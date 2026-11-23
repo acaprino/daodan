@@ -395,7 +395,7 @@ def test_the_routes_are_read_from_the_tree_whatever_the_wrappers_around_the_impo
              "      'post': Awaited<ReturnType<typeof import('../../server/api/a.post').default>>\n    }\n"
              "    '/b/:id': {\n      'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/b/[id]').default>>>>\n    }\n"
              "  }\n}\n")
-    found, error, unread = entries.nitro_routes(older)
+    found, error, unread = premap.nuxt.nitro_routes(older)
     assert (error, unread) == (None, [])
     assert found == [{"path": "/a", "method": "get", "import": "../../server/api/a.get"},
                      {"path": "/a", "method": "post", "import": "../../server/api/a.post"},
@@ -405,8 +405,8 @@ def test_the_routes_are_read_from_the_tree_whatever_the_wrappers_around_the_impo
 def test_a_text_that_does_not_parse_whole_gives_the_line_of_the_error_and_no_route():
     import entries
     whole = "interface InternalApi {\n  '/a': {\n    'get': Awaited<ReturnType<typeof import('x').default>>\n  }\n}\n"
-    assert entries.nitro_routes(whole)[0] == [{"path": "/a", "method": "get", "import": "x"}]
-    found, error, unread = entries.nitro_routes(whole + "const = = ;\n")  # a route that was whole is no row when the file is not
+    assert premap.nuxt.nitro_routes(whole)[0] == [{"path": "/a", "method": "get", "import": "x"}]
+    found, error, unread = premap.nuxt.nitro_routes(whole + "const = = ;\n")  # a route that was whole is no row when the file is not
     assert found == [] and error == 6 and unread == []
 
 

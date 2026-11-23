@@ -85,10 +85,10 @@ def test_a_name_at_a_position_is_the_one_function_of_that_name_whose_lines_hold_
 def test_a_noir_endpoint_with_no_handler_name_is_a_row_at_its_position_that_the_binder_says_is_a_gap():
     """Noir's row always carries `handler`, the name or None, so the binder says what it could not bind."""
     import binder
-    import entries
+    from premap import noir
     report = {"endpoints": [{"method": "GET", "url": "/x", "protocol": "http",
                              "details": {"code_paths": [{"path": "/src/app.py", "line": 3}]}}]}
-    [row] = entries.noir(report, "/src")
+    [row] = noir.rows(report, "/src")
     assert (row["site"], row["handler"]) == ("app.py:3", None)
     facts = types.SimpleNamespace(functions={"app.py": [{"id": "app.py::f", "name": "f", "line": 1, "end": 9}]})
     [bound] = binder.bind([row], facts, resolver=None)

@@ -4,7 +4,7 @@
 (`npx --no-install`, offline: the runner's setup restores the project's packages first, `container_runner.TOOLS`, and
 installs nothing else; without `next` installed `npx` would still ask the registry and fail after 70 seconds) and the print of `.next/types/validator.ts`, where each block ties a route and the kind of
 config the tool checks a file against (a page, a route handler, a layout) to the import of that file. `read` reads
-the blocks from the syntax tree (`entries.typegen`) and binds each import to the one file of the snapshot with that
+the blocks from the syntax tree (`typegen`) and binds each import to the one file of the snapshot with that
 path and stem: a candidate with the route and no line, since the tool gives none. A route whose file is in another
 language (`page.mdx`) is no candidate: what the tool writes for it is not guessed, and the gap names the file. A folder whose typegen fails or
 writes no validator.ts is a gap, and the other folders are still read.
@@ -42,6 +42,27 @@ def _next_path(path: str) -> str | None:
     return "/".join("{}" if segment.startswith("[") and segment.endswith("]") else segment for segment in segments)
 
 
+def typegen(text: str) -> tuple[list[dict], int | None, list[dict]]:
+    """The blocks of `.next/types/validator.ts` (`next typegen`, run in Daodan's container), read from its syntax tree
+    (`QUERIES["typegen"]`), the line of the first error the tree holds (None when it parses whole), and the blocks it
+    checks a file in that this reader does not read (`QUERIES["typegen_blocks"]`: a config type with no route). Each
+    block is a checked file: the type of config the tool checks it against (`shape`), the route that type is written
+    for (`path`) and the file it imports (`import`, relative to `.next/types`); an unread one gives its `import` and
+    its `block`. The comment above a block is not read. A tree that holds an error gives no block: a file cut short
+    must not pass as a short list."""
+    import entries
+    source = text.encode("utf-8")
+    root = entries._parse(source, "typescript")
+    if root is not None and root.has_error:
+        return [], entries._error_line(root), []
+    matches = entries._matches(source, "typescript", "typegen", root)
+    read = {found["import"][0].start_byte for found in matches}
+    unread = [{"import": entries._text(source, found["import"][0]), "block": " ".join(entries._text(source, found["block"][0]).split())}
+              for found in entries._matches(source, "typescript", "typegen_blocks", root) if found["import"][0].start_byte not in read]
+    return ([{"shape": entries._text(source, found["shape"][0]), "path": entries._text(source, found["route"][0]),
+              "import": entries._text(source, found["import"][0])} for found in matches], None, unread)
+
+
 def _tail(result: dict) -> str:
     return (result["stderr"] or result["stdout"]).strip()[-400:]
 
@@ -56,18 +77,18 @@ def read(context, commands, results):
         (by_stem if header.get("language") in SCRIPTS else elsewhere).setdefault(
             (path.parent.as_posix(), path.stem), []).append(rel)
     candidates, gaps = [], []
-    for command, typegen, printed in zip(commands[::2], results[::2], results[1::2]):
+    for command, generated, printed in zip(commands[::2], results[::2], results[1::2]):
         folder = command["cwd"]
-        if typegen["returncode"] != 0:
+        if generated["returncode"] != 0:
             gaps.append({"kind": "model_failed", "path": folder,
-                         "detail": f"next typegen exited with {typegen['returncode']}: {_tail(typegen)}"})
+                         "detail": f"next typegen exited with {generated['returncode']}: {_tail(generated)}"})
             continue
         if printed["returncode"] != 0:
             gaps.append({"kind": "model_failed", "path": folder,
                          "detail": f"next typegen exited with 0 and wrote no {VALIDATOR}: its distDir is not .next, "
                                    "or this Next.js has no typegen command"})
             continue
-        blocks, error, unread = entries.typegen(printed["stdout"])
+        blocks, error, unread = typegen(printed["stdout"])
         if error:
             gaps.append({"kind": "model_partial", "path": folder,
                          "detail": f"{VALIDATOR} did not parse whole (an error at line {error}): it was printed cut "

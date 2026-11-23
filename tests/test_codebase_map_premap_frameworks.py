@@ -88,3 +88,12 @@ def test_no_module_of_the_pre_map_takes_a_private_helper_of_a_framework_source()
                     and isinstance(node.value, ast.Name) and node.value.id in names - {path.stem}
                     and node.attr.startswith("_")]
         assert not borrowed, (path.name, borrowed)
+
+
+def test_the_reading_of_a_tools_output_is_in_its_adapter():
+    """Spec 8.13 point 4: Noir's report, Nitro's routes file and Next.js's validator are read by the adapter of the
+    tool that writes them, not by the tree reader of the entries."""
+    import entries
+    from premap import nextjs, noir, nuxt
+    assert not {"noir", "nitro_routes", "typegen"} & set(vars(entries))
+    assert callable(noir.rows) and callable(nuxt.nitro_routes) and callable(nextjs.typegen)

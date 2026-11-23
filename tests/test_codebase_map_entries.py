@@ -14,6 +14,7 @@ if str(SCRIPTS) not in sys.path:
 import flows  # noqa: E402
 import snapshot  # noqa: E402
 from daodan.core import entries  # noqa: E402  (by its package: benchmarks/system-map has an entries.py too)
+from daodan.core.premap import noir  # noqa: E402
 
 
 def edge(source: str, target: str, kind: str, site: str) -> dict:
@@ -1107,7 +1108,7 @@ class NoirTests(unittest.TestCase):
         "passive_results": [], "errors": []}
 
     def test_each_protocol_decides_the_kind_and_the_site_is_relative_to_the_scanned_root(self):
-        self.assertEqual(entries.noir(self.REPORT, "/work"), [
+        self.assertEqual(noir.rows(self.REPORT, "/work"), [
             {"reader": "noir", "shape": "http", "site": "app/api/healthz/route.ts:3",
              "symbol": "app/api/healthz/route.ts::GET", "method": "GET", "path": "/healthz", "kind": "rotta",
              "handler": "GET", "schema": "/healthz"},
@@ -1126,14 +1127,14 @@ class NoirTests(unittest.TestCase):
 
     def test_a_report_of_another_root_is_refused(self):
         with self.assertRaises(ValueError):
-            entries.noir(self.REPORT, "/elsewhere")
+            noir.rows(self.REPORT, "/elsewhere")
 
     def test_a_server_action_is_its_own_shape_and_no_entry_while_another_kind_changes_nothing(self):
         def endpoint(url, kind):
             return {"url": url, "method": "POST", "protocol": "http", "kind": kind,
                     "handler": {"name": "pay", "path": "/work/app/actions.ts", "line": 3},
                     "details": {"code_paths": [{"path": "/work/app/actions.ts", "line": 3}], "technology": "js_nextjs"}}
-        found = entries.noir({"endpoints": [endpoint("/pay", "server-action"), endpoint("/a", "something-else"),
+        found = noir.rows({"endpoints": [endpoint("/pay", "server-action"), endpoint("/a", "something-else"),
                                             endpoint("/b", "")]}, "/work")
         self.assertEqual([(row["path"], row["shape"], row.get("kind")) for row in found], [
             ("/pay", "server-action", entries.NO_ENTRY), ("/a", "http", "rotta"), ("/b", "http", "rotta")])
@@ -1285,7 +1286,6 @@ def test_a_noir_row_of_a_premap_written_before_the_binder_has_no_handler_key_and
     binder says the gap instead of passing the row on as an entry."""
     import types
     from daodan.core import binder
-    from daodan.core.premap import noir
     row = {"reader": "noir", "shape": "http", "site": "app.py:3", "symbol": "app.py::<module>", "method": "GET", "path": "/x",
            "kind": "rotta"}
     report = {"sources": [{"source": f"{noir.NAME}@{noir.VERSION}"}], "noir_entries": [row], "gaps": []}

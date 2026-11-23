@@ -11,7 +11,7 @@ installed fail at once with npm's own words (measured: 0.45 s against 70.6 s, `b
 
 The server routes: the file ties each route (`server/api`, `server/routes`, and the `nitro.handlers` of the config, which are
 code) to its HTTP method and to the import of its handler's file, in Nuxt 3 and Nuxt 4 alike; `read` reads it from its syntax tree
-(`entries.nitro_routes`) and ties each import to the one script of the snapshot with that path, without its extension. The
+(`nitro_routes`) and ties each import to the one script of the snapshot with that path, without its extension. The
 default export of the handler file is the function a route starts (`QUERIES["nuxt"]`, as for React Router): the row is the handler
 file with that `exports`, and the links' binder (`binder.bind`) ties it to the function: a default-exported function declaration binds,
 and the usual `export default defineEventHandler(...)` is a call, which the snapshot's export records do not bind: the gap is the binder's.
@@ -68,6 +68,33 @@ def commands(context):
     pages = [{"tool": NAME, "argv": ["timeout", "--kill-after=10", str(pages_seconds(len(folders))), SCRIPT], "cwd": folder, "env": {},
               "network": "none"} for folder in folders]
     return routes + pages or None
+
+
+def nitro_routes(text: str) -> tuple[list[dict], int | None, list[str]]:
+    """The routes of `.nuxt/types/nitro-routes.d.ts` (`nuxt prepare`, run in Daodan's container), read from its syntax tree
+    (`QUERIES["nitro_routes"]`): per route and method, `{path, method, import}` as the tool wrote them (the method `default` is
+    a handler with no method in its file name), in the file's order; the line of the first error the tree holds (None when it
+    parses whole), and the routes in which no import was read (`unread`: the tool named no handler file the reader knows). The
+    import is assigned to the method, and the method to the route, whose type contains it, so the generics the tool wraps it in
+    are no part of the reader. A tree that holds an error gives no route: a file cut short must not pass as a short list."""
+    import entries
+    source = text.encode("utf-8")
+    root = entries._parse(source, "typescript")
+    if root is not None and root.has_error:
+        return [], entries._error_line(root), []
+    found = entries._matches(source, "typescript", "nitro_routes", root)
+    inside = lambda inner, outer: outer.start_byte <= inner.start_byte and inner.end_byte <= outer.end_byte  # noqa: E731
+    imports = [match["import"][0] for match in found if "import" in match]
+    methods = [(match["method"][0], match["value"][0]) for match in found if "method" in match]
+    out, unread = [], []
+    for match in (m for m in found if "route" in m):
+        path, before = entries._text(source, match["route"][0]), len(out)
+        out += [{"path": path, "method": entries._text(source, name), "import": entries._text(source, imported)}
+                for name, value in methods if inside(value, match["methods"][0])
+                for imported in imports if inside(imported, value)]
+        if len(out) == before:
+            unread.append(path)
+    return out, None, unread
 
 
 def _pages(tree, parents=()) -> list[dict]:
@@ -130,7 +157,7 @@ def read(context, commands, results):
                          "detail": f"nuxt prepare exited with 0 and wrote no {ROUTES}: its buildDir is not .nuxt, or this Nuxt has "
                                    "no such file"})
             continue
-        found, error, unread = entries.nitro_routes(printed["stdout"])
+        found, error, unread = nitro_routes(printed["stdout"])
         if error:
             gaps.append({"kind": "model_partial", "path": folder,
                          "detail": f"{ROUTES} did not parse whole (an error at line {error}): it was printed cut short, or written "
