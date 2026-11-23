@@ -34,8 +34,8 @@ flowchart LR
 | 7. `connect` | Joins the graphs and lists what is missing | — | No |
 
 After the pipeline the model writes semantic cards and link rules, and flows connect writers, readers and user
-actions. [The process, with example graphs](docs/pipeline.md) explains each step; these names were approved on
-22 November 2026 and the code still uses some earlier ones, listed there under «Stato».
+actions. [The process, with example graphs](docs/plugins/codebase-map.md#pipeline) explains each step; these names were approved on
+22 November 2026 and the code still uses some earlier ones, listed there under «Nel codice oggi».
 
 ## How Daodan identifies the stack
 
@@ -116,7 +116,6 @@ checks the viewer against Imago's design rules; the Viewer workflow runs it with
 
 ## Documentation
 
-- [How Daodan builds the graph](docs/pipeline.md)
 - [Design: Codebase Map and semantic review](docs/specs/2026-11-03-semantic-review-foundation.md)
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
