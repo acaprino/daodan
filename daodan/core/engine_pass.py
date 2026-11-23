@@ -62,11 +62,9 @@ def _statuses(connection) -> dict[str, dict[str, int]]:
 
 
 def snapshot_plan(connection) -> dict:
-    """The plan (`pipeline.plan`) of the snapshot's files, each with its language and parse status: the inventory has
-    no exclusion field yet, so a file outside the perimeter (status `excluded`) is the snapshot's to say."""
+    """The plan (`pipeline.plan`) of the snapshot's files, per language and parse status."""
     from pipeline import plan as planning
-    return planning.plan((file, {"language": language, "status": status}) for file, language, status in
-                         connection.execute("SELECT file, language, status FROM sem_coverage"))
+    return planning.plan(planning.coverage(connection))
 
 
 def pass_languages(connection) -> list[str]:
@@ -90,16 +88,11 @@ def unparsed(connection) -> dict[str, str]:
 
 
 def no_analyzer(connection) -> dict[str, int]:
-    """The snapshot's languages no analyzer lists, each with its files: in the snapshot, in no graph. A graph built
-    from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph's) serves a language whose files the
-    snapshot reads no code of; the code of one it does read (an Astro file's script) needs an analyzer of its own."""
-    import indexers
-    from semantic_store import READ
-    styles = {language for analyzer in indexers.analyzers() for language in getattr(analyzer, "SNAPSHOT_LANGUAGES", ())}
-    counts = {language: sum(count for status, count in files.items() if status != "excluded")
-              for language, files in _statuses(connection).items()
-              if language not in ENGINE_LANGUAGES and (language not in styles or set(files) & set(READ))}
-    return {language: count for language, count in sorted(counts.items()) if count}
+    """The snapshot's languages no analyzer lists, each with its files: in the snapshot, in no graph (the plan's
+    `no-analyzer` gaps). A graph built from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph's)
+    serves a language whose files the snapshot reads no code of; the code of one it does read (an Astro file's
+    script) needs an analyzer of its own."""
+    return {gap["language"]: gap["files"] for gap in snapshot_plan(connection)["gaps"] if gap["kind"] == "no-analyzer"}
 
 
 def _process_alive(pid: int) -> bool:
@@ -422,10 +415,9 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
             if reason is None:
                 fresh = {language: entry for language, entry in (binding.get("languages") or {}).items()
                          if entry.get("state") == "fresh" and from_source(language, entry)}
-    present = {language for node in nodes for language in node["on"]["languages"]
-               if language not in planning.blocked(node, failed)}
-    plan = [(spec, [language for language in spec.languages
-                    if language in present and ENGINE_LANGUAGES.get(language) is spec]) for spec in ENGINES]
+    specs = {spec.name: spec for spec in ENGINES}
+    plan = [(specs[node["adapter"]], [language for language in node["on"]["languages"]
+                                      if language not in planning.blocked(node, failed)]) for node in nodes]
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
 
 
@@ -452,8 +444,9 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     with open_snapshot(manifest) as store:
         nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == "resolve"]
         failed = _unparsed_needs(store.connection)
-    stopped = {language: (ENGINE_LANGUAGES[language], *why) for node in nodes
-               for language, why in planning.blocked(node, failed).items() if language in ENGINE_LANGUAGES}
+    specs = {spec.name: spec for spec in ENGINES}
+    stopped = {language: (specs[node["adapter"]], *why) for node in nodes
+               for language, why in planning.blocked(node, failed).items()}
     for language, (spec, needed, reason) in sorted(stopped.items()):  # a resolver does not start without its parser
         _not_fresh(bus, spec, [language], outcomes, "unavailable", reason, PARSER_INSTALL, needed)
     exhausted = None

@@ -574,7 +574,7 @@ def run(manifest: Path, bus) -> dict:
         obsolete = engine_pass.superseded_languages(entries)
         graphs = {language: entry for language, entry in entries.items()
                   if reason is None and language not in obsolete and entry.get("state") == "fresh"}
-        layout = planning.plan((rel, {"language": language}) for rel, language in snapshot.languages.items())
+        layout = planning.plan(planning.stored(snapshot.store))
         for gap in layout["gaps"]:  # the observers the plan holds are the ones that start
             if gap["kind"] == "no-observer" and gap["language"] in graphs:
                 say(gap["detail"], {key: gap[key] for key in ("kind", "language", "detail")}, language=gap["language"])

@@ -52,6 +52,12 @@ def _without(*ids: str):
     return plan
 
 
+def _parse_without(*ids: str):
+    """`pipeline.plan.parse_nodes`, which the reading takes its nodes from, minus the nodes `ids`."""
+    real = _planning().parse_nodes
+    return lambda rows: [node for node in real(rows) if node["id"] not in ids]
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # The function
 
@@ -103,6 +109,29 @@ def test_a_node_whose_need_failed_is_blocked_per_language_and_says_which_need():
     assert planning.blocked(watcher, failed) == {"cpp": ("resolve:scip-clang", "no graph of cpp")}
 
 
+def test_a_row_may_stand_for_a_group_of_files_and_the_parse_part_needs_no_adapter_registry():
+    planning = _planning()
+    single = [(f"f{n}", {"language": "python", "status": "ast"}) for n in range(3)] + [
+        ("x", {"language": "go", "status": "excluded"}), ("y", {"language": None, "status": "lexical"})]
+    grouped = [("", {"language": "python", "status": "ast", "files": 3}),
+               ("", {"language": "go", "status": "excluded", "files": 1}),
+               ("", {"language": None, "status": "lexical", "files": 1})]
+    assert planning.plan(grouped) == planning.plan(single)
+    ids = {node["id"] for node in planning.plan(single)["nodes"]}
+    assert "parse:go" not in ids and not {"resolve:scip-go", "observe:dynamic-record-go"} & ids  # all excluded
+    assert planning.parse_nodes(single) == [node for node in planning.plan(single)["nodes"] if node["step"] == "parse"]
+
+
+def test_the_stylesheet_graph_is_built_from_its_own_parsers_so_no_parse_node_blocks_it():
+    planning = _planning()
+    nodes = {node["id"]: node for node in planning.plan([("a.css", {"language": "css"}),
+                                                         ("b.vue", {"language": "vue"})])["nodes"]}
+    sheet = nodes["resolve:stylesheet"]
+    assert sheet["needs"] == [] and nodes["resolve:scip-typescript"]["needs"] == ["parse:vue"]
+    assert planning.blocked(sheet, {"parse:stylesheet": "x", "parse:css": "x", "parse:vue": "x"}) == {}
+    assert planning.blocked(nodes["resolve:scip-typescript"], {"parse:vue": "x"}) == {"vue": ("parse:vue", "x")}
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # Proof 3: the plan covers everything, and nothing runs outside it
 
@@ -128,10 +157,24 @@ def test_no_parser_runs_outside_the_plan(tmp_path):
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     parsed = []
     real = snapshot.get_adapter
-    with mock.patch.object(_planning(), "plan", _without("parse:go")), \
+    with mock.patch.object(_planning(), "parse_nodes", _parse_without("parse:go")), \
             mock.patch.object(snapshot, "get_adapter", side_effect=lambda name: parsed.append(name) or real(name)):
         snapshot.write_snapshot(root, tmp_path / "out" / "manifest.sqlite")
     assert "python" in parsed and "go" not in parsed  # the spy sees the adapter that is in the plan
+
+
+def test_a_file_in_no_parse_node_keeps_its_row_and_says_why(tmp_path):
+    root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    with mock.patch.object(_planning(), "parse_nodes", _parse_without("parse:go")):
+        written = snapshot.write_snapshot(root, manifest)
+    with open_snapshot(manifest) as store:
+        assert [path for path, _row in store.iter_inventory()] == ["billing.go", "pay.py"]
+        entry = store.get_file("billing.go")
+        assert (store.file_count, written["file_count"]) == (2, 2)
+    assert entry["status"] == "file-level" and entry["symbols"] == {}
+    assert entry["parser_notes"] == ["no parse node in the plan"]
+    assert entry["language"] == "go"  # the inventory's fact: not read, still a Go file
 
 
 def test_no_resolver_runs_outside_the_plan(tmp_path):
@@ -183,26 +226,36 @@ def no_go_grammar():
     _treesitter.get_parser.cache_clear()
 
 
-def test_a_parser_that_is_missing_stops_the_resolver_and_the_observer_of_its_language_only(tmp_path, no_go_grammar):
+def _chain(tmp_path):
+    """parse, resolve and observe of a Go and a Python file, end to end: the stage stub reports its languages
+    fresh, and the store's graphs are the languages it reported, so a stopped resolver leaves its observer no graph."""
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.write_snapshot(root, manifest)
-    launched, asked, seen = [], [], []
+    launched, asked, seen, fresh = [], [], [], {}
 
     def launch(spec, wanted, path):
         launched.append(spec.name)
+        fresh.update({language: {"state": "fresh", "engine": spec.name, "coverage": {}} for language in wanted})
         return None, None, None, {"available": True, "engine": spec.name,
                                   "languages": {language: {"state": "fresh"} for language in wanted}}
 
-    graphs = {"manifest_digest": "d", "parser_fingerprint": "p", "resolver_version": 1,
-              "languages": {"python": {"state": "fresh", "engine": "scip-python", "coverage": {}}}}
+    def graphs(*args):
+        return [], {"manifest_digest": "d", "parser_fingerprint": "p", "resolver_version": 1,
+                    "languages": dict(fresh)}, None
+
     with mock.patch.object(engine_pass, "_launch", side_effect=launch), \
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30), \
-            mock.patch.object(resolve_edges, "read_edge_store", return_value=([], graphs, None)), \
+            mock.patch.object(resolve_edges, "read_edge_store", side_effect=graphs), \
             mock.patch.object(dynamic_go, "plan", side_effect=lambda *a: asked.append("go") or {"runs": [], "gaps": []}), \
             mock.patch.object(dynamic_python, "plan",
                               side_effect=lambda *a: asked.append("python") or {"runs": [], "gaps": []}):
         results = pipeline.run(manifest, listeners=[seen.append], start="analyze", stop="dynamic")
+    return results, launched, asked, seen
+
+
+def test_a_parser_that_is_missing_stops_the_resolver_and_the_observer_of_its_language_only(tmp_path, no_go_grammar):
+    results, launched, asked, seen = _chain(tmp_path)
     assert launched == ["scip-python"]  # scip-go does not start, with its parser missing
     languages = results["analyze"]["languages"]
     assert languages["go"]["state"] == "unavailable" and languages["go"]["need"] == "parse:go"
@@ -215,13 +268,24 @@ def test_a_parser_that_is_missing_stops_the_resolver_and_the_observer_of_its_lan
     assert observed["python"]["state"] == "not-run"
 
 
-def test_the_languages_no_analyzer_serves_are_the_plans_gaps(tmp_path):
+def test_with_its_parser_the_same_chain_reaches_the_observer_of_each_language(tmp_path):
+    results, launched, asked, _seen = _chain(tmp_path)
+    assert sorted(launched) == ["scip-go", "scip-python"] and sorted(asked) == ["go", "python"]
+    assert {language: outcome["state"] for language, outcome in results["dynamic"]["languages"].items()} == {
+        "go": "not-run", "python": "not-run"}
+
+
+def test_the_plan_the_parse_step_says_is_the_plan_the_pass_runs(tmp_path):
+    """One row source (`plan.stored`): the event's plan has the pass's gaps, the astro code no analyzer serves too."""
     root = _project(tmp_path / "project", {
         "a.sql": "select 1;\n", "pay.py": PY, "page.html": '<p class="x">x</p>\n',
         "Page.astro": '---\nimport { f } from "./f";\nf();\n---\n<p class="x">x</p>\n<style>\n.x { color: red }\n</style>\n'})
-    manifest = tmp_path / "out" / "manifest.sqlite"
+    manifest, seen = tmp_path / "out" / "manifest.sqlite", []
     snapshot.write_snapshot(root, manifest)
+    pipeline.run(manifest, listeners=[seen.append], stop="parse")
+    [said] = [event["data"]["plan"] for event in seen if event["message"] == "the plan"]
     with open_snapshot(manifest) as store:
-        served = engine_pass.no_analyzer(store.connection)
-        gaps = engine_pass.snapshot_plan(store.connection)["gaps"]
-    assert served and {gap["language"]: gap["files"] for gap in gaps if gap["kind"] == "no-analyzer"} == served
+        planned = engine_pass.snapshot_plan(store.connection)
+        assert engine_pass.no_analyzer(store.connection) == {gap["language"]: gap["files"] for gap in planned["gaps"]
+                                                            if gap["kind"] == "no-analyzer"} == {"astro": 1, "sql": 1}
+    assert said == planned

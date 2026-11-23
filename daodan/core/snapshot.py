@@ -417,6 +417,9 @@ _RESERVED_METADATA = {"schema", "target", "root", "created_at", "git", "scope", 
                       "metrics", "files", "file_count", "format", "reading"}
 
 
+NO_PARSE_NODE = "no parse node in the plan"  # why a file is read as file-level (`_SnapshotPass.unplanned`)
+
+
 class _SnapshotPass:
     """One streaming pass of the inventory's files into a snapshot writer: reuse what still holds, parse the rest.
 
@@ -424,7 +427,8 @@ class _SnapshotPass:
     Python file Daodan's interpreter rejects for the Python its project states (`newer`).
     """
 
-    def __init__(self, format: str, previous, reusable: bool, fast_reuse: bool, metrics: dict, progress, rows: dict):
+    def __init__(self, format: str, previous, reusable: bool, fast_reuse: bool, metrics: dict, progress, rows: dict,
+                 unplanned: frozenset | set = frozenset()):
         self.format = format
         self.previous = previous
         self.reusable = reusable
@@ -433,6 +437,7 @@ class _SnapshotPass:
         self.metrics = metrics
         self.progress = progress
         self.rows = rows  # the inventory's rows by path, corrected where a file changed since
+        self.unplanned = unplanned  # the files the plan puts in no parse node: read as file-level, with the cause
         self.writer = None
         self.count = 0
         self.exact_reused_paths: list[str] = []
@@ -456,7 +461,7 @@ class _SnapshotPass:
 
     def _fast_reused(self, rel: str, path: Path, row: dict) -> bool:
         """A header the previous SQLite snapshot verified, copied in bulk at the end instead of rewritten."""
-        if not (self.fast_reuse and rel in self.verified_headers):
+        if not (self.fast_reuse and rel in self.verified_headers) or rel in self.unplanned:
             return False
         old_h = self.verified_headers[rel]
         if not _reusable(old_h, path, row["raw_hash"], language=row["language"]):
@@ -475,17 +480,22 @@ class _SnapshotPass:
                macros: dict | None = None) -> dict:
         """The previous entry when it still holds, otherwise a fresh parse."""
         old = self.previous.get_file(rel) if self.reusable else None
-        language = self.rows[rel]["language"]
+        language = None if rel in self.unplanned else self.rows[rel]["language"]
         key = None if macros is None else context_key(macros)
         if old is not None and _reusable(old, path, raw_digest or hashlib.sha256(data).hexdigest(), key, language):
             old["size"], old["mtime"] = len(data), mtime
             self.metrics["cache_hits"] += 1
-            return old
-        del old
-        entry = (file_entry(path, data, mtime, parse_result=parsed, language=language) if macros is None
-                 else file_entry(path, data, mtime, parse_result=parsed, macros=macros, language=language))
-        if entry["status"] in {"parsed", "parse-error"} and parsed is None:
-            self.metrics["parsed_files"] += 1
+            entry = old
+        else:
+            del old
+            entry = (file_entry(path, data, mtime, parse_result=parsed, language=language) if macros is None
+                     else file_entry(path, data, mtime, parse_result=parsed, macros=macros, language=language))
+            if entry["status"] in {"parsed", "parse-error"} and parsed is None:
+                self.metrics["parsed_files"] += 1
+        if rel in self.unplanned:  # read as no language, so not parsed; the language stays the inventory's
+            entry["language"] = self.rows[rel]["language"]
+            if NO_PARSE_NODE not in entry["parser_notes"]:
+                entry["parser_notes"] = [*entry["parser_notes"], NO_PARSE_NODE]
         return entry
 
     def sources(self, root: Path, supplied: dict) -> list[tuple]:
@@ -619,6 +629,8 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
     Host metadata joins the immutable header before semantic binding. Reserved
     snapshot fields cannot be overridden by an embedding application's header.
     A file changed since the inventory is read as it now is, and its inventory row corrected.
+    Its plan is the parse part only (`pipeline.plan.parse_nodes`): the inventory has no status yet, and the
+    resolve and observe nodes are the plan of the read snapshot (`plan.stored`).
     """
     from datetime import datetime, timezone
     from snapshot_store import SnapshotWriter, _plain
@@ -652,12 +664,13 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
             and hasattr(previous, "verified_reusable_headers")
             and previous._has_json_cache()
         )
-        # The plan says which files are read, each by its parse node (spec 8.4): the reading takes no other.
+        # The plan's parse part (spec 8.4; no entries exist yet, so no status): a file in no parse node is not
+        # read by a language adapter. It keeps its inventory row and a file-level entry that says so.
         from pipeline import plan as planning
         rows = dict(listed.iter_inventory())
-        parse = {node["id"] for node in planning.plan(rows.items())["nodes"] if node["step"] == "parse"}
-        run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress,
-                            {path: row for path, row in rows.items() if planning.node_of(row) in parse})
+        parse = {node["id"] for node in planning.parse_nodes(rows.items())}
+        run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress, rows,
+                            {path for path, row in rows.items() if planning.node_of(row) not in parse})
         scope = listed.metadata["scope"]
     try:
         with SnapshotWriter(temporary, format) as writer:

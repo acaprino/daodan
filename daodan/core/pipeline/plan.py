@@ -1,8 +1,9 @@
 """The plan (spec 8.4): which adapter runs on which files, and what each needs first, as plain data.
 
-`plan(rows)` takes the inventory's rows, `(path, {"language": ...})` pairs (`stored` reads them from a store; a row
-may also carry the file's `status`, which the pass has from the snapshot), and the adapters' own declarations
-(`indexers.analyzers()`, `dynamic.observers()`), and gives `{"nodes": [...], "gaps": [...]}`. It states no fact about
+`plan(rows)` takes `(path, {"language": ...})` pairs, `stored` reads them from a store (every executor takes its rows
+from it); a row may carry the file's `status` and, when it stands for a group of files, their number (`files`).
+It reads the adapters' own declarations (`engine_pass.ENGINES`, which the stages are built from, and
+`dynamic.observers()`), and gives `{"nodes": [...], "gaps": [...]}`. It states no fact about
 the project, only choices; the steps run the nodes it gives and nothing else (`snapshot.write_reading`,
 `engine_pass.pass_plan`, `dynamic.run`).
 
@@ -27,25 +28,55 @@ def node_of(row: dict) -> str:
     return f"parse:{row.get('language') or FILE_LEVEL}"
 
 
+def coverage(connection) -> list[tuple[str, dict]]:
+    """The snapshot's files as grouped rows: per language and parse status, how many (`sem_coverage`)."""
+    return [("", {"language": language, "status": status, "files": count}) for language, status, count in
+            connection.execute("SELECT language, status, COUNT(*) FROM sem_coverage GROUP BY language, status")]
+
+
 def stored(store) -> list[tuple[str, dict]]:
-    """The rows of a snapshot: its inventory, or, for a store that has none (JSON, a store written before it), its
-    files' headers' languages."""
+    """The rows of a snapshot, one source for every step: the parse status of each language once the snapshot is read
+    (`coverage`), else its inventory, else, for a store that has none (JSON, a store written before it), its files'
+    headers' languages."""
+    connection = getattr(store, "connection", None)
+    if connection is not None and connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='sem_coverage'").fetchone():
+        rows = coverage(connection)
+        if rows:
+            return rows
     rows = list(store.iter_inventory())
     return rows or [(path, {"language": header.get("language")}) for path, header in store.iter_file_headers_only()]
 
 
+def _analyzers() -> list:
+    """The resolvers as the pass holds them (`engine_pass.ENGINES`), each with its adapter's declaration."""
+    import importlib
+    import types
+    import engine_pass
+    found = []
+    for spec in engine_pass.ENGINES:
+        module = importlib.import_module(f"indexers.{spec.indexer}")
+        found.append(types.SimpleNamespace(
+            ENTRY=spec.name, LANGUAGES=spec.languages, VERSION=getattr(module, "VERSION", None),
+            UNIT_KINDS=module.UNIT_KINDS, NEEDS_CONTAINER=spec.needs_container,
+            SNAPSHOT_LANGUAGES=getattr(module, "SNAPSHOT_LANGUAGES", ())))
+    return found
+
+
 def _owner(language: str):
     """The analyzer that resolves `language`: the first that lists it."""
-    import indexers
-    return next((analyzer for analyzer in indexers.analyzers() if language in analyzer.LANGUAGES), None)
+    return next((analyzer for analyzer in _analyzers() if language in analyzer.LANGUAGES), None)
 
 
-def need(node: dict, language: str) -> str:
-    """The id of the node `node` waits for on `language`: its parser (a resolver), its resolver (an observer)."""
+def need(node: dict, language: str) -> str | None:
+    """The id of the node of `node`'s `needs` that `language` waits for: its parser (a resolver), its resolver (an
+    observer); None where it waits for none."""
     if node["step"] == "resolve":
-        return f"parse:{language}"
-    owner = _owner(language)
-    return f"resolve:{owner.ENTRY if owner else 'none'}"
+        needed = f"parse:{language}"
+    else:
+        owner = _owner(language)
+        needed = f"resolve:{owner.ENTRY}" if owner else None
+    return needed if needed in node["needs"] else None
 
 
 def blocked(node: dict, failed: dict) -> dict[str, tuple[str, str]]:
@@ -54,7 +85,7 @@ def blocked(node: dict, failed: dict) -> dict[str, tuple[str, str]]:
     found = {}
     for language in node["on"]["languages"]:
         needed = need(node, language)
-        reason = failed.get(needed)
+        reason = failed.get(needed) if needed else None
         if isinstance(reason, dict):
             reason = reason.get(language)
         if reason is not None:
@@ -67,48 +98,63 @@ def _node(step: str, adapter: str, version, on: dict, container: bool, needs: li
             "on": on, "container": container, "needs": needs}
 
 
-def plan(rows, record=None) -> dict:
-    """The nodes and gaps for `rows`. `record`, the pre-map (None before `scan`), does not change a choice yet: the
-    units of a node come from it when the plan is recomputed after the scan (8.4)."""
-    import dynamic
-    import indexers
-    from semantic_store import READ
-    files, held, read = collections.Counter(), set(), set()
+def _tally(rows) -> tuple[collections.Counter, dict, set]:
+    """The files per language (None: no language), the statuses each language's files have, and the languages
+    held at all, outside the perimeter or not."""
+    files, statuses, held = collections.Counter(), collections.defaultdict(set), set()
     for _path, row in rows:
         language = row.get("language")
         if language:
             held.add(language)
         if row.get("status") == "excluded":  # outside the perimeter: in no node, and the inventory says why
             continue
-        files[language] += 1
-        if row.get("status") in READ:
-            read.add(language)
-    languages = sorted(language for language in files if language)
+        files[language] += row.get("files", 1)
+        statuses[language].add(row.get("status"))
+    return files, statuses, held
+
+
+def _parse(files: collections.Counter) -> list[dict]:
     nodes = [_node("parse", language, None, {"languages": [language], "files": files[language]}, False, [])
-             for language in languages]
+             for language in sorted(language for language in files if language)]
     if files[None]:
         nodes.append(_node("parse", FILE_LEVEL, None, {"languages": [], "files": files[None]}, False, []))
-    analyzers = indexers.analyzers()
+    return nodes
+
+
+def parse_nodes(rows) -> list[dict]:
+    """The parse nodes alone, which need no adapter registry: what the reading takes its files from."""
+    return _parse(_tally(rows)[0])
+
+
+def plan(rows, record=None) -> dict:
+    """The nodes and gaps for `rows`. `record`, the pre-map (None before `scan`), does not change a choice yet: the
+    units of a node come from it when the plan is recomputed after the scan (8.4)."""
+    import dynamic
+    from semantic_store import READ
+    files, statuses, held = _tally(rows)
+    read = {language for language, found in statuses.items() if found & set(READ)}
+    languages = sorted(language for language in files if language)
+    nodes = _parse(files)
+    analyzers = _analyzers()
     owner: dict = {}
     for analyzer in analyzers:  # a language's resolver is the first analyzer that lists it
         for language in analyzer.LANGUAGES:
             owner.setdefault(language, analyzer)
     planned = set(languages)
     for analyzer in analyzers:  # a graph built from other languages' files is planned when the snapshot holds one
-        if held & set(getattr(analyzer, "SNAPSHOT_LANGUAGES", ())):
+        if held & set(analyzer.SNAPSHOT_LANGUAGES):
             planned.update(analyzer.LANGUAGES)
     resolved = []
     for analyzer in analyzers:
         mine = [language for language in analyzer.LANGUAGES if language in planned and owner[language] is analyzer]
         if not mine:
             continue
-        sources = sorted(language for language in getattr(analyzer, "SNAPSHOT_LANGUAGES", ()) if files[language])
-        counted = sorted({*mine, *sources})
-        nodes.append(_node("resolve", analyzer.ENTRY, getattr(analyzer, "VERSION", None),
-                           {"languages": mine, "files": sum(files[language] for language in counted),
-                            "unit_kinds": sorted(analyzer.UNIT_KINDS)},
-                           bool(analyzer.NEEDS_CONTAINER), [f"parse:{language}" for language in counted
-                                                            if files[language]]))
+        sources = sorted(language for language in analyzer.SNAPSHOT_LANGUAGES if files[language])
+        # A graph of other languages' files reads them with its own parsers: no parse node of the snapshot is its need.
+        needs = [] if analyzer.SNAPSHOT_LANGUAGES else [f"parse:{language}" for language in mine if files[language]]
+        nodes.append(_node("resolve", analyzer.ENTRY, analyzer.VERSION,
+                           {"languages": mine, "files": sum(files[language] for language in {*mine, *sources}),
+                            "unit_kinds": sorted(analyzer.UNIT_KINDS)}, bool(analyzer.NEEDS_CONTAINER), needs))
         resolved += mine
     watched = set()
     for observer in dynamic.observers():
@@ -119,7 +165,7 @@ def plan(rows, record=None) -> dict:
                                {"languages": mine, "files": sum(files[language] for language in mine)}, True,
                                sorted({f"resolve:{owner[language].ENTRY}" for language in mine})))
     gaps = []
-    served = {language for analyzer in analyzers for language in getattr(analyzer, "SNAPSHOT_LANGUAGES", ())}
+    served = {language for analyzer in analyzers for language in analyzer.SNAPSHOT_LANGUAGES}
     for language in languages:  # a graph of other languages' files serves one whose files it reads no code of
         if language not in owner and (language not in served or language in read):
             gaps.append({"kind": "no-analyzer", "language": language, "files": files[language], "detail":
