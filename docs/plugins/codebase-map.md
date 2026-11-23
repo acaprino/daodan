@@ -83,10 +83,10 @@ Sette step e i loro nomi sono il disegno approvato il 22 novembre 2026 (`docs/sp
 ```mermaid
 flowchart LR
   P[/Progetto/] --> scan
-  scan["1 scan<br>percorre cartelle e file<br>e chiede alla build<br>com'è fatto il progetto"] --> parse
-  parse["2 parse<br>legge i sorgenti"] --> recognize
-  recognize["3 recognize<br>riconosce le tecnologie"] --> plan
-  plan["4 plan<br>decide chi gira su cosa"] --> resolve
+  scan["1 scan<br>percorre cartelle e file<br>e chiede alla build<br>com'è fatto il progetto"] --> recognize
+  recognize["2 recognize<br>riconosce le tecnologie"] --> plan
+  plan["3 plan<br>decide chi gira su cosa"] --> parse
+  parse["4 parse<br>legge i sorgenti<br>che il piano gli dà"] --> resolve
   resolve["5 resolve<br>risolve le chiamate"] --> observe
   observe["6 observe<br>esegue i test<br>e guarda cosa chiamano"] --> connect
   connect["7 connect<br>unisce e dice cosa manca"] --> G[(Grafo completo)]
@@ -95,9 +95,9 @@ flowchart LR
 | Step | Domanda a cui risponde | Adattatori | Strumento sotto | Esegue il progetto |
 | --- | --- | --- | --- | --- |
 | 1 `scan` | Quali cartelle e file ha il progetto, e quali moduli, unità di build e comandi di test dichiara? | scanner | il percorso dell'albero; cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
-| 2 `parse` | Che cosa c'è in ogni sorgente: simboli, import, chiamate? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
-| 3 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork; oggi il registro delle tecnologie | No |
-| 4 `plan` (manca) | Quale adattatore gira su quale parte, e quale no? | nessuno | — | No |
+| 2 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork; oggi il registro delle tecnologie | No |
+| 3 `plan` (manca) | Quale adattatore gira su quale parte, con che cosa gli serve, e quale no? | nessuno | — | No |
+| 4 `parse` | Che cosa c'è in ogni sorgente che il piano gli dà: simboli, import, chiamate? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
 | 5 `resolve` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
 | 6 `observe` | Che cosa chiamano davvero i test? | observer | un registratore per linguaggio | Solo nel container |
 | 7 `connect` | Qual è il grafo intero, e che cosa non contiene? | nessuno | — | No |
@@ -113,6 +113,7 @@ Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
 - **Ogni arco dice chi l'ha prodotto e quanto vale:** provato da un resolver, incerto, osservato in una corsa dei test, campionato.
 - **Una lacuna non è mai silenzio:** un linguaggio senza adattatore, un test non partito, un file che nessun indice copre sono scritti nel risultato.
 - **Tutto si segue mentre accade:** ogni step e ogni adattatore emette eventi (inizio, avanzamento, lacuna, fine), salvati in un giornale accanto allo snapshot. Lo `step.finished` di uno step fallito che la pipeline tollera porta `failed` con la causa.
+- **Ogni fatto ha un padrone solo.** Uno step non riscopre ciò che uno step prima ha stabilito: lo chiede a lui. Per questo `parse` viene dopo `scan`, `recognize` e `plan`: deve sapere quali file leggere, in che linguaggio e in quale modulo. Chi deve sapere che cosa, e da chi: spec, 8.5.
 - **Un guasto resta dove nasce.** Un listener che fallisce, un giornale che non si può scrivere, una riga rotta del giornale, il programma di un adattatore che non parte: ognuno è detto con la causa e non ferma il resto. Un'analisi fermata, o morta senza una parola, non lascia step aperti nel giornale: chi sa che è finita ne scrive la fine. Che cosa resta aperto: spec, 8.4.
 
 ### Esempi
@@ -128,15 +129,15 @@ flowchart LR
     b1["npm-files, npm-tests<br>leggono i file"]
     b2([npm, tsc])
   end
-  subgraph parse
-    a1[tree-sitter<br>ts, tsx]
-    a2[parser dei fogli di stile<br>css]
-  end
   subgraph recognize
     c1[registro<br>React, Vite]
   end
   subgraph plan
     d1[2 resolver<br>1 observer]
+  end
+  subgraph parse
+    a1[tree-sitter<br>ts, tsx]
+    a2[parser dei fogli di stile<br>css]
   end
   subgraph resolve
     e1[stylesheet]
@@ -148,7 +149,7 @@ flowchart LR
   subgraph connect
     g1[grafo completo]
   end
-  scan --> parse --> recognize --> plan --> resolve --> observe --> connect
+  scan --> recognize --> plan --> parse --> resolve --> observe --> connect
 ```
 
 #### Un progetto Gradle con Java e Kotlin
@@ -160,14 +161,14 @@ flowchart LR
     b1[jvm-files<br>legge i file]
     b2([gradle])
   end
-  subgraph parse
-    a1[tree-sitter<br>java, kotlin]
-  end
   subgraph recognize
     c1[registro<br>Spring Boot, JUnit]
   end
   subgraph plan
     d1[2 resolver<br>1 observer]
+  end
+  subgraph parse
+    a1[tree-sitter<br>java, kotlin]
   end
   subgraph resolve
     e1([scip-java]) --> e2([scip-kotlin])
@@ -179,7 +180,7 @@ flowchart LR
     g1[grafo completo]
     g2["not-joined:<br>chiamate fra Java e Kotlin"]:::gap
   end
-  scan --> parse --> recognize --> plan --> resolve --> observe --> connect
+  scan --> recognize --> plan --> parse --> resolve --> observe --> connect
   classDef gap stroke-dasharray: 5 5
 ```
 
@@ -194,14 +195,14 @@ flowchart LR
     b1["python-build, requirements,<br>python-tests<br>leggono i file"]
     b2["model_not_run:<br>uv"]:::gap
   end
-  subgraph parse
-    a1[ast di Python]
-  end
   subgraph recognize
     c1[registro<br>dai pacchetti dichiarati]
   end
   subgraph plan
     d1["1 resolver<br>observer: lacuna"]
+  end
+  subgraph parse
+    a1[ast di Python]
   end
   subgraph resolve
     e1["scip-python<br>sull'host: legge, non esegue"]
@@ -213,7 +214,7 @@ flowchart LR
     g1[grafo statico]
     g2[ciò che nessuna corsa<br>ha osservato]:::gap
   end
-  scan --> parse --> recognize --> plan --> resolve --> observe --> connect
+  scan --> recognize --> plan --> parse --> resolve --> observe --> connect
   classDef gap stroke-dasharray: 5 5
 ```
 
@@ -229,7 +230,7 @@ Lo snapshot si scrive prima della pipeline e fa due cose insieme: l'inventario d
 4. `dynamic` (diventa `observe`): i test del progetto sotto un registratore (sezione Passo dinamico).
 5. `union` (diventa `connect`): i grafi delle tecnologie come grafo completo, con ciò che la corsa ha osservato e ciò che il grafo non contiene: file che un indice ha lasciato fuori, linguaggi senza analyzer, chiamate fra i linguaggi di due analyzer.
 
-Lo step `scan` scrive oggi anche gli archi fra moduli e gli ingressi dei flussi, che leggono ciò che `parse` produce: con `scan` per primo passano dopo `parse` (spec, 8.2, punto 3). Lo step `plan` non c'è: quale adattatore gira su cosa lo decidono la pre-mappa, `engine_pass.pass_plan` e il `plan` di ogni osservatore. Il riconoscimento usa ancora il registro (`service_registry.py`): il passaggio al fork di stack-analyser è approvato (`docs/specs/2026-11-21-stack-dal-fork.md`) e non applicato. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
+Oggi `parse` riscopre da sé ciò che nel disegno riceve: percorre l'albero, decide il linguaggio di un file con espressioni regolari sul contenuto mentre `scan` lo chiede a go-enry, legge `tsconfig` a mano mentre `scan` lo chiede a `tsc`, e legge anche i file che `scan` poi dichiara generati o di terze parti. Lo step `scan` scrive oggi anche gli archi fra moduli e gli ingressi dei flussi, che leggono ciò che `parse` produce: nel disegno stanno in `connect` (spec, 8.5). Lo step `plan` non c'è: quale adattatore gira su cosa lo decidono la pre-mappa, `engine_pass.pass_plan` e il `plan` di ogni osservatore. Il riconoscimento usa ancora il registro (`service_registry.py`): il passaggio al fork di stack-analyser è approvato (`docs/specs/2026-11-21-stack-dal-fork.md`) e non applicato. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
 
 Spec: `docs/specs/2026-11-15-pipeline-di-analisi.md`.
 

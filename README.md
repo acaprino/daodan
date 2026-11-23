@@ -15,21 +15,22 @@ source and survive independent verification. Sources remain the authority.
 
 ## How the graph is built
 
-Seven steps, always in this order. Each uses the official tool of what it reads, behind an adapter, and writes
+Seven steps, always in this order: each starts from what the ones before it established, and none finds out
+again what another already knows. Each uses the official tool of what it reads, behind an adapter, and writes
 what it could not do as a gap. The seven steps and their names are the design approved on 22 November 2026; the
 last column says what the code does today.
 
 ```mermaid
 flowchart LR
-  scan --> parse --> recognize --> plan --> resolve --> observe --> connect --> G[(Complete graph)]
+  scan --> recognize --> plan --> parse --> resolve --> observe --> connect --> G[(Complete graph)]
 ```
 
 | Step | What it does | Runs project code | In the code today |
 |---|---|---|---|
 | 1. `scan` | Walks every folder and file, then asks the build tools for modules, build units and test commands | Only inside the container | Step `scan`; the file inventory is written before the pipeline (`snapshot.py write`) |
-| 2. `parse` | Reads the source files: symbols, imports, calls | No | Before the pipeline, with the inventory (`snapshot.py write`) |
-| 3. `recognize` | Names frameworks, libraries, tools and services | No | Step `stack` |
-| 4. `plan` | Decides which adapter runs on which part | No | Not yet: decided in three places |
+| 2. `recognize` | Names frameworks, libraries, tools and services | No | Step `stack` |
+| 3. `plan` | Decides which adapter runs on which part, and what each needs | No | Not yet: decided in three places |
+| 4. `parse` | Reads the source files the plan gives it: symbols, imports, calls | No | Before the pipeline, with the inventory (`snapshot.py write`) |
 | 5. `resolve` | Resolves each call to its target | Only inside the container | Step `analyze` |
 | 6. `observe` | Runs the project's tests and records what they call | Only inside the container | Step `dynamic` |
 | 7. `connect` | Joins the graphs and lists what is missing | No | Step `union`: it lists, it does not join yet |
