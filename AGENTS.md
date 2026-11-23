@@ -27,10 +27,25 @@ Per ogni framework, libreria o strumento che il progetto analizzato usa, Daodan 
 - Le spec si mettono alla prova in `benchmarks/`: ogni benchmark dichiara nel suo README i parametri da provare e i risultati misurati.
 - Una prova che sostiene un risultato o una scheda del registro resta nel repository, come test o benchmark che si riesegue; quella che chiede gli strumenti veri gira solo su Modal. Un test temporaneo poi cancellato non è una verifica.
 
+## Un solo aspetto per tutta la suite (la regola del proprietario, 2026-11-23)
+
+Ogni app della suite (Daodan, Xiox, Shinatama, Mukade, Muro e le altre su Sigrid) ha lo stesso aspetto e lo stesso
+comportamento: le stesse superfici, ombre, spaziature, tipografia e movimento, e lo stesso componente per lo stesso
+bisogno. Di Daodan sono solo il layout, che segue le sue funzioni, l'accento e l'icona.
+
+- Il design system della suite è Sigrid (`acaprino/sigrid`). L'interfaccia usa solo i suoi componenti: nessun
+  componente proprio che disegna (niente fogli di stile, classi, primitive, copie o ritocchi di un pezzo del design
+  system); il codice di Daodan compone i componenti del design system nelle schermate e li collega ai dati.
+- È l'app ad adeguarsi al design system, mai il contrario. Sigrid cambia solo quando manca davvero un componente o una
+  primitiva che serve a una funzione: allora si aggiunge a Sigrid, generico, per tutte le app. L'aspetto che Daodan
+  aveva prima non è mai un motivo per cambiare Sigrid.
+- Finché il viewer non passa da Imago a Sigrid (il porting è in corso), l'interfaccia usa solo i pezzi di Imago e non ne
+  aggiunge di propri; un pezzo che manca si chiede a Sigrid e arriva con il porting.
+
 ## Interfaccia (viewer/)
 
 - Prima di lavorare sull'interfaccia leggi `viewer/node_modules/@acaprino/imago/docs/design-file.md` (da `viewer/`: `node_modules/@acaprino/imago/docs/design-file.md`, dopo `npm ci`) e i file che richiama.
-- Applica i suoi token e le scelte confermate entro la richiesta; usa le classi `im-` e i token `--im-` del pacchetto e costruisci un controllo tuo dai token, mai da colori o misure scritti a mano.
+- Applica i suoi token e le scelte confermate entro la richiesta; usa le classi `im-` e i token `--im-` del pacchetto, e non costruire mai un controllo tuo («Un solo aspetto per tutta la suite»).
 - Segnala i conflitti e lascia esplicite le scelte aperte.
 - Prima di dire che il lavoro sull'interfaccia è finito esegui `npx imago-check` in `viewer/`.
 

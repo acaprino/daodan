@@ -11,38 +11,35 @@ writes no validator.ts is a gap, and the other folders are still read.
 """
 from __future__ import annotations
 
-import json
 import posixpath
 from pathlib import PurePosixPath
 
-NAME, VERSION, RANK = "next", "daodan/premap/v2", "scanner"
+from premap import frameworks
+
+NAME, VERSION, RANK = "next", "daodan/premap/v4", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a `.js` import names: `.ts`, `.tsx`, `.js`, `.jsx`
 TYPES = ".next/types"
 VALIDATOR = f"{TYPES}/validator.ts"
 
 
-def _folders(context) -> list[str]:
-    """The folders whose `package.json` declares `next`; one that is not valid JSON is skipped: `npm-files` reports it."""
-    folders = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        text = context.inventory.text(rel)
-        try:
-            manifest = json.loads(text)
-        except ValueError:
-            continue
-        if isinstance(manifest, dict) and any(isinstance(manifest.get(section), dict) and "next" in manifest[section]
-                                              for section in ("dependencies", "devDependencies")):
-            folders.append(PurePosixPath(rel).parent.as_posix())
-    return folders
-
-
 def commands(context):
     return [{"tool": NAME, "argv": argv, "cwd": folder, "env": env, "network": "none"}
-            for folder in _folders(context)
+            for folder in frameworks.folders(context, ("next",))
             for argv, env in ((["npx", "--no-install", "next", "typegen"], {"NEXT_TELEMETRY_DISABLED": "1", "npm_config_offline": "true"}),
                               (["cat", VALIDATOR], {}))] or None
+
+
+def _next_path(path: str) -> str | None:
+    """A Next.js route as `REST` reads a path: each dynamic segment (`[id]`) is a parameter, `{}`; None for a catch-all
+    (`[...x]`, `[[...x]]`), which stands for several path schemas. Next.js's own table of a route's parameters is
+    `ParamMap` in `.next/types/routes.d.ts` (the file `validator.ts` imports): the pre-map does not carry it (the
+    Next.js source prints only `validator.ts`), so the segments of the route text are read, as the framework writes
+    them: a whole segment between brackets. A text with no grammar, read with string operations."""
+    # shortcut: the route text, not ParamMap of routes.d.ts (not read, not checked), and a segment like `a-[id]` stays literal, when the Next.js source also prints routes.d.ts
+    segments = path.split("/")
+    if any(segment.startswith(("[...", "[[...")) for segment in segments):
+        return None
+    return "/".join("{}" if segment.startswith("[") and segment.endswith("]") else segment for segment in segments)
 
 
 def _tail(result: dict) -> str:
@@ -104,10 +101,14 @@ def read(context, commands, results):
                              "detail": f"{checks}, and {len(files)} files of the snapshot have that path and stem: "
                                        f"{', '.join(files)}"})
             else:
-                kind = entries.QUERIES["next"].get(block["shape"], {}).get("kind")
+                spec = entries.QUERIES["next"].get(block["shape"], {})
+                route = _next_path(block["path"])
                 candidates.append({"reader": entries.NEXT, "shape": block["shape"], "site": files[0],
                                    "symbol": f"{files[0]}::{flows.MODULE}", "path": block["path"],
-                                   **({"kind": kind} if kind else {})})
+                                   **({"kind": spec["kind"]} if spec.get("kind") else {}),
+                                   "schema": flows.path_schema(route) if route is not None else None,
+                                   **{key: spec[key] for key in ("exports", "methods") if spec.get(key)},
+                                   **({"page": True} if spec.get("page") else {})})
     return {"facts": {"framework_entries": candidates} if candidates else {}, "gaps": gaps}
 
 

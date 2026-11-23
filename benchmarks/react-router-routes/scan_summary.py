@@ -14,7 +14,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "daodan/core"))
 
+import binder  # noqa: E402
 import flows  # noqa: E402
+import semantic_store  # noqa: E402
+from snapshot_store import open_snapshot  # noqa: E402
 
 SOURCES = ("react-router", "noir", "tsc", "npm", "next", "angular")
 
@@ -24,12 +27,14 @@ def main(folder: str) -> None:
     record = json.loads((folder / "premap.json").read_text(encoding="utf-8"))
     seconds = json.loads((folder / "run.json").read_text(encoding="utf-8"))["seconds"]
     links = flows.link_facts(folder / "manifest.sqlite", [])
+    with open_snapshot(folder / "manifest.sqlite") as store, semantic_store.semantic_reader(store) as db:  # the rows the links bind (`binder.bind`)
+        bound = binder.bind(record.get("framework_entries", []), flows.Facts(store, db), semantic_store._Resolver(db))
     mine = [g for g in record["gaps"] if g.get("source", "").startswith("react-router@")]
     summary = {
         "scan_seconds": seconds,
         "sources": {s["source"].partition("@")[0]: {"state": s["state"], "seconds": s["seconds"]}
                     for s in record["sources"] if s["source"].partition("@")[0] in SOURCES},
-        "framework_entries": [{key: row[key] for key in sorted(row) if key != "sources"} for row in record.get("framework_entries", [])],
+        "framework_entries": [{key: row[key] for key in sorted(row) if key != "sources"} for row in bound],
         "source_gaps": mine,
         "noir_endpoints": len(record.get("noir_entries", [])),
         "links": {
@@ -38,7 +43,7 @@ def main(folder: str) -> None:
             "entry_sites": sorted([e["path"], e["site"], e.get("method")] for e in links["entries"] if e["reader"] == "react-router"),
             "routes": links["routes"],
             "gaps": dict(collections.Counter(
-                "noir: no unique snapshot handler at its site" if "Noir reports" in g["reason"] else
+                "noir: no unique snapshot handler at its site" if "without a unique snapshot handler" in g["reason"] else
                 "react-router: no function found for the exports" if "framework starts" in g["reason"] else g["reason"][:80]
                 for g in links["gaps"])),
         },

@@ -41,7 +41,6 @@ READY = 90  # the seconds an app has to answer on its port
 BUILD = 900  # the seconds a build may take
 EXPLORE = 900  # the seconds the exploration may take, beside its own cap (`explore.cjs`)
 MEMORY = 4 * 2**30
-PAGE = "AppPageConfig"  # the shape of a Next.js page in the pre-map's `framework_entries` (`premap/nextjs.py`)
 
 
 def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = ()) -> dict:
@@ -78,10 +77,11 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = ()) -> di
 
 
 def _pages(record: dict, root: str) -> list[str]:
-    """The pages Next.js declares (`typegen`) in the app's folder, as the paths the exploration opens besides `/`; a
-    pattern (`/[id]`) is not a page to open, and an endpoint is not a page."""
-    return sorted({row["path"] for row in record.get("framework_entries", ()) if row.get("shape") == PAGE
-                   and "[" not in row["path"] and (root == "." or row["site"].startswith(f"{root}/"))})
+    """The pages the sources declare (the rows marked `page`) in the app's folder, as the paths the exploration opens besides `/`;
+    a pattern (a `schema` with a `{}`) or a route with no single schema is not a page to open, and an endpoint is not a page."""
+    return sorted({row["path"] for row in record.get("framework_entries", ()) if row.get("page")
+                   and isinstance(row.get("schema"), str) and "{}" not in row["schema"]
+                   and (root == "." or row["site"].startswith(f"{root}/"))})
 
 
 def _manifest(entry: dict) -> str:

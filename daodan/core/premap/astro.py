@@ -30,7 +30,8 @@ from __future__ import annotations
 
 import json
 import posixpath
-from pathlib import PurePosixPath
+
+from premap import frameworks
 
 NAME, VERSION, RANK = "astro", "daodan/premap/v2", "scanner"
 SCRIPT = "daodan-astro"  # what `container_runner.TOOLS` installs: `astro_templates.mjs` run by the container's Node
@@ -47,23 +48,6 @@ def seconds(folders: int) -> int:
     return max(10, TOTAL_SECONDS // folders)
 
 
-def _folders(context) -> list[str]:
-    """The folders whose `package.json` declares `astro`, the deepest first; one that is not valid JSON is skipped: `npm-files`
-    reports it."""
-    folders = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        try:
-            manifest = json.loads(context.inventory.text(rel))
-        except ValueError:
-            continue
-        if isinstance(manifest, dict) and any(isinstance(manifest.get(section), dict) and PACKAGE in manifest[section]
-                                              for section in ("dependencies", "devDependencies")):
-            folders.append(PurePosixPath(rel).parent.as_posix())
-    return sorted(folders, key=lambda folder: (folder == ".", -len(folder), folder))
-
-
 def _table() -> dict:
     """What an Astro event attribute is written with and where Astro declares it, the data of `astro` in `entry-queries.json`."""
     import entries
@@ -73,12 +57,11 @@ def _table() -> dict:
 def _plan(context) -> dict:
     """`{"files": {folder: [file, ...]}, "gaps": [...]}`: the `.astro` files of each folder whose `package.json` declares `astro`,
     relative to the folder, as the snapshot holds them; and a gap for each one no such folder holds."""
-    from premap.angular import _folder  # the nearest folder above a file (shared: no framework in it)
-    folders, by_folder, gaps = _folders(context), {}, []
+    folders, by_folder, gaps = frameworks.nearest_first(frameworks.folders(context, (PACKAGE,))), {}, []
     for file in context.inventory.files:
         if context.inventory.headers[file].get("language") != NAME:
             continue
-        if (folder := _folder(folders, file)) is None:
+        if (folder := frameworks.folder_of(folders, file)) is None:
             gaps.append({"kind": "model_partial", "path": file, "detail": "no package.json above it declares astro: the events of its template are not read"})
         else:
             by_folder.setdefault(folder, []).append(posixpath.relpath(file, folder))
@@ -139,11 +122,10 @@ def _rows(context, path: str, event: dict, gaps: list[dict]) -> list[dict]:
     """The rows of one event: one for each callee its string calls, none when it calls none or holds nothing, one for a value that
     is not a string in place. Each is a gap that says why the function is not known."""
     import entries
-    from premap.angular import _bytes  # the column in bytes, as the snapshot writes it, of one in UTF-16 code units
     name = event["name"]
     line = context.inventory.text(path).split("\n")[event["line"] - 1]
     base = {"reader": entries.ATTRIBUTE, "shape": name, "site": f"{path}:{event['line']}", "event": entries.QUERIES["events"].get(name, name),
-            "column": _bytes(line, event["col"]), "owner": f"{path}::<module>"}
+            "column": frameworks.column_bytes(line, event["col"]), "owner": f"{path}::<module>"}
     base["symbol"] = base["owner"]
     where = f"{name} on <{event['tag']}>"
     if event["kind"] == "quoted":
@@ -168,16 +150,14 @@ def _rows(context, path: str, event: dict, gaps: list[dict]) -> list[dict]:
 
 def _stopped(result: dict, limit: str) -> str:
     """Why the script did not give its answer, in the words of the tool: the cause it wrote, or the limit that ended it."""
-    from premap import react_router  # shortcut: `_excerpt` (both ends of what a tool said) is React Router's, as Nuxt calls it
     if result["returncode"] == 124:  # `timeout` ended the command
         return f"{SCRIPT} did not end in {limit} seconds"
     if result["returncode"] == 137:  # `timeout` had to kill it, or the memory of the run did: the signal does not say which
         return f"{SCRIPT} was killed (exit 137): it did not end in {limit} seconds, or it ran out of memory ({MEMORY_GB} GB)"
-    return f"{SCRIPT} exited with {result['returncode']}: {react_router._excerpt(result)}"
+    return f"{SCRIPT} exited with {result['returncode']}: {frameworks.excerpt(result)}"
 
 
 def read(context, commands, results):
-    from premap import react_router
     plan = _plan(context)
     gaps, rows = list(plan["gaps"]), []
     for command, result in zip(commands, results):
@@ -190,7 +170,7 @@ def read(context, commands, results):
             answered = {item["f"]: item for item in answer["files"]}
         except (ValueError, KeyError, TypeError):
             gaps.append({"kind": "model_failed", "path": folder,
-                         "detail": f"{SCRIPT} printed no JSON of the known layout: {react_router._excerpt(result)}"})
+                         "detail": f"{SCRIPT} printed no JSON of the known layout: {frameworks.excerpt(result)}"})
             continue
         jsx = _table()["jsx"]
         declared = _declared(answer["jsx"]) if isinstance(answer.get("jsx"), str) else set()

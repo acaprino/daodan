@@ -17,11 +17,11 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_premap_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_premap_container_runner import bound, container, container_runner, manifest_of, premap, recorder
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/nuxt-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/nuxt/answers.json").read_text(encoding="utf-8"))
-SOURCE = "nuxt@daodan/premap/v1"
+SOURCE = "nuxt@daodan/premap/v2"
 GAP = "no function found for the exports the framework starts {} from: default"
 HANDLERS = (  # what the file names for the fixture: (route, method, file); None is a handler with no method in its file name
     ("/api/files/**:path", "GET", "server/api/files/[...path].get.ts"),
@@ -79,6 +79,7 @@ def read(tmp_path, files, name="nuxt3", answers=None):
     _, manifest = manifest_of(tmp_path, files)
     asked, run = runner_for(answers or {".": answer(name)})
     record = premap.write(manifest, sources=(premap.nuxt,), runner=run)
+    record["bound"] = bound(manifest, record)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
 
 
@@ -94,7 +95,7 @@ def _order(row):
 def rows(record, shape="server-route"):
     """Each row of a shape: route, method, site, symbol, the export that starts it (None at the file), the gap."""
     return sorted(((r["path"], r.get("method"), r["site"], r["symbol"], r.get("handler"), r.get("gap"))
-                   for r in record.get("framework_entries", []) if r["shape"] == shape), key=_order)
+                   for r in record["bound"] if r["shape"] == shape), key=_order)
 
 
 NUXT3_PAGES = (  # the routes of `fixture/nuxt3`, each with the file Nuxt made it from (`from-hook` is made from `about.vue` too)
@@ -132,7 +133,7 @@ def test_every_server_route_the_types_name_is_a_candidate_with_its_method_and_fi
         files = {rel.removeprefix("app/"): text for rel, text in files.items()}
     record, gaps, asked = read(tmp_path, files, name)
     assert rows(record) == expected(files)
-    assert {(r["reader"], r["shape"], r["kind"]) for r in record["framework_entries"]} == {("nuxt", "server-route", "rotta"), ("nuxt", "page", "rotta")}
+    assert {(r["reader"], r["shape"], r["kind"]) for r in record["bound"]} == {("nuxt", "server-route", "rotta"), ("nuxt", "page", "rotta")}
     # the two routes Nuxt registers itself name no file of the project: a gap each, with the path the tool imports
     assert sorted((g["kind"], g["path"]) for g in gaps) == sorted(("outside_snapshot", path) for _, path in INTERNAL)
     by_path = {g["path"]: g for g in gaps}
@@ -142,15 +143,15 @@ def test_every_server_route_the_types_name_is_a_candidate_with_its_method_and_fi
 
 def test_the_method_is_the_key_the_tool_wrote_in_capitals_and_none_where_the_file_name_gave_none(tmp_path):
     record, _, _ = read(tmp_path, project("nuxt3"))
-    methods = {(r["path"], r.get("method")) for r in record["framework_entries"]}
+    methods = {(r["path"], r.get("method")) for r in record["bound"]}
     assert ("/api/users", "GET") in methods and ("/api/users", "POST") in methods and ("/api/users/:id", "DELETE") in methods
     assert ("/api/health", None) in methods and ("/sitemap.xml", None) in methods
-    assert not [r for r in record["framework_entries"] if r.get("method") == "DEFAULT"]  # `default` is the tool's word for any method
+    assert not [r for r in record["bound"] if r.get("method") == "DEFAULT"]  # `default` is the tool's word for any method
 
 
 def test_the_route_is_written_as_the_tool_wrote_it_and_no_path_is_derived_from_a_file_name(tmp_path):
     record, _, _ = read(tmp_path, project("nuxt3"))
-    server = [r for r in record["framework_entries"] if r["shape"] == "server-route"]
+    server = [r for r in record["bound"] if r["shape"] == "server-route"]
     assert {r["path"] for r in server} == {route for route, _, _ in HANDLERS}
     # `[id]` and `[...path]` of the file names are the tool's `:id` and `**:path`: only its text says so
     assert all("[" not in r["path"] for r in server)
@@ -158,13 +159,13 @@ def test_the_route_is_written_as_the_tool_wrote_it_and_no_path_is_derived_from_a
 
 def test_a_route_that_nuxt_config_declares_in_code_is_a_row_like_the_others(tmp_path):
     record, _, _ = read(tmp_path, project("nuxt3"))
-    [row] = [r for r in record["framework_entries"] if r["path"] == "/api/from-config"]
+    [row] = [r for r in record["bound"] if r["path"] == "/api/from-config"]
     assert (row["method"], row["site"]) == ("POST", "server/custom/config-handler.ts")
 
 
 def test_the_layouts_and_the_middleware_are_no_rows_whatever_the_page_pass_says(tmp_path):
     record, _, _ = read(tmp_path, project("nuxt3"))
-    assert not [r for r in record["framework_entries"] if r["site"].startswith(("layouts/", "middleware/", "app.vue", "server/middleware/"))]
+    assert not [r for r in record["bound"] if r["site"].startswith(("layouts/", "middleware/", "app.vue", "server/middleware/"))]
 
 
 def test_a_project_without_pages_gives_its_server_routes_all_the_same_and_the_pages_a_gap_saying_the_hook_was_not_called(tmp_path):
@@ -185,7 +186,7 @@ def test_every_page_the_script_prints_is_a_row_on_its_file_with_its_whole_path_a
     files = project(fixture)
     record, gaps, _ = read(tmp_path, files, name)
     assert rows(record, "page") == pages_expected(pages)
-    assert {(r["reader"], r["kind"]) for r in record["framework_entries"] if r["shape"] == "page"} == {("nuxt", "rotta")}
+    assert {(r["reader"], r["kind"]) for r in record["bound"] if r["shape"] == "page"} == {("nuxt", "rotta")}
     assert not [g for g in gaps if g["kind"] != "outside_snapshot"]  # the two routes of Nuxt's own are the only gaps
 
 
@@ -197,7 +198,7 @@ def test_the_app_folder_moved_to_the_root_gives_the_same_pages_under_the_root(tm
 
 def test_a_route_made_from_the_same_file_as_another_is_a_row_of_its_own(tmp_path):
     record, _, _ = read(tmp_path, project("nuxt3"))
-    assert {r["path"] for r in record["framework_entries"] if r["shape"] == "page" and r["site"] == "pages/about.vue"} == {"/about", "/from-hook"}
+    assert {r["path"] for r in record["bound"] if r["shape"] == "page" and r["site"] == "pages/about.vue"} == {"/about", "/from-hook"}
 
 
 def test_a_page_of_a_layer_is_a_row_on_its_file_when_the_snapshot_holds_it_and_a_gap_when_it_does_not(tmp_path):
@@ -234,7 +235,7 @@ def test_a_child_route_has_the_path_of_its_ancestors_unless_it_starts_with_a_sla
                                                                   "pages/parent/index.vue", "pages/parent/away.vue", "pages/top.vue")}
     record, _, _ = read(tmp_path, {**project("nuxt3"), **files},
                         answers={".": (*answer("nuxt3")[:2], pages_answer(tree))})
-    assert {(r["path"], r["site"]) for r in record["framework_entries"] if r["shape"] == "page"} == {
+    assert {(r["path"], r["site"]) for r in record["bound"] if r["shape"] == "page"} == {
         ("/parent", "pages/parent.vue"), ("/parent/child", "pages/parent/child.vue"), ("/parent/child/deep", "pages/parent/deep.vue"),
         ("/parent", "pages/parent/index.vue"), ("/away", "pages/parent/away.vue"), ("/top", "pages/top.vue")}
 
@@ -280,7 +281,7 @@ def test_the_script_failing_in_one_folder_is_that_folder_s_gap_and_the_other_is_
     files = {f"apps/{name}/{rel}": text for name in "ab" for rel, text in project("nuxt3").items()}
     record, gaps, _ = read(tmp_path, files, answers={"apps/a": (*answer("nuxt3")[:2], answer("config-throws")[2]), "apps/b": answer("nuxt3")})
     assert [(g["kind"], g["path"]) for g in gaps if g["kind"] == "model_failed"] == [("model_failed", "apps/a")]
-    assert {r["site"].split("/pages/")[0] for r in record["framework_entries"] if r["shape"] == "page"} == {"apps/b"}
+    assert {r["site"].split("/pages/")[0] for r in record["bound"] if r["shape"] == "page"} == {"apps/b"}
 
 
 # ----------------------------------------------------------------------------- what binds a route to the snapshot
@@ -288,18 +289,18 @@ def test_the_script_failing_in_one_folder_is_that_folder_s_gap_and_the_other_is_
 def test_a_function_the_default_export_names_is_the_site_and_the_symbol_of_the_row_and_the_call_default_is_a_gap_row(tmp_path):
     files = project("nuxt3")
     record, _, _ = read(tmp_path, files)
-    [bound] = [r for r in record["framework_entries"] if r["path"] == "/api/plain"]
+    [bound] = [r for r in record["bound"] if r["path"] == "/api/plain"]
     assert (bound["site"], bound["symbol"], bound["handler"], bound["handler_source"]) == (
         at(files, "server/api/plain.get.ts", "export default function plain"), "server/api/plain.get.ts::plain", "default", "nuxt")
     assert "gap" not in bound
-    [call] = [r for r in record["framework_entries"] if r["path"] == "/api/hello"]
+    [call] = [r for r in record["bound"] if r["path"] == "/api/hello"]
     assert call["site"] == "server/api/hello.get.ts" and call["symbol"].endswith("::<module>") and "default" in call["gap"]
 
 
 def test_an_import_that_matches_no_snapshot_file_is_a_gap_and_no_row(tmp_path):
     files = project("nuxt3", **{"server/api/hello.get.ts": None})
     record, gaps, _ = read(tmp_path, files)
-    assert "/api/hello" not in {r["path"] for r in record["framework_entries"]}
+    assert "/api/hello" not in {r["path"] for r in record["bound"]}
     [gap] = [g for g in gaps if g["path"] == "server/api/hello.get"]
     assert gap["kind"] == "outside_snapshot" and "/api/hello" in gap["detail"] and "no file with that path" in gap["detail"]
 
@@ -307,7 +308,7 @@ def test_an_import_that_matches_no_snapshot_file_is_a_gap_and_no_row(tmp_path):
 def test_an_import_that_matches_two_snapshot_files_is_a_gap_naming_both_and_no_row(tmp_path):
     files = project("nuxt3", **{"server/api/hello.get.js": "export default () => 1\n"})
     record, gaps, _ = read(tmp_path, files)
-    assert "/api/hello" not in {r["path"] for r in record["framework_entries"]}
+    assert "/api/hello" not in {r["path"] for r in record["bound"]}
     [gap] = [g for g in gaps if g["path"] == "server/api/hello.get"]
     assert gap["kind"] == "model_partial" and "server/api/hello.get.ts" in gap["detail"] and "server/api/hello.get.js" in gap["detail"]
 
@@ -315,7 +316,7 @@ def test_an_import_that_matches_two_snapshot_files_is_a_gap_naming_both_and_no_r
 def test_a_handler_file_of_the_snapshot_that_is_no_script_is_no_match(tmp_path):
     files = project("nuxt3", **{"server/api/hello.get.ts": None, "server/api/hello.get.md": "# not a handler\n"})
     record, gaps, _ = read(tmp_path, files)
-    assert "/api/hello" not in {r["path"] for r in record["framework_entries"]}
+    assert "/api/hello" not in {r["path"] for r in record["bound"]}
     assert [g["kind"] for g in gaps if g["path"] == "server/api/hello.get"] == ["outside_snapshot"]
 
 
@@ -355,8 +356,8 @@ def test_prepare_failing_in_one_folder_is_that_folder_s_gap_and_the_other_is_sti
     answers = {"apps/a": answer("not-installed"), "apps/b": answer("nuxt3")}
     record, gaps, _ = read(tmp_path, files, answers=answers)
     assert {g["path"] for g in gaps if g["kind"] == "model_failed"} == {"apps/a"}
-    assert {r["site"].split(":")[0] for r in record["framework_entries"]} >= {"apps/b/server/api/hello.get.ts"}
-    assert not [r for r in record["framework_entries"] if r["site"].startswith("apps/a/")]
+    assert {r["site"].split(":")[0] for r in record["bound"]} >= {"apps/b/server/api/hello.get.ts"}
+    assert not [r for r in record["bound"] if r["site"].startswith("apps/a/")]
 
 
 def test_the_file_cut_in_the_middle_of_a_route_is_a_gap_and_no_server_row(tmp_path):
@@ -382,7 +383,7 @@ def test_a_route_with_no_handler_file_the_reader_reads_is_a_gap_naming_the_route
     odd = printed["stdout"].replace("  interface InternalApi {\n", "  interface InternalApi {\n    '/api/odd': {\n      'get': unknown\n    }\n")
     record, gaps, _ = read(tmp_path, project("nuxt3"), answers={".": (prepare, {**printed, "stdout": odd}, pages)})
     assert [g for g in gaps if "/api/odd" in g["detail"]][0]["kind"] == "model_partial"
-    assert "/api/odd" not in {r["path"] for r in record["framework_entries"]} and "/api/hello" in {r["path"] for r in record["framework_entries"]}
+    assert "/api/odd" not in {r["path"] for r in record["bound"]} and "/api/hello" in {r["path"] for r in record["bound"]}
 
 
 # ------------------------------------------------------------------------------------ the syntax tree of the file
@@ -604,3 +605,18 @@ def test_the_shape_of_the_source_is_in_the_registry_so_no_question_is_asked_for_
     from premap.flow_entries import evidence
     rules = entries.registry_rules([r for r in evidence(made)[0] if r["reader"] == "nuxt"])
     assert {(r["shape"], r["entry"]) for r in rules} == {("server-route", "rotta"), ("page", "rotta")}
+
+
+def test_the_premap_rows_are_the_modules_with_their_exports_and_the_links_report_the_call_default_as_a_gap(tmp_path):
+    """No source binds a row (spec 8.13, point 2): a server route's row is the handler file with the `default` export, and the
+    links' binder reads the snapshot's export record: a `defineEventHandler(...)` call is no function, so the links' gap says so."""
+    import flows
+    _, manifest = manifest_of(tmp_path, project("nuxt3"))
+    record = premap.write(manifest, sources=(premap.nuxt,), runner=runner_for({".": answer("nuxt3")})[1])
+    servers = [r for r in record["framework_entries"] if r["shape"] == "server-route"]
+    assert servers and all(r["exports"] == ["default"] and r["symbol"] == f"{r['site']}::<module>" and "handler" not in r for r in servers)
+    links = flows.cached_links(manifest, [])
+    [hello] = [g for g in links["gaps"] if g["site"] == "server/api/hello.get.ts"]
+    assert "default" in hello["reason"] and not [e for e in links["entries"] if e["site"].startswith("server/api/hello.get.ts")]
+    [plain] = [e for e in links["entries"] if e["site"].startswith("server/api/plain.get.ts")]
+    assert plain["symbol"] == "server/api/plain.get.ts::plain"

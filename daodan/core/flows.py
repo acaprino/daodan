@@ -87,6 +87,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import binder  # noqa: E402
 import edge_view  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
@@ -155,11 +156,12 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
             raise ValueError(f"{where}: link must be one of {', '.join(LINKS)}")
         if "shape" in rule or "reader" in rule:
             import entries
+            import premap
             if rule.get("source") != "modello":
                 raise ValueError(f"{where}: supplied classifications must have source modello; registry decisions come from Daodan")
             if set(rule) != {"link", "reader", "shape", "entry", "source"} or rule["link"] != "ingresso" or (
                     rule["reader"] not in (entries.ATTRIBUTE, entries.ARGUMENT, entries.DECORATOR, entries.NOIR, entries.MANIFEST,
-                                             entries.NEXT)
+                                             *(source.NAME for source in (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)))
                     or not isinstance(rule["shape"], str) or not rule["shape"]
                     or rule["entry"] not in (*entries.ENTRY_KINDS, entries.NO_ENTRY)):
                 raise ValueError(f"{where}: invalid shape classification or entry kind")
@@ -1021,93 +1023,34 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     facts._nodes.clear()
 
 
-def _next_handlers(facts: Facts, resolver, item: dict) -> list[dict]:
-    """The functions a Next.js candidate starts from. The framework's rule is data (`QUERIES["next"]`): the exports of
-    the file that start its config type, the default export of a page or each method a route handler exports. The
-    snapshot's own export records name the function (`exported_target`), so a page is one entry on that function and
-    a route handler one per exported method. A type with no export in the table (a layout) stays as it is; what is not
-    found, or not resolved (a re-export), keeps the file-level symbol with a gap that says which export was looked
-    for, beside the entries of the others."""
-    import entries
-    spec = entries.QUERIES["next"].get(item["shape"], {})
-    methods = "methods" in spec
-    names = spec.get("methods") or spec.get("exports")
-    if not names:
-        return [item]
-    file, found, unread = item["site"], [], []
-    for name in names:
-        identity, reason = resolver.exported_target(file, name)
-        symbol = facts.node(identity) if identity else None
-        if symbol:
-            found.append({**item, "symbol": symbol, "site": f"{file}:{facts.declarations[identity]['line']}",
-                          "handler_source": entries.NEXT, **({"method": name} if methods else {})})
-        elif reason != "export-missing":  # an export the file does not make is no gap: a route module has the exports it needs
-            unread.append(f"{name}: {reason}")
-    if found and not unread:
-        return found
-    looked = "; ".join(unread) or ", ".join(names)
-    return [*found, {**item, "gap": f"no function found for the export Next.js starts {item['path']} from: {looked}"}]
-
-
-def _next_path(path: str) -> str | None:
-    """A Next.js route as `REST` reads a path: each dynamic segment (`[id]`) is a parameter, `{}`; None for a catch-all
-    (`[...x]`, `[[...x]]`), which stands for several path schemas. Next.js's own table of a route's parameters is
-    `ParamMap` in `.next/types/routes.d.ts` (the file `validator.ts` imports): the pre-map does not carry it (the
-    Next.js source prints only `validator.ts`), so the segments of the route text are read, as the framework writes
-    them: a whole segment between brackets. A text with no grammar, read with string operations."""
-    # shortcut: the route text, not ParamMap of routes.d.ts (not read, not checked), and a segment like `a-[id]` stays literal, when the Next.js source also prints routes.d.ts
-    segments = path.split("/")
-    if any(segment.startswith(("[...", "[[...")) for segment in segments):
-        return None
-    return "/".join("{}" if segment.startswith("[") and segment.endswith("]") else segment for segment in segments)
-
-
-def _declared_schema(reader: str, path: str | None) -> tuple[str | None, str]:
-    """`(schema, "")`, the path of a route Noir or Next.js declares as `REST` reads one (`/orders/{}`: `:id` and
-    `[id]` alike), or `(None, cause)` when it has none."""
-    import entries
-    if path is None:
-        return None, "it has no path"
-    # shortcut: Noir's spelling of a Next.js dynamic segment is not measured, a Noir path with `[id]` stays literal, when a Noir report of a real Next.js project is read
-    if reader == entries.NEXT and (path := _next_path(path)) is None:
-        return None, "a catch-all segment stands for several path schemas, so no call is linked to it"
+def path_schema(path: str) -> str | None:
+    """The path of a route as `REST` reads one (`/orders/{}`: `:id` and `[id]` alike), or None when it has none (nothing after
+    the base URL, or a computed first segment). The adapter that knows its tool's spelling gives it as the row's `schema`."""
     key = REST.key(ANY_SERVICE, "", path)  # the key wants a method, the schema is the same under any
-    return (key[2], "") if key else (None, "the path is no schema (nothing after the base URL, or a computed first segment)")
-
-
-def _declared_key(reader: str, method: str | None, path: str | None) -> tuple[tuple | None, str]:
-    """`(key, "")` of a route Noir or Next.js declares, in `REST`'s terms and with no service (`ANY_SERVICE`), or
-    `(None, cause)` when it cannot be one."""
-    if not method:
-        return None, "it has no method"
-    schema, cause = _declared_schema(reader, path)
-    return (REST.key(ANY_SERVICE, method, schema), "") if schema is not None else (None, cause)
+    return key[2] if key else None
 
 
 def _declared_routes(found: list[dict], offered: list[dict]) -> tuple[list[dict], list[dict]]:
-    """`(points, gaps)`: the routes Noir and Next.js declare as offered points of `REST`, and those that cannot be one.
-    `found` are the entries already classified (an entry of kind `rotta` on a function, no gap: the same
-    classification as the entries themselves), `offered` the points the rules gave. What is a route with a method of
-    its own is in the tables (`QUERIES`): the protocol of Noir that is a route (a server action and any other protocol
-    are not), the config type of Next.js that lists methods (a route handler; a page answers any method, and the one
-    Noir's route on its path gave it is not its own). A point is dropped when one of the same function, method and
-    path schema exists, whatever its service: the rule's comes first, then the first declared."""
-    import entries
+    """`(points, gaps)`: the routes the adapters declare as offered points of `REST`, and those that cannot be one. `found` are
+    the entries already classified (an entry of kind `rotta` on a function, no gap: the same classification as the entries
+    themselves), `offered` the points the rules gave. A row offers a route when it has a `schema` (the path as `REST` reads it,
+    written by the adapter that knows its tool's spelling) and a `method` of its own (a page has none and answers any); a `schema`
+    that is None is a path that stands for no single schema, and a gap. A point is dropped when one of the same function, method
+    and path schema exists, whatever its service: the rule's comes first, then the first declared."""
     points, gaps = [], []
     taken = {(o["symbol"], *o["key"][1:]) for o in offered}
     for item in found:
-        reader, shape = item.get("reader"), item.get("shape")
-        # shortcut: a Next.js page only Noir reports (no typegen) has Noir's method and its protocol, so it is offered, when the Noir row keeps its technology
-        http = {entries.NOIR: entries.QUERIES["noir"].get(shape) == "rotta",
-                entries.NEXT: "methods" in entries.QUERIES["next"].get(shape, {})}.get(reader, False)
-        if item.get("kind") != "rotta" or not http or not item.get("symbol"):
+        method = item.get("method")
+        if item.get("kind") != "rotta" or "schema" not in item or item.get("page") or not item.get("symbol"):
+            continue  # a page answers any method: it is no route and no gap
+        cause = "it has no method" if not method else None if item["schema"] is not None else (
+            "the tool's path is no single path schema (a catch-all, or nothing after the base URL)")
+        if cause:
+            gaps.append({"site": item["site"], "symbol": item["symbol"], "reason": f"declared route {method} {item.get('path')}: {cause}"})
             continue
-        method, path = item.get("method"), item.get("path")
-        key, cause = _declared_key(reader, method, path)
-        if key is None:
-            gaps.append({"site": item["site"], "symbol": item["symbol"], "reason": f"declared route {method} {path}: {cause}"})
+        key = REST.key(ANY_SERVICE, method, item["schema"])
         # shortcut: the declared route goes whatever the calling service, so a call of another service than the rule's finds no declared route of that function, when one function is offered under two services
-        elif (item["symbol"], *key[1:]) not in taken:
+        if key and (item["symbol"], *key[1:]) not in taken:
             taken.add((item["symbol"], *key[1:]))
             points.append({"symbol": item["symbol"], "key": key, "site": item["site"]})
     return points, gaps
@@ -1136,35 +1079,23 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         from premap.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
-        declared = [row for item in declared
-                    for row in (_next_handlers(facts, resolver, item) if item["reader"] == entry_reader.NEXT else [item])]
-        for item in declared:
-            if item["reader"] != entry_reader.NOIR:
-                continue
-            file, _, line = item["site"].rpartition(":")
-            name = item.get("handler")
-            at = int(line) if line.isdecimal() else 0
-            matches = [d for d in facts.functions.get(file, ()) if name and name == d["name"] and
-                       d["line"] <= at <= (d["end"] or d["line"])]
-            if len(matches) == 1:
-                item.update(symbol=facts.node(matches[0]["id"]), handler_source="noir")
-            else:
-                item["gap"] = "Noir reports this endpoint without a unique snapshot handler at its site"
-        # One route, one entry: Noir's route on the path of a Next entry (the same path schema, `:id` as `[id]`; the
-        # text where a path has none), in the file or on the function that entry starts, is that entry, provided it
-        # is of Noir's method (a page carries none and answers any, a route handler's entry has its method); the
-        # method goes to an entry that lacks one. Another path, or a method no entry of that file and path carries,
-        # is a route of its own.
+        declared = binder.bind(declared, facts, resolver)
+        # One route, one entry: the route of a source outside `premap.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
+        # of them (the text of the path where a row has no schema), in the file or on the function that row starts, is that row,
+        # provided its method is the row's or the row has none (a page answers any; Noir's method is not copied onto it). Another
+        # path, or a method no row of that file and path carries, is a route of its own.
+        from premap import FRAMEWORK_SOURCES
+        tuple_names = {source.NAME for source in FRAMEWORK_SOURCES}
         def file_of(site: str) -> str:
             file, _, line = site.rpartition(":")
             return file if line.isdecimal() else site
 
         def route_of(item: dict):
-            return _declared_schema(item["reader"], item.get("path"))[0] or item.get("path")
+            return item.get("schema") or item.get("path")
 
         by_path = defaultdict(list)
         for item in declared:
-            if item["reader"] == entry_reader.NEXT and not item.get("gap"):
+            if item["reader"] in tuple_names and not item.get("gap"):
                 by_path[route_of(item)].append(item)
         kept = []
         for item in declared:
@@ -1172,11 +1103,9 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             same = next((n for n in by_path.get(route_of(item), ())
                          if (file_of(n["site"]) == file_of(item["site"]) or n["symbol"] == item["symbol"])
                          and (not method or n.get("method") in (None, method))), None) \
-                if item["reader"] == entry_reader.NOIR else None
+                if item["reader"] not in tuple_names and "schema" in item else None
             if same is None:
                 kept.append(item)
-            elif method:
-                same.setdefault("method", method)
         declared = kept
         candidates = candidates + declared + _observed_entries(manifest, store, facts, gaps)
         _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
@@ -1457,7 +1386,7 @@ def _links_reader_digest() -> str:
     """Installed link readers and rules; one bounded read of Daodan's own code per process."""
     from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
     digest = hashlib.sha256()
-    for path in (Path(__file__), SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
+    for path in (Path(__file__), SCRIPT_DIR / "binder.py", SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
                  SCRIPT_DIR / "premap" / "flow_entries.py", SCRIPT_DIR / "premap" / "noir.py",
                  *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
                  SCRIPT_DIR / "premap" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
@@ -1617,6 +1546,10 @@ def _classify_entries(candidates, attributes, decisions, held, actions, found, g
             continue
         evidence = {key: item[key] for key in ("reader", "shape", "column", "event", "label", "label_gap", "handler_source",
                                                "path", "method", "declared_in", "handler_confidence") if item.get(key) is not None}
+        if "schema" in item:  # None is a path that stands for no single schema: a gap of the declared routes
+            evidence["schema"] = item["schema"]
+            if item.get("page"):
+                evidence["page"] = True
         found.append({"symbol": handler, "site": site, "kind": "azione" if legacy else rule["entry"],
                       "source": "regola" if legacy else rule["source"], **evidence})
         if owner:

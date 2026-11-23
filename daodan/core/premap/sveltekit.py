@@ -16,10 +16,11 @@ own route and by the routes below it, which have more); the route is the tool's 
 relative to the project, so `kit.files.routes` needs no reading. The role of a file is its name as the tool prints it (`+server`,
 `+page.server`, ...): `QUERIES["sveltekit"]` says which exports of each the framework calls (`GET` and the other methods of a
 `+server`, `load` of a page, `actions` of a `+page.server`) and which starts nothing (a layout). The tool names no export, line or
-method, and no `+page.svelte`: the exports are the snapshot's own export records (`semantic_store`), at their `file:line`, and a
+method, and no `+page.svelte`: the row is the module with the exports its table names, and the links' binder (`binder.bind`) ties them
+to the functions the snapshot's export records name, and a
 route with no module in the list (a page with only a component) has no row: React Router's `default` export is the component of
 a route and an entry there, but here the component is not a module with functions that the tool names. An export that no function of
-the snapshot is bound to (`actions` is an object: its members are anonymous functions of the snapshot, and so is `GET = make('get')`
+the snapshot is bound to, which the binder says (`actions` is an object: its members are anonymous functions of the snapshot, and so is `GET = make('get')`
 and a re-export), a file the snapshot does not hold, a failed command and a file that is not the layout this reader knows are gaps
 with their cause, never a guess. The rows are entries, not offered routes: the tool gives no HTTP method.
 
@@ -36,9 +37,9 @@ import json
 import posixpath
 from pathlib import PurePosixPath
 
-from premap import react_router
+from premap import frameworks
 
-NAME, VERSION, RANK = "sveltekit", "daodan/premap/v1", "scanner"
+NAME, VERSION, RANK = "sveltekit", "daodan/premap/v2", "scanner"
 PACKAGE = "@sveltejs/kit"
 ENV = {"npm_config_offline": "true"}
 # shortcut: the file is the tool's own cache, not the output the documentation promises (the types and `tsconfig.json`), and it is
@@ -59,25 +60,8 @@ def sync_seconds(folders: int) -> int:
     return max(10, SYNC_TOTAL // folders)
 
 
-def _folders(context) -> list[str]:
-    """The folders whose `package.json` declares `@sveltejs/kit`; one that is not valid JSON is skipped: `npm-files`
-    reports it."""
-    folders = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        try:
-            manifest = json.loads(context.inventory.text(rel))
-        except ValueError:
-            continue
-        if isinstance(manifest, dict) and any(isinstance(manifest.get(section), dict) and PACKAGE in manifest[section]
-                                              for section in ("dependencies", "devDependencies")):
-            folders.append(PurePosixPath(rel).parent.as_posix())
-    return folders
-
-
 def commands(context):
-    folders = _folders(context)
+    folders = frameworks.folders(context, ("@sveltejs/kit",))
     if not folders:
         return None
     sync = ["timeout", "--kill-after=10", str(sync_seconds(len(folders))), "npx", "--no-install", "svelte-kit", "sync"]
@@ -92,7 +76,7 @@ def _failed(command: dict, result: dict) -> str:
         return f"svelte-kit sync did not end in {seconds} seconds"
     if result["returncode"] == 137:  # `timeout` had to kill it, or the memory of the run did: the signal does not say which
         return f"svelte-kit sync was killed (exit 137): it did not end in {seconds} seconds, or it ran out of memory ({MEMORY_GB} GB)"
-    return f"svelte-kit sync exited with {result['returncode']}: {react_router._excerpt(result)}"
+    return f"svelte-kit sync exited with {result['returncode']}: {frameworks.excerpt(result)}"
 
 
 def _files(listed) -> dict[str, str]:
@@ -112,7 +96,6 @@ def _files(listed) -> dict[str, str]:
 def read(context, commands, results):
     import entries
     import flows
-    import semantic_store
     table = entries.QUERIES[NAME]
     gaps, files = [], []  # the files to bind: (route id, file)
     for command, sync, printed in zip(commands[::2], results[::2], results[1::2]):
@@ -121,7 +104,7 @@ def read(context, commands, results):
             gaps.append({"kind": "model_failed", "path": folder, "detail": _failed(command, sync)})
             continue
         if printed["returncode"] != 0:
-            said = react_router._excerpt({"stdout": "", "stderr": sync["stderr"]})
+            said = frameworks.excerpt({"stdout": "", "stderr": sync["stderr"]})
             gaps.append({"kind": "model_failed", "path": folder,
                          "detail": f"svelte-kit sync exited with 0 and wrote no {META}: its outDir is not .svelte-kit, or this SvelteKit "
                                    f"writes none (the four measured, 2.0.0 to 2.70.4, do){f'; it said: {said}' if said else ''}"})
@@ -130,7 +113,7 @@ def read(context, commands, results):
             owner = _files(json.loads(printed["stdout"]))
         except ValueError as error:
             gaps.append({"kind": "model_failed", "path": folder,
-                         "detail": f"{META} is no JSON of the known layout ({error}): {react_router._excerpt(printed)}"})
+                         "detail": f"{META} is no JSON of the known layout ({error}): {frameworks.excerpt(printed)}"})
             continue
         for file, route in sorted(owner.items(), key=lambda item: (item[1], item[0])):
             path = posixpath.normpath(posixpath.join(folder, file))
@@ -141,33 +124,26 @@ def read(context, commands, results):
                              "detail": f"svelte-kit sync lists {path} for {route}, and the snapshot holds no file with that path"})
     rows = []
     if files:
-        with semantic_store.semantic_reader(context.store) as db:
-            resolver = semantic_store._Resolver(db)
-            for route, file in files:
-                shape = PurePosixPath(file).stem  # `+page.server.ts` -> `+page.server`, as the tool names the role
-                spec = table.get(shape)
-                base = {"reader": NAME, "shape": shape, "path": route}
-                module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
-                if spec is None:  # a file name this table does not know: a shape to classify, and no export to start from
-                    rows.append({**module, "gap": f"{file}: {NAME} lists a file named {shape}, which this reader has no exports for"})
-                    continue
-                base["kind"] = module["kind"] = spec["kind"]
-                names = spec.get("exports")
-                # shortcut: the `load` of a layout runs for every page under it, and it is no row of its own: the layouts are "nessun
-                # ingresso" (React Router's root and layouts with no path have a row for their `loader`: `read` there); when the owner wants it an entry, give `+layout` and `+layout.server` the exports
-                if not names:  # a layout starts no flow of its own
-                    rows.append(module)
-                    continue
-                # shortcut: an export is a function of the snapshot only where the snapshot says so: `actions` (an object whose members
-                # are anonymous functions), `load = (async () => ...) satisfies PageServerLoad` (a documented form: the arrow is under the
-                # `satisfies`), `GET = make('get')` and a re-export are rows with the snapshot's own cause; when one is met, bind them
-                # from the type-checker's answer for the member or the wrapped function, which no tool of SvelteKit gives
-                found, unread = react_router._starts(db, resolver, file, names)
-                rows += [{**base, "site": f"{file}:{line}", "symbol": f"{file}::{qualified}", "handler_source": NAME, "handler": name}
-                         for name, qualified, line in found]
-                if not found or unread:
-                    looked = "; ".join(unread) or ", ".join(names)
-                    rows.append({**module, "gap": f"no function found for the exports the framework starts {route} from: {looked}"})
+        for route, file in files:
+            shape = PurePosixPath(file).stem  # `+page.server.ts` -> `+page.server`, as the tool names the role
+            spec = table.get(shape)
+            base = {"reader": NAME, "shape": shape, "path": route}
+            module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
+            if spec is None:  # a file name this table does not know: a shape to classify, and no export to start from
+                rows.append({**module, "gap": f"{file}: {NAME} lists a file named {shape}, which this reader has no exports for"})
+                continue
+            base["kind"] = module["kind"] = spec["kind"]
+            names = spec.get("exports")
+            # shortcut: the `load` of a layout runs for every page under it, and it is no row of its own: the layouts are "nessun
+            # ingresso" (React Router's root and layouts with no path have a row for their `loader`: `read` there); when the owner wants it an entry, give `+layout` and `+layout.server` the exports
+            if not names:  # a layout starts no flow of its own
+                rows.append(module)
+                continue
+            # shortcut: an export is a function of the snapshot only where the snapshot says so: `actions` (an object whose members
+            # are anonymous functions), `load = (async () => ...) satisfies PageServerLoad` (a documented form: the arrow is under the
+            # `satisfies`), `GET = make('get')` and a re-export are rows with the snapshot's own cause; when one is met, bind them
+            # from the type-checker's answer for the member or the wrapped function, which no tool of SvelteKit gives
+            rows.append({**module, "exports": names})  # the links bind them (`binder`)
     return {"facts": {"framework_entries": rows} if rows else {}, "gaps": gaps}
 
 

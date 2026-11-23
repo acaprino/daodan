@@ -1110,19 +1110,19 @@ class NoirTests(unittest.TestCase):
         self.assertEqual(entries.noir(self.REPORT, "/work"), [
             {"reader": "noir", "shape": "http", "site": "app/api/healthz/route.ts:3",
              "symbol": "app/api/healthz/route.ts::GET", "method": "GET", "path": "/healthz", "kind": "rotta",
-             "handler": "GET"},
+             "handler": "GET", "schema": "/healthz"},
             {"reader": "noir", "shape": "http", "site": "server/routes.js:12", "symbol": "server/routes.js::<module>",
-             "method": "POST", "path": "/orders/:id", "kind": "rotta"},                   # no handler: its code path
+             "method": "POST", "path": "/orders/:id", "kind": "rotta", "handler": None, "schema": "/orders/{}"},   # no handler: its code path
             {"reader": "noir", "shape": "cli", "site": "bin/tool.py:8", "symbol": "bin/tool.py::<module>",
-             "method": "CLI", "path": "cli://deploy", "kind": "comando"},
+             "method": "CLI", "path": "cli://deploy", "kind": "comando", "handler": None},
             {"reader": "noir", "shape": "universal-link", "site": "ios/Shop.entitlements:6",
              "symbol": "ios/Shop.entitlements::<module>", "method": "GET", "path": "https://shop.example/cart",
-             "kind": "evento del sistema operativo"},
+             "kind": "evento del sistema operativo", "handler": None},
             {"reader": "noir", "shape": "mobile-scheme", "site": "android/AndroidManifest.xml:21",
              "symbol": "android/AndroidManifest.xml::<module>", "method": "GET", "path": "shop://open",
-             "kind": "evento del sistema operativo"},
+             "kind": "evento del sistema operativo", "handler": None},
             {"reader": "noir", "shape": "ws", "site": "server/live.js:4", "symbol": "server/live.js::<module>",
-             "method": "GET", "path": "/live"}])                                           # a shape to classify
+             "method": "GET", "path": "/live", "handler": None}])                                           # a shape to classify
 
     def test_a_report_of_another_root_is_refused(self):
         with self.assertRaises(ValueError):
@@ -1278,3 +1278,18 @@ class ClassifiedBindingsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_a_noir_row_of_a_premap_written_before_the_binder_has_no_handler_key_and_is_given_the_binder_s_gap():
+    """An older pre-map wrote no `handler` for an endpoint Noir names no function for: `from_record` gives it `None`, so the links'
+    binder says the gap instead of passing the row on as an entry."""
+    import types
+    from daodan.core import binder
+    from daodan.core.premap import noir
+    row = {"reader": "noir", "shape": "http", "site": "app.py:3", "symbol": "app.py::<module>", "method": "GET", "path": "/x",
+           "kind": "rotta"}
+    report = {"sources": [{"source": f"{noir.NAME}@{noir.VERSION}"}], "noir_entries": [row], "gaps": []}
+    [read] = noir.from_record(report)[0]
+    assert read["handler"] is None
+    [bound] = binder.bind([read], types.SimpleNamespace(functions={}), None)
+    assert "without a unique snapshot handler" in bound["gap"]

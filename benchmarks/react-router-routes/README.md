@@ -118,7 +118,7 @@ ripristino dei pacchetti dal `package-lock.json` con la rete aperta ai soli regi
 | sorgente `react-router@daodan/premap/v2` | `ran`, 17,0 secondi, compreso il ripristino dei pacchetti e il comando (14,7 senza `timeout`); `timeout` esiste nel container (l'immagine `buildpack-deps`, coreutils) e il comando ha girato |
 | `framework_entries` in `premap.json` | 23 righe, 0 lacune della sorgente: le stesse 23 righe della risposta registrata; `test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_recorded_answer` lo verifica |
 | `next` e `angular` | `not_needed`: la fixture non li dichiara |
-| Noir sulla stessa fixture | 25 endpoint `http` negli stessi file, con il suo metodo (`GET` per ogni modulo; `GET`, `POST`, `PUT`, `PATCH`, `DELETE` per `api/pay`, `checkout` e `users/edit`, che esportano `action`) e il suo modo di scrivere il percorso (`/orders/{id}`, `/docs/{splat}`, `/{lang}/blog`), senza il nome del gestore: nei collegamenti sono 25 lacune «Noir reports this endpoint without a unique snapshot handler», non ingressi |
+| Noir sulla stessa fixture | 25 endpoint `http` negli stessi file, con il suo metodo (`GET` per ogni modulo; `GET`, `POST`, `PUT`, `PATCH`, `DELETE` per `api/pay`, `checkout` e `users/edit`, che esportano `action`) e il suo modo di scrivere il percorso (`/orders/{id}`, `/docs/{splat}`, `/{lang}/blog`), senza il nome del gestore: nei collegamenti sono 25 lacune «noir reports this entry without a unique snapshot handler at its site», non ingressi |
 | collegamenti | 19 ingressi (`react-router rotta`), `routes` `{offered: 0, called: 0, linked: 0}`, 27 lacune: le 25 di Noir e le 2 righe di lacuna di React Router |
 
 ## La radice e un layout senza percorso

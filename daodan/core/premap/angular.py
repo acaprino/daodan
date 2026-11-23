@@ -28,7 +28,8 @@ from __future__ import annotations
 
 import json
 import posixpath
-from pathlib import PurePosixPath
+
+from premap import frameworks
 
 NAME, VERSION, RANK = "angular", "daodan/premap/v1", "scanner"
 SCRIPT = "daodan-angular"  # what `container_runner.TOOLS` installs: `angular_templates.mjs` run by the container's Node
@@ -42,26 +43,6 @@ def types_seconds(folders: int) -> int:
     the others (the parses all run before it)."""
     # shortcut: a project of more than 90 folders asks for more than TYPES_TOTAL, 10 seconds each at the least; when one is met
     return max(10, TYPES_TOTAL // folders)
-
-
-def _folders(context) -> list[str]:
-    """The folders whose `package.json` declares Angular; one that is not valid JSON is skipped: `npm-files` reports it."""
-    folders = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        try:
-            manifest = json.loads(context.inventory.text(rel))
-        except ValueError:
-            continue
-        if isinstance(manifest, dict) and any(isinstance(manifest.get(section), dict) and name in manifest[section]
-                                              for section in ("dependencies", "devDependencies") for name in PACKAGES):
-            folders.append(PurePosixPath(rel).parent.as_posix())
-    return sorted(folders, key=lambda folder: (folder == ".", -len(folder), folder))  # the deepest first, the root last
-
-
-def _folder(folders: list[str], file: str) -> str | None:
-    return next((folder for folder in folders if folder == "." or file.startswith(folder + "/")), None)
 
 
 def _units(line: str, byte_column: int) -> int:
@@ -188,14 +169,14 @@ def _plan(context) -> dict:
     """`{"jobs": {folder: [(job, [component, ...]), ...]}, "gaps": [...]}`: the templates to read in each folder, one job
     for each (file, range) with the components that use it, in the order the folder's command lists them; and the gaps
     of what cannot be read before the compiler runs."""
-    folders, gaps, by_folder = _folders(context), [], {}
+    folders, gaps, by_folder = frameworks.nearest_first(frameworks.folders(context, PACKAGES)), [], {}
     if not folders:
         return {"jobs": {}, "gaps": []}
     for file in context.inventory.files:
         header = context.inventory.headers[file]
         if header.get("language") != "typescript" or not _imports_component(header):
             continue
-        folder = _folder(folders, file)
+        folder = frameworks.folder_of(folders, file)
         components = _components(context, file, gaps)
         if folder is None:
             if components:
@@ -246,16 +227,6 @@ def _declarations(store, file: str) -> list[dict]:
             for d in (entry.get("semantic") or {}).get("declarations", ()) if d["kind"] in ("class", "method", "function")]
 
 
-def _bytes(line: str, units: int) -> int:
-    """The column in bytes, as the snapshot writes it, of a column the compiler gives in UTF-16 code units."""
-    seen = 0
-    for index, char in enumerate(line):
-        if seen >= units:
-            return len(line[:index].encode("utf-8"))
-        seen += 2 if ord(char) > 0xFFFF else 1
-    return len(line.encode("utf-8"))
-
-
 def _tail(result: dict) -> str:
     return (result["stderr"] or result["stdout"]).strip()[-400:]
 
@@ -297,7 +268,7 @@ def _rows(context, declared: dict, folder: str, job: dict, component: dict, even
     shape = f"({event['name']})"
     line = context.inventory.text(file).split("\n")[event["line"] - 1]
     base = {"reader": entries.ATTRIBUTE, "shape": shape, "site": f"{file}:{event['line']}",
-            "event": entries.QUERIES["events"].get(shape, shape), "column": _bytes(line, event["col"])}
+            "event": entries.QUERIES["events"].get(shape, shape), "column": frameworks.column_bytes(line, event["col"])}
     ts = component["file"]
     declared_in = lambda path: declared.setdefault(path, _declarations(context.store, path))  # noqa: E731
     found = [d for d in declared_in(ts) if d["kind"] == "class" and d["name"] == cls and d["line"] == component["line"]]

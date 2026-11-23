@@ -16,11 +16,11 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_premap_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_premap_container_runner import bound, container, container_runner, manifest_of, premap, recorder
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/react-router-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/react-router/answers.json").read_text(encoding="utf-8"))
-SOURCE = "react-router@daodan/premap/v3"  # v3: the root's and a pathless layout's data functions are rows; v2: an absolute child, the root under `app/`: an older pre-map is stale
+SOURCE = "react-router@daodan/premap/v4"  # v4: the module row with its `exports`, bound by the links; v3: the root's and a pathless layout's data functions are rows; v2: an absolute child, the root under `app/`: an older pre-map is stale
 LAST = "nessun ingresso"
 EXPORTS = ("default", "loader", "action", "clientLoader", "clientAction")
 LIMIT = ["timeout", "--kill-after=10", "300"]  # what ends a command that does not end: 10 seconds after the signal, the kill
@@ -51,6 +51,7 @@ def read(tmp_path, files, name="framework", answers=None):
     _, manifest = manifest_of(tmp_path, files)
     asked, run = runner_for(answers or {".": answer(name)})
     record = premap.write(manifest, sources=(premap.react_router,), runner=run)
+    record["bound"] = bound(manifest, record)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
 
 
@@ -62,12 +63,12 @@ def at(files, file, needle):
 def found(record):
     """Each row: path, shape, kind, site, symbol, the export that starts it (None at the file), the gap."""
     return sorted((r["path"], r["shape"], r["kind"], r["site"], r["symbol"], r.get("handler"), r.get("gap"))
-                  for r in record.get("framework_entries", []))
+                  for r in record["bound"])
 
 
 def starts(record, path, shape=None):
     """The exports a route starts: name -> the function the snapshot binds it to."""
-    return {r["handler"]: r["symbol"].split("::")[1] for r in record["framework_entries"]
+    return {r["handler"]: r["symbol"].split("::")[1] for r in record["bound"]
             if r["path"] == path and r.get("handler") and (shape is None or r["shape"] == shape)}
 
 
@@ -122,7 +123,7 @@ def test_every_route_of_the_tree_the_tool_prints_is_a_candidate_with_its_file_an
         ("/legacy", routes + "legacy.jsx", by(routes + "legacy.jsx", "<module>"), None)]
     assert "default" in gap_rows[0][6] and "default: reexport-unsupported" in gap_rows[1][6]
     assert gaps == []
-    assert all(r["reader"] == "react-router" and r["sources"] == [SOURCE] for r in record["framework_entries"])
+    assert all(r["reader"] == "react-router" and r["sources"] == [SOURCE] for r in record["bound"])
     assert [(c["argv"], c["cwd"], c["network"]) for c in asked] == [
         ([*LIMIT, "npx", "--no-install", "react-router", "routes", "--json"], ".", "none")]
 
@@ -136,7 +137,7 @@ def test_a_route_module_with_no_default_export_is_a_resource_route_and_starts_on
 
 def test_a_layout_with_no_path_is_one_row_on_its_file_that_no_flow_starts_from(tmp_path):
     record, _, _ = read(tmp_path, project("framework"))
-    layout = [r for r in record["framework_entries"] if r["site"] == "app/routes/shop/layout.tsx"]
+    layout = [r for r in record["bound"] if r["site"] == "app/routes/shop/layout.tsx"]
     assert [(r["shape"], r["kind"], r["path"], r["symbol"]) for r in layout] == [
         ("layout", LAST, "/", "app/routes/shop/layout.tsx::<module>")]
     assert "handler" not in layout[0] and "gap" not in layout[0]  # the tool gives no export to start: not a gap, a layout
@@ -154,7 +155,7 @@ def test_the_loader_and_action_of_the_root_are_entries_on_their_functions_and_th
     files = project("framework", **{"app/root.tsx": ROOT})
     record, gaps, _ = read(tmp_path, files)
     assert starts(record, "/", "root-data") == {"loader": "loader", "action": "action"}
-    rows = [r for r in record["framework_entries"] if r["site"].startswith("app/root.tsx")]
+    rows = [r for r in record["bound"] if r["site"].startswith("app/root.tsx")]
     assert {(r["shape"], r["kind"]) for r in rows} == {("layout", LAST), ("root-data", "rotta")}
     assert [r["site"] for r in rows if r["shape"] == "root-data"] == [at(files, "app/root.tsx", "function loader"),
                                                                        at(files, "app/root.tsx", "function action")]
@@ -168,14 +169,14 @@ def test_the_loader_of_a_layout_with_no_path_is_an_entry_and_its_action_is_not_b
     files = project("framework", **{file: LAYOUT})
     record, gaps, _ = read(tmp_path, files)
     assert starts(record, "/", "layout-data") == {"loader": "loader"}
-    rows = [r for r in record["framework_entries"] if r["site"].startswith(file)]
+    rows = [r for r in record["bound"] if r["site"].startswith(file)]
     assert {(r["shape"], r["kind"]) for r in rows} == {("layout", LAST), ("layout-data", "rotta")}
     assert not [r for r in rows if r.get("gap")] and gaps == []
 
 
 def test_a_layout_or_root_with_no_data_function_is_the_module_row_only_and_no_gap(tmp_path):
     record, _, _ = read(tmp_path, project("framework"))
-    assert not [r for r in record["framework_entries"] if r["shape"] in ("root-data", "layout-data")]
+    assert not [r for r in record["bound"] if r["shape"] in ("root-data", "layout-data")]
 
 
 def test_a_data_function_of_the_root_or_a_layout_that_the_snapshot_cannot_bind_is_a_gap_row_of_the_data_shape(tmp_path):
@@ -183,7 +184,7 @@ def test_a_data_function_of_the_root_or_a_layout_that_the_snapshot_cannot_bind_i
     before its gap is looked at (`flows._classify_entries`)."""
     files = project("framework", **{"app/root.tsx": "export const loader = make();\nexport default function App() { return null; }\n"})
     record, _, _ = read(tmp_path, files)
-    [row] = [r for r in record["framework_entries"] if r["shape"] == "root-data"]
+    [row] = [r for r in record["bound"] if r["shape"] == "root-data"]
     assert row["gap"] and "loader" in row["gap"] and row["symbol"] == "app/root.tsx::<module>" and row["kind"] == "rotta"
 
 
@@ -204,7 +205,7 @@ def test_the_gap_of_a_root_data_function_reaches_the_links_and_its_function_is_a
 
 def test_the_path_of_a_route_is_the_path_of_its_ancestors_and_its_own(tmp_path):
     record, _, _ = read(tmp_path, project("framework"))
-    paths = {r["site"].split(":")[0]: r["path"] for r in record["framework_entries"]}
+    paths = {r["site"].split(":")[0]: r["path"] for r in record["bound"]}
     assert paths["app/routes/shop/checkout.tsx"] == "/checkout"  # under a layout with no path
     assert paths["app/routes/nested/child.tsx"] == "/nested/child"  # under a layout with one
     assert paths["app/routes/api/pay.ts"] == "/api/pay"  # one path of two segments
@@ -217,7 +218,7 @@ def test_a_path_that_begins_with_a_slash_is_the_whole_path_of_the_route_and_of_w
     not `/users/users/:id`); a child of that route is under the whole path (`details` > `/users/:id/details`)."""
     files = project("framework", **{"app/routes.ts": "// users > /users/:id > details, users > /users/new, /about: see the recorded answer\n"})
     record, gaps, _ = read(tmp_path, files, "absolute-child")
-    paths = {r["site"].split(":")[0]: r["path"] for r in record["framework_entries"]}
+    paths = {r["site"].split(":")[0]: r["path"] for r in record["bound"]}
     assert gaps == []
     assert paths["app/routes/users/user.tsx"] == "/users" and paths["app/routes/users/edit.tsx"] == "/users/:id"
     assert paths["app/routes/nested/child.tsx"] == "/users/:id/details"  # a relative child under an absolute one
@@ -228,13 +229,13 @@ def test_an_absolute_child_that_does_not_start_with_its_parent_s_path_is_given_a
     """React Router's rule is that it must (`/elsewhere` under `other` is invalid), and the tool does not enforce it (Modal,
     `results/absolute-child-elsewhere.json`: exit 0 and the path as written): this reader does not repeat the framework's check."""
     record, gaps, _ = read(tmp_path, project("framework"), "absolute-child-elsewhere")
-    paths = {r["site"].split(":")[0]: r["path"] for r in record["framework_entries"]}
+    paths = {r["site"].split(":")[0]: r["path"] for r in record["bound"]}
     assert gaps == [] and paths["app/routes/docs.tsx"] == "/other" and paths["app/routes/legacy.jsx"] == "/elsewhere"
 
 
 def test_two_routes_of_one_module_are_two_rows_with_their_own_paths(tmp_path):
     record, _, _ = read(tmp_path, project("framework"))
-    hello = [(r["path"], r["site"]) for r in record["framework_entries"] if r["site"].startswith("app/routes/hello.tsx")]
+    hello = [(r["path"], r["site"]) for r in record["bound"] if r["site"].startswith("app/routes/hello.tsx")]
     assert sorted(hello) == [("/en/hello", "app/routes/hello.tsx:1"), ("/it/hello", "app/routes/hello.tsx:1")]
 
 
@@ -243,7 +244,7 @@ def test_the_file_convention_of_flat_routes_is_the_routes_the_tool_prints(tmp_pa
     record, gaps, _ = read(tmp_path, files, "flat")
     routes = "app/routes/"
     assert gaps == []
-    assert sorted({(r["path"], r["shape"], r["site"].split(":")[0]) for r in record["framework_entries"]}) == sorted([
+    assert sorted({(r["path"], r["shape"], r["site"].split(":")[0]) for r in record["bound"]}) == sorted([
         ("/", "layout", "app/root.tsx"), ("/:lang?/docs", "route", routes + "($lang).docs.tsx"),
         ("/api/pay", "route", routes + "api.pay.ts"), ("/files/*", "route", routes + "files.$.tsx"),
         ("/", "index", routes + "_index.tsx"), ("/", "layout", routes + "_auth.tsx"),
@@ -260,9 +261,9 @@ def test_remix_prints_the_same_tree_with_its_own_command_classic_or_vite(tmp_pat
     record, gaps, asked = read(tmp_path, files, name)
     assert gaps == [] and [c["argv"] for c in asked] == [[*LIMIT, "npx", "--no-install", tool, "routes", "--json"]]
     assert starts(record, "/custom/:id") == {"default": "Custom"}  # the route remix.config.js or vite.config.ts adds
-    assert [(r["site"]) for r in record["framework_entries"] if r["path"] == "/custom/:id"] == [at(files, "app/custom.tsx", "function Custom")]
+    assert [(r["site"]) for r in record["bound"] if r["path"] == "/custom/:id"] == [at(files, "app/custom.tsx", "function Custom")]
     assert starts(record, "/api/pay") == {"action": "action"} and starts(record, "/blog/:slug") == {"loader": "loader", "default": "Post"}
-    assert {r["path"] for r in record["framework_entries"]} == {"/", "/login", "/blog/:slug", "/api/pay", "/about", "/custom/:id"}
+    assert {r["path"] for r in record["bound"]} == {"/", "/login", "/blog/:slug", "/api/pay", "/about", "/custom/:id"}
 
 
 # ------------------------------------------------------------------------- what the tool does not say
@@ -272,7 +273,7 @@ def test_a_file_the_tool_names_and_the_snapshot_does_not_hold_is_a_gap_and_no_ca
     record, [gap], _ = read(tmp_path, files, "file-missing")
     assert (gap["kind"], gap["path"]) == ("outside_snapshot", "app/routes/about.tsx")
     assert "/about" in gap["detail"] and "no file" in gap["detail"]
-    assert not [r for r in record["framework_entries"] if r["path"] == "/about"]
+    assert not [r for r in record["bound"] if r["path"] == "/about"]
     assert starts(record, "/checkout") == {"loader": "loader", "action": "action", "default": "Checkout"}
 
 
@@ -344,7 +345,7 @@ def test_a_failure_with_a_long_message_keeps_both_ends_of_it(tmp_path):
 
 def test_a_route_module_that_exports_none_of_what_a_route_starts_is_a_row_with_a_gap_naming_what_was_looked_for(tmp_path):
     record, _, _ = read(tmp_path, project("framework", **{"app/routes/blog.tsx": "export const handle = {};\n"}))
-    [row] = [r for r in record["framework_entries"] if r["path"] == "/:lang?/blog"]
+    [row] = [r for r in record["bound"] if r["path"] == "/:lang?/blog"]
     assert row["symbol"] == "app/routes/blog.tsx::<module>" and row["site"] == "app/routes/blog.tsx"
     assert all(name in row["gap"] for name in EXPORTS)
 
@@ -372,10 +373,10 @@ def test_the_snapshot_tells_an_export_that_is_missing_from_one_that_is_made_twic
 
 def test_an_export_a_route_module_makes_twice_is_a_gap_naming_the_cause_and_one_it_does_not_make_is_not(tmp_path):
     record, _, _ = read(tmp_path, project("framework", **{"app/routes/api/health.ts": OVERLOADED, "app/routes/api/pay.ts": BOTH}))
-    [health] = [r for r in record["framework_entries"] if r["path"] == "/api/health"]
+    [health] = [r for r in record["bound"] if r["path"] == "/api/health"]
     assert health["symbol"] == "app/routes/api/health.ts::<module>" and "loader: export-ambiguous" in health["gap"]
     assert "default" not in health["gap"]  # the exports it does not make are not what it says: they are what a route does not need
-    pay = [r for r in record["framework_entries"] if r["path"] == "/api/pay"]
+    pay = [r for r in record["bound"] if r["path"] == "/api/pay"]
     assert {r["handler"] for r in pay if r.get("handler")} == {"loader"}  # the one it makes once is read, beside the gap
     [gap] = [r for r in pay if r.get("gap")]
     assert "action: export-ambiguous" in gap["gap"] and "loader" not in gap["gap"]
@@ -597,7 +598,7 @@ def test_a_source_added_to_the_tuple_reaches_the_evidence_and_the_key_of_the_cac
     seen = []
     with patch.object(Reader, "read_bytes", autospec=True, side_effect=lambda self: seen.append(self.name) or b""):
         flows._links_reader_digest.__wrapped__()
-    assert {"nextjs.py", "react_router.py", "svelte_like.py", "angular.py", "angular_templates.mjs"} <= set(seen)
+    assert {"nextjs.py", "react_router.py", "svelte_like.py", "angular.py", "angular_templates.mjs", "binder.py"} <= set(seen)
 
 
 # --------------------------------------------------------------------- what reaches the links
@@ -631,7 +632,7 @@ def test_the_routes_the_snapshot_cannot_bind_are_gaps_of_the_links_with_what_was
 
 def test_a_layout_is_a_candidate_of_no_kind_that_starts_a_flow_and_so_no_entry(made, links):
     from premap.flow_entries import evidence
-    [layout] = [r for r in evidence(made)[0] if r["site"] == "app/routes/shop/layout.tsx"]
+    [layout] = [r for r in evidence(made)[0] if r["site"] == "app/routes/shop/layout.tsx" and r["shape"] == "layout"]
     assert (layout["reader"], layout["kind"]) == ("react-router", LAST)
     assert not [e for e in links["entries"] if e["site"] == "app/routes/shop/layout.tsx"]
 
@@ -640,7 +641,9 @@ def test_the_shapes_of_the_source_are_in_the_registry_so_no_question_is_asked_fo
     import entries
     from premap.flow_entries import evidence
     rules = entries.registry_rules([r for r in evidence(made)[0] if r["reader"] == "react-router"])
-    assert {(r["shape"], r["entry"]) for r in rules} == {("route", "rotta"), ("index", "rotta"), ("layout", LAST)}
+    # the module rows of the root's and of a layout's data functions are rows of the pre-map now (`exports_optional`)
+    assert {(r["shape"], r["entry"]) for r in rules} == {("route", "rotta"), ("index", "rotta"), ("layout", LAST),
+                                                         ("root-data", "rotta"), ("layout-data", "rotta")}
     rules = entries.registry_rules([{"reader": "react-router", "shape": shape, "kind": "rotta"} for shape in ("root-data", "layout-data")])
     assert {(r["shape"], r["entry"]) for r in rules} == {("root-data", "rotta"), ("layout-data", "rotta")}
 
@@ -651,7 +654,7 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
     entries are the rows on a function, and Noir's 25 endpoints in the same files stay gaps of their own."""
     scan = json.loads((BENCHMARK.parent / "results/pipeline-scan.json").read_text(encoding="utf-8"))
     record, _, _ = read(tmp_path, project("framework"))
-    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key != "sources"} for row in record["framework_entries"]]
+    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key != "sources"} for row in record["bound"]]
     assert len(scan["framework_entries"]) == 23 and scan["source_gaps"] == []
     assert scan["sources"]["react-router"]["state"] == "ran" and scan["sources"]["next"]["state"] == "not_needed"
     assert scan["links"]["entries"] == {"react-router rotta": 19} and scan["links"]["routes"]["offered"] == 0
@@ -714,3 +717,34 @@ def test_a_premap_where_the_source_was_not_needed_gives_the_evidence_no_react_ro
     premap.write(manifest, sources=(premap.react_router,), runner=lambda commands: 1 / 0)
     rows, gaps = evidence(manifest)
     assert [r for r in rows if r["reader"] == "react-router"] == [] and [g for g in gaps if g.get("source") == SOURCE] == []
+
+
+def test_the_premap_rows_are_the_modules_with_their_exports_and_the_links_bind_them_to_the_functions(tmp_path):
+    """No source binds a row (spec 8.13, point 2): the pre-map row is the module with the exports its table says start a
+    function, and the links' binder puts each entry on the function the snapshot names."""
+    import flows
+    files = project("framework", **{"app/root.tsx": ROOT})
+    _, manifest = manifest_of(tmp_path, files)
+    record = premap.write(manifest, sources=(premap.react_router,), runner=runner_for({".": answer("framework")})[1])
+    [checkout] = [r for r in record["framework_entries"] if r["path"] == "/checkout"]
+    assert (checkout["site"], checkout["symbol"], checkout["exports"]) == (
+        "app/routes/shop/checkout.tsx", "app/routes/shop/checkout.tsx::<module>", list(EXPORTS))
+    assert not [r for r in record["framework_entries"] if "handler" in r or "handler_source" in r]
+    [data] = [r for r in record["framework_entries"] if r["shape"] == "root-data"]
+    assert data["exports_optional"] is True and data["symbol"] == "app/root.tsx::<module>"
+    linked = {(e["path"], e["symbol"].split("::")[1], e["handler_source"]) for e in flows.cached_links(manifest, [])["entries"]
+              if e["reader"] == "react-router"}
+    assert {("/checkout", "loader", "react-router"), ("/checkout", "Checkout", "react-router"), ("/", "action", "react-router")} <= linked
+
+
+def test_the_public_candidates_hold_the_entries_on_their_functions_and_the_gap_rows(made):
+    """`entries._declared_rows` and `cached_syntax` (the MCP candidates, the brief) give the rows the links' binder binds, not the
+    pre-map's module rows."""
+    import entries
+    rows = entries._declared_rows(made)
+    assert {(r["path"], r["symbol"].split("::")[1], r["handler_source"]) for r in rows if r.get("handler_source")
+            and r["reader"] == "react-router"} >= {("/checkout", "loader", "react-router"), ("/checkout", "Checkout", "react-router")}
+    assert {r["site"] for r in rows if r.get("gap") and r["reader"] == "react-router"} == {"app/routes/docs.tsx", "app/routes/legacy.jsx"}
+    assert not [r for r in rows if "exports" in r or "methods" in r]
+    syntax = entries.cached_syntax(made)
+    assert [c for c in syntax if c["reader"] == "react-router" and c.get("handler") == "loader" and c["path"] == "/checkout"]

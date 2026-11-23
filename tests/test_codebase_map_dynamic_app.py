@@ -78,10 +78,10 @@ def test_a_project_declaring_no_start_is_a_gap_and_nothing_runs():
 
 def test_the_pages_nextjs_declares_under_an_apps_folder_are_its_seeds():
     record = {"starts": [start("web", "dev")], "framework_entries": [
-        {"shape": "AppPageConfig", "site": "web/app/about/page.tsx", "path": "/about"},
-        {"shape": "AppPageConfig", "site": "web/app/[id]/page.tsx", "path": "/[id]"},  # a pattern: no page to open
-        {"shape": "RouteHandlerConfig", "site": "web/app/api/x/route.ts", "path": "/api/x"},  # an endpoint, not a page
-        {"shape": "AppPageConfig", "site": "other/app/page.tsx", "path": "/other"}]}  # another app's
+        {"shape": "AppPageConfig", "page": True, "schema": "/about", "site": "web/app/about/page.tsx", "path": "/about"},
+        {"shape": "AppPageConfig", "page": True, "schema": "/{}", "site": "web/app/[id]/page.tsx", "path": "/[id]"},  # a pattern: no page to open
+        {"shape": "RouteHandlerConfig", "schema": "/api/x", "site": "web/app/api/x/route.ts", "path": "/api/x"},  # an endpoint, not a page
+        {"shape": "AppPageConfig", "page": True, "schema": "/other", "site": "other/app/page.tsx", "path": "/other"}]}  # another app's
     planned = app.plan(record, explore=True)
     assert planned["apps"][0]["seeds"] == ["/about"]
     assert "'[\"/about\"]'" in app.scripts(planned, [])[1] or '["/about"]' in app.scripts(planned, [])[1]
