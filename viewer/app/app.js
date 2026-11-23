@@ -42,7 +42,7 @@ let SYMBOLS = null;  // the inspector's file: its symbols and calls, asked when 
 let events = [], cursors = { after: 0, pipeline_after: 0, pulse_after: 0 }, eventsRun = '';
 let engineDraft = null, engineSaid = '', engineTone = '', question = '', asked = null, shown = '';
 const FINAL = ['fresh', 'unavailable', 'failed', 'off'];
-const STEPS = [['scan', 'Scan · inventario e moduli'], ['stack', 'Stack · tecnologie e librerie'], ['analyze', 'Analyze · analyzer per linguaggio'], ['dynamic', 'Dynamic · osservazione dei test'], ['union', 'Union · collegamento dei grafi']];
+const STEPS = [['parse', 'Parse · lettura dei sorgenti'], ['scan', 'Scan · inventario e moduli'], ['stack', 'Stack · tecnologie e librerie'], ['analyze', 'Analyze · analyzer per linguaggio'], ['dynamic', 'Dynamic · osservazione dei test'], ['union', 'Union · collegamento dei grafi']];
 const STEP = Object.fromEntries(STEPS.map(([id, label]) => [id, label.split(' · ')[0]]));
 
 function save() { try { localStorage.setItem(STORAGE, JSON.stringify(state)); } catch { storageAvailable = false; } }

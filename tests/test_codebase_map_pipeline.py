@@ -407,6 +407,39 @@ def test_the_parse_step_reads_a_store_that_holds_only_its_inventory_and_leaves_a
     assert manifest.read_bytes() == written
 
 
+def test_a_snapshot_that_cannot_be_read_stops_the_run_with_its_remedy(tmp_path):
+    """As the scan did before the parse step came first: a step failure with the remedy, not an error."""
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    manifest.parent.mkdir()
+    manifest.write_bytes(b"not a snapshot")
+    for written in (True, False):
+        if not written:
+            manifest.unlink()
+        seen = []
+        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
+        assert list(result) == ["parse"] and result["parse"]["remedy"] == "write the snapshot again"
+        assert result["parse"]["failed"].startswith("the snapshot cannot be read")
+        assert seen[-1]["kind"] == "step.failed" and seen[-1]["step"] == "parse"
+
+
+def test_the_callers_say_a_failure_of_the_parse_step(tmp_path, capsys):
+    """The command line and the MCP service run the pipeline to the stack and read the scan's result, or the parse
+    step's when it stopped the run before the scan: the failure is said, never a KeyError."""
+    import mcp_service
+    project = tmp_path / "project"
+    (project / "src").mkdir(parents=True)
+    (project / "src" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    stop = pipeline.StepFailed("the snapshot cannot be read: broken", "write the snapshot again")
+    with mock.patch.object(pipeline.Parse, "run", side_effect=stop):
+        status = snapshot.main(["write", str(project / "src"), "--out", str(tmp_path / "out" / "manifest.sqlite"),
+                                "--no-index", "--no-engine"])
+        assert status == 1 and "modules: the snapshot cannot be read: broken" in capsys.readouterr().err
+        service = mcp_service.MapService(project)
+        service.create_run("src", "example", engine=False)
+    said = [event for event in service.events("example")["events"] if event["event"] == "modules_failed"]
+    assert said and said[0]["message"].startswith("the snapshot cannot be read: broken")
+
+
 def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarations():
     """An analyzer is one adapter module under `indexers/`: it says its entry, the languages it indexes, the unit
     kinds it takes its structure from and whether its build runs only in a container, and gives its index. No

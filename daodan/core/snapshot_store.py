@@ -217,11 +217,10 @@ class SnapshotStore:
         self._open()
         if self._json:
             return
-        try:
-            for path, payload in self.connection.execute("SELECT path,payload FROM inventory ORDER BY ordinal"):
-                yield path, _unpack(payload)
-        except sqlite3.OperationalError:
+        if self.connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory'").fetchone() is None:
             return
+        for path, payload in self.connection.execute("SELECT path,payload FROM inventory ORDER BY ordinal"):
+            yield path, _unpack(payload)
 
     def get_file_header(self, path: str) -> dict | None:
         self._open()

@@ -55,10 +55,16 @@ class Parse:
 
     @staticmethod
     def run(context: Context) -> dict:
+        import run_store
         import snapshot
         from snapshot_store import open_snapshot
-        with open_snapshot(context.manifest) as store:  # a header read only: this runs under the project lock
-            pending = store.metadata.get("reading") == "not-started"
+        try:
+            with open_snapshot(context.manifest) as store:  # a header read only: this runs under the project lock
+                pending = store.metadata.get("reading") == "not-started"
+        except run_store.RunControlError:  # a store that comes with the project: the caller is told as it is
+            raise
+        except (OSError, ValueError) as error:  # a missing, unreadable or refused store
+            raise StepFailed(f"the snapshot cannot be read: {error}", "write the snapshot again") from error
         if not pending:
             return {"action": "fresh"}
         written = snapshot.write_reading(context.manifest, context.manifest)

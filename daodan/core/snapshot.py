@@ -70,6 +70,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from languages import SUPPORTED_EXTENSIONS, detect_language, get_adapter  # noqa: E402
 from tree_scope import Perimeter  # noqa: E402
+import file_inventory  # noqa: E402
 from file_inventory import write as write_inventory, SCHEMA, _read_source, _temporary_beside, _text  # noqa: E402,F401
 from snapshot_store import (SnapshotStore, artifact_digest, file_headers, open_snapshot, resolve_run_snapshot)  # noqa: E402
 from source_files import (DOC_EXTENSIONS, git_info, hash_text, is_forbidden, iter_files,  # noqa: E402,F401
@@ -266,9 +267,11 @@ def _newer_python(root: Path, rejected: list[tuple]) -> list[tuple[str, dict, by
 _REUSABLE_STATUSES = {"parsed", "file-level", "parse-skipped"}
 
 
-def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None) -> bool:
-    """A previous entry still describes these bytes: same bytes, include context and parser, a reusable status."""
+def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None, language=_DETECT) -> bool:
+    """A previous entry still describes these bytes: same bytes, language (when given), include context and
+    parser, a reusable status."""
     return (isinstance(old, dict) and old.get("raw_hash") == raw_hash
+            and (language is _DETECT or old.get("language") == language)
             and (macro_key is None or old.get("macro_context") == macro_key)
             and old.get("parser_profile") == parser_profile(path, old.get("language"))
             and old.get("status") in _REUSABLE_STATUSES)
@@ -456,7 +459,7 @@ class _SnapshotPass:
         if not (self.fast_reuse and rel in self.verified_headers):
             return False
         old_h = self.verified_headers[rel]
-        if not _reusable(old_h, path, row["raw_hash"]):
+        if not _reusable(old_h, path, row["raw_hash"], language=row["language"]):
             return False
         self.metrics["cache_hits"] += 1
         self.profiles.append(old_h["parser_profile"])
@@ -472,13 +475,13 @@ class _SnapshotPass:
                macros: dict | None = None) -> dict:
         """The previous entry when it still holds, otherwise a fresh parse."""
         old = self.previous.get_file(rel) if self.reusable else None
+        language = self.rows[rel]["language"]
         key = None if macros is None else context_key(macros)
-        if old is not None and _reusable(old, path, raw_digest or hashlib.sha256(data).hexdigest(), key):
+        if old is not None and _reusable(old, path, raw_digest or hashlib.sha256(data).hexdigest(), key, language):
             old["size"], old["mtime"] = len(data), mtime
             self.metrics["cache_hits"] += 1
             return old
         del old
-        language = self.rows[rel]["language"]
         entry = (file_entry(path, data, mtime, parse_result=parsed, language=language) if macros is None
                  else file_entry(path, data, mtime, parse_result=parsed, macros=macros, language=language))
         if entry["status"] in {"parsed", "parse-error"} and parsed is None:
@@ -492,9 +495,17 @@ class _SnapshotPass:
         for rel, row in list(self.rows.items()):
             path = root / rel
             c_family = rel.lower().endswith(_C_FAMILY_SUFFIXES)
-            if not c_family and self._fast_reused(rel, path, row):
-                self._advance()
-                continue
+            if not c_family:
+                try:
+                    st = path.stat()
+                except OSError:
+                    del self.rows[rel]
+                    continue
+                if ((st.st_size, round(st.st_mtime, 3)) == (row["size"], row["mtime"])
+                        and (st.st_size <= file_inventory.MAX_FILE_BYTES or path.resolve() in supplied)
+                        and self._fast_reused(rel, path, row)):
+                    self._advance()
+                    continue
             try:
                 read = _read_source(path, supplied, spent)
             except OSError:
@@ -583,8 +594,13 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
 
     The inventory is staged beside `out` and removed at the end; only the reading publishes `out`.
     """
+    from snapshot_store import _plain
     _checked_options(format, extra_metadata)
     out = Path(out)
+    _plain(out)
+    resolved = Path(target).resolve()
+    if not (resolved.is_dir() or resolved.is_file()):
+        raise ValueError(f"snapshot target does not exist: {resolved}")
     inventory = _temporary_beside(out)
     try:
         write_inventory(target, inventory, parse_results=parse_results, progress=progress)
@@ -611,6 +627,8 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
     out = Path(out)
     _plain(out)
     with open_snapshot(inventory) as listed:
+        if listed.metadata.get("reading") != "not-started":
+            raise ValueError("not an inventory awaiting its reading")
         root = Path(listed.metadata["root"])
         target_key = listed.metadata["target"]
         target = (root / target_key).resolve()
@@ -1576,7 +1594,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
         if index["state"] != "fresh":
             raise ValueError(f"index: {index['state']}: {index.get('reason', '')}")
         piped = pipeline.run(manifest, stop="stack", fast_scan=True)
-        scanned = piped["scan"]
+        scanned = piped.get("scan") or piped["parse"]
         if "failed" in scanned:
             raise ValueError(f"modules: {scanned['failed']}")
         stacked = piped.get("stack") or {}
@@ -1829,7 +1847,7 @@ def cmd_write(args: argparse.Namespace) -> int:
         # Step 1 (scan) and Step 2 (stack): structure and module stack before downstream analysis.
         import pipeline
         piped = pipeline.run(Path(args.out), stop="stack")
-        scanned = piped["scan"]
+        scanned = piped.get("scan") or piped["parse"]
         if "failed" in scanned:
             print(f"modules: {scanned['failed']}", file=sys.stderr)
             status = 1

@@ -111,5 +111,73 @@ class SnapshotSplitTests(unittest.TestCase):
                          {key: entry[key] for key in ("size", "mtime", "raw_hash", "language")})
 
 
+    def test_a_previous_store_is_reused_only_where_the_file_and_its_language_still_hold(self):
+        """Between the two writes one file is edited, one removed, one grows past the size limit: none of them keeps
+        its previous entry, even on the bulk copy from a SQLite snapshot. A header from the inventory with another
+        language than the previous entry's is read again in the inventory's language."""
+        import file_inventory
+        root = self.base / "tree"
+        root.mkdir()
+        for name, text in (("a.py", "A = 1\n"), ("b.py", "B = 1\n"), ("c.py", "C = 1\n"), ("d.py", "D = 1\n"),
+                           ("shape.h", "int area(int side);\n")):
+            (root / name).write_text(text, encoding="utf-8")
+        previous_path, inventory, out = (self.base / f"{name}.sqlite" for name in ("previous", "inventory", "out"))
+        snapshot.write_snapshot(root, previous_path)
+        detect = file_inventory.detect_language
+        with mock.patch.object(file_inventory, "detect_language",
+                               side_effect=lambda path, text: "cpp" if path.suffix == ".h" else detect(path, text)):
+            file_inventory.write(root, inventory)
+        (root / "b.py").write_text("B = 22\n\ndef later():\n    return B\n", encoding="utf-8")
+        (root / "c.py").unlink()
+        (root / "d.py").write_text("D = 1\n" + "# padding\n" * 50, encoding="utf-8")
+        with mock.patch.object(file_inventory, "MAX_FILE_BYTES", 200), \
+                snapshot_store.open_snapshot(previous_path) as previous:
+            kept = previous.get_file("a.py")
+            snapshot.write_reading(inventory, out, previous=previous)
+        with snapshot_store.open_snapshot(out) as store:
+            files, rows = dict(store.iter_files()), dict(store.iter_inventory())
+        self.assertEqual(sorted(files), ["a.py", "b.py", "shape.h"])
+        self.assertEqual(sorted(rows), sorted(files))
+        self.assertEqual(files["a.py"], kept)
+        self.assertEqual(files["b.py"]["raw_hash"], hashlib.sha256((root / "b.py").read_bytes()).hexdigest())
+        self.assertIn("later", files["b.py"]["symbols"])
+        self.assertEqual(files["shape.h"]["language"], "cpp", "the inventory's language, not the previous entry's")
+        for path, entry in files.items():
+            self.assertEqual({key: rows[path][key] for key in ("size", "mtime", "raw_hash", "language")},
+                             {key: entry[key] for key in ("size", "mtime", "raw_hash", "language")}, path)
+
+    def test_json_and_supplied_content_give_the_single_pass(self):
+        root = self.base / "tree"
+        root.mkdir()
+        (root / "one.py").write_text("def one():\n    return 1\n", encoding="utf-8")
+        (root / "two.py").write_text("def two():\n    return 2\n", encoding="utf-8")
+        supplied = {str(root / "two.py"): ("def edited():\n    return 22\n", None)}
+        single = snapshot.build_manifest(root, parse_results=supplied)
+        for format in ("sqlite", "json"):
+            with self.subTest(format=format):
+                out = self.base / f"manifest.{format}"
+                snapshot.write_snapshot(root, out, format=format, parse_results=supplied)
+                with snapshot_store.open_snapshot(out) as store:
+                    keys = _keys(store)
+                    self.assertEqual(snapshot_store.logical_digest(store, keys=keys), _single_pass_digest(single, keys))
+                    self.assertIn("edited", store.get_file("two.py")["symbols"])
+
+    def test_a_refused_write_creates_nothing(self):
+        out = self.base / "absent" / "deeper" / "manifest.sqlite"
+        with self.assertRaisesRegex(ValueError, "does not exist"):
+            snapshot.write_snapshot(self.base / "missing", out)
+        self.assertFalse((self.base / "absent").exists())
+
+    def test_the_reading_refuses_a_store_that_is_not_an_inventory(self):
+        root = self.base / "tree"
+        root.mkdir()
+        (root / "one.py").write_text("VALUE = 1\n", encoding="utf-8")
+        read = self.base / "read.sqlite"
+        snapshot.write_snapshot(root, read)
+        with self.assertRaisesRegex(ValueError, "inventory"):
+            snapshot.write_reading(read, self.base / "again.sqlite")
+        self.assertFalse((self.base / "again.sqlite").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

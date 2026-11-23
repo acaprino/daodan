@@ -73,7 +73,7 @@ def measure(manifest, output):
     import premap
     events = []
     result = pipeline.run(manifest, listeners=[events.append])
-    assert list(result) == ["scan", "stack", "analyze", "dynamic", "union"]
+    assert list(result) == ["parse", "scan", "stack", "analyze", "dynamic", "union"]
     report = json.loads(premap.path(manifest).read_text())
     summary = {"events": [f"{e['step']}.{e['kind']}" for e in events if e["kind"].startswith("step.")],
                "gaps_by_step": Counter(e["step"] for e in events if e["kind"] == "gap"),

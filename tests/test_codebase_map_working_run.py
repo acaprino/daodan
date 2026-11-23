@@ -102,6 +102,16 @@ class WorkingRunTests(unittest.TestCase):
         self.assertEqual([(c["phase_file"], c["line"], c["reason"]) for c in claims],
                          [("01-structure.md", 3, "symbol-changed")])
 
+    def test_a_parse_step_that_stops_the_run_is_said_by_the_refresh(self):
+        """The refresh reads the scan's result, or the parse step's when it stopped the run before the scan."""
+        import pipeline
+        self.edit("app.py", "def greet():\n    return 'hello'\n")
+        stop = pipeline.StepFailed("the snapshot cannot be read: broken", "write the snapshot again")
+        with mock.patch.object(pipeline.Parse, "run", side_effect=stop):
+            self.refresh()
+        self.assertEqual(self.report()["status"], "failed")
+        self.assertEqual(self.report()["error"], "modules: the snapshot cannot be read: broken")
+
     def test_2_the_published_run_stays_byte_identical(self):
         before = run_bytes(self.published)
         self.edit("app.py", "def greet():\n    return 'changed'\n")

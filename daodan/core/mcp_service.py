@@ -497,8 +497,9 @@ class MapService:
                 if format == "sqlite":
                     import pipeline
                     piped = pipeline.run(run / state["snapshot"]["path"], stop="stack", fast_scan=True)
-                    if "failed" in piped.get("scan", {}):
-                        self._event(run, "modules_failed", message=str(piped["scan"]["failed"])[:MAX_MESSAGE])
+                    scanned = piped.get("scan") or piped.get("parse", {})
+                    if "failed" in scanned:
+                        self._event(run, "modules_failed", message=str(scanned["failed"])[:MAX_MESSAGE])
                 else:
                     graph = module_graph.ensure_graph(run / state["snapshot"]["path"])
                     if graph["state"] != "fresh":

@@ -31,7 +31,7 @@ def parser_fingerprint() -> str:
     helpers = [SCRIPT_DIR / name for name in
                ("snapshot.py", "source_files.py", "parser_identity.py", "symbol_records.py", "symbols_at.py",
                 "import_resolution.py", "change_set.py", "run_store.py", "ast_parser.py", "tree_scope.py",
-                "source_reader.py",
+                "source_reader.py", "file_inventory.py",
                 "semantic_index.py", "dependency_graph.py", "snapshot_store.py", "json_snapshot.py",
                 "semantic_store.py", "resolution.py", "store_graph.py", "store_graph_metrics.py",
                 "store_consumers.py")]
