@@ -499,14 +499,17 @@ def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | 
             container.find_engine()  # acquire the run's Kiri daemon before the indexer enters its own process
         except container.Gap:
             pass  # the index stage reports its normal unavailability and remedy
-    completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
-                               env={**os.environ, **node_environment(), **node_preparation.child_environment()})
+    try:
+        completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
+                                   env={**os.environ, **node_environment(), **node_preparation.child_environment()})
+    except OSError as error:  # the stage's program did not start: this stage failed, the others still run
+        return "failed", f"the {spec.name} stage could not start: {type(error).__name__}: {error}", None, None
     try:
         stage = json.loads(stage_report.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         stage = None
     stage_report.unlink(missing_ok=True)
-    if stage is None:
+    if not isinstance(stage, dict):  # no report, or one that is not a report
         return "failed", (f"the {spec.name} stage exited with code {completed.returncode} without a report; "
                           f"see {LOG_NAME}"), None, {"memory_exhausted": bool(MEMORY_EXHAUSTED.search(
                               _log_tail(manifest)))}

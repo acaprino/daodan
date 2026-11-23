@@ -144,13 +144,17 @@ class Union:
         def say(message: str, gap: dict, language: str | None = None) -> None:
             context.bus.emit("gap", message, step=Union.NAME, gap=gap, **({"language": language} if language else {}))
 
-        outcomes = (context.results.get(Dynamic.NAME) or {}).get("languages") or {}
+        dynamic = context.results.get(Dynamic.NAME)
+        outcomes = (dynamic or {}).get("languages") or {}
+        # Why no language has a reason of its own: the step that gives it did not run here, or failed.
+        absent = ("the dynamic step did not run in this analysis" if dynamic is None else
+                  f"the dynamic step failed: {dynamic['failed']}" if dynamic.get("failed") else None)
         for language, entry in sorted(languages.items()):
             if entry.get("state") != "fresh":
                 continue
             try:
-                Union.observed(language, entry.get("coverage") or {}, (outcomes.get(language) or {}).get("reason"),
-                               context.bus, say)
+                Union.observed(language, entry.get("coverage") or {},
+                               (outcomes.get(language) or {}).get("reason") or absent, context.bus, say)
                 files = (entry.get("coverage") or {}).get("files") or {}
                 if files.get("missing"):
                     reasons = dict(collections.Counter(item["reason"] for item in files["missing"]).most_common(3))
@@ -172,8 +176,8 @@ class Union:
             detail = (f"calls between {one} and {other} are not resolved: each analyzer reads its own index, so a "
                       "project symbol of the other language can read as external")
             say(detail, {"kind": "not-joined", "languages": [one, other], "detail": detail})
-        ui_controls = (context.results.get("dynamic") or {}).get("ui_controls", [])
-        ui_gaps = (context.results.get("dynamic") or {}).get("ui_gaps", [])
+        ui_controls = (dynamic or {}).get("ui_controls", [])
+        ui_gaps = (dynamic or {}).get("ui_gaps", [])
         context.bus.emit("graph.ready", "the complete graph is ready", step=Union.NAME,
                          **({"ui_controls": ui_controls} if ui_controls else {}),
                          **({"ui_gaps": ui_gaps} if ui_gaps else {}),
@@ -244,18 +248,23 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
     """The steps in order on the snapshot `manifest`, from `start` through `stop` (default: all), with
     `listeners` on the bus and the journal beside it; each step's result by its name. A step that fails says
     why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`. One the others can do
-    without (`WITHOUT`) says why as an error and the run goes on: its result is `{"failed": cause}`. An error a step
-    the others need does not foresee is said as `step.failed` and reaches the caller."""
+    without (`WITHOUT`) says why as an error and the run goes on: its result is `{"failed": cause}`, and its
+    `step.finished` carries `failed`. An error a step the others need does not foresee is said as `step.failed`
+    and reaches the caller. A `start` or `stop` that names no step is refused before any event."""
+    names = [step.NAME for step in STEPS]
+    for asked in (start, stop):
+        if asked is not None and asked not in names:
+            raise ValueError(f"no step {asked!r}: the steps are {', '.join(names)}")
     manifest = Path(manifest).resolve()
     bus = events.Bus(manifest.with_name(events.JOURNAL))
     for listener in listeners:
         bus.subscribe(listener)
     context = Context(manifest, bus, report_path, fast_scan=fast_scan)
-    names = [step.NAME for step in STEPS]
     chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
     results = context.results
     for step in chosen:
         bus.emit("step.started", step.NAME, step=step.NAME, inputs=list(step.INPUTS))
+        failed = None
         try:
             results[step.NAME] = step.run(context)
         except StepFailed as failure:
@@ -271,8 +280,10 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
                 raise
             bus.emit("log", f"the {step.NAME} step failed: {error}", step=step.NAME, level="error", cause=cause,
                      remedy=step.WITHOUT)
+            failed = cause
             results[step.NAME] = {"failed": cause}
-        bus.emit("step.finished", step.NAME, step=step.NAME, outputs=list(step.OUTPUTS))
+        bus.emit("step.finished", step.NAME, step=step.NAME, outputs=list(step.OUTPUTS),
+                 **({"failed": failed} if failed else {}))
     report = results.get(Analyze.NAME, {})
     if report.get("pass") and Union.NAME in results and "failed" not in results[Union.NAME]:
         import engine_pass
