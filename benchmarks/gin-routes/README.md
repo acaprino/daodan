@@ -58,4 +58,6 @@ Progetti con `vendor/`, più moduli o `go.work`, `cgo`, tag di compilazione e `m
 
 ## Decisioni che aspettano la misura
 
-Se gli hook con `-overlay` bastano come sorgente (e in quanti progetti veri `SetMode(release)` o un avvio che non arriva a `Run` li lascia muti: in quel caso resta una lacuna con la causa e i candidati di Noir), se `go tool addr2line` dà la riga della dichiarazione o della prima istruzione, la voce `go` in `container_runner.TOOLS` (immagine, cache, `GOPROXY=off`, `GOFLAGS=-mod=readonly`) e se una compilazione della copia con un file in più conta come «non modificare il progetto» per il proprietario: è la domanda aperta del task 14g.
+Se gli hook con `-overlay` bastano come sorgente (e in quanti progetti veri `SetMode(release)` o un avvio che non arriva a `Run` li lascia muti: in quel caso resta una lacuna con la causa e i candidati di Noir), se `go tool addr2line` dà la riga della dichiarazione o della prima istruzione, la voce `go` in `container_runner.TOOLS` (immagine, cache, `GOPROXY=off`, `GOFLAGS=-mod=readonly`).
+
+**Deciso dal proprietario il 23 novembre 2026:** costruire una copia del progetto con un file in più (`go build -overlay`, l'albero del progetto non cambia) conta come «senza modificare il progetto».
