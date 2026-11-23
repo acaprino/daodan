@@ -57,3 +57,13 @@ def test_the_command_prints_the_measure(tmp_path, capsys):
     paths[2].write_text("".join(f"{path}\n" for path in FILES), encoding="utf-8")
     assert entries.main(["entries.py", "measure", *map(str, paths)]) == 0
     assert json.loads(capsys.readouterr().out) == entries.measure(CANDIDATES, EXPECTED, FILES)
+
+
+def test_a_control_the_browser_found_counts_at_the_file_of_its_handler():
+    """The reader `observed` (the app explored in a browser) gives `at` and `handler`, no `symbol`."""
+    found = {"reader": "observed", "shape": "control", "kind": "controllo dell'interfaccia", "site": "/",
+             "handler": "mail/send.ts:3 send", "at": {"file": "mail/send.ts", "line": 3, "name": "send"}}
+    measured = entries.measure({"case": "sintetico", "candidates": [found], "calls": []}, EXPECTED, FILES)
+    assert measured["readers"] == [{"reader": "observed", "candidates": 1, "not_entries": 0, "by_kind": {
+        "controllo dell'interfaccia": {"found": 0, "of": 1}, "messaggio": {"found": 1, "of": 1},
+        "orario": {"found": 0, "of": 1}}}]                       # the file of the mail node: its entry is found
