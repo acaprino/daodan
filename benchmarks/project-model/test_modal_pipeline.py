@@ -82,16 +82,15 @@ def test_a_round_uploads_the_data_its_scripts_read_beside_their_folder():
     assert modal_pipeline.REMOTE_DATA == posixpath.join(posixpath.dirname(modal_pipeline.REMOTE_SCRIPTS), "data")
 
 
-def test_a_sandbox_sees_its_runs_folder_read_only_and_never_the_volumes_other_results():
-    """Project code runs in a sandbox: what it sees of the volume is its run's folder, and with services Docker's
-    binaries, each read only. The volume's other results (other cases, other runs) are not there, and nothing is
-    mounted at `/results`."""
-    plain = modal_pipeline.mount_plan("abc123", False)
-    assert plain == {modal_pipeline.IN: ("/project-model/pipeline-scratch/abc123", True)}
-    served = modal_pipeline.mount_plan("abc123", True)
-    assert served == {**plain, modal_pipeline.IN_BUNDLES: (modal_pipeline.BUNDLES, True)}
-    assert "/results" not in served and all(read_only for _, read_only in served.values())
-    assert not any(path in ("", "/") for path, _ in served.values())  # a sub path, never the volume's root
+def test_a_sandbox_sees_only_its_runs_folder_read_only_and_never_the_volumes_other_results():
+    """Project code runs in a sandbox: what it sees of the volume is its run's folder, read only: the copy and, with
+    services, Docker's binaries, which `sandbox_run` puts there. The volume's other results (other cases, other runs)
+    are not there, nothing is mounted at `/results`, and there is one mount: Modal refuses the same Volume at two
+    places of a sandbox."""
+    plan = modal_pipeline.mount_plan("abc123")
+    assert plan == {modal_pipeline.IN: ("/project-model/pipeline-scratch/abc123", True)}
+    assert "/results" not in plan and all(read_only for _, read_only in plan.values())
+    assert not any(path in ("", "/") for path, _ in plan.values())  # a sub path, never the volume's root
 
 
 def test_the_preparation_reaches_its_registries_by_host_and_nothing_else():
