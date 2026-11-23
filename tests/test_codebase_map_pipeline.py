@@ -547,3 +547,20 @@ def test_the_tests_start_no_container():
     assert os.environ.get("DAODAN_CONTAINER") == "off"
     with pytest.raises(container.Gap, match="DAODAN_CONTAINER=off"):
         container.find_engine()
+
+
+def _unmet(steps, given) -> list[tuple[str, str]]:
+    """Each input of a step that no step before it writes and the pipeline is not given."""
+    available, unmet = set(given), []
+    for step in steps:
+        unmet += [(step.NAME, name) for name in step.INPUTS if name not in available]
+        available |= set(step.OUTPUTS)
+    return unmet
+
+
+def test_every_input_of_a_step_is_written_by_a_step_before_or_given_to_the_pipeline():
+    """Spec of the pipeline, 8.8 point 3, proof 6: the order of the steps is the one their inputs ask for."""
+    assert _unmet(pipeline.STEPS, pipeline.INPUTS) == []
+    # the check sees a step out of place: `analyze` first reads a snapshot no step has written yet
+    misplaced = [pipeline.Analyze, *(step for step in pipeline.STEPS if step is not pipeline.Analyze)]
+    assert ("analyze", "snapshot") in _unmet(misplaced, pipeline.INPUTS)

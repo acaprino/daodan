@@ -285,6 +285,7 @@ class Union:
 
 
 STEPS = (Scan, Stack, Parse, Analyze, Dynamic, Union)
+INPUTS = ("inventory",)  # what the pipeline is given: every other input of a step is the output of a step before it
 
 
 class StepFailed(Exception):

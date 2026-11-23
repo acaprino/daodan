@@ -268,7 +268,7 @@ Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto 
 
 1. **Una dichiarazione per ogni adattatore:** `NAME` e `VERSION`, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Oggi `premap/` dichiara `NAME`, `VERSION`, `RANK` in una lista scritta (`SOURCES`); `indexers/` `ENTRY`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`; `dynamic/` `ENTRY`, `VERSION`, `LANGUAGES`; `languages/` `language`, scelto dall'estensione. Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa un bisogno dichiarato come quelli del piano. Aperto (A1).
 2. **La freschezza si controlla in un punto solo,** `pipeline._run`, sull'impronta degli ingressi dichiarati (sezione 1). Oggi `_run` non la controlla e non emette mai `step.skipped`: ogni step chiama il suo `ensure`.
-3. **Un test controlla gli ingressi:** ogni ingresso di uno step è l'uscita di uno step prima, o un ingresso della pipeline. Oggi `INPUTS` e `OUTPUTS` finiscono solo negli eventi.
+3. **Un test controlla gli ingressi:** ogni ingresso di uno step è l'uscita di uno step prima, o un ingresso della pipeline. *Fatto il 23 novembre:* prova 6.
 
 **8.9 Solidità del processo.** *Revisione del 23 novembre 2026 su `pipeline/` e su `engine_pass.run_pass`: applicata.* Prova: `tests/test_codebase_map_pipeline.py`.
 
@@ -288,14 +288,14 @@ Aperto:
 - **Uno stage non ha un limite di tempo suo** (`_launch`): i comandi nel container hanno i loro, ma un indicizzatore che non risponde ferma l'analisi finché qualcuno non la interrompe (`stop_pass`). Serve un limite dichiarato da ogni analyzer accanto a `MIN_FREE`, preso dalle durate che il rapporto ora registra (punto 8) sul corpus; un numero scelto senza misura fermerebbe indicizzazioni lunghe ma sane. Da leggere prima: che cosa resta del container di uno stage chiuso da fuori.
 - **Il giornale cresce a ogni analisi dello stesso snapshot** e `events.read` lo scorre dall'inizio a ogni lettura: il cursore è un numero di righe, parte del contratto di MCP. Un cursore in byte lo toglierebbe, cambiando quel contratto.
 
-**8.10 Prove.** Ogni prova resta nel repository. Sono scritte la 1, la 3 e la 4; le altre no.
+**8.10 Prove.** Ogni prova resta nel repository. Sono scritte la 1, la 3, la 4 e la 6; le altre no.
 
 1. **Lo snapshot diviso dà lo stesso store:** sulle fixture del grafo, `logical_digest` dopo inventario e lettura è quello del passaggio solo (8.6, punto 5). *Scritta:* `tests/test_codebase_map_snapshot_split.py`. Il passaggio solo è `snapshot.build_manifest`, che percorre e legge in una volta; il confronto gira sulle 27 fixture di `code-graph`, `css-graph` e `clang-reader`, senza `created_at`. Lo step `parse` ha la sua prova in `tests/test_codebase_map_pipeline.py`.
 2. **Le due modalità danno lo stesso grafo:** su una fixture con un file che go-enry dichiara generato e un alias di `tsconfig`, il grafo finale di «`parse` dopo la prima parte» è quello di «`parse` dopo tutto `scan`» (8.5).
 3. **Il piano copre tutto:** ogni file dell'inventario è in un nodo di `parse` o ha un motivo di esclusione; nessun adattatore parte senza il suo nodo (come il test che oggi impedisce a un indicizzatore di cercare file da solo).
 4. **Un bisogno fallito ferma solo chi ne ha bisogno:** con un parser che manca, il resolver di quel linguaggio non parte e dice perché; gli altri girano.
 5. **Un ripiego è dichiarato:** senza container, il linguaggio di un `.h` e gli alias di un `tsconfig` portano scritto che vengono dal ripiego.
-6. **Gli ingressi degli step** (8.8, punto 3).
+6. **Gli ingressi degli step** (8.8, punto 3). *Scritta:* `tests/test_codebase_map_pipeline.py`. L'ingresso della pipeline è `pipeline.INPUTS` (l'inventario); uno step fuori posto rende il test rosso.
 
 Misure, su Modal con gli strumenti veri, nel README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md): il tempo della doppia lettura (8.6, punto 6); il tempo di una prima analisi nelle due modalità; quanti file la lettura di oggi legge e `scan` poi esclude.
 
