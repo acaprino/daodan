@@ -530,9 +530,19 @@ def engine_environment(site: Path = Path("/site")) -> dict:
     site.mkdir(exist_ok=True)
     (site / "sitecustomize.py").write_text(SITE, encoding="utf-8")
     ours = [str(site), str(Path(__file__).resolve().parent)]
-    # what the process already had stays after ours: a plain Python child must still find Modal's client
-    kept = [part for part in os.environ.get("PYTHONPATH", "").split(os.pathsep) if part and part not in ours]
-    return {"PYTHONPATH": os.pathsep.join([*ours, *kept])}
+    # A plain Python child (`resolve_edges.py --pass`, no uv) must import Modal's client as this process does. On
+    # Modal the client sits in `/pkg` and its dependencies elsewhere, neither in the interpreter's own site-packages
+    # (measured on 23 November 2026: `No module named 'grpclib'`): the folders they are imported from go on the path.
+    import importlib
+    client = []
+    for name in ("modal", "grpclib", "synchronicity"):
+        try:
+            client.append(str(Path(importlib.import_module(name).__file__).resolve().parents[1]))
+        except ImportError:
+            continue
+    # what the process already had stays after ours
+    kept = [part for part in (*client, *os.environ.get("PYTHONPATH", "").split(os.pathsep)) if part and part not in ours]
+    return {"PYTHONPATH": os.pathsep.join(dict.fromkeys([*ours, *kept]))}
 
 
 def _project(name: str) -> Path:

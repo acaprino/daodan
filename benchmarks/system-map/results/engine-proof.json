@@ -1,0 +1,67 @@
+{
+ "scip_typescript_fresh": {
+  "pass": true,
+  "evidence": {
+   "engine": {
+    "timed_out": false,
+    "exit": 0,
+    "stderr": "installing uv 0.11.28 into /root/.cache/daodan/engines/uv/0.11.28 (first use)\n",
+    "languages": {
+     "javascript": "fresh"
+    }
+   },
+   "engines": [
+    "scip-typescript"
+   ]
+  }
+ },
+ "dynamic_edge_observed": {
+  "pass": true,
+  "evidence": {
+   "in_src_index_js": [
+    [
+     "src/index.js",
+     "call",
+     "npm lodash 4.17.21 lodash.head",
+     null
+    ]
+   ],
+   "observed_in_the_store": 6
+  }
+ },
+ "preparation_refuses_outside_registries": {
+  "pass": true,
+  "evidence": {
+   "said": {
+    "registry": "reached",
+    "outside": "refused",
+    "plain": "refused",
+    "address": "refused"
+   },
+   "state": "done",
+   "cause": null
+  }
+ },
+ "sandbox_does_not_read_other_results": {
+  "pass": true,
+  "evidence": {
+   "log": "ls: cannot access '/results': No such file or directory\n--- found\n--- write\ntouch: cannot touch '/mnt/daodan-in/x': Read-only file system\nwrite=1\n",
+   "state": "done"
+  }
+ },
+ "everything_removed_after_an_error": {
+  "pass": true,
+  "evidence": {
+   "states": [
+    "failed",
+    "failed"
+   ],
+   "left_on_the_volume": [],
+   "sandboxes_running": 0,
+   "causes": [
+    "preparation exited with code 3",
+    "ImageBuildError: Image build for im-dgipdPNK15vnhxFvyPuK30 failed.\nView the build logs:\n  modal image logs im-dgipdPNK15vnhxFvyPuK30"
+   ]
+  }
+ }
+}
