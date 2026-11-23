@@ -6,7 +6,8 @@ from, None outside one), `kind`, `level`, `message` (to read), `data` and `at`. 
 listener in another process, or one that comes later, reads them with `read` from a cursor. A listener that fails
 stops nothing: its error becomes an event. Nor does a journal that cannot be written: the listeners are told once,
 and the events go on to them. Each event is one write, so the lines of two processes that append do not mix; a
-line a stopped writer left broken is skipped by `read`.
+line a stopped writer left broken is skipped by `read`. An analysis that ends without a word (stopped, killed)
+leaves a step started and never ended: who knows it is over says that end (`close_open`).
 """
 from __future__ import annotations
 
@@ -101,3 +102,24 @@ def read(journal: Path, after: int = 0, limit: int | None = None) -> tuple[list[
             if isinstance(event, dict):
                 found.append(event)
     return found, cursor
+
+
+def close_open(journal: Path, cause: str, remedy: str) -> list[str]:
+    """Say the end of every step and analyzer the journal shows started and never ended: an analyzer as
+    `analyzer.finished` and a step as `step.failed`, both errors with `cause` and `remedy`, the analyzers first.
+    Returns their names. For the caller that knows the analysis that wrote them is over (it stopped it, or found
+    its process gone): a step of an analysis still running beside it would be closed too."""
+    last: dict = {}
+    for event in read(journal)[0]:
+        family = str(event.get("kind")).partition(".")[0]
+        if family in ("step", "analyzer"):
+            last[family, event.get("step"), event.get("analyzer") if family == "analyzer" else None] = event["kind"]
+    left = sorted((key for key, kind in last.items() if kind.endswith(".started")), key=lambda key: key[0] == "step")
+    bus = Bus(journal)
+    for family, step, analyzer in left:
+        if family == "analyzer":
+            bus.emit("analyzer.finished", f"{analyzer} did not end: {cause}", step=step, analyzer=analyzer,
+                     level="error", cause=cause, remedy=remedy)
+        else:
+            bus.emit("step.failed", cause, step=step, level="error", cause=cause, remedy=remedy)
+    return [analyzer or step for _family, step, analyzer in left]

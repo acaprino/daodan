@@ -196,12 +196,13 @@ Corretto:
 4. **Uno step tollerato che fallisce finiva con uno `step.finished` uguale a quello di un successo.** Ora porta `failed` con la causa.
 5. **La lacuna «nessun arco osservato» perdeva la causa** quando lo step dinamico falliva o non girava in quell'analisi. Ora la dice.
 6. **Un `start` o `stop` che non nomina uno step** dava un errore di lista; ora è rifiutato prima di ogni evento, con i nomi validi.
+7. **Un'analisi interrotta lasciava nel giornale uno step iniziato e mai finito.** Ora la fine la dice chi sa che l'analisi è finita: lo step stesso su un'interruzione (Ctrl-C, l'uscita dell'interprete); `stop_pass` e `reset_pass` dopo aver chiuso il passaggio; `ensure_edges` prima di avviarne uno nuovo, per quello morto senza una parola (`events.close_open`: uno `step.failed` per step, un `analyzer.finished` di errore per analyzer, con la causa). Limite: chi chiude non distingue uno step di un'altra analisi che gira nello stesso momento sullo stesso snapshot; nessuno dei tre chiamanti di `ensure_edges` la chiama da dentro uno step.
+8. **La durata di ogni stage non era registrata.** Ora il rapporto del passaggio la tiene (`engines.<nome>.seconds`): è la misura che serve al limite di tempo qui sotto.
 
 Aperto:
 
-- **Uno stage non ha un limite di tempo suo** (`_launch`): i comandi nel container hanno i loro, ma un indicizzatore che non risponde ferma l'analisi finché qualcuno non la interrompe (`stop_pass`). Serve un limite misurato per analyzer; un numero scelto senza misura fermerebbe indicizzazioni lunghe ma sane.
+- **Uno stage non ha un limite di tempo suo** (`_launch`): i comandi nel container hanno i loro, ma un indicizzatore che non risponde ferma l'analisi finché qualcuno non la interrompe (`stop_pass`). Serve un limite dichiarato da ogni analyzer accanto a `MIN_FREE`, preso dalle durate che il rapporto ora registra (punto 8) sul corpus; un numero scelto senza misura fermerebbe indicizzazioni lunghe ma sane. Da leggere prima: che cosa resta del container di uno stage chiuso da fuori.
 - **Il giornale cresce a ogni analisi dello stesso snapshot** e `events.read` lo scorre dall'inizio a ogni lettura: il cursore è un numero di righe, parte del contratto di MCP. Un cursore in byte lo toglierebbe, cambiando quel contratto.
-- **Un'interruzione** (`KeyboardInterrupt`, un processo ucciso) lascia nel giornale uno step iniziato e mai finito: chi legge lo capisce solo dallo stato del passaggio (`engine_pass.pass_state`).
 
 ## Scelte
 
@@ -230,5 +231,5 @@ Dalla seconda revisione esterna del 20 novembre 2026 (sezione 7):
 
 - **U1. Tutta l'analisi nel container?** La revisione propone di lasciare all'host solo avvio, avanzamento e lettura dei risultati. Oggi snapshot, stack e unione girano sull'host, e scip-python sull'host su Linux e macOS: leggono il progetto e non lo eseguono, che è ciò che la regola di `AGENTS.md` chiede. A favore: un ambiente solo e artefatti condivisi senza copie. Contro: la sezione 6 (sotto il blocco del progetto nulla aspetta il container, e la scansione veloce dura pochi millisecondi a ogni modifica) e l'uso senza motore di container, dove oggi Daodan dà comunque snapshot e grafo statico con le lacune. Raccomandazione: no; condividere gli artefatti attraverso lo store e tenere sull'host ciò che solo legge. **Deciso dal proprietario il 20 novembre 2026: no**, come la raccomandazione.
 - **U2. Le regole della sezione 7.3** (un indice letto da tutti, un avvio per stato dei dati, l'esplorazione sullo scoperto): entrano dopo la misura del task 2b, che dice quanto costa oggi ogni doppione.
-- **A1. L'armonizzazione e i nomi della sezione 8.** **Deciso dal proprietario il 22 novembre 2026: sì**, anche `reasoner`. Restano aperte le scelte che non sono un sì o un no: l'ordine di `SOURCES` (scritto, o dipendenza dichiarata), `pass` contro `run`, quando cambiano i nomi sul disco, il nome `producer` per la colonna `resolver` dello store e il limite di tempo di uno stage (8.4).
+- **A1. L'armonizzazione e i nomi della sezione 8.** **Deciso dal proprietario il 22 novembre 2026: sì**, anche `reasoner`. Restano aperte le scelte che non sono un sì o un no: l'ordine di `SOURCES` (scritto, o dipendenza dichiarata), `pass` contro `run`, quando cambiano i nomi sul disco, il nome `producer` per la colonna `resolver` dello store, e in 8.4 il limite di tempo di uno stage e la dimensione del giornale.
 - Le decisioni sulle superfici (osservare le interfacce desktop Python, il ponte Tauri) sono in [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), «Da decidere».

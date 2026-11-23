@@ -250,7 +250,8 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
     why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`. One the others can do
     without (`WITHOUT`) says why as an error and the run goes on: its result is `{"failed": cause}`, and its
     `step.finished` carries `failed`. An error a step the others need does not foresee is said as `step.failed`
-    and reaches the caller. A `start` or `stop` that names no step is refused before any event."""
+    and reaches the caller, and so is an interruption (Ctrl-C, the interpreter's exit). A `start` or `stop` that
+    names no step is refused before any event."""
     names = [step.NAME for step in STEPS]
     for asked in (start, stop):
         if asked is not None and asked not in names:
@@ -282,6 +283,11 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
                      remedy=step.WITHOUT)
             failed = cause
             results[step.NAME] = {"failed": cause}
+        except BaseException as stop:  # an interruption: the step says it ends here, then the run leaves
+            cause = f"interrupted: {type(stop).__name__}"
+            bus.emit("step.failed", cause, step=step.NAME, level="error", cause=cause,
+                     remedy="run the analysis again: this step did not end")
+            raise
         bus.emit("step.finished", step.NAME, step=step.NAME, outputs=list(step.OUTPUTS),
                  **({"failed": failed} if failed else {}))
     report = results.get(Analyze.NAME, {})

@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from datetime import datetime, timezone
 from functools import cache
 from importlib import metadata
@@ -456,9 +457,12 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
             reason, state, install = (f"{free / 2**30:.1f} GB of memory free; {spec.name} starts with at least "
                                       f"{spec.min_free / 2**30:.1f} GB"), "failed", None
         else:
+            started = time.monotonic()
             state, reason, install, stage = _launch(spec, wanted, manifest)
             if stage is not None:
-                report["engines"][spec.name] = compact_report(stage)
+                # How long the stage took, its process included: the measure a time limit per analyzer needs.
+                report["engines"][spec.name] = {**compact_report(stage),
+                                                "seconds": round(time.monotonic() - started, 1)}
                 for gap in stage.get("gaps") or ():
                     bus.emit("gap", gap.get("detail") or gap["kind"], step="analyze", analyzer=spec.name, gap=gap)
                 if stage.get("memory_exhausted"):
@@ -735,6 +739,9 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
     running_path = running_record(manifest)
     for leftover in (report_path, running_path):
         leftover.unlink(missing_ok=True)
+    # No pass runs here (`running` returned above): a step the last one left open ended with its process.
+    _close_steps(manifest, "the analysis that started it ended without finishing it",
+                 f"a new analysis starts now; see {LOG_NAME} beside the snapshot for the one that ended")
     plan, fresh, digest = pass_plan(manifest)
     pending = [(spec, wanted) for spec, wanted in plan if not all(language in fresh for language in wanted)]
     if pending and not fresh and all(stage_command(spec, manifest, report_path) is None for spec, _ in pending):
@@ -786,6 +793,8 @@ def reset_pass(manifest: Path) -> dict | None:
     last = pass_state(manifest)
     if last is not None and last["state"] == "running":
         _terminate_tree(last["pid"])
+        _close_steps(manifest, "a new snapshot replaced the one being analyzed",
+                     "wait for the analysis of the new snapshot")
     for record in (running_record(manifest), manifest.with_name(REPORT_NAME)):
         record.unlink(missing_ok=True)
     for pattern in (f".{default_edge_store(manifest).name}.*.partial", ".engine-stage-*.json"):
@@ -808,7 +817,18 @@ def stop_pass(manifest: Path, reason: str) -> dict:
                   {"pass": True, "available": False, "stopped": True, "reason": f"stopped: {reason}"})
     # The report is the record now; a dying process must not read as running.
     running_record(manifest).unlink(missing_ok=True)
+    _close_steps(manifest, f"the analysis was stopped: {reason}", "write the snapshot again to analyze again")
     return {"stopped": True, "state": "stopped", "pid": last["pid"]}
+
+
+def _close_steps(manifest: Path, cause: str, remedy: str) -> None:
+    """Say the end of the steps and analyzers a pass that is over left open in the journal
+    (`pipeline.events.close_open`). A journal that cannot be read changes nothing of the caller's work."""
+    from pipeline import events
+    try:
+        events.close_open(Path(manifest).with_name(events.JOURNAL), cause, remedy)
+    except OSError:
+        pass
 
 
 def compact_report(report: dict, *, report_out: Path | None = None) -> dict:

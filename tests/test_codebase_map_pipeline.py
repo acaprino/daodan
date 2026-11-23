@@ -72,6 +72,24 @@ def test_a_journal_that_cannot_be_written_stops_nothing_and_is_told_once(tmp_pat
     assert seen[1]["level"] == "error" and seen[1]["data"]["cause"] and seen[1]["data"]["remedy"]
 
 
+def test_what_an_ended_analysis_left_open_is_closed_with_the_cause_and_only_once(tmp_path):
+    journal = tmp_path / events.JOURNAL
+    bus = events.Bus(journal)
+    bus.emit("step.started", "scan", step="scan")
+    bus.emit("step.finished", "scan", step="scan")
+    bus.emit("step.started", "analyze", step="analyze")
+    bus.emit("analyzer.started", "scip-go for go", step="analyze", analyzer="scip-go")
+    bus.emit("analyzer.finished", "scip-go: go", step="analyze", analyzer="scip-go")
+    bus.emit("analyzer.started", "scip-rust for rust", step="analyze", analyzer="scip-rust")
+    assert events.close_open(journal, "its process is gone", "analyze again") == ["scip-rust", "analyze"]
+    closed = events.read(journal, after=6)[0]
+    assert [(e["kind"], e["step"], e["analyzer"], e["level"]) for e in closed] == [
+        ("analyzer.finished", "analyze", "scip-rust", "error"), ("step.failed", "analyze", None, "error")]
+    assert all(e["data"] == {"cause": "its process is gone", "remedy": "analyze again"} for e in closed)
+    assert events.close_open(journal, "its process is gone", "analyze again") == []
+    assert events.close_open(tmp_path / "none.jsonl", "no journal", "nothing to close") == []
+
+
 def test_an_unknown_kind_or_level_is_refused():
     bus = events.Bus()
     with pytest.raises(ValueError):
@@ -237,6 +255,65 @@ def test_the_union_says_why_no_run_was_observed_when_the_dynamic_step_gave_no_re
     with mock.patch.object(dynamic, "run", side_effect=RuntimeError("the recorder's file is gone")):
         assert details(start="dynamic") == ["no edge observed in a run: the dynamic step failed: RuntimeError: "
                                             "the recorder's file is gone"]
+
+
+def test_an_interrupted_step_says_it_ends_before_the_interruption_leaves(tmp_path):
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.write_snapshot(tmp_path / "p", manifest)
+    seen = []
+    with mock.patch.object(pipeline.Analyze, "run", side_effect=KeyboardInterrupt), pytest.raises(KeyboardInterrupt):
+        pipeline.run(manifest, listeners=[seen.append], start="analyze")
+    assert (seen[-1]["kind"], seen[-1]["step"]) == ("step.failed", "analyze")
+    assert seen[-1]["data"]["cause"] == "interrupted: KeyboardInterrupt" and seen[-1]["data"]["remedy"]
+
+
+def test_a_stopped_pass_and_one_that_ended_without_a_word_leave_no_step_open(tmp_path):
+    """Who knows the pass is over says the end of what it left started: `stop_pass` after it ended it, and
+    `ensure_edges` before it starts the next one."""
+    manifest = (tmp_path / "manifest.sqlite").resolve()
+    journal = manifest.with_name(events.JOURNAL)
+
+    class Child:
+        pid = 4321
+
+        def wait(self):
+            return 0
+
+    def last_step():
+        last = [e for e in events.read(journal)[0] if e["kind"].startswith("step.")][-1]
+        return last["kind"], last["step"], last["data"].get("cause")
+
+    with mock.patch.object(engine_pass, "running_record", return_value=tmp_path / "running.json"), \
+            mock.patch.object(engine_pass, "_terminate_tree"):
+        events.Bus(journal).emit("step.started", "analyze", step="analyze")
+        with mock.patch.object(engine_pass, "pass_state", return_value={"state": "running", "pid": 1}):
+            assert engine_pass.stop_pass(manifest, "the person asked")["stopped"]
+        assert last_step() == ("step.failed", "analyze", "the analysis was stopped: the person asked")
+
+        events.Bus(journal).emit("step.started", "dynamic", step="dynamic")
+        with mock.patch.object(engine_pass, "edge_state", return_value={"state": "missing", "languages": {}}), \
+                mock.patch.object(engine_pass, "pass_plan", return_value=([], {}, "digest")), \
+                mock.patch.object(engine_pass, "engine_command", return_value=["pass"]), \
+                mock.patch.object(engine_pass, "_spawn_detached", return_value=Child()):
+            assert engine_pass.ensure_edges(manifest)["action"] == "started"
+        assert last_step() == ("step.failed", "dynamic", "the analysis that started it ended without finishing it")
+
+
+def test_the_pass_records_how_long_each_stage_took(tmp_path):
+    """The measure a time limit per analyzer needs: the report keeps the seconds of every stage that reported."""
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.write_snapshot(tmp_path / "p", manifest)
+    spec = engine_pass.ENGINE_LANGUAGES["go"]
+    stage = {"available": True, "engine": "scip-go", "languages": {"go": {"state": "fresh"}}}
+    with mock.patch.object(engine_pass, "pass_plan", return_value=([(spec, ["go"])], {}, "digest")), \
+            mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30), \
+            mock.patch.object(engine_pass, "_launch", return_value=(None, None, None, stage)):
+        report = engine_pass.run_pass(manifest, tmp_path / "out" / "report.json")
+    assert report["languages"]["go"]["state"] == "fresh" and report["engines"]["scip-go"]["seconds"] >= 0
 
 
 def test_a_start_or_stop_that_names_no_step_is_refused_before_any_event(tmp_path):
