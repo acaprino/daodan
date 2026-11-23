@@ -55,7 +55,7 @@ def _without(*ids: str):
 def _parse_without(*ids: str):
     """`pipeline.plan.parse_nodes`, which the reading takes its nodes from, minus the nodes `ids`."""
     real = _planning().parse_nodes
-    return lambda rows: [node for node in real(rows) if node["id"] not in ids]
+    return lambda rows, record=None: [node for node in real(rows, record) if node["id"] not in ids]
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -289,3 +289,13 @@ def test_the_plan_the_parse_step_says_is_the_plan_the_pass_runs(tmp_path):
         assert engine_pass.no_analyzer(store.connection) == {gap["language"]: gap["files"] for gap in planned["gaps"]
                                                             if gap["kind"] == "no-analyzer"} == {"astro": 1, "sql": 1}
     assert said == planned
+
+
+def test_excluded_holds_the_files_under_an_entry_of_the_pre_map_and_names_the_first_why():
+    rows = [(path, {"language": "python"}) for path in ("lib/a.py", "lib/deep/b.py", "app.py", "vendor.py", "libx/c.py")]
+    record = {"excluded": [{"path": "lib/", "why": "submodule"}, {"path": "vendor.py", "why": "vendored"},
+                           {"path": "lib/a.py", "why": "later"}, {"path": "libx/"}]}
+    assert _planning().excluded(rows, record) == {"lib/a.py": "submodule", "lib/deep/b.py": "submodule",
+                                                  "vendor.py": "vendored", "libx/c.py": "excluded"}
+    assert set(_planning().excluded(rows, {"excluded": [{"path": ".", "why": "all"}]})) == {p for p, _ in rows}
+    assert _planning().excluded(rows, None) == {} and _planning().excluded(rows, {}) == {}

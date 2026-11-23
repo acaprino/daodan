@@ -150,3 +150,96 @@ def test_a_declared_symbol_member_is_checked_once_parse_has_read_the_file(tmp_pa
     assert greeting(wholes[0]) == greeting(wholes[1]) == derived
     assert derived["status"] == "incomplete" and [m["resolved"] for m in derived["members"]] == [True, False]
     assert wholes[0]["coverage"] == wholes[1]["coverage"]
+
+
+SUBMODULE = {".gitmodules": '[submodule "lib"]\n\tpath = lib\n\turl = https://example.invalid/lib.git\n',
+             "lib/x.py": "def f():\n    return 1\n", "app.py": "def g():\n    return 2\n"}
+
+
+def _inventoried(tmp_path, name: str) -> Path:
+    root = tmp_path / "proj"
+    if not root.exists():
+        for rel, text in SUBMODULE.items():
+            (root / rel).parent.mkdir(parents=True, exist_ok=True)
+            (root / rel).write_text(text, encoding="utf-8", newline="\n")
+    manifest = tmp_path / name / "manifest.sqlite"
+    file_inventory.write(root, manifest)
+    return manifest
+
+
+def test_a_file_the_pre_map_excludes_is_read_by_no_language_adapter_and_says_why(tmp_path):
+    """Spec 8.3, point 3, and 8.11 step 5, piece E1: `parse` takes the exclusions from `scan`. A submodule's file keeps its
+    inventory language and a file-level entry with the reason; the plan puts it in no parse node."""
+    from pipeline import plan as planning
+    from snapshot_store import open_snapshot
+    manifest = _inventoried(tmp_path, "out")
+    result = pipeline.run(manifest, start="scan", stop="parse", fast_scan=True)
+    assert result["parse"]["action"] == "read"
+    record = premap.ensure(manifest)
+    with open_snapshot(manifest) as store:
+        excluded, kept = store.get_file("lib/x.py"), store.get_file("app.py")
+        rows = list(store.iter_inventory())
+    assert excluded["language"] == "python" and not excluded["symbols"] and "excluded: submodule" in excluded["parser_notes"]
+    assert "g" in kept["symbols"]
+    nodes = {node["id"]: node["on"]["files"] for node in planning.parse_nodes(rows, record)}
+    assert nodes.get("parse:python") == 1  # app.py; lib/x.py is in no node, and its entry says why
+    assert premap.state(manifest)["state"] == "fresh"  # the exclusion is not written in the inventory's rows
+
+
+def test_without_the_pre_map_the_reading_is_the_one_of_before(tmp_path):
+    manifest = _inventoried(tmp_path, "out")
+    snapshot.write_reading(manifest, manifest)
+    from snapshot_store import open_snapshot
+    with open_snapshot(manifest) as store:
+        assert "f" in store.get_file("lib/x.py")["symbols"]
+
+
+def test_the_plan_parse_tells_after_reading_counts_no_excluded_file(tmp_path):
+    """The plan the step says once the files are read (`plan.stored`, the coverage of the read snapshot) agrees with the
+    reading: the excluded file is in no parse node, and the step says how many it left out."""
+    from pipeline import plan as planning
+    from snapshot_store import open_snapshot
+    manifest = _inventoried(tmp_path, "out")
+    result = pipeline.run(manifest, start="scan", stop="parse", fast_scan=True)
+    assert result["parse"]["excluded"] == 1
+    with open_snapshot(manifest) as store:
+        nodes = {node["id"]: node["on"]["files"] for node in planning.plan(planning.stored(store))["nodes"]}
+    assert nodes["parse:python"] == 1
+
+
+def test_an_excluded_entry_is_never_reused_as_a_reading(tmp_path):
+    """A later reading with no pre-map (`write_snapshot`) reads the file again: an entry the plan left out says nothing of
+    the file's symbols."""
+    from snapshot_store import open_snapshot
+    manifest = _inventoried(tmp_path, "out")
+    pipeline.run(manifest, start="scan", stop="parse", fast_scan=True)
+    again = tmp_path / "again" / "manifest.sqlite"
+    with open_snapshot(manifest) as previous:
+        snapshot.write_snapshot(tmp_path / "proj", again, previous=previous)
+    with open_snapshot(again) as store:
+        assert "f" in store.get_file("lib/x.py")["symbols"]
+
+
+def test_go_enrys_folders_and_files_are_left_out_of_the_reading(tmp_path):
+    from snapshot_store import open_snapshot
+    root = tmp_path / "proj"
+    for rel, text in {"third_party/a.py": "def a():\n    pass\n", "gen.py": "def b():\n    pass\n",
+                      "app.py": "def c():\n    pass\n"}.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8", newline="\n")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    file_inventory.write(root, manifest)
+    record = {"excluded": [{"path": "third_party/", "why": "vendored"}, {"path": "gen.py", "why": "generated"}]}
+    assert snapshot.write_reading(manifest, manifest, record=record)["excluded"] == 2
+    with open_snapshot(manifest) as store:
+        notes = {rel: store.get_file(rel)["parser_notes"] for rel in ("third_party/a.py", "gen.py")}
+        assert "c" in store.get_file("app.py")["symbols"]
+    assert "excluded: vendored" in notes["third_party/a.py"] and "excluded: generated" in notes["gen.py"]
+
+
+def test_a_reading_with_no_fresh_pre_map_says_it_excludes_nothing(tmp_path):
+    manifest = _inventoried(tmp_path, "out")
+    seen = []
+    result = pipeline.run(manifest, listeners=[seen.append], start="parse", stop="parse")
+    assert result["parse"]["excluded"] == 0
+    assert [e for e in seen if e["kind"] == "log" and e["level"] == "warning" and "pre-map" in e["message"]]

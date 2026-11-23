@@ -105,7 +105,7 @@ def _tally(rows) -> tuple[collections.Counter, dict, set]:
         language = row.get("language")
         if language:
             held.add(language)
-        if row.get("status") == "excluded":  # outside the perimeter: in no node, and the inventory says why
+        if row.get("status") == "excluded":  # outside the perimeter, or left out by the pre-map: in no node
             continue
         files[language] += row.get("files", 1)
         statuses[language].add(row.get("status"))
@@ -120,16 +120,41 @@ def _parse(files: collections.Counter) -> list[dict]:
     return nodes
 
 
-def parse_nodes(rows) -> list[dict]:
-    """The parse nodes alone, which need no adapter registry: what the reading takes its files from."""
-    return _parse(_tally(rows)[0])
+def excluded(rows, record) -> dict[str, str]:
+    """The files of `rows` that an entry of the pre-map's `excluded` facet holds (the entry's path, a file under a
+    folder entry ending in `/`, or any file for `.`), each with the `why` of the outermost entry that holds it (the
+    first one, of several for the same path). They enter no parse node (spec 8.3, point 3)."""
+    held: dict[str, str] = {}
+    for entry in ((record or {}).get("excluded") or []):
+        held.setdefault(entry["path"].rstrip("/") or ".", entry.get("why") or "excluded")
+    if not held:
+        return {}
+    found = {}
+    for path, _row in rows:  # each file's ancestors, not `premap._inside` pairwise: files x entries (go-enry lists thousands)
+        parts = path.split("/")
+        for why in (held.get(".") or None, *(held.get("/".join(parts[:cut])) for cut in range(1, len(parts) + 1))):
+            if why:
+                found[path] = why
+                break
+    return found
+
+
+def parse_nodes(rows, record=None) -> list[dict]:
+    """The parse nodes alone, which need no adapter registry: what the reading takes its files from. The files the
+    pre-map `record` excludes are in none."""
+    rows = list(rows)
+    out = excluded(rows, record)
+    return _parse(_tally(row for row in rows if row[0] not in out)[0])
 
 
 def plan(rows, record=None) -> dict:
-    """The nodes and gaps for `rows`. `record`, the pre-map (None before `scan`), does not change a choice yet: the
-    units of a node come from it when the plan is recomputed after the scan (8.4)."""
+    """The nodes and gaps for `rows`. `record`, the pre-map (None before `scan`), leaves its excluded files out of
+    every node; the units of a node come from it when the plan is recomputed after the scan (8.4)."""
     import dynamic
     from semantic_store import READ
+    rows = list(rows)
+    out = excluded(rows, record)
+    rows = [row for row in rows if row[0] not in out]
     files, statuses, held = _tally(rows)
     read = {language for language, found in statuses.items() if found & set(READ)}
     languages = sorted(language for language in files if language)

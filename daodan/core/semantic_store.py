@@ -173,6 +173,9 @@ def observed_coverage(entry, data):
     """Validate one extracted payload while its observed source is still in memory."""
     record = {"status": "excluded", "reason": "outside-current-perimeter", "verified_source": False,
               "reference_count": 0, "resolved_count": 0}
+    if entry.get("excluded"):  # left out by the pre-map: not a reading, whatever its bytes are
+        record["reason"] = f"pre-map: {entry['excluded']}"
+        return record
     try:
         if len(data) > snapshot.MAX_FILE_BYTES:
             record.update(status="oversized", reason="source-size-limit")

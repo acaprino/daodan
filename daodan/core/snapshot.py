@@ -274,7 +274,8 @@ def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None, lang
             and (language is _DETECT or old.get("language") == language)
             and (macro_key is None or old.get("macro_context") == macro_key)
             and old.get("parser_profile") == parser_profile(path, old.get("language"))
-            and old.get("status") in _REUSABLE_STATUSES)
+            and old.get("status") in _REUSABLE_STATUSES
+            and "excluded" not in old)  # left out by the pre-map: the plan of each reading decides again
 
 
 def _reused(old: dict, size: int, mtime: float) -> dict:
@@ -428,7 +429,7 @@ class _SnapshotPass:
     """
 
     def __init__(self, format: str, previous, reusable: bool, fast_reuse: bool, metrics: dict, progress, rows: dict,
-                 unplanned: frozenset | set = frozenset()):
+                 unplanned: dict | None = None):
         self.format = format
         self.previous = previous
         self.reusable = reusable
@@ -437,7 +438,9 @@ class _SnapshotPass:
         self.metrics = metrics
         self.progress = progress
         self.rows = rows  # the inventory's rows by path, corrected where a file changed since
-        self.unplanned = unplanned  # the files the plan puts in no parse node: read as file-level, with the cause
+        # The files the plan puts in no parse node, read as file-level: path -> why the pre-map excludes it, or None
+        # for a file whose language has no node.
+        self.unplanned = unplanned or {}
         self.writer = None
         self.count = 0
         self.exact_reused_paths: list[str] = []
@@ -494,8 +497,12 @@ class _SnapshotPass:
                 self.metrics["parsed_files"] += 1
         if rel in self.unplanned:  # read as no language, so not parsed; the language stays the inventory's
             entry["language"] = self.rows[rel]["language"]
-            if NO_PARSE_NODE not in entry["parser_notes"]:
-                entry["parser_notes"] = [*entry["parser_notes"], NO_PARSE_NODE]
+            why = self.unplanned[rel]
+            note = f"excluded: {why}" if why else NO_PARSE_NODE
+            if note not in entry["parser_notes"]:
+                entry["parser_notes"] = [*entry["parser_notes"], note]
+            if why:  # structured, for the coverage (`semantic_store.observed_coverage`)
+                entry["excluded"] = why
         return entry
 
     def sources(self, root: Path, supplied: dict) -> list[tuple]:
@@ -623,14 +630,15 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
 
 def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previous=None,
                   parse_results: dict | None = None, extra_metadata: dict | None = None,
-                  progress=None) -> dict:
+                  progress=None, record=None) -> dict:
     """Read the files of an inventory (`file_inventory.write`), in its order and language, into a snapshot.
 
     Host metadata joins the immutable header before semantic binding. Reserved
     snapshot fields cannot be overridden by an embedding application's header.
     A file changed since the inventory is read as it now is, and its inventory row corrected.
     Its plan is the parse part only (`pipeline.plan.parse_nodes`): the inventory has no status yet, and the
-    resolve and observe nodes are the plan of the read snapshot (`plan.stored`).
+    resolve and observe nodes are the plan of the read snapshot (`plan.stored`). `record`, the pre-map, takes its
+    excluded files out of every parse node: they stay file-level with the note `excluded: <why>`.
     """
     from datetime import datetime, timezone
     from snapshot_store import SnapshotWriter, _plain
@@ -668,9 +676,11 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
         # read by a language adapter. It keeps its inventory row and a file-level entry that says so.
         from pipeline import plan as planning
         rows = dict(listed.iter_inventory())
-        parse = {node["id"] for node in planning.parse_nodes(rows.items())}
+        left = planning.excluded(rows.items(), record)
+        parse = {node["id"] for node in planning.parse_nodes((item for item in rows.items() if item[0] not in left))}
         run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress, rows,
-                            {path for path, row in rows.items() if planning.node_of(row) not in parse})
+                            {**{path: None for path, row in rows.items() if planning.node_of(row) not in parse},
+                             **left})
         scope = listed.metadata["scope"]
     try:
         with SnapshotWriter(temporary, format) as writer:
@@ -697,7 +707,7 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
         if previous is not None and previous.path.resolve() == out.resolve():
             previous.close()
         os.replace(temporary, out)
-        return {**metadata_record, "file_count": run.count, "format": format}
+        return {**metadata_record, "file_count": run.count, "format": format, "excluded": len(left)}
     finally:
         temporary.unlink(missing_ok=True)
         Path(str(temporary) + "-journal").unlink(missing_ok=True)

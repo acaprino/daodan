@@ -30,6 +30,7 @@ See docs/specs/2026-11-15-pipeline-di-analisi.md.
 """
 from __future__ import annotations
 
+import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -75,8 +76,17 @@ class Parse:
         pending = _reading_pending(context.manifest)
         result = {"action": "fresh"}
         if pending:
-            written = snapshot.write_reading(context.manifest, context.manifest)
-            result = {"action": "read", "files": written["file_count"]}
+            import premap
+            status = premap.state(context.manifest)
+            record = None
+            if status["state"] == "fresh":
+                record = json.loads(premap.path(context.manifest).read_text(encoding="utf-8"))
+            else:
+                context.bus.emit("log", "no fresh pre-map: the reading excludes no file", step=Parse.NAME, level="warning",
+                                 cause=f"{status['state']}: {status['reason']}",
+                                 remedy="run the scan step first: the reading excludes no file without a fresh pre-map")
+            written = snapshot.write_reading(context.manifest, context.manifest, record=record)
+            result = {"action": "read", "files": written["file_count"], "excluded": written["excluded"]}
         from . import plan as planning
         with open_snapshot(context.manifest) as store:
             planned = planning.plan(planning.stored(store))
