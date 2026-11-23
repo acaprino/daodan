@@ -999,7 +999,13 @@ def compiled(rows: list[dict], manifest: Path) -> list[dict]:
     cause). Astro's compiler (`premap/astro.py`) gives rows of the same shape for the events of a `.astro` template, which no tree
     reader reads. Without a pre-map record of the compiler the rows are the tree reader's, whole."""
     from premap import TEMPLATE_SOURCES
-    found = [row for source in TEMPLATE_SOURCES for row in source.recorded(manifest)]
+    found = []
+    for source in TEMPLATE_SOURCES:
+        recorded = source.recorded(manifest)
+        if recorded and hasattr(source, "bind"):  # the binding to the snapshot's declarations runs here, not at `scan`
+            with open_snapshot(manifest) as store:
+                recorded = source.bind(recorded, store)
+        found += recorded
     if not found:
         return rows
     events = {(row["site"], row["column"]) for row in found}

@@ -20,7 +20,7 @@ import preparation  # noqa: E402
 
 FIXTURE = Path(__file__).resolve().parents[1] / "benchmarks/angular-compiler/fixture"
 RECORDED = Path(__file__).parent / "fixtures/premap/angular"
-SOURCE = "angular@daodan/premap/v1"
+SOURCE = "angular@daodan/premap/v2"
 
 
 def project_files(**changes) -> dict[str, str | None]:
@@ -184,6 +184,13 @@ def column(files, file, line, text) -> int:
     return len(files[file].replace("\r\n", "\n").split("\n")[line - 1].split(text)[0].encode("utf-8"))
 
 
+def bound(record, manifest) -> dict:
+    """The record with its Angular rows bound to the snapshot's declarations, as `entries.compiled` binds them when the links are made."""
+    from snapshot_store import open_snapshot
+    with open_snapshot(manifest) as store:
+        return {**record, "framework_entries": premap.angular.bind(record["framework_entries"], store)}
+
+
 def seen(record) -> dict:
     out = {}
     for row in record["framework_entries"]:
@@ -193,7 +200,8 @@ def seen(record) -> dict:
 
 def test_the_events_of_the_three_cases_are_rows_on_the_methods_of_their_classes_with_the_file_and_line_of_the_event(tmp_path):
     files = project_files()
-    record, _, _ = read(tmp_path)
+    record, _, manifest = read(tmp_path)
+    record = bound(record, manifest)
     html = "src/app/app.component.html"
     on = lambda cls, name, file=APP: (f"{file}::{cls}.{name}", None)
     at = lambda file, line, text: (f"{file}:{line}", column(files, file, line, text))
@@ -240,7 +248,8 @@ def test_the_events_of_the_three_cases_are_rows_on_the_methods_of_their_classes_
 
 
 def test_an_event_that_calls_nothing_is_no_row_and_a_call_the_type_checker_places_outside_the_snapshot_or_cannot_place_is_a_gap_that_says_why(tmp_path):
-    record, _, _ = read(tmp_path)
+    record, _, manifest = read(tmp_path)
+    record = bound(record, manifest)
     html = "src/app/app.component.html"
     assert not [r for r in record["framework_entries"] if r["site"] == f"{html}:8"]  # `open = !open`
     assert not [r for r in record["framework_entries"] if r["site"] == f"{html}:13" and r["shape"] != "(keyup.enter)"]  # `[(ngModel)]`
@@ -418,11 +427,12 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
     fixture, in Daodan's container (the packages restored from the lockfile, the script with no network): its state for the source,
     its rows and its gaps are what the script's recorded answer gives here."""
     scan = json.loads((FIXTURE.parent / "results/pipeline-scan.json").read_text(encoding="utf-8"))
-    record, gaps, _ = read(tmp_path)
+    record, gaps, manifest = read(tmp_path)
+    record = bound(record, manifest)
     key = lambda row: (row["site"], row["column"], row["shape"], row["event"], row["owner"], row["symbol"], row.get("gap"))
     assert sorted(map(key, scan["framework_entries"])) == sorted(map(key, record["framework_entries"]))
-    assert len(scan["framework_entries"]) == 41 and all(SOURCE in row["sources"] for row in scan["framework_entries"])
-    assert {s["source"]: s["state"] for s in scan["sources"]}[SOURCE] == "ran"
+    assert len(scan["framework_entries"]) == 41 and all(SOURCE.replace("v2", "v1") in row["sources"] for row in scan["framework_entries"])
+    assert {s["source"]: s["state"] for s in scan["sources"]}[SOURCE.replace("v2", "v1")] == "ran"
     assert sorted((g["kind"], g["path"], g["detail"]) for g in scan["gaps"]) == sorted((g["kind"], g["path"], g["detail"]) for g in gaps)
 
 
@@ -500,7 +510,8 @@ def test_where_the_type_checker_gave_nothing_the_calls_on_another_object_are_gap
     html = "src/app/app.component.html"
     for name, cause in (("no-compiler-cli.json", "@angular/compiler-cli is not installed"), ("no-tsconfig.json", "tsconfig.json is not in"),
                         ("timeout.json", f"did not end in {premap.angular.types_seconds(1)} seconds")):
-        record, gaps, _ = read(tmp_path / name, recorded(name))
+        record, gaps, manifest = read(tmp_path / name, recorded(name))
+        record = bound(record, manifest)
         rows = {r["site"]: r for r in record["framework_entries"]}
         assert rows[f"{html}:2"]["symbol"] == f"{APP}::AppComponent.save"  # the method of the component: no tool needed
         assert cause in rows[f"{html}:4"]["gap"] and "svc.cancel" in rows[f"{html}:4"]["gap"], name  # `svc.cancel()`, now a gap with the cause
@@ -543,7 +554,8 @@ def test_a_type_checker_killed_may_have_run_out_of_memory_and_the_gap_says_both(
 def test_an_answer_of_the_type_checker_that_lacks_a_call_says_so_and_not_none(tmp_path):
     parsed, types = recorded("fixture.json")
     empty = json.dumps({"compiler_cli": "22.3.0", "seconds": 0, "resolved": []})
-    record, gaps, _ = read(tmp_path, [parsed, {**types, "stdout": empty}])
+    record, gaps, manifest = read(tmp_path, [parsed, {**types, "stdout": empty}])
+    record = bound(record, manifest)
     gap = {r["site"]: r["gap"] for r in record["framework_entries"] if r.get("gap")}
     assert "the type-checker's answer lacks this call" in gap["src/app/app.component.html:4"] and "None" not in gap["src/app/app.component.html:4"]
 
@@ -557,7 +569,8 @@ def test_a_declaration_the_type_checker_names_is_the_method_whose_lines_hold_its
         answer = json.loads(types["stdout"])
         [item] = [r for r in answer["resolved"] if r["line"] == 4 and r["c"][1] == "AppComponent"]
         item["decl"] = {"f": "src/app/order.service.ts", "l": line, "n": "cancel"}
-        record, _, _ = read(tmp_path / expected, [parsed, {**types, "stdout": json.dumps(answer)}], project_files(**{"src/app/order.service.ts": service}))
+        record, _, manifest = read(tmp_path / expected, [parsed, {**types, "stdout": json.dumps(answer)}], project_files(**{"src/app/order.service.ts": service}))
+        record = bound(record, manifest)
         row = next(r for r in record["framework_entries"] if r["site"] == "src/app/app.component.html:4")
         assert row["symbol"] == f"src/app/order.service.ts::{expected}.cancel" and "gap" not in row
 
@@ -567,7 +580,9 @@ def test_a_label_gap_the_tree_reader_read_stays_with_the_compilers_row(tmp_path,
     tree = [{"reader": "attributo", "shape": "(click)", "site": "a.html:1", "column": 3, "symbol": "a.html::<module>", "label_gap": "the key stays"}]
     row = {"reader": "attributo", "shape": "(click)", "site": "a.html:1", "column": 3, "symbol": "a.ts::A.go", "event": "click"}
     monkeypatch.setattr(premap.angular, "recorded", lambda manifest: [row])
-    assert entries.compiled(tree, tmp_path) == [{**row, "label_gap": "the key stays"}]
+    monkeypatch.setattr(premap.angular, "bind", lambda rows, store: rows)  # the row is bound already: the merge is what is checked
+    _, manifest = manifest_of(tmp_path, project_files())
+    assert entries.compiled(tree, manifest) == [{**row, "label_gap": "the key stays"}]
 
 
 def test_the_names_the_source_looks_for_are_data_not_code(tmp_path, monkeypatch):
@@ -614,7 +629,8 @@ def test_a_call_with_no_object_before_it_is_a_method_of_the_class_unless_the_tem
     the variable of an `@for` (here named like methods of the class). Such a call is not a method of the component, and is no row on
     one: a gap at the event. `real()` and `this.save()` stay on the class."""
     files = project_files()
-    record, _, _ = read(tmp_path)
+    record, _, manifest = read(tmp_path)
+    record = bound(record, manifest)
     scoped = "src/app/scoped.component.ts"
     rows = {}
     for row in record["framework_entries"]:
@@ -630,7 +646,8 @@ def test_a_call_with_no_object_before_it_is_a_method_of_the_class_unless_the_tem
 
 def test_a_callee_that_is_no_name_is_a_gap_at_the_event_and_the_call_inside_it_is_still_read(tmp_path):
     files = project_files()
-    record, _, _ = read(tmp_path)
+    record, _, manifest = read(tmp_path)
+    record = bound(record, manifest)
     callee = "src/app/callee.component.ts"
     rows = {}
     for row in record["framework_entries"]:
@@ -650,7 +667,8 @@ def test_a_call_the_script_says_it_could_not_read_is_a_gap_whatever_the_reason(t
     legacy = next(t for t in printed["templates"] if t["f"] == "src/app/legacy.component.html")
     legacy["events"][0]["calls"] = []
     legacy["events"][0]["unread"] = ["this version of Angular writes a call as MethodCall: it is not read"]
-    record, _, _ = read(tmp_path, [{**parsed, "stdout": json.dumps(printed)}, types])
+    record, _, manifest = read(tmp_path, [{**parsed, "stdout": json.dumps(printed)}, types])
+    record = bound(record, manifest)
     [row] = [r for r in record["framework_entries"] if r["site"] == "src/app/legacy.component.html:1"]
     assert "MethodCall" in row["gap"] and "legacySave()" in row["gap"] and row["symbol"] == "src/app/legacy.component.ts::LegacyComponent"
 
@@ -658,7 +676,8 @@ def test_a_call_the_script_says_it_could_not_read_is_a_gap_whatever_the_reason(t
 def test_a_solution_style_tsconfig_is_asked_through_the_project_it_references(tmp_path):
     """`tsconfig.json` with `files: []` and `references`: no root file of its own. The recorded answers (Modal) are the fixture's
     in a copy with such a `tsconfig.json` and the real one as `tsconfig.app.json`."""
-    record, gaps, _ = read(tmp_path, recorded("solution.json"))
+    record, gaps, manifest = read(tmp_path, recorded("solution.json"))
+    record = bound(record, manifest)
     row = next(r for r in record["framework_entries"] if r["site"] == "src/app/app.component.html:4")
     assert row["symbol"] == "src/app/order.service.ts::OrderService.cancel" and "gap" not in row
     assert not [g for g in gaps if "not resolved" in g["detail"]]
@@ -672,4 +691,5 @@ def test_the_script_gives_in_angular_20_the_events_and_the_rows_it_gives_in_22(t
     old = recorded("fixture-angular20.json")
     assert json.loads(old[0]["stdout"])["compiler"].startswith("20.") and json.loads(old[1]["stdout"])["compiler_cli"].startswith("20.")
     key = lambda row: (row["site"], row["column"], row["shape"], row["symbol"], bool(row.get("gap")))
-    assert sorted(map(key, read(tmp_path / "20", old)[0]["framework_entries"])) == sorted(map(key, read(tmp_path / "22")[0]["framework_entries"]))
+    rows = lambda *args: (lambda record, _, manifest: bound(record, manifest)["framework_entries"])(*read(*args))
+    assert sorted(map(key, rows(tmp_path / "20", old))) == sorted(map(key, rows(tmp_path / "22")))

@@ -11,7 +11,7 @@ template binds, where and what it calls; the second, `--types`, asks the project
 Nothing of the project's runs on this machine: the script needs the project's restored packages (`container_runner.TOOLS`) and
 runs with no network.
 
-`read` binds each call to the method of the class the decorator belongs to, from the declarations the snapshot holds: a
+`read` writes each call unbound (`scan` reads no symbol); `bind`, when the links are made (`entries.compiled`), binds each call to the method of the class the decorator belongs to, from the declarations the snapshot holds: a
 row of the attribute reader's shape (`entries.ATTRIBUTE`), at the event's file and line, on that method. A call on another
 object (`svc.cancel()`: the compiler names the receiver `svc`, not its class) is the method the type-checker says it is, bound to
 the snapshot's declaration at that file and line. A call with no object before it is that method only if the compiler's own binder does not say the template declares the name (`let-c`, `@let`, the variable of an `@for`): then it is a gap. What no tool gives is a gap with its cause, never a guess: a method the class
@@ -31,7 +31,7 @@ import posixpath
 
 from premap import frameworks
 
-NAME, VERSION, RANK = "angular", "daodan/premap/v1", "scanner"
+NAME, VERSION, RANK = "angular", "daodan/premap/v2", "scanner"
 SCRIPT = "daodan-angular"  # what `container_runner.TOOLS` installs: `angular_templates.mjs` run by the container's Node
 PACKAGES = ("@angular/core", "@angular/compiler")
 TYPES_TOTAL = 900  # seconds the type-checker may take in all the folders together: a run lasts 1800, the restore of the packages in it
@@ -256,11 +256,12 @@ def _types(result: dict | None, seconds: str, folder: str, gaps: list[dict]) -> 
     return {}, cause
 
 
-def _rows(context, declared: dict, folder: str, job: dict, component: dict, event: dict, types: tuple[dict, str | None]) -> list[dict]:
-    """The rows of one event for one component: one per call its handler makes, on the method of the component's class, else
-    a gap that says why (the class is not in the snapshot, it does not declare the method). A call on another object is the
-    method the template type-checker says it is, `types`, where the snapshot holds its file: else a gap with the type-checker's
-    cause, or the file the declaration lies in."""
+def _rows(context, folder: str, job: dict, component: dict, event: dict, types: tuple[dict, str | None]) -> list[dict]:
+    """The rows of one event for one component, not yet bound (`bind` does it, when the links are made: `scan` reads no symbol):
+    one per call its handler makes, with the component (`file`, `class`, `line`, `view` the template's file), the call (`name`,
+    `on`, `scope`) and, for a call on another object, what the template type-checker answered (`type`: the declaration's `file`
+    joined to the folder, `name` and `line`; or its `error`; or why it `missing` an answer). One more row for each reason the
+    script could not read a call (`unread`, with the `handler`)."""
     import entries
     file, cls = component["template"], component["class"]
     # shortcut: `(saved)`, an output of a child component, and `(click)`, an event of the DOM, are one reader's rows: the shape is
@@ -268,52 +269,79 @@ def _rows(context, declared: dict, folder: str, job: dict, component: dict, even
     shape = f"({event['name']})"
     line = context.inventory.text(file).split("\n")[event["line"] - 1]
     base = {"reader": entries.ATTRIBUTE, "shape": shape, "site": f"{file}:{event['line']}",
-            "event": entries.QUERIES["events"].get(shape, shape), "column": frameworks.column_bytes(line, event["col"])}
-    ts = component["file"]
-    declared_in = lambda path: declared.setdefault(path, _declarations(context.store, path))  # noqa: E731
-    found = [d for d in declared_in(ts) if d["kind"] == "class" and d["name"] == cls and d["line"] == component["line"]]
-    owner = f"{ts}::{found[0]['qualified']}" if found else f"{file}::<module>"  # as `flows.Facts.node` names a declaration
+            "event": entries.QUERIES["events"].get(shape, shape), "column": frameworks.column_bytes(line, event["col"]),
+            "file": component["file"], "class": cls, "line": component["line"], "view": file}
     out = []
     for index, call in enumerate(event["calls"]):
-        symbol = None
-        if not found:
-            why = f"the snapshot declares no class {cls} at {ts}:{component['line']}, so {call['name']} is not bound to a method"
-        elif call.get("scope"):  # the template declares the name (`let-c`, `@let`, the variable of an `@for`): the compiler's binder said so
-            why = (f"{call['name']} is a template {call['scope']} declared in the template, not a method of {cls}: "
-                   "the handler it stands for is not known")
+        row = {**base, "name": call["name"], "on": call["on"]}
+        if call.get("scope"):  # the template declares the name (`let-c`, `@let`, the variable of an `@for`): the compiler's binder said so
+            row["scope"] = call["scope"]
         elif call["on"] not in (None, "this"):
-            asked = (job["f"], tuple(job.get("r", ())), (posixpath.relpath(ts, folder), cls, component["line"]), event["line"], event["col"], index)
+            asked = (job["f"], tuple(job.get("r", ())), (posixpath.relpath(component["file"], folder), cls, component["line"]),
+                     event["line"], event["col"], index)
             answer = types[0].get(asked)
-            what = f"{call['on']}.{call['name']}"
             if answer is None:
-                missing = types[1] or "the type-checker's answer lacks this call"
-                why = f"{what}: its receiver's class is told by the template type-checker of @angular/compiler-cli, which gave no answer: {missing}"
+                row["type"] = {"missing": types[1] or "the type-checker's answer lacks this call"}
             elif answer["error"]:
-                why = f"{what}: {answer['error']}"
+                row["type"] = {"error": answer["error"]}
             else:
                 decl = answer["decl"]
-                target = posixpath.normpath(posixpath.join(folder, decl["f"]))
-                methods = [d for d in declared_in(target) if d["kind"] in ("method", "function") and d["name"] == decl["n"]
-                           and d["line"] <= decl["l"] <= d["end"]] if target in context.inventory.headers else []
+                row["type"] = {"file": posixpath.normpath(posixpath.join(folder, decl["f"])), "name": decl["n"], "line": decl["l"]}
+        out.append(row)
+    for reason in event.get("unread", ()):  # a call the script could not read: a gap at the event, never a silence
+        out.append({**base, "unread": reason, "handler": event.get("handler")})
+    return out
+
+
+def bind(rows: list[dict], store) -> list[dict]:
+    """The rows `read` wrote, bound to the snapshot's declarations: on the method of the component's class, else a gap that says
+    why (the class is not in the snapshot, it does not declare the method). A call on another object is the method the template
+    type-checker says it is, where the snapshot holds its file: else a gap with the type-checker's cause, or the file the
+    declaration lies in. This is Angular's own binding (the class of the component and the type-checker's answer are not one of the
+    links' binder's two forms), run when the links are made."""
+    declared, out = {}, []
+    declared_in = lambda path: declared.setdefault(path, _declarations(store, path))  # noqa: E731
+    for row in rows:
+        ts, cls, view = row["file"], row["class"], row["view"]
+        found = [d for d in declared_in(ts) if d["kind"] == "class" and d["name"] == cls and d["line"] == row["line"]]
+        owner = f"{ts}::{found[0]['qualified']}" if found else f"{view}::<module>"  # as `flows.Facts.node` names a declaration
+        symbol, call = None, row.get("name")
+        what = f"{row['on']}.{call}" if row.get("on") else call
+        if "unread" in row:
+            why = f"{row.get('handler')}: {row['unread']}"
+        elif not found:
+            why = f"the snapshot declares no class {cls} at {ts}:{row['line']}, so {call} is not bound to a method"
+        elif row.get("scope"):
+            why = (f"{call} is a template {row['scope']} declared in the template, not a method of {cls}: "
+                   "the handler it stands for is not known")
+        elif row["on"] not in (None, "this"):
+            answer = row["type"]
+            if "missing" in answer:
+                why = f"{what}: its receiver's class is told by the template type-checker of @angular/compiler-cli, which gave no answer: {answer['missing']}"
+            elif "error" in answer:
+                why = f"{what}: {answer['error']}"
+            else:
+                target = answer["file"]
+                held = store.get_file_header(target) is not None
+                methods = [d for d in declared_in(target) if d["kind"] in ("method", "function") and d["name"] == answer["name"]
+                           and d["line"] <= answer["line"] <= d["end"]] if held else []
                 if methods:
                     symbol = f"{target}::{max(methods, key=lambda d: d['line'])['qualified']}"
-                elif target not in context.inventory.headers:
+                elif not held:
                     why = f"{what} is declared in {target}, which the snapshot does not hold (a package's, or outside the project)"
                 else:
-                    why = f"{what} is declared at {target}:{decl['l']}, where the snapshot declares no method {decl['n']}"
+                    why = f"{what} is declared at {target}:{answer['line']}, where the snapshot declares no method {answer['name']}"
         else:
             # shortcut: a method the class inherits or a property it assigns an arrow function is not a method the snapshot declares
             # in the class: it is a gap, though the type-checker would give it; ask it for these when a project's gaps are mostly so
-            qualified = f"{found[0]['qualified']}.{call['name']}"
-            methods = [d for d in declared_in(ts) if d["kind"] in ("method", "function") and d["qualified"] == qualified]
-            if methods:
+            qualified = f"{found[0]['qualified']}.{call}"
+            if [d for d in declared_in(ts) if d["kind"] in ("method", "function") and d["qualified"] == qualified]:
                 symbol = f"{ts}::{qualified}"
             else:
-                why = f"{cls} does not declare {call['name']}: it is inherited, or assigned at run time"
-        out.append({**base, "owner": owner, "symbol": symbol, "handler_source": NAME} if symbol
-                   else {**base, "owner": owner, "symbol": owner, "gap": why})
-    for reason in event.get("unread", ()):  # a call the script could not read: a gap at the event, never a silence
-        out.append({**base, "owner": owner, "symbol": owner, "gap": f"{event.get('handler')}: {reason}"})
+                why = f"{cls} does not declare {call}: it is inherited, or assigned at run time"
+        keep = {k: v for k, v in row.items() if k not in ("file", "class", "line", "view", "name", "on", "scope", "type", "unread", "handler")}
+        out.append({**keep, "owner": owner, "symbol": symbol, "handler_source": NAME} if symbol
+                   else {**keep, "owner": owner, "symbol": owner, "gap": why})
     return out
 
 
@@ -321,7 +349,7 @@ def read(context, commands, results):
     # shortcut: the `host` metadata and `@HostListener` of a component are not read (the type-checker's `getHostElement` gives
     # their listeners, measured in `results/10_symbols_options.txt`); do it when a project's entries are measured to miss them
     plan = _plan(context)
-    gaps, rows, declared = list(plan["gaps"]), [], {}
+    gaps, rows = list(plan["gaps"]), []
     parsed, typed = {}, {}
     for command, result in zip(commands, results):
         if "--types" in command["argv"]:
@@ -351,7 +379,7 @@ def read(context, commands, results):
                                                                              f"{path}, so events may be missing: {template['errors'][0][:200]}"})
             for component in members:
                 for event in template["events"]:
-                    rows += _rows(context, declared, folder, job, component, event, types)
+                    rows += _rows(context, folder, job, component, event, types)
     return {"facts": {"framework_entries": rows} if rows else {}, "gaps": gaps}
 
 
