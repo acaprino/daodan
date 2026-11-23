@@ -1042,7 +1042,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             elif method:
                 same.setdefault("method", method)
         declared = kept
-        candidates = candidates + declared
+        candidates = candidates + declared + _observed_entries(manifest, store, facts, candidates + declared, gaps)
         _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
         callbacks = {item["symbol"]: item["owner"] for item in candidates
                      if item.get("handler_source") == "inline" and item["symbol"] in facts.declarations
@@ -1197,6 +1197,9 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                     continue
             calls.append({"from": caller, "to": target, "site": site, "origin": "dedotto"})
         _classify_entries(candidates, attributes, decisions, held, actions, entries, gaps)
+        starts = {entry["symbol"] for entry in entries if entry.get("reader") != "observed"}
+        entries[:] = [entry for entry in entries if entry.get("reader") != "observed" or entry["symbol"] not in starts]
+        actions[:] = [action for action in actions if action.get("reader") != "observed" or action["handler"] not in starts]
         external = _external_nodes(manifest, module_graph)
         ties = _package_services(manifest)
         symbols_by_file = defaultdict(set)
@@ -1310,9 +1313,10 @@ def _links_stamp(manifest: Path, *, premap=True) -> list:
     files = (manifest, manifest.with_name(manifest.name + "-wal"), edges, edges.with_name(edges.name + "-wal"),
              modules.graph_name(manifest), manifest.with_name(modules.LEDGER_FILE))
     if premap:  # the pre-map's record, and the stack step's: its services are the links' external nodes
+        import observed_entries
         import technologies
         from premap import path
-        files += (path(manifest), technologies.path(manifest))
+        files += (path(manifest), technologies.path(manifest), manifest.with_name(observed_entries.FILE))
     stamp = []
     for path in files:
         try:
@@ -1371,6 +1375,52 @@ def cached_links(manifest: Path, rules: list[dict], *, with_key: bool = False):
                                                           "languages": languages, "links": links})
             return (key, links) if with_key else links
     raise ValueError("the mapping inputs changed while computing flow links; retry")
+
+
+def _handler_at(facts, at: dict) -> dict | None:
+    """The function of the snapshot the browser's handler is. The browser says where the function starts (`start`, from
+    `callFrame.functionLocation`): the one function that starts on that line, the nearest by column when several do. Without
+    it, the innermost function whose lines hold the place it paused at, when one stands out (a callback on that line
+    would be taken for the handler, so two of the same lines and name are none)."""
+    functions = facts.functions.get(at["file"], ())
+    start = at.get("start")
+    if start:
+        same = sorted((d for d in functions if d["line"] == start["line"]), key=lambda d: abs(d["column"] - start["column"]))
+        return same[0] if same and (len(same) == 1 or abs(same[0]["column"] - start["column"])
+                                    < abs(same[1]["column"] - start["column"])) else None
+    inside = [d for d in functions if d["line"] <= at["line"] <= (d["end"] or d["line"])]
+    deepest = max(inside, key=lambda d: (d["line"], -(d["end"] or d["line"])), default=None)
+    same = [d for d in inside if deepest and (d["line"], d["end"]) == (deepest["line"], deepest["end"])]
+    same = same if len(same) == 1 else [d for d in same if d["name"] == at["name"]]
+    return same[0] if len(same) == 1 else None
+
+
+def _observed_entries(manifest: Path, store, facts, static: list[dict], gaps: list[dict]) -> list[dict]:
+    """The controls the browser pressed (`observed_entries`) as candidates at their handler (`_handler_at`). An inline arrow
+    is its own node, owned by the function that holds it (as the static reader's `inline` handlers are). A handler the
+    browser isolated that no function of the snapshot stands for is a gap at the place it paused; one handler is one entry,
+    at the first control that reached it, and `link_facts` leaves it out where a static reader starts there."""
+    import observed_entries
+    found: dict[str, dict] = {}
+    for row in observed_entries.rows(manifest, static, set(store.iter_paths())):
+        at = row.get("at")
+        if not at:
+            continue
+        handler = _handler_at(facts, at)
+        if handler is None:
+            gap = {"site": f"{at['file']}:{at['line']}", "reason": f"observed: the handler {at['name']} the browser isolated "
+                   "is no one function of the snapshot"}
+            if gap not in gaps:
+                gaps.append(gap)
+            continue
+        anonymous = handler["name"] == "(anonymous)"
+        symbol = handler["id"] if anonymous else facts.node(handler["id"])
+        if symbol:
+            found.setdefault(symbol, {
+                **{key: value for key, value in row.items() if key != "declared_in"}, "symbol": symbol,
+                "site": f"{at['file']}:{handler['line']}", "handler_source": "inline" if anonymous else "osservato",
+                **({"owner": facts.node(handler["id"])} if anonymous else {})})
+    return list(found.values())
 
 
 def _classify_entries(candidates, attributes, decisions, held, actions, found, gaps):

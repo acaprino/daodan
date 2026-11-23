@@ -62,66 +62,9 @@
    ]
   }
  ],
- "plan_gaps": [],
- "apps_planned": [
-  "admin-app/package.json#scripts.dev",
-  "landing-app/package.json#scripts.dev",
-  "react-app/package.json#scripts.dev"
- ],
  "state": "ran",
- "apps": [
-  {
-   "root": "admin-app",
-   "mode": "dev",
-   "declared_in": "admin-app/package.json#scripts.dev",
-   "state": "ready",
-   "address": "http://localhost:5174/",
-   "port": 5174,
-   "seconds": 9,
-   "stopped": "term",
-   "explored": {
-    "pages": 1,
-    "controls": 3,
-    "pressed": 1,
-    "skipped": 2,
-    "failed": 0
-   }
-  },
-  {
-   "root": "landing-app",
-   "mode": "dev",
-   "declared_in": "landing-app/package.json#scripts.dev",
-   "state": "ready",
-   "address": "http://localhost:5173/",
-   "port": 5173,
-   "seconds": 600,
-   "stopped": "term",
-   "explored": {
-    "pages": 8,
-    "controls": 140,
-    "pressed": 118,
-    "skipped": 19,
-    "failed": 3
-   }
-  },
-  {
-   "root": "react-app",
-   "mode": "dev",
-   "declared_in": "react-app/package.json#scripts.dev",
-   "state": "ready",
-   "address": "http://localhost:5173/",
-   "port": 5173,
-   "seconds": 59,
-   "stopped": "term",
-   "explored": {
-    "pages": 1,
-    "controls": 14,
-    "pressed": 10,
-    "skipped": 4,
-    "failed": 0
-   }
-  }
- ],
+ "apps": 3,
+ "reused": false,
  "gaps": [
   {
    "path": "landing-app/package.json#scripts.dev",
@@ -131,8 +74,8 @@
     "http://localhost:5173/",
     "http://localhost:5173/privacy",
     "http://localhost:5173/src/index.css",
-    "http://localhost:5173/src/i18n/lp/it.json?import",
-    "http://localhost:5173/src/i18n/locales/it.json?import"
+    "http://localhost:5173/src/i18n/locales/it.json?import",
+    "http://localhost:5173/src/i18n/lp/it.json?import"
    ],
    "detail": "11 scripts of the app ran with no source map: their functions are named by script, not by file"
   }
@@ -177,8 +120,8 @@
   "authoring": 38,
   "shared": 27,
   "Legal": 21,
-  "README.md": 1,
-  "build-android.bat": 1
+  "start-pwa.bat": 1,
+  "CLAUDE.md": 1
  },
  "pressed_sample": [
   {
@@ -359,7 +302,11 @@
     "name": "onClick",
     "url": "/src/components/landing/Nav.tsx",
     "source": "/src/components/landing/Nav.tsx",
-    "line": 125
+    "line": 125,
+    "start": {
+     "line": 125,
+     "column": 25
+    }
    },
    "first_calls": [
     [
@@ -523,7 +470,11 @@
     "name": "onClick",
     "url": "/src/components/landing/Nav.tsx",
     "source": "/src/components/landing/Nav.tsx",
-    "line": 135
+    "line": 135,
+    "start": {
+     "line": 135,
+     "column": 21
+    }
    },
    "first_calls": [
     [
@@ -553,7 +504,11 @@
     "name": "onClick",
     "url": "/src/components/landing/Week.tsx",
     "source": "/src/components/landing/Week.tsx",
-    "line": 86
+    "line": 86,
+    "start": {
+     "line": 86,
+     "column": 31
+    }
    },
    "first_calls": [
     [
@@ -583,7 +538,11 @@
     "name": "onClick",
     "url": "/src/components/landing/Week.tsx",
     "source": "/src/components/landing/Week.tsx",
-    "line": 136
+    "line": 136,
+    "start": {
+     "line": 136,
+     "column": 110
+    }
    },
    "first_calls": [
     [
@@ -608,7 +567,11 @@
     "name": "onClick",
     "url": "/src/components/landing/Week.tsx",
     "source": "/src/components/landing/Week.tsx",
-    "line": 139
+    "line": 139,
+    "start": {
+     "line": 139,
+     "column": 111
+    }
    },
    "first_calls": [
     [
@@ -638,7 +601,11 @@
     "name": "onClick",
     "url": "/src/components/landing/Week.tsx",
     "source": "/src/components/landing/Week.tsx",
-    "line": 86
+    "line": 86,
+    "start": {
+     "line": 86,
+     "column": 31
+    }
    },
    "first_calls": [
     [
@@ -802,6 +769,849 @@
   }
  ],
  "page_errors": [],
+ "structure": [
+  {
+   "page": "http://localhost:5173/",
+   "name": "Italiano",
+   "before": 29,
+   "after": 57,
+   "common": 29,
+   "renamed": 22,
+   "redrawn": false
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Forgot password?",
+   "before": 6,
+   "after": 3,
+   "common": 3,
+   "renamed": 2,
+   "redrawn": false
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Back to login",
+   "before": 3,
+   "after": 6,
+   "common": 3,
+   "renamed": 2,
+   "redrawn": false
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Sign up",
+   "before": 6,
+   "after": 6,
+   "common": 5,
+   "renamed": 5,
+   "redrawn": false
+  }
+ ],
+ "revealed": [
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Vai al contenuto principale",
+   "state": "failed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Phazly, torna all\u2019inizio",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "La settimana",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Come funziona",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Funzioni",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Metodo",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Prezzi",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Cambia tema",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Prova gratis",
+   "state": "skipped",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Prova gratis",
+   "state": "skipped",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "link",
+   "name": "Disponibile su Google Play",
+   "state": "skipped",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Marted\u00ec, Colazione: Gallette di riso con formaggio spalmabile light e salmone affumicato",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Marted\u00ec, Colazione: Gallette di riso con formaggio spalmabile light e salmone affumicato"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Marted\u00ec, Colazione: Gallette di riso con formaggio spalmabile light e salmone affumicato"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Mercoled\u00ec, Colazione: Chia pudding con yogurt greco e mirtilli",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Mercoled\u00ec, Colazione: Chia pudding con yogurt greco e mirtilli"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Mercoled\u00ec, Colazione: Chia pudding con yogurt greco e mirtilli"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Gioved\u00ec, Colazione: Uova con pane di segale e fiocchi di latte magri",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Gioved\u00ec, Colazione: Uova con pane di segale e fiocchi di latte magri"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Gioved\u00ec, Colazione: Uova con pane di segale e fiocchi di latte magri"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Venerd\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Venerd\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Venerd\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Sabato, Colazione: Uova con pane di segale e fiocchi di latte magri",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Sabato, Colazione: Uova con pane di segale e fiocchi di latte magri"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Sabato, Colazione: Uova con pane di segale e fiocchi di latte magri"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Domenica, Colazione: Chia pudding con yogurt greco e mirtilli",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Domenica, Colazione: Chia pudding con yogurt greco e mirtilli"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Domenica, Colazione: Chia pudding con yogurt greco e mirtilli"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Luned\u00ec, Pranzo: Pasta integrale con petto di pollo e rucola",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Luned\u00ec, Pranzo: Pasta integrale con petto di pollo e rucola"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Luned\u00ec, Pranzo: Pasta integrale con petto di pollo e rucola"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Marted\u00ec, Pranzo: Gnocchi di patate con petto di tacchino e pomodori",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Marted\u00ec, Pranzo: Gnocchi di patate con petto di tacchino e pomodori"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Marted\u00ec, Pranzo: Gnocchi di patate con petto di tacchino e pomodori"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Mercoled\u00ec, Pranzo: Bowl di cous cous con petto di tacchino e cetriolo",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Mercoled\u00ec, Pranzo: Bowl di cous cous con petto di tacchino e cetriolo"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Mercoled\u00ec, Pranzo: Bowl di cous cous con petto di tacchino e cetriolo"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Gioved\u00ec, Pranzo: Pasta integrale con macinato di manzo e funghi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Gioved\u00ec, Pranzo: Pasta integrale con macinato di manzo e funghi"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Gioved\u00ec, Pranzo: Pasta integrale con macinato di manzo e funghi"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Venerd\u00ec, Pranzo: Gnocchi di patate con petto di tacchino e pomodori",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Venerd\u00ec, Pranzo: Gnocchi di patate con petto di tacchino e pomodori"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Venerd\u00ec, Pranzo: Gnocchi di patate con petto di tacchino e pomodori"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Sabato, Pranzo: Pasta integrale con petto di pollo e rucola",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Sabato, Pranzo: Pasta integrale con petto di pollo e rucola"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Sabato, Pranzo: Pasta integrale con petto di pollo e rucola"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Domenica, Pranzo: Bowl di cous cous con petto di tacchino e cetriolo",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Domenica, Pranzo: Bowl di cous cous con petto di tacchino e cetriolo"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Domenica, Pranzo: Bowl di cous cous con petto di tacchino e cetriolo"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Luned\u00ec, Spuntino: Yogurt greco con mango e mandorle",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Luned\u00ec, Spuntino: Yogurt greco con mango e mandorle"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Luned\u00ec, Spuntino: Yogurt greco con mango e mandorle"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Marted\u00ec, Spuntino: Bowl di ricotta fresca magra con banana e mandorle",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Marted\u00ec, Spuntino: Bowl di ricotta fresca magra con banana e mandorle"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Marted\u00ec, Spuntino: Bowl di ricotta fresca magra con banana e mandorle"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Mercoled\u00ec, Spuntino: Pane con bresaola",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Mercoled\u00ec, Spuntino: Pane con bresaola"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Mercoled\u00ec, Spuntino: Pane con bresaola"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Gioved\u00ec, Spuntino: Yogurt greco con mango e mandorle",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Gioved\u00ec, Spuntino: Yogurt greco con mango e mandorle"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Gioved\u00ec, Spuntino: Yogurt greco con mango e mandorle"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano"
+   ],
+   "role": "button",
+   "name": "Venerd\u00ec, Spuntino: Pane con bresaola",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Venerd\u00ec, Spuntino: Pane con bresaola"
+   ],
+   "role": "button",
+   "name": "A occhio",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Italiano",
+    "Venerd\u00ec, Spuntino: Pane con bresaola"
+   ],
+   "role": "button",
+   "name": "Grammi",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Forgot password?"
+   ],
+   "role": "button",
+   "name": "Send Email",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Forgot password?"
+   ],
+   "role": "button",
+   "name": "Back to login",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Forgot password?",
+    "Back to login"
+   ],
+   "role": "textbox",
+   "name": "Password",
+   "state": "skipped",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Forgot password?",
+    "Back to login"
+   ],
+   "role": "button",
+   "name": "Log in",
+   "state": "pressed",
+   "handler": null
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Forgot password?",
+    "Back to login"
+   ],
+   "role": "button",
+   "name": "Continue with Google",
+   "state": "pressed",
+   "handler": "handleGoogleSignIn"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Forgot password?",
+    "Back to login"
+   ],
+   "role": "button",
+   "name": "Forgot password?",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Forgot password?",
+    "Back to login"
+   ],
+   "role": "button",
+   "name": "Sign up",
+   "state": "pressed",
+   "handler": "onClick"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "opened_by": [
+    "Sign up"
+   ],
+   "role": "textbox",
+   "name": "Name (optional)",
+   "state": "skipped",
+   "handler": null
+  }
+ ],
  "against_static": {
   "static_candidates": 194,
   "static_labelled_click": 0,
@@ -1176,7 +1986,293 @@
     ],
     "requests": []
    }
-  ]
+  ],
+  "links": {
+   "controls_with_an_isolated_handler": 97,
+   "handlers": 13,
+   "entries": 13,
+   "entries_inline": 12,
+   "static_entries": 117,
+   "observed_spans": [
+    {
+     "file": "landing-app/src/components/CookieConsentBanner.tsx",
+     "line": 57,
+     "end": 57,
+     "label": "Rifiuta"
+    },
+    {
+     "file": "landing-app/src/components/CookieConsentBanner.tsx",
+     "line": 63,
+     "end": 63,
+     "label": "Accetta"
+    },
+    {
+     "file": "landing-app/src/components/landing/Nav.tsx",
+     "line": 125,
+     "end": 125,
+     "label": "Italiano"
+    },
+    {
+     "file": "landing-app/src/components/landing/Nav.tsx",
+     "line": 135,
+     "end": 135,
+     "label": "Cambia tema"
+    },
+    {
+     "file": "landing-app/src/components/landing/Week.tsx",
+     "line": 136,
+     "end": 136,
+     "label": "A occhio"
+    },
+    {
+     "file": "landing-app/src/components/landing/Week.tsx",
+     "line": 139,
+     "end": 139,
+     "label": "Grammi"
+    },
+    {
+     "file": "landing-app/src/components/landing/Week.tsx",
+     "line": 86,
+     "end": 86,
+     "label": "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle"
+    },
+    {
+     "file": "landing-app/src/pages/DeleteAccountPage.tsx",
+     "line": 109,
+     "end": 109,
+     "label": "I have read and agree to receive a verification email. After confirming, I will have 30 days to cancel the deletion."
+    },
+    {
+     "file": "landing-app/src/pages/LegalPage.tsx",
+     "line": 64,
+     "end": 64,
+     "label": "EN"
+    },
+    {
+     "file": "react-app/src/components/auth/AuthScreen.tsx",
+     "line": 90,
+     "end": 98,
+     "label": "Continue with Google"
+    },
+    {
+     "file": "react-app/src/components/auth/AuthScreen.tsx",
+     "line": 291,
+     "end": 291,
+     "label": "Forgot password?"
+    },
+    {
+     "file": "react-app/src/components/auth/AuthScreen.tsx",
+     "line": 301,
+     "end": 301,
+     "label": "Sign up"
+    },
+    {
+     "file": "react-app/src/components/auth/AuthScreen.tsx",
+     "line": 328,
+     "end": 328,
+     "label": "Back to login"
+    }
+   ],
+   "static_sites": [
+    "functions-python/app/handlers/account_deletion.py:117",
+    "functions-python/app/handlers/account_deletion.py:180",
+    "functions-python/app/handlers/account_deletion.py:212",
+    "functions-python/app/handlers/account_deletion.py:59",
+    "functions-python/app/handlers/account_deletion.py:78",
+    "functions-python/app/handlers/adapt_plan_structure.py:33",
+    "functions-python/app/handlers/admin/analytics.py:257",
+    "functions-python/app/handlers/admin/api_keys.py:109",
+    "functions-python/app/handlers/admin/api_keys.py:57",
+    "functions-python/app/handlers/admin/api_keys.py:68",
+    "functions-python/app/handlers/admin/db_browser.py:239",
+    "functions-python/app/handlers/admin/db_browser.py:306",
+    "functions-python/app/handlers/admin/db_browser.py:54",
+    "functions-python/app/handlers/admin/db_browser.py:87",
+    "functions-python/app/handlers/admin/llm_models.py:129",
+    "functions-python/app/handlers/admin/llm_models.py:408",
+    "functions-python/app/handlers/admin/llm_models.py:542",
+    "functions-python/app/handlers/admin/meal_images.py:385",
+    "functions-python/app/handlers/admin/meal_images.py:404",
+    "functions-python/app/handlers/admin/meal_images.py:415",
+    "functions-python/app/handlers/admin/meal_images.py:428",
+    "functions-python/app/handlers/admin/meal_images.py:447",
+    "functions-python/app/handlers/admin/proto_recipes.py:43",
+    "functions-python/app/handlers/admin/recipe_forge.py:1048",
+    "functions-python/app/handlers/admin/recipe_forge.py:1133",
+    "functions-python/app/handlers/admin/recipe_forge.py:1286",
+    "functions-python/app/handlers/admin/recipe_forge.py:1345",
+    "functions-python/app/handlers/admin/recipe_forge.py:1370",
+    "functions-python/app/handlers/admin/recipe_forge.py:1404",
+    "functions-python/app/handlers/admin/recipe_forge.py:1427",
+    "functions-python/app/handlers/admin/recipe_forge.py:423",
+    "functions-python/app/handlers/admin/recipe_forge.py:462",
+    "functions-python/app/handlers/admin/recipe_forge.py:507",
+    "functions-python/app/handlers/admin/recipe_forge.py:528",
+    "functions-python/app/handlers/admin/recipe_forge.py:572",
+    "functions-python/app/handlers/admin/recipe_forge.py:593",
+    "functions-python/app/handlers/admin/recipe_forge.py:613",
+    "functions-python/app/handlers/admin/recipe_forge.py:630",
+    "functions-python/app/handlers/admin/recipe_forge.py:660",
+    "functions-python/app/handlers/admin/recipe_forge.py:729",
+    "functions-python/app/handlers/admin/recipe_forge.py:791",
+    "functions-python/app/handlers/admin/recipe_forge.py:820",
+    "functions-python/app/handlers/admin/recipe_forge.py:937",
+    "functions-python/app/handlers/admin/recipe_forge.py:985",
+    "functions-python/app/handlers/admin/recipes.py:31",
+    "functions-python/app/handlers/admin/recipes.py:68",
+    "functions-python/app/handlers/admin/resource_manager.py:129",
+    "functions-python/app/handlers/admin/resource_manager.py:72",
+    "functions-python/app/handlers/admin/subscriptions.py:57",
+    "functions-python/app/handlers/admin/system.py:180",
+    "functions-python/app/handlers/admin/system.py:28",
+    "functions-python/app/handlers/admin/system.py:82",
+    "functions-python/app/handlers/admin/user_actions.py:229",
+    "functions-python/app/handlers/admin/users.py:130",
+    "functions-python/app/handlers/admin/users.py:250",
+    "functions-python/app/handlers/admin/users.py:72",
+    "functions-python/app/handlers/analyze_photo.py:186",
+    "functions-python/app/handlers/analyze_photo.py:540",
+    "functions-python/app/handlers/analyze_photo.py:557",
+    "functions-python/app/handlers/analyze_photo.py:580",
+    "functions-python/app/handlers/analyze_photo.py:598",
+    "functions-python/app/handlers/change_subscription_plan.py:47",
+    "functions-python/app/handlers/consents.py:63",
+    "functions-python/app/handlers/create_checkout_session.py:159",
+    "functions-python/app/handlers/create_customer_portal_session.py:31",
+    "functions-python/app/handlers/decompose_dish.py:46",
+    "functions-python/app/handlers/error_log.py:70",
+    "functions-python/app/handlers/export_user_data.py:41",
+    "functions-python/app/handlers/generate_cooking_tip.py:431",
+    "functions-python/app/handlers/generate_meal_alternatives.py:364",
+    "functions-python/app/handlers/generate_shopping_list.py:236",
+    "functions-python/app/handlers/generate_smart_tip.py:324",
+    "functions-python/app/handlers/generate_week_plan.py:377",
+    "functions-python/app/handlers/lookup/lookup_macros.py:566",
+    "functions-python/app/handlers/lookup/lookup_macros.py:584",
+    "functions-python/app/handlers/lookup_barcode.py:159",
+    "functions-python/app/handlers/meal_images.py:117",
+    "functions-python/app/handlers/meal_images.py:128",
+    "functions-python/app/handlers/meal_images.py:139",
+    "functions-python/app/handlers/meal_plan_data.py:158",
+    "functions-python/app/handlers/meal_plan_data.py:171",
+    "functions-python/app/handlers/meal_plan_data.py:196",
+    "functions-python/app/handlers/meal_plan_data.py:235",
+    "functions-python/app/handlers/meal_plan_data.py:291",
+    "functions-python/app/handlers/meal_plan_data.py:357",
+    "functions-python/app/handlers/meal_plan_data.py:401",
+    "functions-python/app/handlers/mutate_plan.py:28",
+    "functions-python/app/handlers/play_rtdn.py:129",
+    "functions-python/app/handlers/process_meal_images.py:657",
+    "functions-python/app/handlers/process_recipe_forge.py:49",
+    "functions-python/app/handlers/rebalance_week_plan.py:113",
+    "functions-python/app/handlers/scheduled_deletions.py:51",
+    "functions-python/app/handlers/set_subscription_renewal.py:42",
+    "functions-python/app/handlers/shopping_share.py:128",
+    "functions-python/app/handlers/shopping_share.py:169",
+    "functions-python/app/handlers/shopping_share.py:197",
+    "functions-python/app/handlers/shopping_share.py:249",
+    "functions-python/app/handlers/shopping_share.py:338",
+    "functions-python/app/handlers/stripe_webhook.py:613",
+    "functions-python/app/handlers/subscription_status.py:23",
+    "functions-python/app/handlers/suggest_next_phase.py:341",
+    "functions-python/app/handlers/supplement_config.py:50",
+    "functions-python/app/handlers/transcribe_audio.py:80",
+    "functions-python/app/handlers/usage_status.py:23",
+    "functions-python/app/handlers/user_data.py:1076",
+    "functions-python/app/handlers/user_data.py:1105",
+    "functions-python/app/handlers/user_data.py:1187",
+    "functions-python/app/handlers/user_data.py:1267",
+    "functions-python/app/handlers/user_data.py:1287",
+    "functions-python/app/handlers/user_data.py:1304",
+    "functions-python/app/handlers/user_data.py:1335",
+    "functions-python/app/handlers/verify_play_purchase.py:47",
+    "functions-python/app/main.py:567",
+    "functions-python/app/main.py:577",
+    "functions-python/app/main.py:581",
+    "react-app/src-tauri/src/main.rs:4",
+    "utils/battle-arena/src/gui/app.py:903"
+   ],
+   "sample": [
+    {
+     "symbol": "landing-app/src/components/CookieConsentBanner.tsx::function@57:21",
+     "site": "landing-app/src/components/CookieConsentBanner.tsx:57",
+     "label": "Rifiuta",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/components/CookieConsentBanner.tsx::function@63:21",
+     "site": "landing-app/src/components/CookieConsentBanner.tsx:63",
+     "label": "Accetta",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/components/landing/Nav.tsx::function@125:25",
+     "site": "landing-app/src/components/landing/Nav.tsx:125",
+     "label": "Italiano",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/components/landing/Nav.tsx::function@135:21",
+     "site": "landing-app/src/components/landing/Nav.tsx:135",
+     "label": "Cambia tema",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/components/landing/Week.tsx::function@136:110",
+     "site": "landing-app/src/components/landing/Week.tsx:136",
+     "label": "A occhio",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/components/landing/Week.tsx::function@139:111",
+     "site": "landing-app/src/components/landing/Week.tsx:139",
+     "label": "Grammi",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/components/landing/Week.tsx::function@86:31",
+     "site": "landing-app/src/components/landing/Week.tsx:86",
+     "label": "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/pages/DeleteAccountPage.tsx::function@109:24",
+     "site": "landing-app/src/pages/DeleteAccountPage.tsx:109",
+     "label": "I have read and agree to receive a verification email. After confirming, I will have 30 days to cancel the deletion.",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "landing-app/src/pages/LegalPage.tsx::function@64:21",
+     "site": "landing-app/src/pages/LegalPage.tsx:64",
+     "label": "EN",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "react-app/src/components/auth/AuthScreen.tsx::AuthScreen.handleGoogleSignIn",
+     "site": "react-app/src/components/auth/AuthScreen.tsx:90",
+     "label": "Continue with Google",
+     "handler_source": "osservato"
+    },
+    {
+     "symbol": "react-app/src/components/auth/AuthScreen.tsx::function@291:27",
+     "site": "react-app/src/components/auth/AuthScreen.tsx:291",
+     "label": "Forgot password?",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "react-app/src/components/auth/AuthScreen.tsx::function@301:29",
+     "site": "react-app/src/components/auth/AuthScreen.tsx:301",
+     "label": "Sign up",
+     "handler_source": "inline"
+    },
+    {
+     "symbol": "react-app/src/components/auth/AuthScreen.tsx::function@328:25",
+     "site": "react-app/src/components/auth/AuthScreen.tsx:328",
+     "label": "Back to login",
+     "handler_source": "inline"
+    }
+   ]
+  }
  },
- "seconds": 877.7
+ "seconds": 1098.0
 }

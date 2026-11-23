@@ -49,6 +49,13 @@ service and its image (`service_unavailable`). The steps a CI job runs before th
 pre-map's `ci_steps`, `ci_steps()`) run at the end of each of its preparations, the services beside them; one that
 fails is a `ci_step_failed` gap, one that cannot run a `ci_step_not_run` one.
 
+After the observers the step starts the app the pre-map declares (`starts`) in the container and explores it in a headless
+browser (`app.explore`, plan task 11): the controls it pressed are kept in `observed-controls.json` beside the manifest, for
+the entry candidates (`observed_entries`) and the links (`flows._observed_entries`). It has its own record in `RUNS/app` and
+is reused on the same snapshot; the step's result says it as `app`: `{state, apps, kept}`. A project that declares no app,
+no container engine, an app that did not start and an exploration that failed are gaps (`no_start_command`,
+`explore_failed`, `build_failed`, `app_not_started`, ...), never silence.
+
 See docs/specs/2026-11-12-passo-dinamico.md, sections 5 and 7.
 """
 from __future__ import annotations
@@ -63,6 +70,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 STEP = "dynamic"
+APP = "app"  # the exploration of the started app, apart from the observers: its record is `RUNS/APP`
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
 EXAMPLES = 20
 TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's tests ended; the first three ran
@@ -734,8 +742,39 @@ def run(manifest: Path, bus) -> dict:
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
         bus.progress(STEP, len(waiting), len(waiting))
-    return {"languages": outcomes, **({"ui_controls": ui_controls} if ui_controls else {}),
+        explored = _app(manifest, snapshot, bus, say)
+    return {"languages": outcomes, "app": explored, **({"ui_controls": ui_controls} if ui_controls else {}),
             **({"ui_gaps": ui_gaps} if ui_gaps else {})}
+
+
+def _app(manifest: Path, snapshot, bus, say) -> dict:
+    """The app the project declares, started and explored in the container (`app.explore`): the controls it showed
+    are kept beside the manifest for the entries. What did not run is a gap with its cause, never silence; a failure
+    of the exploration stops no other part of the step. `{state, apps, kept}`, with `cause` and `remedy` where it did
+    not run, and `reused` where the run of the same snapshot was kept."""
+    import premap
+    from snapshot_store import logical_digest
+    from . import app
+    record = premap.ensure(manifest)
+    if record.get("starts"):
+        bus.emit("analyzer.started", f"{APP}: the app started and explored", step=STEP, analyzer=APP)
+    try:
+        seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store), manifest.parent / RUNS / APP)
+    except Exception as error:  # noqa: BLE001 - the exploration is one part of the step: the others stay
+        cause = f"{type(error).__name__}: {error}"
+        seen = {"state": "failed", "cause": cause, "remedy": "explore again", "apps": [], "kept": 0,
+                "gaps": [{"kind": "explore_failed", "detail": f"the app could not be explored: {cause}"}]}
+    for gap in seen["gaps"]:
+        say(gap["detail"], gap, APP)
+    if seen["state"] != "ran":
+        bus.emit(*(("analyzer.finished", f"{APP} failed") if seen["state"] == "failed" else
+                   ("analyzer.unavailable", f"{APP} cannot run here")), step=STEP, analyzer=APP,
+                 level="error" if seen["state"] == "failed" else "warning", cause=seen["cause"], remedy=seen["remedy"])
+    elif seen["apps"]:
+        bus.emit("analyzer.finished", f"{APP}: {len(seen['apps'])} apps started, {seen['kept']} explored", step=STEP,
+                 analyzer=APP, fresh=bool(seen.get("reused")))
+    return {key: seen[key] for key in ("state", "cause", "remedy", "reused") if key in seen} | {
+        "apps": len(seen["apps"]), "kept": seen["kept"]}
 
 
 def _unplaced(snapshot, language: str, sites: list[dict], facts: dict) -> str:

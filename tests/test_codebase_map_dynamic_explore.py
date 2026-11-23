@@ -234,8 +234,19 @@ def test_the_handler_of_a_click_is_the_first_project_function_the_event_reaches(
     save, reset = here[("button", "Save")], here[("button", "Reset")]
     assert "handler" in save, json.dumps({k: v for k, v in save.items() if k != "calls"})
     assert (save["handler"]["name"], save["handler"]["url"]) == ("save", "/src/app.js")
+    assert save["handler"]["start"] == {"line": 2, "column": 13}  # `function save() {`: the line of the function and the column of its parameters, where V8 says it begins
     assert reset["handler"]["name"] == "reset"
     assert "handler" not in here[("link", "Out")]  # not pressed: no handler
+
+
+def test_the_start_of_the_handler_is_where_the_function_begins_not_where_the_pause_is(tmp_path, browser):
+    """The pause is at the handler's first statement, a line below its start: the start tells the handler from a callback
+    that statement holds."""
+    nest = SERVER.replace("'/details':", "'/nest': `<!doctype html><title>nest</title><button id=t>Toggle</button>"
+                          "<script src=/src/nest.js></script>`,\n  '/details':")
+    files = {**APP_FILES, "server.js": nest, "src/nest.js": "document.getElementById('t').addEventListener('click', () => {\n  [1].map(o => o);\n});\n"}
+    handler = controls(explore(tmp_path, browser, files, seeds=["/nest"]), "/nest")[("button", "Toggle")]["handler"]
+    assert (handler["line"], handler["start"]) == (2, {"line": 1, "column": 55}), handler
 
 
 def test_a_react_handler_is_the_function_written_in_the_component_not_reacts_own_dispatch(tmp_path, browser):
@@ -255,6 +266,7 @@ def test_a_react_handler_is_the_function_written_in_the_component_not_reacts_own
     for name, line in wanted.items():
         handler = next(c for c in page["controls"] if c["name"] == name)["handler"]
         assert handler["source"].endswith("src/App.tsx") and handler["line"] == line, (name, handler)
+        assert handler["start"] == {"line": line, "column": lines[line - 1].index("() =>")}, (name, handler)
 
 
 # --- the controls a press reveals --------------------------------------------------------------------------------
@@ -322,3 +334,41 @@ def test_the_controls_a_press_reveals_have_a_budget_of_their_own(tmp_path, brows
     revealed = controls(found, "/many")[("button", "Open")]["revealed"]
     assert [c["state"] for c in revealed] == ["pressed", "skipped", "skipped"] and revealed[1]["reason"] == "cap"
     assert any(gap["kind"] == "explore_cap" and "revealed" in gap["caps"] for gap in found["gaps"])
+
+
+def test_a_press_that_renames_the_page_reveals_nothing(tmp_path, browser):
+    """A language or theme toggle gives every control another name: that is the page drawn again, not new controls."""
+    swap = SERVER.replace("'/details':", "'/swap': `<!doctype html><title>swap</title><body><button id=l>English</button>"
+                          "<button class=n>Save</button><button class=n>Reset</button><button class=n>Share</button><script>"
+                          "document.getElementById('l').addEventListener('click', () => {"
+                          "document.getElementById('l').textContent = 'Italiano';"
+                          "const names = ['Salva', 'Azzera', 'Condividi'];"
+                          "document.querySelectorAll('.n').forEach((b, i) => { b.textContent = names[i]; }); });"
+                          "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": swap}, seeds=["/swap"])
+    assert not controls(found, "/swap")[("button", "English")].get("revealed")
+
+
+def test_a_press_that_renames_every_control_and_adds_one_reveals_nothing(tmp_path, browser):
+    """The page in another language has a skip link the first did not, and a third of its names are the same in both."""
+    swap = SERVER.replace("'/details':", "'/skip': `<!doctype html><title>skip</title><body><button id=l>English</button>"
+                          + "".join(f"<button class=n>Name {i}</button>" for i in range(12)) + "<script>"
+                          "document.getElementById('l').addEventListener('click', () => {"
+                          "document.getElementById('l').textContent = 'Italiano';"
+                          "document.querySelectorAll('.n').forEach((b, i) => { if (i < 4) b.textContent = 'Nome ' + i; });"
+                          "const skip = document.createElement('a'); skip.href = '#main'; skip.textContent = 'Vai al contenuto';"
+                          "document.body.prepend(skip); });"
+                          "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": swap}, seeds=["/skip"])
+    assert not controls(found, "/skip")[("button", "English")].get("revealed")
+
+
+def test_a_dialog_that_takes_the_page_over_still_reveals_its_controls(tmp_path, browser):
+    """A modal dialog leaves almost nothing of the page in the accessibility tree: what it shows is still revealed."""
+    modal = SERVER.replace("'/details':", "'/modal': `<!doctype html><title>modal</title><body><button id=o>Open</button><script>"
+                           "document.getElementById('o').addEventListener('click', () => {"
+                           "document.body.innerHTML = '<div role=dialog aria-modal=true><button>Confirm</button><button>Cancel</button></div>'; });"
+                           "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": modal}, seeds=["/modal"])
+    opener = controls(found, "/modal")[("button", "Open")]
+    assert [c["name"] for c in opener.get("revealed", [])] == ["Confirm", "Cancel"]

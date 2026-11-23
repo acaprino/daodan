@@ -13,7 +13,8 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
 4. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
    container engine, no observer for a language or no test command the project declares, it says the gap and
-   the pipeline goes on. `DAODAN_DYNAMIC=off` skips it.
+   the pipeline goes on. The same step starts the app the project declares and explores it in a browser: the controls
+   it pressed are entries of the links (`dynamic/app.py`). `DAODAN_DYNAMIC=off` skips it.
 5. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
    store of each technology's graph: it says what a run observed (the sites, the holes closed, the sampled ones
    apart) and what stayed

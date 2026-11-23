@@ -65,14 +65,36 @@ async function controlsAfter(page, done) {
 // controls drawn after it would look like the press revealed them.
 const still = (found, before, calm) => found.length > 0 && calm >= 3;
 
-// The function a pause is in, as `{name, url, source, line}`: through the script's source map where it has one.
+// The function a pause is in, as `{name, url, source, line, start}`: the place it paused at (the handler's first statement) and
+// `start`, where the function begins (`callFrame.functionLocation`), both through the script's source map where it has one.
 async function handlerOf(read, frame, url) {
   const { map } = await read(url);
-  const { lineNumber, columnNumber } = frame.location;
-  let source = null, line = lineNumber + 1;
-  const entry = map ? map.findEntry(lineNumber, columnNumber) : null;
-  if (entry && entry.originalLine !== undefined) { source = new URL(entry.originalSource, url).pathname; line = entry.originalLine + 1; }
-  return { name: frame.functionName || '(anonymous)', url: new URL(url).pathname, source, line };
+  const place = location => {
+    const entry = map ? map.findEntry(location.lineNumber, location.columnNumber) : null;
+    return entry && entry.originalLine !== undefined
+      ? { source: new URL(entry.originalSource, url).pathname, line: entry.originalLine + 1, column: entry.originalColumn }
+      : { source: null, line: location.lineNumber + 1, column: location.columnNumber };
+  };
+  const here = place(frame.location), start = frame.functionLocation ? place(frame.functionLocation) : null;
+  return { name: frame.functionName || '(anonymous)', url: new URL(url).pathname, source: here.source, line: here.line,
+    ...(start && start.source === here.source ? { start: { line: start.line, column: start.column } } : {}) };
+}
+
+// The positions `[i, j]` of a longest common subsequence of two lists, in order.
+function align(a, b) {
+  const table = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = a.length - 1; i >= 0; i--) {
+    for (let j = b.length - 1; j >= 0; j--) {
+      table[i][j] = a[i] === b[j] ? table[i + 1][j + 1] + 1 : Math.max(table[i + 1][j], table[i][j + 1]);
+    }
+  }
+  const pairs = [];
+  for (let i = 0, j = 0; i < a.length && j < b.length;) {
+    if (a[i] === b[j]) { pairs.push([i, j]); i++; j++; }
+    else if (table[i + 1][j] >= table[i][j + 1]) i++;
+    else j++;
+  }
+  return pairs;
 }
 
 const offsetToLine = (text, offset) => { // V8 gives an offset into the script; the source map wants line and column
@@ -239,7 +261,19 @@ async function explore(ready, out, name, seeds) {
           // what the press drew that the page did not show before; a link navigates or scrolls, it opens nothing
           if (landed === url && control.role !== 'link' && path.length + 1 < LIMITS.depth) {
             const known = new Set(before.map(keyOf));
-            const fresh = (await controlsAfter(page, still)).filter(c => !known.has(keyOf(c))).slice(0, LIMITS.revealed);
+            const now = await controlsAfter(page, still);
+            // A press that leaves the page's structure as it was has drawn it again: a language or theme toggle renames the
+            // controls, and may add one (a skip link), and reveals none. A menu keeps the names the page had; a dialog changes the
+            // structure, even a modal one that takes the page's controls out of the accessibility tree.
+            // shortcut: structure is the role sequence; "as it was" is 90 % of it in common with a quarter of the common controls
+            // renamed. A page redrawn into another structure, or with fewer names changed, reads as controls revealed.
+            const roles = list => list.map(c => c.role);
+            const pairs = align(roles(before), roles(now));
+            const renamed = pairs.filter(([i, j]) => before[i].name !== now[j].name).length;
+            const redrawn = roles(before).join() === roles(now).join() ||
+              (pairs.length >= 0.9 * Math.max(before.length, now.length) && renamed >= pairs.length / 4);
+            entry.structure = { before: before.length, after: now.length, common: pairs.length, renamed, redrawn }; // the numbers of the rule
+            const fresh = redrawn ? [] : now.filter(c => !known.has(keyOf(c))).slice(0, LIMITS.revealed);
             if (fresh.length) {
               entry.revealed = [];
               for (const c of fresh) work.push({ control: c, path: [...path, control], owner: entry.revealed });

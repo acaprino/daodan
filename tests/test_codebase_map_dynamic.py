@@ -500,6 +500,56 @@ def test_the_step_is_skipped_when_it_is_switched_off(case, monkeypatch):
     assert "DAODAN_DYNAMIC=off" in seen[0]["message"] and result["languages"] == {}
 
 
+APP_FILES = {"package.json": '{"scripts": {"dev": "vite --port 5173"}}', "src/main.ts": "export const x = 1\n"}
+
+
+def test_the_step_explores_the_app_the_project_declares_and_says_what_it_could_not(tmp_path):
+    from dynamic import app
+    _project, manifest = write_project(tmp_path, APP_FILES)
+    explored = mock.Mock(return_value={"state": "ran", "apps": [{}], "kept": 1,
+                                       "gaps": [{"kind": "explore_cap", "detail": "stopped at 300 presses"}]})
+    with mock.patch.object(app, "explore", explored):
+        result, seen, _asked = step(manifest)
+    [call] = explored.call_args_list
+    assert call.args[0] == manifest and call.args[4] == manifest.parent / dynamic.RUNS / dynamic.APP
+    assert result["app"] == {"state": "ran", "apps": 1, "kept": 1}
+    assert len(gaps(seen, "explore_cap")) == 1
+    [done] = [event for event in seen if event["kind"] == "analyzer.finished" and event["analyzer"] == dynamic.APP]
+    assert "1 apps started, 1 explored" in done["message"]
+
+
+def test_an_exploration_that_breaks_is_a_gap_and_the_rest_of_the_step_stays(tmp_path):
+    from dynamic import app
+    _project, manifest = write_project(tmp_path, APP_FILES)
+    with mock.patch.object(app, "explore", side_effect=RuntimeError("engine died")):
+        result, seen, _asked = step(manifest)
+    assert result["app"]["state"] == "failed" and "engine died" in result["app"]["cause"]
+    [gap] = gaps(seen, "explore_failed")
+    assert "engine died" in gap["detail"]
+    [event] = [event for event in seen if event["kind"] == "analyzer.finished" and event["analyzer"] == dynamic.APP]
+    assert event["level"] == "error"
+
+
+def test_an_app_that_cannot_run_for_want_of_an_engine_is_unavailable_with_its_cause_and_remedy(tmp_path):
+    from dynamic import app
+    _project, manifest = write_project(tmp_path, APP_FILES)
+    refused = {"state": "gap", "cause": "no container engine answers", "remedy": "start Docker", "apps": [], "kept": 0,
+               "gaps": []}
+    with mock.patch.object(app, "explore", return_value=refused):
+        result, seen, _asked = step(manifest)
+    assert result["app"] == {"state": "gap", "cause": "no container engine answers", "remedy": "start Docker",
+                             "apps": 0, "kept": 0}
+    [event] = [event for event in seen if event["kind"] == "analyzer.unavailable" and event["analyzer"] == dynamic.APP]
+    assert event["level"] == "warning" and event["data"]["remedy"] == "start Docker"
+
+
+def test_a_project_with_no_app_to_start_says_so_and_starts_nothing(tmp_path):
+    _project, manifest = write_project(tmp_path, {"lib.py": "def f():\n    return 1\n"})
+    result, seen, asked = step(manifest)  # a container that started would raise
+    assert result["app"] == {"state": "ran", "apps": 0, "kept": 0} and len(gaps(seen, "no_start_command")) == 1
+    assert not [event for event in seen if event.get("analyzer") == dynamic.APP and event["kind"] != "gap"]
+
+
 def test_the_union_says_what_was_observed_and_what_stayed_unobserved(case):
     played, manifest, _sites = case
     static_store(manifest, {("tests/test_lib.py", 10, "build"): APPLY})

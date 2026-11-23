@@ -51,6 +51,12 @@ def test_a_static_candidate_of_the_same_name_and_event_keeps_the_control_its_own
     assert len(observed_entries.candidates(pages(SAVE), other, FILES)) == 1
 
 
+def test_a_row_the_static_reader_lost_does_not_keep_the_control_it_is_recovered_by():
+    lost = {"reader": "attributo", "shape": "onClick", "site": "src/App.tsx:16", "label": "Save", "event": "click"}
+    for why in ({"component_gap": True, "gap": "an event on a component"}, {"forwarded": True}):
+        assert len(observed_entries.candidates(pages(SAVE), [{**lost, **why}], FILES)) == 1
+
+
 def test_a_control_that_did_nothing_or_was_not_pressed_is_no_entry():
     quiet = control("Details", role="link")
     skipped = [control("Name", role="textbox", state="skipped", reason="needs_value"),
