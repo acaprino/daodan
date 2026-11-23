@@ -338,6 +338,17 @@ def test_a_control_a_submit_reveals_is_found_again_because_the_replay_fills_the_
     assert (dismiss["name"], dismiss["state"]) == ("Dismiss", "pressed"), dismiss
 
 
+def test_the_checkbox_that_is_pressed_is_not_ticked_first_so_the_press_ticks_it(tmp_path, browser):
+    """The fields are filled, never the control about to be pressed: a box ticked by the fill would be unticked by the click."""
+    page = form_page("<input type=checkbox aria-label=Agree><input type=text aria-label=Name>")
+    script = ("document.querySelector('input[type=checkbox]').addEventListener('change', event =>"
+              " fetch('/api/agree?on=' + event.target.checked));" + chr(10))
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": page, "src/form.js": script}, seeds=["/form"])
+    agree = controls(found, "/form")[("checkbox", "Agree")]
+    assert agree["state"] == "pressed" and [request["url"].rpartition("/")[2] for request in agree["requests"]] == ["agree?on=true"]
+    assert [field["type"] for field in agree["filled"]] == ["text"]  # the box is not one of the fields it filled
+
+
 def test_a_button_outside_a_form_fills_nothing(tmp_path, browser):
     found = explore(tmp_path, browser, APP_FILES)
     here = controls(found, f"{found['origin'].rpartition(':')[2]}/")
