@@ -35,7 +35,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from snapshot_store import logical_digest, open_snapshot  # noqa: E402
+from snapshot_store import inventory_digest, logical_digest, open_snapshot  # noqa: E402
 from module_inventory import (EMPTY_DIRECTORY, StaleSource, _Inventory, _digest, _inside, _join,  # noqa: E402,F401
                               _json, _plain, _posix, slug)
 from build_units import ECOSYSTEMS, READERS, SUFFIX_READERS  # noqa: E402,F401
@@ -68,7 +68,7 @@ def load_graph(path: Path) -> dict:
 
 
 def _inputs_digest(manifest: Path, store) -> str:
-    return _digest(["unit-resolution.3", logical_digest(store), store["root"], _digest(load_ledger(manifest))])
+    return _digest(["unit-resolution.3", inventory_digest(store), store["root"], _digest(load_ledger(manifest))])
 
 
 def graph_state(manifest: Path) -> dict:
@@ -91,8 +91,10 @@ def graph_state(manifest: Path) -> dict:
         except ValueError as error:
             return {**report, "state": "stale", "reason": f"proposals ledger unreadable: {error}", "modules": len(graph["modules"])}
     if graph.get("inputs_digest") == current:
-        return {**report, "state": "fresh", "modules": len(graph["modules"]),
-                **({"structure_only": True} if graph.get("structure_only") else {})}
+        # The structure binds to the inventory; `imports` and `calls` read the symbols, so to the reading as well.
+        with open_snapshot(manifest) as store:
+            edges_current = not graph.get("structure_only") and graph["binding"].get("logical_digest") == logical_digest(store)
+        return {**report, "state": "fresh", "modules": len(graph["modules"]), **({} if edges_current else {"structure_only": True})}
     return {**report, "state": "stale", "reason": "snapshot or proposals changed since the graph was derived",
             "modules": len(graph["modules"])}
 
@@ -166,7 +168,7 @@ def _complete(manifest: Path, before: dict) -> dict:
         _plain(graph_path)
         graph = load_graph(graph_path)
         with open_snapshot(manifest) as store:
-            digest = _inputs_digest(manifest, store)
+            digest, reading = _inputs_digest(manifest, store), logical_digest(store)
             whole = derive(store, ledger=load_ledger(manifest))
             if _inputs_digest(manifest, store) != digest or graph.get("inputs_digest") != digest:
                 raise ValueError("snapshot or ledger changed during derivation; retry")
@@ -180,6 +182,7 @@ def _complete(manifest: Path, before: dict) -> dict:
                                       for k in ("declares", "contains", "imports", "calls", "uses")}
         graph["gaps"] = [*graph["gaps"], *(g for g in whole["gaps"] if g not in graph["gaps"])]
         graph.pop("structure_only", None)
+        graph["binding"] = {**graph["binding"], "logical_digest": reading}  # the reading `imports` and `calls` come from
         _publish(graph, manifest)
     except (OSError, ValueError) as error:
         return {**before, "state": "failed", "action": "none", "reason": str(error)}

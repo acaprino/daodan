@@ -717,6 +717,19 @@ def logical_digest(store: SnapshotStore, *, ensure_ascii: bool = True, keys=None
     return digest.hexdigest()
 
 
+def inventory_digest(store: SnapshotStore) -> str:
+    """What a reading that looks at no symbol depends on: the header's `schema`, `root`, `target` and `scope`, and each
+    file's `path`, `raw_hash` and `language`, from the inventory, else from the files' headers: the same value either
+    way. Another parser's identity changes the logical digest, not this."""
+    rows = sorted((path, row) for path, row in store.iter_inventory())
+    if not rows:
+        rows = sorted((path, store.get_file(path, semantic=False)) for path in store.iter_paths())
+    value = [[store.get(key) for key in ("schema", "root", "target", "scope")],
+             [[path, row.get("raw_hash"), row.get("language")] for path, row in rows]]
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+                          .encode("utf-8")).hexdigest()
+
+
 def artifact_digest(path: Path) -> str:
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:

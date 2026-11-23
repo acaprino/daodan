@@ -34,7 +34,7 @@ import modules  # noqa: E402
 import premap  # noqa: E402
 import service_registry  # noqa: E402
 from languages._treesitter import get_parser  # noqa: E402
-from snapshot_store import logical_digest, open_snapshot  # noqa: E402
+from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
 SCHEMA, FILE = "daodan/technologies/v1", "technologies.json"
 MATCHER_VERSION = 3  # Cache identity for recognition and attribution changes within the v1 output format.
@@ -59,10 +59,10 @@ def path(manifest: Path) -> Path:
 
 def _inputs(manifest: Path, registry: dict, facts: dict) -> tuple[str, str, str]:
     """The digest of what the record is derived from, and the snapshot's root and target."""
-    graph_digest = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"])).get("inputs_digest")
+    graph_digest = modules.load_graph(Path(modules.ensure_structure(manifest)["graph"])).get("inputs_digest")
     with open_snapshot(manifest) as store:
         root, target = store["root"], store.get("target") or "."
-        value = [logical_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION,
+        value = [inventory_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION,
                  facts.get("packages"), facts.get("package_graphs"), facts.get("services"), facts.get("configured_services"),
                  facts.get("docker_builds"), facts.get("excluded"), facts.get("toolchains"), facts.get("units")]
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest(), root, target
@@ -143,7 +143,7 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     if "sources" in facts:
         graph = modules.sync_with_premap(manifest, facts)
     else:
-        graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
+        graph = modules.load_graph(Path(modules.ensure_structure(manifest)["graph"]))
     left_out = tuple(item["path"] for item in facts.get("excluded") or () if item.get("path"))
     configured = _configured_services(facts, left_out)
     resolved_members = {node["manifest"]: (model, i) for model in facts.get("package_graphs", ())

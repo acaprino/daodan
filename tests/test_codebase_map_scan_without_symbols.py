@@ -44,3 +44,29 @@ def test_the_links_still_bind_each_event_to_the_method_of_its_class(tmp_path):
     app, html = angular_tests.APP, "src/app/app.component.html"
     assert {(f"{html}:2", f"{app}::AppComponent.save"), (f"{html}:3", f"{app}::AppComponent.save"),
             (f"{html}:4", "src/app/order.service.ts::OrderService.cancel")} <= bound
+
+
+def test_the_whole_pre_map_is_the_same_whether_or_not_the_snapshot_declares_anything(tmp_path):
+    """No source of the pre-map, and not the pre-map itself, reads a symbol: the entries a manifest declares (a script's
+    function) are bound when the links are made (`flow_entries.evidence`)."""
+    files = {"pyproject.toml": '[project]\nname = "tool"\n\n[project.scripts]\ntool = "tool.cli:main"\n',
+             "tool/__init__.py": "", "tool/cli.py": "def main():\n    return 0\n"}
+    records = []
+    for name, strip in (("whole", False), ("stripped", True)):
+        _, manifest = manifest_of(tmp_path / name, files)
+        if strip:
+            _without_declarations(manifest)
+        record = premap.write(manifest)
+        record["sources"] = [{key: value for key, value in source.items() if key != "seconds"} for source in record["sources"]]
+        records.append({key: value for key, value in record.items() if key not in ("binding", "inputs_digest")})
+    assert records[0] == records[1]
+
+
+def test_the_entries_a_manifest_declares_are_still_bound_in_the_links(tmp_path):
+    from premap.flow_entries import evidence
+    files = {"pyproject.toml": '[project]\nname = "tool"\n\n[project.scripts]\ntool = "tool.cli:main"\n',
+             "tool/__init__.py": "", "tool/cli.py": "def main():\n    return 0\n"}
+    _, manifest = manifest_of(tmp_path, files)
+    premap.write(manifest)
+    rows, _gaps = evidence(manifest)
+    assert [(row["reader"], row["symbol"]) for row in rows if row["reader"] == "manifesto"] == [("manifesto", "tool/cli.py::main")]
