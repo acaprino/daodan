@@ -265,3 +265,49 @@ Misura del task 18 del piano degli ingressi e dei flussi: una regola di store co
 - Le 42 lacune nuove, una causa per caso: 24 `self.NOME` (l'identità che il motore dà non arriva alla vista), 10 indici calcolati, 5 nomi puntati (`modulo.NOME`), 3 nomi importati che lo snapshot non lega a una dichiarazione. Tutti gli 86 flussi che diventano incompleti hanno una di queste lacune sul percorso: prima la chiamata era muta.
 - Una versione precedente leggeva `self.NOME` dalla dichiarazione della classe che racchiude: dava 17 flussi chiusi, ma con il motore vero produceva legami certi sbagliati (tupla, `+=`, `cls.NOME = ...`, `Classe.NOME = ...` a livello di modulo) ed è stata tolta.
 - Non misurato: un altro progetto; la pre-mappa non è rigenerata col codice di oggi.
+
+## Il tetto della scheda del percorso, senza modello, 23 novembre 2026
+
+Domanda: prima di pagare un modello, quanti flussi del riferimento una scheda del percorso del prodotto (`daodan/core/flow_paths.py`) può provare, e gli altri perché no. Serve a non scambiare un buco del grafo per un difetto di come la scheda è data al modello.
+
+| Parametro | Valore |
+|---|---|
+| Script | `python benchmarks/system-map/card_ceiling.py MANIFEST LINKS.json EXPECTED-system.json`, in locale, nessun modello; prova `benchmarks/system-map/test_card_ceiling.py` |
+| Collegamenti | quelli della colonna «Dopo» della misura qui sopra: 25.843 legami, 1.105 ingressi, 303 lacune |
+| Riferimento | il privato del proprietario, 38 flussi, letto a runtime |
+| Scheda | una per ingresso classificato; i passi sono quelli di `flow_paths._steps`; l'effetto è quello di `flow_paths._effect`, una scrittura certa su uno store |
+| Scheda all'ingresso | il nodo d'ingresso del flusso tiene il gestore della scheda o il file dove il controllo è legato; per un ingresso che è una persona, un dispositivo o un servizio di altri, i nodi a cui portano le sue frecce |
+
+| Esito del flusso (il primo che vale) | Flussi su 38 |
+|---|---:|
+| `provata`: una scheda all'ingresso arriva a ogni effetto su store del flusso | **7** |
+| `effetto non esprimibile`: nessun effetto del flusso è una scrittura su uno store | 14 |
+| `nessuna scheda all'ingresso` | 3 |
+| `tagliata dalla scheda`: i collegamenti arrivano all'effetto, la scheda no | 0 |
+| `buco del grafo`: dal gestore i collegamenti non arrivano all'effetto | 14 |
+
+| Altra misura | Valore |
+|---|---|
+| Effetti del riferimento: su store, non su store | 25, 25 (17 «valore mostrato», 4 cambi di stato in un sistema di altri o senza store, 3 «evento emesso», 1 comando a un dispositivo) |
+| Schede in tutto, con almeno un effetto | 1.105, 297 |
+| Passi per scheda: mediana, massimo | 2, 1.305 |
+| Nei 7 flussi provati: schede all'ingresso | da 2 a 46 |
+| Nei 7 flussi provati: passi dal gestore all'effetto, caratteri di passi letti fino all'effetto | da 1 a 5, da 274 a 7.167 |
+
+- **La forma della scheda non taglia nulla.** Zero flussi hanno i collegamenti fino all'effetto e la scheda no: dove il grafo arriva, la scheda arriva. Vale anche seguendo chi rilegge uno store del flusso e riscrive altrove.
+- **Il limite maggiore è che cosa conta come effetto.** Quattordici flussi finiscono su un valore mostrato, un evento emesso o un comando: la scheda chiude solo su una scrittura in uno store, e li lascia fuori qualunque cosa il grafo sappia.
+- **Dove la prova c'è è corta, ma va trovata.** Al più 5 passi e 7.167 caratteri, in mezzo a 2–46 schede per ingresso e 1.105 in tutto. Nelle run cieche del 21 novembre (README di `benchmarks/system-map`) il modello debole aveva le schede in coda e non ne ha aperta nessuna.
+- **Non si confronta come totale con i «15 su 38» qui sopra.** Quella misura segue le frecce del riferimento da nodo a nodo, lascia stare in piedi le frecce dichiarate e chiede ogni effetto, schermate comprese; questa segue i collegamenti dal gestore di una scheda e chiede ogni effetto su store. Rifatta in locale sugli stessi collegamenti e manifest ridà 15 flussi chiusi, 16 con i possibili, 104 frecce certe: la corsa locale vale.
+- **Incrocio flusso per flusso** (esito della scheda × flusso chiuso sulle frecce certe):
+
+  | Esito della scheda | Chiuso sulle frecce | Non chiuso |
+  |---|---:|---:|
+  | `provata` | 3 | 4 |
+  | `effetto non esprimibile` | 9 | 5 |
+  | `nessuna scheda all'ingresso` | 1 | 2 |
+  | `buco del grafo` | 2 | 12 |
+
+  Nove flussi il grafo li chiude già e la scheda no, solo perché finiscono su un effetto che non è una scrittura su store: è ciò che costa la definizione di effetto. Dei 14 «buco del grafo» 12 mancano anche sulle frecce, e sono buchi veri; 2 sono chiusi sulle frecce ma nessun gestore di scheda avvia il percorso, ed è un limite dell'inventario delle schede. Quattro flussi `provata` non sono chiusi sulle frecce: la scheda prova l'effetto su store, il riferimento chiede anche una schermata o un servizio di altri.
+- **Conseguenza per la prova con il modello: due denominatori.** Per *certificare* contro il riferimento contano al più 7 flussi. Per *trovare e aprire la scheda giusta* ne contano 31, quelli con almeno una scheda all'ingresso: la consegna (scheda spinta, coda, punti di partenza) si misura su quelli, senza bisogno dell'effetto.
+- Metodo rivisto da un secondo agente prima dei numeri: otto correzioni ai confini degli esiti (il sito del controllo, ogni effetto su store, i lettori di uno store del flusso, le schede incerte), ognuna con il suo test; i totali non sono cambiati.
+- Non misurato: un altro progetto; le schede dei 14 flussi con effetto non esprimibile, se arrivano almeno al file della schermata.
