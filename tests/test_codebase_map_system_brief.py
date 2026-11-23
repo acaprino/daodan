@@ -239,6 +239,10 @@ class DeclaredTests(unittest.TestCase):
             (project / file).write_text(body, encoding="utf-8")
         service = mcp_tests.mcp_service.MapService(project)
         service.create_run(".", "brief", engine=False)
+        # The module graph's `imports` and `calls` are added by its first reader (spec of the pipeline, 8.11 step 5, piece
+        # A), which reads the build files again: done here, so that what is counted is the brief's own reading.
+        import modules
+        modules.ensure_graph(service._run_path("brief") / "snapshot/manifest.sqlite")
         opened = []
         native = Path.open
         def count(path, *args, **kwargs):

@@ -36,6 +36,10 @@ def test_legacy_python_entries_wait_for_refresh_but_cargo_stays_available(tmp_pa
         '[project.scripts]\nrun="pkg.cli:main"\n[tool.setuptools.package-dir]\npkg="src/real"\n'})
     report = premap.write(manifest, sources=(python_build,))
     report["sources"][0]["source"] = "python-build@daodan/premap/v2"
+    from premap.flow_entries import declarations
+    from snapshot_store import open_snapshot
+    with open_snapshot(manifest) as store:  # an older pre-map carried the declared entries, bound to the symbols
+        report["declared_entries"] = declarations(report["units"], store)
     report["declared_entries"][0].update(symbol="pkg/cli.py::main", site="pkg/cli.py:1")
     report["declared_entries"][0].pop("gap", None)
     report["declared_entries"].append({"reader": "manifesto", "shape": "cargo.bin", "label": "worker",
