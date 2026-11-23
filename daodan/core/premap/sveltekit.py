@@ -154,7 +154,7 @@ def read(context, commands, results):
                 base["kind"] = module["kind"] = spec["kind"]
                 names = spec.get("exports")
                 # shortcut: the `load` of a layout runs for every page under it, and it is no row of its own: the layouts are "nessun
-                # ingresso", as React Router's are; when the owner wants it an entry, give `+layout` and `+layout.server` the exports
+                # ingresso" (React Router's root and layouts with no path have a row for their `loader`: `read` there); when the owner wants it an entry, give `+layout` and `+layout.server` the exports
                 if not names:  # a layout starts no flow of its own
                     rows.append(module)
                     continue

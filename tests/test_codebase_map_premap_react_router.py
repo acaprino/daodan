@@ -20,7 +20,7 @@ from test_codebase_map_premap_container_runner import container, container_runne
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/react-router-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/react-router/answers.json").read_text(encoding="utf-8"))
-SOURCE = "react-router@daodan/premap/v2"  # v2: the rows changed (an absolute child, the root under `app/`): a pre-map of v1 is stale
+SOURCE = "react-router@daodan/premap/v3"  # v3: the root's and a pathless layout's data functions are rows; v2: an absolute child, the root under `app/`: an older pre-map is stale
 LAST = "nessun ingresso"
 EXPORTS = ("default", "loader", "action", "clientLoader", "clientAction")
 LIMIT = ["timeout", "--kill-after=10", "300"]  # what ends a command that does not end: 10 seconds after the signal, the kill
@@ -140,6 +140,66 @@ def test_a_layout_with_no_path_is_one_row_on_its_file_that_no_flow_starts_from(t
     assert [(r["shape"], r["kind"], r["path"], r["symbol"]) for r in layout] == [
         ("layout", LAST, "/", "app/routes/shop/layout.tsx::<module>")]
     assert "handler" not in layout[0] and "gap" not in layout[0]  # the tool gives no export to start: not a gap, a layout
+
+
+DATA = "export async function loader() { return null; }\nexport async function action() { return null; }\n"
+ROOT = 'import { Outlet } from "react-router";\n' + DATA + "export default function App() { return <Outlet />; }\n"
+LAYOUT = 'import { Outlet } from "react-router";\n' + DATA + "export default function ShopLayout() { return <Outlet />; }\n"
+
+
+def test_the_loader_and_action_of_the_root_are_entries_on_their_functions_and_the_module_row_stays(tmp_path):
+    """`getTargetMatch` of react-router 7.18.6 (read, not run): the target of a submission is the last match that contributes a
+    path, and the first match always does, so the root's `action` is the target of a post to `/`; its `loader` runs for each
+    request of a page under it."""
+    files = project("framework", **{"app/root.tsx": ROOT})
+    record, gaps, _ = read(tmp_path, files)
+    assert starts(record, "/", "root-data") == {"loader": "loader", "action": "action"}
+    rows = [r for r in record["framework_entries"] if r["site"].startswith("app/root.tsx")]
+    assert {(r["shape"], r["kind"]) for r in rows} == {("layout", LAST), ("root-data", "rotta")}
+    assert [r["site"] for r in rows if r["shape"] == "root-data"] == [at(files, "app/root.tsx", "function loader"),
+                                                                       at(files, "app/root.tsx", "function action")]
+    assert gaps == []
+
+
+def test_the_loader_of_a_layout_with_no_path_is_an_entry_and_its_action_is_not_because_no_post_has_it_as_target(tmp_path):
+    """A layout with no path does not contribute a path, so `getTargetMatch` never returns it: its `action` is never called by
+    the framework (dead code, not an entry and not a gap); its `loader` runs for each request of a page under it."""
+    file = "app/routes/shop/layout.tsx"
+    files = project("framework", **{file: LAYOUT})
+    record, gaps, _ = read(tmp_path, files)
+    assert starts(record, "/", "layout-data") == {"loader": "loader"}
+    rows = [r for r in record["framework_entries"] if r["site"].startswith(file)]
+    assert {(r["shape"], r["kind"]) for r in rows} == {("layout", LAST), ("layout-data", "rotta")}
+    assert not [r for r in rows if r.get("gap")] and gaps == []
+
+
+def test_a_layout_or_root_with_no_data_function_is_the_module_row_only_and_no_gap(tmp_path):
+    record, _, _ = read(tmp_path, project("framework"))
+    assert not [r for r in record["framework_entries"] if r["shape"] in ("root-data", "layout-data")]
+
+
+def test_a_data_function_of_the_root_or_a_layout_that_the_snapshot_cannot_bind_is_a_gap_row_of_the_data_shape(tmp_path):
+    """The gap row has the shape of the data function, not `layout`: a row of a shape that no flow starts from is dropped
+    before its gap is looked at (`flows._classify_entries`)."""
+    files = project("framework", **{"app/root.tsx": "export const loader = make();\nexport default function App() { return null; }\n"})
+    record, _, _ = read(tmp_path, files)
+    [row] = [r for r in record["framework_entries"] if r["shape"] == "root-data"]
+    assert row["gap"] and "loader" in row["gap"] and row["symbol"] == "app/root.tsx::<module>" and row["kind"] == "rotta"
+
+
+def test_the_gap_of_a_root_data_function_reaches_the_links_and_its_function_is_an_entry(tmp_path):
+    import flows
+    files = project("framework", **{"app/root.tsx": ROOT, "app/routes/shop/layout.tsx": LAYOUT})
+    _, manifest = manifest_of(tmp_path, files)
+    premap.write(manifest, sources=(premap.react_router,), runner=runner_for({".": answer("framework")})[1])
+    found = flows.cached_links(manifest, [])
+    assert {(e["shape"], e["symbol"].split("::")[1], e["handler_source"]) for e in found["entries"]
+            if e["reader"] == "react-router" and e["shape"].endswith("-data")} == {
+        ("root-data", "loader", "react-router"), ("root-data", "action", "react-router"), ("layout-data", "loader", "react-router")}
+    files = project("framework", **{"app/root.tsx": "export const loader = make();\nexport default function App() { return null; }\n"})
+    _, manifest = manifest_of(tmp_path / "unbound", files)
+    premap.write(manifest, sources=(premap.react_router,), runner=runner_for({".": answer("framework")})[1])
+    assert [g for g in flows.cached_links(manifest, [])["gaps"] if g["site"].startswith("app/root.tsx")]
 
 
 def test_the_path_of_a_route_is_the_path_of_its_ancestors_and_its_own(tmp_path):
@@ -581,6 +641,8 @@ def test_the_shapes_of_the_source_are_in_the_registry_so_no_question_is_asked_fo
     from premap.flow_entries import evidence
     rules = entries.registry_rules([r for r in evidence(made)[0] if r["reader"] == "react-router"])
     assert {(r["shape"], r["entry"]) for r in rules} == {("route", "rotta"), ("index", "rotta"), ("layout", LAST)}
+    rules = entries.registry_rules([{"reader": "react-router", "shape": shape, "kind": "rotta"} for shape in ("root-data", "layout-data")])
+    assert {(r["shape"], r["entry"]) for r in rules} == {("root-data", "rotta"), ("layout-data", "rotta")}
 
 
 def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_recorded_answer(tmp_path):
