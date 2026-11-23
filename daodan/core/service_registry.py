@@ -33,6 +33,7 @@ from registry_hosts import check_hosts  # noqa: E402
 from stack_source import check_sources  # noqa: E402
 from premap.module_graph import declared_image, package_facts  # noqa: E402
 from mark_svg import MAX_MARK, clean_svg, safe_member  # noqa: E402
+from module_inventory import _Inventory  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 REGISTRY = SCRIPT_DIR.parent / "data" / "service-registry.json"
@@ -231,6 +232,14 @@ CHECKERS = (("package", "declared", check_packages), ("file", "declared", check_
             ("env", "mentioned", check_env), ("host", "mentioned", check_hosts), ("source", "declared", check_sources))
 
 
+def _lines(inventory: _Inventory, rel: str) -> list[str]:
+    """A file's lines; none from a file changed since the inventory or that cannot be read."""
+    try:
+        return inventory.text(rel).split("\n")
+    except ValueError:
+        return []
+
+
 def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:
     """`CHECKERS` over the snapshot: the registry entries it shows signs of (`found`), each sign with its path, line
     and strength, each checker's status (`checkers`) and the `gaps`; `facts` is the pre-map."""
@@ -242,9 +251,10 @@ def run(manifest: Path, registry: dict | None = None, facts: dict | None = None)
     found: dict[str, list[dict]] = {}
     checkers, gaps = [], []
     with open_snapshot(manifest) as store:
-        source = flows.Source(store)
-        files = [rel for rel in sorted(dict(store.iter_file_headers_only())) if not _is_excluded(rel, left_out)]
-        project = Project(declared, files, lambda rel: source.lines(rel) or [])
+        # The files the inventory lists, their text checked against its hash: `stack` runs before `parse`.
+        inventory = _Inventory(store)
+        files = [rel for rel in inventory.files if not _is_excluded(rel, left_out)]
+        project = Project(declared, files, lambda rel: _lines(inventory, rel))
         for name, strength, checker in CHECKERS:
             try:
                 answer = checker(entries, project)

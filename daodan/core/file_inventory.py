@@ -12,7 +12,7 @@ from pathlib import Path
 
 from languages import detect_language
 from snapshot_store import SnapshotWriter, _plain
-from source_files import iter_files, MAX_FILE_BYTES, relative_to_root, repo_root, scope_record
+from source_files import git_info, iter_files, MAX_FILE_BYTES, relative_to_root, repo_root, scope_record
 from tree_scope import Perimeter
 
 SCHEMA = 1  # the only header schema `SnapshotWriter.finish` accepts
@@ -84,7 +84,7 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
                     "raw_hash": hashlib.sha256(data).hexdigest(), "language": detect_language(path, _text(data))})
                 del data
             header = {"schema": SCHEMA, "target": relative_to_root(target, root) or ".", "root": root.as_posix(),
-                      "scope": scope_record(perimeter, root), "metrics": metrics,
+                      "scope": scope_record(perimeter, root), "git": git_info(root), "metrics": metrics,
                       "reading": "not-started"}
             writer.finish(header)
         os.replace(temporary, out)

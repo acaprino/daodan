@@ -69,10 +69,11 @@ def read(context, commands, results):
         if header is None:
             gaps.append({"kind": "outside_snapshot", "path": file, "detail": "Noir cites a file outside the snapshot"})
             continue
-        # Reads once per file (also shared with the other pre-map readers), verifies the snapshot hash.
-        context.inventory.text(file)
+        # Reads once per file (also shared with the other pre-map readers), verifies the snapshot hash; its lines as `parse`
+        # counts them, which runs after `scan`.
+        lines = len(context.inventory.text(file).split("\n"))
         _, _, number = item["site"].rpartition(":")
-        if number.isdecimal() and not 1 <= int(number) <= header["lines"]:
+        if number.isdecimal() and not 1 <= int(number) <= lines:
             gaps.append({"kind": "model_partial", "path": file, "detail": f"Noir cites an absent line: {number}"})
             continue
         candidates.append(item)

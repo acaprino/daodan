@@ -42,7 +42,7 @@ from build_units import ECOSYSTEMS, READERS, SUFFIX_READERS  # noqa: E402,F401
 from module_records import (DECLARED_FILE, DECLARED_SCHEMA, LEDGER_FILE, LEDGER_SCHEMA, LOCATIONS,  # noqa: E402,F401
                             MAX_MEMBERS, MAX_MODULES, MODULE_KINDS, ledger_name, load_ledger, resolve_evidence,
                             resolve_members, validate_module, validate_modules, write_ledger)
-from module_derive import (MAX_EDGE_EVIDENCE, NATURES, PHYSICAL, PROVENANCES, SCHEMA, STATUSES,  # noqa: E402,F401
+from module_derive import (MAX_EDGE_EVIDENCE, NATURES, PHYSICAL, PROVENANCES, SCHEMA, STATUSES, status_counts,  # noqa: E402,F401
                            derive, enrich_with_premap)
 
 GRAPH_FILE = "modules.json"
@@ -173,9 +173,15 @@ def _complete(manifest: Path, before: dict) -> dict:
             if _inputs_digest(manifest, store) != digest or graph.get("inputs_digest") != digest:
                 raise ValueError("snapshot or ledger changed during derivation; retry")
         ids = {m["id"] for m in graph["modules"]}
+        whole_modules = {m["id"]: m for m in whole["modules"]}
+        for module in graph["modules"]:  # what the symbols decide: a declared or proposed module's members and their results
+            if module["provenance"] not in PHYSICAL and module["id"] in whole_modules:
+                module.update({k: whole_modules[module["id"]][k]
+                               for k in ("members", "gaps", "status", "conflicts", "coverage", "members_digest")})
+        graph["coverage"]["statuses"] = status_counts(graph["modules"])
         edge_map = {e["id"]: e for e in graph["edges"]}
         for edge in whole["edges"]:
-            if edge["kind"] in ("imports", "calls") and edge["source"] in ids and edge["target"] in ids:
+            if edge["kind"] in ("imports", "calls", "uses") and edge["source"] in ids and edge["target"] in ids:
                 edge_map[edge["id"]] = edge
         graph["edges"] = [edge_map[k] for k in sorted(edge_map)]
         graph["coverage"]["edges"] = {k: sum(1 for e in graph["edges"] if e["kind"] == k)

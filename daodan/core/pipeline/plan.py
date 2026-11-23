@@ -44,8 +44,7 @@ def stored(store) -> list[tuple[str, dict]]:
         rows = coverage(connection)
         if rows:
             return rows
-    rows = list(store.iter_inventory())
-    return rows or [(path, {"language": header.get("language")}) for path, header in store.iter_file_headers_only()]
+    return list(store.iter_listed())
 
 
 def _analyzers() -> list:

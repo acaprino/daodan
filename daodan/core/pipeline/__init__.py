@@ -5,15 +5,14 @@ Each step has the same contract: `NAME`, `INPUTS` (what it reads, written by the
 stop, else the words that say how it goes on) and `run(context)`; it says what it does on the context's event bus
 (`pipeline.events`). The snapshot is the pipeline's input; the flows read the complete graph after it.
 
-1. `parse`: the files the inventory lists, read into the snapshot (`file_inventory.write`, `snapshot.write_reading`);
-   a caller that wrote the snapshot with `write_snapshot` finds it fresh. The order parse -> scan is today's (scan's
-   module graph and the pre-map's framework sources still read the symbols) and flips when they stop reading them
-   (spec 8.11, step 5). It also says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files,
-   executed by `write_reading`, `engine_pass.pass_plan` and `dynamic.run`.
-2. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
-   commands run in Daodan's container (`premap.container_runner`).
-3. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
-   signs (`technologies.ensure`).
+1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
+   commands run in Daodan's container (`premap.container_runner`). It reads only the inventory
+   (`file_inventory.write`), so it runs before the files are read.
+2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
+   signs (`technologies.ensure`); it too reads only the inventory, the modules and the pre-map.
+3. `parse`: the files the inventory lists, read into the snapshot (`snapshot.write_reading`); a caller that wrote
+   the snapshot with `write_snapshot` finds it fresh. It also says the plan (`pipeline.plan`, spec 8.4): which
+   adapter runs on which files, executed by `write_reading`, `engine_pass.pass_plan` and `dynamic.run`.
 4. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
 5. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
@@ -51,21 +50,29 @@ class Context:
     results: dict = field(default_factory=dict)  # each step's result by its name, for the steps after it
 
 
+def _reading_pending(manifest: Path) -> bool:
+    """Whether the store's files are still to be read; a missing, unreadable or refused store stops the run."""
+    import run_store
+    from snapshot_store import open_snapshot
+    try:
+        with open_snapshot(manifest) as store:
+            return store.metadata.get("reading") == "not-started"
+    except run_store.RunControlError:  # a store that comes with the project: the caller is told as it is
+        raise
+    except (OSError, ValueError) as error:  # a missing, unreadable or refused store
+        raise StepFailed(f"the snapshot cannot be read: {error}", "write the snapshot again") from error
+
+
 class Parse:
     NAME, INPUTS, OUTPUTS, WITHOUT = "parse", ("inventory",), ("snapshot",), None
 
     @staticmethod
     def run(context: Context) -> dict:
-        import run_store
         import snapshot
         from snapshot_store import open_snapshot
-        try:
-            with open_snapshot(context.manifest) as store:  # a header read only: this runs under the project lock
-                pending = store.metadata.get("reading") == "not-started"
-        except run_store.RunControlError:  # a store that comes with the project: the caller is told as it is
-            raise
-        except (OSError, ValueError) as error:  # a missing, unreadable or refused store
-            raise StepFailed(f"the snapshot cannot be read: {error}", "write the snapshot again") from error
+        # A header read on a store already read (`write_snapshot`, every caller today). A store left with only the inventory is
+        # read and published here, by the detached pass too (`resolve_edges.main --whole-pass`), which holds no project lock.
+        pending = _reading_pending(context.manifest)
         result = {"action": "fresh"}
         if pending:
             written = snapshot.write_reading(context.manifest, context.manifest)
@@ -78,12 +85,13 @@ class Parse:
 
 
 class Scan:
-    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("snapshot",), ("modules", "premap"), None
+    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("inventory",), ("modules", "premap"), None
 
     @staticmethod
     def run(context: Context) -> dict:
         import modules
         import premap
+        _reading_pending(context.manifest)  # the first step: a store that cannot be read stops the run here
         bus, manifest = context.bus, context.manifest
         graph = modules.ensure_structure(manifest)
         if graph["state"] != "fresh":
@@ -127,7 +135,7 @@ def _runner(manifest: Path):
 
 
 class Stack:
-    NAME, INPUTS, OUTPUTS = "stack", ("snapshot", "modules", "premap"), ("technologies",)
+    NAME, INPUTS, OUTPUTS = "stack", ("inventory", "modules", "premap"), ("technologies",)
     WITHOUT = "the analysis goes on; scan again to recognize the technologies"  # the analysis needs no technology
 
     @staticmethod
@@ -266,7 +274,7 @@ class Union:
                          "examples": conflicts["examples"], "detail": detail}, language)
 
 
-STEPS = (Parse, Scan, Stack, Analyze, Dynamic, Union)
+STEPS = (Scan, Stack, Parse, Analyze, Dynamic, Union)
 
 
 class StepFailed(Exception):

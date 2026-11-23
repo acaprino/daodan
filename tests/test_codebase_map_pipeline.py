@@ -157,9 +157,9 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
-    assert steps == [("step.started", "parse"), ("step.finished", "parse"),
-                     ("step.started", "scan"), ("step.finished", "scan"), ("step.started", "stack"),
-                     ("step.finished", "stack"), ("step.started", "analyze"),
+    assert steps == [("step.started", "scan"), ("step.finished", "scan"), ("step.started", "stack"),
+                     ("step.finished", "stack"), ("step.started", "parse"), ("step.finished", "parse"),
+                     ("step.started", "analyze"),
                      ("step.finished", "analyze"), ("step.started", "dynamic"), ("step.finished", "dynamic"),
                      ("step.started", "union"), ("step.finished", "union")]
     analyzers = [(e["kind"], e["analyzer"]) for e in seen if e["kind"].startswith("analyzer.")
@@ -187,8 +187,8 @@ def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp
     snapshot.write_snapshot(tmp_path / "p", manifest)
     seen = []
     result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert list(result) == ["parse", "scan"]
-    assert [e["step"] for e in seen if e["kind"].startswith("step.")] == ["parse", "parse", "scan", "scan"]
+    assert list(result) == ["scan"]
+    assert [e["step"] for e in seen if e["kind"].startswith("step.")] == ["scan", "scan"]
     with mock.patch.object(pipeline.Analyze, "run", side_effect=pipeline.StepFailed("no store", "write it")):
         result = pipeline.run(manifest, listeners=[seen.append], start="analyze")
     assert result == {"analyze": {"failed": "no store", "remedy": "write it"}}
@@ -320,7 +320,7 @@ def test_the_pass_records_how_long_each_stage_took(tmp_path):
 
 def test_a_start_or_stop_that_names_no_step_is_refused_before_any_event(tmp_path):
     seen = []
-    with pytest.raises(ValueError, match="no step 'analyse': the steps are parse, scan, stack, analyze, dynamic, union"):
+    with pytest.raises(ValueError, match="no step 'analyse': the steps are scan, stack, parse, analyze, dynamic, union"):
         pipeline.run(tmp_path / "manifest.sqlite", listeners=[seen.append], start="analyse")
     assert seen == [] and not (tmp_path / events.JOURNAL).exists()
 
@@ -364,12 +364,12 @@ def test_an_error_a_step_the_others_need_does_not_foresee_is_said_before_it_leav
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
-    assert [step.NAME for step in pipeline.STEPS] == ["parse", "scan", "stack", "analyze", "dynamic", "union"]
+    assert [step.NAME for step in pipeline.STEPS] == ["scan", "stack", "parse", "analyze", "dynamic", "union"]
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
     # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
     assert {step.NAME: bool(step.WITHOUT) for step in pipeline.STEPS} == {
-        "parse": False, "scan": False, "stack": True, "analyze": False, "dynamic": True, "union": False}
+        "scan": False, "stack": True, "parse": False, "analyze": False, "dynamic": True, "union": False}
     # the reading comes from the inventory and gives the snapshot every step after it reads (spec 8.11, step 3)
     assert (pipeline.Parse.INPUTS, pipeline.Parse.OUTPUTS) == (("inventory",), ("snapshot",))
 
@@ -390,7 +390,7 @@ def test_the_parse_step_reads_a_store_that_holds_only_its_inventory_and_leaves_a
     with open_snapshot(manifest) as store:
         assert (store.metadata["reading"], store.file_count) == ("not-started", 0)
     seen = []
-    result = pipeline.run(manifest, listeners=[seen.append], stop="parse")
+    result = pipeline.run(manifest, listeners=[seen.append], start="parse", stop="parse")
     assert list(result) == ["parse"] and result["parse"]["action"] == "read"
     assert [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")] == [
         ("step.started", "parse"), ("step.finished", "parse")]
@@ -403,34 +403,36 @@ def test_the_parse_step_reads_a_store_that_holds_only_its_inventory_and_leaves_a
         assert logical_digest(store, keys=keys) == expected
     written = manifest.read_bytes()
     with mock.patch.object(snapshot, "write_reading", side_effect=AssertionError("a read store read again")):
-        assert pipeline.run(manifest, stop="parse")["parse"]["action"] == "fresh"
+        assert pipeline.run(manifest, start="parse", stop="parse")["parse"]["action"] == "fresh"
     assert manifest.read_bytes() == written
 
 
 def test_a_snapshot_that_cannot_be_read_stops_the_run_with_its_remedy(tmp_path):
-    """As the scan did before the parse step came first: a step failure with the remedy, not an error."""
+    """The first step, the scan, stops the run with the remedy: a step failure, not an error; so does the parse step, where
+    a run starts at it (the detached pass starts at `stack`)."""
     manifest = tmp_path / "out" / "manifest.sqlite"
     manifest.parent.mkdir()
     manifest.write_bytes(b"not a snapshot")
     for written in (True, False):
         if not written:
             manifest.unlink()
-        seen = []
-        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-        assert list(result) == ["parse"] and result["parse"]["remedy"] == "write the snapshot again"
-        assert result["parse"]["failed"].startswith("the snapshot cannot be read")
-        assert seen[-1]["kind"] == "step.failed" and seen[-1]["step"] == "parse"
+        for first in ("scan", "parse"):
+            seen = []
+            result = pipeline.run(manifest, listeners=[seen.append], start=first, stop=first)
+            assert list(result) == [first] and result[first]["remedy"] == "write the snapshot again"
+            assert result[first]["failed"].startswith("the snapshot cannot be read")
+            assert seen[-1]["kind"] == "step.failed" and seen[-1]["step"] == first
 
 
-def test_the_callers_say_a_failure_of_the_parse_step(tmp_path, capsys):
-    """The command line and the MCP service run the pipeline to the stack and read the scan's result, or the parse
-    step's when it stopped the run before the scan: the failure is said, never a KeyError."""
+def test_the_callers_say_a_failure_of_the_scan_step(tmp_path, capsys):
+    """The command line and the MCP service run the pipeline to the stack and read the scan's result, the first
+    step's: the failure is said, never a KeyError."""
     import mcp_service
     project = tmp_path / "project"
     (project / "src").mkdir(parents=True)
     (project / "src" / "a.py").write_text("x = 1\n", encoding="utf-8")
     stop = pipeline.StepFailed("the snapshot cannot be read: broken", "write the snapshot again")
-    with mock.patch.object(pipeline.Parse, "run", side_effect=stop):
+    with mock.patch.object(pipeline.Scan, "run", side_effect=stop):
         status = snapshot.main(["write", str(project / "src"), "--out", str(tmp_path / "out" / "manifest.sqlite"),
                                 "--no-index", "--no-engine"])
         assert status == 1 and "modules: the snapshot cannot be read: broken" in capsys.readouterr().err

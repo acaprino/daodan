@@ -439,6 +439,13 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
 HEAD = "import { Component } from '@angular/core';\n"
 
 
+def _imports_the_decorator(context, rel: str) -> bool:
+    import entries
+    source = context.inventory.text(rel).encode("utf-8")
+    found = entries._matches(source, "typescript", "components", entries._parse(source, "typescript"))
+    return bool(premap.angular._decorator_names(source, found))
+
+
 def test_every_file_the_import_chooses_is_read_or_a_gap_that_names_its_site_or_applies_no_decorator(tmp_path):
     """A `Component` imported from `@angular/core` chooses a file. Each decorator it applies gives the components read or a gap
     with the file and line: an alias, an abstract class and a default export are read; `@Component(meta)`, an anonymous class
@@ -463,7 +470,7 @@ def test_every_file_the_import_chooses_is_read_or_a_gap_that_names_its_site_or_a
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
         plan = premap.angular._plan(context)
-        chosen = {rel for rel, header in context.inventory.headers.items() if premap.angular._imports_component(header)}
+        chosen = {rel for rel in context.inventory.files if rel.endswith(".ts") and _imports_the_decorator(context, rel)}
     read = {member["file"]: member["class"] for items in plan["jobs"].values() for _, members in items for member in members}
     gaps = {}
     for gap in plan["gaps"]:

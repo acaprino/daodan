@@ -222,6 +222,11 @@ class SnapshotStore:
         for path, payload in self.connection.execute("SELECT path,payload FROM inventory ORDER BY ordinal"):
             yield path, _unpack(payload)
 
+    def iter_listed(self) -> Iterator[tuple[str, dict]]:
+        """The files the inventory lists: its rows, else (a JSON snapshot, a store written before it) the file headers."""
+        rows = list(self.iter_inventory())
+        return iter(rows or self.iter_file_headers_only())
+
     def get_file_header(self, path: str) -> dict | None:
         self._open()
         if self._json:
@@ -721,9 +726,7 @@ def inventory_digest(store: SnapshotStore) -> str:
     """What a reading that looks at no symbol depends on: the header's `schema`, `root`, `target` and `scope`, and each
     file's `path`, `raw_hash` and `language`, from the inventory, else from the files' headers: the same value either
     way. Another parser's identity changes the logical digest, not this."""
-    rows = sorted((path, row) for path, row in store.iter_inventory())
-    if not rows:
-        rows = sorted((path, store.get_file(path, semantic=False)) for path in store.iter_paths())
+    rows = sorted(store.iter_listed())
     value = [[store.get(key) for key in ("schema", "root", "target", "scope")],
              [[path, row.get("raw_hash"), row.get("language")] for path, row in rows]]
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)

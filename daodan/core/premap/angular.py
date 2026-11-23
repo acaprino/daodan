@@ -1,9 +1,9 @@
 """Source: the events an Angular project's own compiler reads in its templates, `parseTemplate`, run in Daodan's container.
 
 `commands` finds, in each folder whose `package.json` declares `@angular/core` or `@angular/compiler`, the templates of
-its components: a file that imports `Component` from `@angular/core` (the file headers say so) is read from its syntax tree
-(`entries.QUERIES["components"]`), and its decorator's `templateUrl` names a file of the snapshot while its `template`, a text
-written in the decorator, is told by where it lies in the `.ts`. Each folder has two commands of Daodan's script
+its components: a TypeScript file is read from its syntax tree (`entries.QUERIES["components"]`), the import of `Component`
+from `@angular/core` too, as `scan` runs before `parse`; and its decorator's `templateUrl` names a file of the snapshot while
+its `template`, a text written in the decorator, is told by where it lies in the `.ts`. Each folder has two commands of Daodan's script
 (`angular_templates.mjs`), both given the list of templates as a file (`inputs`) and its path: the first calls the project's own
 `parseTemplate` (`@angular/compiler`, resolved from the folder, so the one the project installed) and prints, for each event the
 template binds, where and what it calls; the second, `--types`, asks the project's template type-checker
@@ -57,12 +57,16 @@ def _names() -> dict:
     return entries.QUERIES["components"]["typescript"]
 
 
-def _imports_component(header: dict) -> bool:
+def _decorator_names(source: bytes, found: list[dict]) -> set[str]:
+    """The names a file gives the decorator in its imports, an alias too, from its own syntax tree (`found`, the matches of
+    `entries.QUERIES["components"]`): `scan` runs before `parse`, so the imports `parse` writes are not there yet."""
+    import entries
     # shortcut: a file that reaches the decorator by a namespace (`import * as ng from '@angular/core'`, `@ng.Component(...)`) is not
     # chosen, and no gap says so; when a project is met that writes its components so
-    names = _names()
-    return any(item.get("module") == names["module"] and names["decorator"] in item.get("names", ())
-               for item in header.get("import_bindings") or ())
+    data = _names()
+    return {entries._text(source, c["local"][0]) if "local" in c else data["decorator"] for c in found
+            if "imported" in c and entries._text(source, c["module"][0]) == data["module"]
+            and entries._text(source, c["imported"][0]) == data["decorator"]}
 
 
 CLASSES = ("class_declaration", "abstract_class_declaration", "class")  # what a decorator decorates, `class` the anonymous default
@@ -107,10 +111,9 @@ def _components(context, file: str, gaps: list[dict]) -> list[dict]:
         gaps.append({"kind": "model_partial", "path": file, "detail": "the TypeScript grammar did not load: its components are not read"})
         return []
     found = entries._matches(source, "typescript", "components", root)
-    data = _names()
-    names = {entries._text(source, c["local"][0]) if "local" in c else data["decorator"] for c in found
-             if "imported" in c and entries._text(source, c["module"][0]) == data["module"]
-             and entries._text(source, c["imported"][0]) == data["decorator"]}
+    data, names = _names(), _decorator_names(source, found)
+    if not names:
+        return []
     lines, out = text.split("\n"), []
     for captured in sorted((c for c in found if "decorator" in c), key=lambda c: c["decorator"][0].start_byte):
         decorator = captured["decorator"][0]
@@ -174,7 +177,7 @@ def _plan(context) -> dict:
         return {"jobs": {}, "gaps": []}
     for file in context.inventory.files:
         header = context.inventory.headers[file]
-        if header.get("language") != "typescript" or not _imports_component(header):
+        if header.get("language") != "typescript":
             continue
         folder = frameworks.folder_of(folders, file)
         components = _components(context, file, gaps)

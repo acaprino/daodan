@@ -1612,7 +1612,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
         if index["state"] != "fresh":
             raise ValueError(f"index: {index['state']}: {index.get('reason', '')}")
         piped = pipeline.run(manifest, stop="stack", fast_scan=True)
-        scanned = piped.get("scan") or piped["parse"]
+        scanned = piped["scan"]
         if "failed" in scanned:
             raise ValueError(f"modules: {scanned['failed']}")
         stacked = piped.get("stack") or {}
@@ -1865,7 +1865,7 @@ def cmd_write(args: argparse.Namespace) -> int:
         # Step 1 (scan) and Step 2 (stack): structure and module stack before downstream analysis.
         import pipeline
         piped = pipeline.run(Path(args.out), stop="stack")
-        scanned = piped.get("scan") or piped["parse"]
+        scanned = piped["scan"]
         if "failed" in scanned:
             print(f"modules: {scanned['failed']}", file=sys.stderr)
             status = 1

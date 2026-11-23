@@ -282,7 +282,7 @@ def test_the_plan_the_parse_step_says_is_the_plan_the_pass_runs(tmp_path):
         "Page.astro": '---\nimport { f } from "./f";\nf();\n---\n<p class="x">x</p>\n<style>\n.x { color: red }\n</style>\n'})
     manifest, seen = tmp_path / "out" / "manifest.sqlite", []
     snapshot.write_snapshot(root, manifest)
-    pipeline.run(manifest, listeners=[seen.append], stop="parse")
+    pipeline.run(manifest, listeners=[seen.append], start="parse", stop="parse")
     [said] = [event["data"]["plan"] for event in seen if event["message"] == "the plan"]
     with open_snapshot(manifest) as store:
         planned = engine_pass.snapshot_plan(store.connection)
