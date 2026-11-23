@@ -8,7 +8,9 @@ engine pass runs, a `claude -p` session given the app's `LINKS` task writes the 
 links follow from them; the first repetition keeps rules and links on the volume (`rules.json`,
 `links.json`) and starts the other repetitions on them, so a case, scope and model has one rules
 session. With a rules file the links come computed before and replace the cache; with
-`--rules none` the agent finds no rules. Then a fresh `claude -p` session is the agent. The
+`--rules none` the agent finds no rules. The engine pass is the pipeline's, with its containers on Modal
+Sandboxes (`modal_pipeline.engine_on_modal`, handed to the pass's child process by a `sitecustomize`): the
+code of the analyzed project never runs in the job's own container. Then a fresh `claude -p` session is the agent. The
 event streams, the recorded map, the snapshot's files and the cost go to the volume
 `daodan-flow-results`, under TAG/LABEL; `modal volume get daodan-flow-results TAG/LABEL
 benchmarks/system-map/results/system/TAG` brings a run here. Nothing heavy runs on the local machine.
@@ -18,6 +20,9 @@ benchmarks/system-map/results/system/TAG` brings a run here. Nothing heavy runs 
     modal run benchmarks/system-map/modal_map.py::entries --tars CASE=PATH[,CASE=PATH] [--tag entries]
     modal run benchmarks/system-map/modal_map.py::possible --snapshot VOLUME-DIR --source VOLUME-DIR --rules PATH
            --expected PATH --out PATH [--generators ritorno,incerto]
+    modal run benchmarks/system-map/modal_map.py::engine_proof_run [--tag TAG] [--out PATH]
+    python benchmarks/system-map/modal_map.py whole --tag TAG --cases CASE[,CASE] --tar CASE=PATH ...
+           [--models qwen,haiku,opus] [--reps 2] [--budget USD]
     modal deploy benchmarks/system-map/modal_map.py
     python benchmarks/system-map/modal_map.py spawn --tag TAG --cases CASE[,CASE] --tar CASE=PATH ...
            [--rules session|none|PATH] [--links CASE=PATH ...] [--scopes system] [--models opus] [--reps 2]
@@ -35,6 +40,8 @@ import modal
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1] if modal.is_local() else Path("/daodan")  # the checkout, and where the image holds it
 SCRIPTS = "/daodan/daodan/core"
+ENGINE_FOLDER = "/daodan/benchmarks/project-model"  # where `modal_pipeline.py` lies in the image
+PROOF = "js-npm-single"  # the fixture of `engine_proof`: one test that calls lodash, `src/index.js`
 RESULTS = HERE / "results"
 CAPS = (12_000, 24_000, 48_000, 0)  # 0: no cap, the whole brief
 HOLDERS = (5, 8, 12)
@@ -76,6 +83,9 @@ image = (
     .run_commands("pip install --no-deps -e /daodan")
     .add_local_dir(ROOT / "plugins/codebase-map", "/daodan/plugins/codebase-map", ignore=[*SKIP, "**/viewer/**"])
     .add_local_file(ROOT / "benchmarks/system-map/possible.py", "/daodan/benchmarks/system-map/possible.py")
+    # the engine of the pipeline's containers: Modal Sandboxes, as `modal_pipeline.engine_on_modal` gives it
+    .add_local_file(ROOT / "benchmarks/project-model/modal_pipeline.py", f"{ENGINE_FOLDER}/modal_pipeline.py")
+    .add_local_dir(ROOT / "benchmarks/project-model/fixtures" / PROOF, f"{ENGINE_FOLDER}/fixtures/{PROOF}")
 )
 app = modal.App("daodan-system-map", image=image)
 # The account the agent runs bill: its OAuth token (`claude setup-token`) as CLAUDE_CODE_OAUTH_TOKEN.
@@ -346,9 +356,59 @@ def _own() -> None:
     subprocess.run(["chown", "-R", "runner:runner", str(HOME)], check=True)
 
 
+def _engine_pass(manifest: Path) -> dict:
+    """`resolve_edges.py --pass`, the pipeline from the pre-map to the union, with its containers on Modal Sandboxes:
+    the child process gets the engine from its `sitecustomize` (`modal_pipeline.engine_environment`), so the pre-map's
+    commands, scip-typescript and the dynamic step's tests never run in this function. The report lands in
+    `HOME/engine-report.json`. The answer: the pass's `exit` code and `stderr` tail, `timed_out`, and each
+    language's state in the report as `languages` (absent when the pass wrote none: it ended before its analyzers).
+    The pass runs in a process group of its own: at the limit it gets an interrupt, so that the sandboxes it started
+    and its folders on the volume are removed (`sandbox_run`'s `finally`), and a kill 120 seconds later."""
+    import signal
+    import subprocess
+    sys.path.insert(0, ENGINE_FOLDER)
+    import modal_pipeline
+    report = HOME / "engine-report.json"
+    process = subprocess.Popen(
+        [sys.executable, f"{SCRIPTS}/resolve_edges.py", str(manifest), "--pass", "--report-out", str(report)],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True,
+        env={**os.environ, **modal_pipeline.engine_environment()})
+    answer = {"timed_out": False}
+    try:
+        _, error = process.communicate(timeout=ENGINE_SECONDS)
+    except subprocess.TimeoutExpired:
+        answer["timed_out"] = True
+        error = ""
+        for sent, wait in ((signal.SIGINT, 120), (signal.SIGKILL, 30)):
+            try:
+                os.killpg(process.pid, sent)
+                _, error = process.communicate(timeout=wait)
+                break
+            except (subprocess.TimeoutExpired, ProcessLookupError):
+                continue
+    answer.update(exit=process.returncode, stderr=(error or "")[-2000:])
+    if report.is_file():  # rewritten after every stage: what a timed-out pass reached stays
+        answer["languages"] = {language: entry.get("state") for language, entry
+                               in (json.loads(report.read_text(encoding="utf-8")).get("languages") or {}).items()}
+    return answer
+
+
+def _engine_failure(engine: dict | None) -> str | None:
+    """Why the engine pass left nothing to build on, or None: it timed out, ended with a code other than 0 or 1, or
+    wrote no report (a crash exits with 1 too). Without a pass (a rules file replaced it) there is nothing to say."""
+    if engine is None:
+        return None
+    if engine["timed_out"]:
+        return f"the engine pass timed out after {ENGINE_SECONDS} seconds"
+    if engine["exit"] not in (0, 1) or "languages" not in engine:
+        return f"the engine pass {'wrote no report' if engine['exit'] in (0, 1) else 'exited with ' + str(engine['exit'])}: {engine['stderr'][-400:]}"
+    return None
+
+
 def _prepare(project: Path, target: Path, rules: str, links: bytes | None, model: str,
-             budget: float) -> tuple[Path, dict | None]:
-    """The Codebase Map run before any session, and the rules session when `rules` is `session`.
+             budget: float) -> tuple[Path, dict | None, dict | None]:
+    """The Codebase Map run before any session, and the rules session when `rules` is `session`; with the engine
+    pass's answer (`_engine_pass`, None when a rules file replaced it).
 
     A rules file is recorded and its links, computed before with the engine pass, replace the cache. Otherwise the
     engine pass runs here, and the rules session is the app's: the `LINKS` task with the rule format the service
@@ -364,11 +424,10 @@ def _prepare(project: Path, target: Path, rules: str, links: bytes | None, model
         kept = json.loads(cache.read_text(encoding="utf-8"))
         kept["links"] = json.loads(links)
         cache.write_text(json.dumps(kept), encoding="utf-8")
-        return manifest, None
-    _run([sys.executable, f"{SCRIPTS}/resolve_edges.py", str(manifest), "--pass",
-          "--report-out", str(HOME / "engine-report.json")], ok=(0, 1), timeout=ENGINE_SECONDS)
+        return manifest, None, None
+    engine = _engine_pass(manifest)
     if rules == "none":
-        return manifest, None
+        return manifest, None, engine
     import app as daodan_app
     needs = service.flows(RUN_ID)
     if needs.get("status") != "needs_rules":
@@ -385,7 +444,7 @@ def _prepare(project: Path, target: Path, rules: str, links: bytes | None, model
     arguments = engines.ClaudeCode().arguments(
         {"mcp": {"command": "daodan", "args": ["mcp", "--project", str(project)]}}, folder)
     command = [*AS_RUNNER, "claude", *arguments, "--model", MODELS[model], "--max-budget-usd", str(budget)]
-    return manifest, {"command": command, "prompt": prompt, "cwd": folder}
+    return manifest, {"command": command, "prompt": prompt, "cwd": folder}, engine
 
 
 def _through(environment: dict, model: str) -> dict:
@@ -487,10 +546,17 @@ def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: byt
     sys.path.insert(0, SCRIPTS)
     import flows
     started = time.time()
-    manifest, writer = _prepare(project, target, rules, links, model, budget)
+    manifest, writer, engine = _prepare(project, target, rules, links, model, budget)
     summary = {"case": name, "scope": scope, "model": MODELS[model], "rep": rep,
                "rules": mode, "rules_from": origin, "budget_usd": budget,
-               "prepared_seconds": round(time.time() - started)}
+               "prepared_seconds": round(time.time() - started), "engine": engine}
+    if (HOME / "engine-report.json").is_file():  # what each analyzer came to, kept with the run
+        _save(tag, f"{label}/engine-report.json", (HOME / "engine-report.json").read_text(encoding="utf-8"))
+    if failure := _engine_failure(engine):  # no session is paid for on a pass that left nothing
+        summary["stopped"] = failure
+        _save(tag, f"{label}/summary.json", summary)
+        volume.commit()
+        return summary
     _own()
     _run([*AS_RUNNER, "daodan", "mcp", "--help"], cwd=str(project), timeout=300)  # the server the sessions start
     sessions = {}
@@ -524,6 +590,169 @@ def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: byt
     _save(tag, f"{label}/summary.json", summary)
     volume.commit()
     return summary
+
+
+@app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume}, single_use_containers=True)
+def whole_case(name: str, case: dict, archive: bytes | None, counts: str | None, tag: str) -> dict:
+    """What a whole job (`whole`) keeps per case for `score.py whole`, under TAG/cases/CASE/: the counts of the
+    archive (`code_archive.py`'s, `archive.json`), the answer of the engine pass (`engine.json`) and, when the pass
+    left something to build on, the entry candidates with the snapshot's files (`candidates.json`, `files.txt`).
+    The pass's containers are Modal Sandboxes: nothing of the project runs in this function."""
+    work = Path("/work") / name
+    target = _source(work / "src", case, archive)
+    manifest = work / "snapshot/manifest.sqlite"
+    _run([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out", str(manifest), "--no-engine",
+          "--no-index"])
+    engine = _engine_pass(manifest)
+    if counts:
+        _save(tag, f"cases/{name}/archive.json", counts)
+    _save(tag, f"cases/{name}/engine.json", engine)
+    failure = _engine_failure(engine)
+    if not failure:
+        sys.path.insert(0, SCRIPTS)
+        import entries
+        import flows
+        import system_map
+        links = flows.link_facts(manifest, [])
+        _save(tag, f"cases/{name}/candidates.json",
+              {"case": name, "candidates": entries.candidates(links, manifest),
+               "calls": sorted({(e["from"], e["to"]) for e in links["edges"] if e["type"] in entries.CALLS})})
+        _save(tag, f"cases/{name}/files.txt", "".join(f"{path}\n" for path in sorted(system_map._headers(manifest))))
+    volume.commit()
+    return {"case": name, "engine": engine, "stopped": failure}
+
+
+NETWORK_PROBE = """import urllib.request
+for name, url in (("registry", "https://pypi.org/simple/"), ("outside", "https://example.com/"),
+                  ("plain", "http://pypi.org/simple/"), ("address", "https://1.1.1.1/")):
+    try:
+        urllib.request.urlopen(url, timeout=20).close()
+        print(name, "reached")
+    except Exception as error:
+        print(name, "refused", type(error).__name__)
+"""
+VOLUME_PROBE = ("ls /results 2>&1; echo '--- found'; find / -name secret.txt 2>/dev/null; echo '--- write'; "
+                "touch /mnt/daodan-in/x 2>&1; echo write=$?")
+
+
+def _proof_archive() -> bytes:
+    """The proof's fixture as the archive a case comes as (`_source`): its files, but the reference."""
+    import io
+    import tarfile
+    root = Path(ENGINE_FOLDER) / "fixtures" / PROOF
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w") as tar:
+        for path in sorted(root.rglob("*")):
+            if path.is_file() and path.name != "expected.json":
+                tar.add(path, arcname=path.relative_to(root).as_posix())
+    return buffer.getvalue()
+
+
+def _proof_run(name: str, command: list[str], **options) -> tuple[dict, str]:
+    """`container.run_in_container` as the pipeline calls it, on Modal Sandboxes, over a one-file project: its
+    result and the text of its `prepare.log` and `execute.log`."""
+    import container
+    from indexers.python import IMAGE  # an image the rounds on Modal have run through `sandbox_run`
+    project, out = Path("/tmp/proof") / name / "project", Path("/tmp/proof") / name / "out"
+    project.mkdir(parents=True, exist_ok=True)
+    (project / "file.txt").write_text("a file\n", encoding="utf-8")
+    result = container.run_in_container(project, command, image=IMAGE, out_dir=out, **options)
+    logs = "".join((out / log).read_text(encoding="utf-8", errors="replace") for log in ("prepare.log", "execute.log")
+                   if (out / log).is_file())
+    return result, logs
+
+
+@app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume}, single_use_containers=True)
+def engine_proof(tag: str) -> dict:
+    """The container in the run of the map, on one fixture and before the five cases (task 1 of the plan of the
+    unified analysis). Five checks, each with its evidence:
+
+    1. `engine-report.json` says scip-typescript `fresh` on the fixture (`_prepare`, the pass in a child process);
+    2. the dynamic step's observed edge is in the store: the engine reached the child process, and the test ran
+       in a sandbox under the recorder;
+    3. the preparation refuses a destination outside its registries (a host, a plain-HTTP address, an address) and
+       reaches one of them;
+    4. a sandbox does not see another case's results on the volume, and cannot write to its own folder;
+    5. nothing is left after a run that fails (its folder on the volume, a running sandbox), at its preparation or
+       before its sandbox exists. It counts the live sandboxes of the shared app `daodan-pipeline-sandboxes`: no other
+       round may run while this one does."""
+    import sqlite3
+    import time
+    sys.path[:0] = [SCRIPTS, ENGINE_FOLDER]
+    import modal_pipeline
+    import container
+    checks = {}
+    scratch = Path("/results") / modal_pipeline.SCRATCH
+    before = {path.name for path in scratch.iterdir()} if scratch.is_dir() else set()
+
+    project = HOME / PROOF
+    target = _source(project, {"target": "."}, _proof_archive())
+    manifest, _, engine = _prepare(project, target, "none", None, "haiku", 0)
+    report = json.loads((HOME / "engine-report.json").read_text(encoding="utf-8")) \
+        if (HOME / "engine-report.json").is_file() else {}
+    fresh = (engine.get("languages") or {}).get("javascript") == "fresh" and "scip-typescript" in (report.get("engines") or {})
+    checks["scip_typescript_fresh"] = {"pass": fresh, "evidence": {"engine": engine, "engines": sorted(report.get("engines") or {})}}
+    store = manifest.with_name("engine-edges.sqlite")
+    observed, total = [], None
+    if store.is_file():  # the dynamic step saves its rows in the analyzers' store (`code_graph.write_observed`)
+        with sqlite3.connect(store) as database:
+            observed = database.execute("SELECT file, kind, symbol, target_id FROM edges WHERE confidence = 'observed' "
+                                        "AND file LIKE '%src/index.js' LIMIT 5").fetchall()
+            total = database.execute("SELECT COUNT(*) FROM edges WHERE confidence = 'observed'").fetchone()[0]
+    checks["dynamic_edge_observed"] = {"pass": bool(observed), "evidence": {"in_src_index_js": observed,
+                                                                             "observed_in_the_store": total}}
+    # only from here on this process runs containers itself, as the pass's child process did until now
+    modal_pipeline.engine_on_modal(container)
+
+    result, logs = _proof_run("network", ["true"], prepare=["python", "-c", NETWORK_PROBE])
+    said = dict(line.split()[:2] for line in logs.splitlines() if line.split()[:1] in (["registry"], ["outside"],
+                                                                                        ["plain"], ["address"]))
+    checks["preparation_refuses_outside_registries"] = {
+        "pass": said == {"registry": "reached", "outside": "refused", "plain": "refused", "address": "refused"}
+        and result["state"] == "done", "evidence": {"said": said, "state": result["state"], "cause": result.get("cause")}}
+
+    canary = Path("/results") / tag / "other-case" / "secret.txt"
+    canary.parent.mkdir(parents=True, exist_ok=True)
+    canary.write_text("another case's result\n", encoding="utf-8")
+    volume.commit()
+    result, logs = _proof_run("volume", ["sh", "-c", VOLUME_PROBE])
+    after_found = logs.split("--- found")[-1].split("--- write")[0]
+    checks["sandbox_does_not_read_other_results"] = {
+        "pass": "secret.txt" not in after_found and "No such file" in logs.split("--- found")[0]
+        and "write=0" not in logs, "evidence": {"log": logs[-800:], "state": result["state"]}}
+
+    failed, _ = _proof_run("failed-preparation", ["true"], prepare=["sh", "-c", "exit 3"])
+    broken = container.run_in_container(Path("/tmp/proof/network/project"), ["true"], image="invalid.invalid/none:none",
+                                        out_dir=Path("/tmp/proof/broken/out"))
+    volume.reload()
+    left = ({path.name for path in scratch.iterdir()} if scratch.is_dir() else set()) - before
+    running = None
+    try:  # a terminated sandbox leaves the list a moment later
+        app_id = modal.App.lookup("daodan-pipeline-sandboxes").app_id
+        for _ in range(15):
+            running = len(list(modal.Sandbox.list(app_id=app_id)))
+            if not running:
+                break
+            time.sleep(2)
+    except Exception as error:  # the proof says what it could not count
+        running = f"not counted: {type(error).__name__}: {error}"
+    checks["everything_removed_after_an_error"] = {
+        "pass": failed["state"] != "done" and broken["state"] != "done" and not left and running == 0,
+        "evidence": {"states": [failed["state"], broken["state"]], "left_on_the_volume": sorted(left),
+                     "sandboxes_running": running, "causes": [str(failed.get("cause"))[:300], str(broken.get("cause"))[:300]]}}
+    _save(tag, "engine-proof.json", checks)
+    volume.commit()
+    return checks
+
+
+@app.local_entrypoint()
+def engine_proof_run(tag: str = "engine-proof", out: str = ""):
+    checks = engine_proof.remote(tag)
+    for name, check in checks.items():
+        print("PASS" if check["pass"] else "FAIL", name)
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    Path(out or RESULTS / "engine-proof.json").write_text(json.dumps(checks, indent=1, ensure_ascii=False) + "\n",
+                                                          encoding="utf-8")
 
 
 @app.local_entrypoint()
@@ -674,6 +903,27 @@ def spawn(args) -> None:
     print(json.dumps(calls, indent=1))
 
 
+def whole(args) -> None:
+    """The one job of the unified analysis, from the archives: a `whole_case` per case and an independent `map_run`
+    per case, model and repetition. A repetition is a preparation of its own, with its own rules session (`reps=1`:
+    none is handed on), so that `score.py whole` can say how stable the map is. With no model, only the cases run."""
+    tars = _pairs(args.tar, "tar")
+    cases = modal.Function.from_name("daodan-system-map", "whole_case")
+    runs = modal.Function.from_name("daodan-system-map", "map_run")
+    calls = {}
+    for name in args.cases.split(","):
+        archive = _inputs(name, "session", tars, {})[0]
+        sidecar = Path(tars[name]).with_suffix(".json") if name in tars else None  # `code_archive.py`'s counts
+        counts = sidecar.read_text(encoding="utf-8") if sidecar is not None and sidecar.is_file() else None
+        calls[f"{name} case"] = cases.spawn(name, CASES[name], archive, counts, args.tag).object_id
+        for model in (m for m in args.models.split(",") if m):
+            for rep in range(1, args.reps + 1):
+                calls[_label(name, "system", model, "session", rep)] = runs.spawn(
+                    name, CASES[name], archive, "session", None, "system", model, rep, args.tag, args.budget,
+                    reps=1).object_id
+    print(json.dumps(calls, indent=1))
+
+
 def _arguments(argv: list[str] | None = None):
     import argparse
     parser = argparse.ArgumentParser(description="Start runs of the deployed app `daodan-system-map`.")
@@ -692,12 +942,20 @@ def _arguments(argv: list[str] | None = None):
     one.add_argument("--models", default="haiku,sonnet", help=f"comma-separated, of {', '.join(MODELS)}")
     one.add_argument("--reps", type=int, default=2)
     one.add_argument("--budget", type=float, default=BUDGET_USD, help="USD per session")
+    every = commands.add_parser("whole", help="the unified analysis: a job per case, and independent runs of the map")
+    every.add_argument("--tag", required=True, help="the folder of the job on the volume")
+    every.add_argument("--cases", required=True, help=f"comma-separated, of {', '.join(CASES)}")
+    every.add_argument("--tar", action="append", default=[], metavar="CASE=PATH",
+                       help="the archive of a case (`code_archive.py`), repeatable; its counts are PATH with .json")
+    every.add_argument("--models", default="", help=f"comma-separated, of {', '.join(MODELS)}; none: only the cases")
+    every.add_argument("--reps", type=int, default=2, help="independent runs per case and model")
+    every.add_argument("--budget", type=float, default=BUDGET_USD, help="USD per session")
     by_links = commands.add_parser("spawn-links", help="the links of a cloned case; the volume gets links-CASE.json")
     by_links.add_argument("case", choices=[name for name, case in CASES.items() if "repo" in case and "rules" in case])
     by_links.add_argument("tag")
     args = parser.parse_args(argv)
-    if args.command == "spawn":
-        unknown = [m for m in args.models.split(",") if m not in MODELS] + \
+    if args.command in ("spawn", "whole"):
+        unknown = [m for m in args.models.split(",") if m and m not in MODELS] + \
                   [c for c in args.cases.split(",") if c not in CASES]
         if unknown:
             parser.error(f"unknown models or cases: {', '.join(unknown)}")
@@ -711,5 +969,7 @@ if __name__ == "__main__":
         print(function.spawn(arguments.case, CASES[arguments.case],
                              (ROOT / CASES[arguments.case]["rules"]).read_text(encoding="utf-8"),
                              arguments.tag).object_id)
+    elif arguments.command == "whole":
+        whole(arguments)
     else:
         spawn(arguments)

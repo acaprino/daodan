@@ -2009,7 +2009,7 @@ def the_driver():
     import modal_pipeline
     volume, sent = modal_pipeline.volume, set()
     own = f"{modal_pipeline.SCRATCH}/test-{uuid.uuid4().hex[:12]}"
-    bundle = f"project-model/{Path(modal_pipeline.DOCKER[0]).name}"
+    bundle = f"{modal_pipeline.BUNDLES.lstrip('/')}/{Path(modal_pipeline.DOCKER[0]).name}"
 
     def commit():
         root = Path("/results")
@@ -2223,7 +2223,8 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
         bundle = modal_pipeline._bundle()
         box = modal.Sandbox.create(image=image, app=modal.App.lookup("daodan-pipeline-sandboxes",
                                                                        create_if_missing=True),
-                                   volumes={"/results": modal_pipeline.volume},
+                                   volumes={modal_pipeline.IN_BUNDLES: modal_pipeline.volume.with_mount_options(
+                                       sub_path=modal_pipeline.BUNDLES, read_only=True)},  # as a run's sandbox sees it
                                    experimental_options=modal_pipeline.VM, timeout=1200, cpu=2, memory=6144)
         try:
             modal_pipeline._daemon(box, bundle)
