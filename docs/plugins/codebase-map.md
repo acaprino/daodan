@@ -74,9 +74,9 @@ Un `.sql` con marcatori Oracle è PL/SQL. Python richiesto `>= 3.12`: gli script
 
 ## Pipeline
 
-Daodan legge un progetto e ne scrive un grafo: file, simboli, chiamate, moduli e tecnologie, ognuno con la sua prova. Lo fa in sette step, sempre nello stesso ordine. Ogni step usa lo strumento ufficiale di ciò che legge, dietro un adattatore, e dice ciò che non è riuscito a fare.
+Daodan legge un progetto e ne scrive un grafo: file, simboli, chiamate, moduli e tecnologie, ognuno con la sua prova. Il disegno ha sette step, sempre nello stesso ordine. Ogni step usa lo strumento ufficiale di ciò che legge, dietro un adattatore, e dice ciò che non è riuscito a fare.
 
-I nomi degli step sono quelli approvati il 22 novembre 2026 (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8); il codice ne usa ancora alcuni di prima, elencati in «Nel codice oggi».
+Sette step e i loro nomi sono il disegno approvato il 22 novembre 2026 (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8), non ancora il codice: oggi la pipeline ne esegue cinque, con i nomi di prima, `parse` gira prima di essa e `plan` manca. Lo dice «Nel codice oggi».
 
 ### Il processo
 
@@ -94,11 +94,11 @@ flowchart LR
 
 | Step | Domanda a cui risponde | Adattatori | Strumento sotto | Esegue il progetto |
 | --- | --- | --- | --- | --- |
-| 1 `parse` | Che cosa c'è in ogni file? | parser | tree-sitter, `ast` di Python | No |
+| 1 `parse` | Che cosa c'è in ogni file? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
 | 2 `scan` | Quali moduli, unità di build e comandi di test dichiara? | scanner | cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
-| 3 `recognize` | Quali framework, librerie, strumenti e servizi usa? | nessuno | il registro delle tecnologie | No |
-| 4 `plan` | Quale adattatore gira su quale parte, e quale no? | nessuno | — | No |
-| 5 `resolve` | Dove arriva ogni chiamata? | resolver | gli indicizzatori SCIP, uno per linguaggio | Solo nel container |
+| 3 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork; oggi il registro delle tecnologie | No |
+| 4 `plan` (manca) | Quale adattatore gira su quale parte, e quale no? | nessuno | — | No |
+| 5 `resolve` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
 | 6 `observe` | Che cosa chiamano davvero i test? | observer | un registratore per linguaggio | Solo nel container |
 | 7 `connect` | Qual è il grafo intero, e che cosa non contiene? | nessuno | — | No |
 
@@ -106,13 +106,14 @@ Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
 
 ### Regole
 
-- **Un orchestratore solo** (`pipeline/`) esegue gli step. Ogni step dichiara ciò che legge, ciò che scrive e che cosa succede se fallisce: o la corsa si ferma con causa e rimedio, o va avanti e lo dice.
-- **Un adattatore per strumento.** Tutta la logica di uno strumento sta nel suo adattatore, che si dichiara con nome e versione. Daodan non riscrive parser né compilatori.
-- **Il piano è un dato.** `plan` scrive, per ogni tecnologia trovata, l'adattatore, le sue unità e se chiede il container; oppure la lacuna con la causa. Gli step dopo eseguono quel piano.
+- **Un orchestratore solo** (`scripts/pipeline/`) esegue gli step. Ogni step dichiara ciò che legge, ciò che scrive e che cosa succede se fallisce: o la corsa si ferma con causa e rimedio, o va avanti e lo dice.
+- **Un adattatore per strumento.** Tutta la logica di uno strumento sta nel suo adattatore, che si dichiara con nome e versione. Daodan non riscrive parser né compilatori; fanno eccezione, oggi, SQL e PL/SQL, letti con espressioni regolari (`scripts/languages/sql.py`, `plsql.py`).
+- **Il piano è un dato** (approvato, non ancora nel codice). `plan` dà, per ogni tecnologia trovata, l'adattatore, le sue unità e se chiede il container; oppure la lacuna con la causa. Gli step dopo eseguono quel piano.
 - **Il codice del progetto gira solo nel container di Daodan.** Senza container lo step che ne ha bisogno è una lacuna, mai un'esecuzione sull'host.
 - **Ogni arco dice chi l'ha prodotto e quanto vale:** provato da un resolver, incerto, osservato in una corsa dei test, campionato.
 - **Una lacuna non è mai silenzio:** un linguaggio senza adattatore, un test non partito, un file che nessun indice copre sono scritti nel risultato.
-- **Tutto si segue mentre accade:** ogni step e ogni adattatore emette eventi (inizio, avanzamento, lacuna, fine), salvati in un giornale accanto allo snapshot.
+- **Tutto si segue mentre accade:** ogni step e ogni adattatore emette eventi (inizio, avanzamento, lacuna, fine), salvati in un giornale accanto allo snapshot. Lo `step.finished` di uno step fallito che la pipeline tollera porta `failed` con la causa.
+- **Un guasto resta dove nasce.** Un listener che fallisce, un giornale che non si può scrivere, una riga rotta del giornale, il programma di un adattatore che non parte: ognuno è detto con la causa e non ferma il resto. Che cosa resta aperto: spec, 8.4.
 
 ### Esempi
 
@@ -182,7 +183,7 @@ flowchart LR
 
 I resolver girano dal più leggero al più pesante in memoria: scip-java prima di scip-kotlin. Ognuno carica solo il suo indice, quindi le chiamate fra Java e Kotlin restano senza arco, e `connect` lo scrive.
 
-#### Un progetto Python, senza motore di container
+#### Un progetto Python con uv, senza motore di container
 
 ```mermaid
 flowchart LR
@@ -225,7 +226,7 @@ Lo snapshot (`parse`) si scrive prima della pipeline, con gli adattatori di `scr
 4. `dynamic` (diventa `observe`): i test del progetto sotto un registratore (sezione Passo dinamico).
 5. `union` (diventa `connect`): i grafi delle tecnologie come grafo completo, con ciò che la corsa ha osservato e ciò che il grafo non contiene: file che un indice ha lasciato fuori, linguaggi senza analyzer, chiamate fra i linguaggi di due analyzer.
 
-Lo step `plan` non c'è: quale adattatore gira su cosa lo decidono la pre-mappa, `engine_pass.pass_plan` e il `plan` di ogni osservatore. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
+Lo step `plan` non c'è: quale adattatore gira su cosa lo decidono la pre-mappa, `engine_pass.pass_plan` e il `plan` di ogni osservatore. Il riconoscimento usa ancora il registro (`service_registry.py`): il passaggio al fork di stack-analyser è approvato (`docs/specs/2026-11-21-stack-dal-fork.md`) e non applicato. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
 
 Spec: `docs/specs/2026-11-15-pipeline-di-analisi.md`.
 

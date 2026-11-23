@@ -152,7 +152,7 @@ Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tes
 
 **8.2 Proposta.**
 
-1. **Uno step `plan`** dopo lo stack scrive il grafo di processo del progetto come dato: per ogni tecnologia trovata l'adattatore, il suo strumento e la versione, le sue unità, se chiede il container, da quale altro dipende; oppure la lacuna con la causa. Gli step dopo eseguono quel piano e non ne calcolano uno loro; l'interfaccia lo mostra prima che parta.
+1. **Uno step `plan`** dopo lo stack dà il grafo di processo del progetto come dato: per ogni tecnologia trovata l'adattatore, il suo strumento e la versione, le sue unità, se chiede il container, da quale altro dipende; oppure la lacuna con la causa. Gli step dopo eseguono quel piano e non ne calcolano uno loro. Lo calcola una funzione sola, dalla pre-mappa e dalle dichiarazioni degli adattatori: non stabilisce fatti nuovi sul progetto, che restano della pre-mappa, solo scelte. È il risultato dello step e un suo evento; un file a parte entra quando l'interfaccia lo mostra prima che l'analisi parta, non prima. *Corretto il 23 novembre 2026: la prima stesura chiedeva subito un file, un doppione di ciò che la pre-mappa dichiara già («come ogni unità viene analizzata»).*
 2. **Una dichiarazione comune:** `NAME` e `VERSION` per ogni adattatore, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa una dipendenza dichiarata. Aperto.
 3. **Lo snapshot diventa il primo step,** come la sezione 1 dice già.
 4. **La freschezza si controlla in `pipeline._run`,** sull'impronta degli ingressi dichiarati.
@@ -164,18 +164,19 @@ Nessun motore generico di grafi e nessun sistema di plugin: gli step sono una li
 
 | Step oggi | Step proposto | Adattatore | Cartella oggi → proposta | Strumento sotto |
 | --- | --- | --- | --- | --- |
-| `snapshot.py write`, fuori | `parse` | parser | `languages/` → `parsers/` | tree-sitter, `ast` di Python |
+| `snapshot.py write`, fuori | `parse` | parser | `languages/` → `parsers/` | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari (`languages/sql.py`, `plsql.py`) |
 | `scan` | `scan` | scanner | `premap/` → `scanners/` | cargo, gradle, maven, npm, cmake, … |
-| `stack` | `recognize` | nessuno: il registro | `technologies.py`, `stack_analyser.py` | il registro delle tecnologie |
+| `stack` | `recognize` | recognizer | `stack_analyser.py` | stack-analyser, il fork ([spec del 21 novembre](2026-11-21-stack-dal-fork.md): approvata, non ancora collegata allo step; oggi il registro, `service_registry.py`) |
 | manca | `plan` | nessuno | `pipeline/` | — |
-| `analyze` | `resolve` | resolver | `indexers/` → `resolvers/` | gli indicizzatori SCIP |
+| `analyze` | `resolve` | resolver | `indexers/` → `resolvers/` | un indicizzatore SCIP per tecnologia (scip-typescript ne serve quattro linguaggi); per i fogli di stile i loro parser |
 | `dynamic` | `observe` | observer | `dynamic/` → `observers/` | i registratori (`*_record.*`) |
 | `union` | `connect` | nessuno | `pipeline/` | — |
 
 | Parola oggi | Problema | Proposta |
 | --- | --- | --- |
 | `engine` | Tre cose: il motore di container (`container.find_engine`), i modelli a cui l'app dà un compito (`engines.py`), il passaggio degli indicizzatori (`engine_pass.py`, `EngineSpec`, `engine-edges.sqlite`, `engine-report.json`) | `engine` resta solo al motore di container, che è la parola di Docker e Podman; il passaggio prende i nomi di `resolve`; i modelli diventano `reasoner` (aperto) |
-| analyzer, indexer, adapter | Tre parole per l'adattatore dello step 2; «analyzer» vale per ogni step | resolver, che è già la colonna dello store che dice chi ha prodotto un arco. Sostituisce `analyzers/` della sezione 4 |
+| analyzer, indexer, adapter | Tre parole per l'adattatore dello step 2; «analyzer» vale per ogni step | resolver. Sostituisce `analyzers/` della sezione 4 |
+| `resolver` (colonna dello store) | Nomina chiunque abbia prodotto un arco: un resolver, ma anche un observer e il resolver lessicale dello snapshot. Con il nome nuovo dello step 5 la parola avrebbe due sensi | La colonna diventa `producer` al prossimo cambio di schema; fino ad allora resta. Aperto (A1). *Corretto il 23 novembre 2026: la prima stesura portava la colonna come motivo del nome.* |
 | `analyzer.started`, `.finished`, `.unavailable` | Li emettono anche gli osservatori | `adapter.started`, `.finished`, `.unavailable`, con il campo `adapter` |
 | source (in `premap/`) | Si confonde con il sorgente del progetto | scanner; il grado `scanner` di `RANKS` (go-enry, noir) diventa `detector` |
 | premap, pre-map | Due grafie; dice quando viene, non che cosa è | project model, già il nome di `benchmarks/project-model` e dei comandi di modello |
@@ -183,7 +184,24 @@ Nessun motore generico di grafi e nessun sistema di plugin: gli step sono una li
 | step, stage, phase, pass | Quattro livelli senza una regola scritta | `step` della pipeline; `stage` un adattatore sulle sue unità, il nodo del piano; `phase` dentro uno stage; `pass` da confrontare con `run`, non letto |
 | I passi del README (Static, Inference, Dynamic, Semantic) | Non sono i nomi degli step | Il README usa i nomi degli step; Semantic resta dopo la pipeline |
 
-**Costo e limiti.** I nomi degli step e degli eventi sono letti da `mcp_service.py`, dall'interfaccia costruita in `daodan/assets/app/` e da quindici file di `tests/`; i nomi sul disco (`premap.json`, `engine-edges.sqlite`, `engine-report.json`) da CLI, MCP, viewer e benchmark (sezione 1, «Scansione», punto 5). Il cambio entra una famiglia per volta, con le uscite uguali (sezione 5); i nomi sul disco cambiano solo con un cambio di schema, da decidere. Quanti punti del codice tocca non è contato.
+**Costo e limiti.** I nomi degli step e degli eventi sono letti da `mcp_service.py`, dall'interfaccia costruita in `daodan/assets/app/` e dai test che nominano step ed eventi; i nomi sul disco (`premap.json`, `engine-edges.sqlite`, `engine-report.json`) da CLI, MCP, viewer e benchmark (sezione 1, «Scansione», punto 5). Il cambio entra una famiglia per volta, con le uscite uguali (sezione 5); i nomi sul disco cambiano solo con un cambio di schema, da decidere. Quanti punti del codice tocca non è contato.
+
+**8.4 Solidità del processo.** *Revisione del 23 novembre 2026 su `pipeline/` e su `engine_pass.run_pass`.* Prova: `tests/test_codebase_map_pipeline.py`.
+
+Corretto:
+
+1. **Un giornale che non si può scrivere fermava l'analisi** (disco pieno, permessi): l'errore usciva da `Bus.emit`. Ora i listener lo sanno una volta, con causa e rimedio, e gli eventi continuano ad arrivare loro.
+2. **Una riga rotta rendeva il giornale illeggibile per sempre:** `events.read` falliva su di essa a ogni lettura, e con lui `follow` e `runtime`. Ora la riga conta nel cursore e si salta. Ogni evento è una scrittura sola, così le righe di due processi che scrivono insieme non si mescolano.
+3. **Un programma di stage che non parte chiudeva l'intera analisi** (`OSError` in `engine_pass._launch`), e così un rapporto di stage che non è un oggetto. Ora fallisce quello stage e gli altri girano.
+4. **Uno step tollerato che fallisce finiva con uno `step.finished` uguale a quello di un successo.** Ora porta `failed` con la causa.
+5. **La lacuna «nessun arco osservato» perdeva la causa** quando lo step dinamico falliva o non girava in quell'analisi. Ora la dice.
+6. **Un `start` o `stop` che non nomina uno step** dava un errore di lista; ora è rifiutato prima di ogni evento, con i nomi validi.
+
+Aperto:
+
+- **Uno stage non ha un limite di tempo suo** (`_launch`): i comandi nel container hanno i loro, ma un indicizzatore che non risponde ferma l'analisi finché qualcuno non la interrompe (`stop_pass`). Serve un limite misurato per analyzer; un numero scelto senza misura fermerebbe indicizzazioni lunghe ma sane.
+- **Il giornale cresce a ogni analisi dello stesso snapshot** e `events.read` lo scorre dall'inizio a ogni lettura: il cursore è un numero di righe, parte del contratto di MCP. Un cursore in byte lo toglierebbe, cambiando quel contratto.
+- **Un'interruzione** (`KeyboardInterrupt`, un processo ucciso) lascia nel giornale uno step iniziato e mai finito: chi legge lo capisce solo dallo stato del passaggio (`engine_pass.pass_state`).
 
 ## Scelte
 
@@ -212,5 +230,5 @@ Dalla seconda revisione esterna del 20 novembre 2026 (sezione 7):
 
 - **U1. Tutta l'analisi nel container?** La revisione propone di lasciare all'host solo avvio, avanzamento e lettura dei risultati. Oggi snapshot, stack e unione girano sull'host, e scip-python sull'host su Linux e macOS: leggono il progetto e non lo eseguono, che è ciò che la regola di `AGENTS.md` chiede. A favore: un ambiente solo e artefatti condivisi senza copie. Contro: la sezione 6 (sotto il blocco del progetto nulla aspetta il container, e la scansione veloce dura pochi millisecondi a ogni modifica) e l'uso senza motore di container, dove oggi Daodan dà comunque snapshot e grafo statico con le lacune. Raccomandazione: no; condividere gli artefatti attraverso lo store e tenere sull'host ciò che solo legge. **Deciso dal proprietario il 20 novembre 2026: no**, come la raccomandazione.
 - **U2. Le regole della sezione 7.3** (un indice letto da tutti, un avvio per stato dei dati, l'esplorazione sullo scoperto): entrano dopo la misura del task 2b, che dice quanto costa oggi ogni doppione.
-- **A1. L'armonizzazione e i nomi della sezione 8.** **Deciso dal proprietario il 22 novembre 2026: sì**, anche `reasoner`. Restano aperte le tre scelte che non sono un sì o un no: l'ordine di `SOURCES` (scritto, o dipendenza dichiarata), `pass` contro `run`, e quando cambiano i nomi sul disco.
+- **A1. L'armonizzazione e i nomi della sezione 8.** **Deciso dal proprietario il 22 novembre 2026: sì**, anche `reasoner`. Restano aperte le scelte che non sono un sì o un no: l'ordine di `SOURCES` (scritto, o dipendenza dichiarata), `pass` contro `run`, quando cambiano i nomi sul disco, il nome `producer` per la colonna `resolver` dello store e il limite di tempo di uno stage (8.4).
 - Le decisioni sulle superfici (osservare le interfacce desktop Python, il ponte Tauri) sono in [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), «Da decidere».
