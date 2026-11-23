@@ -215,8 +215,12 @@ def _store_answer(rows, target_kinds: dict) -> dict | None:
     if external:
         return {"target": None, "row": external[0], "external": external[0].get("external"),
                 "reason": external[0]["payload"].get("reason") or "external"}
-    values = any(row["verdict"] == "project-value" for row in sure)
-    return {"target": None, "row": sure[0], "reason": "project-value" if values else sure[0]["verdict"]}
+    values = [row for row in sure if row["verdict"] == "project-value"]
+    answer = {"target": None, "row": sure[0], "reason": "project-value" if values else sure[0]["verdict"]}
+    named = {(row.get("payload") or {}).get("binding_id") for row in values}  # the value's declaration, when one
+    if len(named) == 1 and None not in named:
+        answer["binding_id"] = named.pop()
+    return answer
 
 
 def load_edge_view(
@@ -424,6 +428,8 @@ def load_edge_view(
                 else:
                     record.update(target_id=None, resolution="unresolved", resolver=eng_resolver,
                                   confidence=None, provenance=[], target_kind=None, reason=answer["reason"])
+                    if answer.get("binding_id"):
+                        record["binding_id"] = answer["binding_id"]
                     if answer.get("external"):
                         record["external"] = answer["external"]
 

@@ -474,7 +474,7 @@ class Facts:
         if node is None:
             return None
         found = entries._string(node, tree.source, tree.grammar, exact=True)
-        if found is not None or node.type not in NAMES:
+        if found is not None or not (node.type in NAMES or node.type in MEMBERS and _dotted(node)):
             return found
         for declaration in self.constants(entries._text(tree.source, node), tree.file, *entries._at(node)):
             home = self.tree(declaration["file"])
@@ -795,19 +795,20 @@ def _store_key(value, tree: Tree, facts) -> str | None:
 
 
 def _unread_index(index, call: dict, facts) -> str:
-    """Why the index of a receiver is no text: one cause for each case, so a gap says what is missing. `self.NAME` and
-    `this.NAME` name the attribute of a class: the engine's index names its declaration (a value end, `project-value`) and
-    the view drops it (`edge_grading.grade`, `code_graph.Traversal.ends`, `edge_view.load_edge_view`), so no reader here
-    can tell what the attribute holds without a hand-written reading of the class, which also has to see every way
-    a name is assigned (a tuple, `+=`, `cls.NAME = ...`, `Class.NAME = ...` at module level, a default, `setattr`)."""
+    """Why the index of a receiver is no text: one cause for each case, so a gap says what is missing. An attribute of
+    `self`/`this`, or a dotted name, is read through the engine's declaration of it (`Facts.literal`); it is a gap when
+    the engine names none as written once."""
     import entries
     tree, node = call["tree"], _unwrapped(index)
     if node is not None and node.type in MEMBERS and _dotted(node):
+        if any(ref.get("binding_id") for ref in facts.reads.get((tree.file, *entries._at(node)), ())):
+            return f"receiver index {entries._text(tree.source, node)} names a declaration whose value is no text"
         owner = entries._text(tree.source, node.child_by_field_name("object"))
         if owner in entries.RECEIVERS:
-            return (f"receiver index is an attribute of {owner}: the engine's identity for the class attribute does not "
-                    "reach the view (edge_grading drops it)")
-        return "receiver index is a dotted name (`module.NAME`, `Class.NAME`): Facts.literal reads none"
+            return (f"receiver index is an attribute of {owner} with no declaration the engine names as written once "
+                    "(no engine index, an inherited or outside attribute, or a value written again)")
+        return ("receiver index is a dotted name (`module.NAME`, `Class.NAME`) with no declaration the engine names as "
+                "written once (no engine index, an outside name, or a value written again)")
     if node is not None and node.type in NAMES and any(
             ref.get("imported_name") for ref in facts.reads.get((tree.file, *entries._at(node)), ())):
         return f"receiver index {entries._text(tree.source, node)} is imported and the snapshot links it to no declaration"

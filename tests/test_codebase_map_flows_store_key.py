@@ -88,7 +88,7 @@ class StoreKeyTests(unittest.TestCase):
 
     def test_each_index_that_is_no_constant_has_its_own_cause(self):
         gaps = self.gaps("api/usage.py")
-        self.assertIn("dotted name", gaps["api/usage.py::by_module"])  # `module.NAME`: `Facts.literal` reads no dotted name
+        self.assertIn("dotted name", gaps["api/usage.py::by_module"])  # `module.NAME`: no engine store here, so no declaration
         self.assertNotIn("api/usage.py::by_module", users(self.links))
         self.assertNotEqual(gaps["api/usage.py::by_module"], gaps["api/usage.py::by_name"])
 
@@ -131,8 +131,8 @@ CLASSES = {"api/repository.py": (
 
 
 class ClassAttributeTests(unittest.TestCase):
-    """`self.NAME` as an index is the attribute of a class: the engine names its declaration, the view does not carry it
-    (edge_grading drops it), so it is a gap with that cause and never a key, whatever else the class does to the name."""
+    """`self.NAME` as an index is the attribute of a class: with no engine store in these snapshots the view carries no
+    declaration for it, so it is a gap with that cause and never a key, whatever else the class does to the name."""
 
     @classmethod
     def setUpClass(cls):
@@ -152,7 +152,7 @@ class ClassAttributeTests(unittest.TestCase):
         for name in ("Repo.load", "Repo.inherited", "Other.load", "Twice.load", "Own.load", "Pair.load", "Grown.load",
                      "Patched.load", "Defaulted.load", "BySetattr.load"):
             self.assertIn("attribute of self", gaps[f"api/repository.py::{name}"], name)
-            self.assertIn("edge_grading", gaps[f"api/repository.py::{name}"], name)
+            self.assertIn("written once", gaps[f"api/repository.py::{name}"], name)
         self.assertIn("attribute of this", gaps["api/view.js::View.load"])
 
     def test_an_attribute_of_another_object_is_a_dotted_name_not_an_attribute_of_self(self):
