@@ -85,7 +85,7 @@ class Scan:
         import modules
         import premap
         bus, manifest = context.bus, context.manifest
-        graph = modules.ensure_graph(manifest)
+        graph = modules.ensure_structure(manifest)
         if graph["state"] != "fresh":
             raise StepFailed(f"the module graph is {graph['state']}: {graph.get('reason', '')}",
                              "write the snapshot again")
@@ -169,7 +169,13 @@ class Union:
     @staticmethod
     def run(context: Context) -> dict:
         import collections
+        import modules
         import resolve_edges
+        graph = modules.ensure_graph(context.manifest)  # `imports` and `calls`, which `scan` leaves out
+        if graph["state"] != "fresh":
+            context.bus.emit("log", f"the module graph is {graph['state']}: {graph.get('reason', '')}", step=Union.NAME,
+                             level="error", cause=graph.get("reason", graph["state"]),
+                             remedy="scan again: the step that writes the module graph writes it again")
         state = resolve_edges.edge_state(context.manifest)
         languages = state.get("languages") or {}
 

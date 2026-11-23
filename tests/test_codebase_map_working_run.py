@@ -203,7 +203,7 @@ class WorkingRunTests(unittest.TestCase):
         self.assertIn("refresh is running", seen["gate"]["reason"])
 
         self.edit("app.py", "def greet():\n    return 'broken'\n")
-        with mock.patch.object(modules, "ensure_graph", return_value={"state": "failed", "reason": "boom"}):
+        with mock.patch.object(modules, "ensure_structure", return_value={"state": "failed", "reason": "boom"}):
             self.assertEqual(self.refresh()["status"], "failed")
         warned = self.service.read("working", [{"path": "src/app.py", "symbols": ["greet"]}])
         self.assertEqual(warned["state"], "needs_refresh")

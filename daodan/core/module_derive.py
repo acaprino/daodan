@@ -592,11 +592,12 @@ def _uses_edges(modules: list[dict], edges: _Edges) -> None:
 
 
 def _module_edges(store, inventory: _Inventory, modules: list[dict], units: list[dict], build_by_key: dict,
-                  file_owner: dict, symbol_owner: dict, by_id: dict, gaps: list[dict]) -> list[dict]:
+                  file_owner: dict, symbol_owner: dict, by_id: dict, gaps: list[dict], symbols: bool = True) -> list[dict]:
     edges = _Edges(by_id)
     _build_edges(inventory, modules, units, build_by_key, edges)
-    _import_edges(store, file_owner, symbol_owner, edges)
-    if symbol_owner or any(m["provenance"] not in PHYSICAL for m in modules):
+    if symbols:  # `imports` and `calls` join what `parse` reads to the modules: they are `connect`'s, not `scan`'s
+        _import_edges(store, file_owner, symbol_owner, edges)
+    if symbols and (symbol_owner or any(m["provenance"] not in PHYSICAL for m in modules)):
         try:
             for call in _call_edges(store, symbol_owner, file_owner):
                 edges.add("calls", call["source"], call["target"], edges.status(call["source"], call["target"]),
@@ -655,8 +656,9 @@ def build_graph(inventory: _Inventory) -> dict:
     return {"modules": modules, "edges": edges.listed(), "gaps": gaps}
 
 
-def derive(store, *, ledger: list[dict] | None = None) -> dict:
-    """Derive the module graph of a snapshot; deterministic for the same inputs."""
+def derive(store, *, ledger: list[dict] | None = None, edges: bool = True) -> dict:
+    """Derive the module graph of a snapshot; deterministic for the same inputs. With `edges=False` no symbol is read
+    and the graph has no `imports` and `calls` edges."""
     inventory = _Inventory(store)
     units, by_directory, build_modules, gaps = _build_units(inventory)
     modules = [*build_modules, *_virtual_source_tree(inventory, build_modules),
@@ -667,7 +669,8 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
     attach_toolchains(modules)
     file_owner, symbol_owner = _ownership(inventory, modules, by_id, gaps)
     build_by_key = {key: module["id"] for key, module in zip(by_directory, build_modules)}
-    edge_list = _module_edges(store, inventory, modules, units, build_by_key, file_owner, symbol_owner, by_id, gaps)
+    edge_list = _module_edges(store, inventory, modules, units, build_by_key, file_owner, symbol_owner, by_id, gaps,
+                              edges)
     modules.sort(key=lambda m: m["id"])
     for module in modules:
         module.pop("path_dependencies", None)
