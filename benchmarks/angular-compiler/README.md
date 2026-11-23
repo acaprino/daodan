@@ -123,6 +123,20 @@ Misurato con lo script finale (la prima volta, con una versione precedente, le r
 | le chiamate che il controllore dei tipi ha legato a un metodo del progetto in un altro file | **0**: in questo repository nessun template chiama un servizio del progetto; il caso `svc.cancel()` è provato solo sulla fixture. Nessuna chiamata è di una variabile del template | idem |
 | lacune che accompagnano la risposta | 3, della preparazione e non della lettura: un intervallo di Node (`>=24.21.0`) che non è una versione da installare e due file che Daodan non legge; nessuna lacuna di lettura dei template | idem |
 
+## Sonda dei tre punti aperti (scritta, non eseguita)
+
+`probe/13_open_points.mjs` (`PROBES=13_open_points.mjs ... modal run benchmarks/angular-compiler/modal_probe.py`, uscita in `results/13_open_points.txt`)
+costruisce un piccolo progetto suo sotto `/tmp` (le fixture registrate non cambiano) e stampa che cosa dà il controllore dei template:
+
+| Punto | Che cosa stampa | Decide |
+| --- | --- | --- |
+| `host: {…}` e `@HostListener` (componente e direttiva) | per ogni listener di `getHostElement`: `sourceSpan`, `keySpan`, `handlerSpan` (file, riga, colonna: stanno nel `.ts`?), `handler.source`, `getSymbolOfNode` sul listener e sulle chiamate | se c'è un `file:riga` dallo strumento; senza, il punto si ferma con la causa |
+| uscita o evento del DOM | per ogni evento: `bindings`, di ognuno `target` (`isComponent`, `selector`, classe) e la dichiarazione con `isSourceFileDefaultLibrary`; casi: `<app-editor (click)>` senza uscita `click`, un componente con un'uscita `click`, due direttive con la stessa uscita, `HTMLElementEventMap` esteso (`my-event`), `(ngSubmit)`, `[(ngModel)]` | il criterio che separa DOM e uscita (`target`, o la libreria di default come ripiego), e la forma della riga |
+| gestore proprietà-freccia | per ogni chiamata: tipo della dichiarazione (`SyntaxKind`), classe che la dichiara, tipo dell'inizializzatore; casi: `arrow = () => {}`, metodo ereditato, `this.target.bind(this)`, `signal.set()`, `optional?.()` | se lo strumento dà una dichiarazione che lo snapshot lega senza una regola a mano |
+
+Risultati: nessuno. La sonda non è stata eseguita (nessuna credenziale di Modal); nessuna riga di `angular.py` né dello script è cambiata,
+perché ogni modifica dello script rende rosso il test dell'impronta (`script.json`) finché le risposte non sono registrate di nuovo su Modal.
+
 ## Non provato
 
 - Una versione di Angular diversa dalla 20.3.35, 22.1.6 e 22.3.0. Prima della 20: `getTsSymbolOfSymbol` può mancare (lo script ripiega su `tsSymbol` del simbolo, non
