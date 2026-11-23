@@ -1110,9 +1110,9 @@ class NoirTests(unittest.TestCase):
         self.assertEqual(entries.noir(self.REPORT, "/work"), [
             {"reader": "noir", "shape": "http", "site": "app/api/healthz/route.ts:3",
              "symbol": "app/api/healthz/route.ts::GET", "method": "GET", "path": "/healthz", "kind": "rotta",
-             "handler": "GET"},
+             "handler": "GET", "schema": "/healthz"},
             {"reader": "noir", "shape": "http", "site": "server/routes.js:12", "symbol": "server/routes.js::<module>",
-             "method": "POST", "path": "/orders/:id", "kind": "rotta", "handler": None},   # no handler: its code path
+             "method": "POST", "path": "/orders/:id", "kind": "rotta", "handler": None, "schema": "/orders/{}"},   # no handler: its code path
             {"reader": "noir", "shape": "cli", "site": "bin/tool.py:8", "symbol": "bin/tool.py::<module>",
              "method": "CLI", "path": "cli://deploy", "kind": "comando", "handler": None},
             {"reader": "noir", "shape": "universal-link", "site": "ios/Shop.entitlements:6",

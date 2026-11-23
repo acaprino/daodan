@@ -12,7 +12,7 @@ SHOP_DIR = Path(__file__).resolve().parents[1] / "benchmarks/system-map/real-pat
 SHOP = {path.relative_to(SHOP_DIR).as_posix(): path.read_text(encoding="utf-8")
         for path in SHOP_DIR.rglob("*") if path.is_file() and path.name != "package-lock.json"}
 VALIDATOR = (Path(__file__).parent / "fixtures/premap/next/validator.ts").read_text(encoding="utf-8")
-SOURCE = "next@daodan/premap/v3"
+SOURCE = "next@daodan/premap/v4"
 CANDIDATES = {  # the five blocks of the validator: file -> (shape, route, kind)
     "app/checkout/page.tsx": ("AppPageConfig", "/checkout", "rotta"),
     "app/orders/[id]/page.tsx": ("AppPageConfig", "/orders/[id]", "rotta"),
@@ -311,3 +311,14 @@ def test_the_source_file_of_the_next_reader_is_part_of_the_key_of_the_cached_lin
         flows._links_reader_digest.__wrapped__()
     assert "nextjs.py" in seen
 
+
+
+def test_each_row_carries_the_path_schema_as_rest_reads_it_and_the_page_mark_from_its_table(tmp_path):
+    """`schema`: `[id]` is a parameter, a catch-all has none (None); `page` is the table's mark, on `AppPageConfig` alone."""
+    record, _, _ = read(tmp_path, SHOP, {".": done()})
+    by_file = {c["site"]: c for c in record["framework_entries"]}
+    assert by_file["app/orders/[id]/page.tsx"]["schema"] == "/orders/{}" and by_file["app/checkout/page.tsx"]["schema"] == "/checkout"
+    assert by_file["app/orders/[id]/page.tsx"]["page"] is True and "page" not in by_file["app/api/pay/route.ts"]
+    assert "page" not in by_file["app/layout.tsx"]
+    from premap import nextjs
+    assert nextjs._next_path("/docs/[...slug]") is None and nextjs._next_path("/a/[[...x]]") is None

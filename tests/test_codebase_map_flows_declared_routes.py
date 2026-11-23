@@ -101,7 +101,7 @@ def test_the_declared_routes_are_entries_on_the_functions_the_snapshot_resolves(
             ("next", "app/api/orders/[id]/route.ts::GET", "GET", "/api/orders/[id]"),
             ("next", "app/api/items/[id]/route.ts::GET", "GET", "/api/items/[id]"),
             ("next", "app/api/pay/route.ts::POST", "POST", "/api/pay"),
-            ("next", "app/checkout/page.tsx::Checkout", "GET", "/checkout")} <= found  # the page took Noir's method
+            ("next", "app/checkout/page.tsx::Checkout", None, "/checkout")} <= found  # a page has no method of its own: Noir's is not copied
     assert not any(path == "/ghost" for *_, path in found)
     assert any(g["site"] == "server/accounts.py:1" and "without a unique snapshot handler" in g["reason"]
                for g in links["gaps"])
@@ -109,11 +109,11 @@ def test_the_declared_routes_are_entries_on_the_functions_the_snapshot_resolves(
 
 def test_noir_and_next_on_one_route_spelled_two_ways_are_one_entry(links):
     """`:id` and `[id]` are one path schema: Noir's route on the page, or on the function the route handler starts, is
-    that entry (the page takes Noir's method)."""
+    that entry (a page keeps no method: Noir's is not copied onto it)."""
     found = [(e["reader"], e["symbol"], e.get("method"), e["path"]) for e in links["entries"]
              if e["symbol"] in ("app/orders/[id]/page.tsx::Order", "app/api/orders/[id]/route.ts::GET")]
     assert sorted(found) == [("next", "app/api/orders/[id]/route.ts::GET", "GET", "/api/orders/[id]"),
-                             ("next", "app/orders/[id]/page.tsx::Order", "GET", "/orders/[id]")]
+                             ("next", "app/orders/[id]/page.tsx::Order", None, "/orders/[id]")]
 
 
 def test_a_call_meets_the_noir_route_of_its_method_and_path(links):
@@ -192,8 +192,15 @@ def test_what_was_linked_before_is_linked_after_and_the_counts_rise(links):
 
 # ------------------------------------------------------------------ the pure parts
 
-def row(reader, shape, method="GET", path="/x", symbol="a.py::f", kind="rotta", site="a.py:1"):
-    return {"reader": reader, "shape": shape, "kind": kind, "symbol": symbol, "site": site, "method": method, "path": path}
+def row(reader, shape, method="GET", path="/x", symbol="a.py::f", kind="rotta", site="a.py:1", declares=True):
+    """A row as its adapter writes it: the route's `schema` when the adapter declares a route (Noir's `http`, Next.js's
+    route handler and page); the path spelled as the tool does becomes `REST`'s schema, None for a catch-all."""
+    from premap import nextjs
+    out = {"reader": reader, "shape": shape, "kind": kind, "symbol": symbol, "site": site, "method": method, "path": path}
+    if declares:
+        route = nextjs._next_path(path) if reader == "next" else path
+        out["schema"] = flows.path_schema(route) if route is not None else None
+    return out
 
 
 def declared(rows, offered=()):
@@ -204,11 +211,11 @@ def declared(rows, offered=()):
 def test_only_an_http_route_with_a_method_of_its_own_is_offered():
     rows = [row("noir", "http", path="/x"),
             row("next", "RouteHandlerConfig", "POST", "/api/y", "r.ts::POST", site="r.ts:1"),
-            row("next", "AppPageConfig", "GET", "/page", "p.tsx::Page", site="p.tsx:1"),  # the method is Noir's, copied
-            row("noir", "ws", path="/live", symbol="b.py::live"),                         # classified a route by a decision
-            row("noir", "server-action", "POST", "/act", "c.ts::act"),
-            row("noir", "cli", "CLI", "cli://deploy", "d.py::deploy", kind="comando"),
-            row("manifesto", "project.scripts", "GET", "/z", "e.py::z")]
+            {**row("next", "AppPageConfig", None, "/page", "p.tsx::Page", site="p.tsx:1"), "page": True},  # a page has no method of its own
+            row("noir", "ws", path="/live", symbol="b.py::live", declares=False),         # classified a route by a decision
+            row("noir", "server-action", "POST", "/act", "c.ts::act", declares=False),
+            row("noir", "cli", "CLI", "cli://deploy", "d.py::deploy", kind="comando", declares=False),
+            row("manifesto", "project.scripts", "GET", "/z", "e.py::z", declares=False)]
     points, gaps = declared(rows)
     assert points == [("a.py::f", ("*", "GET", "/x")), ("r.ts::POST", ("*", "POST", "/api/y"))] and gaps == []
 
@@ -228,7 +235,8 @@ def test_a_declared_route_that_cannot_be_keyed_is_a_gap_with_its_cause():
     points, gaps = declared([row("noir", "http", "GET", "https://example.org", "a.py::f", site="a.py:2"),
                              row("noir", "http", "", "/x", "b.py::g", site="b.py:3")])
     assert points == [] and [(g["site"], g["symbol"]) for g in gaps] == [("a.py:2", "a.py::f"), ("b.py:3", "b.py::g")]
-    assert "path" in gaps[0]["reason"] and "method" in gaps[1]["reason"]
+    assert "path" in gaps[0]["reason"] and "method" in gaps[1]["reason"]  # only a `page` has no method and is no gap
+    assert flows._declared_routes([{**row("next", "AppPageConfig", None, "/p", site="p.tsx:1"), "page": True}], []) == ([], [])
 
 
 def test_a_declared_route_of_a_function_method_and_path_schema_already_offered_is_dropped_whatever_its_service():

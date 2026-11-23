@@ -11,7 +11,7 @@
   "noir": {"http": "rotta", "cli": "comando", "universal-link": "evento del sistema operativo",
            "mobile-scheme": "evento del sistema operativo"},
   "noir_kinds": {"server-action": "nessun ingresso"},
-  "next": {"AppPageConfig": {"kind": "rotta", "exports": ["default"]},
+  "next": {"AppPageConfig": {"kind": "rotta", "exports": ["default"], "page": true},
            "RouteHandlerConfig": {"kind": "rotta", "methods": ["GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"]},
            "LayoutConfig": {"kind": "nessun ingresso"}},
   "react-router": {"route": {"kind": "rotta", "exports": ["default", "loader", "action", "clientLoader", "clientAction"]},

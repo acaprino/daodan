@@ -25,6 +25,10 @@ SOURCES = {
     "api/orders.ts": ("export function GET() {\n  return 1;\n}\n\nexport const LIMIT = 5;\n\n"
                       "export function POST() {\n  return 2;\n}\n"),
     "api/legacy.ts": "function handle() {\n  return 2;\n}\n\nexport { handle };\n",
+    "web/client.ts": ("function get(path: string) {\n  return path;\n}\n\nfunction post(path: string) {\n  return path;\n}\n\n"
+                      "export function loadOrder() {\n  return get(\"/orders/1\");\n}\n\n"
+                      "export function saveOrder() {\n  return post(\"/orders/1\");\n}\n\n"
+                      "export function openLegacy() {\n  return get(\"/legacy\");\n}\n"),
 }
 ROWS = [
     # a route handler's module: each method it exports is an entry on its function, with that method
@@ -42,15 +46,15 @@ ROWS = [
 ]
 
 
-def _links(tmp_path, monkeypatch):
+def _links(tmp_path, monkeypatch, rows=ROWS, rules=()):
     import flows
     _, manifest = manifest_of(tmp_path, SOURCES)
     premap.write(manifest, sources=())
     fake_file = tmp_path / "fake.py"
     fake_file.write_text("# a source of another framework\n", encoding="utf-8")
-    fake = types.SimpleNamespace(NAME="fake", __file__=str(fake_file), from_record=lambda report: (ROWS, []))
+    fake = types.SimpleNamespace(NAME="fake", __file__=str(fake_file), from_record=lambda report: (rows, []))
     monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, fake))
-    return flows.link_facts(manifest, [])
+    return flows.link_facts(manifest, list(rules))
 
 
 def test_the_exports_of_a_module_row_are_entries_on_their_functions_whatever_the_source(tmp_path, monkeypatch):
@@ -100,3 +104,47 @@ def test_no_source_of_the_entries_tuple_binds_a_row_itself():
             alias.name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
         attributes = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)}
         assert "semantic_store" not in named and not {"starts", "exported_target"} & attributes, source.NAME
+
+
+# --------------------------------------------------------------------- the row's fields, read by field (8.13, point 1)
+
+ROUTE_ROWS = [
+    # a route handler: each method it exports is an entry and a route it offers, on the path schema its tool gives
+    {"reader": "fake", "shape": "endpoint", "kind": "rotta", "site": "api/orders.ts", "symbol": "api/orders.ts::<module>",
+     "path": "/orders/:id", "schema": "/orders/{}", "methods": ["GET", "POST"], "sources": ["fake@v1"]},
+    # Noir on the same route, method and file is that entry, not a second
+    {"reader": "noir", "shape": "http", "kind": "rotta", "site": "api/orders.ts:1", "symbol": "api/orders.ts::<module>",
+     "path": "/orders/:id", "schema": "/orders/{}", "method": "GET", "handler": "GET", "sources": ["noir@1.5.0"]},
+    # a page answers any method: it offers no route, and the method Noir gives its path is not copied onto it
+    {"reader": "fake", "shape": "view", "kind": "rotta", "site": "api/legacy.ts", "symbol": "api/legacy.ts::<module>",
+     "path": "/legacy", "schema": "/legacy", "page": True, "exports": ["handle"], "sources": ["fake@v1"]},
+    {"reader": "noir", "shape": "http", "kind": "rotta", "site": "api/legacy.ts:2", "symbol": "api/legacy.ts::<module>",
+     "path": "/legacy", "schema": "/legacy", "method": "GET", "handler": "handle", "sources": ["noir@1.5.0"]},
+]
+CALLS = [{"written": verb, "in": ["web"], "link": "rotta", "route": {"service": "api", "method": verb.upper(), "path": "arg0"}}
+         for verb in ("get", "post")]
+
+
+def test_a_source_added_to_the_tuple_is_bound_joined_with_noir_and_offers_its_routes_with_no_other_line(tmp_path, monkeypatch):
+    links = _links(tmp_path, monkeypatch, ROUTE_ROWS, CALLS)
+    routed = {(e["from"], e["to"], e["route"][1]) for e in links["edges"] if e.get("route")}
+    assert routed == {("web/client.ts::loadOrder", "api/orders.ts::GET", "GET"),
+                      ("web/client.ts::saveOrder", "api/orders.ts::POST", "POST")}
+    orders = [e for e in links["entries"] if e.get("path") == "/orders/:id"]
+    assert sorted((e["method"], e["handler_source"]) for e in orders) == [("GET", "fake"), ("POST", "fake")]
+    [page] = [e for e in links["entries"] if e.get("path") == "/legacy"]
+    assert (page["symbol"], page["handler_source"], page.get("method")) == ("api/legacy.ts::handle", "fake", None)
+
+
+def test_the_pages_the_exploration_opens_are_the_rows_marked_page_whose_schema_has_no_parameter():
+    """Any source's page (`page`), not one framework's shape; a pattern (`/items/{}`) or a route with no single schema
+    is no page to open, and a route handler is no page."""
+    from dynamic import app
+    record = {"framework_entries": [
+        {"reader": "fake", "shape": "view", "page": True, "path": "/about", "schema": "/about", "site": "web/about.ts"},
+        {"reader": "fake", "shape": "view", "page": True, "path": "/items/:id", "schema": "/items/{}", "site": "web/items.ts"},
+        {"reader": "fake", "shape": "view", "page": True, "path": "/docs/[...all]", "schema": None, "site": "web/docs.ts"},
+        {"reader": "fake", "shape": "endpoint", "path": "/api/x", "schema": "/api/x", "site": "web/api.ts"},
+        {"reader": "fake", "shape": "view", "page": True, "path": "/other", "schema": "/other", "site": "admin/other.ts"}]}
+    assert app._pages(record, "web") == ["/about"]
+    assert app._pages(record, ".") == ["/about", "/other"]

@@ -194,7 +194,7 @@ def read(context, commands, results):
         server = spec["server-route"]
         for route, method, file in handlers:
             # shortcut: the route is the text Nitro wrote (`/api/users/:id`, `/api/files/**:path`), not a path schema a call is
-            # joined to; when the routes are offered, convert it as `flows._next_path` does for Next.js
+            # joined to; when the routes are offered, convert it as `premap/nextjs.py` does for Next.js
             base = {"reader": NAME, "shape": "server-route", "kind": server["kind"], "path": route,
                     **({"method": method.upper()} if method != ANY else {})}
             module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}

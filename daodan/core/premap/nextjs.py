@@ -16,7 +16,7 @@ from pathlib import PurePosixPath
 
 from premap import frameworks
 
-NAME, VERSION, RANK = "next", "daodan/premap/v3", "scanner"
+NAME, VERSION, RANK = "next", "daodan/premap/v4", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a `.js` import names: `.ts`, `.tsx`, `.js`, `.jsx`
 TYPES = ".next/types"
 VALIDATOR = f"{TYPES}/validator.ts"
@@ -27,6 +27,19 @@ def commands(context):
             for folder in frameworks.folders(context, ("next",))
             for argv, env in ((["npx", "--no-install", "next", "typegen"], {"NEXT_TELEMETRY_DISABLED": "1", "npm_config_offline": "true"}),
                               (["cat", VALIDATOR], {}))] or None
+
+
+def _next_path(path: str) -> str | None:
+    """A Next.js route as `REST` reads a path: each dynamic segment (`[id]`) is a parameter, `{}`; None for a catch-all
+    (`[...x]`, `[[...x]]`), which stands for several path schemas. Next.js's own table of a route's parameters is
+    `ParamMap` in `.next/types/routes.d.ts` (the file `validator.ts` imports): the pre-map does not carry it (the
+    Next.js source prints only `validator.ts`), so the segments of the route text are read, as the framework writes
+    them: a whole segment between brackets. A text with no grammar, read with string operations."""
+    # shortcut: the route text, not ParamMap of routes.d.ts (not read, not checked), and a segment like `a-[id]` stays literal, when the Next.js source also prints routes.d.ts
+    segments = path.split("/")
+    if any(segment.startswith(("[...", "[[...")) for segment in segments):
+        return None
+    return "/".join("{}" if segment.startswith("[") and segment.endswith("]") else segment for segment in segments)
 
 
 def _tail(result: dict) -> str:
@@ -89,10 +102,13 @@ def read(context, commands, results):
                                        f"{', '.join(files)}"})
             else:
                 spec = entries.QUERIES["next"].get(block["shape"], {})
+                route = _next_path(block["path"])
                 candidates.append({"reader": entries.NEXT, "shape": block["shape"], "site": files[0],
                                    "symbol": f"{files[0]}::{flows.MODULE}", "path": block["path"],
                                    **({"kind": spec["kind"]} if spec.get("kind") else {}),
-                                   **{key: spec[key] for key in ("exports", "methods") if spec.get(key)}})
+                                   "schema": flows.path_schema(route) if route is not None else None,
+                                   **{key: spec[key] for key in ("exports", "methods") if spec.get(key)},
+                                   **({"page": True} if spec.get("page") else {})})
     return {"facts": {"framework_entries": candidates} if candidates else {}, "gaps": gaps}
 
 

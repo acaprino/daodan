@@ -198,8 +198,8 @@ def test_a_noir_route_with_no_handler_on_a_file_and_path_a_next_entry_covers_is_
     page = {"protocol": "http", "url": "/checkout", "method": "GET", "kind": "",
             "details": {"code_paths": [{"path": "/work/app/checkout/page.tsx", "line": 3}]}}
     links = next_links(tmp_path, shop(), {"endpoints": [page]})
-    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/checkout"] == [
-        ("next", "app/checkout/page.tsx::Checkout", "GET")]
+    assert [(e["reader"], e["symbol"], e.get("method")) for e in links["entries"] if e["path"] == "/checkout"] == [
+        ("next", "app/checkout/page.tsx::Checkout", None)]  # a page answers any method: Noir's is not copied onto it
     assert not [g for g in links["gaps"] if g["site"].startswith("app/checkout/page.tsx")]
 
 
@@ -224,9 +224,9 @@ def test_a_noir_route_with_a_method_no_next_entry_of_its_file_and_path_carries_i
         ("next", "app/api/pay/route.ts::GET", "GET"), ("noir", "app/api/pay/route.ts::POST", "POST")]
 
 
-def test_a_dropped_noir_route_gives_its_method_to_the_next_entry_that_lacks_one(tmp_path):
+def test_a_dropped_noir_route_does_not_give_its_method_to_the_next_page(tmp_path):
     report = {"endpoints": [noir_route("/checkout", "GET", "app/checkout/page.tsx", "Checkout", 3)]}
     links = next_links(tmp_path, shop(), report)
-    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/checkout"] == [
-        ("next", "app/checkout/page.tsx::Checkout", "GET")]
+    assert [(e["reader"], e["symbol"], e.get("method")) for e in links["entries"] if e["path"] == "/checkout"] == [
+        ("next", "app/checkout/page.tsx::Checkout", None)]
 

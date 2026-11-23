@@ -54,7 +54,10 @@ def from_record(report):
     source = f"{NAME}@{VERSION}"
     if not any(s["source"] == source for s in report["sources"]):
         return [], [unavailable("this pre-map has no Noir run")]
-    return [{"handler": None, **row} for row in report.get("noir_entries", [])], [g for g in report["gaps"] if g["source"] == source]
+    # a row of an older pre-map has no `handler` (None: the binder says the gap) and no `schema`: computed here, as `entries.noir` does
+    import flows
+    return [{"handler": None, **({"schema": flows.path_schema(row["path"])} if row.get("kind") == "rotta" else {}), **row}
+            for row in report.get("noir_entries", [])], [g for g in report["gaps"] if g["source"] == source]
 
 
 def evidence(manifest: Path) -> tuple[list, list]:
