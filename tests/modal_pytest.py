@@ -1,19 +1,45 @@
 """The test suites on Modal: pytest in a Linux container over the working tree, nothing on this PC.
 
     python tests/modal_pytest.py tests/test_codebase_map_premap.py -q -k toolchains
-    python tests/modal_pytest.py -q                      # every suite under tests/
+    python tests/modal_pytest.py --shards 32 -q -n 2     # every suite under tests/, in 32 containers at once
 
 The launcher starts `modal run` on this file with the arguments as given; the container holds the checkout as it
 is on disk (daodan, plugins, tests, benchmarks, docs), runs `python -B -m pytest -p no:cacheprovider` in
 it, streams the output and ends with pytest's exit code. Several suites at once: `-n 8`, one per core (pytest-xdist is there).
+
+`--shards N` (taken out of the arguments before pytest) is for the whole suite: pytest-split cuts the tests into N groups
+of about the same time, by the seconds in `tests/.test_durations` (a test with none gets the average one), each group
+runs in a container of its own (`SHARD_CPU` cores, `-n` workers inside), all at once; the launcher prints the groups'
+outputs in order, one line with the counts of all and the real time, and ends with the worst exit code (5, a group with
+no test to run, is not one). `--store-durations` refreshes that file from the run (a passing one only; `--clean-durations`
+drops the tests that are gone): do it after the suite has changed much, and commit the file. One group again, alone:
+`-q -n 2 --splits 32 --group 14 --splitting-algorithm least_duration`.
+
+# measured: the whole suite, 23 November 2026, seconds from the start to the end of the run (3919-3920 passed, 75 skipped,
+# 1202 subtests, no failure unless said). No shards: 8 cores, -n 8: 604 (the owner's), 506 (mine, pytest's own time);
+# 32 cores, -n 32: 618 (the owner's).
+#   --shards 4, 8 cores, -n 8: 155      --shards 8, 8 cores, -n 8: 122, 141
+#   --shards 16, 4 cores, -n 4: 107, 149; 8 cores, -n 8: 106
+#   --shards 32, 2 cores, -n 2: 111, 85, 93 (one failed test, see below);
+#                4 cores, -n 2: 90, 106, 112, 117 (storing the durations of this setting), 87, 108, 99 (one failed test)
+#                4 cores, no -n: 116, 116
+#   --shards 64, 1 core, no -n: 98
+# `test_playwright_keeps_control_event_and_state_after_the_page_closes` (a real browser) failed in two of the 10 runs with
+# -n 2, never alone (3) or in the 3 runs without -n, and passed when its group ran again: if it bothers, leave `-n 2` out.
+# Two tests are the floor, each alone in a group: `test_on_modal_eshop_s_tests_are_five_test_projects_and_the_rest_needs_a_container_engine`
+# (81-106 s) and `test_on_modal_tududi_s_jest_scripts_run` (73-93 s), both a clone, a snapshot and a pre-map of a real project.
+# The slowest group of a 32 run was eshop's (94 s of pytest), then tududi's (85 s), then 69 s: more groups do not pay.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import shlex
 import subprocess
 import sys
+import time
+from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -78,7 +104,8 @@ image = (modal.Image.debian_slim(python_version="3.13")
                        "node /opt/playwright/node_modules/playwright-core/cli.js install --with-deps --only-shell chromium")
          .run_commands("npm install --prefix /opt/components-vue2 --no-audit --no-fund --ignore-scripts "
                        + " ".join(COMPONENTS_VUE2))
-         .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
+         .pip_install("pytest", "pytest-xdist", "pytest-split==0.11.0", "uv==0.11.28", "tree-sitter==0.26.0",
+                      "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30", "keyring>=25", "PyYAML>=6")
          .run_commands(FETCH_SECRETLINT, f"chmod +x {SECRETLINT[2]}")
          .run_commands(f"mkdir -p {STACK_ANALYSER[2]}", FETCH_STACK_ANALYSER,
@@ -97,21 +124,82 @@ if LOCAL:
     for file in ("AGENTS.md", "pyproject.toml", "README.md", "LICENSE"):
         image = image.add_local_file(REPO / file, f"{REMOTE}/{file}")
 app = modal.App("daodan-tests", image=image)
+DURATIONS = "tests/.test_durations"  # pytest-split's seconds per test id: in git, loaded by the image, refreshed by --store-durations
+CAPTURE = dict(stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+SHARD_CPU = 4  # per container of a `--shards` run (a single run keeps the decorator's 8); measured: see the top
+# One line of pytest's own summary: "3914 passed, 75 skipped, 1202 subtests passed in 618.78s (0:10:18)". A log line
+# has no grammar, so a regular expression reads it; pytest's junit XML does not count subtests, which this line does.
+SUMMARY = re.compile(r"(\d+) ([a-z][a-z ]*?)(?=,| in \d)")
+SINGULAR = {"warnings": "warning", "errors": "error"}  # pytest writes "1 warning" and "2 warnings": one count
 
 
-@app.function(cpu=8, memory=16384, timeout=3600)
-def pytest(arguments: list) -> int:
-    """pytest over the checkout in the container, its output streamed; pytest's exit code."""
+# A fresh container per call: a group that found its predecessor's `--store-durations` file in /repo would split by it
+@app.function(cpu=8, memory=16384, timeout=3600, single_use_containers=True)
+def pytest(arguments: list, capture: bool = False) -> tuple:
+    """pytest over the checkout in the container: (exit code, its output if `capture`, else streamed, and the durations
+    it stored if `--store-durations` is among the arguments: only the tests it ran, for the launcher to merge)."""
     subprocess.run(["git", "init", "-q", REMOTE], check=False)  # suites that ask for the work tree's root
+    storing = "--store-durations" in arguments
     command = [sys.executable, "-B", "-m", "pytest", "-p", "no:cacheprovider", *arguments]
+    if storing or "--splits" in arguments:
+        command += ["--durations-path", f"{REMOTE}/{DURATIONS}"]
+    if storing:
+        command.append("--clean-durations")
     print("$", shlex.join(command), flush=True)
     environment = {**os.environ, "PYTHONUTF8": "1", "DAODAN_TEST_BABEL": BABEL[1], "DAODAN_SECRETLINT": SECRETLINT[2],
                    "DAODAN_STACK_ANALYSER": "/opt/stack-analyser/package/dist/cli.mjs"}
-    return subprocess.run(command, cwd=REMOTE, env=environment).returncode
+    started = time.monotonic()
+    done = subprocess.run(command, cwd=REMOTE, env=environment, **(CAPTURE if capture else {}))
+    if capture:
+        print(f"exit {done.returncode} in {time.monotonic() - started:.0f} s", flush=True)
+    stored = Path(REMOTE, DURATIONS)
+    durations = json.loads(stored.read_text(encoding="utf-8")) if storing and stored.is_file() else {}
+    return done.returncode, done.stdout or "", durations
+
+
+def shards_of(arguments: list) -> tuple:
+    """`--shards N` out of the arguments: (the rest, N or 0)."""
+    if "--shards" not in arguments:
+        return arguments, 0
+    at = arguments.index("--shards")
+    if at + 1 == len(arguments) or not arguments[at + 1].isdigit() or not int(arguments[at + 1]):
+        raise SystemExit("--shards takes the number of containers: --shards 8")
+    return arguments[:at] + arguments[at + 2:], int(arguments[at + 1])
+
+
+def sharded(arguments: list, shards: int) -> list:
+    """The suite over `shards` containers at once, each on its group of tests (pytest-split, by the durations in
+    `DURATIONS`); the groups' outputs in order, then one line for all: [(code, output, durations)]."""
+    started = time.monotonic()
+    groups = [([*arguments, "--splits", str(shards), "--group", str(group), "--splitting-algorithm", "least_duration"], True)
+              for group in range(1, shards + 1)]
+    done = list(pytest.with_options(cpu=SHARD_CPU, memory=2048 * SHARD_CPU).starmap(groups, return_exceptions=True))
+    results = [(1, f"{type(result).__name__}: {result}", {}) if isinstance(result, BaseException) else result
+               for result in done]
+    total = Counter()
+    for group, (code, output, _) in enumerate(results, 1):
+        print(f"\n===== group {group}/{shards}: exit {code} =====\n{output}")
+        summary = next((line for line in reversed(output.splitlines()) if SUMMARY.search(line) and " in " in line), "")
+        for count, outcome in SUMMARY.findall(summary):
+            total[SINGULAR.get(outcome, outcome)] += int(count)
+    counts = ", ".join(f"{count} {outcome}" for outcome, count in total.items() if outcome != "deselected")
+    print(f"\n===== {shards} groups: {counts} in {time.monotonic() - started:.0f} s, exits {[code for code, *_ in results]} =====")
+    return results
 
 
 @app.local_entrypoint()
 def main(args: str = ""):
-    code = pytest.remote(shlex.split(args))
+    arguments, shards = shards_of(shlex.split(args))
+    results = sharded(arguments, shards) if shards else [pytest.remote(arguments)]
+    # exit 5 is a group with no test to run (few tests, many groups): not a failure unless every group has none
+    code = max((code for code, *_ in results if code != 5), default=5)
+    stored = [durations for _, _, durations in results if durations]
+    if stored and not code:  # a failing run keeps the file as it was; the groups return only what they ran
+        path = REPO / DURATIONS
+        merged = {} if "--clean-durations" in arguments or not path.is_file() else json.loads(path.read_text(encoding="utf-8"))
+        for durations in stored:
+            merged.update(durations)
+        path.write_text(json.dumps(merged, sort_keys=True, indent=4) + "\n", encoding="utf-8", newline="\n")
+        print(f"{len(merged)} durations in {path}")
     if code:
         raise SystemExit(code)

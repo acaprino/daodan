@@ -357,4 +357,4 @@ Tre fatti dell'host non sono misurati: le suite girano su Linux, dove nessuno de
 
 ## Test
 
-In `tests/` alla radice del repository: 85 file `test_codebase_map_*.py` e 13 file `test_xray_*.py`, più `daodan/core/tests/test_modules.py`. Le suite girano su Modal, in un container Linux sull'albero di lavoro, mai sul PC: `python tests/modal_pytest.py <argomenti di pytest>` dalla radice (`tests/modal_pytest.py`).
+In `tests/` alla radice del repository: 85 file `test_codebase_map_*.py` e 13 file `test_xray_*.py`, più `daodan/core/tests/test_modules.py`. Le suite girano su Modal, in un container Linux sull'albero di lavoro, mai sul PC: `python tests/modal_pytest.py <argomenti di pytest>` dalla radice (`tests/modal_pytest.py`). La suite intera gira in 32 container insieme con `--shards 32 -q -n 2` (da circa 10 minuti a circa 1,5-2: gruppi di durata simile secondo `tests/.test_durations`, che `--store-durations` rinnova).
