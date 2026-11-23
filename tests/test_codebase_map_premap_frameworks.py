@@ -77,3 +77,14 @@ def test_no_framework_source_keeps_a_copy_of_a_shared_helper_or_borrows_another_
                           or node.module == "premap" and any(alias.name in others for alias in node.names))
                      for alias in node.names]
         assert not borrowed, (source.NAME, borrowed)  # what two sources share is in `frameworks`, whatever its name
+
+
+def test_no_module_of_the_pre_map_takes_a_private_helper_of_a_framework_source():
+    """A source outside the tuples (one still being written) reaches the shared helpers through `frameworks` too."""
+    names = {source.__name__.rsplit(".", 1)[-1] for source in (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)}
+    for path in sorted((SCRIPTS / "premap").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        borrowed = [f"{node.value.id}.{node.attr}" for node in ast.walk(tree) if isinstance(node, ast.Attribute)
+                    and isinstance(node.value, ast.Name) and node.value.id in names - {path.stem}
+                    and node.attr.startswith("_")]
+        assert not borrowed, (path.name, borrowed)

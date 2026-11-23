@@ -68,12 +68,12 @@ def commands(context):
 
 def _stopped(result: dict, seconds: str) -> str:
     """Why the script did not give its answer: the limit that ended it, or what it wrote first (both ends of it)."""
-    from premap import react_router
+    from premap import frameworks
     if result["returncode"] == 124:  # `timeout` ended the command
         return f"{SCRIPT} did not end in {seconds} seconds"
     if result["returncode"] == 137:  # `timeout` had to kill it, or the memory of the run did: the signal does not say which
         return f"{SCRIPT} was killed (exit 137): it did not end in {seconds} seconds, or it ran out of memory ({MEMORY_GB} GB)"
-    return f"{SCRIPT} exited with {result['returncode']}: {react_router._excerpt(result)}"
+    return f"{SCRIPT} exited with {result['returncode']}: {frameworks.excerpt(result)}"
 
 
 def _printed(result: dict) -> list[dict]:
@@ -107,7 +107,7 @@ def _records(db, file: str, qualname: str) -> list[tuple[str, int]]:
 def read(context, commands, results):
     import flows
     import semantic_store
-    from premap import react_router
+    from premap import frameworks
     gaps, rows = [], []
     with semantic_store.semantic_reader(context.store) as db:
         for command, result in zip(commands, results):
@@ -119,7 +119,7 @@ def read(context, commands, results):
                 routes = _printed(result)
             except ValueError as error:
                 gaps.append({"kind": "model_failed", "path": folder,
-                             "detail": f"{SCRIPT} printed no JSON of the known layout ({error}): {react_router._excerpt(result)}"})
+                             "detail": f"{SCRIPT} printed no JSON of the known layout ({error}): {frameworks.excerpt(result)}"})
                 continue
             if not routes:
                 gaps.append({"kind": "model_partial", "path": folder, "detail": "the application has no rule in its url_map"})
