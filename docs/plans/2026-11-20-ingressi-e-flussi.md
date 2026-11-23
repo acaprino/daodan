@@ -69,7 +69,7 @@
    - **14c.** Flask: `app.url_map` e `app.view_functions`; prima si verifica se `flask routes` è un comando ufficiale.
    - **14d.** Laravel: `php artisan route:list`; prima si verifica un'uscita per le macchine.
    - **14e.** Rails: `bin/rails routes`.
-   - **14f.** Spring Boot: Actuator `mappings`; prima si verifica se si ottiene senza aprire una porta.
+   - **14f.** Spring Boot: Actuator `mappings`; prima si verifica se si ottiene senza aprire una porta. **Aperto, 24 novembre 2026: la voce non è fatta.** Scritta e non eseguita la sonda `benchmarks/spring-actuator-mappings/` (fixture Spring Boot 3.5.0, 2.7.18 e senza Actuator; `Launcher.java`, un file in modalità sorgente che carica l'applicazione con `server.port=-1` e scrive il JSON del bean `mappings`; `modal_probe.py` con le sonde: porta, forma del JSON, senza Actuator, `javap` per file e riga, applicazione che non si carica, che non termina, restore offline, tempo e memoria): la sessione non aveva le credenziali di Modal e il codice del progetto non gira su questa macchina. Né la sorgente `premap/spring.py` né le risposte registrate esistono: sarebbero scritte sull'immagine che ci si fa di Actuator, non su un'uscita vera. Da decidere con la misura: il comando (jar ripacchettizzato e `Start-Class`, o altro), la voce `spring` in `container_runner.TOOLS` e che `~/.m2` e `target/` sopravvivano fra il comando con la rete e quello senza. Non coperti: Gradle, Kotlin, Spring Boot 4, WebFlux, JDK oltre il 17.
    - **14g.** Gin: `(*Engine).Routes()`; prima si verifica come chiamarla senza modificare il progetto.
    - **14h.** NestJS: `SwaggerModule.createDocument`.
    - **14i.** Expo Router: i tipi generati.
