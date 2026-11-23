@@ -70,8 +70,8 @@ SANDBOX_CPU = 8.0  # cores a build or an indexer is given: the default share wou
 DOCKER = ("https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0.tgz",
           "7c1ebadc65c716cdc6d35fc78759ed0e4317debf43c21dd12f066f2006999def")  # the services' engine in a sandbox
 ENGINE = "/daodan/engine"  # where its binaries lie in a sandbox
-BUNDLES = "/project-model/engine"  # on the volume: the folder the binaries' archive lies alone in
-IN, IN_BUNDLES = "/mnt/daodan-in", "/mnt/daodan-engine"  # where a sandbox sees its run's folder and that archive
+BUNDLES = "/project-model/engine"  # on the volume: where the binaries' archive is kept, for the function
+IN = "/mnt/daodan-in"  # where a sandbox sees its run's folder of the volume, and nothing else of it
 VM = {"vm_runtime": True}  # the `experimental_options` of a VM Sandbox (client 1.5: no `runtime` argument yet)
 
 SCRIPTS, DATA = "daodan/core", "daodan/data"
@@ -139,20 +139,18 @@ def _phase(sandbox, name: str, script: str, env: dict, timeout: float, out_dir: 
     return row
 
 
-def mount_plan(token: str, services: bool) -> dict[str, tuple[str, bool]]:
-    """What a sandbox sees of the volume, by mount point: `(path in the volume, read only)`. Its run's folder, and
-    with services Docker's binaries, never `/results`: project code that runs in a sandbox cannot read another
-    case's results, or write to the volume."""
-    plan = {IN: (f"/{SCRATCH}/{token}", True)}
-    if services:
-        plan[IN_BUNDLES] = (BUNDLES, True)
-    return plan
+def mount_plan(token: str) -> dict[str, tuple[str, bool]]:
+    """What a sandbox sees of the volume, by mount point: `(path in the volume, read only)`. Its run's folder, with
+    the copy and, with services, Docker's binaries (`docker.tgz`, put there by `sandbox_run`), and nothing else, never
+    `/results`: project code that runs in a sandbox cannot read another case's results, or write to the volume. One
+    mount only: Modal refuses the same Volume at two places of a sandbox."""
+    return {IN: (f"/{SCRATCH}/{token}", True)}
 
 
-def mounts(token: str, services: bool) -> dict:
+def mounts(token: str) -> dict:
     """`mount_plan` as `Sandbox.create`'s `volumes` (Modal's client from 1.4.3: `Volume.with_mount_options`)."""
     return {point: volume.with_mount_options(sub_path=path, read_only=read_only)
-            for point, (path, read_only) in mount_plan(token, services).items()}
+            for point, (path, read_only) in mount_plan(token).items()}
 
 
 def _addresses(host: str) -> list[str]:
@@ -194,8 +192,8 @@ def preparation_network(registries, services: bool, resolve=_addresses) -> tuple
 
 
 def _bundle() -> str:
-    """Docker's static binaries on the volume, downloaded once and checked by their sha256: the path a sandbox
-    reads them at (`IN_BUNDLES`)."""
+    """Docker's static binaries on the volume, downloaded once and checked by their sha256: their path in this
+    function, from which `sandbox_run` copies them into the run's folder."""
     import urllib.request
     path = Path("/results") / BUNDLES.lstrip("/") / Path(DOCKER[0]).name
     if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != DOCKER[1]:
@@ -206,7 +204,7 @@ def _bundle() -> str:
             raise RuntimeError(f"{DOCKER[0]} has not the sha256 {DOCKER[1]}")
         path.write_bytes(data)
         volume.commit()
-    return f"{IN_BUNDLES}/{path.name}"
+    return str(path)
 
 
 def _docker(box):
@@ -311,7 +309,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     env = {**variables, **(env or {})}
     env = {"HOME": container.HOME, **env} if prepare else env
     options = {"app": modal.App.lookup("daodan-pipeline-sandboxes", create_if_missing=True),
-               "volumes": mounts(token, bool(services)),
+               "volumes": mounts(token),
                "memory": int(memory / 2**20), "cpu": SANDBOX_CPU, "timeout": int(prepare_timeout + timeout + 900),
                **({"experimental_options": VM} if vm(command, services) else {})}
     network, open_gaps = preparation_network(container.REGISTRIES if registries is None else registries,
@@ -338,6 +336,9 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
             except (OSError, RuntimeError) as error:
                 served += failed(services, error)
         scratch.mkdir(parents=True)
+        if bundle:  # in the run's own folder: a sandbox mounts that and nothing else of the volume
+            shutil.copyfile(bundle, scratch / "docker.tgz")
+            bundle = f"{IN}/docker.tgz"
         digest = container.copy_perimeter(Path(project), scratch / "copy.tar", given)
         if digest["gaps"]:  # what the copy left out of the project, as `run_in_container` says it
             result["gaps"] = digest["gaps"]
