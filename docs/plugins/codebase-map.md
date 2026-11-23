@@ -76,15 +76,15 @@ Un `.sql` con marcatori Oracle è PL/SQL. Python richiesto `>= 3.12`: gli script
 
 Daodan legge un progetto e ne scrive un grafo: file, simboli, chiamate, moduli e tecnologie, ognuno con la sua prova. Il disegno ha sette step, sempre nello stesso ordine. Ogni step usa lo strumento ufficiale di ciò che legge, dietro un adattatore, e dice ciò che non è riuscito a fare.
 
-Sette step e i loro nomi sono il disegno approvato il 22 novembre 2026 (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8), non ancora il codice: oggi la pipeline ne esegue cinque, con i nomi di prima, `parse` gira prima di essa e `plan` manca. Lo dice «Nel codice oggi».
+Sette step e i loro nomi sono il disegno approvato il 22 novembre 2026 (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8), non ancora il codice: oggi la pipeline ne esegue cinque, con i nomi di prima, lo snapshot (l'inventario di `scan` e tutto `parse`) si scrive prima di essa e `plan` manca. Lo dice «Nel codice oggi».
 
 ### Il processo
 
 ```mermaid
 flowchart LR
-  P[/Progetto/] --> parse
-  parse["1 parse<br>legge ogni file"] --> scan
-  scan["2 scan<br>chiede alla build<br>com'è fatto il progetto"] --> recognize
+  P[/Progetto/] --> scan
+  scan["1 scan<br>percorre cartelle e file<br>e chiede alla build<br>com'è fatto il progetto"] --> parse
+  parse["2 parse<br>legge i sorgenti"] --> recognize
   recognize["3 recognize<br>riconosce le tecnologie"] --> plan
   plan["4 plan<br>decide chi gira su cosa"] --> resolve
   resolve["5 resolve<br>risolve le chiamate"] --> observe
@@ -94,8 +94,8 @@ flowchart LR
 
 | Step | Domanda a cui risponde | Adattatori | Strumento sotto | Esegue il progetto |
 | --- | --- | --- | --- | --- |
-| 1 `parse` | Che cosa c'è in ogni file? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
-| 2 `scan` | Quali moduli, unità di build e comandi di test dichiara? | scanner | cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
+| 1 `scan` | Quali cartelle e file ha il progetto, e quali moduli, unità di build e comandi di test dichiara? | scanner | il percorso dell'albero; cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
+| 2 `parse` | Che cosa c'è in ogni sorgente: simboli, import, chiamate? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
 | 3 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork; oggi il registro delle tecnologie | No |
 | 4 `plan` (manca) | Quale adattatore gira su quale parte, e quale no? | nessuno | — | No |
 | 5 `resolve` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
@@ -123,13 +123,14 @@ I tre grafi sono costruiti dalle dichiarazioni degli adattatori nel codice (ling
 
 ```mermaid
 flowchart LR
+  subgraph scan
+    b0["inventario:<br>cartelle e file"]
+    b1["npm-files, npm-tests<br>leggono i file"]
+    b2([npm, tsc])
+  end
   subgraph parse
     a1[tree-sitter<br>ts, tsx]
     a2[parser dei fogli di stile<br>css]
-  end
-  subgraph scan
-    b1["npm-files, npm-tests<br>leggono i file"]
-    b2([npm, tsc])
   end
   subgraph recognize
     c1[registro<br>React, Vite]
@@ -147,19 +148,20 @@ flowchart LR
   subgraph connect
     g1[grafo completo]
   end
-  parse --> scan --> recognize --> plan --> resolve --> observe --> connect
+  scan --> parse --> recognize --> plan --> resolve --> observe --> connect
 ```
 
 #### Un progetto Gradle con Java e Kotlin
 
 ```mermaid
 flowchart LR
-  subgraph parse
-    a1[tree-sitter<br>java, kotlin]
-  end
   subgraph scan
+    b0["inventario:<br>cartelle e file"]
     b1[jvm-files<br>legge i file]
     b2([gradle])
+  end
+  subgraph parse
+    a1[tree-sitter<br>java, kotlin]
   end
   subgraph recognize
     c1[registro<br>Spring Boot, JUnit]
@@ -177,7 +179,7 @@ flowchart LR
     g1[grafo completo]
     g2["not-joined:<br>chiamate fra Java e Kotlin"]:::gap
   end
-  parse --> scan --> recognize --> plan --> resolve --> observe --> connect
+  scan --> parse --> recognize --> plan --> resolve --> observe --> connect
   classDef gap stroke-dasharray: 5 5
 ```
 
@@ -187,12 +189,13 @@ I resolver girano dal più leggero al più pesante in memoria: scip-java prima d
 
 ```mermaid
 flowchart LR
-  subgraph parse
-    a1[ast di Python]
-  end
   subgraph scan
+    b0["inventario:<br>cartelle e file"]
     b1["python-build, requirements,<br>python-tests<br>leggono i file"]
     b2["model_not_run:<br>uv"]:::gap
+  end
+  subgraph parse
+    a1[ast di Python]
   end
   subgraph recognize
     c1[registro<br>dai pacchetti dichiarati]
@@ -210,7 +213,7 @@ flowchart LR
     g1[grafo statico]
     g2[ciò che nessuna corsa<br>ha osservato]:::gap
   end
-  parse --> scan --> recognize --> plan --> resolve --> observe --> connect
+  scan --> parse --> recognize --> plan --> resolve --> observe --> connect
   classDef gap stroke-dasharray: 5 5
 ```
 
@@ -218,7 +221,7 @@ scip-python non chiede il container: su Linux e macOS gira sull'host, perché le
 
 ### Nel codice oggi
 
-Lo snapshot (`parse`) si scrive prima della pipeline, con gli adattatori di `scripts/languages/`. Scritto lo snapshot, `snapshot.py write` e `codebase_map_create_run` eseguono gli step della pipeline (`scripts/pipeline/`), ognuno con i suoi eventi nel giornale accanto al manifest:
+Lo snapshot si scrive prima della pipeline e fa due cose insieme: l'inventario di cartelle e file, che nel disegno è di `scan`, e la lettura dei sorgenti, che è `parse` (adattatori di `scripts/languages/`). Per questo oggi la lettura viene prima della scansione; nel disegno viene dopo. Scritto lo snapshot, `snapshot.py write` e `codebase_map_create_run` eseguono gli step della pipeline (`scripts/pipeline/`), ognuno con i suoi eventi nel giornale accanto al manifest:
 
 1. `scan` (resta `scan`): il grafo dei moduli e la pre-mappa (`references/premap.md`): unità, toolchain, registri, comandi di test, servizi e passi della CI e build dei Dockerfile che il progetto dichiara. I comandi di modello dei build system girano nel container.
 2. `stack` (diventa `recognize`) scrive `technologies.json` accanto al manifest. Assegna a ogni modulo le tecnologie dichiarate nei file di sua competenza. Le menzioni testuali restano disponibili come indizi. Il campo `configured_services` conserva nome e provenienza delle dichiarazioni Compose e CI, anche per servizi fuori catalogo. L'avvio effettivo si verifica nel passo dinamico. Un errore dello stack viene registrato e l'analisi prosegue in background (`resolve_edges.py --pass`).
@@ -226,7 +229,7 @@ Lo snapshot (`parse`) si scrive prima della pipeline, con gli adattatori di `scr
 4. `dynamic` (diventa `observe`): i test del progetto sotto un registratore (sezione Passo dinamico).
 5. `union` (diventa `connect`): i grafi delle tecnologie come grafo completo, con ciò che la corsa ha osservato e ciò che il grafo non contiene: file che un indice ha lasciato fuori, linguaggi senza analyzer, chiamate fra i linguaggi di due analyzer.
 
-Lo step `plan` non c'è: quale adattatore gira su cosa lo decidono la pre-mappa, `engine_pass.pass_plan` e il `plan` di ogni osservatore. Il riconoscimento usa ancora il registro (`service_registry.py`): il passaggio al fork di stack-analyser è approvato (`docs/specs/2026-11-21-stack-dal-fork.md`) e non applicato. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
+Lo step `scan` scrive oggi anche gli archi fra moduli e gli ingressi dei flussi, che leggono ciò che `parse` produce: con `scan` per primo passano dopo `parse` (spec, 8.2, punto 3). Lo step `plan` non c'è: quale adattatore gira su cosa lo decidono la pre-mappa, `engine_pass.pass_plan` e il `plan` di ogni osservatore. Il riconoscimento usa ancora il registro (`service_registry.py`): il passaggio al fork di stack-analyser è approvato (`docs/specs/2026-11-21-stack-dal-fork.md`) e non applicato. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
 
 Spec: `docs/specs/2026-11-15-pipeline-di-analisi.md`.
 

@@ -21,13 +21,13 @@ last column says what the code does today.
 
 ```mermaid
 flowchart LR
-  parse --> scan --> recognize --> plan --> resolve --> observe --> connect --> G[(Complete graph)]
+  scan --> parse --> recognize --> plan --> resolve --> observe --> connect --> G[(Complete graph)]
 ```
 
 | Step | What it does | Runs project code | In the code today |
 |---|---|---|---|
-| 1. `parse` | Reads every file: symbols, imports, calls | No | Before the pipeline (`snapshot.py write`) |
-| 2. `scan` | Asks the build tools for modules, build units and test commands | Only inside the container | Step `scan` |
+| 1. `scan` | Walks every folder and file, then asks the build tools for modules, build units and test commands | Only inside the container | Step `scan`; the file inventory is written before the pipeline (`snapshot.py write`) |
+| 2. `parse` | Reads the source files: symbols, imports, calls | No | Before the pipeline, with the inventory (`snapshot.py write`) |
 | 3. `recognize` | Names frameworks, libraries, tools and services | No | Step `stack` |
 | 4. `plan` | Decides which adapter runs on which part | No | Not yet: decided in three places |
 | 5. `resolve` | Resolves each call to its target | Only inside the container | Step `analyze` |
