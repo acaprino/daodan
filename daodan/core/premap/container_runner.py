@@ -120,6 +120,10 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                                         f" && printf '%s\\n' '#!/bin/sh' 'exec node {T}/astro_templates.mjs \"$@\"' > {T}/bin/daodan-astro"
                                         f" && chmod 755 {T}/bin/daodan-astro"],
               "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
+    # Daodan's script (beside this module) loads the application with the project's own Flask, run by the Python of the environment
+    # the setup restores for each folder (`_python`, `premap/flask_app.py`); written and not run: no measure of it exists yet
+    "flask": {"files": [(None, None, "flask_routes.py")], "setup": [f"cp {IN}/flask_routes.py {T}/flask_routes.py"],
+              "registries": True, "restores": "python", "memory": 3},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
     "compose": {"files": [(*compose.DOWNLOAD, "docker-compose")],  # Compose's own binary: it reads, no engine runs
                 "setup": [f"cp {IN}/docker-compose {T}/bin/docker-compose && chmod 755 {T}/bin/docker-compose"]},
@@ -163,14 +167,14 @@ def fetched(url: str | None, sha256: str | None, name: str) -> Path:
     return Path(__file__).with_name(name) if url is None else preparation.fetched(url, sha256, name)
 
 
-def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=()) -> tuple[dict, list, tuple, list]:
+def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=(), needs=()) -> tuple[dict, list, tuple, list]:
     """The setup command, the files it unpacks, the hosts beside the registries and the gaps known before it runs:
     the tool's own (`TOOLS`), the project's toolchains it runs on (`runs_on`, installed by mise at the version
     `stated`), what the commands name in `needs` (`preparation.NEEDS`), then the lines that restore the project's
     packages (`restores`)."""
     spec = TOOLS[tool]
     chains = preparation.toolchains([t for t in stated if t.get("tool") in spec.get("runs_on", ())])
-    needs = preparation.setup({n for c in commands for n in c.get("needs", ())})
+    needs = preparation.setup({*needs, *(n for c in commands for n in c.get("needs", ()))})
     network = "registries" if spec.get("registries") or needs["registries"] or chains["lines"] or restores or any(
         c.get("network") == "registries" for c in commands) else "none"
     lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"], *chains["lines"], *needs["lines"], *restores]
@@ -187,6 +191,22 @@ def _node(project: Path) -> dict:
     files = sorted((directory / name).relative_to(project).as_posix()
                    for directory, names in Perimeter(project).walk() for name in names)
     return preparation.node_prepare(files, lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
+
+
+def _python(project: Path) -> dict:
+    """The restore of the Python environments the copy of the project holds, one per folder (`preparation.restores`, the
+    family `python`: uv, Poetry or pip by the folder's lockfile), as the Node packages are restored: `{lines, needs, hosts, gaps}`,
+    the lines that make each folder's environment under `preparation.VENVS`, the tools they need, the hosts beside the registries."""
+    from tree_scope import Perimeter
+    files = sorted((directory / name).relative_to(project).as_posix()
+                   for directory, names in Perimeter(project).walk() for name in names)
+    # shortcut: no VCS requirement is overridden (`preparation.python_vcs`, `without`) and no host a project declares is added
+    # (`preparation.declared`): a folder whose install needs them is a `restore_failed` gap; when one is met, take them as the analyzers do
+    managers = {manager: folders for manager, folders in preparation.restores(files).items()
+                if preparation.RESTORES[manager].get("family") == "python"}
+    return {"lines": [preparation.restore(manager, folders) for manager, folders in managers.items()],
+            "needs": [n for manager in managers for n in preparation.RESTORES[manager].get("needs", ())],
+            "hosts": tuple(dict.fromkeys(h for manager in managers for h in preparation.RESTORES[manager]["hosts"])), "gaps": []}
 
 
 def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
@@ -213,9 +233,11 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if any("/" in name or name in ("", ".", "..") for name in carried):
             raise ValueError(f"a file a command carries is a name, not a path: {sorted(carried)}")
         commands = [{k: v for k, v in c.items() if k != "inputs"} for c in commands]
-        restored = _node(project) if spec.get("restores") == "node" else {"lines": [], "hosts": (), "gaps": []}
-        restore_lines, shared = node_preparation.options(restored, toolchains)
-        first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines)
+        restored = ({"node": _node, "python": _python}.get(spec.get("restores"), lambda _project: {"lines": [], "hosts": (), "gaps": []})
+                    )(project)
+        restore_lines, shared = (node_preparation.options(restored, toolchains) if spec.get("restores") == "node"
+                                 else (restored["lines"], {}))
+        first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines, restored.get("needs", ()))
         gaps += restored["gaps"]  # a package folder no restore installs
         hosts = (*hosts, *restored["hosts"])
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
