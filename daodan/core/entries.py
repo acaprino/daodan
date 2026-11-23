@@ -965,7 +965,7 @@ def noir(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dic
         out.append({"reader": NOIR, "shape": shape,
                     "site": f"{file}:{where['line']}" if where.get("line") else file,
                     "symbol": f"{file}::{name or flows.MODULE}", "method": endpoint["method"], "path": endpoint["url"],
-                    **({"kind": kind} if kind else {}), **({"handler": name} if name else {})})
+                    "handler": name, **({"kind": kind} if kind else {})})  # the name or None: the links' binder says the gap
     return out
 
 
@@ -1132,8 +1132,14 @@ def _observed(manifest: Path, static: list[dict]) -> list[dict]:
 
 
 def _declared_rows(manifest):
+    """The declared rows as the links bind them (`binder.bind`): the pre-map's rows are on the module, with their exports."""
+    import binder
     from premap.flow_entries import evidence
-    return evidence(manifest)[0]
+    rows = evidence(manifest)[0]
+    if not rows:
+        return rows
+    with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+        return binder.bind(rows, flows.Facts(store, db), semantic_store._Resolver(db))
 
 
 def cached_syntax(manifest: Path) -> list[dict]:

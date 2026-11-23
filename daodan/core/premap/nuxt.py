@@ -11,10 +11,10 @@ installed fail at once with npm's own words (measured: 0.45 s against 70.6 s, `b
 
 The server routes: the file ties each route (`server/api`, `server/routes`, and the `nitro.handlers` of the config, which are
 code) to its HTTP method and to the import of its handler's file, in Nuxt 3 and Nuxt 4 alike; `read` reads it from its syntax tree
-(`entries.nitro_routes`) and binds each import to the one script of the snapshot with that path, without its extension. The
-default export of the handler file is the function a route starts (`QUERIES["nuxt"]`, as for React Router): a file that
-default-exports a function declaration binds to it, and the usual `export default defineEventHandler(...)` is a call, which the
-snapshot's export records do not bind: a row on the file with the gap.
+(`entries.nitro_routes`) and ties each import to the one script of the snapshot with that path, without its extension. The
+default export of the handler file is the function a route starts (`QUERIES["nuxt"]`, as for React Router): the row is the handler
+file with that `exports`, and the links' binder (`binder.bind`) ties it to the function: a default-exported function declaration binds,
+and the usual `export default defineEventHandler(...)` is a call, which the snapshot's export records do not bind: the gap is the binder's.
 
 The pages: no file `nuxt prepare` writes by default names them, but `loadNuxt` does: Nuxt calls the hook `pages:resolved` with the
 routes it has made of the pages, after the project's own `pages:extend` hooks, its modules and its layers, each with its `path`
@@ -34,7 +34,7 @@ import posixpath
 
 from premap import frameworks
 
-NAME, VERSION, RANK = "nuxt", "daodan/premap/v1", "scanner"
+NAME, VERSION, RANK = "nuxt", "daodan/premap/v2", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a handler import names, written with no extension
 TYPES = ".nuxt/types"
 # shortcut: the file is read where Nuxt writes it by default; a project that sets `buildDir` is a gap saying so (measured: `build-dir`
@@ -112,7 +112,6 @@ def _stopped(result: dict, seconds: str) -> str:
 def read(context, commands, results):
     import entries
     import flows
-    import semantic_store
     spec = entries.QUERIES[NAME]
     by_path: dict[str, list[str]] = {}  # the files of the snapshot that are scripts, by their path without the extension
     for rel, header in context.inventory.headers.items():
@@ -193,23 +192,16 @@ def read(context, commands, results):
     rows = []
     if handlers:
         server = spec["server-route"]
-        with semantic_store.semantic_reader(context.store) as db:
-            resolver = semantic_store._Resolver(db)
-            for route, method, file in handlers:
-                # shortcut: the route is the text Nitro wrote (`/api/users/:id`, `/api/files/**:path`), not a path schema a call is
-                # joined to; when the routes are offered, convert it as `flows._next_path` does for Next.js
-                base = {"reader": NAME, "shape": "server-route", "kind": server["kind"], "path": route,
-                        **({"method": method.upper()} if method != ANY else {})}
-                module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
-                # shortcut: the default export of a handler file is nearly always a call, `defineEventHandler(...)`, which the
-                # snapshot's export records bind to no function: a row on the file with the gap, not a guess by name; when the
-                # records bind the function a call is given as its argument, the row is on that function
-                found, unread = frameworks.starts(db, resolver, file, server["exports"])
-                rows += [{**base, "site": f"{file}:{line}", "symbol": f"{file}::{qualified}", "handler_source": NAME, "handler": name}
-                         for name, qualified, line in found]
-                if not found or unread:
-                    looked = "; ".join(unread) or ", ".join(server["exports"])
-                    rows.append({**module, "gap": f"no function found for the exports the framework starts {route} from: {looked}"})
+        for route, method, file in handlers:
+            # shortcut: the route is the text Nitro wrote (`/api/users/:id`, `/api/files/**:path`), not a path schema a call is
+            # joined to; when the routes are offered, convert it as `flows._next_path` does for Next.js
+            base = {"reader": NAME, "shape": "server-route", "kind": server["kind"], "path": route,
+                    **({"method": method.upper()} if method != ANY else {})}
+            module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
+            # shortcut: the default export of a handler file is nearly always a call, `defineEventHandler(...)`, which the
+            # snapshot's export records bind to no function: a row on the file with the gap, not a guess by name; when the
+            # records bind the function a call is given as its argument, the row is on that function
+            rows.append({**module, "exports": server["exports"]})  # the links bind them (`binder`)
     for path, file in pages:  # the file is the entry, as for a Next.js page: no line, the tool gives none
         rows.append({"reader": NAME, "shape": "page", "kind": spec["page"]["kind"], "path": path, "site": file,
                      "symbol": f"{file}::{flows.MODULE}"})

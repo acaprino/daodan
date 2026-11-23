@@ -143,7 +143,7 @@ tiene gli stati delle sorgenti, le righe di `framework_entries`, le lacune della
 | sorgente `nuxt@daodan/premap/v1` | `ran`, 29,1 secondi, compreso il ripristino dei pacchetti e i tre comandi |
 | `framework_entries` in `premap.json` | 22 righe (11 rotte del server, di cui 1 sulla funzione e 10 con la lacuna, e 11 pagine), 2 lacune della sorgente: le stesse della risposta registrata |
 | `next`, `react-router` e `angular` | `not_needed`: la fixture non li dichiara |
-| Noir sulla stessa fixture | 10 endpoint `http` negli stessi file, con il suo metodo (`ANY` per `health.ts` e `sitemap.xml.ts`) e il suo modo di scrivere il percorso (`/api/files/:path`), senza il nome del gestore, e senza `/api/from-config` (è nel config, non nel nome di un file); nessuna pagina: nei collegamenti sono 10 lacune «Noir reports this endpoint without a unique snapshot handler», non ingressi |
+| Noir sulla stessa fixture | 10 endpoint `http` negli stessi file, con il suo metodo (`ANY` per `health.ts` e `sitemap.xml.ts`) e il suo modo di scrivere il percorso (`/api/files/:path`), senza il nome del gestore, e senza `/api/from-config` (è nel config, non nel nome di un file); nessuna pagina: nei collegamenti sono 10 lacune «noir reports this entry without a unique snapshot handler at its site», non ingressi |
 | collegamenti | 12 ingressi (`nuxt rotta`: 11 pagine, ognuna sul suo file, e `GET /api/plain` su `server/api/plain.get.ts:1`), `routes` `{offered: 0, called: 0, linked: 0}`, 20 lacune: le 10 di Noir e le 10 righe di lacuna di Nuxt |
 
 ## Non provato

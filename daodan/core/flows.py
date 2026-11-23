@@ -87,6 +87,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import binder  # noqa: E402
 import edge_view  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
@@ -1021,34 +1022,6 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     facts._nodes.clear()
 
 
-def _next_handlers(facts: Facts, resolver, item: dict) -> list[dict]:
-    """The functions a Next.js candidate starts from. The framework's rule is data (`QUERIES["next"]`): the exports of
-    the file that start its config type, the default export of a page or each method a route handler exports. The
-    snapshot's own export records name the function (`exported_target`), so a page is one entry on that function and
-    a route handler one per exported method. A type with no export in the table (a layout) stays as it is; what is not
-    found, or not resolved (a re-export), keeps the file-level symbol with a gap that says which export was looked
-    for, beside the entries of the others."""
-    import entries
-    spec = entries.QUERIES["next"].get(item["shape"], {})
-    methods = "methods" in spec
-    names = spec.get("methods") or spec.get("exports")
-    if not names:
-        return [item]
-    file, found, unread = item["site"], [], []
-    for name in names:
-        identity, reason = resolver.exported_target(file, name)
-        symbol = facts.node(identity) if identity else None
-        if symbol:
-            found.append({**item, "symbol": symbol, "site": f"{file}:{facts.declarations[identity]['line']}",
-                          "handler_source": entries.NEXT, **({"method": name} if methods else {})})
-        elif reason != "export-missing":  # an export the file does not make is no gap: a route module has the exports it needs
-            unread.append(f"{name}: {reason}")
-    if found and not unread:
-        return found
-    looked = "; ".join(unread) or ", ".join(names)
-    return [*found, {**item, "gap": f"no function found for the export Next.js starts {item['path']} from: {looked}"}]
-
-
 def _next_path(path: str) -> str | None:
     """A Next.js route as `REST` reads a path: each dynamic segment (`[id]`) is a parameter, `{}`; None for a catch-all
     (`[...x]`, `[[...x]]`), which stands for several path schemas. Next.js's own table of a route's parameters is
@@ -1136,20 +1109,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         from premap.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
-        declared = [row for item in declared
-                    for row in (_next_handlers(facts, resolver, item) if item["reader"] == entry_reader.NEXT else [item])]
-        for item in declared:
-            if item["reader"] != entry_reader.NOIR:
-                continue
-            file, _, line = item["site"].rpartition(":")
-            name = item.get("handler")
-            at = int(line) if line.isdecimal() else 0
-            matches = [d for d in facts.functions.get(file, ()) if name and name == d["name"] and
-                       d["line"] <= at <= (d["end"] or d["line"])]
-            if len(matches) == 1:
-                item.update(symbol=facts.node(matches[0]["id"]), handler_source="noir")
-            else:
-                item["gap"] = "Noir reports this endpoint without a unique snapshot handler at its site"
+        declared = binder.bind(declared, facts, resolver)
         # One route, one entry: Noir's route on the path of a Next entry (the same path schema, `:id` as `[id]`; the
         # text where a path has none), in the file or on the function that entry starts, is that entry, provided it
         # is of Noir's method (a page carries none and answers any, a route handler's entry has its method); the
@@ -1457,7 +1417,7 @@ def _links_reader_digest() -> str:
     """Installed link readers and rules; one bounded read of Daodan's own code per process."""
     from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
     digest = hashlib.sha256()
-    for path in (Path(__file__), SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
+    for path in (Path(__file__), SCRIPT_DIR / "binder.py", SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
                  SCRIPT_DIR / "premap" / "flow_entries.py", SCRIPT_DIR / "premap" / "noir.py",
                  *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
                  SCRIPT_DIR / "premap" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",

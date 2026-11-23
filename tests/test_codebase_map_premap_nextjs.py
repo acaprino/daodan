@@ -12,7 +12,7 @@ SHOP_DIR = Path(__file__).resolve().parents[1] / "benchmarks/system-map/real-pat
 SHOP = {path.relative_to(SHOP_DIR).as_posix(): path.read_text(encoding="utf-8")
         for path in SHOP_DIR.rglob("*") if path.is_file() and path.name != "package-lock.json"}
 VALIDATOR = (Path(__file__).parent / "fixtures/premap/next/validator.ts").read_text(encoding="utf-8")
-SOURCE = "next@daodan/premap/v2"
+SOURCE = "next@daodan/premap/v3"
 CANDIDATES = {  # the five blocks of the validator: file -> (shape, route, kind)
     "app/checkout/page.tsx": ("AppPageConfig", "/checkout", "rotta"),
     "app/orders/[id]/page.tsx": ("AppPageConfig", "/orders/[id]", "rotta"),
@@ -61,6 +61,17 @@ def test_the_pages_the_route_handler_and_the_layout_of_typegen_become_candidates
     assert (page["reader"], page["symbol"], page["sources"]) == ("next", "app/page.tsx::<module>", [SOURCE])
     assert all(":" not in c["site"] for c in record["framework_entries"])  # the tool gives no line
     assert [c["argv"] for c in asked] == [["npx", "--no-install", "next", "typegen"], ["cat", ".next/types/validator.ts"]]
+
+
+def test_each_row_carries_the_exports_or_the_methods_its_table_says_and_binds_nothing(tmp_path):
+    """No source binds a row (spec 8.13, point 2): a page has its `exports`, a route handler its `methods`, a layout neither; the
+    links' binder ties them to the functions."""
+    record, _, _ = read(tmp_path, SHOP, {".": done()})
+    by_file = {c["site"]: c for c in record["framework_entries"]}
+    assert by_file["app/page.tsx"]["exports"] == ["default"] and "methods" not in by_file["app/page.tsx"]
+    assert by_file["app/api/pay/route.ts"]["methods"][:2] == ["GET", "HEAD"] and "exports" not in by_file["app/api/pay/route.ts"]
+    assert "exports" not in by_file["app/layout.tsx"] and "methods" not in by_file["app/layout.tsx"]
+    assert not [c for c in record["framework_entries"] if "handler" in c or "handler_source" in c]
 
 
 def test_the_comment_above_a_block_is_not_read(tmp_path):

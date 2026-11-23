@@ -54,7 +54,7 @@ def from_record(report):
     source = f"{NAME}@{VERSION}"
     if not any(s["source"] == source for s in report["sources"]):
         return [], [unavailable("this pre-map has no Noir run")]
-    return report.get("noir_entries", []), [g for g in report["gaps"] if g["source"] == source]
+    return [{"handler": None, **row} for row in report.get("noir_entries", [])], [g for g in report["gaps"] if g["source"] == source]
 
 
 def evidence(manifest: Path) -> tuple[list, list]:

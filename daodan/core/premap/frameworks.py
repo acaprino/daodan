@@ -39,23 +39,6 @@ def excerpt(result: dict) -> str:
     return text if len(text) <= 600 else f"{text[:300]} [...] {text[-300:]}"
 
 
-def starts(db, resolver, file: str, names: list[str]) -> tuple[list[tuple[str, str, int]], list[str]]:
-    """The exports of a file that name a function of the snapshot, `(export, qualified name, line)`, and why the others do
-    not: an export that the file does not make (`export-missing`) is no reason (a route module has the exports it needs), one the
-    file makes in several records (`export-ambiguous`: an overload, a value and a type of one name) or the snapshot's own records
-    cannot follow (a re-export, a name that is no function) is. Nothing here picks one of several records: it is a gap."""
-    from snapshot_store import _unpack
-    found, unread = [], []
-    for name in names:
-        identity, reason = resolver.exported_target(file, name)
-        if identity:
-            declared = db.execute("SELECT name,l0,payload FROM sem_declarations WHERE id=?", (identity,)).fetchone()
-            found.append((name, _unpack(declared[2]).get("qualified_name") or declared[0], declared[1]))
-        elif reason != "export-missing":
-            unread.append(f"{name}: {reason}")
-    return found, unread
-
-
 def column_bytes(line: str, units: int) -> int:
     """The column in bytes, as the snapshot writes it, of a column the compiler gives in UTF-16 code units."""
     seen = 0

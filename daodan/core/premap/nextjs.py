@@ -16,7 +16,7 @@ from pathlib import PurePosixPath
 
 from premap import frameworks
 
-NAME, VERSION, RANK = "next", "daodan/premap/v2", "scanner"
+NAME, VERSION, RANK = "next", "daodan/premap/v3", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a `.js` import names: `.ts`, `.tsx`, `.js`, `.jsx`
 TYPES = ".next/types"
 VALIDATOR = f"{TYPES}/validator.ts"
@@ -88,10 +88,11 @@ def read(context, commands, results):
                              "detail": f"{checks}, and {len(files)} files of the snapshot have that path and stem: "
                                        f"{', '.join(files)}"})
             else:
-                kind = entries.QUERIES["next"].get(block["shape"], {}).get("kind")
+                spec = entries.QUERIES["next"].get(block["shape"], {})
                 candidates.append({"reader": entries.NEXT, "shape": block["shape"], "site": files[0],
                                    "symbol": f"{files[0]}::{flows.MODULE}", "path": block["path"],
-                                   **({"kind": kind} if kind else {})})
+                                   **({"kind": spec["kind"]} if spec.get("kind") else {}),
+                                   **{key: spec[key] for key in ("exports", "methods") if spec.get(key)}})
     return {"facts": {"framework_entries": candidates} if candidates else {}, "gaps": gaps}
 
 

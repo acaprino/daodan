@@ -19,12 +19,12 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_premap_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_premap_container_runner import bound, container, container_runner, manifest_of, premap, recorder
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/sveltekit-routes"
 FIXTURE = BENCHMARK / "fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/sveltekit/answers.json").read_text(encoding="utf-8"))
-SOURCE = "sveltekit@daodan/premap/v1"
+SOURCE = "sveltekit@daodan/premap/v2"
 SYNC = ["timeout", "--kill-after=10", "900", "npx", "--no-install", "svelte-kit", "sync"]  # one folder has all the time there is
 LAST = "nessun ingresso"
 META = ".svelte-kit/types/route_meta_data.json"
@@ -61,6 +61,7 @@ def read(tmp_path, files, name="routes", pair=None):
     _, manifest = manifest_of(tmp_path, files)
     asked, run = runner_for(pair or answers(name))
     record = premap.write(manifest, sources=(premap.sveltekit,), runner=run)
+    record["bound"] = bound(manifest, record)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
 
 
@@ -72,12 +73,12 @@ def at(files, file, needle):
 def found(record):
     """Each row: path, shape, kind, site, symbol, the export that starts it (None at the file), the gap."""
     return sorted((r["path"], r["shape"], r.get("kind"), r["site"], r["symbol"], r.get("handler"), r.get("gap"))
-                  for r in record.get("framework_entries", []))
+                  for r in record["bound"])
 
 
 def starts(record, path):
     """The exports a route's files start: name -> the function the snapshot binds it to."""
-    return {r["handler"]: r["symbol"].split("::")[1] for r in record["framework_entries"] if r["path"] == path and r.get("handler")}
+    return {r["handler"]: r["symbol"].split("::")[1] for r in record["bound"] if r["path"] == path and r.get("handler")}
 
 
 def listed():
@@ -121,7 +122,7 @@ def test_every_file_the_tool_lists_is_a_row_on_the_function_each_export_a_framew
     ]
     rows = found(record)
     assert [row for row in rows if not row[6] and row[2] == "rotta"] == sorted(expected)
-    assert gaps == [] and all(r["reader"] == "sveltekit" and r["sources"] == [SOURCE] for r in record["framework_entries"])
+    assert gaps == [] and all(r["reader"] == "sveltekit" and r["sources"] == [SOURCE] for r in record["bound"])
     assert [(c["argv"], c["cwd"], c["network"], c["env"]) for c in asked] == [
         (SYNC, ".", "none", {"npm_config_offline": "true"}),
         (["cat", META], ".", "none", {})]
@@ -131,7 +132,7 @@ def test_an_export_no_function_of_the_snapshot_is_bound_to_is_a_row_on_the_file_
     """`actions` is an object: its members are anonymous functions of the snapshot, none of them named by the export; a `GET`
     that is the result of a call is no function either, and a re-export leads to another file."""
     record, _, _ = read(tmp_path, project())
-    unbound = {r["path"]: (r["site"], r["symbol"], r["gap"]) for r in record["framework_entries"] if r.get("gap")}
+    unbound = {r["path"]: (r["site"], r["symbol"], r["gap"]) for r in record["bound"] if r.get("gap")}
     assert sorted(unbound) == ["/(shop)/cart", "/(shop)/checkout", "/blog/[slug]", "/computed", "/login", "/reexport"]
     for path in ("/(shop)/cart", "/(shop)/checkout", "/blog/[slug]", "/login"):
         file = unbound[path][0]
@@ -144,12 +145,12 @@ def test_an_export_no_function_of_the_snapshot_is_bound_to_is_a_row_on_the_file_
 
 def test_a_layout_is_one_row_on_its_file_that_no_flow_starts_from_however_many_routes_list_it(tmp_path):
     record, _, _ = read(tmp_path, project())
-    layouts = [(r["site"], r["path"], r["shape"], r["kind"], r["symbol"]) for r in record["framework_entries"] if r["shape"].startswith("+layout")]
+    layouts = [(r["site"], r["path"], r["shape"], r["kind"], r["symbol"]) for r in record["bound"] if r["shape"].startswith("+layout")]
     assert sorted(layouts) == sorted([
         (ROUTES + "+layout.ts", "/", "+layout", LAST, ROUTES + "+layout.ts::<module>"),
         (ROUTES + "+layout.server.ts", "/", "+layout.server", LAST, ROUTES + "+layout.server.ts::<module>"),
         (ROUTES + "(shop)/+layout.server.ts", "/(shop)", "+layout.server", LAST, ROUTES + "(shop)/+layout.server.ts::<module>")])
-    assert all("handler" not in r and "gap" not in r for r in record["framework_entries"] if r["shape"].startswith("+layout"))
+    assert all("handler" not in r and "gap" not in r for r in record["bound"] if r["shape"].startswith("+layout"))
     assert len(listed()) == 20 and sum(ROUTES + "+layout.server.ts" in files for files in listed().values()) == 15  # the root one: 15 routes list it
 
 
@@ -170,21 +171,21 @@ def test_each_file_is_owned_by_the_route_that_has_it_in_its_own_folder_and_the_t
 
 def test_the_route_is_the_tool_s_id_with_its_group_and_its_segments_as_written_and_a_page_with_no_module_has_no_row(tmp_path):
     record, _, _ = read(tmp_path, project())
-    paths = {r["path"] for r in record["framework_entries"]}
+    paths = {r["path"] for r in record["bound"]}
     assert {"/(shop)/checkout", "/(shop)/cart", "/blog/[slug]", "/docs/[...rest]", "/sitemap.xml"} <= paths
     # `+page.svelte` is no file the tool lists: a route whose files are a component and the layouts above it has no row
     for route in ("/about", "/lang/[[opt]]", "/items/[id=integer]", "/(shop)/receipt"):
-        assert route in listed() and not [r for r in record["framework_entries"] if r["path"] == route], route
+        assert route in listed() and not [r for r in record["bound"] if r["path"] == route], route
         assert all(file.endswith(("+layout.ts", "+layout.server.ts")) for file in listed()[route]), route
-    assert not [r for r in record["framework_entries"] if r["site"].endswith(".svelte")]
+    assert not [r for r in record["bound"] if r["site"].endswith(".svelte")]
 
 
 def test_a_routes_folder_that_is_not_src_routes_needs_no_reading_the_tool_prints_the_files_where_the_project_has_them(tmp_path):
     files = moved(project(), "src/routes/", "src/pages/")
     record, gaps, _ = read(tmp_path, files, "routes-in-pages")
-    assert gaps == [] and all(r["site"].startswith("src/pages/") for r in record["framework_entries"])
+    assert gaps == [] and all(r["site"].startswith("src/pages/") for r in record["bound"])
     assert starts(record, "/api/pay") == {"POST": "POST", "GET": "GET"} and starts(record, "/blog/[slug]") == {"load": "load"}
-    assert len(record["framework_entries"]) == len(read(tmp_path / "again", project())[0]["framework_entries"])
+    assert len(record["bound"]) == len(read(tmp_path / "again", project())[0]["bound"])
 
 
 @pytest.mark.parametrize("name", ["old-kit-2.0.0", "old-kit-2.15.0", "old-kit-2.40.0"])
@@ -198,8 +199,8 @@ def test_a_route_that_was_deleted_is_no_row_the_tool_wrote_its_file_list_again(t
     """`stale`: after a sync and two routes taken away, the second sync listed neither (the tool removes what it wrote)."""
     files = project(**{"src/routes/about/+page.svelte": None, "src/routes/api/health/+server.ts": None})
     record, gaps, _ = read(tmp_path, files, "stale")
-    assert gaps == [] and "/about" not in {r["path"] for r in record["framework_entries"]}
-    assert not [r for r in record["framework_entries"] if r["path"] == "/api/health"]
+    assert gaps == [] and "/about" not in {r["path"] for r in record["bound"]}
+    assert not [r for r in record["bound"] if r["path"] == "/api/health"]
 
 
 # ------------------------------------------------------------------------- what the tool does not say
@@ -208,7 +209,7 @@ def test_a_file_the_tool_lists_and_the_snapshot_does_not_hold_is_a_gap_and_no_ro
     record, [gap], _ = read(tmp_path, project(**{"src/routes/api/pay/+server.ts": None}))
     assert (gap["kind"], gap["path"]) == ("outside_snapshot", "src/routes/api/pay/+server.ts")
     assert "/api/pay" in gap["detail"] and "no file" in gap["detail"]
-    assert not [r for r in record["framework_entries"] if r["path"] == "/api/pay"]
+    assert not [r for r in record["bound"] if r["path"] == "/api/pay"]
     assert starts(record, "/api/health") == {"GET": "GET"}
 
 
@@ -217,10 +218,10 @@ def test_a_file_whose_name_the_table_does_not_know_is_a_row_with_no_kind_and_a_g
     out = {**listed(), "/about": ["src/routes/about/+foo.ts"]}
     pair = [answers()[0], {**answers()[1], "stdout": json.dumps(out)}]
     record, _, _ = read(tmp_path, project(**{"src/routes/about/+foo.ts": "export const GET = () => 1;\n"}), pair=pair)
-    [row] = [r for r in record["framework_entries"] if r["shape"] == "+foo"]
+    [row] = [r for r in record["bound"] if r["shape"] == "+foo"]
     assert (row["path"], row["site"], row["symbol"]) == ("/about", "src/routes/about/+foo.ts", "src/routes/about/+foo.ts::<module>")
     assert "kind" not in row and "+foo" in row["gap"]
-    assert ("sveltekit", "+foo") in {(q["reader"], q["shape"]) for q in entries.shape_questions(record["framework_entries"])}
+    assert ("sveltekit", "+foo") in {(q["reader"], q["shape"]) for q in entries.shape_questions(record["bound"])}
 
 
 def test_an_out_dir_that_is_not_the_default_is_a_gap_that_says_so_with_the_tool_s_own_words_and_no_row(tmp_path):
@@ -269,7 +270,7 @@ def test_a_syntax_error_in_a_route_module_is_a_row_with_the_snapshot_s_cause_and
     """`server-syntax-error`: sync exits 0 and lists the file; the snapshot cannot read it."""
     files = project(**{"src/routes/blog/+page.server.ts": "export const load = async () => ({ posts: [\n"})
     record, gaps, _ = read(tmp_path, files, "server-syntax-error")
-    [blog] = [r for r in record["framework_entries"] if r["path"] == "/blog"]
+    [blog] = [r for r in record["bound"] if r["path"] == "/blog"]
     assert blog["site"] == "src/routes/blog/+page.server.ts" and blog["gap"].startswith("no function found for the exports")
     assert gaps == [] and starts(record, "/blog/[slug]") == {"load": "load"}
 
@@ -325,7 +326,7 @@ def test_a_load_written_with_satisfies_is_a_row_with_the_snapshot_s_cause_and_no
     snapshot records `load` as a binding and the arrow as an anonymous function, so no function is bound to the export."""
     text = "import type { PageServerLoad } from './$types';\nexport const load = (async () => ({ posts: [] })) satisfies PageServerLoad;\n"
     record, gaps, _ = read(tmp_path, project(**{"src/routes/blog/+page.server.ts": text}))
-    [blog] = [r for r in record["framework_entries"] if r["path"] == "/blog"]
+    [blog] = [r for r in record["bound"] if r["path"] == "/blog"]
     assert blog["site"] == "src/routes/blog/+page.server.ts" and "handler" not in blog
     assert "load: unsupported-target-kind" in blog["gap"] and gaps == []
 
@@ -337,7 +338,7 @@ def test_an_overloaded_method_is_not_dropped_without_a_gap(tmp_path):
     text = ("export function GET(a: string): void;\nexport function GET(a: number): void;\nexport function GET(a: any): void {}\n"
             "export const POST = async () => new Response('x');\n")
     record, _, _ = read(tmp_path, project(**{"src/routes/api/health/+server.ts": text}))
-    rows = [r for r in record["framework_entries"] if r["path"] == "/api/health"]
+    rows = [r for r in record["bound"] if r["path"] == "/api/health"]
     assert {r["handler"] for r in rows if r.get("handler")} == {"POST"}  # what is bound stays bound
     assert [r["gap"] for r in rows if r.get("gap")] == [
         "no function found for the exports the framework starts /api/health from: GET: export-ambiguous"], "GET is neither a row nor a gap"
@@ -369,7 +370,7 @@ def test_a_package_folder_is_read_against_its_own_files(tmp_path):
     files["web/package.json"] = '{"devDependencies": {"@sveltejs/kit": "2.70.4"}}\n'
     record, gaps, asked = read(tmp_path, files)
     assert gaps == [] and {c["cwd"] for c in asked} == {"web"}
-    assert {r["site"].split(":")[0] for r in record["framework_entries"]} >= {"web/src/routes/api/pay/+server.ts"}
+    assert {r["site"].split(":")[0] for r in record["bound"]} >= {"web/src/routes/api/pay/+server.ts"}
     assert starts(record, "/api/pay") == {"POST": "POST", "GET": "GET"}
 
 
@@ -590,7 +591,7 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
     source; the 16 entries are the rows on a function, and Noir's 25 endpoints in the same files stay gaps of their own."""
     scan = json.loads((BENCHMARK / "results/pipeline-scan.json").read_text(encoding="utf-8"))
     record, _, _ = read(tmp_path, project())
-    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key != "sources"} for row in record["framework_entries"]]
+    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key != "sources"} for row in record["bound"]]
     assert len(scan["framework_entries"]) == 25 and scan["source_gaps"] == []
     assert scan["sources"]["sveltekit"]["state"] == "ran" and scan["sources"]["next"]["state"] == "not_needed"
     assert scan["links"]["entries"] == {"sveltekit rotta": 16} and scan["links"]["routes"]["offered"] == 0
@@ -606,3 +607,16 @@ def test_a_source_that_a_fake_adds_to_the_tuple_is_read_with_no_other_line_than_
     premap.write(manifest, sources=())
     monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, fake))
     assert row in evidence(manifest)[0]
+
+
+def test_the_premap_rows_are_the_modules_with_their_exports_and_the_links_bind_them_to_the_functions(tmp_path):
+    """No source binds a row (spec 8.13, point 2): the pre-map row is the module with its table's exports, and the links' binder
+    puts each entry on the function the snapshot names."""
+    import flows
+    _, manifest = manifest_of(tmp_path, project())
+    record = premap.write(manifest, sources=(premap.sveltekit,), runner=runner_for(answers())[1])
+    [pay] = [r for r in record["framework_entries"] if r["path"] == "/api/pay"]
+    assert pay["symbol"] == f"{pay['site']}::<module>" and pay["exports"] and "handler" not in pay and "handler_source" not in pay
+    linked = {(e["path"], e["symbol"].split("::")[1], e["handler_source"]) for e in flows.cached_links(manifest, [])["entries"]
+              if e["reader"] == "sveltekit"}
+    assert {("/api/pay", "POST", "sveltekit"), ("/api/pay", "GET", "sveltekit")} <= linked

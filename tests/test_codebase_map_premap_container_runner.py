@@ -33,6 +33,17 @@ def manifest_of(tmp_path, files):
     return project, manifest
 
 
+def bound(manifest, record) -> list[dict]:
+    """The rows of the pre-map as the links bind them (`binder.bind`, as `flows.link_facts` calls it): the pre-map's rows are on
+    the module with their `exports`, and the binder ties each to its function."""
+    import binder
+    import flows
+    import semantic_store
+    from snapshot_store import open_snapshot
+    with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+        return binder.bind(record.get("framework_entries", []), flows.Facts(store, db), semantic_store._Resolver(db))
+
+
 def recorder(answers=None, state="done"):
     calls = []
 
