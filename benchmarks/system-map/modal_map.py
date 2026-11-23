@@ -915,7 +915,8 @@ def whole(args) -> None:
         archive = _inputs(name, "session", tars, {})[0]
         sidecar = Path(tars[name]).with_suffix(".json") if name in tars else None  # `code_archive.py`'s counts
         counts = sidecar.read_text(encoding="utf-8") if sidecar is not None and sidecar.is_file() else None
-        calls[f"{name} case"] = cases.spawn(name, CASES[name], archive, counts, args.tag).object_id
+        if not args.no_cases:
+            calls[f"{name} case"] = cases.spawn(name, CASES[name], archive, counts, args.tag).object_id
         for model in (m for m in args.models.split(",") if m):
             for rep in range(1, args.reps + 1):
                 calls[_label(name, "system", model, "session", rep)] = runs.spawn(
@@ -951,6 +952,8 @@ def _arguments(argv: list[str] | None = None):
     every.add_argument("--reps", type=int, default=2, help="independent runs per case and model")
     every.add_argument("--budget", type=float, default=BUDGET_USD, help="USD per session")
     by_links = commands.add_parser("spawn-links", help="the links of a cloned case; the volume gets links-CASE.json")
+    every.add_argument("--no-cases", action="store_true",
+                       help="start only the runs of the map, under a TAG whose cases an earlier job already kept")
     by_links.add_argument("case", choices=[name for name, case in CASES.items() if "repo" in case and "rules" in case])
     by_links.add_argument("tag")
     args = parser.parse_args(argv)
