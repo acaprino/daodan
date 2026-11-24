@@ -9,7 +9,7 @@ import { Mark } from './mark.tsx';
 import type { Model, Shown } from './model.ts';
 import { FLOW_ICON } from './icons.ts';
 import { bindingSite, entityName, entryName, flowTitle, headOf, kindOf, stepMeta } from './names.ts';
-import { markOf } from './server.ts';
+import { imageOf } from './server.ts';
 import { canEnter, shownDetails } from './state.ts';
 import { FRESHNESS_LABEL, LINK_LABEL, MORE, number, PROVENANCE_LABEL, STATUS_LABEL } from './words.ts';
 
@@ -21,7 +21,7 @@ function Technologies({ envelope, ids }: { envelope: Envelope; ids?: string[] })
   const shown = envelope.technologies.filter(item => !ids || ids.includes(item.id));
   if (!shown.length) return null;
   return <Section title="Tecnologie" level={3} icon={<Icon name="labels" />}>
-    <DescriptionList items={shown.map(item => ({ name: <Cluster wrap={false}><Mark image={markOf(item.mark)} icon="labels" />{item.name}</Cluster>, value: <Column gap="xs">
+    <DescriptionList items={shown.map(item => ({ name: <Cluster wrap={false}><Mark image={imageOf(item.mark)} icon="labels" />{item.name}</Cluster>, value: <Column gap="xs">
       <Text>{item.type}</Text>
       {item.paths.length > 0 && <Listed label={`File di ${item.name}`} more={MORE.files} items={item.paths.map(path => <Text variant="note" pre>{path}</Text>)} />}
     </Column> }))} />
@@ -127,7 +127,7 @@ export function Details({ model, show, open, close }: { model: Model; show: (ask
     {open && <Column gap="lg" data-selectable="">
       {/* The one live region: it stays while what is chosen changes, and reads the name alone. */}
       <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
-        <Mark image={markOf(entity && markOfEntity(envelope, entity))} icon={head.icon} />
+        <Mark image={imageOf(entity && markOfEntity(envelope, entity))} icon={head.icon} />
         <Column><Heading size="small"><Text pre>{head.name}</Text></Heading></Column>
       </Cluster>
       {entity ? <EntityDetails key={entity.ref} model={model} show={show} entity={entity} />

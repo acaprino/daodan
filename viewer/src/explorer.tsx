@@ -15,7 +15,7 @@ import type { Model, Shown } from './model.ts';
 import { typesIn } from './projection.ts';
 import { chosenIn, graphOf, layoutKeyOf, sceneOf } from './scene.ts';
 import type { Drawing, Scene } from './scene.ts';
-import { markOf } from './server.ts';
+import { imageOf } from './server.ts';
 import { inSight, onceDrawn } from './sight.ts';
 import { placeOf, shownDetails } from './state.ts';
 import { Failed } from './states.tsx';
@@ -73,7 +73,7 @@ export function Explorer({ model, title, search, toShow, show, ready, runs, open
   const direction = useAppShell().sidebar === 'full' ? 'right' : 'down';
   const flow = envelope.flows.find(item => item.ref === state.flow);
   const graph = useLayout(useMemo<Drawing>(() => ({ projection, edges, direction, flow }), [projection, edges, direction, flow]), ready);
-  const scene = useMemo(() => graph.layout && sceneOf(graph.drawing, graph.layout, markOf), [graph.drawing, graph.layout]);
+  const scene = useMemo(() => graph.layout && sceneOf(graph.drawing, graph.layout, imageOf), [graph.drawing, graph.layout]);
   const selected = chosenIn(graph.drawing.projection, state.selected);
   // What was asked for outside the canvas (an element, the nodes of a flow) is brought into its view once, when the canvas draws it,
   // and only where a part of it is out of sight: a new layout shows the whole map, which is most often enough. Where it draws no node
