@@ -6,7 +6,7 @@ const assets = new URL('../../daodan/assets/', import.meta.url);
 const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta.url)));
 // What the fixture lacks for the details: evidence as the server writes it, and lists longer than what is in sight at first.
 const parts = Array.from({ length: 9 }, (_, n) => `web/part${n}.tsx`);
-envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', mark: 'react', paths: ['web/checkout.tsx', ...parts] }];
+envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', category: 'framework', mark: 'react', paths: ['web/checkout.tsx', ...parts] }];
 // The logos the server has, and one it has not.
 for (const [ref, mark] of [['external:card payment provider', 'stripe'], ['external:api gateway', 'gone']]) envelope.entities.find(entity => entity.ref === ref).mark = mark;
 const LOGO = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16"/></svg>';
@@ -16,10 +16,10 @@ envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lu
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
 const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [], markRequests = [];
-const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false, pathsBroken: false, marks: false };
+const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, exportBusy: 0, layoutLost: false, pathsBroken: false, marks: false };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
-  id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
+  id: name, name, mark: null, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
   ...(name === 'Client' && { projects: [{ mark: 'react', name: 'React', category: 'framework', evidence: [{ path: 'package.json', line: 12 }] }], other_dependencies: 3 }),
 }));
 const graph = { grouping: 'directories', nodes: groups, open: [], edges: ['confirmed', 'observed', 'sampled'].map(status => ({
@@ -93,7 +93,7 @@ try {
       if (mode.premapStatus !== 200) return route.fulfill({ status: mode.premapStatus, json: { error: 'snapshot non leggibile' } });
       return route.fulfill({ json: {
       files: ['README.md', 'src/lib/util.ts', 'src/main.ts'], languages: [{ name: 'TypeScript', files: 2 }],
-      technologies: [{ name: 'React', category: 'framework', state: 'recognized', source: 'package.json:12' },
+      technologies: [{ name: 'React', category: 'framework', state: 'recognized', source: 'package.json:12', mark: 'react' },
         { name: 'node', category: 'toolchain', state: 'declared', version: '24', source: '.nvmrc' }],
       units: [{ id: 'web', name: 'web', kind: 'npm', root: '.', manifest: 'package.json', status: 'confirmed', parent: null,
         dependencies: [{ name: 'left-pad', scope: 'runtime', state: 'declared', source: 'package.json', version: '^1.3.0', direct: true },
@@ -103,6 +103,10 @@ try {
     }
     if (path === '/data/visual.json') {
       await new Promise(resolve => setTimeout(resolve, mode.exportDelay));
+      if (mode.exportBusy > 0) {
+        mode.exportBusy -= 1;
+        return route.fulfill({ status: 503, json: { error: 'project lock is held by another helper' } });
+      }
       return route.fulfill(mode.exportBroken ? { body: 'not json', contentType: 'text/plain' } : { json: envelope });
     }
     if (path === '/api/mark') {
@@ -179,7 +183,10 @@ try {
     // The frame: the screens in the bar, no sidebar, the context in the status row, the service and the keys at the foot.
     assert.deepEqual((await bar.getByRole('button').allInnerTexts()).slice(0, 3), ['Analisi', 'Grafo', 'Motore e domande']);
     assert.equal(await tab('Analisi').getAttribute('aria-current'), 'page');
+    await page.evaluate(() => document.fonts.ready);
+    const beside = (await tab('Motore').boundingBox()).x;  // before there is a graph to count
     assert.equal(await page.getByRole('navigation').count(), 0);
+    assert.equal(await bar.getByRole('button', { name: 'Comandi', exact: true }).locator('svg').count(), 0);  // the magnifier is the search
     await line('Contesto pronto').waitFor();
     const where = line('Pipeline completata').getByText(`demo/shop · main · ${'1'.repeat(12)} · run demo`, { exact: true });
     await where.waitFor();
@@ -286,7 +293,8 @@ try {
     await tree.waitFor();
     mode.premapDelay = 0;
     await stageSays('Pre-mappa', 'fatta');
-    await tab('Grafo').filter({ hasText: '2 gruppi' }).waitFor();
+    await foot.getByText(/ · 2 gruppi nel grafo$/).waitFor();
+    assert.equal((await tab('Motore').boundingBox()).x, beside);  // a count that comes moves no tab
     // Choosing a stage shows it. The context in use, to read and copy, is with the repository.
     for (const name of ['Analisi', 'Sintesi', 'Repository']) {
       await stage(name).click();
@@ -305,6 +313,14 @@ try {
     assert.match(await panel('Linguaggi').innerText(), /TypeScript\s*2 file/);
     assert.match(await panel('Tecnologie e framework').innerText(),
       /React\s*framework · Versione non registrata\s*package\.json:12[\s\S]*node\s*toolchain · 24\s*\.nvmrc/);
+    for (const text of ['Inventario del checkout', 'File nello snapshot', '2 file', 'framework · Versione non registrata', '.nvmrc']) {
+      assert.ok(await selectable(main.getByText(text, { exact: true }).first()), text);
+    }
+    // A technology asks for its logo, and keeps its icon where none comes; a toolchain has none to ask for.
+    const technologies = panel('Tecnologie e framework').getByRole('term');
+    await technologies.filter({ hasText: 'React' }).locator('img').waitFor({ state: 'detached' });
+    assert.deepEqual(await Promise.all(['React', 'node'].map(text => technologies.filter({ hasText: text }).locator('svg').count())), [1, 1]);
+    assert.deepEqual([...new Set(markRequests)], ['?id=react&token=test']);
     const dependencies = main.getByRole('table', { name: 'Dipendenze per unità' });
     const dependency = name => dependencies.getByRole('row').filter({ hasText: name });
     assert.match(await dependency('left-pad').innerText(), /left-pad\s+runtime\s+web\s+\^1\.3\.0\s+package\.json\s+—\s+Diretta/);
@@ -421,6 +437,7 @@ try {
     await tab('Grafo').click();
     await screen('Grafo');
     assert.deepEqual([await tab('Grafo').getAttribute('aria-current'), await tab('Analisi').getAttribute('aria-current')], ['page', null]);
+    assert.equal((await tab('Motore').boundingBox()).x, beside);  // nor does the choice of one
     assert.ok(await focused(tab('Grafo')));  // a tab keeps the focus; a command takes it to the content
     await tab('Grafo').press('ArrowLeft');
     await page.waitForFunction(() => document.activeElement?.textContent === 'Analisi');
@@ -562,6 +579,7 @@ try {
     assert.ok(await selectable(steps.getByText('Non riuscita · manifest illeggibile', { exact: true })));
     const bar = run.getByRole('progressbar', { name: 'Passi completati della pipeline', exact: true });
     assert.equal(await bar.getAttribute('aria-valuetext'), '21%');  // one of six, and a quarter
+    assert.ok(await selectable(run.getByText('Ultimo avanzamento: Analyze · pyright · 1/4', { exact: true })));
     for (const text of ['1 di 6 passi completati', '21%', 'Analyze · analyzer per linguaggio', 'In esecuzione', 'Ultimo avanzamento: Analyze · pyright · 1/4']) await says(run, text);
     await busyNow(button(page, 'Analisi in corso'));
     const log = run.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem');
@@ -599,7 +617,7 @@ try {
     await button(canvas, 'Server, 6 file · confermato').waitFor();
     assert.equal(await canvas.getByRole('button', { name: /^Apri / }).count(), 0);  // nothing opens in the preview
     assert.match(await run.getByRole('list', { name: 'Tipi di linea', exact: true }).innerText(),
-      /Relazioni\s*1[\s\S]*Osservata in esecuzione\s*1[\s\S]*Campionata dal profiler\s*1[\s\S]*Incerta o in conflitto\s*1/);
+      /Relazioni\s*1[\s\S]*Osservata in esecuzione\s*1[\s\S]*Campionata dal profiler\s*1[\s\S]*Prova insufficiente\s*1/);
     for (const text of ['Codice', '2 directory · 4 relazioni · 2 file', 'Costruzione conclusa']) await says(run, text);
     await thing('Client').click();
     await groupIs('Client');
@@ -711,6 +729,7 @@ try {
     await paths.getByRole('button', { name: /^Salva ordine/ }).waitFor();
     // What the graph counts, the inventory, what is missing, and where to start.
     await says(synthesis, '1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto');
+    assert.ok(await selectable(synthesis.getByText('1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto', { exact: true })));
     await says(synthesis, '1 voce con versione risolta nel modello di build.');
     await says(synthesis, 'Nessuna lacuna registrata dal run.');
     await map(partialMap);
@@ -721,7 +740,7 @@ try {
     await button(synthesis, 'Provenienza e lacune').click();
     const provenance = detail('Provenienza e lacune del grafo');
     await provenance.waitFor();
-    assert.match(await provenance.innerText(), /Repository\s+demo\/shop[\s\S]*Directory \/ relazioni\s+2 \/ 4[\s\S]*Passaggio del grafo\s+fresh[\s\S]*Limiti dichiarati/);
+    assert.match(await provenance.innerText(), /Repository\s+demo\/shop[\s\S]*Directory \/ relazioni\s+2 \/ 4[\s\S]*Passaggio del grafo\s+completato[\s\S]*Limiti dichiarati/);
     await page.keyboard.press('Escape');
     await provenance.waitFor({ state: 'hidden' });
     const largest = synthesis.getByRole('list', { name: 'Responsabilità da esplorare', exact: true }).getByRole('button');
@@ -786,19 +805,18 @@ try {
     // It opens whole, with the details of the group it is read from, as tall as the panel leaves.
     await groupIs('Server');
     await marked('Server');
-    await tab('Grafo').filter({ hasText: '2 gruppi' }).waitFor();
     await says(panel, 'Codice · 2 / 2 nodi');
     assert.ok((await canvas.boundingBox()).height >= 300);
     assert.equal(await canvas.getAttribute('aria-roledescription'), 'grafo');
-    assert.equal(await page.getByRole('link', { name: 'Esploratore completo', exact: true }).getAttribute('href'), '/?token=test&run=demo');
+    assert.equal(await page.getByRole('link', { name: 'Apri l’esploratore', exact: true }).getAttribute('href'), '/?token=test&run=demo');
     // The lines are said by their words, to screen readers always, and by their key, with how many are in view.
     const heard = await thing('Client').evaluate(el => el.getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id)?.textContent).join(' '));
-    for (const text of ['calls: 1 · osservata in esecuzione, verso Server', 'campionata dal profiler', 'destinazioni in conflitto', 'Alt e una freccia lo spostano']) {
+    for (const text of ['1 chiamata · osservata in esecuzione, verso Server', 'campionata dal profiler', 'destinazioni in conflitto', 'Alt e una freccia lo spostano']) {
       assert.ok(heard.includes(text), text);
     }
     const lineKinds = panel.getByRole('list', { name: 'Tipi di linea', exact: true });
     assert.match(await lineKinds.innerText(),
-      /Relazioni\s*1[\s\S]*Osservata in esecuzione\s*1[\s\S]*Campionata dal profiler\s*1[\s\S]*Incerta o in conflitto\s*1/);
+      /Relazioni\s*1[\s\S]*Osservata in esecuzione\s*1[\s\S]*Campionata dal profiler\s*1[\s\S]*Prova insufficiente\s*1/);
     await says(panel, '4 relazioni visibili');
     // The filters: the kind of relation, the neighbourhood of the group it is read from, the search. One button clears them.
     assert.ok(await clear.isDisabled());
@@ -844,13 +862,13 @@ try {
     const relations = group.getByRole('list', { name: 'Relazioni del gruppo (4)', exact: true }).getByRole('listitem');
     await relations.first().waitFor();
     assert.equal(await relations.count(), 4);
-    assert.match(await relations.first().innerText(), /→ Server\s*calls: 1/);
+    assert.match(await relations.first().innerText(), /→ Server\s*1 chiamata/);
     await button(group, 'Prove delle chiamate (3)').click();
     const proofs = group.getByRole('list', { name: 'Prove delle chiamate (3)', exact: true });
     for (const text of ['Client → Server · osservata in esecuzione', 'Client → Server · campionata dal profiler',
       'Client → Server · osservata in esecuzione · destinazioni in conflitto']) await says(proofs, text);
     await button(group, 'Client/file0.ts').click();
-    await says(group, 'calls · save · osservata in esecuzione · riga 3 · Server/file1.ts');
+    await says(group, 'chiama · save · osservata in esecuzione · riga 3 · Server/file1.ts');
     assert.ok(await selectable(proofs.getByText('Client → Server · campionata dal profiler', { exact: true })));
     // By keyboard the arrows follow the lines and Enter chooses; the details follow the choice, with every file in place.
     await thing('Client').focus();
@@ -869,7 +887,7 @@ try {
     await button(group, 'Chiudi').click();
     await group.waitFor({ state: 'hidden' });
     await canvas.locator('[aria-current]').waitFor({ state: 'detached' });
-    await button(panel, 'Grafo e lacune').click();
+    await button(panel, 'Provenienza e lacune').click();
     const provenance = detail('Provenienza e lacune del grafo');
     await provenance.waitFor();
     await page.keyboard.press('Escape');
@@ -1158,6 +1176,7 @@ try {
   });
   await page.setViewportSize({ width: 1280, height: 850 });
   mode.exportBroken = true;  // an export that cannot be read: the page waits, then says what failed, with Riprova
+  mode.exportBusy = 1;       // and before that a busy project, which is asked again
   mode.exportDelay = 1000;
   await page.goto('http://daodan.test/');
   assert.equal(await page.title(), 'Codebase Map');
@@ -1166,10 +1185,13 @@ try {
   await nav.getByText("In attesa dell'export.").waitFor();
   assert.equal(await busy.count(), 1);
   const unreadable = main.getByRole('alert');
+  await page.getByText('Daodan è occupato, riprovo', { exact: true }).waitFor();
+  assert.equal(await unreadable.count(), 0);
   await unreadable.waitFor();
+  assert.equal(mode.exportBusy, 0);
   assert.match(await unreadable.innerText(), /Errore[\s\S]*Export non leggibile[\s\S]*Riprova/);
   await line('Export non leggibile').waitFor();
-  assert.ok(await selectable(unreadable.getByText('unknown schema: undefined')));
+  assert.ok(await selectable(unreadable.getByText('non dice il suo schema')));
   await nav.getByText("Nessuna mappa: l'export non si legge.").waitFor();
   assert.equal(await nav.getByText("In attesa dell'export.").count(), 0);
   for (const control of [search, up, infoButton, openOther]) assert.ok(await control.isDisabled());  // in their place, with nothing to do
@@ -1210,10 +1232,13 @@ try {
   // The logo of a service is on its node and on its row; one that does not load leaves the icon.
   await until(() => logoIn(thing('card payment provider')), 'the logo on its node');
   await until(() => logoIn(row(/^card payment provider/)), 'the logo on its row');
+  // So is that of the one framework a group of code declares.
+  await until(() => logoIn(thing('web')), 'the logo of its framework on the node of a group');
+  await until(() => logoIn(row(/^web/)), 'the logo of its framework on the row of a group');
   for (const where of [thing('API gateway'), row(/^API gateway/)]) {
     await until(async () => await where.locator('img').count() === 0 && await where.locator('svg').count() > 0, 'the icon of what has no logo');
   }
-  assert.deepEqual([...new Set(marksAsked)].sort(), ['?id=gone', '?id=stripe']);
+  assert.deepEqual([...new Set(marksAsked)].sort(), ['?id=gone', '?id=react', '?id=stripe']);
   // A node pressed is in the details; Escape on it, or a press beside the nodes, leaves it.
   await thing('web').click();
   await details.getByRole('heading', { name: 'web', exact: true }).waitFor();
@@ -1652,9 +1677,9 @@ try {
   await give('mappa.png', 'image/png', 'x');
   await problem('Serve un file JSON.').waitFor();
   await give('altro.json', 'application/json', '{"schema":"altro"}');
-  await problem('altro.json non è un export leggibile: unknown schema: altro').waitFor();
+  await problem('altro.json non è un export leggibile: schema sconosciuto: altro').waitFor();
   await give('rotto.json', 'application/json', 'not json');
-  await problem(/rotto\.json non è un export leggibile: .+JSON/).waitFor();
+  await problem('rotto.json non è un export leggibile: non è JSON').waitFor();
   await page.keyboard.press('Escape');
   await opener.waitFor({ state: 'detached' });
   await line('shop · run fixture').waitFor();
@@ -1677,15 +1702,25 @@ try {
   await opener.waitFor({ state: 'detached' });
   await line('shop · run lasciato').waitFor();
 
-  await context.route('**/api/runs', route => route.fulfill({ json: { runs: [] } }));
+  let runsBusy = 1;  // a busy project has runs all the same: its page does not fall back on a static export
+  await context.route('**/api/runs', route => {
+    runsBusy -= 1;
+    return route.fulfill(runsBusy < 0 ? { json: { runs: [] } } : { status: 503, json: { error: 'project lock is held by another helper' } });
+  });
   const asks = { refused: 'progetto occupato', held: null };
   await context.route('**/api/requests', async route => {
     if (asks.held) await asks.held.promise;
-    return route.fulfill(asks.refused ? { status: 503, json: { error: asks.refused } } : { json: { requests: [] } });
+    return route.fulfill(asks.refused ? { status: 500, json: { error: asks.refused } } : { json: { requests: [] } });
   });
-  await context.route('**/api/findings', route => route.fulfill({ json: { findings: [], gaps: [] } }));
+  let findingsBusy = 1;
+  await context.route('**/api/findings', route => {
+    findingsBusy -= 1;
+    return route.fulfill(findingsBusy < 0 ? { json: { findings: [], gaps: [] } } : { status: 503, json: { error: 'project lock is held by another helper' } });
+  });
   await page.reload();
   const noRuns = main.getByText('Creane uno qui sotto, o avvia una mappa nella sessione.');
+  await page.getByText('Daodan è occupato, riprovo', { exact: true }).waitFor();
+  await main.getByRole('progressbar', { name: "Carico l'export…" }).waitFor();
   await noRuns.waitFor();
   await line('Nessun run').waitFor();
   await nav.getByText('Nessuna mappa: non ci sono run.').waitFor();
@@ -1694,6 +1729,7 @@ try {
   // With no run the session is in sight under the words that say so, and its form makes the first run.
   const session = main.getByRole('region', { name: 'Sessione e review', exact: true });
   // Each list is asked by itself: one that is not read says so and can be asked again, beside one that is.
+  await session.getByRole('progressbar', { name: 'Carico i finding…' }).waitFor();  // a busy one is no failure
   await session.getByText('Nessun finding: compaiono quando la sessione chiude una review.').waitFor();
   const listOf = name => session.getByRole('region', { name: new RegExp(`^${name}\\b`) });
   const unread = name => listOf(name).getByRole('alert');
@@ -1754,18 +1790,18 @@ try {
   mode.exportBroken = true;  // a run in progress has no readable export yet: its live event line shows all the same
   await page.reload();
   await main.getByRole('alert').waitFor();
-  await line('10:00 · phase_completed · fase 2 · fatto').waitFor();
+  await line('10:00 · Fase completata · fase 2 · fatto').waitFor();
   mode.exportBroken = false;
   const results = { refused: 'risultati occupati', held: Promise.withResolvers() };
   await context.route('**/api/findings', async route => {
     await results.held.promise;
-    return route.fulfill(results.refused ? { status: 503, json: { error: results.refused } } : { json: {
+    return route.fulfill(results.refused ? { status: 500, json: { error: results.refused } } : { json: {
       findings: [{ file: 'web/checkout.tsx', line: 12, severity: 'High', title: 'Premessa', request: 1 }, { severity: 'Low', title: 'Senza file', request: 1 }],
       gaps: ['lacuna della sessione'],
     } });
   });
   await page.reload();
-  await line('10:00 · phase_completed · fase 2 · fatto').waitFor();
+  await line('10:00 · Fase completata · fase 2 · fatto').waitFor();
   const runPicker = main.getByRole('combobox', { name: 'Run' });  // the last readable run is the one shown
   assert.match(await runPicker.innerText(), /Run demo/);
   await runPicker.click();
@@ -1778,7 +1814,7 @@ try {
   await line('shop · run fixture').waitFor();
   // An export opened there stays until a run is chosen, also the one it took the place of: a phase that ends, here at every poll,
   // does not take it away, and what happens in the run is not said beside it.
-  await line('phase_completed').waitFor();
+  await line('Fase completata').waitFor();
   await openOther.click();
   await opener.waitFor();
   await give('aperto.json', 'application/json', exported('aperto'));
@@ -1786,10 +1822,10 @@ try {
   await line('shop · run aperto · dal file aperto.json').waitFor();
   assert.match(await runPicker.innerText(), /File aperto/);
   await page.waitForTimeout(2500);
-  assert.deepEqual([await line('shop · run aperto · dal file aperto.json').count(), await line('phase_completed').count()], [1, 0]);
+  assert.deepEqual([await line('shop · run aperto · dal file aperto.json').count(), await line('Fase completata').count()], [1, 0]);
   await runPicker.click();
   await page.getByRole('option', { name: 'Run prima', exact: true }).click();
-  await line('phase_completed').waitFor();
+  await line('Fase completata').waitFor();
   await line('shop · run fixture').waitFor();
   assert.equal(await line('dal file').count(), 0);
   assert.match(await runPicker.innerText(), /Run prima/);
@@ -1852,10 +1888,10 @@ try {
   assert.equal(await main.getByRole('alert').count(), 0);
   const findings = session.getByRole('list', { name: 'Finding', exact: true });
   const unplaced = findings.getByRole('listitem').filter({ hasText: 'Senza file' });  // it goes nowhere: to read and copy
-  assert.match(await unplaced.innerText(), /file non indicato[\s\S]*Low[\s\S]*Senza file/);
+  assert.match(await unplaced.innerText(), /file non indicato[\s\S]*gravità bassa[\s\S]*Senza file/);
   assert.deepEqual([await unplaced.getByRole('button').count(), await selectable(unplaced.getByText('Senza file'))], [0, true]);
-  const finding = findings.getByRole('button', { name: /High/ });
-  assert.match(await finding.innerText(), /web\/checkout\.tsx:12[\s\S]*Premessa[\s\S]*High/);
+  const finding = findings.getByRole('button', { name: /gravità alta/ });
+  assert.match(await finding.innerText(), /web\/checkout\.tsx:12[\s\S]*Premessa[\s\S]*gravità alta/);
   // Wherever the view is, the node that stands for the file is brought into it.
   const zoomIn = () => canvas.getByRole('button', { name: 'Ingrandisci', exact: true }).click();
   await row(/^card payment provider/).click();
