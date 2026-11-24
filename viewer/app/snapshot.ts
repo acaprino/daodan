@@ -43,6 +43,7 @@ export type Symbols = {
 };
 
 export type EngineDraft = Partial<Engine> & { api_key: string };
+export type EngineWork = 'save' | 'probe' | 'forget';
 export type Asked = { state: string; text: string; tools: string[]; cause: string | null };
 
 export type Snapshot = Readonly<{
@@ -55,7 +56,7 @@ export type Snapshot = Readonly<{
   pathPage: PathPage | null;
   symbols: Symbols | null;
   events: readonly RunEvent[];
-  engineDraft: EngineDraft | null; engineSaid: string; engineTone: '' | 'good' | 'bad';
+  engineDraft: EngineDraft | null; engineSaid: string; engineTone: '' | 'good' | 'bad'; engineBusy: readonly EngineWork[];
   question: string; asked: Asked | null;
   notices: Notice[];
 }>;

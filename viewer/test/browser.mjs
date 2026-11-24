@@ -471,40 +471,129 @@ try {
   // assert.ok(await page.locator('.im-inspector').isHidden());
   // assert.equal(await page.getByRole('dialog').count(), 0);
   // ticket 23: the engine and the questions
-  // await page.locator('#question').waitFor({ state: 'visible' });
-  // assert.equal(await page.locator('textarea.im-textarea#question').count(), 1);
-  // await page.locator('#question').fill('Dove si firma il token?');  // the question and its answer, with the tools used
-  // await page.getByRole('button', { name: 'Chiedi' }).click();
-  // await page.locator('#answer-box').getByText('Lo firma auth.ts').waitFor();
-  // assert.match(await page.locator('#answer-box').innerText(), /cerca token/);
-  // assert.notEqual(await page.getByRole('button', { name: 'Chiedi' }).getAttribute('aria-busy'), 'true');
-  // // A busy button ignores the pointer, not the keyboard: Enter on it must not send the question a second time.
-  // assert.equal(askRequests.length, 1);
-  // await page.evaluate(() => window.setServerState({ asked: { state: 'running', question: 'Dove si firma il token?' } }));
-  // await page.locator('#ask-button[aria-busy="true"]').waitFor();
-  // await page.locator('#ask-button').focus();
-  // await page.keyboard.press('Enter');
-  // await page.waitForTimeout(300);
-  // assert.equal(askRequests.length, 1);
-  // await page.evaluate(() => window.setServerState({ asked: { state: 'done', question: 'Dove si firma il token?' } }));
-  // await page.evaluate(() => window.setServerState({ engine: { engine: 'openai', engines: ['claude', 'openai'], api_key: 'set', base_url: 'https://api.test/v1', model: 'm' } }));
-  // await page.getByRole('combobox', { name: 'Motore', exact: true }).waitFor();
-  // await page.getByRole('combobox', { name: 'Motore', exact: true }).selectOption('openai');
-  // for (const label of [/^Indirizzo dell’endpoint/, /^Modello/, /^Chiave/, 'Domanda']) await page.getByLabel(label, { exact: typeof label === 'string' }).waitFor();
-  // assert.ok(await page.locator('.im-field-hint', { hasText: 'Chiave impostata' }).isVisible());
-  // const forget = page.getByRole('button', { name: 'Rimuovi la chiave' });
-  // await forget.click();
-  // const sure = page.getByRole('alertdialog', { name: 'Rimuovere la chiave?' });
-  // await sure.waitFor();
-  // assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), 'Annulla');
-  // assert.match(await sure.innerText(), /deposito delle credenziali[\s\S]*non si può recuperare/);
-  // await page.keyboard.press('Escape');
-  // await sure.waitFor({ state: 'detached' });
-  // assert.equal(engineRequests.length, 0);
-  // await forget.click();
-  // await sure.getByRole('button', { name: 'Rimuovi la chiave' }).click();
-  // await page.waitForFunction(() => document.querySelector('#engine-said')?.textContent.includes('Chiave rimossa'));
-  // assert.deepEqual(engineRequests, [{ api_key: '' }]);
+  {
+    const serve = patch => page.evaluate(state => window.setServerState(state), patch);
+    const wrong = text => main.getByRole('alert').filter({ hasText: text });
+    const said = text => main.getByRole('status').filter({ hasText: text });  // what came of the form, when nothing is wrong
+    const button = name => main.getByRole('button', { name, exact: true });
+    const field = label => main.getByLabel(label, { exact: true });
+    const focusOn = text => page.waitForFunction(wanted => document.activeElement?.textContent.trim() === wanted, text);
+    const answered = async (path, reply) => {  // what a route answers, until it is left to the fixture again
+      const here = url => url.pathname === path;
+      await context.route(here, reply);
+      return () => context.unroute(here);
+    };
+    const question = main.getByRole('textbox', { name: 'Domanda', exact: true });
+    const ask = page.getByRole('button', { name: 'Chiedi', exact: true });
+    const answer = main.getByRole('region', { name: 'Risposta', exact: true });
+    await choose('Vai a Motore e domande');
+    await main.getByRole('region', { name: 'Motore e domande', exact: true }).waitFor();
+    await page.keyboard.press('Control+f');
+    await page.getByText('Questa schermata non ha una ricerca.').last().waitFor();
+    // Without a repository, or an engine, nothing can be asked, and why is beside the button.
+    await serve({ context: null, job: { state: 'idle' } });
+    await page.getByText('Seleziona prima una repository.', { exact: true }).waitFor();
+    assert.deepEqual([await question.isDisabled(), await ask.isDisabled()], [true, true]);
+    await serve({ engine: { engine: null, engines: ['claude'] } });
+    const choice = page.getByText('Scegli e salva prima un motore.', { exact: true });
+    await choice.waitFor();
+    assert.deepEqual([await question.isEnabled(), await ask.isDisabled()], [true, true]);
+    await serve({});
+    await choice.waitFor({ state: 'detached' });
+    await main.getByText('Il motore usa il run demo di demo/shop.', { exact: true }).waitFor();
+    await answer.getByText('Nessuna domanda', { exact: true }).waitFor();
+    // The question and its answer, with the tools used.
+    await question.fill('Dove si firma il token?');
+    await ask.click();
+    const text = answer.getByText('Lo firma auth.ts', { exact: true });
+    await text.waitFor();
+    assert.match(await answer.innerText(), /conclusa[\s\S]*Operazioni di Daodan usate[\s\S]*cerca\s+token[\s\S]*Lo firma auth\.ts/);
+    assert.ok(await selectable(text));
+    assert.equal(await answer.locator('[aria-live="polite"]').filter({ hasText: 'Lo firma auth.ts' }).count(), 1);
+    assert.notEqual(await ask.getAttribute('aria-busy'), 'true');
+    // A busy button ignores the pointer, not the keyboard: Enter on it must not send the question a second time.
+    assert.equal(askRequests.length, 1);
+    const working = page.getByText('Il motore sta rispondendo.', { exact: true });
+    await serve({ asked: { state: 'running', question: 'Dove si firma il token?' } });
+    await busyNow(ask);
+    await working.waitFor();
+    await ask.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(300);
+    assert.equal(askRequests.length, 1);
+    await serve({ asked: { state: 'done', question: 'Dove si firma il token?' } });
+    await working.waitFor({ state: 'detached' });
+    // An engine at work, then one that failed: the state in words, and the cause.
+    let leave = await answered('/api/app/answer', route => route.fulfill({ json: { events: [], next: 0, state: 'running', text: '', cause: null } }));
+    await ask.click();
+    await answer.getByText('in corso', { exact: true }).waitFor();
+    await answer.getByRole('progressbar', { name: 'In attesa del motore…' }).waitFor();
+    await busyNow(ask);
+    const leaveWorking = leave;
+    leave = await answered('/api/app/answer', route => route.fulfill({ json: { events: [], next: 0, state: 'failed', text: '', cause: 'il motore si è fermato' } }));
+    await wrong('Domanda non riuscita.').filter({ hasText: 'il motore si è fermato' }).waitFor();
+    assert.match(await answer.innerText(), /non riuscita/);
+    assert.equal(askRequests.length, 2);
+    await leave();
+    await leaveWorking();
+    // The engine: an endpoint has an address, a model and a key; a command line has none.
+    await serve({ engine: { engine: 'openai', engines: ['claude', 'openai'], api_key: 'set', base_url: 'https://api.test/v1', model: 'm' } });
+    const engine = main.getByRole('combobox', { name: 'Motore', exact: true });
+    assert.match(await engine.innerText(), /Claude Code \(riga di comando\)/);
+    assert.deepEqual([await field('Modello').count(), await field('Chiave').count()], [0, 0]);
+    await engine.click();
+    await page.getByRole('option', { name: 'Endpoint compatibile OpenAI' }).click();
+    for (const label of ['Indirizzo dell’endpoint', 'Modello', 'Chiave', 'Domanda']) await field(label).waitFor();
+    await main.getByText('Chiave impostata: lasciare vuoto per tenerla.', { exact: true }).waitFor();
+    assert.equal(await field('Chiave').getAttribute('type'), 'password');
+    // The key's removal is confirmed, from «Annulla»: Escape and it leave the key, and the focus goes back.
+    const forget = button('Rimuovi la chiave');
+    const sure = page.getByRole('dialog', { name: 'Rimuovere la chiave?' });
+    for (const cancel of [() => page.keyboard.press('Escape'), () => sure.getByRole('button', { name: 'Annulla', exact: true }).click()]) {
+      await forget.click();
+      await sure.waitFor();
+      await focusOn('Annulla');
+      assert.match(await sure.innerText(), /deposito delle credenziali[\s\S]*non si può recuperare/);
+      await cancel();
+      await sure.waitFor({ state: 'detached' });
+      await focusOn('Rimuovi la chiave');
+    }
+    assert.equal(engineRequests.length, 0);
+    await forget.click();
+    await sure.getByRole('button', { name: 'Rimuovi la chiave', exact: true }).click();
+    await said('Chiave rimossa.').waitFor();
+    assert.deepEqual(engineRequests, [{ api_key: '' }]);
+    await forget.waitFor({ state: 'detached' });  // the button is gone: the focus is in the key's field
+    await page.waitForFunction(() => document.activeElement?.getAttribute('type') === 'password');
+    await main.getByText('Va nel deposito delle credenziali del sistema.', { exact: true }).waitFor();
+    // The engine is tried: the button is busy, and what came of it is said.
+    const probe = button('Prova il motore');
+    leave = await answered('/api/app/probe', async route => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await route.fulfill({ json: { engine: 'openai', reachable: true, tools: true } });
+    });
+    await probe.click();
+    await busyNow(probe);
+    await said('Prova in corso…').waitFor();
+    await said('openai: risponde, chiama gli strumenti.').waitFor();
+    await leave();
+    leave = await answered('/api/app/probe', route => route.fulfill({ json: { engine: 'openai', reachable: false, tools: null, detail: 'rifiutato' } }));
+    await probe.click();
+    await wrong('openai: non risponde. rifiutato').waitFor();
+    await leave();
+    // The form is saved, and the key is not kept in the page.
+    await field('Indirizzo dell’endpoint').fill('https://api.test/v1');
+    await field('Modello').fill('m');
+    await field('Chiave').fill('segreta');
+    await field('Chiave').press('Enter');
+    await said('Motore salvato.').waitFor();
+    assert.deepEqual(engineRequests.slice(1), [{ engine: 'openai', base_url: 'https://api.test/v1', model: 'm', api_key: 'segreta' }]);
+    assert.equal(await field('Chiave').inputValue(), '');
+    await page.setViewportSize({ width: 390, height: 820 });
+    assert.deepEqual([await ask.isVisible(), await fits()], [true, true]);
+    await page.setViewportSize({ width: 1280, height: 850 });
+  }
   // end of tickets 20 to 23
 
   // The Codebase Map.

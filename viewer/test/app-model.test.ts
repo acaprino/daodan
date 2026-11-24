@@ -400,6 +400,22 @@ test('the setting of the engine is saved without a key left empty; the key is fo
   assert.deepEqual([asked('/api/app/engine')[1].body, now().engineSaid], [{ api_key: '' }, 'Chiave rimossa.']);
 });
 
+test('the engine is asked each thing once at a time, and is busy with it until it is answered, well or not', async () => {
+  let refuse = (_error: Error) => {};
+  const { model, now, asked } = setup({
+    '/api/app/probe': () => new Promise((_resolve, reject) => { refuse = reject; }),
+    '/api/app/engine': () => ({ engine: 'claude', engines: ['claude'] }),
+  });
+  const tried = model.probeEngine();
+  await model.probeEngine();
+  assert.deepEqual([asked('/api/app/probe').length, now().engineBusy, now().engineSaid], [1, ['probe'], 'Prova in corso…']);
+  await model.saveEngine();
+  assert.deepEqual([now().engineBusy, now().engineSaid], [['probe'], 'Motore salvato.']);
+  refuse(new Error('caduto'));
+  await tried;
+  assert.deepEqual([now().engineBusy, now().engineSaid, now().engineTone], [[], 'caduto', 'bad']);
+});
+
 test('a question is asked once and its answer read to the end', async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const answers = [{ events: [{ kind: 'tool', name: 'cerca', arguments: 'token' }], next: 1, state: 'running', text: '', cause: null },

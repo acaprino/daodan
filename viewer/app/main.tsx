@@ -13,7 +13,7 @@ import '@acaprino/sigrid/styles.css';
 import { LOOK } from '../src/page.ts';
 import { WORDS } from '../src/words.ts';
 import { analysisActions, AnalysisScreen } from './analysis.tsx';
-import { EngineScreen } from './engine-screen.tsx';
+import { engineActions, EngineScreen } from './engine-screen.tsx';
 import { FrameContext } from './frame.tsx';
 import type { Detail } from './frame.tsx';
 import { GraphScreen } from './graph-screen.tsx';
@@ -81,7 +81,7 @@ function App() {
     <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
   </>;
   return <FrameContext value={{ search, detail, show, close }}>
-    <AppShell frame="sheet" titleBar={titleBar} status={status} actions={analysisActions(s)} footer={footer} bottomBar={bottomBar} contentLabel={place.label}
+    <AppShell frame="sheet" titleBar={titleBar} status={status} actions={analysisActions(s) ?? engineActions(s)} footer={footer} bottomBar={bottomBar} contentLabel={place.label}
       inspector={<Inspector title={detail?.title ?? 'Dettaglio'} open={detail !== null} onOpenChange={open => { if (!open) close(); }} footer={detail?.footer}>
         {detail && <Column gap="lg" data-selectable="">{detail.content}</Column>}
       </Inspector>}>

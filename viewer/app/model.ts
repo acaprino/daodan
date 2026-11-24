@@ -7,7 +7,7 @@ import { isAsking } from './run.ts';
 import { causeOf, createServer, isBusy } from './server.ts';
 import type { AppState, Checked, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
 import { complete, ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
-import type { Asked, EngineDraft, PathPage, PathResult, PremapFound, Snapshot, Symbols } from './snapshot.ts';
+import type { Asked, EngineDraft, EngineWork, PathPage, PathResult, PremapFound, Snapshot, Symbols } from './snapshot.ts';
 import { readKept, STORAGE } from './storage.ts';
 import type { Kept, Place, Stage } from './storage.ts';
 
@@ -26,7 +26,7 @@ export function createModel(host: Host) {
     kept: stored.kept, server: null, serverError: '',
     checked: null, checkedUrl: '', branch: '', checking: false, checkError: '', selecting: false, selectError: '',
     premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, pathPage: null, symbols: null, events: [],
-    engineDraft: null, engineSaid: '', engineTone: '', question: '', asked: null, notices: [],
+    engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null, notices: [],
   };
   const listeners = new Set<() => void>();
   // What no screen draws: which run and groups the last answers are of, the check in course, and where the stream arrived.
@@ -292,28 +292,30 @@ export function createModel(host: Host) {
   const editEngine = (patch: Partial<EngineDraft>) => set({ engineDraft: { ...(now.engineDraft ?? { api_key: '' }), ...patch } });
   const withEngine = (engine: Engine) => ({ server: { ...now.server, engine } });
 
-  async function saveEngine(): Promise<void> {
-    try {
-      const described = await post<Engine>('/api/app/engine', engineBody());
-      set({ ...withEngine(described), engineDraft: { ...described, api_key: '' }, engineSaid: 'Motore salvato.', engineTone: 'good' });
-    } catch (error) { set({ engineSaid: causeOf(error), engineTone: 'bad' }); }
+  // What the form asks, one of each at a time: a busy button's press, from the keyboard, does nothing. What came of it is said.
+  async function engineWork(work: EngineWork, run: () => Promise<Partial<Snapshot>>): Promise<void> {
+    if (now.engineBusy.includes(work)) return;
+    set({ engineBusy: [...now.engineBusy, work] });
+    let came: Partial<Snapshot>;
+    try { came = await run(); } catch (error) { came = { engineSaid: causeOf(error), engineTone: 'bad' }; }
+    set({ ...came, engineBusy: now.engineBusy.filter(other => other !== work) });
   }
-  async function forgetKey(): Promise<void> {
-    try {
-      const described = await post<Engine>('/api/app/engine', { api_key: '' });
-      set({ ...withEngine(described), engineTone: 'good',
-        engineSaid: described.api_key === 'set' ? 'Chiave rimossa: resta quella dell’ambiente.' : 'Chiave rimossa.' });
-    } catch (error) { set({ engineSaid: causeOf(error), engineTone: 'bad' }); }
-  }
-  async function probeEngine(): Promise<void> {
+  const saveEngine = () => engineWork('save', async () => {
+    const described = await post<Engine>('/api/app/engine', engineBody());
+    return { ...withEngine(described), engineDraft: { ...described, api_key: '' }, engineSaid: 'Motore salvato.', engineTone: 'good' };
+  });
+  const forgetKey = () => engineWork('forget', async () => {
+    const described = await post<Engine>('/api/app/engine', { api_key: '' });
+    return { ...withEngine(described), engineTone: 'good',
+      engineSaid: described.api_key === 'set' ? 'Chiave rimossa: resta quella dell’ambiente.' : 'Chiave rimossa.' };
+  });
+  const probeEngine = () => engineWork('probe', async () => {
     set({ engineSaid: 'Prova in corso…', engineTone: '' });
-    try {
-      const found = await post<{ engine: string; reachable: boolean; tools: boolean | null; detail?: string }>('/api/app/probe', engineBody());
-      const tools = found.tools === null ? 'strumenti tramite MCP' : found.tools ? 'chiama gli strumenti' : 'non ha chiamato lo strumento';
-      set({ engineSaid: found.reachable ? `${found.engine}: risponde, ${tools}.` : `${found.engine}: non risponde. ${found.detail || ''}`,
-        engineTone: found.reachable && found.tools !== false ? 'good' : 'bad' });
-    } catch (error) { set({ engineSaid: causeOf(error), engineTone: 'bad' }); }
-  }
+    const found = await post<{ engine: string; reachable: boolean; tools: boolean | null; detail?: string }>('/api/app/probe', engineBody());
+    const tools = found.tools === null ? 'strumenti tramite MCP' : found.tools ? 'chiama gli strumenti' : 'non ha chiamato lo strumento';
+    return { engineSaid: found.reachable ? `${found.engine}: risponde, ${tools}.` : `${found.engine}: non risponde. ${found.detail || ''}`,
+      engineTone: found.reachable && found.tools !== false ? 'good' : 'bad' };
+  });
 
   async function ask(): Promise<void> {
     if (isAsking(now)) return;  // a busy button's submit, from the keyboard, does nothing
