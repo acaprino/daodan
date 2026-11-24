@@ -1,27 +1,21 @@
 # Angular: `parseTemplate` del compilatore che il progetto installa
 
-Domanda: che dati e che posizioni dà `parseTemplate` di `@angular/compiler`, la funzione che il compilatore di Angular espone e dichiara
-privata, per gli eventi legati in un template (`(click)="save()"`), e che cosa ne ricava la sorgente della pre-mappa
-[`daodan/core/premap/angular.py`](../../daodan/core/premap/angular.py). Piano: [ingressi e flussi](../../docs/plans/2026-11-20-ingressi-e-flussi.md),
-task 13f; spec: [ingressi e scoperta dei flussi](../../docs/specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md), sezione 6.
+**Stato:** In uso. La sorgente [`daodan/core/premap/angular.py`](../../daodan/core/premap/angular.py) con lo script `angular_templates.mjs` è in `premap.SOURCES` e `TEMPLATE_SOURCES`, ha la voce `angular` in `container_runner.TOOLS`; le sue righe si fondono con quelle del lettore ad albero (`entries.compiled`). Aperto: gli eventi di `host` e `@HostListener`, la distinzione fra evento del DOM e uscita di un componente, i gestori proprietà-freccia, e le rotte di Angular, che nessuno strumento elenca («Aperto»).
 
-Tutto gira su Modal, in un container con la rete bloccata: il codice del progetto (qui `@angular/compiler`, installato dal suo
-`package-lock.json` mentre l'immagine si costruisce, l'unico momento con la rete aperta) non gira mai su questa macchina.
+## Domanda
 
-| Cartella | Contenuto |
-| --- | --- |
-| `fixture/` | un progetto Angular 22.3.0 con `package-lock.json` (tutti i `resolved` puntano a `registry.npmjs.org`): un template in un file `.html`, quelli scritti nel `.ts` (letterale con i backtick, stringa con `\'` e `\n`, stringa con `"` e `\"`), i gestori che il lettore ad albero perde, e i casi difficili sotto |
-| `probe/` | le sonde della prova del 22 novembre, ognuna stampa ciò che misura |
-| `results/` | l'uscita di ogni sonda, eseguita su Modal il 23 novembre 2026 (`00_env.txt` dà le versioni; la prova del 22 novembre non aveva ancora il componente con le virgolette doppie, e i secondi cambiano da una run all'altra), e `pipeline-scan.json`, il passo `scan` della pipeline intera |
-| `modal_probe.py` | `--mode probes` esegue le sonde; `--mode source` esegue la sorgente di Daodan e registra le risposte in `tests/fixtures/premap/angular/`; `--mode measure` (con `REPO` e `COMMIT` di un repository pubblico) dice che cosa la sorgente vi trova |
+Che dati e che posizioni dà `parseTemplate` di `@angular/compiler` per gli eventi legati in un template (`(click)="save()"`), e che cosa ne ricava la sorgente. Spec: [ingressi e scoperta dei flussi](../../docs/specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md), sezione 6 (task 13f del piano).
 
-```
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/angular-compiler/modal_probe.py
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/angular-compiler/modal_probe.py --mode source
-REPO=https://github.com/jhipster/jhipster-sample-app COMMIT=6b000b5d23a36c45e01472471b84a44fa2464044 PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/angular-compiler/modal_probe.py --mode measure
-```
+## Strumento ufficiale provato
 
-## Parametri provati
+`@angular/compiler` 22.3.0 e `@angular/compiler-cli` (fixture), Angular 20.3.35 con TypeScript 5.9.3 (immagine a parte), Angular 22.1.6 (`jhipster-sample-app`); Node 24.22.3. Misurato su Modal il 23 novembre 2026, rete bloccata.
+
+- **`parseTemplate`** dà gli eventi con le posizioni e l'albero del gestore. Ha un commento ma nessuna etichetta `@publicApi` (0 occorrenze in `compiler.d.ts`).
+- **`R3TargetBinder`**, dello stesso pacchetto, dice se un nome è una variabile del template.
+- **Il controllore dei template di `@angular/compiler-cli`** (`getSymbolOfNode`, `getTsSymbolOfSymbol`) dice la dichiarazione di una chiamata su un altro oggetto. Chiede l'opzione interna `_enableTemplateTypeChecker`.
+- **Valutato e non usato:** il servizio del linguaggio (`@angular/language-service`, `getDefinitionAndBoundSpan`) dà la stessa dichiarazione ma è un plugin per gli editor; il progetto si carica in 2,8-4,3 secondi. `NgCompiler.getComponentsWithTemplateFile` non dà la classe di un template scritto nel `.ts`: la classe la dà il decoratore, letto dall'albero sintattico.
+
+## Parametri
 
 | Parametro | Valori |
 | --- | --- |
@@ -33,7 +27,17 @@ REPO=https://github.com/jhipster/jhipster-sample-app COMMIT=6b000b5d23a36c45e014
 | Chi dice se un nome è del template | `R3TargetBinder` di `@angular/compiler` |
 | Chi dice dove è il metodo | la sorgente, dalle dichiarazioni dello snapshot, per un metodo del componente; per un ricevente diverso, il servizio del linguaggio di Angular (`getDefinitionAndBoundSpan`) e il controllore dei template di `@angular/compiler-cli` (`getSymbolOfNode`, `getTsSymbolOfSymbol`), a confronto |
 
-## Che cosa dà `parseTemplate`, misurato (Node 24.22.3, `@angular/compiler` 22.3.0, rete bloccata)
+File: `fixture/` (un progetto Angular 22.3.0: 14 template, 3 `.html` e 11 scritti nel `.ts`), `probe/` (le sonde, ognuna stampa ciò che misura), `modal_probe.py` (`--mode probes`; `--mode source`, che registra `tests/fixtures/premap/angular/` con l'impronta dello script; `--mode measure` con `REPO` e `COMMIT` di un repository pubblico), `results/` (`00_env.txt` dà le versioni).
+
+```
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/angular-compiler/modal_probe.py
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/angular-compiler/modal_probe.py --mode source
+REPO=https://github.com/jhipster/jhipster-sample-app COMMIT=6b000b5d23a36c45e01472471b84a44fa2464044 PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/angular-compiler/modal_probe.py --mode measure
+```
+
+## Risultato
+
+**Che cosa dà `parseTemplate`.**
 
 | Misura | Risultato | Uscita |
 | --- | --- | --- |
@@ -46,7 +50,7 @@ REPO=https://github.com/jhipster/jhipster-sample-app COMMIT=6b000b5d23a36c45e014
 | template rotto | `errors` e nodi parziali, mai un'eccezione; una chiamata non chiusa dà comunque l'evento con la `Call` parziale; un `@if` non chiuso non dà alcun evento (li dà con `alwaysAttemptHtmlToR3AstConversion`, non usata) | `results/03_extras.txt` |
 | stato dell'API | `parseTemplate` ha un commento ma nessuna etichetta `@publicApi` (0 occorrenze in `compiler.d.ts`) | `results/03_extras.txt` |
 
-## Che cosa non dà `parseTemplate`, e chi lo dà
+**Che cosa non dà, e chi lo dà.**
 
 | Dato | Misura | Uscita |
 | --- | --- | --- |
@@ -58,19 +62,7 @@ REPO=https://github.com/jhipster/jhipster-sample-app COMMIT=6b000b5d23a36c45e014
 | le rotte | nessuno strumento di Angular le elenca; il valutatore del compilatore (`PartialEvaluator`, `@angular/compiler-cli/private/migrations`) dà `Reference(...)` per `component` e `DynamicValue` per `loadComponent` e `loadChildren`: **non lette** | `results/09_routes.txt` |
 | il tipo dell'evento: DOM o uscita di un componente figlio | `(saved)` e `(click)` sono entrambi `type` 0 per `parseTemplate`; il controllore dei template e il servizio del linguaggio li distinguono (`saved` va a `editor.component.ts`, `click` a `addEventListener` di `lib.dom.d.ts`). **La sorgente non lo usa**: la forma `(saved)` aspetta la classificazione | `results/07_ls_join.txt`, `10_symbols_options.txt` |
 
-## La sorgente su Modal
-
-`--mode source`: la sorgente dà i comandi per la fixture (una funzione con la rete aperta, perché il pacchetto delle grammatiche di
-Daodan si scarica), poi ogni comando gira con la rete bloccata, come lo scrive `angular.py`: per ogni cartella due comandi, i primi di tutti
-(le analisi) e poi quelli del controllore dei tipi, ciascuno con la sua parte di 900 secondi; entrambi con la lista dei template in un file
-(`inputs`, che `container_runner` porta in `preparation.IN`) e il suo percorso come argomento. Il primo
-([`angular_templates.mjs`](../../daodan/core/premap/angular_templates.mjs)) chiama `parseTemplate` e il binder del compilatore; il secondo, `--types`,
-interroga il controllore dei template di `@angular/compiler-cli` per le chiamate su un altro oggetto, sotto `timeout`. Le risposte, come le
-restituisce il container, sono in `tests/fixtures/premap/angular/`, con l'impronta sha256 dello script che le ha prodotte (`script.json`): un test la
-confronta con il file, e se lo script cambia le risposte si registrano di nuovo. La fixture ha 14 template: 3 `.html` (`app`, `bad`, `legacy`) e 11 scritti nel
-`.ts` (`inline` ne ha 3; `accents`, con un carattere fuori dall'ASCII e uno fuori dal piano base prima dell'evento, la classe senza `export`; `crlf`, con
-`\r\n`; `editor`; `gone`; `orders`; `unreached`, che il `tsconfig.json` della fixture non raggiunge; `scoped`, con un `let-c`, un `@let` e la variabile di un
-`@for` che si chiamano come metodi della classe; `callee`, con `handlers[0]()` e `factory()()`).
+**La sorgente.** Per ogni cartella due comandi di `angular_templates.mjs`, con la lista dei template in un file: il primo chiama `parseTemplate` e il binder; il secondo, `--types`, interroga il controllore dei template sotto `timeout`. Le risposte registrate sono in `tests/fixtures/premap/angular/`, con l'impronta sha256 dello script (`script.json`): se lo script cambia, un test fallisce finché le risposte non sono registrate di nuovo su Modal.
 
 | Variante del progetto | Analisi (`parseTemplate`, binder) | Controllore dei tipi (`--types`) |
 | --- | --- | --- |
@@ -90,32 +82,21 @@ confronta con il file, e se lo script cambia le risposte si registrano di nuovo.
 | l'arco `attiva` di un evento | parte dalla classe del componente (`AppComponent`), anche quando il metodo è di un'altra classe (`OrderService.cancel`) |
 | una riga di `svc.cancel()` ha l'etichetta | no: l'etichetta passa dalla riga del lettore ad albero, che per `svc.cancel()` e `this.save()` non ne ha |
 
-### La pre-mappa intera, nel container di Daodan
-
-`DAODAN_FOLDER=<copia della fixture, con `\r\n` in crlf.component.ts> python -m modal run benchmarks/project-model/modal_pipeline.py --folder-out DIR --folder-stop scan`
-esegue il passo `scan` della pipeline su Modal con la sorgente registrata: il ripristino dei pacchetti dal `package-lock.json` con la rete
-aperta ai soli registri, poi i comandi con la rete bloccata, come li lancia `container_runner`. `results/pipeline-scan.json` tiene di
-`DIR/premap.json` gli stati delle sorgenti, le righe di `framework_entries` e le lacune della sorgente.
+**La pre-mappa intera** (`modal_pipeline.py --folder-stop scan` sulla fixture, `results/pipeline-scan.json`; misurata con la sorgente `v1`, oggi `VERSION` è `daodan/premap/v2`: non rimisurata):
 
 | Misura | Risultato |
 | --- | --- |
 | `scan`, tutto | 145,0 secondi (con `tsc` 17,7 s, `npm` 9,5 s, `noir` 9,5 s) |
 | sorgente `angular@daodan/premap/v1` | `ran`, 19,2 secondi, compreso il ripristino dei pacchetti e i due comandi |
 | `framework_entries` in `premap.json` | 41 righe, 9 lacune: le stesse 41 righe della risposta registrata (stesso sito, colonna, simbolo, lacuna, evento e proprietario); `test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_recorded_answer` lo verifica su `results/pipeline-scan.json` |
-| `c('x')` dentro `ng-template let-c` | una lacuna «c is a template variable …», non più «ScopedComponent does not declare c: it is inherited…» |
 | lacune della sorgente | 3: `computed.component.ts`, `nowhere.component.html`, `bad.component.html` (errori del compilatore) |
 | `next` | `not_needed`: la fixture non dichiara Next.js |
 
-### Un progetto reale: `jhipster/jhipster-sample-app`
-
-Repository pubblico (Apache-2.0), commit `6b000b5d23a36c45e01472471b84a44fa2464044`, Angular 22.1.6, usato anche da `benchmarks/project-model`
-(`real-app-jhipster-sample`). Il `tsconfig.json` della radice non ha `files` né `include`: il programma è tutto ciò che sta sotto la cartella.
-Misurato con lo script finale (la prima volta, con una versione precedente, le righe erano le stesse).
+**Un progetto reale:** `jhipster/jhipster-sample-app` (Apache-2.0, commit `6b000b5d23a36c45e01472471b84a44fa2464044`, Angular 22.1.6).
 
 | Misura | Risultato | Uscita |
 | --- | --- | --- |
 | che cosa trova la sorgente (`--mode measure`) | 59 componenti, 59 template, 1 cartella, nessuna lacuna prima dell'esecuzione | `results/measure-jhipster-sample-app.json` |
-| il tetto di 20.000 caratteri della lista nell'argomento, misurato quando c'era ancora | la lista dei 59 template è di 4335 caratteri: **nessun template nella lacuna del tetto**. La lista ora è un file e il tetto non c'è più; quanti template servono per superarlo non è misurato (la media qui è 73 caratteri per template) | `results/measure-jhipster-sample-app-with-the-cap.json` |
 | `scan` della pipeline, tutto | 293,2 secondi (con `tsc` 82,1 s, `maven` 25,5 s, `npm` 9,1 s, `noir` 9,1 s) | `results/pipeline-scan-jhipster-sample-app.json` |
 | sorgente `angular@daodan/premap/v1` | `ran`, 84,1 secondi, compreso il ripristino dei pacchetti (`npm`, senza lockfile) e i due comandi; il tempo del solo controllore dei tipi non è registrato | idem |
 | `framework_entries` | 94 righe: 89 sul metodo della classe, 5 lacune. Per forma: `(click)` 65, `(ngSubmit)` 16, `(sortChange)` 7, `(ngModelChange)` 2, `(closed)` 2, `(pageChange)` 1, `(scrolled)` 1. Due righe sono di template scritti nel `.ts` | idem |
@@ -123,34 +104,13 @@ Misurato con lo script finale (la prima volta, con una versione precedente, le r
 | le chiamate che il controllore dei tipi ha legato a un metodo del progetto in un altro file | **0**: in questo repository nessun template chiama un servizio del progetto; il caso `svc.cancel()` è provato solo sulla fixture. Nessuna chiamata è di una variabile del template | idem |
 | lacune che accompagnano la risposta | 3, della preparazione e non della lettura: un intervallo di Node (`>=24.21.0`) che non è una versione da installare e due file che Daodan non legge; nessuna lacuna di lettura dei template | idem |
 
-## Sonda dei tre punti aperti (scritta, non eseguita)
+## Aperto
 
-`probe/13_open_points.mjs` (`PROBES=13_open_points.mjs ... modal run benchmarks/angular-compiler/modal_probe.py`, uscita in `results/13_open_points.txt`)
-costruisce un piccolo progetto suo sotto `/tmp` (le fixture registrate non cambiano) e stampa che cosa dà il controllore dei template:
-
-| Punto | Che cosa stampa | Decide |
-| --- | --- | --- |
-| `host: {…}` e `@HostListener` (componente e direttiva) | per ogni listener di `getHostElement`: `sourceSpan`, `keySpan`, `handlerSpan` (file, riga, colonna: stanno nel `.ts`?), `handler.source`, `getSymbolOfNode` sul listener e sulle chiamate | se c'è un `file:riga` dallo strumento; senza, il punto si ferma con la causa |
-| uscita o evento del DOM | per ogni evento: `bindings`, di ognuno `target` (`isComponent`, `selector`, classe) e la dichiarazione con `isSourceFileDefaultLibrary`; casi: `<app-editor (click)>` senza uscita `click`, un componente con un'uscita `click`, due direttive con la stessa uscita, `HTMLElementEventMap` esteso (`my-event`), `(ngSubmit)`, `[(ngModel)]` | il criterio che separa DOM e uscita (`target`, o la libreria di default come ripiego), e la forma della riga |
-| gestore proprietà-freccia | per ogni chiamata: tipo della dichiarazione (`SyntaxKind`), classe che la dichiara, tipo dell'inizializzatore; casi: `arrow = () => {}`, metodo ereditato, `this.target.bind(this)`, `signal.set()`, `optional?.()` | se lo strumento dà una dichiarazione che lo snapshot lega senza una regola a mano |
-
-Risultati: nessuno. La sonda non è stata eseguita (nessuna credenziale di Modal); nessuna riga di `angular.py` né dello script è cambiata,
-perché ogni modifica dello script rende rosso il test dell'impronta (`script.json`) finché le risposte non sono registrate di nuovo su Modal.
-
-## Non provato
-
-- Una versione di Angular diversa dalla 20.3.35, 22.1.6 e 22.3.0. Prima della 20: `getTsSymbolOfSymbol` può mancare (lo script ripiega su `tsSymbol` del simbolo, non
-  eseguito) e Angular fino alla 12 scrive una chiamata come `MethodCall` (lo script lo dice in `unread`, non eseguito: la riga è provata solo con una
-  risposta modificata). L'opzione `_enableTemplateTypeChecker` e `getTsSymbolOfSymbol` non sono API pubbliche.
-- Un riferimento del template (`#box`, `box()`): lo script lo chiama `reference`, non c'è un caso registrato.
-- Un `tsconfig.json` solution-style di un progetto vero: provato solo con una copia della fixture.
-- Un secondo progetto reale e la fixture `js-angular` di `benchmarks/project-model`: la sorgente è ora fra quelle della pre-mappa e non è stata
-  eseguita su di loro; su `jhipster-sample-app` le righe sono 94 e nessuna è stata confrontata a mano con il template.
-- Un gestore che è una proprietà-freccia (`save = () => {}`): lo snapshot lo dichiara come funzione anonima di nome `A.(anonymous)`, quindi la
-  sorgente dà la lacuna «non dichiara»; il controllore dei tipi lo darebbe, e la sorgente lo chiede solo per i riceventi che non sono il componente.
-- `import * as core from '@angular/core'` con `@core.Component(...)`: il file non è scelto (l'intestazione dà solo i nomi importati), senza lacuna.
-- Quanto cambia l'ingresso quando il proprietario del controllo è la classe del componente e non il file `.html`: gli archi `attiva` partono
-  dalla classe (un test lo prova), le schede non sono state confrontate.
-- Memoria e tempo del controllore dei tipi su un progetto grande: il tempo è un limite (`types_seconds`: 900 secondi divisi fra le cartelle, 10
-  al minimo), la memoria del container è di 3 GB; un `tsconfig.json` senza `files` e `include` costruisce il programma di tutta la cartella.
-- Il servizio del linguaggio per i riceventi che non sono il componente: valutato, non usato.
+- **Tre punti con una sonda scritta e mai eseguita** (`probe/13_open_points.mjs`, uscita attesa in `results/13_open_points.txt`):
+  - `host: {…}` e `@HostListener`: `getHostElement` del controllore dà i listener; se dà un `file:riga` nel `.ts` non è misurato. Oggi non sono letti.
+  - Uscita di un componente o evento del DOM: `(saved)` e `(click)` sono lo stesso tipo per `parseTemplate`; il controllore li distingue, la sorgente non lo usa.
+  - Un gestore proprietà-freccia (`save = () => {}`): lo snapshot lo dichiara come funzione anonima e la sorgente dà la lacuna «non dichiara»; il controllore lo darebbe.
+- **Le rotte di Angular:** nessuno strumento le elenca; `PartialEvaluator` dà `Reference(...)` per `component` e `DynamicValue` per `loadComponent` e `loadChildren`. Non lette.
+- **I gestori che lo strumento non lega** (9 lacune sulla fixture, 5 su `jhipster-sample-app`: dichiarazioni fuori dallo snapshot, metodi ereditati o assegnati a run time, variabili del template): il passo dinamico preme i controlli nel browser e isola il gestore (`daodan/core/dynamic/app.py`, `observed_entries.py`), misurato su un'app React in [project-model](../project-model/README.md), «Esplorazione dell'app avviata»; su un'app Angular non è misurato.
+- **Le forme fuori dal registro:** nei collegamenti entra solo `(click)`; `(ngSubmit)`, `(keyup.enter)`, `(window:resize)`, `(saved)` aspettano la decisione sulla forma.
+- **Non provati:** Angular diverso da 20.3.35, 22.1.6 e 22.3.0 (prima della 20 `getTsSymbolOfSymbol` può mancare; fino alla 12 una chiamata è `MethodCall`); un riferimento del template (`#box`); un `tsconfig.json` solution-style di un progetto vero; un secondo progetto reale (su `jhipster-sample-app` nessuna delle 94 righe è stata confrontata a mano con il template); `import * as core from '@angular/core'` con `@core.Component(...)` (il file non è scelto, senza lacuna); memoria e tempo del controllore dei tipi su un progetto grande.

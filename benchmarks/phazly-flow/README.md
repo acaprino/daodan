@@ -1,72 +1,118 @@
-# Benchmark: un bug di flusso reale, review per area
+# Benchmark: phazly, un bug di flusso reale
 
-Prova se senior-review trova, in una review per area e non per commit, un bug reale di phazly-app: un fatto registrato sullo slot del diario (record presente) letto come fatto sul piatto del piano (piatto mangiato). Il codice di phazly-app non è copiato qui; le run e i loro artefatti restano fuori dal repository.
+**Stato:** In uso. È il caso reale su cui si misurano i flussi, le unità di review e la mappa del sistema. Le run di review con un modello sono chiuse (nessuna configurazione trova i due difetti); le misure senza modello sui 38 flussi del riferimento si rifanno a ogni modifica dei collegamenti.
 
-## Parametri
+**Domanda.** Su phazly-app, un'app reale con interfaccia e servizio:
+
+1. una review per area trova un difetto di flusso reale (un fatto sullo slot del diario letto come fatto sul piatto del piano)?
+2. i flussi e le unità che la macchina ricava aiutano la review a trovarlo?
+3. quanti flussi del riferimento dell'intero sistema il grafo chiude senza modello, e che cosa aggiunge un modello?
+
+Il codice di phazly-app non è copiato qui; le run e i loro artefatti restano fuori dal repository.
+
+**Risultati validi oggi.**
+
+| Domanda | Risultato | Con un modello? |
+| --- | --- | --- |
+| La review per area trova G1 e G2? | no, in 14 run di review: una sola descrizione esatta di G1, in un job, mai nel rapporto | sì (Sonnet 5.5) |
+| Unità o elenco dei flussi dati alla review cambiano l'esito? | no: né B né C portano un difetto che A non porta; la review resta com'è | sì |
+| Un modello scrive da solo le regole di collegamento? | sì, salvo le rotte: 32 chiamate collegate contro 46 | sì, regole scritte alla cieca |
+| Un modello che etichetta le coppie «chi scrive / chi legge» trova i difetti? | no: 0 su 2 | sì |
+| Una scheda di flusso scritta da un modello è accettata dal controllo? | sì: 15 righe su 15, 32 citazioni | sì |
+| Quanti flussi del riferimento chiude il grafo? | 18 su 38 con i collegamenti certi, 19 con i possibili; 129 frecce certe su 240 | no |
+| Quanti flussi può provare una scheda del percorso? | al più 7 su 38 | no |
+
+**Passo successivo della pipeline.** I collegamenti di queste misure vengono dalla pipeline fino ad `analyze` (statico). Il passo dinamico (`observe`) non è misurato su phazly; sulle chiamate lo misura [`call-provenance`](../call-provenance/README.md). Un modello che conferma i collegamenti possibili o legge le schede dei percorsi su questi 38 flussi non è misurato: il protocollo è in [`system-map`](../system-map/README.md#grafo-contro-modello-il-confronto-ancora-da-fare).
+
+## Parametri del caso
 
 | Parametro | Valore |
 |---|---|
-| target | phazly-app al commit `46c92b28`, il genitore della prima fix, copiato senza storia successiva: i messaggi delle fix non sono leggibili |
-| difetto atteso | G1 `react-app/src/hooks/useDayProgress.ts:190`: la riga del piano è fatta per un record qualsiasi nello slot. G2 `react-app/src/components/common/QuickAddSheet.tsx:268`: l'offerta «Dal piano» sparisce per un record qualsiasi. Fix: `b511e814`, `239819dd` |
-| criterio | trovato se un finding consegnato nel rapporto afferma, con `file:line`, che un record dello slot è usato come «piatto del piano mangiato»; parziale se compare solo in un job o come lead |
-| plugin | Daodan al commit `cf0ffe6`, installato dalla checkout locale |
-| esecuzione | `claude -p` 2.1.319, una sessione nuova per run, modello `claude-sonnet-5-5`; strumenti: Read, Glob, Grep, Write, Edit, sotto-agenti, Skill, Bash solo per `python3`, `uv`, `git` in lettura e `ls` |
-| mappa | `/codebase-map:map` lite su `react-app/` (630 file, 590 con simboli) |
+| target | phazly-app al commit `46c92b28`, il genitore della prima fix, copiato senza storia successiva |
+| difetti attesi | G1 `react-app/src/hooks/useDayProgress.ts:190`: la riga del piano è fatta per un record qualsiasi nello slot. G2 `react-app/src/components/common/QuickAddSheet.tsx:268`: l'offerta «Dal piano» sparisce per un record qualsiasi. Fix: `b511e814`, `239819dd` |
+| criterio | trovato se un finding consegnato nel rapporto afferma, con `file:line`, che un record dello slot è usato come «piatto del piano mangiato»; parziale se compare solo in un job o come pista |
+| regole di collegamento | `rules.json`, 18 regole scritte da Claude leggendo lo stato Zustand, il client delle API, i router FastAPI e l'accesso a MongoDB; `rules-blind.json`, 17 regole scritte alla cieca |
+| riferimento dell'intero sistema | 38 flussi, 240 frecce; privato del proprietario, letto a runtime con `--expected`, non copiato |
+| caso fra strati (fase 2) | dalla riga «Completato» della home il flusso arriva alla collezione `diaryDays` passando per `/getDiaryDays` |
 
-## Parametri per le misure sui flussi
+Spec: [fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md).
 
-Questo benchmark è uno dei casi delle spec [fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md), sullo stesso target.
-
-| Misura | Valore |
+| Script | Cosa fa |
 |---|---|
-| fase 2, file di un difetto noto | i file di G1, di G2 e dei due scrittori dello stato «saltato»; con `pack()` i file di G1 sono in tre incarichi |
-| fase 2, caso fra strati | dalla riga «Completato» della home il flusso arriva alla collezione `diaryDays` passando per `/getDiaryDays` |
-| fase 3, richiesta | «la logica dei widget della home e dell'inserimento» |
-| fase 3, perimetro | i file dei widget della home, dell'inserimento e di chi scrive lo stato che essi leggono; G2 sta nel file dell'inserimento, che i soli widget non comprendono |
-| fase 3, difetti attesi | G1, G2 e lo scrittore che lascia lo stato «saltato» |
-| fase 3, stima | 15-21 USD a run, da ricalibrare sul perimetro |
+| `summarize.py LINKS.json` | i riepiloghi dei collegamenti in `results/` |
+| `measure_links.py` | su Modal: la pipeline fino ad `analyze`, i collegamenti e il confronto con il riferimento |
+| `check_store_keys.py` | in locale: controlla le chiavi di store sull'albero sintattico del sorgente |
+| `phase3/inputs.py`, `modal_review.py`, `collect.py` | gli input delle tre prove della fase 3 (`perimeter.txt`, `units.json`, `flows.md`: generati, non si modificano a mano), le run e la raccolta |
 
-## Run del 2026-11-09
+## La review per area trova il difetto?
+
+### La review com'è, su una richiesta in parole
+
+9 novembre 2026. Plugin al commit `cf0ffe6`, `claude -p` 2.1.319, una sessione nuova per run, `claude-sonnet-5-5`; mappa lite di `react-app/` (630 file), senza il grafo delle chiamate TypeScript.
 
 | Run | Richiesta | Metodo | Job | G1 | G2 | Costo | Tempo |
 |---|---|---|---|---|---|---|---|
 | mappa | lite di `react-app/` | analista isolato, pubblicata | 1 | – | – | 2,06 USD | 548 s |
 | A | widget della home, in parole | saltato: il modello revisiona da solo e lo dichiara solo alla fine | 0 | no | no | 1,04 USD | 207 s |
-| A2 | A, con il metodo nominato | si ferma sul prerequisito della mappa dell'intero progetto e propone due strade | 0 | – | – | 0,34 USD | 37 s |
-| A3 | A2, con la deroga: solo `react-app` | completo, 12 job, 81 finding, 21 cluster | 12 | parziale | fuori perimetro | 15,09 USD | 981 s |
-| A3b | A3 ripetuta sulla stessa copia | completo, 30 job (6 ruoli su 5 gruppi; A3 ne aveva 12) | 30 | un job, solo il caso «saltato» | fuori perimetro | 20,82 USD | 781 s |
-| B | inserimento e scansione, metodo e deroga | completo, 49 job, 29 dei quali dispacciati due volte per il tetto di 20 sotto-agenti dell'host | 49 | no | no | 26,16 USD | 772 s |
+| A2 | A, con il metodo nominato | si ferma sul prerequisito della mappa dell'intero progetto | 0 | – | – | 0,34 USD | 37 s |
+| A3 | A2, con la deroga: solo `react-app` | completo, 81 finding, 21 cluster | 12 | parziale | fuori perimetro | 15,09 USD | 981 s |
+| A3b | A3 ripetuta sulla stessa copia | completo, 6 ruoli su 5 gruppi | 30 | un job, solo il caso «saltato» | fuori perimetro | 20,82 USD | 781 s |
+| B | inserimento e scansione, metodo e deroga | completo, 29 job dispacciati due volte | 49 | no | no | 26,16 USD | 772 s |
 
-- A: il revisore legge per intero il file di G1 e scrive che i tombstone sono esclusi in modo uniforme; il difetto non compare.
-- A3: il job `logic-integrity` descrive G1 esattamente («uno slot che contiene solo un alimento estraneo è annunciato come completato e il piatto del piano non si può più registrare»). Il job stesso lo classifica Low. Il consolidamento lo fonde nel cluster L2 «un pasto saltato è mostrato Completato», Low, con altri cinque finding sulla stessa ancora: il caso del cibo estraneo resta tracciato in `99-consolidated.md` ma sparisce dal titolo e dal rapporto. Con rigor standard nessun Low è verificato. `QuickAddSheet` non entra nel perimetro dei widget.
-- B: `QuickAddSheet` e `useDayProgress` sono nel perimetro. `01-context.md` del coordinatore afferma che non esiste un tipo «planned»: vero per il record dello slot, falso per le sue aggiunte, che hanno `type: 'planned'`. Il job che legge la riga di G2 la descrive («nasconde il tile quando lo slot ha un record») senza segnalarla.
-- In A3 un job segnala lo stesso schema in `useDayLogSlots.ts` (proposta del piano solo su uno slot senza record), ancora presente nell'HEAD di phazly-app dopo le fix: da verificare con l'autore.
-- Risultati di strumento in errore: 17 nella mappa (7 per permessi), 30 in A3 (16 per permessi), 64 in B (20 per permessi); il resto sono errori ordinari dei comandi. Il coordinatore di A3 dichiara che due job non hanno letto il file del proprio ruolo.
+- **A3:** il job `logic-integrity` descrive G1 esattamente e lo classifica Low; il consolidamento lo fonde in un cluster con altri cinque finding sulla stessa ancora e il caso sparisce dal titolo e dal rapporto.
+- **A3b:** stesso prompt e stessa mappa, roster e gruppi diversi (30 job contro 12); un solo job tocca `useDayProgress.ts:190` e descrive solo il caso «pasto saltato». La run ha letto la cartella `.team-review/` di B rimasta nella copia: il confronto con A3 è indicativo.
+- **B:** `01-context.md` afferma che non esiste un tipo «planned» (falso per le aggiunte) e l'affermazione arriva a tutti i worker; il job che legge la riga di G2 la descrive senza segnalarla.
+- **Dove si perde il difetto:** l'ingresso (una richiesta in parole può saltare il metodo), il contesto (un'affermazione sul modello dei dati senza livello), gravità e consolidamento (Low, poi fuso per ancora), il perimetro (i lettori dello stesso fatto in altre aree). Una descrizione esatta di G1 in un job su 12 e in 0 su 30: il ruolo non la trova in modo affidabile.
+- In A3 un job segnala lo stesso schema in `useDayLogSlots.ts`, ancora presente dopo le fix: da verificare con l'autore.
 
-## Ripetizione di A3 (A3b)
+### Con le unità o con l'elenco dei flussi (fase 3)
 
-- **Contaminata.** La cartella `.team-review/` di B era rimasta nella copia cieca: A3b l'ha letta (stato, binding, scope e un brief di job) e ha lavorato in una sottocartella. Ha ereditato il formato dei job, non risulta aver letto `01-context.md` con l'affermazione errata su `planned`. Il confronto con A3 è indicativo, non pulito.
-- **Variabilità alta.** Stesso prompt, stessa mappa: roster diverso (A3b aggiunge `ui-race`, toglie `cache-consistency`) e gruppi diversi, 30 job contro 12. Un solo job su 30 tocca `useDayProgress.ts:190`, `job-01-F4`, Low, e descrive solo il caso «pasto saltato»: il caso «cibo estraneo» che A3 aveva trovato non compare. G1 non è nel rapporto.
-- Una descrizione esatta di G1 su due run, in un job su 12 e 0 su 30: con questi numeri il ruolo non la trova in modo affidabile, né la perde in modo affidabile.
+12 novembre 2026, su Modal, un container per run, `claude -p` con `claude-sonnet-5-5`, due run per prova. Rapporti e flussi degli eventi nel volume Modal `daodan-flow-results`, cartelle `phase3-20261112` (A) e `phase3-20261112-r2` (B e C).
 
-## Diagnosi
+| Parametro | Valore |
+| --- | --- |
+| Richiesta | «la logica dei widget della home e dell'inserimento» |
+| Perimetro | 60 file di `react-app/src` (`phase3/perimeter.txt`); contiene i file di G1 e G2 |
+| Prova A | gruppi per percorso del file: 5 incarichi da 120.000 byte |
+| Prova B | 6 unità con condivisione 2 (`phase3/units.json`), passate a `composition.py bind` come `coverage.units`: incarichi da 13, 2, 6, 9, 26 e 4 file |
+| Prova C | gruppi per percorso più `phase3/flows.md` in `01-context.md`: 15 store con chi scrive e chi legge, 10.323 caratteri su un tetto di 12.000 |
+| Revisori | `logic-integrity-auditor`, `local-correctness-auditor`, `react-auditor`, `ui-race-auditor` |
+| Soglie | B o C vince se porta nel rapporto finale, in entrambe le run, almeno un difetto atteso che A non porta, spendendo al massimo il doppio |
 
-I reviewer vedono il difetto quando leggono chi scrive il fatto e cosa afferma la schermata; lo perdono quattro passi del metodo, non un ruolo mancante:
+| Run | Incarichi | Finding consegnati | Costo | Tempo | G1 | G2 |
+| --- | --- | --- | --- | --- | --- | --- |
+| A1 | 28 (4 revisori × 7 gruppi) | circa 40: 13 Medium, il resto Low | 9,28 USD | 10,5 min | no | no |
+| A2 | 20 (4 × 5) | 20: 12 Medium, 8 Low | 8,84 USD | 10,4 min | no | no |
+| B1 | 24 (4 × 6 unità) | 16: 8 Medium, 8 Low | 9,92 USD | 24,0 min | no | no |
+| B2 | 24 (4 × 6) | 32: 14 Medium, 18 Low | 10,04 USD | 21,6 min | no | no |
+| C1 | 20 (4 × 5) | 26: 1 High, 13 Medium, 12 Low | 10,43 USD | 16,6 min | no | no |
+| C2 | 20 (4 × 5) | 24: 16 Medium, 8 Low | 9,48 USD | 10,0 min | no | no |
 
-1. **Ingresso.** Una richiesta in parole può saltare l'intero metodo senza dichiararlo all'inizio (A).
-2. **Contesto.** Un'affermazione sul modello dei dati senza livello («nessun tipo planned») si propaga a tutti i worker (B).
-3. **Gravità e consolidamento.** Il reviewer valuta Low un fatto mostrato falso che blocca un'azione; il raggruppamento per ancora fonde finding con la stessa riga e trigger diversi, e il trigger più grave sparisce dal titolo (A3). Con rigor standard il risultato è lo stesso anche senza la fusione: nessuna verifica.
-4. **Perimetro.** I lettori dello stesso fatto in altre aree restano fuori (G2 in A3).
+Costo medio: A 9,06 USD, B 9,98, C 9,95 (1,10 volte A).
 
-Limite: due run per A, una per B, un modello, permessi ristretti. **La mappa non aveva il grafo delle chiamate TypeScript:** nell'ambiente mancava `tree-sitter`, quindi i 412 file TS e TSX di `react-app` hanno simboli e import ma nessun riferimento di chiamata (le 202 chiamate dello snapshot sono tutte Python). La Phase 0 e i job hanno lavorato con ricerca, outline e lettura; le conclusioni su perimetro e roster valgono per questa condizione. Dopo A3b il problema di partenza è la variabilità del reviewer su un difetto sottile, prima ancora del consolidamento: la correzione del punto 3 non basta se il reviewer non scrive il trigger.
+- **Esito con le soglie scritte prima:** né B né C portano un difetto atteso che A non porta. Per la regola 4 della fase 3 la review resta com'è.
+- **G1 e G2 non compaiono in nessuna run,** né nei rapporti né nei job: cercati per riga e per contenuto, poi letti.
+  - `useDayProgress.ts` è dichiarato letto da tutti i revisori in ogni run di B e C; i finding citano altre righe (`:94`, `:169`, `:241`, `:290`).
+  - Su `QuickAddSheet.tsx:264-270` tutte le run di B e C leggono la regola dell'offerta e la prendono per l'intento («proposal only on unlogged slot»); i finding su quelle righe vanno nel verso opposto.
+- **Dove sono mancati:**
 
-## Flussi dalle regole di collegamento, 11-12 novembre 2026
+  | Difetto | A | B | C |
+  | --- | --- | --- | --- |
+  | G1 | giudizio: il file è letto, i finding citano altre righe dello stesso hook | giudizio: `useDayProgress.ts`, `mealPlanSlice.ts` e `favoritesSlice.ts` stanno nello stesso incarico | giudizio: l'elenco dei flussi nomina chi scrive e chi legge `completedMeals`, il file è letto |
+  | G2 | giudizio: la logica dell'offerta è letta e ritenuta corretta | selezione e giudizio: `QuickAddSheet.tsx` è in un incarico senza chi scrive lo store | giudizio: la regola dell'offerta è letta e ritenuta corretta |
 
-Prima applicazione di `flows.py` a un'app reale, su Modal. Riepiloghi in `results/` (`python benchmarks/phazly-flow/summarize.py LINKS.json`).
+  Nessuna mancanza è di estrazione: il difetto si perde nel giudizio, che chiede di sapere cosa l'offerta deve significare.
+- **Condizioni diverse dalla spec:** la mappa che ogni run crea non è completa e cambia da run a run (chiamate risolte: 48,3% in B1, circa 15% in B2, passata del motore ancora in corso in C1 e C2). B1 non è una prova B pura: il coordinatore ha letto `flows.md` e lo ha indicato come pista facoltativa; nessun revisore lo ha aperto.
+- **Difetti del metodo emersi:** la review non ha una cartella d'uscita fissa; in due run la pubblicazione della mappa è rifiutata per «snapshot parser identity changed».
+- **Altri difetti trovati,** non verificati: lo scrittore che lascia lo stato «saltato» (`favoritesSlice.ts:152-155`, in tutte le run), il pulsante «Riprova» di `PhaseReviewSheet`, l'azione vocale persa mentre l'abbonamento carica, un giorno futuro che resta selezionato in `QuickAddSheet`.
+
+Una prima esecuzione di B e C dello stesso giorno aveva gli input ricavati prima di una correzione alla lettura dei commenti (commit `75a87cea8`): fra chi scrive `completedMeals` mancavano i quattro scrittori del record di G1 e G2. È superata dalla tabella qui sopra. Spesa delle due esecuzioni: 72,53 e 39,86 USD.
+
+## Le regole di collegamento e i flussi
 
 ### Con e senza il passaggio del motore
 
-`rules.json`: 18 regole scritte da Claude leggendo lo stato Zustand, il client delle API, i router FastAPI e l'accesso a MongoDB.
+11-12 novembre 2026, su Modal, `rules.json`. Riepiloghi in `results/flow-links-summary.json` e `flow-links-summary-engine.json`.
 
 | Misura | Solo lessicale | Con il motore |
 | --- | --- | --- |
@@ -81,12 +127,14 @@ Prima applicazione di `flows.py` a un'app reale, su Modal. Riepiloghi in `result
 | Lacune dichiarate | 33 | 33 |
 
 - **Caso fra strati (misura 3 della fase 2).** Con il motore, da `QuickAddSheet` il flusso a ritroso arriva alla collezione `diaryDays` passando per `POST /getDiaryDays`. Da `useDayProgress` arriva a `POST /getPlanForDate` e a nessuna collezione: riuscita per G2, non per G1.
-- Senza il motore 119 flussi restano di un solo nodo: le rotte chiamano i servizi come attributo di un modulo importato, le azioni chiamano funzioni ricevute o importate con un alias di percorso.
+- Senza il motore 119 flussi restano di un solo nodo: le rotte chiamano i servizi come attributo di un modulo importato, le azioni chiamano funzioni ricevute o importate con un alias di percorso. Con il motore ne restano 60.
 - Lacune restanti: 13 letture dello stato con un selettore non letterale, 5 scritture con chiave calcolata, 15 chiamate fuori da un simbolo con nome o con rotta calcolata.
 
-### Regole scritte alla cieca
+I conteggi di oggi sono diversi (1.105 ingressi, 25.843 legami): vedi [i flussi del riferimento](#flussi-del-riferimento-chiusi-dal-grafo-senza-modello).
 
-`rules-blind.json`: 17 regole scritte da un agente senza contesto, con il solo formato e il sorgente, in circa 14 letture. Così come scritte sono rifiutate: `strip` stava dentro `route`. Misurate dopo aver spostato quel campo, senza altre modifiche, sullo snapshot lessicale e con `flows.py` al commit `7db9b003b`, contro le 14 regole di `rules.json` di quel commit.
+### Regole scritte alla cieca da un modello
+
+`rules-blind.json`: 17 regole scritte da un agente senza contesto, con il solo formato e il sorgente, in circa 14 letture. Così come scritte sono rifiutate: `strip` stava dentro `route`. Misurate dopo aver spostato quel campo, sullo snapshot lessicale e con `flows.py` al commit `7db9b003b`, contro le 14 regole di `rules.json` di quel commit. Riepilogo in `results/flow-links-summary-blind.json`.
 
 | Misura | `rules.json` | `rules-blind.json` |
 | --- | --- | --- |
@@ -97,12 +145,12 @@ Prima applicazione di `flows.py` a un'app reale, su Modal. Riepiloghi in `result
 | Flussi che arrivano a uno store | 59 | 59 |
 | Lacune dichiarate | 60 | 57 |
 
-- Un modello scrive le regole da solo: le colonne differiscono solo sulle rotte. L'agente ha nominato il client delle API come funzione del progetto (`callee`), che non vale per le chiamate importate con un alias di percorso; `written` le prende tutte.
-- Il suo elenco «non esprimibile» ha dato quattro correzioni, ciascuna con un test in `tests/test_codebase_map_flows.py`: il selettore passato da un wrapper, la collezione tenuta in una variabile (`holder`), il campo sconosciuto rifiutato per nome, il valore chiamabile nominato da `callee`. Restano non esprimibili: `fetch` con il metodo nell'oggetto delle opzioni, il prefisso di rotta aggiunto dal servizio, la collezione scelta a runtime.
+- Le colonne differiscono solo sulle rotte: l'agente ha nominato il client delle API come funzione del progetto (`callee`), che non vale per le chiamate importate con un alias di percorso.
+- Il suo elenco «non esprimibile» ha dato quattro correzioni, ciascuna con un test in `tests/test_codebase_map_flows.py`. Restano non esprimibili: `fetch` con il metodo nell'oggetto delle opzioni, il prefisso di rotta aggiunto dal servizio, la collezione scelta a runtime.
 
 ### File di un difetto noto (misura 1 della fase 2)
 
-Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, collegamenti con il motore. Per G1 e per G2 si contano il file del difetto e i file di chi scrive gli store che esso legge: 4 file ciascuno. «Condivisione» è il numero massimo di unità di cui un file è membro; nelle altre è contesto, da consultare e non da giudicare (`flows.py units --share`).
+Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, collegamenti con il motore. Per G1 e per G2 si contano il file del difetto e i file di chi scrive gli store che esso legge: 4 file ciascuno. «Condivisione» è il numero massimo di unità di cui un file è membro; nelle altre è contesto (`flows.py units --share`).
 
 | | `pack()` | Unità, condivisione libera | Unità, condivisione 2 | Unità, condivisione 1 |
 | --- | --- | --- | --- | --- |
@@ -115,194 +163,87 @@ Perimetro `react-app/src` senza i test, 568 file, limite di 120.000 byte, colleg
 | G2: con il contesto | | 3 | 4 | 3 |
 | Due esecuzioni | uguali | uguali | uguali | uguali |
 
-- Con la condivisione libera i file dello stato, che ogni flusso tocca, si ripetono in quasi tutte le unità: il doppio dei byte.
-- Con condivisione 2 il costo torna vicino a `pack()` (1,12) e l'unità del difetto nomina come contesto i file di chi scrive il suo dato: 3 su 4 per G1, 4 su 4 per G2. Con `pack()` quei file stanno in tre incarichi senza che uno nomini gli altri.
-- Se il contesto basti al revisore per trovare il difetto è la domanda della fase 3, che richiede run di review.
-- Tutti i 568 file sono assegnati in ogni colonna. Circa 2.500 collegamenti restano fra unità diverse.
+Con condivisione 2 il costo resta vicino a `pack()` (1,12) e l'unità del difetto nomina come contesto i file di chi scrive il suo dato. Tutti i 568 file sono assegnati in ogni colonna. Che il contesto basti al revisore l'ha misurato la fase 3, sopra: non basta.
 
-### Etichette di granularità e significato (misura 4 della fase 2), 12 novembre 2026
+### Etichette di granularità e significato scritte da un modello (misura 4 della fase 2)
 
-Un agente senza contesto riceve coppie «chi scrive / chi legge» uscite da `flows.py` (store, lettore con `file:line`, scrittori con `file:line`) e il sorgente; per ogni coppia scrive cosa significa una voce per chi scrive, cosa assume chi legge, e se sono coerenti, con le righe che lo provano. Nessun altro contesto, nessun accenno ai difetti attesi. Voci e risposte in `results/`.
+12 novembre 2026. Un agente senza contesto riceve coppie «chi scrive / chi legge» uscite da `flows.py` e il sorgente; per ogni coppia scrive cosa significa una voce per chi scrive, cosa assume chi legge e se sono coerenti. Nessun accenno ai difetti attesi. Voci e risposte in `results/`.
 
 | Giro | Coppie | Fra cui | Coerenti | Incoerenti | Letture |
 | --- | --- | --- | --- | --- | --- |
 | 1 (`label-items.json`, `labels.json`) | 20, estratte a caso con seme fisso più le due di G1 e G2 | G1 (n. 17), G2 (n. 10) | 19 | 1 (n. 5) | 41 file |
 | 2 (`relabel-items.json`, `relabels.json`) | 6: G1, G2 e 4 controlli, con l'elenco completo degli scrittori | G1 (n. 5), G2 (n. 1) | 6 | 0 | 22 file |
 
-- **I due difetti noti non sono trovati, in nessuno dei due giri.**
-  - Nel giro 1 mancava lo scrittore che produce il caso del difetto, `addMealAddition` (un cibo fuori piano nello slot): un commento con un apostrofo dentro `set(...)` rompeva la lettura degli argomenti. Corretto in `flows.py` (`mask_comments`, con test); l'elenco degli scrittori di `completedMeals` passa da 8 a 12.
-  - Nel giro 2, con l'elenco completo: per G1 l'agente segue la lettura fino al conteggio dei pasti registrati (`useDayProgress.ts:86`) e non fino alla riga che mostra il piatto del piano come mangiato (`useDayProgress.ts:190`). Per G2 vede il comportamento (l'offerta del piano sparisce per qualsiasi record nello slot) e lo giudica corretto: decidere che è un difetto richiede di sapere cosa l'offerta deve significare.
-- La coppia n. 5 del giro 1 è una pista nuova, non verificata: spegnendo e riaccendendo gli slot di allenamento lo spuntino torna con id `afternoon_snack` (`types/index.ts:246`) invece di `snack` (`types/index.ts:263`), e i giorni registrati sotto `snack` mostrano lo slot vuoto più una riga orfana (`useDayLogSlots.ts:95`, `useDayLogSlots.ts:98-115`).
-- La coppia n. 12 del giro 1 era un collegamento falso: `getFavoritesByMealSlot` non legge `foodStack`. Lo stato tenuto in una variabile veniva letto fino alla fine della funzione esterna; ora solo nella funzione che lo dichiara (con test).
-- Soglia della misura, 16 concordanze su 20 con una lettura manuale: non valutata, perché la lettura manuale di tutte le 20 coppie non è stata fatta; sulle due coppie dei difetti la concordanza è 0 su 2.
-- Il prompt non è stato adattato a G1 e G2: sarebbe overfitting su questo caso. Ciò che la misura indica è un limite: un'etichetta per coppia giudica il dato dove viene letto, non dove il lettore lo trasforma in un fatto mostrato, e non conosce l'intento del prodotto.
+- **I due difetti noti non sono trovati.** Nel giro 1 mancava lo scrittore che produce il caso (un commento con un apostrofo rompeva la lettura degli argomenti: corretto, l'elenco degli scrittori di `completedMeals` passa da 8 a 12). Nel giro 2, con l'elenco completo: per G1 l'agente segue la lettura fino al conteggio dei pasti (`useDayProgress.ts:86`) e non fino alla riga `:190`; per G2 vede il comportamento e lo giudica corretto.
+- La soglia (16 concordanze su 20 con una lettura manuale) non è valutata: la lettura manuale delle 20 coppie non è stata fatta; sulle due coppie dei difetti la concordanza è 0 su 2.
+- Il limite che la misura indica: un'etichetta per coppia giudica il dato dove viene letto, non dove il lettore lo trasforma in un fatto mostrato, e non conosce l'intento del prodotto.
+- La coppia n. 5 del giro 1 è una pista non verificata: lo spuntino torna con id `afternoon_snack` (`types/index.ts:246`) invece di `snack` (`types/index.ts:263`). La n. 12 era un collegamento falso, corretto con un test.
 
-### Scheda del flusso scritta dal modello, 12 novembre 2026
+### Scheda del flusso scritta da un modello
 
-Un agente senza contesto riceve i passaggi del flusso «ripristino dell'account» (`RestoreAccountModal.handleRestore`, 74 collegamenti con il motore, dall'interfaccia alle collezioni `users` e `deletionAuditLog`) e il sorgente, e scrive la scheda nel formato di `codebase_map_flows(card=...)`. Passaggi e scheda in `results/card-restore-account*.json`.
+12 novembre 2026. Un agente senza contesto riceve i passaggi del flusso «ripristino dell'account» (`RestoreAccountModal.handleRestore`, 74 collegamenti con il motore) e il sorgente, e scrive la scheda nel formato di `codebase_map_flows(card=...)`. Passaggi e scheda in `results/card-restore-account*.json`.
 
 | Misura | Valore |
 | --- | --- |
 | Righe | 15, tutte accettate dal controllo |
 | Citazioni | 32, tutte siti di passaggi del flusso |
 | File letti | 12 sorgenti più l'elenco dei passaggi |
-| Affermazioni verificate a mano | il ripristino in `cancel_soft_delete` (condizioni, campi tolti, eccezione), l'evento di audit, la cache dello stato «cancellato»: corrette |
+| Affermazioni verificate a mano | il ripristino in `cancel_soft_delete`, l'evento di audit, la cache dello stato «cancellato»: corrette |
 
-- La scheda segue i rami: risposta già ripristinata, ripristino riuscito, cancellazione definitiva già avviata, errore lato client.
-- L'agente ha elencato a parte ciò che i passaggi non contengono, come chiede il formato: l'autenticazione del server (`get_current_user_allow_deleted`), una pista (lo stato «cancellato» resta in una cache di 10 secondi che il ripristino non svuota, `api/deps.py:64`), l'abbonamento non ripristinato, il caricamento all'avvio.
-- Una scheda accettata non è per questo esatta: il controllo garantisce che ogni riga poggi su un passaggio, non che la frase sia vera.
+L'agente elenca a parte ciò che i passaggi non contengono, fra cui una pista (lo stato «cancellato» resta in una cache di 10 secondi che il ripristino non svuota, `api/deps.py:64`). Una scheda accettata non è per questo esatta: il controllo garantisce che ogni riga poggi su un passaggio, non che la frase sia vera.
 
-## Fase 3: preparazione, 12 novembre 2026
+## Flussi del riferimento chiusi dal grafo, senza modello
 
-Le tre prove della [fase 3](../../docs/specs/2026-11-09-flows-in-review.md) su phazly, pronte e non eseguite. File in `phase3/`.
+23 novembre 2026. Riferimento dell'intero sistema: 38 flussi, 240 frecce. `rules.json`, nessun modello, nessuna regola scritta a mano in più. Metodo e generatori dei collegamenti possibili: [`system-map`](../system-map/README.md#collegamenti-possibili).
 
-| Parametro | Valore |
-| --- | --- |
-| Richiesta | «la logica dei widget della home e dell'inserimento» |
-| Perimetro | 60 file di `react-app/src` (`perimeter.txt`): widget della home, foglio di inserimento, controller della home con gli hook che chiama fino a due livelli, e chi scrive gli store che essi leggono; contiene i file di G1 e G2 |
-| Prova A | gruppi per percorso del file: 5 incarichi da 120.000 byte |
-| Prova B | 7 unità con condivisione 2 (`units.json`), passate a `composition.py bind` come `coverage.units` |
-| Prova C | gruppi per percorso più `flows.md` in `01-context.md`: 11 store con chi scrive e chi legge, 8.151 caratteri su un tetto di 12.000 |
-| Revisori | `logic-integrity-auditor`, `local-correctness-auditor`, `react-auditor`, `ui-race-auditor`, uguali per le tre prove |
-| Esecuzione | `claude -p` con `claude-sonnet-5-5`, plugin da questa checkout, un container Modal per run, due run per prova (`modal_review.py`) |
-| Soglie | B o C vince se porta nel rapporto finale, in entrambe le run, almeno un difetto atteso che A non porta, spendendo al massimo il doppio; a parità di esito resta la meno costosa |
+| Collegamenti | Frecce certe su 240 | Flussi chiusi su 38, solo certi | Con i possibili |
+|---|---:|---:|---:|
+| prima delle tre modifiche qui sotto | 101 | 14 | 15 |
+| con la chiave dello store come indice costante | 104 | 15 | 16 |
+| con il membro `store:` senza chiave | 118 | 16 | |
+| analisi fresca, `rules.json` | 119 | 16 | 17 |
+| analisi fresca, più le regole dei wrapper HTTP | **129** | **18** | **19** |
 
-**Stato:** eseguita il 12 novembre 2026 con il token di un altro account (secret `claude-code-alt`); il primo token aveva esaurito il limite settimanale.
+Le prime tre righe sono misurate sui collegamenti di un run registrato (`possible-in/phazly5` sul volume `daodan-flow-results`), le ultime due su un'analisi fresca con l'albero di quel giorno (`measure_links.py`).
 
-### Fase 3: risultati, 12 novembre 2026
-
-Sei run in parallelo su Modal, lanciate alle 11:26. Rapporti, job e flussi degli eventi stanno nel volume Modal `daodan-flow-results`, cartella `phase3-20261112`: il codice di phazly non entra in questo repository.
-
-| Run | Incarichi | Finding consegnati | Costo | Tempo | G1 | G2 |
-| --- | --- | --- | --- | --- | --- | --- |
-| A1 | 28 (4 revisori × 7 gruppi) | circa 40: 13 Medium, il resto Low | 9,28 USD | 10,5 min | no | no |
-| A2 | 20 (4 × 5) | 20: 12 Medium, 8 Low | 8,84 USD | 10,4 min | no | no |
-| B1 | 28 (4 × 7 unità) | 27: 15 Medium, 12 Low | 17,20 USD | 14,9 min | no | no |
-| B2 | 28 (4 × 7 unità), rigore scelto `deep` | 18: 11 Medium, 7 Low | 15,77 USD | 16,1 min | no | no |
-| C1 | 20 (4 × 5) | 19: 15 Medium, 4 Low | 9,87 USD | 12,6 min | no | no |
-| C2 | 20 (4 × 5) | 18 | 11,56 USD | 14,0 min | no | no |
-
-Totale 72,53 USD più 0,11 USD della prova di avvio. Costo medio per prova: A 9,06 USD, B 16,49 USD (1,82 volte A), C 10,72 USD (1,18 volte A).
-
-- **Esito con le soglie scritte prima:** né B né C portano nel rapporto finale un difetto atteso che A non porta. Per la regola 4 della fase 3 la review resta com'è, ma per C l'esito non vale (vedi sotto).
-- **G1 e G2 non compaiono in nessuna run**, né nei rapporti né nei job: cercati per riga (`useDayProgress.ts:190`, `QuickAddSheet.tsx:268`) e per contenuto (alimento estraneo mostrato come completato, offerta del piano che sparisce), poi letti. I passaggi più vicini confermano il giudizio opposto: quattro run (A1, B2, C1, C2) leggono la logica dell'offerta e la giudicano corretta («il riquadro del piano sparisce quando lo slot ha un record»).
-- **Dove sono mancati**, come chiede la fase 3:
-
-  | Difetto | A | B | C |
-  | --- | --- | --- | --- |
-  | G1 | giudizio: il file è letto, i finding citano altre righe dello stesso hook (`:94`, `:187`) | giudizio: il file del difetto e quello di chi scrive lo store stanno nella stessa unità | estrazione: all'elenco dei flussi mancava lo scrittore del record estraneo |
-  | G2 | giudizio: la logica dell'offerta è letta e ritenuta corretta | selezione e giudizio: con la condivisione 2 lo scrittore è membro di altre unità, e `bind` riceve solo i membri | estrazione, come per G1 |
-
-- **L'input della prova C era difettoso.** I flussi erano stati ricavati dai collegamenti calcolati prima della correzione dei commenti (`mask_comments`, commit `75a87cea8`): fra chi scrive `completedMeals` mancavano `addMealAddition`, `moveFromStackToMeal`, `mergeDiaryDays` e `moveMealAddition`, cioè proprio chi produce il record di G1 e G2. La prova C è stata ripetuta con i collegamenti corretti, insieme a B: vedi [la ripetizione](#fase-3-ripetizione-di-b-e-c-12-novembre-2026).
-- **Condizioni diverse dalla spec:** la mappa che ogni run crea è solo lessicale (15,2% di chiamate risolte), non completa come chiede la fase 3. Unità e flussi venivano invece dai collegamenti con il motore.
-- **Difetti del metodo emersi:** la review non ha una cartella d'uscita fissa (quattro run usano `.team-review/`, A2 `/tmp/rv/`), e in C2 la pubblicazione della mappa appena creata viene rifiutata per «snapshot parser identity changed». Lo script raccoglieva solo `.daodan/review`: per cinque run su sei la cartella della review è stata ricostruita dal flusso degli eventi, che contiene messaggi, comandi e risultati di ogni agente; per B2 è salvata intera.
-- **Altri difetti trovati in tutte e sei le run**, non verificati: il pulsante «Riprova» di `PhaseReviewSheet` che non rilancia la richiesta, l'azione vocale persa mentre l'abbonamento carica in `useHomeTabController`, un pasto saltato che riceve cibo e resta `skipped` in `favoritesSlice`, un giorno futuro che resta selezionato in `QuickAddSheet`.
-
-### Fase 3: ripetizione di B e C, 12 novembre 2026
-
-Quattro run in parallelo su Modal, lanciate alle 12:31 con gli input del commit `8e38cd01a`, ricavati con `phase3/inputs.py` dai collegamenti ricalcolati dopo `mask_comments`. Cartella `phase3-20261112-r2` dello stesso volume. Richiesta, perimetro, revisori, modello e soglie non cambiano.
-
-| Parametro | Valore |
-| --- | --- |
-| Prova B | 6 unità con condivisione 2 (`units.json`); `bind` dà ogni file alla prima unità che lo contiene: incarichi da 13, 2, 6, 9, 26 e 4 file |
-| Prova C | `flows.md`: 15 store, 10.323 caratteri su un tetto di 12.000; fra chi scrive `completedMeals` ci sono `addMealAddition`, `moveFromStackToMeal`, `mergeDiaryDays` e `moveMealAddition` |
-
-| Run | Incarichi | Finding consegnati | Costo | Tempo | G1 | G2 |
-| --- | --- | --- | --- | --- | --- | --- |
-| B1 | 24 (4 revisori × 6 unità) | 16: 8 Medium, 8 Low | 9,92 USD | 24,0 min | no | no |
-| B2 | 24 (4 × 6) | 32: 14 Medium, 18 Low | 10,04 USD | 21,6 min | no | no |
-| C1 | 20 (4 × 5) | 26: 1 High, 13 Medium, 12 Low | 10,43 USD | 16,6 min | no | no |
-| C2 | 20 (4 × 5) | 24: 16 Medium, 8 Low | 9,48 USD | 10,0 min | no | no |
-
-Totale 39,86 USD. Costo medio per prova: B 9,98 USD, C 9,95 USD, entrambe 1,10 volte A.
-
-- **Esito con le soglie scritte prima:** né B né C portano nel rapporto finale un difetto atteso che A non porta. Con gli input corretti l'esito vale anche per C: per la regola 4 della fase 3 la review resta com'è.
-- **G1 e G2 non compaiono in nessuna delle quattro run**, né nei rapporti né nei job: cercati per riga e per contenuto, poi letti, come nella prima esecuzione.
-  - `useDayProgress.ts` è dichiarato letto da tutti e quattro i revisori in ogni run. I finding citano `:94`, `:241` e `:290` (il pasto corrente che non segue l'orologio) e `:169` (calorie di ripiego): nessuno riguarda la riga del piano mostrata come fatta.
-  - Su `QuickAddSheet.tsx:264-270` tutte e quattro le run leggono la regola dell'offerta e la prendono per l'intento: «proposal only on unlogged slot» (B1), «hides the 'Dal piano' tile only when dayCompletions[slotId] holds a live record», citata come invariante (B2), «plannedForSlot null once record […] callers hold the guard (no finding)» (C1), «hides the tile only when dayCompletions[slotId] exists locally» (C2).
-  - I finding consegnati su quelle righe vanno nel verso opposto: l'offerta compare quando dovrebbe sparire, su un giorno archiviato non ancora caricato (B2, C2), oppure scrive su un giorno futuro (B2, C1, C2).
-- **Dove sono mancati:**
-
-  | Difetto | B | C |
-  | --- | --- | --- |
-  | G1 | giudizio: `useDayProgress.ts`, `mealPlanSlice.ts` e `favoritesSlice.ts` stanno nello stesso incarico, l'unità 1 | giudizio: l'elenco dei flussi nomina chi scrive e chi legge `completedMeals`, il file è letto, i finding citano altre righe |
-  | G2 | selezione e giudizio: `QuickAddSheet.tsx` è nell'incarico dell'unità 3 senza chi scrive lo store, che con la condivisione 2 è membro delle unità 1 e 2 | giudizio: la regola dell'offerta è letta e ritenuta corretta |
-
-  Nessuna mancanza è di estrazione, e nessun finding su G1 o G2 arriva alla verifica.
-- **B1 non è una prova B pura.** La cartella degli input contiene i file di tutte le prove: il coordinatore di B1 ha letto `flows.md` e lo ha indicato come pista facoltativa in `01-context.md` e in 26 prompt su 27. Nessun revisore lo ha aperto: nel flusso degli eventi non c'è una sola lettura. B2, C1 e C2 usano solo il proprio input.
-- **Condizioni diverse dalla spec, come nella prima esecuzione:** la mappa che ogni run crea non è completa, e cambia da run a run. Chiamate risolte: 48,3% in B1 (motore Kotlin fallito), circa 15% in B2 (archi del motore rifiutati), passata del motore ancora in corso in C1 e in C2 (0,18 alla pubblicazione). In C1 la pubblicazione della mappa è rifiutata per «snapshot parser identity changed». B1 dichiara 194 celle coperte su 240.
-- **Lo scrittore che lascia lo stato «saltato»** (`favoritesSlice.ts:152-155`) è nel rapporto di tutte e quattro: Medium in B1, C1 e C2, Low in B2. Era già in tutte le run della prima esecuzione, quindi non distingue le prove.
-- La cartella della review è salvata intera per tutte e quattro: `.team-review/` in tre, `.daodan/review/.team-review/` in B2.
-
-## La chiave dello store come indice costante, 23 novembre 2026
-
-Misura del task 18 del piano degli ingressi e dei flussi: una regola di store con `key: holder` legge la chiave anche quando il ricevente della chiamata è `store[INDICE]` (`db[COLLECTION].insert_one(x)`).
-
-| Parametro | Valore |
-|---|---|
-| Script | `measure_links.py` (Modal, derivato da `modal_map.py::possible_case`) e `check_store_keys.py` (locale, legge il sorgente dall'albero sintattico) |
-| Input | un run della pipeline intera sul volume `daodan-flow-results`: la cartella dello snapshot (`possible-in/phazly5`) e quella del sorgente (`possible-in/phazly3-src`); il record registrato della pre-mappa è tenuto, come nella misura del 23 novembre |
-| Regole | `rules.json` di questa cartella, 18 regole |
-| Riferimento | il privato del proprietario, letto a runtime con `--expected`, non copiato |
-| Prima | l'albero della misura del 23 novembre, rieseguito: stesso sha di `flows.py`, stesso digest dei collegamenti e gli stessi numeri |
-| Dopo | lo stesso albero con i soli blocchi di `flows.py` di questa modifica (`_store_index`, `_store_key`, `_unread_index`, `_inline_handle`, `_handle`) |
+**La chiave dello store come indice costante.** Una regola di store con `key: holder` legge la chiave anche quando il ricevente è `store[INDICE]` (`db[COLLECTION].insert_one(x)`).
 
 | Misura | Prima | Dopo |
 |---|---|---|
-| Flussi chiusi su 38, con i soli collegamenti certi | 14 | **15** |
-| Flussi chiusi su 38, con i possibili | 15 | 16 |
-| Frecce certe su 240 | 101 | **104** |
 | Frecce mancante / non misurabile / mancante con lacuna | 39 / 26 / 10 | 30 / 25 / 17 |
 | Legami `scrive` / `legge` | 459 / 463 | 507 / 489 |
-| Legami di store nuovi, nessuno perso | | 74 (48 `scrive`, 26 `legge`) |
 | Chiavi di store (mongo) | 121 (38) | 127 (44) |
 | Store con scrittori e lettori | 88 | 95 |
 | Lacune | 261 | 303 |
-| Flussi tracciati da un ingresso, incompleti su 1105 | 119 | 205 |
+| Flussi tracciati da un ingresso, incompleti su 1.105 | 119 | 205 |
 
-- Un solo flusso cambia, e passa a chiuso: quello che la diagnosi dei 24 flussi aperti attribuiva a una chiave `db[COLLECTION]` nello stesso file. Nessun flusso peggiora.
-- Le 74 chiavi nuove sono controllate dall'albero sintattico del sorgente (`check_store_keys.py`): 74 giuste, 0 sbagliate; 70 sono una costante dichiarata nello stesso file, 4 un testo. Il campione di 10 (seme 11) è stato riletto a mano sul sorgente: tutte la collezione vera.
-- Le 42 lacune nuove, una causa per caso: 24 `self.NOME` (l'identità che il motore dà non arriva alla vista), 10 indici calcolati, 5 nomi puntati (`modulo.NOME`), 3 nomi importati che lo snapshot non lega a una dichiarazione. Tutti gli 86 flussi che diventano incompleti hanno una di queste lacune sul percorso: prima la chiamata era muta.
-- Una versione precedente leggeva `self.NOME` dalla dichiarazione della classe che racchiude: dava 17 flussi chiusi, ma con il motore vero produceva legami certi sbagliati (tupla, `+=`, `cls.NOME = ...`, `Classe.NOME = ...` a livello di modulo) ed è stata tolta.
-- Non misurato: un altro progetto; la pre-mappa non è rigenerata col codice di oggi.
+- Le 74 chiavi nuove (48 `scrive`, 26 `legge`, nessuna persa) sono controllate sull'albero sintattico del sorgente (`check_store_keys.py`): 74 giuste, 0 sbagliate. Un campione di 10 (seme 11) è stato riletto a mano.
+- Le 42 lacune nuove: 24 `self.NOME`, 10 indici calcolati, 5 nomi puntati (`modulo.NOME`), 3 nomi importati che lo snapshot non lega a una dichiarazione. Gli 86 flussi che diventano incompleti hanno una di queste lacune sul percorso: prima la chiamata era muta.
+- Leggere `self.NOME` dalla dichiarazione della classe che racchiude dava 17 flussi chiusi ma legami certi sbagliati con il motore vero: non è nel codice.
 
-## Il wrapper di un client HTTP e il membro `store:` senza chiave, 23 novembre 2026
+**Il membro `store:` senza chiave.** `system_map._check_nodes` accetta il nodo con `unlinked`: «non misurabile» 25 → 4, «mancante con lacuna» 17 → 24. Il flusso in più si chiude sul file dello store locale, membro dello stesso nodo.
 
-Due cause dei flussi aperti di phazly, misurate sulla stessa analisi fresca (Modal, `measure_links.py`: la pipeline fino ad `analyze` con l'albero di oggi, perché lo store del motore registrato il pomeriggio è rifiutato dopo il cambio degli adattatori; `rules.json`; il riferimento di sistema di phazly; nessun modello).
+**Il wrapper di un client HTTP.** `daodan/core/http_wrappers.py` (`python flows.py wrappers MANIFEST`, tabella dei client in `daodan/data/http-clients.json`) propone le regole `rotta` per le funzioni del progetto che avvolgono un client.
 
-| Parametro | Valore |
-|---|---|
-| Prova del wrapper | `daodan/core/http_wrappers.py` (`python flows.py wrappers MANIFEST`), tabella dei client in `daodan/data/http-clients.json` |
-| Regole | `rules.json` da solo (`full`), poi con le regole `rotta` che la prova propone (`full+wrappers`) |
-| Membro `store:` senza chiave | `system_map._check_nodes`: il nodo è accettato con `unlinked` (piano degli ingressi, 7b) |
-
-**Il membro `store:` senza chiave** (`possible.py` in locale, stessi collegamenti del pomeriggio, prima e dopo il cambio): frecce certe 104 → 118, «non misurabile» 25 → 4, «mancante con lacuna» 17 → 24, flussi con ogni effetto raggiunto 15 → 16 su 38. Il flusso in più si chiude sul file dello store locale, membro dello stesso nodo, non sulla chiave, che resta in `unlinked`.
-
-**Il wrapper** (analisi fresca, che ha già il cambio sopra):
-
-| Misura | `full` | `full+wrappers` |
+| Misura | `rules.json` | più le regole dei wrapper |
 |---|---|---|
 | Chiamate a rotte, e di queste collegate | 50, 50 | 119, 119 |
-| Frecce certe del riferimento | 119 | 129 |
-| Flussi chiusi su 38, collegamenti certi | 16 | 18 |
-| Flussi chiusi su 38, con `ritorno` e `incerto` | 17 | 19 |
 | Lacune dei collegamenti | 296 | 298 |
 
-La prova propone tre regole e una lacuna, senza regole scritte a mano: `adminFetch` (70 chiamate, 69 con l'URL letterale: la stessa regola scritta a mano nella verifica precedente, POST e `arg0`), `apiGet` (nessuna chiamata risolta) e `fetchAsDataUrl` (una chiamata, URL non letterale); rifiutato con la causa `checkVerificationStatus`, che costruisce l'URL con un template. I due flussi in più sono «Revisione delle immagini dei piatti» e «Chiavi API». Le due lacune in più sono chiamate a un wrapper con una rotta non letterale, prima invisibili.
+La prova propone tre regole e una lacuna: `adminFetch` (70 chiamate, 69 con l'URL letterale), `apiGet` (nessuna chiamata risolta) e `fetchAsDataUrl` (una chiamata, URL non letterale); rifiuta con la causa `checkVerificationStatus`, che costruisce l'URL con un template. I due flussi in più sono «Revisione delle immagini dei piatti» e «Chiavi API». Limiti: `fetchAsDataUrl` chiama un URL di altri ed è una regola candidata, da confermare; un wrapper di un wrapper non è provato; la tabella dei client ha solo `fetch`.
 
-**Limiti.** `fetchAsDataUrl` chiama un URL di altri e riceve il servizio `api`, l'unico che le regole `offre` nominano: è una regola candidata, da confermare, e qui non collega nulla. Un wrapper di un wrapper non è provato. La tabella ha solo `fetch` (tre simboli). La tabella è della misura finale (seconda analisi fresca, con il codice dopo le due revisioni): 115 rotte offerte; le due corse precedenti dello stesso giorno davano gli stessi flussi e le stesse chiamate.
+**Non misurato:** un altro progetto; i flussi ancora aperti dopo il passo dinamico; un modello che conferma i collegamenti possibili.
 
-## Il tetto della scheda del percorso, senza modello, 23 novembre 2026
+## Il tetto della scheda del percorso, senza modello
 
-Domanda: prima di pagare un modello, quanti flussi del riferimento una scheda del percorso del prodotto (`daodan/core/flow_paths.py`) può provare, e gli altri perché no. Serve a non scambiare un buco del grafo per un difetto di come la scheda è data al modello.
+23 novembre 2026. Domanda: prima di pagare un modello, quanti flussi del riferimento una scheda del percorso del prodotto (`daodan/core/flow_paths.py`) può provare, e gli altri perché no. Serve a non scambiare un buco del grafo per un difetto di come la scheda è data al modello.
 
 | Parametro | Valore |
 |---|---|
-| Script | `python benchmarks/system-map/card_ceiling.py MANIFEST LINKS.json EXPECTED-system.json`, in locale, nessun modello; prova `benchmarks/system-map/test_card_ceiling.py` |
-| Collegamenti | quelli della colonna «Dopo» della misura qui sopra: 25.843 legami, 1.105 ingressi, 303 lacune |
-| Riferimento | il privato del proprietario, 38 flussi, letto a runtime |
+| Script | `python benchmarks/system-map/card_ceiling.py MANIFEST LINKS.json EXPECTED-system.json`, in locale; prova `benchmarks/system-map/test_card_ceiling.py` |
+| Collegamenti | quelli della riga «chiave dello store come indice costante»: 25.843 legami, 1.105 ingressi, 303 lacune |
 | Scheda | una per ingresso classificato; i passi sono quelli di `flow_paths._steps`; l'effetto è quello di `flow_paths._effect`, una scrittura certa su uno store |
-| Scheda all'ingresso | il nodo d'ingresso del flusso tiene il gestore della scheda o il file dove il controllo è legato; per un ingresso che è una persona, un dispositivo o un servizio di altri, i nodi a cui portano le sue frecce |
+| Scheda all'ingresso | il nodo d'ingresso del flusso tiene il gestore della scheda o il file dove il controllo è legato |
 
 | Esito del flusso (il primo che vale) | Flussi su 38 |
 |---|---:|
@@ -320,20 +261,19 @@ Domanda: prima di pagare un modello, quanti flussi del riferimento una scheda de
 | Nei 7 flussi provati: schede all'ingresso | da 2 a 46 |
 | Nei 7 flussi provati: passi dal gestore all'effetto, caratteri di passi letti fino all'effetto | da 1 a 5, da 274 a 7.167 |
 
-- **La forma della scheda non taglia nulla.** Zero flussi hanno i collegamenti fino all'effetto e la scheda no: dove il grafo arriva, la scheda arriva. Vale anche seguendo chi rilegge uno store del flusso e riscrive altrove.
-- **Il limite maggiore è che cosa conta come effetto.** Quattordici flussi finiscono su un valore mostrato, un evento emesso o un comando: la scheda chiude solo su una scrittura in uno store, e li lascia fuori qualunque cosa il grafo sappia.
-- **Dove la prova c'è è corta, ma va trovata.** Al più 5 passi e 7.167 caratteri, in mezzo a 2–46 schede per ingresso e 1.105 in tutto. Nelle run cieche del 21 novembre (README di `benchmarks/system-map`) il modello debole aveva le schede in coda e non ne ha aperta nessuna.
-- **Non si confronta come totale con i «15 su 38» qui sopra.** Quella misura segue le frecce del riferimento da nodo a nodo, lascia stare in piedi le frecce dichiarate e chiede ogni effetto, schermate comprese; questa segue i collegamenti dal gestore di una scheda e chiede ogni effetto su store. Rifatta in locale sugli stessi collegamenti e manifest ridà 15 flussi chiusi, 16 con i possibili, 104 frecce certe: la corsa locale vale.
-- **Incrocio flusso per flusso** (esito della scheda × flusso chiuso sulle frecce certe):
+Incrocio flusso per flusso (esito della scheda × flusso chiuso sulle frecce certe):
 
-  | Esito della scheda | Chiuso sulle frecce | Non chiuso |
-  |---|---:|---:|
-  | `provata` | 3 | 4 |
-  | `effetto non esprimibile` | 9 | 5 |
-  | `nessuna scheda all'ingresso` | 1 | 2 |
-  | `buco del grafo` | 2 | 12 |
+| Esito della scheda | Chiuso sulle frecce | Non chiuso |
+|---|---:|---:|
+| `provata` | 3 | 4 |
+| `effetto non esprimibile` | 9 | 5 |
+| `nessuna scheda all'ingresso` | 1 | 2 |
+| `buco del grafo` | 2 | 12 |
 
-  Nove flussi il grafo li chiude già e la scheda no, solo perché finiscono su un effetto che non è una scrittura su store: è ciò che costa la definizione di effetto. Dei 14 «buco del grafo» 12 mancano anche sulle frecce, e sono buchi veri; 2 sono chiusi sulle frecce ma nessun gestore di scheda avvia il percorso, ed è un limite dell'inventario delle schede. Quattro flussi `provata` non sono chiusi sulle frecce: la scheda prova l'effetto su store, il riferimento chiede anche una schermata o un servizio di altri.
-- **Conseguenza per la prova con il modello: due denominatori.** Per *certificare* contro il riferimento contano al più 7 flussi. Per *trovare e aprire la scheda giusta* ne contano 31, quelli con almeno una scheda all'ingresso: la consegna (scheda spinta, coda, punti di partenza) si misura su quelli, senza bisogno dell'effetto.
-- Metodo rivisto da un secondo agente prima dei numeri: otto correzioni ai confini degli esiti (il sito del controllo, ogni effetto su store, i lettori di uno store del flusso, le schede incerte), ognuna con il suo test; i totali non sono cambiati.
-- Non misurato: un altro progetto; le schede dei 14 flussi con effetto non esprimibile, se arrivano almeno al file della schermata.
+- **La forma della scheda non taglia nulla:** dove il grafo arriva, la scheda arriva.
+- **Il limite maggiore è che cosa conta come effetto:** quattordici flussi finiscono su un valore mostrato, un evento emesso o un comando, e la scheda chiude solo su una scrittura in uno store. Nove di questi il grafo li chiude già sulle frecce.
+- **Dove la prova c'è è corta, ma va trovata:** al più 5 passi e 7.167 caratteri, in mezzo a 2-46 schede per ingresso e 1.105 in tutto. Nelle run cieche del mappatore con Haiku le schede erano in coda e nessuna è stata aperta ([`system-map`](../system-map/README.md#il-mappatore-con-un-modello-sullintero-sistema-alla-cieca)).
+- **Non si confronta come totale con i flussi chiusi sulle frecce:** quella misura segue le frecce del riferimento da nodo a nodo e chiede ogni effetto, schermate comprese; questa segue i collegamenti dal gestore di una scheda e chiede ogni effetto su store.
+- **Due denominatori per la prova con il modello:** per certificare contro il riferimento contano al più 7 flussi; per trovare e aprire la scheda giusta ne contano 31, quelli con almeno una scheda all'ingresso.
+- Dei 14 «buco del grafo», 12 mancano anche sulle frecce; 2 sono chiusi sulle frecce ma nessun gestore di scheda avvia il percorso.
+- Non misurato: un altro progetto; le schede dei 14 flussi con effetto non esprimibile, se arrivano almeno al file della schermata; le schede lette da un modello.

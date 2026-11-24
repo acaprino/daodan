@@ -1,29 +1,20 @@
 # SvelteKit: `svelte-kit sync` del comando che il progetto installa
 
-Domanda: che dati dà `svelte-kit sync` per le rotte di un progetto, e che cosa ne ricava la sorgente della pre-mappa
-[`daodan/core/premap/sveltekit.py`](../../daodan/core/premap/sveltekit.py). Piano: [ingressi e flussi](../../docs/plans/2026-11-20-ingressi-e-flussi.md),
-task 13c; spec: [ingressi e scoperta dei flussi](../../docs/specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md), sezione 6.
+**Stato:** In uso. La sorgente [`daodan/core/premap/sveltekit.py`](../../daodan/core/premap/sveltekit.py) è in `premap.SOURCES` e `FRAMEWORK_SOURCES`, ha la voce `sveltekit` in `container_runner.TOOLS` e la tabella `sveltekit` in `daodan/data/entry-queries.json`. Aperto: i membri di `actions` non si legano a una funzione, la sorgente non offre rotte ai collegamenti, e il file che legge non è l'uscita documentata del comando («Aperto»).
 
-Tutto gira su Modal, in un container con la rete bloccata: il codice del progetto (`svelte.config.js`, `vite.config.ts`, `node_modules`) gira solo lì, e i pacchetti
-sono ripristinati dal `package-lock.json` mentre l'immagine si costruisce, l'unico momento con la rete aperta. Niente di tutto questo gira su questo PC.
+## Domanda
 
-| Cartella | Contenuto |
-| --- | --- |
-| `fixture/routes/` | SvelteKit 2.70.4 (Svelte 5.59.1, Vite 7.3.8) con `package-lock.json` (ogni `resolved` punta a `registry.npmjs.org`) e `src/routes/`: layout (`+layout.svelte`, `+layout.ts`, `+layout.server.ts`), pagine (`+page.svelte`, `+page.ts`, `+page.js`), `load` di `+page.server.ts` scritto come funzione e come `export const` con una freccia, azioni dei moduli (`actions` con nomi: `comment`, `like`, `pay`, `cancel`; con `default`, `satisfies Actions`, una `function` anonima), endpoint (`+server.ts` con `GET`, `POST`, `PUT`, `DELETE`, `fallback`; una freccia senza tipo; una pagina e un endpoint nella stessa cartella), segmenti `[slug]`, `[...rest]`, `[[opt]]`, `[id=integer]` (con `src/params/integer.ts`), un gruppo `(shop)` con un suo layout e una pagina che lo azzera (`+page@.svelte`), `sitemap.xml`, `GET = make('get')` (il risultato di una chiamata), una riesportazione (`export { load } from './shared'`), un errore (`+error.svelte`), un componente e un modulo accanto alle rotte (`components/Widget.svelte`, `utils.ts`) |
-| `fixture/kit-2.0.0/`, `kit-2.15.0/`, `kit-2.40.0/` | solo `package.json` e `package-lock.json` di SvelteKit 2.0.0 (Svelte 4.2.20, Vite 5.4.21), 2.15.0 (Vite 6.4.6) e 2.40.0: i loro pacchetti girano sui file di `fixture/routes/` |
-| `results/` | l'uscita di ogni comando provato su Modal il 23 novembre 2026 (`00_env.json` dà le versioni; `generated` dà il testo dei file che `sync` ha scritto, tranne `ambient.d.ts` e `env.d.ts`), e `pipeline-scan.json`, il passo `scan` della pipeline intera |
-| `modal_probe.py` | `--mode lock` scrive i `package-lock.json`; `--mode probes` esegue i comandi di `COMMANDS` (e `VARIANTS=a,b` ne sceglie alcuni); `--mode source` esegue la sorgente di Daodan e registra le risposte in `tests/fixtures/premap/sveltekit/answers.json` |
-| `scan_summary.py` | riassume in `results/pipeline-scan.json` ciò che `scan` ha scritto per `fixture/routes` |
+Che dati dà `svelte-kit sync` per le rotte di un progetto, e che cosa ne ricava la sorgente. Spec: [ingressi e scoperta dei flussi](../../docs/specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md), sezione 6 (task 13c del piano).
 
-```
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/sveltekit-routes/modal_probe.py --mode lock
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/sveltekit-routes/modal_probe.py
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/sveltekit-routes/modal_probe.py --mode source
-DAODAN_FOLDER=<copia di fixture/routes> PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/project-model/modal_pipeline.py --folder-out DIR --folder-stop scan
-python benchmarks/sveltekit-routes/scan_summary.py DIR
-```
+## Strumento ufficiale provato
 
-## Parametri provati
+`@sveltejs/kit` 2.70.4 (Svelte 5.59.1, Vite 7.3.8), e 2.0.0, 2.15.0, 2.40.0 sugli stessi file; Node 24.22.3, npm 11.19.1. Misurato su Modal il 23 novembre 2026, rete bloccata.
+
+La sorgente legge `.svelte-kit/types/route_meta_data.json`, `{id della rotta: [file, …]}`. Non è l'uscita che svelte.dev/docs/kit/cli promette (`tsconfig.json` e i tipi): è la memoria che il tool tiene per rigenerare solo le rotte cambiate. È uguale, byte per byte, nelle quattro versioni misurate; una versione che ne cambia la forma è una lacuna.
+
+Valutati e non usati: `$types.d.ts` (l'id e i tipi di una cartella, nessun nome di file né metodo di un `+server`), `non-ambient.d.ts` (`RouteId()` elenca anche 6 cartelle che non sono rotte), `generated/client/app.js` con `nodes/N.js` (solo le pagine, mai un file `.server.` né un `+server`).
+
+## Parametri
 
 | Parametro | Valori |
 | --- | --- |
@@ -33,7 +24,19 @@ python benchmarks/sveltekit-routes/scan_summary.py DIR
 | Versione | SvelteKit 2.0.0, 2.15.0, 2.40.0, 2.70.4 |
 | Pacchetti | installati; non installati, con `npx --no-install` senza e con `npm_config_offline=true` (rete bloccata) |
 
-## Che cosa dà `svelte-kit sync`, misurato (Node 24.22.3, npm 11.19.1, `@sveltejs/kit` 2.70.4, rete bloccata)
+File: `fixture/routes/` (SvelteKit 2.70.4: layout, pagine, `load`, `actions`, endpoint `+server.ts`, segmenti dinamici, un gruppo `(shop)`, una riesportazione, `GET = make('get')`), `fixture/kit-2.0.0/`, `kit-2.15.0/`, `kit-2.40.0/` (solo `package.json` e lockfile: i loro pacchetti girano sui file di `fixture/routes/`), `modal_probe.py` (`--mode lock`, `--mode probes`, `--mode source`, che registra `tests/fixtures/premap/sveltekit/answers.json`), `scan_summary.py`, `results/` (`00_env.json` dà le versioni).
+
+```
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/sveltekit-routes/modal_probe.py --mode lock
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/sveltekit-routes/modal_probe.py
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/sveltekit-routes/modal_probe.py --mode source
+DAODAN_FOLDER=<copia di fixture/routes> PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/project-model/modal_pipeline.py --folder-out DIR --folder-stop scan
+python benchmarks/sveltekit-routes/scan_summary.py DIR
+```
+
+## Risultato
+
+**Che cosa dà `svelte-kit sync`.**
 
 | Misura | Risultato | Uscita |
 | --- | --- | --- |
@@ -52,7 +55,7 @@ python benchmarks/sveltekit-routes/scan_summary.py DIR
 | un errore di sintassi in un `+page.server.ts` | esce 0: il file è elencato lo stesso | `server-syntax-error.json` |
 | versioni | lo stesso JSON, byte per byte, da SvelteKit 2.0.0 (Svelte 4), 2.15.0, 2.40.0 e 2.70.4; il comando esce 0 in 1,4-1,7 secondi e scrive 34 file invece di 58 | `old-kit-*.json` |
 
-## Che cosa non dà
+**Che cosa non dà.**
 
 | Dato | Misura | Uscita |
 | --- | --- | --- |
@@ -64,9 +67,10 @@ python benchmarks/sveltekit-routes/scan_summary.py DIR
 | che cos'è ogni file | nessun campo: il ruolo è il nome del file (`+server`, `+page.server`, `+page`, `+layout.server`, `+layout`) | `sync.json` |
 | il percorso URL | l'id tiene il gruppo (`/(shop)/checkout`) e i segmenti come sono scritti (`[slug]`, `[...rest]`, `[[opt]]`, `[id=integer]`) | `sync.json` |
 | la cartella d'uscita | `kit.outDir` sta in `svelte.config.js`: è codice, e il comando che stampa il file la suppone `.svelte-kit` | `out-dir.json` |
-| un file non documentato | `route_meta_data.json` non è l'uscita che svelte.dev/docs/kit/cli promette (`tsconfig.json` e i tipi): è la memoria che il tool tiene per rigenerare solo le rotte i cui file sono cambiati (`should_generate`); è uguale in quattro versioni, non in tutte | `kit-source.json` |
 
-Quando fallisce:
+Una `+page.svelte` senza `+page.server` né `+page` non dà righe: il componente non è un modulo con funzioni che lo strumento nomina (in React Router il `default` di un modulo di rotta è un ingresso perché il comando nomina il modulo). Le sue azioni sono dei lettori del markup.
+
+**Quando fallisce.**
 
 | Caso | Misura | Uscita |
 | --- | --- | --- |
@@ -78,13 +82,7 @@ Quando fallisce:
 | il comando non è installato, `npx --no-install` | esce 1 dopo **70,6 secondi**, con `EAI_AGAIN` su `registry.npmjs.org`: npx chiede comunque il pacchetto `svelte-kit` al registro | `not-installed.json` |
 | lo stesso con `npm_config_offline=true` | esce 1 dopo **0,6 secondi**, con `ENOTCACHED … cache mode is 'only-if-cached' but no cached response is available` | `not-installed-offline.json` |
 
-## La sorgente su Modal
-
-`--mode source`: la sorgente dà i comandi per la fixture (una funzione con la rete aperta, perché il pacchetto delle grammatiche di Daodan si scarica): per cartella,
-`timeout --kill-after=10 900 npx --no-install svelte-kit sync` con `npm_config_offline=true` (le cartelle si dividono i 900 secondi, non meno di 10 ciascuna) e `cat .svelte-kit/types/route_meta_data.json`. Poi i due comandi girano con la rete bloccata,
-con l'`argv` e l'ambiente che la sorgente ha scritto, in una copia del progetto con i suoi pacchetti, in una copia con un cambiamento che le interessa e in una copia senza i pacchetti.
-Le risposte, come le restituisce il container, sono in `tests/fixtures/premap/sveltekit/answers.json`, che `tests/test_codebase_map_premap_sveltekit.py` legge (46 test, Python
-puro, senza motore).
+**La sorgente.** Comandi, per cartella: `timeout --kill-after=10 900 npx --no-install svelte-kit sync` con `npm_config_offline=true` (le cartelle si dividono i 900 secondi) e `cat .svelte-kit/types/route_meta_data.json`. Le risposte registrate sono in `tests/fixtures/premap/sveltekit/answers.json`, che `tests/test_codebase_map_premap_sveltekit.py` legge.
 
 | Misura | Risultato |
 | --- | --- |
@@ -100,11 +98,7 @@ puro, senza motore).
 | `server-syntax-error` | la riga di `/blog` è una riga con la lacuna (lo snapshot non legge il file) |
 | nei collegamenti (`flows.cached_links`) | 16 ingressi sulle funzioni, tutti `sveltekit` di tipo «rotta»; i 3 layout non sono ingressi; `routes.offered` 0 |
 
-### La pre-mappa intera, nel container di Daodan
-
-`DAODAN_FOLDER=<copia di fixture/routes> … modal_pipeline.py --folder-out DIR --folder-stop scan` esegue il passo `scan` della pipeline su Modal con la sorgente registrata: il
-ripristino dei pacchetti dal `package-lock.json` con la rete aperta ai soli registri, poi i due comandi con la rete bloccata, come li lancia `container_runner`.
-`results/pipeline-scan.json` tiene gli stati delle sorgenti, le righe di `framework_entries`, le lacune della sorgente, gli endpoint di Noir e i collegamenti che `flows.link_facts` ne ricava.
+**La pre-mappa intera** (`modal_pipeline.py --folder-stop scan` su `fixture/routes`, `results/pipeline-scan.json`; misurata con la sorgente `v1`, oggi `VERSION` è `daodan/premap/v2`: non rimisurata):
 
 | Misura | Risultato |
 | --- | --- |
@@ -116,21 +110,12 @@ ripristino dei pacchetti dal `package-lock.json` con la rete aperta ai soli regi
 | collegamenti | 16 ingressi (`sveltekit rotta`), `routes` `{offered: 0, called: 0, linked: 0}`, 31 lacune: le 25 di Noir e le 6 righe di lacuna di SvelteKit |
 | gap della pre-mappa, non di questa sorgente | `tsc --showConfig: error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'`: la fixture non ha lo script `prepare` (`svelte-kit sync`) che i progetti creati con `sv create` hanno, e nessuna installazione crea quel file (D-156) |
 
-## Una differenza con React Router
+## Aperto
 
-Una `+page.svelte` senza `+page.server` né `+page` non dà righe, mentre in React Router il `default` (il componente) di un modulo di rotta è un ingresso. Non è un difetto: in React Router il componente è l'esportazione di un modulo che il comando nomina; in SvelteKit il componente non è un modulo con funzioni che lo strumento nomina (`route_meta_data.json` non lo elenca, e `generated/client/nodes/N.js` lo nomina solo come un `export { default as component }` senza una funzione). Le sue azioni sono dei lettori del markup (`.svelte`), non di questa sorgente.
-
-## Non provato
-
-- `actions`: i membri dell'oggetto non sono legati a una funzione né dallo strumento né dai record di esportazione dello snapshot (le funzioni dei membri sono anonime). Servirebbe il controllore dei tipi di TypeScript, che potrebbe dare i membri di `actions` (non valutato), o un record del membro nello snapshot.
-- Le rotte offerte. Le righe sono ingressi: l'id non è il percorso (il gruppo `(shop)` non è nell'URL, e `[...rest]`, `[[opt]]` e `[id=integer]` stanno per più schemi) e il tool non dà il metodo. Servirebbero la conversione dell'id nel percorso (nessuno strumento la dà: `Pathname()` è lossy), la tabella dei metodi per esportazione (`fallback` risponde agli altri) e la tavola `http` di `flows._declared_routes`, che oggi nomina Noir e Next.js. Noir dà già percorso e metodo agli stessi file e alle stesse righe delle funzioni di `+server` (`+server.ts:5`, `:6`, `:7` per `GET`, `PUT`, `DELETE`): unire le due fonti per file e riga darebbe rotte offerte con il gestore; non scritto.
-- `+page.svelte` per rotta (`generated/client/app.js`, `nodes/N.js`): misurato, non letto; vedi «Una differenza con React Router».
-- `export const load = (async () => …) satisfies PageServerLoad` (la forma di svelte.dev/docs/kit/load con `satisfies`): lo snapshot registra `load` come un binding e la freccia come una funzione anonima, quindi la riga è una riga con la lacuna `load: unsupported-target-kind`, e non una riga sulla funzione (il test `test_a_load_written_with_satisfies_…` lo prova, `# shortcut:` in `sveltekit.py`). `export const load: PageServerLoad = async () => …` e `export async function load` sono legati.
-- Un metodo con overload (`export function GET(a: string): void;` ripetuto): lo snapshot lo dà con più record. Prima della correzione di `semantic_store.exported_target` (`export-ambiguous` distinta da `export-missing`) e di `react_router._starts`, se `+server.ts` aveva anche un `POST` legato, `GET` spariva senza una lacuna (il test era `xfail(strict=True)`: è diventato XPASS quando la correzione è entrata, e il segno è stato tolto). Ora `GET` è una riga con la lacuna `GET: export-ambiguous` e `POST` resta legato (`test_an_overloaded_method_is_not_dropped_without_a_gap`). Non è legato a una funzione: nessuno strumento dice quale dei record è l'implementazione.
-- Il `load` dei layout: è chiamato per ogni pagina sotto il layout; la tabella dice «nessun ingresso» come per i layout di React Router. Deciso qui, aperto.
-- `kit.outDir` diverso da `.svelte-kit`: lacuna con la causa, non una lettura. Lo standard error del tool nomina la cartella (`"extends": "./.kit-out/tsconfig.json"`, misurato): la lacuna lo riporta, la sorgente non lo legge (`# shortcut:` in `sveltekit.py`).
-- `route_meta_data.json` non è documentato e non è l'uscita promessa: una versione che cambia forma è una lacuna («no JSON of the known layout»). SvelteKit 1 e le versioni 2.x fra quelle misurate non sono state provate.
-- Un progetto reale: la sorgente è stata eseguita solo su questa fixture; nessuna riga è stata confrontata a mano con un'app esistente, e il tempo e la memoria del comando su un progetto con molte rotte non sono misurati (i 900 secondi in tutto e i 3 GB sono quelli di Next.js e Nuxt, non una misura).
-- Un modulo di rotta che non è TypeScript né JavaScript (`+page.md` con `kit.extensions`, mdsvex): non provato; il `.svelte`, che è il componente, il tool non lo elenca.
-- Progetti con pnpm, Yarn o Bun: il ripristino dei pacchetti è quello che il container già fa, e `npx --no-install` non è stato provato con la loro disposizione di `node_modules`.
-- `premap/nextjs.py` lancia `npx --no-install` senza `npm_config_offline` e ha la stessa attesa di 70 secondi senza `next`: misurato per `react-router` e `svelte-kit`, non per `next`.
+- **`actions`:** i membri dell'oggetto non sono legati a una funzione né dallo strumento né dai record di esportazione dello snapshot (4 delle 6 lacune sulla fixture). Il controllore dei tipi di TypeScript potrebbe dare i membri: non valutato. Se il passo dinamico osserva la funzione che un'azione esegue non è misurato.
+- **Le altre forme non legate:** `GET = make('get')` (il risultato di una chiamata), una riesportazione, `export const load = (async () => …) satisfies PageServerLoad` (lacuna `load: unsupported-target-kind`), un metodo con overload (lacuna `export-ambiguous`: nessuno strumento dice quale record è l'implementazione).
+- **Le rotte offerte.** Le righe sono ingressi: l'id non è il percorso (il gruppo `(shop)` non è nell'URL; `[...rest]`, `[[opt]]` e `[id=integer]` stanno per più schemi) e il tool non dà il metodo. Noir dà già percorso e metodo agli stessi file e alle stesse righe delle funzioni di `+server`.
+- **Noir e SvelteKit sulla stessa rotta.** Oggi `flows.link_facts` unisce una rotta di Noir a una riga legata e senza lacuna di una sorgente di `FRAMEWORK_SOURCES`, sullo stesso percorso e nello stesso file o sulla stessa funzione. La misura sopra è precedente e non è rifatta: quante righe si uniscono, con l'id di SvelteKit e lo schema di Noir, non è misurato.
+- **Il `load` dei layout** è chiamato per ogni pagina sotto il layout e la tabella dice «nessun ingresso», come per i layout di React Router: deciso qui, da rivedere.
+- **`kit.outDir` diverso da `.svelte-kit`:** una lacuna con la causa, non una lettura (lo standard error del tool nomina la cartella).
+- **Non provati:** un progetto reale (solo questa fixture; tempo e memoria su molte rotte non misurati); SvelteKit 1 e le 2.x fra quelle misurate; un modulo di rotta che non è TypeScript né JavaScript (`+page.md`); una rotta i cui layout non hanno moduli (la chiave potrebbe avere una lista vuota); pnpm, Yarn o Bun.

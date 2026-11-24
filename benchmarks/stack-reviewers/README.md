@@ -1,6 +1,18 @@
 # Benchmark: revisori per framework e librerie
 
-Prova la spec [revisori per framework e librerie](../../docs/specs/2026-11-19-revisori-per-framework-e-librerie.md): se un ruolo di framework o una foglia di libreria trova un difetto reale che i revisori di oggi mancano, in quale job una foglia lo trova e quanto costa. Pilota: `fastapi-auditor`, `nextjs-auditor`, `sqlalchemy-auditor`, `zod-auditor`. Il codice dei casi non è copiato qui; le run e i loro artefatti restano fuori dal repository.
+**Stato:** In parte. Il pilota è chiuso su tre casi (S1, N1, Z1): nessuna voce entra nel catalogo. La regola di attivazione di `stripe-auditor` per uso è nel codice (`review_roster.py`). Non eseguiti: F1, `stack-dichiarato`, il controllo sano, le lenti.
+
+**Domanda.** Per la spec [revisori per framework e librerie](../../docs/specs/2026-11-19-revisori-per-framework-e-librerie.md): un ruolo di framework o una foglia di libreria trova un difetto reale che i revisori di oggi mancano? In quale job una foglia lo trova, e quanto costa? Pilota: `fastapi-auditor`, `nextjs-auditor`, `sqlalchemy-auditor`, `zod-auditor`, i cui file stanno in `roles/` di questa cartella (non sono nel catalogo; `test_catalogs.py` ne controlla gli SHA-256: non si modificano a mano).
+
+**Risultati validi oggi.**
+
+| Domanda | Risultato | Dove |
+|---|---|---|
+| Una voce di stack trova un difetto che `baseline` manca? | no, in tre casi su tre: `baseline` trova 2 run su 2 (`code-auditor` in tutte e cinque le sue run) | [Esito del pilota](#esito-del-pilota), 19-20 novembre 2026 |
+| Quanto costa una foglia nel job ospite? | un solo confronto, in S1: l'80% dei token del job senza foglia, su due run contro una | [S1](#s1-run-del-2026-11-19) |
+| `stripe-auditor` scatta solo dove Stripe è usato? | sì nel replay senza modello: soppresso in N1 e Z1, tenuto in S1 | [Attivazione per uso](#attivazione-di-stripe-auditor-per-uso-replay-senza-modello), 20 novembre 2026 |
+
+Tutte le run usano un modello (`claude-sonnet-5-5`), salvo il replay dell'attivazione e `test_catalogs.py`. La mappa dei casi è senza motore (`snapshot.py write --no-engine`): l'effetto della mappa completa, con i passi `resolve` e `observe`, sulla scelta dei revisori e sul perimetro non è misurato. Il codice dei casi non è copiato qui; le run e i loro artefatti restano fuori dal repository.
 
 ## Parametri
 
@@ -64,19 +76,19 @@ Controllo sano di ogni caso: il commit della fix, rivisto come changeset. La voc
 | S1 | `sqlalchemy-auditor` | sessione condivisa fra task o richieste; caricamento lazy su `AsyncSession` o dopo la chiusura; oggetto scaduto letto fuori transazione; `commit` parziale in un ciclo |
 | Z1 | `zod-auditor` | `.passthrough()`, `z.any()` o `z.unknown()` su un payload esterno fino allo store; schema di scrittura allentato da `.partial()` o `.merge()`; `.parse()` non intercettato dove serve un errore strutturato |
 
-S1, N1 e Z1 sono scelti; S1 si esegue per primo. F1 è esplorativo: non decide la promozione di `fastapi-auditor`, che aspetta un caso conforme alla regola 2. Il piano di ogni caso è calcolato dal solo diff, senza mappa: si ricalcola con la mappa prima delle run.
+S1, N1 e Z1 sono eseguiti. F1 è esplorativo e non è eseguito: non decide la promozione di `fastapi-auditor`, che aspetta un caso conforme alla regola 2.
 
 ### F1, esplorativo: chiamata Stripe sincrona dentro `async def`
 
 | | |
 |---|---|
-| stato | esplorativo. La regola 2 chiede che la fix nomini il difetto, e qui non lo fa: il commit dice «Let's get more throughput!», la sua PR [4125](https://github.com/polarsource/polar/pull/4125), «Stripe optimizations around Checkout», non ha descrizione né commenti, e nemmeno la [4142](https://github.com/polarsource/polar/pull/4142) |
+| stato | esplorativo, non eseguito. La regola 2 chiede che la fix nomini il difetto, e qui non lo fa: il commit dice «Let's get more throughput!», la sua PR [4125](https://github.com/polarsource/polar/pull/4125), «Stripe optimizations around Checkout», non ha descrizione né commenti, e nemmeno la [4142](https://github.com/polarsource/polar/pull/4142) |
 | repository | [polarsource/polar](https://github.com/polarsource/polar), unità `server/`; `server/pyproject.toml` dichiara `fastapi = "^0.114.2"` |
 | target | `071de575d44a81c378099bf2e2f1707d4d2580ff`, «server/checkout: implement tax calculation», 2024-10-02: 7 file di produzione e 3 di test, 811 righe cambiate |
 | fix | `54da720710e5b30bd9d176222bd3d67ecaf66711`, «server/stripe: use async calls for checkout utilities», 2024-10-09 |
 | difetto atteso | `server/polar/checkout/tax.py:295`: `async def calculate_tax` chiama `stripe_service.create_tax_calculation`, che il target aggiunge come metodo sincrono sopra `stripe_lib.tax.Calculation.create` (`server/polar/integrations/stripe/service.py:696`). La richiesta HTTP a Stripe ferma l'event loop. Lo stesso per `create_out_of_band_subscription` e `create_out_of_band_invoice` in `handle_stripe_success` (`server/polar/checkout/service.py:519`, `:534`) |
 | trovato | un finding su una di queste righe afferma che la chiamata a Stripe è sincrona dentro una funzione `async` e blocca l'event loop |
-| piano | `deep`, 12 job: `code-auditor` 27 membri, `security-auditor` 10, `cleanup-auditor` 6, `operability-auditor` 6, `data-integrity-auditor` 5 e sette job da un membro, fra cui `python-auditor` e `stripe-auditor` |
+| piano, dal solo diff | `deep`, 12 job: `code-auditor` 27 membri, `security-auditor` 10, `cleanup-auditor` 6, `operability-auditor` 6, `data-integrity-auditor` 5 e sette job da un membro, fra cui `python-auditor` e `stripe-auditor` |
 | testo della voce | `roles/fastapi-auditor.md`, lo stesso file e lo stesso SHA-256 registrati in S1 |
 | limite | al target 45 dei 53 metodi del servizio Stripe sono sincroni: il commit segue l'uso del codice, corretto per intero il 2024-10-10 (`8547d3bd6`, 23 file). La fix non lo chiama difetto: «Let's get more throughput!». `algorithmic-cost-auditor`, membro di `code-auditor`, nomina già l'I/O sincrono sull'event loop |
 
@@ -89,7 +101,7 @@ S1, N1 e Z1 sono scelti; S1 si esegue per primo. F1 è esplorativo: non decide l
 | fix | `949877dec1f235d779d2c965399159311e35251d`, «fix: lazy loading in account tasks (#6319)», 2025-07-30, figlio diretto del target |
 | difetto atteso | `server/polar/account/tasks.py:42`: il task `account.under_review` carica le organizzazioni con `get_all_by_account` (`server/polar/organization/repository.py:64`), senza la relazione `account`, e le passa a `create_account_review_thread`, che la legge (`server/polar/integrations/plain/service.py:126`). La relazione è `lazy="raise"` (`server/polar/models/organization.py:132`): la lettura solleva e il thread di review non nasce |
 | trovato | un finding su `tasks.py:42`–`44` o su `plain/service.py:126` afferma che `organization.account` è letta senza essere caricata |
-| piano, con la mappa | `deep`, 13 job: `code-auditor` 27 membri, `security-auditor` 10, `performance-auditor` 7, `cleanup-auditor` 6, `operability-auditor` 6, `data-integrity-auditor` 5 e sette job da un membro, fra cui `python-auditor` e `stripe-auditor`. Rispetto al piano dal solo diff entra `stripe-auditor`: l'unità dichiara Stripe, e due file cambiati, `server/polar/account/service.py` e `server/polar/transaction/service/payout.py`, importano `stripe`; il cambiamento aggiorna lo stato dell'organizzazione dalle capacità dell'account Stripe. Non è un'attivazione a vuoto: fino al 2026-11-20 qui era scritto il contrario, senza aver controllato gli import |
+| piano, con la mappa | `deep`, 13 job: `code-auditor` 27 membri, `security-auditor` 10, `performance-auditor` 7, `cleanup-auditor` 6, `operability-auditor` 6, `data-integrity-auditor` 5 e sette job da un membro, fra cui `python-auditor` e `stripe-auditor`. Rispetto al piano dal solo diff entra `stripe-auditor`: l'unità dichiara Stripe, e due file cambiati, `server/polar/account/service.py` e `server/polar/transaction/service/payout.py`, importano `stripe`; il cambiamento aggiorna lo stato dell'organizzazione dalle capacità dell'account Stripe. Non è un'attivazione a vuoto |
 | mappa | base `b6f80c9234944934b5fd7283d2ba8129cd9e6bf5` e target, 961 e 962 file Python di `server/`. Il registro riconosce `fastapi` come framework e `sqlalchemy` nell'unità `server`. Lacune: il motore di risoluzione delle chiamate non è eseguito, e `edit-impact` riporta 25 dei 54 simboli cambiati |
 | copertura del difetto | verificata prima delle run, perché il motore non è eseguito. I due simboli del difetto che il commit cambia, `account_under_review` e `PlainService.create_account_review_thread`, sono nel diff e fra i 25 di `edit-impact`. `get_all_by_account` e la relazione `account` non cambiano, ma stanno in file del changeset, dentro il perimetro di lettura |
 | riga di `stack-dichiarato` | «stack di server: framework fastapi; librerie alembic >=1.9.2, boto3 >=1.38.30, fastapi >=0.115.2, httpx >=0.23.0, jinja >=3.1.2, polarsh ==0.16.13, posthog >=3.6.0, pydantic >=2.10,<2.11, pytest <9, redis >=5.0.4, ruff >=0.6.9, sqlalchemy >=2.0.34, stripe >=10.12.0,<12, typer >=0.12.5», la prima delle due righe che stampa `plan.py`: i pacchetti dichiarati che il registro riconosce. La seconda è per `server/polar/web_backoffice`, che il diff tocca e che non dichiara Python |
@@ -97,7 +109,7 @@ S1, N1 e Z1 sono scelti; S1 si esegue per primo. F1 è esplorativo: non decide l
 | varianti | `catalogs/S1-ospiti.toml` e `catalogs/S1-foglia.toml`. Bracci: `foglia-dominio` lega `data-integrity-auditor` da `S1-foglia`; `foglia-stack` lega `stack-host` da `S1-foglia`, con riferimento `stack-host` da `S1-ospiti`; `foglia-propria` lega `sqlalchemy-auditor` da `S1-foglia` |
 | testo della voce | `roles/sqlalchemy-auditor.md`, 35 righe, 3783 byte, SHA-256 `769854e4c870bc29cf06ac278244374e9fd19f1b4fc24cbd01e757bb7217d617`: lo stesso in ogni braccio di S1, registrato prima della prima run |
 | testo dell'ospite di stack | `roles/fastapi-auditor.md`, 36 righe, 2872 byte, SHA-256 `2b72e8c0f76a5cdb7ca6f3c7057930fb71fd46824f954911a6c4524157eee260`. Le versioni che nomina sono verificate: 0.89.0 e 0.74.0 sulle note di rilascio, 0.106, 0.118 e 0.121 sulla documentazione delle dipendenze con `yield`, l'ordine fra codice di uscita e task in background sul sorgente `fastapi/routing.py` alla 0.118.0 |
-| nota su `sqlalchemy-auditor.md` | registrata prima delle run e fuori dai brief: la riga 24 dice che leggere un attributo non caricato emette SQL, ma con `lazy="raise"` la lettura fallisce prima. La riga 19 chiede comunque al revisore il `lazy=` della relazione. Il testo non si corregge prima di S1 |
+| nota su `sqlalchemy-auditor.md` | registrata prima delle run e fuori dai brief: la riga 24 dice che leggere un attributo non caricato emette SQL, ma con `lazy="raise"` la lettura fallisce prima. La riga 19 chiede comunque al revisore il `lazy=` della relazione. Il testo non è stato corretto |
 | limite | con `lazy="raise"` l'errore non è `MissingGreenlet`: la voce deve leggere come è dichiarata la relazione. Il difetto sta in un task del worker, non in un endpoint. Al target i due metodi che accodano il task (`server/polar/account/service.py:119`, `:256`) non hanno più chiamanti che una ricerca nell'albero trovi: il difetto scatta per i job già in coda |
 
 Scartato per la regola 4: `cc00c2036a29e8869bd4159d000f0c89cfae9313`, che esegue le query Postgres e Tinybird con `asyncio.gather` sulla sessione della richiesta (fix `8ecbaa42f`). Tocca 3 file di produzione.
@@ -167,14 +179,7 @@ I bracci sono indipendenti: l'ordine serve solo a non spendere dove l'esito è g
 
 Dentro una run di `baseline` o di `stack-dichiarato` i job si lanciano a tappe, dai più probabili: la run `trova` al primo job che segnala il difetto e gli altri non si eseguono. Per dire che una run `manca` servono tutti i job del piano. In S1 la prima tappa è `code-auditor` e `python-auditor`. Regola scritta dopo le run della voce e prima di queste.
 
-Stima, da ricalibrare dopo il primo caso: su `jupiter-alias` (28 file, Opus 5.5) un ruolo da solo costa 130–225 mila token e `code-auditor` 300–325 mila. Il passo 1 esegue due run di uno o due job. I passi 2 e 3 eseguono tutto il piano due volte ciascuno e sono la spesa maggiore. Con il piano da 12 job di F1 (13 per S1, N1 e Z1), le run di job dei soli controlli per caso sono:
-
-- 0 se nessun braccio della voce `trova`;
-- 24 (26) se `baseline` `trova` in entrambe le run: il caso si chiude prima di `stack-dichiarato`;
-- 48 (52) se servono entrambi i controlli e le loro run concordano;
-- fino a 72 (78) se entrambi chiedono la terza run.
-
-Per S1 il conteggio viene dalla mappa; per gli altri dal diff, da aggiornare dopo la mappa.
+Spesa misurata: 7 run di job per S1, 6 per N1, 6 per Z1 (tabelle sotto). Ogni caso si è chiuso alla prima tappa di `baseline`, quindi il costo di un piano intero eseguito due volte non è misurato.
 
 ## Non misurato
 
@@ -248,6 +253,7 @@ Per S1 il conteggio viene dalla mappa; per gli altri dal diff, da aggiornare dop
 - **`typescript-auditor` in `baseline`, run 1:** il difetto compare fra le piste per altri revisori, indirizzato a `local-correctness-auditor`: la route non intercetta `ValidationError`, e le regole di `ZSurveyCreateInput` che lo schema v3 non riprende escono come 500. Il solo finding riguarda `ZSurveyMetadata.catchall(z.unknown())`.
 - **`code-auditor` in `baseline`, run 1:** F1 su `route.ts:136`, Medium, confidenza 85: lo schema v3 non applica le regole di `ZSurveyCreateInput` e la route non ha un ramo per `ValidationError`, quindi 500 dopo che le lingue sono già scritte. 27 membri consegnati, sette con copertura incompleta per configurazioni o politiche assenti dall'albero.
 - **`code-auditor` in `baseline`, run 2:** F2 su `route.ts:164`, Medium, confidenza 85, con la stessa premessa; 27 membri su 27 con copertura completa.
+- **Fuori dal difetto atteso:** entrambe le run della foglia segnalano `ZSurveyMetadata.catchall(z.unknown())` (`packages/types/surveys/types.ts`), metadati arbitrari salvati e serializzati verso rispondenti anonimi. Non è verificato dalle lenti.
 
 ### Esito del pilota
 
@@ -266,13 +272,12 @@ Nessuna delle quattro voci entra nel catalogo. Esito: nessun valore incrementale
 - **Spesa:** 19 run di job, 3.910.134 token.
 
 Limiti: un solo modello e due run per braccio; tre casi; mappa senza motore; `stack-dichiarato`, il controllo sano e le lenti non eseguiti, perché `baseline` ha chiuso ogni caso prima. I tre target sono commit pubblici del 2024-2026: il modello potrebbe averne visto codice o fix.
-- **Fuori dal difetto atteso:** entrambe le run della foglia segnalano `ZSurveyMetadata.catchall(z.unknown())` (`packages/types/surveys/types.ts`), metadati arbitrari salvati e serializzati verso rispondenti anonimi. Non è verificato dalle lenti.
 
 ## Attivazione di `stripe-auditor` per uso, replay senza modello
 
-Prova la regola che `review_roster.py` applica dal 2026-11-20 (§2 della spec, solo per `stripe`): l'unità che dichiara Stripe aggiunge `stripe-auditor` solo se un file di produzione cambiato o un vicino a un salto della mappa importa `stripe` o `@stripe/*`. Gli import vengono da `snapshot.py files`. Se gli import non sono noti, per un file senza parser o per un linguaggio fuori da `IMPORT_LANGUAGES`, oppure manca la mappa legata, la voce resta e il roster scrive la lacuna. Una soppressione resta in `signals.suppressed` con i file controllati.
+Prova la regola che `review_roster.py` applica (§2 della spec, solo per `stripe`): l'unità che dichiara Stripe aggiunge `stripe-auditor` solo se un file di produzione cambiato o un vicino a un salto della mappa importa `stripe` o `@stripe/*`. Gli import vengono da `snapshot.py files`. Se gli import non sono noti, per un file senza parser o per un linguaggio fuori da `IMPORT_LANGUAGES`, oppure manca la mappa legata, la voce resta e il roster scrive la lacuna. Una soppressione resta in `signals.suppressed` con i file controllati.
 
-Criterio, dichiarato prima del replay e dopo aver trovato gli import di S1, che correggono lo «0 su 3» della prima decisione: N1 e Z1 non aggiungono `stripe-auditor`; S1, dove due file cambiati importano `stripe`, lo aggiunge; il resto dei piani non cambia. Le due fixture, un import diretto e un import in un vicino a un salto, sono in `tests/test_senior_review_roster.py`, con i casi in cui l'uso è ignoto.
+Criterio, dichiarato prima del replay: N1 e Z1 non aggiungono `stripe-auditor`; S1, dove due file cambiati importano `stripe`, lo aggiunge; il resto dei piani non cambia. Le due fixture, un import diretto e un import in un vicino a un salto, sono in `tests/test_senior_review_roster.py`, con i casi in cui l'uso è ignoto.
 
 Replay del 2026-11-20: `plan.py` sulle stesse mappe del pilota, nessuna run con il modello.
 

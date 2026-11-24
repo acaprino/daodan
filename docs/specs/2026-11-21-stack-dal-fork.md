@@ -1,7 +1,6 @@
 # Stack dal fork di stack-analyser
 
-**Stato:** proposta, quarta stesura, approvata dal proprietario il 21 novembre 2026 insieme alle «Scelte di chi scrive». Nessuna modifica proposta è nel codice. La stesura precedente è stata rivista in [`docs/reviews/2026-11-21-stack-dal-fork.md`](../reviews/2026-11-21-stack-dal-fork.md): questa ne risolve i rilievi B1, B2 e M1–M7.
-
+**Stato:** proposta, quarta stesura, approvata dal proprietario il 21 novembre 2026 insieme alle «Scelte di chi scrive». Nessuna modifica proposta è nel codice.
 Il riconoscimento delle tecnologie di un progetto passa dal registro di Daodan al programma [`acaprino/stack-analyser`](https://github.com/acaprino/stack-analyser), il «fork». Tocca due repository: il fork e Daodan.
 
 ## Perché

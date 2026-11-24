@@ -1,8 +1,27 @@
 # Benchmark: mappa del sistema
 
-Prova la [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md), misure da 1 a 6. Le soglie sono scritte qui prima di ogni misura; il proprietario può cambiarle. I casi sono quelli dei benchmark dei flussi: [`phazly-flow`](../phazly-flow/README.md), [`polar-flow`](../polar-flow/README.md) e [`tududi-flow`](../tududi-flow/README.md). Le regole di collegamento ci sono per phazly e per tududi (`benchmarks/tududi-flow/rules.json`, scritte a mano il 12 novembre 2026 per la misura 2: store di Zustand, chiamate `fetch(getApiPath(...))`, rotte di Express, modelli di Sequelize). Il codice dei casi non entra qui: solo nomi di file e valori attesi. Le run girano su Modal, in un processo nuovo.
+**Stato:** In parte. Misurati: il mappatore con un modello contro i riferimenti, il registro dei servizi, ciò che il grafo dà senza modello su phazly, il riuso di una seconda analisi, i percorsi con gli indicizzatori veri. Mancano: le varianti B e C del confronto fra grafo e modello, la fixture completa, le soglie confermate dal proprietario.
+
+**Domanda.** La [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) regge? Cioè: quanta parte della mappa che una persona disegnerebbe (nodi, frecce, flussi) la macchina ricostruisce da sola, quanta ne aggiunge un modello, e a quale costo.
+
+**Casi.** [`phazly-flow`](../phazly-flow/README.md), [`polar-flow`](../polar-flow/README.md), [`tududi-flow`](../tududi-flow/README.md), più i casi privati con un riferimento dell'intero sistema. Il codice dei casi non entra qui: solo nomi di file e valori attesi. Le run girano su Modal.
+
+**Risultati validi oggi.**
+
+| Domanda | Ultima misura | Dove |
+| --- | --- | --- |
+| Il mappatore con un modello riproduce l'area «pagamenti» di phazly? | no: da 1 a 3 nodi su 11, 0 flussi su 3 (Haiku 5.5 e Sonnet 5.5, 12 novembre) | [Area con un modello](#il-mappatore-con-un-modello-su-unarea) |
+| Il mappatore con Haiku ricostruisce l'intero sistema alla cieca? | no: 0 flussi in ogni caso, nodi da 0 su 129 a 7 su 118 (cinque casi, 10 run, 23-24 novembre) | [Intero sistema alla cieca](#il-mappatore-con-un-modello-sullintero-sistema-alla-cieca) |
+| Quante frecce e flussi del riferimento dà il grafo senza modello? | phazly: 129 frecce certe su 240, 18 flussi chiusi su 38 (23 novembre) | [`phazly-flow`](../phazly-flow/README.md#flussi-del-riferimento-chiusi-dal-grafo-senza-modello) |
+| Il registro riconosce i servizi esterni? | richiamo 75%, 60% e 78,6% su tre casi, sotto la soglia dell'80% (12 novembre, prima dello stack dal fork) | [Registro](#il-registro-dei-servizi-esterni) |
+| Una seconda analisi riusa la prima? | 131,5 s la prima, 1,2 s la seconda, 0 container (21 novembre) | [Riuso](#riuso-di-una-seconda-analisi) |
+| Gli indicizzatori veri danno il percorso di un controllo? | sì su web, Tk, Tauri e Next.js (21 novembre) | [Percorsi veri](#percorsi-con-gli-indicizzatori-veri) |
+
+**Passo successivo della pipeline.** Le misure senza modello si fermano al passo `analyze` (statico). Quante frecce mancanti chiude il passo dinamico (`observe`) su questi casi non è misurato; il passo dinamico sulle chiamate è misurato in [`call-provenance`](../call-provenance/README.md), l'esplorazione dell'app avviata in [`project-model`](../project-model/README.md). Dopo il modello la misura è quella delle due righe del mappatore qui sopra.
 
 ## Soglie
+
+Scritte prima di ogni misura; il proprietario può cambiarle.
 
 | Misura | Cosa si conta | Soglia |
 | --- | --- | --- |
@@ -13,262 +32,89 @@ Prova la [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-map
 | 5 Stabilità | due esecuzioni sullo stesso snapshot, nodi confrontati per file | almeno l'80% dei nodi uguali |
 | 6 Registro | servizi e progetti esterni riconosciuti contro l'elenco letto a mano dai manifest, per registro, stack-analyser e i due insieme | richiamo almeno 80% per caso; al massimo un riconoscimento sbagliato per caso |
 
-## Parametri da provare
-
-Nel comando `score.py system`, `flows_by_nodes` misura la sovrapposizione dei nodi e `flows_depth_1` la somiglianza al primo livello. `flows` conta una corrispondenza uno a uno quando almeno due terzi dei nodi attesi appartengono a percorsi diretti da un ingresso atteso a un effetto atteso. I percorsi seguono frecce provate o dichiarate e scartano quelle scadute. `entries` e `effects` contano gli estremi collegati. `flows.by_type` richiede anche il tipo corretto e `flow_type_precision` indica la quota di etichette di tipo corrette su tutte quelle proposte. Le misure storiche dell'intero sistema basate sui soli nodi sono confrontabili con `flows_by_nodes`.
+## Parametri
 
 | Parametro | Valori |
 | --- | --- |
-| tetto della scheda (`system_brief.CAP`) | 12.000, 24.000, 48.000 caratteri |
-| punti d'ingresso mostrati per gruppo (`HOLDERS`) | 5, 8, 12 |
+| limite della risposta di `brief` (`system_brief.LIMIT`) | oggi 31.800 caratteri di JSON; le misure del 12 novembre usavano un tetto del testo di 12.000, 24.000 e 48.000 caratteri, che nel codice non c'è più |
+| punti d'ingresso mostrati per gruppo (`system_brief.HOLDERS`) | 5, 8, 12; oggi 8 |
 | modello dell'agente | economico (Haiku 5.5), intermedio (Sonnet 5.5) |
 | perimetro | un'area, l'intero sistema |
 | generatori dei collegamenti possibili (`possible.py`) | nessuno, `ritorno`, `incerto`, tutti e due |
 
-## Riferimenti attesi
+`score.py system` conta: `flows`, una corrispondenza uno a uno quando almeno due terzi dei nodi attesi stanno su percorsi diretti da un ingresso atteso a un effetto atteso (frecce provate o dichiarate, non scadute); `entries` ed `effects`, gli estremi collegati; `flows.by_type` chiede anche il tipo giusto e `flow_type_precision` è la quota di etichette di tipo corrette; `flows_by_nodes` è la sovrapposizione dei nodi (confrontabile con le misure sull'area) e `flows_depth_1` la somiglianza al primo livello.
 
-- `expected/phazly-payments.json`: gli 11 nodi e i 3 flussi (pagamento, gestione abbonamento, paywall e limiti d'uso) del grafo d'insieme della mappa fatta a mano il 12 novembre 2026, confermati dal proprietario lo stesso giorno; i 35 percorsi sono letti dall'archivio di phazly. Il pagamento dal web e il suo ritorno (`SubscriptionContext.tsx`, `CheckoutVerificationOverlay.tsx`, `checkout-complete/index.html`) stanno nel Paywall, gli avvisi di prova e scadenza nella Scheda abbonamento; Abbonamento e Consumi sono le chiavi `mongo/subscriptions` e `mongo/usageEvents`; la Landing è un nodo non visto. Un nodo con codice si ritrova per file e chiavi di store, un nodo senza codice se un nodo nella stessa posizione cita uno dei suoi file, un nodo non visto per posizione e tipo.
-- `expected/externals-<caso>.json`: per ogni caso l'elenco a mano letto dai manifest, dai Dockerfile, dai file compose e dai modelli di `.env` del perimetro dello snapshot (`read`). In `externals` stanno ogni servizio esterno che quei file nominano e i progetti con un ruolo nell'architettura (framework dell'applicazione, guscio dell'app, accesso ai dati, stato, code, container), come la mappa fatta a mano di phazly ne nomina 6 su 59 pacchetti. In `also` stanno le cose usate che una persona non nomina (linguaggi, strumenti di build, stile, test e lint, librerie di utilità): non contano per il richiamo né come errore. Un identificatore che il registro non ha è scritto come nome semplice (`zustand`, `google-play-billing`).
+## Riferimenti
 
-## Esecuzione
+- `expected/phazly-payments.json`: 11 nodi e 3 flussi (pagamento, gestione abbonamento, paywall e limiti d'uso) della mappa fatta a mano il 12 novembre 2026 e confermata dal proprietario; i 35 percorsi sono letti dall'archivio di phazly. Un nodo con codice si ritrova per file e chiavi di store, un nodo senza codice se un nodo nella stessa posizione cita uno dei suoi file, un nodo non visto per posizione e tipo.
+- `expected/phazly-anchors.json`: i punti d'appoggio dei 3 flussi, dati a mano.
+- `expected/externals-<caso>.json`: l'elenco a mano letto da manifest, Dockerfile, file compose e modelli di `.env`. In `externals` i servizi esterni e i progetti con un ruolo nell'architettura; in `also` ciò che una persona non nomina (linguaggi, build, stile, test, utilità), che non conta per il richiamo né come errore.
 
-| Misura | Comando |
-| --- | --- |
-| 1, 2, 4, 5 | `modal deploy benchmarks/system-map/modal_map.py`, poi `python benchmarks/system-map/modal_map.py spawn --phazly-tar PATH --phazly-links PATH --tududi-links PATH --tag TAG`: una run per caso, perimetro, modello e ripetizione, ognuna una sessione nuova di `claude -p --agent codebase-map:system-mapper` su un run di Codebase Map preparato prima con le regole del caso e i collegamenti calcolati con il motore; sul volume `daodan-flow-results` restano `stream.jsonl`, `map.json` e `summary.json`. Poi `python score.py map map.json expected/phazly-payments.json` |
-| 3 | `map.json` di ogni run riporta in `levels` i nodi fuori dal loro livello e i punti citati che non esistono, per ogni flusso registrato e ogni livello |
-| 6, dimensione della scheda | `modal run benchmarks/system-map/modal_map.py::brief --phazly-tar PATH --phazly-links PATH` scrive `results/brief-<caso>.json`; poi `python score.py externals results/brief-<caso>.json expected/externals-<caso>.json registry` (oppure `stack-analyser`, `both`) |
-| Il container nella run (task 1 del piano dell'analisi unificata) | `modal run benchmarks/system-map/modal_map.py::engine_proof_run [--tag TAG] [--out PATH]`, prima dei cinque casi: sulla fixture `js-npm-single`, cinque controlli con la loro prova scritta in `results/engine-proof.json`. 1: `engine-report.json` dice scip-typescript `fresh` (la pass è un processo figlio, con il motore da `sitecustomize`). 2: un arco osservato del passo dinamico è nell'archivio `engine-edges.sqlite`, su `src/index.js`. 3: la preparazione raggiunge `pypi.org` e rifiuta un host fuori dai registri, un indirizzo HTTP semplice e un indirizzo IP. 4: una sandbox non vede `/results` né i risultati di un altro caso, e non scrive nella sua cartella. 5: dopo una preparazione fallita e una sandbox che non parte non resta nulla sul volume né in esecuzione. Richiede il client Modal 1.5.0 o successivo (`outbound_domain_allowlist`, `Volume.with_mount_options`). *Scritta il 23 novembre 2026 e non eseguita: nessun giro su Modal da questa macchina, il costo è da concordare con il proprietario.* |
-| Intera analisi (task 2 del piano dell'analisi unificata) | `python benchmarks/system-map/code_archive.py OUT.tar REPOSITORY@COMMIT` (scrive anche `OUT.json`, i conteggi), `modal deploy benchmarks/system-map/modal_map.py`, poi `python benchmarks/system-map/modal_map.py whole --tag TAG --cases CASO --tar CASO=OUT.tar [--models qwen,haiku,opus] [--reps 2]`: un job per caso (`whole_case`: archivio, pass del motore con i container su Modal Sandbox, candidati) e, con `--models`, una `map_run` indipendente per caso, modello e ripetizione (ognuna prepara per sé e scrive le sue regole). Senza `--models` girano solo i casi, senza modello. Poi `modal volume get daodan-flow-results TAG benchmarks/system-map/results/system/TAG` e `python benchmarks/system-map/score.py whole benchmarks/system-map/results/system/TAG`: una tabella per caso, una riga per modello, una colonna che manca dice «non misurato» con la causa. *Scritto il 23 novembre 2026 e non eseguito; il formato dei file per caso è provvisorio fino al primo giro. Mancano le schede dei percorsi con il modello (`paths.json`) e la ricerca (`search.json`), che dipendono dai task 9 e 10.* |
-| Tre corse sullo stesso progetto (task 2b) | `python benchmarks/system-map/score.py runs DA-ZERO SENZA-MODIFICHE UN-MODULO`, su tre cartelle con `pipeline-events.jsonl`, i `container-runs.jsonl` e `links.json` (`found`, `of`, di `possible.py`): tempo, ripristini, avvii degli indicizzatori e dell'app, collegamenti ritrovati; una corsa che costa meno e ritrova meno collegamenti è segnata, non contata come un guadagno. CPU, picco di RAM e spazio temporaneo non sono in nessun evento: «non misurato», finché la pipeline non li scrive. *Scritto il 23 novembre 2026 con uscite sintetiche; la misura su Modal aspetta il via del proprietario.* |
-| Collegamenti possibili | sullo snapshot di un caso con il motore: `python daodan/core/flows.py links MANIFEST --rules RULES > LINKS.json`, poi `python benchmarks/system-map/possible.py MANIFEST LINKS.json EXPECTED-system.json --generators ritorno,incerto` (`--generators ""` per i soli collegamenti certi); un caso privato si misura su Modal o sullo snapshot del proprietario |
+### Riferimenti dell'intero sistema
+
+La mappa che una persona che conosce il prodotto disegnerebbe, per caso. Non sono nel repository: quattro casi su cinque sono privati, e gli script li leggono a runtime (`EXPECTED-system.json`, `--expected`).
+
+- **Formato:** i campi di `daodan/system-map/v1` più `inside`, `what`, `proof`, `routes`, `registry`, `family`, `role` e `mode` su un nodo, `has`, `entries` ed `effects` su un flusso, `packages` e `gaps` sulla mappa (docstring di `reference.py`). Ogni nodo e ogni freccia cita una riga del progetto e un testo che quella riga contiene.
+- **Controllo:** `python reference.py check EXPECTED.json PROJECT_ROOT` apre i file e non esegue nulla; `pin` lega il riferimento a un commit. Prova: `test_reference.py`.
+- **Chi li scrive:** un agente per progetto con il brief [`reference-brief.md`](reference-brief.md), leggendo i file senza eseguirli.
+- **Limite:** il proprietario ha confermato le regole (i tipi, `devops`, il database al primo livello), non i nodi né i flussi: ogni numero misurato contro di loro è una bozza (spec, «Limiti», punto 8).
+
+## Script
+
+| Domanda | Script | Prova |
+| --- | --- | --- |
+| Il mappatore con un modello | `modal_map.py spawn` (una sessione nuova di `claude -p --agent codebase-map:system-mapper` per caso, perimetro, modello e ripetizione), poi `score.py map` o `score.py system` | `tests/test_benchmark_system_map_score.py` |
+| L'intera analisi, con o senza modello | `code_archive.py OUT.tar REPOSITORY@COMMIT`, `modal_map.py whole --tag TAG --cases CASO --tar CASO=OUT.tar [--models qwen,haiku,opus] [--reps 2]`, poi `score.py whole CARTELLA`: una tabella per caso, una riga per modello, «non misurato» con la causa dove manca una colonna | `test_code_archive.py`, `WholeTableTests` |
+| Il container nella run su Modal | `modal run benchmarks/system-map/modal_map.py::engine_proof_run`, sulla fixture `js-npm-single`; chiede il client Modal 1.5.0 o successivo | `results/engine-proof.json` |
+| Registro e scheda | `modal run benchmarks/system-map/modal_map.py::brief`, poi `score.py externals results/brief-<caso>.json expected/externals-<caso>.json registry` (oppure `stack-analyser`, `both`) | |
+| Candidati e frecce senza modello | `candidates.py LINKS.json expected/phazly-payments.json FILES.txt`, `anchors.py LINKS.json expected/phazly-payments.json expected/phazly-anchors.json` | |
+| Collegamenti possibili | `python daodan/core/flows.py links MANIFEST --rules RULES > LINKS.json`, poi `possible.py MANIFEST LINKS.json EXPECTED-system.json --generators ritorno,incerto`; su Modal `modal_map.py::possible` | `test_possible.py` |
+| Tetto della scheda del percorso | `card_ceiling.py MANIFEST LINKS.json EXPECTED-system.json` | `test_card_ceiling.py` |
+| Ingressi del riferimento contro i candidati dei lettori | `entries.py measure CANDIDATES.json EXPECTED.json FILES.txt` | `test_entries.py` |
+| Schede di traccia: il modello trova, corregge e certifica flussi su archi che la macchina ha | `traces.py cards`, `ask`, `verify` | `test_traces.py` |
+| Ricerca in parole di un flusso o di una parte | `embed_queries.py`, `embed_probe.py`, `modal_embed.py` | |
+| Riuso | `path_reuse.py`, `pipeline_reuse.py [--container]`, `path_observations.py` | |
+| Percorsi veri | `real_paths.py [web] [tk] [tauri] [next] [--work DIR]` | |
+| Tre corse sullo stesso progetto | `score.py runs DA-ZERO SENZA-MODIFICHE UN-MODULO`; parametri e risultati in [`project-model`](../project-model/README.md) | |
+
+I risultati di `entries.py`, `traces.py` e degli script `embed_*` non sono in questo README: stanno nei piani [pipeline intera](../../docs/plans/2026-11-20-pipeline-intera.md) e [ricerca e pacchetto di review](../../docs/plans/2026-11-20-ricerca-e-pacchetto-di-review.md).
 
 ## Risultati
 
-### Gruppi candidati, 12 novembre 2026, prima di fissare la regola
+### Il mappatore con un modello, su un'area
 
-Con una soglia sulla quota dei punti d'ingresso (20%) la fixture `flow-model` non forma nessun gruppo, perché due su sei sono già il 33%, e phazly (235 punti d'ingresso, 68 risorse) forma un solo gruppo da 117 più 118 isolati: le risorse a media condivisione fanno catena. Con un gruppo per risorsa la fixture dà i due gruppi attesi (`store:db/payments` con quattro punti d'ingresso, `module:card payment provider` con tre) e phazly 44 gruppi, 143 punti d'ingresso in almeno un gruppo, 92 isolati (86 non toccano nessuna risorsa), in 9.300 caratteri.
-
-### Costruzione del registro, 12 novembre 2026
-
-2.172 voci da stack-analyser 1.27.6 (743 regole), CNCF Landscape (commit `75b47639`, senza le categorie dei membri e dei fornitori certificati) e Simple Icons 16.37.0 (marchi agganciati per nome). `derive`, senza modello, trova pacchetti su PyPI, crates.io o nel proxy di Go per 102 delle 455 voci con un pacchetto npm; tiene un pacchetto solo se il repository ha lo stesso proprietario del pacchetto npm principale, un modulo Go solo se il suo `go.mod` è vero, e scarta i pacchetti trovati per più voci. Una run di Haiku 5.5 (0,023 USD, 40.257 token in uscita) propone il resto: la macchina ne tiene 141, fra cui FastAPI, Flask e Pydantic, e ne rifiuta 22 oltre a quelle già coperte, compresi pacchetti veri con un altro proprietario (`boto3`, `prometheus-client`, il driver Go di MongoDB).
-
-### Misura 6 e dimensione della scheda, 12 novembre 2026
-
-Su Modal, senza modello, uno snapshot per caso: phazly dall'archivio con i collegamenti già calcolati con il motore, polar (`server/`) e tududi ai commit dei loro benchmark, senza regole. Richiamo sull'elenco scritto prima; sbagliati sono i riconoscimenti fuori da `externals` e da `also`, ognuno letto al punto citato.
-
-| Caso | Attesi | Registro | stack-analyser | Insieme | Falsi letti al punto citato |
-| --- | --- | --- | --- | --- | --- |
-| phazly | 16 | 75,0% | 37,5% | 75,0% | 1: `ghost` da un nome in un test |
-| polar | 25 | 60,0% | 32,0% | 60,0% | 0 |
-| tududi | 14 | 78,6% | 78,6% | 78,6% | 3: `zoom` da un tipo TypeScript, `caddy` e `kubernetes` dagli esempi in `docs/examples` |
-
-Nessun caso raggiunge la soglia del richiamo; tududi supera anche quella dei falsi. stack-analyser non riconosce nulla che il registro non veda già. Cause:
-
-- Mancano dal registro: Zustand, Motor, Dramatiq, Logfire, Numeral, Plain, IPinfo, Google Play Billing (il segno è `@choochmeque/tauri-plugin-iap-api`).
-- Il registro ha la voce ma non il segno che il progetto mostra: AWS (`boto3` riconosce solo il progetto Boto3), GitHub (`githubkit`), Expo (`exponent-server-sdk`), MinIO e Tailscale (immagini `bitnamilegacy/minio`, `tailscale/tailscale`), Cloud Run (solo un commento del Dockerfile e `.gcloudignore`), Cloudflare in tududi (`TURNSTILE_*`), Google Calendar (`GOOGLE_CLIENT_ID`, un prefisso troppo generico).
-- L'elenco letto dai soli manifest non vede i servizi chiamati via HTTP e configurati con variabili: in polar il registro trova Discord, Linear, Slack, Resend e OpenAI, in tududi Discord, tutti veri al punto citato.
-- Gli esempi di documentazione contano come configurazione del progetto.
-
-Corretto durante la misura: con un target dentro il repository (polar `server/`) stack-analyser legge i percorsi dal target e lo snapshot dalla radice, così ogni riconoscimento cadeva; il richiamo di stack-analyser su polar passa da 0 a 32%.
-
-Dimensione del testo della scheda, in caratteri; fra parentesi i gruppi riassunti in una riga:
-
-| `CAP` \ `HOLDERS` | 5 | 8 | 12 |
-| --- | --- | --- | --- |
-| phazly 12.000 | 12.000 (48 su 48) | 12.000 (48) | 12.000 (48) |
-| phazly 24.000 | 23.868 (7) | 23.891 (14) | 23.687 (30) |
-| phazly 48.000 e senza tetto | 25.022 (0) | 26.773 (0) | 32.261 (0) |
-| polar, tududi, ogni valore | 5.465 e 5.442 | | |
-
-phazly ha 235 punti d'ingresso, 123 chiavi di store, 48 gruppi e 92 punti d'ingresso isolati; a 12.000 caratteri la sola parte fissa (moduli, esterni, isolati) riempie il tetto. polar e tududi senza regole non hanno gruppi.
-
-### Misure da 1 a 5, prima tornata, 12 novembre 2026
-
-16 run su Modal (tag `system-map-runs`), una sessione nuova ciascuna di `claude -p --agent codebase-map:system-mapper`: phazly e tududi, area «pagamenti e abbonamenti» e intero sistema, Haiku 5.5 e Sonnet 5.5, due ripetizioni. Tetto della scheda 48.000, `HOLDERS` 8. Costo totale 1,53 USD; una run (phazly, area, Haiku, prima ripetizione) non è partita perché Modal ha riusato il container di un'altra. Valori per run in `results/runs-20261112.json`.
-
-| Misura | Risultato | Soglia |
-| --- | --- | --- |
-| 1 Riproduzione, phazly area | nodi ritrovati: Haiku 3, Sonnet 4 e 3 su 11; flussi 0 su 3; frecce rifiutate: Haiku 33%, Sonnet 0% | non raggiunta |
-| 1 Riproduzione, phazly intero sistema | 0 nodi su 11 in tutte e quattro le run | non raggiunta |
-| 2 Secondo progetto, tududi | nessuna mappa registrata in otto run | non misurabile |
-| 3 Livelli | 10-20 viste per run su phazly: nessun nodo fuori dal suo livello, nessun punto citato che manca | raggiunta, sui flussi registrati |
-| 4 Costo | area: Haiku 0,014 USD, Sonnet 0,41 e 0,18; intero sistema: Haiku 0,011 e 0,016, Sonnet 0,24 e 0,28; aperture del sorgente da 0 a 2 | area Sonnet oltre 0,30 in una run su due |
-| 5 Stabilità | phazly area Sonnet 8 nodi su 9 uguali; intero sistema Haiku 1 su 6, Sonnet 1 su 7 | raggiunta solo sull'area con Sonnet |
-
-Cause:
-
-- **tududi:** la risposta di `brief` è di 51,9 KB e supera il limite dell'host per l'uscita di uno strumento (su phazly 31,8 KB passano): l'host la salva in un file e l'agente, che ha solo i quattro strumenti della mappa, non la legge. Il rapporto di `map` è di 86.648 caratteri, soprattutto per gli elenchi di ciò che la copertura lascia fuori (831 punti d'ingresso). In più `codebase_map_read` rifiuta con «parser fingerprint changed»: probabilmente il run è preparato con le versioni di tree-sitter dell'immagine e il server gira in un ambiente `uv` con altre versioni.
-- **phazly, area:** la forma è vicina al riferimento (attore, paywall, scheda abbonamento, Stripe, entità), ma il taglio è più fine (un nodo per gestore: avvio del pagamento, portale clienti, ricezione degli eventi, dove il riferimento ha «API acquisti») e mancano Google Play Billing, i limiti d'uso e i consumi. Un flusso si ritrova con due terzi dei suoi nodi: con 3 o 4 nodi ritrovati su 11 nessun flusso arriva alla soglia.
-- **phazly, intero sistema:** da 2 a 7 nodi per tutto il prodotto (accesso, editor dei pasti, modelli LLM, cancellazioni programmate); l'area dei pagamenti non compare.
-
-Dopo questa tornata il tetto della scheda torna a 24.000 caratteri, perché la risposta di `brief` resti sotto il limite dell'host. Il modello dell'agente non è fissato: nessuno dei due supera la misura 1.
-
-### Misure da 1 a 5, seconda tornata, 12 novembre 2026
-
-Corretti i tre blocchi della prima tornata: il rapporto di `map` conta per cartella ciò che la copertura lascia fuori quando l'elenco supera 40 voci, il run si prepara con l'ambiente del server MCP, ogni run ha un container suo. Tetto della scheda 24.000, `HOLDERS` 8. Stesse 16 run (tag `system-map-runs2`), tutte partite, 1,37 USD. Nessuna risposta degli strumenti supera il limite dell'host salvo un rapporto su phazly, intero sistema, Haiku (16 flussi in una proposta). Valori per run in `results/runs2-20261112.json`.
+12 novembre 2026, tag `system-map-runs2`: 16 run su Modal, phazly e tududi, area «pagamenti e abbonamenti» e intero sistema, Haiku 5.5 e Sonnet 5.5, due ripetizioni, `HOLDERS` 8, tetto del testo di allora 24.000 caratteri. 1,37 USD in tutto. Valori per run in `results/runs2-20261112.json`.
 
 | Misura | Risultato | Soglia |
 | --- | --- | --- |
 | 1 Riproduzione, phazly area | nodi ritrovati: Haiku 1 e 2, Sonnet 3 e 1 su 11; flussi 0 su 3; frecce rifiutate 0% | non raggiunta |
 | 1 Riproduzione, phazly intero sistema | 0 nodi su 11 in tutte e quattro le run | non raggiunta |
-| 2 Secondo progetto, tududi | frecce provate o dichiarate 57 su 60 (95%), solo 4 provate; nomi letti a mano 8 su 10 (vedi sotto) | raggiunta |
+| 2 Secondo progetto, tududi | frecce provate o dichiarate 57 su 60 (95%), solo 4 provate; nomi letti a mano 8 su 10 | raggiunta |
 | 3 Livelli | da 5 a 50 viste per run sui due casi: nessun nodo fuori dal suo livello, nessun punto citato che manca | raggiunta |
 | 4 Costo | area: Haiku da 0,008 a 0,010 USD, Sonnet da 0,11 a 0,20; intero sistema: Haiku da 0,010 a 0,019, Sonnet da 0,13 a 0,26; aperture del sorgente da 0 a 2 | raggiunta |
 | 5 Stabilità | nodi uguali fra le due ripetizioni: da 0% a 55%; il migliore è tududi, intero sistema, Haiku (6 su 11) | non raggiunta |
 
-Nomi letti a mano (tududi, area, Sonnet, prima ripetizione, e due nodi dell'intero sistema): giusti API abbonamenti, Gestione abbonamenti, Pagina admin fatturazione, Provider di pagamento, Scheda Abbonamento, Utente, Assistente MCP, Piano del giorno; sbagliati Client abbonamenti (il nome del codice, non della cosa) e Gateway di pagamento (un nodo solo per Stripe, Paddle e Lemon Squeezy, che il registro riconosce uno per uno).
+- Nomi letti a mano (tududi, area, Sonnet, prima ripetizione, e due nodi dell'intero sistema). Giusti: API abbonamenti, Gestione abbonamenti, Pagina admin fatturazione, Provider di pagamento, Scheda Abbonamento, Utente, Assistente MCP, Piano del giorno. Sbagliati: Client abbonamenti (il nome del codice, non della cosa) e Gateway di pagamento (un nodo solo per Stripe, Paddle e Lemon Squeezy).
+- **La correzione toglieva ciò che era stato accettato:** in 5 run su 8 dell'area il rapporto della correzione toglie da 3 a 5 nodi e flussi. Dopo questa misura una proposta non toglie più ciò che non nomina, e una freccia verso un membro indicato come funzione si prova anche sul file. Non rimisurato sull'area dopo la modifica.
+- **Pochi nodi per area:** da 2 a 8 dove il riferimento ne ha 11; il taglio segue i gestori più che le cose che una persona nomina. Mancano Google Play Billing, i limiti d'uso e i consumi.
+- **L'intero sistema in una proposta** dà da 2 a 18 nodi, spesso un file per nodo.
+- Il modello dell'agente non è fissato: la differenza fra Haiku e Sonnet è più piccola della variazione fra ripetizioni.
+- `results/runs-20261112.json` è la tornata precedente dello stesso giorno, superata da questa: su tududi nessuna mappa veniva registrata perché la risposta di `brief` (51,9 KB) superava il limite dell'host. Da lì viene `system_brief.LIMIT`.
 
-Cause di ciò che non raggiunge la soglia:
+### Il mappatore con un modello, sull'intero sistema, alla cieca
 
-- **La correzione toglie ciò che era stato accettato.** Una proposta con `scope` toglie i flussi non confermati dell'area che non riporta; l'agente corregge mandando solo ciò che è stato rifiutato, e così perde i flussi accettati e i loro nodi. Il rapporto della correzione toglie da 3 a 5 nodi e flussi in 5 run su 8 dell'area (3 su 4 su phazly, 2 su 4 su tududi): su phazly, area, Sonnet, sparisce «Abbonarsi a un piano» con il Paywall. È la causa principale della misura 1 e della misura 5, e la regola di `system-map.md` («Correct what was refused once») non la previene.
-- **Pochi nodi per area.** Da 2 a 8 nodi dove il riferimento ne ha 11: mancano Google Play Billing, i limiti d'uso e i consumi; il taglio segue i gestori (ricezione degli eventi, stato nell'app) più che le cose che una persona nomina.
-- **L'intero sistema in una proposta** dà da 2 a 18 nodi per tutto il prodotto, spesso un file per nodo, e l'area dei pagamenti si riduce a un nodo.
+Il riferimento resta fuori dall'ambiente dell'agente ed è confrontato dopo il salvataggio.
 
-Dopo questa tornata una proposta non toglie più ciò che non nomina, e una freccia verso un membro indicato come funzione si prova anche sul file, dichiarandosi meno precisa: su phazly, area, Sonnet, prima ripetizione, le tre frecce rifiutate alla prima proposta reggevano al livello del file (il Paywall chiama `useSubscription`, e il membro indicato era `SubscriptionProvider` nello stesso file).
+**Cinque casi, 23 e 24 novembre 2026** (`modal_map.py whole --models haiku --reps 2 --budget 1`, Haiku 5.5, 10 run indipendenti, ognuna con la sua pass del motore e le sue due sessioni; registrata nel [piano dell'analisi unificata](../../docs/plans/2026-11-20-analisi-unificata.md), task 2; i risultati per caso restano fuori da git):
 
-Il modello dell'agente non è fissato: Haiku e Sonnet stanno entrambi sotto le misure 1 e 5, e la differenza fra i due (1-2 contro 1-3 nodi su phazly) è più piccola della variazione fra ripetizioni.
+- nodi ritrovati da 0 su 129 a 7 su 118; flussi 0 in ogni caso;
+- due ripetizioni concordano su da 1 su 3 a 5 su 7 nodi;
+- sessioni 2,02 USD in tutto, da 0,26 a 0,76 per caso; nessuna fermata per budget;
+- la pass del caso più grande impiega da 51 a 68 minuti.
 
-### Candidati e frecce senza modello, phazly, 13 novembre 2026
+Senza modello (tag `whole-nomodel-1`, 23 novembre): indici `fresh` per tutti i linguaggi dei cinque casi tranne Kotlin in uno; i candidati degli ingressi si producono per tutti e cinque.
 
-Prova a costo zero della revisione del 13 novembre della spec, sui collegamenti di phazly già calcolati con il motore: `python candidates.py LINKS.json expected/phazly-payments.json FILES.txt`. I candidati sono la partizione per dominatori del grafo dei file dai punti d'ingresso; le chiavi di store sono un candidato ciascuna.
-
-| Cosa | Risultato |
-| --- | --- |
-| Candidati | 408, di cui 123 chiavi di store; 360 hanno un solo file |
-| File di codice | 386 in un candidato, 618 che nessun punto d'ingresso raggiunge |
-| Candidati con file di due nodi del riferimento | nessuno |
-| Nodi del riferimento come unione di candidati | Funzioni a consumo, API diritti, Abbonamento, Consumi interi; API acquisti 9 file su 11; Paywall 2 su 4; Scheda abbonamento 2 su 5. I file mancanti sono raggiunti da nessun punto d'ingresso |
-| File che i candidati aggiungono ai nodi del riferimento | 22 a Funzioni a consumo e 2 ad API diritti: le funzioni di supporto dei gestori, che il riferimento non elenca |
-| Frecce del riferimento fra nodi con codice ricavate dai soli collegamenti | 5 su 6: Paywall → API acquisti (4 chiamate), API acquisti → Abbonamento (7 scritture, 14 letture all'indietro), Funzioni a consumo → API diritti (11 chiamate), API diritti → Abbonamento (2 scritture, 3 letture) |
-
-- La freccia mancante, API diritti → Consumi, è un buco del grafo non dichiarato: `services/usage.py` scrive e legge con `db[USAGE_EVENTS_COLLECTION]`, una forma che le regole di phazly non leggono.
-- Scheda abbonamento → API acquisti arriva come Scheda abbonamento → Paywall (5 chiamate al contesto dell'abbonamento, che il riferimento mette nel Paywall) e Paywall → API acquisti: secondo la spec sono due frecce, e il contesto dell'abbonamento è un candidato a sé.
-- In più c'è una freccia vera che il riferimento non ha: API acquisti → API diritti, 13 chiamate.
-- I file che nessun punto d'ingresso raggiunge sono soprattutto componenti dell'interfaccia: rendere un componente non è un collegamento, e chi lo rende non si vede. È il secondo buco del grafo da chiudere.
-- I candidati sono troppo fini per la scheda così come sono: il raggruppamento oltre il tetto è da misurare.
-
-### Flussi dai punti d'appoggio, phazly, 13 novembre 2026
-
-Prova a costo zero dei flussi costruiti dalla macchina: `python anchors.py LINKS.json expected/phazly-payments.json expected/phazly-anchors.json`. Per i 3 flussi del riferimento i punti d'appoggio sono dati a mano, come li darebbe il modello dalla scheda: punti d'ingresso e chiavi di store, nessun percorso. La macchina prende ciò che sta su un percorso da una partenza a un arrivo, senza limite di passi.
-
-| Flusso | Nodi del riferimento con codice attraversati | File estranei | Dove il grafo si ferma |
-| --- | --- | --- | --- |
-| Pagamento | API acquisti, Abbonamento; manca Paywall | 0 | `PaywallModal.handleCheckout` non raggiunge niente fuori dal suo file |
-| Gestione abbonamento | API acquisti, Abbonamento; manca Scheda abbonamento | 0 | `SubscriptionCard.handleOpenPortal` e `handleSetRenewal`, come sopra |
-| Paywall e limiti d'uso | Funzioni a consumo, API diritti, Abbonamento; mancano Consumi e Paywall | 0 | nessuna partenza raggiunge `mongo/usageEvents` |
-
-- Nessun percorso si allarga: 0 file fuori dal riferimento in tutti e 3 i flussi, fra 4 e 6 file o chiavi per flusso.
-- Ogni nodo mancante corrisponde a un buco del grafo già visto, e la prova lo localizza: l'interfaccia chiama le funzioni dell'abbonamento attraverso un contesto React (`startCheckout` da `useSubscription()`), e le regole non leggono `db[USAGE_EVENTS_COLLECTION]`. Nessuno dei due è dichiarato oggi.
-- Nei tre flussi non ci sono servizi esterni: senza il grafo dei moduli, i collegamenti `usa` verso Stripe e Google Play mancano da questi dati.
-
-### Candidati prima delle regole e osservazioni registrate, 21 novembre 2026
-
-Eseguire `python benchmarks/system-map/path_observations.py`. Prima delle regole, CLI, MCP e strumento dell’app trovano il candidato AST `@trigger("refresh")` con gestore `controls.py::dispatch`. Classificata la forma come comando, la scheda letta da CLI, MCP e HTTP espone l’osservazione esatta di `save` a riga 3, il campione di `also_save` a riga 4 e il conflitto tra la destinazione statica `refund` e quella osservata `cancel` a riga 5. Tre regole associano una scrittura al rispettivo chiamato. CLI, MCP e strumento dell’app accettano `store:db/payments` e rifiutano sia `store:db/orders` (campione) sia `store:db/refunds` (conflitto). Alla riapertura, l’area contiene il solo pagamento, ancora `verified`. Le righe dell’indice e le osservazioni sono sintetiche. La verifica usa il join e l’archivio SQLite di Daodan, con lo scanner simulato.
-
-### Scheda «Paga», riapertura e seconda corsa, 21 novembre 2026
-
-Dalla radice, eseguire `python benchmarks/system-map/path_reuse.py` con le dipendenze di Daodan. Il benchmark prepara uno snapshot SQLite della fixture `flow-model`, registra le sue undici regole e consulta prima l’elenco, poi la scheda del pulsante «Paga». La CLI verifica anche il rifiuto di una decisione discontinua (uscita 1) e la riapertura per nome. La lista e i conteggi delle scritture senza un ingresso provato coincidono su CLI, MCP e HTTP. La CLI, il client MCP con trasporto in memoria, la rotta HTTP dell’app e lo strumento dell’app restituiscono gli stessi passi. Il test usa uno scanner che restituisce zero segreti e tiene spento il container. Nessun sorgente della fixture viene eseguito.
-
-Il percorso registrato segue `onPayClick → submitPayment → store:web state/payment`. La sola scrittura, presentata come passo iniziale dal controllo, viene rifiutata per discontinuità. Il cambio del tema, pur usando lo stesso store, resta fuori dalla scheda. Un nuovo servizio riapre la mappa e ritrova gli estremi verificati, il sito e la provenienza di ogni passo.
-
-| Operazione sullo snapshot già scritto | Aperture sorgenti | Parse tree-sitter | Inventari AST / costruzioni link | Inventari schede / espansioni | Connessioni manifest / cache schede |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Registrare le regole | 23 | 23 | 1 / 1 | 0 / 0 | 8 / 0 |
-| Aprire elenco e scheda | 0 | 0 | 0 / 0 | 1 / 1 | 8 / 3 |
-| Ripetere elenco e scheda con un nuovo servizio | 0 | 0 | 0 / 0 | 0 / 0 | 10 / 5 |
-| Riaprire il flusso per nome | 0 | 0 | 0 / 0 | 0 / 0 | 6 / 1 |
-
-La prima consultazione prepara un unico indice del grafo. Il [test di costo](../../tests/test_flow_path_identity.py) conta 256 visite per indicizzare 256 percorsi indipendenti e 512 visite per 512 percorsi, ciascuno con un solo arco. Aprire i dettagli richiede poi i soli archi raggiunti. La seconda lettura di elenco e scheda apre due volte `flow-links.json` e una volta `system-map.json`. La lettura del flusso per nome li apre una volta ciascuno. Le quattro operazioni hanno richiesto zero elenchi di directory sorgenti, nuovi snapshot, avvii degli indicizzatori, comandi nel container, gestori di pacchetti o download di strumenti. I numeri valgono per questa fixture con grammatiche di Daodan già disponibili. La misura esclude la creazione iniziale dello snapshot e il costo di una vera analisi dinamica.
-
-La scheda globale ha una prova separata in `tests/test_codebase_map_system_brief.py::DeclaredTests::test_global_brief_reopens_only_changed_unmodelled_yaml`. La fixture contiene Dockerfile, Compose, package.json e due manifesti YAML. Prima della modifica, prima e seconda consultazione aprivano quattro sorgenti ciascuna. Ora la scheda riprende le immagini Docker, i servizi Compose e le dipendenze dalla pre-mappa. Apre i soli manifesti Kubernetes e Backstage alla prima consultazione (2 aperture) e nessun sorgente alla seconda, anche riaprendo il servizio. Cambiando il catalogo alla terza lettura, la verifica riapre un solo file e scarta la dichiarazione che diverge dallo snapshot.
-
-### Due analisi complete con il container acceso, 21 novembre 2026
-
-Eseguire `python benchmarks/system-map/pipeline_reuse.py --container`: la stessa fixture `js-npm-single` e lo stesso manifest, due processi, con il motore di container della macchina (qui quello di Daodan su Windows). Ripristino, scip-typescript e `node --test` girano davvero.
-
-| Misura | Prima analisi | Seconda analisi |
-| --- | ---: | ---: |
-| Secondi | 131,5 | 1,2 |
-| Indice / archi osservati dai test | `fresh` / 6 | `fresh` / 6, riusati |
-| Richieste di container / copie del progetto | 6 / 6 | 0 / 0 |
-| Avvii dell'indicizzatore / sonde del motore | 1 / 7 | 0 / 0 |
-| Download di strumenti (già in cache) | 0 | 0 |
-| Aperture di sorgenti / elenchi di cartelle da Python | 52 / 39 | 4 / 0 |
-| Parse tree-sitter | 2 | 0 |
-| Processi `wsl` / `git` / `uv --offline` | 118 / 12 / 2 | 0 / 1 / 0 |
-
-Nella seconda analisi resta una lettura per ognuno dei quattro file, per confrontare lo snapshot con il disco, e un comando git. Le letture interne dei programmi nel container non sono contate. La misura non separa i ripristini: il registro dei container dell'indicizzatore sta in una cartella temporanea.
-
-### Tre percorsi con gli indicizzatori veri, 21 novembre 2026
-
-Eseguire `python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [--work DIR]` con le dipendenze di Daodan e un motore di container (su Windows quello di Daodan). Parametri: il caso (`benchmarks/flow-model/app`, `real-paths/tk-desk`, `real-paths/tauri-desk`), le regole e le risposte sulle forme del caso, la disposizione (analisi accanto al checkout). Lo script crea il run dal servizio con il passaggio del motore, legge i candidati prima delle regole, registra regole e risposte, apre ogni scheda e controlla ciò che deve reggere; esce con 1 se un controllo cade.
-
-| Caso | Indicizzatori nel container | Secondi | Controllo, gestore, ultimo punto provato |
-| --- | --- | ---: | --- |
-| web | scip-python 0.6.8, scip-typescript 0.6.2 | 129 | «Paga» `web/checkout.ts:22` → `onPayClick` → `submitPayment` → `store:web state/payment` (`web/checkout.ts:14`) |
-| tk | scip-python 0.6.8 | 106 | «Salva» `ui.py:8` → `App.save` (gestore dato dall'indice) → `store:disk/orders` (`ui.py:11`) |
-| tauri | scip-typescript 0.6.2, rust-analyzer 2026-11-09 | 322 | «Salva profilo» `src/view.tsx:18` → `save` → `src-tauri/src/main.rs::persist` (`tauri-invoke`, `src/view.tsx:4`); `only_in_tests` e `on_idle_builder` restano lacune |
-
-Il caso Tauri prima falliva: con il ripristino Node condiviso `tsc` e scip-typescript non trovavano `node.tar.gz` (spec della pipeline, sezione 7.1). Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la causa. Le stesse tre fixture su Modal (`modal_pipeline.py --folder-out`): indici `fresh` in 132, 100 e 242 secondi; lì i test Rust non partono per le librerie di sistema che mancano. Le fixture non dichiarano test: nessun arco osservato.
-
-### Le rotte di Next.js dallo strumento del framework, 21 novembre 2026
-
-Eseguire `python benchmarks/system-map/real_paths.py next [--work DIR]` con un motore di container. Parametri: la fixture `real-paths/next-shop` (Next.js 16.4.6, App Router: tre pagine, un gestore `POST`, un layout, un pulsante «Paga» in un form la cui `action` è una funzione `"use server"`), nessuna regola, una risposta sulla forma `action` (il registro non la conosce). La sorgente della pre-mappa lancia `next typegen` del progetto nel container e legge `.next/types/validator.ts`; i collegamenti danno a ogni file la sua funzione dagli export dello snapshot.
-
-| Controllo | Container locale | Modal (`modal_pipeline.py --folder-out`) |
-| --- | --- | --- |
-| secondi dell'analisi | 169 | 145 |
-| `/checkout` è un ingresso sulla funzione della pagina (`app/checkout/page.tsx::Checkout`, riga 3) | sì | sì |
-| `/api/pay` è una sola voce, su `app/api/pay/route.ts::POST` | sì | sì |
-| nessun ingresso è la rotta `/pay` | sì | sì |
-| la scheda «Paga» arriva a `app/checkout/actions.ts::pay` | sì | non misurato: il giro su Modal non apre le schede |
-
-Prima della sorgente le tre pagine non erano ingressi, e Noir dava la funzione sul server come una rotta `/pay` che l'app non ha. `next typegen` da solo, nel container senza rete: 0,9 secondi, exit 0; `next build` 7,9 secondi. Non provati: il Pages Router, un `distDir` diverso, una versione senza `typegen` (la fixture `js-nextjs`, Next.js 14, dà la lacuna `model_failed`).
-
-### Collegamenti possibili, senza modello
-
-Domanda: delle frecce e degli ingressi che mancano ai flussi di un riferimento, quanti darebbe un collegamento possibile, che la macchina propone senza affermarlo e un modello conferma o scarta. `possible.py` verifica le frecce fra nodi con codice con `system_map.verify`, prima con i soli collegamenti certi e poi aggiungendo i possibili; le frecce e gli ingressi su un servizio di altri li controlla nella loro direzione e sui simboli di ogni nodo (il ritorno di un webhook va dal modulo esterno al gestore, non il contrario). Generatori: `ritorno` (una rotta di una regola `offre` che nessuna chiamata del progetto raggiunge, nemmeno come candidata, in un file che usa un modulo esterno, è chiamata da quel modulo; le rotte trovate da un lettore come Noir non hanno un'offerta a cui unire le chiamate e sono contate a parte) e `incerto` (una chiamata con più rotte candidate va a ognuna). I conteggi per freccia e per ingresso sono elencati nel docstring di `possible.py`. Il contesto React e la chiave in una variabile non hanno un generatore: cadono in `mancante con lacuna` o `mancante`. Un collegamento possibile che non sta su nessuna freccia o ingresso del riferimento è contato in `outside_reference`, non come sbagliato: il 13 novembre i soli collegamenti hanno trovato una freccia vera che il riferimento non aveva. Prova del metodo: `test_possible.py`, sulla fixture `flow-model` con un webhook. Va misurato su tutti i casi con riferimento: la prova piccola dei 35 flussi ha già portato a una scelta sbagliata.
-
-**Risultati, phazly, 22 novembre 2026** (riferimento dell'intero sistema: 38 flussi, 240 frecce; snapshot al commit del riferimento, regole di `benchmarks/phazly-flow/rules.json`, nessun modello). L'analisi è l'intera pipeline su Modal fino al passo `analyze` (`benchmarks/project-model/modal_pipeline.py --folder-out DIR --folder-stop analyze`, 41 minuti: Python, TypeScript, JavaScript, Rust e fogli di stile `fresh`, Kotlin fallito); il conteggio è `modal run benchmarks/system-map/modal_map.py::possible` sui file di quel giro caricati sul volume, con la stessa copia del codice che ha fatto l'indice (`DAODAN_CODE`): un indice del motore è letto solo dal codice che l'ha scritto, e un conteggio fatto con un codice diverso ripiega sul parser semplice senza errori (qui dava 13.621 chiamate e 64 frecce certe invece di 23.867 e 91).
-
-| Frecce del riferimento | Prima: servizi di altri fuori dai collegamenti | Dopo: archi `usa` dalle chiamate nei pacchetti dei servizi |
-| --- | ---: | ---: |
-| `certo` | 91 | 101 |
-| `possibile:ritorno` | 0 | 2 |
-| `dichiarata` | 43 | 43 |
-| `senza modulo` | 41 | 21 |
-| `mancante`, `mancante con lacuna` | 39 | 47 |
-| `non misurabile` | 26 | 26 |
-| flussi con ogni effetto raggiunto: solo certi, con i possibili | 13, 13 | 14, 15 |
-| archi `usa` nei collegamenti | 2 | 150 |
-| collegamenti possibili `ritorno`, di cui fuori dal riferimento | 0 | 4, 3 |
-| collegamenti possibili `incerto` | 0 | 0 |
-
-Con gli archi `usa` precisi quattro servizi del riferimento hanno un modulo (Stripe, Firebase Authentication, MongoDB Atlas, Resend) e `ritorno` propone il ritorno di Stripe sul gestore del webhook: «Rinnovo e variazione dell'abbonamento» si chiude solo con quel possibile. Tredici servizi restano `senza modulo`: lo stack li riconosce da un host o da una variabile, non da un pacchetto, e gli archi precisi nascono solo da un pacchetto. Le frecce `senza modulo` che ora hanno un modulo ma nessuna prova passano a `mancante`. I tre possibili fuori dal riferimento non sono stati letti uno per uno. Prima degli archi `usa` precisi i collegamenti non avevano alcun servizio di altri: il grafo dei moduli di phazly ha 13 moduli, tutti interni. Non misurato: gli altri casi con riferimento, e il conteggio dopo le correzioni ai lettori dei framework (i pulsanti su un componente e le rotte scritte nel codice oggi si perdono).
-
-## Confronto proposto per i flussi multilivello
-
-Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). **Confronto proposto, ancora da eseguire su Modal.**
-
-**Scoperta cieca.** Ogni variante riceve la stessa richiesta, «analizza questo sistema», e lo stesso snapshot completo. Il mapper vede i normali artefatti dell'analisi, inclusi i nomi presenti nel prodotto. Prompt, regole e card accessibili al mapper devono essere privi di etichette provenienti dal valutatore o da mappe di flussi già compilate per la prova. I riferimenti manuali, le aree attese, i nomi e il numero di processi e rami rimangono fuori dall'ambiente dell'agente. Il valutatore li confronta con la mappa salvata **prima** di formulare richieste di review.
-
-| Variante | Compito |
-| --- | --- |
-| A, attuale | Eseguire il mapper attuale sull'intero sistema. |
-| B, grafo | Partire da ingressi ed effetti dell'intero inventario. Il modello identifica processi e varianti. La macchina verifica i percorsi. |
-| C, grafo e card | Come B, aggiungendo l'accesso mirato alle card di simbolo aggiornate. B e C possono richiedere gli stessi estratti di sorgente. |
-
-**Casi.** Su Phazly valutare dopo la scoperta i tre flussi noti dell'area pagamenti. Il riferimento storico copre quell'area soltanto. Gli altri flussi scoperti vanno giudicati a parte prima di contarli come errati. Per misurare la scoperta di un intero sistema, predisporre in repository una fixture con inventario manuale indipendente ed esaustivo. Deve comprendere più funzionalità, una funzionalità con ramo utente e cron, un modulo condiviso con un altro processo e un effetto il cui ingresso resta irrisolto. Gli estremi dati a mano nella prova del 13 novembre restano un controllo separato del tracciatore.
-
-**Parametri e misure.** Fare due ripetizioni indipendenti per variante e caso, a parità di grafo, modello, tetto di contesto e budget. Registrare flussi e varianti mancanti, estranei, accorpati o duplicati, verificandoli per ingressi, effetti e membri anche quando il nome differisce. Contare gli estremi spiegati, esclusi con motivo, irrisolti e non esaminati. Misurare token osservati di input e output, aperture e costo dell'intero run, distinguendo riuso e prima generazione delle card. Valgono le soglie storiche applicabili per riproduzione sull'area di riferimento, stabilità e costo a sistema. Il riferimento parziale di Phazly non misura il richiamo globale.
-
-**Criteri sulla fixture completa.** Il mapper deve scoprire tutti i processi e tutte le varianti attesi, conservare il modulo condiviso una sola volta e rendere conto di ogni estremo, inclusa l'origine irrisolta. Nessun arco causale senza evidenza. Aprire il processo deve mostrare i due rami e richiuderlo deve ripristinare la selezione, con zero chiamate LLM. Solo a questo punto chiedere una review della funzionalità e poi del solo ramo automatico. Nel primo caso sono attesi entrambi i percorsi, nel secondo il gestore del cron e il codice condiviso pertinente. In entrambi i casi verificare la motivazione dei file, i file di solo contesto e le lacune rispetto al riferimento.
-
-A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo non espone un ingresso o un effetto, attribuire l'omissione alla raccolta delle evidenze. Se il riferimento è visibile al modello e viene interpretato male, attribuirla alla scoperta semantica. **Risultati del nuovo protocollo e fixture completa: da produrre.**
-
-### Scoperta cieca con il modello debole, variante A, 21 novembre 2026
-
-`python modal_map.py spawn --tag collaudo-cieco-haiku --cases CASO --tar CASO=ARCHIVIO --rules session --scopes system --models haiku --reps 2 --budget 1`, poi `python score.py system` su ogni `map.json` (`results/system/collaudo-cieco-haiku/`). Caso: il più piccolo con riferimento dell'intero sistema (49 nodi confrontabili, 19 flussi, 22 ingressi, 24 effetti); archivio di solo codice sul commit del riferimento (178 file, nessun segreto trovato). Il riferimento resta fuori dall'ambiente dell'agente ed è confrontato dopo il salvataggio.
+**Il caso più piccolo, 21 novembre 2026** (`modal_map.py spawn --tag collaudo-cieco-haiku --rules session --scopes system --models haiku --reps 2 --budget 1`; 49 nodi confrontabili, 19 flussi, 22 ingressi, 24 effetti; archivio di solo codice, 178 file). I `map.json` della run non sono nel repository: la cartella `results/system/collaudo-cieco-haiku/` citata dalla misura non c'è.
 
 | Misura | Ripetizione 1 | Ripetizione 2 |
 | --- | ---: | ---: |
@@ -282,30 +128,167 @@ A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo n
 | Mapper: secondi, turni | 60, 9 | 67, 10 |
 | Costo (USD) | 0,048, con le 88 regole | 0,019 |
 
-Preparazione 320 secondi; nessuna run fermata dal tetto. Il mapper elenca le schede dei percorsi e passa alla proposta libera senza aprirne una. Le otto run precedenti di Haiku sullo stesso caso (`sysmap-a7-haiku`, `sysmap-gate-b-haiku`, `sysmap-gate-b2-haiku`, `sysmap-c1-haiku`), rivalutate con lo `score.py` di oggi: 0 flussi su 19, 0 ingressi e 0 effetti in tutte; nodi da 3 a 9 su 49. Con `--models qwen` la sessione delle regole si è fermata dopo 1.574 secondi: il gateway rifiutava la connessione. Limiti: un solo caso; il passaggio del motore di queste run gira senza il container di Daodan; varianti B e C e fixture completa non eseguite.
+Il mappatore elenca le schede dei percorsi e passa alla proposta libera senza aprirne una. Con `--models qwen` la sessione delle regole si è fermata dopo 1.574 secondi: il gateway rifiutava la connessione.
 
-### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
+**Non misurato:** Qwen e Opus; le colonne delle schede dei percorsi con il modello e della ricerca.
 
-Eseguire `python benchmarks/system-map/pipeline_reuse.py`. Lo script crea una volta il manifest SQLite della fixture `js-npm-single`, poi avvia due processi distinti che chiamano `pipeline.run` senza saltare passi. La fixture dichiara pacchetti npm e il comando `node --test`. Ogni corsa imposta `DAODAN_CONTAINER=off`. Le grammatiche e l’ambiente uv di Daodan erano già disponibili.
+### Grafo contro modello: il confronto ancora da fare
 
-| Passo o misura | Prima analisi | Seconda analisi |
+**Stato:** Aperta: da approfondire. La domanda: partendo dal grafo che la macchina costruisce a strati, un modello che nomina processi e varianti dà una mappa migliore, e a quale costo, di un modello che propone da solo? Finora è misurata solo la variante A.
+
+| Variante | Compito | Stato |
+| --- | --- | --- |
+| A, attuale | il mappatore attuale sull'intero sistema | misurata: le due sezioni qui sopra |
+| B, grafo | parte da ingressi ed effetti dell'intero inventario; il modello identifica processi e varianti, la macchina verifica i percorsi | non eseguita |
+| C, grafo e schede | come B, con l'accesso mirato alle schede di simbolo aggiornate | non eseguita |
+
+Protocollo, per la spec del 18 novembre:
+
+- **Scoperta cieca.** Stessa richiesta («analizza questo sistema») e stesso snapshot completo per ogni variante. Prompt, regole e schede senza etichette del valutatore; riferimenti, aree attese, nomi e numero di processi fuori dall'ambiente dell'agente. Il valutatore confronta la mappa salvata prima di ogni richiesta di review.
+- **Casi.** Su phazly i tre flussi dell'area pagamenti; gli altri flussi scoperti si giudicano a parte prima di contarli come errati. Per il richiamo sull'intero sistema serve una fixture nel repository con inventario manuale esaustivo: più funzionalità, una con ramo utente e cron, un modulo condiviso con un altro processo, un effetto il cui ingresso resta irrisolto. **Da produrre.**
+- **Misure.** Due ripetizioni indipendenti per variante e caso, a parità di grafo, modello, tetto di contesto e budget. Flussi e varianti mancanti, estranei, accorpati o duplicati, verificati per ingressi, effetti e membri anche quando il nome differisce. Estremi spiegati, esclusi con motivo, irrisolti e non esaminati. Token, aperture e costo dell'intero run, distinguendo riuso e prima generazione delle schede.
+- **Criteri sulla fixture completa.** Tutti i processi e le varianti attesi, il modulo condiviso una sola volta, ogni estremo reso conto, nessun arco causale senza evidenza. Aprire il processo mostra i due rami e richiuderlo ripristina la selezione, con zero chiamate al modello. Poi una review della funzionalità e una del solo ramo automatico.
+- **Attribuzione.** Se il grafo non espone un ingresso o un effetto, l'omissione è della raccolta delle evidenze; se il riferimento è visibile al modello e viene interpretato male, è della scoperta semantica. A qualità uguale vince il minor consumo totale.
+
+Ciò che c'è già senza modello, da mettere a confronto: [flussi chiusi dal grafo](../phazly-flow/README.md#flussi-del-riferimento-chiusi-dal-grafo-senza-modello) e [tetto della scheda del percorso](../phazly-flow/README.md#il-tetto-della-scheda-del-percorso-senza-modello).
+
+### Che cosa dà il grafo senza modello, sull'area dei pagamenti di phazly
+
+13 novembre 2026, sui collegamenti di phazly calcolati con il motore; nessun modello.
+
+**Candidati** (`candidates.py`: la partizione per dominatori del grafo dei file dai punti d'ingresso; ogni chiave di store è un candidato).
+
+| Cosa | Risultato |
+| --- | --- |
+| Candidati | 408, di cui 123 chiavi di store; 360 hanno un solo file |
+| File di codice | 386 in un candidato, 618 che nessun punto d'ingresso raggiunge |
+| Candidati con file di due nodi del riferimento | nessuno |
+| Nodi del riferimento come unione di candidati | Funzioni a consumo, API diritti, Abbonamento, Consumi interi; API acquisti 9 file su 11; Paywall 2 su 4; Scheda abbonamento 2 su 5 |
+| File che i candidati aggiungono ai nodi del riferimento | 22 a Funzioni a consumo e 2 ad API diritti: le funzioni di supporto dei gestori |
+| Frecce del riferimento fra nodi con codice ricavate dai soli collegamenti | 5 su 6 |
+
+- La regola dei gruppi è un gruppo per risorsa: con una soglia sulla quota dei punti d'ingresso (20%) phazly formava un solo gruppo da 117 e la fixture `flow-model` nessuno.
+- La freccia mancante, API diritti → Consumi, veniva da `db[USAGE_EVENTS_COLLECTION]`, una forma che le regole non leggevano. La chiave dello store come indice costante è letta dal 23 novembre: [`phazly-flow`](../phazly-flow/README.md#flussi-del-riferimento-chiusi-dal-grafo-senza-modello).
+- I soli collegamenti trovano una freccia vera che il riferimento non ha: API acquisti → API diritti, 13 chiamate.
+- I 618 file che nessun punto d'ingresso raggiunge sono soprattutto componenti dell'interfaccia: rendere un componente non è un collegamento.
+
+**Flussi dai punti d'appoggio** (`anchors.py`: la macchina prende ciò che sta su un percorso da una partenza a un arrivo, senza limite di passi).
+
+| Flusso | Nodi del riferimento con codice attraversati | File estranei | Dove il grafo si ferma |
+| --- | --- | --- | --- |
+| Pagamento | API acquisti, Abbonamento; manca Paywall | 0 | `PaywallModal.handleCheckout` non raggiunge niente fuori dal suo file |
+| Gestione abbonamento | API acquisti, Abbonamento; manca Scheda abbonamento | 0 | `SubscriptionCard.handleOpenPortal` e `handleSetRenewal`, come sopra |
+| Paywall e limiti d'uso | Funzioni a consumo, API diritti, Abbonamento; mancano Consumi e Paywall | 0 | nessuna partenza raggiunge `mongo/usageEvents` |
+
+Nessun percorso si allarga: 0 file fuori dal riferimento, fra 4 e 6 file o chiavi per flusso. I nodi mancanti dell'interfaccia vengono dal contesto React (`startCheckout` da `useSubscription()`): non misurato dopo il passo dinamico.
+
+### Collegamenti possibili
+
+Un collegamento possibile è un collegamento che la macchina propone senza affermarlo e che un modello conferma o scarta. `possible.py` verifica le frecce fra nodi con codice con `system_map.verify`, prima con i soli collegamenti certi e poi con i possibili. Generatori:
+
+- `ritorno`: una rotta di una regola `offre` che nessuna chiamata del progetto raggiunge, in un file che usa un modulo esterno, è chiamata da quel modulo;
+- `incerto`: una chiamata con più rotte candidate va a ognuna.
+
+Un possibile fuori dal riferimento è contato in `outside_reference`, non come sbagliato. Il contesto React non ha un generatore.
+
+Su phazly (riferimento dell'intero sistema: 38 flussi, 240 frecce; pipeline intera su Modal fino ad `analyze`, 22 novembre 2026): con gli archi `usa` ricavati dalle chiamate nei pacchetti dei servizi, quattro servizi del riferimento hanno un modulo (Stripe, Firebase Authentication, MongoDB Atlas, Resend) e gli archi `usa` nei collegamenti passano da 2 a 150. `ritorno` propone 4 possibili: uno è il ritorno di Stripe sul gestore del webhook, e «Rinnovo e variazione dell'abbonamento» si chiude solo con quello; gli altri 3 sono fuori dal riferimento e non sono stati letti. `incerto` ne propone 0. Tredici servizi restano senza modulo: lo stack li riconosce da un host o da una variabile, non da un pacchetto.
+
+I totali di frecce e flussi di oggi stanno in [`phazly-flow`](../phazly-flow/README.md#flussi-del-riferimento-chiusi-dal-grafo-senza-modello). Un indice del motore è letto solo dal codice che l'ha scritto: un conteggio fatto con un codice diverso ripiega sul parser semplice senza errori (qui dava 13.621 chiamate invece di 23.867). **Non misurato:** gli altri casi con riferimento; un modello che conferma o scarta i possibili.
+
+### Il registro dei servizi esterni
+
+12 novembre 2026, su Modal, senza modello. Lo step `stack` è cambiato dopo questa misura (stack dal fork): il confronto di oggi è in [`project-model`](../project-model/README.md); questi tre casi non sono stati rimisurati.
+
+| Caso | Attesi | Registro | stack-analyser | Insieme | Falsi letti al punto citato |
+| --- | --- | --- | --- | --- | --- |
+| phazly | 16 | 75,0% | 37,5% | 75,0% | 1: `ghost` da un nome in un test |
+| polar | 25 | 60,0% | 32,0% | 60,0% | 0 |
+| tududi | 14 | 78,6% | 78,6% | 78,6% | 3: `zoom` da un tipo TypeScript, `caddy` e `kubernetes` dagli esempi in `docs/examples` |
+
+Nessun caso raggiunge la soglia del richiamo. File: `results/brief-<caso>.json`.
+
+- Mancano dal registro: Zustand, Motor, Dramatiq, Logfire, Numeral, Plain, IPinfo, Google Play Billing.
+- Il registro ha la voce ma non il segno che il progetto mostra: AWS (`boto3`), GitHub (`githubkit`), Expo (`exponent-server-sdk`), MinIO e Tailscale (immagini), Cloud Run, Cloudflare in tududi (`TURNSTILE_*`), Google Calendar.
+- L'elenco letto dai soli manifest non vede i servizi chiamati via HTTP e configurati con variabili: in polar il registro trova Discord, Linear, Slack, Resend e OpenAI, in tududi Discord, tutti veri al punto citato.
+- Gli esempi di documentazione contano come configurazione del progetto.
+
+**Costruzione del registro** (12 novembre): 2.172 voci da stack-analyser 1.27.6 (743 regole), CNCF Landscape (commit `75b47639`) e Simple Icons 16.37.0. `derive`, senza modello, trova pacchetti su PyPI, crates.io o nel proxy di Go per 102 delle 455 voci con un pacchetto npm. Una run di Haiku 5.5 (0,023 USD, 40.257 token in uscita) propone il resto: la macchina ne tiene 141, fra cui FastAPI, Flask e Pydantic, e ne rifiuta 22, compresi pacchetti veri con un altro proprietario (`boto3`, `prometheus-client`, il driver Go di MongoDB).
+
+### Riuso di una seconda analisi
+
+21 novembre 2026. Nessun sorgente delle fixture è eseguito sull'host.
+
+**Due analisi complete con il container acceso** (`pipeline_reuse.py --container`, fixture `js-npm-single`, due processi; ripristino, scip-typescript e `node --test` girano davvero):
+
+| Misura | Prima analisi | Seconda analisi |
 | --- | ---: | ---: |
-| Scan eseguito / pre-mappe derivate | 1 / 1 | 1 / 0 |
-| Grafo dei moduli | ricostruito | riusato |
-| Sorgenti di pre-mappa con lacuna del container | 4 | 4 |
-| Stack eseguito / tecnologie restituite | 1 / 2 | 1 / 2 |
-| Analyze / tentativi dell’adattatore SCIP | 1 / 1 | 1 / 1 |
-| Dynamic / osservazioni runtime | 1 / 0 | 1 / 0 |
-| Union eseguito | 1 | 1 |
-| Aperture di file del progetto da Python | 14 | 4 |
-| Elenchi di directory del progetto da Python | 9 | 0 |
-| Processi Git / uv offline | 5 / 2 | 1 / 2 |
-| Verifiche della disponibilità del container | 2 | 1 |
-| Copie nel container / comandi npm / download di Daodan | 0 / 0 / 0 | 0 / 0 / 0 |
-| Nuovi snapshot / parse tree-sitter | 0 / 0 | 0 / 0 |
+| Secondi | 131,5 | 1,2 |
+| Indice / archi osservati dai test | `fresh` / 6 | `fresh` / 6, riusati |
+| Richieste di container / copie del progetto | 6 / 6 | 0 / 0 |
+| Avvii dell'indicizzatore / sonde del motore | 1 / 7 | 0 / 0 |
+| Download di strumenti (già in cache) | 0 | 0 |
+| Aperture di sorgenti / elenchi di cartelle da Python | 52 / 39 | 4 / 0 |
+| Parse tree-sitter | 2 | 0 |
+| Processi `wsl` / `git` / `uv --offline` | 118 / 12 / 2 | 0 / 1 / 0 |
 
-La seconda analisi riapre una volta ciascuno `package.json`, `package-lock.json`, `src/index.js` e `test/index.test.js`. Nella prima le aperture sono rispettivamente 7, 3, 2 e 2. Gli hook di audit coprono i tre interpreti Python di ogni corsa. Contano anche gli avvii di Git e uv. Le letture interne ai binari nativi non sono misurate.
+Nella seconda analisi resta una lettura per ognuno dei quattro file, per confrontare lo snapshot con il disco, e un comando git. Le letture interne dei programmi nel container non sono contate.
 
-La prima corsa tenta go-enry, Renovate, npm e Noir. La seconda riapre le quattro lacune con la loro causa. Prima di questa modifica la seconda corsa rigenerava una pre-mappa, apriva sei file del progetto, elencava tre directory e verificava due volte la disponibilità del container. Il riuso vale quando lo snapshot e le sorgenti sono gli stessi, il runner è quello del container predefinito e Daodan ha già registrato lo stesso spegnimento esplicito per tutte le sorgenti rimaste da eseguire. Una richiesta di rigenerazione, un runner diverso, una causa diversa e la riattivazione del container consentono il nuovo tentativo.
+**Con il container spento** (`pipeline_reuse.py`, `DAODAN_CONTAINER=off`): la seconda analisi apre 4 file del progetto contro 14, elenca 0 directory contro 9, lancia 1 processo git contro 5, non rigenera la pre-mappa e riusa il grafo dei moduli. Le quattro lacune del container (go-enry, Renovate, npm, Noir) si riaprono con la loro causa senza un nuovo tentativo. Il riuso vale quando snapshot e sorgenti sono gli stessi, il runner è quello predefinito e lo spegnimento è già registrato per tutte le sorgenti rimaste.
 
-SCIP si ferma prima della build con stato `unavailable`. Dynamic riporta `no-static-graph` e Union conserva lo stato `unavailable` per JavaScript. I due avvii di uv verificano e aprono l’ambiente offline dell’adattatore. Nessun processo ha installato i pacchetti del progetto o eseguito i suoi test. Resta da misurare una seconda analisi con container disponibile e un indice ufficiale prodotto realmente.
+**Scheda «Paga», riapertura e seconda corsa** (`path_reuse.py`, snapshot SQLite della fixture `flow-model`, undici regole; CLI, MCP e HTTP danno gli stessi passi):
+
+| Operazione sullo snapshot già scritto | Aperture sorgenti | Parse tree-sitter | Inventari AST / costruzioni link | Inventari schede / espansioni | Connessioni manifest / cache schede |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Registrare le regole | 23 | 23 | 1 / 1 | 0 / 0 | 8 / 0 |
+| Aprire elenco e scheda | 0 | 0 | 0 / 0 | 1 / 1 | 8 / 3 |
+| Ripetere elenco e scheda con un nuovo servizio | 0 | 0 | 0 / 0 | 0 / 0 | 10 / 5 |
+| Riaprire il flusso per nome | 0 | 0 | 0 / 0 | 0 / 0 | 6 / 1 |
+
+Il percorso registrato segue `onPayClick → submitPayment → store:web state/payment`; la sola scrittura presentata come passo iniziale è rifiutata per discontinuità. Il [test di costo](../../tests/test_flow_path_identity.py) conta 256 visite per indicizzare 256 percorsi indipendenti e 512 per 512. La misura esclude la creazione dello snapshot e il costo di una vera analisi dinamica.
+
+**Scheda globale** (`tests/test_codebase_map_system_brief.py::DeclaredTests::test_global_brief_reopens_only_changed_unmodelled_yaml`): alla prima consultazione apre i soli manifest Kubernetes e Backstage (2 aperture), nessun sorgente alla seconda; cambiando il catalogo riapre un solo file.
+
+**Candidati prima delle regole e osservazioni registrate** (`path_observations.py`, righe dell'indice e osservazioni sintetiche, scanner simulato): prima delle regole CLI, MCP e app trovano il candidato `@trigger("refresh")` con gestore `controls.py::dispatch`; la scheda espone l'osservazione esatta, il campione e il conflitto fra destinazione statica e osservata; i tre canali accettano `store:db/payments` e rifiutano `store:db/orders` (campione) e `store:db/refunds` (conflitto).
+
+Tre corse sullo stesso progetto (da zero, senza modifiche, un modulo cambiato): [`project-model`](../project-model/README.md).
+
+### Percorsi con gli indicizzatori veri
+
+21 novembre 2026, `real_paths.py` con un motore di container: lo script crea il run dal servizio con il passaggio del motore, legge i candidati prima delle regole, registra regole e risposte, apre ogni scheda e controlla ciò che deve reggere; esce con 1 se un controllo cade.
+
+| Caso | Indicizzatori nel container | Secondi | Controllo, gestore, ultimo punto provato |
+| --- | --- | ---: | --- |
+| web (`benchmarks/flow-model/app`) | scip-python 0.6.8, scip-typescript 0.6.2 | 129 | «Paga» `web/checkout.ts:22` → `onPayClick` → `submitPayment` → `store:web state/payment` (`web/checkout.ts:14`) |
+| tk (`real-paths/tk-desk`) | scip-python 0.6.8 | 106 | «Salva» `ui.py:8` → `App.save` (gestore dato dall'indice) → `store:disk/orders` (`ui.py:11`) |
+| tauri (`real-paths/tauri-desk`) | scip-typescript 0.6.2, rust-analyzer 2026-11-09 | 322 | «Salva profilo» `src/view.tsx:18` → `save` → `src-tauri/src/main.rs::persist` (`tauri-invoke`, `src/view.tsx:4`); `only_in_tests` e `on_idle_builder` restano lacune |
+
+Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la causa. Le stesse tre fixture su Modal (`modal_pipeline.py --folder-out`): indici `fresh` in 132, 100 e 242 secondi. Le fixture non dichiarano test: nessun arco osservato.
+
+**Le rotte di Next.js dallo strumento del framework** (`real_paths.py next`, fixture `real-paths/next-shop`, Next.js 16.4.6, App Router; la sorgente della pre-mappa lancia `next typegen` del progetto nel container e legge `.next/types/validator.ts`):
+
+| Controllo | Container locale | Modal |
+| --- | --- | --- |
+| secondi dell'analisi | 169 | 145 |
+| `/checkout` è un ingresso sulla funzione della pagina (`app/checkout/page.tsx::Checkout`, riga 3) | sì | sì |
+| `/api/pay` è una sola voce, su `app/api/pay/route.ts::POST` | sì | sì |
+| nessun ingresso è la rotta `/pay` | sì | sì |
+| la scheda «Paga» arriva a `app/checkout/actions.ts::pay` | sì | non misurato: il giro su Modal non apre le schede |
+
+`next typegen` da solo, nel container senza rete: 0,9 secondi; `next build` 7,9 secondi. Non provati: il Pages Router, un `distDir` diverso, una versione senza `typegen` (la fixture `js-nextjs`, Next.js 14, dà la lacuna `model_failed`).
+
+### Il container nella run della mappa su Modal
+
+23 novembre 2026, `engine_proof_run` sulla fixture `js-npm-single`: 5 controlli su 5 passano (`results/engine-proof.json`).
+
+1. `engine-report.json` dice scip-typescript `fresh`.
+2. Un arco osservato del passo dinamico è nell'archivio `engine-edges.sqlite`, su `src/index.js`.
+3. La preparazione raggiunge `pypi.org` e rifiuta un host fuori dai registri, un indirizzo HTTP semplice e un indirizzo IP.
+4. Una sandbox non vede `/results` né i risultati di un altro caso, e non scrive nella sua cartella.
+5. Dopo una preparazione fallita e una sandbox che non parte non resta nulla sul volume né in esecuzione.
+
+## Aperto
+
+- **Grafo contro modello:** varianti B e C e fixture completa, sopra.
+- **Soglie:** quelle dell'intero sistema sono proposte; il proprietario non ha confermato nodi e flussi dei riferimenti.
+- **Passo dinamico sui flussi:** quante frecce mancanti chiude, non misurato su nessun caso con riferimento.
+- **Registro:** i tre casi dopo lo stack dal fork.

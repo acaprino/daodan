@@ -1,11 +1,8 @@
-# Fase 1: mappa sempre aggiornata e quattro regole per la review
+# Run di lavoro: la mappa segue il codice
 
-**Stato:** approvata l'11 novembre 2026, pronta da implementare. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 1 di 3: [fase 2](2026-11-18-flussi-e-mappa-del-sistema.md), [fase 3](2026-11-09-flows-in-review.md).
+**Stato:** In uso. `snapshot.refresh_working` (`daodan/core/snapshot.py`, comando `snapshot.py refresh`), hook `PostToolUse` in `plugins/codebase-map/hooks/hooks.json` (`daodan mcp --hook`), riga in `plugins/codebase-map/skills/map/references/tools-guide.md`. Prova: `tests/test_codebase_map_working_run.py`. Le quattro regole per la review che stavano qui sono nella [spec della review](2026-11-03-semantic-review-foundation.md), sezione 5.
 
-Due interventi che usano solo meccanismi già presenti e misurati:
-
-- **A.** Dopo ogni modifica al codice la mappa si aggiorna da sola, nella parte che una macchina può ricalcolare.
-- **B.** La review riceve quattro regole che chiudono errori visti nei test.
+Dopo ogni modifica al codice la mappa si aggiorna da sola, nella parte che una macchina può ricalcolare. Schede e documenti di analisi li scrive un modello: l'aggiornamento non li rigenera, segnala quali non sono più validi.
 
 ## Parole
 
@@ -13,95 +10,44 @@ Due interventi che usano solo meccanismi già presenti e misurati:
 | --- | --- |
 | Run | Una mappa del progetto fatta in un certo momento: lo snapshot dei file più i documenti di analisi |
 | Run pubblicato | L'ultimo run completo. Non cambia più: è la prova su cui poggiano analisi e review |
-| Run di lavoro | Un solo run, chiamato `working`, che segue il codice mentre cambia. Non contiene documenti di analisi |
-| Incarico | Il lavoro affidato a un revisore: un elenco di file e una richiesta |
-| Segnalazione | Un difetto descritto da un revisore, con file e riga |
+| Run di lavoro | Un solo run, `working`, che segue il codice mentre cambia. Non contiene documenti di analisi |
 
-Le altre parole sono definite nella fase 2.
+## Regole
 
-## A. La mappa si aggiorna dopo ogni modifica
+1. **Il run di lavoro nasce dal run pubblicato**, in `.daodan/map/runs/working/`, con lo stesso perimetro, e riparte da ogni nuovo run pubblicato. Senza un run pubblicato non nasce: la prima mappa si fa su richiesta. Un run con documenti di analisi non si riscrive (ogni documento è legato all'impronta del suo snapshot), e un run nuovo a ogni modifica costerebbe troppo spazio.
+2. **Un aggiornamento,** in fila: rilegge solo i file cambiati (`compare_files(..., verify=True)`); rifà sullo stesso snapshot indice di ricerca, moduli e collegamenti `chiama` lessicali; esegue la scansione veloce e lo stack e avvia in background il passaggio degli indicizzatori ([pipeline di analisi](2026-11-15-pipeline-di-analisi.md), sezione 6); scrive `refresh.json` con esito, ora, stato del passaggio, file e simboli cambiati rispetto al run pubblicato e le frasi dei documenti pubblicati che li citano. Sotto il blocco del progetto nulla aspetta il container.
+3. **Un hook lo lancia dopo ogni modifica:** evento `PostToolUse`, strumenti `Edit`, `Write`, `NotebookEdit`, `Bash`, in background. Dove gli hook non esistono lo stesso comando si lancia a mano.
+4. **Un aggiornamento alla volta.** Una modifica arrivata durante un aggiornamento ne fa partire un altro alla fine, mai due insieme.
+5. **Oltre il 40% dei file cambiati** (`FULL_REBUILD_SHARE`) si rifà tutto per intero, sempre senza modello.
 
-### Oggi
-
-- Dopo una modifica la mappa resta ferma all'ultimo run. La ricerca risponde sul codice vecchio e la lettura del file modificato fallisce con «source changed; refresh the manifest».
-- Per aggiornarla bisogna rifare un run a mano.
-- Un run con i documenti di analisi non si può riscrivere: ogni documento è legato all'impronta del proprio snapshot.
-- Creare un run nuovo a ogni modifica costa troppo spazio: lo snapshot pesa 127 MB su questo repository e 20 MB su `react-app` di phazly-app.
-
-### Proposta
-
-1. **Il run di lavoro nasce dal run pubblicato.** Sta in `.daodan/map/runs/working/`, con lo stesso perimetro. Senza un run pubblicato non nasce: la prima mappa si fa sempre su richiesta. A ogni nuovo run pubblicato riparte da quello.
-2. **Un comando lo aggiorna: `snapshot.py refresh`.** In fila:
-   1. rilegge solo i file cambiati dall'ultimo aggiornamento, individuati con `compare_files(..., verify=True)`;
-   2. prepara il nuovo snapshot del run di lavoro;
-   3. rifà sullo stesso snapshot l'indice di ricerca, i moduli e i collegamenti `chiama` lessicali, e avvia in background `resolve_edges.py`, che pubblica subito le risposte valide riusate da `engine-answers.sqlite` senza attendere i language server;
-   4. rende disponibile l'aggiornamento non appena questi artefatti sono coerenti e scrive `refresh.json`: esito, quando, stato del motore (`fresh`, `running`, `partial`, `unavailable`), quali file e simboli sono cambiati rispetto al run pubblicato, quali frasi dei documenti pubblicati li citano (`resolve_edges.py` rifiuta già un `engine-edges.sqlite` con `manifest_digest` diverso). Durante l'aggiornamento o dopo un errore gli strumenti dichiarano che il run è da aggiornare; non leggono artefatti di aggiornamenti diversi.
-3. **Un hook lancia il comando dopo ogni modifica.** In `plugins/codebase-map/hooks/hooks.json`: evento `PostToolUse`, strumenti `Edit`, `Write`, `NotebookEdit`, `Bash`, in background. Non parte se il progetto non ha un run pubblicato, o se il file modificato sta fuori dal perimetro, sotto `.daodan/` o sotto `.team-review/`. Per `Bash`, che non riceve il percorso del file, l'hook parte quando esiste un run pubblicato e `refresh` esce subito se nessun file del perimetro è cambiato. Dove gli hook non esistono, lo stesso comando si lancia a mano o dall'ingresso della mappa.
-4. **Un aggiornamento alla volta.** Se arriva una modifica mentre un aggiornamento è in corso, alla fine ne parte un altro. Mai due insieme.
-5. **Molte modifiche, ricostruzione completa.** Se è cambiato più del 40% dei file dall'ultimo aggiornamento, il comando rifà per intero snapshot, indice, moduli e collegamenti `chiama`, sempre senza modello.
-
-**Cosa non fa.** Schede e documenti di analisi li scrive un modello: il comando non li rigenera, segnala soltanto quali non sono più validi.
-
-**Quale run si usa.**
+## Quale run si usa
 
 | Per | Run |
 | --- | --- |
-| Cercare, leggere, vedere chi chiama chi, valutare l'impatto di una modifica | Run di lavoro solo se l'aggiornamento è completo e coerente con il codice corrente; se assente, run pubblicato con lo stesso controllo di freschezza |
-| Leggere i documenti di analisi | Run pubblicato |
+| Cercare, leggere, vedere chi chiama chi, valutare l'impatto di una modifica | Il run di lavoro, solo se l'aggiornamento è completo e coerente con il codice corrente; se manca, il run pubblicato con lo stesso controllo di freschezza |
+| Leggere i documenti di analisi | Il run pubblicato |
 | Fare una review | Mai il run di lavoro: un run che non cambia, creato per quella review |
 
-L'esistenza della cartella non basta. Prima di rispondere gli strumenti leggono l'esito in `refresh.json` e confrontano lo snapshot con il sorgente tramite `compare_files`: elenco dei file, dimensione e data, e il contenuto solo dove queste differiscono. Limite dichiarato: una modifica che conserva dimensione e data non viene vista. Se il run è da aggiornare restituiscono il motivo e l'azione necessaria, senza ripiegare su un run obsoleto. Una modifica arrivata durante un aggiornamento lascia il run da aggiornare fino al successivo.
+L'esistenza della cartella non basta. Prima di rispondere gli strumenti leggono l'esito in `refresh.json` e confrontano lo snapshot con il sorgente: elenco dei file, dimensione e data, e il contenuto solo dove queste differiscono. Un run da aggiornare risponde `needs_refresh` con il motivo e l'azione, mai con un run obsoleto né con artefatti di aggiornamenti diversi.
 
-### Misure già fatte
+## Limiti
 
-| Operazione su questo repository (569 file) | Tempo |
+- Una modifica che conserva dimensione e data non viene vista.
+- Il passaggio degli indicizzatori gira in background: finché non finisce, `refresh.json` ne dice lo stato.
+
+## Misure
+
+9 novembre 2026, su questo repository (569 file), prima della pipeline a step: non rifatte dopo.
+
+| Operazione | Tempo |
 | --- | --- |
 | Snapshot da zero | 15,7 s |
 | Aggiornamento senza modifiche | 3,4 s |
 | Aggiornamento con un file modificato | 3,6 s |
 | Aggiornamento con i collegamenti `chiama` | 4,4 s |
 
-Un hook `PostToolUse` in background parte davvero dopo una scrittura e riceve il percorso del file (prova del 9 novembre, `claude` 2.1.319).
+## Aperto
 
-### Prova, senza modello
-
-Test su un progetto temporaneo con un run pubblicato:
-
-1. modifico un file fuori dagli hook, senza `refresh`: la ricerca restituisce l'avviso con l'azione, non un risultato sul codice vecchio; dopo `refresh` il simbolo nuovo si trova nel run di lavoro e la lettura del file non fallisce;
-2. il run pubblicato è identico byte per byte;
-3. due `refresh` insieme: un aggiornamento più uno successivo, snapshot integro; una lettura durante l'aggiornamento o dopo un errore riceve un avviso, mai artefatti incoerenti; una modifica arrivata durante l'aggiornamento lascia il run da aggiornare;
-4. oltre il 40%: `refresh.json` registra la ricostruzione completa e la ricerca risponde sul codice corrente; l'aggiornamento successivo, con un solo file modificato, rilegge solo quel file;
-5. l'hook non parte per un file sotto `.team-review/`, fuori perimetro, o senza run pubblicato.
-
-Da registrare, su questo repository e su phazly-app: il tempo di un aggiornamento, del controllo di freschezza a ogni interrogazione e di una ricostruzione completa con indice, moduli e collegamenti.
-
-### Fuori da questa fase
-
-Avvisare l'agente a ogni aggiornamento. Rileggere solo i file indicati dall'hook invece di controllarli tutti: si fa se un aggiornamento supera 10 s su un progetto reale.
-
-## B. Quattro regole per la review
-
-Ogni regola chiude un errore visto in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md).
-
-| # | Regola | Errore visto | File da modificare |
-| --- | --- | --- | --- |
-| 1 | La prima azione di una review è caricare la preparazione. Chi non può seguire il metodo lo dice nella prima riga e si ferma | Run A: il modello ha fatto la review da solo e l'ha detto solo alla fine | `review-method/SKILL.md` |
-| 2 | Ogni frase sul modello dei dati dice a quale tipo e a quale granularità si riferisce, con `file:line`. Una negazione («non esiste X») cita la ricerca che la sostiene, altrimenti si scrive «non noto» | Run B: «non esiste un tipo planned», vero per il record dello slot, falso per le sue aggiunte; 49 incarichi l'hanno ereditato | `review-preparation/references/team-review.md` |
-| 3 | Un'informazione falsa mostrata all'utente, o un'azione che l'utente non può più fare, vale almeno Medium | Run A3: «piatto non mangiato mostrato come Completato, bottone per registrarlo sparito» valutato Low | `review-quality-gates/references/reviewer-common.md` |
-| 4 | Due segnalazioni sono lo stesso problema solo se hanno la stessa causa e la stessa situazione che lo fa scattare. Situazioni diverse sulla stessa riga restano segnalazioni distinte nel rapporto | Run A3: «pasto saltato» e «cibo estraneo» fusi in una voce; la seconda, il difetto vero, sparita | `review-consolidation/references/team-review.md` |
-
-Con rigor `standard` (`critical-high`, `verification-panel.md`) i finding `Medium` restano marcati `unverified (rigor)` nel rapporto finale; `verification-panel.md` non cambia in questa fase.
-
-### Prova
-
-1. **Regola 1.** La stessa richiesta della run A in cinque sessioni nuove, fermate ai primi turni, previa conferma della spesa. Riesce se la prima azione è il caricamento della preparazione in cinque su cinque. Costo atteso: circa 0,3 USD a sessione.
-2. **Regola 4.** Il solo consolidamento rieseguito sui dodici risultati salvati della run A3 nella copia esterna del benchmark (se assenti si registra la prova come pendente, senza rifare la run). Riesce se «cibo estraneo» (`job-03-F4`) compare nel rapporto come segnalazione distinta.
-3. **Regole 2 e 3.** Si misurano nella fase 3, con le review complete.
-
-## Ordine di lavoro
-
-1. `snapshot.py refresh` con i suoi test.
-2. Hook.
-3. Regole 1 e 4 con le loro prove.
-4. Regole 2 e 3 come testo.
-5. Una riga in `tools-guide.md` sul run di lavoro; le versioni dei plugin restano invariate.
+- Avvisare l'agente a ogni aggiornamento.
+- Rileggere solo i file indicati dall'hook invece di controllarli tutti: si fa se un aggiornamento supera 10 s su un progetto reale.
+- **Aperta: da approfondire:** il tempo di un aggiornamento, del controllo di freschezza a ogni interrogazione e di una ricostruzione completa su un progetto reale, con la pipeline di oggi.

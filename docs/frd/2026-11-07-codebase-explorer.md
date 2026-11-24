@@ -1,75 +1,69 @@
-# Esploratore visuale della codebase
+# Esploratore visuale della codebase: requisiti
 
-**Stato:** approvato l'8 novembre 2026; implementazione non iniziata. **Data:** 7 novembre 2026.
-**Scelta acquisita:** UI Daodan originale, ispirata alle idee di esplorazione di Floorplan, costruita con librerie esistenti. Dinamico significa interattivo, non monitoraggio runtime.
-**Decisioni tecniche e fonti:** [ADR](../adr/2026-11-07-codebase-explorer.md).
+**Stato:** In parte. In uso le viste Logica e Fisica con ispettore, filtri, evidenze e flussi evidenziati (`daodan/core/visual.py`, `viewer/`). Proposta l'estensione per funzionalità (sezione 5). Aperti le prestazioni, tre casi di accettazione senza prova e la vista a elenco (sezione 6). **Decisioni tecniche:** [ADR](../adr/2026-11-07-codebase-explorer.md).
 
-## 1. Obiettivo e contenuti
+## 1. Obiettivo e viste
 
-Consentire a sviluppatori, consulenti e interlocutori di progetto di capire un sistema passando dalla panoramica alle sorgenti. I flussi (percorsi tecnici, dati, user journey) sono cammini sulle stesse entità, riaperti il 9 novembre 2026: li definisce la [spec dei flussi](../specs/2026-11-18-flussi-e-mappa-del-sistema.md). La stessa entità deve rimanere riconoscibile fra le viste.
+Chi sviluppa, chi fa consulenza e chi segue il progetto capisce un sistema passando dalla panoramica alle sorgenti. «Dinamico» qui vuol dire interattivo, non monitoraggio a runtime. La stessa entità resta riconoscibile fra le viste.
 
-| Vista | Domanda a cui risponde | Contenuti |
+| Vista | Domanda | Contenuti |
 | --- | --- | --- |
-| Logica | Quali responsabilità collaborano? | Funzionalità, moduli, responsabilità e servizi esterni con relazioni e appartenenze anche multiple |
-| Fisica | Dove sono implementate e configurate? | Repository, unità di build/package, cartelle, file, simboli; processi, database e indirizzi soltanto quando supportati da evidenze |
+| Logica | Quali responsabilità collaborano? | Funzionalità, moduli e servizi esterni, con relazioni e appartenenze anche multiple |
+| Fisica | Dove sono implementate e configurate? | Unità di build, cartelle, file, simboli; processi, database e indirizzi solo quando un'evidenza li sostiene |
 
-La vista fisica descrive ciò che risulta dal codice/configurazione; non certifica il deployment. Un import o una chiamata statica non provano comportamento a runtime. Le relazioni mancanti restano lacune.
-
-Codebase Map resta proprietario di dati, spiegazioni e freschezza. senior-review continua a giudicare la correttezza; l'esploratore funziona anche senza una review. La scelta dei modelli resta dell'host.
+- La vista fisica descrive ciò che risulta da codice e configurazione: non certifica il deployment.
+- Un import o una chiamata statica non provano il comportamento a runtime; una relazione che manca resta una lacuna.
+- Codebase Map resta proprietario di dati, spiegazioni e freschezza; senior-review giudica la correttezza. L'esploratore funziona anche senza una review.
+- I flussi sono cammini sulle stesse entità: li definisce `docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md`.
 
 ## 2. Esperienza richiesta
 
-**Struttura proposta:** barra con progetto/run, ricerca e selettore Logica/Fisica; navigatore laterale con filtri; area centrale del grafo; ispettore contestuale. I pannelli si possono chiudere e ridimensionare. Su schermi stretti diventano pannelli alternativi, mantenendo raggiungibili ricerca e dettagli.
-
-1. **Esplorare:** zoom, pan, adatta alla vista, breadcrumb, espandi/contrai gruppi e approfondisci un modulo. Il livello iniziale mostra responsabilità o unità di build, non tutti i simboli. Una vista elenco espone le stesse entità e relazioni per ricerca e navigazione da tastiera.
-2. **Filtrare:** combinare testo, modulo/repository, tipo di entità, tipo di relazione e stati disponibili. I filtri nascondono elementi; selezione ed evidenziazione non li eliminano. Conteggi distinti indicano elementi filtrati, aggregati e non caricati. Una vista vuota propone il ripristino dei filtri.
-3. **Collegare le viste:** la selezione si conserva tramite riferimenti canonici. Se un file appartiene a più moduli si mostrano tutte le corrispondenze, senza inventare un unico proprietario. Una contrazione evidenzia il gruppo contenitore e conserva gli archi originali consultabili.
-4. **Capire un elemento:** icona per tipo, nome leggibile e identificatore tecnico; ispettore con ruolo, relazioni in/out, moduli, percorso e righe, spiegazione, endpoint/indirizzo se disponibile, evidenze e stato di freschezza. Copia del riferimento sempre disponibile; apertura nell'editor solo con integrazione host configurata. Gli indirizzi non vengono contattati automaticamente.
-
-La disposizione non salta durante selezione o evidenziazione: si ricalcola quando cambia la struttura visibile o su «Riordina». Nessuna modifica ai sorgenti, alle relazioni o alle schede è prodotta da spostamenti, selezioni o filtri.
+1. **Esplorare:** zoom, spostamento, inquadra tutto, ingresso in un gruppo e ritorno. Il livello iniziale mostra responsabilità o unità di build, non tutti i simboli. Ricerca per nome e palette dei comandi da tastiera.
+2. **Filtrare:** per testo, tipo di entità, tipo di relazione e stato. I filtri nascondono, non eliminano la selezione; una vista vuota propone il ripristino. Conteggi distinti per elementi filtrati, aggregati e non caricati.
+3. **Collegare le viste:** la selezione si conserva per riferimento canonico. Un file di più moduli mostra tutte le appartenenze, senza un proprietario inventato.
+4. **Capire un elemento:** icona per tipo, nome leggibile e identificatore tecnico; nell'ispettore ruolo, relazioni in entrata e in uscita, moduli, percorso e righe, spiegazione, evidenze, stato e freschezza. Gli indirizzi non vengono contattati.
+5. Nessuno spostamento, selezione o filtro modifica sorgenti, relazioni o schede.
+6. Su schermi stretti barra laterale e ispettore diventano pannelli alternativi; ricerca e dettagli restano raggiungibili.
+7. Ogni run si apre pulito; in `localStorage` restano solo aspetto e tema, mai dati del progetto.
 
 ## 3. Evidenze, aggiornamenti e stati
 
-L'interfaccia mantiene distinti **provenienza**, **stato del contenuto** e **freschezza**, riusando i significati di Codebase Map. Non converte un modulo proposto in confermato e non equipara un rilievo statico a comportamento osservato.
-
-Ogni apertura è legata a un run e ai digest degli input dell'export. «Aggiorna» carica un altro export completato, non avvia analisi o LLM dal browser. Il nuovo dataset si applica interamente o non si applica; le selezioni si conservano solo se i riferimenti risolvono. Riferimenti scomparsi generano un avviso e vengono rimossi dalla selezione, senza associazioni per somiglianza.
-
-La freschezza visualizzata è relativa allo snapshot: senza un nuovo controllo Daodan non si dichiara che il working tree sia invariato.
-
-Un dato strutturalmente corrotto blocca il caricamento del nuovo export; una lacuna dichiarata è invece contenuto visualizzabile. Le descrizioni obsolete restano consultabili ma etichettate.
+- **Provenienza**, **stato** e **freschezza** restano distinti, con i significati di Codebase Map: un modulo proposto non diventa confermato, un rilievo statico non diventa comportamento osservato.
+- Ogni apertura è legata a un run e ai digest dei suoi input. Caricare un altro export non avvia analisi né modelli; il nuovo dataset si applica per intero o non si applica.
+- Una selezione si conserva solo se il riferimento risolve; un riferimento scomparso dà un avviso e si toglie, senza associazioni per somiglianza.
+- La freschezza è relativa allo snapshot: senza un nuovo controllo non si dichiara invariato il working tree.
+- Un dato corrotto blocca il caricamento; una lacuna dichiarata è contenuto da mostrare; una descrizione obsoleta resta consultabile, etichettata.
 
 ## 4. Accettazione
 
-**Estensione proposta il 18 novembre 2026.** Chi chiede di analizzare un sistema deve poter scoprire dalla mappa finale quali funzionalità offre, anche senza conoscerne nomi, ingressi o rami. La stessa mappa permette di delimitare una review per funzionalità, ramo o componente. [Spec dei flussi multilivello](../specs/2026-11-18-flussi-e-mappa-del-sistema.md)
+| Caso | Risultato | Prova |
+| --- | --- | --- |
+| File condiviso da due moduli | Due occorrenze, un solo file nel conteggio, entrambe le appartenenze raggiungibili | `viewer/test/projection.test.ts`; `tests/test_codebase_map_visual.py` |
+| Cambio di vista con un elemento selezionato | La selezione resta se il riferimento risolve nell'altra vista | `viewer/test/state.test.ts` |
+| Gruppo chiuso con archi | L'arco aggregato conserva le relazioni originali; gli archi interni sono un conteggio | `projection.test.ts` |
+| Filtra e ripristina | Stato iniziale ripristinato; la selezione non si perde | `projection.test.ts`, `state.test.ts` |
+| Scheda obsoleta e modulo inferito | Stati separati, mai promossi | `projection.test.ts`; `test_codebase_map_visual.py` |
+| Export invalido o schema ignoto | Errore comprensibile, la mappa di prima resta | `state.test.ts`; `test_codebase_map_visual.py` |
+| Due layout che finiscono fuori ordine | Compare solo quello della struttura corrente | `viewer/test/layoutClient.test.ts` |
+| Indirizzi con credenziali | Esportati senza credenziali, query e frammento | `test_codebase_map_visual.py` |
+| Richieste al server con traversal, link simbolici o un altro `Host` | Rifiutate, nessun listing | `tests/test_codebase_map_visual_server.py` |
+| Nome ostile (`<img src=x onerror=1>`) | Mostrato come testo | il nome è in `viewer/test/fixture.json`; nessuna asserzione trovata |
+| Solo tastiera | Filtri, selezione e dettagli senza trascinare | in parte: i passi da tastiera di `viewer/test/browser.mjs` |
+| Movimento ridotto | Animazioni facoltative | nessuna prova trovata nel viewer: dipende da Imago |
 
-| Caso di accettazione dell’estensione | Risultato atteso |
+## 5. Estensione proposta: dalla mappa alle funzionalità
+
+**Stato:** Proposta. Oggi il viewer evidenzia un flusso al livello della vista ed elenca i flussi che attraversano un nodo (`projection.test.ts`); il resto dipende dall'anagrafica dei flussi ([piano della ricerca](../plans/2026-11-20-ricerca-e-pacchetto-di-review.md)) e dal task 12 del [piano della pipeline](../plans/2026-11-20-pipeline-intera.md).
+
+| Caso | Risultato atteso |
 | --- | --- |
-| Esplorare una funzionalità con un ingresso utente e uno automatico | Aprendo la funzionalità si vedono entrambi i rami. Cambiare prospettiva conserva la selezione e permette di raggiungere le evidenze. Richiuderla ripristina il nodo iniziale. |
-| Chiedere una review della funzionalità | Il perimetro comprende tutte le varianti individuate, motiva i file e i simboli da revisionare e segnala i tratti irrisolti. Se si chiede un solo ramo, include anche il codice condiviso che può determinarne l’esito. |
-| Chiedere una review di un componente | La mappa identifica i flussi che attraversano il componente e indica dove ciascuno lo usa. |
+| Esplorare una funzionalità con un ingresso utente e uno automatico | Aprendo la funzionalità si vedono entrambi i rami; cambiare prospettiva conserva la selezione; richiuderla ripristina il nodo iniziale |
+| Chiedere una review della funzionalità | Il perimetro comprende tutte le varianti, motiva file e simboli e segnala i tratti irrisolti; per un solo ramo include il codice condiviso che può determinarne l'esito |
+| Chiedere una review di un componente | La mappa dà i flussi che attraversano il componente e dove ciascuno lo usa |
 
-**Casi della versione approvata l’8 novembre 2026**
+## 6. Aperto: da approfondire
 
-| Caso | Risultato osservabile |
-| --- | --- |
-| File condiviso da due moduli | Due occorrenze visive possono puntare alla stessa entità; il totale dei file unici non raddoppia; entrambe le appartenenze restano raggiungibili |
-| Cambia Logica/Fisica con un elemento selezionato | La selezione resta se il riferimento risolve nell'altra vista e mostra le corrispondenze multiple; nessun collegamento viene inventato |
-| Collassa un gruppo con archi evidenziati | Il gruppo e gli archi aggregati conservano l'evidenziazione; l'ispettore elenca gli archi originali |
-| Filtra e poi ripristina | Stato iniziale ripristinato; contatori corretti |
-| Scheda obsoleta e modulo inferito | Stati separati leggibili su grafo/elenco e ispettore; non promossi dalla proiezione |
-| Nuovo export invalido o schema ignoto | Errore comprensibile, vecchia mappa utilizzabile; niente dataset parzialmente sostituito |
-| Due layout asincroni terminano fuori ordine | Appare soltanto il layout della struttura corrente; selezione e viewport non vengono riportati allo stato precedente |
-| Nomi ostili e indirizzi sensibili | Testo non eseguito come HTML; credenziali, query e frammenti URL non esportati; copia dei riferimenti senza esecuzione shell |
-| Tastiera e movimento ridotto | Filtri, selezione e dettagli utilizzabili senza drag; focus visibile, significato non affidato solo al colore; animazioni opzionali |
-
-Benchmark previsto in `benchmarks/codebase-explorer/` dopo approvazione: fixture piccola con due moduli, file condiviso, gerarchia, stato obsoleto e gap; fixture scalate con 100/300/1.000 nodi visibili e archi dichiarati; un run reale anonimizzato. Il README dovrà registrare hardware/browser/versioni, numero totale e visibile di entità/archi, campionamento, memoria, layout, interazioni e risultati, distinguendo sintetico e reale.
-
-**Obiettivi iniziali proposti, non misurati:** fino a 300 nodi visibili, layout più primo disegno entro 2 s; p95 evidenziazione/selezione entro 100 ms su 20 interazioni dopo il caricamento, sulla macchina di riferimento dichiarata. Il caso a 1.000 nodi è stress diagnostico, non capacità promessa. Nessun risparmio token è assunto: l'esplorazione non effettua chiamate AI.
-
-## 5. Stato e approcci
-
-La scelta dell'utente sostituisce l'ipotesi precedente di adattare il viewer Floorplan: il prodotto sarà originale. Le alternative tecniche rimaste sono una composizione React Flow + ELK o il riuso del renderer di architetture LikeC4; confronto e motivazione sono nell'ADR, senza duplicarli qui.
-
-Componenti proposti per Daodan stesso, usati dalla prima preview: [proposte](2026-11-07-codebase-explorer-proposals.json), da caricare con `modules.py propose`. Restano inferiti finché il progetto non li copia in `codebase-modules.json`.
-
-La proposta comprende le due prospettive logica e fisica; l'ordine di implementazione non riduce l'obiettivo a una mappa dei file. I flussi sono stati riaperti il 9 novembre 2026 e hanno una spec propria; non cambiano l'implementazione già approvata finché il modello non è misurato. L'eventuale strumentazione runtime è un requisito distinto e non è stata richiesta. Aspetto finale, spaziature e shortcut precisi restano al design UI; non sono state approvate schermate o installate librerie.
+- **Prestazioni.** Obiettivi: fino a 300 nodi visibili, layout più primo disegno entro 2 s; selezione entro 100 ms al p95 su 20 interazioni; 1.000 nodi è stress diagnostico. La sola misura ([`benchmarks/codebase-explorer`](../../benchmarks/codebase-explorer/README.md)) è sul viewer di prima, con React Flow, su export sintetici: nessuno dei due obiettivi era raggiunto. Sul grafo di Imago e su un run reale non sono misurati.
+- **Tre casi senza prova:** nome ostile, uso da sola tastiera per intero, movimento ridotto (tabella sopra).
+- **Vista a elenco** delle stesse entità e relazioni, per la navigazione da tastiera: richiesta in origine, non trovata nel viewer. Con lei il ridimensionamento dei pannelli.
+- **Apertura nell'editor:** solo con un'integrazione dell'host; non c'è.

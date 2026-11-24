@@ -1,6 +1,6 @@
 # Benchmark: un nome reale che la validazione rifiuta, in una review
 
-Il caso iniziale era indipendente dalla costruzione del metodo, come chiede la spec [review: contesto, domande e selezione](../../docs/specs/2026-11-07-review-context-and-selection.md). Ora è usato per correggerlo: le nuove run sono calibrazione sullo stesso caso, non validazione indipendente. Viene da un repository privato, Jupiter: un difetto reale arrivato in produzione e poi corretto. La validazione di `get_market_candles` rifiuta lo spazio, e l'alias reale di ogni broker IBKR lo contiene. Il codice di Jupiter non è copiato qui; le run e i loro artefatti restano fuori dal repository.
+Il caso iniziale era indipendente dalla costruzione del metodo, come chiede la spec [della review](../../docs/specs/2026-11-03-semantic-review-foundation.md). Ora è usato per correggerlo: le nuove run sono calibrazione sullo stesso caso, non validazione indipendente. Viene da un repository privato, Jupiter: un difetto reale arrivato in produzione e poi corretto. La validazione di `get_market_candles` rifiuta lo spazio, e l'alias reale di ogni broker IBKR lo contiene. Il codice di Jupiter non è copiato qui; le run e i loro artefatti restano fuori dal repository.
 
 ## Parametri
 

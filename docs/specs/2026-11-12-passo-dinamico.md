@@ -1,34 +1,38 @@
 # Passo dinamico: i test del progetto in un container
 
-**Stato:** sezione 2 applicata in `plugins/codebase-map/skills/map/scripts/container.py` (`run_in_container`) e verificata con una riga di comando finta e con un container sul Kiri dell'utente; il motore proprio della sezione 3 è applicato su Windows e provato accanto al Kiri dell'utente (D-219); le sezioni 5 e 7 sono applicate nello step `dynamic` della pipeline (`plugins/codebase-map/skills/map/scripts/dynamic/`) per Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#, provate con un container finto e con il registro eseguito davvero; Rust, C e C++ nelle VM Sandbox di Modal, perché sotto il gVisor delle altre Valgrind non parte (`dynamic/callgrind.py`): nel giro di conferma del 16 novembre 2026 semver 558 siti osservati, tinyxml2 552 con 26 buchi chiusi, zlib 148 (`benchmarks/project-model/results/pipeline/2026-11-16-conferma.json`); C# su eShop: 4 progetti di test, 72 test passati, 2.385 siti registrati (`15960a591`). Il rapporto finale legge ciò che il passo ha osservato con `snapshot.py runtime`. Python anche con una corsa su Modal sugli script e i test di Daodan, senza `benchmarks/` (16 novembre 2026: analisi 26 minuti, passo dinamico 2,6): 1.361 siti osservati e 82 buchi chiusi, ma solo dall'import dei moduli di test, perché pytest si fermava agli errori di raccolta; ora gira con `--continue-on-collection-errors` (sezione 7), da rimisurare. Della sezione 6 è applicato il grafo delle chiamate. Misurato su tududi, JavaScript: la copertura passa dal 37,9% al 47,1% con il profiler di V8 e al 72,2% con il registro esatto, sopra la soglia del 70%. Dettagli in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md). **Data:** 12 novembre 2026. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
+**Stato:** In uso, come step `dynamic` della [pipeline](2026-11-15-pipeline-di-analisi.md) (`observe` nei nomi nuovi), per Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Codice in `daodan/core/container.py` (`run_in_container`, sezioni 2–4) e `daodan/core/dynamic/` (sezioni 5 e 7); `snapshot.py runtime` legge ciò che il passo ha osservato. Ogni punto delle sezioni 3 e 4 porta il suo stato: [costruito], [specificato] (deciso, non nel codice), [da misurare]. Fuori da Windows `find_engine` usa ancora il Docker o il Podman dell'utente (sezione 3). Misure e soglie: [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md); il giro di conferma degli osservatori nativi in `benchmarks/project-model/results/pipeline/2026-11-16-conferma.json`. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
 
 Daodan deve saper rispondere a due domande che la lettura del codice lascia aperte: «quale funzione viene chiamata davvero, dove la destinazione si decide in esecuzione?» e «questo difetto si riproduce?». Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark.
 
 ## Parole
 
-- **Passo di analisi:** uno dei quattro modi con cui Daodan ricava fatti dal codice (statico, inferenza, dinamico, semantico). «Livello» resta la parola delle viste di un flusso ([fase 2](2026-11-18-flussi-e-mappa-del-sistema.md), sezione 5).
+- **Passo di analisi:** uno dei quattro modi con cui Daodan ricava fatti dal codice (statico, inferenza, dinamico, semantico); gli step della pipeline li realizzano (sezione 1). «Livello» resta la parola delle viste di un flusso ([flussi e mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), sezione 4).
 - **Osservato:** provenienza di un fatto visto durante un'esecuzione. Si distingue da «provato» (il motore lo dimostra dal codice) e da «dedotto» (una regola accoppia i due capi).
 - **Container:** processo isolato dall'host, con il suo file system e con rete e risorse limitate.
 - **Motore di container:** il programma che avvia i container e parla la Docker Engine API.
 
-## Comportamento attuale
+## Dove sta nell'analisi
 
-- Codebase Map non esegue il programma: la copertura a runtime è nulla (`docs/plugins/codebase-map.md`). Il requisito 12 della [spec del motore](2026-11-08-risoluzione-chiamate-motore.md) vieta build e script del progetto.
-- Le chiamate la cui destinazione si decide in esecuzione restano senza risposta dopo l'inferenza: metodi su valori senza tipo, oggetti costruiti a runtime, valori di funzione (`docs/plugins/codebase-map-linguaggi.md`, Limiti noti).
-- senior-review esegue codice in due punti, sull'host: la riproduzione di un finding, quando il brief concede un workspace usa e getta (`review-quality-gates/SKILL.md`, classe `reproduced`), e il test di riproduzione di un'indagine, in un worktree usa e getta (`investigation-method/SKILL.md`, sezioni 4 e 5). Il worktree protegge il checkout, non il resto della macchina.
+«Analisi» è l'intera pipeline, e questo passo riceve i resti del precedente: un buco si dichiara e si misura dopo l'ultimo passo, mai sul risultato di uno solo.
 
-## Proposta
+- **Che cosa riceve.** Dallo step `analyze` i buchi per classe: le chiamate la cui destinazione si decide in esecuzione (metodi su valori senza tipo, oggetti costruiti a runtime, valori di funzione; [`codebase-map-linguaggi.md`](../plugins/codebase-map-linguaggi.md), «Limiti noti»). Parte solo per i linguaggi che hanno un grafo statico nello store (`no-static-graph` altrimenti).
+- **Che cosa chiude.** Un buco con una destinazione osservata esce da `holes` ed entra in `answered.observed` (sezione 5). Misurato su tududi, JavaScript, il 12 novembre 2026: delle 16.527 chiamate che lo step `analyze` lascia senza risposta il registro esatto ne risolve 13.677, l'82,8%, e la copertura passa dal 37,9% al 72,2% ([`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md), «Registro esatto su tududi»). Su python-semver chiude 16 mancati veri su 16 e 31 buchi su 64 (stesso README).
+- **Che cosa lascia.** Ciò che nessun test esegue resta un buco, con i file con chiamate che nessun test ha eseguito e le cause della corsa; lo step `union` lo elenca, e l'esplorazione dell'app avviata e il modello lavorano su quel resto ([interfacce del progetto](2026-11-19-interfacce-del-progetto.md), 7.4; [flussi e mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md)). Per gli altri linguaggi la quota di buchi chiusi su un progetto reale non è misurata.
 
-### 1. Quattro passi di analisi
+## Regole
 
-| Passo | Cosa fa | Esegue codice del progetto | Quando parte | Stato |
-| --- | --- | --- | --- | --- |
-| 1. Statico | Parser e risolutore lessicale: file, simboli, import, chiamate | No | Con ogni snapshot | Applicato |
-| 2. Inferenza | Il motore del linguaggio risolve le chiamate con le librerie del progetto | Sì, solo nel container: la build da cui l'indice nasce (Java e Kotlin, TypeScript e JavaScript, C#, C e C++; di Rust i build script e le macro procedurali) | Con ogni snapshot, in background | Applicato |
-| 3. Dinamico | I test girano in un container; ciò che si osserva entra nel grafo | Sì, solo nel container | Con ogni analisi, dopo il passo 2, quando un motore di container risponde | Applicato per Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C# |
-| 4. Semantico | Il modello scrive schede e regole di collegamento; i flussi uniscono chi scrive, chi legge e le azioni | No | Con l'analisi richiesta | Applicato; flussi in prova |
+### 1. I passi di analisi e chi esegue codice del progetto
 
-Ogni passo legge ciò che gli altri hanno già prodotto. Solo il primo è un prerequisito: il quarto lavora con o senza il terzo.
+L'ordine e i nomi degli step sono nella [pipeline di analisi](2026-11-15-pipeline-di-analisi.md); qui conta chi esegue codice del progetto, e dove.
+
+| Passo | Step | Esegue codice del progetto | Quando parte |
+| --- | --- | --- | --- |
+| Statico | `scan`, `stack`, `parse` | Solo nel container: i comandi di modello degli strumenti di build | Con ogni snapshot |
+| Inferenza | `analyze` | Solo nel container: la build da cui l'indice nasce (Java e Kotlin, TypeScript e JavaScript, C#, C e C++; di Rust i build script e le macro procedurali) | Con ogni snapshot, in background |
+| Dinamico | `dynamic` | Solo nel container: i test, e l'app che il progetto dichiara | Dopo `analyze`, quando un motore di container risponde |
+| Semantico | Dopo la pipeline | No | Con l'analisi richiesta: il modello scrive schede e regole di collegamento, i flussi uniscono chi scrive, chi legge e le azioni |
+
+Ogni passo legge ciò che i precedenti hanno prodotto e lascia al successivo ciò che non ha potuto stabilire, come lacuna. Senza motore di container il passo dinamico dichiara la lacuna e la pipeline arriva all'unione: il semantico lavora con o senza di lui. `DAODAN_DYNAMIC=off` lo salta; `pipeline.run(..., stop="analyze")` si ferma prima.
 
 ### 2. Un'operazione: eseguire un comando in un container
 
@@ -43,16 +47,16 @@ Il passo dinamico e la review usano la stessa operazione, con queste garanzie:
 ### 3. Motore di container
 
 - Daodan parla la Docker Engine API attraverso la riga di comando compatibile (`run`, `cp`, `rm`). Non dipende da un prodotto: un motore si sostituisce senza toccare il resto.
-- Daodan porta il proprio motore: scarica Kiri a versione fissata nella cartella condivisa, con il checksum verificato, come ogni altro motore (requisito 12 della spec del motore), e lo usa senza interfaccia. L'utente non installa nulla. Daodan non esegue l'installer di Kiri, che cambia `PATH`, configurazione di Docker e avvio automatico dell'utente, e non modifica un motore già installato.
+- Daodan porta il proprio motore: scarica Kiri a versione fissata nella cartella condivisa, con il checksum verificato, come ogni altro strumento ([spec del passaggio](2026-11-08-risoluzione-chiamate-motore.md), requisito 12), e lo usa senza interfaccia. L'utente non installa nulla. Daodan non esegue l'installer di Kiri, che cambia `PATH`, configurazione di Docker e avvio automatico dell'utente, e non modifica un motore già installato.
 - Un motore si adotta solo se è attivo e supportato: licenza che consente la ridistribuzione, repository non archiviato, commit e release nell'ultimo anno. Il controllo si ripete a ogni cambio della versione fissata.
 - Su Windows Kiri gira dentro WSL 2: Daodan importa una distribuzione propria nella sua cartella e parla al motore attraverso `wsl.exe`, senza l'applicazione di Kiri per Windows. Dove WSL 2 non è attivo serve un amministratore, una volta: Daodan dichiara la lacuna con il rimedio.
 - Un'immagine sola per ogni linguaggio, C e C++ compresi: una base glibc fissata per digest, di circa 28 MB compressi, scelta sulla glibc che chiedono gli strumenti già compilati [specificato]. Ciò che un linguaggio chiede (interprete, compilatore, strumento di build, indicizzatore) Daodan lo scarica nel suo magazzino degli strumenti al primo uso del linguaggio, con il checksum verificato. Non c'è un'immagine per linguaggio né un'immagine con il compilatore [specificato]. Oggi Java e Kotlin usano Temurin 17, Python `python:3.13-slim`, C e C++ `buildpack-deps:noble` e il proxy `python:3.13-alpine`. Che un compilatore C e C++ rilocabile dia gli stessi risultati di quello dell'immagine è [da misurare].
-- Il motore è sempre il Kiri di Daodan, portatile e incorporato: mai il Docker, il Podman o il Kiri che l'utente ha già (deciso dal proprietario il 15 novembre 2026) [specificato]. Su Windows `find_engine` avvia solo il motore di Daodan e non prova quello dell'utente; fuori da Windows usa ancora il Docker o il Podman dell'utente (gap).
+- Il motore è sempre il Kiri di Daodan, portatile e incorporato: mai il Docker, il Podman o il Kiri che l'utente ha già [specificato]. Su Windows `find_engine` avvia solo il motore di Daodan e non prova quello dell'utente; fuori da Windows usa ancora il Docker o il Podman dell'utente (gap).
   - Accanto a un altro Kiri nella stessa macchina WSL 2 il demone di Daodan gira in uno spazio di rete suo, legato a `/run/daodan/net`, e esce con `pasta`, che porta il traffico come socket ordinari: nello spazio di rete che le distribuzioni condividono non aggiunge interfacce, rotte, tabelle né impostazioni.
   - `pasta` si installa all'import con `apk add --no-cache passt`, dal repository della base Alpine fissata e con la firma controllata sulle sue chiavi; la versione installata sta nel nome del motore (`daodan-kiri@0.2.0+pasta@<versione>`). Un'installazione fallita è una lacuna, mai un avvio senza `pasta`.
   - Misurato il 17 novembre 2026 con il Kiri dell'utente acceso: lo spazio condiviso è identico prima, durante e dopo, anche dopo un arresto improvviso (D-219). Con l'agente dell'altro Kiri attivo, cioè con la sua tabella `kiri` presente, è [da misurare].
-- Le librerie di un progetto stanno in un magazzino per progetto, mai condiviso: la build di un progetto non tocca ciò che un altro userà (deciso il 15 novembre 2026) [specificato].
-- I limiti si calcolano all'avvio di ogni analisi da ciò che la macchina riporta in quel momento, e restano fermi fino alla fine; l'analisi successiva li ricalcola (deciso il 15 novembre 2026) [specificato]. Un container alla volta.
+- Le librerie di un progetto stanno in un magazzino per progetto, mai condiviso: la build di un progetto non tocca ciò che un altro userà [specificato].
+- I limiti si calcolano all'avvio di ogni analisi da ciò che la macchina riporta in quel momento, e restano fermi fino alla fine; l'analisi successiva li ricalcola [specificato]. Un container alla volta.
   - Processori: un quarto dei processori logici, almeno 1, al massimo 8 (massimo provvisorio). Quali indicizzatori ne usano più di uno è [da misurare].
   - Memoria: il bisogno misurato dell'indicizzatore più un quarto, entro la memoria libera meno una riserva per la macchina. Sotto il bisogno l'analisi è `unavailable`, con il bisogno e il rimedio: mai un risultato a metà.
   - Disco: metà dello spazio libero oltre una riserva di 5 GiB, fra 2 e 20 GiB. Oltre il tetto Daodan toglie per nome il magazzino usato meno di recente e lo scarica di nuovo quando serve.
@@ -89,7 +93,7 @@ Un ambiente git comune vale per ogni comando di ogni fase [specificato]:
 - `GIT_ALLOW_PROTOCOL=https`, `protocol.allow=never` con il solo `https` ammesso, sottomoduli compresi;
 - `core.fsmonitor=false`, `core.hooksPath=/dev/null`, nessun `git-lfs` nell'immagine.
 
-L'ambiente del passo 2 resta com'è: lì nessuno script gira.
+Vale anche per i container dello step `analyze`.
 
 #### Perimetro della regola di rete
 
@@ -129,14 +133,14 @@ Gli script spenti non bastano: i file di configurazione del progetto possono far
   - L'inoltro DNS del motore, finché non è misurato.
   - Canali laterali come i tempi.
 
-Lo stesso container può preparare anche dati per il passo 2: le librerie che gli script di build calcolano (Gradle) e i file che i build script generano (Rust). Il passo 2 li legge come legge i file di build, e sull'host continua a non girare nulla. Le macro procedurali di Rust restano escluse: espanderle significa eseguirle.
+Lo step `analyze` usa la stessa operazione e le stesse tre fasi: la build da cui un indicizzatore prende l'indice, con le librerie che gli script di build calcolano (Gradle), i file che i build script generano e le macro procedurali (Rust), gira nel container, mai sull'host.
 
 ### 5. Fatti osservati
 
 - Un arco osservato entra nello store degli archi con un risolutore proprio (campo `resolver`, come `builtin-lexical` e i motori) e con la provenienza «osservato», distinta da `confirmed` e `candidate`.
 - Vale per l'esecuzione che lo ha prodotto. Prova che la chiamata può arrivare a quella destinazione, non che arrivi solo lì. Una chiamata non osservata resta senza risposta: non prova che il codice non venga chiamato.
 - La destinazione si classifica per la sua provenienza, come chiede il requisito 23: una funzione definita fuori dal progetto è esterna ed esce dal denominatore.
-- Il rapporto «risolte su risolvibili» riporta gli archi osservati a parte, così il valore dei passi 1 e 2 resta confrontabile nel tempo.
+- Il rapporto «risolte su risolvibili» riporta gli archi osservati a parte, così il valore degli step statici e di `analyze` resta confrontabile nel tempo.
 - Un arco osservato che contraddice un arco provato è un difetto di uno dei due passi: si riporta, non si sceglie.
 - Una coppia chiamante-chiamato vista in uno stack campionato è un fatto osservato di una seconda fonte (sezione 7): `confidence` `sampled` e resolver `ENTRY@VERSION:sampled`, distinti da quelli esatti. Non dice mai che una chiamata che nessun campione ha visto non avviene.
 
@@ -153,13 +157,13 @@ Applicato così (`dynamic/__init__.py`, `edge_store.py`, `code_graph.write_obser
 
 ### 6. Chi lo usa
 
-- **Grafo delle chiamate:** i linguaggi in cui l'inferenza lascia molte chiamate senza risposta. JavaScript è il primo.
+- **Grafo delle chiamate:** i linguaggi in cui l'inferenza lascia molte chiamate senza risposta. JavaScript è il primo misurato.
 - **Flussi:** un arco osservato è un collegamento `chiama` con la sua provenienza.
-- **Review e indagine:** la riproduzione di un finding e il test di riproduzione girano nel container al posto del workspace sull'host. Il disegno delle review dinamiche è una spec a parte.
+- **Review e indagine:** la riproduzione di un finding e il test di riproduzione di un'indagine girano nel container, mai sull'host; senza container la riproduzione è una lacuna con la causa (`review-quality-gates/SKILL.md`, `investigation-method/SKILL.md`). Che cosa un revisore riceve da un'esecuzione è nel [registro dell'esecuzione](2026-11-19-esecuzione-del-programma.md), proposta.
 
 ### 7. Per linguaggio
 
-Operazione e fatti osservati sono gli stessi per ogni linguaggio; l'immagine è la stessa (sezione 3); cambiano gli strumenti che il linguaggio scarica, la preparazione e il registro delle chiamate. Il registro si sceglie in quest'ordine (deciso dal proprietario il 16 novembre 2026):
+Operazione e fatti osservati sono gli stessi per ogni linguaggio; l'immagine è la stessa (sezione 3); cambiano gli strumenti che il linguaggio scarica, la preparazione e il registro delle chiamate. Il registro si sceglie in quest'ordine:
 
 1. Un registro esatto che esiste già (ogni chiamata, con chiamante, chiamato e posizione del sito) si adotta, fissato per versione e sha256 e con la licenza dichiarata; Daodan scrive solo l'adattatore.
 2. Dove nessuno lo è, Daodan scrive il registro esatto e dice quali candidati esistenti ha scartato e su che cosa.
@@ -187,7 +191,7 @@ Un osservatore è un modulo di `dynamic/` che si dichiara (`ENTRY`, `VERSION`, `
 
 ## Limiti
 
-- Il passo vede solo ciò che i test eseguono. Un progetto senza test, o con test che non partono, non dà nulla: è una lacuna dichiarata.
+- Il passo vede solo ciò che i test eseguono. Un progetto senza test, o con test che non partono, non dà nulla: è una lacuna dichiarata, e i buchi dello step `analyze` restano tali fino all'esplorazione dell'app o al modello.
 - I test che richiedono servizi (database, code, API esterne) partono solo se il progetto dichiara come avviarli. Oggi il passo avvia i service container di GitHub Actions, i `services:` di GitLab CI scritti in `.gitlab-ci.yml` (un file che include è una lacuna `include_not_read`; un `!reference` si risolve come lo risolve GitLab, e uno che il file non contiene è una lacuna `reference_not_found` che nomina il job) e i servizi che `docker compose up` avvia in un passo di GitHub Actions o in uno script di test npm (un'immagine che Compose costruisce, un comando con una variabile, uno script che cambia cartella, un bind mount fuori dal progetto, Compose in un job di GitLab sono lacune): quei test falliscono, e la corsa lo dice. Un job che esegue i test dentro un servizio di Compose (`docker compose run` o `exec`) non si legge: il suo passo dei test e ogni passo prima sono lacune `ci_step_not_run` con la causa. Una variabile di un `.env` tracciato dove Compose vuole un numero o una durata (una porta, un intervallo) fa fallire il `config` sui nomi: è una lacuna `model_failed` con il messaggio di Compose. Un valore di un `.env` si maschera ovunque stia, anche dentro una parola più lunga (`-DVERSION=1.28.0x`); uno più corto di quattro caratteri solo dove sta come parola intera, una parola booleana o un numero fino a cinque cifre mai: si confonderebbero con le parole e le porte del testo. La corsa lo dice una volta, con una lacuna `mask_partial` che nomina quelle variabili. I file d'esempio restano fuori da questa regola: i loro valori sono pubblici.
 - Un ambiente Python riceve le dipendenze che il ripristino condiviso installa: gli extra e i gruppi che il gestore non installa da sé mancano, e i test che li importano non partono.
 - Un container protegge l'host da errori e da script comuni, non da un attacco mirato al kernel. Su Linux i container di Kiri condividono il kernel dell'host.
@@ -198,24 +202,32 @@ Un osservatore è un modulo di `dynamic/` che si dichiara (`ENTRY`, `VERSION`, `
 Parametri e soglie in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md), scritti prima di ogni misura.
 
 1. **Isolamento.** Dal container una richiesta di rete fallisce, una scrittura nel progetto è rifiutata e sull'host non compare nessun file.
-2. **Copertura.** Sugli stessi casi del passo 2: risolte su risolvibili per linguaggio, con e senza gli archi osservati; quante posizioni senza risposta ricevono una destinazione; quanti archi osservati contraddicono un arco provato.
+2. **Copertura.** Sugli stessi casi dello step `analyze`: risolte su risolvibili per linguaggio, con e senza gli archi osservati; quante posizioni senza risposta ricevono una destinazione; quanti archi osservati contraddicono un arco provato.
 3. **Costo.** Durata di preparazione ed esecuzione, RAM di picco, spazio su disco.
-4. **Ambiente per il passo 2.** Su un caso Gradle e su uno Rust: risolte su risolvibili con e senza i dati preparati nel container.
+4. **Ambiente per lo step `analyze`.** Su un caso Gradle e su uno Rust: risolte su risolvibili con e senza i dati preparati nel container.
 5. **Motore proprio.** Su una macchina senza Kiri: Daodan scarica il motore ed esegue un comando in un container senza aprire finestre. `PATH`, configurazione e contesto di Docker e avvio automatico dell'utente restano invariati; fuori dalla cartella di Daodan resta solo la registrazione della distribuzione WSL. Provata su Windows il 12 novembre 2026, con un Kiri dell'utente già attivo: riuscita (README del benchmark).
 
-## Da decidere
+Misure fuori da quel README:
 
-- Come si avviano i servizi che la CI dichiara altrove: i file che `.gitlab-ci.yml` include, Compose in un job di GitLab (sul Docker che il job avvia), Compose avviato da un Makefile o da un task runner.
-- I passi prima dei test di un job di GitLab CI (`before_script`, i job degli stadi precedenti) e quelli che scrivono fuori da `/work` e da `/daodan/state`, che l'esecuzione non vede; su Kiri, come eseguire i passi accanto ai servizi senza togliere il pod dalla sua prima rete.
-- Quanto vale un arco osservato dopo una modifica: oggi vale per lo store del suo snapshot (sezione 5); se tenerlo per i file non toccati è da decidere.
-- Se misurare accanto un motore statico per programmi interi. Jelly (`cs-au-dk/jelly`, BSD 3-clause, 0.13.0 dell'11 maggio 2026) copre anche il codice che i test non eseguono; il suo modo dinamico dipende da NodeProf, fermo dal 2023.
+- Rust, C e C++ nelle VM Sandbox di Modal, dove Valgrind parte (sotto il gVisor delle altre no, `dynamic/callgrind.py`), 16 novembre 2026: semver 558 siti osservati, tinyxml2 552 con 26 buchi chiusi, zlib 148 (`benchmarks/project-model/results/pipeline/2026-11-16-conferma.json`).
+- C# su eShop: 4 progetti di test, 72 test passati, 2.385 siti registrati (`15960a591`).
+- Python sugli script e i test di Daodan, senza `benchmarks/`, su Modal, 16 novembre 2026: analisi 26 minuti, passo dinamico 2,6; 1.361 siti osservati e 82 buchi chiusi, ma solo dall'import dei moduli di test, perché pytest si fermava agli errori di raccolta. Da rimisurare con `--continue-on-collection-errors` (sezione 7).
+- Il motore proprio accanto al Kiri dell'utente su Windows: D-219 ([registro dei difetti](../verification/2026-11-16-registro-difetti.md)).
 
-Deciso il 16 novembre 2026:
+## Scelte
 
 - **Registro:** l'ordine di scelta della sezione 7.
 - **Comando dei test:** quello che il progetto dichiara, dalle voci `tests` della pre-mappa (`premap/python_tests.py`, `premap/npm_tests.py`), mai una convenzione di Daodan.
-- **Accensione:** il passo è uno step della pipeline, fra l'analisi e l'unione, acceso quando un motore di container risponde. Senza motore dichiara la lacuna e la pipeline arriva all'unione. `DAODAN_DYNAMIC=off` lo salta; `pipeline.run(..., stop="analyze")` si ferma prima.
-- **Codice del progetto:** gira solo nel container di Daodan, anche quando lo esegue il motore del passo 2, come per le macro procedurali di Rust (`AGENTS.md`, sezione Regola invalicabile).
-- **Kiri dell'utente:** sostituita il 17 novembre 2026 dalla sezione 3: Daodan avvia sempre il proprio motore, in uno spazio di rete suo, e non riavvia, ferma né riconfigura quello dell'utente. La decisione del 16 (usare il motore dell'utente e dichiarare una lacuna accanto a un Kiri attivo) non vale più.
+- **Codice del progetto:** gira solo nel container di Daodan, anche quando lo esegue l'indicizzatore dello step `analyze` (`AGENTS.md`, «Regola invalicabile»).
+- **Motore:** Daodan avvia sempre il proprio, in uno spazio di rete suo, e non riavvia, ferma né riconfigura quello dell'utente (sezione 3).
+
+## Aperto
+
+- **Aperta: da approfondire:** come si avviano i servizi che la CI dichiara altrove: i file che `.gitlab-ci.yml` include, Compose in un job di GitLab (sul Docker che il job avvia), Compose avviato da un Makefile o da un task runner.
+- **Aperta: da approfondire:** i passi prima dei test di un job di GitLab CI (`before_script`, i job degli stadi precedenti) e quelli che scrivono fuori da `/work` e da `/daodan/state`, che l'esecuzione non vede; su Kiri, come eseguire i passi accanto ai servizi senza togliere il pod dalla sua prima rete.
+- **Aperta: da approfondire:** quanto vale un arco osservato dopo una modifica: oggi vale per lo store del suo snapshot (sezione 5); se tenerlo per i file non toccati è da decidere.
+- **Aperta: da approfondire:** se misurare accanto un motore statico per programmi interi. Jelly (`cs-au-dk/jelly`, BSD 3-clause, 0.13.0 dell'11 maggio 2026) copre anche il codice che i test non eseguono; il suo modo dinamico dipende da NodeProf, fermo dal 2023.
+- **Aperta: da approfondire:** la quota di buchi chiusi per linguaggio su progetti reali, oltre JavaScript su tududi («Prova», misure).
+- I punti [da misurare] e [specificato] delle sezioni 3 e 4.
 
 **Per modificare questa spec:** un requisito in più solo per un'esigenza obbligatoria o un esito sbagliato riproducibile.

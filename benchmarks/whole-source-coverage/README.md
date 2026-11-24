@@ -1,6 +1,6 @@
 # Benchmark: review dell'intero sorgente divisa in gruppi
 
-Prova la spec [`docs/specs/2026-11-07-whole-source-coverage.md`](../../docs/specs/2026-11-07-whole-source-coverage.md): la review `branch` con base `content` divide i file in gruppi sotto un budget, conta i controlli conclusi e mostra quelli aperti con il motivo.
+Prova la spec [`docs/specs/2026-11-03-semantic-review-foundation.md`](../../docs/specs/2026-11-03-semantic-review-foundation.md), sezione 4: la review `branch` con base `content` divide i file in gruppi sotto un budget, conta i controlli conclusi e mostra quelli aperti con il motivo.
 
 ## Parametri
 

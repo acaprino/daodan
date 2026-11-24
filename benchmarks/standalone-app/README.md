@@ -60,4 +60,4 @@ Conferma del 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade8
 
 La [suite browser](../../viewer/test/browser.mjs) esercita gli asset distribuiti dell'app e dell'esploratore. Il comando è `npm run test:ui` dalla directory `viewer/`, in un ambiente con le dipendenze del viewer e Chromium di Playwright installati.
 
-Le misure UI in `container-results.json` appartengono al prototipo ritirato. La [review storica](../../docs/reviews/2026-11-16-standalone-app.md) conserva i riferimenti ai sorgenti e ai risultati di quella prova.
+Le misure UI in `container-results.json` appartengono al prototipo ritirato.

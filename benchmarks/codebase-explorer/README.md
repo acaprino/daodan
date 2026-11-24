@@ -1,6 +1,6 @@
 # Benchmark: renderer dell'esploratore
 
-Gate del Task 1 di [`docs/plans/2026-11-08-codebase-explorer.md`](../../docs/plans/2026-11-08-codebase-explorer.md): React Flow + ELK contro LikeC4 Model Builder sulla stessa fixture, prima di fissare il renderer. Le due prove sono minime, non prodotti.
+Gate del renderer dell'[ADR dell'esploratore](../../docs/adr/2026-11-07-codebase-explorer.md): React Flow + ELK contro LikeC4 Model Builder sulla stessa fixture, prima di fissare il renderer. Le due prove sono minime, non prodotti.
 
 ## Parametri
 
@@ -29,7 +29,7 @@ Gate del Task 1 di [`docs/plans/2026-11-08-codebase-explorer.md`](../../docs/pla
 
 ## Prestazioni del viewer, prima misura
 
-Passo 2 del Task 7 del piano. Obiettivi da misurare, non promessi: fino a 300 nodi visibili, layout più primo disegno entro 2 s; p95 della selezione entro 100 ms su 20 interazioni. 1.000 nodi è stress diagnostico.
+Obiettivi del [FRD](../../docs/frd/2026-11-07-codebase-explorer.md), da misurare, non promessi: fino a 300 nodi visibili, layout più primo disegno entro 2 s; p95 della selezione entro 100 ms su 20 interazioni. 1.000 nodi è stress diagnostico.
 
 ### Parametri
 

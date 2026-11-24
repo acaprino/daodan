@@ -1,9 +1,22 @@
 # Benchmark: connection points between a front end and a back end
 
-Does the connection-point model join a React front end and an Express back end into one graph, with nothing
-invented and nothing lost? A connection point is a node with a kind and a key; code sites attach to it with a
+**Status:** In use. The join measured here is in the product: `flows.py` joins `rotta` and `offre` through the link
+type `REST` with this benchmark's segment grades. The scripts of this folder (runtime recorder, client reader, join)
+stay a benchmark: one real case, no model.
+
+**Question.** Does the connection-point model join a React front end and an Express back end into one graph, with
+nothing invented and nothing lost? A connection point is a node with a kind and a key; code sites attach to it with a
 role (`calls`, `exposes`). Here the kind is `http` and the key is the method plus the path, parameters as `{}`.
-First measurement, one real case.
+
+**Results today.** On tududi (14 November 2026): 361 links joined at 360 sites, 25 of 25 expected cases found, the
+largest connected component goes from 50.0% to 96.4% of the callable nodes. In the product (18 November 2026): 5 of
+5 expected on the `pets` fixture.
+
+**Next step of the pipeline.** This benchmark measures the join over a static index. Where it names a hole of that
+index (a receiver that is `any`, such as the Sequelize model in the chain below), the dynamic step is what answers:
+how many of the calls the engine leaves unanswered its exact call log resolves, on this same commit, is measured in
+[`call-provenance`](../call-provenance/README.md). Whether the chains of this benchmark close after the dynamic step
+is not measured.
 
 ## Parameters
 
@@ -12,12 +25,12 @@ First measurement, one real case.
 | case | [chrisvel/tududi](https://github.com/chrisvel/tududi) at `71da9d7b34dfd1600657e9c5ddf40420206fd263` (as in `benchmarks/inference-audit`) |
 | perimeter | front end: the 483 `.ts`/`.tsx`/`.js` files under `frontend/` that are not tests; back end: the Express app `backend/app.js` as it loads with `NODE_ENV=test` and a database URL it never connects to |
 | expected | `expected.json`: 20 links across features and 5 hard cases, written from the source before any extraction code |
-| back end | `express_routes.js` (99 lines): the running app's own Express, patched before load, records every mount and route; full path through every mount, registration line, handler location from V8 (`[[FunctionLocation]]`); checked on `fixtures/express` in the container (10 of 10 routes) |
-| front end | `client_http.py` (314 lines with docstrings): tree-sitter 0.26.0 and language pack 1.13.5 read the request each `fetch` sends; the index (the TypeScript graph of `inference-audit`, label `plugin`) confirms the sink and every wrapper call |
+| back end | `express_routes.js`: the running app's own Express, patched before load, records every mount and route; full path through every mount, registration line, handler location from V8 (`[[FunctionLocation]]`); checked on `fixtures/express` in the container (10 of 10 routes) |
+| front end | `client_http.py`: tree-sitter 0.26.0 and language pack 1.13.5 read the request each `fetch` sends; the index (the TypeScript graph of `inference-audit`, label `plugin`) confirms the sink and every wrapper call |
 | declared rules | `rules.json`: the sink `fetch`, and `getApiPath` as a prefix rule (`/api/` unless the path has it), because its body depends on the deployment's base path |
-| join, islands | `points.py` (124 lines), no language: exact and loose matches, uncertain links with candidates, one-sided keys with their reason |
+| join, islands | `points.py`, no language: exact and loose matches, uncertain links with candidates, one-sided keys with their reason |
 | existing tools | express-list-endpoints 7.1.1 (runtime), ast-grep 0.50.0 (structural search), jsluice `0ddfab153e06` (URLs in JavaScript), swagger-jsdoc of the project (declared API) |
-| graph | `graph-javascript.json.gz` and `graph-typescript.json.gz` of `inference-audit/scip-inputs/tududi/plugin` (scip-typescript 0.5.2); callable nodes: code holders and the callables reached, types and parameters left out |
+| graph | `graph-javascript.json.gz` and `graph-typescript.json.gz` of `inference-audit/scip-inputs/tududi/plugin` (scip-typescript 0.5.2; an input kept outside the repository, passed as `GRAPH_DIR`); callable nodes: code holders and the callables reached, types and parameters left out |
 | runtime | Node 22.12.0 (22.11 refuses `require()` of the ES module `jose`), `npm ci` 26.7 s, whole run 44.1 s on 2 CPU |
 
 Run:
@@ -29,9 +42,9 @@ Run:
 `survey` (same file) lists the greps used to read the source for `expected.json`. Tests:
 `python -B -m pytest -q -p no:cacheprovider` in this folder (20).
 
-## Results, 14 November 2026
+## Results on tududi
 
-Code hash `40e61f0bbf63`, the same locally and in the container. Modal cost 0.038 USD for every run
+14 November 2026. Code hash `40e61f0bbf63`, the same locally and in the container. Modal cost 0.038 USD for every run
 (two surveys, four tool runs, one fixture check each).
 
 ### Existing tools
@@ -87,14 +100,15 @@ A chain from a UI component to the database:
 3. point `POST /api/caldav/conflicts/{}/resolve`, registered at `backend/modules/caldav/api/routes.js:36`
 4. `backend/modules/caldav/api/sync-controller.js:142` `SyncController#resolveConflict`, calls at `:175`
 5. `backend/modules/caldav/sync/merge-phase.js:553` `MergePhase#resolveConflict`
-6. `backend/modules/caldav/sync/merge-phase.js:563` `Task.findByPk`: a hole of the graph (the model is `any` to the index), read from its text
+6. `backend/modules/caldav/sync/merge-phase.js:563` `Task.findByPk`: a hole of the static index (the model is `any` to it), read from its text; not measured after the dynamic step
 
 ### What did not fit the model
 
 - A site has a set of keys, not one: branches and `let` with `+=` give candidates, and both sides carry
   placeholders, so the join matches patterns, not equal strings.
 - A placeholder for a value that selects the entity (`${kind}`) makes a key match 27 routes: the model's
-  uncertain link holds, the static types of `kind` could narrow it and are not read.
+  uncertain link holds, the static types of `kind` could narrow it and are not read; whether the values observed by
+  the dynamic step narrow it is not measured.
 - The method is part of the key, but `ALL` routes and an unknown method need a wildcard, and the SPA fallback
   `GET *` answers every path: matched only by it counts as a missing route.
 - One handler under two keys (`/api` and `/api/v1`): "routes nobody calls" is mostly the version mirror.
@@ -110,10 +124,10 @@ A chain from a UI component to the database:
 - `public/sw.js` and the end-to-end tests also send requests; they are outside the perimeter.
 - The 371 routes without callers are not checked one by one beyond the `/api` list above.
 
-## In the product, 18 November 2026
+## In the product
 
-`flows.py` joins `rotta` and `offre` through the link type `REST` with this benchmark's segment grades
-(`points._grade`, `_match`): the most literal route wins, a tie is uncertain, loose candidates always tie.
+18 November 2026. `flows.py` joins `rotta` and `offre` through the link type `REST` with this benchmark's segment grades
+(`points._grade`, `_match`; in the product `flows._segment_grade`): the most literal route wins, a tie is uncertain, loose candidates always tie.
 
 | Parameter | Value |
 | --- | --- |

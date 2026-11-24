@@ -1,103 +1,55 @@
-# ADR: visualizzazione originale per Codebase Map
+# ADR: esploratore visuale di Codebase Map
 
-**Stato:** approvata l'8 novembre 2026. **Data:** 7 novembre 2026.
-**Requisiti:** [FRD](../frd/2026-11-07-codebase-explorer.md). **Proprietario:** `codebase-map`.
-
-**Aggiornamento del 20 novembre 2026.** L'app di analisi e l'esploratore usano `@acaprino/imago/graph` per disegnare e navigare i grafi. Nell'esploratore ELK continua a calcolare posizioni e percorsi in un Web Worker. La valutazione di React Flow riportata qui documenta la scelta precedente.
-
-## 1. Contesto e decisione proposta
-
-L'utente ha scelto una UI originale ispirata alle capacità esplorative di Floorplan, riusando librerie. Si riprendono idee generali: navigazione progressiva, nomi comprensibili, ispettore collegato al codice ed elementi evidenziati. Non si adottano codice, template, asset, schema `graph@1` o orchestratore Floorplan.
-
-Il coordinatore ha già ispezionato Floorplan: «clean room» indica qui progettazione indipendente e assenza di copia, non un processo formalmente separato fra analista e implementatore mai esposti al sorgente. Questo documento è la base originale, ricavata dai requisiti Daodan e dalle API pubbliche delle librerie.
-
-**Raccomandazione:** React + TypeScript, React Flow per rendering/interazione ed ELK in Web Worker per layout; Radix Primitives, Lucide e react-resizable-panels per i controlli circostanti. Vite compila asset locali. Node serve allo sviluppo/build del viewer, non diventa requisito del motore Python né dell'utilizzo degli asset precompilati.
-
-Codebase Map produce l'export; il viewer lo consuma senza rianalizzare la codebase. Non si introduce un secondo database o un servizio AI. Il frontend ha stato di esplorazione locale, distinto dai dati canonici. React state/reducer e selettori memoizzati bastano inizialmente; nessuno state manager aggiuntivo è assunto.
+**Stato:** In uso. L'export e il server sono `daodan/core/visual.py`; i sorgenti delle due pagine (esploratore e app) sono in `viewer/`, le pagine costruite in `daodan/assets/viewer/` e `daodan/assets/app/`, dentro il pacchetto Python. **Requisiti:** [FRD](../frd/2026-11-07-codebase-explorer.md). **Aperto:** le prestazioni, in fondo.
 
 ```mermaid
 flowchart LR
-  S[Snapshot del run e moduli] --> E[Export Codebase Map]
-  C[Schede e stati di freschezza] --> E
+  S[Snapshot del run e moduli] --> E[visual.py export]
+  C[Schede e freschezza] --> E
   E --> J[Export immutabile con digest]
   J --> P[Proiezione logica o fisica]
-  P --> W[ELK: worker locale]
-  W --> R[React Flow]
+  P --> W[ELK in un Web Worker]
+  W --> R[Grafo di Imago]
   P --> I[Elenco, filtri e ispettore]
-  R <--> I
 ```
 
-I flussi sono stati riaperti il 9 novembre 2026 ([spec](../specs/2026-11-18-flussi-e-mappa-del-sistema.md)): `daodan/visual@1` li porterà come elenco `flows` di riferimenti a entità e relazioni esistenti, senza nuove entità; fino alla misura del modello nessun campo o vista di flusso è implementato.
+## Decisioni
 
-**Estensione proposta il 18 novembre 2026.** Codebase Map scopre funzionalità e varianti prima dell’export. Il viewer proietta ciascuna funzionalità come nodo espandibile sui rami della mappa salvata. I rami che attraversano lo stesso servizio rimandano alla stessa entità. Cambi di prospettiva, espansioni e contrazioni usano i riferimenti del run e richiedono zero chiamate al modello. [Scoperta dei flussi](../specs/2026-11-18-flussi-e-mappa-del-sistema.md), sezione 7 e Principio 4
+1. **Interfaccia propria, costruita con librerie.** Dalle capacità esplorative di Floorplan si riprendono solo idee generali: navigazione progressiva, nomi comprensibili, ispettore collegato al codice. Nessun codice, template, asset, schema o orchestratore di Floorplan.
 
-## 2. Librerie, alternative e ricerca
+2. **Codebase Map produce, il viewer proietta.** L'export nasce da snapshot, grafo dei moduli e schede attraverso le loro API; il viewer non rianalizza nulla, non ha un secondo database e non chiama un modello: cambi di prospettiva, espansioni e filtri sono zero chiamate.
 
-**Renderer confermato: React Flow + ELK** (12 novembre 2026): LikeC4 perde le appartenenze multiple di un file; misure in [`benchmarks/codebase-explorer`](../../benchmarks/codebase-explorer/README.md).
+3. **Disegno e controlli sono di Imago** (`@acaprino/imago`: `graph`, `ui`, `react`, `shell`), perché ogni app della suite ha un solo aspetto (`AGENTS.md`, «Un solo aspetto per tutta la suite»); il passaggio a Sigrid è in corso. ELK (`elkjs`, licenza EPL-2.0 OR GPL-3.0-or-later) calcola posizioni e percorsi in un Web Worker; le icone sono di Lucide. Node serve solo a sviluppo e build: le pagine costruite sono nel pacchetto, con le licenze in `LICENSES.txt`.
+   - Scartato LikeC4: perde le appartenenze multiple di un file. Misura: [`benchmarks/codebase-explorer`](../../benchmarks/codebase-explorer/README.md).
+   - Sostituiti da Imago: React Flow, Radix e react-resizable-panels, la prima scelta.
+   - Cytoscape.js, Sigma.js e Dagre sono stati letti sulla documentazione, mai provati.
 
-Documentazione ufficiale consultata il 7 novembre 2026; nessun pacchetto installato o benchmark eseguito. Le versioni dei rami sorgenti non sono trattate come release compatibili: versioni distribuite, peer dependencies e licenze transitive saranno fissate nel lockfile dopo la prova di integrazione.
+4. **Il contratto è `daodan/visual@1`.**
 
-| Componente | Riuso previsto | Lavoro che resta Daodan | Licenza verificata |
-| --- | --- | --- | --- |
-| [React Flow / @xyflow/react](https://reactflow.dev/) | Nodi React, pan/zoom, selezione, archi, controlli e minimappa | Proiezioni, semantica espansione/aggregazione ed evidenze; il layout non è incluso | MIT |
-| [ELK / elkjs](https://github.com/kieler/elkjs) | Disposizione direzionata, porte, gerarchie e routing; worker browser | Preparazione dimensioni/porte, invocazione e gestione risultati | Manifest attuale: EPL-2.0 OR GPL-3.0-or-later; proposta opzione EPL-2.0, verificata sul pacchetto fissato |
-| [Radix Primitives](https://www.radix-ui.com/primitives) | Tab, menu, dialoghi, tooltip e gestione del focus | Composizione, stile originale e accessibilità dell'esperienza complessiva | MIT ([repository](https://github.com/radix-ui/primitives)) |
-| [react-resizable-panels](https://github.com/bvaughn/react-resizable-panels) | Pannelli ridimensionabili e collassabili, separatori da tastiera | Disposizione responsive e persistenza delle preferenze | MIT ([licenza](https://raw.githubusercontent.com/bvaughn/react-resizable-panels/main/LICENSE.md)) |
-| [Lucide](https://lucide.dev/license) | Icone per tipo e azione | Associazione semantica e etichette accessibili | ISC, mantenendo anche notice MIT per le icone derivate da Feather |
+   | Campo | Contenuto |
+   | --- | --- |
+   | `meta` | progetto, run, target e i digest degli input letti: l'export è legato al run, non al mirror corrente |
+   | `entities` | riferimento canonico `tipo:id`, nome, descrizione quando c'è, evidenze, stati originali; nessun sorgente completo |
+   | `relations` | estremi canonici, tipo, stato, evidenze |
+   | `memberships` | appartenenze logiche e fisiche esplicite: un file può stare in più gruppi |
+   | `gaps` | lacune già dichiarate o introdotte dalla proiezione, con i riferimenti e la ragione |
+   | `flows` | i flussi come riferimenti a entità e relazioni che esistono già; vuoto senza regole di collegamento |
 
-CSS originale e font di sistema iniziali: nessun obbligo di Tailwind, shadcn o font remoti. Si importano i soli componenti necessari. Le funzioni avanzate mostrate negli esempi React Flow possono appartenere all'offerta Pro: non si presume che il loro codice sia incluso nella licenza core. Nessun acquisto è previsto; aggregazione e filtri sono logica originale Daodan.
+   - Provenienza, stato e freschezza restano tre campi distinti, con i valori dei loro produttori: nessuna seconda tassonomia e nessuna promozione.
+   - Un riferimento multiplo produce occorrenze visuali, non nuove entità: l'id dell'occorrenza è il riferimento più il contenitore e vive solo nel viewer; conteggi e ricerca deduplicano per riferimento. Un arco aggregato conserva i riferimenti delle relazioni sottostanti; gli archi interni a un gruppo chiuso diventano un conteggio, non false dipendenze esterne.
 
-| Alternativa | Vantaggio reale | Motivo della preferenza attuale / condizione di rivalutazione |
-| --- | --- | --- |
-| [LikeC4 React](https://likec4.dev/tooling/react/) | Renderer architetturale, navigazione, dettagli, viste dinamiche e walkthrough già disponibili; Model Builder programmatico, metadata e nodi personalizzati | Richiede un modello `Layouted` e stack/stili Mantine. L'adattamento di identità, membership e stati va misurato. Potrebbe ridurre il lavoro più di React Flow: resta la principale alternativa, non è escluso perché «solo DSL» |
-| [Cytoscape.js](https://github.com/cytoscape/cytoscape.js) | Modello di grafo, algoritmi e renderer con compound nodes; MIT | Interessante per esplorazione di reti; nodi con controlli React e pannelli coordinati richiedono un diverso adattamento. Nessuna inferiorità prestazionale assunta |
-| [Sigma.js](https://www.sigmajs.org/get-started/quickstart/) | Rendering WebGL e interazione con grafi Graphology; supporta anche layer custom | Candidato se emerge esigenza di reti molto dense. Non si aggiunge un secondo renderer preventivamente; nessuna capacità numerica dedotta dal solo uso di WebGL |
-| [Dagre / D3](https://reactflow.dev/learn/layouting/layouting) | Dagre semplice per grafi diretti; D3 offre algoritmi e primitive | Dagre ha un limite documentato per subflow collegati all'esterno; D3 richiederebbe più composizione delle interazioni. Si preferisce ELK per gerarchie e routing |
+5. **L'export è immutabile**, in `.daodan/map/views/<run-id>/<digest>/visual.json`. Si valida prima di pubblicare e non si riscrive mai; uno snapshot con un altro parser, un riferimento sconosciuto o schede che cambiano durante la lettura lo fanno rifiutare, senza lasciare cartelle parziali.
 
-LikeC4 dichiara MIT sia in [core/package.json](https://raw.githubusercontent.com/likec4/likec4/main/packages/core/package.json) sia in [diagram/package.json](https://raw.githubusercontent.com/likec4/likec4/main/packages/diagram/package.json). Le [viste dinamiche](https://likec4.dev/dsl/views/dynamic/) esistono: sono i blocchi di controllo del flusso a essere sperimentali; la variante sequence collega elementi foglia. Questi limiti non equivalgono a incompatibilità con Daodan.
+6. **Il server è locale.** Solo `127.0.0.1`, porta libera, elenco chiuso di file calcolato all'avvio, nessun listing, controllo di `Host`, nessun CORS, `Content-Security-Policy` con `default-src 'self'`; nessuna risorsa remota. `visual.py serve` serve un export in sola lettura. L'esploratore che il server MCP avvia (`codebase_map_ui`) e l'app (`daodan app`) usano lo stesso server con rotte e azioni loro, dietro un token: elencano i run, ne seguono gli eventi, creano run e registrano richieste per l'host. I confini dell'app: `docs/specs/2026-11-16-app-standalone.md`.
 
-Prima di fissare il renderer, la stessa piccola fixture del FRD verrà proiettata in React Flow + ELK e in LikeC4 Model Builder, senza costruire due prodotti. Si confrontano fedeltà delle membership/stati, focus e ripristino filtri, gerarchie, estensioni necessarie e costo di adattamento misurato. LikeC4 può sostituire la scelta proposta se soddisfa gli stessi requisiti con un adattamento più semplice e sostenibile. Il minor numero di righe, da solo, non decide; nessuna soglia temporale o prestazione è già provata.
+7. **Il testo resta testo**, mai HTML. Di un indirizzo esterno si esportano host, porta e percorso: via credenziali, query e frammento; una stringa riconosciuta come sensibile non si esporta.
 
-## 3. Contratto dati e integrazione
+8. **Il layout ha un limite.** 5 secondi per tentativo, poi il worker è terminato; la risposta a una richiesta superata si scarta.
 
-**Stato attuale:** Daodan ha snapshot, moduli e schede. L'export usa solo questi; non interpreta i report Markdown né i diagrammi Mermaid.
+## Prove
 
-L'exporter Python usa le API interne di snapshot/moduli/schede, senza leggere direttamente tabelle SQLite sparse nel frontend e senza richiedere un server MCP. Percorsi proposti: `plugins/codebase-map/skills/map/scripts/visual.py` per export/serve; `plugins/codebase-map/viewer/` per sorgenti frontend; asset distribuiti sotto `plugins/codebase-map/assets/viewer/`. Non sono file già implementati.
+`tests/test_codebase_map_visual.py`, `tests/test_codebase_map_visual_server.py`; nel viewer `viewer/test/` (proiezione, stato, client del layout, suite nel browser `browser.mjs`). Il workflow `Viewer` esegue i test del viewer, il build e `npx imago-check`.
 
-Envelope proposto `daodan/visual@1`:
+## Aperto: da approfondire
 
-| Campo | Contenuto minimo e regola |
-| --- | --- |
-| `meta` | Identità progetto/run, versione export e digest degli input consumati; export legato al run, non al mirror corrente |
-| `entities` | Riferimenti canonici tipizzati ai record originari, nome/tipo, descrizione quando presente, evidenze e stati originali; nessun source code completo incorporato |
-| `relations` | Estremi canonici, tipo/direzione, evidenze e stato; ID originale se esiste, altrimenti derivato deterministicamente dall'identità della relazione e della sorgente |
-| `memberships` | Appartenenze fisiche/logiche esplicite; non costringere le responsabilità in un singolo albero |
-| `gaps` | Lacune già dichiarate o introdotte dalla proiezione, con riferimenti interessati e ragione; nessuna lacuna sostituita da un arco certo |
-
-Non si crea una seconda tassonomia degli stati: i nomi e significati di provenienza, stato e freschezza sono quelli dei produttori Daodan, distinti fra loro. I riferimenti canonici riusano gli ID originari con namespace del tipo; la validità è nel run. Le sorgenti usano percorso relativo, righe e digest ove già disponibili. Una citazione senza digest non viene promossa a lettura verificata.
-
-I riferimenti multipli producono occorrenze visuali, non nuove entità. ID dell'occorrenza = funzione del riferimento canonico e del contenitore della vista; esiste solo nella UI. Counts e risultati di ricerca deduplicano per identità canonica. I parent React Flow organizzano le occorrenze, non definiscono i proprietari del codice. Gli archi aggregati conservano l'elenco dei riferimenti alle relazioni sottostanti; gli archi interni a un gruppo collassato diventano un conteggio consultabile, non false dipendenze esterne.
-
-L'export viene scritto in una directory derivata per run/digest, esterna agli input immutabili: destinazione proposta `.daodan/map/views/<run-id>/<export-digest>/`. Si valida prima di pubblicare la directory completa; errori non sovrascrivono l'export precedente. Il digest include anche le schede effettivamente lette: il loro store è aggiornabile separatamente, perciò la lettura deve acquisire una vista coerente o rifiutare un cambiamento concorrente.
-
-## 4. Esecuzione, UI e failure mode
-
-Il comando Python di apertura serve soltanto il singolo export selezionato e gli asset precompilati su `127.0.0.1`, porta libera, senza installazioni o download a runtime. Allowlist di file, nessun directory listing, controllo Host/origine per i dati, nessun CORS permissivo; collegamenti simbolici/traversal non possono uscire dalle radici consentite. Nessuna API per leggere percorsi arbitrari, eseguire comandi o avviare agenti. L'esportazione è una cache derivata; il viewer è sola lettura rispetto alle sorgenti e agli store.
-
-«Apri altro export» usa un file locale scelto dall'utente o un nuovo URL locale prodotto dal comando: non richiede un servizio di discovery dei progetti. Il caricamento verifica schema e riferimenti prima di sostituire il dataset. L'interfaccia non promette di rilevare da sola nuovi run; espone identità/data del run caricato. La generazione di un nuovo run resta il workflow Codebase Map esistente.
-
-Testo mostrato come testo, mai HTML grezzo. Indirizzi esterni sono attributi informativi: si rimuovono userinfo, query e frammenti, si preservano host/porta/path utili; stringhe riconosciute sensibili non si esportano. Niente immagini, font o worker da CDN. Link editor opzionali con integrazione host esplicita, senza concatenare comandi shell. Nessun codice Pro di esempi o asset Floorplan nella distribuzione; includere notice delle librerie effettivamente fissate.
-
-React Flow opera in modalità esplorazione: creazione/eliminazione/riconnessione degli archi disabilitate. Un eventuale trascinamento cambia soltanto la posizione locale. Stato per progetto/run: vista, selezione canonica, filtri, gruppi aperti e viewport. Si possono memorizzare preferenze UI; dati del progetto e sorgenti non vengono duplicati in localStorage.
-
-ELK riceve solo il grafo visibile con dimensioni e porte. Il worker è incluso negli asset e serve da URL locale. Ogni richiesta porta la generazione della proiezione; risultati superati vengono scartati. Le richieste ravvicinate si accorpano. Fallimento/timeout mantiene la vista precedente se riferita agli stessi dati; per un nuovo dataset offre vista elenco e riprova, senza presentare un vecchio grafo come nuovo. Budget iniziale del tentativo layout: 5 s, proposto e configurabile; terminazione del worker a scadenza.
-
-Selezione e hover non rilanciano il layout salvo espansioni necessarie. Apertura/chiusura di gruppi preserva per quanto possibile il punto osservato; «Riordina» e «Adatta» sono espliciti. Rendering progressivo e memoizzazione seguono le [raccomandazioni React Flow](https://reactflow.dev/learn/advanced-use/performance). Una vista troppo densa richiede restringimento del perimetro, con contatori e vista elenco: niente troncamenti silenziosi.
-
-## 5. Evidenze locali, verifiche e approvazione
-
-Fonti consultate: [README](../../README.md), [moduli](../../plugins/codebase-map/skills/map/references/modules.md), [run](../../plugins/codebase-map/skills/map/references/run.md), [schede](../../plugins/codebase-map/skills/map/scripts/card_store.py), [freschezza](../../plugins/codebase-map/skills/map/scripts/semantic_store.py), [MCP](../../plugins/codebase-map/skills/map/scripts/mcp_server.py). Non è stato trovato un `package.json` nel progetto durante questa ricognizione; il frontend aggiunge quindi una toolchain di sviluppo isolata.
-
-Test futuri: unitari del mapping/aggregazione e delle transizioni di stato; fixture export con digest discordanti; browser desktop e viewport stretta, tastiera e reduced motion; server confinato; caricamento offline senza richieste esterne; compatibilità della distribuzione precompilata e licenze del lock. I benchmark e i criteri osservabili sono nel FRD. Una libreria accessibile non rende automaticamente accessibile il grafo finito.
-
-**Approvati l'8 novembre 2026:** questo design e i target provvisori del FRD. Segue il piano di implementazione. **Da verificare durante la prima prova:** fedeltà/costo React Flow contro LikeC4, compatibilità delle versioni, effettiva disponibilità degli input e prestazioni. L'approvazione non dichiara integrazione completata né attribuisce i precedenti test di Floorplan a Daodan.
+- **Prestazioni.** Gli obiettivi del FRD (300 nodi visibili entro 2 s, selezione entro 100 ms al p95) non erano raggiunti nella sola misura fatta, sul viewer con React Flow e su export sintetici. Sul grafo di Imago e su un run reale non sono misurati.

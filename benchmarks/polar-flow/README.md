@@ -1,6 +1,8 @@
 # Benchmark: un conteggio letto a un'altra granularità, in un servizio
 
-Caso per le spec [fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md): un servizio senza interfaccia, [polarsource/polar](https://github.com/polarsource/polar), con un difetto reale già corretto. Una concessione di beneficio è registrata per membro; la revoca la conta per cliente. Il codice di polar non è copiato qui; le run e i loro artefatti restano fuori dal repository.
+**Stato:** In parte. Il caso è definito (commit, difetti attesi, perimetro) e il suo target è usato dal conteggio delle chiamate ([`call-provenance`](../call-provenance/README.md)) e dalla misura del registro ([`system-map`](../system-map/README.md#il-registro-dei-servizi-esterni)). Le run di review della fase 3 non sono eseguite. La cartella contiene solo questo README.
+
+**Domanda.** La review trova un conteggio letto a un'altra granularità dentro un servizio, e il flusso dato in più la aiuta? Caso per le spec [fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md): un servizio senza interfaccia, [polarsource/polar](https://github.com/polarsource/polar), con un difetto reale già corretto. Una concessione di beneficio è registrata per membro; la revoca la conta per cliente. Il codice di polar non è copiato qui; le run e i loro artefatti restano fuori dal repository.
 
 ## Parametri
 
@@ -22,4 +24,6 @@ Chi conta e chi interroga stanno nella stessa cartella: i gruppi per percorso de
 
 ## Risultati
 
-Nessuna run eseguita.
+- **Review (fase 3), P1 e P2:** nessuna run eseguita. **Aperta: da approfondire:** sull'unico caso misurato, [`phazly-flow`](../phazly-flow/README.md#con-le-unità-o-con-lelenco-dei-flussi-fase-3), unità e flussi non cambiano l'esito; se valga la spesa di ripeterlo qui non è deciso.
+- **Regole di collegamento:** nessuna, né a mano né scritte da un modello.
+- **Chiamate risolte su `server/`,** dopo il passo statico: [`call-provenance`](../call-provenance/README.md). Dopo il passo dinamico: non misurato su questo caso.

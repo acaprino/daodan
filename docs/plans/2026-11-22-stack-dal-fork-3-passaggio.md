@@ -1,24 +1,24 @@
-# Stack dal fork, piano 3 di 3: il passaggio
+# Piano: stack dal fork, il passaggio
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Stato:** Proposta: nulla nel codice. `technologies.derive` chiama ancora `service_registry.run`, `daodan/core/stack_recognition.py` non esiste e il rilascio fissato in `daodan/core/stack_analyser.py` è `1.27.6-daodan.2`. Tutti i task sotto sono aperti. La Parte A si fa nel repository del fork, [`acaprino/stack-analyser`](https://github.com/acaprino/stack-analyser), ramo `feature/stack-detection`.
 
-**Goal:** Il passo `stack` di Daodan riconosce solo attraverso il fork di stack-analyser, in entrambe le scansioni; ogni segno porta la sua fonte e la scansione da cui viene; il registro resta come anagrafica.
+**Obiettivo:** il passo `stack` di Daodan riconosce solo attraverso il fork di stack-analyser, in entrambe le scansioni; ogni segno porta la sua fonte e la scansione da cui viene; il registro resta come anagrafica.
 
-**Architecture:** Parte A, nel fork: un rilascio `.3` che legge il perimetro da un file invece che dalla riga di comando e sa scrivere il proprio catalogo. Parte B, in Daodan: la traduzione oggi nel benchmark diventa il modulo `stack_recognition.py`; `technologies.derive` la chiama al posto di `service_registry.run` e unisce i segni nuovi con quelli delle fonti che in questa scansione non hanno girato; il registro si genera dal catalogo del rilascio e perde i segni.
+**Architettura:** Parte A, nel fork: un rilascio `.3` che legge il perimetro da un file invece che dalla riga di comando e sa scrivere il proprio catalogo. Parte B, in Daodan: la traduzione oggi nel benchmark diventa il modulo `stack_recognition.py`; `technologies.derive` la chiama al posto di `service_registry.run` e unisce i segni nuovi con quelli delle fonti che in questa scansione non hanno girato; il registro si genera dal catalogo del rilascio e perde i segni.
 
-**Tech Stack:** TypeScript/Vitest (fork, `C:\Users\alfio\Documents\ChatGPT\Daodan\stack-analyser`, ramo `feature/stack-detection`); Python 3.12/pytest (Daodan, ramo nuovo `stack-dal-fork` da `develop`). Gli strumenti veri girano su Modal.
+**Tecnologie:** TypeScript e Vitest nel fork; Python 3.12 e pytest in Daodan. Gli strumenti veri girano su Modal.
 
-**Spec:** `docs/specs/2026-11-21-stack-dal-fork.md`, «Disegno» 2.2–2.6, «Ordine» punto 4, «Verifica». Il piano 2 ha misurato e ha scritto ciò che ha trovato in `benchmarks/project-model/README.md`, sezione «Lo step `stack` dal fork».
+**Spec:** `docs/specs/2026-11-21-stack-dal-fork.md`, «Disegno» 2.2–2.6, «Ordine» punto 4, «Verifica». **Misura di partenza:** [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «Lo step `stack` dal fork».
 
-## Che cosa consegnano i piani 1 e 2
+## Punto di partenza, nel codice oggi
 
-- Rilascio `1.27.6-daodan.2` del fork, fissato in `daodan/core/stack_analyser.py` (`VERSION`, `URL`, `SHA256`), in `tests/modal_pytest.py` e in `benchmarks/project-model/modal_stack_fork.py`; due test legano i tre punti.
+- Rilascio `1.27.6-daodan.2` del fork, fissato in `daodan/core/stack_analyser.py` (`VERSION`, `URL`, `SHA256`), in `tests/modal_pytest.py` e in `benchmarks/project-model/modal_stack_fork.py`.
 - `stack_analyser.run(project, *, declarations=(), skip_dirs=None, ignore=()) -> dict`, `cli()`, `node(project)`: lo strumento, provato su Modal con il rilascio vero ma con `cli` e `node` sostituiti.
-- `benchmarks/project-model/tools/fork_stack.py`: la traduzione (`declarations`, `perimeter`, `_signs`, `found`, `recognize`) e le misure del confronto (`compare`, `measure`, `summary`, …), con 70 test.
-- Il giro sul corpus (178 progetti su 180): nessun nome atteso perso; scansione veloce 0,52 s di mediana contro 0,013 s.
+- `benchmarks/project-model/tools/fork_stack.py`: la traduzione (`declarations`, `perimeter`, `_signs`, `found`, `recognize`) e le misure del confronto (`compare`, `measure`, `summary`).
+- Il giro sul corpus: nessun nome atteso perso; numeri e tempi nel README del benchmark.
 - Uscita del fork: componenti con `evidence: [{tech, kind, value, path, line?, source}]`, `kind` in `package | image | action | terraform | file | extension | env | source`.
 
-## Che cosa il piano 2 ha trovato e questo piano deve chiudere
+## Che cosa la misura sul corpus ha trovato e questo piano deve chiudere
 
 1. `--ignore` e `--skip-dirs` stanno sulla riga di comando: `real-stack-owncast` chiede 36.678 caratteri, oltre il limite di Windows (32.767). Il costo della lista cresce con la sua lunghezza (il fork confronta ogni voce con ogni prefisso di ogni percorso).
 2. Il fork apre `.env*.example|sample|template`, che `source_files.FORBIDDEN_GLOBS` vieta a Daodan.
@@ -26,7 +26,7 @@
 4. Un'installazione fallita viene ritentata a ogni scansione (tre tentativi, 12 secondi di attese) sotto `project_lock`.
 5. Un'uscita o un fatto malformato solleva `KeyError` invece di diventare un buco; lo store della snapshot resta aperto durante la corsa di Node.
 6. La scansione veloce riscrive `premap.json` e `technologies.json` da capo: i fatti delle fonti con comandi (Renovate, Compose, BuildKit, go-enry, i build tool) spariscono fino alla completa successiva.
-7. `develop` ha cambiato `technologies.py` e la pre-mappa dopo il giro: i numeri vanno rimisurati.
+7. `technologies.py` e la pre-mappa sono cambiati dopo il giro: i numeri vanno rimisurati.
 
 ## Scelte di chi scrive, da confermare con il proprietario
 
@@ -38,7 +38,7 @@
 6. **Servizi generici in più** (`azure`, `aws`, `google`, `gcp`, `firebase`…): restano come li dà il fork; il giro li riporta fra i servizi «in più».
 7. **La tabella di supporto** perde la colonna dei segni per tipo e dice se il fork ha una regola per la voce.
 
-## Global Constraints
+## Vincoli
 
 - **Regola invalicabile.** Il fork legge file e non esegue nulla del progetto; la prova su Modal passa con l'installazione vera e con il Node di Daodan.
 - **Un solo riconoscitore.** Dopo il Task B4 nessun modulo sotto `daodan/` confronta nomi di pacchetti, file o variabili con segni del registro. `registry_hosts.py` resta l'unica lettura di Daodan (2.4).
@@ -50,7 +50,7 @@
 - **Modal e pubblicazioni**: ogni giro su Modal, ogni push, tag, rilascio e la rinomina del repository si fanno solo dopo la conferma del proprietario, e li lancia chi coordina.
 - Commit nello stile di ciascun repository (fork: `feat: …` in inglese; Daodan: prefisso e frase in italiano).
 
-## Review Focus
+## Punti da presidiare
 
 1. **Dopo una modifica spariscono tecnologie.** Scansione completa, poi modifica di un file e scansione veloce: le tecnologie che venivano da Renovate o da un build tool devono restare, con la scansione da cui vengono. Test: B3, `test_a_fast_scan_keeps_the_signs_of_the_sources_it_did_not_run`.
 2. **Il fork non parte.** Senza rete al primo uso, senza disco, Node non installabile: il passo finisce, conserva i risultati e scrive il buco; non ritenta a ogni scansione. Test: B1, `test_an_install_that_failed_is_not_tried_again_in_the_same_process`; B3, `test_without_the_tool_the_previous_signs_stay_and_a_gap_says_why`.
@@ -60,7 +60,7 @@
 
 ---
 
-## Parte A — il fork
+## Parte A: il fork
 
 ### Task A1: Il perimetro da un file
 
@@ -117,7 +117,7 @@ Commit: `feat: write the catalogue of rules`.
 
 ---
 
-## Parte B — Daodan
+## Parte B: Daodan
 
 ### Task B1: Lo strumento sul rilascio `.3`
 
@@ -234,7 +234,7 @@ Test:
 
 - La prova «nulla viene eseguito» chiama il `cli()` vero (con `shared_engine_dir` in una cartella temporanea) e il Node di Daodan (`runtime.node`), e ha un vettore in più: un `.env.example` in una cartella viva, che il fork non deve aprire. Il controllo è sul perimetro passato e sull'assenza di prove `env`.
 - `modal_stack.py` misura il prodotto: l'immagine ha Node 22 e il rilascio; per fixture registra anche il tempo della scansione veloce, il numero di dichiarazioni e la lunghezza del perimetro.
-- Il confronto con il registro non esiste più nel codice: il README confronta il giro nuovo con l'ultimo giro del piano 2, che resta nei risultati committati.
+- Il confronto con il registro non esiste più nel codice: il README confronta il giro nuovo con l'ultimo giro con il registro, che resta nei risultati committati.
 
 - [ ] **Step 1**: codice e test locali; **Step 2 (chi coordina, dopo conferma)**: la prova su Modal; il giro sul corpus; **Step 3**: la sezione del README con parametri, risultati, «Non misurato» e verdetto sulla «Verifica»; commit.
 
@@ -245,4 +245,4 @@ Test:
 
 Ogni frase dice ciò che il codice fa dopo B4–B5, con i tempi misurati in B6. Nessun riepilogo.
 
-- [ ] **Step 1**: modifiche; **Step 2**: `git grep` di `check_packages`, `specfy_rules`, `stack_source`, `pochi millisecondi`, `segni del registro` fuori da `docs/plans` e `docs/reviews`: nessun riferimento rimasto al comportamento di prima; commit `docs: lo stack dal fork, com'è dopo il passaggio`.
+- [ ] **Step 1**: modifiche; **Step 2**: `git grep` di `check_packages`, `specfy_rules`, `stack_source`, `pochi millisecondi`, `segni del registro` fuori da `docs/plans`: nessun riferimento rimasto al comportamento di prima; commit `docs: lo stack dal fork, com'è dopo il passaggio`.

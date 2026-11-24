@@ -1,8 +1,8 @@
-# Fase 3: unità e flussi aiutano la review?
+# Flussi nella review: unità e flussi aiutano a trovare difetti?
 
-**Stato:** primo caso misurato il 12 novembre 2026 su phazly (dieci run, 112,39 USD): né le unità né i flussi portano i difetti attesi nel rapporto, anche dopo la ripetizione di B e C con i collegamenti corretti, quindi per ora la review resta com'è. I due difetti mancano per giudizio: la logica è letta e ritenuta corretta. Numeri in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md). **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 3 di 3.
+**Stato:** Aperta: da approfondire. La domanda: la review trova più difetti se riceve unità e flussi della [mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md)? Un caso misurato su tre, il 12 novembre 2026 su phazly (dieci run, 112,39 USD): né le unità né i flussi portano i difetti attesi nel rapporto, anche con i collegamenti corretti; i due difetti mancano per giudizio, la logica è letta e ritenuta corretta. Per ora la review resta com'è. I casi polar e tududi non hanno run; la prova sulla ricerca con le parole di chi usa il prodotto non è fatta. Numeri in [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md).
 
-Una domanda sola: la review trova più difetti se riceve le unità e i flussi della fase 2? Si risponde con una misura. Unità e flussi restano comunque utili all'esploratore e alla mappa funzionale: qui si decide solo se entrano nella review. Le parole sono quelle definite nelle fasi 1 e 2.
+Si risponde con una misura. Unità e flussi restano comunque utili all'esploratore e alla mappa: qui si decide solo se entrano nella review. Le parole sono quelle della spec della mappa del sistema.
 
 ## Cosa sappiamo
 
@@ -15,7 +15,7 @@ Dalle run di [`benchmarks/phazly-flow`](../../benchmarks/phazly-flow/README.md),
 - Ogni incarico riceve la richiesta in una frase e un elenco di file. Nessuna domanda sul dato.
 - La mappa di quelle run non aveva i collegamenti `chiama` per TypeScript.
 
-Dalla [rassegna della letteratura](../research/2026-11-09-flow-reconstruction-literature.md) e dalla [rassegna dettagliata](../research/2026-11-11-flow-reconstruction-detailed.md): dividere il lavoro seguendo i collegamenti è misurato sulle modifiche da rivedere, non sul numero di difetti trovati; aggiungere contesto alla review senza controllare budget e selezione peggiora tutti gli otto modelli provati in `SWE-PRBench`; confrontare il significato fra chi scrive e chi legge un dato non ha strumenti valutati. La risposta può quindi essere «non aiuta».
+Dalla [rassegna della letteratura](../research/2026-11-11-flow-reconstruction-detailed.md): dividere il lavoro seguendo i collegamenti è misurato sulle modifiche da rivedere, non sul numero di difetti trovati; aggiungere contesto alla review senza controllare budget e selezione peggiora tutti gli otto modelli provati in `SWE-PRBench`; confrontare il significato fra chi scrive e chi legge un dato non ha strumenti valutati. La risposta può quindi essere «non aiuta».
 
 ## Le tre prove
 
@@ -32,10 +32,10 @@ Si prova su casi: progetti reali con difetti noti, al commit che precede la corr
 - **Mappa:** completa dei collegamenti `chiama` per i linguaggi del perimetro.
 - **Revisori:** scelti a mano una volta per caso, uguali per le tre prove.
 - **Ripetizioni:** due run per prova.
-- **Regole della fase 1:** attive in tutte e tre.
+- **Le quattro regole** della [spec della review](2026-11-03-semantic-review-foundation.md), sezione 5: attive in tutte e tre.
 - **Stima iniziale:** 15-21 USD a run, circa 110 USD per le sei run di un caso; da ricalibrare sul perimetro di ogni caso.
 
-I flussi di C si ricavano dallo stesso perimetro e dallo stesso contesto di A e B, entro un tetto fisso di caratteri nell'incarico per non confondere qualità del flusso e diluizione del contesto. Un caso entra nelle run a pagamento solo dopo aver superato le misure senza modello della fase 2 (compreso il conteggio dei `chiama` risolti).
+I flussi di C si ricavano dallo stesso perimetro e dallo stesso contesto di A e B, entro un tetto fisso di caratteri nell'incarico per non confondere qualità del flusso e diluizione del contesto. Un caso entra nelle run a pagamento solo dopo aver superato le misure senza modello di [`benchmarks/flow-model`](../../benchmarks/flow-model/README.md) (compreso il conteggio dei `chiama` risolti).
 
 Si conta, per ogni run: difetti attesi presenti nel rapporto finale (non solo in un incarico), altri difetti reali, segnalazioni sbagliate, token effettivi, costo, tempo e file non esaminati; per ogni difetto mancato si registra se è mancato nell'estrazione del collegamento, nella selezione dell'incarico o nel giudizio del revisore. Il confronto è valido solo a parità di perimetro e con copertura completa: una run con file mancanti va completata prima di applicare le soglie.
 
@@ -52,4 +52,4 @@ Le soglie si scrivono nel README del benchmark prima delle run e valgono per ogn
 3. Il campo di testo resta se porta nei primi cinque risultati almeno tre simboli che l'indice lessicale da solo non porta, senza peggiorare le ricerche per nome.
 4. Se né B né C superano A, la review resta com'è, e lo si scrive con i numeri.
 
-**Da decidere alla rifinitura:** come passare un'unità a `composition.py bind`; come scrivere il flusso in `01-context.md`; se due run per prova bastano, vista la variabilità misurata; come si combinano gli esiti di casi diversi.
+**Aperta: da approfondire:** come passare un'unità a `composition.py bind`; come scrivere il flusso in `01-context.md`; se due run per prova bastano, vista la variabilità misurata; come si combinano gli esiti di casi diversi.
