@@ -33,8 +33,5 @@ export const WORDS: WordsOverride = {
     moreSteps: count => `+${count}`,
     onPath: (item, steps) => `${item}, ${steps.length === 1 ? `passo ${steps[0]}` : `passi ${steps.slice(0, -1).join(', ')} e ${steps[steps.length - 1]}`}`,
     line: (item, way, label) => `${label ? `${label}, ` : ''}${way === 'to' ? 'verso' : way === 'from' ? 'da' : 'con'} ${item}`,
-    open: item => `Apri ${item}`, close: item => `Chiudi ${item}`,
-    holds: (item, count) => `${item}, aperto, contiene ${count === 1 ? 'un elemento' : `${count} elementi`}`, inGroup: group => `in ${group}`,
-    resetLayout: 'Riordina', moveKeys: 'Alt e una freccia lo spostano', moved: (item, x, y) => `${item} spostato a ${x}, ${y}`,
   },
 };
