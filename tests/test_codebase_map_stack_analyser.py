@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import http.client
 import io
 import json
 import sys
@@ -28,6 +29,14 @@ import stack_analyser  # noqa: E402
 from indexers import runtime  # noqa: E402
 
 DECLARATION = {"type": "npm", "name": "react", "path": "web/package.json", "line": 4, "source": "npm@1"}
+
+
+@pytest.fixture(autouse=True)
+def forgotten_failures():
+    """What the process remembers of a failed install is not carried from one test to the next."""
+    stack_analyser._failed.clear()
+    yield
+    stack_analyser._failed.clear()
 
 
 @pytest.fixture
@@ -50,8 +59,8 @@ def test_the_fork_is_started_outside_the_project_without_the_caller_s_node_varia
     [call] = fake_stack_analyser.calls(program)
     assert Path(call["argv"][0]) == cli and cli.is_absolute() and program.is_absolute()
     assert call["argv"][1] == str(project.resolve())
-    assert "--skip-dirs" in call["argv"] and call["argv"][call["argv"].index("--skip-dirs") + 1] == ""
-    assert call["argv"][call["argv"].index("--ignore") + 1] == "gen"
+    assert not {"--skip-dirs", "--ignore"} & set(call["argv"])
+    assert json.loads((program.parent / "perimeter.json").read_bytes()) == {"skipDirs": [], "ignore": ["gen"]}
     assert not Path(call["cwd"]).resolve().is_relative_to(project.resolve())
     assert "NODE_OPTIONS" not in call["env"] and "NODE_PATH" not in call["env"]
     assert "NODE_COMPILE_CACHE" in call["env"]  # Daodan's own caches are added after the caller's are dropped
@@ -75,7 +84,52 @@ def test_without_declarations_the_option_is_not_passed(started):
     stack_analyser.run(project)
     [call] = fake_stack_analyser.calls(program)
     assert not {"--declarations", "--skip-dirs", "--ignore"} & set(call["argv"])
-    assert call["argv"][2:] == ["--output", call["argv"][3]] and not (program.parent / "declarations.json").exists()
+    assert call["argv"][2:4] == ["--output", call["argv"][3]] and not (program.parent / "declarations.json").exists()
+    assert json.loads((program.parent / "perimeter.json").read_bytes()) == {"skipDirs": [], "ignore": []}
+
+
+def test_the_perimeter_reaches_the_fork_in_a_file(started):
+    project, program, _cli = started
+    ignore = tuple(f"packages/service-{number}/generated/file-{number}.ts" for number in range(10000))
+    stack_analyser.run(project, declarations=[DECLARATION], skip_dirs=("node_modules", "dist"), ignore=ignore)
+    [call] = fake_stack_analyser.calls(program)
+    assert max(len(argument) for argument in call["argv"]) < 300
+    path = Path(call["argv"][call["argv"].index("--perimeter") + 1])
+    assert not path.resolve().is_relative_to(project.resolve())
+    assert json.loads((program.parent / "perimeter.json").read_bytes()) == {"skipDirs": ["node_modules", "dist"],
+                                                                         "ignore": list(ignore)}
+
+
+def test_the_catalogue_is_what_the_fork_writes(started):
+    _project, program, cli = started
+    assert stack_analyser.catalogue() == fake_stack_analyser.CATALOGUE
+    [call] = fake_stack_analyser.calls(program)
+    assert Path(call["argv"][0]) == cli and call["argv"][1] == "--catalogue" and len(call["argv"]) == 3
+    assert not {"--output", "--perimeter"} & set(call["argv"])
+
+
+def test_a_cache_folder_that_cannot_be_used_is_a_gap(started, monkeypatch):
+    project, program, _cli = started
+
+    def unusable():
+        raise OSError(13, "Permission denied")
+
+    monkeypatch.setattr(engine_tools, "node_environment", unusable)
+    for call in (lambda: stack_analyser.run(project), stack_analyser.catalogue):
+        with pytest.raises(container.Gap) as gap:
+            call()
+        assert "Permission denied" in gap.value.cause and gap.value.remedy
+    assert fake_stack_analyser.calls(program) == []
+
+    def unusable_engines(_name):
+        raise ValueError("DAODAN_SHARED_DIR must be an absolute path")
+
+    monkeypatch.undo()  # the fixture's stand-ins go: `cli` is the real one
+    monkeypatch.setattr(engine_tools, "shared_engine_dir", unusable_engines)
+    stack_analyser.cli.cache_clear()
+    with pytest.raises(container.Gap) as gap:
+        stack_analyser.cli()
+    assert "must be an absolute path" in gap.value.cause and gap.value.remedy
 
 
 def test_declarations_that_are_not_valid_unicode_are_a_gap_and_nothing_starts(started):
@@ -162,6 +216,47 @@ def test_a_release_with_another_sha256_is_not_installed(tmp_path, monkeypatch, i
     assert "checksum mismatch" in gap.value.cause and gap.value.remedy
     assert not installed_under.exists()
     assert not any(tmp_path.joinpath("stack-analyser").iterdir())  # not even a partial install
+
+
+def test_an_install_that_failed_is_not_tried_again_in_the_same_process(tmp_path, monkeypatch, installed_under):
+    attempts = []
+
+    def refuse(*_args, **_kwargs):
+        attempts.append(1)
+        raise OSError("no route to host")
+
+    monkeypatch.setattr(engine_tools, "publish", refuse)
+    with pytest.raises(container.Gap) as first:
+        stack_analyser.cli()
+    with pytest.raises(container.Gap) as second:
+        stack_analyser.cli()
+    assert second.value is first.value and "no route to host" in first.value.cause and len(attempts) == 1
+
+    def unavailable(_project):
+        attempts.append(2)
+        raise runtime.Unavailable("no room", "free 1 GB")
+
+    monkeypatch.setattr(runtime, "node", unavailable)
+    for _ in range(2):
+        with pytest.raises(container.Gap) as node_gap:
+            stack_analyser.node(tmp_path)
+    assert node_gap.value.cause == "no room" and attempts == [1, 2]
+
+
+def test_a_download_cut_off_is_tried_again(tmp_path, monkeypatch, installed_under):
+    url, digest = _release(tmp_path)
+    monkeypatch.setattr(stack_analyser, "URL", url)
+    monkeypatch.setattr(stack_analyser, "SHA256", digest)
+    opened, open_url = [], engine_tools.open_url
+
+    def cut_off_once(*args, **kwargs):
+        opened.append(1)
+        if len(opened) == 1:
+            raise http.client.IncompleteRead(b"")
+        return open_url(*args, **kwargs)
+
+    monkeypatch.setattr(engine_tools, "open_url", cut_off_once)
+    assert stack_analyser.cli().is_file() and len(opened) == 2
 
 
 def test_the_release_is_installed_once_and_found_again(tmp_path, monkeypatch, installed_under):

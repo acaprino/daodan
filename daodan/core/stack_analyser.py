@@ -4,11 +4,12 @@ The release is a Node program (`package/dist/cli.mjs` of its `.tgz`): the recogn
 a fork of Specfy's. A project's files are its data, so it runs in a folder of its own outside every project, in
 Daodan's own pinned Node, with the project named only by its argument and without the caller's `NODE_` variables
 (`NODE_OPTIONS` and `NODE_PATH` lead Node to code of the caller's choosing). The declarations Daodan already read go
-in a file of that folder, not on the command line. Nothing of the folder outlives the run.
+in files of that folder, not on the command line. Nothing of the folder outlives the run.
 """
 from __future__ import annotations
 
 import functools
+import http.client
 import json
 import os
 import subprocess
@@ -18,20 +19,37 @@ from pathlib import Path
 
 from container import Gap
 
-VERSION = "1.27.6-daodan.2"
-URL = f"https://github.com/acaprino/stack-analyser/releases/download/v{VERSION}/specfy-stack-analyser-{VERSION}.tgz"
-SHA256 = "57dfe8d1b2e37ecb95c331b3f74c8c2aecead59a4ef95835c71a02d5397a9774"  # of the `.tgz` above
+VERSION = "1.27.6-daodan.3"
+URL = f"https://github.com/acaprino/stack-analyser-daodan/releases/download/v{VERSION}/stack-analyser-daodan-{VERSION}.tgz"
+SHA256 = "dbd26252845ccfabcc95ff45dee15118eb611adc2222f2c0a3f46ad6933fc322"  # of the `.tgz` above
 PROGRAM = "package/dist/cli.mjs"  # in the archive
 TIMEOUT = 300  # seconds for one project, start included; the real run time is not measured yet
 UNSET = "NODE_"  # what Node reads as its own options or module paths
+_failed: dict[str, Gap] = {}  # an install that failed, by tool: it is not tried again in this process
 
 
+def _remembered(function):
+    """`function` that, once it raised a `Gap`, raises that same `Gap` again without trying: an install that failed
+    (no network, no disk) would otherwise be retried, with its waits, at every scan."""
+    @functools.wraps(function)
+    def wrapper(*arguments):
+        if function.__name__ not in _failed:
+            try:
+                return function(*arguments)
+            except Gap as gap:
+                _failed[function.__name__] = gap
+        raise _failed[function.__name__]
+
+    wrapper.cache_clear = lambda: (_failed.pop(function.__name__, None), getattr(function, "cache_clear", int)())
+    return wrapper
+
+
+@_remembered
 @functools.cache
 def cli() -> Path:
     """The release's `cli.mjs`, downloaded on the first call into Daodan's shared tool folder, checked against the
     release's sha256 and published whole. `Gap` when it cannot be had."""
     import engine_tools
-    home = engine_tools.shared_engine_dir("stack-analyser") / VERSION
 
     def fill(partial: Path) -> None:
         archive = engine_tools.download(URL, partial / "release.tgz", sha256=SHA256)
@@ -39,10 +57,11 @@ def cli() -> Path:
         archive.unlink()
 
     try:
+        home = engine_tools.shared_engine_dir("stack-analyser") / VERSION
         if not (home / ".installed").is_file():
             print(f"installing stack-analyser {VERSION} into {home} (first use)", flush=True)
             engine_tools.publish(home, fill, VERSION)
-    except (OSError, ValueError, tarfile.TarError) as error:
+    except (OSError, ValueError, http.client.HTTPException, tarfile.TarError) as error:
         raise Gap(f"stack-analyser {VERSION} could not be downloaded and verified: {error}",
                   "check the connection to github.com, then analyze again") from error
     if not (home / PROGRAM).is_file():
@@ -51,6 +70,7 @@ def cli() -> Path:
     return home / PROGRAM
 
 
+@_remembered
 def node(project: Path) -> Path:
     """The executable of Daodan's own pinned Node, installed on first use. `Gap` when it cannot be had."""
     import engine_tools
@@ -65,9 +85,10 @@ def node(project: Path) -> Path:
 
 
 def command(node: Path, cli: Path, project: Path, output: Path, declarations: Path | None,
-            skip_dirs: tuple[str, ...] | None, ignore: tuple[str, ...]) -> list[str]:
-    """The command line of one run. `skip_dirs` None leaves the option out (the release's own default), `()` passes
-    an empty list: skip nothing."""
+            skip_dirs: tuple[str, ...] | None, ignore: tuple[str, ...], perimeter: Path | None = None) -> list[str]:
+    """The command line of one run. `perimeter` names the file of the two lists, which `run` passes in place of
+    `skip_dirs` and `ignore`. `skip_dirs` None leaves the option out (the release's own default), `()` passes an empty
+    list: skip nothing."""
     argv = [str(node), str(cli), str(project), "--output", str(output)]
     if declarations is not None:
         argv += ["--declarations", str(declarations)]
@@ -75,52 +96,88 @@ def command(node: Path, cli: Path, project: Path, output: Path, declarations: Pa
         argv += ["--skip-dirs", ",".join(skip_dirs)]
     if ignore:
         argv += ["--ignore", ",".join(ignore)]
+    if perimeter is not None:
+        argv += ["--perimeter", str(perimeter)]
     return argv
 
 
 def _environment() -> dict:
     import engine_tools
-    return {key: value for key, value in os.environ.items() if not key.upper().startswith(UNSET)} \
-        | engine_tools.node_environment()
+    try:
+        added = engine_tools.node_environment()
+    except (OSError, ValueError) as error:
+        raise Gap(f"Daodan's cache folder for Node could not be used: {error}",
+                  "fix DAODAN_SHARED_DIR or free space on that drive, then analyze again") from error
+    return {key: value for key, value in os.environ.items() if not key.upper().startswith(UNSET)} | added
 
 
-def run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, ...] | None = None,
+def _write(path: Path, content, what: str) -> Path:
+    """`content` as UTF-8 JSON in `path`, in the run's own folder. `Gap` when it cannot be written."""
+    try:
+        path.write_bytes(json.dumps(content, ensure_ascii=False).encode("utf-8"))
+    except UnicodeError as error:  # a lone surrogate: a manifest's `\ud800`, a file name that is not UTF-8
+        raise Gap(f"stack-analyser's {what} could not be written: one holds text that is not valid Unicode",
+                  "rename the file or folder whose name is not valid UTF-8, or fix the manifest string that holds a "
+                  "lone surrogate, then analyze again") from error
+    except OSError as error:
+        raise Gap(f"stack-analyser's {what} could not be written: {error}",
+                  f"free space on the drive of {tempfile.gettempdir()}, then analyze again") from error
+    return path
+
+
+def _start(argv: list[str], folder: Path) -> subprocess.CompletedProcess:
+    """One run of the release in `folder`, with its environment. `Gap` on a timeout or when it cannot start."""
+    try:
+        return subprocess.run(argv, cwd=folder, env=_environment(), stdin=subprocess.DEVNULL, capture_output=True,
+                              timeout=TIMEOUT)
+    except subprocess.TimeoutExpired as error:
+        raise Gap(f"stack-analyser gave no answer within {TIMEOUT} s",
+                  "check a smaller project, or leave out its large folders") from error
+    except OSError as error:
+        raise Gap(f"stack-analyser could not start: {error}", "check Node in Daodan's tool folder") from error
+
+
+def _answer(ended: subprocess.CompletedProcess, output: Path):
+    """The JSON the release wrote to `output`. `Gap` on a failure or an output that is not JSON."""
+    said = ended.stderr.decode("utf-8", "replace").strip()[-600:] or "no message"
+    remedy = "fix what the message says, or remove the release in Daodan's tool folder to install it again"
+    if ended.returncode:
+        raise Gap(f"stack-analyser failed (exit {ended.returncode}): {said}", remedy)
+    try:
+        return json.loads(output.read_bytes())
+    except OSError as error:
+        raise Gap(f"stack-analyser wrote no output ({error}): {said}", remedy) from error
+    except ValueError as error:
+        raise Gap(f"stack-analyser's output is not JSON: {error}", remedy) from error
+
+
+def run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, ...] = (),
         ignore: tuple[str, ...] = ()) -> dict:
-    """The release's JSON for `project`. `declarations` are written as UTF-8 JSON in the run's own folder. On a
-    failure, a timeout or an output that is not a JSON object: `Gap`."""
+    """The release's JSON for `project`. `declarations` and the perimeter (`skip_dirs`, always passed, and `ignore`)
+    are written as UTF-8 JSON in the run's own folder. On a failure, a timeout or an output that is not a JSON object:
+    `Gap`."""
     project = Path(project).resolve()
     program, script = node(project), cli()
     with tempfile.TemporaryDirectory(prefix="daodan-stack-") as folder:
         folder, output = Path(folder), Path(folder) / "output.json"
-        declared = folder / "declarations.json" if declarations else None
-        if declared:
-            try:
-                declared.write_bytes(json.dumps(declarations, ensure_ascii=False).encode("utf-8"))
-            except UnicodeError as error:  # a lone surrogate: a manifest's `\ud800`, a file name that is not UTF-8
-                raise Gap("stack-analyser's declarations could not be written: one holds text that is not valid "
-                          "Unicode", "rename the file or folder whose name is not valid UTF-8, or fix the manifest "
-                          "string that holds a lone surrogate, then analyze again") from error
-            except OSError as error:
-                raise Gap(f"stack-analyser's declarations could not be written: {error}",
-                          f"free space on the drive of {tempfile.gettempdir()}, then analyze again") from error
-        try:
-            ended = subprocess.run(command(program, script, project, output, declared, skip_dirs, ignore), cwd=folder,
-                                   env=_environment(), stdin=subprocess.DEVNULL, capture_output=True, timeout=TIMEOUT)
-        except subprocess.TimeoutExpired as error:
-            raise Gap(f"stack-analyser gave no answer within {TIMEOUT} s",
-                      "check a smaller project, or leave out its large folders") from error
-        except OSError as error:
-            raise Gap(f"stack-analyser could not start: {error}", "check Node in Daodan's tool folder") from error
-        said = ended.stderr.decode("utf-8", "replace").strip()[-600:] or "no message"
-        remedy = "fix what the message says, or remove the release in Daodan's tool folder to install it again"
-        if ended.returncode:
-            raise Gap(f"stack-analyser failed (exit {ended.returncode}): {said}", remedy)
-        try:
-            answer = json.loads(output.read_bytes())
-            if not isinstance(answer, dict):
-                raise ValueError("expected a JSON object")
-        except OSError as error:
-            raise Gap(f"stack-analyser wrote no output ({error}): {said}", remedy) from error
-        except ValueError as error:
-            raise Gap(f"stack-analyser's output is not JSON: {error}", remedy) from error
+        declared = _write(folder / "declarations.json", declarations, "declarations") if declarations else None
+        perimeter = _write(folder / "perimeter.json", {"skipDirs": list(skip_dirs), "ignore": list(ignore)}, "perimeter")
+        answer = _answer(_start(command(program, script, project, output, declared, None, (), perimeter), folder),
+                         output)
+        if not isinstance(answer, dict):
+            raise Gap("stack-analyser's output is not JSON: expected a JSON object",
+                      "fix what the message says, or remove the release in Daodan's tool folder to install it again")
+        return answer
+
+
+def catalogue() -> list[dict]:
+    """The release's catalogue of rules (`--catalogue`), written to a file of the run's own folder. `Gap` as for `run`."""
+    script = cli()
+    with tempfile.TemporaryDirectory(prefix="daodan-stack-") as folder:
+        folder, output = Path(folder), Path(folder) / "catalogue.json"
+        program = node(folder)  # no project: Node's install is the one of the empty run folder
+        answer = _answer(_start([str(program), str(script), "--catalogue", str(output)], folder), output)
+        if not isinstance(answer, list):
+            raise Gap("stack-analyser's catalogue is not a JSON array",
+                      "remove the release in Daodan's tool folder to install it again")
         return answer
