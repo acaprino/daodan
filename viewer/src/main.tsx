@@ -19,8 +19,9 @@ import { useExplorer } from './model.ts';
 import type { Phase } from './model.ts';
 import { counted, projectName } from './names.ts';
 import { Navigation } from './navigation.tsx';
+import { OpenExport } from './openExport.tsx';
 import { LOOK } from './page.ts';
-import { getJson, POLL_MS, Session } from './session.tsx';
+import { getJson, POLL_MS, Session, SessionDisclosure } from './session.tsx';
 import { shownDetails } from './state.ts';
 import { WORDS } from './words.ts';
 
@@ -50,6 +51,7 @@ function App() {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [pick, setPick] = useState<{ file: string } | null>(null);
   const [menu, setMenu] = useState(false);
+  const [opening, setOpening] = useState(false);  // the dialog of another export
   const [notices, setNotices] = useState<ToastItem[]>([]);
   const noticeId = useRef(0);  // not crypto.randomUUID, which a page served over plain http does not have
   const search = useRef<HTMLInputElement>(null);
@@ -82,7 +84,7 @@ function App() {
 
   useEffect(() => {
     const ref = pick && envelope && fileRef(envelope, pick.file);
-    if (ref) model.dispatch({ type: 'select', ref });
+    if (ref) { model.dispatch({ type: 'select', ref }); show(ref); }
   }, [pick]);
   const addressOf = (id: string) => `./data/visual.json?run=${encodeURIComponent(id)}`;
   const load = (url: string, stale = () => false) => getJson(url).then(json => {
@@ -124,14 +126,13 @@ function App() {
   }, [runs, run]);
   const last = events[events.length - 1];
   const meta = state.envelope.meta;
-  // shortcut: nothing calls it, until ticket 18 of the port opens another export from a dialog
-  const openFile = async (file: File | undefined) => {
-    if (!file) return;
-    try { dispatch({ type: 'replaceEnvelope', json: JSON.parse(await file.text()) }); }
-    catch (reason) { dispatch({ type: 'replaceEnvelope', json: { error: String(reason) } }); }
+  // Another export takes the place of the map shown; of a file that holds none the dialog says why.
+  const openFile = async (file: File) => {
+    dispatch({ type: 'replaceEnvelope', json: parseEnvelope(JSON.parse(await file.text())) });
+    setOpening(false);
   };
   const toView = (view: string) => dispatch({ type: 'view', view: view as View });
-  const onRun = (id: string) => { listRuns(id).catch(() => undefined); };
+  const session = { onPick: (file: string) => setPick({ file }), onRun: (id: string) => { listRuns(id).catch(() => undefined); } };
   const title = VIEWS.find(view => view.value === state.view)!.title;
 
   const titleBar = <TitleBar><Toolbar aria-label="Daodan">
@@ -160,19 +161,27 @@ function App() {
     <Spacer />
     <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
   </>;
-  const runPicker = !!runs?.length && <Select size="sm" aria-label="Run" value={run} onValueChange={setRun} options={runs.map(id => ({ value: id, label: `Run ${id}` }))} />;
+  // Which map is shown: the run, where there are runs, or the export of a file.
+  const source = <>
+    {!!runs?.length && <Select size="sm" aria-label="Run" value={run} onValueChange={setRun} options={runs.map(id => ({ value: id, label: `Run ${id}` }))} />}
+    <Button variant="ghost" size="sm" disabled={!ready} onClick={() => setOpening(true)}>Apri altro export</Button>
+  </>;
   return <>
     <AppShell frame="sheet" titleBar={titleBar} status={status} footer={footer} bottomBar={bottomBar} contentLabel={title}
       sidebar={<Navigation model={model} phase={phase} show={show} open={menu} onOpenChange={setMenu} />}
       inspector={<Details model={model} open={detailsOpen} close={close} />}>
-      <Explorer model={model} title={title} search={search} canvas={canvas} ready={ready} runs={runPicker}>
-        {runs && <Session onPick={file => setPick({ file })} onRun={onRun} />}
-        {phase === 'none' && <Empty fill title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />}
+      <Explorer model={model} title={title} search={search} canvas={canvas} ready={ready} runs={source}>
+        {!!runs?.length && <Column pad="lg"><SessionDisclosure {...session} /></Column>}
+        {phase === 'none' && <Column pad="lg" gap="xl">
+          <Empty title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />
+          <Session {...session} />
+        </Column>}
         {phase === 'failed' && <Column pad="lg"><Note tone="error" title="Export non leggibile" actions={<Button variant="outline"
           onClick={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }}><Icon name="refresh" />Riprova</Button>}><Text data-selectable="">{failure}</Text></Note></Column>}
         {phase === 'loading' && <Column pad="lg" aria-busy><Progress aria-label="Carico l'export…" value={null} /></Column>}
       </Explorer>
     </AppShell>
+    <OpenExport open={opening} onOpenChange={setOpening} onFile={openFile} />
     <Toasts items={notices} durationMs={5000} onDismiss={id => setNotices(list => list.filter(notice => notice.id !== id))} />
   </>;
 }

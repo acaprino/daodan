@@ -364,6 +364,7 @@ try {
   const details = page.getByRole('complementary', { name: 'Dettaglio' });
   const flowPanel = page.getByRole('complementary', { name: 'Flusso', exact: true });
   const infoButton = main.getByRole('button', { name: 'Informazioni sul progetto' });
+  const openOther = main.getByRole('button', { name: 'Apri altro export' });
   const up = main.getByRole('button', { name: 'Su', exact: true });
   const search = main.getByLabel('Cerca per nome');
   const place = path => main.getByText(new RegExp(`^${path} · \\d+ nod`));  // the line beside the panel's title
@@ -393,7 +394,7 @@ try {
   assert.ok(await selectable(unreadable.getByText('unknown schema: undefined')));
   await nav.getByText("Nessuna mappa: l'export non si legge.").waitFor();
   assert.equal(await nav.getByText("In attesa dell'export.").count(), 0);
-  for (const control of [search, up, infoButton]) assert.ok(await control.isDisabled());  // in their place, with nothing to do
+  for (const control of [search, up, infoButton, openOther]) assert.ok(await control.isDisabled());  // in their place, with nothing to do
   assert.equal(await busy.count(), 0);
   mode.exportBroken = false;
   mode.exportDelay = 0;
@@ -718,15 +719,92 @@ try {
   assert.ok(await fits());
   await page.setViewportSize({ width: 1280, height: 850 });
 
+  // Another export, chosen or dropped, takes the place of the map; a file that holds none says why, and the map stays.
+  const opener = page.getByRole('dialog', { name: 'Apri altro export' });
+  const zone = opener.getByRole('button', { name: 'Trascina qui un export, o scegli il file' });
+  const problem = text => opener.getByRole('alert').filter({ hasText: text });
+  const exported = id => JSON.stringify({ ...envelope, meta: { ...envelope.meta, run_id: id } });
+  const give = async (name, mimeType, text) => {
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), zone.click()]);
+    await chooser.setFiles({ name, mimeType, buffer: Buffer.from(text) });
+  };
+  await openOther.click();
+  await opener.waitFor();
+  await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label')?.startsWith('Trascina qui'));
+  await give('mappa.png', 'image/png', 'x');
+  await problem('Serve un file JSON.').waitFor();
+  await give('altro.json', 'application/json', '{"schema":"altro"}');
+  await problem('altro.json non è un export leggibile: unknown schema: altro').waitFor();
+  await give('rotto.json', 'application/json', 'not json');
+  await problem(/rotto\.json non è un export leggibile: .+JSON/).waitFor();
+  await page.keyboard.press('Escape');
+  await opener.waitFor({ state: 'detached' });
+  await line('shop · run fixture').waitFor();
+  await openOther.click();
+  await opener.waitFor();
+  assert.equal(await opener.getByRole('alert').count(), 0);
+  await give('scelto.json', 'application/json', exported('scelto'));
+  await opener.waitFor({ state: 'detached' });
+  await line('shop · run scelto').waitFor();
+  await thing('web').waitFor();
+  await page.waitForFunction(() => document.activeElement?.textContent === 'Apri altro export');  // the focus goes back
+  await openOther.click();
+  await opener.waitFor();
+  const dropped = await page.evaluateHandle(text => {
+    const data = new DataTransfer();
+    data.items.add(new File([text], 'lasciato.json', { type: 'application/json' }));
+    return data;
+  }, exported('lasciato'));
+  await zone.dispatchEvent('drop', { dataTransfer: dropped });
+  await opener.waitFor({ state: 'detached' });
+  await line('shop · run lasciato').waitFor();
+
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [] } }));
   await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
   await context.route('**/api/findings', route => route.fulfill({ json: { findings: [], gaps: [] } }));
   await page.reload();
-  await main.getByText('Creane uno qui sotto, o avvia una mappa nella sessione.').waitFor();
+  const noRuns = main.getByText('Creane uno qui sotto, o avvia una mappa nella sessione.');
+  await noRuns.waitFor();
   await line('Nessun run').waitFor();
   await nav.getByText('Nessuna mappa: non ci sono run.').waitFor();
   await page.keyboard.press('Control+f');  // no map, no search
   await page.getByText('Questa vista non ha una ricerca.').waitFor();
+  // With no run the session is in sight under the words that say so, and its form makes the first run.
+  const session = main.getByRole('region', { name: 'Sessione e review', exact: true });
+  await session.getByText('Nessuna richiesta.').waitFor();
+  await session.getByText('Nessun finding: compaiono quando la sessione chiude una review.').waitFor();
+  assert.ok((await session.boundingBox()).y > (await noRuns.boundingBox()).y);
+  assert.ok(await openOther.isDisabled());
+  const server = { runs: [], posted: [], refuses: 'run già presente', delay: 1000 };
+  await context.route('**/api/runs', async route => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { runs: server.runs } });
+    server.posted.push(route.request().postDataJSON());
+    await new Promise(resolve => setTimeout(resolve, server.delay));
+    return route.fulfill(server.refuses ? { status: 400, json: { error: server.refuses } } : { json: {} });
+  });
+  const said = text => session.getByRole('alert').filter({ hasText: text });  // what a form says is wrong, or the server refuses
+  const runName = session.getByRole('textbox', { name: 'Nome del run' });
+  const create = session.getByRole('button', { name: 'Crea il run', exact: true });
+  await create.click();  // a name is needed, as the server takes it
+  await said('Scrivi il nome del run.').waitFor();
+  assert.ok(await focused(runName));
+  await runName.fill('Primo Run');
+  await said('Scrivi il nome del run.').waitFor({ state: 'detached' });
+  await create.click();
+  await said('Solo minuscole, cifre e trattini').waitFor();
+  assert.deepEqual(server.posted, []);
+  await runName.fill('primo-run');
+  await create.click();
+  await create.and(page.locator('[aria-busy="true"]')).waitFor();
+  await runName.press('Enter');  // a form that is sending is not sent again
+  await said('Richiesta non riuscita').waitFor();
+  assert.match(await said('Richiesta non riuscita').innerText(), /Errore[\s\S]*Richiesta non riuscita[\s\S]*run già presente/);
+  assert.deepEqual([server.posted, await runName.inputValue()], [[{ target: '.', run_id: 'primo-run' }], 'primo-run']);
+  Object.assign(server, { refuses: '', delay: 0, runs: [{ run_id: 'primo-run', readable: true }] });
+  await create.click();
+  await line('shop · run fixture').waitFor();
+  assert.match(await main.getByRole('combobox', { name: 'Run' }).innerText(), /Run primo-run/);
+  assert.equal(await session.count(), 0);  // over a map it is behind its row
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'prima', readable: true }, { run_id: 'rotto', readable: false }, { run_id: 'demo', readable: true }] } }));
   await context.route('**/api/events?*', route => route.fulfill({ json: { events: [{ cursor: 1, timestamp: '10:00', event: 'phase_completed', message: 'fatto', phase: 2 }], next_cursor: 1, has_more: false } }));
   mode.exportBroken = true;  // a run in progress has no readable export yet: its live event line shows all the same
@@ -748,24 +826,63 @@ try {
   assert.match(await runPicker.innerText(), /Run prima/);
   await line('shop · run fixture').waitFor();
 
-  // ticket 18: the contract of what it ports (the session, the findings and the other export), in Imago's selectors: to restore
-  // by role and name, then delete from here.
-  // const file = page.locator('.im-file-selector');
-  // await file.setInputFiles({ name: 'shop.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(envelope)) });
-  // (with no runs) await page.getByLabel('Nome del run').waitFor();
-  // const disclosure = page.locator('summary', { hasText: 'Sessione e review' });
-  // await disclosure.press('Enter');
-  // await page.getByRole('button', { name: 'Invia' }).waitFor();
-  // assert.ok(await page.getByLabel('Perimetro').isVisible());
-  // assert.ok(await page.locator('.im-btn--primary:visible').count() <= 1);  // "Entra in ..." is the page's only primary
-  // for (const name of ['Invia', 'Crea il run']) assert.ok(!(await page.getByRole('button', { name }).getAttribute('class')).includes('im-btn--primary'));
-  // await page.getByText('lacuna della sessione').waitFor();  // the session's gaps are a note
-  // await page.getByRole('button', { name: /High/ }).click();  // a finding selects its file
-  // assert.equal(await page.locator('.im-inspector h2').innerText(), 'checkout.tsx');
-  // await page.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  // await disclosure.press('Enter');
-  // await page.getByRole('button', { name: 'Invia' }).waitFor({ state: 'detached' });
-  // end of ticket 18
+  // The session and its review, behind their row: drawn, and asked of the server, only while it is open.
+  const requests = [];
+  let polls = 0;
+  page.on('request', request => { if (new URL(request.url()).pathname === '/api/findings') polls += 1; });
+  await context.route('**/api/requests', route => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { requests } });
+    if (server.refuses) return route.fulfill({ status: 400, json: { error: server.refuses } });
+    requests.push({ id: requests.length + 1, state: 'pending', ...route.request().postDataJSON() });
+    return route.fulfill({ json: {} });
+  });
+  const sessionRow = main.getByRole('button', { name: 'Sessione e review', exact: true });
+  await page.waitForTimeout(2500);
+  assert.deepEqual([await sessionRow.getAttribute('aria-expanded'), await session.count(), polls], ['false', 0, 0]);
+  await sessionRow.press('Enter');
+  await session.getByRole('heading', { name: 'Finding · 1', exact: true }).waitFor();
+  assert.equal(await sessionRow.getAttribute('aria-expanded'), 'true');
+  // A request: what it asks, the text a feature needs, what the server refuses, and its state as the session moves it.
+  const scope = session.getByRole('combobox', { name: 'Perimetro' });
+  const send = session.getByRole('button', { name: 'Invia', exact: true });
+  assert.match(await session.getByRole('combobox', { name: 'Cosa' }).innerText(), /Review/);
+  assert.match(await scope.innerText(), /Changeset/);
+  await session.getByRole('textbox', { name: 'Indicazioni' }).waitFor();
+  await scope.click();
+  await page.getByRole('option', { name: 'Funzionalità', exact: true }).click();
+  const feature = session.getByRole('textbox', { name: 'Funzionalità' });
+  await send.click();
+  await said('Scrivi il nome della funzionalità.').waitFor();
+  assert.deepEqual([requests, await focused(feature)], [[], true]);
+  await feature.fill('Pagamenti');
+  server.refuses = 'troppe richieste aperte';
+  await send.click();
+  await said('troppe richieste aperte').waitFor();
+  assert.equal(await feature.inputValue(), 'Pagamenti');
+  server.refuses = '';
+  await send.click();
+  await session.getByRole('heading', { name: 'Richieste · 1', exact: true }).waitFor();
+  assert.deepEqual(requests, [{ id: 1, state: 'pending', kind: 'review', scope: 'feature', text: 'Pagamenti' }]);
+  assert.equal(await feature.inputValue(), '');
+  const request = session.getByRole('list', { name: 'Richieste', exact: true }).getByRole('listitem');
+  assert.match(await request.innerText(), /#1 review · feature[\s\S]*Pagamenti[\s\S]*in attesa della sessione/);
+  Object.assign(requests[0], { state: 'done', message: 'Un finding' });
+  await request.filter({ hasText: 'Un finding' }).filter({ hasText: 'conclusa' }).waitFor();
+  // The session's gaps are a note that is not announced; a finding says its severity and selects its file.
+  await session.getByText('Lacune · 1').waitFor();
+  await session.getByText('lacuna della sessione').waitFor();
+  assert.equal(await main.getByRole('alert').count(), 0);
+  const finding = session.getByRole('list', { name: 'Finding', exact: true }).getByRole('button', { name: /High/ });
+  assert.match(await finding.innerText(), /web\/checkout\.tsx:12[\s\S]*Premessa[\s\S]*High/);
+  await finding.click();
+  await details.getByRole('heading', { name: 'checkout.tsx', exact: true }).waitFor();
+  await closeIn(details);
+  await details.waitFor({ state: 'hidden' });
+  await sessionRow.press('Enter');
+  await session.waitFor({ state: 'detached' });
+  const pollsAtClose = polls;
+  await page.waitForTimeout(2500);
+  assert.equal(polls, pollsAtClose);
 
   // The theme the person picks on one page is followed live by the other one (the storage event), on Sigrid or on Imago.
   await choose('Tema chiaro');
