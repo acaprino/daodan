@@ -95,13 +95,16 @@ def test_a_kept_sign_leaves_with_its_file(scan, manifest):
 
 
 def test_without_the_tool_the_previous_signs_stay_and_a_gap_says_why(scan):
-    scan(1, answer([entry("fastapi", sign("api/requirements.txt", "fastapi"))], ran=["stack-analyser"]))
+    scan(1, answer([entry("fastapi", sign("api/requirements.txt", "fastapi"),
+                          sign("api/requirements.txt", "fastapi", "requirements@1"))],
+                   ran=["requirements", "stack-analyser"]))
     failed = {"checker": "stack-analyser", "state": "failed", "reason": "no Node"}
     cause = {"kind": "checker_failed", "checker": "stack-analyser", "detail": "no Node"}
     record = scan(2, answer(ran=["registry_hosts"], gaps=[cause], checkers=[failed]))
-    assert signs_of(record, "fastapi") == [("stack-analyser", "api/requirements.txt", 1, "scan-1")]
+    assert sorted(signs_of(record, "fastapi")) == [("requirements@1", "api/requirements.txt", 1, "scan-1"),
+                                                   ("stack-analyser", "api/requirements.txt", 1, "scan-1")]
     assert cause in record["gaps"] and failed in record["checkers"]
-    assert {"kind": "signs_kept", "sources": ["stack-analyser"], "scans": ["scan-1"]} in record["gaps"]
+    assert {"kind": "signs_kept", "sources": ["requirements", "stack-analyser"], "scans": ["scan-1"]} in record["gaps"]
 
 
 def test_a_record_of_the_old_shape_keeps_nothing(scan, manifest):
@@ -123,3 +126,53 @@ def test_a_new_release_makes_the_record_stale(scan, manifest, monkeypatch):
     monkeypatch.undo()
     monkeypatch.setattr(stack_analyser, "SHA256", "0" * 64)
     assert technologies.state(manifest, facts=facts) == "stale"
+
+
+def test_a_source_that_ran_since_makes_the_record_stale(scan, manifest):
+    """A full scan whose source states differ from the last scan's derives again, even with the same facts: the
+    signs that source kept from before are replaced by what it says now."""
+    scan(1, answer([entry("fastapi", sign("web/package.json", "fastapi", "renovate@41"))], ran=["renovate"]))
+    facts = {"packages": [], "excluded": [{"path": "skipped-1/", "why": "test"}], "inputs_digest": "scan-1"}
+    assert technologies.state(manifest, facts=facts) == "fresh"
+    assert technologies.state(manifest, facts={**facts, "sources": [
+        {"source": "renovate@41", "state": "ran"}]}) == "stale"
+
+
+def test_a_record_the_tool_failed_for_is_stale_once_this_process_remembers_no_failure(scan, manifest, monkeypatch):
+    """Node installed or the network back since: a later process runs the tool again. The process that remembers the
+    failure (`stack_analyser._failed`) does not."""
+    failed = {"checker": "stack-analyser", "state": "failed", "reason": "no Node"}
+    cause = {"kind": "checker_failed", "checker": "stack-analyser", "detail": "no Node"}
+    scan(1, answer(ran=["registry_hosts"], gaps=[cause], checkers=[failed]))
+    facts = {"packages": [], "excluded": [{"path": "skipped-1/", "why": "test"}], "inputs_digest": "scan-1"}
+    monkeypatch.setattr(stack_analyser, "_failed", {})
+    assert technologies.state(manifest, facts=facts) == "stale"
+    monkeypatch.setattr(stack_analyser, "_failed", {"cli": RuntimeError("no network")})
+    assert technologies.state(manifest, facts=facts) == "fresh"
+
+
+def test_a_kept_sign_leaves_when_the_premap_leaves_its_file_out(scan, manifest, monkeypatch):
+    scan(1, answer([entry("redis", sign("api/requirements.txt", "redis", "renovate@41"))], ran=["renovate"]))
+    monkeypatch.setattr(stack_recognition, "run", lambda *args, **kwargs: answer(ran=["stack-analyser"]))
+    record = technologies.ensure(manifest, facts={"packages": [], "inputs_digest": "scan-2",
+                                                  "excluded": [{"path": "api/", "why": "generated"}]})
+    assert record["technologies"] == [] and not any(g["kind"] == "signs_kept" for g in record["gaps"])
+
+
+def test_a_kept_sign_this_scan_made_again_is_there_once(scan):
+    """A sign of a source outside `ran` that this scan made too is the sign of now, once."""
+    redis = entry("redis", sign("web/package.json", "redis", "renovate@41"))
+    scan(1, answer([redis], ran=["renovate"]))
+    scan(2, answer([redis], ran=["stack-analyser"]))
+    record = scan(3, answer([redis], ran=["stack-analyser"]))
+    assert signs_of(record, "redis") == [("renovate@41", "web/package.json", 1, "scan-3")]
+
+
+def test_reading_the_state_writes_no_premap(scan, manifest):
+    """`state` is a read: with a pre-map that is not fresh (here one a pass is writing, unreadable) the record is stale,
+    and the pre-map is left to the pass that writes it, never rewritten by a reader-only scan."""
+    scan(1, answer(ran=["stack-analyser"]))
+    written = technologies.premap.path(manifest)
+    written.write_text("{}", encoding="utf-8")
+    assert technologies.state(manifest) == "stale"
+    assert written.read_text(encoding="utf-8") == "{}"

@@ -230,8 +230,14 @@ class RecognizeTests(unittest.TestCase):
         shutil.rmtree(cls.work, True)
 
     def test_each_sign_says_where_it_is(self):
-        signs = {(s["sign"], s["value"], s["path"], s["line"]) for s in self.found["stripe"]["signs"]}
-        self.assertEqual(signs, {("package", "stripe", "web/package.json", 1), ("package", "stripe", "api/requirements.txt", 1)})
+        # the release reads each file by itself (no line) and is given the pre-map's declarations: both stay, each with
+        # its source (the source's name, the label up to `@`)
+        signs = {(s["sign"], s["value"], s["path"], s["line"], s["source"].partition("@")[0])
+                 for s in self.found["stripe"]["signs"]}
+        self.assertEqual(signs, {("package", "stripe", "web/package.json", 1, "modules.py"),
+                                 ("package", "stripe", "web/package.json", None, "stack-analyser"),
+                                 ("package", "stripe", "api/requirements.txt", 1, "requirements"),
+                                 ("package", "stripe", "api/requirements.txt", None, "stack-analyser")})
         self.assertEqual((self.found["stripe"]["source"], self.found["stripe"]["type"]), ("registry", "gateway"))
 
     def test_packages_files_and_images_are_recognized(self):

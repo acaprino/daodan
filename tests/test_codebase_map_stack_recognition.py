@@ -638,13 +638,13 @@ def test_the_store_is_closed_while_the_fork_runs(manifest, monkeypatch):
 
 
 def test_ran_names_the_sources_of_this_run(manifest, started, monkeypatch):
-    """The pre-map's sources that ran (`facts["sources"]`: `{"source": "name@version", "state": ...}`) by name, the tool
-    and the host check when each ran."""
+    """The pre-map's sources that ran (`facts["sources"]`: `{"source": "name@version", "state": ...}`) by name, a source
+    that looked and had nothing to state (`not_needed`) among them, the tool and the host check when each ran."""
     sources = [{"source": "renovate@41", "state": "ran"}, {"source": "requirements@2", "state": "ran"},
                {"source": "cargo@1", "state": "not_run"}, {"source": "go@1", "state": "not_needed"},
                {"source": "compose@3", "state": "failed"}, {"state": "ran"}, "npm@1", None]
     answer = stack_recognition.run(manifest, REGISTRY, {**FACTS, "sources": sources})
-    assert answer["ran"] == ["registry_hosts", "renovate", "requirements", "stack-analyser"]
+    assert answer["ran"] == ["go", "registry_hosts", "renovate", "requirements", "stack-analyser"]
 
     def broken(project, **kwargs):
         raise container.Gap("stack-analyser failed (exit 1): boom", "analyze again")

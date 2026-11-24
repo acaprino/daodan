@@ -250,17 +250,18 @@ def _failed(checker: str, reason: str, checkers: list[dict], gaps: list[dict]) -
 
 
 def _premap_sources(facts: dict) -> set[str]:
-    """The names (the label up to `@`) of the pre-map sources whose state is `ran`: `facts["sources"]` is each source's
-    status, `{"source": "name@version", "state": ...}`."""
+    """The names (the label up to `@`) of the pre-map sources whose state is `ran` or `not_needed` (it looked at the
+    project, in a fast scan as in a full one, and had nothing to state): `facts["sources"]` is each source's status,
+    `{"source": "name@version", "state": ...}`."""
     statuses = facts.get("sources") or ()
-    return {status["source"].partition("@")[0] for status in statuses
-            if isinstance(status, dict) and status.get("state") == "ran" and isinstance(status.get("source"), str)} - {""}
+    return {status["source"].partition("@")[0] for status in statuses if isinstance(status, dict)
+            and status.get("state") in ("ran", "not_needed") and isinstance(status.get("source"), str)} - {""}
 
 
 def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:
     """`{"found", "checkers", "gaps", "ran"}` for `manifest`, from the tool's evidence and the host mentions; `ran` is the
     sources whose signs this run made, sorted: `stack-analyser` when the tool ran, `registry_hosts` when the host check
-    did, and, only when the tool ran, the pre-map's sources that ran. A failure of the tool is a gap with its cause and remedy; the host mentions
+    did, and, only when the tool ran, the pre-map's sources (`_premap_sources`). A failure of the tool is a gap with its cause and remedy; the host mentions
     stay. The snapshot's store is closed while the tool runs."""
     manifest = Path(manifest)
     facts = premap.ensure(manifest) if facts is None else facts

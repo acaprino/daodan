@@ -13,7 +13,8 @@ For build modules with a native package graph, `resolved_libraries` records the 
 and their exact versions. A resolved package can be conditional on a target or feature.
 An entry with no `declared` sign, only lines of text that mention it, is no module's: it stays in `mentioned` with its
 signs. Every sign carries its `source` and the `scan` (the pre-map's `inputs_digest`) that produced it: a scan replaces the
-signs of the sources it ran and keeps the others while their file exists (`merge`). `checkers` gives each checker's status (`stack-analyser`, `host`) and `gaps` what they could not establish.
+signs of the sources it ran and keeps the others while their file exists and the pre-map does not leave it
+out (`merge`). `checkers` gives each checker's status (`stack-analyser`, `host`) and `gaps` what they could not establish.
 """
 from __future__ import annotations
 
@@ -57,6 +58,18 @@ def module_declaration(sign: dict) -> bool:
             and not (sign.get("sign") == "package" and _versions_only(sign["path"])))
 
 
+def sites(signs: list[dict]) -> list[dict]:
+    """One sign per site of a technology, its kind, file and value: the record keeps each source's sign, and a file the
+    tool reads by itself and the pre-map declares too is one site, with the line any of its signs knows. In the order
+    of the record's signs, except that in a file a site with its line comes before one without."""
+    out = {}
+    for sign in signs:
+        site = out.setdefault((sign.get("sign"), sign.get("path"), sign.get("value")), dict(sign))
+        if not site.get("line") and sign.get("line"):
+            site["line"] = sign["line"]
+    return sorted(out.values(), key=lambda s: (s["sign"], s["path"] or "", not s["line"], s["line"] or 0, s["value"]))
+
+
 def path(manifest: Path) -> Path:
     return Path(manifest).with_name(FILE)
 
@@ -64,11 +77,13 @@ def path(manifest: Path) -> Path:
 def _inputs(manifest: Path, registry: dict, facts: dict) -> tuple[str, str, str]:
     """The digest of what the record is derived from, and the snapshot's root and target."""
     graph_digest = modules.load_graph(Path(modules.ensure_structure(manifest)["graph"])).get("inputs_digest")
+    # Which sources ran decides which signs `merge` keeps, and the pre-map's own digest does not change with it.
+    sources = sorted((str(s.get("source")), str(s.get("state"))) for s in facts.get("sources") or () if isinstance(s, dict))
     with open_snapshot(manifest) as store:
         root, target = store["root"], store.get("target") or "."
         value = [inventory_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION, stack_analyser.VERSION, stack_analyser.SHA256,
                  facts.get("packages"), facts.get("package_graphs"), facts.get("services"), facts.get("configured_services"),
-                 facts.get("docker_builds"), facts.get("excluded"), facts.get("toolchains"), facts.get("units")]
+                 facts.get("docker_builds"), facts.get("excluded"), facts.get("toolchains"), facts.get("units"), sources]
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest(), root, target
 
 
@@ -137,16 +152,23 @@ def _resolved_libraries(graph: dict, member: int) -> list[dict]:
     return sorted(result, key=lambda row: (not row["direct"], row["name"], row["version"]))
 
 
+def _sign_key(ident: str, sign: dict) -> tuple:
+    return ident, *(sign.get(key) for key in ("sign", "value", "path", "line", "source"))
+
+
 def merge(found: list[dict], ran: set[str], previous: dict | None, scan: str, exists, registry: dict) -> tuple[list[dict], list[dict]]:
     """The entries of this scan's `found`, each sign with its `scan`, and those of the `previous` record whose source is
     not in `ran` (the label up to `@`) and whose file `exists`. A sign with no path is kept; one with no source (a
-    record of another shape) is not. A kept entry has the registry's data of now. A gap says what was kept."""
+    record of another shape) is not, nor one this scan made too. A kept entry has the registry's data of now. A gap says
+    what was kept."""
     now = {e["id"]: {**e, "signs": [{**s, "scan": scan} for s in e["signs"]]} for e in found}
+    made = {_sign_key(e["id"], s) for e in found for s in e["signs"]}
     kept, sources, scans = {}, set(), set()
     for old in [*(previous or {}).get("technologies", ()), *(previous or {}).get("mentioned", ())]:
         for sign in old.get("signs") or ():
             name = (sign.get("source") or "").partition("@")[0]
-            if name and name not in ran and (not sign.get("path") or exists(sign["path"])):
+            if (name and name not in ran and _sign_key(old["id"], sign) not in made
+                    and (not sign.get("path") or exists(sign["path"]))):
                 kept.setdefault(old["id"], []).append(sign)
                 sources.add(name)
                 scans.add(sign.get("scan"))
@@ -166,8 +188,10 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     not run come from the record beside `manifest`, as it is before this one replaces it (`merge`)."""
     recognized = stack_recognition.run(manifest, registry, facts)
     digest, root, target = _inputs(manifest, registry, facts)
+    left_out = stack_recognition._left_out(facts)
     merged, kept = merge(recognized["found"], set(recognized.get("ran") or ()), recorded(manifest),
-                         facts.get("inputs_digest"), lambda rel: Path(root, rel).is_file(), registry)
+                         facts.get("inputs_digest"), registry=registry,
+                         exists=lambda rel: Path(root, rel).is_file() and not service_registry._is_excluded(rel, left_out))
     entries, mentioned = [], []
     for found in merged:
         entry = {k: v for k, v in found.items() if k != "source"}
@@ -176,7 +200,6 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
         graph = modules.sync_with_premap(manifest, facts)
     else:
         graph = modules.load_graph(Path(modules.ensure_structure(manifest)["graph"]))
-    left_out = tuple(item["path"] for item in facts.get("excluded") or () if item.get("path"))
     configured = _configured_services(facts, left_out)
     resolved_members = {node["manifest"]: (model, i) for model in facts.get("package_graphs", ())
                         for i, node in enumerate(model["nodes"]) if "manifest" in node}
@@ -185,7 +208,7 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     known_pkg: dict[tuple[str, str | None], dict] = {}
     declarations_by_path: dict[str, list[tuple[str, dict]]] = {}
     for entry in entries:
-        for sign in entry["signs"]:
+        for sign in sites(entry["signs"]):
             if sign["sign"] == "package":
                 known_pkg.setdefault((sign["value"].casefold(), sign["path"]), entry)
             if module_declaration(sign):
@@ -267,6 +290,10 @@ def _read(manifest: Path, digest: str) -> dict | None:
         missing = {g["language"] for g in record.get("gaps", ()) if g.get("kind") == "source_grammar_unavailable"}
         if any(get_parser(language) is not None for language in missing):
             return None
+        # Node or the network may have come since the tool failed, unless this process remembers the failure.
+        if not stack_analyser._failed and any(g.get("kind") == "checker_failed" and g.get("checker") == "stack-analyser"
+                                              for g in record.get("gaps", ())):
+            return None
         return record
     return None
 
@@ -303,11 +330,15 @@ def externals(graph: dict, record: dict) -> list[dict]:
 
 
 def state(manifest: Path, *, facts: dict | None = None) -> str:
-    """fresh, stale or missing."""
+    """fresh, stale or missing; a read, which writes no pre-map: without `facts`, a pre-map that is not fresh (a pass may
+    be writing it) makes the record stale."""
     manifest = Path(manifest).resolve()
     if not path(manifest).is_file():
         return "missing"
-    facts = premap.ensure(manifest) if facts is None else facts
+    if facts is None:
+        if premap.state(manifest)["state"] != "fresh":
+            return "stale"
+        facts = premap.ensure(manifest)
     digest = _inputs(manifest, service_registry.load(), facts)[0]
     return "fresh" if _read(manifest, digest) else "stale"
 

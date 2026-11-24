@@ -43,11 +43,15 @@ def test_dockerfile_and_compose_keep_the_original_registry_and_owning_publisher(
                         "redis", "mirror.example/redis", "localhost:5000/playwright", "mcr.microsoft.com/playwright"}
     assert {s["image"] for s in facts["configured_services"]} == {
         "docker.io/library/postgres:16", "private.example:5000/library/postgres:16", "custom/redis:7"}
-    signs = {e["id"]: [(s["value"], s["path"], s["line"]) for s in e["signs"] if s["sign"] == "package"]
-             for e in stack["technologies"]}
-    assert signs["postgresql"] == [("postgres", "compose.yaml", 3)]
-    assert signs["redis"] == [("redis", "Dockerfile", 1)]
-    assert signs["playwright"] == [("mcr.microsoft.com/playwright", "Dockerfile", 4)]
+    # the release reads each file by itself (no line) and is given the pre-map's declarations: both stay, each with
+    # its source (the source's name, the label up to `@`)
+    signs = {e["id"]: {(s["value"], s["path"], s["line"], s["source"].partition("@")[0])
+                       for s in e["signs"] if s["sign"] == "package"} for e in stack["technologies"]}
+    assert signs["postgresql"] == {("postgres", "compose.yaml", 3, "modules.py"),
+                                   ("postgres", "compose.yaml", None, "stack-analyser")}
+    assert signs["redis"] == {("redis", "Dockerfile", 1, "modules.py"), ("redis", "Dockerfile", None, "stack-analyser")}
+    assert signs["playwright"] == {("mcr.microsoft.com/playwright", "Dockerfile", 4, "modules.py"),
+                                   ("mcr.microsoft.com/playwright", "Dockerfile", None, "stack-analyser")}
 
 
 def test_saved_packages_ci_service_images_and_docker_builds_share_exact_match_semantics(real_stack, tmp_path):
