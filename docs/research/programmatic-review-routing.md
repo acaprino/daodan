@@ -1,6 +1,6 @@
 # Routing automatico programmatico delle review: ricerca e specifica operativa proposta
 
-Data: 2026-11-07. Stato: report di ricerca con indicazioni di sviluppo; router non implementato e benchmark non eseguito.
+**Stato:** Proposta. Nulla nel codice: nessun router, nessuna selezione di modello o effort nei job, benchmark non eseguito. Aperta: da approfondire su quale host e quale famiglia di review fare il primo benchmark, con l'eredità di sessione come baseline. **Data:** 7 novembre 2026.
 
 Prerequisito: [profilazione e tiering dei modelli dell'harness](harness-model-tiering.md). Quel documento produce candidati qualificati; questo definisce come usarli per un job senza affidare la selezione a un altro LLM.
 
@@ -92,11 +92,11 @@ La verifica cieca rispetto all'indizio fuorviante riduce il danno nel particolar
 
 | Punto attuale | Comportamento verificato | Conseguenza per lo sviluppo |
 |---|---|---|
-| [review_roster.py](../../plugins/senior-review/skills/review-preparation/scripts/review_roster.py), `compute`, righe 529–677 | Calcola rigore, ruoli, obblighi, segnali, grounding e gap. Soglie per chiamanti/file/moduli e segnali sensibili, non qualità dei modelli. | Riutilizzare segnali e obblighi; non duplicare un secondo analizzatore del diff per assegnare il modello. |
-| [composition.py](../../plugins/senior-review/skills/review-preparation/scripts/composition.py), `bind`, righe 75–156 | Produce job con membri, scope, input mode, permessi, candidato e digest. `light` richiede un solo discovery job. | La selezione avviene dopo che il job e il suo contenuto sono noti, prima del dispatch; non cambia numero o membri del roster. |
+| [review_roster.py](../../daodan/core/review_roster.py), `compute` | Calcola rigore, ruoli, obblighi, segnali, grounding e gap. Il rigore lo passa la richiesta; lo alzano a `deep` un'interfaccia pubblica cambiata, un percorso sensibile, un manifest cambiato o molti chiamanti. Nessuna qualità dei modelli. | Riutilizzare segnali e obblighi; non duplicare un secondo analizzatore del diff per assegnare il modello. |
+| [composition.py](../../daodan/core/composition.py), `bind` | Produce job con membri, scope, input mode, permessi, candidato e digest. `light` richiede un solo discovery job. | La selezione avviene dopo che il job e il suo contenuto sono noti, prima del dispatch; non cambia numero o membri del roster. |
 | [composition.md](../../plugins/senior-review/skills/review-preparation/references/composition.md), sezioni Execute and account | Dispatch attraverso binding isolato dell'host; report e provenienza legati al job; record preparati immutabili. | Collocare la scelta nell'adapter/record del dispatch senza mutare retroattivamente `PREPARED-REVIEW`. |
-| [verification-panel.md](../../plugins/senior-review/skills/review-quality-gates/references/verification-panel.md), righe 13–20 | Modello di sessione ereditato; override soltanto esplicito e supportato dal binding. | Prima dell'automazione serve un'estensione opt-in del contratto host. Oggi una funzione di selezione potrebbe solo consigliare, non imporre l'override. |
-| [review_roster.py](../../plugins/senior-review/skills/review-preparation/scripts/review_roster.py), `check`, righe 680–694 | Controlla ruolo/obblighi di dispatch e schema, non compatibilità modello/effort. | Aggiungere il controllo della selezione nel punto che governa il dispatch, senza presumere che il check corrente lo faccia già. |
+| [verification-panel.md](../../plugins/senior-review/skills/review-quality-gates/references/verification-panel.md), «Adversarial Verification Panel» | Modello di sessione ereditato; override soltanto esplicito e supportato dal binding. | Prima dell'automazione serve un'estensione opt-in del contratto host. Oggi una funzione di selezione potrebbe solo consigliare, non imporre l'override. |
+| [review_roster.py](../../daodan/core/review_roster.py), `check` | Controlla ruolo/obblighi di dispatch e schema, non compatibilità modello/effort. | Aggiungere il controllo della selezione nel punto che governa il dispatch, senza presumere che il check corrente lo faccia già. |
 
 Questi sono punti d'integrazione candidati, non un audit completo dei consumer. Prima di implementare vanno individuati nell'host scelto invocazione effettiva, validatori del record, accounting dei token/costi e comportamento di retry. Il codice host non è stato ispezionato in questo incarico.
 

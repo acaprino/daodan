@@ -1,5 +1,7 @@
 # Cataloghi pubblici di servizi e progetti esterni
 
+**Stato:** In uso: il registro dei servizi (`daodan/data/service-registry.json`) nasce dai tre cataloghi scelti qui, e lo strumento gira nel passo `stack`; vedi «Uso nel prodotto».
+
 **Verifica delle fonti:** 12 novembre 2026. **Natura del documento:** ricognizione mirata per il registro della [mappa del sistema](../specs/2026-11-18-flussi-e-mappa-del-sistema.md), non esaustiva. I numeri sono contati alla fonte, salvo dove è scritto il contrario.
 
 ## In breve
@@ -28,7 +30,9 @@ register({
 });
 ```
 
-## Prova di stack-analyser su un caso reale
+## Prova di stack-analyser su phazly
+
+La misura valida di ciò che Specfy e il registro riconoscono è sul corpus di [`benchmarks/project-model`, «Regole di riconoscimento di Specfy e Daodan»](../../benchmarks/project-model/README.md#regole-di-riconoscimento-di-specfy-e-daodan). Questo caso resta come termine di confronto delle fonti valutate sotto.
 
 Versione 1.27.6 (pubblicata il 18 gennaio 2026, 12 dipendenze), eseguita il 12 novembre 2026 in un container Modal sull'archivio di phazly (1.812 file, tre cartelle): 1,6 secondi, nessun modello. Legge manifest e configurazione, non esegue il progetto.
 
@@ -36,27 +40,25 @@ Versione 1.27.6 (pubblicata il 18 gennaio 2026, 12 dipendenze), eseguita il 12 n
 - **Non riconosce**, pur dichiarati nei manifest: Stripe, MongoDB (Motor e PyMongo), FastAPI, Pydantic, Google Gen AI, Secret Manager di Google Cloud, Prometheus, Zustand, il modulo degli acquisti su Google Play. Dal lato Python riconosce 2 pacchetti su 22.
 - **Non può vedere** ciò che sta solo nella configurazione fuori dall'archivio: Cloud Run e Pub/Sub.
 
-Conclusione: utile come fonte in più, forte su npm, insufficiente da sola.
-
 ## Altre fonti programmatiche valutate
 
 Criterio: una fonte entra se è pubblica, ha una licenza adatta e nel benchmark riconosce qualcosa che le altre non vedono.
 
 | Fonte | Cosa aggiungerebbe | Esito |
 | --- | --- | --- |
-| Lettori di configurazione scritti da noi: docker-compose, Dockerfile, manifest di Kubernetes, hosting, CI, `catalog-info.yaml` di [Backstage](https://backstage.io/docs/features/software-catalog/descriptor-format) | Il livello infrastruttura e l'architettura che il progetto dichiara già | Da aggiungere: nessuno strumento esterno, nessun modello |
+| Configurazione che il progetto dichiara già: docker-compose, Dockerfile, hosting, CI, `catalog-info.yaml` di [Backstage](https://backstage.io/docs/features/software-catalog/descriptor-format), manifest di Kubernetes | Il livello infrastruttura e l'architettura dichiarata | In uso, senza modello: i file Compose li legge Compose stesso (`daodan/core/premap/compose.py`), i Dockerfile BuildKit (`daodan/core/premap/dockerfile.py`); i file di hosting, di CI e `catalog-info.yaml` li elenca il brief (`daodan/core/system_brief.py`, `HOSTING` e `CI`). Nessun lettore dei manifest di Kubernetes |
 | tech-stack-analyzer, riscrittura in Go di stack-analyser (MIT secondo [pkg.go.dev](https://pkg.go.dev/github.com/petrarca/tech-stack-analyzer)) | Provato su phazly nella versione 0.7.1: 7,5 secondi, 29 tecnologie; in più rispetto a stack-analyser FastAPI, Pydantic e Android; nemmeno lui riconosce Stripe, MongoDB e Google Gen AI | Non adottabile oggi: il 12 novembre 2026 il repository su GitHub risponde 404, resta solo la copia nella cache del proxy di Go |
 | [InfraMap](https://github.com/cycloidio/inframap) (MIT) | Il grafo delle risorse da Terraform | Solo per progetti con Terraform; copertura migliore su AWS, manutenzione non chiara. Dopo |
 | [cdxgen](https://cyclonedx.github.io/cdxgen) (Apache-2.0), comandi `evinse` e `saasbom` | Servizi esterni ed endpoint chiamati dal codice | Richiede Java 21 e tempi lunghi con il flusso dei dati. Non ora |
 | [Syft](https://github.com/anchore/syft) (Apache-2.0) | Inventario dei pacchetti di molti ecosistemi | Daodan legge già i manifest: non aggiunge riconoscimenti. Utile più avanti per la review delle dipendenze |
 
-## Uso proposto
+## Uso nel prodotto
 
-- Base: le regole di stack-analyser, che hanno già tipo e segni. Lo strumento stesso gira come fonte in più nel passo statico: costa pochi secondi e nessun token.
-- Marchi: Simple Icons, agganciati per nome.
-- Allargamento: le voci del CNCF Landscape per l'infrastruttura.
-- Il modello propone solo ciò che manca: sito, tipo dove assente, pacchetti degli ecosistemi non coperti. Resta ciò che la macchina verifica.
-- Da rispettare: la nota di licenza MIT e l'attribuzione CC BY 4.0.
+- **Registro:** `daodan/core/registry_build.py` lo costruisce dalle regole di stack-analyser 1.27.6, che hanno già tipo e segni, dai marchi di Simple Icons 16.37.0 agganciati per nome (`daodan/data/marks/`) e dalle voci del CNCF Landscape, a un commit fisso; le versioni sono nel campo `versions` del registro.
+- **Ciò che i cataloghi non hanno** sta in `daodan/data/registry-additions.json`. Il modello propone solo ciò che manca (`registry_build.py model-input`), e una proposta resta solo se la macchina la verifica (`accept`: stesso proprietario del repository, pacchetto esistente, sito che risponde).
+- **Lo strumento** gira nel passo `stack` come fonte in più, dal fork fissato in `daodan/core/stack_analyser.py`; la misura è in [`benchmarks/project-model`, «Lo step `stack` dal fork»](../../benchmarks/project-model/README.md#lo-step-stack-dal-fork).
+- **Licenze:** la nota MIT di stack-analyser e l'attribuzione CC BY 4.0 del CNCF Landscape sono in `daodan/data/REGISTRY-NOTICES.md`.
+- **Non usati:** APIs.guru e webappanalyzer.
 
 ## Fonti
 

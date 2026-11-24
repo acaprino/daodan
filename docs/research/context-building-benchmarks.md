@@ -1,57 +1,43 @@
 <a id="code-context-benchmarks"></a>
 
-# Code-context benchmark and test diary
+# Code-context benchmarks
 
-> Test diary of the context-building work. Raw evaluation files and private holdouts stay outside this repository.
+**Stato:** In uso. These measurements decided three things in force today: the agent locates code with lexical search (`codebase_map_search`, guide in `plugins/codebase-map/skills/map/references/locate.md`), EmbeddingGemma stays opt-in, and no static context packet is built by default. Aperta: da approfondire whether context construction changes task success with a smaller model or vaguer requests; the gate of 2026-10-27 hit a ceiling.
 
-[Back to Context-building research](context-building-research.md) · [Used by Codebase Map](../plugins/codebase-map.md)
+Raw evaluation files, harnesses and private holdouts are outside this repository (see the [evidence register](#evidence-register)): each figure is what its run recorded, and none can be re-run from here. Papers and literature-derived findings are in [Code-context retrieval: scientific research and findings](context-building-research.md).
 
-> **This is the single canonical diary for local code-context experiments.**
-> It tracks benchmark configurations, results, costs, rejected approaches and the
-> best current candidate. Scientific papers and literature-derived findings stay
-> in [Code-context retrieval: scientific research and findings](context-building-research.md).
-> Snapshot: 2026-10-27. The end-to-end gate of 2026-10-27 is the only run added
-> since the 2026-10-26 consolidation; see the [changelog](#changelog).
-
-[Current assessment](#current-assessment) ·
+[Decisions in force](#decisions-in-force) ·
 [Approach ledger](#approach-ledger) ·
 [Benchmark contract](#benchmark-contract) ·
-[Test diary](#test-diary) ·
+[Measured runs](#measured-runs) ·
 [Costs](#costs) ·
 [Limits](#limits) ·
-[Next decisions](#next-decisions) ·
-[Evidence register](#evidence-register) ·
-[Changelog](#changelog)
+[Open questions](#open-questions) ·
+[Evidence register](#evidence-register)
 
-## Current assessment
+## Decisions in force
 
-1. **Best measured candidate on the latest unseen private set:** Sonnet 5.5 with
-   A+D, arm C4, at 0.38 / 0.59 / 0.64 whole gold delivered at 6k / 12k / 24k.
-   It is the strongest candidate at 12k and 24k, not a validated product default.
-   The run was single, small and expensive relative to Haiku.
-2. **Best supported architectural direction:** search first, use lexical and
-   optional dense indexes as candidate generators, rewrite from grounded names,
-   then deliver exact whole entities by rank. The old scope-planner plus packet
-   direction failed its decision gate. This direction still has to prove value
-   on completed agent tasks.
-3. **Verified shipped core:** snapshot-bound SQLite FTS5, optional local
-   EmbeddingGemma 2 q4 and hybrid rank fusion. The two-pass rewriter and the
-   A/D/E/picks variants belong to the research harness. An inventory did not
-   locate the two-pass prompt's executable owner in the kernel; do not describe
-   it as shipped until that binding exists.
-4. **Engineering priority:** reliability and resumability of semantic indexing,
-   plus correct source reading and freshness checks. More workers or ranking
-   variants do not fix those constraints.
-5. ~~**Next decision:** test whether a static context packet improves real agent
-   outcomes against bounded exploration with search tools. Do not start another
-   ranking sweep on the consumed holdouts.~~ Superseded on 2026-10-27 by the
+1. **Search first, no static packet.** On 23 fresh private tasks with hidden
+   test oracles, Sonnet 5.5 solved 21 with lexical search (B0), 19 with hybrid
+   EmbeddingGemma search (B1) and 19 with the static A+D packet (A2). No
+   difference is significant; by the pre-registered rule the static packet is
+   not adopted as default and EmbeddingGemma stays opt-in. The packet cost the
+   most per solved task. See the
    [end-to-end gate](#2026-10-27-end-to-end-gate-on-modal).
-6. **End-to-end gate (2026-10-27, measured):** on 23 fresh private tasks with
-   hidden test oracles, Sonnet 5.5 solved 21 with lexical search (B0), 19 with
-   hybrid EmbeddingGemma search (B1) and 19 with the static A+D packet (A2).
-   No difference is significant; by the pre-registered rule the static packet
-   is not adopted as default and EmbeddingGemma stays opt-in. The packet cost
-   the most per solved task.
+2. **In the product:** the lexical index (SQLite FTS5, bound to the snapshot) is
+   built with every snapshot (`retrieval.ensure_index` in
+   `daodan/core/snapshot.py`) and served by `codebase_map_search` and
+   `codebase_map_index`; local EmbeddingGemma 2 q4 with hybrid rank fusion is
+   optional (`daodan/core/embedding_worker.py`, `daodan/core/retrieval.py`).
+   The two-pass rewriter and the A/D/E/picks variants belong to the research
+   harness: no query rewriting is in `daodan/core`.
+3. **Best measured ranking candidate, not adopted:** Sonnet 5.5 with A+D, arm
+   C4, at 0.38 / 0.59 / 0.64 whole gold delivered at 6k / 12k / 24k on the
+   latest unseen private set: strongest at 12k and 24k, in a single, small run
+   that is expensive relative to Haiku. The gate found no task-success gain for
+   the packet built from it.
+4. **The old scope-planner plus packet direction failed its decision gate** as a
+   way to build context; its verified correctness fixes stay.
 
 ### Status vocabulary
 
@@ -84,7 +70,7 @@
 | Slim CLI localization agent | **Deferred, unresolved** | Reached 0.99 at 24k on Starlette at 0.45 USD for 24 questions, then failed on click because a source-reader bug returned a whole file. It has not had a corrected cross-corpus evaluation. |
 | Identifier router | **Not tested for quality** | Could avoid rewrite calls on explicit symbol lookups. Public inspection suggests savings, not a measured quality gain. Regex routing and private-code evaluation remain open. |
 | CoIR/CosQA comparison | **Not tested** | Useful for comparable published retrieval numbers, but it does not replace repository-level or task-success evaluation. |
-| End-to-end agent task success | **Not tested; highest priority** | No current result establishes completed tasks, total agent tokens and latency against autonomous exploration. |
+| End-to-end agent task success | **Measured 2026-10-27** | 21 / 19 / 19 of 23 tasks solved with lexical search, hybrid search and the static packet; no significant difference. See the [end-to-end gate](#2026-10-27-end-to-end-gate-on-modal). |
 
 ## Benchmark contract
 
@@ -132,11 +118,9 @@ This measures localization for circumscribed pre-change work. It does not cover
 new entities, large changes, every source file a developer would read or whether
 an agent can complete the task.
 
-## Test diary
+## Measured runs
 
-New entries append a dated run with its frozen configuration and evidence. Do
-not rewrite historical outcomes. Update the approach ledger separately and link
-it to the entry that justifies the change.
+Each entry is a dated run with its frozen configuration.
 
 ### 2026-10-23 to 2026-10-25: context-packet redesign
 
@@ -155,7 +139,7 @@ packets can refuse with explicit reasons, preserve obligations and run in
 seconds rather than about 95 seconds per packet. They did not beat plain text on
 coverage.
 
-Evidence: the raw context-scope results are not in this repository; the figures above are what this diary recorded.
+Evidence: the raw context-scope results are not in this repository; the figures above are what the run recorded.
 
 <a id="embedding-benchmark"></a>
 
@@ -363,6 +347,30 @@ logs under `results/`). Measured, single replicate.
 - **Separate record:** 38 local runs of the same holdout, stopped at the owner's
   request (B0 8/12, B1 7/13, A2 9/13), never pooled with the Modal runs.
 
+### 2026-10-27: parity of the product path
+
+After the gate the search became product (`codebase_map_search`,
+`codebase_map_index`, the `locate.md` guide). The recorded searches replayed
+through the product path gave identical results for 136 of 137.
+
+### 2026-10-28: consumer gate (acceptance 7)
+
+Run `.daodan/runs/20261027-acceptance7` (local only). With the worker brief's
+`locate:` line and the real codebase-map 8.12.0 server, the agent called
+`codebase_map_search` before its first read and first edit in 21 of 21 judged
+tasks; 19 solved on the hidden oracle; median 5 searches, 0.25 USD per run;
+6.43 USD known spend; two cells lost by a harness parser defect. A map built by
+another interpreter is `stale` for the server.
+
+### 2026-10-28: requirement-list prompt test (P1)
+
+Run `.daodan/runs/20261028-prompt-requirements` (local only). The brief obliged
+a numbered requirement list before the first edit. 20 of 23 solved; on the 21
+tasks both arms judged, 19 against 19 (one gained, one lost); 0.34 against 0.25
+USD per run; the list appeared before the first edit in only 6 of 23 runs.
+Inconclusive under the rule fixed beforehand; the requirement-list line stays a
+hypothesis.
+
 ## Costs
 
 ### Query-time model and delivery cost
@@ -438,72 +446,37 @@ difference on that corpus, not equal end-to-end task value.
    reconstructed caches preserved some results, but they are not replications.
 10. **Static inspection is not runtime proof.** Harness outcomes, product source
     status and installed-host execution remain different evidence classes.
+11. **Perimeter of the end-to-end gate.** Python projects, a strong model,
+    precise requests, one replicate. Vague requests, weak models, large
+    repositories and other languages are unmeasured, while the index covers
+    every parsed language.
 
-## Next decisions
+## Open questions
 
-This is a **proposed sequence**, not a measured result.
+Aperte: da approfondire. A proposed sequence, not a measured result.
 
-1. **Stop rank-only tuning on all existing sets.** Do not try more prompts,
-   fusion weights, graph boosts or stubs on consumed questions.
-2. **Close correctness and reliability prerequisites.** Verify the source-reader
-   fix, current freshness behavior, slow-batch timeout handling and resumable
-   indexing before comparing performance again.
-3. ~~**Run an end-to-end gate first.**~~ Done on 2026-10-27; see the
-   [end-to-end gate](#2026-10-27-end-to-end-gate-on-modal). No arm improved task
-   success, so step 4 does not start on these data. Original wording kept for
-   the record: on fresh private tasks with executable or
-   independently adjudicated outcomes, compare the same agent under equal total
-   budgets using:
-   - bounded exploration with ordinary lexical/source tools;
-   - the hybrid index as an on-demand tool;
-   - the best static-packet candidate.
-   Primary outcome: task success. Secondary outcomes: total tokens, wall time,
-   incomplete or false-ready results and human intervention. Pre-register the
-   decision rule after a small instrumentation pilot, not after seeing the test.
-4. **Only if a static packet shows task value, run the ranking factorial.** Use
+1. **Does context construction matter where the agent is weaker?** The gate's
+   ceiling (every arm solved over 80%) leaves it unmeasured: a test needs a
+   smaller model or vaguer requests, at least two replicates and fresh tasks.
+2. **Correctness and reliability prerequisites,** not re-verified in today's
+   source: the source-reader fix (the inexact `typing.overload` span), the
+   freshness cost per search, slow-batch timeout handling, resumable semantic
+   indexing and `index.lock` recovery.
+3. **The ranking factorial runs only if a static packet shows task value.** Use
    Haiku/Sonnet × picks absent/capped, constant prompt and ranking, the raw
    question as a no-call control, replications and a fresh private project.
    Keep A and D separately ablatable so their contributions are not inferred
-   from a combined arm.
-5. **Defer broader comparisons until the gate says they matter.** Other
-   languages, monorepos, CoIR, remote rerankers and per-entity descriptions are
-   later questions, not the next way to spend the remaining research budget.
+   from a combined arm. No more prompts, fusion weights, graph boosts or stubs
+   on the consumed questions.
+4. **Deferred until a gate says they matter:** other languages, monorepos,
+   CoIR, remote rerankers and per-entity descriptions.
 
 ## Evidence register
 
 | Evidence | Role |
 |---|---|
-| [Context-building research](context-building-research.md) | Papers, primary sources and literature-derived hypotheses; no local test diary |
+| [Context-building research](context-building-research.md) | Papers, primary sources and literature-derived hypotheses; no local measurements |
 | [Prompt design and brevity](prompt-engineering-and-brevity.md) | Evaluation methodology, independent verification and prompt/agent literature |
 | `.daodan/runs/20261025-context-redesign/worktree/evals/codebase-map/context-scope/harness/` | Research harness on local branch `context-ablation`; experiment code, not shipped product |
 | `.daodan/runs/20261025-context-redesign/logs/` and `vectors/` | Frozen run scripts, logs, cached vectors and manifests |
 | `.daodan/runs/20261026-code-context-e2e-gate/` | Local-only end-to-end gate of 2026-10-27: protocol, harness, frozen private tasks, 69 Modal runs, `REPORT.md` (Italian), `results/summary-modal.json`; not for public release |
-
-## Changelog
-
-- **2026-10-27:** added the end-to-end gate on Modal (23 private tasks, three
-  arms, one replicate); struck through the "next decision" it answers in the
-  current assessment and step 3 of the next decisions; recorded its expenditure
-  and evidence location; snapshot date moved to 2026-10-27. Later the same day:
-  the one run where the gold change was absent from every search result was
-  traced to an empty gold list (module-level dict change), not to retrieval.
-  Evening: the result became product (`codebase_map_search`,
-  `codebase_map_index`, the lexical index built with every snapshot, the
-  `locate.md` guide, bindings in senior-review);
-  parity replay 136 of 137 recorded searches identical through the new path.
-  2026-10-28 morning: acceptance 7 (instrumented consumer gate, run
-  `.daodan/runs/20261027-acceptance7`): with the worker brief's `locate:` line and the
-  real codebase-map 8.12.0 server, the agent called `codebase_map_search` before its
-  first read and first edit in 21 of 21 judged tasks; 19 solved on the hidden oracle;
-  median 5 searches, 0.25 USD per run; 6.43 USD known spend; two cells lost by a
-  harness parser defect. A map built by another interpreter is `stale` for the server.
-  2026-10-28: prompt test P1 (run `.daodan/runs/20261028-prompt-requirements`): the brief
-  obliged a numbered requirement list before the first edit. 20 of 23 solved; on the
-  21 tasks both arms judged, 19 against 19 (one gained, one lost); 0.34 against 0.25 USD
-  per run; the list appeared before the first edit in only 6 of 23 runs. Inconclusive
-  under the rule fixed beforehand; the requirement-list line stays a hypothesis.
-  2026-11-04: the measurement narrative left `locate.md`, which keeps the loop and
-  budgets only. Its perimeter: Python projects, a strong model, precise requests,
-  one replicate; vague requests, weak models, large repositories and other
-  languages are unmeasured, while the index covers every parsed language.
-- **2026-10-26:** consolidation into this single canonical diary.

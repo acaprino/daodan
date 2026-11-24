@@ -1,6 +1,6 @@
 # Tiering dei modelli dell'harness: evidenze e applicazione al plugin
 
-Data: 2026-11-07. Stato: ricerca e proposta di sviluppo; nessun modello qualificato e nessuna modifica applicativa.
+**Stato:** Proposta. Nulla nel codice: nessun catalogo dei modelli, nessun probe, nessun modello qualificato, nessun `benchmarks/model-routing/`; i revisori ereditano il modello della sessione. Aperta: da approfondire quale prima famiglia di review e quale set di difetti confermati usare. **Data:** 7 novembre 2026.
 
 Documento collegato: [routing automatico programmatico](programmatic-review-routing.md). Qui si costruisce il profilo dei candidati; nell'altro report si decide quale configurazione usare per ciascun job.
 
@@ -14,7 +14,7 @@ Documento collegato: [routing automatico programmatico](programmatic-review-rout
 
 ## Perimetro e metodo
 
-Lettura dei testi primari HTML delle versioni indicate, con controllo delle sezioni metodologiche, dei risultati e dei limiti pertinenti; consultazione delle appendici rilevanti quando disponibili. Questo report sostituisce, per questi riferimenti, le precedenti descrizioni basate sui soli estratti della ricerca fallita. Non è una revisione sistematica dell'intera letteratura né una riproduzione degli esperimenti.
+Lettura dei testi primari HTML delle versioni indicate, con controllo delle sezioni metodologiche, dei risultati e dei limiti pertinenti; consultazione delle appendici rilevanti quando disponibili. Non è una revisione sistematica dell'intera letteratura né una riproduzione degli esperimenti.
 
 I risultati numerici sotto sono **riportati dagli autori**, non misure del nostro plugin. Le proposte operative sono esplicitamente distinte dalle conclusioni dei paper. Gli artifact collegati sono quelli indicati dalle fonti: il loro codice non è stato eseguito o sottoposto ad audit. Le versioni sono fissate per rendere tracciabile la lettura, senza sostenere che siano sempre le più recenti.
 
@@ -48,7 +48,7 @@ Dieci modelli producono due corpora da **1.000 testi**, rispettivamente di circa
 
 Il riconoscimento dell'autore resta vicino al caso. Esiste però un'incongruenza nella versione letta: introduzione e §4 scambiano l'associazione fra lunghezza del corpus e valori **10,3% / 10,9%**. Il risultato robusto da riportare è l'intervallo vicino al 10%, non quale lunghezza vinca. Nel corpus da 500 parole, **97,7%** delle attribuzioni va a GPT o Claude, che costituiscono solo il 40% dei generatori.
 
-**Correzione importante alla lettura preliminare:** il test «Who are you?» (§5) dà riconoscimento della propria famiglia al **100% per nove modelli**, mentre GLM arriva al 50%, su dieci rollout. Questa sottovalutazione usa GPT-4.1-mini come giudice. Il paper non dimostra che tutte le autodescrizioni siano false: mostra che riconoscere la famiglia non implica attribuire correttamente gli output, conoscere l'esatto ID o classificare imparzialmente gli altri modelli.
+Il test «Who are you?» (§5) dà riconoscimento della propria famiglia al **100% per nove modelli**, mentre GLM arriva al 50%, su dieci rollout. Questa sottovalutazione usa GPT-4.1-mini come giudice. Il paper non dimostra che tutte le autodescrizioni siano false: mostra che riconoscere la famiglia non implica attribuire correttamente gli output, conoscere l'esatto ID o classificare imparzialmente gli altri modelli.
 
 **Da usare:** nomi come `mini`, `flash`, il marchio e l'opinione del modello non sono rubriche di qualificazione. **Gap:** il paper non testa prezzi, tool disponibili, limiti del gateway o mapping dell'effort; l'autorità di questi dati deve quindi restare nel runner/configurazione, per scelta ingegneristica e non per un risultato sperimentale di H2.
 
@@ -78,17 +78,17 @@ I confronti fra modelli 7B e 13B non sostengono una classifica universale. Il te
 
 ## Cosa significa per il nostro plugin
 
-### Stato attuale verificato
+### Stato del codice
 
-Il componente pertinente è `plugins/senior-review`. Il suo [review_roster.py](../../plugins/senior-review/skills/review-preparation/scripts/review_roster.py), `compute`, produce `tier`, `roster`, `signals`, `required_specialists`, `grounding` e `gaps`. Quel `tier` descrive il **rigore della review** (`light/small/medium/large`), non un modello LLM.
+Il componente pertinente è `plugins/senior-review`, con il codice in `daodan/core/`. [review_roster.py](../../daodan/core/review_roster.py), `compute`, produce `rigor`, `roster`, `signals`, `required_specialists`, `grounding` e `gaps`. `rigor` descrive il **rigore della review** (`quick`, `standard`, `deep`), non un modello LLM.
 
-[composition.py](../../plugins/senior-review/skills/review-preparation/scripts/composition.py), `bind`, costruisce i job con scope, modalità, permessi, candidato, selezione della conoscenza e digest dei corpi. Nel contratto ispezionato non seleziona modello o effort. Il [verification panel](../../plugins/senior-review/skills/review-quality-gates/references/verification-panel.md) prescrive di ereditare il modello della sessione; un override richiede richiesta esplicita e supporto dell'host. La ricerca non modifica tale regola.
+[composition.py](../../daodan/core/composition.py), `bind`, costruisce i job con scope, modalità, permessi, candidato, selezione della conoscenza e digest dei corpi. Nel contratto ispezionato non seleziona modello o effort. Il [verification panel](../../plugins/senior-review/skills/review-quality-gates/references/verification-panel.md) prescrive di ereditare il modello della sessione; un override richiede richiesta esplicita e supporto dell'host. La ricerca non modifica tale regola.
 
-Nella precedente osservazione di questa sessione, il catalogo `opencode.models` del provider selezionato esponeva ID, varianti e costi, ma non limiti del contesto o capacità tool/schema. Una soglia `cost.tier.context.size` era una **fascia tariffaria**, non una context window. Questa osservazione non è una garanzia per ogni provider né una nuova verifica runtime; l'adapter deve seguire lo schema effettivo dell'host.
+Osservazione del 7 novembre 2026, non ripetuta: il catalogo `opencode.models` del provider selezionato esponeva ID, varianti e costi, ma non limiti del contesto o capacità tool/schema. Una soglia `cost.tier.context.size` era una **fascia tariffaria**, non una context window. Questa osservazione non è una garanzia per ogni provider né una nuova verifica runtime; l'adapter deve seguire lo schema effettivo dell'host.
 
 ### Proposta: cinque passaggi, una sola tabella di qualificazione
 
-1. **Enumerare tramite il runner che eseguirà i job.** Usare SDK/API/configurazione realmente disponibili, gestire paginazione e allowlist, conservare ID esatti. Il catalogo dei revisori in `plugin.toml` contiene ruoli, non modelli. Un catalogo di un altro servizio non allarga automaticamente i candidati eseguibili.
+1. **Enumerare tramite il runner che eseguirà i job.** Usare SDK/API/configurazione realmente disponibili, gestire paginazione e allowlist, conservare ID esatti. Il catalogo dei revisori (`daodan/review/catalog.toml`) contiene ruoli, non modelli. Un catalogo di un altro servizio non allarga automaticamente i candidati eseguibili.
 2. **Normalizzare solo dati utilizzati.** Identità provider/modello e varianti; prezzi con unità e condizioni; limiti/capacità solo quando dichiarati dalla fonte. Un valore assente resta sconosciuto. `active` non prova accessibilità, prezzo assente non significa gratuito, alias `auto` non significa modello fisso.
 3. **Verificare compatibilità attraverso lo stesso adapter.** Una piccola suite controlla risposta, round-trip tool, struttura dell'output e contesto necessario. Il risultato è pass/fail/unknown con evidenza: non è ancora un tier.
 4. **Misurare review reali su configurazioni selezionate.** Pochi candidati ed effort iniziali, stessi input e contratto, difetti confermati e controlli corretti. Separare valutazione del modello a contesto fisso e valutazione end-to-end dell'agente.
@@ -124,7 +124,7 @@ Queste sono responsabilità dei dati, non tre nuovi servizi obbligatori. Il repo
 
 Questa tassonomia è un punto di partenza editoriale, non una scala dimostrata dai paper. Le soglie minime di recall, massimo rumore e incertezza accettabile devono essere decise sul benchmark e sul rischio del dominio. Se i dati non distinguono quattro livelli, mantenerne meno o lasciare il campo non assegnato. Il routing può già funzionare con qualificazioni esplicite senza un numero di tier.
 
-Un modello può qualificarsi meglio per review di contratti che per concorrenza. Un effort maggiore può costare di più senza superare una qualificazione aggiuntiva. Un modello non idoneo ai casi T1 non è un «T1 economico»: è non qualificato per quella famiglia. Non riutilizzare il campo `tier` del roster; se il livello viene persistito, deve avere una denominazione distinta, ad esempio `model_tier`, nel profilo e non nel contratto di rigore.
+Un modello può qualificarsi meglio per review di contratti che per concorrenza. Un effort maggiore può costare di più senza superare una qualificazione aggiuntiva. Un modello non idoneo ai casi T1 non è un «T1 economico»: è non qualificato per quella famiglia. Non riutilizzare il campo `rigor` del roster; se il livello viene persistito, deve avere una denominazione distinta, ad esempio `model_tier`, nel profilo e non nel contratto di rigore.
 
 ### Regole per i casi incompleti
 
@@ -165,7 +165,5 @@ Per rendere concreto il problema della numerosità: con zero errori su 20 casi i
 Consultati testi primari e contratti locali citati; controllata aritmeticamente la discrepanza dei voti Ericsson. L'ispezione del codice riguarda roster, composizione e istruzioni di dispatch/verifica: non attesta tutte le integrazioni di tutti gli host.
 
 Non sono stati eseguiti probe sui candidati, benchmark di review, misure di billing o prove del mapping effort. Nessuna soglia T1–T4 è quindi validata. Restano da definire host iniziale, famiglie prioritarie, criterio economico e tolleranza agli errori. Le evidenze lette sostengono i singoli controlli, non certificano una pipeline end-to-end pronta per il nostro plugin.
-
-La deliberazione Ultra Nerd precedente non sostituisce queste verifiche; nella ripresa gli strumenti Ultra Nerd non risultavano disponibili e non è stato eseguito un nuovo confronto tra modelli.
 
 Prossima decisione: scegliere la prima famiglia di review e il relativo set di difetti confermati, prima di assegnare tier a nomi commerciali.

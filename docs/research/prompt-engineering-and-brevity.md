@@ -2,10 +2,9 @@
 
 # Designing reliable prompts and agents: evidence and architecture
 
-[Used by Senior Review](../plugins/senior-review.md) · [Context-building research](context-building-research.md)
+**Stato:** In parte. In use as the evidence base for how instructions and roles are written; the five practices of section 3 are recommendations: the repository holds no obligation inventory, no load-graph accounting and no before-and-after behavioral evaluation of them.
 
-*Last substantive update: 2026-10-28. The operational recommendations below were
-revised; no new literature search or behavioral experiment was performed.*
+[Used by Senior Review](../../plugins/senior-review/README.md) · [Context-building research](context-building-research.md)
 
 ## Abstract
 
@@ -136,24 +135,3 @@ proposed method; they did not independently validate the measurements or the
 recommendations. This case motivates further evaluation, not a claim of
 general effectiveness. The abstract and operational guidance do not depend on
 these figures.
-
-## Changelog
-
-### 2026-10-28
-
-Added a standalone operational abstract in English, separated the illustrative
-case from the general guidance, and qualified the preservation and evaluation
-claims. Existing literature references and findings remain unchanged.
-
-- Superseded ~~fixed MUST/MUST NOT skeletons cannot contain procedures, output
-  contracts and stop conditions~~: structured formats can help, but are not
-  sufficient evidence of compliance.
-- Superseded ~~"no rule lost" is provable only against a complete, human-audited
-  register of obligations~~: preservation is auditable relative to the registered
-  inventory, with residual risk from omissions and contextual changes.
-- Superseded ~~mechanical equivalence proofs for paraphrase do not exist~~:
-  text checks and finite behavioral tests alone do not prove general semantic
-  equivalence.
-- Superseded ~~absolute thresholds derive from rendered baselines, not from
-  token conversion~~: baselines and volume measurements inform evaluation;
-  effective limits require evidence from the relevant tasks and models.

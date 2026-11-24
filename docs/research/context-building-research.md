@@ -2,22 +2,24 @@
 
 # Code-context retrieval: scientific research and findings
 
-> Research notes behind the context-building work. Embeddings stay opt-in because the local experiments did not improve candidate retrieval; the cited papers have not been independently re-verified here.
+**Stato:** In uso as the literature behind the search-first locate loop of Codebase Map. The local measurements and the decisions they support are in [Code-context benchmarks](context-building-benchmarks.md). The cited papers have not been independently re-verified here.
 
-[Used by Codebase Map](../plugins/codebase-map.md) · [Test diary](context-building-benchmarks.md)
+[Used by Codebase Map](../plugins/codebase-map.md) · [Benchmarks](context-building-benchmarks.md)
 
 ## TL;DR
 
 - **Problem:** Providing a coding agent with the context needed to resolve a request without consuming hundreds of thousands of tokens and without hallucinating identifiers.
 - **Tested approach:** Hybrid retrieval (lexical FTS5 + dense EmbeddingGemma 2) with grounded query rewriting based on discovered symbols, delivering whole entities in rank order under budget constraints (6k / 12k / 24k characters).
 - **Scientific findings:** Literature and empirical tests converge on a few stable principles: (1) keep the original question in the representation; (2) rewrite using only real codebase identifiers; (3) avoid indiscriminate graph expansion beyond 1 hop; (4) do not replace the query with fabricated code stubs.
-- **Reference to local tests:** Experimental measurements, C1-C4 comparisons on private code, costs and rejected approaches are tracked in the [test diary](context-building-benchmarks.md).
+- **Outcome of the local tests:** on completed agent tasks neither hybrid search nor a static packet beat plain lexical search, so the product searches first and embeddings stay opt-in. Measurements, costs and rejected approaches are in the [benchmarks](context-building-benchmarks.md#decisions-in-force).
 
 ## Why we conducted the research
 
-1. **Failure of the static-packet approach:** The earlier Codebase Map context path (scope planner + static packet) yielded 72 refusals out of 72 attempts. Even after two redesign phases, it delivered only 21/38/46% of required code on Starlette compared to 31/47/52% for plain BM25 lexical search.
-2. **Unsustainable cost of unguided autonomous exploration:** A generalist Sonnet agent exploring the codebase independently achieves 92% at 24k characters but consumes roughly 825,000 tokens per single request. A targeted pipeline was needed to supply relevant code using under 11,000 total tokens.
-3. **Risk of hallucination and drift:** Naive query expansion or hypothetical code generation (stubs) invents non-existent symbols (up to 134 hallucinated names on private codebases), degrading correct rankings. Literature verification was required to identify repository-level code search architectures backed by empirical evidence.
+Each figure is in the [benchmarks](context-building-benchmarks.md#approach-ledger).
+
+1. **Failure of the static-packet approach:** the earlier Codebase Map context path (scope planner plus static packet) refused every attempt, and after two redesign phases still delivered less of the required code than plain lexical search.
+2. **Unsustainable cost of unguided autonomous exploration:** a generalist agent exploring the codebase on its own reached high coverage at a token cost per request far above that of a targeted pipeline.
+3. **Risk of hallucination and drift:** naive query expansion or hypothetical code generation (stubs) invents non-existent symbols on private codebases and degrades correct rankings. Literature was needed to identify repository-level code search architectures backed by empirical evidence.
 
 ## Links to cited papers
 
@@ -47,11 +49,6 @@
 
 ### 2. What was refuted or downscaled
 
-- **Hypothetical code stubs:** In empirical testing on private codebases, generating hypothetical stubs causes the LLM to hallucinate missing symbols, reducing code delivery by 8 percentage points at 24k characters.
+- **Hypothetical code stubs:** In empirical testing on private codebases, generating hypothetical stubs causes the LLM to hallucinate missing symbols and reduces code delivery ([private-code rounds](context-building-benchmarks.md#2026-10-26-private-code-rounds)).
 - **Heavy rerankers on local CPU:** Cross-encoders (such as gte, sno or Qwen) achieve high recall but demand dozens of CPU seconds per query, making them unviable for interactive local execution without a GPU.
 - **Unfiltered expansion for all queries:** For requests that directly name an exact symbol, any rewriting or expansion is redundant or counterproductive (MadAppGang, Song & Zheng).
-
-### 3. Connection to the experimental diary
-
-For quantitative benchmark breakdowns (C1–C4 comparisons on public and private datasets, recall@5/@20 tables, measured token consumption and dollar costs), see the dedicated document:
-👉 [Context-building benchmark and test diary](context-building-benchmarks.md).

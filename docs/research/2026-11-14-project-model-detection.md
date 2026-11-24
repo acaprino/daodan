@@ -1,66 +1,34 @@
-# Pre-mappa del progetto: cosa fa Daodan e quali strumenti esistenti la danno
+# Pre-mappa del progetto: quali strumenti esistenti la danno
 
-**Verifica delle fonti:** 14 novembre 2026. **Codice letto:** albero di lavoro di `main` in quella data, compresi `indexers/jvm.py` e `indexers/runtime.py`, non ancora committati. Percorsi del codice relativi a `plugins/codebase-map/skills/map/scripts/`. Ogni dato esterno viene dalla fonte primaria (repository, pagina o API delle release, file di licenza, documentazione, registro dei pacchetti). Dove non è stato possibile c'è scritto **non verificato**. Le inferenze dal codice sono segnate come tali. Niente è stato installato o eseguito.
+**Stato:** In parte. La pre-mappa esiste (`daodan/core/premap/`) e prende da strumenti esistenti linguaggi ed esclusi, versioni e pacchetti dichiarati, modelli dei build system e framework; restano di Daodan i lettori di manifest, e lo scanner di file e gli strumenti per i progetti senza build tool non sono nel codice (sezione 1). Gli strumenti sono misurati in [`benchmarks/project-model/REPORT.md`](../../benchmarks/project-model/REPORT.md); il passo che scrive la pre-mappa è descritto in [pipeline di analisi](../specs/2026-11-15-pipeline-di-analisi.md).
 
-**Nota del 16 novembre 2026:** la sezione 1 descrive il codice letto il 14 novembre. Da allora lo cambiano la pre-mappa (`premap/`), gli analyzer che girano nel container e la divisione di `resolve_edges.py`, `modules.py` e `snapshot.py` in più file: righe e percorsi citati nelle tabelle non valgono più. Lo stato di oggi è in [2026-11-15-pipeline-di-analisi.md](../specs/2026-11-15-pipeline-di-analisi.md).
+**Verifica delle fonti:** 14 novembre 2026. Ogni dato esterno viene dalla fonte primaria (repository, pagina o API delle release, file di licenza, documentazione, registro dei pacchetti). Dove non è stato possibile c'è scritto **non verificato**. Per questa ricerca niente è stato installato o eseguito.
 
 ## In breve
 
 - **La regola del proprietario.** Daodan non porta codice di riconoscimento proprio: linguaggi, framework, build tool, struttura e versioni di toolchain vengono da strumenti esistenti e mantenuti. Le dipendenze non entrano nella pre-mappa: le risolve nel container il build tool di ogni analyzer. Il codice proprio è solo un adattatore sottile sopra la loro uscita, e solo dove nulla esiste. Lo scopo è una **pre-mappa**, fatta prima di ogni analisi. Dice quali analisi eseguire e come costruire il grafo. Dà la prima suddivisione in **moduli espliciti**, cioè le unità che il build system stesso dichiara.
 - **Nessuno strumento dà da solo la pre-mappa.** Chi legge i file senza eseguire nulla (Trivy, Syft, component-detection, Renovate) dà manifest, lockfile, pacchetti con versioni e a volte i membri del workspace. Non dà cartelle sorgente, source set, task di compilazione, file per unità, linguaggi per unità né `tsconfig`. Chi dà unità con source set e dipendenze (BSP, Gradle Tooling API, ORT, Nx) esegue la build: va nel container.
-- **La combinazione che sostituisce il codice proprio.** Ha tre pezzi, normalizzati nel modello `BuildTarget` di BSP:
+- **La combinazione proposta,** normalizzata nel modello `BuildTarget` di BSP, ha tre pezzi:
   - uno scanner di file per l'inventario (Trivy o Syft);
-  - sull'host, i comandi di modello dei build tool che non eseguono codice del progetto: `go list`, `cargo metadata --frozen`, `pnpm`/`npm ls` in modalità solo lockfile, `uv --frozen --no-build`, `tsc --showConfig`;
+  - i comandi di modello dei build tool che non eseguono codice del progetto: `go list`, `cargo metadata --frozen`, `pnpm`/`npm ls` in modalità solo lockfile, `uv --frozen --no-build`, `tsc --showConfig`;
   - nel container, il modello nativo di Gradle, Maven, .NET, CMake e Bazel.
-  
-  Le versioni dichiarate le legge Renovate (`premap/renovate.py`) e le installa mise (`preparation.py`); i framework vengono da Specfy stack-analyser (già in uso).
-- **Versioni di toolchain: il 14 novembre Daodan non onorava quasi nulla di ciò che il progetto dichiara.** Usava sempre versioni sue; leggeva solo il `distributionUrl` dei wrapper Gradle e Maven. Un progetto che chiedeva un Go più nuovo falliva senza buco dichiarato. Uno che chiedeva un JDK più nuovo diventava buco dichiarato solo dopo che la build era fallita. Oggi la pre-mappa riporta le versioni dichiarate e la preparazione nel container installa quelle esatte; un intervallo come `>=20` è un buco `toolchain_unavailable`.
+- **Versioni di toolchain.** La pre-mappa riporta le versioni dichiarate e la preparazione nel container installa quelle esatte; un intervallo come `>=20` è un buco `toolchain_unavailable`.
 - **Progetti senza build tool.** Esistono lettori onesti: uv per gli script PEP 723; deptry per Python, dependency-cruiser per JS/TS e `go list` per Go, quando ci sono solo gli import. Ognuno però indovina o esegue qualcosa in un punto preciso, scritto più sotto. Per una lista non bloccata (`requests>=2`), solo OSV-SCALIBR conserva il vincolo senza inventare una versione. Per le import map HTML non esiste nulla.
-- **Di `modules.py` (1.489 righe) resterebbe il modello, non il riconoscimento.** Restano: record, provenienze `declared` e `proposed`, verifica dei membri sullo snapshot, archi da import e chiamate, scrittura e interrogazione del grafo (circa 900 righe). I 30 lettori di manifest (circa 580 righe) diventerebbero adattatori, uno per uscita di strumento.
 
-## 1. Cosa fa Daodan oggi
+## 1. Nel codice oggi
 
-### 1.1 Per responsabilità
+Percorsi relativi a `daodan/core/`. Le fonti della pre-mappa sono `premap.SOURCES`; ogni comando di modello gira nel container di Daodan, nessuno sull'host.
 
-| Responsabilità | Codice proprio | Cosa delega | Righe proprie (circa) |
-| --- | --- | --- | --- |
-| Linguaggio per file | Tabella di circa 70 suffissi verso 16 adattatori, euristica `.h` C/C++, marcatori PL/SQL su `.sql` (`languages/__init__.py:94-207`); tipi di file documento e manifest (`snapshot.py:142-174`) | Perimetro: ciò che Git ignora, con `git check-ignore` e `ls-files` (`tree_scope.py`); più directory con il punto e nomi fissi | 150 |
-| Unità di build e workspace | 30 lettori di manifest (`modules.py:252-679`, tabella `READERS` a `modules.py:635`), mini parser YAML e inventario (`modules.py:101-251`). Danno nome, membri del workspace come scritti, nomi delle dipendenze senza versione, dipendenze per percorso. Nessun lockfile. Gradle (`modules.py:429-446`), `setup.py`, `go.mod`, `go.work`, Gemfile, CMake, sbt sono letti con regex, benché `modules.py:9-10` dica "no heuristics" | Parser della libreria standard (`tomllib`, `json`, `configparser`, `ElementTree`) | 580 |
-| Configurazione per gli indicizzatori | Lettura di `tsconfig` con JSONC, `extends`, `baseUrl` e `paths` (`snapshot.py:1414-1581`); `tsconfig` generato per scip-typescript (`indexers/typescript.py:140`); `pyrightconfig.json` per il layout `src` (`indexers/python.py:178`); cartelle sorgente Java dedotte dai file (`resolve_edges.py:1997`) | Nulla | 220 |
-| Versioni di toolchain | Download a versione fissa: Go (`resolve_edges.py:1071-1116`), Rust (`resolve_edges.py:1118-1176`), JRE (`resolve_edges.py:2014-2056`), Node (`indexers/runtime.py:143-163`); build tool e JDK nel container (`indexers/jvm.py:165-277`) | Le verifiche dei download usano le somme pubblicate dai siti ufficiali | 300 |
-| Dipendenze e file su disco | npm (`resolve_edges.py:850-1036`); JVM: pom con genitori, proprietà e BOM, coordinate Gradle per regex, poi Coursier (`resolve_edges.py:1755-1995`); Python (`resolve_edges.py:3623-3743`, `indexers/python.py:127-157`) | `npm ci` o `npm install --ignore-scripts`; `uv export --frozen` e `uv pip install --only-binary :all:`; Coursier 2.1.24; `go mod download`; `cargo metadata` tramite rust-analyzer | 580 |
-| Framework e servizi | Confronto con il registro (`service_registry.py`, 151); costruzione del registro, solo in sviluppo (`registry_build.py`, 637); Dockerfile, compose, Backstage (`system_brief.py:46-95`) | Specfy stack-analyser 1.27.6: regole nel registro (`data/REGISTRY-NOTICES.md`) e CLI a ogni brief (`stack_analyser.py`, `system_brief.py:143`); Simple Icons; CNCF Landscape. Nessun rilevatore di framework proprio | 840, di cui 637 in sviluppo |
-| Sottomoduli Git | Nessuno: nel codice non c'è `.gitmodules` | Nulla | 0 |
-
-Osservazioni trasversali:
-
-- **Sei giri separati per trovare i manifest**, ognuno con le sue esclusioni. Sono `modules.py` (dallo snapshot), `npm_manifests` e `package_directories` (`resolve_edges.py:850-976`), `build_files` con `BUILD_SKIP` (`resolve_edges.py:1707`, `1768`), `python_manifests` (`resolve_edges.py:3627`), `indexers/python._manifests` (`indexers/python.py:127`) e `code_graph.manifest_dirs` (`code_graph.py:870`).
-- **Due fonti di Node.** Il motore TypeScript e stack-analyser usano `node` e `npm` del PATH, di qualsiasi versione (`resolve_edges.py:1449`, `stack_analyser.py:31`, `56`). Gli indicizzatori usano invece Node 22.23.4 scaricato da Daodan (`indexers/runtime.py:26`).
-
-### 1.2 Versioni dichiarate dal progetto: cosa onora Daodan
-
-| Linguaggio | Il progetto dichiara | Daodan usa | Con un disallineamento |
-| --- | --- | --- | --- |
-| Go | `go` e `toolchain` in `go.mod`, `go.work` | Go 1.27.3 fisso, `GOTOOLCHAIN=local`, `GOFLAGS=-mod=readonly` (`resolve_edges.py:1071`, `1362-1367`), per gopls e scip-go (`indexers/go.py:119-125`); `toolchain` ignorato | Un `go` più nuovo fa rifiutare il modulo ([go.dev/doc/toolchain](https://go.dev/doc/toolchain)). `go mod download` fallisce in silenzio (`indexers/go.py:135`) e l'esito è `failed` con lo stderr: nessun buco con causa e rimedio |
-| Rust | `rust-toolchain.toml` o `rust-toolchain`; `rust-version` | La toolchain dell'host se ha `cargo`, `rustc` e `rust-src`, altrimenti la 1.99.1 (`resolve_edges.py:1124-1176`) | Con la toolchain di Daodan il file del progetto è ignorato. Con rustup sull'host, il proxy `cargo` gira nello specchio accanto al file, quindi rustup sceglie, e dalla 1.28.1 installa fuori dalla cartella di Daodan, la toolchain chiesta (inferenza). L'esito scrive comunque `"toolchain": "1.99.1"` (`indexers/rust.py:181`) |
-| Python | `requires-python`, `.python-version` | La versione dell'interprete di Daodan (`resolve_edges.py:3703`, `3958`); `uv` del PATH | I pacchetti senza wheel per quella versione sono saltati e contati (`resolve_edges.py:3730-3740`); Jedi e Pyright leggono con la grammatica di quella versione, salvo `pythonVersion` in `[tool.pyright]` |
-| JS e TS | `engines`, `.nvmrc`, `.node-version`, `packageManager`, lockfile | Node del PATH o 22.23.4; sempre npm. `npm ci` solo con `package-lock.json` o `npm-shrinkwrap.json`, altrimenti `npm install --package-lock=false` (`resolve_edges.py:856`, `1009-1010`) | `pnpm-lock.yaml`, `yarn.lock`, `bun.lock` ignorati: le versioni sono quelle che npm risolve oggi |
-| Java sull'host (JDT LS) | release in `pom.xml`, `toolchain` di Gradle, `.java-version`, `.sdkmanrc` | Java del PATH se è almeno 17, altrimenti Temurin JRE "latest 21" scaricato **senza somma di controllo** (`resolve_edges.py:1700`, `2014-2056`); ambiente fisso `JavaSE-21` (`resolve_edges.py:1641`) | Nessun controllo: sintassi di Java 22 o più letta a livello 21 (inferenza) |
-| Java e Kotlin nel container (scip-java) | come sopra, più i wrapper | `eclipse-temurin:17-jdk-noble` per digest (`indexers/jvm.py:38-39`); `distributionUrl` del wrapper onorato con la sua sha256, solo dai siti ufficiali (`indexers/jvm.py:192-261`); senza wrapper Gradle 9.9.1 o Maven 3.10.0 (`indexers/jvm.py:80-81`) | Un JDK più nuovo di 17 si scopre solo dopo che la build è fallita, con tre regex sull'uscita, e diventa buco `newer_jdk` (`indexers/jvm.py:165-170`, `263-277`) |
-| Kotlin sull'host | versione del plugin Kotlin | KSP 2.3.13 e `kotlin-compiler-embeddable` 2.4.21 (`resolve_edges.py:1685-1690`); la versione del plugin, letta per regex, sceglie solo `kotlin-stdlib` (`resolve_edges.py:1710`, `1883`) | Nessun controllo |
-
-### 1.3 Progetti senza build tool
-
-Ricostruito leggendo il codice, non misurato.
-
-- **Solo una lista di dipendenze:**
-  - Per Python, `requirements*.txt` è letto da `python_manifests` (`resolve_edges.py:3627`) e installato da wheel; le righe con percorsi, URL o include sono scartate (`resolve_edges.py:3681-3686`).
-  - Un `package.json` senza lockfile si installa con `npm install` alla versione di oggi.
-  - I blocchi PEP 723 (`# /// script`) non sono letti da nessun giro.
-- **Nessuna dichiarazione, solo import:**
-  - `python_environment` restituisce `None` (`resolve_edges.py:3699-3702`), `npm_modules` pure. `go list` fuori da un modulo si ferma.
-  - Le chiamate verso i pacchetti restano senza risposta del motore. Contano fra le risolvibili, come per i metodi di librerie senza tipo in `benchmarks/inference-audit/README.md:46`.
-  - Nessun buco dichiarato dice "il progetto importa pacchetti che non dichiara". Il registro dei servizi trova soltanto i segni da variabili d'ambiente, host e nomi di file.
+| Responsabilità | Nel codice |
+| --- | --- |
+| Linguaggio per file ed esclusi | go-enry (`premap/enry.py`); la tabella dei suffissi dello snapshot resta come fonte che go-enry sostituisce (`premap/suffix_table.py`) |
+| Unità di build, workspace, dipendenze fra unità | I lettori di manifest di Daodan (`build_units.py`, fonte `premap/module_graph.py`), più i comandi di modello di Go, Cargo, uv, npm, CMake, Meson, Bazel, Make, Gradle, Maven, sbt e .NET (una fonte per strumento in `premap/`) |
+| Configurazione per gli indicizzatori | `tsc --showConfig` per ogni `tsconfig` (`premap/tsc.py`); cartelle dei pacchetti Python dalla configurazione di build (`premap/python_build.py`) |
+| Versioni di toolchain e pacchetti dichiarati | Renovate in estrazione locale (`premap/renovate.py`); versioni di Swift e di MSBuild dai file di progetto (`premap/project_files.py`); installazione con mise (`preparation.py`) |
+| Framework e servizi | Il fork di stack-analyser (`stack_analyser.py`) e il registro (`service_registry.py`), nel passo `stack` |
+| Sottomoduli Git | `premap/gitmodules.py` legge `.gitmodules`; un sottomodulo assente è il buco `submodule_absent` |
+| Lista di dipendenze senza build tool | `premap/requirements.py` legge i file requirements di pip |
+| Non nel codice | Trivy, Syft, OSV-SCALIBR, deptry, dependency-cruiser; nessuna fonte per gli script PEP 723 |
 
 ## 2. Strumenti esistenti
 
@@ -104,7 +72,7 @@ Date lette dalle API delle release o dai registri il 14 novembre 2026.
 | Strumento | Vincoli | Nota |
 | --- | --- | --- |
 | [Linguist](https://github.com/github-linguist/linguist) | MIT, v9.7.0 del 2026-08-26; gemma Ruby con estensioni native, Windows **non verificato** | I dati (`languages.yml`, `heuristics.yml`, `vendor.yml`, `documentation.yml`) sono riusabili; `generated.rb` e il classificatore sono codice Ruby |
-| [go-enry](https://github.com/go-enry/go-enry) | Apache-2.0, v2.9.6 del 2026-04-04, commit fino a novembre 2026; nessun binario pubblicato | Porting di Linguist (segue la 9.5.0) con `IsVendor`, `IsGenerated`, `IsTest`, `IsDocumentation`. Daodan già compila scip-go con il suo Go (`indexers/go.py:97-107`): un piccolo binario go-enry si scaricherebbe allo stesso modo |
+| [go-enry](https://github.com/go-enry/go-enry) | Apache-2.0, v2.9.6 del 2026-04-04, commit fino a novembre 2026; nessun binario pubblicato | Porting di Linguist (segue la 9.5.0) con `IsVendor`, `IsGenerated`, `IsTest`, `IsDocumentation`. In uso: `daodan/core/premap/enry.py` |
 | scc, tokei, Magika | MIT; MIT o Apache-2.0; Apache-2.0 | Contano righe o classificano il contenuto: non sostituiscono Linguist |
 
 ### 2.4 Versioni di toolchain
@@ -149,16 +117,16 @@ Nessuno legge la release Java di `pom.xml` né il blocco `toolchain` di Gradle s
 
 ### 3.1 Per responsabilità
 
-| Responsabilità | Daodan oggi | Strumento, o piccolo insieme, che lo sostituisce | Cosa fa l'adattatore | Cosa resta scoperto |
-| --- | --- | --- | --- | --- |
-| **Pre-mappa dei moduli espliciti** | `modules.py`, 1.489 righe: 580 di lettori, il resto è modello, verifica, archi e grafo | Tre pezzi: lo scanner di file Trivy o Syft per manifest, lockfile, pacchetti e relazioni; sull'host `go list`, `cargo metadata --frozen`, `npm`/`pnpm ls` con solo lockfile, `uv --frozen --no-build`, `tsc --showConfig`; nel container il modello nativo di Gradle (BSP o Tooling API), Maven (`help:effective-pom`), .NET, CMake (File API), Bazel | Mette ogni uscita in un `BuildTarget` (radice, linguaggi, dipendenze fra unità, sorgenti, dipendenze esterne con versione) e scrive il record di `modules.py`. Un adattatore per comando, decine di righe ciascuno | File per unità dove non c'è comando di modello: un pacchetto Python senza eseguire il suo build backend, nulla va bene. Gradle e Maven senza container: buco dichiarato. Moduli Rust condivisi fra crate di test: li vede solo rust-analyzer. `modules.py` tiene record, `declared`, `proposed`, verifica dei membri, archi, grafo (circa 900 righe) |
-| Linguaggio per file | 150 righe | go-enry, compilato una volta con il Go di Daodan come già scip-go; oppure i dati di Linguist | Traduce il nome del linguaggio di go-enry nell'adattatore di Daodan e usa `IsVendor`, `IsGenerated`, `IsDocumentation` per il perimetro | go-enry segue Linguist 9.5.0 e manca di alcune euristiche (RE2). Con i soli dati di Linguist l'ordine delle strategie va riscritto: è codice proprio |
-| Configurazione per gli indicizzatori | 220 righe | `tsc --showConfig -p` per ogni `tsconfig`; `cargo metadata` per i target; `go list` per i pacchetti; nel container, le cartelle sorgente di BSP | Segue le `references` del `tsconfig` radice e lancia `--showConfig` su ognuno | Le opzioni che Vite o webpack aggiungono a runtime (alias, `additionalData` dei CSS) esistono solo eseguendo la loro configurazione: buco dichiarato |
-| Versioni di toolchain | 300 righe a versione fissa | mise (`MISE_SAFE`, `MISE_OFFLINE`, file idiomatici accesi) per leggere; `GOTOOLCHAIN`, uv e la semantica di rustup per onorare | Passa la versione letta al download già verificato di Daodan, o al meccanismo nativo | Release Java del pom, `toolchain` di Gradle, `go X.Y` senza patch, range come `>=18` o `lts/*` (serve la rete). La versione Java si legge solo dal modello nativo nel container: **nulla va bene sull'host** |
-| Dipendenze e file su disco | 580 righe | Inventario: Trivy o Syft. File su disco: i comandi nativi che Daodan già chiama, più il gestore di pacchetti del progetto (pnpm, yarn) con `--ignore-scripts` e lockfile | Converte l'inventario nella lista da installare; sceglie il gestore dal lockfile | Gradle senza lockfile (solo il modello nativo nel container); nessuno SBOM scarica i file |
-| Framework e servizi | 840 righe, di cui 637 in sviluppo, già su Specfy | Specfy stack-analyser per tutti gli ecosistemi; @vercel/fs-detectors se serve la versione del framework JS | Il registro è già l'adattatore (dati dalle regole di Specfy) | Specfy è fermo da dieci mesi; Java e C# parziali; nessun catalogo mantenuto copre i servizi lato codice per tutti i linguaggi |
-| Progetto con sola lista di dipendenze | Installa le versioni di oggi; PEP 723 ignorato | uv (`--script`, `--frozen`, `--no-build`) per Python; OSV-SCALIBR per conservare i vincoli | Marca "dichiarato, non bloccato" ogni riga senza `==` | Nessuno strumento segnala da solo che una versione non è bloccata |
-| Progetto che dichiara nulla | Nessun buco dichiarato | deptry (Python), dependency-cruiser senza configurazione JS (JS e TS), `go list` sui file (Go) | Riporta il modulo importato come buco "importato, non dichiarato", mai un nome di pacchetto indovinato | Import map HTML, Deno senza rete, Groovy `@Grab`: nulla va bene |
+| Responsabilità | Strumento, o piccolo insieme, che la dà | Cosa fa l'adattatore | Cosa resta scoperto |
+| --- | --- | --- | --- |
+| **Pre-mappa dei moduli espliciti** | Tre pezzi: lo scanner di file Trivy o Syft per manifest, lockfile, pacchetti e relazioni; sull'host `go list`, `cargo metadata --frozen`, `npm`/`pnpm ls` con solo lockfile, `uv --frozen --no-build`, `tsc --showConfig`; nel container il modello nativo di Gradle (BSP o Tooling API), Maven (`help:effective-pom`), .NET, CMake (File API), Bazel | Mette ogni uscita in un `BuildTarget` (radice, linguaggi, dipendenze fra unità, sorgenti, dipendenze esterne con versione) e scrive il record di `modules.py`. Un adattatore per comando, decine di righe ciascuno | File per unità dove non c'è comando di modello: un pacchetto Python senza eseguire il suo build backend, nulla va bene. Gradle e Maven senza container: buco dichiarato. Moduli Rust condivisi fra crate di test: li vede solo rust-analyzer. `modules.py` tiene record, `declared`, `proposed`, verifica dei membri, archi, grafo |
+| Linguaggio per file | go-enry; oppure i dati di Linguist | Traduce il nome del linguaggio di go-enry nell'adattatore di Daodan e usa `IsVendor`, `IsGenerated`, `IsDocumentation` per il perimetro | go-enry segue Linguist 9.5.0 e manca di alcune euristiche (RE2). Con i soli dati di Linguist l'ordine delle strategie va riscritto: è codice proprio |
+| Configurazione per gli indicizzatori | `tsc --showConfig -p` per ogni `tsconfig`; `cargo metadata` per i target; `go list` per i pacchetti; nel container, le cartelle sorgente di BSP | Segue le `references` del `tsconfig` radice e lancia `--showConfig` su ognuno | Le opzioni che Vite o webpack aggiungono a runtime (alias, `additionalData` dei CSS) esistono solo eseguendo la loro configurazione: buco dichiarato |
+| Versioni di toolchain | Renovate per leggere (in REPORT.md legge più dichiarazioni di mise); mise per installare | Passa la versione letta al meccanismo che installa | Release Java del pom, `toolchain` di Gradle, `go X.Y` senza patch, range come `>=18` o `lts/*` (serve la rete). La versione Java si legge solo dal modello nativo nel container: **nulla va bene sull'host** |
+| Dipendenze e file su disco | Inventario: Trivy o Syft. File su disco: i comandi nativi, più il gestore di pacchetti del progetto (pnpm, yarn) con `--ignore-scripts` e lockfile | Converte l'inventario nella lista da installare; sceglie il gestore dal lockfile | Gradle senza lockfile (solo il modello nativo nel container); nessuno SBOM scarica i file |
+| Framework e servizi | Specfy stack-analyser per tutti gli ecosistemi; @vercel/fs-detectors se serve la versione del framework JS | Il registro è già l'adattatore (dati dalle regole di Specfy) | Specfy è fermo da dieci mesi; Java e C# parziali; nessun catalogo mantenuto copre i servizi lato codice per tutti i linguaggi |
+| Progetto con sola lista di dipendenze | uv (`--script`, `--frozen`, `--no-build`) per Python; OSV-SCALIBR per conservare i vincoli | Marca "dichiarato, non bloccato" ogni riga senza `==` | Nessuno strumento segnala da solo che una versione non è bloccata |
+| Progetto che dichiara nulla | deptry (Python), dependency-cruiser senza configurazione JS (JS e TS), `go list` sui file (Go) | Riporta il modulo importato come buco "importato, non dichiarato", mai un nome di pacchetto indovinato | Import map HTML, Deno senza rete, Groovy `@Grab`: nulla va bene |
 
 ### 3.2 I casi misurati in questo progetto: chi li avrebbe riportati prima
 
@@ -170,8 +138,8 @@ Nessuno legge la release Java di `pom.xml` né il blocco `toolchain` di Gradle s
 | Workspace Rust: un modulo di test condiviso fra più crate di test | `cargo metadata` elenca ogni crate di test con il suo `src_path` | Quali crate includono il file condiviso lo sa solo rust-analyzer al caricamento |
 | Kotlin: più task di compilazione, overload referenziati fra loro | Solo il modello Gradle (BSP o Tooling API), nel container | Nulla di statico |
 | Android Gradle: serve l'SDK e chiama cargo | Prima: gli id dei plugin dal parser statico di Renovate (dipendenze di tipo `plugin`). Del tutto: solo Gradle nel container, che senza SDK fallisce e diventa buco | Tradurre un id di plugin in un requisito è codice proprio, piccolo |
-| Sottomoduli Git assenti da un archivio | Git stesso: `git config -f .gitmodules --get-regexp path`, che funziona anche senza `.git`; `git ls-files --stage` (modo 160000) in un checkout. Anche Renovate `git-submodules` | Oggi Daodan non li vede |
-| Progetto Python con versioni in `uv.lock` | Trivy, Syft, component-detection; `uv export --frozen`, che Daodan già usa | |
+| Sottomoduli Git assenti da un archivio | Git stesso: `git config -f .gitmodules --get-regexp path`, che funziona anche senza `.git`; `git ls-files --stage` (modo 160000) in un checkout. Anche Renovate `git-submodules` | Nel codice li legge `premap/gitmodules.py` |
+| Progetto Python con versioni in `uv.lock` | Trivy, Syft, component-detection; `uv export --frozen` (`premap/uv.py`) | |
 | App Vue: fogli globali caricati da `main.ts` | Nessuno: è un import nel sorgente, lo trova il grafo (adattatore dei fogli di stile) | Ciò che `vite.config` aggiunge resta un buco |
 
 ### 3.3 Vincoli dei candidati scelti
@@ -189,37 +157,15 @@ Nessuno legge la release Java di `pom.xml` né il blocco `toolchain` di Gradle s
 | dependency-cruiser | Sì senza configurazioni JS | Node | Sì | MIT | Sì |
 | Renovate | Sì per i parser | In uscita | **Non verificato** | AGPL-3.0 | Sì |
 
-## 4. Cinque adozioni da misurare
+## 4. Misura e questioni aperte
 
-Tutte in un container (Modal o il container di Daodan), mai su questo PC. La seconda esecuzione sempre con `--network none`.
+Le adozioni proposte da questa ricerca sono state misurate su Modal in [`benchmarks/project-model`](../../benchmarks/project-model/README.md): il verdetto per strumento e per faccetta, e l'esito di ogni affermazione di questa ricerca, sono in [REPORT.md](../../benchmarks/project-model/REPORT.md) («La ricerca alla prova»). I numeri vivono lì.
 
-1. **Scanner di file come base della pre-mappa: Trivy contro Syft.** Casi: i sette (chi, semver, tududi, python-semver, javapoet, klaxon, phazly). Contare:
-   - unità trovate contro `modules.json`, compresi i `go.mod` di `_examples` in chi;
-   - membri del workspace e versioni da `uv.lock`;
-   - pacchetti per ecosistema: in comune, solo strumento, solo Daodan;
-   - buco Gradle su klaxon;
-   - tempo, memoria e tentativi di rete.
-2. **Comandi di modello sicuri sull'host, normalizzati in `BuildTarget`.** Comandi: `go list` per ogni `go.mod`, `cargo metadata --frozen`, `npm`/`pnpm ls` solo lockfile, `uv export --frozen --no-build --all-packages`, `tsc --showConfig` per ogni `tsconfig` seguendo le `references`. Casi: chi, semver, tududi, python-semver, l'app TypeScript di phazly. Contare:
-   - target e file per unità contro `modules.json`;
-   - import `@/` risolti contro `snapshot.ts_path_config`;
-   - processi figli lanciati, da controllare con un file esca nella configurazione;
-   - riuscita offline.
-3. **Modello JVM nel container.** Strumenti: build-server-for-gradle o un modello della Tooling API, e `mvn help:effective-pom`. Casi: javapoet, klaxon. Contare:
-   - source set e task di compilazione;
-   - coordinate contro `jvm_coordinates`;
-   - versione del JDK chiesta, letta prima della build;
-   - tempo e memoria contro la preparazione di scip-java di oggi.
-4. **Versioni dichiarate lette da mise e onorate dai meccanismi nativi.** mise con `MISE_SAFE=1 MISE_OFFLINE=1` e i file idiomatici accesi; `GOTOOLCHAIN=auto` con la cache dei moduli condivisa; uv senza `--python`. Casi: i sette, più una copia di chi con `toolchain go1.27.4`, con un elenco dei file di versione fatto a mano. Contare:
-   - file trovati e versioni onorate;
-   - download verificati;
-   - riuscita offline della seconda esecuzione.
-5. **Progetti senza build tool.** Strumenti: deptry, dependency-cruiser senza configurazione JS, `go list` sui file, `uv export --script --no-build`. Casi: tre fixture locali senza manifest (una per linguaggio), uno script PEP 723, un `package.json` senza lockfile, i 14 script di `plugins/codebase-map/skills/map/scripts/` con un blocco PEP 723. Contare:
-   - import riportati;
-   - nomi di pacchetto inventati (devono essere zero);
-   - codice eseguito (deve essere zero; un modulo esca che scrive un file quando viene importato);
-   - riuscita offline.
+Aperte: da approfondire.
 
-Fuori dai cinque: go-enry al posto della tabella dei linguaggi. È poco costoso: lo stesso `go install` di scip-go. Da misurare quando la pre-mappa sarà decisa, contando su tududi, phazly, javapoet, zlib e tinyxml2 i file esclusi come vendored, generati o documentazione e i disaccordi su `.h` e `.sql`. Una verifica, non un'adozione: confrontare su tududi e phazly ciò che il CLI di stack-analyser trova in più del registro. Se non trova nulla, `stack_analyser.py` si toglie.
+- **Scanner di file (Trivy o Syft) per le versioni bloccate dai lockfile.** REPORT.md lo consiglia accanto a Renovate; nel codice non c'è.
+- **Progetti senza build tool.** deptry, dependency-cruiser senza configurazione JS, `go list` sui file e `uv export --script --no-build` non sono nel codice. La prova proposta conta: import riportati; nomi di pacchetto inventati (devono essere zero); codice eseguito (deve essere zero, con un modulo esca che scrive un file quando viene importato); riuscita offline.
+- **I lettori di manifest di Daodan (`build_units.py`)** restano: in REPORT.md trovano più unità di ogni strumento esterno (Verdetto, punto 5). Da decidere se, dove un comando di modello esiste, il lettore si toglie, come chiede la regola del proprietario.
 
 ## Non verificato
 
@@ -231,7 +177,6 @@ Fuori dai cinque: go-enry al posto della tabella dei linguaggi. È poco costoso:
 - deptry: che legga gli import senza importare i moduli.
 - uv: se `uv build` del suo backend sa elencare i file di un pacchetto senza costruirlo.
 - Linguist su Windows; bazel-bsp nel monorepo di JetBrains come server a sé.
-- Inferenze dal codice, da misurare: rustup nello specchio di Daodan; sintassi Java più nuova letta a livello 21; comportamento offline di `GOTOOLCHAIN=auto` con la toolchain già in cache.
 
 ## Fonti
 

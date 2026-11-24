@@ -1,12 +1,14 @@
 # scip-dotnet: i nomi con argomenti di tipo e i gruppi di metodi
 
+**Stato:** In uso: Daodan costruisce scip-dotnet 0.2.16 con `daodan/core/indexers/scip-dotnet.patch` (la patch qui sotto più il commento che dichiara la modifica), da `daodan/core/indexers/csharp.py`. Aperta la scelta del proprietario di proporre issue e patch a scip-dotnet.
+
 **Verifica delle fonti:** 16 novembre 2026. scip-dotnet 0.2.16 (tag `v0.2.16`, commit `fadd98aeb`) e il ramo `main`, dove `ScipCSharpSyntaxWalker.cs` è identico; Roslyn 5.3.0, quella di scip-dotnet 0.2.16. Le risposte di Roslyn e le occorrenze sono misurate su Modal (`tests/modal_pytest.py`), eShop al commit `913acea`. Nessuna issue di scip-dotnet tratta i due casi (ricerca del 16 novembre: "generic", "GenericName", "method group", "CandidateSymbols").
 
 ## In breve
 
 - `ScipCSharpSyntaxWalker` scrive un'occorrenza per ogni `IdentifierNameSyntax` e legge solo `GetSymbolInfo(node).Symbol`. Restano senza occorrenza i nomi con argomenti di tipo (`GenericNameSyntax`: `new List<Order>()`, `AddSingleton<A, B>()`) e i gruppi di metodi convertiti in `System.Delegate` (`app.MapGet("/items", GetItems)`), dove Roslyn non dà un simbolo ma il metodo come unico candidato.
-- Su eShop i riferimenti di C# con risposta passano dall'84,7% al 92,1%: dei 966 nomi con argomenti di tipo senza occorrenza ne restano 55, degli altri 997 ne restano 911.
-- Daodan costruisce scip-dotnet dal sorgente del rilascio con la patch (`indexers/scip-dotnet.patch`, `indexers/csharp.py`) finché scip-dotnet non la integra. Daodan non invia niente: issue e patch qui sotto sono per il proprietario, se vuole proporle.
+- Su eShop i riferimenti di C# con risposta passano dall'84,7% al 92,1%: dei 966 nomi con argomenti di tipo senza occorrenza ne restano 55, degli altri 997 ne restano 911. È il risultato del passo statico: il resto non è misurato dopo il passo dinamico.
+- Daodan costruisce scip-dotnet dal sorgente del rilascio con la patch (`daodan/core/indexers/scip-dotnet.patch`, `daodan/core/indexers/csharp.py`) finché scip-dotnet non la integra. Daodan non invia niente: issue e patch qui sotto sono per il proprietario, se vuole proporle.
 
 ## Issue
 

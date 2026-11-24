@@ -2,8 +2,9 @@
 
 ## Rassegna scientifica ragionata su analisi statica, configurazione, interfacce, sistemi distribuiti, LLM e hardware
 
+**Stato:** In uso: è la fonte di [fase 3, «unità e flussi aiutano la review?»](../specs/2026-11-09-flows-in-review.md). Aperta: da approfondire quando un modello aggiunge valore sopra un grafo costruito a strati (statico, poi dinamico): il corpus lo tratta nelle sezioni [10](#contributo-llm), [11](#contesto-review) e [19.2](#fuori-corpus), e la [14.3](#lacune-ricerca) propone il confronto che nessun lavoro letto misura.  
 **Verifica delle fonti:** 11 novembre 2026.  
-**Corpus:** 38 lavori, di cui 34 dal 2015 in poi e 4 antecedenti fondativi o direttamente pertinenti.  
+**Corpus:** 38 lavori, di cui 34 dal 2015 in poi e 4 antecedenti fondativi o direttamente pertinenti; altri 15, verificati con un criterio più largo, sono nella [sezione 19](#fuori-corpus) e restano fuori dalle sintesi.  
 **Natura del documento:** ricerca bibliografica mirata con verifica delle fonti, confronto delle evidenze e proposte metodologiche esplicitamente separate. Non è una revisione sistematica esaustiva.  
 **Lingua:** italiano; titoli dei lavori, nomi dei benchmark e termini tecnici conservati quando utili alla ricerca.
 
@@ -31,6 +32,7 @@ Le tabelle contengono i risultati pubblicati e i relativi limiti. Le sezioni pro
 16. [Fonti primarie e punti del testo da controllare](#fonti)
 17. [Stringhe di ricerca per aggiornare la rassegna](#query)
 18. [Glossario e convenzioni di lettura](#glossario)
+19. [Lavori verificati fuori dal corpus dei 38](#fuori-corpus)
 
 <a id="sintesi"></a>
 
@@ -1317,3 +1319,92 @@ Le definizioni seguenti fissano l'uso dei termini nel rapporto. Non sostituiscon
 | **NR / NV** | Non riportato nella fonte consultata / non verificato nella ricerca. |
 
 **Nota di uso del rapporto.** Le proposte di grafo, protocollo ed esempi sono riusabili come base di discussione o di progetto sperimentale, mantenendo la loro etichetta di sintesi non validata. Per attribuire un risultato scientifico, citare il lavoro e la versione indicati nella matrice, insieme alla metrica e al suo perimetro. Per selezionare uno strumento, controllare nuovamente compatibilità e disponibilità dell'artefatto: il rapporto registra la verifica bibliografica alla data dichiarata, non l'esecuzione degli esperimenti.
+
+<a id="fuori-corpus"></a>
+
+## 19. Lavori verificati fuori dal corpus dei 38
+
+Quindici lavori verificati il 9 novembre 2026 con un criterio più largo di quello della matrice: è stata aperta la pagina arXiv, DOI/editore o un record bibliografico affidabile (dblp, Crossref, ACM, USENIX), e alcuni numeri vengono da abstract o da riassunti secondari; la cella lo dice. Non entrano nei conteggi né nelle sintesi delle sezioni 1–14. **[Misurato]** indica ciò che il paper misura, **[Mia deduzione]** un'inferenza non misurata. I numeri fra parentesi quadre rimandano alle [fonti di questa sezione](#fuori-corpus-fonti).
+
+### 19.1 Schede
+
+| # | Titolo | Autori | Anno | Sede | Link verificato | Tipo di flusso | Tecnica | Linguaggi / piattaforme | Rappresentazione | Valutazione / benchmark | Risultati principali | Limiti dichiarati |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| X1 | GUI Ripping: Reverse Engineering of Graphical User Interfaces for Testing | Memon, Banerjee, Nagarajan | 2003 (fondativo) | WCRE | https://doi.org/10.1109/WCRE.2003.1287256 | UX, event-flow | Dinamica (traversal DFS della GUI in esecuzione) | Windows, Java Swing | GUI forest, event-flow graph per componente, integration tree | 4 app Java, WordPad, Yahoo Messenger, WinZip | Motivazione: un test case di 50 eventi richiede 20-30 minuti con capture-replay. In WordPad, Main: 69 eventi system-interaction. Tempi di ripping del paper non verificati\[19\] | Il modello va verificato e corretto dal tester\[19\] |
+| X2 | PolyCruise: A Cross-Language Dynamic Information Flow Analysis | Li, Ming, Luo, Cai | 2022 | USENIX Security | https://www.usenix.org/conference/usenixsecurity22/presentation/li-wen | Dati cross-language | Ibrida (dipendenze simboliche statiche per linguaggio + analisi dinamica language-agnostic)\[22\] | Python-C | Dynamic Information Flow Graph costruito incrementalmente da eventi\[23\] | Micro, medi e grandi benchmark; primo benchmark per DIFA multilingue\[22\] | 14 vulnerabilità cross-language sconosciute (es. NumPy): 11 confermate, 8 CVE, 8 corrette\[22\] | Dinamica: copre solo i percorsi eseguiti. Implementata per Python-C |
+| X3 | Reconstructing the Holistic Architecture of Microservice Systems using Static Analysis | Bushong, Das, Cerny (Baylor University; autori da Crossref) | 2022 | CLOSER (SciTePress), pp. 149-157 | https://doi.org/10.5220/0011032100003200 | Tecnico (HTTP fra servizi), dati (entità) | Statica (bytecode Java)\[24\] | Java/Spring Boot | Diagramma di comunicazione, context map, bounded context\[24\] | Testbed di microservizi (Texas Teacher Examination); confronto con analisi manuale | 135 delle 153 connessioni manuali individuate (18 mancanti). Enumerazione manuale ~1,5 h\[9\] | Tecnologie client specifiche (RestTemplate)\[25\] |
+| X4 | Static Analysis of Dynamic Database Usage in Java Systems | Meurice, Nagy, Cleve | 2016 | CAiSE | https://doi.org/10.1007/978-3-319-39696-5_30 | Dati (codice → tabelle/colonne) | Statica | Java (JDBC, Hibernate, JPA) | Insieme di access location con le query SQL ricostruite e le tabelle/colonne toccate\[26\] | Sistemi Java reali; numeri non estratti | Secondo gli autori è il primo approccio che traduce gli accessi ORM in query\[26\] | Query molto dinamiche ricostruite solo parzialmente |
+| X5 | Statically Checking Web API Requests in JavaScript | Wittern et al. | 2017 | ICSE (preprint arXiv) | https://arxiv.org/abs/1702.03906 | Tecnico frontend → API | Statica (string analysis) | JavaScript | Richieste estratte (URL, metodo, dati) confrontate con specifiche Swagger\[27\] | Codice JS reale contro specifiche OpenAPI; numeri non verificati | Estrae le richieste e verifica la conformità agli endpoint\[27\] | Difficoltà intrinseche dell'analisi di JS\[27\] |
+| X6 | Comparing Software Architecture Recovery Techniques Using Accurate Dependencies | Lutellier, Chollak, Garcia, Tan, Rayside, Medvidovic, Kroeger | 2015 | ICSE (SEIP) | https://doi.org/10.1109/ICSE.2015.136 | Architetturale/strutturale | Statica + clustering | C/C++, Java | Partizioni di moduli | Sistemi con architetture ground truth pubblicate dagli autori\[28\] | Le dipendenze symbol migliorano il recovery rispetto alle include. Servono tecniche più accurate\[10\]\[29\] | Ground truth costosa da costruire |
+| X7 | Feature location in source code: a taxonomy and survey | Dit, Revelle, Gethers, Poshyvanyk | 2013 (fondativo) | J. Softw. Evol. Process | https://doi.org/10.1002/smr.567 | Funzionale (feature → codice) | Survey (statica, dinamica, testuale) | Vari | Tassonomia a 9 dimensioni\[30\] | 89 articoli classificati\[30\] | Base concettuale per feature/concept location | Survey: nessun nuovo esperimento |
+| X8 | Flexeme: Untangling Commits Using Lexical Flows | Pârțachi, Dash, Allamanis, Barr | 2020 | ESEC/FSE | https://doi.org/10.1145/3368089.3409693 | Dati, controllo, nomi | Statica + graph kernel | C# | δ-PDG multi-versione + name flow (δ-NFG), clustering agglomerativo con kernel Weisfeiler-Lehman\[6\] | Corpus artificiale di commit "tangled" C# | Accuratezza 0,81 (+0,14 sullo stato dell'arte), 32 volte più veloce\[6\] | Troppo lento per l'uso interattivo (~10 s per untangling). Tangle sintetici\[6\] |
+| X9 | LocAgent: Graph-Guided LLM Agents for Code Localization | Chen, Tang, Deng, Wu, Wu, Jiang, Prasanna, Cohan, Wang | 2025 | ACL | https://arxiv.org/abs/2503.09089 | Funzionale (issue → codice) | LLM + grafo eterogeneo | Python | Grafo diretto eterogeneo: file, classi, funzioni; import, invocazioni, ereditarietà\[2\] | SWE-Bench-Lite e benchmark reali di localizzazione | 92,7% di accuratezza a livello di file. Costo ~86% più basso con Qwen-2.5-Coder-32B fine-tuned. +12% Pass@10 nella risoluzione delle issue\[2\] | Valutazione centrata su Python |
+| X10 | LLMDFA: Analyzing Dataflow in Code with Large Language Models | Wang, Zhang, Su, Xu, Xie, Zhang | 2024 | NeurIPS | https://arxiv.org/abs/2402.10754 | Dati (sorgente → sink) | LLM + strumenti esterni (parser, SMT) | Java, app Android | Fatti dataflow per funzione composti in percorsi; fattibilità validata con SMT | Programmi sintetici (3 tipi di bug) e app Android reali\[3\] | Media: 87,10% precisione, 80,77% recall; F1 fino a +0,35. Supera CodeFuseQuery\[3\]\[33\] | Allucinazioni mitigate ma non eliminate. Serve il CFG in ingresso\[34\] |
+| X11 | An Empirical Study on Concurrency Bugs in Interrupt-Driven Embedded Software | Chao Li, Rui Chen et al. (Beijing Institute of Control Engineering; da Crossref) | 2023 | ISSTA, pp. 1345-1356 | https://doi.org/10.1145/3597926.3598140 | Controllo/concorrenza HW-SW (interrupt) | Studio empirico | Embedded industriale | Tassonomia di pattern | 132 bug da 102 software industriali\[36\] | 5 pattern di bug. Solo il 14% coinvolge interrupt annidati\[36\] | Dati industriali non pubblici (deduzione dal contesto) |
+| X12 | Automatic Detection, Validation and Repair of Race Conditions in Interrupt-Driven Embedded Software (SDRacer) | Wang et al. | 2023 (preprint) | arXiv (versione journal non verificata) | https://arxiv.org/abs/2305.17869 | Controllo/dati su variabili condivise fra task e ISR | Ibrida: statica + esecuzione simbolica + simulazione\[37\] | C embedded | Coppie di accessi condivisi + percorsi | Software interrupt-driven (numeri non estratti) | Rileva, valida e ripara le race\[38\] | La statica da sola produce falsi positivi (motivazione del lavoro)\[37\] |
+| X13 | Efficient data race detection for interrupt-driven programs via path feasibility analysis (IntRace) | Jingwen Zhao, Yanxia Wu, Jibin Dong (da Crossref) | 2024 | J. Supercomputing, vol. 80, n. 15, pp. 21699-21725 | https://doi.org/10.1007/s11227-024-06189-4 | Controllo/dati (race con ISR) | Statica + fattibilità dei percorsi\[39\] | C embedded | Coppie di accessi filtrate per concorrenza e raggiungibilità\[39\] | Benchmark + 9 programmi embedded reali\[39\] | Meno falsi positivi delle analisi statiche precedenti (numeri non estratti)\[39\] | Non estratti |
+| X14 | Hardware Information Flow Tracking | Hu, Ardeshiricham, Kastner | 2021 | ACM Computing Surveys | https://doi.org/10.1145/3447867 | Flusso hardware (bit, gate, RTL) | Survey (statica/simulazione/verifica formale) | Netlist, RTL, HDL | Etichette di taint + logica di tracking (shadow logic)\[40\] | Survey | GLIFT è la prima tecnica IFT precisa consolidata. A livello di gate tutti i flussi (anche impliciti e di timing) diventano espliciti\[41\]\[42\] | Overhead e scalabilità a livello di gate\[43\] |
+| X15 | LLM-IFT: LLM-Powered Information Flow Tracking for Secure Hardware | Mashnoor, Akyash, Kamali, Azar (University of Central Florida) | 2025 | Preprint arXiv | https://arxiv.org/abs/2504.07015 | Flusso hardware | LLM (analisi gerarchica multi-step delle dipendenze) + IFT | RTL | Dipendenze gerarchiche estratte da LLM sull'RTL | Casi di test Trust-Hub a livello di IP e di SoC | Secondo l'abstract: "a 100% success rate in accurate IFT analysis for confidentiality and integrity checks in hardware" | Motivazione: GLIFT non scala sui SoC grandi e CellIFT ha costi di strumentazione\[43\] |
+
+Note di verifica:
+
+- Per X3 e X11–X15 alcuni metadati (numeri, e gli autori di SDRacer) non sono stati estratti dal testo; sono inclusi perché la pagina DOI o arXiv è stata trovata e il contenuto principale è confermato da abstract, record Crossref o snippet dell'editore.
+- Per X5 e X12 gli elenchi completi degli autori non sono stati verificati; per X3, X11, X13 e X15 gli autori provengono da Crossref o dall'abstract arXiv.
+
+### 19.2 Risultati che le sezioni 1–18 non riportano
+
+- **[Misurato]** Nei microservizi, il matching statico fra endpoint dichiarati e chiamate client (RestTemplate) ha trovato 135 delle 153 connessioni individuate manualmente su un testbed reale; le 18 mancanti, il 12% circa, sono falsi negativi (X3).\[9\]
+- **[Misurato]** La qualità delle dipendenze in ingresso conta più dell'algoritmo di clustering per l'architecture recovery: le dipendenze "symbol" battono le "include" (X6).\[10\]\[11\]
+- **[Misurato]** Gli LLM funzionano meglio come *specificatori* ([IRIS](#l4): etichettano sorgenti e sink per CodeQL) o *navigatori* ([RepoGraph](#l3), LocAgent X9: interrogano un grafo) che come analizzatori end-to-end. LLMDFA (X10) mostra che l'analisi end-to-end via LLM soffre di allucinazioni, che si riducono scomponendo il problema e delegando a parser e risolutori SMT.\[3\]
+- **[Misurato]** Più contesto da grafo non è sempre meglio. In [RepoGraph](#l3) l'ego-graph a 2 hop "appiattito" fa scendere il resolve rate a 26,00%, sotto il baseline di 27,33%.\[1\]
+- **[Misurato]** Limiti degli LLM nei lavori letti: allucinazioni nell'analisi end-to-end (LLMDFA); degrado con troppo contesto (RepoGraph a 2 hop); costo in token ([CodexGraph](#l2), RepoGraph negli agenti); valutazione quasi sempre su un solo linguaggio.
+- **[Mia deduzione]** Il frontend-backend linking è valutato sulla conformità a Swagger (X5), non sulla precisione del collegamento al codice del controller.
+- Il lineage attraverso il DB, dove uno scrive una colonna e un altro servizio la legge, richiede di unire l'output alla Meurice (X4) con il taint. Non ho trovato una valutazione di questa composizione.
+- Raccomandazioni della stessa verifica, non misurate: usare l'LLM solo per etichettare sorgenti, sink e semantica dei campi (schema IRIS), non per tracciare i percorsi; per il retrieval LLM, ego-graph da 1 hop non riassunto come default, perché in RepoGraph è il migliore.\[1\]
+
+Dati sui lavori della matrice che le schede non riportano:
+
+- **[RepoGraph (L3)](#l3):** +32,8% relativo medio fra i quattro framework; RAG da 2,67 a 5,33; CrossCodeEval con GPT-4o, EM del codice da 10,5 a 28,7.\[1\]
+- **[CLUSTERCHANGES (R1)](#r1):** "nearly 42%" dei changeset decomponibile; per 16 sviluppatori su 20 le partizioni sono corrette e complete; nessun falso positivo, molti falsi negativi.\[4\]
+- **[SmartCommit (R2)](#r2):** in media 3,41 aggiustamenti umani.\[5\]
+- **[WTG (U1)](#u1):** versione estesa in Automated Software Engineering (journal), 2018, <https://doi.org/10.1007/s10515-018-0237-6>.
+
+Benchmark riusabili oltre a quelli della [sezione 15](#artefatti): il benchmark multilingue di PolyCruise; i dataset di localizzazione di LocAgent; CWE-Bench-Java risulta esteso nel repository con 93 nuove CVE secondo la pagina del progetto.\[46\] Rico è un dataset UI citato in un lavoro collegato, non verificato direttamente.\[52\]
+
+Cercati e non verificati, quindi fuori da questa rassegna senza giudizio sulla loro rilevanza: Amandroid e GUITAR come strumenti, ARCADE come sistema, Bunch, lavori CHI sul user journey mining.
+
+<a id="fuori-corpus-fonti"></a>
+
+### 19.3 Fonti di questa sezione
+
+- \[1\] <https://arxiv.org/pdf/2410.14684>
+- \[2\] [LocAgent: Graph-Guided LLM Agents for Code Localization](https://arxiv.org/abs/2503.09089)
+- \[3\] [LLMDFA: Analyzing Dataflow in Code with Large Language Models](https://arxiv.org/abs/2402.10754)
+- \[4\] <https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/barnett2015hdh.pdf>
+- \[5\] <https://www.cs.cmu.edu/~ckaestne/pdf/fse21_sc.pdf>
+- \[6\] <https://partachi.com/papers/untangle.pdf>
+- \[9\] [(PDF) Using Static Analysis to Address Microservice Architecture Reconstruction](https://www.researchgate.net/publication/357990564_Using_Static_Analysis_to_Address_Microservice_Architecture_Reconstruction)
+- \[10\] [(PDF) Evolution in Software Architecture Recovery Techniques](https://www.researchgate.net/publication/321025813_Evolution_in_Software_Architecture_Recovery_Techniques_-_A_Survey)
+- \[11\] [(PDF) Measuring the Impact of Code Dependencies on Software Architecture Recovery Techniques](https://www.researchgate.net/publication/313866417_Measuring_the_Impact_of_Code_Dependencies_on_Software_Architecture_Recovery_Techniques)
+- \[19\] <https://www.cs.umd.edu/~atif/pubs/MemonWCRE2003.pdf>
+- \[22\] [PolyCruise: A Cross-Language Dynamic Information Flow Analysis](https://www.usenix.org/conference/usenixsecurity22/presentation/li-wen)
+- \[23\] [PolyCruise: A Cross-Language Dynamic Information Flow ...](https://www.usenix.org/system/files/sec22-li-wen.pdf)
+- \[24\] [Reconstructing the Holistic Architecture of Microservice Systems using](https://www.scitepress.org/PublishedPapers/2022/110321/110321.pdf)
+- \[25\] [Assessing Evolution of Microservices Using Static Analysis](https://www.mdpi.com/2076-3417/14/22/10725)
+- \[26\] [Static Analysis of Dynamic Database Usage in Java Systems](https://link.springer.com/chapter/10.1007/978-3-319-39696-5_30)
+- \[27\] [Statically Checking Web API Requests in JavaScript](https://arxiv.org/pdf/1702.03906)
+- \[28\] [Uwaterloo](http://asset.uwaterloo.ca/ArchRecovery/)
+- \[29\] [\[PDF\] A comparative analysis of software architecture recovery techniques](https://www.semanticscholar.org/paper/A-comparative-analysis-of-software-architecture-Garcia-Ivkovic/e535bd8fbe8b14dd55d0600a6dd54f7c0af7d3ce)
+- \[30\] [Feature location in source code: a taxonomy and survey - Dit - 2013 - Journal of Software: Evolution and Process - Wiley Online Library](https://onlinelibrary.wiley.com/doi/abs/10.1002/smr.567)
+- \[33\] [LLMDFA: Analyzing Dataflow in Code with Large Language Models](https://arxiv.org/html/2402.10754)
+- \[34\] [LLMDFA: Analyzing Dataflow in Code with Large Language Models](https://arxiv.org/pdf/2402.10754)
+- \[36\] [An Empirical Study on Concurrency Bugs in Interrupt-Driven Embedded Software](https://dl.acm.org/doi/pdf/10.1145/3597926.3598140)
+- \[37\] [Automatic Detection, Validation and Repair of Race ...](https://arxiv.org/pdf/2305.17869)
+- \[38\] [(PDF) Automatic Detection, Validation and Repair of Race Conditions in Interrupt-Driven Embedded Software](https://www.researchgate.net/publication/371137085_Automatic_Detection_Validation_and_Repair_of_Race_Conditions_in_Interrupt-Driven_Embedded_Software)
+- \[39\] [Efficient data race detection for interrupt-driven programs via path feasibility analysis](https://link.springer.com/article/10.1007/s11227-024-06189-4)
+- \[40\] [IEEE TRANSACTIONS ON COMPUTER-AIDED DESIGN OF INTEGRATED CIRCUITS AND SYSTEMS 1](https://sites.engineering.ucsb.edu/~sherwood/pubs/TCAD-11-gliftproof.pdf)
+- \[41\] [Hardware Information Flow Tracking](https://dl.acm.org/doi/fullHtml/10.1145/3447867)
+- \[42\] [Method and system providing mutli-level security to gate level information flow](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10083305)
+- \[43\] [LLM-IFT: LLM-Powered Information Flow Tracking for Secure Hardware](https://arxiv.org/pdf/2504.07015)
+- \[46\] [github.com](https://github.com/iris-sast/iris)
+- \[52\] [What do all these Buttons do? Statically Mining Android User Interfaces at Scale](https://arxiv.org/pdf/2105.03144)
