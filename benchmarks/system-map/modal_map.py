@@ -53,7 +53,8 @@ MODELS = {"haiku": "claude-haiku-5-5", "sonnet": "claude-sonnet-5-5", "opus": "c
 GATEWAY = {"qwen"}
 GATEWAY_EFFORT = "medium"  # the gateway's model refuses the effort Claude Code sends by default (`high`)
 BUDGET_USD = 3  # per session: a session past it stops, and its summary says so
-SESSION_SECONDS = ENGINE_SECONDS = 3600
+SESSION_SECONDS = 3600
+ENGINE_SECONDS = 2 * 3600  # the pass of the largest case: 51 minutes alone, over an hour under load (23 November 2026)
 RULES = ("session", "none")  # the rules a run writes itself, or leaves to the agent; anything else is a rules file
 
 CASES = {
