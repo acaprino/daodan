@@ -11,13 +11,12 @@ import {
   runProblem, SCOPES,
 } from './requests.ts';
 import type { Asked, Finding, Question, Tone } from './requests.ts';
+import { TOKEN } from './token.ts';
 
 export const POLL_MS = 2000;
 
 const answer = (response: Response) => response.json().catch(() => ({})).then(json =>
   (response.ok ? json : Promise.reject(new Error(json.error ?? `HTTP ${response.status}`))));
-// The token comes in the address the MCP server returned; a static export has none and needs none.
-const TOKEN = new URLSearchParams(window.location.search).get('token') ?? '';
 const auth = TOKEN ? { 'X-Daodan-Token': TOKEN } : undefined;
 export const getJson = (url: string) => fetch(url, { headers: auth }).then(answer);
 const postJson = (url: string, body: unknown) =>

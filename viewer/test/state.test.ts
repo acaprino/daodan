@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseEnvelope } from '../src/envelope.ts';
-import { initialState, placeOf, reduce, shownDetails } from '../src/state.ts';
+import { canEnter, initialState, placeOf, reduce, shownDetails } from '../src/state.ts';
 import type { Action } from '../src/state.ts';
 
 const raw = JSON.parse(readFileSync(new URL('./fixture.json', import.meta.url), 'utf8'));
@@ -53,6 +53,22 @@ test('filters, groups and flows change only their own field', () => {
   state = reduce(reduce(state, { type: 'resetFilters' }), { type: 'toggleGroup', ref: 'component:web' });
   assert.deepEqual([state.filters, state.open], [{}, []]);
   assert.equal(reduce(state, { type: 'flow', ref: 'flow:nowhere' }).flow, 'flow:symbol:web/checkout.tsx::pay');
+});
+
+test('a group opened in place changes where nothing is: the scope, the choice and the way up stay', () => {
+  let state = reduce(reduce(initialState(env), { type: 'select', ref: 'component:web' }), { type: 'toggleGroup', ref: 'component:web' });
+  state = reduce(state, { type: 'toggleGroup', ref: 'component:server' });
+  assert.deepEqual([state.scope, state.selected, state.open, placeOf(state)], [null, 'component:web', ['component:web', 'component:server'], ['Sistema']]);
+  assert.deepEqual(reduce(state, { type: 'up' }), state);
+  const inside = reduce(state, { type: 'open', ref: 'component:web' });  // «Entra» still goes in
+  assert.deepEqual([inside.scope, inside.open], ['component:web', []]);
+  assert.deepEqual(reduce(state, { type: 'closeGroups' }).open, []);
+});
+
+test('what holds something in the view is gone into, and a feature is not', () => {
+  const state = initialState(env);
+  assert.deepEqual(['component:web', 'file:web/checkout.tsx', 'store:db/orders', 'feature:payment', 'file:nowhere', null].map(ref => canEnter(state, ref)),
+    [true, true, false, false, false, false]);
 });
 
 test('load starts a run clean: nothing of the last one is kept', () => {

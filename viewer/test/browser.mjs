@@ -6,7 +6,11 @@ const assets = new URL('../../daodan/assets/', import.meta.url);
 const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta.url)));
 // What the fixture lacks for the details: evidence as the server writes it, and lists longer than what is in sight at first.
 const parts = Array.from({ length: 9 }, (_, n) => `web/part${n}.tsx`);
-envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', paths: ['web/checkout.tsx', ...parts] }];
+envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', mark: 'react', paths: ['web/checkout.tsx', ...parts] }];
+// The logos the server has, and one it has not.
+for (const [ref, mark] of [['external:card payment provider', 'stripe'], ['external:api gateway', 'gone']]) envelope.entities.find(entity => entity.ref === ref).mark = mark;
+const LOGO = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16"/></svg>';
+const marksAsked = [];
 Object.assign(envelope.entities.find(entity => entity.ref === 'component:web'), { technologies: ['react'], evidence: parts.map((path, n) => ({ path, line: n + 1 })) });
 envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lungo', complete: true, gaps: [], steps: Array(43).fill(envelope.flows[1].steps[0]) });
 let pathsClassified = false;
@@ -100,6 +104,10 @@ try {
     if (path === '/data/visual.json') {
       await new Promise(resolve => setTimeout(resolve, mode.exportDelay));
       return route.fulfill(mode.exportBroken ? { body: 'not json', contentType: 'text/plain' } : { json: envelope });
+    }
+    if (path === '/api/mark') {
+      marksAsked.push(url.search);
+      return route.fulfill(['react', 'stripe'].includes(url.searchParams.get('id')) ? { body: LOGO, contentType: 'image/svg+xml' } : { status: 404, json: {} });
     }
     if (path.startsWith('/api/')) return route.fulfill({ status: 404, json: {} });
     if (mode.layoutLost && path.includes('layout.worker')) return route.fulfill({ body: '', contentType: 'text/javascript' });  // it never answers
@@ -1086,11 +1094,68 @@ try {
   // The canvas is a group named by the page; a node is a button named by its name, its step, «esterno», what it contains and its kind.
   const canvas = main.getByRole('group', { name: 'Naviga il grafo', exact: true });
   const thing = name => canvas.getByRole('button', { name: new RegExp(`^${name},`) });
-  const opens = name => canvas.getByRole('button', { name: `Apri ${name}`, exact: true });
+  // A group: the arrow that opens it in place, the one that closes it, its frame once open, and the › that goes into it.
+  const onGroup = action => name => canvas.getByRole('button', { name: `${action} ${name}`, exact: true });
+  const [opens, closes, enters] = ['Apri', 'Chiudi', 'Entra in'].map(onGroup);
+  const frame = name => canvas.getByRole('group', { name: new RegExp(`^${name}, aperto, contiene`) });
   const kinds = main.getByRole('list', { name: 'Tipi di linea', exact: true });
   const kindOfLine = text => kinds.getByRole('listitem').filter({ hasText: text });
   const busy = main.locator('[aria-busy="true"]');
   const focusOn = start => page.waitForFunction(text => document.activeElement?.getAttribute('aria-label')?.startsWith(text), start);
+  const frames = count => page.evaluate(left => new Promise(done => {
+    const next = () => { left -= 1; if (left < 0) done(); else requestAnimationFrame(next); };
+    next();
+  }), count);
+  const until = async (holds, what) => {
+    for (const end = Date.now() + 8000; !await holds(); await frames(1)) assert.ok(Date.now() < end, what);
+  };
+  // What is on the canvas, and nothing on it moving (the view and the things glide for a fifth of a second).
+  const rest = async () => {
+    let last = '';
+    await until(async () => {
+      const now = JSON.stringify(await canvas.getByRole('button').evaluateAll(all => all.map(el => { const { x, y, width } = el.getBoundingClientRect(); return [x, y, width].map(Math.round); })));
+      const same = now === last;
+      last = now;
+      if (!same) await frames(15);
+      return same;
+    }, 'the canvas at rest');
+  };
+  const inSight = async name => {
+    const [box, node] = await Promise.all([canvas.boundingBox(), thing(name).boundingBox({ timeout: 200 }).catch(() => null)]);  // out of the view a node is not drawn
+    return !!node && node.x >= box.x && node.x + node.width <= box.x + box.width && node.y >= box.y && node.y + node.height <= box.y + box.height;
+  };
+  const comes = (name, wanted = true) => until(async () => await inSight(name) === wanted, `${name} ${wanted ? 'in' : 'out of'} sight`);
+  // Where a node is in the canvas and how large: the view.
+  const viewAt = async name => {
+    const [box, node] = await Promise.all([canvas.boundingBox(), thing(name).boundingBox()]);
+    return [node.x - box.x, node.y - box.y, node.width].map(Math.round);
+  };
+  const fitAll = async () => {
+    await canvas.getByRole('button', { name: 'Inquadra tutto', exact: true }).click();
+    await rest();
+  };
+  // Everything out of sight, by the ground of the canvas: a drag on a thing would move the thing.
+  const panAway = async () => {
+    await fitAll();
+    await canvas.scrollIntoViewIfNeeded();
+    const { x, y, width, height } = await canvas.boundingBox();
+    for (let drags = 0; drags < 2; drags += 1) {
+      await page.mouse.move(x + 8, y + 8);
+      await page.mouse.down();
+      await page.mouse.move(x + width / 2, y + height / 2, { steps: 4 });
+      await page.mouse.move(x + width - 12, y + height - 12, { steps: 4 });
+      await page.mouse.up();
+    }
+  };
+  const logoIn = async where => await where.locator('img').count() === 1 && where.locator('img').evaluate(img => img.complete && img.naturalWidth > 0);
+  // The layout can be held, so that a test sees what the page does while it waits for one.
+  await page.addInitScript(() => {
+    const post = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (...message) {
+      if (window.holdLayout) window.heldLayout = () => post.apply(this, message);
+      else post.apply(this, message);
+    };
+  });
   await page.setViewportSize({ width: 1280, height: 850 });
   mode.exportBroken = true;  // an export that cannot be read: the page waits, then says what failed, with Riprova
   mode.exportDelay = 1000;
@@ -1116,6 +1181,7 @@ try {
   await line('shop · run fixture').waitFor();
   await main.getByRole('progressbar', { name: 'Dispongo il grafo…' }).waitFor();
   await main.getByText('Sistema · Dispongo il grafo…', { exact: true }).waitFor();
+  await line('Dispongo il grafo…').waitFor();  // said as it is waited for
   assert.deepEqual([await unreadable.count(), await busy.count(), await canvas.count()], [0, 1, 0]);
   await unreadable.waitFor();
   assert.match(await unreadable.innerText(), /Errore[\s\S]*Impossibile disporre il grafo[\s\S]*5000 ms[\s\S]*Riprova/);
@@ -1141,6 +1207,13 @@ try {
   for (const name of ['Ingrandisci', 'Riduci', 'Inquadra tutto']) await canvas.getByRole('button', { name, exact: true }).waitFor();
   await canvas.getByRole('button', { name: 'web, contiene 3 elementi, componente', exact: true }).waitFor();
   assert.match(await kinds.innerText(), /Relazioni\s*6[\s\S]*Collegamenti di dati\s*3/);
+  // The logo of a service is on its node and on its row; one that does not load leaves the icon.
+  await until(() => logoIn(thing('card payment provider')), 'the logo on its node');
+  await until(() => logoIn(row(/^card payment provider/)), 'the logo on its row');
+  for (const where of [thing('API gateway'), row(/^API gateway/)]) {
+    await until(async () => await where.locator('img').count() === 0 && await where.locator('svg').count() > 0, 'the icon of what has no logo');
+  }
+  assert.deepEqual([...new Set(marksAsked)].sort(), ['?id=gone', '?id=stripe']);
   // A node pressed is in the details; Escape on it, or a press beside the nodes, leaves it.
   await thing('web').click();
   await details.getByRole('heading', { name: 'web', exact: true }).waitFor();
@@ -1154,7 +1227,7 @@ try {
   await details.getByRole('heading', { name: 'server', exact: true }).waitFor();
   await canvas.click({ position: { x: 8, y: 8 } });
   await details.waitFor({ state: 'hidden' });
-  // By keyboard: the arrows follow the lines, Enter chooses, and the › after a node enters it.
+  // By keyboard: the arrows follow the lines, Enter chooses; after a group are the arrow that opens it in place and the › that enters it.
   await thing('web').focus();
   for (const [key, name] of [['ArrowRight', 'server,'], ['ArrowLeft', 'web,'], ['ArrowRight', 'server,']]) {
     await page.keyboard.press(key);
@@ -1162,29 +1235,126 @@ try {
   }
   await page.keyboard.press('Enter');
   await details.getByRole('heading', { name: 'server', exact: true }).waitFor();
-  await opens('server').and(page.locator('[tabindex="0"]')).waitFor();
+  await until(() => opens('server').evaluate(el => el.tabIndex === 0), 'the arrow of the chosen group on the way of Tab');
   await page.keyboard.press('Tab');
   await focusOn('Apri server');
+  await page.keyboard.press('Tab');
+  await focusOn('Entra in server');
   await page.keyboard.press('Enter');
   await place('Sistema / server').waitFor();
   await details.waitFor({ state: 'hidden' });
   await thing('money.ts').waitFor();
   await choose('Torna al sistema');
   await place('Sistema').waitFor();
-  await opens('web').click();  // by its ›
+  await enters('web').click();  // by its ›
   await place('Sistema / web').waitFor();
-  await opens('checkout.tsx').click();
+  await enters('checkout.tsx').click();
   await place('Sistema / web / checkout.tsx').waitFor();
   await thing('pay').waitFor();
   await choose('Torna al sistema');
   await place('Sistema').waitFor();
-  await thing('web').click();  // a double press enters, here with the details open: their opening narrows the canvas
-  await details.waitFor();
-  await thing('web').dblclick();
+  await thing('web').waitFor();
+  await rest();
+  assert.equal(await details.count(), 0);
+  await thing('web').dblclick();  // a double press enters, also the first: the details its first press opens narrow the canvas, and move nothing on it
   await place('Sistema / web').waitFor();
   await thing('api.ts').waitFor();
   await choose('Torna al sistema');
   await place('Sistema').waitFor();
+  await thing('web').click();  // and with the details open
+  await details.waitFor();
+  await thing('web').dblclick();
+  await place('Sistema / web').waitFor();
+  await choose('Torna al sistema');
+  await place('Sistema').waitFor();
+  // A group opens in place by its arrow: what it holds is in its frame, and the rest is there as it was.
+  await opens('web').click();
+  await frame('web').waitFor();
+  await rest();
+  for (const name of ['checkout.tsx', 'api.ts', 'money.ts', 'server', 'card payment provider', 'Cliente']) await thing(name).waitFor();
+  await panel.getByText(/^Sistema · 11 nodi · /).waitFor();
+  assert.deepEqual([await up.isDisabled(), await details.count()], [true, 0]);  // the place is the same, and nothing is chosen
+  const inFrame = async (name, group) => {
+    const [a, b] = await Promise.all([frame(group).boundingBox(), thing(name).boundingBox()]);
+    return b.x >= a.x && b.y > a.y && b.x + b.width <= a.x + a.width + 1 && b.y + b.height <= a.y + a.height + 1;
+  };
+  assert.deepEqual([await inFrame('checkout.tsx', 'web'), await inFrame('money.ts', 'web'), await inFrame('server', 'web')], [true, true, false]);
+  assert.equal(await elements.getByText('file · in web', { exact: true }).count(), 3);
+  await opens('checkout.tsx').click();  // a group in a group
+  await frame('checkout.tsx').waitFor();
+  await rest();
+  assert.ok(await inFrame('pay', 'checkout.tsx') && await inFrame('api.ts', 'web'));
+  await thing('pay').click();
+  await details.getByRole('heading', { name: 'pay', exact: true }).waitFor();
+  await fitAll();
+  await closes('checkout.tsx').click();  // what stands for the chosen thing is chosen
+  await frame('checkout.tsx').waitFor({ state: 'detached' });
+  await thing('checkout.tsx').and(page.locator('[aria-current="true"]')).waitFor();
+  await closeIn(details);
+  await details.waitFor({ state: 'hidden' });
+  // A search that finds nothing but a thing in it keeps its frame.
+  await search.fill('checkout');
+  await thing('server').waitFor({ state: 'detached' });
+  assert.ok(await frame('web').isVisible() && await thing('checkout.tsx').isVisible());
+  await search.fill('');
+  await thing('server').waitFor();
+  // It closes by its arrow, and by keyboard opens and closes with the focus on it.
+  await closes('web').click();
+  await frame('web').waitFor({ state: 'detached' });
+  await thing('checkout.tsx').waitFor({ state: 'detached' });
+  await panel.getByText('Sistema · 8 nodi · 6 relazioni visibili', { exact: true }).waitFor();
+  await thing('web').focus();
+  for (const [action, start] of [['Apri web', 'attached'], ['Chiudi web', 'detached']]) {
+    await until(() => canvas.getByRole('button', { name: action, exact: true }).evaluate(el => el.tabIndex === 0), `${action} on the way of Tab`);
+    await page.keyboard.press('Tab');
+    await focusOn(action);
+    await page.keyboard.press('Enter');
+    await frame('web').waitFor({ state: start });
+    await focusOn('web,');
+  }
+  // An open group is entered by the row and by the command, and the way back is the same.
+  await opens('web').click();
+  await frame('web').waitFor();
+  await row('Entra in web').click();
+  await place('Sistema / web').waitFor();
+  await up.click();
+  await place('Sistema').waitFor();
+  await details.getByRole('heading', { name: 'web', exact: true }).waitFor();
+  await comes('web');
+  await choose("Entra nell'elemento scelto");
+  await place('Sistema / web').waitFor();
+  await choose('Torna al sistema');
+  await place('Sistema').waitFor();
+  // A thing moves, here from the keyboard, and the layout is put back.
+  await thing('Cliente').waitFor();
+  await rest();
+  const reset = canvas.getByRole('button', { name: 'Riordina', exact: true });
+  const start = await viewAt('Cliente');
+  assert.equal(await reset.count(), 0);
+  await thing('Cliente').focus();
+  await page.keyboard.press('Alt+ArrowDown');
+  await line(/^Cliente spostato a /).waitFor();
+  await reset.waitFor();
+  await until(async () => (await viewAt('Cliente'))[1] > start[1], 'a moved thing');
+  await reset.click();
+  await reset.waitFor({ state: 'detached' });
+  await rest();
+  assert.deepEqual(await viewAt('Cliente'), start);
+  // What a press moves glides, and with the system's reduced motion it jumps.
+  await page.evaluate(label => document.addEventListener('transitionrun', event => {
+    if (event.propertyName === 'transform' && event.target.closest(`[aria-label="${label}"]`)) window.glided = true;
+  }, true), 'Naviga il grafo');
+  for (const reducedMotion of ['reduce', 'no-preference']) {
+    await page.emulateMedia({ reducedMotion });
+    await page.evaluate(() => { window.glided = false; });
+    await opens('web').click();
+    await frame('web').waitFor();
+    await rest();
+    assert.equal(await page.evaluate(() => window.glided), reducedMotion !== 'reduce', reducedMotion);
+    await closes('web').click();
+    await frame('web').waitFor({ state: 'detached' });
+    await rest();
+  }
   // The skip link goes to the content.
   await page.getByRole('link', { name: 'Vai al contenuto' }).press('Enter');
   await page.waitForFunction(() => document.activeElement?.tagName === 'MAIN');
@@ -1218,6 +1388,7 @@ try {
   await main.getByRole('button', { name: 'Informazioni sul progetto', pressed: true }).waitFor();
   assert.match(await info.innerText(), /shop[\s\S]*Collegamenti di dati[\s\S]*Tecnologie[\s\S]*React[\s\S]*framework[\s\S]*web\/checkout\.tsx/);
   assert.ok(await selectable(info.getByText('web/checkout.tsx', { exact: true })));
+  await until(() => logoIn(info.getByRole('term').filter({ hasText: 'React' })), 'the logo of a technology');
   assert.equal(await info.getByRole('list', { name: 'File di React' }).getByRole('listitem').count(), 8);
   await info.getByRole('button', { name: 'Altri 2 file' }).click();
   await info.getByRole('list', { name: 'Altri 2 file' }).getByText('web/part8.tsx').waitFor();
@@ -1240,7 +1411,13 @@ try {
   const current = locator => locator.getAttribute('aria-current');
   assert.equal(await current(whole), 'page');
   const pay = row(/^pay\b.*\b8\s*passi$/);
+  await page.evaluate(() => { window.holdLayout = true; });
   await pay.click();
+  // Its layout is waited for: that is said, and the last one stays, with no number of the flow just chosen.
+  await line('Dispongo il grafo…').waitFor();
+  assert.deepEqual([await thing('web').count(), await canvas.getByRole('button', { name: /, pass[oi] \d/ }).count(), await busy.count()], [1, 0, 1]);
+  await page.evaluate(() => { window.holdLayout = false; window.heldLayout(); });
+  await line('Dispongo il grafo…').waitFor({ state: 'detached' });
   await flowPanel.getByRole('heading', { name: 'pay', exact: true }).waitFor();
   assert.deepEqual([await current(pay), await pay.getAttribute('aria-pressed'), await current(whole)], ['page', null, null]);
   const steps = flowPanel.getByRole('list', { name: 'Passi del flusso', exact: true }).getByRole('listitem');
@@ -1251,12 +1428,25 @@ try {
   await flowPanel.waitFor({ state: 'hidden' });
   assert.equal(await current(pay), 'page');
   // On the canvas its nodes have the numbers of its steps, and its lines are a kind of their own.
-  await thing('web, passo 1').waitFor();
-  await thing('server, passo 2').waitFor();
+  await thing('web, passi 1 e 2').waitFor();  // every step a node has a part in
+  await thing('server, passi 2, 3, 4, 5, 6, 7 e 8').waitFor();
+  await thing('card payment provider, passo 5').waitFor();
   await kindOfLine('Linee del flusso').waitFor();
   assert.match(await kindOfLine('Linee del flusso').innerText(), /Linee del flusso\s*4/);
+  // Asked for again, what it goes through comes back into the view it was moved out of.
+  await panAway();
+  await comes('web, passi 1 e 2', false);
   await pay.click();
   await flowPanel.waitFor();
+  await comes('web, passi 1 e 2');
+  await comes('card payment provider, passo 5');
+  // With a group open its steps are on what it holds.
+  await opens('web').click();
+  await frame('web').waitFor();
+  await thing('checkout.tsx, passo 1').waitFor();
+  await thing('api.ts, passi 1 e 2').waitFor();
+  await closes('web').click();
+  await thing('web, passi 1 e 2').waitFor();
   await row(/^nightlyReconcile\b.*\bincompleto\s*2\s*passi$/).click();
   await flowPanel.getByRole('heading', { name: 'nightlyReconcile', exact: true }).waitFor();
   await flowPanel.getByRole('list', { name: 'Dove si ferma la prova' }).getByText('call to refund is unresolved').waitFor();
@@ -1300,19 +1490,22 @@ try {
   await page.waitForFunction(() => document.querySelector('nav[aria-label="Mappa"] [aria-current="page"]').textContent === 'Tutta la mappa');
   await thing('web, contiene 3 elementi').waitFor();
   await kindOfLine('Linee del flusso').waitFor({ state: 'detached' });
-  // What is chosen in the list is brought into the view of the canvas.
+  // What is chosen in the list is brought into the view of the canvas; where it is in it already, the view stays.
+  await panAway();
+  await comes('card payment provider', false);
   await row(/^card payment provider/).click();
   await details.getByRole('heading', { name: 'card payment provider', exact: true }).waitFor();
   await canvas.getByRole('button', { name: 'card payment provider, esterno, servizio o API', exact: true }).waitFor();
-  const inSight = async name => {
-    const [box, node] = await Promise.all([canvas.boundingBox(), thing(name).boundingBox({ timeout: 200 }).catch(() => null)]);  // out of the view a node is not drawn
-    return !!node && node.x >= box.x && node.x + node.width <= box.x + box.width && node.y >= box.y && node.y + node.height <= box.y + box.height;
-  };
-  const comes = async (name, wanted = true) => {
-    for (let tries = 0; tries < 30 && await inSight(name) !== wanted; tries += 1) await page.waitForTimeout(100);
-    assert.equal(await inSight(name), wanted, name);
-  };
   await comes('card payment provider');
+  await rest();
+  await canvas.getByRole('button', { name: 'Riduci', exact: true }).click();
+  await rest();
+  assert.ok(await inSight('card payment provider'));
+  const seen = await viewAt('card payment provider');
+  await row(/^card payment provider/).click();
+  await frames(20);
+  await rest();
+  assert.deepEqual(await viewAt('card payment provider'), seen);
   await closeIn(details);
   await details.waitFor({ state: 'hidden' });
   // A group is entered by the inspector's action, by its row's own control, or by a double press; «Su» goes back.
@@ -1327,7 +1520,8 @@ try {
   await place('Sistema / web / checkout.tsx').waitFor();
   await up.click();
   await place('Sistema / web').waitFor();
-  await details.getByRole('heading', { name: 'checkout.tsx', exact: true }).waitFor();  // what was left is chosen
+  await details.getByRole('heading', { name: 'checkout.tsx', exact: true }).waitFor();  // what was left is chosen, and in sight
+  await comes('checkout.tsx');
   await closeIn(details);
   await details.waitFor({ state: 'hidden' });
   await choose('Torna al sistema');
@@ -1400,7 +1594,15 @@ try {
   await page.waitForFunction(() => document.querySelector('nav[aria-label="Mappa"]').getBoundingClientRect().width < 100);
   assert.deepEqual([await whole.isVisible(), await row(/^pay/).isVisible(), await elements.count()], [true, true, 0]);
   assert.ok(await fits());
+  // The ranks go down where the sidebar is the rail, and along where it is whole.
+  const ranks = async () => {
+    const [from, to] = await Promise.all(['Cliente', 'web'].map(name => thing(name).boundingBox()));
+    return to.y > from.y + from.height ? 'down' : to.x > from.x + from.width ? 'right' : '';
+  };
+  await thing('Cliente').waitFor();
+  await until(async () => await ranks() === 'down', 'the ranks down');
   await page.setViewportSize({ width: 900, height: 820 });  // the inspector covers the end of the content, not modal
+  await until(async () => await ranks() === 'right', 'the ranks along');
   await infoButton.click();
   const overlay = page.getByRole('dialog', { name: 'Informazioni sul progetto' });
   await overlay.waitFor();
@@ -1658,8 +1860,7 @@ try {
   const zoomIn = () => canvas.getByRole('button', { name: 'Ingrandisci', exact: true }).click();
   await row(/^card payment provider/).click();
   await details.getByRole('heading', { name: 'card payment provider', exact: true }).waitFor();
-  await comes('card payment provider');
-  for (let presses = 0; presses < 3; presses += 1) await zoomIn();
+  await panAway();
   await comes('web', false);
   await finding.click();
   await details.getByRole('heading', { name: 'checkout.tsx', exact: true }).waitFor();
@@ -1676,17 +1877,15 @@ try {
   await row(/^routes\.ts/).click();
   await details.getByRole('heading', { name: 'routes.ts', exact: true }).waitFor();
   await comes('routes.ts');
-  await page.waitForTimeout(300);  // the canvas has its width beside the details
+  await rest();  // the canvas has its width beside the details
   await zoomIn();
-  const viewAt = async () => {
-    const [box, node] = await Promise.all([canvas.boundingBox(), thing('routes.ts').boundingBox()]);
-    return [node.x - box.x, node.y - box.y, node.width].map(Math.round);
-  };
-  const left = await viewAt();
+  await rest();
+  const left = await viewAt('routes.ts');
   await finding.click();
   await details.getByRole('heading', { name: 'checkout.tsx', exact: true }).waitFor();
-  await page.waitForTimeout(300);
-  assert.deepEqual(await viewAt(), left);
+  await frames(20);
+  await rest();
+  assert.deepEqual(await viewAt('routes.ts'), left);
   await closeIn(details);
   await details.waitFor({ state: 'hidden' });
   await choose('Torna al sistema');
@@ -1701,7 +1900,9 @@ try {
   await choose('Tema chiaro');
   await schemeIs(page, 'light');
   const tab = await context.newPage(), app = await context.newPage();
-  await tab.goto('http://daodan.test/');
+  const withToken = tab.waitForRequest(request => request.url().endsWith('/api/mark?id=stripe&token=prova'));  // a logo is asked for with the page's token
+  await tab.goto('http://daodan.test/?token=prova');
+  await withToken;
   await schemeIs(tab, 'light');
   await app.goto('http://daodan.test/app/?token=test');
   await schemeIs(app, 'light');
@@ -1716,5 +1917,5 @@ try {
   await tab.close();
   await app.close();
   assert.deepEqual(errors, []);
-  console.log('Passed the App (frame, palette, stages, repository, graph, server, theme) and the map (frame, palette, canvas, places and things, details, filters, runs, theme).');
+  console.log('Passed the App (frame, palette, stages, repository, graph, server, theme) and the map (frame, palette, canvas, groups in place, moves, motion, logos, places and things, details, filters, runs, theme).');
 } finally { await browser.close(); }

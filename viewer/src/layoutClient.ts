@@ -1,6 +1,10 @@
 // Layout requests to a worker: only the latest answer counts, and a worker that overruns its time is ended.
 
-export type LayoutGraph = { nodes: { id: string; width: number; height: number }[]; edges: { id: string; source: string; target: string }[] };
+// `parent` is the node that holds it: one that holds others is as large as they need. In the answer the place of a node is from the
+// corner of what holds it, and the points of a line from the corner of the drawing.
+export type LayoutGraph = {
+  nodes: { id: string; width: number; height: number; parent?: string }[]; edges: { id: string; source: string; target: string }[];
+};
 export type Point = { x: number; y: number };
 export type Layout = { nodes: Record<string, { x: number; y: number; width: number; height: number }>; edges: Record<string, Point[] | null> };
 export type WorkerLike = {

@@ -15,13 +15,13 @@ import { parseEnvelope } from './envelope.ts';
 import type { Envelope, View } from './envelope.ts';
 import { Explorer } from './explorer.tsx';
 import { useExplorer } from './model.ts';
-import type { Phase } from './model.ts';
+import type { Phase, Shown } from './model.ts';
 import { counted, projectName } from './names.ts';
 import { Navigation } from './navigation.tsx';
 import { OpenExport } from './openExport.tsx';
 import { LOOK } from './page.ts';
 import { getJson, POLL_MS, Session, SessionDisclosure } from './session.tsx';
-import { shownDetails } from './state.ts';
+import { canEnter, shownDetails } from './state.ts';
 import { WORDS } from './words.ts';
 
 // The views of the map: their word in the bar, their command, and the name of the content.
@@ -49,7 +49,7 @@ function App() {
   const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [opened, setOpened] = useState('');  // the file whose map is shown in place of the run's
-  const [toShow, setToShow] = useState<{ ref: string } | null>(null);
+  const [toShow, setToShow] = useState<Shown | null>(null);
   const [menu, setMenu] = useState(false);
   const [opening, setOpening] = useState(false);  // the dialog of another export
   const [notices, setNotices] = useState<ToastItem[]>([]);
@@ -65,8 +65,8 @@ function App() {
   const detailsOpen = ready && shownDetails(state) !== null;
   const say = (text: string) => { noticeId.current += 1; const id = String(noticeId.current); setNotices(list => [...list, { id, text }]); };
   const close = () => dispatch({ type: 'close' });
-  // What is chosen outside the canvas is brought into its view; what is chosen on it is in view already.
-  const show = (ref: string) => setToShow({ ref });
+  // What is asked for outside the canvas is brought into its view; what is chosen on it is in view already.
+  const show = (asked: Shown) => setToShow(asked);
 
   // Ctrl+F: the search of the map in view; a page that shows no map has none.
   useCommand({ id: 'daodan.search', label: 'Cerca in questa vista', group: 'Vista', keys: 'Ctrl+F', icon: <Icon name="search" />,
@@ -75,6 +75,8 @@ function App() {
     useCommand({ id: `daodan.view.${view.value}`, label: view.command, group: 'Vista', icon: <Icon name={view.icon} />, checked: state.view === view.value,
       run: () => dispatch({ type: 'view', view: view.value }) });
   }
+  useCommand({ id: 'daodan.place.enter', label: "Entra nell'elemento scelto", group: 'Vista', icon: <Icon name="folderOpen" />, when: ready && canEnter(state, state.selected),
+    run: () => { if (state.selected !== null) dispatch({ type: 'open', ref: state.selected }); } });
   useCommand({ id: 'daodan.place.root', label: 'Torna al sistema', group: 'Vista', icon: <Icon name="back" />, when: ready && state.scope !== null,
     run: () => dispatch({ type: 'root' }) });
   useCommand({ id: 'daodan.project.info', label: 'Informazioni sul progetto', group: 'Vista', icon: <Icon name="info" />, when: ready, run: () => dispatch({ type: 'info' }) });
@@ -135,7 +137,7 @@ function App() {
   // A finding's file: one this map does not hold changes nothing.
   const pick = (file: string) => {
     const ref = fileRef(state.envelope, file);
-    if (ref) { dispatch({ type: 'select', ref }); show(ref); }
+    if (ref) { dispatch({ type: 'select', ref }); show({ ref }); }
   };
   const toView = (view: string) => dispatch({ type: 'view', view: view as View });
   const session = { onPick: pick, onRun: (id: string) => { listRuns(id).catch(() => undefined); } };
@@ -174,8 +176,8 @@ function App() {
   return <>
     <AppShell frame="sheet" titleBar={titleBar} status={status} footer={footer} bottomBar={bottomBar} contentLabel={title}
       sidebar={<Navigation model={model} phase={phase} show={show} open={menu} onOpenChange={setMenu} />}
-      inspector={<Details model={model} open={detailsOpen} close={close} />}>
-      <Explorer model={model} title={title} search={search} toShow={toShow} ready={ready} runs={runPicker} openOther={openOther}>
+      inspector={<Details model={model} show={show} open={detailsOpen} close={close} />}>
+      <Explorer model={model} title={title} search={search} toShow={toShow} show={show} ready={ready} runs={runPicker} openOther={openOther}>
         {!!runs?.length && <Column pad="lg"><SessionDisclosure {...session} /></Column>}
         {phase === 'none' && <Column pad="lg" gap="xl">
           <Empty title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />

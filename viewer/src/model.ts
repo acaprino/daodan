@@ -2,13 +2,15 @@
 import { useEffect, useMemo, useReducer, useRef } from 'react';
 import { parseEnvelope, SCHEMA } from './envelope.ts';
 import type { Envelope } from './envelope.ts';
-import { dataLinks, flowFocus, project } from './projection.ts';
+import { dataLinks, flowFocus, keptBy, project } from './projection.ts';
 import { initialState, reduce } from './state.ts';
 
 const EMPTY = parseEnvelope({ schema: SCHEMA, entities: [], relations: [], memberships: [] });
 // What the page is doing: there is no run, its export cannot be read, it is being read, or it is shown.
 export type Phase = 'none' | 'failed' | 'loading' | 'ready';
-export type Model =ReturnType<typeof useExplorer>;
+export type Model = ReturnType<typeof useExplorer>;
+// What was last asked for outside the canvas, to bring into its view: an element, or the nodes of a flow.
+export type Shown = { ref: string } | { flow: string };
 
 export function useExplorer(envelope: Envelope | null) {
   const [state, dispatch] = useReducer(reduce, EMPTY, initialState);
@@ -18,8 +20,10 @@ export function useExplorer(envelope: Envelope | null) {
     dispatch(shown.current ? { type: 'replaceEnvelope', envelope } : { type: 'load', envelope });
     shown.current = envelope;
   }, [envelope]);
-  const projection = useMemo(() => project(state.envelope, state.view, state.scope, state.filters, state.open, state.selected),
-    [state.envelope, state.view, state.scope, state.filters, state.open, state.selected]);
+  // Of a choice only what the filters would hide changes what is projected: any other choice builds nothing again.
+  const kept = keptBy(state.envelope, state.filters, state.selected);
+  const projection = useMemo(() => project(state.envelope, state.view, state.scope, state.filters, state.open, kept),
+    [state.envelope, state.view, state.scope, state.filters, state.open, kept]);
   const focus = useMemo(() => (state.flow ? flowFocus(state.envelope, state.flow, projection) : null), [state.flow, projection]);
   const data = useMemo(() => (focus ? [] : dataLinks(state.envelope, projection)), [focus, projection]);
   const edges = useMemo(() => [...projection.edges, ...data, ...(focus?.edges ?? [])], [projection, data, focus]);

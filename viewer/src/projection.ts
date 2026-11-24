@@ -2,9 +2,10 @@
 import type { Entity, Envelope, Flow, View } from './envelope.ts';
 
 export type Filters = { text?: string; types?: string[]; kinds?: string[]; status?: string[] };
+// `parent` is the open group a node is drawn in; `open` says whether a group is (a node that holds nothing is no group).
 export type ProjectedNode = {
-  id: string; ref: string; type: string; label: string; parent: string | null; collapsed: boolean; count: number;
-  nodeType?: string; location?: string; status?: string; freshness?: string; provenance?: string;
+  id: string; ref: string; type: string; label: string; parent: string | null; open?: boolean; count: number;
+  nodeType?: string; location?: string; status?: string; freshness?: string; provenance?: string; mark?: string;
 };
 export type ProjectedEdge = { id: string; source: string; target: string; relations: string[]; kinds: string[]; flow?: boolean; label?: string; uncertain?: boolean };
 export type Projection = {
@@ -96,28 +97,39 @@ function matches(entity: Entity, filters: Filters): boolean {
   return true;
 }
 
+// The choice the filters would hide, which stays in sight, or null: all that a choice changes in the projection.
+export function keptBy(env: Envelope, filters: Filters, selected: string | null): string | null {
+  const entity = selected === null ? undefined : indexOf(env).byRef.get(selected);
+  return entity && !matches(entity, filters) ? selected : null;
+}
+
+// `open` are the groups opened in place, wherever each is drawn; `kept` is in sight whatever the filters say.
 export function project(env: Envelope, view: View, scope: string | null, filters: Filters = {},
-  open: string[] = [], selected: string | null = null): Projection {
+  open: string[] = [], kept: string | null = null): Projection {
   const index = indexOf(env);
   const nodes: ProjectedNode[] = [];
   const stands = new Map<string, Set<string>>();  // node id -> refs it stands for
   let filtered = 0;
-  const visit = (ref: string, parent: string | null, container: string) => {
+  // Whether the node is in sight. An open group the filters would hide stays while something in it does: it is the frame of that.
+  // A group inside itself is not opened again.
+  const visit = (ref: string, parent: string | null, container: string, inside: string[]): boolean => {
     const entity = index.byRef.get(ref);
-    if (!entity) return;
+    if (!entity) return false;
     const id = `${ref}@${container}`;
     const kids = childrenOf(env, ref, view);
-    const expanded = kids.length > 0 && open.includes(ref);
-    if (!matches(entity, filters) && ref !== selected) { filtered += 1; return; }
+    const expanded = kids.length > 0 && open.includes(ref) && !inside.includes(ref);
     nodes.push({
-      id, ref, type: entity.type, label: entity.name, parent, collapsed: kids.length > 0 && !expanded,
+      id, ref, type: entity.type, label: entity.name, parent, open: kids.length > 0 ? expanded : undefined,
       count: new Set(kids).size, nodeType: entity.node_type, location: entity.location, status: entity.status,
-      freshness: entity.freshness, provenance: entity.provenance,
+      freshness: entity.freshness, provenance: entity.provenance, mark: entity.mark,
     });
-    stands.set(id, expanded ? new Set([ref]) : descendants(env, ref, view));
-    if (expanded) for (const kid of kids) visit(kid, id, id);
+    let shown = matches(entity, filters) || ref === kept;
+    if (expanded) for (const kid of kids) shown = visit(kid, id, id, [...inside, ref]) || shown;
+    if (shown) stands.set(id, expanded ? new Set([ref]) : descendants(env, ref, view));
+    else { nodes.pop(); filtered += 1; }  // nothing in it is in sight either, so it is the last one
+    return shown;
   };
-  for (const ref of topOf(env, view, scope)) visit(ref, null, scope ?? 'root');
+  for (const ref of topOf(env, view, scope)) visit(ref, null, scope ?? 'root', []);
 
   const owners: Record<string, string[]> = {};
   for (const [id, refs] of stands) for (const ref of refs) (owners[ref] ??= []).push(id);
@@ -146,13 +158,13 @@ export function project(env: Envelope, view: View, scope: string | null, filters
 export function typesIn(env: Envelope, view: View, scope: string | null, open: string[] = [], chosen = ''): string[] {
   const index = indexOf(env);
   const types = new Set<string>(chosen ? [chosen] : []);
-  const visit = (ref: string) => {
+  const visit = (ref: string, inside: string[]) => {
     const entity = index.byRef.get(ref);
     if (!entity) return;
     types.add(entity.type);
-    if (open.includes(ref)) childrenOf(env, ref, view).forEach(visit);
+    if (open.includes(ref) && !inside.includes(ref)) for (const kid of childrenOf(env, ref, view)) visit(kid, [...inside, ref]);
   };
-  topOf(env, view, scope).forEach(visit);
+  for (const ref of topOf(env, view, scope)) visit(ref, []);
   return [...types].sort();
 }
 
