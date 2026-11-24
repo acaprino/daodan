@@ -31,14 +31,6 @@ from indexers import runtime  # noqa: E402
 DECLARATION = {"type": "npm", "name": "react", "path": "web/package.json", "line": 4, "source": "npm@1"}
 
 
-@pytest.fixture(autouse=True)
-def forgotten_failures():
-    """What the process remembers of a failed install is not carried from one test to the next."""
-    stack_analyser._failed.clear()
-    yield
-    stack_analyser._failed.clear()
-
-
 @pytest.fixture
 def started(tmp_path, monkeypatch):
     """`(project, program, cli)`: a project, the stand-in as Node, and a path for the release's program."""
@@ -231,6 +223,7 @@ def test_an_install_that_failed_is_not_tried_again_in_the_same_process(tmp_path,
     with pytest.raises(container.Gap) as second:
         stack_analyser.cli()
     assert second.value is first.value and "no route to host" in first.value.cause and len(attempts) == 1
+    assert "restart Daodan" in first.value.remedy  # one process stays up: analyzing again returns this same gap
 
     def unavailable(_project):
         attempts.append(2)
@@ -241,6 +234,22 @@ def test_an_install_that_failed_is_not_tried_again_in_the_same_process(tmp_path,
         with pytest.raises(container.Gap) as node_gap:
             stack_analyser.node(tmp_path)
     assert node_gap.value.cause == "no room" and attempts == [1, 2]
+
+
+def test_a_remembered_failure_does_not_grow_its_traceback(tmp_path, monkeypatch, installed_under):
+    def refuse(*_args, **_kwargs):
+        raise OSError("no route to host")
+
+    monkeypatch.setattr(engine_tools, "publish", refuse)
+    lengths = []
+    for _ in range(4):
+        with pytest.raises(container.Gap) as gap:
+            stack_analyser.cli()
+        depth, trace = 0, gap.value.__traceback__
+        while trace:
+            depth, trace = depth + 1, trace.tb_next
+        lengths.append(depth)
+    assert len(set(lengths[1:])) == 1 and lengths[-1] <= lengths[1], lengths
 
 
 def test_a_download_cut_off_is_tried_again(tmp_path, monkeypatch, installed_under):
@@ -303,6 +312,34 @@ def test_node_is_the_executable_of_daodan_s_own_node(tmp_path, monkeypatch):
     assert seen == [tmp_path]
 
 
+def test_a_shared_folder_that_is_not_absolute_is_a_node_gap(tmp_path, monkeypatch):
+    monkeypatch.setenv("DAODAN_SHARED_DIR", "relative/folder")
+    with pytest.raises(container.Gap) as gap:
+        stack_analyser.node(tmp_path)
+    assert "absolute path" in gap.value.cause and gap.value.remedy
+
+
+def test_a_cut_off_node_download_is_unavailable():
+    with pytest.raises(runtime.Unavailable) as error:
+        with runtime.fetching("Node", "nodejs.org"):
+            raise http.client.IncompleteRead(b"")
+    assert "could not be downloaded" in error.value.reason and "nodejs.org" in error.value.install
+
+
+def test_a_temporary_folder_that_cannot_be_made_is_a_gap(started, monkeypatch):
+    project, program, _cli = started
+
+    def full(*_args, **_kwargs):
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(stack_analyser.tempfile, "TemporaryDirectory", full)
+    for call in (lambda: stack_analyser.run(project), stack_analyser.catalogue):
+        with pytest.raises(container.Gap) as gap:
+            call()
+        assert "No space left" in gap.value.cause and gap.value.remedy
+    assert fake_stack_analyser.calls(program) == []
+
+
 def test_a_node_that_cannot_be_installed_is_a_gap(tmp_path, monkeypatch):
     def unavailable(_project):
         raise runtime.Unavailable("no room", "free 1 GB")
@@ -310,4 +347,5 @@ def test_a_node_that_cannot_be_installed_is_a_gap(tmp_path, monkeypatch):
     monkeypatch.setattr(runtime, "node", unavailable)
     with pytest.raises(container.Gap) as gap:
         stack_analyser.node(tmp_path)
-    assert (gap.value.cause, gap.value.remedy) == ("no room", "free 1 GB")
+    assert gap.value.cause == "no room" and gap.value.remedy.startswith("free 1 GB; ")
+    assert "restart Daodan" in gap.value.remedy

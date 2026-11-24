@@ -8,6 +8,7 @@ in files of that folder, not on the command line. Nothing of the folder outlives
 """
 from __future__ import annotations
 
+import contextlib
 import functools
 import http.client
 import json
@@ -30,15 +31,17 @@ _failed: dict[str, Gap] = {}  # an install that failed, by tool: it is not tried
 
 def _remembered(function):
     """`function` that, once it raised a `Gap`, raises that same `Gap` again without trying: an install that failed
-    (no network, no disk) would otherwise be retried, with its waits, at every scan."""
+    (no network, no disk) would otherwise be retried, with its waits, at every scan. Daodan serves from one process,
+    so analyzing again returns the same `Gap`: its remedy, completed once when it is stored, says to restart."""
     @functools.wraps(function)
     def wrapper(*arguments):
         if function.__name__ not in _failed:
             try:
                 return function(*arguments)
             except Gap as gap:
+                gap.remedy += "; this process remembers the failure, so restart Daodan before analyzing again"
                 _failed[function.__name__] = gap
-        raise _failed[function.__name__]
+        raise _failed[function.__name__].with_traceback(None)  # a stored exception's traceback grows at each raise
 
     wrapper.cache_clear = lambda: (_failed.pop(function.__name__, None), getattr(function, "cache_clear", int)())
     return wrapper
@@ -79,26 +82,20 @@ def node(project: Path) -> Path:
         return runtime.node(project) / engine_tools.executable_name("node")
     except runtime.Unavailable as error:
         raise Gap(error.reason, error.install) from error
+    except ValueError as error:  # `DAODAN_SHARED_DIR` that is not absolute
+        raise Gap(f"Node could not be installed: {error}", "fix DAODAN_SHARED_DIR, then analyze again") from error
     except OSError as error:
         raise Gap(f"Node could not be installed: {error}", "check the connection to nodejs.org, then analyze again") \
             from error
 
 
 def command(node: Path, cli: Path, project: Path, output: Path, declarations: Path | None,
-            skip_dirs: tuple[str, ...] | None, ignore: tuple[str, ...], perimeter: Path | None = None) -> list[str]:
-    """The command line of one run. `perimeter` names the file of the two lists, which `run` passes in place of
-    `skip_dirs` and `ignore`. `skip_dirs` None leaves the option out (the release's own default), `()` passes an empty
-    list: skip nothing."""
+            perimeter: Path) -> list[str]:
+    """The command line of one run. `perimeter` names the file of the folders to skip and the paths to ignore."""
     argv = [str(node), str(cli), str(project), "--output", str(output)]
     if declarations is not None:
         argv += ["--declarations", str(declarations)]
-    if skip_dirs is not None:
-        argv += ["--skip-dirs", ",".join(skip_dirs)]
-    if ignore:
-        argv += ["--ignore", ",".join(ignore)]
-    if perimeter is not None:
-        argv += ["--perimeter", str(perimeter)]
-    return argv
+    return argv + ["--perimeter", str(perimeter)]
 
 
 def _environment() -> dict:
@@ -123,6 +120,18 @@ def _write(path: Path, content, what: str) -> Path:
         raise Gap(f"stack-analyser's {what} could not be written: {error}",
                   f"free space on the drive of {tempfile.gettempdir()}, then analyze again") from error
     return path
+
+
+@contextlib.contextmanager
+def _folder():
+    """The run's own folder, removed with its content when the run ends. `Gap` when it cannot be made."""
+    try:
+        made = tempfile.TemporaryDirectory(prefix="daodan-stack-", ignore_cleanup_errors=True)
+    except OSError as error:
+        raise Gap(f"stack-analyser's folder could not be made: {error}",
+                  f"free space on the drive of {tempfile.gettempdir()}, then analyze again") from error
+    with made as folder:
+        yield Path(folder)
 
 
 def _start(argv: list[str], folder: Path) -> subprocess.CompletedProcess:
@@ -158,11 +167,11 @@ def run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, .
     `Gap`."""
     project = Path(project).resolve()
     program, script = node(project), cli()
-    with tempfile.TemporaryDirectory(prefix="daodan-stack-") as folder:
-        folder, output = Path(folder), Path(folder) / "output.json"
+    with _folder() as folder:
+        output = folder / "output.json"
         declared = _write(folder / "declarations.json", declarations, "declarations") if declarations else None
         perimeter = _write(folder / "perimeter.json", {"skipDirs": list(skip_dirs), "ignore": list(ignore)}, "perimeter")
-        answer = _answer(_start(command(program, script, project, output, declared, None, (), perimeter), folder),
+        answer = _answer(_start(command(program, script, project, output, declared, perimeter), folder),
                          output)
         if not isinstance(answer, dict):
             raise Gap("stack-analyser's output is not JSON: expected a JSON object",
@@ -173,8 +182,8 @@ def run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, .
 def catalogue() -> list[dict]:
     """The release's catalogue of rules (`--catalogue`), written to a file of the run's own folder. `Gap` as for `run`."""
     script = cli()
-    with tempfile.TemporaryDirectory(prefix="daodan-stack-") as folder:
-        folder, output = Path(folder), Path(folder) / "catalogue.json"
+    with _folder() as folder:
+        output = folder / "catalogue.json"
         program = node(folder)  # no project: Node's install is the one of the empty run folder
         answer = _answer(_start([str(program), str(script), "--catalogue", str(output)], folder), output)
         if not isinstance(answer, list):

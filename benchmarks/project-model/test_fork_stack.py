@@ -177,7 +177,7 @@ def test_the_command_of_a_real_run_is_judged_as_modal_stack_records_it():
     """`modal_stack` keeps each process as one string of at most 200 characters: a long command is cut after the cli."""
     argv = stack_analyser.command(PurePosixPath(NODE_BIN), PurePosixPath(CLI), PurePosixPath("/work/" + "d" * 150),
                                   PurePosixPath("/tmp/daodan-stack-x/output.json"), PurePosixPath("/tmp/x/declarations.json"),
-                                  tuple(f"folder{i}" for i in range(40)), ("api/gen",))
+                                  PurePosixPath("/tmp/daodan-stack-x/perimeter.json"))
     line = " ".join(map(str, argv))[:200]
     assert len(line) == 200 and line.startswith(f"{NODE_BIN} {CLI} /work/")
     assert executed(line) == "no"

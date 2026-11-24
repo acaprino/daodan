@@ -26,3 +26,12 @@ def _grammars():
         sys.path.insert(0, scripts)
     from languages import _treesitter
     _treesitter.get_parser("python")
+
+
+@pytest.fixture(autouse=True)
+def _forgotten_failures():
+    """What `stack_analyser` remembers of a failed install is not carried from one test to the next."""
+    yield
+    module = sys.modules.get("stack_analyser")
+    if module is not None:
+        module._failed.clear()
