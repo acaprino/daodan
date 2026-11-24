@@ -154,10 +154,12 @@ def mounts(token: str) -> dict:
 
 
 def _addresses(host: str) -> list[str]:
-    """The addresses `host` answers to now, as CIDRs: a plain-HTTP archive has no name Modal can allow by."""
+    """The IPv4 addresses `host` answers to now, as CIDRs: a plain-HTTP archive has no name Modal can allow by, and Modal's
+    allowlist refuses an IPv6 CIDR (`Network access allowlist does not support IPv6 CIDRs`, measured on 24 November 2026): a host
+    with only IPv6 addresses raises, and `preparation_network` says it as a gap."""
     import socket
-    found = {item[4][0] for item in socket.getaddrinfo(host, 80, type=socket.SOCK_STREAM)}
-    return sorted(f"{address}/{128 if ':' in address else 32}" for address in found)
+    found = {item[4][0] for item in socket.getaddrinfo(host, 80, family=socket.AF_INET, type=socket.SOCK_STREAM)}
+    return sorted(f"{address}/32" for address in found)
 
 
 def preparation_network(registries, services: bool, resolve=_addresses) -> tuple[dict, list[dict]]:

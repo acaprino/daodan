@@ -51,6 +51,9 @@ def rows(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dic
                     "site": f"{file}:{where['line']}" if where.get("line") else file,
                     "symbol": f"{file}::{name or flows.MODULE}", "method": endpoint["method"], "path": endpoint["url"],
                     "handler": name, **({"kind": kind} if kind else {}),
+                    # Noir's own tag, an object with a `name` (a plain string is read too): only a specification declares it
+                    **({"spec_only": True} if "spec-only" in {t.get("name") if isinstance(t, dict) else t
+                                                              for t in endpoint.get("tags") or ()} else {}),
                     **({"schema": flows.path_schema(endpoint["url"])} if kind == "rotta" else {})})  # the name or None: the links' binder says the gap
     return out
 
