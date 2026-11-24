@@ -121,18 +121,18 @@ flowchart TD
 
 Due cose che sorprendono:
 
-- **`parse` è il terzo step, ma i file sono già letti.** Ogni chiamante della pipeline legge i file al tempo 1, prima di eseguirla. Lo step `parse` trova lo store letto, non rilegge e dice solo il piano (`pipeline.Parse.run`). Legge davvero solo uno store di solo inventario, e nessun chiamante oggi glielo dà.
+- **`parse` è il terzo step, ma non legge nulla.** I file li legge una strada sola, `write_snapshot`, che ogni chiamante esegue al tempo 1. Lo step `parse` dice solo il piano (`pipeline.Parse.run`); uno store con il solo inventario ferma la pipeline e dice di scrivere di nuovo lo snapshot.
 - **`stack` gira due volte.** La seconda volta riscrive `technologies.json` solo se i suoi ingressi sono cambiati (`technologies.ensure`). Cambiano se lo `scan` in primo piano era veloce: in background si eseguono i comandi di modello e la pre-mappa ha fatti nuovi. Senza container non cambiano.
 
 #### Gli step
 
-L'ordine è `pipeline.STEPS`: `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`. Alla pipeline si dà solo l'inventario (`pipeline.INPUTS`): ogni altro ingresso di uno step è l'uscita di uno step prima.
+L'ordine è `pipeline.STEPS`: `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`. Alla pipeline si danno l'inventario e lo snapshot letto, che scrive `write_snapshot` (`pipeline.INPUTS`): ogni altro ingresso di uno step è l'uscita di uno step prima.
 
 | Step oggi | Nome nel disegno | Legge | Scrive | Nel container | Se fallisce |
 | --- | --- | --- | --- | --- | --- |
 | 1 `scan` | `scan` | Dello snapshot solo l'inventario, nessun simbolo. Del progetto, i manifest e i sorgenti che servono alle sue fonti | `modules.json` senza gli archi `imports` e `calls`; `premap.json` | I comandi di modello. Nessuno con `fast_scan` | La corsa si ferma |
 | 2 `stack` | `recognize` | L'inventario, i moduli, la pre-mappa | `technologies.json` | Niente | La corsa va avanti e lo dice |
-| 3 `parse` | `parse` (e `plan`) | L'inventario; dalla pre-mappa i file esclusi | La lettura nello snapshot, solo se manca; il piano, come evento | Niente | La corsa si ferma |
+| 3 `parse` | `parse` (e `plan`) | Lo snapshot letto | Il piano, come evento | Niente | La corsa si ferma: uno store di solo inventario chiede di scrivere di nuovo lo snapshot |
 | 4 `analyze` | `resolve` | Lo snapshot letto, la pre-mappa | Gli archi provati, in `engine-edges.sqlite` | Gli analyzer che lo dichiarano (`NEEDS_CONTAINER`); scip-python solo su Windows, altrove sull'host | La corsa si ferma. Uno stage che fallisce non ferma gli altri; dopo uno che esaurisce la memoria nessun altro parte (`engine_pass.run_pass`) |
 | 5 `dynamic` | `observe` | Lo snapshot, la pre-mappa, gli archi | Gli archi osservati | Sempre: test e app del progetto | La corsa va avanti: il grafo resta quello statico |
 | 6 `union` | `connect` | Gli archi provati e osservati | Gli archi `imports` e `calls` fra moduli, se nessun lettore li ha già scritti (`modules.ensure_graph`); le lacune; l'evento `graph.ready` | Niente | La corsa si ferma. Con un grafo dei moduli non fresco lo dice e va avanti |
@@ -158,7 +158,7 @@ Note sugli step:
 - La lettura non percorre l'albero e non sceglie il linguaggio: prende file e linguaggio dall'inventario.
 - `write_snapshot` mette l'inventario in un file di appoggio accanto allo store e lo cancella alla fine. Pubblica solo la lettura. Una scrittura fallita lascia lo store di prima.
 - Il linguaggio lo decide l'inventario con `languages.detect_language`: l'estensione, più espressioni regolari sul contenuto per `.h`, `.ts` e `.sql`. Non lo chiede ancora a go-enry.
-- Un file che la pre-mappa esclude (generato, di terze parti) non si legge solo quando la lettura riceve la pre-mappa. Gliela dà solo lo step `parse`. `write_snapshot` non la passa e legge tutto.
+- La lettura non esclude nulla: i file che la pre-mappa mette in `excluded` (generati, di terze parti, documentazione) si leggono come gli altri. `excluded` è solo un'etichetta, usata da chi la legge dalla pre-mappa.
 
 #### Le due impronte
 
@@ -183,7 +183,7 @@ In pratica: riscrivere lo snapshot sugli stessi file lascia fresche pre-mappa, s
 
 `scan` veloce: solo i lettori dei file, senza container, perché gira sotto il blocco del progetto. I comandi di modello li esegue poi il passaggio. Con lo snapshot in formato JSON `ensure_edges` non avvia niente, per ogni chiamante. Il passaggio solo `snapshot.build_manifest`, che percorre e legge insieme, resta per test e benchmark.
 
-Buco: nessun chiamante dà alla pipeline uno store con il solo inventario. Quel percorso (inventario, poi `scan`, `stack`, `parse`) gira solo nei test (`tests/test_codebase_map_scan_before_parse.py`). La misura che decide quando i chiamanti cambiano è in corso (`benchmarks/project-model/modal_scan_cost.py`; spec, 8.10).
+Una strada sola: lo decise il proprietario il 24 novembre 2026, dopo le misure di 8.10 della spec. La lettura dentro `parse` e l'esclusione dei file sono tolte, perché nessun chiamante le usava e l'esclusione toglieva codice vero del progetto.
 
 #### Dal codice al disegno
 
@@ -198,10 +198,10 @@ I passi sono quelli della spec, 8.11: qui c'è solo lo stato, là i dettagli.
 | La funzione del piano, eseguita da lettura, passaggio e passo dinamico | Fatto. Non è uno step | Passo 4 |
 | Archi fra moduli e legame degli ingressi dei flussi fuori da `scan` | Fatto: `modules.ensure_graph`, `binder.bind` | Passo 5, pezzi A e B |
 | Archi fra moduli e legame degli ingressi dentro `connect` | Da fare: oggi li fa il primo lettore | Passo 5; 8.2 |
-| I file che la pre-mappa esclude non si leggono (il pezzo E1 della spec) | Fatto solo sul percorso che nessun chiamante usa | Passo 5, pezzo E1 |
-| I chiamanti passano da `write_snapshot` a inventario e poi pipeline | Da fare, dopo la misura in corso | Passo 5, «Restano» |
-| Il linguaggio da go-enry | Da fare | Passo 5, «Restano» |
-| Radici e alias degli import da `tsc`, la lettura a mano come ripiego | Da fare: oggi la lettura a mano (`import_resolution.py`) | Passo 5, pezzo F |
+| I file che la pre-mappa esclude non si leggono (il pezzo E1 della spec) | Tolto: deciso il 24 novembre | Passo 5, pezzo E1 |
+| I chiamanti passano da `write_snapshot` a inventario e poi pipeline | Fermo: non cambia nulla per il prodotto | 8.3 |
+| Il linguaggio da un nostro fork di Linguist | Da fare: oggi `languages.detect_language`. go-enry non si usa per questo | 8.3 |
+| Radici e alias degli import da `tsc` | Fermo: sui 25 progetti veri 0 import guadagnati e 110 persi. Oggi la lettura a mano (`import_resolution.py`) | Passo 5, pezzo F |
 | I nomi nuovi di step, eventi e cartelle (`parsers/`, `scanners/`, `resolvers/`, `observers/`) | Da fare. Fatto solo `NAME` in `indexers/` | Passo 6 |
 | Le prove 2 e 5: le due modalità danno lo stesso grafo; un ripiego è dichiarato | Da fare | 8.10 |
 | Le due parti di `scan`: `parse` parte dopo la prima, e si rifà solo ciò che la seconda corregge | Da fare | 8.5 |
