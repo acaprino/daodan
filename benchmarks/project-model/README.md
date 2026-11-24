@@ -95,6 +95,41 @@ Limiti:
 - (c) Su Modal la nuova registrazione ha `output` e `raw.references` uguali alla vecchia sulle 17 fixture, tranne `paths` dell'unità `projects/ui-kit` di `js-angular`; `raw.paths_base` cambia forma, `raw.typescript` è nuovo, e il testo degli errori perde il prefisso `exit 1:`.
 - (d) Solo queste fixture: nessun albero intero di un progetto reale.
 
+## Le importazioni che la configurazione di `tsc` aggiunge
+
+Misura quante coppie (file importatore, specificatore) risolve in più, o in modo diverso, la configurazione di `tsc` rispetto a `import_resolution.ts_path_config`, sui progetti veri (8.11, passo 5, pezzo F2). Solo misura: `modal_ts_imports.py` su Modal, niente in `daodan/`; la parte pura (quale tsconfig tiene un file, il confronto) la prova `test_modal_ts_imports.py`. Scrive `results/ts-imports/ts-imports.json`: conteggi, al massimo cinque esempi per progetto, nessun sorgente.
+
+Parametri:
+
+- Corpus: le 11 miniature con un `tsconfig*.json` o un `jsconfig*.json` e le 58 fixture reali con archivio sul volume; 25 delle reali ne hanno uno e girano, le altre 33 no (le due risoluzioni sono uguali per costruzione). Codice di Daodan: un clone pulito di `11f751cc1` (`DAODAN_SCRIPTS`). TypeScript 6.0.3 su Node v22.23.4, come F1; nessun pacchetto ripristinato, nessun codice del progetto eseguito (l'API legge JSON).
+- Prima: `iter_resolved_imports` con `ts_path_config`, come il prodotto oggi (le impostazioni della cartella più vicina con un `tsconfig.json` o `jsconfig.json`). Dopo: per ogni file importatore, `baseUrl` e `paths` del tsconfig che lo tiene, con base `baseUrl ?? pathsBasePath`, e la lettura a mano per i file che nessun tsconfig letto tiene (`tools/ts_imports_config.cjs`, una sottoclasse di `_ImportResolver` nel benchmark).
+- Quale tsconfig tiene un file: l'elenco ufficiale `fileNames` di ogni `tsconfig*.json` e `jsconfig*.json`, mai la cartella più vicina. Se più tsconfig lo tengono, quello in cui lo apre tsserver (`src/server/editorServices.ts`, 6.0.3: `forEachConfigFileLocation`, dalla cartella del file in su un `tsconfig.json` e poi un `jsconfig.json` per cartella; `tryFindDefaultConfiguredProjectForOpenScriptInfoOrClosedFileInfo`: quel tsconfig se lo elenca, altrimenti i suoi `references` in ordine e i loro, altrimenti il tsconfig delle cartelle sopra). Un file che più tsconfig tengono e nessun cammino raggiunge è ambiguo: va al più profondo, poi al primo per nome. Un tsconfig che `tsc` rifiuta (un `extends` in un `node_modules` assente) non conta.
+- Moduli: `module_derive.derive` sullo snapshot (nessuna pre-mappa, nessun arco di simboli); un arco fra moduli viene dai proprietari dei due file.
+
+Risultati (36 progetti; i 32 che non compaiono hanno 0 guadagnate, 0 perse, 0 cambiate):
+
+| Progetto | Importatori | Uguali | Guadagnate | Perse | Cambiate | Archi file | Archi moduli |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| `js-nx` | 2 | 0 | 1 | 0 | 0 | +1 / -0 | +1 / -0 |
+| `js-vite-react-ts` | 6 | 0 | 3 | 0 | 0 | +3 / -0 | +0 / -0 |
+| `real-app-hoppscotch` | 1584 | 4878 | 0 | 101 | 0 | +0 / -101 | +0 / -0 |
+| `real-stack-mattermost-mobile` | 3352 | 17097 | 0 | 9 | 0 | +0 / -9 | +0 / -0 |
+| Totale | 19003 | 64649 | 4 | 110 | 0 | +4 / -110 | +1 / -0 |
+
+- Guadagnate: 4, tutte da un pattern di `paths`, nessuna da un `baseUrl` semplice, tutte in due miniature (`@acme/util` in `tsconfig.base.json` di `js-nx`, `@/*` in `tsconfig.app.json` di `js-vite-react-ts`): i due casi che F0 aveva già visto. Nessuna sui 25 progetti reali.
+- Perse: 110, tutte da un pattern di `paths`, in 81 file importatori di test. Il tsconfig che li tiene è un `jsconfig.json` della radice, l'unico che li elenca (il tsconfig del pacchetto li esclude), e non ha il `paths` dell'alias: per `tsc` quei file non hanno alias, la lettura a mano usa quelli della cartella. Archi fra moduli persi: 0.
+- Ambigui: 5713 file tenuti da più tsconfig e risolti dalla regola di tsserver; 4 che nessun cammino raggiunge (`js-nx` 2, `mix-poly-firebase` 2). In 4351 i tsconfig che li tengono hanno impostazioni diverse: 1043 in `real-app-hoppscotch`, 3260 in `real-stack-mattermost-mobile`, dove un `tsconfig.json` e un `jsconfig.json` si sovrappongono.
+- Errori di `tsc`: 21 tsconfig su 125: 15 TS6053 (un `extends` in un pacchetto che non c'è), 4 TS5083 (un `extends` in un file generato, `.nuxt/` o `.svelte-kit/`), 2 TS18003 (nessun file in ingresso). Dietro un tsconfig rifiutato stanno 2623 importatori, 1649 in `real-stack-documenso`, 565 in `real-stack-mealie`; restano alla lettura a mano.
+- File che nessun tsconfig tiene: 5849 importatori su 19003: i 2623 appena detti, `.vue` (1424: `tsc` non li elenca), `.js` senza `allowJs` e il resto.
+
+Limiti:
+
+- (a) Senza ripristino di pacchetti né generazione dei tsconfig dei framework, i 2623 importatori dietro un tsconfig rifiutato non si possono dire: la pre-mappa il ripristino lo fa (`premap/tsc.py`), e lì il risultato può essere diverso.
+- (b) Lo snapshot è la lettura intera, senza pre-mappa: i file di terze parti e generati ci sono. I moduli sono quelli senza pre-mappa e senza i simboli: un arco fra moduli che passa da un simbolo non è contato.
+- (c) `tsc` elenca i file radice di ogni tsconfig; un file importato e non elencato non ha tsconfig. Senza le estensioni che `vue-tsc` e simili aggiungono, `.vue`, `.svelte` e `.astro` restano alla lettura a mano.
+- (d) La regola di tsserver è letta nel sorgente e rifatta con `disableSolutionSearching` e `disableReferencedProjectLoad`, senza altre opzioni (`composite`, `solution`).
+- (e) Solo queste fixture e questi progetti pubblici, al commit che il corpus fissa.
+
 ## Dopo una modifica
 
 Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Su questo PC non gira niente: ogni passo va su Modal, dalla radice del repository.
@@ -591,3 +626,106 @@ Secondi per passo, da zero e dopo la modifica: scan 210,5 e 224,0; analyze 222,9
 - Il guadagno del ripristino condiviso (task 1b): serve un motore Docker vero in una VM Sandbox, non le sandbox di `sandbox_run`.
 - CPU, picco di memoria, spazio temporaneo; la varianza fra due corse dello stesso tipo; un progetto con un frontend più grande di due pulsanti.
 - Il rinnovo come lo fa la run di lavoro dell'app (`snapshot.py`, il percorso con `compare_files`): qui l'ho riprodotto con le stesse chiamate, non con la funzione stessa.
+
+## Il costo di `scan` sul corpus, 24 novembre 2026 (8.10 della spec della pipeline)
+
+Domande: quanti file la lettura di oggi legge e `scan` poi esclude, per motivo (8.3 punto 3, 8.11 passo 5 pezzo E1); quanto pesa la doppia lettura dei byte (8.6 punto 6); quanto costa in `scan` l'albero di ogni file TypeScript di un progetto Angular (8.11 passo 5 pezzo D).
+
+### Parametri
+
+- `modal_scan_cost.py`, su Modal. Una funzione per ogni progetto real; le 122 miniature a gruppi di 8 (`--chunk`). Macchina: 4 core e 16 GB, richiesta uguale al limite (`CPU`, `MEMORY`); dentro la sandbox la CPU si legge «unknown» e `os.cpu_count()` dà 4; Python 3.13.3. Codice di Daodan: un clone pulito di `68b784ee7` (`DAODAN_SCRIPTS`); HEAD all'avvio era `03161c8a6`, e `daodan/` è lo stesso (nessun commit in mezzo lo tocca).
+- Nessun codice dei progetti gira: si leggono file. La pre-mappa è quella registrata (`results/premap-runs`, `tools/premap_replay.py`: `replayer`, `real_project`), quindi **nessun numero qui contiene il tempo del container**. Le registrazioni sono del 15-17 novembre e a tutti i 178 progetti manca almeno un comando di oggi (`noir` in tutti; poi `daodan-dockerfile` 103, `dotnet` 85, `renovate` 54, `gradle` 16, `cmake` 14, `make` 13, `next` 12, `maven` 9, `nuxt` 9, `angular` 8, `meson` 4, `sveltekit`, `react-router` e `bazel` 2, `sbt` e `astro` 1: i comandi, non i progetti): la `read` di quella sorgente riceve un errore. Le esclusioni vengono da go-enry e da `.gitmodules` (letto); il comando di go-enry è registrato in tutti i 178, e `.gitmodules` si legge, senza comando. Senza registrazione, quindi senza esclusioni note: `real-stack-jellyfin` e `real-stack-kuvasz` (solo misura B e ritmo di C). La prima chiamata li ha lasciati fuori (un container ha superato i 7.200 s, poi il client ha perso la rete): rifatti con `--resume --reps 1` e `TIMEOUT` di 4 ore: `real-stack-kuvasz` ha **una ripetizione, non tre** (3.392 s); `real-stack-jellyfin` non è finito dopo oltre due ore e l'ho fermato, quindi non è nel JSON (179 progetti su 180).
+- **A.** `snapshot.write_snapshot` (legge tutto, senza pre-mappa), `premap.write` con la riproduzione, `pipeline.plan.excluded` (la funzione che `write_reading` chiama). «Letto da un parser»: stato `parsed` o `parse-error`. Simboli dalla tabella `symbols` dello store. Import: `snapshot.resolved_imports(store)`, coppie distinte (importatore, bersaglio) da un file che resta a uno escluso. Sulle miniature con file esclusi, `write_reading(record=...)` ne lascia fuori tanti quanti `plan.excluded` (`reading_leaves_out`).
+- **B.** Sui real, tre ripetizioni di seguito, ognuna: `file_inventory.write`, `snapshot.write_reading`, `snapshot.build_manifest` (il passaggio solo). Dentro la lettura, avvolti `snapshot._read_source` (stat e byte di ogni file: quelli che l'inventario ha già letto) e `_SnapshotPass.seal` (legame dello store semantico e pubblicazione). Mediana per progetto, poi somma. **La cache del disco è calda** a ogni lettura: l'archivio è appena estratto e ogni passo segue un altro che ha letto gli stessi file, come nell'uso vero.
+- **C.** `premap.angular.commands` su un `Context` nuovo (nessun testo in cache), con `premap.angular._components` (chi legge l'albero di un file) contato; la regola di prima del pezzo D (`648efd2b7`): i file `typescript` che importano `Component` da `@angular/core`, dalle intestazioni dello snapshot letto. Il ritmo: `_components` su ogni file `typescript` di ogni progetto, un file alla volta.
+
+`code.differs` del JSON elenca tre percorsi: due file di `fixtures/mix-edge-vendored/node_modules/left-pad`, che git traccia e `git add -A` ignora, e `modal_pipeline.py`, che ha lo stesso contenuto di HEAD (blob `90381c557`): `modal_pipeline.code` dà elenchi diversi in chiamate successive senza che un file cambi, quindi la riga non prova una modifica.
+
+Comando (clone pulito di HEAD in `<clone>`), risultato in `results/scan-cost/scan-cost.json` (solo conteggi e tempi):
+
+    PYTHONUTF8=1 PYTHONIOENCODING=utf-8 DAODAN_SCRIPTS=<clone>/daodan/core \
+      uv run --no-project --with modal python -m modal run benchmarks/project-model/modal_scan_cost.py
+
+`--cases a,b` sceglie i progetti, `--resume` aggiunge a un JSON che c'è quelli che mancano. Il test della parte pura: `uv run --no-project --with modal --with pytest python -m pytest benchmarks/project-model/test_modal_scan_cost.py`.
+
+### Risultati
+
+**A. Quello che la lettura legge e `scan` esclude.** 122 miniature (806 file, 388 letti da un parser) e 56 real (46.737 file, 33.190 letti da un parser).
+
+| Corpus | Motivo | Progetti | File esclusi | Letti da un parser | KB | Simboli | Import dai file che restano |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| miniature | `vendored` | 9 | 12 | 10 | 13 | 8 | 0 |
+| miniature | `generated` | 10 | 12 | 6 | 13 | 15 | 1 |
+| miniature | `documentation` | 4 | 6 | 1 | 0 | 0 | 0 |
+| miniature | totale | 122 | 30 | 17 | 27 | 23 | 1 |
+| real | `documentation` | 56 | 1.746 | 438 | 16.386 | 1.498 | 24 (23 file) |
+| real | `generated` | 32 | 774 | 717 | 43.842 | 9.543 | 10 (10) |
+| real | `vendored` | 43 | 462 | 339 | 8.767 | 8.838 | 60 (58) |
+| real | `binary` | 2 | 2 | 2 | 729 | 4 | 2 (2) |
+| real | totale | 56 | 2.984 | 1.496 | 69.724 | 19.883 | 96 (93) |
+
+I file che oggi un parser legge e `scan` esclude sono il 4,4% dei letti nelle miniature e il 4,5% nei real. Nessuno dei 56 real è senza file esclusi; 40 ne hanno di letti da un parser. Gli import nell'altro verso (da un file escluso a uno che resta) sono 231 nei real: `vendored` 113, `documentation` 93, `generated` 24, `binary` 1; chi non legge i file esclusi perde quegli archi.
+
+I progetti con più file esclusi letti da un parser:
+
+| Progetto | File letti | Di cui da un parser | Esclusi | Esclusi letti da un parser | Simboli degli esclusi | Import verso gli esclusi | Motivi (file) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| `real-stack-owncast` | 1.726 | 1.584 | 562 | 527 | 1.456 | 0 | `generated` 533, `documentation` 24, `vendored` 4, `binary` 1 |
+| `real-stack-ardalis-cleanarchitecture` | 471 | 373 | 260 | 201 | 525 | 0 | `documentation` 253, `generated` 5, `vendored` 2 |
+| `mix-real-tinyxml2` | 212 | 193 | 193 | 188 | 367 | 0 | `documentation` 167, `generated` 25, `vendored` 1 |
+| `real-stack-mattermost-mobile` | 3.900 | 3.467 | 96 | 76 | 418 | 9 | `vendored` 73, `documentation` 20, `generated` 3 |
+| `real-app-hoppscotch` | 2.244 | 1.740 | 95 | 70 | 389 | 2 | `documentation` 47, `vendored` 45, `generated` 3 |
+| `real-stack-ctfd` | 791 | 751 | 82 | 63 | 3.401 | 45 | `generated` 51, `vendored` 21, `documentation` 10 |
+| `real-stack-bookstack` | 2.373 | 417 | 70 | 57 | 867 | 1 | `vendored` 48, `generated` 16, `documentation` 6 |
+| `real-app-memos` | 1.328 | 1.210 | 82 | 50 | 3.634 | 2 | `generated` 43, `documentation` 27, `vendored` 11, `binary` 1 |
+
+Alcuni di quei file sono codice del progetto, non di terzi né generato. Percorsi letti con una corsa a parte (stesso codice, stesse registrazioni, dieci progetti: non sono nel JSON):
+
+- `vendored`: `CTFd/cache/__init__.py` in `real-stack-ctfd` (la cartella `cache/`), importato da 45 file che restano (`CTFd/__init__.py`, `CTFd/api/v1/awards.py`, ...); `…/tauri-plugin-appload/src/cache/mod.rs` in `real-app-hoppscotch`, importato da `config/model.rs` e `uri/handler.rs`; `types/api/posts.d.ts` e `types/api/apps.d.ts` in `real-stack-mattermost-mobile` (le dichiarazioni dei tipi del progetto).
+- `documentation`: `app/constants/license.ts` e `app/actions/remote/license.ts` in `real-stack-mattermost-mobile`, importati da `app/constants/index.ts` e `app/screens/settings/about/about.tsx`; i componenti Vue di `packages/hoppscotch-common/src/components/collections/documentation/` (`MarkdownEditor.vue`, `Preview.vue`, ...); `sample/src/NimblePros.SampleToDo.Web/Projects/List.cs` in `real-stack-ardalis-cleanarchitecture`, uno dei 194 file letti di `sample/src` e `sample/tests`; `examples/gzlog.c` e altri 11 file C di `mix-real-zlib`.
+- `binary`: `web/src/components/MemoEditor/view/useSearchMatchHighlight.ts` in `real-app-memos`, un file di testo, importato da `MemoContentView.tsx` e da un test.
+- `generated`: `assets/js/dashboard/stats/modals/rocket-icon.js` in `real-stack-plausible`, importato da tre `.tsx`; `resources/js/wysiwyg-tinymce/icons.js` in `real-stack-bookstack`, importato da `config.js`.
+
+Nei dieci progetti guardati il resto dei file più grandi è di terzi o generato davvero: `public/libs/tinymce` in BookStack, i `fontawesome` di Quarkus Super Heroes, i bundle di `CTFd/themes`, i `Designer.cs` delle migrazioni di OpenBudgeteer, `proto/gen/**/*.pb.go` di Memos (695 simboli in `user_service.pb.go`: codice generato, che il progetto compila).
+
+**B. La doppia lettura.** Somma delle mediane su 56 real, secondi.
+
+| Progetti | File | Inventario | Lettura | di cui `seal` | Passaggio solo | Byte riletti nella lettura | Quota riletta (su inventario + lettura) |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 56 | 46.737 | 33,5 | 1.936,6 | 1.358,2 | 397,8 | 10,5 s (366 MB) | 0,5% |
+
+I cinque progetti (di quelli con tre ripetizioni) che impiegano di più, mediana:
+
+| Progetto | File | MB | Inventario | Lettura | di cui `seal` | Passaggio solo | Byte riletti | Quota |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `real-stack-owncast` | 1.726 | 52,5 | 1,57 | 396,43 | 220,63 | 123,64 | 0,53 | 0,1% |
+| `real-app-kotlinconf` | 607 | 1,7 | 0,36 | 163,01 | 160,85 | 1,60 | 0,12 | 0,1% |
+| `real-stack-mattermost-mobile` | 3.900 | 26,1 | 2,84 | 158,23 | 118,51 | 28,15 | 1,03 | 0,6% |
+| `real-stack-ctfd` | 791 | 14,5 | 0,65 | 146,29 | 94,73 | 25,23 | 0,20 | 0,1% |
+| `real-stack-openbudgeteer` | 368 | 1,8 | 0,26 | 94,26 | 90,43 | 2,77 | 0,08 | 0,1% |
+
+- Rileggere i byte costa lo 0,5% di inventario più lettura: 10,5 s contro i 33,5 dell'inventario che li ha letti la prima volta. Per progetto la quota va dallo 0,07% (`real-app-kotlinconf`) al 5,6% (`real-stack-wallabag`), mediana 1,0%. Con la cache calda la seconda lettura non pesa: l'inventario non ha bisogno di passare i byte a `parse`.
+- Osservazione, non una misura chiesta: nei 56 progetti `seal` è il 63% di mediana del tempo di `write_reading` (dal 51% di `real-stack-bakerydemo` al 99% di `real-app-kotlinconf`) e `write_reading` dura 3,9 volte il passaggio solo di mediana (da 2,3 a 102). `real-stack-kuvasz` (una ripetizione, 1.601 file, 12,2 MB, senza registrazione) ha inventario 1,85 s, lettura 3.358,12 s, di cui `seal` 3.312,92 (98,7%, 2,4 volte i 1.358 s dei 56 messi insieme), passaggio solo 30,17 s, byte riletti 0,69 s (0,02%); nel suo log `sqlglot` segnala sintassi SQL non supportata in molti file, ma non l'ho scomposto. Il costo della lettura non sta nei byte.
+- Il passaggio solo non è un termine di confronto pulito: costruisce un dizionario, non scrive uno store né il suo livello semantico, e legge con un gruppo di thread (fino a 8).
+- Rumore: fra le tre ripetizioni la lettura più lunga è, di mediana, 1,12 volte la più corta; il massimo è 3,7 (`real-stack-fiber-go-template`).
+
+**C. Angular in `scan`.** Quattro progetti dichiarano `@angular/core` o `@angular/compiler`. Secondi con il solo costo dei file (sorgente `angular` e pre-mappa con i comandi del container risposti dalla registrazione).
+
+| Progetto | File TypeScript | Alberi letti prima | Alberi letti ora | `commands` | Stima con la regola di prima | Sorgente `angular` | Pre-mappa |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `js-angular` | 4 | 2 | 4 | 0,001 | 0,0004 | 0,059 | 0,105 |
+| `real-app-jhipster-sample` | 288 | 59 | 288 | 0,234 | 0,050 | 0,458 | 2,56 |
+| `real-stack-jasontaylor-cleanarchitecture` | 24 | 10 | 24 | 0,012 | 0,005 | 0,073 | 1,84 |
+| `real-stack-paperless-ngx` | 446 | 124 | 446 | 0,549 | 0,172 | 1,009 | 4,48 |
+
+- Oggi `scan` legge da 2,0 a 4,9 volte gli alberi di prima, e il costo in più è sotto il secondo nel corpus: `commands` meno la somma dei secondi di `_components` sui soli file di prima fa da 0,0006 a 0,38 s. La sorgente `angular` è il 4% (jasontaylor), il 18% (jhipster), il 23% (paperless) e il 56% (la miniatura) dei secondi della pre-mappa riprodotta.
+- Gli alberi sono letti due volte per pre-mappa (`commands` e `read` chiamano `_plan`; i testi restano in cache): 8, 576, 48 e 892 chiamate a `_components`.
+- Ritmo di `_components`, con la lettura del file, l'hash, la decodifica, l'albero e la query: sul progetto TypeScript più grande del corpus per byte, `real-stack-mattermost-mobile` (React Native, non Angular), 3.278 file, 18,3 MB, 5,47 s: 599 file/s e 3,35 MB/s. Su tutti i 40 progetti con file TypeScript: 15.251 file, 72,2 MB, 26,6 s, 572 file/s e 2,71 MB/s. A quel ritmo, una lettura di tutti gli alberi di un progetto di quella dimensione costerebbe 5,5 s, due volte per pre-mappa.
+
+### Non misurato
+
+- Il tempo del container nella pre-mappa (comandi registrati, non rieseguiti) e la `read` delle sorgenti i cui comandi non sono registrati (`noir` in tutti i progetti): i secondi della pre-mappa sono quindi un limite inferiore della parte che non è il container, e le sorgenti `angular` dei progetti sopra hanno letto gli alberi ma non le righe del compilatore (comandi `angular` non registrati).
+- `real-stack-jellyfin` per intero (una ripetizione non è finita in oltre due ore: non so se dichiara Angular né quanti TypeScript abbia); le due ripetizioni oltre la prima di `real-stack-kuvasz` (tre superano le due ore); l'esclusione dei file di entrambi (nessuna registrazione).
+- Il secondo hash dei byte: `snapshot.py` ricalcola `sha256` in `_SnapshotPass.sources` e in `file_entry`, fuori dalla misura dei byte riletti.
+- La scomposizione di `seal`; i progetti con un frontend Angular più grande di 446 file TypeScript.
+- La varianza fra corse intere: ogni progetto ha avuto una sola funzione Modal (con le ripetizioni di B dentro); il container può essere stato rilanciato dopo una prelazione (`preemption`: due volte nella corsa).
