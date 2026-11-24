@@ -67,7 +67,7 @@ Domande senza decisione o senza misura. Ognuna vive nel documento indicato, segn
 
 **Buchi misurati su un passo solo.**
 
-- Chiamate su riceventi `any` di JavaScript: il registro esatto è misurato sopra il passo per posizione del 12 novembre, non sopra l'indice di oggi; il residuo nei sorgenti che nessun test esegue e ciò che resta dopo il modello non sono misurati ([`benchmarks/call-provenance`](../benchmarks/call-provenance/README.md)).
+- Chiamate su riceventi `any` di JavaScript: il registro esatto del benchmark ne chiude 13.677 su tududi, la pipeline del prodotto fra 691 e 2.329 nei giri del 16 novembre, e la distanza non è spiegata. Il registro è misurato sopra il passo per posizione del 12 novembre, non sopra l'indice di oggi; il residuo nei sorgenti che nessun test esegue e ciò che resta dopo il modello non sono misurati ([`benchmarks/call-provenance`](../benchmarks/call-provenance/README.md), «Che cosa resta aperto dopo l'intera pipeline»).
 - Rotte e gestori dopo il passo dinamico: non misurato in nessun benchmark delle rotte.
 - Quali buchi di `analyze` restano dopo `dynamic`, per causa: i giri li contano per caso e linguaggio, non per scheda ([registro](verification/2026-11-16-registro-difetti.md), «Buchi aperti»).
 - Chiamate fra i linguaggi di due analyzer: nessuno step le unisce ([`codebase-map`](plugins/codebase-map.md), «Che cosa resta aperto»).
