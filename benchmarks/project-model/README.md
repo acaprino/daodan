@@ -67,29 +67,33 @@ La tabella riporta l’archivio dell’eseguibile originale e il replay dei regi
 
 ## I percorsi TypeScript di Daodan contro `tsc`
 
-Misura quanto il lettore scritto a mano (`import_resolution.ts_path_config`: un `tsconfig.json` o `jsconfig.json` per cartella, `extends` relativo, bersagli risolti contro `baseUrl` o la cartella del file che li dichiara; una configurazione vale per i discendenti) dista da `tsc`, prima di sostituirlo. `tools/ts_paths_vs_tsc.py` legge `results/native_tsc.json` (TypeScript 6.0.3 on Node v22.23.4, `tsc --showConfig` per tsconfig, registrato su Modal) e chiama il lettore sulle cartelle `fixtures/<nome>`; legge solo JSON e non esegue codice del progetto. Scrive `results/ts_paths_vs_tsc.json`; `test_ts_paths_vs_tsc.py` lo rigenera e lo confronta.
+Misura quanto il lettore scritto a mano (`import_resolution.ts_path_config`: un `tsconfig.json` o `jsconfig.json` per cartella, `extends` relativo, bersagli risolti contro `baseUrl` o la cartella del file che li dichiara; una configurazione vale per i discendenti) dista da `tsc`, prima di sostituirlo. `tools/ts_paths_vs_tsc.py` legge `results/native_tsc.json` (TypeScript 6.0.3 on Node v22.23.4, un `ts.getParsedCommandLineOfConfigFile` per tsconfig, registrato su Modal) e chiama il lettore sulle cartelle `fixtures/<nome>`; legge solo JSON e non esegue codice del progetto. Scrive `results/ts_paths_vs_tsc.json`; `test_ts_paths_vs_tsc.py` lo rigenera e lo confronta.
 
-Parametri: le 17 fixture registrate; 6 non hanno qui l'albero (solo `expected.json` e `source.json`) e restano fuori. Per ogni unità di `tsc` e ogni pattern di `paths`, i percorsi di Daodan sono quelli della configurazione più vicina, nella cartella dell'unità o sopra. Classi: `same` (stessi bersagli), `different` (stesso pattern, altri bersagli), `missing` (solo `tsc`), `extra` (solo Daodan).
+Parametri: le 17 fixture registrate; 6 non hanno qui l'albero (solo `expected.json` e `source.json`) e restano fuori. Per ogni unità di `tsc` e ogni pattern di `paths`, i percorsi di Daodan sono quelli della configurazione più vicina, nella cartella dell'unità o sopra. Classi: `same` (stessi bersagli), `different` (stesso pattern, altri bersagli), `missing` (solo `tsc`), `extra` (solo Daodan). Il lato `tsc` è la lettura dell'API del compilatore (`tools/native_tsc.py` con `tools/native_tsc_config.cjs`, una chiamata `node` per fixture): `options.paths`, `options.baseUrl` e `options.pathsBasePath`, la cartella del file che dichiara `paths`. Il compilatore risolve i `paths` contro `baseUrl ?? pathsBasePath` (TypeScript 6.0.3: `src/compiler/moduleNameResolver.ts:1576` chiama `getPathsBasePath`, `src/compiler/utilities.ts:6611`; `pathsBasePath` è scritto in `src/compiler/commandLineParser.ts:3432` e l'unione di `extends` lo conserva, 3451 e 3481). L'API dà anche `references`, il numero di file e gli errori di configurazione, con la stessa condizione di `--showConfig` (`src/compiler/executeCommandLine.ts:655`), che quindi non serve più.
 
 Misura: 11 fixture con albero, 6 con almeno un pattern, 5 senza pattern da nessuna parte (una con errore di `tsc`).
 
 | Classe | Coppie unità-pattern |
 | --- | ---: |
-| same | 4 |
-| different | 1 |
+| same | 5 |
+| different | 0 |
 | missing | 4 |
 | extra | 0 |
+
+Prima della correzione dell'adattatore (24 novembre 2026): 4 `same`, 1 `different`, 4 `missing`, 0 `extra`; cambia solo la coppia di `js-angular` qui sotto, che passa da `different` a `same`. Fino ad allora l'adattatore leggeva `tsc --showConfig`, che non dà `pathsBasePath`, e risolveva contro la cartella del tsconfig mostrato: un `paths` ereditato da un'altra cartella usciva sbagliato.
 
 Fixture con differenze:
 
 - `js-nx`: `missing` x3 (`@acme/util` in tre unità); i `paths` stanno in `tsconfig.base.json`, che Daodan non legge e nessun `tsconfig.json` estende.
 - `js-vite-react-ts`: `missing` (`@/*`); il `tsconfig.json` radice ha solo `references`, i `paths` stanno in `tsconfig.app.json`, che Daodan non legge.
-- `js-angular`: `different` (`ui-kit` nell'unità `projects/ui-kit`); `tsc` dà `projects/ui-kit/dist/ui-kit`, Daodan `dist/ui-kit`. Qui è giusto Daodan: il `paths` è dichiarato nel `tsconfig.json` radice, ereditato, e TypeScript lo risolve contro il file che lo dichiara. L'errore è dell'adattatore.
+- `js-angular` non ha più differenze: `ui-kit` nell'unità `projects/ui-kit` era `different` (`tsc` dava `projects/ui-kit/dist/ui-kit`, Daodan `dist/ui-kit`) per un errore dell'adattatore, non di Daodan. Il `paths` è dichiarato nel `tsconfig.json` radice, ereditato da `projects/ui-kit/tsconfig.lib.json`, e TypeScript lo risolve contro il file che lo dichiara; con l'API ora lo dà anche l'adattatore (`dist/ui-kit`).
 
 Limiti:
 
-- (a) Il lato `tsc` è la normalizzazione dell'adattatore (`tools/native_tsc.py`), non l'uscita grezza di `tsc`: senza `baseUrl` risolve i bersagli contro la cartella del tsconfig mostrato, mentre TypeScript risolve i `paths` ereditati contro il file che li dichiara; un `paths` ereditato può quindi essere sbagliato dal lato `tsc` (il caso `ui-kit` di `js-angular`).
-- (b) Solo queste fixture: nessun albero intero di un progetto reale.
+- (a) `pathsBasePath` è un campo `@internal` di TypeScript (`src/compiler/types.ts:7512`, non è in `typescript.d.ts`): vale per la versione fissata, 6.0.3, e si ricontrolla a ogni cambio di versione.
+- (b) I `paths` di un'unità li unisce l'adattatore, e per un pattern vale il primo tsconfig dell'unità che lo dichiara; lo stesso pattern con altri bersagli in un tsconfig successivo non si vede. Così in `js-angular` il tsconfig di `storefront`, che ha il `pathsBasePath` fuori dalla sua cartella, non cambia l'unità radice: `tsconfig.json` la precede e dichiara `ui-kit` per primo. Fuori dalla propria cartella il `pathsBasePath` sta anche nel tsconfig di Cypress di `real-app-jhipster-sample`, la cui unità esce uguale a prima.
+- (c) Su Modal la nuova registrazione ha `output` e `raw.references` uguali alla vecchia sulle 17 fixture, tranne `paths` dell'unità `projects/ui-kit` di `js-angular`; `raw.paths_base` cambia forma, `raw.typescript` è nuovo, e il testo degli errori perde il prefisso `exit 1:`.
+- (d) Solo queste fixture: nessun albero intero di un progetto reale.
 
 ## Dopo una modifica
 

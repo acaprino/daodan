@@ -1,6 +1,6 @@
 """How far Daodan's TypeScript path reader is from `tsc`, on the recorded fixtures.
 
-Reads `results/native_tsc.json` (`tsc --showConfig` per tsconfig, recorded on Modal) and calls
+Reads `results/native_tsc.json` (TypeScript's own API per tsconfig, `native_tsc.py`, recorded on Modal) and calls
 `import_resolution.ts_path_config` on `fixtures/<name>`. It only reads JSON and runs no project code.
 Per tsc unit and pattern: same, different, missing (tsc only) or extra (Daodan only).
 Writes `results/ts_paths_vs_tsc.json`.

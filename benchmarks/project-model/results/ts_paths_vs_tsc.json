@@ -1,9 +1,9 @@
 {
  "counts": {
-  "different": 1,
+  "different": 0,
   "extra": 0,
   "missing": 4,
-  "same": 4
+  "same": 5
  },
  "daodan": "import_resolution.ts_path_config",
  "fixtures": {
@@ -22,12 +22,12 @@
     },
     "projects/ui-kit": {
      "ui-kit": {
-      "class": "different",
+      "class": "same",
       "daodan": [
        "dist/ui-kit"
       ],
       "tsc": [
-       "projects/ui-kit/dist/ui-kit"
+       "dist/ui-kit"
       ]
      }
     }
