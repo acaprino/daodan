@@ -1,5 +1,5 @@
 // What the run and the synthesis both say: how the map of the system is, and that something is being read or could not be.
-import { Button, Column, Icon, Note, Progress, Text } from '@acaprino/sigrid';
+import { Button, Column, Empty, Icon, Note, Progress, Text } from '@acaprino/sigrid';
 import { focusContent } from './frame.tsx';
 import { mapNotice } from './run.ts';
 import { model, useModel } from './use-model.ts';
@@ -25,4 +25,10 @@ export function Failed({ title, cause, retry }: { title: string; cause: string; 
 export function GraphFailed() {
   const { graphError } = useModel();
   return <Failed title="Grafo non disponibile." cause={graphError} retry={model.retryGraph} />;
+}
+
+// A graph the run has not written yet.
+export function NoGroups({ fill }: { fill?: boolean }) {
+  return <Empty fill={fill} title="Prima l’inventario, poi le relazioni."
+    description="Il grafo del run non ha ancora gruppi di file. I nodi compaiono quando la pipeline scrive un artefatto." />;
 }

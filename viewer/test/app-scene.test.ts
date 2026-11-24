@@ -1,19 +1,39 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { GraphEdge, GraphNode } from '../app/graph.ts';
-import { iconOf, sceneOf } from '../app/scene.ts';
+import type { GraphEdge, GraphNode, OpenGroup } from '../app/graph.ts';
+import { iconOf, sceneOf as drawnOf } from '../app/scene.ts';
+
+const sceneOf = (graph: Parameters<typeof drawnOf>[0]) => drawnOf(graph, mark => `/mark/${mark}`);
+const bare = { image: undefined, open: undefined, group: undefined };
 
 const node = (id: string, more: Partial<GraphNode> = {}): GraphNode => ({ id, name: id, kind: 'directory', files: [`${id}/a.ts`], location: 'internal', status: 'confirmed', group: null, ...more });
 const edge = (status: string, more: Partial<GraphEdge> = {}): GraphEdge => ({ source: 'a', target: 'b', counts: { calls: 1 }, status, evidence: [], ...more });
 
-test('a thing has its name, its facts and the icon of its kind, and no place', () => {
-  const { nodes } = sceneOf({ nodes: [node('.'), node('db', { location: 'external', node_type: 'database', files: [] }), node('api', { location: 'external', files: [] })], edges: [] });
+test('a thing has its name, its facts, its logo and the icon of its kind, and no place; the project comes before what is outside it', () => {
+  const { nodes } = sceneOf({ nodes: [node('db', { location: 'external', node_type: 'database', mark: 'postgresql', files: [] }), node('.'), node('api', { location: 'external', files: [] })], edges: [] });
   assert.deepEqual(nodes, [
-    { id: '.', label: 'radice del repository', icon: 'folder', external: false, detail: '1 file · confermato' },
-    { id: 'db', label: 'db', icon: 'data', external: true, detail: 'database' },
-    { id: 'api', label: 'api', icon: 'globe', external: true, detail: undefined },
+    { ...bare, id: '.', label: 'radice del repository', icon: 'folder', external: false, detail: '1 file · confermato', open: false },
+    { ...bare, id: 'api', label: 'api', icon: 'globe', external: true, detail: undefined },
+    { ...bare, id: 'db', label: 'db', icon: 'data', image: '/mark/postgresql', external: true, detail: 'database' },
   ]);
   assert.deepEqual(['file', 'symbol', 'component', 'altro'].map(kind => iconOf(node('x', { kind }))), ['file', 'code', 'structure', 'layers']);
+});
+
+test('a group open in place is a thing that holds what is in it, also an open group; what holds something opens', () => {
+  const open: OpenGroup[] = [{ id: 'web', name: 'web', kind: 'directory', parent: null }, { id: 'web/ui', name: 'ui', kind: 'directory', parent: 'web' }];
+  const { nodes, key } = sceneOf({
+    nodes: [node('api'), node('web/ui/a.ts', { name: 'a.ts', kind: 'file', group: 'web/ui' }), node('web/main.ts', { name: 'main.ts', kind: 'file', group: 'web' }),
+      node('s', { kind: 'symbol', files: [], lines: [1, 5] }), node('t', { kind: 'symbol', files: [], lines: [6, 9], members: ['u'] })],
+    edges: [edge('confirmed', { source: 'api', target: 'web' })], open,
+  });
+  assert.deepEqual(nodes.map(thing => [thing.id, thing.open, thing.group]), [
+    ['api', false, undefined], ['s', undefined, undefined], ['t', false, undefined],
+    ['web', true, undefined], ['web/main.ts', false, 'web'], ['web/ui', true, 'web'], ['web/ui/a.ts', false, 'web/ui'],
+  ]);
+  assert.deepEqual(nodes.find(thing => thing.id === 'web/ui'), { id: 'web/ui', label: 'ui', icon: 'folder', open: true, group: 'web' });
+  assert.match(key, /^api,s,t,[+]web,web\/main.ts,[+]web\/ui,web\/ui\/a.ts[|]api→web$/);  // an open group is another layout than a closed one
+  // A group that is not open holds nothing: the thing is on the canvas as the others.
+  assert.deepEqual(sceneOf({ nodes: [node('x', { group: 'gone' })], edges: [], open: [] }).nodes.map(thing => thing.id), ['x']);
 });
 
 test('a line says its kind by its dash and its words, and each is a line of its own', () => {

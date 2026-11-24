@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCounts, endName, graphKey, levelsName, nodeById, nodeFacts, nodeName, openWithout, proofLabel, rootOf, runtimeSummary, shownOpen, visibleGraph } from '../app/graph.ts';
+import {
+  buildCounts, endName, filtersOn, graphKey, isOpenGroup, levelsName, nodeById, nodeFacts, nodeName, openWithout, proofLabel, relationWords, rootOf,
+  runtimeSummary, shownOpen, thingById, toggledGroup, visibleGraph,
+} from '../app/graph.ts';
 import type { Graph, GraphNode } from '../app/graph.ts';
 import { DEFAULTS } from '../app/storage.ts';
 
@@ -41,6 +44,22 @@ test('a group that closes closes what is open inside it, and the groups are aske
   assert.notEqual(graphKey('r1', kept), graphKey('r2', kept));
 });
 
+test('a filter is on when it is not the one the graph opens with', () => {
+  assert.equal(filtersOn(DEFAULTS), false);
+  for (const patch of [{ graphSearch: ' ' }, { graphDirection: 'in' }, { graphDepth: '1' }, { graphKind: 'calls' }] as const) assert.equal(filtersOn({ ...DEFAULTS, ...patch }), true);
+  assert.equal(filtersOn({ ...DEFAULTS, graphRoot: 'a', graphOpen: ['a'] }), false);
+});
+
+test('what the graph shows is a node or an open group, and the group opened or closed is told from one reading to the next', () => {
+  const holding = (...ids: [string, string | null][]): Graph => ({ ...graph, open: ids.map(([id, parent]) => ({ id, name: id, parent })) });
+  const web = holding(['web', null]), both = holding(['web', null], ['ui', 'web']);
+  assert.deepEqual([thingById(web, 'a')!.name, isOpenGroup(thingById(web, 'a')!), isOpenGroup(thingById(web, 'web')!), thingById(web, 'altro'), thingById(null, 'a')],
+    ['a', false, true, undefined, undefined]);
+  assert.deepEqual([toggledGroup(graph, web), toggledGroup(web, both), toggledGroup(both, web), toggledGroup(web, graph)], ['web', 'ui', 'ui', 'web']);
+  assert.equal(toggledGroup(both, graph), 'web');  // with what is open inside it
+  assert.deepEqual([toggledGroup(web, { ...web }), toggledGroup(null, web), toggledGroup(web, null)], [null, null, null]);
+});
+
 test('the node the graph is read from is the one kept, else the one with most relations of the project', () => {
   assert.equal(rootOf(graph, 'c'), 'c');
   assert.equal(rootOf(graph, 'gone'), 'b');
@@ -54,6 +73,8 @@ test('nodes, lines and the whole graph are said in words', () => {
   assert.deepEqual([nodeFacts(node('a')), nodeFacts(node('r', { location: 'external', node_type: 'database' })), nodeFacts(node('s', { kind: 'symbol', lines: [1, 5], members: ['x', 'y'] }))],
     ['1 file · confermato', 'database · esterno', 'righe 1–5 · 2 simboli']);
   assert.deepEqual([proofLabel('observed'), proofLabel('sampled', true), proofLabel('confirmed')], ['osservata in esecuzione', 'campionata dal profiler · destinazioni in conflitto', '']);
+  assert.deepEqual([relationWords({ counts: { calls: 2, imports: 1 }, status: 'sampled' }), relationWords({ counts: { uses: 1 } })],
+    ['calls: 2, imports: 1 · campionata dal profiler', 'uses: 1']);
   assert.equal(runtimeSummary([{ status: 'observed' }, { status: 'observed' }, { status: 'sampled' }, { status: 'observed', conflict: true }]),
     '2 osservate in esecuzione · 1 campionata dal profiler · 1 in conflitto');
   assert.deepEqual([buildCounts(null), levelsName(graph)], ['—', 'Codice · Infrastruttura']);

@@ -5,8 +5,8 @@ import type { ComponentType, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import {
-  applyKeptScheme, AppShell, Badge, Cluster, Column, CommandPalette, CommandsProvider, Count, formatKeys, Heading, Icon, Inspector, KeyHints, Progress,
-  Spacer, Text, TitleBar, Toasts, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs, useCommand, useCommandPalette,
+  applyKeptScheme, AppShell, Badge, Cluster, Column, CommandPalette, CommandsProvider, Count, formatKeys, Heading, Icon, Inspector, KeyHints, Logo,
+  Progress, Spacer, Text, TitleBar, Toasts, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs, useCommand, useCommandPalette,
   useMedia, useSchemeCommands, WordsProvider,
 } from '@acaprino/sigrid';
 import type { IconName } from '@acaprino/sigrid';
@@ -79,7 +79,7 @@ function App() {
 
   // Ctrl+F: the search of the screen in view, in sight first where its pane is hidden; a screen without one says so.
   const find = () => {
-    if (!search.current) { model.say('Questa schermata non ha una ricerca.'); return; }
+    if (!search.current || search.current.disabled) { model.say('Questa schermata non ha una ricerca.'); return; }
     if (reveal.current) {
       focusContent();
       flushSync(reveal.current);
@@ -130,7 +130,7 @@ function App() {
         <Column gap="lg" data-selectable="">
           {/* The one live region: it stays while what the details are of changes, and reads the name alone. */}
           <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
-            {detail && <><Icon name={detail.icon} /><Column><Heading size="small"><Text pre>{detail.name}</Text></Heading></Column></>}
+            {detail && <>{detail.image ? <Logo src={detail.image} decorative icon={detail.icon} /> : <Icon name={detail.icon} />}<Column><Heading size="small"><Text pre>{detail.name}</Text></Heading></Column></>}
           </Cluster>
           {detail && <Fragment key={`${detail.id} ${detail.key ?? ''}`}>{detail.content}</Fragment>}
         </Column>

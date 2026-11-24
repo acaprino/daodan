@@ -400,8 +400,16 @@ test('the graph is asked with the groups open on its own screen, and a group the
   model.navigate('graph');
   await turn();
   model.closeGroup('a');
+  assert.deepEqual([now().graph!.open.length, now().graphLoading], [1, true]);  // what is drawn stays until the answer
   await turn();
-  assert.deepEqual([now().kept.graphOpen, now().kept.graphRoot, now().graphLoading], [[], 'a', false]);
+  assert.deepEqual([now().kept.graphOpen, now().kept.graphRoot, now().graphLoading, now().graph!.open], [[], 'a', false, []]);
+  model.toggleGroup('a');  // by what is drawn, not by what is asked
+  model.toggleGroup('a');
+  await turn();
+  assert.deepEqual([now().kept.graphOpen, now().graph!.open.length], [['a'], 1]);
+  model.toggleGroup('a');
+  await turn();
+  assert.deepEqual([now().kept.graphOpen, now().graph!.open], [[], []]);
 });
 
 test('the groups opened while the graph is read are asked when it is, and so are those a screen keeps', async () => {
@@ -640,4 +648,5 @@ test('what is asked of the run is answered by its new state, or said as an error
   await model.findLinks();
   assert.equal(now().server!.links!.state, 'running');
   assert.equal(model.explorerUrl(), '/?token=segreto&run=r1');
+  assert.equal(model.markUrl('next.js & co'), '/api/app/mark?id=next.js+%26+co&token=segreto');
 });

@@ -1,6 +1,6 @@
 // The graph as it takes shape: its groups and relations on the canvas, which lays them out, and the details of the one chosen.
 import { memo, useCallback, useMemo } from 'react';
-import { Badge, Button, Empty, Icon, Section, Split, Text, useMedia } from '@acaprino/sigrid';
+import { Badge, Button, Icon, Section, Split, Text, useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
 import { useFrame } from './frame.tsx';
 import { buildCounts, levelLabel, levelsName } from './graph.ts';
@@ -8,13 +8,13 @@ import type { Graph } from './graph.ts';
 import { groupDetail, groupOf } from './group-details.tsx';
 import { buildStatus } from './run.ts';
 import { sceneOf } from './scene.ts';
-import { GraphFailed, Loading } from './states.tsx';
+import { GraphFailed, Loading, NoGroups } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 
 // Drawn again when the graph or the choice is another: an event of the run, which draws the screen again, does not touch the canvas.
 const Canvas = memo(function Canvas({ graph, selected, onSelect }: { graph: Graph; selected: string | null; onSelect: (id: string | null) => void }) {
   const direction = useMedia('(width < 850px)') ? 'down' : 'right';
-  const scene = useMemo(() => sceneOf(graph), [graph]);
+  const scene = useMemo(() => sceneOf(graph, model.markUrl), [graph]);
   return <>
     <GraphCanvas aria-label="Costruzione del grafo" model="graph" nodes={scene.nodes} edges={scene.edges} direction={direction}
       layoutKey={`${direction}|${scene.key}`} selected={selected} onSelect={onSelect} />
@@ -42,8 +42,7 @@ export function Preview() {
     {s.graphError ? <GraphFailed />
       : !graph ? <Loading label="Lettura del grafo…" />
       : graph.nodes.length ? <Drawing graph={graph} />
-      : <Empty title="Prima l’inventario, poi le relazioni."
-          description="Il grafo del run non ha ancora gruppi di file. I nodi compaiono quando la pipeline scrive un artefatto." />}
+      : <NoGroups />}
     <Split>
       <Text variant="note">{buildCounts(graph)}</Text>
       <Text variant="note">{buildStatus(s)}</Text>

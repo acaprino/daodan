@@ -11,14 +11,16 @@ Object.assign(envelope.entities.find(entity => entity.ref === 'component:web'), 
 envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lungo', complete: true, gaps: [], steps: Array(43).fill(envelope.flows[1].steps[0]) });
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
-const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [];
-const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false, pathsBroken: false };
+const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [], markRequests = [];
+const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false, pathsBroken: false, marks: false };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
+  ...(name === 'Client' && { projects: [{ mark: 'react', name: 'React', category: 'framework', evidence: [{ path: 'package.json', line: 12 }] }], other_dependencies: 3 }),
 }));
 const graph = { grouping: 'directories', nodes: groups, open: [], edges: ['confirmed', 'observed', 'sampled'].map(status => ({
-    source: 'Client', target: 'Server', counts: { calls: 1 }, status, evidence: [],
+    source: 'Client', target: 'Server', counts: { calls: 1 }, status,
+    evidence: status === 'observed' ? [{ path: 'Client/file0.ts', line: 3, target: 'Server/file1.ts', kind: 'calls', key: 'save' }] : [],
   })).concat({source: 'Client', target: 'Server', counts: { calls: 1 }, status: 'observed', conflict: true, evidence: []}),
   gaps: [], files: 2, levels: ['codice'], meta: {}, unassigned: { count: 0 } };
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH });
@@ -52,6 +54,11 @@ try {
     if (path === '/api/app/engine') {
       engineRequests.push(JSON.parse(route.request().postData() ?? '{}'));
       return route.fulfill({ json: { engine: 'openai', engines: ['openai'], api_key: 'unset', base_url: 'https://api.test/v1', model: 'm' } });
+    }
+    if (path === '/api/app/mark') {
+      markRequests.push(url.search);
+      return route.fulfill(mode.marks ? { contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16"/></svg>' }
+        : { status: 404, json: { error: 'nessun logo' } });
     }
     if (path === '/api/app/symbols') return route.fulfill({ json: { file: 'child', symbols: [{ id: 'child::save', name: 'save', lines: [1, 5] }], calls: [] } });
     if (path === '/api/app/ask') {
@@ -498,7 +505,6 @@ try {
     await path.waitFor();
   }
 
-  // The contract of the screens not yet drawn, in Imago's selectors: each to restore by role and name, then delete from here.
   // ticket 21: the run and the synthesis
   {
     const tab = name => page.getByRole('toolbar', { name: 'Daodan', exact: true }).getByRole('button', { name: new RegExp(`^${name}`) });
@@ -736,69 +742,208 @@ try {
     await stage('Repository').waitFor();
   }
   // ticket 22: the graph
-  // mode.graphStatus = 500;
-  // await tabs.getByRole('tab', { name: 'Grafo' }).click();
-  // const failed = page.locator('.im-failure');
-  // assert.match(await failed.innerText(), /Errore[\s\S]*grafo non letto[\s\S]*Riprova/);
-  // mode.graphStatus = 200;
-  // await failed.getByRole('button', { name: 'Riprova' }).click();
-  // await page.getByRole('region', { name: 'Grafo del codice' }).waitFor();
-  // assert.equal(await tabs.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
-  // await page.getByLabel('Relazioni', { exact: true }).selectOption('imports');  // the kind filter: no relation of that kind
-  // await page.locator('.im-graph-legend').getByText('0 relazioni visibili').waitFor();
-  // await page.getByRole('button', { name: 'Azzera filtri' }).click();
-  // await page.locator('.im-graph-legend').getByText('4 relazioni visibili').waitFor();
-  // const legend = await page.locator('.im-graph-legend').innerText();
-  // assert.ok(legend.includes('Osservata in esecuzione') && legend.includes('Incerta') && !legend.includes('■'));
-  // await tabs.getByRole('tab', { name: /^Grafo/ }).click();
-  // const diagram = page.getByRole('region', { name: 'Grafo del codice' });
-  // await page.keyboard.press('Control+f');
-  // assert.equal(await page.evaluate(() => document.activeElement?.id), 'graph-search');
-  // await tabs.getByRole('tab', { name: /^Grafo/ }).focus();
-  // await page.keyboard.press('F6');
-  // assert.ok(await inContent());
-  // await diagram.locator('[data-im-node="Client"] .im-graph-node').press('ArrowRight');
-  // assert.equal(await page.evaluate(() => document.activeElement.closest('[data-im-node]').dataset.imNode), 'Server');
-  // await page.keyboard.press('Enter');
-  // const group = page.getByRole('region', { name: 'Dettaglio del gruppo' });
-  // assert.equal(await group.locator('h2').innerText(), 'Server');
-  // const titles = await diagram.locator('.im-graph-edge title').allTextContents();
-  // assert.ok(titles.some(label => label.includes('osservata in esecuzione')));
-  // assert.ok(titles.some(label => label.includes('campionata dal profiler')));
-  // assert.ok(titles.some(label => label.includes('destinazioni in conflitto')));
-  // await group.locator('summary', { hasText: 'Prove delle chiamate' }).click();
-  // await page.getByText('Client → Server · osservata in esecuzione', { exact: true }).waitFor();
-  // await page.getByText('Client → Server · campionata dal profiler', { exact: true }).waitFor();
-  // await page.getByText('Client → Server · osservata in esecuzione · destinazioni in conflitto', { exact: true }).waitFor();
-  // await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
-  // assert.match(await page.locator('.im-inspector .im-panel-title:visible').innerText(), /File di Server/);
-  // await page.keyboard.press('Escape');
-  // assert.equal(await group.locator('h2').innerText(), 'Server');
-  // // A node chosen while a file list is pushed on another group: the new group replaces both, and nothing stale comes back.
-  // await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
-  // await diagram.locator('[data-im-node="Client"] .im-graph-node').click();
-  // assert.equal(await group.locator('h2:visible').innerText(), 'Client');
-  // assert.equal(await page.locator('.im-inspector .im-panel-title:visible').innerText(), 'Dettaglio del gruppo');
-  // await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  // assert.ok(await page.locator('.im-inspector').isHidden());
-  // await diagram.getByRole('button', { name: 'Apri Client' }).click();
-  // await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
-  // await diagram.locator('[data-im-node="child"] .im-graph-node').click();  // a file: its symbols are asked and drawn
-  // await group.getByText('Simboli e chiamate').waitFor();
-  // await group.locator('code', { hasText: 'save' }).waitFor();
-  // assert.equal(await diagram.locator('.im-graph-group').count(), 1);
-  // await diagram.getByRole('button', { name: 'Chiudi Client' }).click();
-  // await diagram.getByRole('button', { name: 'Apri Client' }).waitFor();
-  // await tabs.getByRole('tab', { name: 'Analisi' }).click();
-  // assert.ok(await page.locator('.im-inspector').isHidden());
-  // await tabs.getByRole('tab', { name: /^Grafo/ }).click();
-  // await page.setViewportSize({ width: 900, height: 820 });
-  // await group.waitFor();
-  // const [content, inspector] = await Promise.all([page.locator('.im-content').boundingBox(), page.locator('.im-inspector').boundingBox()]);
-  // assert.ok(inspector.x < content.x + content.width - 100);
-  // await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  // assert.ok(await page.locator('.im-inspector').isHidden());
-  // assert.equal(await page.getByRole('dialog').count(), 0);
+  {
+    const tab = name => page.getByRole('toolbar', { name: 'Daodan', exact: true }).getByRole('button', { name: new RegExp(`^${name}`) });
+    const panel = main.getByRole('region', { name: 'Grafo del codice', exact: true });
+    const canvas = panel.getByRole('group', { name: 'Grafo interattivo', exact: true });
+    const thing = name => canvas.getByRole('button', { name: new RegExp(`^${name},`) });
+    const button = (where, name) => where.getByRole('button', { name, exact: true });
+    const says = (where, text) => where.getByText(text, { exact: true }).waitFor();
+    const detail = name => page.getByRole('complementary', { name, exact: true });
+    const group = detail('Dettaglio del gruppo'), groupIs = name => group.getByRole('heading', { name, exact: true }).waitFor();
+    const marked = name => thing(name).and(page.locator('[aria-current="true"]')).waitFor();
+    const focusOn = start => page.waitForFunction(text => document.activeElement?.getAttribute('aria-label')?.startsWith(text), start);
+    const onCanvas = () => page.waitForFunction(() => document.activeElement?.closest('[aria-roledescription="grafo"]'));
+    const serve = patch => page.evaluate(state => window.setServerState(state), patch);
+    const search = panel.getByRole('searchbox', { name: 'Cerca un gruppo o un file', exact: true });
+    const filter = name => panel.getByRole('combobox', { name, exact: true });
+    const pick = async (name, option) => {
+      await filter(name).click();
+      await page.getByRole('option', { name: option, exact: true }).click();
+    };
+    const clear = button(panel, 'Azzera filtri').first();  // over the canvas: where nothing is found there is another one
+    // A graph that cannot be read says why, with Riprova; its filters wait in their place.
+    mode.graphStatus = 500;
+    await tab('Grafo').click();
+    const unread = panel.getByRole('alert').filter({ hasText: 'Grafo non disponibile.' });
+    assert.match(await unread.innerText(), /Errore[\s\S]*grafo non letto[\s\S]*Riprova/);
+    for (const control of [search, filter('Direzione'), filter('Profondità'), filter('Relazioni'), clear]) assert.ok(await control.isDisabled());
+    await page.keyboard.press('Control+f');
+    await page.getByText('Questa schermata non ha una ricerca.').last().waitFor();
+    mode.graphStatus = 200;
+    await button(unread, 'Riprova').click();
+    await button(canvas, 'Client, 1 file · confermato').waitFor();
+    await button(canvas, 'Server, 6 file · confermato').waitFor();
+    assert.ok(await inMain());
+    // It opens whole, with the details of the group it is read from, as tall as the panel leaves.
+    await groupIs('Server');
+    await marked('Server');
+    await tab('Grafo').filter({ hasText: '2 gruppi' }).waitFor();
+    await says(panel, 'Codice · 2 / 2 nodi');
+    assert.ok((await canvas.boundingBox()).height >= 300);
+    assert.equal(await canvas.getAttribute('aria-roledescription'), 'grafo');
+    assert.equal(await page.getByRole('link', { name: 'Esploratore completo', exact: true }).getAttribute('href'), '/?token=test&run=demo');
+    // The lines are said by their words, to screen readers always, and by their key, with how many are in view.
+    const heard = await thing('Client').evaluate(el => el.getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id)?.textContent).join(' '));
+    for (const text of ['calls: 1 · osservata in esecuzione, verso Server', 'campionata dal profiler', 'destinazioni in conflitto', 'Alt e una freccia lo spostano']) {
+      assert.ok(heard.includes(text), text);
+    }
+    const lineKinds = panel.getByRole('list', { name: 'Tipi di linea', exact: true });
+    assert.match(await lineKinds.innerText(),
+      /Relazioni\s*1[\s\S]*Osservata in esecuzione\s*1[\s\S]*Campionata dal profiler\s*1[\s\S]*Incerta o in conflitto\s*1/);
+    await says(panel, '4 relazioni visibili');
+    // The filters: the kind of relation, the neighbourhood of the group it is read from, the search. One button clears them.
+    assert.ok(await clear.isDisabled());
+    await pick('Relazioni', 'Import');
+    await says(panel, '0 relazioni visibili');
+    await lineKinds.waitFor({ state: 'detached' });
+    await clear.click();
+    await says(panel, '4 relazioni visibili');
+    await page.getByText('Filtri azzerati: tutti i gruppi del grafo sono visibili.', { exact: true }).waitFor();
+    assert.deepEqual([await focused(search), await clear.isDisabled()], [true, true]);
+    await pick('Profondità', '1 livello');
+    await pick('Direzione', 'Dipendenze →');  // nothing leaves the server
+    await says(panel, 'Codice · 1 / 2 nodi');
+    await thing('Client').waitFor({ state: 'detached' });
+    await clear.click();
+    await says(panel, 'Codice · 2 / 2 nodi');
+    await tab('Grafo').focus();
+    await page.keyboard.press('Control+f');
+    assert.ok(await focused(search));
+    await search.fill('server/file5');
+    await thing('Client').waitFor({ state: 'detached' });
+    await thing('Server').waitFor();
+    await search.fill('niente');
+    await says(panel, 'Nessun gruppo trovato');
+    await button(panel, 'Azzera filtri').last().click();
+    await thing('Client').waitFor();
+    assert.deepEqual([await focused(search), await search.inputValue()], [true, '']);
+    await tab('Grafo').focus();
+    await page.keyboard.press('F6');
+    assert.ok(await inMain());
+    // A logo that does not come leaves the icon of the kind, in its place.
+    await thing('Client').locator('img').waitFor({ state: 'detached' });
+    assert.equal(await thing('Client').locator('svg').count(), 1);
+    assert.ok(markRequests.includes('?id=react&token=test'));
+    // A group chosen: what it is, its stack, its relations with what proves them, and its files, each with what is recorded in it.
+    await thing('Client').click();
+    await groupIs('Client');
+    await marked('Client');
+    assert.match(await group.innerText(), /Directory selezionata\s*confermato[\s\S]*Responsabilità non descritta nel grafo\.[\s\S]*File assegnati\s*1\s*Relazioni nel grafo\s*4\s*Provenienza\s*Directory del checkout/);
+    assert.match(await group.getByRole('list', { name: 'Stack', exact: true }).innerText(), /React\s*framework\s*package\.json:12/);
+    for (const text of ['Altre dipendenze dichiarate: 3', 'Nessuna evidenza dichiarata.']) await says(group, text);
+    await button(group, 'Relazioni del gruppo (4)').click();
+    const relations = group.getByRole('list', { name: 'Relazioni del gruppo (4)', exact: true }).getByRole('listitem');
+    await relations.first().waitFor();
+    assert.equal(await relations.count(), 4);
+    assert.match(await relations.first().innerText(), /→ Server\s*calls: 1/);
+    await button(group, 'Prove delle chiamate (3)').click();
+    const proofs = group.getByRole('list', { name: 'Prove delle chiamate (3)', exact: true });
+    for (const text of ['Client → Server · osservata in esecuzione', 'Client → Server · campionata dal profiler',
+      'Client → Server · osservata in esecuzione · destinazioni in conflitto']) await says(proofs, text);
+    await button(group, 'Client/file0.ts').click();
+    await says(group, 'calls · save · osservata in esecuzione · riga 3 · Server/file1.ts');
+    assert.ok(await selectable(proofs.getByText('Client → Server · campionata dal profiler', { exact: true })));
+    // By keyboard the arrows follow the lines and Enter chooses; the details follow the choice, with every file in place.
+    await thing('Client').focus();
+    await page.keyboard.press('ArrowRight');
+    await focusOn('Server,');
+    await page.keyboard.press('Enter');
+    await groupIs('Server');
+    await button(group, 'Tutti i 6 file').click();
+    const files = group.getByRole('list', { name: 'Tutti i 6 file', exact: true }).getByRole('listitem');
+    await files.first().waitFor();
+    assert.equal(await files.count(), 6);
+    assert.equal(await group.getByRole('list', { name: 'Stack', exact: true }).count(), 0);
+    await thing('Client').click();
+    await groupIs('Client');
+    assert.equal(await button(group, 'Tutti i 6 file').count(), 0);
+    await button(group, 'Chiudi').click();
+    await group.waitFor({ state: 'hidden' });
+    await canvas.locator('[aria-current]').waitFor({ state: 'detached' });
+    await button(panel, 'Grafo e lacune').click();
+    const provenance = detail('Provenienza e lacune del grafo');
+    await provenance.waitFor();
+    await page.keyboard.press('Escape');
+    await provenance.waitFor({ state: 'hidden' });
+    // A group opens in place: a frame around what it holds, with the rest in sight, and its details; its button closes it. The focus
+    // stays on it.
+    const frame = canvas.getByRole('group', { name: 'Client, aperto, contiene un elemento', exact: true });
+    await button(canvas, 'Apri Client').click();
+    await frame.waitFor();
+    await thing('main.ts').waitFor();
+    await thing('Server').waitFor();
+    await groupIs('Client');
+    assert.match(await group.innerText(), /aperto sul posto[\s\S]*Elementi dentro\s*1\s*Relazioni nel grafo\s*4/);
+    await onCanvas();
+    await button(canvas, 'Chiudi Client').click();
+    await frame.waitFor({ state: 'detached' });
+    await button(canvas, 'Apri Client').waitFor();
+    assert.equal(await thing('main.ts').count(), 0);
+    await groupIs('Client');
+    await onCanvas();
+    // From the details too: one button opens and closes it, and keeps the focus.
+    await button(group, 'Apri sul posto').click();
+    await frame.waitFor();
+    await button(group, 'Chiudi il gruppo').and(page.locator(':focus')).waitFor();
+    await button(canvas, 'Client').click();  // the title of the frame
+    await groupIs('Client');
+    // A file: its symbols are read; those that cannot be read say why, and are asked again.
+    const symbolsRoute = url => url.pathname === '/api/app/symbols';
+    await context.route(symbolsRoute, route => route.fulfill({ status: 500, json: { error: 'simboli non letti' } }));
+    await thing('main.ts').click();
+    await groupIs('main.ts');
+    const symbols = group.getByRole('region', { name: 'Simboli e chiamate', exact: true });
+    const noSymbols = symbols.getByRole('alert').filter({ hasText: 'Simboli non disponibili.' });
+    await noSymbols.filter({ hasText: 'simboli non letti' }).waitFor();
+    await context.unroute(symbolsRoute);
+    await button(noSymbols, 'Riprova').click();
+    await says(symbols, 'save');
+    assert.match(await symbols.innerText(), /save\s*righe 1–5[\s\S]*Nessuna chiamata risolta da o verso i suoi simboli\./);
+    assert.ok(await focused(symbols));
+    // What was open and what was chosen are kept. A logo that comes takes the place of the icon.
+    mode.marks = true;
+    await page.reload();
+    await frame.waitFor();
+    await groupIs('main.ts');
+    await marked('main.ts');
+    await button(canvas, 'Chiudi Client').click();
+    await frame.waitFor({ state: 'detached' });
+    await thing('Client').waitFor();
+    await thing('Client').locator('svg').waitFor({ state: 'detached' });
+    assert.ok(await thing('Client').locator('img').evaluate(img => img.naturalWidth > 0));
+    mode.marks = false;
+    // The things move, by the keys too, and one button puts them back.
+    await thing('Server').focus();
+    await page.keyboard.press('Alt+ArrowDown');
+    await button(canvas, 'Riordina').click();
+    await button(canvas, 'Riordina').waitFor({ state: 'detached' });
+    // Another screen takes the details away, and they are there again with the graph; on a narrow window they cover the end of it.
+    await tab('Analisi').click();
+    await group.waitFor({ state: 'hidden' });
+    await tab('Grafo').click();
+    await group.waitFor();
+    await page.setViewportSize({ width: 900, height: 820 });
+    const sheet = page.getByRole('dialog', { name: 'Dettaglio del gruppo' });
+    await sheet.waitFor();
+    await button(sheet, 'Chiudi').click();
+    await sheet.waitFor({ state: 'detached' });
+    await thing('Client').waitFor();
+    assert.ok(await fits());
+    await page.setViewportSize({ width: 390, height: 820 });
+    await thing('Client').waitFor();
+    assert.deepEqual([(await canvas.boundingBox()).height >= 200, await fits()], [true, true]);
+    await page.setViewportSize({ width: 1280, height: 850 });
+    // Without a repository there is no graph. Then what was kept of where the person looked goes: what follows starts as a first opening.
+    await serve({ context: null, job: { state: 'idle' } });
+    await says(panel, 'Nessun grafo');
+    await button(panel, 'Vai al repository').click();
+    await main.getByRole('region', { name: 'Repository', exact: true }).waitFor();
+    await onContent();
+    await page.evaluate(() => localStorage.removeItem('daodan-app-v2'));
+    await page.reload();
+    await main.getByRole('region', { name: 'Repository', exact: true }).waitFor();
+  }
   // ticket 23: the engine and the questions
   {
     const serve = patch => page.evaluate(state => window.setServerState(state), patch);
@@ -923,7 +1068,6 @@ try {
     assert.deepEqual([await ask.isVisible(), await fits()], [true, true]);
     await page.setViewportSize({ width: 1280, height: 850 });
   }
-  // end of tickets 20 to 23
 
   // The Codebase Map.
   const nav = page.getByRole('navigation', { name: 'Mappa' });
@@ -1572,5 +1716,5 @@ try {
   await tab.close();
   await app.close();
   assert.deepEqual(errors, []);
-  console.log('Passed the App (frame, palette, stages, repository, server, theme) and the map (frame, palette, canvas, places and things, details, filters, runs, theme).');
+  console.log('Passed the App (frame, palette, stages, repository, graph, server, theme) and the map (frame, palette, canvas, places and things, details, filters, runs, theme).');
 } finally { await browser.close(); }

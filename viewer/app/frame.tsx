@@ -10,7 +10,7 @@ export type Detail = {
   id: string;                      // whose they are: a screen knows its own by it
   key?: string;                    // the thing they are of: those of another one are drawn anew
   title: string;                   // of the inspector: what they are
-  icon: IconName; name: ReactNode;  // their heading, which is announced when it changes
+  icon: IconName; image?: string; name: ReactNode;  // their heading, which is announced when it changes; `image`: a logo in the icon's place
   content: ReactNode; footer?: ReactNode;
   opener?: HTMLElement | null;     // what takes the focus back when they close with it inside: what has it as they open, unless it is said
 };

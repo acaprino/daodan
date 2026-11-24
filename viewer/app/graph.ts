@@ -25,6 +25,11 @@ export const graphKey = (runId: string | undefined, kept: Kept) => `${runId ?? '
 
 export const outside = (n: { location?: string }) => Number(n.location === 'external');  // a group of the project before an external node
 export const opens = (n: GraphNode) => n.files.length > 0 || (n.members ?? []).length > 0;  // files, or the projects or symbols it holds
+// What the graph shows: a node, or a group open in place.
+export type Thing = GraphNode | OpenGroup;
+export const isOpenGroup = (thing: Thing): thing is OpenGroup => 'parent' in thing;
+export const thingById = (graph: Graph | null, id: string): Thing | undefined =>
+  graph?.nodes.find(n => n.id === id) ?? graph?.open.find(group => group.id === id);
 export const nodeById = (graph: Graph, id: string): GraphNode | undefined => graph.nodes.find(n => n.id === id) ?? graph.nodes[0];
 
 // The groups left open when `id` closes: those open inside it close too.
@@ -32,6 +37,13 @@ export function openWithout(graphOpen: string[], graph: Graph | null, id: string
   const gone = new Set([id]);
   for (const group of graph?.open ?? []) if (group.parent !== null && gone.has(group.parent)) gone.add(group.id);
   return graphOpen.filter(item => !gone.has(item));
+}
+
+// The group opened or closed from one reading of the graph to the next, the outermost of them: what closes closes what is inside it.
+export function toggledGroup(before: Graph | null, after: Graph | null): string | null {
+  if (!before || !after) return null;
+  const was = new Set(before.open.map(group => group.id)), is = new Set(after.open.map(group => group.id));
+  return [...before.open, ...after.open].find(group => was.has(group.id) !== is.has(group.id))?.id ?? null;
 }
 
 // The node the graph is read from when the one kept is not in it: the one with most relations, inside a group just opened first.
@@ -44,6 +56,8 @@ export function rootOf(graph: Graph, kept: string): string {
 }
 
 type Filters = Pick<Kept, 'graphSearch' | 'graphRoot' | 'graphDirection' | 'graphDepth' | 'graphKind'>;
+export const filtersOn = (kept: Filters) =>
+  kept.graphSearch !== '' || kept.graphDirection !== 'both' || kept.graphDepth !== 'all' || kept.graphKind !== 'all';
 export function visibleGraph(graph: Graph, kept: Filters): { nodes: GraphNode[]; edges: GraphEdge[] } {
   let nodes = graph.nodes;
   const edges = graph.edges.filter(e => kept.graphKind === 'all' || (e.counts[kept.graphKind] || 0) > 0);
@@ -88,6 +102,9 @@ export const levelsName = (graph: Graph | null) => (graph?.levels ?? []).map(lev
 const PROOF: Record<string, string> = { observed: 'osservata in esecuzione', sampled: 'campionata dal profiler', uncertain: 'incerta' };
 export const proofLabel = (status: string | undefined, conflict = false) =>
   [PROOF[status ?? ''] ?? '', conflict && 'destinazioni in conflitto'].filter(Boolean).join(' · ');
+// What a relation counts, and what proves it: «calls: 2, imports: 1 · osservata in esecuzione».
+export const relationWords = (edge: Pick<GraphEdge, 'counts' | 'status' | 'conflict'>) =>
+  [Object.entries(edge.counts).map(([kind, count]) => `${kind}: ${count}`).join(', '), proofLabel(edge.status, edge.conflict)].filter(Boolean).join(' · ');
 export function runtimeSummary(edges: readonly Pick<GraphEdge, 'status' | 'conflict'>[]): string {
   const observed = edges.filter(e => !e.conflict && e.status === 'observed').length;
   const sampled = edges.filter(e => !e.conflict && e.status === 'sampled').length;

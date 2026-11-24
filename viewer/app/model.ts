@@ -167,7 +167,9 @@ export function createModel(host: Host) {
     const run = ctx(now)?.run_id, open = shownOpen(now.kept), key = graphKey(run, now.kept);
     if (!run || now.graphLoading || graphWaits) return;
     const mine = ++graphAsked;
-    set({ graphLoading: true, ...(now.graph?.open.length && !open.length ? { graph: null } : {}) });  // the first grouping is never drawn from an opened graph
+    // The first grouping is never drawn from an opened graph; on the graph screen the last group to close stays drawn until the answer.
+    const left = now.kept.screen !== 'graph' && !open.length && now.graph !== null && now.graph.open.length > 0;
+    set({ graphLoading: true, ...(left && { graph: null }) });
     try {
       const found = await get<Graph>('/api/app/graph' + (open.length ? `?${new URLSearchParams({ open: JSON.stringify(open) })}` : ''));
       if (mine !== graphAsked) return;
@@ -293,6 +295,7 @@ export function createModel(host: Host) {
     chosen(id, openWithout(now.kept.graphOpen, now.graph, id));
     loadGraph();
   }
+  const toggleGroup = (id: string) => (now.graph?.open.some(group => group.id === id) ? closeGroup : openGroup)(id);  // by what is drawn
   function showNode(graphRoot: string) {  // from another screen: the node and what is next to it
     keep({ graphRoot, graphOpen: [], graphDepth: '1', graphSearch: '' });
     navigate('graph');
@@ -389,10 +392,11 @@ export function createModel(host: Host) {
     },
     say, dismiss, keep: choose, navigate, selectStage,
     explorerUrl: () => `/?${new URLSearchParams({ token: host.token, run: ctx(now)?.run_id ?? '' })}`,
+    markUrl: (id: string) => `/api/app/mark?${new URLSearchParams({ id, token: host.token })}`,  // the logo of an entry of the registry
     setRepositoryUrl, verifyRepositoryUrl, selectRepository, setBranch: (branch: string) => set({ branch }),
     retryPremap() { premapRun = ''; loadPremap(); },
     retryGraph() { graphRun = ''; set({ graphError: '' }); loadGraph(); },
-    selectNode: (id: string) => chosen(id), groupShown: () => set({ groupWanted: false }), openGroup, closeGroup,
+    selectNode: (id: string) => chosen(id), groupShown: () => set({ groupWanted: false }), openGroup, closeGroup, toggleGroup,
     showNode, showFullGraph, clearGraphFilters,
     loadSymbols, retrySymbols: askSymbols,
     openPaths, nextPaths, previousPaths, listPaths, retryPaths,
