@@ -370,41 +370,42 @@ def test_the_pipeline_declares_its_steps_in_one_place():
     # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
     assert {step.NAME: bool(step.WITHOUT) for step in pipeline.STEPS} == {
         "scan": False, "stack": True, "parse": False, "analyze": False, "dynamic": True, "union": False}
-    # the reading comes from the inventory and gives the snapshot every step after it reads (spec 8.11, step 3)
-    assert (pipeline.Parse.INPUTS, pipeline.Parse.OUTPUTS) == (("inventory",), ("snapshot",))
+    # the reading is `write_snapshot`'s alone (the owner's decision of 24 November 2026): the step takes the read snapshot,
+    # which the pipeline is given, and says the plan
+    assert (pipeline.Parse.INPUTS, pipeline.Parse.OUTPUTS) == (("snapshot",), ("plan",))
+    assert pipeline.INPUTS == ("inventory", "snapshot")
 
 
-def test_the_parse_step_reads_a_store_that_holds_only_its_inventory_and_leaves_a_read_one_as_it_is(tmp_path):
-    """A store with the inventory and no reading says so in its header (spec 8.6, point 3); the parse step reads
-    it into the snapshot the single pass gives, and finds a store already read fresh without writing it again."""
+def test_the_parse_step_stops_on_a_store_that_holds_only_its_inventory_and_only_says_the_plan_of_a_read_one(tmp_path):
+    """The reading is `snapshot.write_snapshot`'s alone (the owner's decision of 24 November 2026, spec 8.11 step 3): a store
+    with the inventory and no reading (8.6, point 3) stops the step with its remedy, read by no one; a read store is found as
+    it is, and the step writes nothing."""
     import file_inventory
-    import hashlib
-    import json
-    from snapshot_store import logical_digest, open_snapshot
+    from snapshot_store import open_snapshot
     project = tmp_path / "p"
     project.mkdir()
     (project / "a.py").write_text("def answer():\n    return 42\n", encoding="utf-8")
     (project / "b.py").write_text("from a import answer\n\nVALUE = answer()\n", encoding="utf-8")
-    manifest = tmp_path / "out" / "manifest.sqlite"
-    file_inventory.write(project, manifest)
-    with open_snapshot(manifest) as store:
+    listed, read = tmp_path / "listed" / "manifest.sqlite", tmp_path / "read" / "manifest.sqlite"
+    file_inventory.write(project, listed)
+    snapshot.write_snapshot(project, read)
+    with open_snapshot(listed) as store:
         assert (store.metadata["reading"], store.file_count) == ("not-started", 0)
+    kept = {path: path.read_bytes() for path in (listed, read)}
     seen = []
-    result = pipeline.run(manifest, listeners=[seen.append], start="parse", stop="parse")
-    assert list(result) == ["parse"] and result["parse"]["action"] == "read"
+    with mock.patch.object(snapshot, "write_reading", side_effect=AssertionError("the parse step reads")):
+        result = pipeline.run(listed, listeners=[seen.append], start="parse", stop="parse")
+        assert list(result) == ["parse"] and result["parse"]["remedy"] == "write the snapshot again"
+        assert "only its inventory" in result["parse"]["failed"]
+        assert [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")] == [
+            ("step.started", "parse"), ("step.failed", "parse")]
+        seen.clear()
+        result = pipeline.run(read, listeners=[seen.append], start="parse", stop="parse")
+    assert list(result["parse"]) == ["plan"] and set(result["parse"]["plan"]) == {"nodes", "gaps"}
+    assert result["parse"]["plan"]["nodes"] > 0
     assert [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")] == [
         ("step.started", "parse"), ("step.finished", "parse")]
-    single = snapshot.build_manifest(project)
-    with open_snapshot(manifest) as store:
-        assert "reading" not in store.metadata and store.file_count == 2
-        keys = sorted((set(store.metadata) | {"files"}) - {"created_at"})
-        expected = hashlib.sha256(json.dumps({key: single.get(key) for key in keys}, sort_keys=True,
-                                             separators=(",", ":")).encode("utf-8")).hexdigest()
-        assert logical_digest(store, keys=keys) == expected
-    written = manifest.read_bytes()
-    with mock.patch.object(snapshot, "write_reading", side_effect=AssertionError("a read store read again")):
-        assert pipeline.run(manifest, start="parse", stop="parse")["parse"]["action"] == "fresh"
-    assert manifest.read_bytes() == written
+    assert {path: path.read_bytes() for path in kept} == kept
 
 
 def test_a_snapshot_that_cannot_be_read_stops_the_run_with_its_remedy(tmp_path):
@@ -563,6 +564,6 @@ def _unmet(steps, given) -> list[tuple[str, str]]:
 def test_every_input_of_a_step_is_written_by_a_step_before_or_given_to_the_pipeline():
     """Spec of the pipeline, 8.8 point 3, proof 6: the order of the steps is the one their inputs ask for."""
     assert _unmet(pipeline.STEPS, pipeline.INPUTS) == []
-    # the check sees a step out of place: `analyze` first reads a snapshot no step has written yet
+    # the check sees a step out of place: `analyze` first reads a pre-map no step has written yet
     misplaced = [pipeline.Analyze, *(step for step in pipeline.STEPS if step is not pipeline.Analyze)]
-    assert ("analyze", "snapshot") in _unmet(misplaced, pipeline.INPUTS)
+    assert ("analyze", "premap") in _unmet(misplaced, pipeline.INPUTS)

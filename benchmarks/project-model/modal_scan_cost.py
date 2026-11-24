@@ -4,9 +4,10 @@ Nothing of a project runs: its files are read, and the pre-map is the recorded o
 command is answered from `results/premap-runs/<name>.json.gz`, so no number here holds the container's time). The Daodan
 code is the clone of HEAD that `DAODAN_SCRIPTS` names, as `modal_pipeline.py` uploads it.
 
-A. Per reason of exclusion (the `why` of the pre-map's `excluded` facet), the files today's reading reads and `scan` then
-   leaves out (`pipeline.plan.excluded`): files, those a parser read, bytes, symbols, and the resolved imports that cross
-   the line. The snapshot is the whole reading (the inventory, then `snapshot.write_reading` with no pre-map).
+A. Per reason of exclusion (the `why` of the pre-map's `excluded` facet), the files the reading reads and the pre-map then
+   labels excluded (`excluded` below, which `pipeline.plan` had until the owner's decision of 24 November 2026 to keep one
+   reading: the product's reading leaves out no file now): files, those a parser read, bytes, symbols, and the resolved
+   imports that cross the line. The snapshot is the whole reading (the inventory, then `snapshot.write_reading`).
 B. On the real projects, `repetitions` times, one after the other: the inventory (`file_inventory.write`), the reading
    (`snapshot.write_reading`), the single pass (`snapshot.build_manifest`) and, inside the reading, the seconds spent in
    `snapshot._read_source` (stat and bytes of each file, which the inventory has read before) and in `_SnapshotPass.seal`
@@ -66,6 +67,25 @@ app = modal.App("daodan-scan-cost")
 
 
 # ------------------------------------------------------------------ the pure part
+
+def excluded(rows, record) -> dict[str, str]:
+    """The files of `rows` that an entry of the pre-map's `excluded` facet holds (the entry's path, a file under a folder
+    entry ending in `/`, or any file for `.`), each with the `why` of the outermost entry that holds it (the first one, of
+    several for the same path). It is `pipeline.plan.excluded` as that was, kept here so the measure can be run again."""
+    held: dict[str, str] = {}
+    for entry in ((record or {}).get("excluded") or []):
+        held.setdefault(entry["path"].rstrip("/") or ".", entry.get("why") or "excluded")
+    if not held:
+        return {}
+    found = {}
+    for path, _row in rows:  # each file's ancestors, not `premap._inside` pairwise: files x entries (go-enry lists thousands)
+        parts = path.split("/")
+        for why in (held.get(".") or None, *(held.get("/".join(parts[:cut])) for cut in range(1, len(parts) + 1))):
+            if why:
+                found[path] = why
+                break
+    return found
+
 
 def by_reason(held: dict, headers: dict, symbols: dict) -> dict:
     """Per reason of exclusion, what the files `held` (`{path: why}`) are: how many, how many a parser read (`PARSED`) and
@@ -441,11 +461,9 @@ def lay_out(name: str, work: Path) -> tuple[Path, bool]:
 
 def one(name: str, reps: int, work: Path) -> dict:
     """The three measures on one project of the corpus."""
-    import file_inventory
     import premap
     import premap_replay as replay
     import snapshot
-    from pipeline import plan
     from snapshot_store import open_snapshot
     started = time.perf_counter()
     project, real = lay_out(name, work)
@@ -483,7 +501,7 @@ def one(name: str, reps: int, work: Path) -> dict:
         out.update(files=len(headers), bytes=sum(header.get("size", 0) for header in headers.values()),
                    parsed_files=sum(1 for header in headers.values() if header.get("status") in PARSED))
         if record is not None:
-            held = plan.excluded(list(store.iter_inventory()), record)
+            held = excluded(list(store.iter_inventory()), record)
             symbols = dict(store.connection.execute("SELECT file, COUNT(*) FROM symbols GROUP BY file")) if held else {}
             reasons = by_reason(held, headers, symbols)
             pairs = import_pairs(snapshot.resolved_imports(store) if held else {}, held)
@@ -491,12 +509,9 @@ def one(name: str, reps: int, work: Path) -> dict:
                 item.update(to_pairs=pairs["to"].get(why, {}).get("pairs", 0),
                             to_importers=pairs["to"].get(why, {}).get("importers", 0),
                             from_pairs=pairs["from"].get(why, {}).get("pairs", 0))
+            # No `reading_leaves_out` check: it compared `excluded` with the files `write_reading(record=...)` left out, and the
+            # reading takes no pre-map now (24 November 2026). The recorded results keep the check as it was run.
             out["excluded"] = {"files": len(held), "by_reason": reasons, "parsed_in": top_folders(held, headers, symbols)}
-            if not real and held:  # `write_reading` leaves out as many files as `plan.excluded` names
-                inventory = work / "check-inventory.sqlite"
-                file_inventory.write(project, inventory)
-                out["excluded"]["reading_leaves_out"] = snapshot.write_reading(inventory, work / "check.sqlite",
-                                                                              record=record)["excluded"]
         ts_files = [path for path, header in headers.items() if header.get("language") == "typescript"]
         before = old_component_files(headers, *DECORATOR)
         out["angular"] = angular_facts(manifest, store, headers, before, record, whole or Counted())
@@ -523,10 +538,9 @@ def measure(names: list, reps: int = REPS) -> dict:
 def languages_one(name: str, work: Path, same: dict) -> dict:
     """Measures D and E on one project, from its inventory and the recorded answer of `daodan-enry .` alone: no snapshot, no
     pre-map. The exclusion entries are what `premap.enry.read` and `premap.gitmodules.run` state, in the pre-map's order (a
-    reader's first), and the files they hold `pipeline.plan.excluded`."""
+    reader's first), and the files they hold `excluded`."""
     import file_inventory
     import premap_replay as replay
-    from pipeline import plan
     from premap import enry, gitmodules
     from snapshot_store import open_snapshot
     project, real = lay_out(name, work)
@@ -548,7 +562,7 @@ def languages_one(name: str, work: Path, same: dict) -> dict:
               if not any(part.startswith(".") for part in row["path"].split("/")[:-1])}
     submodules = gitmodules.run(types.SimpleNamespace(root=project)) or {}
     entries = [*submodules.get("facts", {}).get("excluded", []), *enry.read(None, None, [result])["facts"].get("excluded", [])]
-    held = collections.Counter(plan.excluded(rows, {"excluded": entries}).values())
+    held = collections.Counter(excluded(rows, {"excluded": entries}).values())
     stated = collections.Counter(entry["why"] for entry in entries)
     out.update(recorded=True, compare=language_pairs(rows, theirs, same),
                excluded={"entries": dict(stated), "files": {why: held.get(why, 0) for why in {*stated, *held}}},

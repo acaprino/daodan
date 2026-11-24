@@ -21,6 +21,16 @@ HEADERS = {
 HELD = {"vendor/jquery.js": "vendored", "vendor/min.js": "vendored", "vendor/logo.png": "binary", "gen/api.ts": "generated"}
 
 
+def test_excluded_holds_the_files_under_an_entry_of_the_pre_map_and_names_the_first_why():
+    rows = [(path, {"language": "python"}) for path in ("lib/a.py", "lib/deep/b.py", "app.py", "vendor.py", "libx/c.py")]
+    record = {"excluded": [{"path": "lib/", "why": "submodule"}, {"path": "vendor.py", "why": "vendored"},
+                           {"path": "lib/a.py", "why": "later"}, {"path": "libx/"}]}
+    assert cost.excluded(rows, record) == {"lib/a.py": "submodule", "lib/deep/b.py": "submodule",
+                                           "vendor.py": "vendored", "libx/c.py": "excluded"}
+    assert set(cost.excluded(rows, {"excluded": [{"path": ".", "why": "all"}]})) == {p for p, _ in rows}
+    assert cost.excluded(rows, None) == {} and cost.excluded(rows, {}) == {}
+
+
 def test_each_reason_counts_its_files_bytes_symbols_and_the_ones_a_parser_read():
     found = cost.by_reason(HELD, HEADERS, {"vendor/jquery.js": 40, "vendor/min.js": 2, "gen/api.ts": 7, "src/app.ts": 9})
     assert found["vendored"] == {"files": 2, "parsed": 2, "statuses": {"parsed": 1, "parse-error": 1}, "bytes": 400,

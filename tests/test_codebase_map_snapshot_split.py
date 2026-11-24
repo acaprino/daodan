@@ -178,6 +178,23 @@ class SnapshotSplitTests(unittest.TestCase):
             snapshot.write_reading(read, self.base / "again.sqlite")
         self.assertFalse((self.base / "again.sqlite").exists())
 
+    def test_the_reading_is_written_by_write_snapshot_alone(self):
+        """One path reads the files (the owner's decision of 24 November 2026): no module of the product calls
+        `write_reading` but `snapshot.py`, whose `write_snapshot` stages the inventory and reads it. The calls are found in
+        each module's syntax tree (`ast`, Python's own parser)."""
+        import ast
+        product = SCRIPTS.parent
+        callers = []
+        for path in sorted(product.rglob("*.py")):
+            if path == Path(snapshot.__file__).resolve():
+                continue
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            callers += [f"{path.relative_to(product).as_posix()}:{node.lineno}" for node in ast.walk(tree)
+                        if isinstance(node, ast.Attribute) and node.attr == "write_reading"
+                        or isinstance(node, ast.Name) and node.id == "write_reading"
+                        or isinstance(node, ast.alias) and node.name == "write_reading"]
+        self.assertEqual(callers, [])
+
 
 if __name__ == "__main__":
     unittest.main()
