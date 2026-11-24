@@ -594,7 +594,7 @@ try {
     assert.match(await partial.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata[\s\S]*revisione precedente/);
     await partial.evaluate(el => { window.partialNote = el; });
     await map({ state: 'failed', cause: 'motore fermo' });
-    await alertIn(run, 'Mappa del sistema interrotta').filter({ hasText: 'motore fermo' }).waitFor();
+    await alertIn(run, 'Mappatura del sistema interrotta').filter({ hasText: 'motore fermo' }).waitFor();
     assert.equal(await page.evaluate(() => window.partialNote.isConnected), false);
     await map({ state: 'done' });
     await says(run, /Mappa del sistema registrata/);
