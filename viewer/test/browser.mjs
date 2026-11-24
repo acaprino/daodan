@@ -636,7 +636,7 @@ try {
     await paths.getByRole('button', { name: /^Salva ordine/ }).waitFor();
     // What the graph counts, the inventory, what is missing, and where to start.
     await says(synthesis, '1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto');
-    await says(synthesis, '0 voci con versione risolta nel modello di build.');
+    await says(synthesis, '1 voce con versione risolta nel modello di build.');
     await says(synthesis, 'Nessuna lacuna registrata dal run.');
     await map(partialMap);
     await alertIn(synthesis, 'Mappa del sistema parziale').waitFor();
