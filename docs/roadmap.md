@@ -54,6 +54,41 @@ L'ordine dei task di questi filoni e la prova da zero sui cinque casi: [piano de
 
 Difetti trovati e corretti, con la loro prova: [registro](verification/2026-11-16-registro-difetti.md).
 
+## Questioni aperte da approfondire
+
+Domande senza decisione o senza misura. Ognuna vive nel documento indicato, segnato `Aperta: da approfondire`; qui c'è solo l'indice.
+
+**La review a pacchetti progressivi.** Una review in cui il modello riceve pacchetti sempre più dettagliati costruiti dal grafo (sistema, flusso, unità, codice), contro il modello che legge il codice da solo. Mai eseguita.
+
+- Dove vive: [spec del pacchetto di review](specs/2026-11-20-ricerca-e-pacchetto-di-review.md).
+- Che cosa è misurato: unità e flussi dati tutti insieme non portano nel rapporto i difetti attesi, su un caso ([`flows-in-review`](specs/2026-11-09-flows-in-review.md), [`benchmarks/phazly-flow`](../benchmarks/phazly-flow/README.md)); sul solo perimetro il modello batte il resolver ([`benchmarks/scope-resolution`](../benchmarks/scope-resolution/README.md)).
+- Che cosa dice la letteratura raccolta: nessun lavoro confronta statico, poi dinamico, poi modello sullo stesso grafo; il confronto è proposto come esperimento ([rassegna](research/2026-11-11-flow-reconstruction-detailed.md), sezioni 10 e 14.3).
+- Domanda vicina, distinta: sulla mappa del sistema, un modello che nomina sopra il grafo contro uno che propone da solo ([`benchmarks/system-map`](../benchmarks/system-map/README.md), varianti B e C non eseguite).
+
+**Buchi misurati su un passo solo.**
+
+- Chiamate su riceventi `any` di JavaScript: il registro esatto è misurato sopra il passo per posizione del 12 novembre, non sopra l'indice di oggi; il residuo nei sorgenti che nessun test esegue e ciò che resta dopo il modello non sono misurati ([`benchmarks/call-provenance`](../benchmarks/call-provenance/README.md)).
+- Rotte e gestori dopo il passo dinamico: non misurato in nessun benchmark delle rotte.
+- Quali buchi di `analyze` restano dopo `dynamic`, per causa: i giri li contano per caso e linguaggio, non per scheda ([registro](verification/2026-11-16-registro-difetti.md), «Buchi aperti»).
+- Chiamate fra i linguaggi di due analyzer: nessuno step le unisce ([`codebase-map`](plugins/codebase-map.md), «Che cosa resta aperto»).
+
+**Misure da rifare o senza prova nel repository.**
+
+- Il corpus ha 180 progetti; l'ultimo giro dell'intera pipeline è del 16 novembre su 122 ([`benchmarks/project-model`](../benchmarks/project-model/README.md)).
+- Lo step `stack` ha due serie di numeri non riconciliate (19 e 22 novembre), e il registro è cresciuto da allora.
+- Accordo fra due mappatori, 531 richieste in parole, 15 su 23: citati dalle spec dei flussi, senza un file di risultati nel repository ([`benchmarks/system-map`](../benchmarks/system-map/README.md)).
+- Prova 0 sui cinque casi e rapporti della fase 3 di phazly: risultati fuori da git.
+- I numeri di [`context-building-benchmarks`](research/context-building-benchmarks.md) vengono da run locali non rieseguibili.
+- Prestazioni dell'esploratore: misurate solo sul viewer precedente.
+
+**Decisioni del proprietario.**
+
+- Passaggio dello step `stack` al fork: misurato, non nel prodotto; sette scelte da confermare ([piano](plans/2026-11-22-stack-dal-fork-3-passaggio.md)).
+- Resti del passo per posizione: togliere o tenere per le richieste mirate ([piano](plans/2026-11-14-grafo-dall-indice.md)).
+- Lettori PHP e Ruby, senza i quali nessuna rotta Laravel o Rails si lega ([`benchmarks/noir-binding`](../benchmarks/noir-binding/README.md)).
+- Profilazione e routing dei modelli per la review: due ricerche, nulla nel codice ([tiering](research/harness-model-tiering.md), [routing](research/programmatic-review-routing.md)).
+- Il piano `2026-11-19-verso-i-riferimenti.md`, citato da due spec, non è mai stato nel repository: i suoi task aperti non sono ricostruibili.
+
 ## Piattaforme rimandate
 
 I moduli con superficie `desktop`, `windows` o `android`, quando non hanno anche una superficie `web`, sono riconosciuti e non eseguiti: lacuna `ui_execution_deferred:<surface>`. Quando si faranno, nessun emulatore o runtime dell'host: tutto si scarica nel magazzino di Daodan e gira nel container, dopo l'approvazione dell'utente per download, licenze e spazio su disco.
