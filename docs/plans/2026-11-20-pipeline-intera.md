@@ -7,7 +7,7 @@
 
 ## 1. La pipeline, un passo per riga
 
-I passi sono quelli di `pipeline.STEPS` (`daodan/core/pipeline/__init__.py`), con lo snapshot prima e il passo semantico dopo, come li avvia il codice.
+I passi sono quelli di `pipeline.STEPS` (`daodan/core/pipeline/__init__.py`) del 20 novembre 2026, con lo snapshot prima e il passo semantico dopo, come li avviava il codice. *Dal 23 novembre `STEPS` ha anche `parse`, terzo, e lo snapshot si scrive in due scritture: l'ordine di oggi è in [Codebase Map, «Oggi nel codice»](../plugins/codebase-map.md#oggi-nel-codice).*
 
 **0. snapshot** (`snapshot.py write`, l'ingresso di `pipeline.run`): tree-sitter e risolutore lessicale.
 - c'è già: le grammatiche dei lettori, `angular` compresa (`languages/_treesitter.py`); un nome in un attributo o in un argomento è un riferimento `read` (`languages/semantic.py`).

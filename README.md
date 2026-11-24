@@ -17,8 +17,8 @@ source and survive independent verification. Sources remain the authority.
 
 Seven steps, always in this order: each starts from what the ones before it established, and none finds out
 again what another already knows. Each uses the official tool of what it reads, behind an adapter, and writes
-what it could not do as a gap. The seven steps and their names are the design approved on 22 November 2026; the
-last column says what the code does today.
+what it could not do as a gap. The seven steps and their names are the design approved on 22 November 2026, applied
+in part; the last column says where each step is in the code today.
 
 ```mermaid
 flowchart LR
@@ -27,16 +27,16 @@ flowchart LR
 
 | Step | What it does | Runs project code | In the code today |
 |---|---|---|---|
-| 1. `scan` | Walks every folder and file, then asks the build tools for modules, build units and test commands | Only inside the container | Step `scan`; the file inventory is written before the pipeline (`snapshot.py write`) |
+| 1. `scan` | Walks every folder and file, then asks the build tools for modules, build units and test commands | Only inside the container | Step `scan`: of the snapshot it reads only the file inventory, written before the pipeline; of the project, the manifests and sources its tools need |
 | 2. `recognize` | Names frameworks, libraries, tools and services | No | Step `stack` |
-| 3. `plan` | Decides which adapter runs on which part, and what each needs | No | Not yet: decided in three places |
-| 4. `parse` | Reads the source files the plan gives it: symbols, imports, calls | No | Before the pipeline, with the inventory (`snapshot.py write`) |
+| 3. `plan` | Decides which adapter runs on which part, and what each needs | No | A function, not a step yet |
+| 4. `parse` | Reads the source files the plan gives it: symbols, imports, calls | No | Step `parse`, third; the files are still read before the pipeline, so it finds them read |
 | 5. `resolve` | Resolves each call to its target | Only inside the container | Step `analyze` |
 | 6. `observe` | Runs the project's tests and records what they call; starts the app the project declares and presses its controls in a browser | Only inside the container | Step `dynamic` |
 | 7. `connect` | Joins the graphs and lists what is missing | No | Step `union`: it lists, it does not join yet |
 
 After the pipeline the model writes semantic cards and link rules, and flows connect writers, readers and user
-actions. [The process, its tools and example graphs](docs/plugins/codebase-map.md#pipeline).
+actions. [The process as the code runs it today, what is left to reach the design, its tools and example graphs](docs/plugins/codebase-map.md#pipeline).
 
 ## How Daodan identifies the stack
 

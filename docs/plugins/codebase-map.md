@@ -74,11 +74,146 @@ Un `.sql` con marcatori Oracle è PL/SQL. Python richiesto `>= 3.12`: gli script
 
 ## Pipeline
 
-Daodan legge un progetto e ne scrive un grafo: file, simboli, chiamate, moduli e tecnologie, ognuno con la sua prova. Il disegno ha sette step, sempre nello stesso ordine. Ogni step usa lo strumento ufficiale di ciò che legge, dietro un adattatore, e dice ciò che non è riuscito a fare.
+Daodan legge un progetto e ne scrive un grafo: file, simboli, chiamate, moduli e tecnologie, ognuno con la sua prova. Ogni step usa lo strumento ufficiale di ciò che legge, dietro un adattatore, e dice ciò che non è riuscito a fare.
 
-Sette step e i loro nomi sono il disegno approvato il 22 novembre 2026 (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8), non ancora il codice: oggi la pipeline ne esegue sei, `scan` e `stack` prima di `parse` e gli altri con i nomi di prima, e `plan` è una funzione, non uno step. Lo dice «Nel codice oggi».
+Questa sezione è l'unico posto che spiega il processo; gli altri documenti rimandano qui. Ha due parti, da non confondere:
 
-### Il processo
+- **Oggi nel codice:** sei step, con i nomi di prima. Ogni riga è letta sul codice il 24 novembre 2026 (commit `03161c8a6`).
+- **Il disegno:** sette step, con i nomi nuovi. Approvato il 22 e il 23 novembre 2026 (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8), applicato in parte.
+
+Che cosa separa le due parti: la tabella «Dal codice al disegno».
+
+### Oggi nel codice
+
+Un'analisi avviene in tre tempi. I percorsi sono sotto `daodan/core/`.
+
+Parole usate qui:
+
+- **Store:** il file dello snapshot, `manifest.sqlite`. **Store di solo inventario:** ha l'elenco dei file, non ancora i simboli.
+- **Comandi di modello:** i programmi a cui `scan` chiede com'è fatto il progetto: gli strumenti di build, go-enry, Renovate, Noir, le sorgenti dei framework. Girano nel container.
+- **Passaggio:** il processo staccato che esegue gli step dopo quelli in primo piano. **Stage:** un analyzer sulle sue unità, dentro `analyze`.
+- **Lacuna:** ciò che non si è potuto fare, scritto nel risultato con la causa.
+
+```mermaid
+flowchart TD
+  P[/Progetto/] --> inv
+  subgraph T1["1 Lo snapshot: snapshot.write_snapshot"]
+    inv["inventario<br>ogni file: hash e linguaggio"] --> let["lettura<br>simboli, import, chiamate"]
+  end
+  subgraph T2["2 In primo piano: pipeline.run fino a stack"]
+    scanA["scan<br>moduli e pre-mappa"] --> stackA["stack<br>tecnologie"]
+  end
+  subgraph T3["3 In background: resolve_edges.py --pass"]
+    scanB["scan<br>solo se la pre-mappa<br>non è fresca"] --> stackB[stack]
+    stackB --> parse["parse<br>trova lo store già letto,<br>dice il piano"]
+    parse --> analyze["analyze<br>risolve le chiamate"]
+    analyze --> dynamic["dynamic<br>esegue test e app"]
+    dynamic --> union["union<br>dice cosa c'è e cosa manca"]
+  end
+  let --> scanA
+  stackA --> scanB
+  union --> G[(Grafo completo)]
+```
+
+1. **Lo snapshot.** `snapshot.write_snapshot` scrive l'inventario, poi la lettura, e pubblica lo store una volta sola. Subito dopo si scrive l'indice lessicale (`retrieval.ensure_index`).
+2. **In primo piano.** `pipeline.run(..., stop="stack")` esegue solo `scan` e `stack`. La mappa è subito utilizzabile.
+3. **In background.** `engine_pass.ensure_edges` avvia il passaggio, `resolve_edges.py --pass`, che arriva a `union`. Parte da `scan` se la pre-mappa non è fresca per qualunque motivo (manca, è vecchia, ha comandi di modello non eseguiti), altrimenti da `stack` (`resolve_edges.main`). `ensure_edges` non avvia niente se gli archi sono `fresh`, `running`, `stopped` o `unavailable`, o se lo snapshot è in formato JSON.
+
+Due cose che sorprendono:
+
+- **`parse` è il terzo step, ma i file sono già letti.** Ogni chiamante della pipeline legge i file al tempo 1, prima di eseguirla. Lo step `parse` trova lo store letto, non rilegge e dice solo il piano (`pipeline.Parse.run`). Legge davvero solo uno store di solo inventario, e nessun chiamante oggi glielo dà.
+- **`stack` gira due volte.** La seconda volta riscrive `technologies.json` solo se i suoi ingressi sono cambiati (`technologies.ensure`). Cambiano se lo `scan` in primo piano era veloce: in background si eseguono i comandi di modello e la pre-mappa ha fatti nuovi. Senza container non cambiano.
+
+#### Gli step
+
+L'ordine è `pipeline.STEPS`: `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`. Alla pipeline si dà solo l'inventario (`pipeline.INPUTS`): ogni altro ingresso di uno step è l'uscita di uno step prima.
+
+| Step oggi | Nome nel disegno | Legge | Scrive | Nel container | Se fallisce |
+| --- | --- | --- | --- | --- | --- |
+| 1 `scan` | `scan` | Dello snapshot solo l'inventario, nessun simbolo. Del progetto, i manifest e i sorgenti che servono alle sue fonti | `modules.json` senza gli archi `imports` e `calls`; `premap.json` | I comandi di modello. Nessuno con `fast_scan` | La corsa si ferma |
+| 2 `stack` | `recognize` | L'inventario, i moduli, la pre-mappa | `technologies.json` | Niente | La corsa va avanti e lo dice |
+| 3 `parse` | `parse` (e `plan`) | L'inventario; dalla pre-mappa i file esclusi | La lettura nello snapshot, solo se manca; il piano, come evento | Niente | La corsa si ferma |
+| 4 `analyze` | `resolve` | Lo snapshot letto, la pre-mappa | Gli archi provati, in `engine-edges.sqlite` | Gli analyzer che lo dichiarano (`NEEDS_CONTAINER`); scip-python solo su Windows, altrove sull'host | La corsa si ferma. Uno stage che fallisce non ferma gli altri; dopo uno che esaurisce la memoria nessun altro parte (`engine_pass.run_pass`) |
+| 5 `dynamic` | `observe` | Lo snapshot, la pre-mappa, gli archi | Gli archi osservati | Sempre: test e app del progetto | La corsa va avanti: il grafo resta quello statico |
+| 6 `union` | `connect` | Gli archi provati e osservati | Gli archi `imports` e `calls` fra moduli, se nessun lettore li ha già scritti (`modules.ensure_graph`); le lacune; l'evento `graph.ready` | Niente | La corsa si ferma. Con un grafo dei moduli non fresco lo dice e va avanti |
+
+Ingressi, uscite e `WITHOUT` di ogni step: le classi di `pipeline/__init__.py`. Che cosa vuol dire «si ferma» e «va avanti»: `pipeline._run`. Ogni step scrive i suoi eventi nel giornale accanto al manifest.
+
+Note sugli step:
+
+- `scan`: la pre-mappa (`references/premap.md`) tiene unità, toolchain, registri, comandi di test, servizi e passi della CI, e le build dei Dockerfile che il progetto dichiara.
+- `stack`: assegna a ogni modulo le tecnologie dichiarate nei file di sua competenza. Le menzioni testuali restano indizi. Il campo `configured_services` conserva nome e provenienza delle dichiarazioni Compose e CI, anche per servizi fuori catalogo. L'avvio effettivo dei servizi configurati si verifica nel passo dinamico.
+- `parse`: il piano è una funzione, non uno step (`pipeline/plan.py`). La chiamano anche la lettura (`snapshot.write_reading`), il passaggio (`engine_pass.pass_plan`) e il passo dinamico (`dynamic.run`).
+- `analyze`: un analyzer per tecnologia (`indexers/`), uno alla volta.
+- `dynamic`: sezione Passo dinamico.
+- `union`: non unisce ancora i grafi ai punti di connessione. Gli archi `imports` e `calls` fra moduli li scrive il primo lettore del grafo intero (`modules.ensure_graph`): i flussi, la mappa del sistema, `codebase_map_modules`, oppure `union`. Dice ciò che la corsa ha osservato e ciò che il grafo non contiene: file che un indice ha lasciato fuori, linguaggi senza analyzer, chiamate fra i linguaggi di due analyzer.
+
+#### Le due scritture dello snapshot
+
+| Scrittura | Funzione | Che cosa scrive |
+| --- | --- | --- |
+| 1. Inventario | `file_inventory.write` | Una riga per file del perimetro: percorso, dimensione, data, hash, linguaggio. Salta i file oltre `MAX_FILE_BYTES` e quelli illeggibili. L'header dice `reading: "not-started"` |
+| 2. Lettura | `snapshot.write_reading` | Simboli, import e riferimenti dei file dell'inventario. Lo store letto non ha più `reading` |
+
+- La lettura non percorre l'albero e non sceglie il linguaggio: prende file e linguaggio dall'inventario.
+- `write_snapshot` mette l'inventario in un file di appoggio accanto allo store e lo cancella alla fine. Pubblica solo la lettura. Una scrittura fallita lascia lo store di prima.
+- Il linguaggio lo decide l'inventario con `languages.detect_language`: l'estensione, più espressioni regolari sul contenuto per `.h`, `.ts` e `.sql`. Non lo chiede ancora a go-enry.
+- Un file che la pre-mappa esclude (generato, di terze parti) non si legge solo quando la lettura riceve la pre-mappa. Gliela dà solo lo step `parse`. `write_snapshot` non la passa e legge tutto.
+
+#### Le due impronte
+
+| Impronta | Che cosa copre | Chi ci si lega | Quando cambia |
+| --- | --- | --- | --- |
+| Dell'inventario: `snapshot_store.inventory_digest` | Perimetro, e di ogni file percorso, hash e linguaggio | Pre-mappa (`premap/__init__.py`), struttura del grafo dei moduli (`modules.py`), tecnologie (`technologies.py`) | Un file aggiunto, tolto o cambiato; un perimetro diverso |
+| Della lettura: `snapshot_store.logical_digest` | Tutto lo store letto: i simboli e l'header, con data di scrittura, stato di git e contatori | Archi `imports` e `calls` fra moduli (`modules.py`), archi degli analyzer (`engine_pass.pass_plan`), indice lessicale (`retrieval.py`) | A ogni nuova scrittura dello snapshot, anche sugli stessi file (`snapshot_store.logical_chunks`) |
+
+In pratica: riscrivere lo snapshot sugli stessi file lascia fresche pre-mappa, struttura dei moduli e tecnologie, e rende vecchio ciò che è legato alla lettura.
+
+#### Chi chiama che cosa
+
+| Chiamante | Snapshot | In primo piano | In background |
+| --- | --- | --- | --- |
+| `snapshot.py write` (`snapshot.cmd_write`) | `write_snapshot` | `scan` intero, con i comandi nel container, e `stack`; niente con `--no-modules` | `ensure_edges`; niente con `--no-engine` |
+| `codebase_map_create_run` (`MapService.create_run`) | `write_snapshot` | `scan` veloce (`fast_scan`) e `stack`. Con il formato JSON solo il grafo dei moduli | `ensure_edges`, salvo `engine=false` |
+| L'app (`App._prepare`) | Come `create_run`, che chiama; per un run che c'è già, `MapService.index` | Come `create_run` | Come `create_run` |
+| `codebase_map_index` (`MapService.index`) | Nessuno: ripara l'indice lessicale | Nessuna pipeline | `ensure_edges`, salvo `check` o `engine=false` |
+| Aggiornamento dell'hook (`snapshot._refresh_locked`) | `write_snapshot`, che riusa lo snapshot di prima, salvo in una ricostruzione intera | `scan` veloce e `stack` | `ensure_edges`, salvo `engine=false` |
+| Processo staccato (`resolve_edges.py --pass`) | Nessuno: usa lo store che trova | — | Gli step fino a `union` |
+| Operazioni isolate (`store_consumers.temporary_snapshot`) | `write_snapshot` | Nessuna pipeline | — |
+
+`scan` veloce: solo i lettori dei file, senza container, perché gira sotto il blocco del progetto. I comandi di modello li esegue poi il passaggio. Con lo snapshot in formato JSON `ensure_edges` non avvia niente, per ogni chiamante. Il passaggio solo `snapshot.build_manifest`, che percorre e legge insieme, resta per test e benchmark.
+
+Buco: nessun chiamante dà alla pipeline uno store con il solo inventario. Quel percorso (inventario, poi `scan`, `stack`, `parse`) gira solo nei test (`tests/test_codebase_map_scan_before_parse.py`). La misura che decide quando i chiamanti cambiano è in corso (`benchmarks/project-model/modal_scan_cost.py`; spec, 8.10).
+
+#### Dal codice al disegno
+
+I passi sono quelli della spec, 8.11: qui c'è solo lo stato, là i dettagli.
+
+| Che cosa | Stato | Spec 8.11 |
+| --- | --- | --- |
+| Lo snapshot in due scritture | Fatto | Passo 1 |
+| La lettura prende file e linguaggio dall'inventario | Fatto | Passo 2 |
+| `scan` e `stack` prima di `parse`; le due impronte | Fatto | Passi 3 e 5, pezzi C e D |
+| L'inventario lo scrive `scan`, non lo snapshot prima della pipeline | Da fare | Passo 3 |
+| La funzione del piano, eseguita da lettura, passaggio e passo dinamico | Fatto. Non è uno step | Passo 4 |
+| Archi fra moduli e legame degli ingressi dei flussi fuori da `scan` | Fatto: `modules.ensure_graph`, `binder.bind` | Passo 5, pezzi A e B |
+| Archi fra moduli e legame degli ingressi dentro `connect` | Da fare: oggi li fa il primo lettore | Passo 5; 8.2 |
+| I file che la pre-mappa esclude non si leggono (il pezzo E1 della spec) | Fatto solo sul percorso che nessun chiamante usa | Passo 5, pezzo E1 |
+| I chiamanti passano da `write_snapshot` a inventario e poi pipeline | Da fare, dopo la misura in corso | Passo 5, «Restano» |
+| Il linguaggio da go-enry | Da fare | Passo 5, «Restano» |
+| Radici e alias degli import da `tsc`, la lettura a mano come ripiego | Da fare: oggi la lettura a mano (`import_resolution.py`) | Passo 5, pezzo F |
+| I nomi nuovi di step, eventi e cartelle (`parsers/`, `scanners/`, `resolvers/`, `observers/`) | Da fare. Fatto solo `NAME` in `indexers/` | Passo 6 |
+| Le prove 2 e 5: le due modalità danno lo stesso grafo; un ripiego è dichiarato | Da fare | 8.10 |
+| Le due parti di `scan`: `parse` parte dopo la prima, e si rifà solo ciò che la seconda corregge | Da fare | 8.5 |
+| `plan` come step | Da fare | 8.4 |
+| Una dichiarazione comune per ogni adattatore | Da fare | 8.8 |
+| La freschezza controllata in un punto solo, `step.skipped` | Da fare | 8.8 |
+| `connect` unisce ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle) | Da fare | 8.2 |
+| Il riconoscimento dal fork di stack-analyser | Da fare: oggi il registro (`service_registry.py`) | `docs/specs/2026-11-21-stack-dal-fork.md` |
+
+### Il disegno
+
+Proposta approvata, non il codice di oggi. Sette step, sempre nello stesso ordine.
 
 ```mermaid
 flowchart LR
@@ -96,19 +231,19 @@ flowchart LR
 | --- | --- | --- | --- | --- |
 | 1 `scan` | Quali cartelle e file ha il progetto, e quali moduli, unità di build e comandi di test dichiara? | scanner | il percorso dell'albero; cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
 | 2 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork; oggi il registro delle tecnologie | No |
-| 3 `plan` (manca) | Quale adattatore gira su quale parte, con che cosa gli serve, e quale no? | nessuno | — | No |
+| 3 `plan` | Quale adattatore gira su quale parte, con che cosa gli serve, e quale no? | nessuno | — | No |
 | 4 `parse` | Che cosa c'è in ogni sorgente che il piano gli dà: simboli, import, chiamate? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
 | 5 `resolve` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
 | 6 `observe` | Che cosa chiamano davvero i test, e che cosa fa girare ogni controllo dell'app? | observer | un registratore per linguaggio; per l'app, Chromium senza interfaccia di Playwright | Solo nel container |
 | 7 `connect` | Qual è il grafo intero, e che cosa non contiene? | nessuno | — | No |
 
-Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
+Oggi `plan` è una funzione e non uno step, e gli step hanno ancora i nomi di prima: «Oggi nel codice». Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
 
 ### Regole
 
 - **Un orchestratore solo** (`scripts/pipeline/`) esegue gli step. Ogni step dichiara ciò che legge, ciò che scrive e che cosa succede se fallisce: o la corsa si ferma con causa e rimedio, o va avanti e lo dice.
 - **Un adattatore per strumento.** Tutta la logica di uno strumento sta nel suo adattatore, che si dichiara con nome e versione. Daodan non riscrive parser né compilatori; fanno eccezione, oggi, SQL e PL/SQL, letti con espressioni regolari (`scripts/languages/sql.py`, `plsql.py`).
-- **Il piano è un dato** (approvato, non ancora nel codice). `plan` dà, per ogni tecnologia trovata, l'adattatore, le sue unità e se chiede il container; oppure la lacuna con la causa. Gli step dopo eseguono quel piano.
+- **Il piano è un dato.** Oggi è una funzione (`daodan/core/pipeline/plan.py`): dai file dello snapshot e dalle dichiarazioni degli adattatori dà i nodi (adattatore, linguaggi, se chiede il container, di chi ha bisogno) e le lacune con la causa; lettura, passaggio e passo dinamico eseguono quei nodi. Proposta, non nel codice: `plan` come step, che legge anche tecnologie e unità.
 - **Il codice del progetto gira solo nel container di Daodan.** Senza container lo step che ne ha bisogno è una lacuna, mai un'esecuzione sull'host.
 - **Ogni arco dice chi l'ha prodotto e quanto vale:** provato da un resolver, incerto, osservato in una corsa dei test, campionato.
 - **Una lacuna non è mai silenzio:** un linguaggio senza adattatore, un test non partito, un file che nessun indice copre sono scritti nel risultato.
@@ -118,7 +253,7 @@ Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
 
 ### Esempi
 
-I tre grafi sono costruiti dalle dichiarazioni degli adattatori nel codice (linguaggi, unità, container), non registrati da una corsa. Il grafo vero di un progetto lo scriverà `plan`. Bordo arrotondato: gira nel container. Bordo tratteggiato: lacuna.
+I tre grafi sono costruiti dalle dichiarazioni degli adattatori nel codice (linguaggi, unità, container), non registrati da una corsa. I nomi sono quelli del disegno. Il piano vero di un progetto lo dice oggi lo step `parse`, come evento (`log`, campo `plan`). Bordo arrotondato: gira nel container. Bordo tratteggiato: lacuna.
 
 #### Un'app web TypeScript con npm
 
@@ -221,20 +356,7 @@ flowchart LR
 
 scip-python non chiede il container: su Linux e macOS gira sull'host, perché legge il progetto e non lo esegue. Senza container Daodan dà comunque snapshot e grafo statico: ciò che chiede di eseguire il progetto diventa una lacuna con la causa.
 
-### Nel codice oggi
-
-Lo snapshot si scrive in due scritture sullo stesso store: l'inventario di cartelle e file (`file_inventory.py`: dimensione, data, hash e linguaggio di ogni file), che nel disegno è di `scan`, e la lettura dei sorgenti (`snapshot.write_reading`, adattatori di `scripts/languages/`), che è `parse` e prende file e linguaggio solo dall'inventario. `snapshot.write_snapshot` le chiama una dopo l'altra e pubblica una volta sola. Poi `snapshot.py write` e `codebase_map_create_run` eseguono gli step della pipeline (`scripts/pipeline/`), ognuno con i suoi eventi nel giornale accanto al manifest:
-
-1. `scan` (resta `scan`): legge solo l'inventario. Scrive il grafo dei moduli senza gli archi `imports` e `calls`, e la pre-mappa (`references/premap.md`): unità, toolchain, registri, comandi di test, servizi e passi della CI e build dei Dockerfile che il progetto dichiara. I comandi di modello dei build system girano nel container.
-2. `stack` (diventa `recognize`) scrive `technologies.json` accanto al manifest. Assegna a ogni modulo le tecnologie dichiarate nei file di sua competenza. Le menzioni testuali restano disponibili come indizi. Il campo `configured_services` conserva nome e provenienza delle dichiarazioni Compose e CI, anche per servizi fuori catalogo. L'avvio effettivo si verifica nel passo dinamico. Un errore dello stack viene registrato e l'analisi prosegue in background (`resolve_edges.py --pass`).
-3. `parse`: legge uno store che ha solo l'inventario; dopo `write_snapshot` è fresco. Dice il piano (`pipeline/plan.py`): quale adattatore gira su quali file.
-4. `analyze` (diventa `resolve`): un analyzer per tecnologia della pre-mappa (`indexers/`), uno alla volta.
-5. `dynamic` (diventa `observe`): i test del progetto sotto un registratore (sezione Passo dinamico).
-6. `union` (diventa `connect`): i grafi delle tecnologie come grafo completo, con ciò che la corsa ha osservato e ciò che il grafo non contiene: file che un indice ha lasciato fuori, linguaggi senza analyzer, chiamate fra i linguaggi di due analyzer.
-
-Oggi inventario e lettura riscoprono ancora ciò che nel disegno chiedono a `scan`. L'inventario decide il linguaggio di un file con espressioni regolari sul contenuto, mentre `scan` lo chiede a go-enry. `parse` legge `tsconfig` a mano, mentre `scan` lo chiede a `tsc`, e legge anche i file che `scan` poi dichiara generati o di terze parti. Gli archi `imports` e `calls` fra moduli e il legame degli ingressi dei flussi ai simboli leggono ciò che `parse` produce. Li fanno il primo lettore del grafo intero (`modules.ensure_graph`, anche lo step `union`) e i collegamenti (`binder.bind`); nel disegno stanno in `connect` (spec, 8.2 e 8.3). Il piano non è uno step: `write_reading`, `engine_pass.pass_plan` e il passo dinamico chiamano la sua funzione con i fatti che hanno. Il riconoscimento usa ancora il registro (`service_registry.py`): il passaggio al fork di stack-analyser è approvato (`docs/specs/2026-11-21-stack-dal-fork.md`) e non applicato. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
-
-Spec: `docs/specs/2026-11-15-pipeline-di-analisi.md`.
+Spec: `docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8.
 
 **Container.** `container.py` esegue il codice del progetto su una copia dei file del perimetro e di quelli che Git traccia, senza mai montare o scrivere il progetto; un link che Git traccia è quel link nella copia se porta dentro il progetto, altrimenti resta fuori, con una lacuna `link_outside` che la corsa riporta. I file `.env` che Git traccia sono nella copia, come nel checkout della CI: Daodan non li legge sull'host, ne legge i valori solo in un suo container senza rete e li maschera (`[<file>:<nome>]`) ovunque stiano, anche dentro una parola più lunga, in ciò che la corsa conserva (log, output di testo, output JSON stringa per stringa, registro, cause); un valore sotto i quattro caratteri solo come parola intera, un booleano o un numero fino a cinque cifre mai, e una lacuna `mask_partial` nomina quelle variabili; un output che ne contiene ancora i byte (un indice, un file oggetto) non si corregge: si scarta, con una lacuna `output_withheld` che nomina l'output e le variabili; i valori di un file d'esempio (`.env.example`, `.env.sample`, `.env.template`, `.env.dist`, anche con un nome in mezzo come `.env.local.example`) sono pubblici: non si mascherano e non fanno scartare niente, salvo un valore che sta anche in un `.env` vero; nella pre-mappa ogni valore è il suo nome, così nessun fatto ne contiene uno. Ogni altro file che Daodan non legge resta fuori con una lacuna `file_withheld` che lo nomina con la regola. Il motore è Docker o Podman se l'utente li ha, altrimenti, su Windows, Kiri in una distribuzione WSL 2 di Daodan. Senza un motore di container la tecnologia è una lacuna con causa e rimedio, mai un'esecuzione sull'host. Un analyzer che deve costruire il progetto lo fa con il build tool del progetto, come la sua CI, in due fasi. La preparazione (`preparation.py`) installa con mise le toolchain dichiarate, alla versione dichiarata, e ripristina le dipendenze con il gestore del progetto; la sua rete passa da un proxy che apre solo i registri dello strumento, gli host da cui il progetto dichiara le dipendenze (i `registries` delle unità della pre-mappa, per gli analyzer e per gli osservatori) e quelli degli installatori; un ripristino fallito che non ha raggiunto un host dichiarato è una lacuna `host_unreachable` che lo nomina. L'esecuzione, che costruisce, indicizza o esegue i test, non ha rete. Python si indicizza senza eseguire codice del progetto, con le librerie che scarica Daodan. Go no: il comando `go` avvia ciò che il progetto nomina, quindi gira solo nel container (`indexers/go.py`). Rust nemmeno: `rust-analyzer scip` esegue i build script (`cargo check`) e costruisce e carica le macro procedurali qualunque cosa dica la sua configurazione, quindi gira solo nel container, sulla Rust che un file di rustup del progetto nomina, altrimenti su quella di Daodan, con la preparazione che scarica i crate e l'esecuzione senza rete; un build script che fallisce, o una macro che non si costruisce, è una lacuna che nomina il crate, letto poi come a build script spenti. Senza container Go e Rust sono `unavailable` con la causa, e sull'host non parte niente di Go né di Rust.
 
@@ -263,7 +385,7 @@ In `daodan/core/`, Python con sola libreria standard salvo gli opzionali detti. 
 - `snapshot.py`: `scope`, `write`, `index`, `search`, `resolve`, `runtime`, `diff`, `carry`, `prepare`, `check`, `publish`, `register`, `unregister`, `meta-query`, `meta-upsert`, `edit-impact`, `symbols-at`, `stale-callers`, `context`, `technologies`, `files`, `refresh`, `hook`.
 - `source_reader.py`: `outline` (metadati dei simboli), `graph` (chiamanti e chiamati dal manifest, 1-3 salti), `read` (blocchi di sorgente verificati per simbolo, intervallo o file intero).
 - `modules.py`: `build`, `query`, `brief`, `propose`.
-- `resolve_edges.py`: con `--pass` gli step `stack`, `analyze`, `dynamic` e `union` della pipeline in `engine-edges.sqlite`, come li avviano in background `snapshot.py write` e `codebase_map_create_run`; con `--engine <analyzer>` o `--engine scip` un solo stadio.
+- `resolve_edges.py`: con `--pass` il passaggio, cioè gli step della pipeline fino a `union` (sezione Pipeline), con gli archi in `engine-edges.sqlite`, come li avviano in background `snapshot.py write` e `codebase_map_create_run`; con `--engine <analyzer>` o `--engine scip` un solo stadio.
 - `semantic_map.py`: vista `semantic-map.md` delle schede di un'area.
 - `embedding_worker.py`: embedding locali opzionali, su richiesta esplicita.
 - `analyze_file.py`, `ast_parser.py`, `classifier.py`, `usage_finder.py`: analisi di un file, estrazione grezza, criticità, usi di un simbolo.
