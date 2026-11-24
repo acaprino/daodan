@@ -24,6 +24,7 @@ Per ogni framework, libreria o strumento che il progetto analizzato usa, Daodan 
 - Prima di modificare, riassumi in una frase cosa chiede la richiesta e perché; se non riesci, chiedi.
 - Stile e formato sono del linter o formatter configurato, non delle review.
 - Ogni regola di questo file è verificabile e vale per ogni compito; il resto vive nel metodo che lo usa.
+- «Analisi» è l'intera pipeline, dallo statico al dinamico fino al modello: un buco si dichiara e si misura dopo l'ultimo passo, mai sul risultato di un passo solo.
 - Le spec si mettono alla prova in `benchmarks/`: ogni benchmark dichiara nel suo README i parametri da provare e i risultati misurati.
 - Una prova che sostiene un risultato o una scheda del registro resta nel repository, come test o benchmark che si riesegue; quella che chiede gli strumenti veri gira solo su Modal. Un test temporaneo poi cancellato non è una verifica.
 
