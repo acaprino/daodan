@@ -6,6 +6,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+
+import pytest
 from unittest import mock
 from pathlib import Path
 
@@ -147,6 +149,7 @@ class FlowFixtureTests(unittest.TestCase):
                       {(edge["from"], edge["to"]) for edge in ux["edges"] if edge["type"] == "attiva"})
         self.assertEqual(flows.at_level(flow, "fisico", {}), flow)
 
+    @pytest.mark.usefixtures("real_stack")
     def test_the_service_asks_for_rules_records_them_and_answers_at_a_level(self):
         import mcp_service
         project = self.work / "service"

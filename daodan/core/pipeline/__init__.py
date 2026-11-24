@@ -8,11 +8,13 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
 1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`). It reads only the inventory
    (`file_inventory.write`), so it runs before the files are read.
-2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
-   signs (`technologies.ensure`); it too reads only the inventory, the modules and the pre-map.
-3. `parse`: the files the inventory lists, read into the snapshot (`snapshot.write_reading`); a caller that wrote
-   the snapshot with `write_snapshot` finds it fresh. It also says the plan (`pipeline.plan`, spec 8.4): which
-   adapter runs on which files, executed by `write_reading`, `engine_pass.pass_plan` and `dynamic.run`.
+2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, recognized by the
+   pinned stack-analyser release from the pre-map's declarations and the files it reads by itself, executing
+   nothing of the project (`technologies.ensure`, `stack_recognition.run`); it too reads only the inventory, the
+   modules and the pre-map. A fast scan keeps the signs of the sources it did not run (`technologies.merge`).
+3. `parse`: says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files, executed by
+   `snapshot.write_reading`, `engine_pass.pass_plan` and `dynamic.run`. It reads no file: the one reading is
+   `snapshot.write_snapshot`, which every caller runs first, and a store that holds only its inventory stops the step.
 4. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
 5. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
@@ -30,7 +32,6 @@ See docs/specs/2026-11-15-pipeline-di-analisi.md.
 """
 from __future__ import annotations
 
-import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -65,33 +66,20 @@ def _reading_pending(manifest: Path) -> bool:
 
 
 class Parse:
-    NAME, INPUTS, OUTPUTS, WITHOUT = "parse", ("inventory",), ("snapshot",), None
+    NAME, INPUTS, OUTPUTS, WITHOUT = "parse", ("snapshot",), ("plan",), None
 
     @staticmethod
     def run(context: Context) -> dict:
-        import snapshot
         from snapshot_store import open_snapshot
-        # A header read on a store already read (`write_snapshot`, every caller today). A store left with only the inventory is
-        # read and published here, by the detached pass too (`resolve_edges.main --whole-pass`), which holds no project lock.
-        pending = _reading_pending(context.manifest)
-        result = {"action": "fresh"}
-        if pending:
-            import premap
-            status = premap.state(context.manifest)
-            record = None
-            if status["state"] == "fresh":
-                record = json.loads(premap.path(context.manifest).read_text(encoding="utf-8"))
-            else:
-                context.bus.emit("log", "no fresh pre-map: the reading excludes no file", step=Parse.NAME, level="warning",
-                                 cause=f"{status['state']}: {status['reason']}",
-                                 remedy="run the scan step first: the reading excludes no file without a fresh pre-map")
-            written = snapshot.write_reading(context.manifest, context.manifest, record=record)
-            result = {"action": "read", "files": written["file_count"], "excluded": written["excluded"]}
+        # The reading is `write_snapshot`'s alone (the owner's decision of 24 November 2026): this step finds the store read
+        # and says the plan. A store with only the inventory is a caller that skipped it: the run stops, and is not read here.
+        if _reading_pending(context.manifest):
+            raise StepFailed("the snapshot holds only its inventory: its files are not read", "write the snapshot again")
         from . import plan as planning
         with open_snapshot(context.manifest) as store:
             planned = planning.plan(planning.stored(store))
         context.bus.emit("log", "the plan", step=Parse.NAME, plan=planned)
-        return {**result, "plan": {"nodes": len(planned["nodes"]), "gaps": len(planned["gaps"])}}
+        return {"plan": {"nodes": len(planned["nodes"]), "gaps": len(planned["gaps"])}}
 
 
 class Scan:
@@ -285,7 +273,9 @@ class Union:
 
 
 STEPS = (Scan, Stack, Parse, Analyze, Dynamic, Union)
-INPUTS = ("inventory",)  # what the pipeline is given: every other input of a step is the output of a step before it
+# What the pipeline is given, the snapshot `write_snapshot` wrote (its inventory, and the files read): every other input of a
+# step is the output of a step before it.
+INPUTS = ("inventory", "snapshot")
 
 
 class StepFailed(Exception):

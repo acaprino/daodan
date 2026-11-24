@@ -12,8 +12,8 @@ Stati: **In uso** (nel codice, con la sua prova), **In parte** (dice cosa c'è e
 | --- | --- | --- |
 | Pipeline, un passo dopo l'altro | **In parte.** `pipeline.STEPS` ha `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`. `plan` è una funzione (`pipeline/plan.py`), non uno step; `union` elenca ciò che manca e non unisce ancora i grafi di linguaggi indicizzati a parte | [`README`](../README.md), «How the graph is built»; [spec](specs/2026-11-15-pipeline-di-analisi.md); [riferimento](plugins/codebase-map.md#pipeline) |
 | Pre-mappa e mappa dei moduli (`scan`) | **In uso** (`daodan/core/premap/`, una sorgente per strumento, i comandi di modello nel container) | [spec della pipeline](specs/2026-11-15-pipeline-di-analisi.md), sezione 1; [`benchmarks/project-model`](../benchmarks/project-model/README.md) |
-| Stack per modulo (`stack`) | **In uso** sul registro (`service_registry.py`, `technologies.py`) | [spec della pipeline](specs/2026-11-15-pipeline-di-analisi.md), sezione 1 |
-| Stack dal fork di stack-analyser | **In parte.** Il rilascio `1.27.6-daodan.2` è fissato in `stack_analyser.py` e misurato sul corpus; il passo `stack` non lo usa ancora | [spec](specs/2026-11-21-stack-dal-fork.md); [piano del passaggio](plans/2026-11-22-stack-dal-fork-3-passaggio.md) |
+| Stack per modulo (`stack`) | **In uso:** dal 24 novembre riconosce solo attraverso il fork di stack-analyser (`stack_recognition.py`, rilascio `1.27.6-daodan.5`); il registro è l'anagrafica. Aperte le prove su Modal dopo il passaggio | [spec](specs/2026-11-21-stack-dal-fork.md); [piano](plans/2026-11-22-stack-dal-fork-3-passaggio.md); [riferimento](plugins/codebase-map.md#lo-step-stack) |
+| Linguaggio dei file | **Proposta:** un modulo di Daodan con il catalogo di Linguist; oggi decide `languages.detect_language` | [spec](specs/2026-11-24-libreria-del-linguaggio.md) |
 | Indicizzatori per linguaggio (`analyze`) | **In uso:** Go, Rust, TypeScript e JavaScript con Vue e Svelte, Python, Java, Kotlin, C e C++, C#, fogli di stile (`daodan/core/indexers/`). Aperti: richieste mirate e resti del passo per posizione, secondo configure di CMake | [linguaggi](plugins/codebase-map-linguaggi.md), [supporto misurato](plugins/codebase-map-supporto.md); [spec](specs/2026-11-08-risoluzione-chiamate-motore.md); [piano](plans/2026-11-14-grafo-dall-indice.md); [`benchmarks/inference-audit`](../benchmarks/inference-audit/README.md) |
 | Passo dinamico sui test (`dynamic`) | **In uso** per Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C# (`daodan/core/dynamic/`). È il passo che chiude le chiamate che l'indice lascia aperte | [spec](specs/2026-11-12-passo-dinamico.md); misura in [`benchmarks/call-provenance`](../benchmarks/call-provenance/README.md) |
 | Esplorazione dell'app avviata (`dynamic`) | **In parte.** L'app parte nel container e un browser ne preme i controlli (`dynamic/app.py`, `explore.cjs`), solo con `npm` e per le pagine web. Mancano pnpm, Yarn e Bun, le altre fonti di avvio, le credenziali di prova | [piano degli ingressi](plans/2026-11-20-ingressi-e-flussi.md), task 11; [spec delle interfacce](specs/2026-11-19-interfacce-del-progetto.md), sezione 7; [`benchmarks/project-model`](../benchmarks/project-model/README.md) |
@@ -75,7 +75,7 @@ Domande senza decisione o senza misura. Ognuna vive nel documento indicato, segn
 **Misure da rifare o senza prova nel repository.**
 
 - Il corpus ha 180 progetti; l'ultimo giro dell'intera pipeline è del 16 novembre su 122 ([`benchmarks/project-model`](../benchmarks/project-model/README.md)).
-- Lo step `stack` ha due serie di numeri non riconciliate (19 e 22 novembre), e il registro è cresciuto da allora.
+- Lo step `stack` riconosce con il fork dal 24 novembre: il giro sul corpus, il tempo della scansione veloce e la prova «nessun codice eseguito» con l'installazione vera aspettano Modal ([spec](specs/2026-11-21-stack-dal-fork.md), «Verifica»). I numeri sul corpus e le schede D-294–D-304 del registro dei difetti sono del riconoscimento di prima.
 - Accordo fra due mappatori, 531 richieste in parole, 15 su 23: citati dalle spec dei flussi, senza un file di risultati nel repository ([`benchmarks/system-map`](../benchmarks/system-map/README.md)).
 - Prova 0 sui cinque casi e rapporti della fase 3 di phazly: risultati fuori da git.
 - I numeri di [`context-building-benchmarks`](research/context-building-benchmarks.md) vengono da run locali non rieseguibili.
@@ -83,7 +83,6 @@ Domande senza decisione o senza misura. Ognuna vive nel documento indicato, segn
 
 **Decisioni del proprietario.**
 
-- Passaggio dello step `stack` al fork: misurato, non nel prodotto; sette scelte da confermare ([piano](plans/2026-11-22-stack-dal-fork-3-passaggio.md)).
 - Resti del passo per posizione: togliere o tenere per le richieste mirate ([piano](plans/2026-11-14-grafo-dall-indice.md)).
 - Lettori PHP e Ruby, senza i quali nessuna rotta Laravel o Rails si lega ([`benchmarks/noir-binding`](../benchmarks/noir-binding/README.md)).
 - Profilazione e routing dei modelli per la review: due ricerche, nulla nel codice ([tiering](research/harness-model-tiering.md), [routing](research/programmatic-review-routing.md)).

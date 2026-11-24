@@ -421,13 +421,17 @@ def _around(payload, root):
     errors, lines, stack = [], [], [root]
     while stack:
         node = stack.pop()
-        if node.type == "ERROR" or node.is_missing or (node.has_error and not node.children):  # a missing token
-            if node.type == "ERROR":
+        flagged = [child for child in node.children if child.has_error]
+        # An ERROR node, a missing token, or a node that has the error and none of its children does: a grammar may flag
+        # a body with no ERROR node and no missing token (a `;` between two properties on one line, in Kotlin), and the
+        # file must not be read as unparsed for it.
+        if node.type == "ERROR" or node.is_missing or (node.has_error and not flagged):
+            if node.type == "ERROR":  # a node that only carries the flag holds well-formed nodes: its references stay
                 errors.append(((node.start_point[0] + 1, node.start_point[1]), (node.end_point[0] + 1,
                                                                                  node.end_point[1])))
             lines.append([node.start_point[0] + 1, node.end_point[0] + 1])
         elif node.has_error:
-            stack.extend(node.children)
+            stack.extend(flagged)
     # A reference an ERROR node overlaps, or one of no width (a token the parser made up), is none.
     payload["references"] = [ref for ref in payload["references"] if ref["span"][:2] != ref["span"][2:] and not any(
         (ref["span"][0], ref["span"][1]) < stop and (ref["span"][2], ref["span"][3]) > start for start, stop in errors)]

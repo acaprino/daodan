@@ -1,10 +1,10 @@
 # Registry notices
 
-`service-registry.json` is built by `scripts/registry_build.py` from the sources below, at the versions recorded in the file's `versions` field.
+`service-registry.json` is built by `daodan/core/registry_build.py` from the sources below, at the versions recorded in the file's `versions` field.
 
-## stack-analyser 1.27.6
+## stack-analyser (the fork Daodan runs)
 
-The detection rules (names, types, packages, configuration prefixes, files) come from [specfy/stack-analyser](https://github.com/specfy/stack-analyser).
+The ids, names, types and hosts of the entries made from a rule come from the catalogue of the release of [stack-analyser-daodan](https://github.com/acaprino/stack-analyser-daodan), a fork of [specfy/stack-analyser](https://github.com/specfy/stack-analyser) (release recorded in the `versions` field). The registry carries no detection rule: the fork recognizes.
 
 ```
 The MIT License

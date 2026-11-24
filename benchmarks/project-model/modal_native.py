@@ -159,8 +159,8 @@ volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 def code_sha256() -> str:
     """One hash over this driver and the native adapters, compared with the local one before trusting a run."""
     digest = hashlib.sha256()
-    files = sorted((ROOT / "tools").glob("native_*.py")) + [ROOT / "tools/daodan_modules.py", ROOT / "tools/bsp_client.py",
-                                                             ROOT / "modal_native.py"]
+    files = sorted((ROOT / "tools").glob("native_*.py")) + sorted((ROOT / "tools").glob("native_*.cjs")) + [
+        ROOT / "tools/daodan_modules.py", ROOT / "tools/bsp_client.py", ROOT / "modal_native.py"]
     for path in files:
         digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
     return digest.hexdigest()[:16]

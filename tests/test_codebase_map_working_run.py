@@ -151,6 +151,35 @@ class WorkingRunTests(unittest.TestCase):
         self.assertNotIn("previous module", {item["name"] for item in modules.load_graph(
             modules.graph_name(working))["modules"]})
 
+    def test_the_first_refresh_keeps_the_signs_of_the_full_scan_sources_it_does_not_run(self):
+        """A source only the full scan runs (here `renovate`) keeps its signs, with the full scan's `scan`, in the
+        working run born from the published one."""
+        import stack_recognition
+        import technologies
+        renovate = {"sign": "package", "value": "redis", "path": "src/app.py", "line": 1, "strength": "declared",
+                    "source": "renovate@41"}
+        redis = {"id": "redis", "name": "Redis", "kind": "service", "category": "service", "type": "altro",
+                 "site": None, "mark": None, "source": "registry", "signs": [renovate]}
+        ran = {"checker": "stack-analyser", "state": "ran"}
+        full = {"found": [redis], "checkers": [ran], "gaps": [], "ran": ["renovate", "stack-analyser"]}
+        fast = {"found": [], "checkers": [ran], "gaps": [], "ran": ["stack-analyser"]}
+        with mock.patch.object(stack_recognition, "run", return_value=full):
+            self.service.create_run("src", "second", engine=False)
+        second = self.root / "runs/second/state.json"
+        state = json.loads(second.read_text(encoding="utf-8"))
+        state["status"] = "complete"
+        second.write_text(json.dumps(state), encoding="utf-8")
+        (self.root / "runs.json").write_text(json.dumps(
+            {"schema": 2, "active": [], "latest_completed": "second"}), encoding="utf-8")
+        published = technologies.recorded(self.root / "runs/second/snapshot/manifest.sqlite")
+        scan = published["technologies"][0]["signs"][0]["scan"]
+        self.edit("app.py", "def greet():\n    return 'hello'\n")
+        with mock.patch.object(stack_recognition, "run", return_value=fast):
+            self.assertEqual(self.refresh()["status"], "fresh")
+        record = technologies.recorded(self.working / "snapshot/manifest.sqlite")
+        self.assertEqual([(s["source"], s["scan"]) for e in record["technologies"] for s in e["signs"]],
+                         [("renovate@41", scan)])
+
     def test_3_one_refresh_runs_one_waits_the_rest_are_dropped(self):
         self.assertEqual(self.refresh()["status"], "fresh")
         self.edit("app.py", "def greet():\n    return 'queued'\n")

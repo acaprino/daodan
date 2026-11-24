@@ -82,13 +82,14 @@ REPO=https://github.com/jhipster/jhipster-sample-app COMMIT=6b000b5d23a36c45e014
 | l'arco `attiva` di un evento | parte dalla classe del componente (`AppComponent`), anche quando il metodo è di un'altra classe (`OrderService.cancel`) |
 | una riga di `svc.cancel()` ha l'etichetta | no: l'etichetta passa dalla riga del lettore ad albero, che per `svc.cancel()` e `this.save()` non ne ha |
 
-**La pre-mappa intera** (`modal_pipeline.py --folder-stop scan` sulla fixture, `results/pipeline-scan.json`; misurata con la sorgente `v1`, oggi `VERSION` è `daodan/premap/v2`: non rimisurata):
+**La pre-mappa intera** (`modal_pipeline.py --folder-stop scan` sulla fixture, `results/pipeline-scan.json`; rifatta il 24 novembre 2026 con la sorgente `daodan/premap/v2`):
 
 | Misura | Risultato |
 | --- | --- |
-| `scan`, tutto | 145,0 secondi (con `tsc` 17,7 s, `npm` 9,5 s, `noir` 9,5 s) |
-| sorgente `angular@daodan/premap/v1` | `ran`, 19,2 secondi, compreso il ripristino dei pacchetti e i due comandi |
-| `framework_entries` in `premap.json` | 41 righe, 9 lacune: le stesse 41 righe della risposta registrata (stesso sito, colonna, simbolo, lacuna, evento e proprietario); `test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_recorded_answer` lo verifica su `results/pipeline-scan.json` |
+| `scan`, tutto | 134,0 secondi, rifatto il 24 novembre 2026 (con `renovate` 39,0 s, `tsc` 24,5 s, `go-enry` 23,6 s, `noir` 10,0 s, `npm` 6,8 s) |
+| sorgente `angular@daodan/premap/v2` | `ran`, 28,7 secondi, compreso il ripristino dei pacchetti e i due comandi |
+| `framework_entries` in `premap.json` | 41 righe non legate (dalla v2 il legame al metodo si fa nei collegamenti), le stesse della risposta registrata campo per campo; legate, 9 lacune, lo stesso sito, colonna, simbolo, lacuna, evento e proprietario; `test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_recorded_answer` lo verifica su `results/pipeline-scan.json` |
+| `c('x')` dentro `ng-template let-c` | una lacuna «c is a template variable …», non più «ScopedComponent does not declare c: it is inherited…» |
 | lacune della sorgente | 3: `computed.component.ts`, `nowhere.component.html`, `bad.component.html` (errori del compilatore) |
 | `next` | `not_needed`: la fixture non dichiara Next.js |
 

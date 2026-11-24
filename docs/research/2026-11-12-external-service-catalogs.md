@@ -56,7 +56,7 @@ Criterio: una fonte entra se è pubblica, ha una licenza adatta e nel benchmark 
 
 - **Registro:** `daodan/core/registry_build.py` lo costruisce dalle regole di stack-analyser 1.27.6, che hanno già tipo e segni, dai marchi di Simple Icons 16.37.0 agganciati per nome (`daodan/data/marks/`) e dalle voci del CNCF Landscape, a un commit fisso; le versioni sono nel campo `versions` del registro.
 - **Ciò che i cataloghi non hanno** sta in `daodan/data/registry-additions.json`. Il modello propone solo ciò che manca (`registry_build.py model-input`), e una proposta resta solo se la macchina la verifica (`accept`: stesso proprietario del repository, pacchetto esistente, sito che risponde).
-- **Lo strumento** gira nel passo `stack` come fonte in più, dal fork fissato in `daodan/core/stack_analyser.py`; la misura è in [`benchmarks/project-model`, «Lo step `stack` dal fork»](../../benchmarks/project-model/README.md#lo-step-stack-dal-fork).
+- **Lo strumento** è, dal 24 novembre 2026, l'unico riconoscitore del passo `stack`: il fork fissato in `daodan/core/stack_analyser.py`; la misura è in [`benchmarks/project-model`, «Lo step `stack` dal fork»](../../benchmarks/project-model/README.md#lo-step-stack-dal-fork).
 - **Licenze:** la nota MIT di stack-analyser e l'attribuzione CC BY 4.0 del CNCF Landscape sono in `daodan/data/REGISTRY-NOTICES.md`.
 - **Non usati:** APIs.guru e webappanalyzer.
 

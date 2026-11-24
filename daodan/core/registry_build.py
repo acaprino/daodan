@@ -4,45 +4,34 @@
 # ///
 """Build the registry of external services and projects from public catalogs. A development tool.
 
-Sources, at fixed versions: the rules of stack-analyser (MIT), evaluated in Node with
-`register` replaced by a collector; the marks of Simple Icons (CC0), joined by name and written, clean, as one SVG
+Sources, at fixed versions: the catalogue of rules of the stack-analyser release Daodan runs (`stack_analyser.catalogue`:
+id, name, type and hosts of each rule; MIT, a fork of specfy/stack-analyser), which makes the register of names and
+leaves the recognizing to the release; the marks of Simple Icons (CC0), joined by name and written, clean, as one SVG
 per entry in `data/marks/ID.svg` (the entry's `mark`), and the official marks of the services Simple Icons lacks
 (`add-mark`: the owner's file, its URL, the day and its terms, or with `--own` a drawing of Daodan's, kept in the
 additions and in REGISTRY-NOTICES.md);
 the entries of the CNCF Landscape (CC BY 4.0) with name, category and site; and
-`registry-additions.json`, what the catalogs lack and the machine verified.
+`registry-additions.json`, what the catalogs lack: a name, a site, a category, a mark, the name of the CNCF item that is the
+entry when the two write it otherwise (`cncf`). An entry has no signs: what a
+project shows is the release's, and the additions may not hold any.
 
     python registry_build.py build --out FILE [--cache DIR]
     python registry_build.py check FILE        # also the marks beside FILE: each file named, clean, none left over
     python registry_build.py marks [--registry FILE] [--additions FILE] [--cache DIR]
     python registry_build.py add-mark ID SVG (--url URL [--terms URL] | --own)
     python registry_build.py add-package-mark ID ZIP --url URL --member PATH --terms URL
-    python registry_build.py derive [--registry FILE] [--additions FILE]
-    python registry_build.py verify-additions [--additions FILE]
-    python registry_build.py model-input [--icons] > PROMPT; claude -p ... < PROMPT > ANSWER
-    python registry_build.py accept ANSWER
-
-`derive` looks for the packages a catalog lists only for npm on PyPI, crates.io and
-the Go proxy, under the same name or the name without a scope, prefix or suffix, and
-keeps one only when its repository has the owner of the npm package's repository.
-What is left a cheap model proposes in one run; `accept` keeps a proposal only when
-the same owner check holds, the package exists and the site answers.
 """
 from __future__ import annotations
 
 import argparse
-import concurrent.futures
 import io
 import json
 import os
 import re
-import subprocess
 import sys
 import tarfile
-import tempfile
 import time
 import urllib.error
-import urllib.parse
 import urllib.request
 from datetime import date
 from pathlib import Path
@@ -52,6 +41,8 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import flows  # noqa: E402
+import stack_analyser  # noqa: E402
+from container import Gap  # noqa: E402
 from mark_svg import clean_svg, safe_member  # noqa: E402
 
 SCHEMA = "daodan/service-registry/v1"
@@ -60,15 +51,13 @@ DATA = SCRIPT_DIR.parent / "data"
 SOURCES = ("stack-analyser", "simple-icons", "cncf-landscape", "additions")
 KINDS = ("service", "project")
 CATEGORIES = ("framework", "library", "tool", "service")
-SIGNS = ("packages", "patterns", "env", "hosts", "files")
 MIN_ENTRIES = 1000
 MARKS = "marks"  # the folder of the marks, beside the registry: one SVG per entry, named by the entry's id
 MARK_PATH = re.compile(rf"{MARKS}/[a-z0-9][a-z0-9._-]*\.svg")
-STACK_ANALYSER = ("@specfy/stack-analyser", "1.27.6")
 SIMPLE_ICONS = ("simple-icons", "16.37.0")
 CNCF_COMMIT = "75b47639d132b3a7afa31ecc84a90f61b8072dd6"
 AGENT = "daodan-registry-build"
-# stack-analyser dependency types, as registry ecosystems.
+# stack-analyser dependency types, as ecosystems (`stack_recognition` reads them the other way round).
 ECOSYSTEMS = {"npm": "npm", "python": "pypi", "rust": "crates", "golang": "go", "ruby": "rubygems", "php": "composer",
               "docker": "docker", "githubAction": "github-actions", "terraform": "terraform",
               "terraform.resource": "terraform-resource", "deno": "deno"}
@@ -82,16 +71,15 @@ CNCF_TYPES = {"Database": "database", "Vector Database": "database", "Cloud Nati
               "Key Management": "autenticazione"}
 CNCF_HOSTED = {"Certified Kubernetes - Hosted", "PaaS/Container Service", "Hosted Platform", "Hosted Platforms"}
 CNCF_SKIPPED = {"CNCF Members", "Special"}  # companies and certified vendors, not services or projects
-_PREFIXES = ("node-", "js-")
-_SUFFIXES = ("-node", "-js", ".js", "js", "-sdk", "-client", "-api")
 
 
 # ---------------------------------------------------------------- check
 
-def check(value: object, data: Path | None = None) -> list[str]:
+def check(value: object, data: Path | None = None, additions: list[dict] | None = None) -> list[str]:
     """What breaks the registry's rules, one line each; empty when it holds.
 
-    With `data`, the folder that holds the registry, the marks it names must be there, clean, and no other."""
+    With `data`, the folder that holds the registry, the marks it names must be there, clean, and no other. With
+    `additions`, their records: none may hold signs, which are the release's."""
     if not isinstance(value, dict) or value.get("schema") != SCHEMA or not isinstance(value.get("entries"), list):
         return [f"the registry is {SCHEMA} with a list of entries"]
     problems, seen = [], set()
@@ -110,19 +98,11 @@ def check(value: object, data: Path | None = None) -> list[str]:
             problems.append(f"{ident}: category is one of {', '.join(CATEGORIES)}")
         if entry.get("type") not in flows.NODE_TYPES:
             problems.append(f"{ident}: type is one of {', '.join(flows.NODE_TYPES)}")
-        signs = entry.get("signs")
-        if signs is not None and (not isinstance(signs, dict) or set(signs).difference({"source"}) != set(SIGNS)
-                                  or not any(signs.values())):
-            problems.append(f"{ident}: signs are null or have at least one of {', '.join(SIGNS)}")
-        if isinstance(signs, dict) and "source" in signs:
-            from stack_source import QUERIES
-            source = signs["source"]
-            if not isinstance(source, dict) or not source or any(
-                kind not in QUERIES or not isinstance(names, list) or not names
-                or any(not isinstance(name, str) or not name.strip() for name in names)
-                for kind, names in source.items()
-            ):
-                problems.append(f"{ident}: source signs require a known syntax query and its names")
+        if "signs" in entry:
+            problems.append(f"{ident}: no signs, the rules are the fork's")
+        hosts = entry.get("hosts")
+        if "hosts" in entry and not (isinstance(hosts, list) and hosts and all(isinstance(h, str) and h for h in hosts)):
+            problems.append(f"{ident}: hosts are a list of at least one host")
         if not entry.get("from") or not set(entry["from"]) <= set(SOURCES):
             problems.append(f"{ident}: from names one or more of {', '.join(SOURCES)}")
         mark, package = entry.get("mark"), entry.get("mark_source")
@@ -134,6 +114,8 @@ def check(value: object, data: Path | None = None) -> list[str]:
             problems.append(f"{ident}: mark and mark_source are two cases, an entry has one")
         if package is not None and not _package_ok(package):
             problems.append(f"{ident}: mark_source is {', '.join(PACKAGE_KEYS)}: https URLs, the sha256 and a safe member")
+    problems += [f"additions: {record.get('id')} has {field}, the rules are the fork's"
+                 for record in additions or () for field in ("signs", "wrong_signs") if field in record]
     if data is not None:
         named = {e.get("mark") for e in value["entries"]}
         problems += [f"{MARKS}/{f.name}: no entry names this file" for f in sorted((data / MARKS).glob("*"))
@@ -164,35 +146,7 @@ def _mark_problems(ident: str, mark: str, data: Path) -> list[str]:
     return [f"{ident}: {mark} is not what the sanitiser makes of it"]
 
 
-# ---------------------------------------------------------------- names and owners
-
-def candidates(package: str) -> list[str]:
-    """Names an npm package may have in another ecosystem: as is, without its scope, prefix or suffix."""
-    if package.startswith("@") and "/" in package:
-        scope, name = package[1:].split("/", 1)
-        return list(dict.fromkeys([f"{scope}-{name}", scope]))
-    out = [package]
-    for prefix in _PREFIXES:
-        if package.startswith(prefix):
-            out.append(package[len(prefix):])
-    for suffix in _SUFFIXES:
-        if package.endswith(suffix) and len(package) > len(suffix):
-            out.append(package[: -len(suffix)])
-    return list(dict.fromkeys(name.rstrip("-.") for name in out if name.rstrip("-.")))
-
-
-def owner(url: object) -> str | None:
-    """`host/owner` of a repository URL on a code host, lower case; None for anything else."""
-    if not isinstance(url, str):
-        return None
-    text = url.strip().removeprefix("git+")
-    text = re.sub(r"^git@([^:]+):", r"https://\1/", text)
-    text = re.sub(r"^(github|gitlab|bitbucket):", lambda m: f"https://{m.group(1)}.{'org' if m.group(1) == 'bitbucket' else 'com'}/", text)
-    if re.fullmatch(r"[\w.-]+/[\w.-]+", text):
-        text = "https://github.com/" + text
-    match = re.match(r"^[a-z+]+://(?:[^@/]+@)?(github\.com|gitlab\.com|bitbucket\.org)/([^/#?]+)/[^/#?]+", text, re.I)
-    return f"{match.group(1).lower()}/{match.group(2).lower()}" if match else None
-
+# ---------------------------------------------------------------- names
 
 def _norm(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", str(name).casefold())
@@ -278,14 +232,6 @@ def _get(url: str, timeout: int = 30) -> bytes | None:
     return None
 
 
-def _json(url: str):
-    data = _get(url)
-    try:
-        return json.loads(data) if data else None
-    except ValueError:
-        return None
-
-
 def _tarball(name: str, version: str, cache: Path) -> Path:
     """An npm package's files, unpacked once into the cache; no install scripts run."""
     target = cache / f"{name.replace('/', '__')}-{version}"
@@ -303,46 +249,6 @@ def _tarball(name: str, version: str, cache: Path) -> Path:
 
 
 # ---------------------------------------------------------------- sources
-
-_COLLECT = r"""
-const fs = require('fs'), path = require('path');
-const root = process.argv[2], rules = [];
-const plain = v => v instanceof RegExp ? {regex: v.source} : v;
-function walk(dir) {
-  for (const name of fs.readdirSync(dir).sort()) {
-    const file = path.join(dir, name);
-    if (fs.statSync(file).isDirectory()) { walk(file); continue; }
-    if (!name.endsWith('.js')) continue;
-    let text = fs.readFileSync(file, 'utf8');
-    if (!/^register\(/m.test(text)) continue;
-    // Every other import is a detection function the registry does not need: a no-op stands in.
-    const names = [];
-    for (const line of text.match(/^import .*$/gm) || []) {
-      const named = line.match(/\{([^}]*)\}/), single = line.match(/^import (?:\* as )?([A-Za-z_$][\w$]*)/);
-      if (named) names.push(...named[1].split(',').map(n => n.trim().split(/\s+as\s+/).pop()).filter(Boolean));
-      else if (single) names.push(single[1]);
-      text = text.replace(line, '');
-    }
-    text = text.replace(/^export (default )?/gm, '');
-    const others = [...new Set(names)].filter(n => n !== 'register');
-    new Function(...others, 'register', text)(...others.map(() => () => undefined), rule => rules.push(rule));
-  }
-}
-walk(path.join(root, 'dist', 'rules'));
-process.stdout.write(JSON.stringify(rules, (k, v) => plain(v)));
-"""
-
-
-def stack_analyser_rules(cache: Path) -> list[dict]:
-    root = _tarball(*STACK_ANALYSER, cache)
-    with tempfile.TemporaryDirectory() as work:
-        script = Path(work) / "collect.cjs"
-        script.write_text(_COLLECT, encoding="utf-8")
-        done = subprocess.run(["node", str(script), str(root)], capture_output=True, text=True, timeout=120, cwd=work)
-    if done.returncode != 0:
-        raise RuntimeError(f"stack-analyser rules: {done.stderr.strip()[:500]}")
-    return json.loads(done.stdout)
-
 
 def simple_icons(cache: Path) -> list[dict]:
     root = _tarball(*SIMPLE_ICONS, cache)
@@ -381,86 +287,60 @@ def cncf_items(cache: Path) -> list[dict]:
 
 # ---------------------------------------------------------------- build
 
-def _empty_signs() -> dict:
-    return {name: ({} if name in ("packages", "patterns") else []) for name in SIGNS}
-
-
-def _add_signs(signs: dict, more: dict) -> None:
-    for name, value in more.items():
-        if name in ("packages", "patterns", "source"):
-            group = signs.setdefault(name, {})
-            for ecosystem, names in value.items():
-                group[ecosystem] = sorted(set(group.get(ecosystem, [])) | set(names))
-        else:
-            signs[name] = sorted(set(signs[name]) | set(value))
-
-
-def _drop_signs(signs: dict, wrong: dict) -> None:
-    for name, value in wrong.items():
-        if name in ("packages", "patterns", "source"):
-            for ecosystem, names in value.items():
-                group = signs.get(name, {})
-                kept = [n for n in group.get(ecosystem, []) if n not in names]
-                if kept:
-                    group[ecosystem] = kept
-                else:
-                    group.pop(ecosystem, None)
-            if name == "source" and not signs.get(name):
-                signs.pop(name, None)
-        else:
-            signs[name] = [n for n in signs[name] if n not in value]
+# stack-analyser technology types, as the category of an entry the additions give none: the majority of the
+# categories curated for the types, which this table does not replace. A release with a type not here stops the build.
+CATEGORY_OF_TYPE = {
+    "ai": "service", "analytics": "service", "api": "service", "app": "service", "auth": "service",
+    "automation": "service", "ci": "service", "cloud": "service", "cms": "service", "collaboration": "service",
+    "communication": "service", "crm": "service", "db": "service", "etl": "service", "hosting": "service",
+    "maps": "service", "messaging": "service", "monitoring": "service", "network": "service",
+    "notification": "service", "payment": "service", "queue": "service", "saas": "service", "security": "service",
+    "storage": "service",
+    "builder": "tool", "iac": "tool", "language": "tool", "linter": "tool", "package_manager": "tool",
+    "runtime": "tool", "test": "tool",
+    "framework": "framework", "ssg": "framework", "ui_framework": "framework",
+    "iconset": "library", "orm": "library", "tool": "library", "ui": "library", "validation": "library",
+}
 
 
 def _from_rule(rule: dict) -> dict:
-    signs = _empty_signs()
-    for dependency in rule.get("dependencies", []):
-        ecosystem = ECOSYSTEMS.get(dependency["type"], dependency["type"])
-        name = dependency["name"]
-        if isinstance(name, dict):
-            signs["patterns"].setdefault(ecosystem, []).append(name["regex"])
-        else:
-            signs["packages"].setdefault(ecosystem, []).append(name)
-    signs["env"] = list(rule.get("dotenv", []))
-    files = rule.get("files")
-    if isinstance(files, list):
-        signs["files"] = [f for f in files if isinstance(f, str)]
-    _add_signs(signs, {})
+    """The entry of a rule of the catalogue: what it names, no sign. `hosts` only when the rule has some."""
+    if rule["type"] not in CATEGORY_OF_TYPE:
+        raise ValueError(f"{rule['tech']}: no category for the type {rule['type']}; add it to CATEGORY_OF_TYPE")
     kind = "service" if rule["type"] in SERVICES or rule["type"] in SERVICE_TYPES else "project"
     node_type = SERVICE_TYPES.get(rule["type"], "servizio o API" if kind == "service" else "altro")
-    return {"id": rule["tech"], "name": rule["name"], "kind": kind, "type": node_type, "site": None, "mark": None,
-            "signs": signs, "from": ["stack-analyser"]}
+    entry = {"id": rule["tech"], "name": rule["name"], "kind": kind, "type": node_type, "site": None, "mark": None,
+             "from": ["stack-analyser"], "category": CATEGORY_OF_TYPE[rule["type"]]}
+    if rule.get("hosts"):
+        entry["hosts"] = list(rule["hosts"])
+    return entry
 
 
 def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
-    """Merge curated/verified `additions` records into `entries` in place; a record's `wrong_signs` take away the
-    signs a catalog gives the entry wrongly. The records that make an entry (they have its `name`) come first,
-    whatever their order: another may only add to it."""
+    """Merge curated `additions` records into `entries` in place. The records that make an entry (they have its
+    `name`) come first, whatever their order: another may only add to it."""
     for record in sorted(records, key=lambda record: "name" not in record):
         entry = entries.get(record["id"])
         if entry is None:
             entry = entries[record["id"]] = {"id": record["id"], "name": record["name"], "kind": record["kind"],
-                                             "type": record["type"], "site": None, "mark": None,
-                                             "signs": _empty_signs(), "from": []}
-        elif entry["signs"] is None:
-            entry["signs"] = _empty_signs()
+                                             "type": record["type"], "site": None, "mark": None, "from": []}
         for name in ("name", "kind", "type", "site", "category", "mark", "mark_source"):
             if record.get(name):
                 entry[name] = record[name]
         if record.get("mark"):
             entry.pop("mark_source", None)  # a file and a package are two cases: the record's file stays
-        _add_signs(entry["signs"], record.get("signs", {}))
-        _drop_signs(entry["signs"], record.get("wrong_signs", {}))
         entry["from"] = sorted(set(entry["from"]) | {"additions"})
-        if not any(entry["signs"].values()):
-            entry["signs"] = None
 
 
 def build(cache: Path, additions: Path, data: Path) -> dict:
     entries, by_name = {}, {}
-    for rule in stack_analyser_rules(cache):
+    records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
+    for rule in stack_analyser.catalogue():
         entry = _from_rule(rule)
         entries[entry["id"]] = entry
         by_name.setdefault(_norm(entry["name"]), entry["id"])
+    # A CNCF item whose name the rule writes otherwise (`Kafka`, `Apache Kafka`) joins the entry whose record names it.
+    by_name |= {_norm(r["cncf"]): r["id"] for r in records if r.get("cncf") and r["id"] in entries}
     for item in cncf_items(cache):
         if item["category"] in CNCF_SKIPPED or not item.get("name"):
             continue
@@ -476,288 +356,17 @@ def build(cache: Path, additions: Path, data: Path) -> dict:
             ident += "-cncf"
         entries[ident] = {"id": ident, "name": item["name"], "kind": "service" if hosted else "project",
                           "type": CNCF_TYPES.get(item["subcategory"], "servizio o API" if hosted else "altro"),
-                          "site": item.get("homepage_url"), "mark": None, "signs": _empty_signs(),
-                          "from": ["cncf-landscape"]}
+                          "site": item.get("homepage_url"), "mark": None, "from": ["cncf-landscape"]}
         by_name[_norm(item["name"])] = ident
-    apply_additions(entries, json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else [])
+    apply_additions(entries, records)
     root = _tarball(*SIMPLE_ICONS, cache)
-    records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
     refused = apply_marks(entries, simple_icons(cache), lambda slug: (root / "icons" / f"{slug}.svg").read_bytes(), data,
                           {r["id"]: r for r in records if r.get("mark") or r.get("mark_source")})
     if refused:
         print("\n".join(refused), file=sys.stderr)
-    for entry in entries.values():
-        if not any((entry["signs"] or {}).values()):
-            entry["signs"] = None
-    return {"schema": SCHEMA, "versions": {"stack-analyser": STACK_ANALYSER[1], "simple-icons": SIMPLE_ICONS[1],
+    return {"schema": SCHEMA, "versions": {"stack-analyser": stack_analyser.VERSION, "simple-icons": SIMPLE_ICONS[1],
                                            "cncf-landscape": CNCF_COMMIT},
             "entries": [entries[i] for i in sorted(entries)]}
-
-
-# ---------------------------------------------------------------- derive and verify
-
-def _npm_owner(package: str) -> str | None:
-    data = _json(f"https://registry.npmjs.org/{urllib.parse.quote(package, safe='@')}/latest")
-    repository = (data or {}).get("repository")
-    return owner(repository.get("url") if isinstance(repository, dict) else repository)
-
-
-def _pypi_owners(name: str) -> set[str] | None:
-    data = _json(f"https://pypi.org/pypi/{urllib.parse.quote(name)}/json")
-    if data is None:
-        return None
-    info = data.get("info") or {}
-    urls = [info.get("home_page"), info.get("project_url"), *(info.get("project_urls") or {}).values()]
-    return {o for o in map(owner, urls) if o}
-
-
-_crates_clock = [0.0]
-
-
-def _crates_owners(name: str) -> set[str] | None:
-    wait = 1.0 - (time.monotonic() - _crates_clock[0])  # crates.io asks for one request a second
-    if wait > 0:
-        time.sleep(wait)
-    _crates_clock[0] = time.monotonic()
-    data = _json(f"https://crates.io/api/v1/crates/{urllib.parse.quote(name)}")
-    if data is None:
-        return None
-    crate = data.get("crate") or {}
-    return {o for o in map(owner, [crate.get("repository"), crate.get("homepage")]) if o}
-
-
-def real_go_mod(text: bytes) -> bool:
-    """A go.mod the module wrote: the proxy makes up a bare `module` line for any repository."""
-    return any(line.startswith(b"go ") for line in text.splitlines())
-
-
-def _go_module(module: str) -> bool:
-    escaped = re.sub(r"[A-Z]", lambda m: "!" + m.group(0).lower(), module)
-    latest = _json(f"https://proxy.golang.org/{escaped}/@latest")
-    version = (latest or {}).get("Version")
-    mod = _get(f"https://proxy.golang.org/{escaped}/@v/{version}.mod") if version else None
-    return bool(mod) and real_go_mod(mod)
-
-
-def own_npm(packages: dict) -> list[str]:
-    """An entry's npm packages without type stubs and OpenTelemetry instrumentations, which belong to those projects."""
-    return [p for p in packages.get("npm", []) if not p.startswith(("@types/", "@opentelemetry/"))]
-
-
-def answers(url: str) -> bool:
-    """A site answers when its server replies with anything but not found or a server error; 403 to robots counts."""
-    request = urllib.request.Request(url, headers={"User-Agent": AGENT})
-    try:
-        with urllib.request.urlopen(request, timeout=30):
-            return True
-    except urllib.error.HTTPError as error:
-        return error.code not in (404, 410) and error.code < 500
-    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
-        return False
-
-
-def catalog_packages(entry: dict, derived: list[dict]) -> dict:
-    """An entry's packages without the ones an earlier `derive` added: each run starts from the catalogs."""
-    added = {}
-    for record in derived:
-        if record["id"] == entry["id"]:
-            for ecosystem, names in record["signs"]["packages"].items():
-                added.setdefault(ecosystem, set()).update(names)
-    packages = {e: [n for n in names if n not in added.get(e, set())]
-                for e, names in ((entry.get("signs") or {}).get("packages") or {}).items()}
-    return {e: names for e, names in packages.items() if names}
-
-
-def _derive_entry(entry: dict, packages: dict) -> dict | None:
-    """Packages of the other ecosystems for an entry known only on npm, by the owner of the repository."""
-    npm = own_npm(packages)[:3]
-    found, main = {}, None
-    for number, package in enumerate(npm):
-        home = _npm_owner(package)
-        main = home if number == 0 else main
-        if home is None or home != main:  # the first package names the owner; another owner is another project
-            continue
-        names = candidates(package)
-        if "pypi" not in packages and "pypi" not in found:
-            hit = next((n for n in names if home in (_pypi_owners(n) or set())), None)
-            if hit:
-                found["pypi"] = [hit]
-        if "crates" not in packages and "crates" not in found:
-            hit = next((n for n in names if home in (_crates_owners(n) or set())), None)
-            if hit:
-                found["crates"] = [hit]
-        if "go" not in packages and "go" not in found and home.startswith("github.com/"):
-            base = names[0].replace("@", "").replace("/", "-")
-            hit = next((m for n in dict.fromkeys([base, *names]) for m in
-                        (f"{home}/{n}", f"{home}/{n}-go", f"{home}/go-{n}") if _go_module(m)), None)
-            if hit:
-                found["go"] = [hit]
-        if found:
-            return {"id": entry["id"], "signs": {"packages": found}, "by": "derive", "owner": home}
-    return None
-
-
-def unambiguous(found: list[dict]) -> list[dict]:
-    """Derived records without the packages found for more than one entry: an umbrella names none of them."""
-    count = {}
-    for record in found:
-        for ecosystem, names in record["signs"]["packages"].items():
-            for name in names:
-                count[(ecosystem, name)] = count.get((ecosystem, name), 0) + 1
-    out = []
-    for record in found:
-        packages = {e: [n for n in names if count[(e, n)] == 1] for e, names in record["signs"]["packages"].items()}
-        packages = {e: names for e, names in packages.items() if names}
-        if packages:
-            out.append({**record, "signs": {**record["signs"], "packages": packages}})
-    return out
-
-
-def derive(registry: Path, additions: Path, workers: int = 8) -> dict:
-    value = json.loads(registry.read_text(encoding="utf-8"))
-    records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
-    kept = [r for r in records if r.get("by") != "derive"]
-    last = [r for r in records if r.get("by") == "derive"]
-    wanted = [(e, catalog_packages(e, last)) for e in value["entries"]]
-    wanted = [(e, packages) for e, packages in wanted if packages.get("npm")]
-    with concurrent.futures.ThreadPoolExecutor(workers) as pool:
-        derived = unambiguous([r for r in pool.map(lambda pair: _derive_entry(*pair), wanted) if r])
-    out = {"schema": ADDITIONS_SCHEMA, "entries": sorted(kept + derived, key=lambda r: (r["id"], r.get("by", "")))}
-    additions.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    return {"looked": len(wanted), "derived": len(derived)}
-
-
-_EXISTS = {"npm": lambda n: _get(f"https://registry.npmjs.org/{urllib.parse.quote(n, safe='@')}/latest") is not None,
-           "pypi": lambda n: _pypi_owners(n) is not None, "crates": lambda n: _crates_owners(n) is not None,
-           "go": _go_module}
-
-
-def verify_additions(additions: Path) -> list[str]:
-    """What in the additions does not hold: a package its registry does not have, a site that does not answer."""
-    problems = []
-    for record in json.loads(additions.read_text(encoding="utf-8"))["entries"]:
-        for ecosystem, names in record.get("signs", {}).get("packages", {}).items():
-            for name in names:
-                if ecosystem in _EXISTS and not _EXISTS[ecosystem](name):
-                    problems.append(f"{record['id']}: {ecosystem} has no package {name}")
-        if record.get("site") and not answers(record["site"]):
-            problems.append(f"{record['id']}: {record['site']} does not answer")
-    return problems
-
-
-# ---------------------------------------------------------------- model proposals
-
-MODEL_PROMPT = """Each line below is an entry of a registry of external services and projects: id, name, kind,
-npm packages. For each, give only what you know with confidence: the package of the same product on pypi
-and crates, the Go module path, and its official site. Leave out what you are not sure of.
-Then add up to 100 widely used services and projects that have no line here and are not only on npm
-(frameworks, SDKs, databases, clouds), each with id (lowercase), name, kind (service or project),
-type (one of: {types}), site and packages.
-Answer with JSON only, no prose: {{"entries": [{{"id": "...", "name": "...", "kind": "...", "type": "...",
-"site": "https://...", "packages": {{"pypi": ["..."], "crates": ["..."], "go": ["..."], "npm": ["..."]}}}}]}};
-for a line of the list, id and the fields you add are enough.
-
-{lines}
-"""
-
-
-ICONS_PROMPT = """Below are names of brands that have a mark (a logo) and no entry in a registry of external services.
-Choose the ones that are external services a software project calls or uses through a package: hosted APIs, SaaS,
-databases, clouds, authentication, payments, messaging, monitoring, AI. Leave out companies and products that have
-no developer service, end-user apps, and libraries or frameworks that are not a service.
-For each one chosen give: id (lowercase), name exactly as listed, kind "service", type (one of: {types}), site
-(the official one) and packages: the official SDK or client package on npm, pypi, crates or go (a Go module path),
-only the ones you know with confidence; an entry without a package is not wanted.
-Answer with JSON only, no prose: {{"entries": [{{"id": "...", "name": "...", "kind": "service", "type": "...",
-"site": "https://...", "packages": {{"npm": ["..."], "pypi": ["..."], "crates": ["..."], "go": ["..."]}}}}]}}
-
-{lines}
-"""
-
-
-def model_input(registry: dict, icons: list[dict] | None = None) -> str:
-    """The prompt: entries known only on npm and without a site, or, with `icons`, the marks that have no entry."""
-    if icons is not None:
-        index = mark_index(icons)
-        named = {_norm(e["name"]) for e in registry["entries"]} | {_norm(e["id"]) for e in registry["entries"]}
-        used = {i["slug"] for e in registry["entries"] if (i := simple_icon(e, index))}
-        lines = [i["title"] for i in icons if i["slug"] not in used and _norm(i["title"]) not in named]
-        return ICONS_PROMPT.format(types=", ".join(flows.NODE_TYPES), lines="\n".join(lines))
-    lines = []
-    for entry in registry["entries"]:
-        packages = (entry.get("signs") or {}).get("packages") or {}
-        npm_only = packages.get("npm") and not {"pypi", "crates", "go"} & set(packages)
-        if npm_only or (not entry["site"] and "stack-analyser" in entry["from"]):
-            lines.append("\t".join([entry["id"], entry["name"], entry["kind"], ",".join(packages.get("npm", [])[:2])]))
-    return MODEL_PROMPT.format(types=", ".join(flows.NODE_TYPES), lines="\n".join(lines))
-
-
-def _owners(ecosystem: str, name: str) -> set[str] | None:
-    if ecosystem == "npm":
-        found = _npm_owner(name)
-        return {found} if found else (set() if _EXISTS["npm"](name) else None)
-    if ecosystem == "pypi":
-        return _pypi_owners(name)
-    if ecosystem == "crates":
-        return _crates_owners(name)
-    if ecosystem == "go":
-        return {o for o in [owner("https://" + name)] if o} if _go_module(name) else None
-    return None
-
-
-NETWORK = {"owners": _owners, "site": answers}
-
-
-def accept(proposals: list[dict], entries: dict[str, dict], check: dict = NETWORK) -> tuple[list[dict], list[str]]:
-    """Additions from a model's proposals, kept only where the machine verifies them, and why the rest is not.
-
-    A package of a known entry needs the owner of the entry's first npm package, when it has one;
-    a new entry needs a name, a kind, a type, packages that exist and have one owner among them, no package that
-    another entry has already, and a site that answers.
-    """
-    by_name = {_norm(e["name"]): i for i, e in entries.items()}
-    kept, refused = [], []
-    for proposal in proposals:
-        ident = proposal.get("id")
-        ident = ident if ident in entries else by_name.get(_norm(proposal.get("name", "")), ident)
-        entry = entries.get(ident)
-        have = ((entry or {}).get("signs") or {}).get("packages") or {}
-        first = next(iter(own_npm(have)), None)
-        main = check["owners"]("npm", first) if first else None
-        packages = {}
-        for ecosystem, names in (proposal.get("packages") or {}).items():
-            if ecosystem in have:
-                refused.append(f"{ident}: already has {ecosystem}")
-                continue
-            for name in names:
-                found = check["owners"](ecosystem, name)
-                if entry is None and main is None and found:  # a new entry: its first package names the owner
-                    main = found
-                if found is None:
-                    refused.append(f"{ident}: {ecosystem} has no package {name}")
-                elif main and not main & found:
-                    refused.append(f"{ident}: {ecosystem} {name} has another owner than npm {first}")
-                else:
-                    packages.setdefault(ecosystem, []).append(name)
-        site = proposal.get("site") if not (entry or {}).get("site") else None
-        if site and not check["site"](site):
-            refused.append(f"{ident}: {site} does not answer")
-            site = None
-        taken = [i for i, e in entries.items() if entry is None and any(
-            n in (((e.get("signs") or {}).get("packages") or {}).get(eco) or []) for eco, ns in packages.items() for n in ns)]
-        if taken:
-            refused.append(f"{ident}: has packages that {', '.join(taken)} already has")
-            continue
-        if entry is None:
-            if (not packages or proposal.get("kind") not in KINDS or proposal.get("type") not in flows.NODE_TYPES
-                    or not proposal.get("name") or not site):
-                refused.append(f"{ident}: a new entry needs a name, kind, type, a site that answers and a package")
-                continue
-            kept.append({"id": _slug(ident), "name": proposal["name"], "kind": proposal["kind"],
-                         "type": proposal["type"], "site": site, "signs": {"packages": packages}, "by": "model"})
-        elif packages or site:
-            kept.append({"id": ident, **({"site": site} if site else {}), "signs": {"packages": packages}, "by": "model"})
-    return kept, refused
 
 
 def _write(path: Path, value: object) -> None:
@@ -778,7 +387,7 @@ def sync_additions(incoming: list[dict], registry: Path, additions: Path) -> int
     entries = {e["id"]: e for e in reg_doc["entries"]}
     apply_additions(entries, incoming)
     reg_doc["entries"] = [entries[k] for k in sorted(entries)]
-    problems = check(reg_doc, registry.parent)
+    problems = check(reg_doc, registry.parent, add_doc["entries"])
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1
@@ -849,7 +458,7 @@ def set_marks(registry: Path, additions: Path, cache: Path) -> int:
     marked = [e for e in reg_doc["entries"] if e["mark"] or e.get("mark_source")]
     print(json.dumps({"entries with a mark file": sum(1 for e in marked if e["mark"]),
                       "entries with a package": sum(1 for e in marked if e.get("mark_source")),
-                      "services with signs and either": sum(1 for e in marked if e["kind"] == "service" and e["signs"])}))
+                      "services with a rule and either": sum(1 for e in marked if e["kind"] == "service" and "stack-analyser" in e["from"])}))
     return 0
 
 
@@ -862,19 +471,7 @@ def main(argv=None) -> int:
     build_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     check_parser = sub.add_parser("check")
     check_parser.add_argument("file", type=Path)
-    derive_parser = sub.add_parser("derive")
-    derive_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
-    derive_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
-    input_parser = sub.add_parser("model-input")
-    input_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
-    input_parser.add_argument("--icons", action="store_true", help="ask for the services of the marks that have no entry")
-    input_parser.add_argument("--cache", type=Path, default=Path.home() / ".cache/daodan/registry-build")
-    accept_parser = sub.add_parser("accept")
-    accept_parser.add_argument("answer", type=Path, help="the model's JSON answer")
-    accept_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
-    accept_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
-    verify_parser = sub.add_parser("verify-additions")
-    verify_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
+    check_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     package_parser = sub.add_parser("add-package-mark")
     package_parser.add_argument("id")
     package_parser.add_argument("archive", type=Path, help="a copy of the owner's package, downloaded into a folder of its own")
@@ -911,26 +508,16 @@ def main(argv=None) -> int:
         return set_marks(args.registry, args.additions, args.cache)
     if args.command == "build":
         args.cache.mkdir(parents=True, exist_ok=True)
-        value = build(args.cache, args.additions, args.out.parent)
+        try:
+            value = build(args.cache, args.additions, args.out.parent)
+        except Gap as gap:
+            print(f"{gap}: {gap.remedy}", file=sys.stderr)
+            return 1
         args.out.write_text(json.dumps(value, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(f"{len(value['entries'])} entries -> {args.out}")
         return 0
-    if args.command == "model-input":
-        args.cache.mkdir(parents=True, exist_ok=True)
-        print(model_input(json.loads(args.registry.read_text(encoding="utf-8")), simple_icons(args.cache) if args.icons else None))
-        return 0
-    if args.command == "accept":
-        text = args.answer.read_text(encoding="utf-8")
-        answer = json.loads(text[text.index("{"): text.rindex("}") + 1])
-        entries = {e["id"]: e for e in json.loads(args.registry.read_text(encoding="utf-8"))["entries"]}
-        kept, refused = accept(answer["entries"], entries)
-        print(json.dumps({"kept": len(kept), "refused": refused}, ensure_ascii=False, indent=1))
-        return sync_additions(kept, args.registry, args.additions)  # the registry takes what the additions now hold
-    if args.command == "derive":
-        print(json.dumps(derive(args.registry, args.additions)))
-        return 0
-    problems = (check(json.loads(args.file.read_text(encoding="utf-8")), args.file.parent) if args.command == "check"
-                else verify_additions(args.additions))
+    additions = json.loads(args.additions.read_text(encoding="utf-8"))["entries"] if args.additions.is_file() else []
+    problems = check(json.loads(args.file.read_text(encoding="utf-8")), args.file.parent, additions)
     print("\n".join(problems) or "ok")
     return 1 if problems else 0
 

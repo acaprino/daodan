@@ -24,7 +24,7 @@
 - L'allowlist per host è una funzione Beta di Modal e non filtra il traffico che non è TLS sulla porta 443: gli archivi apt `http://` passano per indirizzo, su ogni porta.
 - Con servizi accanto la preparazione non è confinata: la rete resta aperta e il risultato lo dice (lacuna `network_open`).
 - Le liste di host di ogni strumento non sono mai state osservate su Modal: un host mancante fa fallire una preparazione che prima passava. La modifica di `sandbox_run` vale per ogni giro su Modal, non solo per la mappa.
-- Non verificato: se una VM Sandbox accetta il montaggio con `sub_path` in sola lettura e l'allowlist per host; se le liste per host e per indirizzo valgono insieme; se un indirizzo IPv6 `/128` è accettato; se un CDN risolve nella sandbox come nella funzione.
+- Non verificato: se una VM Sandbox accetta il montaggio con `sub_path` in sola lettura e l'allowlist per host; se le liste per host e per indirizzo valgono insieme; se un CDN risolve nella sandbox come nella funzione.
 - Il controllo 5 della prova conta le sandbox vive dell'app condivisa: nessun altro giro deve girare in quel momento.
 - Una pass scaduta riceve un'interruzione e poi un kill: le sandbox di un processo ucciso restano fino al loro limite, e uno stadio che non passa da uv può non fare in tempo a pulire.
 

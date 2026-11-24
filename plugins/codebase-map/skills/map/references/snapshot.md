@@ -140,8 +140,9 @@ Python uses stdlib `ast`, SQL/PL-SQL regex DDL, CSS/SCSS/LESS the tokenizer.
 Parser notes name the engine or fallback; missing grammars report
 `tree-sitter unavailable: <error>`. For optional offline embedding, read
 `references/embeddings.md` before invoking `embedding_worker.py`.
-The engine pass is the pipeline after `scan` (`pipeline/`): `analyze`, `dynamic`
-and `union`, into `<run-dir>/snapshot/engine-edges.sqlite`, read by `edge_view.py`.
+The engine pass is the pipeline from `stack` on (`pipeline/`; from `scan` when model
+commands are still to run): `stack`, `parse`, `analyze`, `dynamic` and `union`,
+with the edges in `<run-dir>/snapshot/engine-edges.sqlite`, read by `edge_view.py`.
 `analyze` runs one analyzer per technology of the pre-map, one at a time: the index
 of scip-go for Go, rust-analyzer for Rust and scip-python for Python; in a
 container, over the build the project declares, scip-typescript for TypeScript,

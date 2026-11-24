@@ -1,34 +1,20 @@
 # Piano: stack dal fork, il passaggio
 
-**Stato:** Proposta: nulla nel codice. `technologies.derive` chiama ancora `service_registry.run`, `daodan/core/stack_recognition.py` non esiste e il rilascio fissato in `daodan/core/stack_analyser.py` è `1.27.6-daodan.2`. Tutti i task sotto sono aperti. La Parte A si fa nel repository del fork, [`acaprino/stack-analyser`](https://github.com/acaprino/stack-analyser), ramo `feature/stack-detection`.
+**Stato:** In parte. Il passaggio è nel codice e in `develop` dal 24 novembre 2026: `technologies.derive` chiama `stack_recognition.run`, il rilascio fissato in `daodan/core/stack_analyser.py` è `1.27.6-daodan.5` e il registro è l'anagrafica generata dal catalogo del fork. Restano aperte le prove su Modal: il passo 4 del Task B4 e il Task B6. Il fork è [`acaprino/stack-analyser-daodan`](https://github.com/acaprino/stack-analyser-daodan).
 
-**Obiettivo:** il passo `stack` di Daodan riconosce solo attraverso il fork di stack-analyser, in entrambe le scansioni; ogni segno porta la sua fonte e la scansione da cui viene; il registro resta come anagrafica.
+**Spec:** [`2026-11-21-stack-dal-fork.md`](../specs/2026-11-21-stack-dal-fork.md), «Verifica». **Misura prima del passaggio:** [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «Lo step `stack` dal fork».
 
-**Architettura:** Parte A, nel fork: un rilascio `.3` che legge il perimetro da un file invece che dalla riga di comando e sa scrivere il proprio catalogo. Parte B, in Daodan: la traduzione oggi nel benchmark diventa il modulo `stack_recognition.py`; `technologies.derive` la chiama al posto di `service_registry.run` e unisce i segni nuovi con quelli delle fonti che in questa scansione non hanno girato; il registro si genera dal catalogo del rilascio e perde i segni.
+## Fatto
 
-**Tecnologie:** TypeScript e Vitest nel fork; Python 3.12 e pytest in Daodan. Gli strumenti veri girano su Modal.
+- **Parte A, il fork:** perimetro da un file, catalogo, nome `stack-analyser-daodan`, rilasci `.3`, `.4` e `.5`. `.3` pubblicato. Il rilascio `.4`, con le correzioni trovate dalla prova di B4 (ramo `feature/stack-detection`, `69c77c2`…`348051b`, CI verde), è pubblicato (tag `v1.27.6-daodan.4`, costruito da GitHub Actions da `ff2fef4`). Il rilascio `.5` (tag `v1.27.6-daodan.5`, da `453a2a9`) riprende i segni veri che il porting aveva lasciato fuori (la scelta del proprietario: «più cose riconosciamo e meglio è») e dà a uno starter di Spring Data il suo server; Daodan è fissato a `.5`.
+- **B1, lo strumento sul rilascio:** `feat: lo strumento passa il perimetro in un file e legge il catalogo del rilascio .3`.
+- **B2, la traduzione nel prodotto:** `daodan/core/stack_recognition.py`, `tests/test_codebase_map_stack_recognition.py`.
+- **B3, la regola delle fonti:** una scansione sostituisce i segni delle fonti che ha eseguito e conserva gli altri (`tests/test_codebase_map_stack_sources.py`).
+- **B4, il passaggio e le rimozioni:** passi 1–3 (sotto, con i numeri della suite); il passo 4 è aperto.
+- **B5, il registro come anagrafica:** `feat: il registro è l'anagrafica, generata dal catalogo di stack-analyser`.
+- **B7, i documenti:** fatti. I tempi di B6 non ci sono: i documenti danno quelli del piano 2, detti tali, e dicono che dopo il passaggio non sono misurati.
 
-**Spec:** `docs/specs/2026-11-21-stack-dal-fork.md`, «Disegno» 2.2–2.6, «Ordine» punto 4, «Verifica». **Misura di partenza:** [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «Lo step `stack` dal fork».
-
-## Punto di partenza, nel codice oggi
-
-- Rilascio `1.27.6-daodan.2` del fork, fissato in `daodan/core/stack_analyser.py` (`VERSION`, `URL`, `SHA256`), in `tests/modal_pytest.py` e in `benchmarks/project-model/modal_stack_fork.py`.
-- `stack_analyser.run(project, *, declarations=(), skip_dirs=None, ignore=()) -> dict`, `cli()`, `node(project)`: lo strumento, provato su Modal con il rilascio vero ma con `cli` e `node` sostituiti.
-- `benchmarks/project-model/tools/fork_stack.py`: la traduzione (`declarations`, `perimeter`, `_signs`, `found`, `recognize`) e le misure del confronto (`compare`, `measure`, `summary`).
-- Il giro sul corpus: nessun nome atteso perso; numeri e tempi nel README del benchmark.
-- Uscita del fork: componenti con `evidence: [{tech, kind, value, path, line?, source}]`, `kind` in `package | image | action | terraform | file | extension | env | source`.
-
-## Che cosa la misura sul corpus ha trovato e questo piano deve chiudere
-
-1. `--ignore` e `--skip-dirs` stanno sulla riga di comando: `real-stack-owncast` chiede 36.678 caratteri, oltre il limite di Windows (32.767). Il costo della lista cresce con la sua lunghezza (il fork confronta ogni voce con ogni prefisso di ogni percorso).
-2. Il fork apre `.env*.example|sample|template`, che `source_files.FORBIDDEN_GLOBS` vieta a Daodan.
-3. L'installazione vera (`cli()`, `runtime.node()`) non ha mai girato con i file veri; la prova è girata su Node 24, su Linux.
-4. Un'installazione fallita viene ritentata a ogni scansione (tre tentativi, 12 secondi di attese) sotto `project_lock`.
-5. Un'uscita o un fatto malformato solleva `KeyError` invece di diventare un buco; lo store della snapshot resta aperto durante la corsa di Node.
-6. La scansione veloce riscrive `premap.json` e `technologies.json` da capo: i fatti delle fonti con comandi (Renovate, Compose, BuildKit, go-enry, i build tool) spariscono fino alla completa successiva.
-7. `technologies.py` e la pre-mappa sono cambiati dopo il giro: i numeri vanno rimisurati.
-
-## Scelte di chi scrive, da confermare con il proprietario
+## Scelte confermate dal proprietario il 24 novembre 2026
 
 1. **Nome.** Il pacchetto e il repository diventano `stack-analyser-daodan` (con la s, come l'originale), dal rilascio `.3`. Il file `LICENSE` conserva la nota di Specfy.
 2. **Menzioni delle variabili.** Non si tengono: `check_env` si toglie come dice la spec (2.6). Nessun modulo di Daodan legge `mentioned`.
@@ -58,134 +44,7 @@
 4. **Un file vietato viene aperto.** `.env.example` in una cartella viva: deve stare nel perimetro. Test: B2, `test_a_forbidden_file_is_in_the_perimeter`; e sul rilascio vero la prova di B6.
 5. **Un segno conservato su un file cancellato.** Deve sparire con il file. Test: B3, `test_a_kept_sign_leaves_with_its_file`.
 
----
-
-## Parte A: il fork
-
-### Task A1: Il perimetro da un file
-
-**Files:**
-- Modify: `src/cli.ts`, `src/provider/fs.ts`, `README.md`
-- Test: `src/cli.test.ts`, `src/provider/fs.test.ts`
-
-**Interfaces:**
-- Produces: l'opzione `--perimeter <FILE>`: un JSON UTF-8 `{"skipDirs": [nomi], "ignore": [percorsi]}`; ciascuna chiave è facoltativa e vale come l'opzione omonima. Non si usa insieme a `--skip-dirs` o `--ignore` (codice 1, con il messaggio). Le stesse regole di validità delle due opzioni; un file che manca o non è quel JSON è un errore che lo nomina.
-
-- [ ] **Step 1: test che falliscono**
-
-`src/cli.test.ts`: `gives the same output from --perimeter as from --skip-dirs and --ignore`; `exits with 1 when --perimeter is given with --ignore`; `exits with 1 and writes nothing when the perimeter file is not the expected JSON`. `src/provider/fs.test.ts`: `reads a perimeter of five thousand paths` (5.000 voci `ignore`, un albero di 200 file: sotto 2 secondi).
-
-- [ ] **Step 2: implementare**
-
-In `FSProvider.allowed` le regole stringa si normalizzano una volta e si cercano in un `Set`; le espressioni regolari restano come sono.
-
-- [ ] **Step 3: suite e commit**
-
-Run: `npx vitest run --coverage.enabled=false --maxWorkers=4` e `npx tsc --noEmit`.
-Commit: `feat: read the perimeter from a file`.
-
-### Task A2: Il catalogo
-
-**Files:**
-- Modify: `src/cli.ts`, `README.md`
-- Create: `src/catalogue.ts`, `src/catalogue.test.ts`
-
-**Interfaces:**
-- Produces: `node dist/cli.mjs --catalogue <FILE>` scrive, senza analizzare nulla, un array JSON ordinato per `tech`: `{tech, name, type, hosts: [..], dependencies: [{type, name} | {type, pattern}], files: [..] | {pattern}, dotenv: [..], extensions: [..]}`, con le chiavi assenti omesse. `pattern` è la sorgente dell'espressione. Con `--catalogue` l'argomento del progetto non serve.
-
-- [ ] **Step 1: test che falliscono**
-
-`src/catalogue.test.ts`: `lists every registered rule once`; `writes a pattern as its source`; `spring-mvc lists the Spring web starter`; in `src/cli.test.ts`: `gives the same catalogue from the bundle as from the modules`.
-
-- [ ] **Step 2: implementare, suite, commit**
-
-Commit: `feat: write the catalogue of rules`.
-
-### Task A3: Il nome e il rilascio `.3`
-
-**Files:**
-- Modify: `package.json`, `package-lock.json` (a mano: nome e versione nei campi di radice), `README.md`, `benchmarks/verify-package.mjs` (il nome dell'archivio), `benchmarks/README.md`
-
-**Interfaces:**
-- Produces, per la Parte B: il rilascio `v1.27.6-daodan.3`, l'URL dell'asset e il suo sha256; `package/dist/cli.mjs` con `--perimeter` e `--catalogue`.
-
-`package.json`: `"name": "stack-analyser-daodan"` (scelta 1), `"version": "1.27.6-daodan.3"`, `"bin"` verso `./dist/cli.mjs`. `verify-package.mjs` prova anche `--catalogue` e `--perimeter` sul pacchetto scompattato.
-
-- [ ] **Step 1**: modifiche, `npm run build`, suite, `node benchmarks/verify-package.mjs` (lo lancia chi coordina).
-- [ ] **Step 2**: commit `chore(release): 1.27.6-daodan.3 as stack-analyser-daodan`.
-- [ ] **Step 3 (chi coordina, dopo la conferma del proprietario)**: rinomina del repository (`gh repo rename`), aggiornamento del remoto locale, tag, push, `gh release create`, verifica dello sha256 dell'asset scaricato.
-
----
-
-## Parte B: Daodan
-
-### Task B1: Lo strumento sul rilascio `.3`
-
-**Files:**
-- Modify: `daodan/core/stack_analyser.py`, `daodan/core/engine_tools.py`, `tests/modal_pytest.py`, `benchmarks/project-model/modal_stack_fork.py` (solo i valori fissati)
-- Test: `tests/test_codebase_map_stack_analyser.py`, `tests/fake_stack_analyser.py`
-
-**Interfaces:**
-- Consumes: il rilascio di A3.
-- Produces:
-  - `run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, ...] = (), ignore: tuple[str, ...] = ()) -> dict`: perimetro e dichiarazioni viaggiano in file della cartella temporanea (`--perimeter`, `--declarations`); `skip_dirs` è sempre passato.
-  - `catalogue() -> list[dict]`: l'uscita di `--catalogue`.
-  - `cli()` e `node()` ricordano per il processo un'installazione fallita: la seconda chiamata dà lo stesso `Gap` senza riprovare.
-  - `engine_tools.download` ritenta anche su `http.client.HTTPException`.
-  - Ogni errore di `shared_engine_dir()` e `node_environment()` dentro `run`/`catalogue` è un `Gap`.
-
-- [ ] **Step 1: test che falliscono**
-
-`test_the_perimeter_reaches_the_fork_in_a_file` (10.000 percorsi: nessun argomento della riga di comando supera 300 caratteri); `test_an_install_that_failed_is_not_tried_again_in_the_same_process`; `test_a_download_cut_off_is_tried_again`; `test_the_catalogue_is_what_the_fork_writes`; `test_a_cache_folder_that_cannot_be_used_is_a_gap`. I test dei valori fissati passano al `.3`.
-
-- [ ] **Step 2: implementare; Step 3: i tre file di test in locale; commit** `feat: lo strumento passa il perimetro in un file e legge il catalogo del rilascio .3`.
-
-### Task B2: La traduzione nel prodotto
-
-**Files:**
-- Create: `daodan/core/stack_recognition.py`, `tests/test_codebase_map_stack_recognition.py`, `tests/fixtures/stack/py-fastapi-compose.payload.json`
-- Modify: `benchmarks/project-model/tools/fork_stack.py` (importa la traduzione dal prodotto e tiene solo le misure), `benchmarks/project-model/test_fork_stack.py`
-
-**Interfaces:**
-- Consumes: `stack_analyser.run` (B1); da `service_registry`: `service_site`, `_split_declared_in`, `_is_excluded`, `entry_category`; `registry_hosts.check_hosts`; `source_files.is_forbidden`; `snapshot_store.open_snapshot`; `registry_build.ECOSYSTEMS`.
-- Produces: `stack_recognition.run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict` con `{"found", "checkers", "gaps", "ran"}`: la forma di `service_registry.run`, più `ran`, le etichette delle fonti i cui segni questa corsa ha prodotto (`stack-analyser`, `registry_hosts`, e le fonti della pre-mappa con stato `ran`).
-
-Dal benchmark si spostano `declarations`, `perimeter`, `_signs`, `found`, `recognize` (che diventa `run`), con i loro test. Cambia:
-- **Segni.** `sign` è `package` per le prove `package`, `image`, `action`, `terraform`; `file`, `source`, `env` restano; ogni segno ha `source`. `scan` lo mette B3.
-- **Perimetro.** `ignore` contiene anche i file che `is_forbidden` vieta, trovati elencando le cartelle vive. I nomi con la virgola non sono più un caso a parte. Un nome di cartella con `/` o `\`, e un percorso con lettera di disco o `..`, non entrano nel perimetro e danno un buco `perimeter_entry_left_out`.
-- **Forma.** Una prova o un fatto senza le chiavi attese non solleva: la prova si scarta e si conta (`evidence_malformed`), il fatto dà `declaration_not_sent`.
-- **Store.** Lo store della snapshot si chiude prima di lanciare il fork e si riapre per le menzioni di host.
-- **Host.** `check_hosts` riceve le voci del registro come oggi (B5 cambia da dove vengono gli host).
-
-- [ ] **Step 1: spostare i test e aggiungere quelli che falliscono**
-
-`test_a_forbidden_file_is_in_the_perimeter`; `test_an_image_an_action_and_a_terraform_resource_are_package_signs`; `test_a_malformed_evidence_item_is_counted_not_raised`; `test_a_perimeter_entry_the_fork_would_refuse_is_left_out_with_a_gap`; `test_the_store_is_closed_while_the_fork_runs`; `test_ran_names_the_sources_of_this_run`.
-
-- [ ] **Step 2: implementare; Step 3: test in locale** (`tests/test_codebase_map_stack_recognition.py`, `benchmarks/project-model/test_fork_stack.py`); commit `feat: la traduzione fra la pre-mappa e stack-analyser entra nel prodotto`.
-
-### Task B3: La regola delle fonti
-
-**Files:**
-- Modify: `daodan/core/technologies.py`
-- Test: `tests/test_codebase_map_stack_sources.py` (nuovo)
-
-**Interfaces:**
-- Consumes: `stack_recognition.run` (B2), sostituito nei test da una funzione che restituisce `found`, `gaps`, `ran` scritti a mano.
-- Produces: `technologies.merge(found: list[dict], ran: set[str], previous: dict | None, scan: str, exists) -> tuple[list[dict], list[dict]]`: le voci con i segni uniti e i buchi; e in `derive` il suo uso.
-
-Regole:
-- `scan` è l'`inputs_digest` della pre-mappa di questa scansione. Ogni segno prodotto ora lo porta.
-- Una fonte è «eseguita» se il suo nome (l'etichetta fino a `@`) è in `ran`. Di una fonte eseguita valgono solo i segni di ora.
-- Dal record precedente (`technologies` e `mentioned`) si conservano i segni la cui fonte non è eseguita, con il loro `scan`, se `exists(path)` è vero. Un record precedente di un'altra versione dello schema dei segni (senza `source`) non conserva nulla.
-- Una voce esiste finché ha un segno. L'anagrafica di una voce conservata viene dal registro di ora.
-- Quando qualcosa è conservato, un buco `{"kind": "signs_kept", "sources": [...], "scans": [...]}`.
-- `_inputs` comprende `stack_analyser.VERSION` e `SHA256`; `MATCHER_VERSION` passa a 4. `_read` considera fresco il record come oggi.
-
-- [ ] **Step 1: test che falliscono**
-
-`test_a_fast_scan_keeps_the_signs_of_the_sources_it_did_not_run` (completa con `renovate@…` e `stack-analyser`; veloce con `ran = {"stack-analyser", "requirements"}`: i segni di `renovate` restano con il vecchio `scan`, quelli di `stack-analyser` sono i nuovi); `test_a_source_that_ran_replaces_its_signs` (un pacchetto tolto da un manifest sparisce); `test_a_technology_stays_while_it_has_a_sign`; `test_a_kept_sign_leaves_with_its_file`; `test_without_the_tool_the_previous_signs_stay_and_a_gap_says_why` (`ran` senza `stack-analyser`, controllore `failed`); `test_a_record_of_the_old_shape_keeps_nothing`; `test_a_new_release_makes_the_record_stale`.
-
-- [ ] **Step 2: implementare `merge`; Step 3: test; commit** `feat: una scansione sostituisce i segni delle fonti che ha eseguito e conserva gli altri`.
+## Aperto
 
 ### Task B4: Il passaggio e le rimozioni
 
@@ -208,23 +67,7 @@ Test:
 
 - [ ] **Step 1**: `conftest.py` e i test adattati; **Step 2**: il cambio in `derive` e le rimozioni; **Step 3**: `python -B -m pytest -q -p no:cacheprovider tests` in locale (nessun fallimento; i salti con il motivo); **Step 4 (chi coordina, dopo conferma)**: la suite su Modal, dove `real_stack` è attivo; commit `feat: lo stack riconosce solo attraverso stack-analyser`.
 
-### Task B5: Il registro come anagrafica
-
-**Files:**
-- Modify: `daodan/core/registry_build.py`, `daodan/core/registry_hosts.py`, `daodan/core/support_table.py`, `daodan/data/service-registry.json`, `daodan/data/registry-additions.json`, `daodan/data/REGISTRY-NOTICES.md`, `docs/plugins/codebase-map-supporto.md` (generato)
-- Test: `tests/test_codebase_map_service_registry.py`, `tests/test_registry_hosts.py`, `tests/test_codebase_map_support_table.py`
-
-**Interfaces:**
-- Consumes: `stack_analyser.catalogue()` (B1).
-- Produces: `service-registry.json` con, per voce, `id, name, kind, type, site, mark, from, category?, hosts?` e senza `signs`; `versions["stack-analyser"]` uguale a `stack_analyser.VERSION`; `registry_hosts.check_hosts` legge `entry["hosts"]`.
-
-- `build` prende le regole da `stack_analyser.catalogue()` al posto del pacchetto npm e di `_COLLECT`, che si tolgono. `hosts` viene dal catalogo.
-- La `category` curata resta dalle aggiunte; per un ID senza categoria vale una tabella tipologia → categoria (`CATEGORY_OF_TYPE`), completa per ogni `type` del catalogo: un test lo verifica.
-- Le aggiunte perdono `signs` e `wrong_signs`; `check` rifiuta un record che li ha. Si tolgono i comandi `derive`, `verify-additions`, `model-input`, `accept` e il loro codice.
-- Un ID che il fork riconosce e il registro non ha non deve più esistere: `test_every_rule_of_the_release_has_a_registry_entry`.
-- La tabella di supporto (scelta 7) si rigenera.
-
-- [ ] **Step 1: test; Step 2: codice; Step 3 (chi coordina)**: `registry_build build` con il rilascio vero, che scarica anche Simple Icons e CNCF; **Step 4**: test, tabella rigenerata, commit `feat: il registro è l'anagrafica, generata dal catalogo di stack-analyser`.
+*Stato, 24 novembre 2026: Step 1–2 e commit fatti (`091c093`, poi `2f57d91`). Step 3 con il rilascio vero `.3` (`DAODAN_STACK_ANALYSER`, container Linux con Node 22): 4.401 passati, 11 falliti, 140 saltati; gli 11 si correggono con `.4` (Task A3). Con `.4` fissato, suite locale (non Modal) sullo stesso container, Node v22.23.5: 4.415 passati, 0 falliti, 140 saltati; senza il rilascio 4.316 passati, 0 falliti, 239 saltati. Step 4 aspetta Modal, che dalla macchina di questo lavoro non si raggiunge.*
 
 ### Task B6: Le prove vere
 
@@ -238,11 +81,4 @@ Test:
 
 - [ ] **Step 1**: codice e test locali; **Step 2 (chi coordina, dopo conferma)**: la prova su Modal; il giro sul corpus; **Step 3**: la sezione del README con parametri, risultati, «Non misurato» e verdetto sulla «Verifica»; commit.
 
-### Task B7: I documenti
-
-**Files:**
-- Modify: `docs/specs/2026-11-15-pipeline-di-analisi.md` (la riga «Stack» della tabella; il punto che dice «pochi millisecondi»; «Stack. Applicato»), `docs/plugins/codebase-map.md`, `README.md` (il paragrafo sullo stack e le «regole in più»), `plugins/codebase-map/skills/map/references/premap.md` (la riga `services`), `daodan/core/technologies.py` e `daodan/core/pipeline/__init__.py` (le docstring), `docs/specs/2026-11-21-stack-dal-fork.md` (lo «Stato»: applicata, con le scelte confermate)
-
-Ogni frase dice ciò che il codice fa dopo B4–B5, con i tempi misurati in B6. Nessun riepilogo.
-
-- [ ] **Step 1**: modifiche; **Step 2**: `git grep` di `check_packages`, `specfy_rules`, `stack_source`, `pochi millisecondi`, `segni del registro` fuori da `docs/plans`: nessun riferimento rimasto al comportamento di prima; commit `docs: lo stack dal fork, com'è dopo il passaggio`.
+*Stato, 24 novembre 2026: Step 1 in corso. Step 2 aspetta Modal. Step 3 aspetta lo Step 2.*

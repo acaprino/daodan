@@ -1,0 +1,102 @@
+name: Modal
+
+# The runs that need the real tools, started by hand: the runner only launches them, the work is in Modal's containers.
+# It needs the repository secrets MODAL_TOKEN_ID and MODAL_TOKEN_SECRET. A push of this file only says whether they are set.
+on:
+  workflow_dispatch:
+    inputs:
+      run:
+        description: "suite: every test; proof: the real install of stack-analyser; corpus: the stack step on the corpus; baseline: the same on develop 68b784e"
+        type: choice
+        options: [suite, proof, corpus, baseline]
+        required: true
+  push:
+    branches: [stack-dal-fork]
+    paths: [.github/workflows/modal.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modal-${{ inputs.run }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+  MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: utf-8
+  BASELINE: 68b784ee70147e40dedc52d730296885fe78172e # develop before the switch (plan 3, point 7)
+
+jobs:
+  modal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    permissions:
+      contents: write # corpus and baseline commit their results file to the branch they ran on
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: The secrets
+        run: |
+          if [ -z "$MODAL_TOKEN_ID" ] || [ -z "$MODAL_TOKEN_SECRET" ]; then
+            echo "::error::MODAL_TOKEN_ID and MODAL_TOKEN_SECRET are not set in the repository secrets"
+            exit 1
+          fi
+          echo "the Modal secrets are set"
+
+      - name: Python with Modal and the project's dependencies
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/venv/bin/pip" install -q modal pytest -r daodan/core/requirements.txt
+
+      - name: Every suite
+        if: inputs.run == 'suite'
+        run: python tests/modal_pytest.py --shards 32 -q -n 2
+
+      - name: The real install of stack-analyser, and nothing of the project executed
+        if: inputs.run == 'proof'
+        run: python tests/modal_pytest.py tests/test_codebase_map_host_programs.py tests/test_codebase_map_stack_analyser.py -q -rw
+
+      - name: The stack step on the corpus
+        if: inputs.run == 'corpus'
+        working-directory: benchmarks/project-model
+        run: |
+          modal deploy modal_stack.py
+          python modal_stack.py spawn | tee "$RUNNER_TEMP/spawn.txt"
+          python "$GITHUB_WORKSPACE/benchmarks/project-model/tools/modal_wait.py" "$RUNNER_TEMP/spawn.txt"
+          python modal_stack.py fetch
+
+      - name: The same on develop before the switch
+        if: inputs.run == 'baseline'
+        run: |
+          git worktree add "$RUNNER_TEMP/base" "$BASELINE"
+          cd "$RUNNER_TEMP/base/benchmarks/project-model"
+          modal deploy modal_stack_fork.py
+          python modal_stack_fork.py spawn | tee "$RUNNER_TEMP/spawn.txt"
+          python "$GITHUB_WORKSPACE/benchmarks/project-model/tools/modal_wait.py" "$RUNNER_TEMP/spawn.txt"
+          python modal_stack_fork.py fetch
+          cp results/daodan_stack_fork.json \
+            "$GITHUB_WORKSPACE/benchmarks/project-model/results/daodan_stack_fork_develop_68b784e.json"
+
+      - name: The results file, committed to the branch
+        if: inputs.run == 'corpus' || inputs.run == 'baseline'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmarks/project-model/results
+          if git diff --cached --quiet; then
+            echo "the results did not change"
+            exit 0
+          fi
+          git commit -q -m "bench(stack): i risultati di ${{ inputs.run }} su Modal (run ${{ github.run_id }})"
+          git pull -q --rebase origin "$GITHUB_REF_NAME"
+          git push -q origin "HEAD:$GITHUB_REF_NAME"

@@ -496,35 +496,139 @@ def _all_evidence(component: dict):
         yield from _all_evidence(child)
 
 
+ENV_EXAMPLE = "ANTHROPIC_API_KEY=x\n"  # a variable the release's rules know (`anthropic`, prefix `ANTHROPIC_`)
+
+
+def _env_example(project: Path) -> list[str]:
+    """A file Daodan may not read, `.env.example`, in a live folder (`web/` holds a source file), as the files of the
+    project: the vector of a program that opens what it is not meant to. Its mark is not a file left behind but a
+    piece of evidence of kind `env`, which the release gives only for a file it opened."""
+    (project / "web").mkdir(exist_ok=True)
+    (project / "web" / "index.ts").write_text("export {}\n", encoding="utf-8")
+    (project / "web" / ".env.example").write_text(ENV_EXAMPLE, encoding="utf-8")
+    return ["web/index.ts"]
+
+
+def _env_evidence(result: dict) -> list[dict]:
+    """The evidence of kind `env`, or that comes from a `.env.example`."""
+    return [item for item in _all_evidence(result) if item["kind"] == "env" or item["path"].endswith("/.env.example")]
+
+
+def test_the_env_example_vector_is_a_file_the_perimeter_names(tmp_path):
+    """The Modal proof below plants it, and the perimeter is the only thing that keeps it from the release: here, with no
+    release, that the vector is a forbidden name of a live folder and that `perimeter` ignores it."""
+    import source_files
+    import stack_recognition
+    project = tmp_path / "project"
+    project.mkdir()
+    files = _env_example(project)
+    assert source_files.is_forbidden(".env.example") and (project / "web/.env.example").read_text() == ENV_EXAMPLE
+    assert stack_recognition.perimeter(project, files, ()) == ((), ("web/.env.example",), [])
+
+
 @pytest.mark.skipif(not (os.environ.get("DAODAN_STACK_ANALYSER") and os.environ.get("MODAL_TASK_ID")),
                     reason="a real proof on Modal (tests/modal_pytest.py): its report starts Node the naive way in "
                            "the trap project")
 def test_the_real_stack_analyser_runs_nothing_of_the_project(stack_trapped, tmp_path, monkeypatch):
-    """The pinned release (DAODAN_STACK_ANALYSER, next to the archive it came from, checked against its sha256), run by
-    the Node of the image. The report, in the warnings summary, says for each vector alone whether a naive start runs
-    it: that is a fact about this release, not the claim, but for one control: the `node-options` trap must fire there,
-    or a green would prove nothing. The claim, which passes or fails the test: started by Daodan
-    in the project holding every vector, with their variables set, it runs none of them, and it did read the project.
-    What it does not prove: it replaces `stack_analyser.cli` (the install: `engine_tools.download`, `unpack`, `publish`
-    on the real archive) and `stack_analyser.node` (`indexers.runtime.node`) by the image's own paths, so neither has run
-    with the real artefacts; it runs on the test image's Node, not the product's `NODE_VERSION`, and on Linux only."""
+    """The pinned release as Daodan installs and starts it. The report, in the warnings summary, says for each vector
+    alone whether a naive start runs it: that is a fact about this release, not the claim, but for one control: the
+    `node-options` trap must fire there, or a green would prove nothing. The claim, which passes or fails the test:
+    Daodan installs the release (`stack_analyser.cli`, with `shared_engine_dir` in a folder of the test: the real
+    download from github.com, the sha256 check, the unpack and the publish) and its own Node (`stack_analyser.node`,
+    `indexers.runtime.node`: nodejs.org, checked against the release's SHASUMS256); then, in the project holding every
+    vector with their variables set, it passes the perimeter `stack_recognition.perimeter` makes and starts the release
+    through `stack_analyser.run`. None of the traps runs, `.env.example` of a live folder (a file the release opens when
+    it is not told to leave it, which a control on a project of its own shows) is in the perimeter and no evidence of
+    kind `env` comes out, and the release did read the project.
+    What is replaced: nothing of the product's path. The image's copy of the release (`DAODAN_STACK_ANALYSER`, kept
+    with its archive) and its Node serve only the naive starts of the report and the check of the archive. The test needs
+    github.com and nodejs.org. What it does not prove: Windows (the perimeter file, the start without a shell, the
+    paths), where the release is not run here; the other kind of start, the release run by a Node that is not the one
+    Daodan installs; a release other than the pinned one."""
+    import subprocess
     import warnings
     import stack_analyser
+    import stack_recognition
+    from source_files import is_forbidden
     project, mark, node = stack_trapped
-    cli = Path(os.environ["DAODAN_STACK_ANALYSER"]).resolve()
-    assert hashlib.sha256((cli.parents[2] / "release.tgz").read_bytes()).hexdigest() == stack_analyser.SHA256
+    image_cli = Path(os.environ["DAODAN_STACK_ANALYSER"]).resolve()
+    assert hashlib.sha256((image_cli.parents[2] / "release.tgz").read_bytes()).hexdigest() == stack_analyser.SHA256
     assert node, "no `node` on the image's PATH"
-    naive = {name: _stack_naive(cli, tmp_path, name, vector) for name, vector in STACK_VECTORS.items()}
+    naive = {name: _stack_naive(image_cli, tmp_path, name, vector) for name, vector in STACK_VECTORS.items()}
     warnings.warn("stack-analyser naive starts:\n" + "\n".join(line for _fired, line in naive.values()), stacklevel=1)
     # the control: Node honours NODE_OPTIONS before any script, whatever the release, so here the trap must fire
     fired, line = naive["node-options"]
     assert fired, f"the node-options trap did not fire when started the naive way: the proof would be vacuous ({line})"
-    monkeypatch.setattr(stack_analyser, "cli", lambda: cli)
-    monkeypatch.setattr(stack_analyser, "node", lambda _project: Path(node).resolve())
-    result = stack_analyser.run(project)
+    # the install, for real, in a folder of the test
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    stack_analyser.cli.cache_clear()
+    release, program = stack_analyser.cli(), stack_analyser.node(project)
+    assert release != image_cli and (tmp_path / "shared") in release.parents and (tmp_path / "shared") in program.parents
+    assert (release.parents[2] / ".installed").is_file(), release
+    from indexers import runtime
+    started = subprocess.run([str(program), "--version"], capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL,
+                             env={key: value for key, value in os.environ.items() if not key.startswith("NODE_")})
+    assert started.stdout.strip() == runtime.NODE_VERSION, started  # Daodan's own Node, not the image's
+    # the control of the vector: told nothing, the release opens `.env.example` of a live folder
+    control = tmp_path / "control"
+    control.mkdir()
+    _env_example(control)
+    assert {item["tech"] for item in _env_evidence(stack_analyser.run(control))} == {"anthropic"}, \
+        "the release did not open the `.env.example`: the proof would be vacuous"
+    # the proof: the perimeter of the project, as the `stack` step makes it
+    files = [rel for rel in _env_example(project) + sorted(_files(project)) if not is_forbidden(Path(rel).name)]
+    skip, ignore, gaps = stack_recognition.perimeter(project, sorted(set(files)), ())
+    assert "web/.env.example" in ignore and gaps == []
+    result = stack_analyser.run(project, skip_dirs=skip, ignore=ignore)
     evidence = list(_all_evidence(result))
     warnings.warn(f"stack-analyser through stack_analyser.run: {len(evidence)} evidence rows, "
                   f"techs {result.get('techs')}", stacklevel=1)
     assert not mark.exists(), mark.read_text(encoding="utf-8")
+    assert _env_evidence(result) == []
     assert "react" in {item["tech"] for item in evidence}  # it did read the project
     assert all(item["path"].startswith("/") for item in evidence)
+
+
+@pytest.fixture
+def released(monkeypatch):
+    """The release named by `DAODAN_STACK_ANALYSER` and the `node` of the PATH in place of the install (no network), for
+    the test of a module that is not `real_stack`'s: the Modal proof above needs the real install, not this one."""
+    release, program = os.environ.get("DAODAN_STACK_ANALYSER"), shutil.which("node")
+    if not (release and program):
+        pytest.skip("il rilascio vero gira dove c'è (DAODAN_STACK_ANALYSER e node)")
+    import stack_analyser
+    monkeypatch.setattr(stack_analyser, "cli", lambda: Path(release))
+    monkeypatch.setattr(stack_analyser, "node", lambda _project: Path(program))
+    return stack_analyser
+
+
+def test_a_forbidden_file_of_a_live_folder_is_not_opened_by_the_real_release(released, tmp_path, monkeypatch):
+    """A plain project (no trap): a live folder holds `.env.example` naming a variable a rule knows. The step
+    (`stack_recognition.run`, on a real snapshot) passes it in the perimeter, and no sign of kind `env` comes out; the
+    release, started with no perimeter on the same folder, does open the file, so the green is not vacuous. This is the
+    release `.3` or later on Linux; Windows and the Node Daodan installs are the Modal proof's."""
+    import service_registry
+    import snapshot
+    import stack_recognition
+    import subprocess
+    app = tmp_path / "app"
+    app.mkdir()
+    (app / "web").mkdir()
+    (app / "web" / "package.json").write_text('{"name": "web", "dependencies": {"react": "18.0.0"}}\n', encoding="utf-8")
+    _env_example(app)
+    for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                    ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+        subprocess.run(command, cwd=app, check=True, capture_output=True)
+    manifest = tmp_path / "snapshot/manifest.sqlite"
+    snapshot.main(["write", str(app), "--out", str(manifest), "--no-engine", "--no-index", "--no-modules"])
+    passed = []
+    run = released.run
+    monkeypatch.setattr(released, "run", lambda root, **kwargs: passed.append(kwargs) or run(root, **kwargs))
+    answer = stack_recognition.run(manifest, service_registry.load(), {"packages": [], "excluded": []})
+    [kwargs] = passed
+    assert "web/.env.example" in kwargs["ignore"]
+    assert [item["state"] for item in answer["checkers"] if item["checker"] == "stack-analyser"] == ["ran"]
+    signs = [sign for entry in answer["found"] for sign in entry["signs"]]
+    assert [sign for sign in signs if sign["sign"] == "env" or sign["path"].endswith(".env.example")] == []
+    assert "react" in {entry["id"] for entry in answer["found"]}  # it did read the project
+    assert {item["tech"] for item in _env_evidence(run(app))} == {"anthropic"}  # the control

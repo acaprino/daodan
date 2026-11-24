@@ -186,12 +186,12 @@ _C_NOISE_RE = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\
 # library header (the last two are Linguist's own rule for `.h`).
 _CPP_HEADER_RE = re.compile(
     r"\bnamespace\s+\w+(?:\s*::\s*(?:inline\s+)?\w+)*\s*\{|^[ \t]*namespace\s*\{|^[ \t]*namespace\s+\w+\s*=(?!=)"
-    r"|\bclass\s+\w+[^;(){}]*\{|\btemplate\s*<|^\s*(?:public|private|protected)\s*:|\busing\s+namespace\b|\bstd::\w"
-    r"|^\s*#\s*include\s*<(?:cstdint|string|vector|map|list|array|bitset|queue|stack|forward_list|unordered_map"
+    r"|\bclass\s+\w+[^;(){}]*\{|\btemplate\s*<|^[ \t]*(?:public|private|protected)\s*:|\busing\s+namespace\b|\bstd::\w"
+    r"|^[ \t]*#\s*include\s*<(?:cstdint|string|vector|map|list|array|bitset|queue|stack|forward_list|unordered_map"
     r"|unordered_set|(?:i|o|io)stream)>",
     re.MULTILINE,
 )
-_OBJC_HEADER_RE = re.compile(r"^\s*@(?:interface|implementation|protocol|class|property|end)\b", re.MULTILINE)
+_OBJC_HEADER_RE = re.compile(r"^[ \t]*@(?:interface|implementation|protocol|class|property|end)\b", re.MULTILINE)
 # A `.ts` file that is an XML document is a Qt Linguist translation (`<!DOCTYPE TS>`), not TypeScript.
 _XML_RE = re.compile(r"\s*<(?:\?xml|!DOCTYPE)\b")
 

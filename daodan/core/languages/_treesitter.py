@@ -691,8 +691,11 @@ def check_syntax_errors(root: Any) -> str | None:
     first_line: int | None = None
     while stack:
         node = stack.pop()
+        flagged = [child for child in (getattr(node, "children", None) or ()) if getattr(child, "has_error", False)]
+        # an ERROR node, a missing token, or the node that has the error when none of its children does (a grammar may
+        # flag a body and show no ERROR node: the line is that node's, not the file's first)
         is_err = getattr(node, "type", "") == "ERROR" or getattr(node, "is_missing", False) or (
-            getattr(node, "has_error", False) and not getattr(node, "children", None))  # a missing token
+            getattr(node, "has_error", False) and not flagged)
         if is_err:
             line = getattr(node, "start_point", (0, 0))[0] + 1
             if first_line is None or line < first_line:

@@ -419,6 +419,35 @@ class WholeTableTests(unittest.TestCase):
         self.assertEqual(row["entries"]["state"], "non misurato")
         self.assertNotIn("system", row)
 
+    def test_the_secrets_the_answers_masked_and_the_tokens_of_the_sessions_are_counted_from_what_a_run_kept(self):
+        answer = lambda text: {"type": "user", "message": {"content": [  # noqa: E731
+            {"type": "tool_result", "content": [{"type": "text", "text": text}]}]}}
+        stream = [answer(json.dumps({"status": "ok", "masked_secrets": 2})), answer(json.dumps({"status": "ok"})),
+                  answer("Error: not JSON"), {"type": "assistant", "message": {"content": []}}]
+        usage = {"input_tokens": 10, "cache_creation_input_tokens": 100, "cache_read_input_tokens": 1000,
+                 "output_tokens": 50}
+        with tempfile.TemporaryDirectory() as folder:
+            tag, expected = Path(folder) / "tag", Path(folder) / "expected"
+            self._write(tag / "cases/shop/archive.json",
+                        {"/repo": {"kept": 5, "left": 0, "bytes": 1, "masked": {"a.py": 1}, "withheld": []}})
+            for rep in (1, 2):
+                run = self._run(tag, f"shop-{rep}", "shop", rep, cost_usd=0.1, engine={"exit": 0, "languages": {}},
+                                sessions={"rules": {"seconds": 30, "turns": 4, "usage": usage},
+                                          "mapper": {"seconds": 10, "turns": 2, "usage": usage}})
+                self._write(run / "stream.jsonl", "\n".join(json.dumps(event) for event in stream))
+            row = score.whole(tag, expected)["shop"]["haiku system session"]
+            bare = self._run(tag, "bare-1", "bare", 1, cost_usd=0.1, engine=None)
+            self._write(tag / "cases/bare/archive.json", {"/r": {"kept": 1, "left": 0, "bytes": 1, "masked": {}, "withheld": []}})
+            self.assertEqual(score.whole(tag, expected)["bare"]["haiku system session"]["secrets"]["value"]
+                             ["in_the_texts_sent_out"]["state"], "non misurato")
+        self.assertEqual(row["secrets"]["value"]["masked_in_the_archive"], 1)
+        self.assertEqual(row["secrets"]["value"]["in_the_texts_sent_out"],
+                         {"state": "misurato", "value": {"answers": 6, "read": 4, "masked_secrets": 4, "runs": 2}})
+        self.assertEqual(row["cost"]["value"]["usage"], {
+            "tokens": {"input_tokens": 40, "cache_creation_input_tokens": 400, "cache_read_input_tokens": 4000,
+                       "output_tokens": 200},
+            "seconds": {"rules": 60, "mapper": 20}, "turns": {"rules": 8, "mapper": 4}})
+
     def test_a_run_given_the_rules_of_another_is_not_a_second_independent_run(self):
         with tempfile.TemporaryDirectory() as folder:
             tag, expected = Path(folder) / "tag", Path(folder) / "expected"

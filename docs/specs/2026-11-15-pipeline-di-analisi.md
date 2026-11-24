@@ -1,6 +1,6 @@
 # Pipeline di analisi: step, adattatori, listener
 
-**Stato:** In parte. Nel codice (`daodan/core/pipeline/`): gli step `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union` (`pipeline.STEPS`), gli adattatori che si dichiarano, il bus degli eventi, la preparazione, la mappa dei moduli e lo stack (sezione 1), la reattività (sezione 6), la solidità (8.9), la funzione del piano (8.4), lo snapshot in due scritture (8.6, punti 1, 3 e 5), i pezzi A–E1 del passo 5 di 8.11, il formato comune degli adattatori di ingressi (8.13). Mancano: i nomi di 8.7 (fatto solo `NAME` in `indexers/`), la freschezza in un punto solo e `step.skipped` (8.8), `connect` che unisce (`union` oggi elenca), il riconoscitore dal fork, linguaggio e configurazione degli import presi da `scan` (resto del passo 5), le prove 2 e 5 di 8.10, le regole di 7.3. Come gira il processo, con esempi: [Codebase Map, sezione Pipeline](../plugins/codebase-map.md#pipeline). **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
+**Stato:** In parte. Nel codice (`daodan/core/pipeline/`): gli step `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union` (`pipeline.STEPS`), gli adattatori che si dichiarano, il bus degli eventi, la preparazione, la mappa dei moduli e lo stack, che riconosce solo attraverso stack-analyser ([spec](2026-11-21-stack-dal-fork.md)) (sezione 1), la reattività (sezione 6), la solidità (8.9), la funzione del piano (8.4), lo snapshot in due scritture (8.6, punti 1, 3 e 5), i pezzi A–D del passo 5 di 8.11 (E1 tolto e F fermo per le scelte del 24 novembre, 8.3), il formato comune degli adattatori di ingressi (8.13). Mancano: i nomi di 8.7 (fatto solo `NAME` in `indexers/`), la freschezza in un punto solo e `step.skipped` (8.8), `connect` che unisce (`union` oggi elenca), `plan` come step, il linguaggio dei file da una libreria nostra ([spec](2026-11-24-libreria-del-linguaggio.md), nulla nel prodotto), le prove 2 e 5 di 8.10, le regole di 7.3. Che cosa gira oggi e in che ordine: [Codebase Map, «Oggi nel codice»](../plugins/codebase-map.md#oggi-nel-codice). **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
 
 Un codice modulare a step, con il pattern adapter e listener dell'intero processo: una scansione di moduli e tecnologie, poi per ogni linguaggio o framework un adattatore sopra lo strumento ufficiale, con eventi e avanzamento fino al grafo completo.
 
@@ -29,7 +29,7 @@ Il passaggio misurato fra `analyze` e `dynamic`: su tududi, JavaScript, delle 16
 
 ## 1. Gli step, dichiarati in un punto solo
 
-**In uso.** `pipeline.STEPS`; ogni step ha lo stesso contratto: `inputs`, `run(context)`, `outputs`. L'ingresso della pipeline è `pipeline.INPUTS` (l'inventario). Lo snapshot lo scrive ancora `snapshot.py write`, in due scritture (inventario, poi lettura), che poi esegue la pipeline fino a `stack` e avvia in background il passaggio (`resolve_edges.ensure_edges`).
+**In uso.** `pipeline.STEPS`; ogni step ha lo stesso contratto: `inputs`, `run(context)`, `outputs`. L'ingresso della pipeline è `pipeline.INPUTS` (l'inventario). Lo snapshot lo scrive ancora `snapshot.py write`, in due scritture (inventario, poi lettura), che poi esegue la pipeline fino a `stack` e avvia in background il passaggio (`resolve_edges.ensure_edges`). Chi scrive lo snapshot, chi esegue quali step e quando: [Codebase Map, «Oggi nel codice»](../plugins/codebase-map.md#oggi-nel-codice).
 
 | Step | Cosa fa | Uscita |
 | --- | --- | --- |
@@ -48,12 +48,11 @@ Il passaggio misurato fra `analyze` e `dynamic`: su tududi, JavaScript, delle 16
 4. `modules.sync_with_premap` allinea `modules.json` alla pre-mappa in una scrittura sola.
 5. `modules.json`, `premap.json` e `technologies.json` restano negli stessi percorsi, per CLI, MCP, viewer e benchmark.
 
-**Stack.** Prova: `tests/test_codebase_map_stack_rationalized.py`; README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «Lo step `stack` sul corpus».
+**Stack.** Applicato (Scelte, 5); dal fork di stack-analyser ([spec](2026-11-21-stack-dal-fork.md); il processo: [Codebase Map, «Lo step `stack`»](../plugins/codebase-map.md#lo-step-stack)). Prova: `tests/test_codebase_map_stack_rationalized.py`, `tests/test_codebase_map_stack_recognition.py`, `tests/test_codebase_map_stack_sources.py`; README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «Lo step `stack` sul corpus» e «Lo step `stack` dal fork».
 
-1. `service_registry.recognize` legge i fatti della scansione (`packages`, `services`, `docker_builds`, `excluded`) senza rileggere i file e dà a ogni voce la sua categoria (framework, libreria, strumento, servizio: [flussi e mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), 5.1).
-2. `technologies.json` dà per ogni modulo `{id, name, kind, nature, provenance, paths, languages, toolchains, frameworks, libraries, services, tools, technologies}`, più la vista `units`. `libraries` elenca tutte le librerie che il modulo dichiara, anche fuori catalogo.
-3. Il registro copre anche gli ecosistemi `maven`, `nuget`, `pub`, `hex` e `swiftpm`, e tiene framework ed esecutori dei test separati dai servizi esterni.
-4. Il passaggio del riconoscimento al fork di stack-analyser è una [spec a parte](2026-11-21-stack-dal-fork.md), non collegata allo step.
+1. `stack_recognition.run` manda a stack-analyser i fatti della scansione (`packages`, `services`, `docker_builds`) come dichiarazioni, senza rileggere i manifest, lascia fuori `excluded` dal perimetro e dalle prove, e `service_registry.entry_category` dà a ogni voce la sua categoria (framework, libreria, strumento, servizio: [flussi e mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), 5.1).
+2. `technologies.json` dà per ogni modulo, anche `logical` e `virtual`, `{id, name, kind, nature, provenance, paths, languages, toolchains, frameworks, libraries, services, tools, technologies}`, più la vista `units` delle unità fisiche e virtuali. `libraries` elenca tutte le librerie che il modulo dichiara: arricchite dall'id e dal nome della tecnologia riconosciuta sullo stesso pacchetto e file, mai tolte se nessuna lo è.
+3. Il registro è l'anagrafica, senza segni: la categoria tiene framework ed esecutori dei test separati dai servizi esterni (`registry_build.CATEGORY_OF_TYPE`, le categorie curate delle aggiunte).
 
 **Dinamico.** Un osservatore per tecnologia, un modulo di `dynamic/` che si dichiara (`ENTRY`, `VERSION`, `LANGUAGES`), elencato da `dynamic.observers()`. Parte per le tecnologie che hanno un grafo statico nello store e prende il comando dei test dalla pre-mappa. Una tecnologia senza osservatore, un progetto senza comando dichiarato e una corsa senza motore di container sono lacune: la pipeline arriva comunque a `union`. `DAODAN_DYNAMIC=off` salta lo step.
 
@@ -94,11 +93,11 @@ Il passaggio misurato fra `analyze` e `dynamic`: su tududi, JavaScript, delle 16
 
 **In uso.** Prova: `tests/test_codebase_map_reactive_server.py`; `tests/test_codebase_map_mcp.py` (`test_events_and_status_follow_the_analysis_pipeline_of_the_run`). I numeri 4 e 5 erano il riordino del codice e il suo ordine di lavoro, fatti o passati a 8.7 e 8.11: non si riusano.
 
-1. Sotto `project_lock` girano solo letture dello snapshot: la scansione veloce (`Scan(fast=True)`, senza runner, pochi millisecondi) e lo stack. Così fanno `MapService.create_run` e l'aggiornamento dell'hook `PostToolUse` (`snapshot.refresh_working --hook`). Il resto lo fa il processo staccato (`resolve_edges.py --pass`), fuori dal blocco: la scansione, se restano comandi di modello `not_run`, poi stack, analisi, dinamico e unione.
-2. `snapshot.py write` da riga di comando fa la scansione intera e lo stack prima di avviare il passaggio.
-3. `MapService` dà `stack(run_id, module=None)`; `status(run_id)` dice lo stato degli step e del run `working`; `modules(run_id)` porta `nature`, `languages` e `toolchains`; a ogni evento del servizio o aggiornamento dell'hook si registra un impulso (`live-pulse.jsonl`).
-4. Il server MCP espone `codebase_map_stack`, la risorsa `daodan://project/live` e notifiche di avanzamento che non bloccano.
-5. Il server dell'interfaccia inoltra `pipeline_after` e `run=working` in `/api/events`, aggiunge `/api/modules`, `/api/stack` e lo stream `/api/stream`, solo da loopback e con il token, e dà natura, linguaggi, toolchain e stack nelle entità senza aspettare il container.
+1. Sotto `project_lock` girano solo letture dello snapshot: la scansione veloce (`Context.fast_scan`, senza runner) e lo stack, che lancia stack-analyser sull'host con il Node di Daodan. Il piano 2 dello stack dal fork ha misurato lo stack della veloce, con il rilascio `.2`: mediana 0,523 s, massimo 5,791 s su 178 fixture, contro 0,013 s del registro ([README di project-model](../../benchmarks/project-model/README.md), «Lo step `stack` dal fork»); dopo il passaggio non è misurato. Così fanno `MapService.create_run` e l'aggiornamento dell'hook `PostToolUse` (`snapshot.refresh_working --hook`). Il resto lo fa il processo staccato (`resolve_edges.py --pass`), fuori dal blocco: la scansione, se restano comandi di modello `not_run`, poi stack, analisi, dinamico e unione.
+2. `snapshot.py write` da riga di comando fa la scansione intera e lo stack prima di avviare il passaggio del motore.
+3. `MapService` dà `stack(run_id, module=None)`; `status(run_id)` dice lo stato degli step della pipeline e del run `working`; `modules(run_id)` porta `nature`, `languages` e `toolchains`; a ogni evento del servizio o aggiornamento dell'hook si registra un impulso (`live-pulse.jsonl`).
+4. Il server MCP espone lo strumento `codebase_map_stack`, la risorsa `daodan://project/live` e notifiche di avanzamento e di aggiornamento che non bloccano.
+5. Il server dell'interfaccia inoltra `pipeline_after` e `run=working` in `/api/events`, aggiunge `/api/modules`, `/api/stack` e lo stream `/api/stream`, solo da loopback e con il token, chiuso in modo pulito allo spegnimento, e dà `nature`, `languages`, `toolchains`, `frameworks`, `libraries`, `services` e `tools` nelle entità senza aspettare il container.
 
 ## 7. Analisi unificata: niente si fa due volte
 
@@ -121,7 +120,7 @@ Il passaggio misurato fra `analyze` e `dynamic`: su tududi, JavaScript, delle 16
 
 ## 8. La pipeline riordinata: ordine, piano, nomi
 
-**Approvata dal proprietario; nel codice in parte** (lo stato è su ogni punto). I fatti sul codice sono letti in `pipeline/`, `snapshot.py`, `engine_pass.py`, `import_resolution.py`, `technologies.py` e nei contratti di `languages/`, `premap/`, `indexers/` e `dynamic/`, non in ogni adattatore.
+*Chiesta dal proprietario il 22 e il 23 novembre 2026 e approvata: i nomi con «sì a tutto», l'ordine e la regola di 8.1 con parole sue. **Stato al 24 novembre 2026:** il codice ha 8.9, i passi 1, 2 e 4 di 8.11, parte dei passi 3 e 5 (pezzi A–D; E1 tolto e F fermo, per le misure: 8.3) e 8.13. Non ha i nomi nuovi (8.7), `plan` come step, la freschezza in un punto solo (8.8) e l'unione di `connect`. Che cosa gira oggi e in che ordine: [Codebase Map, «Oggi nel codice»](../plugins/codebase-map.md#oggi-nel-codice). Dove il testo sotto dice «oggi» senza una data, è il codice del 22 e 23 novembre, prima di quei passi; fanno eccezione le colonne «Oggi nel codice» di 8.2 e «Step oggi» di 8.7, aggiornate al 24 novembre. I fatti sul codice sono letti in quei due giorni in `pipeline/`, `snapshot.py`, `engine_pass.py`, `import_resolution.py`, `technologies.py` e nei contratti di `languages/`, `premap/`, `indexers/` e `dynamic/`, non in ogni adattatore.*
 
 **8.1 La regola.** Ogni step parte da ciò che gli step prima hanno stabilito. **Ogni fatto ha un padrone solo:** uno step non riscopre ciò che un altro stabilisce, lo chiede a lui. Dove il padrone non ha potuto stabilirlo (manca il container), chi ne ha bisogno usa un ripiego e lo scrive accanto al dato.
 
@@ -139,30 +138,38 @@ Il passaggio misurato fra `analyze` e `dynamic`: su tududi, JavaScript, delle 16
 
 | Step | Adattatore | Strumento sotto | Oggi nel codice |
 | --- | --- | --- | --- |
-| 1 `scan` | scanner | Il percorso dell'albero (`tree_scope.py`); go-enry; cargo, gradle, maven, npm, `tsc`, cmake, … | Step `scan`; l'inventario lo scrive lo snapshot, prima della pipeline (`file_inventory.write`) |
-| 2 `recognize` | recognizer | stack-analyser, il fork ([spec](2026-11-21-stack-dal-fork.md)) | Step `stack`, sul registro (`service_registry.py`); legge solo i fatti dello step 1 |
-| 3 `plan` | nessuno | — | Una funzione, non uno step (`pipeline/plan.py`), che `parse`, il passaggio e il passo dinamico chiamano |
-| 4 `parse` | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari (`languages/sql.py`, `plsql.py`) | Step `parse`, dopo `scan` e `stack`; i chiamanti passano ancora da `snapshot.py write` |
+| 1 `scan` | scanner | Il percorso dell'albero (`tree_scope.py`); go-enry; cargo, gradle, maven, npm, `tsc`, cmake, … | Lo step `scan` c'è; l'inventario lo scrive lo snapshot, prima della pipeline |
+| 2 `recognize` | recognizer | stack-analyser, il fork ([spec del 21 novembre](2026-11-21-stack-dal-fork.md)) | Step `stack`, con il fork (`stack_recognition.py`); legge solo i fatti dello step 1 e i file che il fork legge da sé |
+| 3 `plan` | nessuno | — | Una funzione, non uno step (`pipeline/plan.py`; 8.11, passo 4): la chiamano la lettura, `engine_pass.pass_plan` e il passo dinamico; lo step `parse` la emette come evento |
+| 4 `parse` | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari (`languages/sql.py`, `plsql.py`) | Step `parse`, terzo in `STEPS` (8.11, passi 3 e 5); ogni chiamante legge ancora prima, con `write_snapshot`, e lo step trova lo store letto |
 | 5 `resolve` | resolver | Un indicizzatore SCIP per tecnologia (scip-typescript serve quattro linguaggi); per i fogli di stile i loro parser | Step `analyze` |
 | 6 `observe` | observer | Un registratore per linguaggio (`*_record.*`); per l'app, Chromium senza interfaccia di Playwright (`dynamic/app.py`, `explore.cjs`) | Step `dynamic`; senza grafo statico non parte (`no-static-graph`); l'app si avvia solo con npm (`start_runner_not_supported` per pnpm, Yarn e Bun) |
 | 7 `connect` | nessuno | — | Step `union`: dice ciò che il grafo ha e non ha, non unisce ancora |
 
-Perché `recognize` e `plan` stanno prima di `parse`: `recognize` non legge nulla di ciò che `parse` produce, mentre `parse` deve sapere che cosa leggere e come. Perché gli archi fra moduli e gli ingressi dei flussi stanno in `connect`: uniscono ciò che `parse` legge a ciò che `scan` stabilisce, e cambiano quando cambia uno dei due.
+Perché `recognize` e `plan` stanno prima di `parse`: `recognize` non legge nulla di ciò che `parse` produce (`technologies.py`: solo i fatti dello step 1), mentre `parse` deve sapere che cosa leggere e come. Perché gli archi fra moduli e gli ingressi dei flussi stanno in `connect`: uniscono ciò che `parse` legge a ciò che `scan` stabilisce, e cambiano quando cambia uno dei due; in `parse`, a un modulo che lo strumento di build corregge dopo si dovrebbero rileggere file che non sono cambiati. Fino al 23 novembre li scriveva lo step `scan` (`module_derive`, `premap/flow_entries.py`), perché girava dopo la lettura; ora gli archi li aggiunge il primo lettore del grafo intero (`modules.ensure_graph`, anche lo step `union`) e il legame lo fanno i collegamenti (`binder.bind`): 8.11, passo 5, pezzi A e B.
 
-**8.3 Che cosa `parse` smette di scoprire da sé.** Quattro fatti che non sono suoi:
+**8.3 Che cosa `parse` smette di scoprire da sé.** *Stato al 24 novembre 2026: il punto 1 è fatto (8.11, passo 2). Del punto 2 il linguaggio è dell'inventario, che lo decide ancora con estensione e contenuto (`file_inventory.write`), non con go-enry. Il punto 3 è tolto (deciso il 24 novembre, sotto). Il punto 4 resta. Il testo sotto descrive il codice del 22 novembre.* Oggi gira per primo, e stabilisce da solo quattro fatti che non sono suoi:
 
 1. **Quali file ci sono.** Fatto: li riceve dall'inventario, non percorre l'albero.
 2. **Il linguaggio di un file.** Fatto a metà: la lettura non sceglie il linguaggio, ma l'inventario lo dà ancora per estensione, più espressioni regolari sul contenuto per `.h`, `.ts` e `.sql` (`languages.detect_language`). Da fare: il linguaggio da go-enry, con l'estensione come ripiego dichiarato.
 3. **Quali file lasciare fuori.** Fatto sul percorso inventario → pipeline (8.11, pezzo E1); `write_snapshot`, che ogni chiamante usa ancora, legge come prima.
 4. **La configurazione degli import.** Da fare: oggi legge `tsconfig`, `jsconfig` e i workspace a mano (`import_resolution.py`); diventa: radici e alias da `tsc`, la lettura a mano come ripiego dove `tsc` non è girato.
 
-In più cerca il ponte di Tauri in ogni file Rust (`languages/rust.py`): una lettura di framework, che il piano assegnerà solo dove `recognize` trova quel framework. La risoluzione degli import non è parte della lettura di un file: si calcola dal manifest e dalla configurazione (`import_resolution.resolved_imports`), e si ricalcola senza rileggere quando radici e alias cambiano.
+**Scelte del 24 novembre 2026, dopo le misure di 8.10.** Criterio del proprietario: meno codice nostro possibile, e dati da sorgenti aggiornate. Le misure sono in [`benchmarks/project-model`](../../benchmarks/project-model/README.md).
 
-**8.4 Il piano.** Una funzione sola, dall'inventario, dal modello del progetto, dalle tecnologie e dalle dichiarazioni degli adattatori. Non stabilisce fatti sul progetto: solo scelte. *Nel codice:* `pipeline/plan.py`, prove in `tests/test_codebase_map_plan.py`, che guardano i lanci veri; fuori restano il nodo di preparazione, i comandi degli osservatori e la freschezza per nodo.
+| Punto | Che cosa si fa | Chi l'ha deciso | Perché |
+| --- | --- | --- | --- |
+| 2, il linguaggio | Verrà da una libreria nostra, con il catalogo di Linguist come punto di partenza ([spec](2026-11-24-libreria-del-linguaggio.md)). **Nel prodotto oggi non c'è nulla:** resta `languages.detect_language` | Proprietario | go-enry gira nel container, dopo la lettura: la nostra tabella sarebbe rimasta come ripiego. Su 47.543 file i due linguaggi divergono in 87. Un primo lettore dei soli dati di Linguist, provato e non entrato: leggeva come C 95 header C++ su 6.857 e perdeva 8 `.ts` su 47.999 |
+| 3, quali file lasciare fuori | `parse` non esclude nulla: l'esclusione resta l'etichetta `excluded` della pre-mappa. E1 è tolto | Proprietario («C») | I predicati di Linguist rispondono a «conta nelle statistiche», non a «non è codice del progetto»: su 56 progetti veri toglierebbero 1.496 file letti, verso cui vanno 96 import (`CTFd/cache/__init__.py`, importato da 45 file) |
+| La lettura dentro lo step `parse` | Tolta: l'unica lettura è `write_snapshot`. Lo step dice solo il piano, e uno store di solo inventario ferma la pipeline | Proprietario («C») | Nessun chiamante la usava |
+| 4, la configurazione degli import | Ferma: resta la lettura a mano | Chi scrive | Sui 25 progetti veri la configurazione di `tsc` guadagna 0 import e ne perde 110. Da rivalutare un risolutore pronto (`ts.resolveModuleName`, oxc-resolver) solo se riduce il codice |
+| I chiamanti verso «inventario + pipeline» | Fermi | Chi scrive | Con E1 e la lettura in `parse` tolti, non cambia nulla per il prodotto, e `create_run` e l'hook leggerebbero sotto il blocco del progetto |
+
+**8.4 Il piano.** Una funzione sola, dall'inventario, dal modello del progetto, dalle tecnologie e dalle dichiarazioni degli adattatori. Non stabilisce fatti sul progetto: solo scelte.
 
 - **Un nodo** è un adattatore sulle sue unità o sui suoi file: lo step, l'adattatore con la versione, su che cosa gira, se chiede il container, di quali altri nodi ha bisogno. **Una lacuna** è ciò che nessun adattatore serve, con la causa.
-- **I bisogni fanno il grafo.** Un resolver ha bisogno del parser del suo linguaggio; un observer del resolver. La preparazione è un nodo, fatto una volta per analisi, di cui hanno bisogno gli strumenti di build di `scan`, i resolver e gli observer: non è uno step.
-- **Un nodo il cui bisogno è fallito non parte,** e dice quale (`need`). Il blocco vale per linguaggio.
+- **I bisogni fanno il grafo.** Un resolver ha bisogno del parser del suo linguaggio; un observer del resolver. La preparazione (toolchain e dipendenze nel container, «Preparazione») è un nodo, fatto una volta per analisi, di cui hanno bisogno gli strumenti di build di `scan`, i resolver e gli observer: non è uno step.
+- **Un nodo il cui bisogno è fallito non parte,** e dice quale. Il 22 novembre lo facevano due casi, ognuno a modo suo (dal 23 lo dice il piano, `plan.blocked` e `plan.need`: 8.11, passo 4): un linguaggio che la lettura non ha letto lascia il suo analyzer `unavailable` (`engine_pass.run_pass`), e un linguaggio senza grafo statico non ha osservatore (`no-static-graph`).
 - **Ogni file dell'inventario è in un nodo di `parse` o ha un motivo di esclusione.** Nessun adattatore gira fuori dal piano.
 - **Si ricalcola quando un fatto cambia,** e rifà solo i nodi che leggono quel fatto (8.8).
 - È il risultato dello step e un suo evento. Un file a parte entra quando l'interfaccia mostra il piano prima che l'analisi parta.
@@ -197,8 +204,8 @@ Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto 
 | --- | --- | --- | --- |
 | `scan`, più l'inventario di `snapshot.py write` | `scan` | scanner | `premap/` → `scanners/` |
 | `stack` | `recognize` | recognizer | `stack_analyser.py` |
-| la funzione del piano | `plan` | nessuno | `pipeline/` |
-| `parse` | `parse` | parser | `languages/` → `parsers/` |
+| manca come step; la funzione è `pipeline/plan.py` | `plan` | nessuno | `pipeline/` |
+| `parse`, più la lettura di `write_snapshot` | `parse` | parser | `languages/` → `parsers/` |
 | `analyze` | `resolve` | resolver | `indexers/` → `resolvers/` |
 | `dynamic` | `observe` | observer | `dynamic/` → `observers/` |
 | `union` | `connect` | nessuno | `pipeline/` |
@@ -260,12 +267,13 @@ Misure da fare, su Modal con gli strumenti veri, nel README di [`benchmarks/proj
    - **B, fatto:** nessuna sorgente della pre-mappa legge simboli. Il legame al simbolo si fa nei collegamenti: `binder.bind`, `angular.bind`, `flow_entries.evidence`.
    - **C, fatto:** pre-mappa, struttura del grafo dei moduli e tecnologie si legano all'impronta dell'inventario.
    - **D, fatto:** gli step sono `scan, stack, parse, …`; `scan` e `stack` leggono le righe dell'inventario e su uno store di solo inventario scrivono ciò che scrivono su uno letto (`tests/test_codebase_map_scan_before_parse.py`). Da misurare su Modal: in un progetto Angular `scan` legge l'albero di ogni file TypeScript, prima solo dei file che importavano `Component`.
-   - **E1, fatto:** un file che la faccia `excluded` della pre-mappa contiene non entra in nessun nodo di `parse` (`plan.excluded`): resta a livello di file, con il linguaggio dell'inventario e la nota `excluded: <motivo>`, e non si riusa mai. Senza una pre-mappa fresca `parse` non esclude niente e lo dice. Aperto: un file C o C++ escluso dà ancora il suo contesto di include ai file del progetto (`cfamily.include_contexts`).
-   - **F0, misurato:** i `paths` di `tsc` registrati contro `import_resolution.ts_path_config`, sulle 11 fixture con albero: README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «I percorsi TypeScript di Daodan contro `tsc`». F, la configurazione da `tsc` con la lettura a mano come ripiego dichiarato, aspetta Modal.
-   - **Restano:** i chiamanti che passano da `write_snapshot` all'inventario seguito dalla pipeline, dopo la misura di 8.10; il linguaggio da go-enry; la configurazione degli import da `tsc`; le prove 2 e 5.
+   - **E1, tolto il 24 novembre 2026** (decisione del proprietario, 8.3): escludeva dalla lettura i file della faccia `excluded` della pre-mappa; nessun chiamante l'ha mai usato.
+   - **F0, misurato:** i `paths` di `tsc` registrati contro `import_resolution.ts_path_config`, sulle 11 fixture con albero: 5 coppie unità-pattern uguali, 4 che Daodan non vede, 0 diverse, 0 in più (README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «I percorsi TypeScript di Daodan contro `tsc`»). **F, fermo** (8.3): sui progetti veri la configurazione di `tsc` non guadagna import.
+   - **Misurato su Modal il 24 novembre 2026,** da un clone pulito di `76f1e2aa9` con un'analisi fresca: phazly 15/38 flussi chiusi e 105/240 frecce certe (base 15 e 104); Kotlin fallito come nella corsa di base (build Android).
+   - **Restano:** la sorgente Flask, che lega ancora i gestori ai simboli quando legge la risposta del comando; le prove 2 e 5. Fermi per le scelte del 24 novembre (8.3): i chiamanti verso «inventario + pipeline», la configurazione degli import da `tsc`.
 6. I nomi, una famiglia per volta (8.7), e la dichiarazione comune (8.8).
 
-Il recognizer entra con il passaggio al fork, nella sua spec.
+Il recognizer entra con il passaggio al fork, nella sua spec: lo step `stack` riconosce solo con stack-analyser.
 
 **8.12 Non letto.** Se le fonti della pre-mappa che guardano un framework (`noir`, `nextjs`) siano lavoro che dipende da `recognize`, e vadano quindi nel piano. Che cosa resta del container di uno stage chiuso da fuori (8.9). `pass` contro `run`. Quanti punti del codice tocca la rinomina.
 

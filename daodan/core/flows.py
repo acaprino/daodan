@@ -1100,6 +1100,28 @@ def _declared_routes(found: list[dict], offered: list[dict]) -> tuple[list[dict]
     return points, gaps
 
 
+def _spec_routes(rows: list[dict], offered: list[dict]) -> tuple[list[dict], list[dict]]:
+    """`(points, gaps)`: the routes a specification file declares and no function holds, offered at the file's own symbol. `rows` are
+    Noir's rows tagged `spec-only` that the binder could not place on a function (the tool says it is a contract, so nothing is
+    guessed from the file's name). A route a point of `offered` already has, by method and path schema and whatever its service, is
+    the contract agreeing with the code and adds none; a row with no single method and schema is a gap. A call that meets such a
+    point meets the contract: its edge says `spec`.
+    shortcut: the symbol is the file's module symbol, which the snapshot may not read (a `.yaml` has no declarations); the
+    edge is there for the route, the node is the file; upgrade when a specification's operations are nodes of their own."""
+    points, gaps = [], []
+    taken = {o["key"][1:] for o in offered}
+    for row in rows:
+        method = row.get("method")
+        key = REST.key(ANY_SERVICE, method, row["schema"]) if method and row.get("schema") else None
+        if not key:
+            gaps.append({"site": row["site"], "symbol": row["symbol"],
+                         "reason": f"declared route {method} {row.get('path')}: the specification gives no single method and path schema"})
+        elif key[1:] not in taken:
+            taken.add(key[1:])
+            points.append({"symbol": row["symbol"], "key": key, "site": row["site"], "spec": True})
+    return points, gaps
+
+
 def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
     """Accesses, deduced links, entry points and gaps of a snapshot under the given rules."""
     import entries as entry_reader
@@ -1151,6 +1173,9 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             if same is None:
                 kept.append(item)
         declared = kept
+        # A route only a specification declares has no function to hold it: it is no entry and no gap, a point offered below.
+        spec_rows = [item for item in declared if item.get("spec_only") and item.get("gap")]
+        declared = [item for item in declared if not (item.get("spec_only") and item.get("gap"))]
         candidates = candidates + declared + _observed_entries(manifest, store, facts, gaps)
         callbacks = {item["symbol"]: item["owner"] for item in candidates
                      if item.get("handler_source") == "inline" and item["symbol"] in facts.declarations
@@ -1329,8 +1354,9 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         actions[:] = [action for action in actions if action.get("reader") != "observed" or action["handler"] not in starts]
         # The routes Noir and Next.js declare are offered too, for a call to meet: they are entries already, and add none.
         declared_points, declared_gaps = _declared_routes(entries, routes_offered)
-        routes_offered += declared_points
-        gaps += declared_gaps
+        spec_points, spec_gaps = _spec_routes(spec_rows, [*routes_offered, *declared_points])
+        routes_offered += declared_points + spec_points
+        gaps += declared_gaps + spec_gaps
         external = _external_nodes(manifest, module_graph)
         ties = _package_services(manifest)
         symbols_by_file = defaultdict(set)
@@ -1355,7 +1381,8 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                          "offered": sorted(o["site"] for o in found)} if found else gap)
             continue
         edges.append({"from": call["symbol"], "to": found[0]["symbol"], "type": "chiama", "origin": "dedotto",
-                      "site": call["site"], "route": list(found[0]["key"]), "offered": found[0]["site"]})
+                      "site": call["site"], "route": list(found[0]["key"]), "offered": found[0]["site"],
+                      **({"spec": True} if found[0].get("spec") else {})})
     for action in actions:
         edges.append({"from": action["symbol"], "to": action["handler"], "type": "attiva", "origin": "dedotto",
                       "site": action["site"], "label": action["label"],

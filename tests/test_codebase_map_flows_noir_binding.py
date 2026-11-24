@@ -416,3 +416,65 @@ def test_no_declaration_has_another_node_but_the_closures_noir_cites_as_routes_a
     # the closures of `api/users.js` and the callback inside the first, the function at the top of `src/auth.js` and the two lambdas of `api/Cat.cs`: not the closure of
     # `/health` (Noir names no handler), not the lambda `Three(x => x)`, not the closure a rule had named, not what is in `routes/other.js`
     assert changed == {("api/users.js", 12), ("api/users.js", 13), ("api/users.js", 15), ("api/users.js", 18), ("src/auth.js", 2), ("api/Cat.cs", 5), ("api/Cat.cs", 6)}
+
+
+def test_a_spring_method_noir_names_with_its_class_is_an_offered_route_that_a_call_of_another_module_meets(tmp_path):
+    """Noir names a Kotlin method `Class.method` and cites the line of its `fun`, where the snapshot's declaration starts at the
+    annotation above it and its qualified name is `Class.method`. When the binder compared Noir's name with the bare name only,
+    that row was a gap, no Spring route was offered, and the brief of a Next.js and Spring project read `routes 1 offered,
+    33 called, 0 linked` (measured on 23 November 2026). The route comes from Noir; the function, from the Kotlin tree."""
+    files = {"api/ShopController.kt": source("class ShopController {", '    @PostMapping("/api/v1/checkout")',
+                                              '    fun checkout(): String = "ok"', "}"),  # fun on line 3
+             "web/client.ts": source("function post(path: string) {", "  return path;", "}", "",
+                                     "export function pay() {", '  return post("/api/v1/checkout");', "}")}
+    answer = [endpoint("/api/v1/checkout", "POST", "api/ShopController.kt", "ShopController.checkout", 3)]
+    rules = [{"written": "post", "in": ["web"], "link": "rotta", "route": {"service": "api", "method": "POST", "path": "arg0"}}]
+    links = links_of(tmp_path, answer, files, rules)
+    assert links["routes"] == {"offered": 1, "called": 1, "linked": 1}
+    assert {(e["from"], e["to"], tuple(e["route"])) for e in links["edges"] if e.get("route")} == {
+        ("web/client.ts::pay", "api/ShopController.kt::ShopController.checkout", ("*", "POST", "/api/v1/checkout"))}
+    assert entry_of(links, "POST", "/api/v1/checkout")["symbol"] == "api/ShopController.kt::ShopController.checkout"
+
+
+# ----------------------------------------------------------------------------------------- a route only a specification declares
+
+CONTRACT = source("openapi: 3.0.0", "paths:", "  /logout:", "    post: {}")  # the declaration of POST /logout is on line 4
+LEAVE = source("function post(path: string) {", "  return path;", "}", "", "export function leave() {", '  return post("/logout");', "}")
+POST_CALL = [{"written": "post", "in": ["web"], "link": "rotta", "route": {"service": "api", "method": "POST", "path": "arg0"}}]
+
+
+def spec_row(url, method, file, line):
+    """What Noir answers for a route that only a specification file declares: no handler, the line of the declaration in
+    `code_paths`, and the tag `spec-only` that Noir gives it (an object with a `name`, as the tool writes it)."""
+    return {**without_handler(url, method, file, line), "tags": [{"name": "spec-only", "description": "declared only by a specification"}]}
+
+
+def test_a_route_only_a_specification_declares_is_offered_at_its_file_for_a_call_to_meet(tmp_path):
+    """A contract says a route exists; no function of the project is its handler (a framework serves it). The call meets the
+    contract's own node, and the edge says so (`spec`); the row is no gap."""
+    links = links_of(tmp_path, [spec_row("/logout", "POST", "api/openapi.yaml", 4)],
+                     {"api/openapi.yaml": CONTRACT, "web/client.ts": LEAVE}, POST_CALL)
+    assert links["routes"] == {"offered": 1, "called": 1, "linked": 1}
+    [edge] = [e for e in links["edges"] if e.get("route")]
+    assert (edge["from"], edge["to"], edge["spec"], tuple(edge["route"])) == (
+        "web/client.ts::leave", "api/openapi.yaml::<module>", True, ("*", "POST", "/logout"))
+    assert not [g for g in links["gaps"] if "openapi.yaml" in str(g.get("site"))]
+
+
+def test_a_route_a_specification_declares_and_a_function_offers_is_offered_once_by_the_function(tmp_path):
+    """The contract agreeing with the code adds no point: the call meets the function, and the edge is no contract's."""
+    files = {"api/openapi.yaml": CONTRACT, "web/client.ts": LEAVE,
+             "api/Shop.kt": source("class Shop {", '    @PostMapping("/logout")', "    fun leave() = 1", "}")}
+    answer = [endpoint("/logout", "POST", "api/Shop.kt", "Shop.leave", 3), spec_row("/logout", "POST", "api/openapi.yaml", 4)]
+    links = links_of(tmp_path, answer, files, POST_CALL)
+    assert links["routes"] == {"offered": 1, "called": 1, "linked": 1}
+    [edge] = [e for e in links["edges"] if e.get("route")]
+    assert edge["to"] == "api/Shop.kt::Shop.leave" and "spec" not in edge
+
+
+def test_a_row_without_a_handler_that_noir_does_not_tag_spec_only_stays_a_gap(tmp_path):
+    """Only what the official tool says is a contract is offered as one: an untagged row with no handler is a gap as before."""
+    links = links_of(tmp_path, [without_handler("/logout", "POST", "api/openapi.yaml", 4)],
+                     {"api/openapi.yaml": CONTRACT, "web/client.ts": LEAVE}, POST_CALL)
+    assert links["routes"] == {"offered": 0, "called": 1, "linked": 0}
+    assert any("without a unique snapshot handler" in str(g.get("reason")) for g in links["gaps"])
