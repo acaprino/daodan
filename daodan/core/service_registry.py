@@ -17,9 +17,11 @@ An exact host in a source literal or configuration value is a mention.
 from __future__ import annotations
 
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import sys
+import threading
 from pathlib import Path, PurePosixPath
 from typing import NamedTuple
 
@@ -77,6 +79,34 @@ def mark_file(entry: dict, data: Path | None = None) -> Path | None:
         return out
     except Exception:  # noqa: BLE001 - whatever the download, the archive or the file does, the answer is no mark
         return None
+
+
+class Marks:
+    """The marks of the registry's entries, for the servers of the pages. An id is only looked up among the entries,
+    so none is a path; without a registry no id is known."""
+
+    def __init__(self):
+        self.entries = {entry["id"]: entry for entry in load()["entries"]} if REGISTRY.is_file() else {}
+        self._fetched, self._fetch = {}, ThreadPoolExecutor(max_workers=1)  # the packages' marks, one at a time
+        self._lock = threading.Lock()
+
+    def file(self, ident: str | None) -> Path | None:
+        """The mark of the entry `ident` (`mark_file`), or None: the page draws the icon of the node's type. A mark
+        taken out of its owner's package on first use is fetched off the request: until it is there, and after it
+        failed, the answer is None, so that no page or graph waits on a download."""
+        entry = self.entries.get(ident)
+        if entry is None:
+            return None
+        if entry.get("mark") or not entry.get("mark_source"):
+            return mark_file(entry)
+        with self._lock:
+            if ident not in self._fetched:
+                self._fetched[ident] = self._fetch.submit(mark_file, entry)
+            fetched = self._fetched[ident]
+        return fetched.result() if fetched.done() else None
+
+    def close(self) -> None:
+        self._fetch.shutdown(wait=False, cancel_futures=True)
 
 
 def _is_excluded(rel: str | None, left_out: tuple[str, ...]) -> bool:

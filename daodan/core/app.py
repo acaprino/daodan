@@ -38,7 +38,6 @@ import sys
 import threading
 import time
 from collections import OrderedDict
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -132,8 +131,7 @@ class App:
         self.linked = {"state": "idle", "cause": None}  # the links between modules: see `link`
         self.mapped = {"state": "idle", "cause": None}  # the system map: see `map`
         self._following = None  # the selection whose pass's end is followed: see `_follow`
-        self.registry = {entry["id"]: entry for entry in service_registry.load()["entries"]}  # whose marks `mark` serves
-        self._marks, self._fetch = {}, ThreadPoolExecutor(max_workers=1)  # the marks fetched on first use, one at a time
+        self.marks = service_registry.Marks()  # the logos the two pages ask for
         self._lock, self._stop = threading.Lock(), threading.Event()
         self._levels, self._graphing = {}, threading.Lock()  # the graph's answers kept for the run's data: see `_kept`
 
@@ -389,19 +387,10 @@ class App:
             return answers[key]
 
     def mark(self, query: dict) -> Path | None:
-        """The mark of the registry entry `id` (`service_registry.mark_file`), or None: the page draws the icon of the
-        node's type. A mark taken out of its owner's package on first use is fetched off the request: until it is
-        there, and after it failed, the answer is None, so that no page or graph waits on a download."""
-        entry = self.registry.get(query["id"])
-        if entry is None:
+        """The mark of the registry entry `id` (`service_registry.Marks`); an id of no entry is refused."""
+        if query["id"] not in self.marks.entries:
             raise ValueError("the registry has no entry with this id")
-        if entry.get("mark") or not entry.get("mark_source"):
-            return service_registry.mark_file(entry)
-        with self._lock:
-            if entry["id"] not in self._marks:
-                self._marks[entry["id"]] = self._fetch.submit(service_registry.mark_file, entry)
-            fetched = self._marks[entry["id"]]
-        return fetched.result() if fetched.done() else None
+        return self.marks.file(query["id"])
 
     # -- the engine -----------------------------------------------------------------------------------------------
 
@@ -727,11 +716,12 @@ class App:
                    "/api/app/link": self.link, "/api/app/map": self.map}
         stream = {"/api/stream": self.stream(visual.live_stream(active)["/api/stream"])}
         return visual.make_server(None, VIEWER, port, routes=routes, actions=actions, token=token, stream=stream,
-                                  mounts={"app": PAGE}, files={"/api/app/mark": self.mark})
+                                  mounts={"app": PAGE},
+                                  files={**visual.mark_files(self.marks), "/api/app/mark": self.mark})
 
     def close(self) -> None:
         self._stop.set()
-        self._fetch.shutdown(wait=False, cancel_futures=True)
+        self.marks.close()
 
 
 def main(argv=None) -> int:

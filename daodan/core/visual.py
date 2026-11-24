@@ -14,14 +14,16 @@ Every node carries `location` (`internal`, `external`) and, when known, `node_ty
 from the closed list of the flow model: an external module is a service or API, a service
 the stack recognises the type of its registry entry, a route handler a service or API, the
 symbol that binds a user action a screen, a store the type its link rule names. A node of
-unknown type has none.
+unknown type has none. An external service and an item of `technologies` whose registry entry has a
+logo carry the entry's id in `mark`; the others have none.
 
     python visual.py envelope RUN_DIR [--out FILE]
     python visual.py export RUN_DIR        # publishes .daodan/map/views/<run>/<digest>/visual.json
     python visual.py serve EXPORT_DIR      # http://127.0.0.1:<port>/, read-only
 
 The MCP server serves the same page live (`codebase_map_ui`): `live_routes` answers with the
-project's runs, a run's events and a run's envelope built at each request.
+project's runs, a run's events and a run's envelope built at each request. Every server of the page
+answers `/api/mark?id=ID` with the logo of a registry entry (`mark_files`).
 """
 from __future__ import annotations
 
@@ -287,7 +289,7 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
         "gaps": gaps,
         "flows": envelope_flows,
         "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro",
-                          "category": item["category"],
+                          "category": item["category"], **({"mark": item["id"]} if item["id"] in marked else {}),
                           "paths": sorted({sign["path"] for sign in item["signs"]
                                            if sign["strength"] == "declared" and sign["path"]}),
                           # the declared sites by which a module's stack holds it, as `technologies.ensure` matches them
@@ -622,6 +624,12 @@ def live_actions(service) -> dict:
             "/api/runs": lambda body: service.create_run(body["target"], body["run_id"])}
 
 
+def mark_files(marks) -> dict:
+    """The image the map's page asks of every server: the mark of the registry entry `id` (`service_registry.Marks`);
+    any other id, or none, is 404."""
+    return {"/api/mark": lambda query: marks.file(query.get("id"))}
+
+
 def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None,
                 actions: dict | None = None, token: str | None = None,
                 stream: dict | None = None, mounts: dict | None = None, files: dict | None = None) -> ThreadingHTTPServer:
@@ -789,7 +797,9 @@ def main(argv=None) -> int:
         run_dir = args.run_dir.resolve()
         print(export(run_dir, run_dir.parent.parent))
         return 0
-    server = make_server(args.export_dir, args.assets, args.port)
+    import service_registry
+    marks = service_registry.Marks()
+    server = make_server(args.export_dir, args.assets, args.port, files=mark_files(marks))
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     try:
         server.serve_forever()
@@ -797,6 +807,7 @@ def main(argv=None) -> int:
         pass
     finally:
         server.server_close()
+        marks.close()
     return 0
 
 

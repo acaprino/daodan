@@ -1392,18 +1392,20 @@ def test_the_mark_of_a_registry_entry_is_served_by_its_id_and_nothing_else_is(tm
     monkeypatch.setattr(service_registry, "mark_file", mark_file)
     app = launcher.App(tmp_path / "work", environment={})
     # an entry whose mark is in its owner's package: the test's own, the distributed registry ships every mark it has
-    app.registry["packaged.example"] = {"id": "packaged.example", "mark": None,
-                                        "mark_source": {"url": "https://owner.example/icons.zip"}}
+    app.marks.entries["packaged.example"] = {"id": "packaged.example", "mark": None,
+                                             "mark_source": {"url": "https://owner.example/icons.zip"}}
     server = app.serve(token="t")
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         port = server.server_address[1]
         stripe = (service_registry.REGISTRY.parent / "marks/stripe.svg").read_bytes()
         assert raw(port, "/api/app/mark?id=stripe&token=t") == (200, "image/svg+xml", stripe)
+        assert raw(port, "/api/mark?id=stripe&token=t") == (200, "image/svg+xml", stripe)  # the map's page, on the same server
         assert raw(port, "/api/app/mark?id=stripe")[0] == 403
         for wrong in ("nope", "marks/stripe.svg", "../data/marks/stripe.svg", ""):
             assert raw(port, f"/api/app/mark?id={wrong}&token=t")[0] == 400, wrong
         assert raw(port, "/api/app/mark?token=t")[0] == 400
+        assert raw(port, "/api/mark?id=nope&token=t")[0] == 404 and raw(port, "/api/mark?id=stripe")[0] == 403
         assert raw(port, "/api/app/mark?id=adobe.analytics&token=t")[0] == 404  # an entry without a mark: no image
         started = time.monotonic()
         assert raw(port, "/api/app/mark?id=packaged.example&token=t")[0] == 404

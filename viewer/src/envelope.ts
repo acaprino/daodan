@@ -9,10 +9,11 @@ export type Entity = {
   ref: string; type: string; name: string; technical: string; description: string;
   provenance?: string; status?: string; freshness?: string; path?: string; lines?: number | number[];
   address?: string; location?: 'internal' | 'external'; node_type?: string; evidence: Evidence[]; gaps: unknown[];
-  technologies?: string[];
+  technologies?: string[]; mark?: string;
 };
-// A framework, library, tool or service the stack step recognized, with the files that show it.
-export type Technology = { id: string; name: string; type: string; paths: string[] };
+// A framework, library, tool or service the stack step recognized, with the files that show it. `mark`, here and on an
+// entity, is the registry id whose logo the server of the page answers (`./api/mark?id=`, with the page's token if any).
+export type Technology = { id: string; name: string; type: string; paths: string[]; mark?: string };
 export type Relation = {
   ref: string; kind: string; source: string; target: string; status: string;
   counts?: Record<string, number>; evidence: Evidence[]; conflict?: boolean;
