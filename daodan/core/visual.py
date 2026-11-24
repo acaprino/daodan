@@ -144,16 +144,29 @@ def _symbols(store, paths: list[str], cards_path: Path, entity, relation, gaps: 
             relation("defines", f"file:{path}", ref)
 
 
-def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
-    """The run's envelope; without `symbols`, no file's outline or cards are read and its symbols are only the ends
-    of its flows (the app's graph reads a file's symbols when the file is opened: `file_symbols`)."""
-    run_dir = Path(run_dir)
-    state = json.loads((run_dir / "state.json").read_text(encoding="utf-8"))
-    manifest = resolve_run_snapshot(run_dir, state)
+def _derived(manifest: Path) -> tuple[dict, dict]:
+    """The module graph and the stack the envelope is built on, written first when they are not fresh."""
+    import technologies
     built = modules.ensure_graph(manifest)
     if built.get("state") == "failed":
         raise ValueError(f"module graph not available: {built.get('reason')}")
-    graph = modules.load_graph(Path(built["graph"]))
+    return modules.load_graph(Path(built["graph"])), technologies.ensure(manifest)
+
+
+def settle(run_dir: Path) -> None:
+    """Write what `build_envelope` derives, so that an `inputs_stamp` taken next is the one the envelope is built on."""
+    run_dir = Path(run_dir)
+    _derived(resolve_run_snapshot(run_dir, json.loads((run_dir / "state.json").read_text(encoding="utf-8"))))
+
+
+def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
+    """The run's envelope; without `symbols`, no file's outline or cards are read and its symbols are only the ends
+    of its flows (the app's graph reads a file's symbols when the file is opened: `file_symbols`)."""
+    import technologies
+    run_dir = Path(run_dir)
+    state = json.loads((run_dir / "state.json").read_text(encoding="utf-8"))
+    manifest = resolve_run_snapshot(run_dir, state)
+    graph, stack = _derived(manifest)
     cards_path = card_store.default_cards_path(manifest)
 
     entities: dict[str, dict] = {}
@@ -189,8 +202,6 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
                      counts={edge["kind"]: edge.get("evidence_total", len(edge.get("evidence", [])))},
                      evidence=[{"path": site.get("path"), "line": site.get("line")} for site in edge.get("evidence", [])[:20]])
 
-    import technologies
-    stack = technologies.ensure(manifest)
     for unit in stack.get("modules", stack["units"]):
         if unit["id"] in by_id:
             target_entity = entities[by_id[unit["id"]]]

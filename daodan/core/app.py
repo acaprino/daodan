@@ -377,6 +377,8 @@ class App:
         with self._graphing:
             stamp = (run_dir, visual.inputs_stamp(run_dir))
             if self._levels.get("stamp") != stamp or not store_graph.sources_unchanged(self._levels["sources"]):
+                visual.settle(run_dir)  # the build writes what it derives: the stamp is of what it leaves
+                stamp = (run_dir, visual.inputs_stamp(run_dir))
                 with store_graph.capture_verified_sources() as sources:
                     envelope = visual.build_envelope(run_dir, symbols=False)
                 self._levels = {"stamp": stamp, "envelope": envelope, "sources": sources, "answers": OrderedDict()}

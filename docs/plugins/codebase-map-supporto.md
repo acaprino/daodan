@@ -97,11 +97,11 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `sbt` | 1.13.1 | modello: il comando del build tool, nel container | `premap/sbt.py` | not_needed 121, ran 1 |
 | `dotnet` | 10.0.404 | modello: il comando del build tool, nel container | `premap/dotnet.py` | not_needed 117, ran 5 |
 | `noir` | 1.5.0 | scanner: legge ogni file | `premap/noir.py` | non misurato: non era nel giro |
-| `next` | daodan/premap/v2 | scanner: legge ogni file | `premap/nextjs.py` | non misurato: non era nel giro |
-| `react-router` | daodan/premap/v2 | scanner: legge ogni file | `premap/react_router.py` | non misurato: non era nel giro |
-| `nuxt` | daodan/premap/v1 | scanner: legge ogni file | `premap/nuxt.py` | non misurato: non era nel giro |
-| `sveltekit` | daodan/premap/v1 | scanner: legge ogni file | `premap/sveltekit.py` | non misurato: non era nel giro |
-| `angular` | daodan/premap/v1 | scanner: legge ogni file | `premap/angular.py` | non misurato: non era nel giro |
+| `next` | daodan/premap/v4 | scanner: legge ogni file | `premap/nextjs.py` | non misurato: non era nel giro |
+| `react-router` | daodan/premap/v4 | scanner: legge ogni file | `premap/react_router.py` | non misurato: non era nel giro |
+| `nuxt` | daodan/premap/v2 | scanner: legge ogni file | `premap/nuxt.py` | non misurato: non era nel giro |
+| `sveltekit` | daodan/premap/v2 | scanner: legge ogni file | `premap/sveltekit.py` | non misurato: non era nel giro |
+| `angular` | daodan/premap/v2 | scanner: legge ogni file | `premap/angular.py` | non misurato: non era nel giro |
 | `astro` | daodan/premap/v2 | scanner: legge ogni file | `premap/astro.py` | non misurato: non era nel giro |
 
 ### Pre-mappa per faccia
