@@ -1,23 +1,29 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { NODE_TYPES, parseEnvelope } from '../src/envelope.ts';
-import { iconFor, TYPE_LABEL } from '../src/icons.ts';
+import { NODE_TYPES } from '../src/envelope.ts';
+import { FLOW_ICON, iconFor, NO_ICON, TYPE_LABEL } from '../src/icons.ts';
 
-const env = parseEnvelope(JSON.parse(readFileSync(new URL('./fixture.json', import.meta.url), 'utf8')));
-const UNKNOWN = iconFor({ type: 'nothing the model names' });
+const UNKNOWN = { type: 'nothing the model names' };
 
-test('every generic node type has an icon, and only the one that says nothing has the icon of the unknown', () => {
-  for (const nodeType of NODE_TYPES) assert.equal(iconFor({ nodeType, type: 'nothing the model names' }) === UNKNOWN, nodeType === 'altro', nodeType);
+test('what Sigrid has a name for has its icon, whether the release in use draws it or not', () => {
+  const byNodeType = Object.fromEntries(NODE_TYPES.map(nodeType => [nodeType, iconFor({ ...UNKNOWN, nodeType })]));
+  assert.deepEqual(byNodeType, {
+    attore: 'account', schermata: 'layout', 'funzionalità': NO_ICON, 'servizio o API': 'service', gateway: 'gateway', database: 'data',
+    coda: 'listOrdered', autenticazione: 'key', dispositivo: 'device', altro: NO_ICON,
+  });
+  assert.deepEqual([iconFor({ type: 'symbol' }), iconFor({ type: 'build' }), FLOW_ICON], ['code', 'package', 'branch']);
 });
 
-test('every entity type the interface has a word for has an icon, and so has every entity of the fixture', () => {
-  for (const type of Object.keys(TYPE_LABEL)) assert.notEqual(iconFor({ type }), UNKNOWN, type);
-  for (const entity of env.entities) assert.notEqual(iconFor({ type: entity.type }), UNKNOWN, entity.ref);
+test('no kind borrows the icon of another thing: without a name of its own it has the empty slot', () => {
+  const borrowed = ['settings', 'profile', 'moveRight', 'tag', 'link', 'archive', 'importExport', 'now', 'more'];
+  const icons = [...NODE_TYPES.map(nodeType => iconFor({ ...UNKNOWN, nodeType })), ...Object.keys(TYPE_LABEL).map(type => iconFor({ type })), FLOW_ICON];
+  for (const icon of icons) assert.ok(!borrowed.includes(icon), icon);
+  assert.equal(iconFor(UNKNOWN), NO_ICON);
 });
 
-test('the node type of the flow model comes before the entity type, and one the list does not hold leaves the entity type', () => {
+test('the node type of the flow model comes before the entity type, and one that says nothing leaves the entity type', () => {
   assert.equal(iconFor({ nodeType: 'database', type: 'external' }), iconFor({ nodeType: 'database', type: 'file' }));
   assert.notEqual(iconFor({ nodeType: 'database', type: 'external' }), iconFor({ type: 'external' }));
+  assert.equal(iconFor({ nodeType: 'altro', type: 'file' }), iconFor({ type: 'file' }));
   assert.equal(iconFor({ nodeType: 'not in the list', type: 'file' }), iconFor({ type: 'file' }));
 });

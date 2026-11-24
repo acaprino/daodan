@@ -74,6 +74,8 @@ export function rootsOf(env: Envelope, view: View): string[] {
   return [...groups, ...loose];
 }
 
+const topOf = (env: Envelope, view: View, scope: string | null) => (scope === null ? rootsOf(env, view) : childrenOf(env, scope, view));
+
 function descendants(env: Envelope, ref: string, view: View, seen = new Set<string>()): Set<string> {
   if (seen.has(ref)) return seen;
   seen.add(ref);
@@ -115,8 +117,7 @@ export function project(env: Envelope, view: View, scope: string | null, filters
     stands.set(id, expanded ? new Set([ref]) : descendants(env, ref, view));
     if (expanded) for (const kid of kids) visit(kid, id, id);
   };
-  const top = scope === null ? rootsOf(env, view) : childrenOf(env, scope, view);
-  for (const ref of top) visit(ref, null, scope ?? 'root');
+  for (const ref of topOf(env, view, scope)) visit(ref, null, scope ?? 'root');
 
   const owners: Record<string, string[]> = {};
   for (const [id, refs] of stands) for (const ref of refs) (owners[ref] ??= []).push(id);
@@ -139,6 +140,20 @@ export function project(env: Envelope, view: View, scope: string | null, filters
   }
   const files = new Set(nodes.flatMap(node => [...(stands.get(node.id) ?? [])]).filter(ref => index.byRef.get(ref)?.type === 'file'));
   return { nodes, edges: [...edges.values()], counts: { filtered, aggregated, unloaded, files: files.size }, owners };
+}
+
+// The types to choose from: of all the view holds in the scope, whatever the filters hide, and the chosen one with them.
+export function typesIn(env: Envelope, view: View, scope: string | null, open: string[] = [], chosen = ''): string[] {
+  const index = indexOf(env);
+  const types = new Set<string>(chosen ? [chosen] : []);
+  const visit = (ref: string) => {
+    const entity = index.byRef.get(ref);
+    if (!entity) return;
+    types.add(entity.type);
+    if (open.includes(ref)) childrenOf(env, ref, view).forEach(visit);
+  };
+  topOf(env, view, scope).forEach(visit);
+  return [...types].sort();
 }
 
 // A flow seen on the current projection: the visible nodes that stand for its nodes, and its steps between them.

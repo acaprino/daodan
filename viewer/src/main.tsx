@@ -3,9 +3,9 @@
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  applyKeptScheme, AppShell, Button, Cluster, Column, CommandPalette, CommandsProvider, DrawerButton, Empty, FormField, formatKeys, Icon,
-  KeyHints, Note, PALETTE_COMMAND, Progress, Select, Spacer, Text, TitleBar, Toasts, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer,
-  ToolbarTab, ToolbarTabs, useCommand, useCommandPalette, useMedia, useSchemeCommands, WordsProvider,
+  applyKeptScheme, AppShell, Badge, Button, Column, CommandPalette, CommandsProvider, DrawerButton, Empty, formatKeys, Icon, KeyHints, Note,
+  Progress, Select, Spacer, Text, TitleBar, Toasts, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs, useCommand,
+  useCommandPalette, useMedia, useSchemeCommands, WordsProvider,
 } from '@acaprino/sigrid';
 import type { IconName, ToastItem } from '@acaprino/sigrid';
 import '@acaprino/sigrid/styles.css';
@@ -14,16 +14,23 @@ import { parseEnvelope } from './envelope.ts';
 import type { Envelope, View } from './envelope.ts';
 import { Explorer } from './explorer.tsx';
 import { useExplorer } from './model.ts';
-import { projectName } from './names.ts';
+import type { Phase } from './model.ts';
+import { counted, projectName } from './names.ts';
 import { Navigation } from './navigation.tsx';
 import { LOOK } from './page.ts';
 import { getJson, POLL_MS, Session } from './session.tsx';
+import { shownDetails } from './state.ts';
 import { WORDS } from './words.ts';
 
-const VIEWS: { value: View; label: string; icon: IconName }[] = [
-  { value: 'logical', label: 'Logica', icon: 'structure' },
-  { value: 'physical', label: 'Fisica', icon: 'folder' },
+// The views of the map: their word in the bar, their command, and the name of the content.
+const VIEWS: { value: View; label: string; icon: IconName; command: string; title: string }[] = [
+  { value: 'logical', label: 'Logica', icon: 'structure', command: 'Vista logica', title: 'Mappa logica' },
+  { value: 'physical', label: 'Fisica', icon: 'folder', command: 'Vista fisica', title: 'Mappa fisica' },
 ];
+// The status row while there is no map.
+const STATUS: Record<Exclude<Phase, 'ready'>, { badge?: string; text: string }> = {
+  none: { text: 'Nessun run' }, failed: { badge: 'Errore', text: 'Export non leggibile' }, loading: { badge: 'Lettura', text: "Carico l'export…" },
+};
 
 // A finding names a project-relative file; the envelope's refs are relative to the run's target.
 function fileRef(envelope: Envelope, file: string): string | null {
@@ -40,7 +47,6 @@ function App() {
   const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [pick, setPick] = useState<{ file: string } | null>(null);
-  const [overview, setOverview] = useState(false);
   const [menu, setMenu] = useState(false);
   const [notices, setNotices] = useState<ToastItem[]>([]);
   const noticeId = useRef(0);  // not crypto.randomUUID, which a page served over plain http does not have
@@ -50,20 +56,22 @@ function App() {
   // Under this width the frame is laid out as on a phone: the sidebar is a drawer and the views are at the foot.
   const narrow = useMedia('(width < 620px)');
   const { state, dispatch } = model;
-  const ready = !(runs && !runs.length) && !failure && model.ready;
-  const detailsOpen = ready && (state.selected !== null || overview);
+  const phase: Phase = runs && !runs.length ? 'none' : failure ? 'failed' : model.ready ? 'ready' : 'loading';
+  const ready = phase === 'ready';
+  const detailsOpen = ready && shownDetails(state) !== null;
   const say = (text: string) => { noticeId.current += 1; const id = String(noticeId.current); setNotices(list => [...list, { id, text }]); };
-  const info = () => { dispatch({ type: 'select', ref: null }); setOverview(true); };
-  const close = () => { dispatch({ type: 'select', ref: null }); setOverview(false); };
+  const close = () => dispatch({ type: 'close' });
 
   // Ctrl+F: the search of the map in view; a page that shows no map has none.
   useCommand({ id: 'daodan.search', label: 'Cerca in questa vista', group: 'Vista', keys: 'Ctrl+F', icon: <Icon name="search" />,
-    run: () => { if (search.current) search.current.focus(); else say('Questa vista non ha una ricerca.'); } });
-  useCommand({ id: 'daodan.view.logical', label: 'Vista logica', group: 'Vista', icon: <Icon name="structure" />, checked: state.view === 'logical',
-    run: () => dispatch({ type: 'view', view: 'logical' }) });
-  useCommand({ id: 'daodan.view.physical', label: 'Vista fisica', group: 'Vista', icon: <Icon name="folder" />, checked: state.view === 'physical',
-    run: () => dispatch({ type: 'view', view: 'physical' }) });
-  useCommand({ id: 'daodan.project.info', label: 'Informazioni sul progetto', group: 'Vista', icon: <Icon name="info" />, when: ready, run: info });
+    run: () => { if (ready) search.current?.focus(); else say('Questa vista non ha una ricerca.'); } });
+  for (const view of VIEWS) {  // the list never changes, so neither does the order of the hooks
+    useCommand({ id: `daodan.view.${view.value}`, label: view.command, group: 'Vista', icon: <Icon name={view.icon} />, checked: state.view === view.value,
+      run: () => dispatch({ type: 'view', view: view.value }) });
+  }
+  useCommand({ id: 'daodan.place.root', label: 'Torna al sistema', group: 'Vista', icon: <Icon name="back" />, when: ready && state.scope !== null,
+    run: () => dispatch({ type: 'root' }) });
+  useCommand({ id: 'daodan.project.info', label: 'Informazioni sul progetto', group: 'Vista', icon: <Icon name="info" />, when: ready, run: () => dispatch({ type: 'info' }) });
   useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Vista', keys: 'Escape', icon: <Icon name="close" />, when: detailsOpen, run: close });
   useSchemeCommands(LOOK);
 
@@ -117,10 +125,9 @@ function App() {
     try { dispatch({ type: 'replaceEnvelope', json: JSON.parse(await file.text()) }); }
     catch (reason) { dispatch({ type: 'replaceEnvelope', json: { error: String(reason) } }); }
   };
-  const noRuns = runs && !runs.length;
-  const loading = !noRuns && !failure && !envelope;
   const toView = (view: string) => dispatch({ type: 'view', view: view as View });
   const onRun = (id: string) => { listRuns(id).catch(() => undefined); };
+  const title = VIEWS.find(view => view.value === state.view)!.title;
 
   const titleBar = <TitleBar><Toolbar aria-label="Daodan">
     <DrawerButton onOpen={() => setMenu(true)} />
@@ -136,37 +143,30 @@ function App() {
   </Toolbar>;
   // The live event line is the run's, so it shows while its export is loading or unreadable too.
   const status = <>
-    <Text data-selectable="">{ready ? `${projectName(state.envelope)}${meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run ${String(meta.run_id ?? '')}`
-      : noRuns ? 'Nessun run' : failure ? 'Export non leggibile' : "Carico l'export…"}</Text>
-    {(ready || (runs && !noRuns)) && <><Spacer />
+    {phase === 'ready'
+      ? <Text variant="soft" data-selectable="">{projectName(state.envelope)}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}</Text>
+      : <>{STATUS[phase].badge && <Badge variant="secondary">{STATUS[phase].badge}</Badge>}<Text variant="soft">{STATUS[phase].text}</Text></>}
+    {(ready || !!runs?.length) && <><Spacer />
       <Text data-selectable="">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</Text></>}
   </>;
+  // The foot: what the whole export holds (what is in view the panel says), and the keys no control in sight shows.
   const footer = !narrow && <>
-    <Text>{ready
-      ? `${state.envelope.entities.length} entità · ${state.envelope.relations.length} relazioni · ${state.envelope.flows.length} flussi · ${state.envelope.gaps.length} lacune · ${model.projection.nodes.length} nodi · ${model.projection.edges.length} relazioni visibili · ${model.data.length} collegamenti di dati (tratteggiati) · ${model.projection.counts.aggregated} dentro i gruppi${model.focus ? ` · flusso su ${model.focus.nodes.length} nodi` : ''}`
-      : 'Nessuna mappa'}</Text>
+    <Text>{ready ? `${counted(state.envelope.entities.length, 'entità', 'entità')} · ${counted(state.envelope.relations.length, 'relazione', 'relazioni')}` : 'Nessuna mappa'}</Text>
     <Spacer />
-    <KeyHints ids={[PALETTE_COMMAND, 'daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
+    <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
   </>;
-  const content = noRuns
-    ? <><Empty title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." /><Session onPick={() => undefined} onRun={onRun} /></>
-    : <>
-      {(runs || ready) && <Cluster gap="md" align="end">
-        {runs && <FormField label="Run"><Select aria-label="Run" value={run} onValueChange={setRun} options={runs.map(id => ({ value: id, label: id }))} /></FormField>}
-        {ready && <Button variant="outline" onClick={info}><Icon name="info" />Informazioni sul progetto</Button>}
-      </Cluster>}
-      {runs && <Session onPick={file => setPick({ file })} onRun={onRun} />}
-      {failure ? <Note tone="error" title="Export non leggibile" actions={<Button variant="outline"
-          onClick={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }}><Icon name="refresh" />Riprova</Button>}>{failure}</Note>
-        : !envelope ? <Progress aria-label="Carico l'export…" value={null} />
-        : ready && <Explorer key={run} model={model} search={search} />}
-    </>;
+  const runPicker = !!runs?.length && <Select size="sm" aria-label="Run" value={run} onValueChange={setRun} options={runs.map(id => ({ value: id, label: `Run ${id}` }))} />;
   return <>
-    <AppShell titleBar={titleBar} status={status} footer={footer} bottomBar={bottomBar}
-      contentLabel={state.view === 'logical' ? 'Mappa logica' : 'Mappa fisica'}
-      sidebar={<Navigation model={model} ready={ready} open={menu} onOpenChange={setMenu} />}
+    <AppShell frame="sheet" titleBar={titleBar} status={status} footer={footer} bottomBar={bottomBar} contentLabel={title}
+      sidebar={<Navigation model={model} phase={phase} open={menu} onOpenChange={setMenu} />}
       inspector={<Details model={model} open={detailsOpen} close={close} />}>
-      <Column gap="lg" pad="lg" aria-busy={loading}>{content}</Column>
+      <Explorer model={model} title={title} search={search} ready={ready} runs={runPicker}>
+        {runs && <Session onPick={file => setPick({ file })} onRun={onRun} />}
+        {phase === 'none' && <Empty fill title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />}
+        {phase === 'failed' && <Column pad="lg"><Note tone="error" title="Export non leggibile" actions={<Button variant="outline"
+          onClick={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }}><Icon name="refresh" />Riprova</Button>}><Text data-selectable="">{failure}</Text></Note></Column>}
+        {phase === 'loading' && <Column pad="lg" aria-busy><Progress aria-label="Carico l'export…" value={null} /></Column>}
+      </Explorer>
     </AppShell>
     <Toasts items={notices} durationMs={5000} onDismiss={id => setNotices(list => list.filter(notice => notice.id !== id))} />
   </>;

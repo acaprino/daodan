@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseEnvelope } from '../src/envelope.ts';
-import { initialState, reduce } from '../src/state.ts';
+import { initialState, placeOf, reduce, shownDetails } from '../src/state.ts';
+import type { Action } from '../src/state.ts';
 
 const raw = JSON.parse(readFileSync(new URL('./fixture.json', import.meta.url), 'utf8'));
 const env = parseEnvelope(raw);
@@ -61,4 +62,41 @@ test('load starts a run clean: nothing of the last one is kept', () => {
   const state = reduce(reduce(initialState(env), { type: 'select', ref: 'file:shared/money.ts' }), { type: 'view', view: 'physical' });
   const loaded = reduce(state, { type: 'load', envelope: env });
   assert.deepEqual(loaded, initialState(env));
+});
+
+const FLOW = 'flow:symbol:web/checkout.tsx::pay';
+const after = (...actions: Action[]) => actions.reduce(reduce, initialState(env));
+
+test('the inspector shows the element first, then the flow or the project, the one asked for last', () => {
+  assert.equal(shownDetails(initialState(env)), null);
+  assert.equal(shownDetails(after({ type: 'flow', ref: FLOW })), 'flow');
+  assert.equal(shownDetails(after({ type: 'flow', ref: FLOW }, { type: 'select', ref: 'component:web' })), 'entity');
+  assert.equal(shownDetails(after({ type: 'flow', ref: FLOW }, { type: 'info' })), 'project');
+  assert.equal(shownDetails(after({ type: 'info' }, { type: 'flow', ref: FLOW })), 'flow');
+  assert.equal(shownDetails(after({ type: 'select', ref: 'component:web' }, { type: 'info' })), 'project');
+});
+
+test('closing the inspector leaves the flow chosen; the whole map clears it and closes its steps', () => {
+  const closed = after({ type: 'flow', ref: FLOW }, { type: 'select', ref: 'component:web' }, { type: 'close' });
+  assert.deepEqual([shownDetails(closed), closed.flow, closed.selected], [null, FLOW, null]);
+  assert.equal(shownDetails(reduce(closed, { type: 'flow', ref: FLOW })), 'flow');
+  const whole = after({ type: 'flow', ref: FLOW }, { type: 'flow', ref: null });
+  assert.deepEqual([shownDetails(whole), whole.flow], [null, null]);
+  assert.equal(shownDetails(after({ type: 'flow', ref: FLOW }, { type: 'info' }, { type: 'flow', ref: null })), 'project');
+});
+
+test('the project does not come back when a chosen element is left, and a flow does', () => {
+  assert.equal(shownDetails(after({ type: 'info' }, { type: 'select', ref: 'component:web' }, { type: 'open', ref: 'component:web' })), null);
+  assert.equal(shownDetails(after({ type: 'open', ref: 'component:web' }, { type: 'info' }, { type: 'up' }, { type: 'select', ref: null })), null);
+  assert.equal(shownDetails(after({ type: 'flow', ref: FLOW }, { type: 'select', ref: 'component:web' }, { type: 'open', ref: 'component:web' })), 'flow');
+});
+
+test('a flow that is not in the new export takes its steps away', () => {
+  const state = reduce(after({ type: 'flow', ref: FLOW }), { type: 'replaceEnvelope', json: { ...raw, flows: [] } });
+  assert.deepEqual([shownDetails(state), state.flow], [null, null]);
+});
+
+test('the place is the way up from the scope, from the system down', () => {
+  assert.deepEqual(placeOf(initialState(env)), ['Sistema']);
+  assert.deepEqual(placeOf(after({ type: 'open', ref: 'component:web' }, { type: 'open', ref: 'file:web/checkout.tsx' })), ['Sistema', 'web', 'checkout.tsx']);
 });

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseEnvelope } from '../src/envelope.ts';
-import { dataLinks, flowFocus, flowsThrough, project, UNASSIGNED } from '../src/projection.ts';
+import { dataLinks, flowFocus, flowsThrough, project, typesIn, UNASSIGNED } from '../src/projection.ts';
 
 const env = parseEnvelope(JSON.parse(readFileSync(new URL('./fixture.json', import.meta.url), 'utf8')));
 const SHARED = 'file:shared/money.ts';
@@ -107,4 +107,11 @@ test('uncertain and proved steps between the same groups stay distinguishable on
     assert.equal(edges.length, 2);
     assert.equal(edges.filter(edge => edge.uncertain).length, 1);
   }
+});
+
+test('the types to choose from are those of the scope, whatever the filters hide, with the chosen one', () => {
+  assert.deepEqual(typesIn(env, 'logical', null), ['component', 'external', 'store']);
+  assert.deepEqual(typesIn(env, 'logical', null, ['component:web']), ['component', 'external', 'file', 'store']);
+  assert.deepEqual(typesIn(env, 'logical', 'component:server'), ['file']);
+  assert.deepEqual(typesIn(env, 'logical', 'component:server', [], 'component'), ['component', 'file']);
 });

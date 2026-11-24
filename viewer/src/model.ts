@@ -6,7 +6,9 @@ import { dataLinks, flowFocus, project } from './projection.ts';
 import { initialState, reduce } from './state.ts';
 
 const EMPTY = parseEnvelope({ schema: SCHEMA, entities: [], relations: [], memberships: [] });
-export type Model = ReturnType<typeof useExplorer>;
+// What the page is doing: there is no run, its export cannot be read, it is being read, or it is shown.
+export type Phase = 'none' | 'failed' | 'loading' | 'ready';
+export type Model =ReturnType<typeof useExplorer>;
 
 export function useExplorer(envelope: Envelope | null) {
   const [state, dispatch] = useReducer(reduce, EMPTY, initialState);

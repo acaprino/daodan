@@ -53,11 +53,14 @@ jobs:
 
       - run: npm run test:ui
 
-      # The committed pages are what the source builds. Last, so one run shows the behaviour and the difference.
-      - run: git diff --exit-code -- ../daodan/assets
+      # The committed pages are what the source builds. Last, and also after a failed step (the job fails all the same), so one
+      # run shows the behaviour and the difference.
+      - if: ${{ !cancelled() }}
+        run: git diff --exit-code -- ../daodan/assets
 
-      # When the committed pages differ, keep what the source builds so it can be committed (the pages are not built by hand).
-      - if: failure()
+      # When the committed pages differ, or anything else failed, keep what the source builds so it can be committed (the pages
+      # are not built by hand).
+      - if: ${{ failure() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: built-assets
