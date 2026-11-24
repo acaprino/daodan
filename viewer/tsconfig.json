@@ -11,6 +11,5 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true
   },
-  // shortcut: the two pages alone: test/ and vite.config.ts import node:*, whose types are @types/node, until it is in the lockfile (written in CI)
-  "include": ["src", "app"]
+  "include": ["src", "app", "test", "vite.config.ts"]
 }
