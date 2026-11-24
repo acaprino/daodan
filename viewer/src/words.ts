@@ -22,4 +22,12 @@ export const WORDS: WordsOverride = {
   },
   note: { info: 'Informazione', success: 'Riuscito', warning: 'Attenzione' },
   shell: { skip: 'Vai al contenuto' },
+  graph: {
+    view: 'Vista', zoomIn: 'Ingrandisci', zoomOut: 'Riduci', fit: 'Inquadra tutto', roleDescription: 'grafo', external: 'esterno',
+    hides: (item, count) => `${item}, contiene ${count === 1 ? 'un elemento' : `${count} elementi`}`,
+    chosenToo: item => `scelto con ${item}`,
+    leadsTo: items => `porta a ${items.join(', ')}`, comesFrom: items => `arriva da ${items.join(', ')}`,
+    onPath: (item, steps) => `${item}, ${steps.length === 1 ? `passo ${steps[0]}` : `passi ${steps.slice(0, -1).join(', ')} e ${steps[steps.length - 1]}`}`,
+    line: (item, way, label) => `${label ? `${label}, ` : ''}${way === 'to' ? 'verso' : way === 'from' ? 'da' : 'con'} ${item}`,
+  },
 };

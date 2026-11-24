@@ -4,6 +4,7 @@ import type { Entity, Envelope, Flow, FlowStep } from './envelope.ts';
 import { indexOf } from './projection.ts';
 import type { ProjectedNode } from './projection.ts';
 import { ENTRY_LABEL, FLOW_ICON, iconFor, STATUS_LABEL, TYPE_LABEL } from './icons.ts';
+import type { NodeIcon } from './icons.ts';
 
 export function nodeMeta(node: ProjectedNode): string {
   return [
@@ -41,7 +42,7 @@ export function projectName(envelope: Envelope): string {
 }
 
 // What the inspector is about: its title, and the name it shows with its icon. With no element and no flow it is the project.
-export function headOf(envelope: Envelope, entity?: Entity, flow?: Flow): { title: string; name: string; icon: string } {
+export function headOf(envelope: Envelope, entity?: Entity, flow?: Flow): { title: string; name: string; icon: NodeIcon } {
   if (entity) return { title: 'Dettaglio', name: entity.name, icon: iconFor({ nodeType: entity.node_type, type: entity.type }) };
   if (flow) return { title: 'Flusso', name: flowTitle(envelope, flow), icon: FLOW_ICON };
   return { title: 'Informazioni sul progetto', name: projectName(envelope) || 'Progetto', icon: 'info' };

@@ -5,7 +5,7 @@ import { FLOW_ICON, iconFor, NO_ICON, TYPE_LABEL } from '../src/icons.ts';
 
 const UNKNOWN = { type: 'nothing the model names' };
 
-test('what Sigrid has a name for has its icon, whether the release in use draws it or not', () => {
+test('what Sigrid has a name for has its icon', () => {
   const byNodeType = Object.fromEntries(NODE_TYPES.map(nodeType => [nodeType, iconFor({ ...UNKNOWN, nodeType })]));
   assert.deepEqual(byNodeType, {
     attore: 'account', schermata: 'layout', 'funzionalità': NO_ICON, 'servizio o API': 'service', gateway: 'gateway', database: 'data',

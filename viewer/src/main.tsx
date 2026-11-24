@@ -8,7 +8,9 @@ import {
   useCommandPalette, useMedia, useSchemeCommands, WordsProvider,
 } from '@acaprino/sigrid';
 import type { IconName, ToastItem } from '@acaprino/sigrid';
+import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
 import '@acaprino/sigrid/styles.css';
+import '@acaprino/sigrid/graph.css';
 import { Details } from './details.tsx';
 import { parseEnvelope } from './envelope.ts';
 import type { Envelope, View } from './envelope.ts';
@@ -51,6 +53,7 @@ function App() {
   const [notices, setNotices] = useState<ToastItem[]>([]);
   const noticeId = useRef(0);  // not crypto.randomUUID, which a page served over plain http does not have
   const search = useRef<HTMLInputElement>(null);
+  const canvas = useRef<GraphCanvasHandle>(null);
   const model = useExplorer(envelope);
   const palette = useCommandPalette();
   // Under this width the frame is laid out as on a phone: the sidebar is a drawer and the views are at the foot.
@@ -61,6 +64,8 @@ function App() {
   const detailsOpen = ready && shownDetails(state) !== null;
   const say = (text: string) => { noticeId.current += 1; const id = String(noticeId.current); setNotices(list => [...list, { id, text }]); };
   const close = () => dispatch({ type: 'close' });
+  // What is chosen outside the canvas is brought into its view; what is chosen on it is in view already.
+  const show = (ref: string) => canvas.current?.focus(model.projection.owners[ref] ?? []);
 
   // Ctrl+F: the search of the map in view; a page that shows no map has none.
   useCommand({ id: 'daodan.search', label: 'Cerca in questa vista', group: 'Vista', keys: 'Ctrl+F', icon: <Icon name="search" />,
@@ -158,9 +163,9 @@ function App() {
   const runPicker = !!runs?.length && <Select size="sm" aria-label="Run" value={run} onValueChange={setRun} options={runs.map(id => ({ value: id, label: `Run ${id}` }))} />;
   return <>
     <AppShell frame="sheet" titleBar={titleBar} status={status} footer={footer} bottomBar={bottomBar} contentLabel={title}
-      sidebar={<Navigation model={model} phase={phase} open={menu} onOpenChange={setMenu} />}
+      sidebar={<Navigation model={model} phase={phase} show={show} open={menu} onOpenChange={setMenu} />}
       inspector={<Details model={model} open={detailsOpen} close={close} />}>
-      <Explorer model={model} title={title} search={search} ready={ready} runs={runPicker}>
+      <Explorer model={model} title={title} search={search} canvas={canvas} ready={ready} runs={runPicker}>
         {runs && <Session onPick={file => setPick({ file })} onRun={onRun} />}
         {phase === 'none' && <Empty fill title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />}
         {phase === 'failed' && <Column pad="lg"><Note tone="error" title="Export non leggibile" actions={<Button variant="outline"

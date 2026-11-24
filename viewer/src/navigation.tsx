@@ -9,7 +9,9 @@ const NO_MAP: Record<Exclude<Phase, 'ready'>, string> = {
   none: 'Nessuna mappa: non ci sono run.', failed: "Nessuna mappa: l'export non si legge.", loading: "In attesa dell'export.",
 };
 
-export function Navigation({ model, phase, open, onOpenChange }: { model: Model; phase: Phase; open: boolean; onOpenChange: (open: boolean) => void }) {
+type NavigationProps = { model: Model; phase: Phase; show: (ref: string) => void; open: boolean; onOpenChange: (open: boolean) => void };
+
+export function Navigation({ model, phase, show, open, onOpenChange }: NavigationProps) {
   const { state, dispatch, projection, selectedIds } = model;
   const shell = useAppShell();
   const [collapsed, setCollapsed] = useState(false);
@@ -20,7 +22,7 @@ export function Navigation({ model, phase, open, onOpenChange }: { model: Model;
   const toFlow = (ref: string) => { dispatch({ type: 'select', ref: null }); dispatch({ type: 'flow', ref }); };
   // Where the sidebar is a drawer it closes itself on a place; on a thing it is closed here.
   const enter = (ref: string) => { dispatch({ type: 'open', ref }); onOpenChange(false); };
-  const choose = (ref: string) => { dispatch({ type: 'select', ref }); onOpenChange(false); };
+  const choose = (ref: string) => { dispatch({ type: 'select', ref }); show(ref); onOpenChange(false); };
   return <Sidebar aria-label="Mappa" open={open} onOpenChange={onOpenChange} collapsed={collapsed} onCollapsedChange={setCollapsed}>
     {phase === 'ready' ? <>
       <SidebarGroup label="Flussi" icon={<Icon name={FLOW_ICON} />}>

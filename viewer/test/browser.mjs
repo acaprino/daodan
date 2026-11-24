@@ -12,7 +12,7 @@ envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lu
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
 const engineRequests = [], askRequests = [];
-const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, exportBroken: false, exportDelay: 0 };
+const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, exportBroken: false, exportDelay: 0, layoutLost: false };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
@@ -83,6 +83,7 @@ try {
       return route.fulfill(mode.exportBroken ? { body: 'not json', contentType: 'text/plain' } : { json: envelope });
     }
     if (path.startsWith('/api/')) return route.fulfill({ status: 404, json: {} });
+    if (mode.layoutLost && path.includes('layout.worker')) return route.fulfill({ body: '', contentType: 'text/javascript' });  // it never answers
     const app = path.startsWith('/app/');
     const part = path.slice(app ? 5 : 1) || 'index.html';
     const mime = { html: 'text/html', css: 'text/css', js: 'text/javascript' }[part.split('.').at(-1)];
@@ -367,6 +368,14 @@ try {
   const search = main.getByLabel('Cerca per nome');
   const place = path => main.getByText(new RegExp(`^${path} · \\d+ nod`));  // the line beside the panel's title
   const closeIn = region => region.getByRole('button', { name: 'Chiudi', exact: true }).click();
+  // The canvas is a group named by the page; a node is a button named by its name, its step, «esterno», what it contains and its kind.
+  const canvas = main.getByRole('group', { name: 'Naviga il grafo', exact: true });
+  const thing = name => canvas.getByRole('button', { name: new RegExp(`^${name},`) });
+  const opens = name => canvas.getByRole('button', { name: `Apri ${name}`, exact: true });
+  const kinds = main.getByRole('list', { name: 'Tipi di linea', exact: true });
+  const kindOfLine = text => kinds.getByRole('listitem').filter({ hasText: text });
+  const busy = main.locator('[aria-busy="true"]');
+  const focusOn = start => page.waitForFunction(text => document.activeElement?.getAttribute('aria-label')?.startsWith(text), start);
   const inMain = () => page.evaluate(() => !!document.activeElement?.closest('main'));
   await page.setViewportSize({ width: 1280, height: 850 });
   mode.exportBroken = true;  // an export that cannot be read: the page waits, then says what failed, with Riprova
@@ -376,7 +385,7 @@ try {
   await main.getByRole('progressbar', { name: "Carico l'export…" }).waitFor();
   await line("Carico l'export…").waitFor();
   await nav.getByText("In attesa dell'export.").waitFor();
-  assert.equal(await main.locator('[aria-busy="true"]').count(), 1);
+  assert.equal(await busy.count(), 1);
   const unreadable = main.getByRole('alert');
   await unreadable.waitFor();
   assert.match(await unreadable.innerText(), /Errore[\s\S]*Export non leggibile[\s\S]*Riprova/);
@@ -385,12 +394,21 @@ try {
   await nav.getByText("Nessuna mappa: l'export non si legge.").waitFor();
   assert.equal(await nav.getByText("In attesa dell'export.").count(), 0);
   for (const control of [search, up, infoButton]) assert.ok(await control.isDisabled());  // in their place, with nothing to do
-  assert.equal(await main.locator('[aria-busy="true"]').count(), 0);
+  assert.equal(await busy.count(), 0);
   mode.exportBroken = false;
   mode.exportDelay = 0;
+  mode.layoutLost = true;  // a layout that does not come: the canvas waits, then says what failed, with Riprova
   await unreadable.getByRole('button', { name: 'Riprova' }).click();
   await line('shop · run fixture').waitFor();
-  assert.equal(await unreadable.count(), 0);
+  await main.getByRole('progressbar', { name: 'Dispongo il grafo…' }).waitFor();
+  await main.getByText('Sistema · Dispongo il grafo…', { exact: true }).waitFor();
+  assert.deepEqual([await unreadable.count(), await busy.count(), await canvas.count()], [0, 1, 0]);
+  await unreadable.waitFor();
+  assert.match(await unreadable.innerText(), /Errore[\s\S]*Impossibile disporre il grafo[\s\S]*5000 ms[\s\S]*Riprova/);
+  mode.layoutLost = false;
+  await unreadable.getByRole('button', { name: 'Riprova' }).click();
+  await thing('web').waitFor({ timeout: 15000 });
+  assert.deepEqual([await unreadable.count(), await busy.count()], [0, 0]);
   await schemeIs(page, 'dark');  // the theme chosen on the App page
   const foot = page.getByRole('contentinfo');
   assert.match(await foot.innerText(), /\d+ entità · \d+ relazioni/);
@@ -403,6 +421,56 @@ try {
   await panel.getByText('Sistema · 8 nodi · 6 relazioni visibili', { exact: true }).waitFor();
   assert.ok(await up.isDisabled());
   assert.ok(await main.getByRole('button', { name: 'Azzera filtri (0 nascosti)' }).isDisabled());
+  // The canvas, as tall as the panel leaves, with its view's buttons and the key of its lines.
+  assert.ok((await canvas.boundingBox()).height >= 320);
+  assert.equal(await canvas.getAttribute('aria-roledescription'), 'grafo');
+  for (const name of ['Ingrandisci', 'Riduci', 'Inquadra tutto']) await canvas.getByRole('button', { name, exact: true }).waitFor();
+  await canvas.getByRole('button', { name: 'web, contiene 3 elementi, componente', exact: true }).waitFor();
+  assert.match(await kinds.innerText(), /Relazioni\s*6[\s\S]*Collegamenti di dati\s*3/);
+  // A node pressed is in the details; Escape on it, or a press beside the nodes, leaves it.
+  await thing('web').click();
+  await details.getByRole('heading', { name: 'web', exact: true }).waitFor();
+  await thing('web').and(page.locator('[aria-current="true"]')).waitFor();
+  assert.equal(await canvas.locator('[aria-current]').count(), 1);
+  await thing('web').focus();
+  await page.keyboard.press('Escape');
+  await details.waitFor({ state: 'hidden' });
+  await canvas.locator('[aria-current]').waitFor({ state: 'detached' });
+  await thing('server').click();
+  await details.getByRole('heading', { name: 'server', exact: true }).waitFor();
+  await canvas.click({ position: { x: 8, y: 8 } });
+  await details.waitFor({ state: 'hidden' });
+  // By keyboard: the arrows follow the lines, Enter chooses, and the › after a node enters it.
+  await thing('web').focus();
+  for (const [key, name] of [['ArrowRight', 'server,'], ['ArrowLeft', 'web,'], ['ArrowRight', 'server,']]) {
+    await page.keyboard.press(key);
+    await focusOn(name);
+  }
+  await page.keyboard.press('Enter');
+  await details.getByRole('heading', { name: 'server', exact: true }).waitFor();
+  await opens('server').and(page.locator('[tabindex="0"]')).waitFor();
+  await page.keyboard.press('Tab');
+  await focusOn('Apri server');
+  await page.keyboard.press('Enter');
+  await place('Sistema / server').waitFor();
+  await details.waitFor({ state: 'hidden' });
+  await thing('money.ts').waitFor();
+  await choose('Torna al sistema');
+  await place('Sistema').waitFor();
+  await opens('web').click();  // by its ›
+  await place('Sistema / web').waitFor();
+  await opens('checkout.tsx').click();
+  await place('Sistema / web / checkout.tsx').waitFor();
+  await thing('pay').waitFor();
+  await choose('Torna al sistema');
+  await place('Sistema').waitFor();
+  await thing('web').click();  // a double press enters, here with the details open: their opening narrows the canvas
+  await details.waitFor();
+  await thing('web').dblclick();
+  await place('Sistema / web').waitFor();
+  await thing('api.ts').waitFor();
+  await choose('Torna al sistema');
+  await place('Sistema').waitFor();
   // The skip link goes to the content.
   await page.getByRole('link', { name: 'Vai al contenuto' }).press('Enter');
   await page.waitForFunction(() => document.activeElement?.tagName === 'MAIN');
@@ -411,6 +479,7 @@ try {
   assert.equal(await view('Logica').getAttribute('aria-current'), 'page');
   await view('Fisica').click();
   await page.getByRole('main', { name: 'Mappa fisica' }).waitFor();
+  await thing('shop').waitFor();
   assert.equal(await view('Fisica').getAttribute('aria-current'), 'page');
   assert.equal(await view('Logica').getAttribute('aria-current'), null);
   await choose('Vista logica');
@@ -467,6 +536,11 @@ try {
   await page.keyboard.press('Escape');  // closing leaves the flow chosen, and its place shows its steps again
   await flowPanel.waitFor({ state: 'hidden' });
   assert.equal(await current(pay), 'page');
+  // On the canvas its nodes have the numbers of its steps, and its lines are a kind of their own.
+  await thing('web, passo 1').waitFor();
+  await thing('server, passo 2').waitFor();
+  await kindOfLine('Linee del flusso').waitFor();
+  assert.match(await kindOfLine('Linee del flusso').innerText(), /Linee del flusso\s*4/);
   await pay.click();
   await flowPanel.waitFor();
   await row(/^nightlyReconcile\b.*\bincompleto\s*2\s*passi$/).click();
@@ -510,6 +584,20 @@ try {
   assert.equal(await current(long), 'page');
   await whole.click();
   await page.waitForFunction(() => document.querySelector('nav[aria-label="Mappa"] [aria-current="page"]').textContent === 'Tutta la mappa');
+  await thing('web, contiene 3 elementi').waitFor();
+  await kindOfLine('Linee del flusso').waitFor({ state: 'detached' });
+  // What is chosen in the list is brought into the view of the canvas.
+  await row(/^card payment provider/).click();
+  await details.getByRole('heading', { name: 'card payment provider', exact: true }).waitFor();
+  await canvas.getByRole('button', { name: 'card payment provider, esterno, servizio o API', exact: true }).waitFor();
+  const inSight = async () => {
+    const [box, node] = await Promise.all([canvas.boundingBox(), thing('card payment provider').boundingBox()]);
+    return !!node && node.x >= box.x && node.x + node.width <= box.x + box.width && node.y >= box.y && node.y + node.height <= box.y + box.height;
+  };
+  for (let tries = 0; tries < 30 && !await inSight(); tries += 1) await page.waitForTimeout(100);
+  assert.ok(await inSight());
+  await closeIn(details);
+  await details.waitFor({ state: 'hidden' });
   // A group is entered by the inspector's action, by its row's own control, or by a double press; «Su» goes back.
   const still = async () => [(await view('Logica').boundingBox()).x, (await up.boundingBox()).x, (await infoButton.boundingBox()).x];
   const before = await still();
@@ -546,15 +634,19 @@ try {
   assert.ok(await focused(search));
   await search.fill('zzzz');
   await main.getByText('Nessun elemento visibile.').waitFor();
+  assert.equal(await canvas.count(), 0);
   assert.ok(await main.getByRole('button', { name: 'Azzera filtri (8 nascosti)' }).isEnabled());
   await main.getByRole('button', { name: 'Azzera filtri', exact: true }).click();
   await main.getByText('Nessun elemento visibile.').waitFor({ state: 'detached' });
+  await thing('web').waitFor();
   assert.equal(await search.inputValue(), '');
   // The type: its choices are those of the view, whatever the search hides, and the chosen one stays said.
   const kind = main.getByRole('combobox', { name: 'Tipo di entità' });
   await kind.click();
   await page.getByRole('option', { name: 'componente', exact: true }).click();
   await place('Sistema').filter({ hasText: '2 nodi' }).waitFor();
+  await thing('Cliente').waitFor({ state: 'detached' });
+  await thing('server').waitFor();
   await search.fill('zzzz');
   await main.getByText('Nessun elemento visibile.').waitFor();
   assert.match(await kind.innerText(), /componente/);
@@ -597,6 +689,13 @@ try {
   await overlay.waitFor();
   await closeIn(overlay);
   await overlay.waitFor({ state: 'detached' });
+  const sheet = page.getByRole('dialog', { name: 'Dettaglio' });
+  await thing('web').waitFor();
+  await busy.waitFor({ state: 'detached' });
+  await thing('web').click();
+  await sheet.waitFor();
+  await closeIn(sheet);
+  await sheet.waitFor({ state: 'detached' });
   await page.setViewportSize({ width: 390, height: 820 });  // the sidebar is a drawer, and the views are at the foot
   const drawer = page.getByRole('dialog', { name: 'Mappa' });
   await page.getByRole('button', { name: 'Apri il menu' }).click();
@@ -606,10 +705,10 @@ try {
   await page.getByRole('button', { name: 'Apri il menu' }).click();  // an element chosen there closes it and shows its details
   await drawer.getByRole('button', { name: /^web/ }).click();
   await drawer.waitFor({ state: 'detached' });
-  const sheet = page.getByRole('dialog', { name: 'Dettaglio' });
   await sheet.waitFor();
   await closeIn(sheet);
   await sheet.waitFor({ state: 'detached' });
+  assert.ok((await canvas.boundingBox()).height >= 200);
   const footViews = page.getByRole('toolbar', { name: 'Viste in basso' });
   assert.equal(await view('Logica').count(), 1);
   await footViews.getByRole('button', { name: 'Fisica' }).click();
@@ -649,30 +748,8 @@ try {
   assert.match(await runPicker.innerText(), /Run prima/);
   await line('shop · run fixture').waitFor();
 
-  // ticket 17/18: the contract of what they port, in Imago's selectors: to restore by role and name, then delete from here.
-  // ticket 17, the canvas and the flows on it
-  // const canvas = page.getByRole('region', { name: 'Naviga il grafo' });
-  // const node = canvas.locator('.im-graph-node').first();
-  // await node.waitFor({ timeout: 15000 });
-  // const name = await node.getAttribute('title');
-  // await node.click();
-  // await page.waitForFunction(label => document.querySelector('.im-inspector h2')?.textContent === label, name, { timeout: 5000 });
-  // await node.focus();
-  // await page.keyboard.press('Escape');
-  // await inspectorBox.waitFor({ state: 'hidden' });
-  // await node.click();
-  // await inspectorBox.waitFor();
-  // const flow = page.locator('.im-sidebar .im-row').first();
-  // await flow.click();
-  // await page.locator('.im-canvas-message').waitFor({ state: 'hidden' });
-  // await canvas.locator('.im-graph-node').first().waitFor();
-  // assert.ok((await canvas.boundingBox()).height >= 320);
-  // await emptyMap.getByRole('button', { name: 'Azzera filtri' }).click();
-  // await canvas.locator('.im-graph-node').first().waitFor();
-  // (on the physical view) await canvas.locator('.im-graph-node').first().waitFor();
-  // (at 900) await node.click(); await inspectorBox.waitFor();
-  // (at 390) assert.ok((await canvas.boundingBox()).height >= 200);
-  // ticket 18, the session, the findings and the other export
+  // ticket 18: the contract of what it ports (the session, the findings and the other export), in Imago's selectors: to restore
+  // by role and name, then delete from here.
   // const file = page.locator('.im-file-selector');
   // await file.setInputFiles({ name: 'shop.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(envelope)) });
   // (with no runs) await page.getByLabel('Nome del run').waitFor();
@@ -688,7 +765,7 @@ try {
   // await page.getByRole('button', { name: 'Chiudi dettaglio' }).click();
   // await disclosure.press('Enter');
   // await page.getByRole('button', { name: 'Invia' }).waitFor({ state: 'detached' });
-  // end of ticket 17/18
+  // end of ticket 18
 
   // The theme the person picks on one page is followed live by the other one (the storage event), on Sigrid or on Imago.
   await choose('Tema chiaro');
@@ -709,5 +786,5 @@ try {
   await tab.close();
   await app.close();
   assert.deepEqual(errors, []);
-  console.log('Passed the App on Imago (navigation, tree, dialog, pipeline, graph groups) and the map on Sigrid (frame, palette, places and things, details, filters, runs, theme).');
+  console.log('Passed the App on Imago (navigation, tree, dialog, pipeline, graph groups) and the map on Sigrid (frame, palette, canvas, places and things, details, filters, runs, theme).');
 } finally { await browser.close(); }
