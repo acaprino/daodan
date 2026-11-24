@@ -1,0 +1,187 @@
+{
+ "name": "ruoyi",
+ "repository": "yangzongzhuan/RuoYi",
+ "commit": "d6708994364bfbb472c96380d6129e24303b3228",
+ "licence": "MIT",
+ "launcher_answers_used": [
+  "service-handler-methods"
+ ],
+ "needs_a_service": true,
+ "restore_rc": "1",
+ "built_rc": "0",
+ "build_offline_after_restore": {
+  "rc": 1,
+  "seconds": 2.53,
+  "missing": 14
+ },
+ "build_again_offline": {
+  "rc": 0,
+  "seconds": 10.96
+ },
+ "modules": [
+  {
+   "module": "ruoyi-admin",
+   "start_class": "com.ruoyi.RuoYiApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 1,
+     "seconds": 6.09,
+     "peak_memory_mb": 613,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'messageSource' defined in class path resource [org/springframework/boot/autoconfigure/context/MessageSourceAutoConfiguration.class]: BeanPostProcessor before instantiation of bean failed <- org.springf"
+    },
+    {
+     "label": "aot",
+     "exit": 1,
+     "seconds": 5.28,
+     "peak_memory_mb": 587,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"java.lang.reflect.InvocationTargetException: null <- org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'authorizationAttributeSourceAdvisor' defined in class path resource [com/ruoyi/framework/config/ShiroConfig.class]: Unsatisfied dependency "
+    },
+    {
+     "label": "lazy",
+     "exit": 1,
+     "seconds": 5.58,
+     "peak_memory_mb": 606,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'messageSource' defined in class path resource [org/springframework/boot/autoconfigure/context/MessageSourceAutoConfiguration.class]: BeanPostProcessor before instantiation of bean failed <- org.springf"
+    },
+    {
+     "label": "lazy-handler-methods",
+     "exit": 1,
+     "seconds": 4.99,
+     "peak_memory_mb": 621,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'messageSource' defined in class path resource [org/springframework/boot/autoconfigure/context/MessageSourceAutoConfiguration.class]: BeanPostProcessor before instantiation of bean failed <- org.springf"
+    },
+    {
+     "label": "exclude",
+     "exit": 1,
+     "seconds": 5.01,
+     "peak_memory_mb": 602,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'messageSource' defined in class path resource [org/springframework/boot/autoconfigure/context/MessageSourceAutoConfiguration.class]: BeanPostProcessor before instantiation of bean failed <- org.springf"
+    },
+    {
+     "label": "exclude-lazy-aot",
+     "exit": 1,
+     "seconds": 4.62,
+     "peak_memory_mb": 577,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"java.lang.reflect.InvocationTargetException: null <- org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'authorizationAttributeSourceAdvisor' defined in class path resource [com/ruoyi/framework/config/ShiroConfig.class]: Unsatisfied dependency "
+    },
+    {
+     "label": "mariadb-setup",
+     "exit": 0,
+     "seconds": 0,
+     "peak_memory_mb": 0,
+     "rows": 0,
+     "listeners": [],
+     "error": null
+    },
+    {
+     "label": "service-actuator",
+     "exit": 2,
+     "seconds": 7.67,
+     "peak_memory_mb": 812,
+     "rows": 0,
+     "listeners": [
+      [
+       55449,
+       7.436
+      ]
+     ],
+     "error": "{\"error\": \"no bean of an endpoint with the id mappings\"}"
+    },
+    {
+     "label": "service-aot",
+     "exit": 1,
+     "seconds": 4.59,
+     "peak_memory_mb": 605,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"java.lang.reflect.InvocationTargetException: null <- org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'authorizationAttributeSourceAdvisor' defined in class path resource [com/ruoyi/framework/config/ShiroConfig.class]: Unsatisfied dependency "
+    },
+    {
+     "label": "service-handler-methods",
+     "exit": 0,
+     "seconds": 7.53,
+     "peak_memory_mb": 821,
+     "rows": 311,
+     "listeners": [
+      [
+       29775,
+       7.345
+      ]
+     ],
+     "error": null
+    }
+   ],
+   "used": "service-handler-methods",
+   "rows": 311,
+   "project_rows": 303,
+   "framework_rows": 8,
+   "function_rows": 0,
+   "routes": 304,
+   "placed": 304,
+   "gaps": {}
+  }
+ ],
+ "launcher_routes": 304,
+ "placed": 304,
+ "gap_causes": {},
+ "noir": {
+  "seconds": 1.74,
+  "peak_memory_mb": 164,
+  "endpoints": 508,
+  "with_java_handler": 304,
+  "in_java_without_handler": [
+   [
+    "GET",
+    "/profile/**",
+    "ruoyi-framework/src/main/java/com/ruoyi/framework/config/ResourcesConfig.java"
+   ],
+   [
+    "GET",
+    "/swagger-ui/**",
+    "ruoyi-framework/src/main/java/com/ruoyi/framework/config/ResourcesConfig.java"
+   ]
+  ],
+  "other": {
+   "pom.xml": 2,
+   "a file of the project that is not code (static)": 199,
+   "messages.properties": 1
+  }
+ },
+ "compare": {
+  "both": 304,
+  "only_launcher": 0,
+  "only_noir_java": 0,
+  "agree": {
+   "file": 304,
+   "line_in_span": 304,
+   "same_line": 304
+  },
+  "differ": []
+ },
+ "only_launcher_examples": [],
+ "only_noir_examples": [],
+ "left_behind": {
+  "changed_outside_target": [],
+  "files_in_target": 627,
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ },
+ "prep_left_behind": {
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ }
+}

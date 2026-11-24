@@ -1,5 +1,5 @@
-"""Gin's `Routes()` and debug hooks on Modal, in a container with the network blocked. NOT RUN YET (23 November 2026: no Modal
-credentials in the session that wrote it).
+"""Gin's `Routes()` and debug hooks on Modal, in a container with the network blocked. Written on 23 November 2026, run on 24 November
+2026 (`results/`); the answer comes back in compressed pieces (a call with the network blocked cannot return more than about 8 KB).
 
     PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/gin-routes/modal_probe.py
     VARIANTS=hook-names,app-panic ... (a choice of `PROBES`)
@@ -111,8 +111,9 @@ def _listing(root: str) -> dict[str, int]:
 
 
 def _symbols(binary: str, names: list[str], cwd: str) -> list[dict]:
-    """The toolchain's `go tool nm` (name -> address) and `go tool addr2line` (address -> file:line) for each handler name."""
-    nm = _run(["go", "tool", "nm", binary], cwd)["stdout"]
+    """The toolchain's `go tool nm` (name -> address) and `go tool addr2line` (address -> file:line) for each handler name; a name
+    ending in `-fm` (the wrapper the compiler writes for a method value) is also resolved without it, the method's own symbol."""
+    nm = subprocess_text(["go", "tool", "nm", binary], cwd)
     address = {}
     for line in nm.splitlines():
         parts = line.split(None, 2)
@@ -120,21 +121,42 @@ def _symbols(binary: str, names: list[str], cwd: str) -> list[dict]:
             address.setdefault(parts[2].strip(), parts[0])
     rows = []
     for name in dict.fromkeys(names):
-        if name not in address:
-            rows.append({"handler": name, "address": None, "file_line": None})
-            continue
-        answer = _run(["go", "tool", "addr2line", binary], cwd, stdin="0x" + address[name] + "\n")["stdout"].splitlines()
-        rows.append({"handler": name, "address": address[name], "addr2line": answer})
+        row = {"handler": name}
+        for key, symbol in (("", name), ("method_", name.removesuffix("-fm") if name.endswith("-fm") else None)):
+            if symbol is None:
+                continue
+            row[key + "address"] = address.get(symbol)
+            if symbol in address:
+                row[key + "addr2line"] = subprocess_text(["go", "tool", "addr2line", binary], cwd, "0x" + address[symbol] + "\n").splitlines()
+        rows.append(row)
     return rows
 
 
+def subprocess_text(argv: list[str], cwd: str, stdin: str | None = None) -> str:
+    """The whole standard output of one toolchain command (`_run` keeps only its tail)."""
+    import subprocess
+
+    return subprocess.run(argv, cwd=cwd, input=stdin, capture_output=True, text=True).stdout
+
+
+CHUNK = 6000  # bytes: with the network blocked a call cannot return more than about 8 KB, so the answer comes back in pieces
+
+
 @app.function(cpu=2, memory=4096, timeout=1800, block_network=True)
-def probe(names: list[str]) -> dict:
+def probe(names: list[str]):
+    import zlib
+
+    payload = zlib.compress(json.dumps(_probe(names)).encode("utf-8"), 9)
+    for start in range(0, len(payload), CHUNK):
+        yield payload[start:start + CHUNK]
+
+
+def _probe(names: list[str]) -> dict:
     import shutil
     import subprocess
 
     def version(*argv):
-        return subprocess.run(argv, capture_output=True, text=True).stdout.strip().splitlines()[:1]
+        return subprocess.run(argv, cwd="/fix", capture_output=True, text=True).stdout.strip().splitlines()[:1]
 
     out = {"_env": {"go": version("go", "version"), "gin": version("go", "list", "-m", "github.com/gin-gonic/gin")}}
     for name in names:
@@ -180,7 +202,9 @@ def cold_build() -> dict:
 def main():
     wanted = (os.environ.get("VARIANTS") or ",".join(PROBES)).split(",")
     OUT.mkdir(exist_ok=True)
-    answers = {**probe.remote(wanted), **cold_build.remote()}
+    import zlib
+
+    answers = {**json.loads(zlib.decompress(b"".join(probe.remote_gen(wanted)))), **cold_build.remote()}
     for name, items in answers.items():
         (OUT / f"{'00_env' if name == '_env' else name}.json").write_bytes(
             (json.dumps(items, indent=1, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8"))

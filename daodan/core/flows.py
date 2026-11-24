@@ -68,6 +68,7 @@ A component written as an element (`<Paywall />`) is called by the function that
 
     python flows.py links MANIFEST --rules RULES
     python flows.py trace MANIFEST --rules RULES (--from NODE | --to NODE | --through NODE)
+    python flows.py wrappers MANIFEST [--rules RULES]    (the `rotta` rules `http_wrappers.py` proposes, and its gaps)
 """
 from __future__ import annotations
 
@@ -77,7 +78,7 @@ import hashlib
 import json
 import re
 import sys
-from collections import defaultdict, deque
+from collections import Counter, defaultdict, deque
 from functools import cache, cached_property
 from pathlib import Path, PurePosixPath
 from typing import Callable, NamedTuple
@@ -312,6 +313,7 @@ class Facts:
                 self.outside[file, name] = module or "another module"
         self._nodes: dict[str, str | None] = {}
         self.route_named: dict[str, str] = {}  # a function written in place as a route handler: its route
+        self._held: dict[str, Counter] = {}  # per file: how many functions hold each node as their own (`own_node`)
 
     def targets(self, name: str, file: str, line: int, column: int, kinds: tuple) -> list[str]:
         """Declarations an identifier names: its resolved read, else the one module-level
@@ -417,13 +419,11 @@ class Facts:
         property it is the value of, inside its owner, or as its owner."""
         if declaration_id not in self._nodes:
             declaration, labels = self.declarations.get(declaration_id or ""), []
-            while declaration is not None and declaration["name"] == "(anonymous)" \
-                    and declaration["id"] not in self.route_named:
+            while declaration is not None and self.folds(declaration):
                 label = self.property_label(declaration)
                 if label:
                     labels.insert(0, label)
-                scope = str(declaration.get("scope") or "")
-                declaration = self.declarations.get(f"{declaration['file']}::{scope.removeprefix('scope-')}")
+                declaration = self.owner(declaration)
             name, file = None, declaration_id.split("::", 1)[0] if declaration_id else None
             if declaration is not None:
                 base = self.route_named.get(declaration["id"]) or \
@@ -434,6 +434,38 @@ class Facts:
                 name = f"{file}::{'.'.join(labels)}"
             self._nodes[declaration_id] = name
         return self._nodes[declaration_id]
+
+    def owner(self, declaration: dict) -> dict | None:
+        """The declaration whose scope holds this one: the class of a method, the function a closure is written in."""
+        scope = str(declaration.get("scope") or "")
+        return self.declarations.get(f"{declaration['file']}::{scope.removeprefix('scope-')}")
+
+    def folds(self, declaration: dict) -> bool:
+        """Whether a declaration is no node of its own: an anonymous function counts as the function that holds it, unless a
+        route names it."""
+        return declaration["name"] == "(anonymous)" and declaration["id"] not in self.route_named
+
+    def name_routes(self, names: dict[str, str]) -> None:
+        """Name functions written in place as route handlers by their route (`route_named`); the nodes read so far are read again."""
+        self.route_named.update(names)
+        self._nodes.clear()
+        self._held.clear()
+
+    def own_node(self, declaration_id: str | None) -> str | None:
+        """The node of a function that is its own: a function with a name, an anonymous one a route names or that is the value of a
+        property (its node is the property's), and the only one of its file to hold that node (the `(lambda)` of one method are one
+        name). None otherwise: a route bound to it would carry the steps of the others, or of the function that holds it."""
+        declaration = self.declarations.get(declaration_id or "")
+        if declaration is None or not self._holds(declaration):
+            return None
+        node = self.node(declaration_id)
+        file = declaration["file"]
+        if file not in self._held:
+            self._held[file] = Counter(self.node(d["id"]) for d in self.functions.get(file, ()) if self._holds(d))
+        return node if self._held[file][node] == 1 else None
+
+    def _holds(self, declaration: dict) -> bool:
+        return not self.folds(declaration) or self.property_label(declaration) is not None
 
     def named(self, declaration_id: str | None) -> str | None:
         declaration = self.declarations.get(declaration_id or "")
@@ -564,23 +596,27 @@ def _key_name(node, tree: Tree) -> str | None:
 
 
 def _members(node, tree: Tree) -> tuple[dict[str, object], bool] | None:
-    """The named entries of an object literal, `{name: value node}` (None for a method), and whether a spread may add
-    others; None when the node is no object literal. A computed key adds nothing."""
+    """The named entries of an object literal, `{name: value node}` (None for a method), and whether other members may
+    exist that these do not name: a spread, a computed key (`['method']`) and a prototype (`__proto__: {...}`) may each set
+    any member; None when the node is no object literal. A key that is no name (a number) names no member we read."""
     import entries
     node = _unwrapped(node)
     if node is None or node.type not in OBJECTS:
         return None
     found, spread = {}, False
     for child in node.named_children:
-        if child.type in SPREADS:
+        key = child.child_by_field_name("key") if child.type == "pair" else \
+            child.child_by_field_name("name") if child.type == "method_definition" else None
+        if child.type in SPREADS or key is not None and (
+                key.type == "computed_property_name" or child.type == "pair" and _key_name(key, tree) == "__proto__"):
             spread = True
         elif child.type == "pair":
-            if (name := _key_name(child.child_by_field_name("key"), tree)) is not None:
+            if (name := _key_name(key, tree)) is not None:
                 found[name] = child.child_by_field_name("value")
         elif child.type == "shorthand_property_identifier":
             found[entries._text(tree.source, child)] = child
         elif child.type == "method_definition":
-            if (name := _key_name(child.child_by_field_name("name"), tree)) is not None:
+            if (name := _key_name(key, tree)) is not None:
                 found[name] = None
     return found, spread
 
@@ -1008,6 +1044,7 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     import entries
     if not rules:
         return
+    names = {}
     for ref in view["references"]:
         parts = [str(part) for part in ref.get("parts") or []]
         for rule in (r for r in rules if _written(r, parts, ref["file"])):
@@ -1019,8 +1056,15 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
             method, path = (_value(rule["route"][k], call, facts, rule.get("strip", "") if k == "path" else "")
                             for k in ("method", "path"))
             if written and written["name"] == "(anonymous)" and method and path is not None:
-                facts.route_named[written["id"]] = f"{method.upper()} {path}"
-    facts._nodes.clear()
+                names[written["id"]] = f"{method.upper()} {path}"
+    facts.name_routes(names)
+
+
+def bind_declared(declared: list[dict], facts: Facts, view: dict, rules: list[dict]) -> list[dict]:
+    """The declared rows as the links bind them (`binder.bind`), for the links and the candidates alike: a function written in place as a
+    handler a rule offers is named by that route first, and then the binder names the closures Noir cites, so that both end on the same nodes."""
+    _name_written_handlers(facts, view, [r for r in rules if "written" in r and "shape" not in r and r["link"] == "offre" and r.get("handler")])
+    return binder.bind(declared, facts, facts.resolver)
 
 
 def path_schema(path: str) -> str | None:
@@ -1079,7 +1123,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         from premap.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
-        declared = binder.bind(declared, facts, resolver)
+        declared = bind_declared(declared, facts, view, rules)
         # One route, one entry: the route of a source outside `premap.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
         # of them (the text of the path where a row has no schema), in the file or on the function that row starts, is that row,
         # provided its method is the row's or the row has none (a page answers any; Noir's method is not copied onto it). Another
@@ -1108,7 +1152,6 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                 kept.append(item)
         declared = kept
         candidates = candidates + declared + _observed_entries(manifest, store, facts, gaps)
-        _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
         callbacks = {item["symbol"]: item["owner"] for item in candidates
                      if item.get("handler_source") == "inline" and item["symbol"] in facts.declarations
                      and item["symbol"] not in facts.route_named}
@@ -1943,7 +1986,7 @@ def file_sizes(manifest: Path) -> dict[str, int]:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("links", "trace", "units", "candidates", "shapes", "paths"):
+    for name in ("links", "trace", "units", "candidates", "shapes", "paths", "wrappers"):
         command = sub.add_parser(name)
         command.add_argument("manifest", type=Path)
         command.add_argument("--rules", type=Path, help="default: the rules recorded beside this snapshot")
@@ -1989,6 +2032,10 @@ def _cli_query(args, manifest, parser):
         parser.error("offset must be nonnegative and limit between 1 and 1000")
     recorded = manifest.with_name("flow-rules.json")
     rules = load_rules(args.rules) if args.rules else load_rules(recorded) if recorded.is_file() else []
+    if args.command == "wrappers":
+        import http_wrappers
+        print(json.dumps(http_wrappers.wrappers(manifest, rules), indent=2, ensure_ascii=False))
+        return 0
     if args.command in ("candidates", "shapes", "paths"):
         import entries
         import flow_questions

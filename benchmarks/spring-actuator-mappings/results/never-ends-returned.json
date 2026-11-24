@@ -1,0 +1,40 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "20",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/never-ends-returned/target/unpacked/BOOT-INF/classes:/work/never-ends-returned/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/never-ends-returned.json",
+   "actuator",
+   "returned",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "probe.block=true"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.931,
+    "gone_s": 2.953,
+    "owner": "3491 java -Xmx1g -cp /work/never-ends-returned/target/unpacked/BOOT-INF/classes:/work/never-ends-returned/target/unpacked/BOO",
+    "port": 21345
+   }
+  ],
+  "peak_memory_mb": 498,
+  "returncode": 124,
+  "seconds": 20.12,
+  "stderr": "",
+  "stdout": "2026-11-24T00:38:59.923Z  INFO 3491 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 3491 (/launcher/Launcher.java started by root in /work/never-ends-returned)\n2026-11-24T00:38:59.927Z  INFO 3491 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:39:00.825Z  INFO 3491 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:39:00.837Z  INFO 3491 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:39:00.837Z  INFO 3491 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:39:00.869Z  INFO 3491 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:39:00.870Z  INFO 3491 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 895 ms\n2026-11-24T00:39:01.301Z  INFO 3491 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'\n2026-11-24T00:39:01.364Z  INFO 3491 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:39:01.379Z  INFO 3491 --- [           main] Launcher                                 : Started Launcher in 1.825 seconds (process running for 2.948)\n2026-11-24T00:39:18.427Z  INFO 3491 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:39:18.428Z  INFO 3491 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": null,
+  "written_bytes": 0
+ }
+]

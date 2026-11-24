@@ -1,0 +1,26 @@
+{
+ "variant": "openapi",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-I",
+  "-c",
+  "import json\nfrom fastapi_cli.config import FastAPIConfig\nfrom fastapi_cli.discover import get_import_data, get_import_data_from_import_string\nfrom uvicorn.importer import import_from_string\nconfig = FastAPIConfig.resolve()\ndata = get_import_data_from_import_string(config.entrypoint, config.from_pyproject) if config.entrypoint else get_import_data()\napp = import_from_string(data.import_string)\ntry:\n    schema = app.openapi()\n    print(json.dumps({path: {m: o.get('operationId') for m, o in item.items()} for path, item in schema['paths'].items()}, indent=1))\nexcept BaseException as error:\n    print('OPENAPI FAILED', type(error).__name__, str(error)[:300])\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\n \"/api/users/orders/\": {\n  \"get\": \"list_orders_api_users_orders__get\"\n },\n \"/api/users/orders/{order_id}/ship\": {\n  \"post\": \"ship_order_api_users_orders__order_id__ship_post\"\n },\n \"/api/users/{user_id}\": {\n  \"get\": \"read_user_api_users__user_id__get\",\n  \"delete\": \"remove_user\"\n },\n \"/items/{item_id}\": {\n  \"get\": \"read_item_items__item_id__get\"\n },\n \"/items\": {\n  \"post\": \"create_item_items_post\"\n },\n \"/logged\": {\n  \"get\": \"read_logged_logged_get\"\n },\n \"/unwrapped\": {\n  \"get\": \"wrapper_unwrapped_get\"\n },\n \"/multi\": {\n  \"get\": \"multi_multi_post\",\n  \"post\": \"multi_multi_post\"\n },\n \"/both\": {\n  \"get\": \"both_both_head\",\n  \"head\": \"both_both_head\"\n },\n \"/added\": {\n  \"put\": \"added_added_put\",\n  \"patch\": \"added_added_put\"\n },\n \"/lambda\": {\n  \"get\": \"_lambda__lambda_get\"\n },\n \"/page\": {\n  \"get\": \"show_page_get\"\n },\n \"/callable\": {\n  \"get\": \"Counter_callable_get\"\n },\n \"/partial\": {\n  \"get\": \"partial_partial_get\"\n },\n \"/stdlib\": {\n  \"get\": \"dumps_stdlib_get\"\n },\n \"/third-party\": {\n  \"get\": \"is_body_allowed_for_status_code_third_party_get\"\n },\n \"/files/{file_path}\": {\n  \"get\": \"read_file_files__file_path__get\"\n },\n \"/typed/{n}\": {\n  \"get\": \"read_typed_typed__n__get\"\n },\n \"/uuid/{u}\": {\n  \"get\": \"read_uuid_uuid__u__get\"\n },\n \"/slug/{s}\": {\n  \"get\": \"read_slug_slug__s__get\"\n },\n \"/pair/{p}\": {\n  \"get\": \"read_pair_pair__p__get\"\n },\n \"/two/{a}/{b}\": {\n  \"get\": \"read_two_two__a___b__get\"\n },\n \"/glued/{a}-{b}\": {\n  \"get\": \"read_glued_glued__a___b__get\"\n },\n \"/strict/\": {\n  \"get\": \"strict_strict__get\"\n },\n \"/loose\": {\n  \"get\": \"loose_loose_get\"\n }\n}\n",
+ "stderr": "/daodan/state/venvs/lib/python3.12/site-packages/fastapi/openapi/utils.py:295: UserWarning: Duplicate Operation ID multi_multi_post for function multi at /work/app/main.py\n  warnings.warn(message, stacklevel=1)\n/daodan/state/venvs/lib/python3.12/site-packages/fastapi/openapi/utils.py:295: UserWarning: Duplicate Operation ID both_both_head for function both at /work/app/main.py\n  warnings.warn(message, stacklevel=1)\n/daodan/state/venvs/lib/python3.12/site-packages/fastapi/openapi/utils.py:295: UserWarning: Duplicate Operation ID added_added_put for function added at /work/app/main.py\n  warnings.warn(message, stacklevel=1)\n",
+ "seconds": 1.54,
+ "max_rss_mb": 71.1,
+ "left_in_the_project": [
+  "app/__pycache__/__init__.cpython-312.pyc",
+  "app/__pycache__/convertors.cpython-312.pyc",
+  "app/__pycache__/main.cpython-312.pyc",
+  "app/__pycache__/orders.cpython-312.pyc",
+  "app/__pycache__/sub.cpython-312.pyc",
+  "app/routers/__pycache__/__init__.cpython-312.pyc",
+  "app/routers/__pycache__/users.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 1558
+}

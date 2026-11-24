@@ -1,0 +1,46 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "60",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/props-defaults/target/unpacked/BOOT-INF/classes:/work/props-defaults/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/props-defaults.json",
+   "actuator",
+   "started",
+   "defaults",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.991,
+    "gone_s": 3.161,
+    "owner": "653 java -Xmx1g -cp /work/props-defaults/target/unpacked/BOOT-INF/classes:/work/props-defaults/target/unpacked/BOOT-INF/lib/",
+    "port": 8080
+   },
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 3.141,
+    "gone_s": 3.161,
+    "owner": "653 java -Xmx1g -cp /work/props-defaults/target/unpacked/BOOT-INF/classes:/work/props-defaults/target/unpacked/BOOT-INF/lib/",
+    "port": 9001
+   }
+  ],
+  "peak_memory_mb": 543,
+  "returncode": 2,
+  "seconds": 3.28,
+  "stderr": "",
+  "stdout": "2026-11-24T00:36:35.602Z  INFO 653 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 653 (/launcher/Launcher.java started by root in /work/props-defaults)\n2026-11-24T00:36:35.608Z  INFO 653 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:36:36.568Z  INFO 653 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)\n2026-11-24T00:36:36.578Z  INFO 653 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:36:36.578Z  INFO 653 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:36:36.619Z  INFO 653 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:36:36.620Z  INFO 653 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 949 ms\n2026-11-24T00:36:37.146Z  INFO 653 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'\n2026-11-24T00:36:37.216Z  INFO 653 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9001 (http)\n2026-11-24T00:36:37.217Z  INFO 653 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:36:37.217Z  INFO 653 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:36:37.224Z  INFO 653 --- [           main] o.a.c.c.C.[Tomcat-1].[localhost].[/]     : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:36:37.224Z  INFO 653 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 74 ms\n2026-11-24T00:36:37.237Z  INFO 653 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'\n2026-11-24T00:36:37.269Z  INFO 653 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9001 (http) with context path '/'\n2026-11-24T00:36:37.281Z  INFO 653 --- [           main] Launcher                                 : Started Launcher in 2.12 seconds (process running for 3.136)\n2026-11-24T00:36:37.286Z  INFO 653 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:36:37.292Z  INFO 653 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n2026-11-24T00:36:37.293Z  INFO 653 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:36:37.294Z  INFO 653 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": "{\"error\": \"no bean of an endpoint with the id mappings\"}",
+  "written_bytes": 56
+ }
+]

@@ -1,0 +1,111 @@
+{
+ "name": "drf",
+ "script_as_the_runner_restores": null,
+ "second_environment": false,
+ "sources": {
+  "django": "ran",
+  "noir": "ran"
+ },
+ "gaps": {
+  "django/model_partial": 1
+ },
+ "gap_details": [
+  "django: 2 routes of the URLconf are views of packages of the restored environment, not of the project: djangorestframework (2: /v1/, /v1/<drf_format_suffix:format>)"
+ ],
+ "script": {
+  "returncode": 0,
+  "seconds": 1.06,
+  "max_rss_mb": 68.9,
+  "stderr_tail": null
+ },
+ "noir": {
+  "returncode": 0,
+  "seconds": 0.98,
+  "max_rss_mb": 148.9,
+  "stderr_tail": null,
+  "endpoints": 15,
+  "with_handler_name": 6,
+  "bound_to_a_function": 4,
+  "unbound": 11,
+  "protocols": {
+   "http": 15
+  },
+  "methods": {
+   "POST": 5,
+   "DELETE": 1,
+   "GET": 7,
+   "PATCH": 1,
+   "PUT": 1
+  }
+ },
+ "framework": {
+  "routes": 15,
+  "unread_includes": 0,
+  "locale": null,
+  "environment_routes": 2,
+  "project_routes": 13,
+  "with_schema": 4,
+  "rows": 24,
+  "rows_bound_to_a_function": 6,
+  "rows_on_a_class_with_file_and_line": 16,
+  "rows_unbound": 2,
+  "routes_with_a_bound_row": 12
+ },
+ "by_function": {
+  "framework_functions": 4,
+  "framework_classes_with_a_gap": 4,
+  "noir_sites": 8,
+  "functions_both": 4,
+  "functions_only_framework": 0,
+  "classes_noir_cites": 3,
+  "classes_only_framework": 1,
+  "only_noir": 1,
+  "only_noir_in_documentation_files": 0
+ },
+ "comparison": {
+  "framework_routes_with_a_row": 13,
+  "noir_cites_the_same_function": 12,
+  "of_which_same_path": 2,
+  "of_which_path_written_differently": 10,
+  "only_framework": 1,
+  "noir_http_endpoints_distinct_site_and_path": 10,
+  "of_which_on_a_function_the_framework_lists": 9,
+  "of_which_on_a_site_the_framework_does_not_list": 1,
+  "noir_paths_with_an_unresolved_prefix": 0,
+  "function_views_the_framework_gives_no_method_for": 0,
+  "of_which_noir_gives_a_method_at_that_function": 0
+ },
+ "examples": {
+  "path_written_differently": [
+   "/v1/items/$ ['api/views.py:11', 'api/views.py:15'] | noir ['/v1/items/', '/v1/items/{pk}/']",
+   "/v1/items/(?P<pk>[^/.]+)/$ ['api/views.py:11'] | noir ['/v1/items/', '/v1/items/{pk}/']",
+   "/v1/items/(?P<pk>[^/.]+)/publish/$ ['api/views.py:19'] | noir ['/v1/items/{pk}/publish/']",
+   "/v1/items/(?P<pk>[^/.]+)/publish\\.(?P<format>[a-z0-9]+)/?$ ['api/views.py:19'] | noir ['/v1/items/{pk}/publish/']",
+   "/v1/items/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$ ['api/views.py:11'] | noir ['/v1/items/', '/v1/items/{pk}/']",
+   "/v1/items\\.(?P<format>[a-z0-9]+)/?$ ['api/views.py:11', 'api/views.py:15'] | noir ['/v1/items/', '/v1/items/{pk}/']",
+   "/v1/readonly/$ ['api/views.py:23'] | noir ['/v1/readonly/', '/v1/readonly/{pk}/']",
+   "/v1/readonly/(?P<pk>[^/.]+)/$ ['api/views.py:23'] | noir ['/v1/readonly/', '/v1/readonly/{pk}/']",
+   "/v1/readonly/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$ ['api/views.py:23'] | noir ['/v1/readonly/', '/v1/readonly/{pk}/']",
+   "/v1/readonly\\.(?P<format>[a-z0-9]+)/?$ ['api/views.py:23'] | noir ['/v1/readonly/', '/v1/readonly/{pk}/']"
+  ],
+  "only_framework": [
+   "/status/ ['api/views.py']"
+  ],
+  "only_noir_site": [
+   "/status/ (api/views.py:42)"
+  ],
+  "noir_unbound": [
+   "POST /v1/items/ (api/views.py:11): noir reports this entry without a unique snapshot handler at its site",
+   "DELETE /v1/items/{pk}/ (api/views.py:11): noir reports this entry without a unique snapshot handler at its site",
+   "GET /v1/items/{pk}/ (api/views.py:11): noir reports this entry without a unique snapshot handler at its site",
+   "PATCH /v1/items/{pk}/ (api/views.py:11): noir reports this entry without a unique snapshot handler at its site",
+   "PUT /v1/items/{pk}/ (api/views.py:11): noir reports this entry without a unique snapshot handler at its site",
+   "GET /v1/readonly/ (api/views.py:23): noir reports this entry without a unique snapshot handler at its site",
+   "GET /v1/readonly/{pk}/ (api/views.py:23): noir reports this entry without a unique snapshot handler at its site",
+   "GET /ping/ (api/views.py:29): noir reports this entry without a unique snapshot handler at its site",
+   "POST /ping/ (api/views.py:32): noir reports this entry without a unique snapshot handler at its site",
+   "GET /listed/ (api/views.py:36): noir reports this entry without a unique snapshot handler at its site",
+   "POST /listed/ (api/views.py:36): noir reports this entry without a unique snapshot handler at its site"
+  ]
+ }
+}

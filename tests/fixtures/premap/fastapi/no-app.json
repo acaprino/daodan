@@ -1,0 +1,5 @@
+{
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "FastAPICLIException: Could not find FastAPI app in module, try using --app\n"
+}

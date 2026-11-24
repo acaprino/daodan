@@ -1,0 +1,116 @@
+{
+ "name": "fixture",
+ "script_as_the_runner_restores": null,
+ "second_environment": false,
+ "sources": {
+  "django": "ran",
+  "noir": "ran"
+ },
+ "gaps": {
+  "django/model_partial": 2
+ },
+ "gap_details": [
+  "django: 31 routes of the URLconf are views of packages of the restored environment, not of the project: Django (31: /admin/, /admin/login/, /admin/logout/ and 28 more)",
+  "django: the routes under i18n_patterns are listed with the prefix of the language `en` the project loaded in, without a path schema: the 1 other languages of LANGUAGES have routes of their own that are not listed"
+ ],
+ "script": {
+  "returncode": 0,
+  "seconds": 1.01,
+  "max_rss_mb": 72.1,
+  "stderr_tail": null
+ },
+ "noir": {
+  "returncode": 0,
+  "seconds": 0.93,
+  "max_rss_mb": 148.8,
+  "stderr_tail": null,
+  "endpoints": 39,
+  "with_handler_name": 31,
+  "bound_to_a_function": 17,
+  "unbound": 22,
+  "protocols": {
+   "http": 39
+  },
+  "methods": {
+   "GET": 32,
+   "POST": 5,
+   "HEAD": 1,
+   "OPTIONS": 1
+  }
+ },
+ "framework": {
+  "routes": 61,
+  "unread_includes": 0,
+  "locale": {
+   "active": "en",
+   "others": 1
+  },
+  "environment_routes": 31,
+  "project_routes": 30,
+  "with_schema": 35,
+  "rows": 37,
+  "rows_bound_to_a_function": 33,
+  "rows_on_a_class_with_file_and_line": 2,
+  "rows_unbound": 2,
+  "routes_with_a_bound_row": 28
+ },
+ "by_function": {
+  "framework_functions": 23,
+  "framework_classes_with_a_gap": 2,
+  "noir_sites": 29,
+  "functions_both": 21,
+  "functions_only_framework": 2,
+  "classes_noir_cites": 2,
+  "classes_only_framework": 0,
+  "only_noir": 6,
+  "only_noir_in_documentation_files": 0
+ },
+ "comparison": {
+  "framework_routes_with_a_row": 30,
+  "noir_cites_the_same_function": 28,
+  "of_which_same_path": 21,
+  "of_which_path_written_differently": 7,
+  "only_framework": 2,
+  "noir_http_endpoints_distinct_site_and_path": 38,
+  "of_which_on_a_function_the_framework_lists": 34,
+  "of_which_on_a_site_the_framework_does_not_list": 4,
+  "noir_paths_with_an_unresolved_prefix": 0,
+  "function_views_the_framework_gives_no_method_for": 17,
+  "of_which_noir_gives_a_method_at_that_function": 15
+ },
+ "examples": {
+  "path_written_differently": [
+   "/(alpha|beta)/$ ['shop/views/pages.py:40'] | noir ['/(alpha|beta)/']",
+   "/en/localized/ ['shop/views/pages.py:7'] | noir ['/<str:tenant>/dash/', '/plain-wrapper/']",
+   "/en/products-i18n/ ['shop/views/products.py:12', 'shop/views/products.py:15'] | noir ['/api/items/', '/regex-class/']",
+   "/legacy/(?P<year>[0-9]{4})/$ ['shop/views/pages.py:16'] | noir ['/legacy/{year}/']",
+   "/noprefix/ ['shop/views/pages.py:7'] | noir ['/<str:tenant>/dash/', '/plain-wrapper/']",
+   "/optional/(?:(?P<n>[0-9]+)/)?$ ['shop/views/pages.py:36'] | noir ['/optional/{n}/']",
+   "/regex-class/$ ['shop/views/products.py:12', 'shop/views/products.py:15'] | noir ['/api/items/', '/regex-class/']"
+  ],
+  "only_framework": [
+   "/partial/ ['shop/views/pages.py:44']",
+   "/plain-wrapper/ ['config/urls.py:18']"
+  ],
+  "only_noir_site": [
+   "/admin/ (config/urls.py:25)",
+   "/about/ (config/urls.py:28)",
+   "/go/ (config/urls.py:29)",
+   "/partial/ (config/urls.py:40)"
+  ],
+  "noir_unbound": [
+   "GET /admin/ (config/urls.py:25): noir reports this entry without a unique snapshot handler at its site",
+   "GET /about/ (config/urls.py:28): noir reports this entry without a unique snapshot handler at its site",
+   "GET /go/ (config/urls.py:29): noir reports this entry without a unique snapshot handler at its site",
+   "GET /partial/ (config/urls.py:40): noir reports this entry without a unique snapshot handler at its site",
+   "GET /lambda/ (config/urls.py:42): noir reports this entry without a unique snapshot handler at its site",
+   "GET /shop/mixed/ (shop/mixins.py:5): noir reports this entry without a unique snapshot handler at its site",
+   "GET /shop/lambda/ (shop/urls.py:15): noir reports this entry without a unique snapshot handler at its site",
+   "GET /api/items/ (shop/views/products.py:12): noir reports this entry without a unique snapshot handler at its site",
+   "GET /regex-class/ (shop/views/products.py:12): noir reports this entry without a unique snapshot handler at its site",
+   "GET /shop/products/ (shop/views/products.py:12): noir reports this entry without a unique snapshot handler at its site",
+   "POST /api/items/ (shop/views/products.py:15): noir reports this entry without a unique snapshot handler at its site",
+   "POST /regex-class/ (shop/views/products.py:15): noir reports this entry without a unique snapshot handler at its site"
+  ]
+ }
+}

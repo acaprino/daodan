@@ -1,0 +1,20 @@
+{
+ "variant": "dump-no-manage",
+ "argv": [
+  "sh",
+  "-c",
+  "exec 3>&1 1>&2; exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python manage.py shell -c \"$2\"",
+  "django",
+  "120",
+  "exec(open('/daodan/state/in/dump.py').read())"
+ ],
+ "cwd": ".",
+ "returncode": 2,
+ "stdout": "",
+ "stderr": "/daodan/state/venvs/./bin/python: can't open file '/work/manage.py': [Errno 2] No such file or directory\n",
+ "seconds": 0.07,
+ "max_rss_mb": 34.6,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

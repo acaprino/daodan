@@ -8,6 +8,20 @@ from __future__ import annotations
 
 import ast
 
+# Why a generic function's scope is unresolved: its type parameters. The reader sets it first on the scope the function
+# opens, so a later reason takes its place there; `http_wrappers` lets this one reason through and no other.
+GENERIC_SCOPE_REASON = "generic function type parameter scope is unresolved"
+# What only wraps an expression: parentheses keep a reference as it is and TypeScript erases the rest, so the value is the
+# inner one's, and `(eval)(x)` is a direct eval as `eval(x)` is.
+ERASED = ("parenthesized_expression", "as_expression", "satisfies_expression", "non_null_expression", "type_assertion")
+
+
+def _erased(node):
+    """The expression inside what only wraps it (`ERASED`): `(eval)`, `(eval as any)`, `(eval!)`, `(<any>eval)`."""
+    while node is not None and node.type in ERASED:
+        node = next((child for child in node.named_children if not child.is_extra and child.type != "type_arguments"), None)
+    return node
+
 
 def _payload(backend):
     return {"version": 1, "backend": backend, "status": "ast", "notes": [],
@@ -165,8 +179,8 @@ class _PythonEvidence(ast.NodeVisitor, _Evidence):
                            node.returns, *[arg.annotation for arg in parameters]])
         scope = self.new_scope("function", _py_span(node), self.lexical_parent(), identity)
         if getattr(node, "type_params", None):
-            self.scope_by_id[scope].update(unresolved=True, reason="generic function type parameter scope is unresolved")
-            self.note("generic function type parameter scope is unresolved")
+            self.scope_by_id[scope].update(unresolved=True, reason=GENERIC_SCOPE_REASON)
+            self.note(GENERIC_SCOPE_REASON)
         for arg in parameters:
             self.declaration(arg.arg, "parameter", _py_span(arg), scope)
         self.in_scope(scope, identity, node.body)
@@ -797,7 +811,7 @@ class _JavaScriptEvidence(_Evidence):
         previous = self.scope, self.caller
         self.scope, self.caller = parameter_scope or scope, identity
         if node.child_by_field_name("type_parameters") is not None:
-            self.block("generic function type parameter scope is unresolved")
+            self.block(GENERIC_SCOPE_REASON)
         if name is not None and node.type in ("function_expression", "generator_function", "function"):
             self.declaration(self.text(name), "function-name", self.span(name))
         self.binding(parameters, "parameter")
@@ -837,8 +851,8 @@ class _JavaScriptEvidence(_Evidence):
                     self.walk(child)
             return
         if t == "jsx_attribute":
-            for child in node.named_children:
-                if child.type == "jsx_expression":
+            for child in node.named_children:  # the value: a `{...}`, an element or a fragment may hold a write; a text holds none
+                if child.type not in ("property_identifier", "jsx_namespace_name"):
                     self.walk(child)
             return
         if t == "import_statement":
@@ -970,7 +984,7 @@ class _JavaScriptEvidence(_Evidence):
                     self.tauri_event_calls.append((ref, node))
                 if not parts:
                     self.walk(function.child_by_field_name("object") if call_parts else function)
-                if parts == ["eval"]:
+                if self.parts(_erased(function)) == ["eval"]:
                     scope = self.scope
                     while scope is not None:
                         self.scope_by_id[scope].update(unresolved=True, reason="direct eval may mutate lexical bindings")
@@ -1061,6 +1075,9 @@ _TS_ANON_CALLABLES = {
     "closure_expression": "(closure)",
     "func_literal": "(func)",
 }
+# The names the readers give a function written with none (`(anonymous)` where a name is missing, `(lambda)` of Python and C++);
+# not `(constructor)`, which is a function's own role.
+NAMELESS = frozenset({"(anonymous)", "(lambda)", *_TS_ANON_CALLABLES.values()})
 _TS_BLOCK_NODES = frozenset({
     "block", "for_statement", "enhanced_for_statement",
     "switch_block_statement_group", "switch_rule", "try_statement",

@@ -501,7 +501,13 @@ class TreeReadTests(unittest.TestCase):
                           "export function computed() {\n  post(BASE);\n}\nexport function literal() {\n  post(SAVE);\n}\n"
                           "export function viaShorthand() {\n  fetch(\"/orders\", { method });\n}\n"
                           "export function viaParameter(method: string) {\n  fetch(\"/orders\", { method });\n}\n"
-                          "export function viaDefault() {\n  fetch(\"/orders\");\n}\n"),
+                          "export function viaDefault() {\n  fetch(\"/orders\");\n}\n"
+                          "declare const key: string;\n"
+                          "export function viaQuoted() {\n  fetch(\"/orders\", { 'method': 'POST' });\n}\n"
+                          "export function viaNumeric() {\n  fetch(\"/orders\", { 1: 'x', method: 'POST' });\n}\n"
+                          "export function viaComputed() {\n  fetch(\"/orders\", { ['method']: 'POST' });\n}\n"
+                          "export function viaComputedBeside() {\n  fetch(\"/orders\", { [key]: 'x', method: 'POST' });\n}\n"
+                          "export function viaPrototype() {\n  fetch(\"/orders\", { __proto__: { method: 'POST' } } as any);\n}\n"),
         "web/state.ts": ("declare function useStore(): any;\ndeclare function pick(f: any): any;\n"
                          "declare function shallow(f: any): any;\ndeclare function put(v: any): void;\n"
                          "declare function log(m: string): void;\n"
@@ -576,9 +582,21 @@ class TreeReadTests(unittest.TestCase):
         self.assertEqual(linked, {
             ("web/consts.ts::literal", "api/routes.js::save", ("api", "POST", "/api/save")),
             ("web/consts.ts::viaShorthand", "api/routes.js::create", ("api", "POST", "/orders")),  # `{ method }`: a constant
-            ("web/consts.ts::viaDefault", "api/routes.js::list", ("api", "GET", "/orders"))})  # no options: the default
+            ("web/consts.ts::viaDefault", "api/routes.js::list", ("api", "GET", "/orders")),  # no options: the default
+            ("web/consts.ts::viaQuoted", "api/routes.js::create", ("api", "POST", "/orders")),  # a string key is a key
+            ("web/consts.ts::viaNumeric", "api/routes.js::create", ("api", "POST", "/orders"))})  # a number is no `method`
         gaps = {g["symbol"]: g["reason"] for g in self.links["gaps"] if g["site"].startswith("web/consts.ts")}
         self.assertEqual(gaps["web/consts.ts::viaParameter"], "rotta: route not a literal")  # `{ method }`, a parameter
+
+    def test_a_computed_key_or_a_prototype_makes_the_members_of_the_options_unknown_as_a_spread_does(self):
+        """`{ ['method']: 'POST' }` and `{ __proto__: { method: 'POST' } }` hold a `method` the reader cannot see as a key:
+        reading the default `GET` there would be a false route."""
+        linked = {e["from"] for e in self.links["edges"] if e.get("route") and e["from"].startswith("web/consts.ts")}
+        gaps = {g["symbol"]: g["reason"] for g in self.links["gaps"] if g["site"].startswith("web/consts.ts")}
+        for name in ("viaComputed", "viaComputedBeside", "viaPrototype"):
+            with self.subTest(name):
+                self.assertNotIn(f"web/consts.ts::{name}", linked)
+                self.assertEqual(gaps[f"web/consts.ts::{name}"], "rotta: route not a literal")
 
     def test_the_keys_read_on_a_held_value_are_the_snapshots_not_those_of_a_string_or_a_default(self):
         self.assertEqual({k: v["reads"] for k, v in self.links["stores"].items() if k.startswith("s/")},

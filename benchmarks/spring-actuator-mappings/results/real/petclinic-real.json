@@ -1,0 +1,1408 @@
+{
+ "build": {
+  "argv": [
+   "mvn",
+   "-o",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/m2/petclinic",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "missing_have": {
+   "com.fasterxml:classmate:1.7.3": [
+    "1.7.1"
+   ],
+   "commons-codec:commons-codec:1.21.0": [
+    "1.11",
+    "1.16.1",
+    "1.17.0",
+    "1.17.1",
+    "1.19.0",
+    "1.22.0"
+   ],
+   "commons-logging:commons-logging:1.3.6": [
+    "1.0",
+    "1.0.3",
+    "1.1",
+    "1.1.1",
+    "1.2",
+    "1.3.5"
+   ],
+   "net.bytebuddy:byte-buddy-agent:1.18.10": [
+    "1.12.19",
+    "1.17.7"
+   ],
+   "net.bytebuddy:byte-buddy:1.18.10": [
+    "1.12.19",
+    "1.17.7",
+    "1.18.3",
+    "1.18.8"
+   ],
+   "org.aspectj:aspectjweaver:1.9.25.1": [
+    "1.9.25"
+   ],
+   "org.glassfish.jaxb:jaxb-runtime:4.0.9": [
+    "4.0.7"
+   ],
+   "org.jboss.logging:jboss-logging:3.6.3.Final": [
+    "3.6.1.Final",
+    "3.6.3.Final"
+   ],
+   "org.slf4j:slf4j-api:2.0.18": [
+    "1.7.30",
+    "1.7.32",
+    "1.7.33",
+    "1.7.36",
+    "1.7.5",
+    "2.0.13",
+    "2.0.17",
+    "2.0.18"
+   ]
+  },
+  "peak_memory_mb": 462,
+  "returncode": 1,
+  "seconds": 2.84,
+  "stderr": "",
+  "stdout": "n2) in offline mode and the artifact commons-logging:commons-logging:jar:1.3.6 has not been downloaded from it before.\n[ERROR] dependency: net.bytebuddy:byte-buddy:jar:1.18.10 (runtime)\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact net.bytebuddy:byte-buddy:jar:1.18.10 has not been downloaded from it before.\n[ERROR] dependency: net.bytebuddy:byte-buddy-agent:jar:1.18.10 (test)\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact net.bytebuddy:byte-buddy-agent:jar:1.18.10 has not been downloaded from it before.\n[ERROR] dependency: org.slf4j:slf4j-api:jar:2.0.18 (compile)\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact org.slf4j:slf4j-api:jar:2.0.18 has not been downloaded from it before.\n[ERROR] dependency: commons-codec:commons-codec:jar:1.21.0 (test)\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact commons-codec:commons-codec:jar:1.21.0 has not been downloaded from it before.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/DependencyResolutionException\n",
+  "written": null,
+  "written_bytes": 0
+ },
+ "build_again": {
+  "argv": [
+   "mvn",
+   "-o",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/m2b/petclinic",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 848,
+  "returncode": 0,
+  "seconds": 7.93,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "built_log_tail": "",
+ "built_rc": "0",
+ "commit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+ "jars_made": 1,
+ "kind": "real",
+ "left_behind": {
+  "changed_outside_target": [],
+  "files_in_target": 281,
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ },
+ "licence": "Apache-2.0",
+ "m2_kb": "246949",
+ "m2b_kb": "206173",
+ "modules": [
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/petclinic-built/target/unpacked/BOOT-INF/classes:/work/petclinic-built/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.PetClinicApplication",
+     "/work/aot-71369877/src",
+     "/work/aot-71369877/res",
+     "/work/aot-71369877/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 213,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 749,
+    "returncode": 0,
+    "routes_named": {
+     "found": 0,
+     "of": 13
+    },
+    "seconds": 5.67,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.0",
+   "handler_classes": {
+    "in_project": 6,
+    "named": 7
+   },
+   "javap": {
+    "argv": [
+     "javap",
+     "-l",
+     "-p",
+     "-s",
+     "-cp",
+     "/work/petclinic-built/target/unpacked/BOOT-INF/classes",
+     "org.springframework.samples.petclinic.owner.OwnerController",
+     "org.springframework.samples.petclinic.owner.PetController",
+     "org.springframework.samples.petclinic.owner.VisitController",
+     "org.springframework.samples.petclinic.system.CrashController",
+     "org.springframework.samples.petclinic.system.WelcomeController",
+     "org.springframework.samples.petclinic.vet.VetController"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 242,
+    "returncode": 0,
+    "seconds": 0.26,
+    "stderr": "",
+    "written": null,
+    "written_bytes": 0
+   },
+   "jdk": "17",
+   "module": "",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/petclinic-built/target/unpacked/BOOT-INF/classes:/work/petclinic-built/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.PetClinicApplication",
+      "/work/actuator-71369877.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [
+      {
+       "address": "00000000000000000000000000000000",
+       "at_s": 6.504,
+       "gone_s": 6.525,
+       "owner": "263 java -Xmx1g -cp /work/petclinic-built/target/unpacked/BOOT-INF/classes:/work/petclinic-built/target/unpacked/BOOT-INF/li",
+       "port": 48194
+      }
+     ],
+     "peak_memory_mb": 809,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/samples/petclinic/owner/Pet;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processUpdateForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/edit"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.vet.VetController",
+       "descriptor": "()Lorg/springframework/samples/petclinic/vet/Vets;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showResourcesVetList",
+       "patterns": [
+        "/vets"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(ILorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/validation/BindingResult;Lorg/springframework/ui/Model;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "processFindForm",
+       "patterns": [
+        "/owners"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processCreationForm",
+       "patterns": [
+        "/owners/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initFindForm",
+       "patterns": [
+        "/owners/find"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.system.WelcomeController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "welcome",
+       "patterns": [
+        "/"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initUpdateForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/edit"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/validation/BindingResult;ILorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processUpdateOwnerForm",
+       "patterns": [
+        "/owners/{ownerId}/edit"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initCreationForm",
+       "patterns": [
+        "/owners/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.VisitController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;ILorg/springframework/samples/petclinic/owner/Visit;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processNewVisitForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/visits/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.system.CrashController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "triggerException",
+       "patterns": [
+        "/oups"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.VisitController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initNewVisitForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/visits/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initUpdateOwnerForm",
+       "patterns": [
+        "/owners/{ownerId}/edit"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.vet.VetController",
+       "descriptor": "(ILorg/springframework/ui/Model;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showVetList",
+       "patterns": [
+        "/vets.html"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/samples/petclinic/owner/Pet;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processCreationForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/new"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initCreationForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(I)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showOwner",
+       "patterns": [
+        "/owners/{ownerId}"
+       ]
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [stat",
+       "predicate": "/**"
+      }
+     ],
+     "seconds": 6.86,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 12213
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/petclinic-built/target/unpacked/BOOT-INF/classes:/work/petclinic-built/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.PetClinicApplication",
+      "/work/aot-71369877.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 702,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.samples.petclinic.system.CrashController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "triggerException",
+       "patterns": [
+        "/oups"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initCreationForm",
+       "patterns": [
+        "/owners/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.VisitController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;ILorg/springframework/samples/petclinic/owner/Visit;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processNewVisitForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/visits/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.system.WelcomeController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "welcome",
+       "patterns": [
+        "/"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initUpdateForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/edit"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/validation/BindingResult;ILorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processUpdateOwnerForm",
+       "patterns": [
+        "/owners/{ownerId}/edit"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initFindForm",
+       "patterns": [
+        "/owners/find"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(ILorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/validation/BindingResult;Lorg/springframework/ui/Model;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "processFindForm",
+       "patterns": [
+        "/owners"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.vet.VetController",
+       "descriptor": "()Lorg/springframework/samples/petclinic/vet/Vets;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showResourcesVetList",
+       "patterns": [
+        "/vets"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processCreationForm",
+       "patterns": [
+        "/owners/new"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "(I)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showOwner",
+       "patterns": [
+        "/owners/{ownerId}"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/samples/petclinic/owner/Pet;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processUpdateForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/edit"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initCreationForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/new"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.PetController",
+       "descriptor": "(Lorg/springframework/samples/petclinic/owner/Owner;Lorg/springframework/samples/petclinic/owner/Pet;Lorg/springframework/validation/BindingResult;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processCreationForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.VisitController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initNewVisitForm",
+       "patterns": [
+        "/owners/{ownerId}/pets/{petId}/visits/new"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.vet.VetController",
+       "descriptor": "(ILorg/springframework/ui/Model;Lorg/springframework/web/servlet/mvc/support/RedirectAttributes;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showVetList",
+       "patterns": [
+        "/vets.html"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.owner.OwnerController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "initUpdateOwnerForm",
+       "patterns": [
+        "/owners/{ownerId}/edit"
+       ]
+      }
+     ],
+     "seconds": 5.73,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 9947
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.PetClinicApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/petclinic-built/target/spring-petclinic-4.0.0-SNAPSHOT.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 228,
+    "returncode": 0,
+    "seconds": 0.32,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  }
+ ],
+ "name": "petclinic",
+ "noir": {
+  "endpoints": [
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/beans"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/caches"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/conditions"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/configprops"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/env"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/health"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/heapdump"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/info"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/loggers"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/mappings"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/metrics"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/scheduledtasks"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/petclinic/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/threaddump"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 72,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+     }
+    ],
+    "handler": {
+     "line": 73,
+     "name": "OwnerController.initCreationForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/owners/new"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 77,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+     }
+    ],
+    "handler": {
+     "line": 78,
+     "name": "OwnerController.processCreationForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 5,
+    "protocol": "http",
+    "url": "/owners/new"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 89,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+     }
+    ],
+    "handler": {
+     "line": 90,
+     "name": "OwnerController.initFindForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/owners/find"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 94,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+     }
+    ],
+    "handler": {
+     "line": 95,
+     "name": "OwnerController.processFindForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 6,
+    "protocol": "http",
+    "url": "/owners"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 148,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+     }
+    ],
+    "handler": {
+     "line": 149,
+     "name": "OwnerController.initUpdateOwnerForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/edit"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 153,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+     }
+    ],
+    "handler": {
+     "line": 154,
+     "name": "OwnerController.processUpdateOwnerForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 6,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/edit"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 178,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+     }
+    ],
+    "handler": {
+     "line": 179,
+     "name": "OwnerController.showOwner",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/owners/{ownerId}"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 100,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+     }
+    ],
+    "handler": {
+     "line": 101,
+     "name": "PetController.initCreationForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/pets/new"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 107,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+     }
+    ],
+    "handler": {
+     "line": 108,
+     "name": "PetController.processCreationForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 4,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/pets/new"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 139,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+     }
+    ],
+    "handler": {
+     "line": 140,
+     "name": "PetController.initUpdateForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 2,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/pets/{petId}/edit"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 144,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+     }
+    ],
+    "handler": {
+     "line": 145,
+     "name": "PetController.processUpdateForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetController.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 5,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/pets/{petId}/edit"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 90,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/VisitController.java"
+     }
+    ],
+    "handler": {
+     "line": 91,
+     "name": "VisitController.initNewVisitForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/VisitController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 2,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/pets/{petId}/visits/new"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 97,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/VisitController.java"
+     }
+    ],
+    "handler": {
+     "line": 98,
+     "name": "VisitController.processNewVisitForm",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/owner/VisitController.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 4,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/pets/{petId}/visits/new"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 31,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/system/CrashController.java"
+     }
+    ],
+    "handler": {
+     "line": 32,
+     "name": "CrashController.triggerException",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/system/CrashController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/oups"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 25,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java"
+     }
+    ],
+    "handler": {
+     "line": 26,
+     "name": "WelcomeController.welcome",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 45,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/vet/VetController.java"
+     }
+    ],
+    "handler": {
+     "line": 46,
+     "name": "VetController.showVetList",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/vet/VetController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/vets.html"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 72,
+      "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/vet/VetController.java"
+     }
+    ],
+    "handler": {
+     "line": 73,
+     "name": "VetController.showResourcesVetList",
+     "path": "/work/petclinic/src/main/java/org/springframework/samples/petclinic/vet/VetController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/vets"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/css/petclinic.css"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/css/petclinic.css"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/montserrat-webfont.eot"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/montserrat-webfont.eot"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/montserrat-webfont.svg"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/montserrat-webfont.svg"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/montserrat-webfont.ttf"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/montserrat-webfont.ttf"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/montserrat-webfont.woff"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/montserrat-webfont.woff"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/varela_round-webfont.eot"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/varela_round-webfont.eot"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/varela_round-webfont.svg"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/varela_round-webfont.svg"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/varela_round-webfont.ttf"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/varela_round-webfont.ttf"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/fonts/varela_round-webfont.woff"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/fonts/varela_round-webfont.woff"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/images/favicon.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/images/favicon.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/images/pets.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/images/pets.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/images/spring-logo-dataflow-mobile.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/images/spring-logo-dataflow-mobile.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/images/spring-logo-dataflow.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/images/spring-logo-dataflow.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/petclinic/src/main/resources/static/resources/images/spring-logo.svg"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/resources/images/spring-logo.svg"
+   }
+  ],
+  "errors": 0,
+  "peak_memory_mb": 151,
+  "returncode": 0,
+  "seconds": 0.68,
+  "stderr": ""
+ },
+ "noir_ldd_missing": [],
+ "prep_left_behind": {
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ },
+ "repository": "spring-projects/spring-petclinic",
+ "restore_log_tail": "",
+ "restore_rc": "0",
+ "source_files": {
+  "all": 132,
+  "java": 50
+ }
+}

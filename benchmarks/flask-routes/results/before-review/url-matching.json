@@ -1,0 +1,22 @@
+{
+ "variant": "url-matching",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-I",
+  "-c",
+  "from flask.cli import ScriptInfo\napp = ScriptInfo(app_import_path=None).load_app()\nadapter = app.url_map.bind('localhost')\nfor path in ('/int/7', '/int/a', '/string/a', '/string/a/b', '/uuid/123e4567-e89b-12d3-a456-426614174000', '/files/a', '/files/a/b',\n             '/slug/a-b', '/slug/a/b', '/tail/a/b', '/tailre/a', '/tailre/a/b', '/pair/a/b', '/pair/a', '/glued/x-y', '/glued/x',\n             '/two/1/2', '/strict/', '/strict', '/loose', '/loose/', '/relaxed/', '/relaxed', '/admin/users/7'):\n    try:\n        print(path, '->', adapter.match(path, method='GET'))\n    except Exception as error:\n        print(path, '->', type(error).__name__)\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "/int/7 -> ('by_int', {'id': 7})\n/int/a -> NotFound\n/string/a -> ('by_string', {'name': 'a'})\n/string/a/b -> NotFound\n/uuid/123e4567-e89b-12d3-a456-426614174000 -> ('by_uuid', {'u': UUID('123e4567-e89b-12d3-a456-426614174000')})\n/files/a -> ('by_path', {'name': 'a'})\n/files/a/b -> ('by_path', {'name': 'a/b'})\n/slug/a-b -> ('by_slug', {'s': 'a-b'})\n/slug/a/b -> NotFound\n/tail/a/b -> ('by_tail', {'rest': 'a/b'})\n/tailre/a -> ('by_tailre', {'rest': 'a'})\n/tailre/a/b -> NotFound\n/pair/a/b -> ('by_pair', {'p': 'a/b'})\n/pair/a -> NotFound\n/glued/x-y -> ('glued', {'a': 'x', 'b': 'y'})\n/glued/x -> NotFound\n/two/1/2 -> ('two', {'x': 1, 'y': 2})\n/strict/ -> ('strict_with_slash', {})\n/strict -> RequestRedirect\n/loose -> ('loose_without_slash', {})\n/loose/ -> NotFound\n/relaxed/ -> ('relaxed', {})\n/relaxed -> ('relaxed', {})\n/admin/users/7 -> ('admin.user', {'user_id': 7})\n",
+ "stderr": "",
+ "seconds": 0.26,
+ "max_rss_mb": 48.3,
+ "left_in_the_project": [
+  "__pycache__/wsgi.cpython-312.pyc",
+  "admin/__pycache__/__init__.cpython-312.pyc",
+  "admin/__pycache__/blueprint.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 872
+}

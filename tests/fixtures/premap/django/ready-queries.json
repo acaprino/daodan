@@ -1,0 +1,5 @@
+{
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "/daodan/state/venvs/lib/python3.12/site-packages/django/db/backends/utils.py:98: RuntimeWarning: Accessing the database during app initialization is discouraged. To fix this warning, avoid executing queries in AppConfig.ready() or when your app modules are imported.\n  warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)\nOperationalError: no such table: shop_product\n"
+}

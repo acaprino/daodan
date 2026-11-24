@@ -1,0 +1,54 @@
+{
+ "name": "shhh",
+ "application": "shhh",
+ "repository": "smallwat3r/shhh",
+ "commit": "448acf4bed058d27a28a939b1ff5fba1601e2273",
+ "licence": "MIT",
+ "folder": ".",
+ "script": {
+  "variant": "shhh-script",
+  "exit": 3,
+  "seconds": 2.99,
+  "peak_memory_mb": 100.6,
+  "left_in_the_project": [],
+  "stopped": "RuntimeError: env=None specified in FLASK_ENV is not supported"
+ },
+ "noir": {
+  "variant": "shhh-noir",
+  "exit": 0,
+  "seconds": 0.92,
+  "peak_memory_mb": 147.5
+ },
+ "gaps": [
+  {
+   "source": "flask",
+   "kind": "model_failed",
+   "path": ".",
+   "detail": "flask_routes.py exited with 3: RuntimeError: env=None specified in FLASK_ENV is not supported (the Python of the environment restored for '.')"
+  }
+ ],
+ "noir_report": {
+  "endpoints": 6,
+  "protocols": {
+   "http": 6
+  },
+  "errors": 0,
+  "python_files": [
+   [
+    ".py",
+    6
+   ]
+  ],
+  "http_rows": 6,
+  "python_rows": 6,
+  "python_bound_to_a_function": 6,
+  "python_with_a_handler_name": 6,
+  "python_with_a_qualified_name": 2,
+  "python_bound_before_the_qualified_name_match": 4,
+  "python_bound_with_the_method_name_alone": 6,
+  "unbound_after": [],
+  "bound_by_the_name_alone_and_not_by_the_qualified_name": []
+ },
+ "comparison": null,
+ "comparison_with_the_method_name_alone": null
+}

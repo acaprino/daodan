@@ -1,0 +1,9 @@
+{
+ "name": "btcpayserver",
+ "framework": "aspnet",
+ "repository": "btcpayserver/btcpayserver",
+ "commit": "da4b5935c160dd057c6ad32fc92d655fbe6d5db5",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "failed": "FunctionTimeoutError: Task's current input in-01M85RS29Y7Y0MANY15K0BHV7X:1795490089278-0 hit its timeout of 3600s"
+}

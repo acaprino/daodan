@@ -1,0 +1,20 @@
+{
+ "variant": "dump-manage-no-call",
+ "argv": [
+  "sh",
+  "-c",
+  "exec 3>&1 1>&2; exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python manage.py shell -c \"$2\"",
+  "django",
+  "60",
+  "exec(open('/daodan/state/in/dump.py').read())"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "",
+ "stderr": "manage.py with no command\n",
+ "seconds": 0.09,
+ "max_rss_mb": 34.6,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

@@ -1,0 +1,213 @@
+{
+ "name": "expo-template",
+ "framework": "expo-router",
+ "repository": "mrmeg/expo-template",
+ "commit": "4571ece79f22de7b65ee9c9cb63bb7edf4eea51f",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 19,
+  "protocols": {
+   "http": 16,
+   "cli": 3
+  },
+  "errors": 1,
+  "seconds": 0.9,
+  "peak_memory_mb": 213.5,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name": 15,
+   "none": 4
+  },
+  "http_handler_forms": {
+   "name": 15,
+   "none": 1
+  },
+  "http_endpoints_in_the_json": 16,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 15,
+  "with_name_and_path_and_line": 15
+ },
+ "before_the_binder": {
+  "other_protocol": 3,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 1268,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 1169,
+  "functions": 14412,
+  "functions_by_suffix": {
+   ".tsx": 7423,
+   ".ts": 5858,
+   ".mjs": 635,
+   ".js": 488,
+   ".py": 8
+  },
+  "files_by_suffix": {
+   ".ts": 513,
+   ".tsx": 396,
+   ".md": 116,
+   ".mjs": 49,
+   ".js": 35,
+   ".json": 34,
+   ".txt": 12,
+   ".html": 7,
+   ".css": 3,
+   ".toml": 1,
+   ".py": 1,
+   ".sh": 1,
+   ".jsonc": 1
+  },
+  "seconds": 32.0
+ },
+ "http": {
+  "endpoints": 16,
+  "with_handler_name": 15,
+  "bound_to_one_function": 15,
+  "unbound": 1,
+  "by_file_suffix": {
+   ".ts": {
+    "endpoints": 15,
+    "with_handler_name": 15,
+    "bound": 15
+   },
+   ".jsonc": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "no function of the project serves the endpoint": 1
+ },
+ "causes": {
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".jsonc": 1
+   },
+   "examples": [
+    {
+     "method": "ANY",
+     "url": "/api/media/*",
+     "site": "workers/media/wrangler.jsonc",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "none": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "none": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "none": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "many": 14,
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 15
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

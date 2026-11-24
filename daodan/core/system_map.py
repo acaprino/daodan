@@ -315,12 +315,13 @@ def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict
     module_files = None
     out = {}
     for record in records:
-        problems, whole, symbols, others = [], set(), set(), set()
+        problems, absent, whole, symbols, others = [], [], set(), set(), set()
         for member in record["members"]:
             if member.startswith("store:"):
-                others.add(member)
-                if member[6:] not in links["stores"]:
-                    problems.append(f"member {member}: the links have no store key {member[6:]}")
+                if member[6:] in links["stores"]:
+                    others.add(member)
+                else:
+                    absent.append(member)
             elif member.startswith("module:"):
                 module_files = _module_files(manifest) if module_files is None else module_files
                 found = module_files.get(modules.slug(member[7:]))
@@ -338,10 +339,16 @@ def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict
             else:
                 whole.add(found["path"])
         problems += [f"evidence {e}: {evidence[e]['reason']}" for e in record["evidence"] if not evidence[e]["resolved"]]
+        # A store key no rule reads yet refuses a node only when no other member holds it up; else the node does not
+        # own the store, and the report says so.
+        if absent and (problems or len(absent) == len(record["members"])):
+            problems += [f"member {m}: the links have no store key {m[6:]}" for m in absent]
         report = {"name": record["name"], "status": "refused" if problems else "accepted",
                   "files": sorted(whole | {path for path, _ in symbols})}
         if problems:
             report["reason"] = "; ".join(problems)
+        elif absent:
+            report["unlinked"] = sorted(absent)
         out[record["id"]] = {"report": report, "record": record, "whole": whole, "symbols": symbols, "others": others}
     for ident, item in out.items():  # `inside` climbs towards the whole system, never back to the node
         at, seen = item["record"].get("inside"), set()
@@ -362,6 +369,9 @@ def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict
                 item["report"].update(status="refused",
                                       reason=f"on or inside names refused nodes: {', '.join(refused)}")
                 changed = True
+    for item in out.values():  # `unlinked` is said of an accepted node only
+        if item["report"]["status"] != "accepted":
+            item["report"].pop("unlinked", None)
     return out
 
 
@@ -714,7 +724,7 @@ def _evaluate(manifest: Path, links: dict, state: dict, headers: dict) -> dict:
         fresh = state_of in ok and (record["position"] == "internal" or not changed)
         out_nodes.append({**{k: record[k] for k in _STORED if k in record}, "on": [name[o] for o in record["on"]],
                           **({"inside": name[record["inside"]]} if record.get("inside") else {}),
-                          "status": state_of, **({"reason": checked["reason"]} if "reason" in checked else {}),
+                          "status": state_of, **{k: checked[k] for k in ("reason", "unlinked") if k in checked},
                           "files": checked["files"], "fresh": fresh, "changed_files": [] if fresh else changed})
     out_flows, holders = [], []
     for record, checked in zip(flow_records.values(), report["flows"]):
@@ -1154,6 +1164,7 @@ def _write(manifest: Path, links: dict, headers: dict, state: dict, proposal: di
         if report["status"] == "accepted" and report["id"] not in final_nodes:
             report.update(status="refused",
                           reason="no flow uses it, it is inside no node and no node names it in on or inside")
+            report.pop("unlinked", None)
     proposed = {flow_reports[key(f["name"])].get("id") for f in proposal["flows"]}
     # Project-confirmed identities cannot be changed by a proposal. Surface a
     # failed verification of those stored records in this answer just as on load.
@@ -1240,7 +1251,8 @@ def about(system: dict, name: str) -> dict:
                        **({"reason": f["reason"]} if "reason" in f else {}),
                        **({"refused_arrows": arrows} if (arrows := [a for a in f["arrows"] if a["status"] == "refused"]) else {}),
                        **listed(files(by_name[n] for n in f["nodes"]))} for f in chosen],
-            "nodes": [{k_: n[k_] for k_ in ("id", "name", "type", "position", "status", "fresh")} for n in involved],
+            "nodes": [{k_: n[k_] for k_ in ("id", "name", "type", "position", "status", "fresh", "unlinked") if k_ in n}
+                      for n in involved],
             **listed(files(involved)),
             "externals": sorted((n["name"] for n in involved if n["position"] == "external"), key=key),
             "unseen": [{"name": n["name"], "where": n["where"]} for n in involved if n["position"] == "unseen"]}

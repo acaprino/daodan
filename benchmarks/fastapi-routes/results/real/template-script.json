@@ -1,0 +1,30 @@
+{
+ "variant": "template-script",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "fastapi",
+  "900",
+  "/daodan/state/tools/fastapi_routes.py"
+ ],
+ "cwd": "backend",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "ValidationError: 6 validation errors for Settings\nFASTAPI_ENV\n  Input should be 'development' [type=literal_error, input_value='./daodan-dotenv-2e656e76-464153544150495f454e56', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\nDATABASE_URL\n  Input should be a valid URL, relative URL without a base [type=url_parsing, input_value='./daodan-dotenv-2e656e76...4415441424153455f55524c', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/url_parsing\nSMTP_TLS\n  Input should be a valid boolean, unable to interpret input [type=bool_parsing, input_value='./daodan-dotenv-2e656e76-534d54505f544c53', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/bool_parsing\nSMTP_PORT\n  Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='./daodan-dotenv-2e656e76-534d54505f504f5254', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/int_parsing\nEMAILS_FROM_EMAIL\n  value is not a valid email address: An email address must have an @-sign. [type=value_error, input_value='./daodan-dotenv-2e656e76...35f46524f4d5f454d41494c', input_type=str]\nFIRST_SUPERUSER\n  value is not a valid email address: An email address must have an @-sign. [type=value_error, input_value='./daodan-dotenv-2e656e76...3545f535550455255534552', input_type=str]\n",
+ "seconds": 3.01,
+ "max_rss_mb": 132.0,
+ "left_in_the_project": [
+  "backend/app/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/__pycache__/main.cpython-314.pyc",
+  "backend/app/api/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/api/__pycache__/deps.cpython-314.pyc",
+  "backend/app/api/__pycache__/main.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/items.cpython-314.pyc",
+  "backend/app/core/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/core/__pycache__/config.cpython-314.pyc",
+  "backend/app/core/__pycache__/security.cpython-314.pyc"
+ ],
+ "changed_in_the_project": []
+}

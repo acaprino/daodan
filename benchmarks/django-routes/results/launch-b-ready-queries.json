@@ -1,0 +1,21 @@
+{
+ "variant": "launch-b-ready-queries",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\" \"$3\"",
+  "django",
+  "60",
+  "/daodan/state/in/launch.py",
+  "b"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "/daodan/state/venvs/lib/python3.12/site-packages/django/db/backends/utils.py:98: RuntimeWarning: Accessing the database during app initialization is discouraged. To fix this warning, avoid executing queries in AppConfig.ready() or when your app modules are imported.\n  warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)\nOperationalError: no such table: shop_product\n",
+ "seconds": 0.39,
+ "max_rss_mb": 64.1,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

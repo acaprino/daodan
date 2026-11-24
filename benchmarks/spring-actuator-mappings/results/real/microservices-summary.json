@@ -1,0 +1,408 @@
+{
+ "name": "microservices",
+ "repository": "spring-petclinic/spring-petclinic-microservices",
+ "commit": "935ba9320a6514a6c31ff1316c29281b2191dcd3",
+ "licence": "Apache-2.0",
+ "launcher_answers_used": [
+  "actuator",
+  "actuator-port0",
+  "handler-methods"
+ ],
+ "needs_a_service": false,
+ "restore_rc": "0",
+ "built_rc": "0",
+ "build_offline_after_restore": {
+  "rc": 1,
+  "seconds": 3.81,
+  "missing": 3
+ },
+ "build_again_offline": {
+  "rc": 0,
+  "seconds": 15.12
+ },
+ "modules": [
+  {
+   "module": "spring-petclinic-admin-server",
+   "start_class": "org.springframework.samples.petclinic.admin.SpringBootAdminApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 1,
+     "seconds": 8.31,
+     "peak_memory_mb": 602,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop' <- org.springframework.boot.web.server.WebServerException: Unable to start Netty <- java.lang.IllegalArgumentException: port out of range:-1\"}"
+    },
+    {
+     "label": "actuator-port0",
+     "exit": 0,
+     "seconds": 11.59,
+     "peak_memory_mb": 610,
+     "rows": 23,
+     "listeners": [
+      [
+       45178,
+       6.329
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 1,
+     "seconds": 4.83,
+     "peak_memory_mb": 521,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"java.lang.ClassNotFoundException: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping\"}"
+    }
+   ],
+   "used": "actuator-port0",
+   "rows": 23,
+   "project_rows": 0,
+   "framework_rows": 20,
+   "function_rows": 3,
+   "routes": 0,
+   "placed": 0,
+   "gaps": {}
+  },
+  {
+   "module": "spring-petclinic-api-gateway",
+   "start_class": "org.springframework.samples.petclinic.api.ApiGatewayApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 1,
+     "seconds": 8.85,
+     "peak_memory_mb": 710,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop' <- org.springframework.boot.web.server.WebServerException: Unable to start Netty <- java.lang.IllegalArgumentException: port out of range:-1\"}"
+    },
+    {
+     "label": "actuator-port0",
+     "exit": 0,
+     "seconds": 13.56,
+     "peak_memory_mb": 700,
+     "rows": 6,
+     "listeners": [
+      [
+       43155,
+       7.893
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 1,
+     "seconds": 5.42,
+     "peak_memory_mb": 567,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"java.lang.ClassNotFoundException: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping\"}"
+    }
+   ],
+   "used": "actuator-port0",
+   "rows": 6,
+   "project_rows": 2,
+   "framework_rows": 0,
+   "function_rows": 4,
+   "routes": 3,
+   "placed": 3,
+   "gaps": {}
+  },
+  {
+   "module": "spring-petclinic-config-server",
+   "start_class": "org.springframework.samples.petclinic.config.ConfigServerApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 2,
+     "seconds": 5.61,
+     "peak_memory_mb": 548,
+     "rows": 0,
+     "listeners": [
+      [
+       55428,
+       5.109
+      ]
+     ],
+     "error": "{\"error\": \"no bean of an endpoint with the id mappings\"}"
+    },
+    {
+     "label": "handler-methods",
+     "exit": 0,
+     "seconds": 5.61,
+     "peak_memory_mb": 543,
+     "rows": 23,
+     "listeners": [
+      [
+       56350,
+       5.07
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 0,
+     "seconds": 4.94,
+     "peak_memory_mb": 496,
+     "rows": 23,
+     "listeners": [],
+     "error": null
+    }
+   ],
+   "used": "handler-methods",
+   "rows": 23,
+   "project_rows": 0,
+   "framework_rows": 23,
+   "function_rows": 0,
+   "routes": 0,
+   "placed": 0,
+   "gaps": {}
+  },
+  {
+   "module": "spring-petclinic-customers-service",
+   "start_class": "org.springframework.samples.petclinic.customers.CustomersServiceApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 0,
+     "seconds": 12.44,
+     "peak_memory_mb": 747,
+     "rows": 12,
+     "listeners": [
+      [
+       23273,
+       10.801
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 0,
+     "seconds": 8.59,
+     "peak_memory_mb": 690,
+     "rows": 10,
+     "listeners": [],
+     "error": null
+    }
+   ],
+   "used": "actuator",
+   "rows": 12,
+   "project_rows": 8,
+   "framework_rows": 2,
+   "function_rows": 2,
+   "routes": 8,
+   "placed": 8,
+   "gaps": {}
+  },
+  {
+   "module": "spring-petclinic-discovery-server",
+   "start_class": "org.springframework.samples.petclinic.discovery.DiscoveryServerApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 0,
+     "seconds": 6.99,
+     "peak_memory_mb": 597,
+     "rows": 6,
+     "listeners": [
+      [
+       43016,
+       6.484
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 0,
+     "seconds": 5.16,
+     "peak_memory_mb": 532,
+     "rows": 4,
+     "listeners": [],
+     "error": null
+    }
+   ],
+   "used": "actuator",
+   "rows": 6,
+   "project_rows": 0,
+   "framework_rows": 4,
+   "function_rows": 2,
+   "routes": 0,
+   "placed": 0,
+   "gaps": {}
+  },
+  {
+   "module": "spring-petclinic-genai-service",
+   "start_class": "org.springframework.samples.petclinic.genai.GenAIServiceApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 1,
+     "seconds": 13.67,
+     "peak_memory_mb": 828,
+     "rows": 0,
+     "listeners": [],
+     "error": "{\"error\": \"org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop' <- org.springframework.boot.web.server.WebServerException: Unable to start Netty <- java.lang.IllegalArgumentException: port out of range:-1\"}"
+    },
+    {
+     "label": "actuator-port0",
+     "exit": 0,
+     "seconds": 18.52,
+     "peak_memory_mb": 882,
+     "rows": 3,
+     "listeners": [
+      [
+       25790,
+       11.941
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 0,
+     "seconds": 8.17,
+     "peak_memory_mb": 764,
+     "rows": 0,
+     "listeners": [],
+     "error": null
+    }
+   ],
+   "used": "actuator-port0",
+   "rows": 3,
+   "project_rows": 1,
+   "framework_rows": 0,
+   "function_rows": 2,
+   "routes": 1,
+   "placed": 1,
+   "gaps": {}
+  },
+  {
+   "module": "spring-petclinic-vets-service",
+   "start_class": "org.springframework.samples.petclinic.vets.VetsServiceApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 0,
+     "seconds": 11.39,
+     "peak_memory_mb": 767,
+     "rows": 5,
+     "listeners": [
+      [
+       20198,
+       9.575
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 0,
+     "seconds": 8.45,
+     "peak_memory_mb": 685,
+     "rows": 3,
+     "listeners": [],
+     "error": null
+    }
+   ],
+   "used": "actuator",
+   "rows": 5,
+   "project_rows": 1,
+   "framework_rows": 2,
+   "function_rows": 2,
+   "routes": 1,
+   "placed": 1,
+   "gaps": {}
+  },
+  {
+   "module": "spring-petclinic-visits-service",
+   "start_class": "org.springframework.samples.petclinic.visits.VisitsServiceApplication",
+   "boot_version": "4.1.2",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 0,
+     "seconds": 10.73,
+     "peak_memory_mb": 746,
+     "rows": 7,
+     "listeners": [
+      [
+       59846,
+       9.6
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 0,
+     "seconds": 8.95,
+     "peak_memory_mb": 690,
+     "rows": 5,
+     "listeners": [],
+     "error": null
+    }
+   ],
+   "used": "actuator",
+   "rows": 7,
+   "project_rows": 3,
+   "framework_rows": 2,
+   "function_rows": 2,
+   "routes": 3,
+   "placed": 3,
+   "gaps": {}
+  }
+ ],
+ "launcher_routes": 16,
+ "placed": 16,
+ "gap_causes": {},
+ "noir": {
+  "seconds": 1.11,
+  "peak_memory_mb": 151,
+  "endpoints": 73,
+  "with_java_handler": 16,
+  "in_java_without_handler": [],
+  "other": {
+   "pom.xml": 10,
+   "application.yml": 4,
+   "a file of the project that is not code (static)": 43
+  }
+ },
+ "compare": {
+  "both": 16,
+  "only_launcher": 0,
+  "only_noir_java": 0,
+  "agree": {
+   "file": 16,
+   "line_in_span": 16,
+   "same_line": 16
+  },
+  "differ": []
+ },
+ "only_launcher_examples": [],
+ "only_noir_examples": [],
+ "left_behind": {
+  "changed_outside_target": [],
+  "files_in_target": 2246,
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ },
+ "prep_left_behind": {
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ }
+}

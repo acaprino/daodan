@@ -1,0 +1,272 @@
+{
+ "name": "nest-admin",
+ "framework": "nestjs",
+ "repository": "buqiyuan/nest-admin",
+ "commit": "5b549e540d52d04f08d26ded192a455a8e4c058d",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 97,
+  "protocols": {
+   "http": 97
+  },
+  "errors": 0,
+  "seconds": 1.0,
+  "peak_memory_mb": 246.3,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name joined by '.'": 94,
+   "none": 3
+  },
+  "http_handler_forms": {
+   "name joined by '.'": 94,
+   "none": 3
+  },
+  "http_endpoints_in_the_json": 97,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 94,
+  "with_name_and_path_and_line": 94
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 3,
+  "dropped_by_reason": {
+   "outside_snapshot (.conf)": 3
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 274,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 256,
+  "functions": 891,
+  "functions_by_suffix": {
+   ".ts": 891
+  },
+  "files_by_suffix": {
+   ".ts": 240,
+   ".json": 5,
+   ".yml": 2,
+   ".hbs": 2,
+   "": 1,
+   ".md": 1,
+   ".js": 1,
+   ".mjs": 1,
+   ".yaml": 1,
+   ".sh": 1,
+   ".sql": 1
+  },
+  "seconds": 4.8
+ },
+ "http": {
+  "endpoints": 94,
+  "with_handler_name": 94,
+  "bound_to_one_function": 88,
+  "unbound": 6,
+  "by_file_suffix": {
+   ".ts": {
+    "endpoints": 94,
+    "with_handler_name": 94,
+    "bound": 88
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 6
+ },
+ "causes": {
+  "the name is the end of a covering function's qualified name (the class or function around it is not in Noir's name)": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 6,
+   "by_file_suffix": {
+    ".ts": 6
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/",
+     "site": "src/helper/crud/crud.factory.ts:55",
+     "noir_handler": {
+      "name": "BaseController.list",
+      "path": "src/helper/crud/crud.factory.ts",
+      "line": 55
+     },
+     "covering": [
+      "BaseCrudFactory.BaseController.list 55-57",
+      "BaseCrudFactory 23-88"
+     ],
+     "named_in_file": [
+      "BaseCrudFactory.BaseController.list 55-57"
+     ],
+     "after": [
+      "BaseCrudFactory.BaseController.get 61-63",
+      "BaseCrudFactory.BaseController.create 67-69"
+     ],
+     "named_elsewhere": [
+      "src/helper/crud/base.service.ts: BaseService.list 13",
+      "src/modules/netdisk/manager/manage.controller.ts: NetDiskManageController.list 52"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/:id",
+     "site": "src/helper/crud/crud.factory.ts:61",
+     "noir_handler": {
+      "name": "BaseController.get",
+      "path": "src/helper/crud/crud.factory.ts",
+      "line": 61
+     },
+     "covering": [
+      "BaseCrudFactory.BaseController.get 61-63",
+      "BaseCrudFactory 23-88"
+     ],
+     "named_in_file": [
+      "BaseCrudFactory.BaseController.get 61-63"
+     ],
+     "after": [
+      "BaseCrudFactory.BaseController.create 67-69",
+      "BaseCrudFactory.BaseController.update 72-74"
+     ],
+     "named_elsewhere": [
+      "src/shared/redis/cache.service.ts: CacheService.get 31"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "POST",
+     "url": "/",
+     "site": "src/helper/crud/crud.factory.ts:67",
+     "noir_handler": {
+      "name": "BaseController.create",
+      "path": "src/helper/crud/crud.factory.ts",
+      "line": 67
+     },
+     "covering": [
+      "BaseCrudFactory.BaseController.create 67-69",
+      "BaseCrudFactory 23-88"
+     ],
+     "named_in_file": [
+      "BaseCrudFactory.BaseController.create 67-69"
+     ],
+     "after": [
+      "BaseCrudFactory.BaseController.update 72-74",
+      "BaseCrudFactory.BaseController.patch 77-79"
+     ],
+     "named_elsewhere": [
+      "src/helper/crud/base.service.ts: BaseService.create 28",
+      "src/modules/system/dept/dept.controller.ts: DeptController.create 43"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "one": 6
+   },
+   "bound": {
+    "same": 88
+   },
+   "distinct_functions_of_the_unbound_one": 6
+  },
+  "last-part-covering": {
+   "unbound": {
+    "one": 6
+   },
+   "bound": {
+    "same": 88
+   },
+   "distinct_functions_of_the_unbound_one": 6
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 6
+   },
+   "bound": {
+    "none": 88
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "one": 6
+   },
+   "bound": {
+    "same": 88
+   },
+   "distinct_functions_of_the_unbound_one": 6
+  },
+  "combined": {
+   "unbound": {
+    "one": 6
+   },
+   "bound": {
+    "same": 88
+   },
+   "distinct_functions_of_the_unbound_one": 6
+  },
+  "nested-below": {
+   "unbound": {},
+   "bound": {
+    "none": 88
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 6
+   },
+   "bound": {
+    "none": 88
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "one": 6
+   },
+   "bound": {
+    "same": 88
+   },
+   "distinct_functions_of_the_unbound_one": 6
+  },
+  "name-in-project": {
+   "unbound": {
+    "many": 5,
+    "one": 1
+   },
+   "bound": {
+    "many": 61,
+    "same": 27
+   },
+   "distinct_functions_of_the_unbound_one": 1
+  },
+  "innermost-covering": {
+   "unbound": {},
+   "bound": {
+    "same": 88
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {
+  "both bind, same function": 6
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

@@ -1,0 +1,2885 @@
+{
+ "applications": {
+  "shhh": {
+   "name": "shhh",
+   "framework": "flask",
+   "http_rows": 6,
+   "bound_before": 6,
+   "bound_after_the_first_fix": 6,
+   "bound_now": 6,
+   "newly_bound": 0,
+   "unbound_now": 0,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 6,
+    "nodes": 6,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "shhh/api/api.py::Api.get",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 2,
+    "edges": 2,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 6,
+    "nodes": 6,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "shhh/api/api.py::Api.get",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 2,
+    "edges": 2,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {},
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 6,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 40,
+    "gaps": 0
+   },
+   "links_failed": null
+  },
+  "bookstack": {
+   "name": "bookstack",
+   "framework": "laravel",
+   "http_rows": 345,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 0,
+   "bound_now": 0,
+   "newly_bound": 0,
+   "unbound_now": 345,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "no function starts at the line": 341,
+    "null handler": 4
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 0,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 14637,
+    "gaps": 349
+   },
+   "links_failed": null
+  },
+  "koel": {
+   "name": "koel",
+   "framework": "laravel",
+   "http_rows": 339,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 0,
+   "bound_now": 0,
+   "newly_bound": 0,
+   "unbound_now": 339,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "no function starts at the line": 288,
+    "null handler": 51
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 0,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 5089,
+    "gaps": 763
+   },
+   "links_failed": null
+  },
+  "rubygems": {
+   "name": "rubygems",
+   "framework": "rails",
+   "http_rows": 12,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 0,
+   "bound_now": 0,
+   "newly_bound": 0,
+   "unbound_now": 12,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 12
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 0,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 30,
+    "gaps": 12
+   },
+   "links_failed": null
+  },
+  "lobsters": {
+   "name": "lobsters",
+   "framework": "rails",
+   "http_rows": 8,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 0,
+   "bound_now": 0,
+   "newly_bound": 0,
+   "unbound_now": 8,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 8
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 0,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 87,
+    "gaps": 8
+   },
+   "links_failed": null
+  },
+  "gin-vue-admin": {
+   "name": "gin-vue-admin",
+   "framework": "gin",
+   "http_rows": 217,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 1,
+   "bound_now": 1,
+   "newly_bound": 1,
+   "unbound_now": 216,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 1,
+    "nodes": 1,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "server/initialize/router.go::GET /health",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 1,
+    "nodes": 1,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "server/initialize/router.go::GET /health",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 216
+   },
+   "agreement_of_the_new": {
+    "anonymous": 1
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 1,
+   "links": {
+    "noir_entries": 1,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 2372,
+    "gaps": 232
+   },
+   "links_failed": null
+  },
+  "go-admin": {
+   "name": "go-admin",
+   "framework": "gin",
+   "http_rows": 139,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 93,
+   "bound_now": 93,
+   "newly_bound": 93,
+   "unbound_now": 46,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 93,
+    "nodes": 93,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "app/admin/apis/sys_api.go::SysApi.GetPage",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 4,
+    "edges": 14,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 93,
+    "nodes": 93,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "app/admin/apis/sys_api.go::SysApi.GetPage",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 4,
+    "edges": 14,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 46
+   },
+   "agreement_of_the_new": {
+    "receiver": 91,
+    "anonymous": 2
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 2,
+   "links": {
+    "noir_entries": 93,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 1567,
+    "gaps": 56
+   },
+   "links_failed": null
+  },
+  "go-gin-example": {
+   "name": "go-gin-example",
+   "framework": "gin",
+   "http_rows": 29,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 0,
+   "bound_now": 0,
+   "newly_bound": 0,
+   "unbound_now": 29,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 29
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 0,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 26,
+    "gaps": 29
+   },
+   "links_failed": null
+  },
+  "nestjs-boilerplate": {
+   "name": "nestjs-boilerplate",
+   "framework": "nestjs",
+   "http_rows": 22,
+   "bound_before": 22,
+   "bound_after_the_first_fix": 22,
+   "bound_now": 22,
+   "newly_bound": 0,
+   "unbound_now": 0,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 22,
+    "nodes": 22,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/auth-apple/auth-apple.controller.ts::AuthAppleController.login",
+     "functions": 1,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 1,
+    "edges": 1,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 22,
+    "nodes": 22,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/auth-apple/auth-apple.controller.ts::AuthAppleController.login",
+     "functions": 1,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 1,
+    "edges": 1,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {},
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 22,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 68,
+    "gaps": 0
+   },
+   "links_failed": null
+  },
+  "nest-admin": {
+   "name": "nest-admin",
+   "framework": "nestjs",
+   "http_rows": 94,
+   "bound_before": 88,
+   "bound_after_the_first_fix": 94,
+   "bound_now": 94,
+   "newly_bound": 6,
+   "unbound_now": 0,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 88,
+    "nodes": 88,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/modules/auth/auth.controller.ts::AuthController.login",
+     "functions": 1,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 6,
+    "edges": 7,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 94,
+    "nodes": 94,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/helper/crud/crud.factory.ts::BaseCrudFactory.BaseController.list",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 6,
+    "edges": 7,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 6,
+    "nodes": 6,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/helper/crud/crud.factory.ts::BaseCrudFactory.BaseController.list",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {},
+   "agreement_of_the_new": {
+    "receiver": 6
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 94,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 704,
+    "gaps": 0
+   },
+   "links_failed": null
+  },
+  "nestjs-realworld": {
+   "name": "nestjs-realworld",
+   "framework": "nestjs",
+   "http_rows": 40,
+   "bound_before": 21,
+   "bound_after_the_first_fix": 21,
+   "bound_now": 21,
+   "newly_bound": 0,
+   "unbound_now": 19,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 21,
+    "nodes": 21,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/app.controller.ts::AppController.root",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 21,
+    "nodes": 21,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/app.controller.ts::AppController.root",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 19
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 21,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 9,
+    "gaps": 19
+   },
+   "links_failed": null
+  },
+  "node-express-boilerplate": {
+   "name": "node-express-boilerplate",
+   "framework": "express",
+   "http_rows": 15,
+   "bound_before": 0,
+   "bound_after_the_first_fix": 13,
+   "bound_now": 13,
+   "newly_bound": 13,
+   "unbound_now": 2,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 13,
+    "nodes": 13,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/controllers/auth.controller.js::POST /v1/auth/register",
+     "functions": 1,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 13,
+    "nodes": 13,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/controllers/auth.controller.js::POST /v1/auth/register",
+     "functions": 1,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 2
+   },
+   "agreement_of_the_new": {
+    "anonymous": 13
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 13,
+   "links": {
+    "noir_entries": 13,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 23,
+    "gaps": 2
+   },
+   "links_failed": null
+  },
+  "anything-llm": {
+   "name": "anything-llm",
+   "framework": "express",
+   "http_rows": 424,
+   "bound_before": 4,
+   "bound_after_the_first_fix": 354,
+   "bound_now": 354,
+   "newly_bound": 350,
+   "unbound_now": 70,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 4,
+    "nodes": 2,
+    "largest_group": {
+     "endpoints": 2,
+     "node": "server/endpoints/agentFileServer.js::downloadGeneratedFile",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 4,
+    "edges": 4,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 354,
+    "nodes": 340,
+    "largest_group": {
+     "endpoints": 7,
+     "node": "collector/index.js::DELETE /*",
+     "functions": 1,
+     "methods": [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 11,
+    "edges": 16,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 350,
+    "nodes": 338,
+    "largest_group": {
+     "endpoints": 7,
+     "node": "collector/index.js::DELETE /*",
+     "functions": 1,
+     "methods": [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 7,
+    "edges": 12,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 70
+   },
+   "agreement_of_the_new": {
+    "anonymous": 350
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 338,
+   "links": {
+    "noir_entries": 354,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 8224,
+    "gaps": 286
+   },
+   "links_failed": null
+  },
+  "juice-shop": {
+   "name": "juice-shop",
+   "framework": "express",
+   "http_rows": 188,
+   "bound_before": 1,
+   "bound_after_the_first_fix": 117,
+   "bound_now": 106,
+   "newly_bound": 105,
+   "unbound_now": 82,
+   "lost_since_the_first_fix": {
+    "endpoints": 11,
+    "by_cause": {
+     "a factory whose returned function is not folded into it": 11
+    },
+    "examples": {
+     "a factory whose returned function is not folded into it": [
+      {
+       "app": "juice-shop",
+       "method": "DELETE",
+       "path": "/ftp/:file",
+       "noir_handler": "servePublicFiles()",
+       "site": "routes/fileServer.ts:13",
+       "registration": "server.ts:295",
+       "function_at_the_line": {
+        "name": "servePublicFiles",
+        "qn": "servePublicFiles",
+        "line": 13,
+        "end": 59
+       },
+       "written_directly_in_it": [
+        {
+         "name": "(anonymous)",
+         "qn": "servePublicFiles.(anonymous)",
+         "line": 14,
+         "end": 23,
+         "folds": true
+        },
+        {
+         "name": "verify",
+         "qn": "servePublicFiles.verify",
+         "line": 25,
+         "end": 37,
+         "folds": false
+        },
+        {
+         "name": "verifySuccessfulPoisonNullByteExploit",
+         "qn": "servePublicFiles.verifySuccessfulPoisonNullByteExploit",
+         "line": 39,
+         "end": 54,
+         "folds": false
+        },
+        {
+         "name": "endsWithAllowlistedFileType",
+         "qn": "servePublicFiles.endsWithAllowlistedFileType",
+         "line": 56,
+         "end": 58,
+         "folds": false
+        }
+       ],
+       "gap": "Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles"
+      },
+      {
+       "app": "juice-shop",
+       "method": "GET",
+       "path": "/ftp/:file",
+       "noir_handler": "servePublicFiles()",
+       "site": "routes/fileServer.ts:13",
+       "registration": "server.ts:295",
+       "function_at_the_line": {
+        "name": "servePublicFiles",
+        "qn": "servePublicFiles",
+        "line": 13,
+        "end": 59
+       },
+       "written_directly_in_it": [
+        {
+         "name": "(anonymous)",
+         "qn": "servePublicFiles.(anonymous)",
+         "line": 14,
+         "end": 23,
+         "folds": true
+        },
+        {
+         "name": "verify",
+         "qn": "servePublicFiles.verify",
+         "line": 25,
+         "end": 37,
+         "folds": false
+        },
+        {
+         "name": "verifySuccessfulPoisonNullByteExploit",
+         "qn": "servePublicFiles.verifySuccessfulPoisonNullByteExploit",
+         "line": 39,
+         "end": 54,
+         "folds": false
+        },
+        {
+         "name": "endsWithAllowlistedFileType",
+         "qn": "servePublicFiles.endsWithAllowlistedFileType",
+         "line": 56,
+         "end": 58,
+         "folds": false
+        }
+       ],
+       "gap": "Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles"
+      }
+     ]
+    }
+   },
+   "before": {
+    "endpoints": 1,
+    "nodes": 1,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "routes/fileUpload.ts::handleYamlUpload",
+     "functions": 1,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 1,
+    "edges": 5,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 106,
+    "nodes": 88,
+    "largest_group": {
+     "endpoints": 7,
+     "node": "routes/quarantineServer.ts::serveQuarantineFiles",
+     "functions": 1,
+     "methods": [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 58,
+    "edges": 135,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 105,
+    "nodes": 87,
+    "largest_group": {
+     "endpoints": 7,
+     "node": "routes/quarantineServer.ts::serveQuarantineFiles",
+     "functions": 1,
+     "methods": [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 57,
+    "edges": 130,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 71,
+    "a factory whose returned function is not folded into it": 11
+   },
+   "agreement_of_the_new": {
+    "factory": 91,
+    "receiver": 10,
+    "anonymous": 4
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 4,
+   "links": {
+    "noir_entries": 106,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 2871,
+    "gaps": 202
+   },
+   "links_failed": null
+  },
+  "litecast": {
+   "name": "litecast",
+   "framework": "expo-router",
+   "http_rows": 5,
+   "bound_before": 4,
+   "bound_after_the_first_fix": 4,
+   "bound_now": 4,
+   "newly_bound": 0,
+   "unbound_now": 1,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 4,
+    "nodes": 4,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "app/api/channel+api.ts::GET",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 4,
+    "edges": 4,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 4,
+    "nodes": 4,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "app/api/channel+api.ts::GET",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 4,
+    "edges": 4,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 1
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 4,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 161,
+    "gaps": 1
+   },
+   "links_failed": null
+  },
+  "uni-stack": {
+   "name": "uni-stack",
+   "framework": "expo-router",
+   "http_rows": 15,
+   "bound_before": 13,
+   "bound_after_the_first_fix": 15,
+   "bound_now": 15,
+   "newly_bound": 2,
+   "unbound_now": 0,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 13,
+    "nodes": 9,
+    "largest_group": {
+     "endpoints": 5,
+     "node": "web/src/pages/api/hello.ts::handler",
+     "functions": 1,
+     "methods": [
+      "DELETE",
+      "GET",
+      "PATCH",
+      "POST",
+      "PUT"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 15,
+    "nodes": 11,
+    "largest_group": {
+     "endpoints": 5,
+     "node": "web/src/pages/api/hello.ts::handler",
+     "functions": 1,
+     "methods": [
+      "DELETE",
+      "GET",
+      "PATCH",
+      "POST",
+      "PUT"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 2,
+    "nodes": 2,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "with-tamagui-lab/src/trpc-server/routers/_app.ts::GET /api/trpc/health",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {},
+   "agreement_of_the_new": {
+    "anonymous": 2
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 2,
+   "links": {
+    "noir_entries": 15,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 41,
+    "gaps": 1
+   },
+   "links_failed": null
+  },
+  "expo-template": {
+   "name": "expo-template",
+   "framework": "expo-router",
+   "http_rows": 16,
+   "bound_before": 15,
+   "bound_after_the_first_fix": 15,
+   "bound_now": 15,
+   "newly_bound": 0,
+   "unbound_now": 1,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 15,
+    "nodes": 15,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "app/api/billing/[action]+api.ts::OPTIONS",
+     "functions": 1,
+     "methods": [
+      "OPTIONS"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 15,
+    "edges": 26,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 15,
+    "nodes": 15,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "app/api/billing/[action]+api.ts::OPTIONS",
+     "functions": 1,
+     "methods": [
+      "OPTIONS"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 15,
+    "edges": 26,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 1
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 15,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 14075,
+    "gaps": 185
+   },
+   "links_failed": null
+  },
+  "petclinic": {
+   "name": "petclinic",
+   "framework": "spring",
+   "http_rows": 32,
+   "bound_before": 17,
+   "bound_after_the_first_fix": 17,
+   "bound_now": 17,
+   "newly_bound": 0,
+   "unbound_now": 15,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 17,
+    "nodes": 17,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java::OwnerController.initCreationForm",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 4,
+    "edges": 7,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 17,
+    "nodes": 17,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java::OwnerController.initCreationForm",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 4,
+    "edges": 7,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 15
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 17,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 57,
+    "gaps": 15
+   },
+   "links_failed": null
+  },
+  "ruoyi": {
+   "name": "ruoyi",
+   "framework": "spring",
+   "http_rows": 441,
+   "bound_before": 304,
+   "bound_after_the_first_fix": 304,
+   "bound_now": 304,
+   "newly_bound": 0,
+   "unbound_now": 137,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 304,
+    "nodes": 300,
+    "largest_group": {
+     "endpoints": 2,
+     "node": "ruoyi-admin/src/main/java/com/ruoyi/web/controller/demo/controller/DemoOperateController.java::DemoOperateController.addSave",
+     "functions": 2,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 3,
+    "endpoints_on_them": 6,
+    "with_an_edge_out": 33,
+    "edges": 43,
+    "edges_outside_the_lines_of_the_function": 1,
+    "rows_with_an_edge_outside": 1
+   },
+   "now": {
+    "endpoints": 304,
+    "nodes": 300,
+    "largest_group": {
+     "endpoints": 2,
+     "node": "ruoyi-admin/src/main/java/com/ruoyi/web/controller/demo/controller/DemoOperateController.java::DemoOperateController.addSave",
+     "functions": 2,
+     "methods": [
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 3,
+    "endpoints_on_them": 6,
+    "with_an_edge_out": 33,
+    "edges": 43,
+    "edges_outside_the_lines_of_the_function": 1,
+    "rows_with_an_edge_outside": 1
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 137
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 304,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 7119,
+    "gaps": 232
+   },
+   "links_failed": null
+  },
+  "petclinic-kotlin": {
+   "name": "petclinic-kotlin",
+   "framework": "spring-kotlin",
+   "http_rows": 33,
+   "bound_before": 18,
+   "bound_after_the_first_fix": 18,
+   "bound_now": 18,
+   "newly_bound": 0,
+   "unbound_now": 15,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 18,
+    "nodes": 18,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/main/kotlin/org/springframework/samples/petclinic/owner/OwnerController.kt::OwnerController.initCreationForm",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 18,
+    "nodes": 18,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/main/kotlin/org/springframework/samples/petclinic/owner/OwnerController.kt::OwnerController.initCreationForm",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 15
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 18,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 15,
+    "gaps": 15
+   },
+   "links_failed": null
+  },
+  "eshoponweb": {
+   "name": "eshoponweb",
+   "framework": "aspnet",
+   "http_rows": 54,
+   "bound_before": 25,
+   "bound_after_the_first_fix": 32,
+   "bound_now": 32,
+   "newly_bound": 7,
+   "unbound_now": 22,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 25,
+    "nodes": 21,
+    "largest_group": {
+     "endpoints": 2,
+     "node": "src/Web/Controllers/ManageController.cs::ManageController.MyAccount",
+     "functions": 2,
+     "methods": [
+      "GET",
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 4,
+    "endpoints_on_them": 8,
+    "with_an_edge_out": 7,
+    "edges": 11,
+    "edges_outside_the_lines_of_the_function": 5,
+    "rows_with_an_edge_outside": 4
+   },
+   "now": {
+    "endpoints": 32,
+    "nodes": 28,
+    "largest_group": {
+     "endpoints": 2,
+     "node": "src/Web/Controllers/ManageController.cs::ManageController.MyAccount",
+     "functions": 2,
+     "methods": [
+      "GET",
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 4,
+    "endpoints_on_them": 8,
+    "with_an_edge_out": 14,
+    "edges": 18,
+    "edges_outside_the_lines_of_the_function": 5,
+    "rows_with_an_edge_outside": 4
+   },
+   "new": {
+    "endpoints": 7,
+    "nodes": 7,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/PublicApi/CatalogBrandEndpoints/CatalogBrandListEndpoint.cs::GET /api/catalog-brands",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 7,
+    "edges": 7,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 19,
+    "no function starts at the line": 3
+   },
+   "agreement_of_the_new": {
+    "anonymous": 7
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 7,
+   "links": {
+    "noir_entries": 32,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 84,
+    "gaps": 22
+   },
+   "links_failed": null
+  },
+  "eshop": {
+   "name": "eshop",
+   "framework": "aspnet",
+   "http_rows": 61,
+   "bound_before": 37,
+   "bound_after_the_first_fix": 46,
+   "bound_now": 46,
+   "newly_bound": 9,
+   "unbound_now": 15,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 37,
+    "nodes": 34,
+    "largest_group": {
+     "endpoints": 2,
+     "node": "src/Identity.API/Quickstart/Account/AccountController.cs::AccountController.Login",
+     "functions": 2,
+     "methods": [
+      "GET",
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 3,
+    "endpoints_on_them": 6,
+    "with_an_edge_out": 18,
+    "edges": 25,
+    "edges_outside_the_lines_of_the_function": 4,
+    "rows_with_an_edge_outside": 4
+   },
+   "now": {
+    "endpoints": 46,
+    "nodes": 43,
+    "largest_group": {
+     "endpoints": 2,
+     "node": "src/Identity.API/Quickstart/Account/AccountController.cs::AccountController.Login",
+     "functions": 2,
+     "methods": [
+      "GET",
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 3,
+    "endpoints_on_them": 6,
+    "with_an_edge_out": 18,
+    "edges": 25,
+    "edges_outside_the_lines_of_the_function": 4,
+    "rows_with_an_edge_outside": 4
+   },
+   "new": {
+    "endpoints": 9,
+    "nodes": 9,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/Catalog.API/Apis/CatalogApi.cs::GET /api/catalog/catalogtypes",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "no function starts at the line": 10,
+    "null handler": 5
+   },
+   "agreement_of_the_new": {
+    "anonymous": 9
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 9,
+   "links": {
+    "noir_entries": 46,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 436,
+    "gaps": 15
+   },
+   "links_failed": null
+  },
+  "healthchecks": {
+   "name": "healthchecks",
+   "framework": "django",
+   "http_rows": 258,
+   "bound_before": 257,
+   "bound_after_the_first_fix": 257,
+   "bound_now": 257,
+   "newly_bound": 0,
+   "unbound_now": 1,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 257,
+    "nodes": 132,
+    "largest_group": {
+     "endpoints": 12,
+     "node": "hc/api/views.py::ping",
+     "functions": 1,
+     "methods": [
+      "GET",
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 192,
+    "edges": 587,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 257,
+    "nodes": 132,
+    "largest_group": {
+     "endpoints": 12,
+     "node": "hc/api/views.py::ping",
+     "functions": 1,
+     "methods": [
+      "GET",
+      "POST"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 192,
+    "edges": 587,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 1
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 257,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 2270,
+    "gaps": 1
+   },
+   "links_failed": null
+  },
+  "defectdojo": {
+   "name": "defectdojo",
+   "framework": "django",
+   "http_rows": 678,
+   "bound_before": 492,
+   "bound_after_the_first_fix": 572,
+   "bound_now": 572,
+   "newly_bound": 80,
+   "unbound_now": 106,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 492,
+    "nodes": 250,
+    "largest_group": {
+     "endpoints": 8,
+     "node": "dojo/api_v2/mixins.py::DeletePreviewModelMixin.delete_preview",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 469,
+    "edges": 1926,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 572,
+    "nodes": 305,
+    "largest_group": {
+     "endpoints": 8,
+     "node": "dojo/api_v2/mixins.py::DeletePreviewModelMixin.delete_preview",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 511,
+    "edges": 2032,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 80,
+    "nodes": 55,
+    "largest_group": {
+     "endpoints": 4,
+     "node": "dojo/finding/ui/views.py::ListOpenFindings.get",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 42,
+    "edges": 106,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 106
+   },
+   "agreement_of_the_new": {
+    "class": 77,
+    "anonymous": 3
+   },
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 3,
+   "links": {
+    "noir_entries": 572,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 16984,
+    "gaps": 111
+   },
+   "links_failed": null
+  },
+  "fastapi-template": {
+   "name": "fastapi-template",
+   "framework": "fastapi",
+   "http_rows": 31,
+   "bound_before": 23,
+   "bound_after_the_first_fix": 23,
+   "bound_now": 23,
+   "newly_bound": 0,
+   "unbound_now": 8,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 23,
+    "nodes": 23,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "backend/app/api/routes/items.py::read_items",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 23,
+    "nodes": 23,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "backend/app/api/routes/items.py::read_items",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 8
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 23,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 794,
+    "gaps": 40
+   },
+   "links_failed": null
+  },
+  "dispatch": {
+   "name": "dispatch",
+   "framework": "fastapi",
+   "http_rows": 498,
+   "bound_before": 290,
+   "bound_after_the_first_fix": 290,
+   "bound_now": 290,
+   "newly_bound": 0,
+   "unbound_now": 208,
+   "lost_since_the_first_fix": {
+    "endpoints": 0,
+    "by_cause": {},
+    "examples": {}
+   },
+   "before": {
+    "endpoints": 290,
+    "nodes": 290,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/dispatch/ai/prompt/views.py::get_prompts",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 268,
+    "edges": 418,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "now": {
+    "endpoints": 290,
+    "nodes": 290,
+    "largest_group": {
+     "endpoints": 1,
+     "node": "src/dispatch/ai/prompt/views.py::get_prompts",
+     "functions": 1,
+     "methods": [
+      "GET"
+     ]
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 268,
+    "edges": 418,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "new": {
+    "endpoints": 0,
+    "nodes": 0,
+    "largest_group": {
+     "endpoints": 0,
+     "node": null,
+     "functions": 0,
+     "methods": []
+    },
+    "nodes_with_several_functions": 0,
+    "endpoints_on_them": 0,
+    "with_an_edge_out": 0,
+    "edges": 0,
+    "edges_outside_the_lines_of_the_function": 0,
+    "rows_with_an_edge_outside": 0
+   },
+   "unbound_by_cause": {
+    "null handler": 208
+   },
+   "agreement_of_the_new": {},
+   "symbols_changed_against_the_untouched_facts": [],
+   "symbols_changed_against_the_earlier_run": [],
+   "bound_before_and_not_bound_now": [],
+   "named_by_their_route": 0,
+   "links": {
+    "noir_entries": 290,
+    "same_symbols_as_the_binder_rows": true,
+    "edges": 4905,
+    "gaps": 698
+   },
+   "links_failed": null
+  }
+ },
+ "samples": [
+  {
+   "group": "Express",
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/rest/repeat-notification",
+   "handler": "repeatNotification()",
+   "node": "routes/repeatNotification.ts::repeatNotification",
+   "function": {
+    "name": "repeatNotification",
+    "qn": "repeatNotification",
+    "line": 9,
+    "end": 20
+   },
+   "lines": [
+    9,
+    20
+   ],
+   "edges_out": 2,
+   "edges": [
+    {
+     "to": "lib/challengeUtils.ts::findChallengeByName",
+     "site": "routes/repeatNotification.ts:12",
+     "inside_the_function": true
+    },
+    {
+     "to": "lib/challengeUtils.ts::sendNotification",
+     "site": "routes/repeatNotification.ts:15",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "Express",
+   "app": "juice-shop",
+   "method": "POST",
+   "path": "/rest/2fa/disable",
+   "handler": "twoFactorAuth.disable",
+   "node": "routes/2fa.ts::disable",
+   "function": {
+    "name": "disable",
+    "qn": "disable",
+    "line": 142,
+    "end": 170
+   },
+   "lines": [
+    142,
+    170
+   ],
+   "edges_out": 2,
+   "edges": [
+    {
+     "to": "lib/insecurity.ts::hash",
+     "site": "routes/2fa.ts:152",
+     "inside_the_function": true
+    },
+    {
+     "to": "lib/utils.ts::queryResultToJson",
+     "site": "routes/2fa.ts:164",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "Express",
+   "app": "juice-shop",
+   "method": "PUT",
+   "path": "/rest/continue-code-fixIt/apply/:continueCode",
+   "handler": "restoreProgress.restoreProgressFixIt()",
+   "node": "routes/restoreProgress.ts::restoreProgressFixIt",
+   "function": {
+    "name": "restoreProgressFixIt",
+    "qn": "restoreProgressFixIt",
+    "line": 61,
+    "end": 80
+   },
+   "lines": [
+    61,
+    80
+   ],
+   "edges_out": 1,
+   "edges": [
+    {
+     "to": "lib/challengeUtils.ts::solveFixIt",
+     "site": "routes/restoreProgress.ts:72",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "Gin",
+   "app": "go-admin",
+   "method": "GET",
+   "path": "/api/v1/server-monitor",
+   "handler": "api.ServerInfo",
+   "node": "app/other/apis/sys_server_monitor.go::ServerMonitor.ServerInfo",
+   "function": {
+    "name": "ServerMonitor.ServerInfo",
+    "qn": "ServerMonitor.ServerInfo",
+    "line": 46,
+    "end": 70
+   },
+   "lines": [
+    46,
+    70
+   ],
+   "edges_out": 7,
+   "edges": [
+    {
+     "to": "app/other/apis/sys_server_monitor.go::GetHourDiffer",
+     "site": "app/other/apis/sys_server_monitor.go:68",
+     "inside_the_function": true
+    },
+    {
+     "to": "app/other/apis/sys_server_monitor.go::getCPUInfo",
+     "site": "app/other/apis/sys_server_monitor.go:52",
+     "inside_the_function": true
+    },
+    {
+     "to": "app/other/apis/sys_server_monitor.go::getDiskInfo",
+     "site": "app/other/apis/sys_server_monitor.go:53",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "Gin",
+   "app": "go-admin",
+   "method": "POST",
+   "path": "/api/v1/logout",
+   "handler": "handler.LogOut",
+   "node": "common/middleware/handler/auth.go::LogOut",
+   "function": {
+    "name": "LogOut",
+    "qn": "LogOut",
+    "line": 156,
+    "end": 163
+   },
+   "lines": [
+    156,
+    163
+   ],
+   "edges_out": 1,
+   "edges": [
+    {
+     "to": "common/middleware/handler/auth.go::LoginLogToDB",
+     "site": "common/middleware/handler/auth.go:157",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "C#",
+   "app": "eshoponweb",
+   "method": "GET",
+   "path": "/api/catalog-brands",
+   "handler": "closure",
+   "node": "src/PublicApi/CatalogBrandEndpoints/CatalogBrandListEndpoint.cs::GET /api/catalog-brands",
+   "function": {
+    "name": "(lambda)",
+    "qn": "CatalogBrandListEndpoint.AddRoute.(lambda)",
+    "line": 28,
+    "end": 31
+   },
+   "lines": [
+    28,
+    31
+   ],
+   "edges_out": 1,
+   "edges": [
+    {
+     "to": "src/PublicApi/CatalogBrandEndpoints/CatalogBrandListEndpoint.cs::CatalogBrandListEndpoint.HandleAsync",
+     "site": "src/PublicApi/CatalogBrandEndpoints/CatalogBrandListEndpoint.cs:30",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "C#",
+   "app": "eshoponweb",
+   "method": "GET",
+   "path": "/api/catalog-types",
+   "handler": "closure",
+   "node": "src/PublicApi/CatalogTypeEndpoints/CatalogTypeListEndpoint.cs::GET /api/catalog-types",
+   "function": {
+    "name": "(lambda)",
+    "qn": "CatalogTypeListEndpoint.AddRoute.(lambda)",
+    "line": 28,
+    "end": 31
+   },
+   "lines": [
+    28,
+    31
+   ],
+   "edges_out": 1,
+   "edges": [
+    {
+     "to": "src/PublicApi/CatalogTypeEndpoints/CatalogTypeListEndpoint.cs::CatalogTypeListEndpoint.HandleAsync",
+     "site": "src/PublicApi/CatalogTypeEndpoints/CatalogTypeListEndpoint.cs:30",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "DefectDojo",
+   "app": "defectdojo",
+   "method": "POST",
+   "path": "/product/{product_id}/import_scan_results",
+   "handler": "ImportScanResultsView",
+   "node": "dojo/engagement/ui/views.py::ImportScanResultsView.post",
+   "function": {
+    "name": "post",
+    "qn": "ImportScanResultsView.post",
+    "line": 1063,
+    "end": 1103
+   },
+   "lines": [
+    1063,
+    1103
+   ],
+   "edges_out": 4,
+   "edges": [
+    {
+     "to": "dojo/utils.py::add_error_message_to_response",
+     "site": "dojo/engagement/ui/views.py:1080",
+     "inside_the_function": true
+    },
+    {
+     "to": "dojo/utils.py::add_error_message_to_response",
+     "site": "dojo/engagement/ui/views.py:1084",
+     "inside_the_function": true
+    },
+    {
+     "to": "dojo/utils.py::add_error_message_to_response",
+     "site": "dojo/engagement/ui/views.py:1088",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "DefectDojo",
+   "app": "defectdojo",
+   "method": "POST",
+   "path": "/jira/advanced",
+   "handler": "AdvancedJiraView",
+   "node": "dojo/jira/views.py::AdvancedJiraView.post",
+   "function": {
+    "name": "post",
+    "qn": "AdvancedJiraView.post",
+    "line": 437,
+    "end": 466
+   },
+   "lines": [
+    437,
+    466
+   ],
+   "edges_out": 3,
+   "edges": [
+    {
+     "to": "dojo/authorization/authorization.py::user_has_configuration_permission",
+     "site": "dojo/jira/views.py:438",
+     "inside_the_function": true
+    },
+    {
+     "to": "dojo/jira/helper.py::get_jira_connection_raw",
+     "site": "dojo/jira/views.py:448",
+     "inside_the_function": true
+    },
+    {
+     "to": "dojo/notifications/helper.py::create_notification",
+     "site": "dojo/jira/views.py:458",
+     "inside_the_function": true
+    }
+   ]
+  },
+  {
+   "group": "DefectDojo",
+   "app": "defectdojo",
+   "method": "POST",
+   "path": "/jira/{tid}/delete",
+   "handler": "DeleteJiraView",
+   "node": "dojo/jira/views.py::DeleteJiraView.post",
+   "function": {
+    "name": "post",
+    "qn": "DeleteJiraView.post",
+    "line": 563,
+    "end": 599
+   },
+   "lines": [
+    563,
+    599
+   ],
+   "edges_out": 5,
+   "edges": [
+    {
+     "to": "dojo/authorization/authorization.py::user_has_configuration_permission",
+     "site": "dojo/jira/views.py:564",
+     "inside_the_function": true
+    },
+    {
+     "to": "dojo/notifications/helper.py::create_notification",
+     "site": "dojo/jira/views.py:577",
+     "inside_the_function": true
+    },
+    {
+     "to": "dojo/utils.py::add_breadcrumb",
+     "site": "dojo/jira/views.py:593",
+     "inside_the_function": true
+    }
+   ]
+  }
+ ],
+ "total": {
+  "http_rows": 3994,
+  "bound_before": 1631,
+  "bound_after_the_first_fix": 2308,
+  "bound_now": 2297,
+  "newly_bound": 666,
+  "unbound_now": 1697
+ },
+ "nodes_before": 1247,
+ "nodes_now": 1858,
+ "largest_group_among_the_new": {
+  "endpoints": 7,
+  "application": "juice-shop",
+  "node": "routes/quarantineServer.ts::serveQuarantineFiles",
+  "functions": 1,
+  "methods": [
+   "DELETE",
+   "GET",
+   "HEAD",
+   "OPTIONS",
+   "PATCH",
+   "POST",
+   "PUT"
+  ]
+ },
+ "unbound_by_cause": {
+  "null handler": 1044,
+  "no function starts at the line": 642,
+  "a factory whose returned function is not folded into it": 11
+ },
+ "lost_since_the_first_fix": {
+  "endpoints": 11,
+  "by_cause": {
+   "a factory whose returned function is not folded into it": 11
+  },
+  "examples": {
+   "a factory whose returned function is not folded into it": [
+    {
+     "app": "juice-shop",
+     "method": "DELETE",
+     "path": "/ftp/:file",
+     "noir_handler": "servePublicFiles()",
+     "site": "routes/fileServer.ts:13",
+     "registration": "server.ts:295",
+     "function_at_the_line": {
+      "name": "servePublicFiles",
+      "qn": "servePublicFiles",
+      "line": 13,
+      "end": 59
+     },
+     "written_directly_in_it": [
+      {
+       "name": "(anonymous)",
+       "qn": "servePublicFiles.(anonymous)",
+       "line": 14,
+       "end": 23,
+       "folds": true
+      },
+      {
+       "name": "verify",
+       "qn": "servePublicFiles.verify",
+       "line": 25,
+       "end": 37,
+       "folds": false
+      },
+      {
+       "name": "verifySuccessfulPoisonNullByteExploit",
+       "qn": "servePublicFiles.verifySuccessfulPoisonNullByteExploit",
+       "line": 39,
+       "end": 54,
+       "folds": false
+      },
+      {
+       "name": "endsWithAllowlistedFileType",
+       "qn": "servePublicFiles.endsWithAllowlistedFileType",
+       "line": 56,
+       "end": 58,
+       "folds": false
+      }
+     ],
+     "gap": "Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles"
+    },
+    {
+     "app": "juice-shop",
+     "method": "GET",
+     "path": "/ftp/:file",
+     "noir_handler": "servePublicFiles()",
+     "site": "routes/fileServer.ts:13",
+     "registration": "server.ts:295",
+     "function_at_the_line": {
+      "name": "servePublicFiles",
+      "qn": "servePublicFiles",
+      "line": 13,
+      "end": 59
+     },
+     "written_directly_in_it": [
+      {
+       "name": "(anonymous)",
+       "qn": "servePublicFiles.(anonymous)",
+       "line": 14,
+       "end": 23,
+       "folds": true
+      },
+      {
+       "name": "verify",
+       "qn": "servePublicFiles.verify",
+       "line": 25,
+       "end": 37,
+       "folds": false
+      },
+      {
+       "name": "verifySuccessfulPoisonNullByteExploit",
+       "qn": "servePublicFiles.verifySuccessfulPoisonNullByteExploit",
+       "line": 39,
+       "end": 54,
+       "folds": false
+      },
+      {
+       "name": "endsWithAllowlistedFileType",
+       "qn": "servePublicFiles.endsWithAllowlistedFileType",
+       "line": 56,
+       "end": 58,
+       "folds": false
+      }
+     ],
+     "gap": "Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles"
+    }
+   ]
+  }
+ },
+ "agreement_of_the_new": {
+  "anonymous": 391,
+  "receiver": 107,
+  "factory": 91,
+  "class": 77
+ },
+ "symbols_changed": [],
+ "symbols_changed_against_the_earlier_run": [],
+ "bound_before_and_not_bound_now": [],
+ "links_failed": {},
+ "links_with_other_symbols_than_the_binder": [],
+ "edges_new": {
+  "with_an_edge_out": 117,
+  "edges": 269,
+  "edges_outside_the_lines_of_the_function": 0,
+  "rows_with_an_edge_outside": 0
+ },
+ "edges_before": {
+  "with_an_edge_out": 1022,
+  "edges": 3064,
+  "edges_outside_the_lines_of_the_function": 10,
+  "rows_with_an_edge_outside": 9
+ },
+ "doubts": {
+  "nameless_functions_bound_by_position": 391,
+  "syntax_coverage": {
+   "parent: argument_list": 19,
+   "tree not read": 0,
+   "one of several arguments": 375,
+   "the last argument": 390,
+   "no other function starts on its line": 391,
+   "parent: arguments": 371,
+   "the only argument": 15,
+   "parent: export_statement": 1
+  },
+  "by_app": {
+   "gin-vue-admin": 1,
+   "go-admin": 2,
+   "node-express-boilerplate": 13,
+   "anything-llm": 350,
+   "juice-shop": 4,
+   "uni-stack": 2,
+   "eshoponweb": 7,
+   "eshop": 9,
+   "defectdojo": 3
+  },
+  "guard_or_middleware_before_in_the_same_call": {
+   "endpoints": 0,
+   "by_app": {},
+   "examples": []
+  },
+  "in_an_array": {
+   "endpoints": 0,
+   "by_app": {},
+   "examples": []
+  },
+  "a_later_argument_holds_a_function": {
+   "endpoints": 0,
+   "by_app": {},
+   "examples": []
+  },
+  "holds_a_function_that_starts_on_its_line": {
+   "endpoints": 0,
+   "by_app": {},
+   "examples": []
+  },
+  "several_methods_on_one_function": {
+   "functions": 2,
+   "endpoints": 14,
+   "groups": [
+    {
+     "app": "anything-llm",
+     "function": {
+      "name": "(anonymous)",
+      "qn": "(anonymous)",
+      "line": 221,
+      "end": 223
+     },
+     "file": "collector/index.js",
+     "methods": [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT"
+     ],
+     "endpoints": 7,
+     "paths": [
+      "/*"
+     ],
+     "cited_lines": [
+      "collector/index.js:221"
+     ],
+     "registration_lines": [
+      "collector/index.js:221"
+     ],
+     "callee": "all",
+     "callee_is_one_of_the_methods": false,
+     "callee_answers_every_method": true,
+     "parent": "arguments"
+    },
+    {
+     "app": "anything-llm",
+     "function": {
+      "name": "(anonymous)",
+      "qn": "(anonymous)",
+      "line": 192,
+      "end": 194
+     },
+     "file": "server/index.js",
+     "methods": [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT"
+     ],
+     "endpoints": 7,
+     "paths": [
+      "/*"
+     ],
+     "cited_lines": [
+      "server/index.js:192"
+     ],
+     "registration_lines": [
+      "server/index.js:192"
+     ],
+     "callee": "all",
+     "callee_is_one_of_the_methods": false,
+     "callee_answers_every_method": true,
+     "parent": "arguments"
+    }
+   ]
+  },
+  "not_an_argument_of_a_call": {
+   "export_statement": 1
+  }
+ },
+ "fingerprints": {
+  "frozen_copy": "D:\\daodan-work\\final-code\\daodan",
+  "fingerprinted_at": "2026-11-24 07:43:35",
+  "files": 1059,
+  "overall_sha256": "625bba1e3227133e0789d99f56af39585630871f24e5af6c2582d6afabde45f5",
+  "key_files": {
+   "core/binder.py": "ffc1518965192abd",
+   "core/flows.py": "b8fa8057fd9e2712",
+   "core/premap/noir.py": "b4ab1ae505c13e74",
+   "core/entries.py": "bc8eb540d3d7d374",
+   "core/edge_view.py": "32636f764bf7a6b5",
+   "core/languages/semantic.py": "9b5311b23f354c83",
+   "core/snapshot.py": "ad51da178e49e16c",
+   "core/semantic_store.py": "d7122063a8f82e9e",
+   "data/entry-queries.json": "e0af917d0031b63f"
+  }
+ }
+}

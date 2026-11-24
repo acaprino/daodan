@@ -1,0 +1,34 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "20",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/never-builds/target/unpacked/BOOT-INF/classes:/work/never-builds/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/never-builds.json",
+   "actuator",
+   "started",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "probe.refresh=true"
+  ],
+  "java_left": [
+   "3564 java            [java] <defunct>"
+  ],
+  "listeners": [],
+  "peak_memory_mb": 75,
+  "returncode": -9,
+  "seconds": 30.01,
+  "stderr": "",
+  "stdout": "2026-11-24T00:39:19.888Z  INFO 3564 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 3564 (/launcher/Launcher.java started by root in /work/never-builds)\n2026-11-24T00:39:19.891Z  INFO 3564 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:39:20.696Z  INFO 3564 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:39:20.704Z  INFO 3564 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:39:20.704Z  INFO 3564 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:39:20.734Z  INFO 3564 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:39:20.735Z  INFO 3564 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 801 ms\n",
+  "written": null,
+  "written_bytes": 0
+ }
+]

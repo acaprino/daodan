@@ -1,0 +1,23 @@
+[
+ {
+  "argv": [
+   "mvn",
+   "-o",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/m2-goffline",
+   "clean",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 545,
+  "returncode": 0,
+  "seconds": 3.42,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ }
+]

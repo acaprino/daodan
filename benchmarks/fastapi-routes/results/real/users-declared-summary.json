@@ -1,0 +1,72 @@
+{
+ "name": "users-declared",
+ "application": "users",
+ "repository": "fastapi-users/fastapi-users",
+ "commit": "e9c57ff7ff2fd385bb0f6f795b524e9736b64290",
+ "licence": "MIT",
+ "folder": "examples/sqlalchemy",
+ "script": {
+  "variant": "users-cli-script-declared",
+  "exit": 0,
+  "seconds": 3.33,
+  "peak_memory_mb": 114.4,
+  "application": "app.app:app",
+  "found": "entrypoint-pyproject",
+  "root_path": "",
+  "routes": 17,
+  "http": 17,
+  "websocket": 0,
+  "documentation": 4,
+  "unread": [],
+  "competing": {
+   "others": [],
+   "shadowed": []
+  }
+ },
+ "noir": {
+  "variant": "users-noir",
+  "exit": 0,
+  "seconds": 1.09,
+  "peak_memory_mb": 146.7
+ },
+ "gaps": [
+  {
+   "source": "fastapi",
+   "kind": "model_partial",
+   "path": ".",
+   "detail": "12 routes of the application are views of packages of the restored environment, not of the project: /auth/jwt/login (fastapi_users), /auth/jwt/logout (fastapi_users), /auth/register (fastapi_users), /auth/forgot-password (fastapi_users), /auth/reset-password (fastapi_users), /auth/request-verify-token (fastapi_users), /auth/verify (fastapi_users), /users/me (fastapi_users) and 4 more"
+  }
+ ],
+ "framework": {
+  "rows": 1,
+  "http_rows": 1,
+  "bound_to_a_function": 1,
+  "websocket_rows": 0,
+  "unbound": []
+ },
+ "noir_report": {
+  "endpoints": 1,
+  "protocols": {
+   "http": 1
+  },
+  "errors": 0,
+  "with_a_handler_name": 1,
+  "rows": 1,
+  "bound_to_a_function": 1,
+  "unbound": []
+ },
+ "comparison": {
+  "both": 1,
+  "agreement": {
+   "same function": 1,
+   "same site": 1
+  },
+  "differences": [],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_framework": 0,
+  "only_framework_examples": [],
+  "only_noir": 0,
+  "only_noir_examples": []
+ }
+}

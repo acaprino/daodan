@@ -1,0 +1,11 @@
+{
+ "cpu_count": 18,
+ "git": "git version 2.39.5",
+ "next": "16.4.6",
+ "next_native": [
+  "env",
+  "swc-linux-x64-gnu"
+ ],
+ "node": "v24.22.3",
+ "npm": "11.19.1"
+}

@@ -39,6 +39,15 @@ def excerpt(result: dict) -> str:
     return text if len(text) <= 600 else f"{text[:300]} [...] {text[-300:]}"
 
 
+def stopped(result: dict, script: str, seconds: str, memory_gb: int) -> str:
+    """Why a source's script did not give its answer, in the words of the tool: the cause it wrote, or the limit that ended it."""
+    if result["returncode"] == 124:  # `timeout` ended the command
+        return f"{script} did not end in {seconds} seconds"
+    if result["returncode"] == 137:  # `timeout` had to kill it, or the memory of the run did: the signal does not say which
+        return f"{script} was killed (exit 137): it did not end in {seconds} seconds, or it ran out of memory ({memory_gb} GB)"
+    return f"{script} exited with {result['returncode']}: {excerpt(result)}"
+
+
 def column_bytes(line: str, units: int) -> int:
     """The column in bytes, as the snapshot writes it, of a column the compiler gives in UTF-16 code units."""
     seen = 0

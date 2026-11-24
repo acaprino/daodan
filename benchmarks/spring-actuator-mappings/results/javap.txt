@@ -1,0 +1,357 @@
+Compiled from "DemoApplication.java"
+public class demo.DemoApplication {
+  public demo.DemoApplication();
+    descriptor: ()V
+    LineNumberTable:
+      line 7: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/DemoApplication;
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    LineNumberTable:
+      line 9: 0
+      line 10: 7
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       8     0  args   [Ljava/lang/String;
+}
+Compiled from "Inherited.java"
+public class demo.Inherited {
+  public demo.Inherited();
+    descriptor: ()V
+    LineNumberTable:
+      line 8: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Inherited;
+}
+Compiled from "Inherited.java"
+public interface demo.Inherited$Api {
+  public abstract java.lang.String apiPing();
+    descriptor: ()Ljava/lang/String;
+}
+Compiled from "Inherited.java"
+public class demo.Inherited$ApiImpl implements demo.Inherited$Api {
+  public demo.Inherited$ApiImpl();
+    descriptor: ()V
+    LineNumberTable:
+      line 27: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Inherited$ApiImpl;
+
+  public java.lang.String apiPing();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 28: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       3     0  this   Ldemo/Inherited$ApiImpl;
+}
+Compiled from "Inherited.java"
+public abstract class demo.Inherited$Base<T> {
+  public demo.Inherited$Base();
+    descriptor: ()V
+    LineNumberTable:
+      line 9: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Inherited$Base;
+
+  public T byId(int);
+    descriptor: (I)Ljava/lang/Object;
+    LineNumberTable:
+      line 11: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       6     0  this   Ldemo/Inherited$Base;
+          0       6     1    id   I
+
+  protected abstract T load(int);
+    descriptor: (I)Ljava/lang/Object;
+}
+Compiled from "Inherited.java"
+public class demo.Inherited$BaseImpl extends demo.Inherited$Base<java.lang.String> {
+  public demo.Inherited$BaseImpl();
+    descriptor: ()V
+    LineNumberTable:
+      line 17: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Inherited$BaseImpl;
+
+  protected java.lang.String load(int);
+    descriptor: (I)Ljava/lang/String;
+    LineNumberTable:
+      line 18: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       7     0  this   Ldemo/Inherited$BaseImpl;
+          0       7     1    id   I
+
+  protected java.lang.Object load(int);
+    descriptor: (I)Ljava/lang/Object;
+    LineNumberTable:
+      line 16: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       6     0  this   Ldemo/Inherited$BaseImpl;
+}
+Compiled from "ItemController.java"
+public class demo.ItemController {
+  public demo.ItemController();
+    descriptor: ()V
+    LineNumberTable:
+      line 8: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/ItemController;
+
+  public java.util.List<java.lang.String> list();
+    descriptor: ()Ljava/util/List;
+    LineNumberTable:
+      line 10: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       8     0  this   Ldemo/ItemController;
+
+  public java.lang.String one(int);
+    descriptor: (I)Ljava/lang/String;
+    LineNumberTable:
+      line 13: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       7     0  this   Ldemo/ItemController;
+          0       7     1    id   I
+
+  public java.lang.String create(java.lang.String);
+    descriptor: (Ljava/lang/String;)Ljava/lang/String;
+    LineNumberTable:
+      line 16: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       2     0  this   Ldemo/ItemController;
+          0       2     1  body   Ljava/lang/String;
+
+  public java.lang.String replace(int, java.lang.String);
+    descriptor: (ILjava/lang/String;)Ljava/lang/String;
+    LineNumberTable:
+      line 19: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       2     0  this   Ldemo/ItemController;
+          0       2     1    id   I
+          0       2     2  body   Ljava/lang/String;
+
+  public void remove(int);
+    descriptor: (I)V
+    LineNumberTable:
+      line 22: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       1     0  this   Ldemo/ItemController;
+          0       1     1    id   I
+
+  public java.lang.String search(java.lang.String);
+    descriptor: (Ljava/lang/String;)Ljava/lang/String;
+    LineNumberTable:
+      line 26: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       2     0  this   Ldemo/ItemController;
+          0       2     1     q   Ljava/lang/String;
+
+  public java.lang.String search(int);
+    descriptor: (I)Ljava/lang/String;
+    LineNumberTable:
+      line 29: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       7     0  this   Ldemo/ItemController;
+          0       7     1     n   I
+
+  public java.lang.String multi();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 32: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       3     0  this   Ldemo/ItemController;
+
+  public java.lang.String alias();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 36: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       3     0  this   Ldemo/ItemController;
+
+  public java.lang.String spread(java.lang.String, java.lang.String);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+    LineNumberTable:
+      line 44: 0
+      line 46: 8
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      10     0  this   Ldemo/ItemController;
+          0      10     1     a   Ljava/lang/String;
+          0      10     2     b   Ljava/lang/String;
+          8       2     3 joined   Ljava/lang/String;
+}
+Compiled from "PageController.java"
+public class demo.PageController {
+  public demo.PageController();
+    descriptor: ()V
+    LineNumberTable:
+      line 8: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/PageController;
+
+  public java.lang.String home();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 10: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       3     0  this   Ldemo/PageController;
+}
+Compiled from "PageController.java"
+public class demo.PageController$Ping {
+  public demo.PageController$Ping();
+    descriptor: ()V
+    LineNumberTable:
+      line 13: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/PageController$Ping;
+
+  public java.lang.String ping();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 15: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       3     0  this   Ldemo/PageController$Ping;
+}
+Compiled from "Prod.java"
+public class demo.Prod {
+  public demo.Prod();
+    descriptor: ()V
+    LineNumberTable:
+      line 9: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Prod;
+
+  public java.lang.String only();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 11: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       3     0  this   Ldemo/Prod;
+}
+Compiled from "Routes.java"
+public class demo.Routes {
+  public demo.Routes();
+    descriptor: ()V
+    LineNumberTable:
+      line 10: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Routes;
+
+  public org.springframework.web.servlet.function.RouterFunction<org.springframework.web.servlet.function.ServerResponse> functional();
+    descriptor: ()Lorg/springframework/web/servlet/function/RouterFunction;
+    LineNumberTable:
+      line 13: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      21     0  this   Ldemo/Routes;
+
+  private static org.springframework.web.servlet.function.ServerResponse lambda$functional$0(org.springframework.web.servlet.function.ServerRequest) throws java.lang.Exception;
+    descriptor: (Lorg/springframework/web/servlet/function/ServerRequest;)Lorg/springframework/web/servlet/function/ServerResponse;
+    LineNumberTable:
+      line 13: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      11     0 request   Lorg/springframework/web/servlet/function/ServerRequest;
+}
+Compiled from "Switches.java"
+public class demo.Switches {
+  public demo.Switches();
+    descriptor: ()V
+    LineNumberTable:
+      line 11: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Switches;
+}
+Compiled from "Switches.java"
+public class demo.Switches$NeedsDatabase {
+  public demo.Switches$NeedsDatabase() throws java.lang.Exception;
+    descriptor: ()V
+    LineNumberTable:
+      line 15: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      20     0  this   Ldemo/Switches$NeedsDatabase;
+}
+Compiled from "Switches.java"
+public class demo.Switches$NeverBuilds implements org.springframework.beans.factory.InitializingBean {
+  public demo.Switches$NeverBuilds();
+    descriptor: ()V
+    LineNumberTable:
+      line 26: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Switches$NeverBuilds;
+
+  public void afterPropertiesSet() throws java.lang.Exception;
+    descriptor: ()V
+    LineNumberTable:
+      line 27: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       7     0  this   Ldemo/Switches$NeverBuilds;
+}
+Compiled from "Switches.java"
+public class demo.Switches$NeverCloses implements org.springframework.beans.factory.DisposableBean {
+  public demo.Switches$NeverCloses();
+    descriptor: ()V
+    LineNumberTable:
+      line 32: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Switches$NeverCloses;
+
+  public void destroy() throws java.lang.Exception;
+    descriptor: ()V
+    LineNumberTable:
+      line 33: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       7     0  this   Ldemo/Switches$NeverCloses;
+}
+Compiled from "Switches.java"
+public class demo.Switches$NeverEnds implements org.springframework.boot.CommandLineRunner {
+  public demo.Switches$NeverEnds();
+    descriptor: ()V
+    LineNumberTable:
+      line 20: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Ldemo/Switches$NeverEnds;
+
+  public void run(java.lang.String...) throws java.lang.Exception;
+    descriptor: ([Ljava/lang/String;)V
+    LineNumberTable:
+      line 21: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       7     0  this   Ldemo/Switches$NeverEnds;
+          0       7     1  args   [Ljava/lang/String;
+}

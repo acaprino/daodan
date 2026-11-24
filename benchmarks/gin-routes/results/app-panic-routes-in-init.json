@@ -1,0 +1,43 @@
+[
+ {
+  "build": {
+   "argv": [
+    "go",
+    "build",
+    "-o",
+    "/work/app-panic-routes-in-init.bin",
+    "-overlay",
+    "/work/app-panic-routes-in-init-overlay.json",
+    "."
+   ],
+   "peak_memory_mb": 325,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 0,
+   "seconds": 1.32,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  },
+  "changed_in_the_project": [],
+  "left_in_the_project": [],
+  "run": {
+   "argv": [
+    "timeout",
+    "--kill-after=5",
+    "20",
+    "/work/app-panic-routes-in-init.bin"
+   ],
+   "peak_memory_mb": 75,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 2,
+   "seconds": 0.02,
+   "stderr": "panic: fixture: the application does not load\n\ngoroutine 1 [running]:\nmain.setupRouter()\n\t/work/app-panic-routes-in-init/main.go:34 +0x6d8\nmain.init.0()\n\t/work/app-panic-routes-in-init/zz_daodan.go:18 +0x38\n",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  }
+ }
+]

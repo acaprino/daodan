@@ -1060,14 +1060,16 @@ def _observed(manifest: Path, static: list[dict]) -> list[dict]:
 
 
 def _declared_rows(manifest):
-    """The declared rows as the links bind them (`binder.bind`): the pre-map's rows are on the module, with their exports."""
-    import binder
+    """The declared rows as the links bind them (`flows.bind_declared`), with the rules recorded beside the snapshot, which the links are made
+    with: the pre-map's rows are on the module, with their exports, and a closure a rule names by its route is on that node here too."""
     from premap.flow_entries import evidence
     rows = evidence(manifest)[0]
     if not rows:
         return rows
+    recorded = Path(manifest).with_name("flow-rules.json")
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
-        return binder.bind(rows, flows.Facts(store, db), semantic_store._Resolver(db))
+        view = edge_view.load_edge_view(store)
+        return flows.bind_declared(rows, flows.Facts(store, db, view), view, flows.load_rules(recorded) if recorded.is_file() else [])
 
 
 def cached_syntax(manifest: Path) -> list[dict]:

@@ -1,0 +1,21 @@
+{
+ "variant": "launch-b-hangs",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\" \"$3\"",
+  "django",
+  "5",
+  "/daodan/state/in/launch.py",
+  "b"
+ ],
+ "cwd": ".",
+ "returncode": 124,
+ "stdout": "",
+ "stderr": "",
+ "seconds": 5.05,
+ "max_rss_mb": 46.3,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

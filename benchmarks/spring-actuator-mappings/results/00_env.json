@@ -1,0 +1,25 @@
+{
+ "goffline27_kb": "85087",
+ "goffline_kb": "88142",
+ "java": "openjdk version \"17.0.20.1\" 2026-08-18",
+ "libs": {
+  "boot27": [
+   "spring-boot-2.7.18.jar",
+   "spring-boot-actuator-2.7.18.jar",
+   "spring-boot-actuator-autoconfigure-2.7.18.jar",
+   "spring-boot-autoconfigure-2.7.18.jar",
+   "spring-boot-jarmode-layertools-2.7.18.jar",
+   "spring-webmvc-5.3.31.jar"
+  ],
+  "boot3": [
+   "spring-boot-3.5.0.jar",
+   "spring-boot-actuator-3.5.0.jar",
+   "spring-boot-actuator-autoconfigure-3.5.0.jar",
+   "spring-boot-autoconfigure-3.5.0.jar",
+   "spring-boot-jarmode-tools-3.5.0.jar",
+   "spring-webmvc-6.2.7.jar"
+  ]
+ },
+ "m2_kb": "132093",
+ "mvn": "Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)"
+}

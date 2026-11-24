@@ -1,0 +1,270 @@
+{
+ "endpoints": [
+  {
+   "code_paths": [
+    {
+     "line": 10,
+     "path": "/fixture-src/main/java/demo/Inherited.java"
+    }
+   ],
+   "handler": null,
+   "method": "GET",
+   "url": "/base/{id}"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 22,
+     "path": "/fixture-src/main/java/demo/Inherited.java"
+    }
+   ],
+   "handler": {
+    "line": 28,
+    "name": "ApiImpl.apiPing",
+    "path": "/fixture-src/main/java/demo/Inherited.java"
+   },
+   "method": "GET",
+   "url": "/api/ping"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 9,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 10,
+    "name": "ItemController.list",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 12,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 13,
+    "name": "ItemController.one",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items/{id}"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 15,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 16,
+    "name": "ItemController.create",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "POST",
+   "url": "/items"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 18,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 19,
+    "name": "ItemController.replace",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "PUT",
+   "url": "/items/{id}"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 21,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 22,
+    "name": "ItemController.remove",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "DELETE",
+   "url": "/items/{id}"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 25,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 26,
+    "name": "ItemController.search",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items/search"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 28,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 29,
+    "name": "ItemController.search",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items/search"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 31,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 32,
+    "name": "ItemController.multi",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items/multi"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 31,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 32,
+    "name": "ItemController.multi",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "HEAD",
+   "url": "/items/multi"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 35,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 36,
+    "name": "ItemController.alias",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items/alias-a"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 35,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 36,
+    "name": "ItemController.alias",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items/alias-b"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 39,
+     "path": "/fixture-src/main/java/demo/ItemController.java"
+    }
+   ],
+   "handler": {
+    "line": 41,
+    "name": "ItemController.spread",
+    "path": "/fixture-src/main/java/demo/ItemController.java"
+   },
+   "method": "GET",
+   "url": "/items/spread"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 9,
+     "path": "/fixture-src/main/java/demo/PageController.java"
+    }
+   ],
+   "handler": {
+    "line": 10,
+    "name": "PageController.home",
+    "path": "/fixture-src/main/java/demo/PageController.java"
+   },
+   "method": "GET",
+   "url": "/"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 14,
+     "path": "/fixture-src/main/java/demo/PageController.java"
+    }
+   ],
+   "handler": {
+    "line": 15,
+    "name": "Ping.ping",
+    "path": "/fixture-src/main/java/demo/PageController.java"
+   },
+   "method": "GET",
+   "url": "/ping"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 10,
+     "path": "/fixture-src/main/java/demo/Prod.java"
+    }
+   ],
+   "handler": {
+    "line": 11,
+    "name": "Prod.only",
+    "path": "/fixture-src/main/java/demo/Prod.java"
+   },
+   "method": "GET",
+   "url": "/prod-only"
+  },
+  {
+   "code_paths": [
+    {
+     "line": 13,
+     "path": "/fixture-src/main/java/demo/Routes.java"
+    }
+   ],
+   "handler": null,
+   "method": "GET",
+   "url": "/fn/hello"
+  }
+ ],
+ "kind": "noir-fixture",
+ "peak_memory_mb": 149,
+ "returncode": 0,
+ "seconds": 2.58
+}

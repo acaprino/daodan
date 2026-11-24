@@ -1,0 +1,20 @@
+{
+ "variant": "dispatcher-serves",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-I",
+  "-c",
+  "import sys\nfrom flask.cli import ScriptInfo\nfrom werkzeug.test import Client\nScriptInfo(app_import_path=None).load_app()\nclient = Client(sys.modules['wsgi'].application)\nfor path in ('/sub/hello', '/hello', '/sub', '/sub/'):\n    print(path, '->', client.get(path).status_code)\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "/sub/hello -> 200\n/hello -> 404\n/sub -> 404\n/sub/ -> 404\n",
+ "stderr": "",
+ "seconds": 0.25,
+ "max_rss_mb": 48.2,
+ "left_in_the_project": [
+  "__pycache__/wsgi.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 57
+}

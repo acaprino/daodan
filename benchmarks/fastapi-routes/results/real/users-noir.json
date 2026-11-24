@@ -1,0 +1,19 @@
+{
+ "variant": "users-noir",
+ "argv": [
+  "noir",
+  "scan",
+  "/work",
+  "-f",
+  "json",
+  "--no-log"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"endpoints\":[{\"handler\":{\"name\":\"authenticated_route\",\"path\":\"/work/app/app.py\",\"line\":45},\"callees\":[],\"url\":\"/authenticated-route\",\"method\":\"GET\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/app/app.py\",\"line\":44}],\"technology\":\"python_fastapi\"},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[]}],\"passive_results\":[],\"errors\":[]}\n",
+ "stderr": "",
+ "seconds": 1.09,
+ "max_rss_mb": 146.7,
+ "left_in_the_project": [],
+ "changed_in_the_project": []
+}

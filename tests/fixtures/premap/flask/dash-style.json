@@ -1,0 +1,5 @@
+{
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"dispatch\": null, \"routes\": [{\"rule\": \"/static/<path:filename>\", \"methods\": [\"GET\"], \"build_only\": false, \"redirect_to\": false, \"static\": true, \"parts\": [[false, \"/\"], [false, \"static\"], [false, \"/\"], [true, \"filename\"]], \"arguments\": {\"filename\": false}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"flask.app\", \"qualname\": \"Flask.__init__.<locals>.<lambda>\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/flask/app.py\", \"line\": 278, \"environment\": true, \"distribution\": null}}, {\"rule\": \"/dash\", \"methods\": [\"GET\"], \"build_only\": false, \"redirect_to\": false, \"static\": false, \"parts\": [[false, \"/\"], [false, \"dash\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"app\", \"qualname\": \"dash\", \"file\": \"app.py\", \"line\": 14, \"environment\": false, \"distribution\": null}}]}",
+ "stderr": ""
+}

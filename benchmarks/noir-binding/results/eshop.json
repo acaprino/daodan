@@ -1,0 +1,371 @@
+{
+ "name": "eshop",
+ "framework": "aspnet",
+ "repository": "dotnet/eShop",
+ "commit": "669682e724306a48f6c6ec4c8afea941658bf3a7",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 66,
+  "protocols": {
+   "grpc": 3,
+   "http": 63
+  },
+  "errors": 0,
+  "seconds": 1.0,
+  "peak_memory_mb": 156.6,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name": 29,
+   "name joined by '.'": 17,
+   "none": 10,
+   "closure": 10
+  },
+  "http_handler_forms": {
+   "name": 29,
+   "name joined by '.'": 17,
+   "closure": 10,
+   "none": 7
+  },
+  "http_endpoints_in_the_json": 63,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 56,
+  "with_name_and_path_and_line": 56
+ },
+ "before_the_binder": {
+  "other_protocol": 3,
+  "no_path": 0,
+  "dropped": 2,
+  "dropped_by_reason": {
+   "outside_snapshot (.http)": 2
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 1110,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 760,
+  "functions": 1952,
+  "functions_by_suffix": {
+   ".cs": 1803,
+   ".js": 140,
+   ".ts": 9
+  },
+  "files_by_suffix": {
+   ".cs": 547,
+   ".json": 41,
+   ".razor": 40,
+   ".css": 30,
+   ".csproj": 28,
+   ".cshtml": 18,
+   ".js": 14,
+   ".plist": 9,
+   ".xml": 7,
+   ".ts": 6,
+   ".md": 4,
+   ".yml": 3,
+   ".props": 3,
+   ".txt": 3,
+   ".proto": 2
+  },
+  "seconds": 81.7
+ },
+ "http": {
+  "endpoints": 61,
+  "with_handler_name": 56,
+  "bound_to_one_function": 37,
+  "unbound": 24,
+  "by_file_suffix": {
+   ".cs": {
+    "endpoints": 49,
+    "with_handler_name": 47,
+    "bound": 37
+   },
+   ".razor": {
+    "endpoints": 12,
+    "with_handler_name": 9,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "the snapshot holds no function where Noir cites": 13,
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 9,
+  "Noir gives no handler": 1,
+  "no function of the project serves the endpoint": 1
+ },
+ "causes": {
+  "the cited file is markup (a template or a component with its code inside)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 12,
+   "by_file_suffix": {
+    ".razor": 12
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/cart",
+     "site": "src/WebApp/Components/Pages/Cart/CartPage.razor:118",
+     "noir_handler": {
+      "name": "OnInitializedAsync",
+      "path": "src/WebApp/Components/Pages/Cart/CartPage.razor",
+      "line": 118
+     },
+     "file_language": "markup"
+    },
+    {
+     "method": "POST",
+     "url": "/cart",
+     "site": "src/WebApp/Components/Pages/Cart/CartPage.razor:1",
+     "noir_handler": null,
+     "file_language": "markup"
+    },
+    {
+     "method": "GET",
+     "url": "/",
+     "site": "src/WebApp/Components/Pages/Catalog/Catalog.razor:196",
+     "noir_handler": {
+      "name": "OnInitializedAsync",
+      "path": "src/WebApp/Components/Pages/Catalog/Catalog.razor",
+      "line": 196
+     },
+     "file_language": "markup"
+    }
+   ]
+  },
+  "Noir names a closure and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 9,
+   "by_file_suffix": {
+    ".cs": 9
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/catalog/catalogtypes",
+     "site": "src/Catalog.API/Apis/CatalogApi.cs:85",
+     "noir_handler": {
+      "name": "closure",
+      "path": "src/Catalog.API/Apis/CatalogApi.cs",
+      "line": 85
+     },
+     "covering": [
+      "CatalogApi.MapCatalogApi.(lambda) 85-86",
+      "CatalogApi.MapCatalogApi 13-120"
+     ],
+     "after": [
+      "CatalogApi.MapCatalogApi.(lambda).(lambda) 86-86",
+      "CatalogApi.MapCatalogApi.(lambda) 92-93"
+     ],
+     "file_language": "csharp"
+    },
+    {
+     "method": "GET",
+     "url": "/api/catalog/catalogbrands",
+     "site": "src/Catalog.API/Apis/CatalogApi.cs:92",
+     "noir_handler": {
+      "name": "closure",
+      "path": "src/Catalog.API/Apis/CatalogApi.cs",
+      "line": 92
+     },
+     "covering": [
+      "CatalogApi.MapCatalogApi.(lambda) 92-93",
+      "CatalogApi.MapCatalogApi 13-120"
+     ],
+     "after": [
+      "CatalogApi.MapCatalogApi.(lambda).(lambda) 93-93",
+      "CatalogApi.GetAllItemsV1 122-128"
+     ],
+     "file_language": "csharp"
+    },
+    {
+     "method": "POST",
+     "url": "/logout",
+     "site": "src/WebhookClient/Endpoints/AuthenticationEndpoints.cs:12",
+     "noir_handler": {
+      "name": "closure",
+      "path": "src/WebhookClient/Endpoints/AuthenticationEndpoints.cs",
+      "line": 12
+     },
+     "covering": [
+      "AuthenticationEndpoints.MapAuthenticationEndpoints.(lambda) 12-17",
+      "AuthenticationEndpoints.MapAuthenticationEndpoints 10-20"
+     ],
+     "file_language": "csharp"
+    }
+   ]
+  },
+  "the snapshot holds no function in the cited code file": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".cs": 1
+   },
+   "examples": [
+    {
+     "method": "ANY",
+     "url": "/product-images/{id}",
+     "site": "src/WebApp/Program.cs:32",
+     "noir_handler": null,
+     "file_language": "csharp"
+    }
+   ]
+  },
+  "Noir names no handler, the line is inside a function (the registration)": {
+   "group": "Noir gives no handler",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".cs": 1
+   },
+   "examples": [
+    {
+     "method": "ANY",
+     "url": "/health",
+     "site": "src/eShop.ServiceDefaults/Extensions.cs:118",
+     "noir_handler": null,
+     "covering": [
+      "Extensions.MapDefaultEndpoints 108-128"
+     ],
+     "file_language": "csharp"
+    }
+   ]
+  },
+  "Noir names a closure and no function starts at the cited line (a mapping the framework answers, a health check)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".cs": 1
+   },
+   "examples": [
+    {
+     "method": "ANY",
+     "url": "/alive",
+     "site": "src/eShop.ServiceDefaults/Extensions.cs:121",
+     "noir_handler": {
+      "name": "closure",
+      "path": "src/eShop.ServiceDefaults/Extensions.cs",
+      "line": 121
+     },
+     "covering": [
+      "Extensions.MapDefaultEndpoints 108-128"
+     ],
+     "file_language": "csharp"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 24
+   },
+   "bound": {
+    "same": 37
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 24
+   },
+   "bound": {
+    "same": 37
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 24
+   },
+   "bound": {
+    "none": 37
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "one": 9,
+    "none": 15
+   },
+   "bound": {
+    "none": 24,
+    "same": 13
+   },
+   "distinct_functions_of_the_unbound_one": 9
+  },
+  "combined": {
+   "unbound": {
+    "one": 9,
+    "none": 15
+   },
+   "bound": {
+    "same": 37
+   },
+   "distinct_functions_of_the_unbound_one": 9
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 5
+   },
+   "bound": {
+    "none": 37
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 24
+   },
+   "bound": {
+    "none": 37
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 24
+   },
+   "bound": {
+    "same": 31,
+    "many": 6
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 24
+   },
+   "bound": {
+    "same": 20,
+    "many": 17
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 4,
+    "one": 1
+   },
+   "bound": {
+    "same": 37
+   },
+   "distinct_functions_of_the_unbound_one": 1
+  }
+ },
+ "fixes_agree": {
+  "only starts-at-line binds": 9
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

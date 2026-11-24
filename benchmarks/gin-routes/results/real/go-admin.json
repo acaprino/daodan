@@ -1,0 +1,1139 @@
+{
+ "name": "go-admin",
+ "calibration": {
+  "http": 139,
+  "no_handler": 15,
+  "named": 93,
+  "expected": [
+   139,
+   15,
+   93
+  ],
+  "matches": true
+ },
+ "noir_bound_now": 93,
+ "noir_rows_without_after": 0,
+ "snapshot_seconds": 20.0,
+ "go_functions": 1930,
+ "prepared": {
+  "folders": [
+   ".",
+   "example/app-order",
+   "test/e2e-apporder"
+  ],
+  "line": "for f in '.' 'example/app-order' 'test/e2e-apporder'; do ( cd \"$f\" && go mod download ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED go %s\\n' \"$f\"; { grep -E 'go: |go.mod:|error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+  "seconds": 17.5,
+  "returncode": 0,
+  "failed": [],
+  "stderr_tail": "",
+  "gomod_bytes": 867561959,
+  "perimeter_files": 404
+ },
+ "go": "go version go1.27.3 linux/amd64",
+ "x_tools": "golang.org/x/tools v0.53.0",
+ "left_in_the_copy": [
+  "go-admin-db.db-shm",
+  "go-admin-db.db-wal",
+  "temp/logs/app.log"
+ ],
+ "left_count": 3,
+ "changed_in_the_copy": [
+  "go-admin-db.db"
+ ],
+ "gomod_bytes": 867561959,
+ "modules": {
+  ".": {
+   "engine_builders": [
+    {
+     "package": "go-admin/app/admin/router",
+     "name": "InitExamplesRouter",
+     "exported": true,
+     "params": [
+      "*github.com/gin-gonic/gin.Engine",
+      "*github.com/go-admin-team/go-admin-core/v2/jwtauth.GinJWTMiddleware"
+     ],
+     "results": [
+      "*github.com/gin-gonic/gin.Engine"
+     ],
+     "pos": "app/admin/router/router.go:15"
+    },
+    {
+     "package": "go-admin/app/demo/router",
+     "name": "InitBusinessRouter",
+     "exported": true,
+     "params": [
+      "*github.com/gin-gonic/gin.Engine",
+      "*github.com/go-admin-team/go-admin-core/v2/jwtauth.GinJWTMiddleware"
+     ],
+     "results": [
+      "*github.com/gin-gonic/gin.Engine"
+     ],
+     "pos": "app/demo/router/router.go:44"
+    },
+    {
+     "package": "go-admin/app/jobs/router",
+     "name": "initRouter",
+     "exported": false,
+     "params": [
+      "*github.com/gin-gonic/gin.Engine",
+      "*github.com/go-admin-team/go-admin-core/v2/jwtauth.GinJWTMiddleware"
+     ],
+     "results": [
+      "*github.com/gin-gonic/gin.Engine"
+     ],
+     "pos": "app/jobs/router/router.go:14"
+    },
+    {
+     "package": "go-admin/app/other/router",
+     "name": "initRouter",
+     "exported": false,
+     "params": [
+      "*github.com/gin-gonic/gin.Engine",
+      "*github.com/go-admin-team/go-admin-core/v2/jwtauth.GinJWTMiddleware"
+     ],
+     "results": [
+      "*github.com/gin-gonic/gin.Engine"
+     ],
+     "pos": "app/other/router/router.go:21"
+    }
+   ],
+   "engine_calls": [
+    {
+     "callee": "gin.New",
+     "in": "go-admin/app/demo/router.InitRouter",
+     "pos": "app/demo/router/router.go:25"
+    },
+    {
+     "callee": "gin.New",
+     "in": "go-admin/cmd/api.initRouter",
+     "pos": "cmd/api/server.go:599"
+    }
+   ],
+   "main_packages": [
+    {
+     "package": "go-admin",
+     "dir": ".",
+     "depends_on_gin": true
+    },
+    {
+     "package": "go-admin/tools/checksilent",
+     "dir": "tools/checksilent",
+     "depends_on_gin": false
+    }
+   ],
+   "registrars": 37,
+   "load_error_count": 0,
+   "seconds": 22.01,
+   "peak_memory_mb": 1073,
+   "returncode": 0,
+   "handler_factories": 20
+  },
+  "example/app-order": {
+   "engine_builders": [],
+   "engine_calls": [],
+   "main_packages": [],
+   "registrars": 1,
+   "load_error_count": 0,
+   "seconds": 8.72,
+   "peak_memory_mb": 1226,
+   "returncode": 0,
+   "handler_factories": 0
+  },
+  "test/e2e-apporder": {
+   "engine_builders": [],
+   "engine_calls": [],
+   "main_packages": [
+    {
+     "package": "go-admin-e2e-apporder",
+     "dir": "test/e2e-apporder",
+     "depends_on_gin": true
+    }
+   ],
+   "registrars": 0,
+   "load_error_count": 0,
+   "seconds": 1.92,
+   "peak_memory_mb": 93,
+   "returncode": 0,
+   "handler_factories": 0
+  }
+ },
+ "builds": {
+  ".": {
+   "module": ".",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 21.87,
+     "peak_memory_mb": 1055,
+     "stderr_tail": ""
+    }
+   ]
+  },
+  "test/e2e-apporder": {
+   "module": "test/e2e-apporder",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 3.16,
+     "peak_memory_mb": 987,
+     "stderr_tail": ""
+    }
+   ]
+  },
+  "/tmp/bin/.-0-sqlite3-json1": {
+   "module": ".",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 38.45,
+     "peak_memory_mb": 982,
+     "stderr_tail": ""
+    }
+   ]
+  },
+  "/tmp/bin/.-0-sqlite3-json1-plain": {
+   "module": ".",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 5.45,
+     "peak_memory_mb": 981,
+     "stderr_tail": ""
+    }
+   ]
+  }
+ },
+ "runs": [
+  {
+   "dir": ".",
+   "argv": [],
+   "label": "none",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": 255,
+   "seconds": 0.03,
+   "peak_memory_mb": 111,
+   "ended": {
+    "by": "exit"
+   },
+   "debugging": true,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "Error: \u001b[0;0;31mrequires at least one arg\u001b[0m"
+   ]
+  },
+  {
+   "dir": ".",
+   "argv": [
+    "server"
+   ],
+   "label": "by hand: the command `server` of cmd/api/server.go, its flag -c defaults to config/settings.yml",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": 1,
+   "seconds": 0.03,
+   "peak_memory_mb": 109,
+   "ended": {
+    "by": "exit"
+   },
+   "debugging": true,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "{\"level\":\"info\",\"logger\":\"go-admin\",\"msg\":\"* =\\u003e \\u001b[0;0;32muser:***@tcp(127.0.0.1:3306)/dbname?charset=utf8\\u0026parseTime=True\\u0026loc=Local\\u0026timeout=1000ms\\u001b[0m\",\"time\":\"2026-11-24 ",
+    "{\"level\":\"fatal\",\"logger\":\"go-admin\",\"msg\":\"\\u001b[0;0;31mmysql connect error :\\u001b[0mdial tcp 127.0.0.1:3306: connect: connection refused\",\"time\":\"2026-11-24 08:37:39.776\"}"
+   ]
+  },
+  {
+   "dir": ".",
+   "argv": [
+    "server",
+    "-c",
+    "config/settings.demo.yml"
+   ],
+   "label": "Dockerfile: CMD /main server -c /config/settings.yml after COPY ./config/settings.demo.yml /config/settings.yml",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": 1,
+   "seconds": 0.03,
+   "peak_memory_mb": 110,
+   "ended": {
+    "by": "exit"
+   },
+   "debugging": true,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "{\"level\":\"info\",\"logger\":\"go-admin\",\"msg\":\"* =\\u003e \\u001b[0;0;32m./go-admin-db.db\\u001b[0m\",\"time\":\"2026-11-24 08:37:39.813\"}",
+    "{\"level\":\"fatal\",\"logger\":\"go-admin\",\"msg\":\"\\u001b[0;0;31mdatabase driver \\\"sqlite3\\\" is not in this build, rebuild with -tags sqlite3 (this build supports mysql, postgres, sqlserver)\\u001b[0m\",\"time\""
+   ]
+  },
+  {
+   "dir": ".",
+   "argv": [
+    "server",
+    "-c",
+    "config/settings.demo.yml"
+   ],
+   "label": "CI: the same, built with -tags sqlite3,json1 as .github/workflows/build.yml builds the main the Dockerfile copies (Makefile build-sqlite: -tags sqlite3)",
+   "tags": "sqlite3,json1",
+   "plain": false,
+   "skipped": null,
+   "returncode": -9,
+   "seconds": 0.05,
+   "peak_memory_mb": 110,
+   "ended": {
+    "by": "listen",
+    "at_s": 0.045,
+    "ports": [
+     8000
+    ]
+   },
+   "debugging": true,
+   "hook_routes": 109,
+   "distinct": 109,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "{\"level\":\"debug\",\"logger\":\"go-admin\",\"msg\":\"\\u001b[31;1m/copy/app/jobs/lease.go:127 \\u001b[35;1mno such table: sys_job_lease \\u001b[0m\\u001b[33m[0.170ms] \\u001b[34;1m[rows:0]\\u001b[0m UPDATE `sys_job_",
+    "{\"level\":\"error\",\"logger\":\"go-admin\",\"msg\":\"[Job] scheduler lease for *: renewing the scheduler lease: no such table: sys_job_lease\",\"time\":\"2026-11-24 08:38:18.311\"}"
+   ]
+  },
+  {
+   "dir": ".",
+   "argv": [
+    "server",
+    "-c",
+    "config/settings.demo.yml"
+   ],
+   "label": "CI: the same, built without the hook: Gin's own debug text (way b)",
+   "tags": "sqlite3,json1",
+   "plain": true,
+   "skipped": null,
+   "returncode": -9,
+   "seconds": 0.05,
+   "peak_memory_mb": 110,
+   "ended": {
+    "by": "listen",
+    "at_s": 0.045,
+    "ports": [
+     8000
+    ]
+   },
+   "debugging": null,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 109,
+   "before_steps": [],
+   "stderr_last": [
+    "{\"level\":\"debug\",\"logger\":\"go-admin\",\"msg\":\"\\u001b[31;1m/copy/app/jobs/lease.go:127 \\u001b[35;1mno such table: sys_job_lease \\u001b[0m\\u001b[33m[0.166ms] \\u001b[34;1m[rows:0]\\u001b[0m UPDATE `sys_job_",
+    "{\"level\":\"error\",\"logger\":\"go-admin\",\"msg\":\"[Job] scheduler lease for *: renewing the scheduler lease: no such table: sys_job_lease\",\"time\":\"2026-11-24 08:38:28.153\"}"
+   ]
+  },
+  {
+   "dir": "test/e2e-apporder",
+   "argv": [],
+   "label": "none (a main package that depends on Gin)",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": 255,
+   "seconds": 0.04,
+   "peak_memory_mb": 108,
+   "ended": {
+    "by": "exit"
+   },
+   "debugging": true,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "Error: \u001b[0;0;31mrequires at least one arg\u001b[0m"
+   ]
+  }
+ ],
+ "probes": [],
+ "gin": {
+  "routes": {
+   "none": 0,
+   "Dockerfile": 0,
+   "CI": 109,
+   "by hand": 0,
+   "Routes()": 0
+  },
+  "routes_every": 109,
+  "levels": {
+   "no file and line": 10,
+   "one function starts at the line": 90,
+   "outside the project": 9
+  },
+  "via": {
+   "null": 10,
+   "name without -fm": 88,
+   "name": 11
+  },
+  "nodes": {
+   "own, one function": 88,
+   "own, shared by several functions": 2
+  },
+  "name_agrees": {
+   "true": 90
+  },
+  "handler_from_a_factory_of_the_project": 10,
+  "generic_names": 10,
+  "handlers_in_chain": {
+   "14": 21,
+   "13": 68,
+   "11": 13,
+   "12": 7
+  },
+  "registration_frame_in_the_project": 109,
+  "examples": [
+   {
+    "route": "GET /api/v1/demo-product",
+    "handler": "go-admin/common/actions.Index[...].func1",
+    "via": null,
+    "level": "no file and line",
+    "at": "None:None",
+    "function": null
+   },
+   {
+    "route": "GET /api/v1/demo-product/{}",
+    "handler": "go-admin/common/actions.ViewAs[...].func1",
+    "via": null,
+    "level": "no file and line",
+    "at": "None:None",
+    "function": null
+   },
+   {
+    "route": "POST /api/v1/demo-product",
+    "handler": "go-admin/common/actions.Create[...].func1",
+    "via": null,
+    "level": "no file and line",
+    "at": "None:None",
+    "function": null
+   },
+   {
+    "route": "PUT /api/v1/demo-product/{}",
+    "handler": "go-admin/common/actions.Update[...].func1",
+    "via": null,
+    "level": "no file and line",
+    "at": "None:None",
+    "function": null
+   },
+   {
+    "route": "DELETE /api/v1/demo-product",
+    "handler": "go-admin/common/actions.Delete[...].func1",
+    "via": null,
+    "level": "no file and line",
+    "at": "None:None",
+    "function": null
+   },
+   {
+    "route": "GET /api/v1/sysjob",
+    "handler": "go-admin/common/actions.Index[...].func1",
+    "via": null,
+    "level": "no file and line",
+    "at": "None:None",
+    "function": null
+   }
+  ]
+ },
+ "noir_vs_gin": {
+  "none and Routes()": {
+   "named": {
+    "rows": 93,
+    "met": 0,
+    "how": {},
+    "levels": {},
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 0
+   },
+   "no_handler": {
+    "rows": 15,
+    "met": 0,
+    "how": {},
+    "levels": {},
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 0
+   },
+   "all_http": {
+    "rows": 139,
+    "met": 0,
+    "how": {},
+    "levels": {},
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 0
+   },
+   "only_gin": {
+    "count": 0,
+    "levels": {},
+    "examples": []
+   },
+   "only_noir": {
+    "count": 139,
+    "groups": {
+     "bound": 93,
+     "Noir gives no handler": 15,
+     "the snapshot holds no function where Noir cites": 12,
+     "no function of the project serves the endpoint": 19
+    },
+    "cited_files": {
+     "app/other/router/gen_router.go": 13,
+     "app/admin/router/sys_dict.go": 12,
+     "docs/admin/admin_swagger.json": 12,
+     "app/admin/router/sys_user.go": 11,
+     "app/admin/router/sys_config.go": 9,
+     "app/admin/router/sys_router.go": 9,
+     "app/admin/router/sys_role.go": 7,
+     "app/jobs/router/sys_job.go": 7
+    },
+    "examples": [
+     {
+      "route": "GET /api/v1/sys-api",
+      "group": null,
+      "cites": "app/admin/apis/sys_api.go:33"
+     },
+     {
+      "route": "GET /api/v1/sys-api/:id",
+      "group": null,
+      "cites": "app/admin/apis/sys_api.go:66"
+     },
+     {
+      "route": "PUT /api/v1/sys-api/:id",
+      "group": null,
+      "cites": "app/admin/apis/sys_api.go:99"
+     },
+     {
+      "route": "GET /api/v1/config",
+      "group": null,
+      "cites": "app/admin/apis/sys_config.go:31"
+     },
+     {
+      "route": "GET /api/v1/config/:id",
+      "group": null,
+      "cites": "app/admin/apis/sys_config.go:62"
+     },
+     {
+      "route": "POST /api/v1/config",
+      "group": null,
+      "cites": "app/admin/apis/sys_config.go:96"
+     }
+    ]
+   }
+  },
+  "+ Dockerfile": {
+   "named": {
+    "rows": 93,
+    "met": 0,
+    "how": {},
+    "levels": {},
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 0
+   },
+   "no_handler": {
+    "rows": 15,
+    "met": 0,
+    "how": {},
+    "levels": {},
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 0
+   },
+   "all_http": {
+    "rows": 139,
+    "met": 0,
+    "how": {},
+    "levels": {},
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 0
+   },
+   "only_gin": {
+    "count": 0,
+    "levels": {},
+    "examples": []
+   },
+   "only_noir": {
+    "count": 139,
+    "groups": {
+     "bound": 93,
+     "Noir gives no handler": 15,
+     "the snapshot holds no function where Noir cites": 12,
+     "no function of the project serves the endpoint": 19
+    },
+    "cited_files": {
+     "app/other/router/gen_router.go": 13,
+     "app/admin/router/sys_dict.go": 12,
+     "docs/admin/admin_swagger.json": 12,
+     "app/admin/router/sys_user.go": 11,
+     "app/admin/router/sys_config.go": 9,
+     "app/admin/router/sys_router.go": 9,
+     "app/admin/router/sys_role.go": 7,
+     "app/jobs/router/sys_job.go": 7
+    },
+    "examples": [
+     {
+      "route": "GET /api/v1/sys-api",
+      "group": null,
+      "cites": "app/admin/apis/sys_api.go:33"
+     },
+     {
+      "route": "GET /api/v1/sys-api/:id",
+      "group": null,
+      "cites": "app/admin/apis/sys_api.go:66"
+     },
+     {
+      "route": "PUT /api/v1/sys-api/:id",
+      "group": null,
+      "cites": "app/admin/apis/sys_api.go:99"
+     },
+     {
+      "route": "GET /api/v1/config",
+      "group": null,
+      "cites": "app/admin/apis/sys_config.go:31"
+     },
+     {
+      "route": "GET /api/v1/config/:id",
+      "group": null,
+      "cites": "app/admin/apis/sys_config.go:62"
+     },
+     {
+      "route": "POST /api/v1/config",
+      "group": null,
+      "cites": "app/admin/apis/sys_config.go:96"
+     }
+    ]
+   }
+  },
+  "+ CI": {
+   "named": {
+    "rows": 93,
+    "met": 89,
+    "how": {
+     "path": 89
+    },
+    "levels": {
+     "one function starts at the line": 89
+    },
+    "one_function_own_node": 87,
+    "one_function_own_node_by_via": {
+     "name without -fm": 84,
+     "name": 3
+    },
+    "registration_line_equal": 89
+   },
+   "no_handler": {
+    "rows": 15,
+    "met": 15,
+    "how": {
+     "path": 10,
+     "registration line": 5
+    },
+    "levels": {
+     "outside the project": 5,
+     "no file and line": 10
+    },
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 15
+   },
+   "all_http": {
+    "rows": 139,
+    "met": 105,
+    "how": {
+     "path": 100,
+     "registration line": 5
+    },
+    "levels": {
+     "one function starts at the line": 90,
+     "outside the project": 5,
+     "no file and line": 10
+    },
+    "one_function_own_node": 88,
+    "one_function_own_node_by_via": {
+     "name without -fm": 85,
+     "name": 3
+    },
+    "registration_line_equal": 104
+   },
+   "only_gin": {
+    "count": 4,
+    "levels": {
+     "outside the project": 4
+    },
+    "examples": [
+     {
+      "route": "GET /static/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:52"
+     },
+     {
+      "route": "HEAD /static/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:52"
+     },
+     {
+      "route": "GET /form-generator/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:54"
+     },
+     {
+      "route": "HEAD /form-generator/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:54"
+     }
+    ]
+   },
+   "only_noir": {
+    "count": 34,
+    "groups": {
+     "the snapshot holds no function where Noir cites": 11,
+     "bound": 4,
+     "no function of the project serves the endpoint": 19
+    },
+    "cited_files": {
+     "docs/admin/admin_swagger.json": 11,
+     "example/app-order/router/router.go": 4,
+     "static/form-generator/css/index.1a124643.css": 2,
+     "static/form-generator/css/parser-example.69e16e51.css": 2,
+     "static/form-generator/index.html": 2,
+     "static/form-generator/js/chunk-vendors.971555db.js": 2,
+     "static/form-generator/js/index.8e6d9f8f.js": 2,
+     "static/form-generator/js/parser-example.ce55fa09.js": 2
+    },
+    "examples": [
+     {
+      "route": "GET /api/v1/menuTreeselect/{roleId}",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1009"
+     },
+     {
+      "route": "PUT /api/v1/role-status/{id}",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1405"
+     },
+     {
+      "route": "DELETE /api/v1/sys-api",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1687"
+     },
+     {
+      "route": "GET /api/v1/sys-config",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1796"
+     },
+     {
+      "route": "POST /api/v1/sys-config",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1881"
+     },
+     {
+      "route": "DELETE /api/v1/sys-config",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1915"
+     }
+    ]
+   }
+  },
+  "+ by hand": {
+   "named": {
+    "rows": 93,
+    "met": 89,
+    "how": {
+     "path": 89
+    },
+    "levels": {
+     "one function starts at the line": 89
+    },
+    "one_function_own_node": 87,
+    "one_function_own_node_by_via": {
+     "name without -fm": 84,
+     "name": 3
+    },
+    "registration_line_equal": 89
+   },
+   "no_handler": {
+    "rows": 15,
+    "met": 15,
+    "how": {
+     "path": 10,
+     "registration line": 5
+    },
+    "levels": {
+     "outside the project": 5,
+     "no file and line": 10
+    },
+    "one_function_own_node": 0,
+    "one_function_own_node_by_via": {},
+    "registration_line_equal": 15
+   },
+   "all_http": {
+    "rows": 139,
+    "met": 105,
+    "how": {
+     "path": 100,
+     "registration line": 5
+    },
+    "levels": {
+     "one function starts at the line": 90,
+     "outside the project": 5,
+     "no file and line": 10
+    },
+    "one_function_own_node": 88,
+    "one_function_own_node_by_via": {
+     "name without -fm": 85,
+     "name": 3
+    },
+    "registration_line_equal": 104
+   },
+   "only_gin": {
+    "count": 4,
+    "levels": {
+     "outside the project": 4
+    },
+    "examples": [
+     {
+      "route": "GET /static/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:52"
+     },
+     {
+      "route": "HEAD /static/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:52"
+     },
+     {
+      "route": "GET /form-generator/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:54"
+     },
+     {
+      "route": "HEAD /form-generator/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "app/admin/router/sys_router.go:54"
+     }
+    ]
+   },
+   "only_noir": {
+    "count": 34,
+    "groups": {
+     "the snapshot holds no function where Noir cites": 11,
+     "bound": 4,
+     "no function of the project serves the endpoint": 19
+    },
+    "cited_files": {
+     "docs/admin/admin_swagger.json": 11,
+     "example/app-order/router/router.go": 4,
+     "static/form-generator/css/index.1a124643.css": 2,
+     "static/form-generator/css/parser-example.69e16e51.css": 2,
+     "static/form-generator/index.html": 2,
+     "static/form-generator/js/chunk-vendors.971555db.js": 2,
+     "static/form-generator/js/index.8e6d9f8f.js": 2,
+     "static/form-generator/js/parser-example.ce55fa09.js": 2
+    },
+    "examples": [
+     {
+      "route": "GET /api/v1/menuTreeselect/{roleId}",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1009"
+     },
+     {
+      "route": "PUT /api/v1/role-status/{id}",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1405"
+     },
+     {
+      "route": "DELETE /api/v1/sys-api",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1687"
+     },
+     {
+      "route": "GET /api/v1/sys-config",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1796"
+     },
+     {
+      "route": "POST /api/v1/sys-config",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1881"
+     },
+     {
+      "route": "DELETE /api/v1/sys-config",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "docs/admin/admin_swagger.json:1915"
+     }
+    ]
+   }
+  }
+ },
+ "named_agreement": {
+  "same function": 89,
+  "not met by Gin": 4
+ },
+ "named_disagreements": [],
+ "static": {
+  "handler_calls": 220,
+  "named": {
+   "rows": 93,
+   "levels": {
+    "one function starts at the line": 93
+   },
+   "kinds": {
+    "method": 88,
+    "function": 3,
+    "function literal": 2
+   },
+   "one_function_own_node": 91,
+   "spread": 0
+  },
+  "no_handler": {
+   "rows": 15,
+   "levels": {
+    "the last argument is a call": 12,
+    "outside the project": 3
+   },
+   "kinds": {
+    "call": 12,
+    "method": 3
+   },
+   "one_function_own_node": 0,
+   "spread": 0
+  },
+  "all_http": {
+   "rows": 139,
+   "levels": {
+    "one function starts at the line": 93,
+    "the last argument is a call": 12,
+    "outside the project": 3,
+    "no call of Gin at the line": 31
+   },
+   "kinds": {
+    "method": 91,
+    "function": 3,
+    "call": 12,
+    "function literal": 2
+   },
+   "one_function_own_node": 91,
+   "spread": 0
+  },
+  "against_gin": {
+   "same function": 89
+  },
+  "no_handler_only_gin": [],
+  "no_handler_only_static": [],
+  "no_handler_only_static_count": 0,
+  "named_against_the_binder": {
+   "same function as the binder": 93
+  },
+  "examples": [
+   {
+    "route": "GET /swagger/admin/*any",
+    "noir_cites": "app/admin/router/sys_router.go:59",
+    "level": "the last argument is a call",
+    "kind": "call",
+    "function": null,
+    "callee": "github.com/swaggo/gin-swagger.WrapHandler"
+   },
+   {
+    "route": "GET /ws/:id/:channel",
+    "noir_cites": "app/admin/router/sys_router.go:65",
+    "level": "outside the project",
+    "kind": "method",
+    "function": null,
+    "callee": null
+   },
+   {
+    "route": "GET /wslogout/:id/:channel",
+    "noir_cites": "app/admin/router/sys_router.go:66",
+    "level": "outside the project",
+    "kind": "method",
+    "function": null,
+    "callee": null
+   },
+   {
+    "route": "POST /api/v1/login",
+    "noir_cites": "app/admin/router/sys_router.go:71",
+    "level": "outside the project",
+    "kind": "method",
+    "function": null,
+    "callee": null
+   },
+   {
+    "route": "GET /demo-product",
+    "noir_cites": "app/demo/router/demo_product.go:34",
+    "level": "the last argument is a call",
+    "kind": "call",
+    "function": null,
+    "callee": "go-admin/common/actions.Index"
+   },
+   {
+    "route": "GET /demo-product/:id",
+    "noir_cites": "app/demo/router/demo_product.go:35",
+    "level": "the last argument is a call",
+    "kind": "call",
+    "function": null,
+    "callee": "go-admin/common/actions.View"
+   }
+  ],
+  "not_placed": [
+   {
+    "route": "GET /swagger/admin/*any",
+    "level": "the last argument is a call",
+    "callee": "github.com/swaggo/gin-swagger.WrapHandler",
+    "at": "None:None"
+   },
+   {
+    "route": "GET /ws/:id/:channel",
+    "level": "outside the project",
+    "callee": null,
+    "at": "github.com/go-admin-team/go-admin-core/v2@v2.11.0/sdk/pkg/ws/ws.go:288"
+   },
+   {
+    "route": "GET /wslogout/:id/:channel",
+    "level": "outside the project",
+    "callee": null,
+    "at": "github.com/go-admin-team/go-admin-core/v2@v2.11.0/sdk/pkg/ws/ws.go:328"
+   },
+   {
+    "route": "POST /api/v1/login",
+    "level": "outside the project",
+    "callee": null,
+    "at": "github.com/go-admin-team/go-admin-core/v2@v2.11.0/jwtauth/jwtauth.go:468"
+   },
+   {
+    "route": "GET /demo-product",
+    "level": "the last argument is a call",
+    "callee": "go-admin/common/actions.Index",
+    "at": "None:None"
+   },
+   {
+    "route": "GET /demo-product/:id",
+    "level": "the last argument is a call",
+    "callee": "go-admin/common/actions.View",
+    "at": "None:None"
+   },
+   {
+    "route": "POST /demo-product",
+    "level": "the last argument is a call",
+    "callee": "go-admin/common/actions.Create",
+    "at": "None:None"
+   },
+   {
+    "route": "PUT /demo-product/:id",
+    "level": "the last argument is a call",
+    "callee": "go-admin/common/actions.Update",
+    "at": "None:None"
+   },
+   {
+    "route": "DELETE /demo-product",
+    "level": "the last argument is a call",
+    "callee": "go-admin/common/actions.Delete",
+    "at": "None:None"
+   },
+   {
+    "route": "GET /api/v1/sysjob",
+    "level": "the last argument is a call",
+    "callee": "go-admin/common/actions.Index",
+    "at": "None:None"
+   }
+  ]
+ },
+ "no_handler_examples": [
+  {
+   "route": "GET /swagger/admin/*any",
+   "met_by": "path",
+   "noir_cites": "app/admin/router/sys_router.go:59",
+   "gin_handler": "github.com/swaggo/gin-swagger.CustomWrapHandler.func1",
+   "at": "github.com/swaggo/gin-swagger@v1.6.1/swagger.go:161",
+   "function": null,
+   "level": "outside the project"
+  },
+  {
+   "route": "GET /ws/:id/:channel",
+   "met_by": "path",
+   "noir_cites": "app/admin/router/sys_router.go:65",
+   "gin_handler": "github.com/go-admin-team/go-admin-core/v2/sdk/pkg/ws.(*Manager).WsClient-fm",
+   "at": "github.com/go-admin-team/go-admin-core/v2@v2.11.0/sdk/pkg/ws/ws.go:288",
+   "function": null,
+   "level": "outside the project"
+  },
+  {
+   "route": "GET /wslogout/:id/:channel",
+   "met_by": "path",
+   "noir_cites": "app/admin/router/sys_router.go:66",
+   "gin_handler": "github.com/go-admin-team/go-admin-core/v2/sdk/pkg/ws.(*Manager).UnWsClient-fm",
+   "at": "github.com/go-admin-team/go-admin-core/v2@v2.11.0/sdk/pkg/ws/ws.go:328",
+   "function": null,
+   "level": "outside the project"
+  },
+  {
+   "route": "POST /api/v1/login",
+   "met_by": "path",
+   "noir_cites": "app/admin/router/sys_router.go:71",
+   "gin_handler": "b.com/go-admin-team/go-admin-core/v2/jwtauth.(*GinJWTMiddleware).LoginHandler-fm",
+   "at": "github.com/go-admin-team/go-admin-core/v2@v2.11.0/jwtauth/jwtauth.go:468",
+   "function": null,
+   "level": "outside the project"
+  },
+  {
+   "route": "GET /demo-product",
+   "met_by": "registration line",
+   "noir_cites": "app/demo/router/demo_product.go:34",
+   "gin_handler": "go-admin/common/actions.Index[...].func1",
+   "at": "None:None",
+   "function": null,
+   "level": "no file and line"
+  },
+  {
+   "route": "GET /demo-product/:id",
+   "met_by": "registration line",
+   "noir_cites": "app/demo/router/demo_product.go:35",
+   "gin_handler": "go-admin/common/actions.ViewAs[...].func1",
+   "at": "None:None",
+   "function": null,
+   "level": "no file and line"
+  },
+  {
+   "route": "POST /demo-product",
+   "met_by": "registration line",
+   "noir_cites": "app/demo/router/demo_product.go:36",
+   "gin_handler": "go-admin/common/actions.Create[...].func1",
+   "at": "None:None",
+   "function": null,
+   "level": "no file and line"
+  },
+  {
+   "route": "PUT /demo-product/:id",
+   "met_by": "registration line",
+   "noir_cites": "app/demo/router/demo_product.go:37",
+   "gin_handler": "go-admin/common/actions.Update[...].func1",
+   "at": "None:None",
+   "function": null,
+   "level": "no file and line"
+  }
+ ]
+}
