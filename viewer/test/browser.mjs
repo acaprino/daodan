@@ -12,7 +12,7 @@ envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lu
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
 const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [];
-const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false };
+const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
@@ -78,10 +78,15 @@ try {
     }
     if (path === '/api/app/premap') {
       await new Promise(resolve => setTimeout(resolve, mode.premapDelay));
+      if (mode.premapStatus !== 200) return route.fulfill({ status: mode.premapStatus, json: { error: 'snapshot non leggibile' } });
       return route.fulfill({ json: {
-      files: ['src/main.ts'], technologies: [], languages: [],
-      units: [{ id: 'web', name: 'web', kind: 'npm', root: '.', manifest: 'package.json', status: 'confirmed',
-        dependencies: [{ name: 'left-pad', scope: 'runtime', state: 'declared', source: 'package.json', version: '^1.3.0', direct: true }] }],
+      files: ['README.md', 'src/lib/util.ts', 'src/main.ts'], languages: [{ name: 'TypeScript', files: 2 }],
+      technologies: [{ name: 'React', category: 'framework', state: 'recognized', source: 'package.json:12' },
+        { name: 'node', category: 'toolchain', state: 'declared', version: '24', source: '.nvmrc' }],
+      units: [{ id: 'web', name: 'web', kind: 'npm', root: '.', manifest: 'package.json', status: 'confirmed', parent: null,
+        dependencies: [{ name: 'left-pad', scope: 'runtime', state: 'declared', source: 'package.json', version: '^1.3.0', direct: true },
+          { name: 'tiny', scope: 'npm', state: 'resolved', source: 'package-lock.json', resolved_version: '2.0.1', direct: false }] },
+      { id: 'api', name: 'api', kind: 'npm', root: 'server', manifest: null, status: 'inferred', parent: 'web', dependencies: [] }],
       } });
     }
     if (path === '/data/visual.json') {
@@ -235,10 +240,27 @@ try {
     await stageSays('Repository', 'non riuscita');
     await prepare.click();
     await line('Preparazione in corso').waitFor();
+    mode.premapStatus = 500;
     await serve({});  // the context is ready: its pre-map opens, and its graph is read
     await page.getByText('Contesto pronto: demo/shop · main', { exact: true }).waitFor();
     await panel('Pre-mappa').waitFor();
     assert.equal(await stage('Pre-mappa').getAttribute('aria-current'), 'true');
+    // A pre-map that cannot be read says why, with Riprova; while it is read the panel waits.
+    const unread = wrong('Pre-mappa non disponibile.'), provenance = main.getByRole('button', { name: 'Provenienza', exact: true });
+    await unread.filter({ hasText: 'snapshot non leggibile' }).waitFor();
+    assert.ok(await selectable(unread.getByText('snapshot non leggibile')));
+    await stageSays('Pre-mappa', 'non riuscita');
+    assert.ok(await provenance.isDisabled());
+    mode.premapStatus = 200;
+    mode.premapDelay = 1000;
+    await unread.getByRole('button', { name: 'Riprova' }).click();
+    await main.getByRole('progressbar', { name: 'Lettura della pre-mappa…' }).waitFor();
+    assert.equal(await unread.count(), 0);
+    await page.waitForFunction(() => document.activeElement?.tagName === 'MAIN');
+    const tree = main.getByRole('tree'), treeRow = name => tree.getByRole('treeitem', { name, exact: true });
+    await tree.waitFor();
+    mode.premapDelay = 0;
+    await stageSays('Pre-mappa', 'fatta');
     await tab('Grafo').filter({ hasText: '2 gruppi' }).waitFor();
     // Choosing a stage shows it. The context in use, to read and copy, is with the repository.
     for (const name of ['Analisi', 'Sintesi', 'Repository']) {
@@ -248,6 +270,105 @@ try {
     }
     const facts = panel('Contesto attivo');
     for (const text of ['demo/shop', 'main', '1'.repeat(12), 'demo']) assert.ok(await selectable(facts.getByText(text, { exact: true })), text);
+    await facts.getByRole('button', { name: 'Torna alla pre-mappa' }).click();
+    await panel('Pre-mappa').waitFor();
+    // The pre-map: the context and what it holds, what it is made with and what it depends on, in words to read and copy.
+    for (const text of ['demo/shop', '1'.repeat(12)]) assert.ok(await selectable(facts.getByText(text, { exact: true })), text);
+    assert.match(await panel('Inventario').innerText(), /File nello snapshot\s*3[\s\S]*Linguaggi rilevati\s*1[\s\S]*Unità tecniche\s*2[\s\S]*Dipendenze per unità\s*2/);
+    assert.match(await panel('Linguaggi').innerText(), /TypeScript\s*2 file/);
+    assert.match(await panel('Tecnologie e framework').innerText(),
+      /React\s*framework · Versione non registrata\s*package\.json:12[\s\S]*node\s*toolchain · 24\s*\.nvmrc/);
+    const dependencies = main.getByRole('table', { name: 'Dipendenze per unità' });
+    const dependency = name => dependencies.getByRole('row').filter({ hasText: name });
+    assert.match(await dependency('left-pad').innerText(), /left-pad\s+runtime\s+web\s+\^1\.3\.0\s+package\.json\s+—\s+Diretta/);
+    assert.match(await dependency('tiny').innerText(), /tiny\s+npm\s+web\s+—\s+2\.0\.1\s+package-lock\.json\s+Transitiva/);
+    assert.ok(await selectable(dependencies.getByText('left-pad', { exact: true })));
+    // Its tree: the first level is open; a row chosen is in the details, and closing them leaves it.
+    const details = name => page.getByRole('complementary', { name, exact: true });
+    const chosen = name => tree.getByRole('treeitem', { name, exact: true, selected: true });
+    const fileDetails = details('File dell’inventario'), unitDetails = details('Unità tecnica');
+    const counted = text => main.getByText(text, { exact: true });
+    await main.getByRole('tree', { name: 'Albero delle directory' }).waitFor();
+    await counted('shop · 3 file').waitFor();
+    for (const name of ['src', 'lib', 'main.ts', 'README.md']) await treeRow(name).waitFor();
+    assert.equal(await treeRow('util.ts').count(), 0);
+    assert.equal(await tree.getByRole('treeitem', { selected: true }).count(), 0);
+    await treeRow('main.ts').press('Enter');
+    await fileDetails.getByRole('heading', { name: 'main.ts', exact: true }).waitFor();
+    assert.match(await fileDetails.innerText(), /Percorso\s*src\/main\.ts[\s\S]*Tipo\s*ts[\s\S]*snapshot del commit 1{12}/);
+    assert.ok(await selectable(fileDetails.getByText('src/main.ts', { exact: true })));
+    await chosen('main.ts').waitFor();
+    await page.keyboard.press('Escape');
+    await fileDetails.waitFor({ state: 'hidden' });
+    await chosen('main.ts').waitFor({ state: 'detached' });
+    await treeRow('main.ts').click();
+    await fileDetails.waitFor();
+    await treeRow('lib').click();  // a directory opens and closes, and the choice stays
+    await treeRow('util.ts').waitFor();
+    await chosen('main.ts').waitFor();
+    // Another stage takes the details away, and they are there again with their stage.
+    await stage('Repository').click();
+    await fileDetails.waitFor({ state: 'hidden' });
+    await stage('Pre-mappa').click();
+    await fileDetails.waitFor();
+    // Where it comes from takes the place of the choice; Escape closes it, and the focus stays on its button.
+    await provenance.click();
+    const origin = details('Provenienza della pre-mappa');
+    await origin.waitFor();
+    assert.match(await origin.innerText(), /Commit\s*1{40}[\s\S]*File nello snapshot\s*3[\s\S]*Unità tecniche\s*2[\s\S]*Dipendenze per unità\s*2/);
+    await chosen('main.ts').waitFor({ state: 'detached' });
+    await page.keyboard.press('Escape');
+    await origin.waitFor({ state: 'hidden' });
+    assert.ok(await focused(provenance));
+    // Ctrl+F is the tree's search, on the whole path; it says how many it finds.
+    const treeSearch = main.getByRole('searchbox', { name: 'Cerca nell’albero' });
+    await page.keyboard.press('Control+f');
+    assert.ok(await focused(treeSearch));
+    await treeSearch.fill('SRC/main');
+    await counted('shop · 1 file').waitFor();
+    await treeRow('main.ts').waitFor();
+    assert.equal(await treeRow('README.md').count(), 0);
+    await treeSearch.fill('niente');
+    await counted('shop · 0 file').waitFor();
+    await main.getByText('Nessun risultato.', { exact: true }).waitFor();
+    await main.getByRole('button', { name: 'Azzera ricerca', exact: true }).click();
+    await counted('shop · 3 file').waitFor();
+    assert.ok(await focused(treeSearch));
+    // By directory or by unit: the arrows move, Enter chooses.
+    const kindOfTree = main.getByRole('group', { name: 'Tipo di albero' });
+    const directories = kindOfTree.getByRole('button', { name: /^Directory/ }), units = kindOfTree.getByRole('button', { name: /^Unità tecniche/ });
+    const pressed = button => button.and(page.locator('[aria-pressed="true"]')).waitFor();
+    await pressed(directories);
+    await directories.press('ArrowRight');
+    await units.and(page.locator(':focus')).waitFor();
+    await units.press('Enter');
+    await pressed(units);
+    await main.getByRole('tree', { name: 'Albero delle unità tecniche' }).waitFor();
+    await counted('Unità da manifest').waitFor();
+    await treeRow('web').filter({ hasText: 'npm · Confermata' }).waitFor();
+    await treeRow('package.json').waitFor();
+    await treeSearch.fill('server');  // the root of a unit
+    await treeRow('package.json').waitFor({ state: 'detached' });
+    await treeRow('api').filter({ hasText: 'npm · Inferita' }).click();
+    await unitDetails.getByRole('heading', { name: 'api', exact: true }).waitFor();
+    assert.match(await unitDetails.innerText(), /Tipo\s*npm[\s\S]*Stato\s*Inferita[\s\S]*Radice\s*server[\s\S]*Dipendenze registrate\s*0/);
+    // The mode, the search, the open branches and the choice are kept.
+    await page.reload();
+    await unitDetails.getByRole('heading', { name: 'api', exact: true }).waitFor();
+    await chosen('api').waitFor();
+    await pressed(units);
+    assert.equal(await treeSearch.inputValue(), 'server');
+    await unitDetails.getByRole('button', { name: 'Chiudi', exact: true }).click();
+    await unitDetails.waitFor({ state: 'hidden' });
+    await treeSearch.fill('');
+    await directories.click();
+    await treeRow('util.ts').waitFor();
+    // What the pre-map leads to.
+    await page.getByRole('button', { name: 'Segui l’analisi', exact: true }).click();
+    await panel('Analisi').waitFor();
+    await stage('Pre-mappa').click();
+    await facts.getByRole('button', { name: 'Cambia repository o branch', exact: true }).click();
+    await panel('Repository').waitFor();
     await facts.getByRole('button', { name: 'Torna alla pre-mappa' }).click();
     await panel('Pre-mappa').waitFor();
     // The screens are places: by a press, by the arrows and Enter, by their commands.
@@ -265,7 +386,8 @@ try {
     await choose('Vai ad Analisi');
     await screen('Analisi');
     await panel('Pre-mappa').waitFor();  // the stage is where it was left
-    // Ctrl+F on a screen with no search says so; F6 and Shift+F6 go from a region to the next; the skip link goes to the content.
+    // Ctrl+F on a stage with no search says so; F6 and Shift+F6 go from a region to the next; the skip link goes to the content.
+    await stage('Repository').click();
     await page.keyboard.press('Control+f');
     await page.getByText('Questa schermata non ha una ricerca.').waitFor();
     await tab('Analisi').focus();
@@ -322,32 +444,6 @@ try {
   }
 
   // The contract of the screens not yet drawn, in Imago's selectors: each to restore by role and name, then delete from here.
-  // ticket 20: the pre-map
-  // mode.premapDelay = 1000;
-  // await page.locator('#stage-premap').click();
-  // await page.locator('[data-im-state-layer="loading"]').waitFor();
-  // await page.getByRole('tree').waitFor();
-  // mode.premapDelay = 0;
-  // assert.ok(await selectable(page.locator('.im-table td strong', { hasText: 'left-pad' })));
-  // const directories = page.getByRole('radio', { name: 'Directory', exact: true });
-  // const units = page.getByRole('radio', { name: 'Unità tecniche' });
-  // await directories.focus();
-  // await directories.press('ArrowRight');
-  // assert.ok(await units.isChecked());
-  // assert.ok(await units.evaluate(el => document.activeElement === el));
-  // await units.press('ArrowLeft');
-  // assert.ok(await directories.isChecked());
-  // assert.equal(await page.locator('.im-metric').count(), 4);
-  // const tree = page.getByRole('tree');
-  // await tree.getByRole('treeitem', { name: 'main.ts' }).press('Enter');
-  // assert.match(await page.locator('#tree-selection').innerText(), /src\/main.ts/);
-  // const provenance = page.getByRole('button', { name: 'Provenienza', exact: true });
-  // await provenance.click();
-  // const detail = page.getByRole('region', { name: 'Provenienza della pre-mappa' });
-  // assert.ok(await detail.isVisible());
-  // await page.keyboard.press('Escape');
-  // assert.ok(await detail.isHidden());
-  // assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Provenienza');
   // ticket 21: the run and the synthesis
   // await tabs.getByRole('tab', { name: /^Analisi/ }).click();
   // await page.locator('#stage-analysis').click();

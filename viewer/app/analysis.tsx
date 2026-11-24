@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import { Badge, Column, ContentSplit, ItemList, ItemRow, Progress, Text } from '@acaprino/sigrid';
 import { FrameContext, ScreenPanel, useFrame } from './frame.tsx';
-import { PremapScreen } from './premap-screen.tsx';
+import { PremapActions, PremapScreen } from './premap-screen.tsx';
 import { RepositoryActions, RepositoryScreen } from './repository-screen.tsx';
 import { RunScreen } from './run-screen.tsx';
 import type { Snapshot } from './snapshot.ts';
@@ -15,7 +15,7 @@ import { model, useModel } from './use-model.ts';
 // What each stage draws and, in the window's action bar, what it leads to. The notices sit above the bar, never over the action.
 const STAGE: Record<Stage, { Screen: ComponentType; Actions?: ComponentType }> = {
   repository: { Screen: RepositoryScreen, Actions: RepositoryActions },
-  premap: { Screen: PremapScreen },
+  premap: { Screen: PremapScreen, Actions: PremapActions },
   analysis: { Screen: RunScreen },
   synthesis: { Screen: SynthesisScreen },
 };
