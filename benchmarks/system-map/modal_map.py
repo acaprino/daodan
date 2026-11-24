@@ -623,10 +623,6 @@ def whole_case(name: str, case: dict, archive: bytes | None, counts: str | None,
     return {"case": name, "engine": engine, "stopped": failure}
 
 
-NETWORK_PROBE = """import urllib.request
-for name, url in (("registry", "https://pypi.org/simple/"), ("outside", "https://example.com/"),
-                  ("plain", "http://pypi.org/simple/"), ("address", "https://1.1.1.1/")):
-    try:
 @app.function(cpu=4, memory=16384, timeout=3 * 3600, volumes={"/results": volume}, single_use_containers=True)
 def routes_case(name: str, case: dict, archive: bytes | None, rules: str, tag: str) -> dict:
     """The routes of a case at the code of this image, with the rules an earlier rules session wrote (`rules`, the text of
@@ -674,6 +670,10 @@ def routes_case(name: str, case: dict, archive: bytes | None, rules: str, tag: s
     return answer
 
 
+NETWORK_PROBE = """import urllib.request
+for name, url in (("registry", "https://pypi.org/simple/"), ("outside", "https://example.com/"),
+                  ("plain", "http://pypi.org/simple/"), ("address", "https://1.1.1.1/")):
+    try:
         urllib.request.urlopen(url, timeout=20).close()
         print(name, "reached")
     except Exception as error:
@@ -996,12 +996,12 @@ def _arguments(argv: list[str] | None = None):
     every.add_argument("--cases", required=True, help=f"comma-separated, of {', '.join(CASES)}")
     every.add_argument("--tar", action="append", default=[], metavar="CASE=PATH",
                        help="the archive of a case (`code_archive.py`), repeatable; its counts are PATH with .json")
+    every.add_argument("--no-cases", action="store_true",
+                       help="start only the runs of the map, under a TAG whose cases an earlier job already kept")
     every.add_argument("--models", default="", help=f"comma-separated, of {', '.join(MODELS)}; none: only the cases")
     every.add_argument("--reps", type=int, default=2, help="independent runs per case and model")
     every.add_argument("--budget", type=float, default=BUDGET_USD, help="USD per session")
     by_links = commands.add_parser("spawn-links", help="the links of a cloned case; the volume gets links-CASE.json")
-    every.add_argument("--no-cases", action="store_true",
-                       help="start only the runs of the map, under a TAG whose cases an earlier job already kept")
     by_links.add_argument("case", choices=[name for name, case in CASES.items() if "repo" in case and "rules" in case])
     by_links.add_argument("tag")
     args = parser.parse_args(argv)
