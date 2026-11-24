@@ -115,7 +115,7 @@ Commit: `feat: write the catalogue of rules`.
 - [x] **Step 2**: commit `chore(release): 1.27.6-daodan.3 as stack-analyser-daodan`.
 - [x] **Step 3 (chi coordina, dopo la conferma del proprietario)**: rinomina del repository (`gh repo rename`), aggiornamento del remoto locale, tag, push, `gh release create`, verifica dello sha256 dell'asset scaricato.
 
-*Stato, 24 novembre 2026: `.3` pubblicato. Il rilascio `.4`, con le correzioni trovate dalla prova di B4 (ramo `feature/stack-detection`, `69c77c2`…`348051b`, CI verde), è pubblicato (tag `v1.27.6-daodan.4`, costruito da GitHub Actions da `ff2fef4`); Daodan è fissato a `.4`.*
+*Stato, 24 novembre 2026: `.3` pubblicato. Il rilascio `.4`, con le correzioni trovate dalla prova di B4 (ramo `feature/stack-detection`, `69c77c2`…`348051b`, CI verde), è pubblicato (tag `v1.27.6-daodan.4`, costruito da GitHub Actions da `ff2fef4`). Il rilascio `.5` (tag `v1.27.6-daodan.5`, da `453a2a9`) riprende i segni veri che il porting aveva lasciato fuori (la scelta del proprietario: «più cose riconosciamo e meglio è») e dà a uno starter di Spring Data il suo server; Daodan è fissato a `.5`.*
 
 ---
 

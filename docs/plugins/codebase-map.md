@@ -252,7 +252,7 @@ Strumenti, versioni e licenze per linguaggio: `docs/plugins/codebase-map-linguag
 
 Riconosce framework, librerie, strumenti e servizi.
 Lo fa solo stack-analyser, nel fork `acaprino/stack-analyser-daodan`, in entrambe le scansioni.
-Il rilascio è fissato e verificato con sha256: `stack_analyser.VERSION` (`1.27.6-daodan.4`), `URL`, `SHA256`.
+Il rilascio è fissato e verificato con sha256: `stack_analyser.VERSION` (`1.27.6-daodan.5`), `URL`, `SHA256`.
 Il registro (`data/service-registry.json`) è solo anagrafica: nome, tipo, categoria, sito, marchio, host. Non ha segni.
 Disegno e motivi: [spec dello stack dal fork](../specs/2026-11-21-stack-dal-fork.md).
 
