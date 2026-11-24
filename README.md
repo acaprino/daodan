@@ -50,6 +50,17 @@ Daodan maintains its extra rules in [registry-additions.json](daodan/data/regist
 The [project-model benchmark](benchmarks/project-model/README.md) compares the shipped registry and upstream Specfy,
 and includes an adapter that loads compatible Daodan rules into Specfy.
 
+## Package registries of the preparation
+
+Project code runs only in Daodan's container. Its preparation reaches the package registries through a proxy, and
+nothing else; the tests run with no network. The registries are listed in
+[package-managers.json](daodan/data/package-managers.json). The managers' names come from Wikipedia's
+[List of software package management systems](https://en.wikipedia.org/w/index.php?title=List_of_software_package_management_systems&oldid=1379970373),
+revision 1379970373 of 13 October 2026, read on 24 November 2026. Only the managers a Linux container restores
+dependencies with are kept, plus Go modules. Wikipedia gives no hosts: they were written by hand and are probed by
+[registry-hosts](benchmarks/registry-hosts/README.md). Hosts that take uploads beyond a package publish, such as
+GitHub and container registries, stay out; GitHub opens only for a project that declares a dependency on it.
+
 ## Plugins
 
 | Plugin | Responsibility | Entry |
