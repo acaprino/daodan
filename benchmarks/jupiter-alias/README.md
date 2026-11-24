@@ -1,5 +1,19 @@
 # Benchmark: un nome reale che la validazione rifiuta, in una review
 
+**Stato:** In uso come caso di calibrazione. Le correzioni ai testi dei ruoli misurate qui sono nel prodotto; `bind` lega la light a un job unico (la divisione in job da 27 membri è stata provata e ritirata). Il repository del caso è privato: si ripete solo dove ne esiste la copia locale.
+
+**Domanda.** Su un difetto reale arrivato in produzione (J1: la validazione rifiuta un nome reale), quali ruoli lo trovano da soli, il job composto della light lo trova, e il numero di membri per job cambia l'esito?
+
+**Risultati validi oggi** (16 novembre 2026, Opus 5.5):
+
+| Domanda | Risultato |
+|---|---|
+| I job composti trovano J1 con i testi aggiornati? | sì: 2 run su 2 con 27 membri, 2 su 2 con 47, 1 su 1 con il secondo job da 20 |
+| 27 membri sono una soglia di affidabilità? | non dimostrato: con i testi aggiornati 27 e 47 trovano entrambi J1; dividere costa 591.566-598.001 token contro 369.633-400.078 |
+| I job composti trovano J2 (un ciclo che non termina)? | no: 0 su 7, contro 2 su 2 del ruolo da solo. È un limite noto dei job composti |
+
+Tutte le misure usano un modello, tranne il conteggio della ripartizione sui 101 changeset. Le run sono senza mappa di Codebase Map (niente `symbols-at`, `edit-impact`, `stale-callers`): l'effetto della mappa sul rilevamento non è misurato su questo caso.
+
 Il caso iniziale era indipendente dalla costruzione del metodo, come chiede la spec [della review](../../docs/specs/2026-11-03-semantic-review-foundation.md). Ora è usato per correggerlo: le nuove run sono calibrazione sullo stesso caso, non validazione indipendente. Viene da un repository privato, Jupiter: un difetto reale arrivato in produzione e poi corretto. La validazione di `get_market_candles` rifiuta lo spazio, e l'alias reale di ogni broker IBKR lo contiene. Il codice di Jupiter non è copiato qui; le run e i loro artefatti restano fuori dal repository.
 
 ## Parametri
@@ -16,10 +30,6 @@ Il caso iniziale era indipendente dalla costruzione del metodo, come chiede la s
 | ruoli da soli | `api-contract-auditor`, `local-correctness-auditor`, `input-validation-auditor`, `testing-auditor` |
 | strumenti | sulla copia: ruff 0.15.20, pytest 8.4.2, tsc 5.9.3, eslint 9.39.2, vitest 4.1.11. Rust non compilato |
 | esecuzione | copia fuori da questo repository, senza rete; i revisori non vedono questo README. Senza mappa Codebase Map del candidato, quindi niente `symbols-at`, `edit-impact` né `stale-callers` |
-
-## Limite del caso
-
-Il repository è privato: il caso si ripete solo dove ne esiste la copia locale.
 
 ## Misure iniziali, testi invariati
 

@@ -1,48 +1,70 @@
-# Roadmap di Daodan
+# Roadmap di Daodan: indice dello stato
 
-Aggiornata al 19 novembre 2026. Distingue ciò che è in uso nel repository, ciò che è specificato per le prossime iterazioni e ciò che è rimandato come lacuna dichiarata. Vale ovunque la regola invalicabile di [`AGENTS.md`](../AGENTS.md): nessun codice, build, test o interfaccia del progetto analizzato gira mai sull'host, nemmeno su un browser o emulatore installato sulla macchina dell'utente.
+Stato verificato nel codice il 24 novembre 2026. Ogni riga dice che cosa c'è oggi e rimanda al documento che lo descrive; i numeri misurati stanno nei README dei benchmark.
 
-## Stato generale dei filoni
+Due regole di [`AGENTS.md`](../AGENTS.md) valgono per ogni riga: nessun codice del progetto analizzato gira mai sull'host, e «analisi» è l'intera pipeline, quindi un buco si dichiara e si misura dopo l'ultimo passo.
 
-| Filone | Stato | Riferimento |
+Stati: **In uso** (nel codice, con la sua prova), **In parte** (dice cosa c'è e cosa manca), **Proposta** (nulla nel codice), **Aperta** (una domanda senza decisione o senza misura), **Rimandata**.
+
+## Analisi: dalla lettura al grafo
+
+| Filone | Stato | Dove |
 | --- | --- | --- |
-| Mappa statica, moduli unificati (Step 1 `scan`) e stack per modulo (Step 2 `stack`) | In uso | [pipeline, sezioni 1 e 6](specs/2026-11-15-pipeline-di-analisi.md) |
-| Indicizzatori per linguaggio nel container e passo dinamico sui test (`tests`) | In uso | [passo dinamico](specs/2026-11-12-passo-dinamico.md), [supporto misurato](plugins/codebase-map-supporto.md) |
-| Flussi, mappa del sistema e grafo dei moduli dai flussi | In uso / prova sui benchmark | [flussi e mappa, «Principi»](specs/2026-11-18-flussi-e-mappa-del-sistema.md) |
-| Registro dell'esecuzione: albero delle chiamate, frontiere, conto di sistema e corsa HTTP | Proposto | [esecuzione del programma](specs/2026-11-19-esecuzione-del-programma.md) |
-| Riconoscimento statico delle interfacce, `builds` e `starts` risolti con `toolchains` | Proposto (priorità immediata) | [interfacce del progetto](specs/2026-11-19-interfacce-del-progetto.md) |
-| Esecuzione dinamica delle interfacce `web` e `webview` (Electron, Tauri, Wails) | Proposto (subito dopo il riconoscimento) | [interfacce del progetto, sezione 7](specs/2026-11-19-interfacce-del-progetto.md#7-esecuzione-solo-web-e-webview) |
-| Esecuzione dinamica di desktop Linux, Android e Windows nativo (emulatori/VM in container) | Rimandato (oggi lacuna dichiarata) | Sezione seguente |
-| Mappa del sistema a fine di ogni analisi, con il giro del modello sui resti | Da collegare: il ruolo `system-mapper` esiste nel plugin, nessun passo lo avvia | [flussi e mappa, sezione 7](specs/2026-11-18-flussi-e-mappa-del-sistema.md), [flussi e mappa, Principio 4](specs/2026-11-18-flussi-e-mappa-del-sistema.md) |
+| Pipeline, un passo dopo l'altro | **In parte.** `pipeline.STEPS` ha `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`. `plan` è una funzione (`pipeline/plan.py`), non uno step; `union` elenca ciò che manca e non unisce ancora i grafi di linguaggi indicizzati a parte | [`README`](../README.md), «How the graph is built»; [spec](specs/2026-11-15-pipeline-di-analisi.md); [riferimento](plugins/codebase-map.md#pipeline) |
+| Pre-mappa e mappa dei moduli (`scan`) | **In uso** (`daodan/core/premap/`, una sorgente per strumento, i comandi di modello nel container) | [spec della pipeline](specs/2026-11-15-pipeline-di-analisi.md), sezione 1; [`benchmarks/project-model`](../benchmarks/project-model/README.md) |
+| Stack per modulo (`stack`) | **In uso** sul registro (`service_registry.py`, `technologies.py`) | [spec della pipeline](specs/2026-11-15-pipeline-di-analisi.md), sezione 1 |
+| Stack dal fork di stack-analyser | **In parte.** Il rilascio `1.27.6-daodan.2` è fissato in `stack_analyser.py` e misurato sul corpus; il passo `stack` non lo usa ancora | [spec](specs/2026-11-21-stack-dal-fork.md); [piano del passaggio](plans/2026-11-22-stack-dal-fork-3-passaggio.md) |
+| Indicizzatori per linguaggio (`analyze`) | **In uso:** Go, Rust, TypeScript e JavaScript con Vue e Svelte, Python, Java, Kotlin, C e C++, C#, fogli di stile (`daodan/core/indexers/`). Aperti: richieste mirate e resti del passo per posizione, secondo configure di CMake | [linguaggi](plugins/codebase-map-linguaggi.md), [supporto misurato](plugins/codebase-map-supporto.md); [spec](specs/2026-11-08-risoluzione-chiamate-motore.md); [piano](plans/2026-11-14-grafo-dall-indice.md); [`benchmarks/inference-audit`](../benchmarks/inference-audit/README.md) |
+| Passo dinamico sui test (`dynamic`) | **In uso** per Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C# (`daodan/core/dynamic/`). È il passo che chiude le chiamate che l'indice lascia aperte | [spec](specs/2026-11-12-passo-dinamico.md); misura in [`benchmarks/call-provenance`](../benchmarks/call-provenance/README.md) |
+| Esplorazione dell'app avviata (`dynamic`) | **In parte.** L'app parte nel container e un browser ne preme i controlli (`dynamic/app.py`, `explore.cjs`), solo con `npm` e per le pagine web. Mancano pnpm, Yarn e Bun, le altre fonti di avvio, le credenziali di prova | [piano degli ingressi](plans/2026-11-20-ingressi-e-flussi.md), task 11; [spec delle interfacce](specs/2026-11-19-interfacce-del-progetto.md), sezione 7; [`benchmarks/project-model`](../benchmarks/project-model/README.md) |
+| Aggiornamento incrementale | **Aperta.** Dopo una modifica a un modulo riparte quasi tutto; le regole di riuso per file non sono nel codice | [piano](plans/2026-11-14-grafo-dall-indice.md), «Aggiornamento incrementale»; [`benchmarks/project-model`](../benchmarks/project-model/README.md), «Tre corse sullo stesso progetto» |
+| Una preparazione per analisi, un job per tutta la catena | **In parte.** Nel codice (`node_preparation.py`, `modal_map.py whole`); il guadagno su Modal non è misurato | [piano](plans/2026-11-20-analisi-unificata.md) |
+| Registro dell'esecuzione: albero delle chiamate, frontiere, corsa HTTP | **Proposta** | [spec](specs/2026-11-19-esecuzione-del-programma.md) |
 
-## Sequenza per le interfacce e l'avvio dei programmi
+## Dopo la pipeline: ingressi, flussi, mappa del sistema
 
-### Fase 1 — Riconoscimento statico di interfacce, `builds` e `starts` (prossimo passo)
+| Filone | Stato | Dove |
+| --- | --- | --- |
+| Ingressi dai framework e dagli endpoint | **In parte.** Sorgenti nel container per Next.js, React Router e Remix, SvelteKit, Nuxt, Astro, Angular; Noir per le rotte, legate alle funzioni dello snapshot (`binder.py`). Le sorgenti che caricano il framework all'avvio sono misurate e non collegate | [spec](specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md); [piano](plans/2026-11-20-ingressi-e-flussi.md); [`benchmarks/noir-binding`](../benchmarks/noir-binding/README.md) |
+| Collegamenti, flussi e mappa del sistema | **In uso** (`flows.py`, `flow_paths.py`, `system_map.py`, `system_levels.py`); la mappa parte a fine analisi, nell'app (`App._follow`) e nel plugin (`system-mapper`). Il mappatore con un modello debole non ricostruisce il sistema alla cieca | [spec](specs/2026-11-18-flussi-e-mappa-del-sistema.md); [`benchmarks/system-map`](../benchmarks/system-map/README.md) |
+| Anagrafica dei flussi, ricerca, pacchetto di una review | **Proposta** | [spec](specs/2026-11-20-ricerca-e-pacchetto-di-review.md); [piano](plans/2026-11-20-ricerca-e-pacchetto-di-review.md) |
+| Interfacce: riconoscimento statico | **In parte.** `starts` e `builds` da `package.json` (`premap/npm_start.py`); comandi ed eventi fra pagina e guscio Tauri come legami. Mancano il catalogo delle superfici e l'interfaccia come nodo | [spec](specs/2026-11-19-interfacce-del-progetto.md) |
+| Esecuzione di `webview` (Electron, Tauri, Wails) | **Proposta** | [spec delle interfacce](specs/2026-11-19-interfacce-del-progetto.md), sezione 7 |
+| Desktop Linux, Android, Windows nativo | **Rimandata:** riconosciute, non eseguite | sezione sotto |
 
-Zero esecuzione di codice del progetto; verificato sui 180 progetti di `benchmarks/project-model` su Modal:
+L'ordine dei task di questi filoni e la prova da zero sui cinque casi: [piano della pipeline intera](plans/2026-11-20-pipeline-intera.md).
 
-1. **Catalogo delle superfici:** campo `surface` e `type: "schermata"` sulle voci `web` e `webview` che `service-registry.json` ha già. Le voci desktop, Windows e Android, con i loro segni fuori dai gestori di pacchetti, entrano ciascuna con un caso reale nel corpus: oggi il corpus non ne ha.
-2. **Comandi `builds` e `starts` legati a `toolchains`:** estrazione in `premap.json` dei comandi di build e di avvio (`start` e `dev`, `angular.json`, `tauri.conf.*`, `wails.json`, `pyproject.toml`, binari Cargo/.NET, `Dockerfile` e `Compose`), scegliendo l'esecutore effettivo (`npm`/`pnpm`/`yarn`/`bun`, `uv`/`poetry`, wrapper JVM) dalle `toolchains` e dai lockfile del modulo e calcolando `needs_build` quando l'avvio punta ad artefatti compilati non presenti nello snapshot.
-3. **Interfaccia come nodo:** una schermata nasce da un ingresso (pagina dichiarata, pagina di un meta-framework, pagina che il codice incorpora o offre su una rotta), non da un manifesto. Servono due collegamenti che oggi mancano: ciò che un documento HTML carica e ciò che il codice incorpora. Sopra ogni interfaccia sta il dispositivo dedotto; guscio e pagina sono due nodi collegati. Lacune dichiarate: `interface_uncertain`, `entry_not_found`, `no_start_command`, `build_command_missing`, `port_not_declared`, `ui_execution_deferred:<surface>`.
+## Review
 
-### Fase 2 — Esecuzione `web` e `webview` nel container
+| Filone | Stato | Dove |
+| --- | --- | --- |
+| Review `branch`: perimetro, selezione, rigor, copertura dell'intero sorgente | **In uso** (Parte A della copertura). Il riuso dei controlli fra review è una **Proposta** | [spec](specs/2026-11-03-semantic-review-foundation.md); [piano](plans/2026-11-08-whole-source-coverage.md); [`benchmarks/whole-source-coverage`](../benchmarks/whole-source-coverage/README.md) |
+| Run di lavoro e regole di review | **In uso** | [spec](specs/2026-11-09-working-run-and-review-fixes.md) |
+| Unità e flussi dentro la review | **Aperta:** un caso misurato su tre, senza guadagno | [spec](specs/2026-11-09-flows-in-review.md); [`benchmarks/phazly-flow`](../benchmarks/phazly-flow/README.md) |
+| Revisori per framework e librerie | **Proposta:** il pilota non promuove nessuna voce | [spec](specs/2026-11-19-revisori-per-framework-e-librerie.md); [`benchmarks/stack-reviewers`](../benchmarks/stack-reviewers/README.md) |
+| Review dinamiche: riprodurre un finding nel container | **Proposta;** oggi i ruoli chiedono il container e senza è una lacuna | [spec dell'esecuzione](specs/2026-11-19-esecuzione-del-programma.md) |
 
-1. **Albero delle chiamate e frontiere sui test esistenti**, come primo passo della [spec del 19 novembre](specs/2026-11-19-esecuzione-del-programma.md).
-2. **Corsa `web`:** avvio del modulo tramite `builds` + `starts` nel pod senza rete (`--network none`, servizi CI accanto) e navigazione delle pagine d'ingresso con **Playwright + Chromium headless** forniti da Daodan nel container, unendo gli scambi browser-server e le catene registrate.
-3. **Corsa `webview` (Electron, Tauri, Wails):** avvio sotto `Xvfb` nel container Linux e collegamento dello stesso pilota browser alla webview dell'app (CDP per Electron, WebDriver per Tauri/Wails), osservando insieme vista web e processo nativo del guscio.
+## Interfaccia
 
-### Fase 3 — Piattaforme differite ed emulatori nel container (futuro, su consenso utente)
+| Filone | Stato | Dove |
+| --- | --- | --- |
+| Esploratore visuale | **In uso** (`visual.py`, `viewer/`), sui componenti di Imago; il passaggio a Sigrid è in corso. Prestazioni non misurate sul viewer di oggi | [ADR](adr/2026-11-07-codebase-explorer.md), [FRD](frd/2026-11-07-codebase-explorer.md) |
+| App standalone (`daodan app`) | **In uso** (`app.py`, motori `openai`, `claude`, `codex` in `engines.py`) | [spec](specs/2026-11-16-app-standalone.md) |
+| La mappa del sistema nel grafo dell'app | **Proposta** | [piano della pipeline intera](plans/2026-11-20-pipeline-intera.md), task 12 |
 
-Finché questa fase non è implementata, i moduli con superficie `desktop`, `windows` o `android` (quando non dispongono anche di una superficie `web` eseguibile in Fase 2) sono riconosciuti nello stack ma riportano nel passo dinamico la lacuna `ui_execution_deferred:<surface>`. Quando verranno attivati, nessun emulatore o runtime dell'host verrà mai usato: tutto verrà scaricato nel magazzino di Daodan ed eseguito **dentro il container** dietro approvazione esplicita dell'utente per download, licenze e spazio disco.
+Difetti trovati e corretti, con la loro prova: [registro](verification/2026-11-16-registro-difetti.md).
 
-1. **Desktop Linux (`surface: "desktop"` — PyQt, PySide, Tkinter, GTK, Kivy, Flet, Avalonia, Uno Platform, JavaFX):**
-   - Esecuzione sotto `Xvfb` o compositor Wayland headless nel container Linux con i registratori di linguaggio esistenti (`python_record.py`, agente JVM, rewriter `.NET`), già sufficiente a tracciare l'avvio e la costruzione delle finestre.
-   - Costruzione di un pilota leggero basato su AT-SPI / introspezione del toolkit per esercitare azioni utente sui controlli (fino ad allora lacuna `ui_driver_not_implemented`).
-2. **Android (`surface: "android"` — Android SDK, React Native, Expo, Flutter/MAUI Android):**
-   - Priorità ai target `web` o `desktop` Linux quando il modulo multipiattaforma (Flutter, Expo, Compose) li dichiara già, a costo zero emulatori.
-   - Per i moduli solo-Android: su approvazione esplicita dell'utente (termini Android SDK + ~4 GB di download), riuso di `cmdline-tools` e `sdkmanager` già presenti in `daodan/core/preparation.py` per scaricare `emulator` e una system image headless (`-no-window -no-audio`) dentro il container/VM di Daodan. Richiede `/dev/kvm` esposto dal motore (Linux nativo, WSL 2 con nested virtualization attiva o VM Sandbox di Modal); dove `/dev/kvm` manca resta la lacuna dichiarata `kvm_unavailable`.
-3. **Windows nativo (`surface: "windows"` — WinForms, WPF, WinUI 3, UWP):**
-   - **Gradino leggero (`Wine + Xvfb`, ~500 MB, nessun KVM, su consenso utente):** per applicazioni `WinForms` e `WPF` compatibili sotto `.NET` + registratore Mono.Cecil di Daodan.
-   - **Gradino completo per `WinUI 3` (`Windows App SDK`), `UWP` e `WPF` non retti da Wine (`dockur/windows`, MIT):** poiché nessun compatibility layer su Linux (`Wine 10`, `Proton`) implementa `DirectComposition`/DWM completi e `AppContainer` WinRT richiesti da `WinUI 3` e `UWP`, l'esecuzione userà una VM Windows 11 isolata in container Docker tramite QEMU/KVM (`dockur/windows`, puro codice MIT che non ridistribuisce Windows ma scarica automaticamente la ISO di valutazione ufficiale Microsoft dopo il consenso dell'utente). Richiede `/dev/kvm`, ~4 GB di RAM e una deroga esplicita dell'utente per ~25–32 GB di spazio disco; senza `/dev/kvm` o senza consenso resta lacuna dichiarata (`kvm_unavailable` / `approval_required`).
-4. **Fuori perimetro attuale — macOS e iOS (`AppKit`, `SwiftUI`, `UIKit`):**
-   - Ignorati sia nel riconoscimento delle superfici sia nell'esecuzione: non esiste un simulatore eseguibile in un container Linux e l'EULA Apple vincola l'esecuzione ad hardware Mac.
+## Piattaforme rimandate
+
+I moduli con superficie `desktop`, `windows` o `android`, quando non hanno anche una superficie `web`, sono riconosciuti e non eseguiti: lacuna `ui_execution_deferred:<surface>`. Quando si faranno, nessun emulatore o runtime dell'host: tutto si scarica nel magazzino di Daodan e gira nel container, dopo l'approvazione dell'utente per download, licenze e spazio su disco.
+
+1. **Desktop Linux** (PyQt, PySide, Tkinter, GTK, Kivy, Flet, Avalonia, Uno Platform, JavaFX).
+   - `Xvfb` o un compositor Wayland senza schermo nel container, con i registratori di linguaggio che ci sono: basta a tracciare avvio e costruzione delle finestre.
+   - Per premere i controlli serve un pilota su AT-SPI o sull'introspezione del toolkit: fino ad allora lacuna `ui_driver_not_implemented`.
+2. **Android** (Android SDK, React Native, Expo, Flutter e MAUI per Android).
+   - Prima i target `web` o desktop Linux, quando il modulo multipiattaforma li dichiara: nessun emulatore.
+   - Per i moduli solo Android: `emulator` e un'immagine di sistema senza finestra, scaricati con `cmdline-tools` e `sdkmanager` (termini dell'Android SDK, circa 4 GB). Chiede `/dev/kvm`; dove manca, lacuna `kvm_unavailable`.
+3. **Windows nativo** (WinForms, WPF, WinUI 3, UWP).
+   - Gradino leggero: Wine con `Xvfb` (circa 500 MB, senza KVM) per WinForms e WPF compatibili.
+   - Gradino completo per WinUI 3, UWP e WPF che Wine non regge: una VM Windows 11 in un container con QEMU e KVM (`dockur/windows`, MIT, che scarica la ISO di valutazione di Microsoft). Chiede `/dev/kvm`, circa 4 GB di RAM e 25–32 GB di disco; senza, lacune `kvm_unavailable` o `approval_required`.
+4. **macOS e iOS** (AppKit, SwiftUI, UIKit): fuori perimetro. Nessun simulatore gira in un container Linux e la licenza di Apple lega l'esecuzione a hardware Mac.

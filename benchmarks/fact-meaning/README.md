@@ -1,6 +1,12 @@
 # Benchmark: un fatto letto con un altro significato
 
-Prova se `senior-review:logic-integrity-auditor`, così com'è, trova un lettore che risponde a una domanda con un fatto che significa altro. Il caso riproduce un bug trovato in un'app di piani alimentari: «lo slot ha una registrazione» letto come «il piatto del piano è stato mangiato».
+**Stato:** In uso come fixture del ruolo. Misurato una volta, il 9 novembre 2026, sul ruolo al commit `4ac9475`; non rimisurato sul testo di oggi di `daodan/review/roles/logic-integrity-auditor.md`.
+
+**Domanda.** `senior-review:logic-integrity-auditor`, così com'è, trova un lettore che risponde a una domanda con un fatto che significa altro? Il caso riproduce un bug trovato in un'app di piani alimentari: «lo slot ha una registrazione» letto come «il piatto del piano è stato mangiato».
+
+**Risultato valido oggi.** Sì, sulle due fixture: P1 e P2 trovati con l'ADR accanto al codice, Q1 e Q2 trovati senza ADR; nessuna modifica al ruolo. Sul caso reale da cui le fixture nascono lo stesso difetto non arriva nel rapporto di nessuna run di review: [`phazly-flow`](../phazly-flow/README.md#la-review-per-area-trova-il-difetto).
+
+Tutto ciò che è misurato qui usa un modello (un sotto-agente Sonnet con il file del ruolo); senza modello ci sono solo i test che dimostrano i semi. Il ruolo riceve i file interi: mappa, flussi e schede non entrano nella prova.
 
 ## Parametri
 
@@ -27,9 +33,9 @@ Esche: `slot_badge` usa `states_nothing` per una domanda sullo slot, e `ring` so
 
 `python -B -m pytest -q benchmarks/fact-meaning`
 
-## Misure
+## Giro 1: `app/`, con l'ADR
 
-Giro 1 del 2026-11-09, ruolo al commit `4ac9475`: P1 e P2 trovati, 1 altro reale (`ring` divide per zero con obiettivo 0). `slot_badge` è segnalato con confidenza bassa come accoppiamento per `meal_id`: l'esca era mal costruita, perché l'ADR scritto per la fixture vieta ogni accoppiamento per slot e quindi anche quello. Nessuna modifica al ruolo. Il risultato sovrastima il caso reale: l'ADR sta accanto al codice e dice proprio la regola violata.
+Run del 2026-11-09, ruolo al commit `4ac9475`: P1 e P2 trovati, 1 altro reale (`ring` divide per zero con obiettivo 0). `slot_badge` è segnalato con confidenza bassa come accoppiamento per `meal_id`: l'esca era mal costruita, perché l'ADR scritto per la fixture vieta ogni accoppiamento per slot e quindi anche quello. Nessuna modifica al ruolo. Il risultato sovrastima il caso reale: l'ADR sta accanto al codice e dice proprio la regola violata.
 
 ## Giro 2: `app2/`, senza ADR
 
@@ -42,7 +48,7 @@ I due flussi si capiscono solo dal codice: store separati, scritture separate (`
 
 Esche: `today.slot_kcal` somma le kcal del diario per slot (domanda sullo slot) e `diary.log_planned` è l'aggancio legittimo per valore.
 
-Giro 2 del 2026-11-09, ruolo al commit `4ac9475`: Q1 e Q2 trovati in un solo finding, con il meccanismo esatto (`type` e `dish_id` esistono per separare piatto pianificato e cibo libero, nessun lettore li usa); esche non segnalate. Altri plausibili: `log_planned` non idempotente, un doppio tocco raddoppia le kcal; una modifica del piano lascia nel diario riferimenti orfani. Nessuna modifica al ruolo.
+Run del 2026-11-09, ruolo al commit `4ac9475`: Q1 e Q2 trovati in un solo finding, con il meccanismo esatto (`type` e `dish_id` esistono per separare piatto pianificato e cibo libero, nessun lettore li usa); esche non segnalate. Altri plausibili: `log_planned` non idempotente, un doppio tocco raddoppia le kcal; una modifica del piano lascia nel diario riferimenti orfani. Nessuna modifica al ruolo.
 
 Costo: giro 1 82.888 token, 6 strumenti, 41 s; giro 2 81.664 token, 7 strumenti, 50 s.
 

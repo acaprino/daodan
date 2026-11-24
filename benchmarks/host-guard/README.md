@@ -1,6 +1,10 @@
 # Guardia dell'host: l'avvio del server e dell'hook
 
-Prova la regola invalicabile di `AGENTS.md` sulle righe di comando con cui l'host avvia il plugin (`plugins/codebase-map/.mcp.json`, `hooks/hooks.json`). Il test che resta nelle suite è `tests/test_codebase_map_launch.py`.
+**Stato:** In uso. Le due prove si rieseguono su Modal; il test che resta nelle suite è `tests/test_codebase_map_launch.py`.
+
+**Domanda.** Le righe di comando con cui l'host avvia il plugin (`plugins/codebase-map/.mcp.json`, `plugins/codebase-map/hooks/hooks.json`) possono eseguire codice del progetto analizzato sull'host, contro la regola invalicabile di `AGENTS.md`? Si misura che cosa `uv` e Claude Code fanno davvero con quelle righe, per ogni insieme di opzioni.
+
+**Risultato valido oggi** (16 novembre 2026, Modal, Linux): `uv` esegue l'interprete del `.venv` del progetto con ogni insieme di opzioni provato tranne `--python <percorso di un interprete>` e `--directory <plugin>`. Nessun modello è usato. Windows non è misurato.
 
 ## Parametri
 
@@ -11,8 +15,6 @@ Prova la regola invalicabile di `AGENTS.md` sulle righe di comando con cui l'hos
 | `modal_host_launch.py` | un plugin di prova il cui server registra riga di comando, cartella di lavoro e variabili; `claude mcp list` dalla cartella del progetto e da una sottocartella, senza chiamare un modello | `modal run benchmarks/host-guard/modal_host_launch.py` |
 
 ## Risultati misurati
-
-Su Modal (Linux), 16 novembre 2026.
 
 uv 0.11.28, avviato nella cartella del progetto:
 

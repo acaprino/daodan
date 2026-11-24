@@ -1,6 +1,10 @@
 # Confini dell'app standalone
 
-Prova di riuso per la [spec dell'app](../../docs/specs/2026-11-16-app-standalone.md). Esercita `MapService` e il server HTTP esistenti su un progetto temporaneo, senza modificare il repository analizzato e senza processi figli.
+**Stato:** In uso. `probe.py` si riesegue nel container; le misure dell'interfaccia in `container-results.json` appartengono a un prototipo ritirato e non descrivono il viewer di oggi.
+
+**Domanda.** Per la [spec dell'app](../../docs/specs/2026-11-16-app-standalone.md): il nucleo (`MapService` e il server HTTP) regge come servizio di un'app, senza UI né SDK MCP, senza modificare il repository analizzato e senza processi figli?
+
+**Risultato valido oggi** (17 novembre 2026, commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`): 9 controlli HTTP su 9 in 1,678 s, nel container, senza rete né mount dell'host. Nessun modello è usato.
 
 ## Esecuzione nel container
 
@@ -52,9 +56,7 @@ Le asserzioni verificano import del nucleo senza UI/SDK MCP, HTTP autonomo, loop
 | Chiusura dopo ogni ciclo | Thread terminato e socket chiuso in tutti e 3 i cicli |
 | Durata complessiva della prova | 1,665 s; misura descrittiva, non un obiettivo prestazionale |
 
-La precedente misura Windows, Python 3.13.14, registrava 9 controlli in 2,477 s: è storica e distinta dall'esecuzione container corrente.
-
-Conferma del 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`, escludendo le modifiche locali: **9/9 controlli HTTP passati** con gli stessi parametri (3 cicli, 4 richieste, 2 consumer), in 1,678 s. Python 3.13.18 su Linux, container Daodan su Kiri 0.2.1, senza rete né mount host, con limiti di 1 GiB, 2 CPU e 256 processi.
+Ultima esecuzione, 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`, escludendo le modifiche locali: **9/9 controlli HTTP passati** con gli stessi parametri (3 cicli, 4 richieste, 2 consumer), in 1,678 s. Python 3.13.18 su Linux, container Daodan su Kiri 0.2.1, senza rete né mount host, con limiti di 1 GiB, 2 CPU e 256 processi.
 
 ## Test delle interfacce Imago
 

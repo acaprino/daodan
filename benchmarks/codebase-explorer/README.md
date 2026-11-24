@@ -1,6 +1,17 @@
 # Benchmark: renderer dell'esploratore
 
-Gate del renderer dell'[ADR dell'esploratore](../../docs/adr/2026-11-07-codebase-explorer.md): React Flow + ELK contro LikeC4 Model Builder sulla stessa fixture, prima di fissare il renderer. Le due prove sono minime, non prodotti.
+**Stato:** In parte. Le due misure sono del 12 novembre 2026 e riguardano un renderer che il prodotto non usa più: oggi il viewer disegna con il grafo di Imago (`@acaprino/imago`) e tiene ELK per la disposizione ([ADR dell'esploratore](../../docs/adr/2026-11-07-codebase-explorer.md)); `@xyflow/react` non è fra le dipendenze di `viewer/`. `scale.py` e `measure.js` restano utilizzabili per rimisurare il viewer di oggi; `likec4-probe/` e `reactflow-probe/` provano solo il confronto chiuso.
+
+**Domanda.** Quale renderer rappresenta la mappa (appartenenze multiple, stati, gerarchia, flussi), e il viewer regge 300 nodi visibili?
+
+**Risultati.**
+
+| Domanda | Risultato | Vale oggi? |
+| --- | --- | --- |
+| React Flow + ELK o LikeC4? | React Flow + ELK: LikeC4 perde 2 appartenenze multiple su 2 | il motivo vale (le occorrenze multiple sono una scelta della proiezione); il renderer scelto è stato poi sostituito da Imago |
+| Il viewer regge gli obiettivi di prestazione? | no: a 300 nodi il grafo arriva in 4,6 s contro 2 s; selezione p95 265 ms a 100 nodi contro 100 ms | misurato sul viewer con React Flow; **non misurato sul grafo di Imago né su un run reale** |
+
+Nessun modello è usato. Le due prove del renderer sono minime, non prodotti.
 
 ## Parametri
 
@@ -11,7 +22,7 @@ Gate del renderer dell'[ADR dell'esploratore](../../docs/adr/2026-11-07-codebase
 | React Flow + ELK | `@xyflow/react` 12.12.1, `elkjs` 0.12.1; `reactflow-probe/probe.mjs`, 44 righe; l'interfaccia è la preview `.jcode/local/mockups/codebase-explorer/` (fuori da Git) |
 | Esecuzione | Node 24.14.1, `npm install` in ciascuna cartella, poi `node probe.mjs` |
 
-## Risultati, 12 novembre 2026
+## Confronto dei renderer, 12 novembre 2026
 
 | Requisito | LikeC4 | React Flow + ELK |
 | --- | --- | --- |
@@ -23,11 +34,11 @@ Gate del renderer dell'[ADR dell'esploratore](../../docs/adr/2026-11-07-codebase
 | Focus e ripristino dei filtri | Viste statiche del modello | Già nella preview: selezione, viste per funzionalità e cicli, ritorno al sistema |
 | Tempo | Modello calcolato in 30 ms | Layout ELK in 227 ms, primo calcolo |
 
-## Verdetto
+## Verdetto del confronto
 
 **React Flow + ELK.** LikeC4 non rappresenta un file in due gruppi senza duplicarlo nel modello, con ogni relazione da duplicare per ogni copia: l'adattamento è più complesso, non più semplice. Con React Flow le occorrenze multiple sono una scelta della proiezione, che Daodan controlla.
 
-## Prestazioni del viewer, prima misura
+## Prestazioni del viewer con React Flow
 
 Obiettivi del [FRD](../../docs/frd/2026-11-07-codebase-explorer.md), da misurare, non promessi: fino a 300 nodi visibili, layout più primo disegno entro 2 s; p95 della selezione entro 100 ms su 20 interazioni. 1.000 nodi è stress diagnostico.
 
@@ -58,4 +69,4 @@ Una esecuzione per dimensione.
 - Con la finestra visibile, a 100 nodi: layout 934 e 1.169 ms, grafo disegnato in 1.165 e 1.492 ms, selezione p50 70 e 91 ms, p95 116 e 144 ms (due esecuzioni). Una finestra nascosta o coperta riduce i frame a circa uno al secondo e falsa ogni tempo: per questo `measure.js` apre un browser headless e si rifiuta sotto 30 frame al secondo.
 - Cause non verificate con un profilo: a ogni selezione il viewer ricalcola la proiezione e ricrea gli oggetti di tutti i nodi e di tutti gli archi, che React Flow ridisegna.
 - Non misurato: un run reale.
-- La [mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md), una proposta, mostra nodi con nome e non simboli: un grafo avrebbe una decina di nodi. Conviene decidere su quella prima di ottimizzare questo viewer per centinaia di nodi.
+- **Aperta: da approfondire.** La [mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) mostra nodi con nome e non simboli: un grafo avrebbe una decina di nodi. Se gli obiettivi a 300 nodi restino quelli giusti, e quanto impieghi il grafo di Imago, va deciso e misurato prima di ottimizzare.

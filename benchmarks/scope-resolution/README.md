@@ -1,8 +1,18 @@
 # Benchmark: scope resolution (Phase 0 della review)
 
-Mette alla prova [`docs/specs/2026-11-03-semantic-review-foundation.md`](../../docs/specs/2026-11-03-semantic-review-foundation.md), sezione 1, su un run reale di Codebase Map
-(mini-app `app/`: ordini, pagamenti, spedizioni). Il testo provato è quello di
-`plugins/senior-review/skills/review-preparation/references/team-review.md`, sezione "Request to files".
+**Stato:** In uso. Il testo provato è nel prodotto: `plugins/senior-review/skills/review-preparation/references/team-review.md`, sezione "Request to files". Le sessioni con il modello sono una prova di fumo (una per caso); il brief delle sessioni è una copia a mano di quel testo e va riallineato se il testo cambia.
+
+**Domanda.** Per [`docs/specs/2026-11-03-semantic-review-foundation.md`](../../docs/specs/2026-11-03-semantic-review-foundation.md), sezione 1: da una richiesta in parole, la Phase 0 della review arriva ai file giusti usando gli strumenti reali di Codebase Map, senza inventare collegamenti? Su un run reale della mini-app `app/` (ordini, pagamenti, spedizioni).
+
+**Risultati validi oggi.**
+
+| Chi risolve | Con un modello? | Esito uguale all'atteso | File indispensabili | Precision |
+|---|---|---|---|---|
+| resolver deterministico (`resolver.py`) | no | 9/9 | 8/9 | 0.53 |
+| Haiku | sì | 7/9 | 9/9 | 0.82 |
+| Opus | sì | 9/9 | 9/9 | 0.90 |
+
+Il resolver senza modello arriva agli stessi file indispensabili tranne uno, con molti file in più; il modello taglia i file in più. La mappa del run è quella lessicale più il grafo dello snapshot: l'effetto dei passi `resolve` e `observe` della pipeline sul perimetro non è misurato.
 
 ```text
 python -B -m pytest -q                                  # strutture, protocollo, resolver (1 xfail dichiarato)
@@ -26,14 +36,29 @@ di protocollo. Precision e recall sono riportate ma non asserite: oltre i file i
 | Parametro | Dove | Valori provati | Risultato misurato |
 |---|---|---|---|
 | Modello | sessioni | Haiku, Opus | Esito 7/9 e 9/9; file indispensabili 9/9 per entrambi; precision 0.82 e 0.90 |
-| Phase 1 della review `branch` | `review-preparation/references/team-review.md` | attuale (1a-1d, quattro dispatch), ridisegnata (contesto, domande, selezione), semplificata (comprensione, scelta dei reviewer, avvio sull'intero perimetro; [spec](../../docs/specs/2026-11-03-semantic-review-foundation.md)) | Caso: commit `943bdc44c` (sconto sottratto due volte, oracolo in `f52f7352c`), Opus, un giro. Tabella e formula in `results/review-branch-943bdc44c/tokens.md`. Semplificata alla cieca: i 2 reviewer scelti trovano entrambi il difetto e il contesto non lo nomina; run fermato dal sistema per memoria durante Lens 0, senza riproduzione né rapporto. Completa ma non alla cieca: trovato e riprodotto, 6 agenti, 1,17M token nuovi contro 1,58M della ridisegnata e 637K della `light`. Baseline dichiarata mancante: python. Il criterio di costo non è raggiunto: 1,8x la `light`. Review senza diff («Cerca problemi nel modulo ordini», basis `content`), alla cieca in un processo nuovo: Phase 0 `resolved` con 3 query e 1 outline, 8 file; Phase 1 sceglie 7 reviewer con il motivo, un job ciascuno, tier medium; il difetto seminato è F01 (High, confidenza 97, trovato da 2 reviewer su 7, il contesto non lo nomina) tra 23 finding. Fermata dal controllo di memoria (commit libero 2,2 GB, soglia 3) prima della verifica: nessuna riproduzione né rapporto. Contesto del coordinatore 367K, output 272K, 1,22M token nuovi, 44 minuti. La verifica di ogni finding (`all-above-floor`) richiederebbe 65-88 lenti: è il costo dominante e non è misurato. Attuale (1a-1d): non misurata |
 | Budget | testo, `POLICY` | circa 6 query, 10 letture | Query medie: Haiku 5.7, Opus 8.4 (massimo 13). Opus supera 6 query in 7 casi su 9. Costo da valutare |
 | Frase sui chiamanti di una modifica | testo | senza, con | C1 su Opus: `service.py` mancante in 2 prove su 2, presente con la frase (n=1) |
 | Formulazione di `partial` | testo | «what is missing», «what the request still needs» | Nessun effetto: Haiku resta `partial` su C2 e C3b |
 | `top_files` | `POLICY` del resolver | 5, 2 | Precision 0.65 e 0.70, misurata su una fixture precedente |
 | Filtro `anchor-in-read` | resolver | attivo, spento | Precision 0.77 ma recall 0.93 (perde `service.py`): tolto |
 
-## Risultati
+## Phase 1 della review `branch`: tre forme
+
+Misura a parte, sul costo e sull'esito della Phase 1 (`review-preparation/references/team-review.md`), non sulla Phase 0. Forme: attuale (1a-1d, quattro dispatch), ridisegnata (contesto, domande, selezione), semplificata (comprensione, scelta dei reviewer, avvio sull'intero perimetro; [spec](../../docs/specs/2026-11-03-semantic-review-foundation.md)).
+
+- Caso: commit `943bdc44c` (sconto sottratto due volte, oracolo in `f52f7352c`), Opus, un giro.
+- Tabella e formula in `results/review-branch-943bdc44c/tokens.md`.
+- Semplificata alla cieca: i 2 reviewer scelti trovano entrambi il difetto e il contesto non lo nomina; run fermato dal sistema per memoria durante Lens 0, senza riproduzione né rapporto.
+- Completa ma non alla cieca: trovato e riprodotto, 6 agenti, 1,17M token nuovi contro 1,58M della ridisegnata e 637K della `light`.
+- Baseline dichiarata mancante: python.
+- Il criterio di costo non è raggiunto: 1,8x la `light`.
+- Review senza diff («Cerca problemi nel modulo ordini», basis `content`), alla cieca in un processo nuovo: Phase 0 `resolved` con 3 query e 1 outline, 8 file; Phase 1 sceglie 7 reviewer con il motivo, un job ciascuno, tier medium; il difetto seminato è F01 (High, confidenza 97, trovato da 2 reviewer su 7, il contesto non lo nomina) tra 23 finding.
+- Fermata dal controllo di memoria (commit libero 2,2 GB, soglia 3) prima della verifica: nessuna riproduzione né rapporto.
+- Contesto del coordinatore 367K, output 272K, 1,22M token nuovi, 44 minuti.
+- La verifica di ogni finding (`all-above-floor`) richiederebbe 65-88 lenti: è il costo dominante e non è misurato.
+- Attuale (1a-1d): non misurata
+
+## Risultati per caso
 
 Tabella per caso in `results/model-runs/SUMMARY.md`.
 

@@ -1,6 +1,18 @@
 # Benchmark: la stessa cosa in due posti
 
-Prova se i reviewer trovano, in una modifica, ciò che il codice sa o fa due volte: copie di una regola, due percorsi per lo stesso effetto, lo stesso controllo ripetuto e il codice che gestisce più casi perché non sa quale vale.
+**Stato:** In uso. Il ruolo `prior-art-auditor` è nel prodotto (`daodan/review/roles/prior-art-auditor.md`) con la correzione misurata qui.
+
+**Domanda.** I reviewer trovano, in una modifica, ciò che il codice sa o fa due volte: copie di una regola, due percorsi per lo stesso effetto, lo stesso controllo ripetuto e il codice che gestisce più casi perché non sa quale vale?
+
+**Risultati validi oggi** (16-17 novembre 2026, Sonnet):
+
+| Fixture | `prior-art-auditor` corretto | Confronto (`local-correctness-auditor` e `logic-integrity-auditor`) |
+|---|---|---|
+| `shop/` | 5 semi su 5 | 2 finding, 3 note |
+| `booking/` | 5 su 5 | 1 finding, 1 nota |
+| `parcel/` | 3 su 3 in tre run | non eseguito |
+
+Nessuna esca segnalata in nessuna run. Tutte le misure usano un modello; senza modello ci sono solo i test che dimostrano semi ed esche. Le fixture sono lette per intero dal worker: la ricerca delle copie attraverso la mappa (indice lessicale, grafo, schede) in un codebase grande non è misurata, né con un modello né senza.
 
 ## Parametri
 
@@ -29,7 +41,7 @@ Criterio, dichiarato prima delle run:
 
 `test_shop.py`, `test_booking.py` e `test_parcel.py` dimostrano ogni seme e ogni esca: i test passano sulla fixture così com'è.
 
-Conferma del 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`: **21/21 test passati** con `python -B -m unittest discover -s benchmarks/prior-art -v`, Python 3.13.18 su Linux, nel container Daodan su Kiri 0.2.1. Rete disabilitata, nessun mount host, limiti di 1 GiB, 2 CPU e 256 processi; canary assente dal checkout host prima e dopo. La prova riguarda le fixture versionate, esclude le modifiche locali e non ripete le misure LLM.
+Ultima esecuzione registrata: 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`, **21/21 test passati** con `python -B -m unittest discover -s benchmarks/prior-art -v`, Python 3.13.18 su Linux, nel container Daodan su Kiri 0.2.1, senza rete né mount dell'host.
 
 ## Run con il modello
 

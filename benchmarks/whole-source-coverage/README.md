@@ -1,6 +1,12 @@
 # Benchmark: review dell'intero sorgente divisa in gruppi
 
-Prova la spec [`docs/specs/2026-11-03-semantic-review-foundation.md`](../../docs/specs/2026-11-03-semantic-review-foundation.md), sezione 4: la review `branch` con base `content` divide i file in gruppi sotto un budget, conta i controlli conclusi e mostra quelli aperti con il motivo.
+**Stato:** In uso. La divisione in gruppi è nel prodotto: `daodan/core/composition.py` tara su questo benchmark i byte di sorgente per job. Non eseguita: la preparazione con tre richieste.
+
+**Domanda.** Per la spec [`docs/specs/2026-11-03-semantic-review-foundation.md`](../../docs/specs/2026-11-03-semantic-review-foundation.md), sezione 4: la review `branch` con base `content`, divisa in gruppi sotto un budget, trova gli stessi difetti del job unico, li conta per file, e a quale costo?
+
+**Risultato valido oggi** (8 novembre 2026, `claude-sonnet-5-5`, una run per metodo): i tre metodi trovano 4 semi su 4. A gruppi, con l'aiutante leggero e le ondate, la review costa 6,49 USD e 909 s contro 9,48 USD e 1.991 s del job unico, e in più verifica la lettura integrale di 10 celle su 12.
+
+Tutte le misure usano un modello; senza modello ci sono i test della fixture e del verificatore. La fixture è piccola: il caso in cui un solo job non riesce a leggere il perimetro non è misurato.
 
 ## Parametri
 
@@ -9,10 +15,10 @@ Prova la spec [`docs/specs/2026-11-03-semantic-review-foundation.md`](../../docs
 | `budget` | 4000 byte |
 | reviewer | `senior-review:security-auditor` |
 | rigor | `standard` |
-| modello | da registrare alla run, uguale per le due review |
+| modello | `claude-sonnet-5-5`, per mappa e review |
 | materiali | mappa completa del target sullo stesso commit, nessuna conoscenza aggiuntiva |
-| metodo attuale | plugin al commit `42a63a9ac`, prima dell'intervento |
-| metodo a gruppi | plugin al commit del branch `whole-source-coverage`, da registrare alla run |
+| metodo attuale (job unico) | plugin al commit `42a63a9ac`, prima dell'intervento |
+| metodo a gruppi | plugin al commit `f227b4941`; con l'aiutante leggero e le ondate, al commit `0ead554c3` |
 | fixture | `app/` a questo commit; semi e risultati attesi fuori da `main` |
 
 ## Fixture
@@ -41,7 +47,7 @@ Ogni run richiede prima il via dell'utente, un processo alla volta e la memoria 
 
 ## Preparazione: tre richieste
 
-Esiti attesi, dichiarati prima della run:
+**Non eseguita.** Esiti attesi, dichiarati prima della run:
 
 | Richiesta | Esito atteso |
 |---|---|
@@ -66,7 +72,6 @@ Run del 2026-11-08. Modello `claude-sonnet-5-5` per mappa e review; reviewer `se
 - Le 8 celle coperte hanno tutte una lettura integrale nel job assegnato (`check_run.py`: 8 verificate, nessuna violazione). Le 4 aperte (`client/api.ts`, `client/view.ts`, `config.json`, `server/audit.py`) sono `partial` perché pagina ospite, deployment e politica di audit stanno fuori dal progetto: il job ha usato `partial` per limiti di contesto, non per letture o controlli incompleti.
 - Costo: +42% in USD e +41% in tempo. I token dei job di review sono 3,4 volte quelli del job unico, perché ogni job paga circa 120.000 token di contesto fisso; 83.926 token per cella coperta. La verifica costa quasi uguale nelle due run e domina il totale.
 - Strumenti della mappa assenti in entrambe le sessioni `claude -p` (ToolSearch non attivo); i coordinatori hanno usato `MapService` via Python.
-- Preparazione con tre richieste: non eseguita.
 
 Terza run, stesso giorno, plugin al commit `0ead554c3`: job, lenti 1-3 e critico su `senior-review:isolated-worker`, chiamate a ondate. Mappa nuova sullo stesso commit della fixture, 345 s e 2,61 USD, completa ma non pubblicata («snapshot parser identity changed»), come la precedente leggibile da `MapService`.
 
@@ -83,7 +88,7 @@ Terza run, stesso giorno, plugin al commit `0ead554c3`: job, lenti 1-3 e critico
 - Le 10 celle coperte hanno tutte una lettura integrale nel job assegnato (`check_run.py`: 10 verificate, nessuna violazione). Le 2 aperte (`server/routes.py`, `server/storage.py`) restano aperte perché il membro `browser-security-auditor` di job-04 ha dichiarato `incomplete` per i file `client/`, assegnati a job-01: un'etichetta sbagliata, non una lettura mancata.
 - Rispetto al metodo a gruppi precedente: −52% in USD, −68% in tempo, −57% in token. Rispetto al metodo attuale: −32% in USD e −54% in tempo, con la copertura per file in più.
 
-Esito delle prime due run: su una fixture che un solo job legge per intero, i gruppi non trovano più difetti e costano di più. Con l'aiutante leggero e le ondate costano meno del metodo attuale. Il vantaggio misurato è la copertura per file verificabile; il risparmio resta da provare su un perimetro che un solo job non riesce a leggere.
+Esito: su una fixture che un solo job legge per intero, i gruppi non trovano più difetti e, così come sono, costano di più. Con l'aiutante leggero e le ondate costano meno del metodo attuale. Il vantaggio misurato è la copertura per file verificabile; il risparmio resta da provare su un perimetro che un solo job non riesce a leggere.
 
 ## Limiti
 

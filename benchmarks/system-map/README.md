@@ -77,7 +77,7 @@ La mappa che una persona che conosce il prodotto disegnerebbe, per caso. Non son
 | Percorsi veri | `real_paths.py [web] [tk] [tauri] [next] [--work DIR]` | |
 | Tre corse sullo stesso progetto | `score.py runs DA-ZERO SENZA-MODIFICHE UN-MODULO`; parametri e risultati in [`project-model`](../project-model/README.md) | |
 
-I risultati di `entries.py`, `traces.py` e degli script `embed_*` non sono in questo README: stanno nei piani [pipeline intera](../../docs/plans/2026-11-20-pipeline-intera.md) e [ricerca e pacchetto di review](../../docs/plans/2026-11-20-ricerca-e-pacchetto-di-review.md).
+**Risultati senza il loro file.** I risultati di `entries.py`, `traces.py` e degli script `embed_*`, e le misure sui cinque riferimenti dell'intero sistema, non sono in questo README e non lo sono mai stati in git. Le spec [mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md), [ingressi e scoperta dei flussi](../../docs/specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md) e [ricerca e pacchetto di review](../../docs/specs/2026-11-20-ricerca-e-pacchetto-di-review.md) citano sezioni di questo file che non esistono: «Misura di partenza», «Il tetto: l'accordo fra due mappatori», «Soglie proposte», «Ingressi senza regole», «Le tre reti», «Schede dei percorsi», «Schede dei percorsi, prova a costo zero», «Legami fra flussi», «Embedder piccoli», «Su 531 richieste in parole». I numeri che quelle spec riportano restano senza una prova rieseguibile in questa cartella finché le sezioni non sono riscritte dai risultati.
 
 ## Risultati
 
@@ -264,7 +264,9 @@ Tre corse sullo stesso progetto (da zero, senza modifiche, un modulo cambiato): 
 
 Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la causa. Le stesse tre fixture su Modal (`modal_pipeline.py --folder-out`): indici `fresh` in 132, 100 e 242 secondi. Le fixture non dichiarano test: nessun arco osservato.
 
-**Le rotte di Next.js dallo strumento del framework** (`real_paths.py next`, fixture `real-paths/next-shop`, Next.js 16.4.6, App Router; la sorgente della pre-mappa lancia `next typegen` del progetto nel container e legge `.next/types/validator.ts`):
+#### Le rotte di Next.js dallo strumento del framework
+
+`real_paths.py next`, fixture `real-paths/next-shop`, Next.js 16.4.6, App Router; la sorgente della pre-mappa lancia `next typegen` del progetto nel container e legge `.next/types/validator.ts`.
 
 | Controllo | Container locale | Modal |
 | --- | --- | --- |
@@ -292,3 +294,4 @@ Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la 
 - **Soglie:** quelle dell'intero sistema sono proposte; il proprietario non ha confermato nodi e flussi dei riferimenti.
 - **Passo dinamico sui flussi:** quante frecce mancanti chiude, non misurato su nessun caso con riferimento.
 - **Registro:** i tre casi dopo lo stack dal fork.
+- **Sezioni citate dalle spec e assenti:** vedi «Risultati senza il loro file», sotto la tabella degli script.

@@ -1,6 +1,12 @@
 # Benchmark: promemoria con orario fluttuante
 
-Ha provato il ruolo `senior-review:calendar-time-auditor`, rimosso dopo il giro 2 perché non ha trovato nulla che i ruoli esistenti non trovino. Il ruolo doveva trovare dove un orario civile viene calcolato, mostrato o fatto suonare in modo incoerente tra fusi orari, ora legale, ricorrenze e cambi di fuso.
+**Stato:** Chiuso. Il ruolo provato, `senior-review:calendar-time-auditor`, non è nel prodotto: non è in `daodan/review/roles/` né nel catalogo. Nessun test fuori da questa cartella, script o documento usa il benchmark. Restano le due fixture con i loro test (`test_app.py`, `test_app2.py`), che dimostrano semi ed esche e servono se si prova di nuovo un ruolo sul tempo civile.
+
+**Domanda.** Un ruolo dedicato trova dove un orario civile viene calcolato, mostrato o fatto suonare in modo incoerente (fusi orari, ora legale, ricorrenze, cambi di fuso), meglio dei ruoli che già lo nominano?
+
+**Risultato valido oggi.** No (9 novembre 2026, due giri, Sonnet): il ruolo dedicato non trova nessun seme che `temporal-resilience-auditor` e `data-representation-auditor` insieme non trovino. Il ruolo e il segnale `calendar` sono stati tolti; resta la correzione della tassonomia 15.2 (UTC per gli istanti, identificatore di fuso o orario locale fluttuante per gli orari civili).
+
+Tutte le misure usano un modello; senza modello ci sono solo i test delle fixture.
 
 ## Parametri
 
@@ -76,4 +82,4 @@ Run del 2026-11-09, ruolo al commit `187b25f`.
 - Entrambe le configurazioni trovano i quattro semi; R3 è segnalato da entrambe con il dubbio su quale data conti, che il contratto lascia aperto.
 - Altri reali del confronto: una regola senza giorni fa sollevare `next_occurrence` e blocca `tick` per le regole successive; un cambio di fuso sovrascrive un suono già dovuto e non ancora inviato.
 - Il confronto ha scritto uno script fuori dalla copia, senza leggere nulla fuori: isolamento violato solo in scrittura.
-- Criterio non raggiunto. Come dichiarato, ruolo e segnale `calendar` sono rimossi; restano la correzione della tassonomia 15.2 (UTC per gli istanti, identificatore di fuso o orario locale fluttuante per gli orari civili) e questa fixture per provare modifiche future.
+- Criterio non raggiunto: come dichiarato, ruolo e segnale `calendar` sono rimossi.

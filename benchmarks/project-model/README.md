@@ -1,30 +1,169 @@
-# Benchmark: la pre-mappa del progetto da strumenti esistenti
+# Benchmark project-model: il corpus e le misure della pre-mappa e della pipeline
 
-Misura quanto di una **pre-mappa** danno gli strumenti esistenti, prima di ogni analisi e senza codice di riconoscimento di Daodan. La pre-mappa contiene:
+**Stato:** In uso. Il corpus (180 progetti con `expected.json`) e i suoi driver su Modal misurano più domande, una per sezione. Su questo PC non gira niente.
 
-- linguaggi;
-- file esclusi;
-- unità che il build system dichiara, con radice, sorgenti, dipendenze fra unità e configurazione per gli indicizzatori;
-- workspace;
-- versioni di toolchain chieste;
-- dipendenze esterne con versione;
-- framework e servizi;
-- bisogno di un container.
-
-È una ricognizione, senza soglie. La ricerca che l'ha motivata è [2026-11-14-project-model-detection.md](../../docs/research/2026-11-14-project-model-detection.md); il verdetto e i risultati sono in [REPORT.md](REPORT.md).
+| Domanda | Sezione | Stato | Ultima misura | Risultati |
+| --- | --- | --- | --- | --- |
+| Quanto di una pre-mappa danno gli strumenti esistenti | «Che cosa danno gli strumenti esistenti», [REPORT.md](REPORT.md) | In uso: la combinazione scelta è `daodan/core/premap/` | 14 novembre 2026 | `results/<tool>.json` |
+| La pipeline dà il grafo completo di ogni progetto | «Il grafo completo sul corpus» | In uso | 16 novembre 2026 (corpus intero), giri parziali fino al 21 | `results/pipeline/` |
+| Che cosa riconosce lo step `stack` | «Lo step `stack` sul corpus» | In uso | 22 novembre 2026 | `results/daodan_stack.json`, `results/daodan_stack_fork.json` |
+| Che cosa aggiunge il registro di Daodan a Specfy | «Regole di riconoscimento di Specfy e Daodan» | In parte | 21 novembre 2026 | nessun file: si rigenera con il comando |
+| Che cosa cambia se riconosce stack-analyser | «Lo step `stack` dal fork» | Proposta misurata, non nel prodotto | 22 novembre 2026 | `results/daodan_stack_fork.json` |
+| Quanto dista il lettore dei `paths` da `tsc` | «I percorsi TypeScript di Daodan contro `tsc`» | In parte | data non scritta | `results/ts_paths_vs_tsc.json` |
+| Che cosa osserva il browser che lo statico non ha | «Esplorazione dell'app avviata» | In uso | 23 novembre 2026 | `results/explore/` |
+| Gli eventi fra pagina e guscio Tauri | «Eventi fra la pagina e il guscio Tauri» | In uso, non misurato su un progetto vero | solo test | |
+| Quanto costa una corsa da zero, senza modifiche, con un modulo cambiato | «Tre corse sullo stesso progetto» | Aperta: da approfondire | 24 novembre 2026 | `results/runs/three-runs-2/` |
 
 ## Come funziona
 
-- `fixtures/<famiglia>-<nome>/` è un progetto in miniatura. Il suo `expected.json` è la verità scritta a mano, letta dai file e mai dall'uscita di uno strumento. La forma e le regole sono in [SCHEMA.md](SCHEMA.md).
+- `fixtures/<famiglia>-<nome>/` è un progetto in miniatura, o un repository vero descritto senza copiarne i file. Il suo `expected.json` è la verità scritta a mano, letta dai file e mai dall'uscita di uno strumento. Forma e regole del punteggio: [SCHEMA.md](SCHEMA.md).
 - `tools/<tool>.py` è un adattatore per strumento: `run(fixture_dir, work_dir)` restituisce la stessa forma, con le sole faccette che lo strumento dà.
-- `modal_<gruppo>.py` esegue gli strumenti di un gruppo su Modal, mai su questo PC.
-- `results/<tool>.json` tiene, per fixture: uscita grezza riassunta, uscita normalizzata, punteggio, secondi, memoria di picco, tentativi di rete, seconda esecuzione offline, codice del progetto eseguito.
-- `score.py` dà il punteggio di ogni faccetta: trovate, sbagliate, mancate, in più. Una faccetta che lo strumento non dà conta come "non data", non come zero.
+- `modal_<gruppo>.py` esegue gli strumenti di un gruppo su Modal.
+- `results/<tool>.json` tiene, per fixture: uscita grezza riassunta, uscita normalizzata, punteggio, secondi, memoria di picco, tentativi di rete, seconda esecuzione offline, codice del progetto eseguito. I giri della pipeline stanno in `results/pipeline/`, una sottocartella, perché `score.py` legge come strumento ogni `.json` di `results/`.
+- `score.py` dà il punteggio di ogni faccetta: trovate, sbagliate, mancate, in più. Una faccetta che lo strumento non dà conta come «non data», non come zero.
 - `cases.json` è il dominio chiuso dei casi di test; ogni `expected.json` elenca i suoi in `cases`.
-- `catalog.py` scrive [ANAGRAFICA.md](ANAGRAFICA.md) dai dati: per ogni progetto origine, tecnologie, versioni dichiarate, framework, servizi e casi, poi la copertura dei casi.
-- `modal_catalog.py` fa girare su Modal il controllo, `catalog.py` e le tabelle di `score.py`, e sul PC scrive solo ANAGRAFICA.md.
+- `catalog.py` scrive [ANAGRAFICA.md](ANAGRAFICA.md) dai dati (non si modifica a mano): per ogni progetto origine, tecnologie, versioni dichiarate, framework, servizi e casi, poi la copertura dei casi.
+
+## Corpus
+
+180 progetti con `expected.json`: `js` 20, `py` 21, `jvm` 34 (18 sono `jvm-ver-*`), `sys` 25, `mix` 30, `real` 50 (40 sono `real-stack-*`). Ogni fixture mette alla prova un punto in cui un lettore ingenuo sbaglia: il dettaglio è nel campo `traps` del suo `expected.json`, l'elenco in ANAGRAFICA.md.
+
+- Le famiglie `js`, `py`, `jvm`, `sys` e `mix` sono progetti in miniatura scritti per il benchmark.
+- I repository veri hanno `source.json` (repository e commit: i runner li clonano a quel commit nel container). Il loro `expected.json` è completo per unità, workspace, toolchain, framework, servizi ed esclusi; le dipendenze sono complete per al massimo tre unità piccole per repository (`unknown` con `known`); `connections` elenca i punti di contatto fra unità, senza entrare nel punteggio.
+- Le 40 `real-stack-*` misurano solo `frameworks` e `services` per unità, per lo step `stack`: ogni voce porta l'evidenza con la riga (`pom.xml#L42`) e le altre facce stanno in `unknown`.
+- Il frammento di `declared_in` di una toolchain Gradle è il nome che il modello di Gradle dà al valore: anche `kotlin { jvmToolchain(N) }` è `#java.toolchain.languageVersion`.
+
+## Dopo una modifica
+
+Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Ogni passo va su Modal, dalla radice del repository.
+
+1. `python benchmarks/project-model/modal_catalog.py`: controlla ogni `expected.json` (forma, casi contro `cases.json` e contro i dati, casi che nessun progetto usa), riscrive ANAGRAFICA.md e stampa le tabelle per strumento e faccetta; `modal_catalog.py <tool> <famiglia>` stampa solo quelle.
+2. `python tests/modal_pytest.py benchmarks/project-model/test_score.py benchmarks/project-model/test_catalog.py benchmarks/project-model/test_pipeline_report.py -q`: test del punteggio, dell'anagrafica e del rapporto della pipeline; falliscono anche se un `expected.json` non passa il controllo o se ANAGRAFICA.md è da riscrivere.
+3. Il driver `modal_<gruppo>.py` del gruppo toccato: riscrive i suoi `results/<tool>.json`; poi di nuovo il passo 1, per le tabelle da confrontare con quelle di REPORT.md.
+
+## Che cosa danno gli strumenti esistenti
+
+**Stato:** In uso. Lettura e verdetto sono in [REPORT.md](REPORT.md); la ricerca che l'ha motivata è [2026-11-14-project-model-detection.md](../../docs/research/2026-11-14-project-model-detection.md).
+
+Misura quanto di una pre-mappa (linguaggi, file esclusi, unità del build system con radice, sorgenti, dipendenze e configurazione, workspace, versioni di toolchain, dipendenze esterne, framework e servizi, bisogno di un container) danno gli strumenti esistenti, senza codice di riconoscimento di Daodan. Ricognizione senza soglie: 59 strumenti e comandi sulle 122 fixture di allora, 14 novembre 2026; le tabelle vengono da `python score.py all all`.
+
+| Gruppo | Strumenti | Driver |
+| --- | --- | --- |
+| `lang` | scc, tokei, go-enry, Linguist, dati di Linguist, Magika | `modal_lang.py` |
+| `sbom` | Syft, Trivy, osv-scanner, cdxgen, ScanCode, component-detection | `modal_sbom.py` |
+| `native` | il comando di modello di ogni build tool (`go list`, `cargo metadata`, `npm`/`pnpm ls`, `uv`, `tsc --showConfig`, Gradle, Maven, …), `.gitmodules`, deptry, dependency-cruiser, uv per PEP 723; `modules.py` di Daodan come riferimento | `modal_native.py` |
+| `versions` | mise, proto, Renovate, Railpack, `GOTOOLCHAIN`, uv, rustup, corepack | `modal_versions.py` |
+| `frameworks` | Specfy stack-analyser, Vercel fs-detectors, Netlify build-info, devfile/alizer; il registro di Daodan come riferimento | `modal_frameworks.py` |
+
+Vincoli controllati per ogni strumento e fixture:
+
+| Vincolo | Come si misura |
+| --- | --- |
+| Esegue codice del progetto | `executed_project_code`: `yes`, `no` o `unknown`, dalla traccia dei processi del runner |
+| Rete | `network_attempts`: connessioni tentate durante l'esecuzione |
+| Seconda esecuzione offline | `offline_second_run`: la stessa uscita con la rete bloccata |
+| Binario per Windows | dalla pagina delle release, una volta per strumento |
+| Tempo e memoria | `seconds`, `peak_mb` |
+
+## Il grafo completo sul corpus
+
+**Stato:** In uso. Verifica che la pipeline (`pipeline.run`: scan, stack, analyze, dynamic, union) dia il grafo completo di ogni progetto del corpus: per ogni linguaggio dello snapshot uno stato, i file nell'indice, i siti con risposta e i buchi con la loro classe. La quota di risposta è dello statico; la colonna del passo dinamico dice quanti siti l'osservatore aggiunge. Ricognizione senza soglie. L'ultimo giro sul corpus intero è del 16 novembre 2026, sui 122 casi di allora: `daodan/core/support_table.py` legge quello.
+
+### Parametri
+
+Dalla cartella del benchmark:
+
+- Giro, su Modal e mai su questo PC: `python -m modal run modal_pipeline.py --cases js,py,jvm,sys,mix,real --out results/pipeline/<giro>.json`. `--cases` accetta anche nomi di fixture; `--chunk` (4) dice quante fixture di una famiglia vanno in un container. Accanto ai casi, `code` dice il codice di Daodan che il giro ha eseguito: il commit della checkout, l'albero git della copia caricata e i percorsi in cui la copia differisce dal commit.
+- Rapporto: `python pipeline_report.py results/pipeline/<giro>.json [<altro>.json ...] [--compare <precedente>.report.json]`. Un caso di un file successivo sostituisce lo stesso caso dei precedenti. Scrive `<giro>.report.md` e, accanto, gli stessi numeri in `<giro>.report.json`; Il rapporto nomina il codice di ogni file; `--compare` dice prima se i due giri hanno eseguito lo stesso codice (lo stesso albero, non lo stesso commit), poi stampa cosa cambia per linguaggio e per caso: stati, buchi in più o in meno.
+
+Conta come risultato, per linguaggio su tutti i casi: i casi `fresh` sui casi che lo contengono, i file indicizzati sui file dello snapshot, la quota dei siti con risposta. Il rapporto dà anche casi falliti e secondi, i motivi degli stati diversi da `fresh`, i file fuori dall'indice, i linguaggi senza analizzatore, il punteggio della pre-mappa per faccetta, i gap per tipo e gli esiti dei container.
+
+### Risultati
+
+Giro sui 122 casi, 16 novembre 2026 (`results/pipeline/2026-11-16-finale.json`, rapporto in `2026-11-16-finale.report.md`), sul codice fino a `492a7b212`: nessun caso fallito, 23.280 secondi, mediana 124 per caso.
+
+| Linguaggio | Casi `fresh` / casi | File indicizzati / nello snapshot | Quota risposta | Passo dinamico: casi osservati, siti |
+| --- | --- | --- | --- | --- |
+| c | 6 / 9 | 49 / 72 | 40,7 % | 2, 149 |
+| cpp | 6 / 9 | 18 / 19 | 89,2 % | 0, 0 |
+| csharp | 4 / 5 | 561 / 561 | 56,1 % | nessun osservatore |
+| go | 14 / 15 | 678 / 679 | 99,5 % | 5, 13.365 |
+| java | 16 / 18 | 261 / 278 | 99,7 % | 9, 7.695 |
+| javascript | 31 / 32 | 1.254 / 1.254 | 72,9 % | 4, 763 |
+| kotlin | 4 / 11 | 103 / 115 | 93,1 % | 4, 1.796 |
+| python | 34 / 34 | 185 / 185 | 89,1 % | 2, 70 |
+| rust | 13 / 13 | 145 / 154 | 88,5 % | 1, 1 |
+| stylesheet | 23 / 24 | 3.336 / 3.402 | 26,3 % | nessun osservatore |
+| svelte | 1 / 2 | 0 / 4 | 26,7 % | nessun osservatore |
+| typescript | 20 / 21 | 2.965 / 2.967 | 90,4 % | 3, 73.230 |
+| vue | 2 / 2 | 0 / 410 | 28,2 % | nessun osservatore |
+
+- Il passo dinamico osserva 97.069 siti e chiude 4.954 buchi; nei progetti in miniatura quasi sempre non ci sono test da lanciare, e lo dice.
+- In questo giro Rust, C e C++ si osservano solo dove Valgrind parte, e sotto il gVisor dei sandbox di Modal non parte: i giri successivi usano le VM Sandbox per gli osservatori nativi e Docker per le corse con servizi.
+
+Giri successivi, su pochi casi ciascuno: ognuno è l'ultima misura dei suoi casi.
+
+| Giro (`results/pipeline/`) | Casi | Risultato |
+| --- | --- | --- |
+| `2026-11-16-java-versions` (codice `68a846a4a`) | le 18 `jvm-ver-*` | nessun caso fallito, 3.527 secondi, mediana 178. Java `fresh` e osservato in tutte: 37 file su 37, 453 siti tutti con risposta, 10-14 siti osservati per caso. Buchi detti: `jdk_unsupported` nelle Maven sotto il 17, `build_edited` dove il build dichiarato non dà indice, `toolchain_unavailable` per Java 9 e 14 (osservati sul JDK 17). Pre-mappa: con il corpus di `1bd53689a` `score.py` sul giro salvato trova 28 toolchain su 30 |
+| `2026-11-16-conferma` | 32: le fixture di sistema e sette repository veri | nessun caso fallito, 6.344 secondi, mediana 133. Nelle VM Sandbox Rust, C e C++ si osservano: semver 558 siti, tinyxml2 552 con 26 buchi chiusi, zlib 148. python-semver 1.046 siti osservati |
+| `2026-11-16-jvm-otel-android` (codice `39805f5e7`) | otel-demo, jvm-android-app-lib, mix-poly-firebase | nessun caso fallito, 2.037 secondi. Java di otel-demo `fresh`, 9 file su 9, 693 siti tutti con risposta, 297 siti osservati. Kotlin `failed` nei tre: in otel-demo nessun compito Kotlin compila i suoi file, i due Android si fermano su `google-services.json`, fuori dal repository (`build_input_missing`) |
+| `2026-11-16-jvm-kotlinconf-kmp` (codice `a13d55787`) | kotlinconf | 1.915 secondi. Kotlin `fresh`, 226 file su 271 nell'indice, 16.830 siti, 76,0 % con risposta, 984 siti osservati. I 45 file fuori: nessun compito di compilazione Kotlin li elenca (34) o sono script Gradle (11) |
+| `2026-11-16-dotenv` | fastapi, tududi | nessun caso fallito, 2.370 secondi. tududi: i tre passi del job della CI escono con 0 accanto a postgres:16-alpine; osservati 11.369 siti JavaScript e 20.192 TypeScript. fastapi: i servizi partono e «Migrate DB» esce con 0; pytest si ferma alla raccolta (manca `backend/app/frontend`) e i test del frontend escono con 1: Python e TypeScript restano `not-run` |
+| `2026-11-17-fastapi-d292` | fastapi | 1 caso, 481,1 secondi, non fallito. Statico: Python 43 file su 43, 96,0 %; TypeScript 109 su 109, 97,2 %; stylesheet 114 su 114, 93,4 % |
+| `2026-11-17-vue-svelte` | js-vue-pnpm, js-sveltekit, hoppscotch | i tre casi sono segnati falliti allo step `stack` (il file del registro mancava nell'immagine). Dalla tabella dei linguaggi: vue 3 file su 3 nell'indice e svelte 2 su 2; stylesheet 97,2 % di risposta; in un caso scip-typescript non scrive l'indice |
+
+Altri giri dello stesso 16 novembre (`-fixtures`, `-real-3`, `-giro-2`, `-jvm-kotlinconf`, `-ci-steps`) sono accanto: i loro casi hanno una misura successiva, sopra.
+
+Prove a parte:
+
+- **La regola invalicabile per Rust**, 16 novembre 2026 (`modal run modal_rust_container.py::rust_container`): un crate con un build script e una macro procedurale che lasciano un segno dove girano, e cargo, rustc, rust-analyzer e rustup sul PATH della macchina sostituiti da finti. Sulla macchina nessun segno e nessun finto chiamato; nell'indice del container la funzione sotto il cfg si risolve e quella generata ha il suo nome, definita in nessun file (`undefined-project-symbol`).
+- **Il ripristino Node su Modal**, 21 novembre 2026 (`modal run modal_pipeline.py --cases js-npm-single,py-uv-src-layout`): `sandbox_run` esegue il ripristino nella sandbox di preparazione di ogni run. `js-npm-single`: tipi di `lodash` e `ms`, test uscito con 0, 6 siti osservati e 6 archi, copertura `complete`, 95,5 secondi. `py-uv-src-layout`: scip-python 0.6.8 e Pyright 1.1.414, `fresh`, 8 siti su 8, nessun test dichiarato, 126,3 secondi. Su Modal ogni run ripristina per sé: la condivisione del ripristino fra i run di un'analisi qui non si misura.
+
+### Aperto
+
+- Un giro del corpus intero (180 progetti) con il codice di oggi: l'ultimo è del 16 novembre sui 122 casi di allora.
+- Dal giro del 16 novembre: C# (56,1 % e nessun osservatore), le classi Tailwind dello stylesheet (26,3 %), il C dei contrib di zlib, Kotlin su Android. Vue e Svelte hanno una misura successiva solo su tre casi.
+- fastapi: i test di backend e frontend non girano (`not-run`), quindi nessun sito osservato.
+- C# su DotZLib di zlib (un progetto di Visual Studio .NET 2002-2003) è `unavailable` e non si lancia.
+
+## Lo step `stack` sul corpus
+
+**Stato:** In uso. Lo step `stack` (`daodan/core/technologies.py`, `daodan/technologies/v1`) dà le tecnologie del progetto per unità di build dal registro (`daodan/data/service-registry.json`, oggi 2.562 voci) e dai fatti della pre-mappa, senza eseguire nulla del progetto.
+
+### Parametri
+
+- Corpus: le 180 fixture con `expected.json`. `expected.json` e `source.json` non entrano nel progetto che lo step legge.
+- Giro, su Modal: `modal deploy modal_stack.py`, poi `python modal_stack.py spawn [--fixtures a,b | --families js,py,jvm,sys,mix,real]` e `fetch`. Il container (1 CPU, 3 GB) scrive la snapshot, la pre-mappa e `technologies.ensure`; ogni fixture ha 900 secondi in un processo a parte. `spawn` rifiuta il giro se i file caricati non sono quelli di questa copia, e `fetch` confronta l'impronta del codice dei due lati.
+- Pre-mappa: i comandi di modello non girano. Le loro risposte sono quelle registrate da `modal_premap.py --runs` (`results/premap-runs`), riprodotte come fa `tools/premap_replay.py`. Le registrazioni sono 178 su 180: mancano `real-stack-jellyfin` e `real-stack-kuvasz`, che superano i 2.400 secondi di `modal_premap.py` (D-302).
+- Punteggio: `score.technologies_faces` porta il record nelle facce `frameworks` (ogni voce la cui `category` non è `service`, per ogni unità che la tiene) e `services` di `expected.json`; `score.score_technologies` le confronta. `expected.json` elenca fra i framework anche librerie e strumenti, e non tutti: ciò che lo step offre in più fra i framework non è un falso (`counted_apart`). I servizi di `expected.json` sono completi, e un servizio in più resta `extra`. `frameworks_by_name` conta un nome una volta per fixture.
+- `executed_project_code` viene dai processi che `ensure` avvia: `no` solo se tutti sono il `git` del perimetro.
+
+### Risultati
+
+Ultima misura, 22 novembre 2026: la colonna «Prima» di «Lo step `stack` dal fork» (`results/daodan_stack_fork.json`, codice `9be947a3bbf0c61d`): framework per nome 531 su 569, per unità 834 su 1.001 (70 sbagliati), servizi 227 su 518, 67 in più; `executed_project_code: no` in 178 fixture su 178 con record.
+
+`results/daodan_stack.json` tiene il giro del 19 novembre 2026 (codice `c6be10745cedb94d`, registro di 2.345 voci), che `daodan/core/support_table.py` legge per la tabella di supporto:
+
+| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 36 / 42 | 2 / 2 | 29 / 31 | 99 / 127 | 182 / 352 | 362 / 568 |
+| Framework per unità, trovati / attesi (sbagliati) | 11 / 11 | 4 / 4 | 37 / 43 | 1 / 2 (1) | 32 / 37 | 177 / 251 (12) | 290 / 653 (37) | 552 / 1.001 (50) |
+| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 11 / 33 (1) | 30 / 84 (9) | 96 / 395 (55) | 141 / 518 (65) |
+
+- Tempo: con la pre-mappa già scritta `technologies.ensure` impiega 0,03 s di mediana e 5,72 s al massimo (`real-stack-owncast`), misurato il 17 novembre 2026; la snapshot con la pre-mappa 354 s su owncast e 333 su kotlinconf.
+- Servizi configurati: il rapporto conserva `configured_services` accanto al punteggio dei servizi del catalogo. `test_compose_files_in_the_corpus_keep_each_service_name_even_if_built_without_an_image` (`test_stack.py`) verifica i tre file Compose delle fixture: nove dichiarazioni su nove, comprese le tre con una build senza immagine.
+- Pacchetti PyPI, 20 novembre 2026 (`replay_stack_packages.py`, sulle risposte di Renovate in `results/premap-runs`, senza avviare strumenti): su 1.185 coppie pacchetto/file di 35 registrazioni, la normalizzazione PyPI porta le triple tecnologia, pacchetto e file da 177 a 178 (`sentry / sentry-sdk / pyproject.toml` in `real-stack-netbox`), senza perderne; mediana 210 ms prima e 214 ms dopo, in 11 ripetizioni.
+
+### Aperto
+
+- La differenza fra il giro del 19 novembre (362 su 568 per nome, 141 su 518 servizi) e la colonna «Prima» del 22 (531 su 569, 227 su 518) non è spiegata da una misura: fra i due il registro è passato da 2.345 a 2.562 voci e il codice è cambiato. `results/daodan_stack.json` va rifatto sul codice di oggi (e `STACK` in `support_table.py` con lui).
+- `real-stack-jellyfin` e `real-stack-kuvasz` non hanno record: la snapshot non finisce (D-302).
+- Un servizio la cui sola prova è una variabile d'ambiente resta `mentioned`, non è di nessun modulo (D-304).
 
 ## Regole di riconoscimento di Specfy e Daodan
+
+**Stato:** In parte. Il replay dei due registri è misurato; la prova end-to-end dell'adattatore che carica le regole di Daodan in Specfy (`tools/specfy_daodan.py`) resta da misurare su Modal.
 
 La misura del 21 novembre 2026 conta ogni nome atteso una volta per progetto. La faccetta `frameworks` comprende anche librerie e strumenti. I 180 progetti hanno 590 nomi attesi in questa faccetta e 541 nei servizi. Le registrazioni della pre-mappa coprono 178 progetti. Mancano 21 nomi di framework e 23 di servizi nei due progetti senza registrazione, `real-stack-jellyfin` e `real-stack-kuvasz`.
 
@@ -65,328 +204,11 @@ python benchmarks/project-model/modal_frameworks.py smoke --tools specfy_stack_a
 
 La tabella riporta l’archivio dell’eseguibile originale e il replay dei registri. La prova end-to-end dell’adattatore Specfy aggiornato resta da misurare su Modal.
 
-## I percorsi TypeScript di Daodan contro `tsc`
-
-Misura quanto il lettore scritto a mano (`import_resolution.ts_path_config`: un `tsconfig.json` o `jsconfig.json` per cartella, `extends` relativo, bersagli risolti contro `baseUrl` o la cartella del file che li dichiara; una configurazione vale per i discendenti) dista da `tsc`, prima di sostituirlo. `tools/ts_paths_vs_tsc.py` legge `results/native_tsc.json` (TypeScript 6.0.3 on Node v22.23.4, `tsc --showConfig` per tsconfig, registrato su Modal) e chiama il lettore sulle cartelle `fixtures/<nome>`; legge solo JSON e non esegue codice del progetto. Scrive `results/ts_paths_vs_tsc.json`; `test_ts_paths_vs_tsc.py` lo rigenera e lo confronta.
-
-Parametri: le 17 fixture registrate; 6 non hanno qui l'albero (solo `expected.json` e `source.json`) e restano fuori. Per ogni unità di `tsc` e ogni pattern di `paths`, i percorsi di Daodan sono quelli della configurazione più vicina, nella cartella dell'unità o sopra. Classi: `same` (stessi bersagli), `different` (stesso pattern, altri bersagli), `missing` (solo `tsc`), `extra` (solo Daodan).
-
-Misura: 11 fixture con albero, 6 con almeno un pattern, 5 senza pattern da nessuna parte (una con errore di `tsc`).
-
-| Classe | Coppie unità-pattern |
-| --- | ---: |
-| same | 4 |
-| different | 1 |
-| missing | 4 |
-| extra | 0 |
-
-Fixture con differenze:
-
-- `js-nx`: `missing` x3 (`@acme/util` in tre unità); i `paths` stanno in `tsconfig.base.json`, che Daodan non legge e nessun `tsconfig.json` estende.
-- `js-vite-react-ts`: `missing` (`@/*`); il `tsconfig.json` radice ha solo `references`, i `paths` stanno in `tsconfig.app.json`, che Daodan non legge.
-- `js-angular`: `different` (`ui-kit` nell'unità `projects/ui-kit`); `tsc` dà `projects/ui-kit/dist/ui-kit`, Daodan `dist/ui-kit`. Qui è giusto Daodan: il `paths` è dichiarato nel `tsconfig.json` radice, ereditato, e TypeScript lo risolve contro il file che lo dichiara. L'errore è dell'adattatore.
-
-Limiti:
-
-- (a) Il lato `tsc` è la normalizzazione dell'adattatore (`tools/native_tsc.py`), non l'uscita grezza di `tsc`: senza `baseUrl` risolve i bersagli contro la cartella del tsconfig mostrato, mentre TypeScript risolve i `paths` ereditati contro il file che li dichiara; un `paths` ereditato può quindi essere sbagliato dal lato `tsc` (il caso `ui-kit` di `js-angular`).
-- (b) Solo queste fixture: nessun albero intero di un progetto reale.
-
-## Dopo una modifica
-
-Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Su questo PC non gira niente: ogni passo va su Modal, dalla radice del repository.
-
-1. `python benchmarks/project-model/modal_catalog.py`: controlla ogni `expected.json` (forma, casi contro `cases.json` e contro i dati, casi che nessun progetto usa), riscrive ANAGRAFICA.md e stampa le tabelle per strumento e faccetta; `modal_catalog.py <tool> <famiglia>` stampa solo quelle.
-2. `python tests/modal_pytest.py benchmarks/project-model/test_score.py benchmarks/project-model/test_catalog.py benchmarks/project-model/test_pipeline_report.py -q`: test del punteggio, dell'anagrafica e del rapporto della pipeline; falliscono anche se un `expected.json` non passa il controllo o se ANAGRAFICA.md è da riscrivere.
-3. Il driver `modal_<gruppo>.py` del gruppo toccato: riscrive i suoi `results/<tool>.json`; poi di nuovo il passo 1, per le tabelle da confrontare con quelle di REPORT.md.
-
-## Parametri
-
-### Corpus
-
-Ogni fixture mette alla prova un punto in cui un lettore ingenuo sbaglia; il dettaglio è nel suo campo `traps`.
-
-Le famiglie `js`, `py`, `jvm`, `sys` e `mix` sono progetti in miniatura scritti per il benchmark. La famiglia `real` è fatta di repository veri di GitHub con più moduli (front end, back end, servizi, più linguaggi e build system affiancati), descritti senza copiarne i file:
-
-- `source.json` dà repository e commit, e i runner li clonano a quel commit nel container;
-- `expected.json` viene dai file del repository a quel commit ed è completo per unità, workspace, toolchain, framework, servizi ed esclusi;
-- le dipendenze sono complete solo per al massimo tre unità piccole per repository (`unknown` con `known`);
-- `connections` elenca i punti di contatto fra unità per il grafo unico, senza entrare nel punteggio.
-- le 40 cartelle `real-stack-*` misurano solo `frameworks` e `services` per unità, per lo step `stack`: ogni voce porta l'evidenza con la riga (`pom.xml#L42`) e le altre facce stanno in `unknown`.
-
-Il frammento di `declared_in` di una toolchain Gradle è il nome che il modello di Gradle dà al valore: `kotlin { jvmToolchain(N) }` imposta la toolchain dell'estensione `java`, e il modello non sa dire quale DSL l'ha scritta, quindi anche lì è `#java.toolchain.languageVersion`.
-
-I runner eseguono `real` in un secondo passaggio.
-
-| Famiglia | Fixture | Cosa mette alla prova |
-| --- | --- | --- |
-| js | `js-angular` | unità dichiarate da `angular.json`, non da `package.json`; dipendenza via alias di `tsconfig` |
-| js | `js-bun` | Bun riconosciuto solo da `bun.lock` testuale |
-| js | `js-cjs-esm-exports` | `type: module`, `.cjs` e `.mjs`, condizioni `import` e `require` di `exports` |
-| js | `js-deno` | nessun `package.json`; dipendenze nell'import map, uno schema per registro |
-| js | `js-lerna` | membri in `lerna.json`, non in `workspaces` |
-| js | `js-local-and-git-deps` | `file:` e dipendenze git senza workspace |
-| js | `js-nextjs` | alias `@/` sulla radice; `next-env.d.ts` generato; servizio dal codice |
-| js | `js-node-scripts` | nessun manifest: nessuna unità, un import esterno |
-| js | `js-npm-single` | lockfile v3 senza versione di npm dichiarata |
-| js | `js-npm-workspaces` | radice del workspace che possiede dipendenze; collegamenti interni |
-| js | `js-nx` | progetti Nx con `project.json`, dipendenza solo da `paths` |
-| js | `js-pnpm-workspace` | `catalog:` di pnpm; `workspace:*` |
-| js | `js-static-html` | dipendenze solo da import map e `<script>` in HTML |
-| js | `js-sveltekit` | `tsconfig` che estende un file generato assente |
-| js | `js-turborepo` | Turborepo sopra workspace npm: lo strumento del workspace è npm |
-| js | `js-vendored-generated` | file vendored e generati da escludere |
-| js | `js-version-conflict` | quattro versioni di Node in disaccordo (`engines`, `volta`, `.nvmrc`, `packageManager`) |
-| js | `js-vite-react-ts` | `tsconfig` radice con sole `references`; alias doppio in Vite e `tsconfig` |
-| js | `js-vue-pnpm` | `.vue` con TypeScript e JavaScript; pnpm solo da `packageManager` |
-| js | `js-yarn-berry` | lockfile Berry; radice senza nome |
-| py | `py-conda-env` | dipendenze conda e lista `pip:` annidata; `python=` è toolchain |
-| py | `py-django` | solo `requirements.txt`; migrazioni con intestazione "Generated" ma scritte a mano |
-| py | `py-fastapi-compose` | PostgreSQL e Redis solo in `docker-compose.yml` |
-| py | `py-hatch-envs` | ambienti Hatch, non extra né gruppi |
-| py | `py-monorepo-path-deps` | tre progetti, dipendenze per percorso senza workspace |
-| py | `py-namespace-packages` | pacchetto namespace PEP 420 diviso fra due unità |
-| py | `py-notebooks` | dipendenza installata da una cella `%pip` |
-| py | `py-pdm` | dipendenze di sviluppo in una tabella PDM |
-| py | `py-pep723-scripts` | dipendenze nei blocchi PEP 723 degli script |
-| py | `py-pip-tools` | `.in` dichiarazione, `.txt` lockfile compilato |
-| py | `py-pipenv` | Pipfile senza nome; `develop` nel lock |
-| py | `py-poetry-groups` | `python` fra le dipendenze di Poetry; gruppi e extra |
-| py | `py-requirements-includes` | `-r` e `-c` annidati; un vincolo non è una dipendenza |
-| py | `py-setup-cfg-extras` | metadati in `setup.cfg`; versione da `attr:` |
-| py | `py-setup-py-dynamic` | `install_requires` calcolato: serve un container |
-| py | `py-setup-py-static` | `package_dir` verso `lib/` |
-| py | `py-undeclared-scripts` | nulla dichiarato: i nomi indovinati dagli import sono errori |
-| py | `py-uv-src-layout` | layout `src`, gruppi PEP 735, `required-version` di uv |
-| py | `py-uv-workspace` | radice virtuale; membro del workspace come dipendenza interna |
-| py | `py-vendored-generated` | copia vendored con il suo `vendor.txt`; file protoc |
-| py | `py-version-disagree` | sette versioni di Python in disaccordo, compresi i bersagli di Pyright, mypy e Ruff |
-| jvm | `jvm-gradle-groovy-wrapper` | wrapper senza jar; script del wrapper vendored |
-| jvm | `jvm-gradle-kts-catalog-composite` | versioni nel catalogo; radice dichiarata solo da `settings.gradle.kts`; build composito |
-| jvm | `jvm-gradle-locking` | range nel build, versioni in `gradle.lockfile` |
-| jvm | `jvm-maven-multi-bom-profile` | cartelle diverse dagli artifactId; modulo solo sotto un profilo; BOM |
-| jvm | `jvm-maven-release-apt` | proprietà `java.version` che nessuno legge; processori di annotazioni |
-| jvm | `jvm-maven-wrapper` | versione di Maven dichiarata solo dal wrapper |
-| jvm | `jvm-ver-mvn-*` (11) | lo stesso progetto Maven con un livello Java per fixture: `source` e `target` da 1.5 a 25, `release` 8, 1.6 nella configurazione del plugin |
-| jvm | `jvm-ver-gradle-tc*` (4), `-src*` (2) | lo stesso progetto Gradle con toolchain 8, 11, 21, 25 o con `sourceCompatibility` 1.6 e 1.8: un livello non è un JDK da trovare |
-| jvm | `jvm-ver-gradle-mixed-tc8` | Java e Kotlin insieme con `jvmToolchain(8)` |
-| sys | `sys-go-buildtags` | suffissi di piattaforma nei nomi dei file come vincoli di build |
-| sys | `sys-go-cgo` | C compilato dal comando go; flag nei commenti `#cgo` |
-| sys | `sys-go-generated` | file generato ma versionato e compilato |
-| sys | `sys-go-nested` | modulo annidato che `./...` salta; cartella `_examples` |
-| sys | `sys-go-single` | due righe di `go.sum` per modulo; `go` non è un toolchain fissato |
-| sys | `sys-go-toolchain` | `go`, `toolchain` e versione fissata in disaccordo |
-| sys | `sys-go-vendor` | `vendor/` non è codice del progetto; `-mod=vendor` implicito |
-| sys | `sys-go-workspace` | `replace` di `go.work` che cambia una versione per tutto il workspace |
-| sys | `sys-rust-buildrs` | `build.rs` per convenzione; `include!` di un file generato assente |
-| sys | `sys-rust-features` | dipendenze opzionali fuori dal build di default |
-| sys | `sys-rust-path-git` | dipendenze per percorso e git senza workspace |
-| sys | `sys-rust-shared-test-module` | modulo di test condiviso fra due crate di test |
-| sys | `sys-rust-single` | due target trovati per convenzione; nome del crate con il trattino |
-| sys | `sys-rust-tauri` | pacchetto npm e crate Cargo con lo stesso nome |
-| sys | `sys-rust-toolchain-conflict` | `rust-toolchain` e `rust-toolchain.toml` insieme; `rust-version` |
-| sys | `sys-rust-workspace` | manifest virtuale, glob dei membri con `exclude` |
-| mix | `mix-dart-flutter` | tre pacchetti pub senza workspace |
-| mix | `mix-dotnet-central` | gestione centrale delle versioni NuGet con `VersionOverride` |
-| mix | `mix-php-laravel` | app Composer e build Vite nella stessa radice |
-| mix | `mix-ruby-rails` | progetto Bundler senza gemspec |
-| mix | `mix-swift-spm` | target del pacchetto come source set; prodotto con un altro nome |
-
-### Strumenti
-
-Versioni, comandi e vincoli verificati si leggono in `results/<tool>.json`; la tabella si completa quando i runner hanno finito.
-
-| Gruppo | Strumenti | Driver |
-| --- | --- | --- |
-| `lang` | scc, tokei, go-enry, Linguist, dati di Linguist, Magika | `modal_lang.py` |
-| `sbom` | Syft, Trivy, osv-scanner, cdxgen, ScanCode, component-detection | `modal_sbom.py` |
-| `native` | il comando di modello di ogni build tool (`go list`, `cargo metadata`, `npm`/`pnpm ls`, `uv`, `tsc --showConfig`, Gradle, Maven, …), `.gitmodules`, deptry, dependency-cruiser, uv per PEP 723; `modules.py` di Daodan come riferimento | `modal_native.py` |
-| `versions` | mise, proto, Renovate, Railpack, `GOTOOLCHAIN`, uv, rustup, corepack | `modal_versions.py` |
-| `frameworks` | Specfy stack-analyser, Vercel fs-detectors, Netlify build-info, devfile/alizer; il registro di Daodan come riferimento | `modal_frameworks.py` |
-
-### Vincoli controllati per ogni strumento e fixture
-
-| Vincolo | Come si misura |
-| --- | --- |
-| Esegue codice del progetto | `executed_project_code`: `yes`, `no` o `unknown`, dalla traccia dei processi del runner |
-| Rete | `network_attempts`: connessioni tentate durante l'esecuzione |
-| Seconda esecuzione offline | `offline_second_run`: la stessa uscita con la rete bloccata |
-| Binario per Windows | dalla pagina delle release, una volta per strumento |
-| Tempo e memoria | `seconds`, `peak_mb` |
-
-## Risultati
-
-14 novembre 2026: 59 strumenti e comandi sulle 122 fixture. Le tabelle vengono da `python score.py all all`; la lettura e il verdetto sono in [REPORT.md](REPORT.md). In breve:
-
-- linguaggi ed esclusi vengono da go-enry o dai dati di Linguist;
-- dipendenze e toolchain dichiarate da Renovate, le versioni bloccate da Trivy;
-- le unità con sorgenti e configurazione solo dai comandi di modello di ogni build tool, parte dei quali va nel container;
-- framework, servizi e bisogno di container restano scoperti.
-
-## Il grafo completo sul corpus
-
-Verifica che la pipeline di Daodan (`pipeline.run`: scan, stack, analyze, dynamic, union) dia il grafo completo di ogni progetto del corpus: per ogni linguaggio dello snapshot uno stato, i file nell'indice, i siti con risposta e i buchi con la loro classe. È una ricognizione, senza soglie.
-
-### Parametri
-
-Dalla cartella del benchmark:
-
-- Corpus: le 140 fixture. `js`, `py`, `jvm`, `sys` e `mix` sono i 122 progetti in miniatura, `real` i 18 repository con `source.json`. Le 18 `jvm-ver-*` sono del 16 novembre 2026, dopo il giro finale sui 122 casi.
-- Giro, su Modal e mai su questo PC: `python -m modal run modal_pipeline.py --cases js,py,jvm,sys,mix,real --out results/pipeline/<giro>.json`. `--cases` accetta anche nomi di fixture; `--chunk` (4) dice quante fixture di una famiglia vanno in un container. Accanto ai casi, `code` dice il codice di Daodan che il giro ha eseguito: il commit della checkout, l'albero git della copia caricata e i percorsi in cui la copia differisce dal commit.
-- Rapporto: `python pipeline_report.py results/pipeline/<giro>.json [<altro>.json ...] [--compare <precedente>.report.json]`. Un caso di un file successivo sostituisce lo stesso caso dei precedenti. Scrive `<giro>.report.md` e, accanto, gli stessi numeri in `<giro>.report.json`; Il rapporto nomina il codice di ogni file; `--compare` dice prima se i due giri hanno eseguito lo stesso codice (lo stesso albero, non lo stesso commit), poi stampa cosa cambia per linguaggio e per caso: stati, buchi in più o in meno.
-
-I giri stanno in `results/pipeline/`, una sottocartella: `score.py` legge come strumento ogni `.json` di `results/`.
-
-Conta come risultato, per linguaggio su tutti i casi: i casi `fresh` sui casi che lo contengono, i file indicizzati sui file dello snapshot, la quota dei siti con risposta. Il rapporto dà anche casi falliti e secondi, i motivi degli stati diversi da `fresh`, i file fuori dall'indice, i linguaggi senza analizzatore, il punteggio della pre-mappa per faccetta, i gap per tipo e gli esiti dei container.
-
-### Risultati
-
-Giro finale, 16 novembre 2026, sui 122 casi (`results/pipeline/2026-11-16-finale.json`, rapporto in `2026-11-16-finale.report.md`), sul codice fino a `492a7b212`: nessun caso fallito, 23.280 secondi, mediana 124 per caso, circa 2,3 USD. I giri precedenti dello stesso giorno sono accanto (`2026-11-16-fixtures`, `-real-3`, `-giro-2`).
-
-| Linguaggio | Casi `fresh` / casi | File indicizzati / nello snapshot | Quota risposta | Passo dinamico: casi osservati, siti |
-| --- | --- | --- | --- | --- |
-| c | 6 / 9 | 49 / 72 | 40,7 % | 2, 149 |
-| cpp | 6 / 9 | 18 / 19 | 89,2 % | 0, 0 |
-| csharp | 4 / 5 | 561 / 561 | 56,1 % | nessun osservatore |
-| go | 14 / 15 | 678 / 679 | 99,5 % | 5, 13.365 |
-| java | 16 / 18 | 261 / 278 | 99,7 % | 9, 7.695 |
-| javascript | 31 / 32 | 1.254 / 1.254 | 72,9 % | 4, 763 |
-| kotlin | 4 / 11 | 103 / 115 | 93,1 % | 4, 1.796 |
-| python | 34 / 34 | 185 / 185 | 89,1 % | 2, 70 |
-| rust | 13 / 13 | 145 / 154 | 88,5 % | 1, 1 |
-| stylesheet | 23 / 24 | 3.336 / 3.402 | 26,3 % | nessun osservatore |
-| svelte | 1 / 2 | 0 / 4 | 26,7 % | nessun osservatore |
-| typescript | 20 / 21 | 2.965 / 2.967 | 90,4 % | 3, 73.230 |
-| vue | 2 / 2 | 0 / 410 | 28,2 % | nessun osservatore |
-
-- Il passo dinamico osserva 97.069 siti e chiude 4.954 buchi; nei progetti in miniatura quasi sempre non ci sono test da lanciare, e lo dice.
-- Restavano aperti: i template di Vue e Svelte (nessun file letto), le classi Tailwind dello stylesheet, C# (56 % e nessun osservatore), il C dei contrib di zlib, i test che vogliono un servizio (un database) e Kotlin su Android, che scip-java non compila; i giri sotto dicono che cosa è cambiato.
-- Rust, C e C++ si osservavano solo dove Valgrind partiva, e sotto il gVisor dei sandbox di Modal non parte: dopo questo giro il driver dà le VM Sandbox agli osservatori nativi, dove parte (`8ef21896f`), e alle corse con servizi, con Docker (`17babc624`).
-
-Giro sulle 18 `jvm-ver-*`, 16 novembre 2026 (`results/pipeline/2026-11-16-java-versions.json`, rapporto in `2026-11-16-java-versions.report.md`), sul codice a `68a846a4a`: nessun caso fallito, 3.527 secondi, mediana 178 per caso.
-
-- Java è `fresh` e osservato in tutte le 18: 37 file su 37 nell'indice, 453 siti tutti con risposta, 10-14 siti osservati per caso; Kotlin è `fresh` e osservato nella fixture mista.
-- Prima di `21b3cb39b` sette non davano indice: Maven con livello 5 e 6 (tre), Gradle con toolchain 8 e 11, con livello 1.6 e la mista; con Java 25 i test fallivano sotto il registratore.
-- Lo dicono i buchi: `jdk_unsupported` nelle Maven sotto il 17 (l'indice nomina le classi del JDK 17), `build_edited` dove il build dichiarato non dà indice e il secondo, con livelli o toolchain alzati, sì.
-- Java 9 e 14 non hanno un JDK installabile: il passo dinamico li osserva sul JDK 17 e lo dice (`toolchain_unavailable`).
-- Pre-mappa: il rapporto conta come sbagliate le toolchain delle 11 fixture Maven e della mista per il solo frammento di `declared_in`. Con il corpus di `1bd53689a`, che nomina un'impostazione del pom con il suo percorso nel pom (`pom.xml#properties.maven.compiler.source`) e una toolchain Gradle come la nomina il modello di Gradle, `score.py` sul giro salvato trova 28 toolchain su 30: le 2 di jvm-ver-mvn-cfg6 restano sbagliate per il solo frammento, perché il giro precede `eef3e1fef`, da cui la pre-mappa scrive `maven-compiler-plugin.configuration.source` e non più `maven-compiler-plugin.source`.
-
-Giro di conferma, 16 novembre 2026, su 32 casi: le fixture di sistema e sette repository veri (`results/pipeline/2026-11-16-conferma.json`, rapporto in `2026-11-16-conferma.report.md`, salvato in `828b5413b`): nessun caso fallito, 6.344 secondi, mediana 133 per caso.
-
-- Nelle VM Sandbox Rust, C e C++ si osservano: semver 558 siti, tinyxml2 552 con 26 buchi chiusi, zlib 148.
-- python-semver è osservato, 1.046 siti, con i link e le dipendenze di tox; i test del backend di tududi girano con il PostgreSQL della sua CI: 3.779 siti JavaScript, 691 buchi chiusi.
-- Restavano fastapi (la versione di Python), kotlinconf (un plugin del build vuole una JVM 21), i test del frontend di tududi (92 siti TypeScript) e C# su DotZLib di zlib, un progetto di Visual Studio .NET 2002-2003, che da `73b645531` è `unavailable` e non si lancia.
-
-Giri JVM, 16 novembre 2026, sull'albero di lavoro con il codice poi committato:
-
-- otel-demo, jvm-android-app-lib e mix-poly-firebase (`results/pipeline/2026-11-16-jvm-otel-android.json`, codice di `39805f5e7`): nessun caso fallito, 2.037 secondi. Java di otel-demo è `fresh`, 9 file su 9 e 693 siti tutti con risposta (nel giro finale `failed`), e l'osservatore registra 297 siti; Kotlin resta `failed` nei tre casi: in otel-demo nessun compito Kotlin compila i suoi file, i due Android si fermano su `google-services.json`, che il progetto tiene fuori dal repository (`build_input_missing`).
-- kotlinconf (`results/pipeline/2026-11-16-jvm-kotlinconf.json`, codice di `22dca6da8`): 754 secondi; il modello di Gradle riparte sul JDK 21 che il devcontainer dichiara e dà le toolchain del build, e Kotlin si ferma dopo, su un compito `compileKotlinJvm` che `:app:adminApp` non ha.
-- kotlinconf con ogni progetto che compila solo i compiti che ha (`results/pipeline/2026-11-16-jvm-kotlinconf-kmp.json`, codice di `a13d55787`): 1.915 secondi; Kotlin è `fresh`, 226 file su 271 nell'indice, 16.830 siti, 76,0 % con risposta, e l'osservatore registra 984 siti. I 45 file fuori dicono perché: nessun compito di compilazione Kotlin li elenca (34) o sono script Gradle (11).
-
-Giro dei passi della CI, 16 novembre 2026, su tududi e fastapi (`results/pipeline/2026-11-16-ci-steps.json`, salvato in `aea1c8c3b`): nessun caso fallito, 1.909 secondi.
-
-- tududi: i tre passi del job (installazione 36 secondi, lint 19, bootstrap e migrazioni 1) girano accanto a postgres:16-alpine prima dei test; il passo dinamico osserva 13.214 siti JavaScript e 20.202 TypeScript, contro i 3.779 e i 92 della conferma, un salto che viene anche dai bundle in memoria e dalle CPU scalate, non solo dai passi.
-- fastapi: «Migrate DB» gira e fallisce, e pytest e Playwright si fermano sulle stesse impostazioni mancanti, che stanno nel `.env` tracciato del template e che la copia di Daodan allora non portava.
-
-Giro del `.env` tracciato, 16 novembre 2026, su fastapi e tududi (`results/pipeline/2026-11-16-dotenv.json`, salvato in `b1f14ac08`): nessun caso fallito, 2.370 secondi.
-
-- fastapi: db, mailpit e adminer partono e «Migrate DB» esce con 0; pytest si ferma alla raccolta (codice 4: manca `backend/app/frontend`) e i test del frontend escono con 1, quindi Python e TypeScript restano `not-run`. La password del `.env` del template non compare nel risultato.
-- tududi: i tre passi del job escono con 0 accanto a postgres:16-alpine; il passo dinamico osserva 11.369 siti JavaScript e 20.192 TypeScript.
-
-Prova della regola invalicabile per Rust, 16 novembre 2026 (`modal run modal_rust_container.py::rust_container`, `c714e6298`): un crate il cui build script imposta un cfg e una macro procedurale che genera una funzione, ognuno con un segno dove gira, e cargo, rustc, rust-analyzer e rustup sul PATH della macchina sostituiti da finti che lasciano un segno. Sulla macchina nessun segno e nessun finto chiamato; nell'indice del container la funzione sotto il cfg si risolve e quella generata ha il suo nome, definita in nessun file (`undefined-project-symbol`).
-
-Ripristino Node su Modal, 21 novembre 2026 (`modal run modal_pipeline.py --cases js-npm-single,py-uv-src-layout`, sul commit `a664e869d` con l'albero di lavoro del giorno). Dopo la condivisione del ripristino Node (`node_preparation`) le righe del ripristino arrivano al motore in `node_restore`, che `sandbox_run` ignorava: su `js-npm-single` scip-typescript girava senza i pacchetti del progetto (tipi: solo `@types/node`) e `npm test` usciva con 1, «Cannot find module 'ms'», passo dinamico `not-run`. Ora `sandbox_run` esegue il ripristino nella sandbox di preparazione di ogni run. Rilanciato sullo stesso caso: tipi di `lodash` e `ms`, test uscito con 0, 6 siti osservati e 6 archi, copertura `complete`, 95,5 secondi. `py-uv-src-layout`: scip-python 0.6.8 e Pyright 1.1.414, `fresh`, 8 siti su 8, nessun test dichiarato, 126,3 secondi. Su Modal ogni run ripristina per sé: la condivisione fra i run di un'analisi qui non si misura.
-
-## Lo step `stack` sul corpus
-
-Misura lo step `stack` della pipeline (`scripts/technologies.py`, `daodan/technologies/v1`): le tecnologie del progetto per unità di build, dal solo registro (`data/service-registry.json`, 2.172 voci), senza eseguire nulla del progetto. Il 14 novembre il registro era stato misurato solo sui servizi (`daodan_registry`, 45 su 123); questo è il primo giro dello step nuovo.
-
-### Parametri
-
-- Corpus: tutte le fixture con `expected.json`, 180 (`js`, `py`, `jvm`, `sys`, `mix`, `real` e le 40 `real-stack-*`, che misurano solo framework e servizi). Il driver prende anche le fixture nuove, senza modifiche: quelle con `source.json` dal loro archivio sul volume (`modal_native.py prepare`) o, senza archivio, da un clone alla revisione fissata. `expected.json` e `source.json` non entrano nel progetto che lo step legge.
-- Giro, su Modal e mai su questo PC: `modal deploy modal_stack.py`, poi `python modal_stack.py spawn [--fixtures a,b | --families js,py,jvm,sys,mix,real]` e `fetch`. Il container (1 CPU, 3 GB) scrive la snapshot, la pre-mappa e `technologies.ensure`; ogni fixture ha 900 secondi in un processo a parte (`bounded`): scaduti, il record dice `no answer in 900 s` e dove stava (faulthandler), e il resto del gruppo va avanti. `spawn` rifiuta il giro se i file caricati (`UPLOADED`, con i dati accanto agli script: D-287) non sono quelli di questa copia, e `fetch` confronta l'impronta del codice dei due lati.
-- Pre-mappa: i comandi di modello non girano. Le loro risposte sono quelle registrate da `modal_premap.py --runs` (`results/premap-runs`), riprodotte come fa `tools/premap_replay.py`; una fixture senza registrazione ha i comandi `not_run` (`model: none`), una registrazione a cui manca una risposta è `partial`. Le registrazioni sono 178 su 180: mancano `real-stack-jellyfin` e `real-stack-kuvasz`, che hanno superato i 2.400 secondi della funzione di `modal_premap.py` (D-302). Le 18 `jvm-ver-*` e le 40 `real-stack-*` sono state registrate il 17 novembre 2026, sul codice `5bcc6674211c593c`.
-- Punteggio: `score.technologies_faces` porta il record nelle facce `frameworks` (ogni voce la cui `category` non è `service`, per ogni unità che la tiene, con il primo segno dentro l'unità come prova) e `services` (ogni voce di `category` `service`) di `expected.json`; `score.score_technologies` le confronta. Dal 19 novembre 2026 ogni voce `project` riconoscibile ha la sua `category` (`framework`, `library`, `tool` o `service`), ma `expected.json` elenca fra i framework anche librerie e strumenti (Zod, Vite, Vitest, Jest) e non tutti: la faccia tiene le tre classi come prima, e ciò che offre in più di `expected.json` fra i framework non è un falso: è `counted_apart`. I servizi di `expected.json` sono completi, e un servizio in più resta `extra`. `frameworks_by_name` toglie le unità, che ogni lettore nomina a modo suo, e conta un nome una volta per fixture.
-- Due fatti per fixture: `executed_project_code`, dai processi che `ensure` avvia (`spawned`: `no` solo se tutti sono il `git` del perimetro, con gli hook e il monitor spenti; la snapshot e la pre-mappa riprodotta non sono osservate), e `seconds` (snapshot con pre-mappa, e lo step). Il costo del giro viene dal rapporto di Modal.
-
-### Replay del riconoscimento dei pacchetti PyPI
-
-`replay_stack_packages.py` rilegge le risposte di Renovate conservate in `results/premap-runs`. Per ogni progetto applica il lettore della pre-mappa e misura `service_registry.check_packages` sulle coppie pacchetto PyPI/file. Il JSON di uscita contiene le triple tecnologia, pacchetto e file per fixture. I parametri sono la revisione Git, le fixture da escludere, il numero di ripetizioni del matcher e il file di uscita. Il replay legge dati archiviati senza avviare strumenti esterni di analisi o codice delle fixture.
-
-Dal repository, con due percorsi di uscita a scelta:
-
-```sh
-python benchmarks/project-model/replay_stack_packages.py --revision 98f360b --exclude real-app-full-stack-fastapi --repeat 11 --out baseline.json
-python benchmarks/project-model/replay_stack_packages.py --exclude real-app-full-stack-fastapi --repeat 11 --out candidate.json
-```
-
-Il 20 novembre 2026, escluso il template FastAPI usato per la correzione, 35 delle 177 registrazioni rimaste contenevano pacchetti PyPI rilevati da Renovate. Su 1.185 coppie pacchetto/file, la normalizzazione PyPI ha portato le triple da 177 a 178. È comparso solo `sentry / sentry-sdk / pyproject.toml` in `real-stack-netbox`, dove il riferimento atteso elenca Sentry. Tutte le triple precedenti sono rimaste. La mediana per analizzare i 35 casi in 11 ripetizioni è stata 210 ms per la base e 214 ms per la modifica. Il replay misura esclusivamente il matcher su questa fonte. L'attribuzione ai moduli, le configurazioni Compose e i tempi dell'intera pipeline richiedono prove distinte.
-
-Per i servizi configurati, il rapporto del benchmark conserva `configured_services` accanto al punteggio dei servizi riconosciuti dal catalogo. Il controllo `test_compose_files_in_the_corpus_keep_each_service_name_even_if_built_without_an_image` in `test_stack.py` verifica i tre file Compose presenti direttamente nelle fixture. Il lettore recupera nove dichiarazioni su nove, comprese le tre che contengono una build senza immagine esplicita. Ogni dichiarazione conserva il punto nel file.
-
-### Risultati
-
-Dopo le categorie scritte delle 245 voci `project` che non ne avevano (19 novembre 2026, codice `c6be10745cedb94d` uguale ai due lati, registro di 2.345 voci), 178 fixture su 180 con record (jellyfin e kuvasz ancora `no answer in 900 s`, D-302), `executed_project_code: no` in 178:
-
-| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 36 / 42 | 2 / 2 | 29 / 31 | 99 / 127 | 182 / 352 | 362 / 568 |
-| Framework per unità, trovati / attesi (sbagliati) | 11 / 11 | 4 / 4 | 37 / 43 | 1 / 2 (1) | 32 / 37 | 177 / 251 (12) | 290 / 653 (37) | 552 / 1.001 (50) |
-| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 11 / 33 (1) | 30 / 84 (9) | 96 / 395 (55) | 141 / 518 (65) |
-
-- Framework per nome e per unità invariati: la faccia tiene ancora ogni classe che non è `service`.
-- Servizi trovati da 137 a 141. Due vengono dalle categorie: MailHog in bookstack e Kafka in otel-demo, prima `counted_apart` fra i framework, ora voci di categoria `service`. Gli altri due (Pusher in koel, LiveKit in mattermost-mobile) e i tre in più (Jellyfin in jellyfin-ios, Chromatic in owncast, LangChain Corporate in otel-demo) vengono da voci `service` aggiunte al registro dopo il giro del 17 novembre (`from`: `additions`, `simple-icons`).
-
-Dopo la pulizia dello stack (`136cd87ca`: tre controlli, e un segno solo da una variabile d'ambiente resta `mentioned`), 17 novembre 2026, codice `d96bc1ec3246636d`, 178 fixture su 180 con record:
-
-| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 36 / 42 | 2 / 2 | 29 / 31 | 99 / 127 | 182 / 352 | 362 / 568 |
-| Framework per unità, trovati / attesi (sbagliati) | 11 / 11 | 4 / 4 | 37 / 43 | 1 / 2 (1) | 32 / 37 | 177 / 251 (12) | 290 / 653 (37) | 552 / 1.001 (50) |
-| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 11 / 33 (1) | 29 / 84 (8) | 93 / 395 (53) | 137 / 518 (62) |
-
-- Servizi in più da 77 a 62 (via Discord, Segment, Facebook e altri da un prefisso o da un identificatore), ma trovati da 159 a 137: 22 servizi veri avevano come solo prova una variabile d'ambiente e ora sono `mentioned` (PostgreSQL in atuin, fiber-go-template e quarkus-super-heroes, Sentry in fastapi, epic-stack e netbox, Redis in mix-infra-k8s-helm e lobsters, Slack, Discord, Telegram e Twilio in healthchecks). OpenTelemetry di eShop non è più un framework per nome. È D-304.
-
-Dopo D-303 (`819964b55`: lo stack nomina le unità come la pre-mappa e dà un pacchetto di catalogo allo script che lo usa), 17 novembre 2026, 178 fixture su 180 con record:
-
-| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 36 / 42 | 2 / 2 | 29 / 31 | 100 / 127 | 182 / 352 | 363 / 568 |
-| Framework per unità, trovati / attesi (sbagliati) | 11 / 11 | 4 / 4 | 37 / 43 | 1 / 2 (1) | 32 / 37 | 178 / 251 (12) | 290 / 653 (37) | 553 / 1.001 (50) |
-| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 15 / 33 (2) | 33 / 84 (8) | 107 / 395 (67) | 159 / 518 (77) |
-
-- Per unità da 364 a 553 su 1.001, gli sbagliati da 208 a 50; JVM da 2 a 37 su 43. Per nome e servizi invariati.
-
-Dopo la mappa dei moduli e lo stack ([pipeline di analisi](../../docs/specs/2026-11-15-pipeline-di-analisi.md), sezione 1; `3b961646a`, `1a33518f4`), 17 novembre 2026, codice `107d16779072c4cd` uguale ai due lati, 178 fixture su 180 con record (jellyfin e kuvasz ancora no, D-302):
-
-| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Fixture con record | 20 | 21 | 34 | 25 | 30 | 10 | 38 | 178 |
-| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 36 / 42 | 2 / 2 | 29 / 31 | 100 / 127 | 182 / 352 | 363 / 568 |
-| Framework per unità, trovati / attesi (sbagliati) | 11 / 11 | 4 / 4 | 2 / 43 (35) | 2 / 2 | 24 / 37 (8) | 95 / 251 (77) | 226 / 653 (88) | 364 / 1.001 (208) |
-| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 15 / 33 (2) | 33 / 84 (8) | 107 / 395 (67) | 159 / 518 (77) |
-
-- Framework per nome da 211 a 363 su 568: JVM da 0 a 36 su 42, i repository veri da 42 a 100 su 127, le `real-stack-*` da 135 a 182 su 352. Servizi da 148 a 159 su 518, con 77 in più invece di 100.
-- Per unità i framework trovati salgono da 268 a 364, ma gli sbagliati da 35 a 208: la tecnologia è giusta e l'unità no (JVM 2 su 43 con 35 sbagliati). Di 208: 76 sono lo stesso modulo con un altro nome (`:app` atteso, `app` dato), 15 attendono la radice `:` e ricevono il nome del progetto, 117 vanno a un'altra unità, spesso la radice o il padre al posto del sottomodulo (kotlinconf `:backend` dato a `kotlinconfapp`, mealie `frontend` dato a `mealie`). È D-303.
-
-Prima della mappa dei moduli, 17 novembre 2026. 178 fixture su 180 con record; `real-stack-jellyfin` e `real-stack-kuvasz` no (D-302). `results/daodan_stack.json` tiene, per fixture, le facce, il punteggio, gli id delle tecnologie, i secondi e i processi avviati. I record vengono da tre versioni del driver (`2dafe3d6678aa4c6`, `63a0f46b0eacc825`, `8720a450c5b16739`, elencate in `code.container`; `code.local` è la terza, quella di questa copia): cambiano solo il tempo per fixture e il testo dell'errore, non la misura.
-
-| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Fixture con record | 20 | 21 | 34 | 25 | 30 | 10 | 38 | 178 |
-| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 0 / 42 | 1 / 2 | 19 / 31 | 42 / 127 | 135 / 352 | 211 / 568 |
-| Framework per unità, trovati / attesi (sbagliati) | 10 / 11 (1) | 4 / 4 | 0 / 43 | 1 / 2 | 18 / 37 (2) | 46 / 251 (8) | 189 / 653 (24) | 268 / 1.001 (35) |
-| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 14 / 33 (9) | 26 / 84 (15) | 104 / 395 (76) | 148 / 518 (100) |
-
-- Il codice del progetto non gira, ma questo giro lo mostra poco: con la pre-mappa già scritta `ensure` non avvia nessun processo (`spawned` vuoto in 178 fixture su 178), e la snapshot e la riproduzione della pre-mappa non sono osservate. Nel primo giro del 17 novembre, in cui `ensure` scriveva la pre-mappa, le 140 fixture avevano solo `git check-ignore` e `git ls-files` del perimetro.
-- Lo step `technologies.ensure` impiega, con la pre-mappa già scritta, 0,03 s di mediana e 5,72 s al massimo (`real-stack-owncast`); la snapshot con la pre-mappa 354 s su owncast e 333 su kotlinconf.
-- I servizi sono quelli di `daodan_registry` (45 su 123 il 14 novembre; qui 44 sulle stesse 123): lo step li prende dal registro e non ne aggiunge. Sulle 40 `real-stack-*` 104 su 395, con 76 in più.
-- Fuori da JVM e .NET, js e py non perdono nessun framework per nome; le `real-stack-*` perdono 217 framework su 352, 181 di una voce che il registro non ha.
-- 62 fixture su 178 hanno `technologies` vuote e 18 non hanno nessuna unità di build.
-- Le cause sono le schede D-294 (Maven, NuGet, Pub, Hex e Swift non letti: JVM 0 su 42), D-295 (il `kind` `service` fa servizi dei framework e delle librerie: Playwright, Firebase, OpenTelemetry, Cypress, Celery, Puppeteer), D-296 (prefissi di variabile, di identificatore e di pacchetto: Zoom, Ghost, Segment, GCP, Postman), D-297 (CI, strumenti ed esempi sotto `docs/` come servizi: Renovate, Crowdin, Codecov, Railway), D-298 (servizi senza voce o senza segno), D-299 (framework senza voce o senza segno nel manifest), D-300 (un segno nomina solo il pacchetto della voce, non i suoi componenti), D-301 (un file di requisiti con un altro nome) e D-302 (la snapshot di jellyfin e kuvasz non finisce). «Tailwind» e «Tailwind CSS» si contano come lo stesso framework dal commit `b2f431eb4`.
-
 ## Lo step `stack` dal fork
 
-Misura che cosa cambia sul corpus se lo step `stack` riconosce le tecnologie con stack-analyser (il rilascio `1.27.6-daodan.2` del fork `acaprino/stack-analyser`) al posto del registro (`service_registry.run`): nomi attesi persi e guadagnati, servizi in più, tempo della scansione veloce. Il prodotto non cambia: `technologies.derive` chiama ancora il registro ([spec](../../docs/specs/2026-11-21-stack-dal-fork.md), «Verifica»).
+**Stato:** Proposta misurata, non nel prodotto. `technologies.derive` chiama ancora il registro (`service_registry.run`); il rilascio è fissato e si installa (`daodan/core/stack_analyser.py`) ma lo step non lo usa. Spec: [stack dal fork](../../docs/specs/2026-11-21-stack-dal-fork.md), «Verifica». La decisione torna al proprietario («Verdetto»).
+
+Misura che cosa cambia sul corpus se lo step `stack` riconosce le tecnologie con stack-analyser (il rilascio `1.27.6-daodan.2` del fork `acaprino/stack-analyser`) al posto del registro: nomi attesi persi e guadagnati, servizi in più, tempo della scansione veloce.
 
 ### Parametri
 
@@ -401,7 +223,7 @@ Misura che cosa cambia sul corpus se lo step `stack` riconosce le tecnologie con
 
 ### Risultati
 
-Secondo giro, 22 novembre 2026, codice `9be947a3bbf0c61d` uguale ai due lati, 180 fixture, 178 con record (le altre due: «Senza risposta»); `executed_project_code: no` in 178, `fork_failed` in 0. `model: partial` in 178: alle registrazioni mancano da 1 a 41 comandi per fixture, ai due lati allo stesso modo.
+Giro del 22 novembre 2026, codice `9be947a3bbf0c61d` uguale ai due lati, 180 fixture, 178 con record (le altre due: «Senza risposta»); `executed_project_code: no` in 178, `fork_failed` in 0. `model: partial` in 178: alle registrazioni mancano da 1 a 41 comandi per fixture, ai due lati allo stesso modo.
 
 | Faccia | Attesi | Prima | Dopo |
 | --- | --- | --- | --- |
@@ -410,16 +232,13 @@ Secondo giro, 22 novembre 2026, codice `9be947a3bbf0c61d` uguale ai due lati, 18
 | Servizi, trovati | 518 | 227 | 228 |
 | Servizi in più | | 67 | 86 |
 
-I «prima» non sono quelli della sezione sopra (362 / 568 e 141 / 518): il codice è un altro (`c6be10745cedb94d`) e questo giro non lo spiega.
+I «prima» non sono quelli di `results/daodan_stack.json` (362 / 568 e 141 / 518, «Lo step `stack` sul corpus»): il codice è un altro e questo giro non spiega la differenza.
 
 Servizi in più: da 67 a 86 (in 32 e poi in 36 fixture). Il fork ne aggiunge 22 (`azure` 6, `aws` 4, `google` 3, `gcp` 3, `firebase` 2, e uno ciascuno `microsoft`, `cloudflare`, `vercel`, `apple`) e ne toglie 3 (`okta`, `gcp`, `kafka`). Le 22 sono gli id di `new` che il punteggio conta come servizi; nessuna è un nome atteso.
 
 Nomi persi: 0 (`fixtures_with_lost`), quindi `accepted-losses.json` è `[]`. Guadagnati: 3, Meilisearch in `real-stack-koel` (`meilisearch/meilisearch-php`, `composer.json` riga 30: la regola del fork lo elenca, nel registro il pacchetto ha uno spazio in fondo e non combacia mai), Maestro in `real-stack-mattermost-mobile` (i file di flusso in `detox/maestro`, letti dal fork; id non nel registro) e WinUI in `real-stack-peopleinspace` (`UseWinUI` in un `.csproj`, letto dal fork; id non nel registro).
 
-**Primo giro**, 21 novembre 2026, rilascio `.1`, codice `b3719332398056ec` (commit `a2613d8`): 5 nomi persi in 5 fixture (framework 531 → 530, servizi 227 → 226) e 33 coppie di id spariti. Lo zero del secondo viene dopo due correzioni:
-
-- Spring MVC (`jvm-spring-boot-managed`, `real-stack-mall`, `real-svc-robot-shop`): `org.springframework.boot:spring-boot-starter-web` andava solo a Spring Boot (differenza registrata della porta); il proprietario ha deciso di correggerlo nel fork, e `.2` lo dà a Spring Boot e a Spring MVC (`src/rules/framework/spring-mvc.ts`).
-- GitHub Pages (`real-app-kotlinconf`) e Gotenberg (`real-stack-documenso`): la traduzione scartava la prova di un file fuori dalla snapshot (`.github/workflows/web-deploy.yml`, `docker/development/Dockerfile.gotenberg`). Corretto in `tools/fork_stack.py` (`22e9b03`), che ha tolto anche altre 22 coppie dagli id spariti (da 33 a 6 con il rilascio): non lette una per una, causa verificata solo per `github.pages` in `real-stack-peopleinspace`.
+Il rilascio `.2` dà `org.springframework.boot:spring-boot-starter-web` a Spring Boot e a Spring MVC (`src/rules/framework/spring-mvc.ts`), e la traduzione (`tools/fork_stack.py`) tiene la prova di una dichiarazione anche quando il suo file è fuori dalla snapshot: con il rilascio `.1` e senza queste due cose i nomi persi erano 5.
 
 Id spariti (`gone`): 6 coppie id/fixture in 6 fixture, su 4 id, nessuno un nome atteso; `fast.lost` ha 7 coppie su 5 id (gli stessi quattro e `github.pages`).
 
@@ -433,7 +252,7 @@ Menzioni `env`: il percorso tradotto non produce segni `env`. Nei 10 record lett
 
 Limite trovato, non corretto: `stack_analyser.py` passa `--skip-dirs` e `--ignore` sulla riga di comando, e `fork_stack.perimeter` mette in `ignore` ogni percorso che la pre-mappa esclude, nella completa anche ogni file che go-enry chiama documentazione, binario, generato o vendored. Dalle risposte registrate di go-enry, `real-stack-owncast` ha 760 percorsi esclusi (535 generati, 192 binari, 21 documentazione, 12 vendored) e un `--ignore` di almeno 36.678 caratteri; la seconda fixture, `real-stack-quarkus-super-heroes`, 19.287. Il limite di `CreateProcess` su Windows è 32.767 caratteri per la riga intera: lì la scansione di owncast finirebbe come gap «could not start», senza riconoscimento; su Linux il limite per argomento è più alto, e il giro (`fork_failed` 0) non l'ha incontrato. Nelle 178 fixture `fork_full − fork_fast` cresce con la lunghezza di quella lista (correlazione 0,87; 0,85 con il numero dei percorsi; owncast 13,4 s, il registro 0,7 s): la causa non è stabilita, perché il numero delle dichiarazioni varia con essa e il file dei risultati non lo registra. Il filtro della traduzione scarta già le prove sotto un percorso escluso, quindi le voci di file in `ignore` sono ridondanti; che cosa farne è del piano successivo.
 
-Id nuovi (`new`, con i tre guadagnati): 148 coppie in 106 fixture, 30 id, per fixture in `compare.new`; oltre ai servizi in più, `gradle` 26, `maven` 23, `cargo` 17. Rispetto al primo giro compaiono `pnpm` (7), `bunsh`, `nodejs` e un `azure` in più, dalle dichiarazioni che ora restano. Fuori dal registro (`not_in_registry`), in quante fixture: `gradle` 26, `setuptools` 9, `rich` 4, `maestro` 1, `winui` 1, col proprio id per nome e categoria `framework` (`entry_category`).
+Id nuovi (`new`, con i tre guadagnati): 148 coppie in 106 fixture, 30 id, per fixture in `compare.new`; oltre ai servizi in più, `gradle` 26, `maven` 23, `cargo` 17. Fuori dal registro (`not_in_registry`), in quante fixture: `gradle` 26, `setuptools` 9, `rich` 4, `maestro` 1, `winui` 1, col proprio id per nome e categoria `framework` (`entry_category`).
 
 Gap del fork:
 
@@ -463,17 +282,45 @@ Tempi in secondi, sulle 178 fixture con record (completa: mediana 0,029 e massim
 
 ### Verdetto
 
-- «Nessuna perdita»: passa sulle 178 fixture misurate (nessun nome atteso perso, nessuna riga `to_fix`, `accepted-losses.json` vuoto) e non è verificata sulle 2 senza risposta. Viene dopo la correzione della traduzione e la nuova regola del fork (Primo giro). `compare` conta id e nomi: delle 6 coppie sparite (4 id), tutte passano a un altro id con il loro segno dichiarato; nella sola veloce, `github.pages` in `mix-real-tinyxml2` non passa a nessun id, per una scelta registrata della porta. Le menzioni `env` non passano: il percorso tradotto non ne produce, ed è un secondo riconoscimento che il registro ha e il percorso non ha.
+- «Nessuna perdita»: passa sulle 178 fixture misurate (nessun nome atteso perso, nessuna riga `to_fix`, `accepted-losses.json` vuoto) e non è verificata sulle 2 senza risposta. `compare` conta id e nomi: delle 6 coppie sparite (4 id), tutte passano a un altro id con il loro segno dichiarato; nella sola veloce, `github.pages` in `mix-real-tinyxml2` non passa a nessun id, per una scelta registrata della porta. Le menzioni `env` non passano: il percorso tradotto non ne produce, ed è un secondo riconoscimento che il registro ha e il percorso non ha.
 - Scansione veloce, su Linux, contro l'obiettivo della spec (meno di un secondo dall'avvio al risultato su `py-fastapi-compose`; circa un secondo a ogni modifica sotto `project_lock`): `py-fastapi-compose` 0,331 s, mediana 0,523 s, 29 fixture su 178 da 1 s in su, massimo 5,791 s. La soglia è del proprietario; se l'obiettivo non è raggiunto, la spec ferma il lavoro al passo 3.
 - Tornano al proprietario: i tempi; i servizi in più (da 67 a 86: 22 aggiunti, 3 tolti); le tre differenze della porta che spostano un id senza cambiare nessun nome atteso (`okta`, `gcp`, `_config.yml` di Jekyll); le menzioni `env` e i modelli `.env` che il rilascio apre benché la politica di Daodan non li legga; il `--ignore` oltre i 32.767 caratteri su Windows (`real-stack-owncast`); ciò che «Non misurato» non copre.
 
+## I percorsi TypeScript di Daodan contro `tsc`
+
+**Stato:** In parte. La distanza è misurata; il lettore scritto a mano (`import_resolution.ts_path_config`) è ancora in uso, e la pre-mappa ha già la sorgente `tsc` (`daodan/core/premap/tsc.py`). Aperta: sostituire il lettore con `tsc`.
+
+Misura quanto il lettore scritto a mano (`import_resolution.ts_path_config`: un `tsconfig.json` o `jsconfig.json` per cartella, `extends` relativo, bersagli risolti contro `baseUrl` o la cartella del file che li dichiara; una configurazione vale per i discendenti) dista da `tsc`, prima di sostituirlo. `tools/ts_paths_vs_tsc.py` legge `results/native_tsc.json` (TypeScript 6.0.3 on Node v22.23.4, `tsc --showConfig` per tsconfig, registrato su Modal) e chiama il lettore sulle cartelle `fixtures/<nome>`; legge solo JSON e non esegue codice del progetto. Scrive `results/ts_paths_vs_tsc.json`; `test_ts_paths_vs_tsc.py` lo rigenera e lo confronta.
+
+Parametri: le 17 fixture registrate; 6 non hanno qui l'albero (solo `expected.json` e `source.json`) e restano fuori. Per ogni unità di `tsc` e ogni pattern di `paths`, i percorsi di Daodan sono quelli della configurazione più vicina, nella cartella dell'unità o sopra. Classi: `same` (stessi bersagli), `different` (stesso pattern, altri bersagli), `missing` (solo `tsc`), `extra` (solo Daodan).
+
+Misura: 11 fixture con albero, 6 con almeno un pattern, 5 senza pattern da nessuna parte (una con errore di `tsc`).
+
+| Classe | Coppie unità-pattern |
+| --- | ---: |
+| same | 4 |
+| different | 1 |
+| missing | 4 |
+| extra | 0 |
+
+Fixture con differenze:
+
+- `js-nx`: `missing` x3 (`@acme/util` in tre unità); i `paths` stanno in `tsconfig.base.json`, che Daodan non legge e nessun `tsconfig.json` estende.
+- `js-vite-react-ts`: `missing` (`@/*`); il `tsconfig.json` radice ha solo `references`, i `paths` stanno in `tsconfig.app.json`, che Daodan non legge.
+- `js-angular`: `different` (`ui-kit` nell'unità `projects/ui-kit`); `tsc` dà `projects/ui-kit/dist/ui-kit`, Daodan `dist/ui-kit`. Qui è giusto Daodan: il `paths` è dichiarato nel `tsconfig.json` radice, ereditato, e TypeScript lo risolve contro il file che lo dichiara. L'errore è dell'adattatore.
+
+Limiti:
+
+- (a) Il lato `tsc` è la normalizzazione dell'adattatore (`tools/native_tsc.py`), non l'uscita grezza di `tsc`: senza `baseUrl` risolve i bersagli contro la cartella del tsconfig mostrato, mentre TypeScript risolve i `paths` ereditati contro il file che li dichiara; un `paths` ereditato può quindi essere sbagliato dal lato `tsc` (il caso `ui-kit` di `js-angular`).
+- (b) Solo queste fixture: nessun albero intero di un progetto reale.
+
 ## Esplorazione dell'app avviata
 
-Passo 11 del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-flussi.md): Daodan avvia l'app dichiarata nel container, apre un browser senza interfaccia, legge i controlli di ogni pagina dall'albero di accessibilità di Playwright, ne preme ognuno una volta e registra le funzioni del progetto che partono (copertura V8 fra due letture, meno ciò che la pagina ferma esegue da sola).
+**Stato:** In uso (`daodan/core/dynamic/app.py`, `app.cjs`, `explore.cjs`, `daodan/core/observed_entries.py`). È il passo dinamico per i controlli dell'interfaccia: Daodan avvia l'app dichiarata nel container, apre un browser senza interfaccia, legge i controlli di ogni pagina dall'albero di accessibilità di Playwright, ne preme ognuno una volta e registra le funzioni del progetto che partono (copertura V8 fra due letture, meno ciò che la pagina ferma esegue da sola).
 
 ### Parametri
 
-- Script: `modal_explore.py` (`DAODAN_FOLDER=<cartella> modal run benchmarks/project-model/modal_explore.py::explore_main --source <cartella del volume | folder> --out <file>`). `--source folder` prende la cartella di `DAODAN_FOLDER`. La corsa è la pipeline intera (`pipeline.run`: scan, stack, analyze, dynamic, union) su un solo snapshot, come la lancia `run_folder`: il passo dinamico avvia ed esplora l'app, e la base di confronto è lo stesso snapshot con `observed-controls.json` messo da parte (candidati, collegamenti e schede senza i controlli). Un confronto con un'analisi fatta prima, su un'altra sorgente, dava un risultato falso (117 ingressi statici invece di 823, e «13 ingressi in più» che non esistono): non vale come base.
+- Script: `modal_explore.py` (`DAODAN_FOLDER=<cartella> modal run benchmarks/project-model/modal_explore.py::explore_main --source <cartella del volume | folder> --out <file>`). `--source folder` prende la cartella di `DAODAN_FOLDER`. La corsa è la pipeline intera (`pipeline.run`: scan, stack, analyze, dynamic, union) su un solo snapshot, come la lancia `run_folder`: il passo dinamico avvia ed esplora l'app, e la base di confronto è lo stesso snapshot con `observed-controls.json` messo da parte (candidati, collegamenti e schede senza i controlli). La base deve essere lo stesso snapshot: un'analisi fatta prima su un'altra sorgente non vale come base.
 - Potenza di Modal: le funzioni della misura 2–16 core e 4–32 GB, le sandbox 8 core, la suite di test su 16 core con `-n 16`.
 - Sorgenti: `premap/npm_start.py` (`starts`, `builds`), `dynamic/app.py` e `app.cjs` (avvio, porta, arresto), `dynamic/explore.cjs` (esplorazione), `observed_entries.py` (candidati con fonte `observed`).
 - Tetti di `explore.cjs`: 25 pagine, 300 pressioni, 900 s, 3 s per il click, 3 livelli di profondità, 4 schede in parallelo. I controlli che un click rivela (un menu, una finestra) hanno un budget a parte di 100 pressioni e al più 30 per click (oltre, la lacuna `explore_cap` con `revealed_per_press` dice quanti ne restano e dopo quale click), e non si cercano dopo un collegamento: un collegamento naviga o scorre, non apre. Ogni controllo si preme dopo aver ricaricato la pagina in un contesto pulito e dopo i click che lo mostrano; la lettura dei controlli aspetta che l'elenco resti fermo per un secondo (fino a 3 s). Le pressioni sono indipendenti (ognuna parte da una prima visita), quindi le schede le prendono dalla stessa lista: cambiano il tempo, non l'esito, e un test su Modal confronta 1 e 4 schede su una fixture (stati, gestori, funzioni, richieste e ordine). Vale per un'app senza stato su un server: con un backend raggiungibile, quattro schede corrono sullo stesso stato e l'esito può cambiare (detto fra i limiti dichiarati di `explore.cjs`). Una casella o un bottone di opzione che si preme non si spunta prima: il campo compilato è un altro.
@@ -486,7 +333,7 @@ Passo 11 del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-fluss
 
 ### Risultati
 
-Su phazly, 23 novembre 2026, file `results/explore/phazly-full-src.json`: la pipeline intera su un solo snapshot, 1211 s (quattro corse con 4 schede: da 1084 s a 1244 s; una sequenziale, 1478 s; con le sandbox a 2 core 1773 s: tempi misurati, i file delle prime corse non sono conservati). La corsa sulla sorgente incompleta del volume è `results/explore/phazly-volume-src.json` (sorgente: una copia ridotta del progetto vero, senza `node_modules`, `target` e senza alcun file `.env*` o chiave).
+Su phazly, 23 novembre 2026, file `results/explore/phazly-full-src.json`: la pipeline intera su un solo snapshot, 1211 s (quattro corse con 4 schede: da 1084 s a 1244 s; una sequenziale, 1478 s; con le sandbox a 2 core 1773 s; i file delle altre corse non sono conservati). La corsa sulla sorgente incompleta del volume è `results/explore/phazly-volume-src.json` (sorgente: una copia ridotta del progetto vero, senza `node_modules`, `target` e senza alcun file `.env*` o chiave).
 
 | App | Avvio | Pagine | Controlli | Premuti | Saltati | Falliti |
 |---|---|---|---|---|---|---|
@@ -498,12 +345,12 @@ Totale: 10 pagine, 158 controlli (77 rivelati da un click), 130 premuti, 128 con
 
 Tetto raggiunto, detto: `explore_cap` con `revealed_per_press`, «20 more after "Italiano"».
 
-- Valori di prova: le variabili dei file `.env.example` (e `.env.local.sample`) che Git traccia nella cartella dell'app passano all'app come ambiente (`dotenv_env` con `("*", file)`, `container.exported`): sono ciò che il progetto pubblica, segnaposto e non segreti. Senza, `admin-app` e `react-app` mostravano una pagina vuota («Missing required Firebase configuration», lacuna `page_without_controls`); con i valori mostrano la schermata di accesso. Non si entra nell'app: manca una credenziale di prova.
+- Valori di prova: le variabili dei file `.env.example` (e `.env.local.sample`) che Git traccia nella cartella dell'app passano all'app come ambiente (`dotenv_env` con `("*", file)`, `container.exported`): sono ciò che il progetto pubblica, segnaposto e non segreti. Con i valori `admin-app` e `react-app` mostrano la schermata di accesso; senza, una pagina vuota (lacuna `page_without_controls`). Non si entra nell'app: manca una credenziale di prova.
 - Moduli: 4 pulsanti hanno inviato il loro modulo con i campi compilati per tipo, e il browser ha accettato i valori (`invalid` vuoto): «Sign In» in `admin-app` (gestore `handleEmailSignIn`), «Log in» due volte e «Send Email» in `react-app` (`handleSubmit`); una casella di consenso della cancellazione dell'account in `landing-app` ha compilato il suo modulo (email, motivo, casella) e raggiunto `onChange`. Le richieste verso Firebase (`POST accounts:signInWithPassword`, `accounts:sendOobCode`) partono dal gestore e restano senza risposta: il container non ha rete. Dopo «Sign In» compare «Dismiss», il pulsante del messaggio d'errore, che si preme: la ripetizione del percorso compila di nuovo il modulo (senza, il browser rifiuta il modulo vuoto e il pulsante non si ritrova). Il gestore di un modulo senza ascoltatore di click è isolato dal punto di interruzione sul `submit` (test su Modal).
-- Ogni pressione parte da un contesto di browser pulito (una prima visita): con lo stato condiviso, i 4 controlli di `react-app` risultavano «non ritrovati» dopo il ricaricamento, e i controlli premuti erano 40 invece di 59. La lettura dei controlli aspetta fino a 3 s che l'app li disegni.
+- Ogni pressione parte da un contesto di browser pulito (una prima visita). La lettura dei controlli aspetta fino a 3 s che l'app li disegni.
 - La corsa è un checkout emulato: lo script fa `git init` e commit della cartella caricata, perché l'upload perde `.git` e solo i file tracciati sono quelli che il progetto pubblica.
 - Il gestore di un click è la prima funzione del progetto che l'evento raggiunge: punto di interruzione ufficiale di Chrome sul `click` e sul `submit` (`DOMDebugger.setEventListenerBreakpoint`) con le dipendenze e gli script del server di sviluppo in blackbox (`Debugger.setBlackboxPatterns`); l'indirizzo dello script viene da `Debugger.scriptParsed`, perché `callFrames[0].url` è vuoto. Su phazly 102 dei 128 controlli con effetto hanno il gestore. I senza gestore sono per lo più collegamenti a un'ancora della stessa pagina (`#features`): non hanno un gestore di click, e le «funzioni partite» dopo la pressione sono lo scorrimento e i ridisegni. Resta una lista di funzioni partite (`observed_calls`) che include i ridisegni di React dopo il cambio di stato; la catena sotto il gestore non è registrata.
-- Controlli rivelati: dopo una pressione (senza navigazione, e non su un collegamento) la pagina si rilegge e i controlli nuovi si premono dopo il click che li mostra; ogni voce porta `opened_by`, i nomi dei click che la mostrano, e `structure`, i numeri della regola (controlli prima e dopo, in comune, rinominati). Una pagina ridisegnata non rivela nulla: la stessa struttura (90 % della sequenza dei ruoli in comune) con almeno un quarto dei controlli in comune rinominati, o gli stessi ruoli nello stesso ordine; un menu tiene i nomi della pagina, una finestra cambia la struttura (anche una modale, che toglie dall'albero i controlli della pagina). Una prima versione confrontava con una lettura presa troppo presto e contava 947 «rivelati» sulla `landing-app`: ora il confronto parte da una lettura ferma, e il test del rendering a scatti lo prova (Modal); i test del cambio lingua, anche con un link in più, e della finestra modale sono su Modal. Su phazly i rivelati sono 77 (34 a un livello, 43 a due): 68 dopo «Italiano», 7 dopo «Forgot password?» in `react-app` (la schermata di recupero), 1 dopo «Sign In» («Dismiss») e 1 dopo «Sign up» (un campo che chiede un valore). **Limite noto:** premendo «Italiano» i controlli letti passano da 29 a 57 e 22 dei 29 in comune cambiano nome; la regola della pagina ridisegnata non scatta (la struttura cambia davvero, perché compaiono 21 pulsanti dei pasti), quindi gli 11 controlli del menu rinominati («La settimana» per «The week») sono letti come rivelati e premuti due volte, e occupano 11 dei 30 posti del tetto per click: da qui il taglio detto sopra. Gli ingressi non ne risentono, perché i collegamenti uniscono per gestore. Il file dei risultati tiene tutti i nomi (`revealed`) e i numeri della regola (`structure`).
+- Controlli rivelati: dopo una pressione (senza navigazione, e non su un collegamento) la pagina si rilegge e i controlli nuovi si premono dopo il click che li mostra; ogni voce porta `opened_by`, i nomi dei click che la mostrano, e `structure`, i numeri della regola (controlli prima e dopo, in comune, rinominati). Una pagina ridisegnata non rivela nulla: la stessa struttura (90 % della sequenza dei ruoli in comune) con almeno un quarto dei controlli in comune rinominati, o gli stessi ruoli nello stesso ordine; un menu tiene i nomi della pagina, una finestra cambia la struttura (anche una modale, che toglie dall'albero i controlli della pagina). Il confronto parte da una lettura ferma (test del rendering a scatti, del cambio lingua e della finestra modale, su Modal). Su phazly i rivelati sono 77 (34 a un livello, 43 a due): 68 dopo «Italiano», 7 dopo «Forgot password?» in `react-app` (la schermata di recupero), 1 dopo «Sign In» («Dismiss») e 1 dopo «Sign up» (un campo che chiede un valore). **Limite noto:** premendo «Italiano» i controlli letti passano da 29 a 57 e 22 dei 29 in comune cambiano nome; la regola della pagina ridisegnata non scatta (la struttura cambia davvero, perché compaiono 21 pulsanti dei pasti), quindi gli 11 controlli del menu rinominati («La settimana» per «The week») sono letti come rivelati e premuti due volte, e occupano 11 dei 30 posti del tetto per click: da qui il taglio detto sopra. Gli ingressi non ne risentono, perché i collegamenti uniscono per gestore. Il file dei risultati tiene tutti i nomi (`revealed`) e i numeri della regola (`structure`).
 - Contro la base statica dello stesso snapshot (2462 candidati, 335 con etichetta ed evento `click`, 823 ingressi, 823 schede): 105 controlli premuti con effetto non hanno un candidato statico con la stessa etichetta e lo stesso evento (`recovered`; 83 col gestore) e 6 ce l'hanno (`matched`). Gli eventi che il lettore statico ha scartato su un componente sono 152, 26 con un'etichetta: nessuno ha un controllo premuto con lo stesso nome, quindi per nome l'esplorazione ne recupera 0. Confrontare per nome è debole: lo stesso gestore può avere un'etichetta del codice e un nome accessibile diversi.
 - Gestori e ingressi dei collegamenti: i gestori che il browser ha eseguito sono 16, tutti collocati in una funzione dello snapshot (nessuno senza luogo). 15 sono già punti di partenza del lettore statico: l'esplorazione li conferma eseguendoli. Uno no: «Dismiss» di `admin-app`. Il lettore statico (scip-typescript) gli dà `AdminAuthContextType.clearError`, un membro dell'interfaccia del contesto, una dichiarazione senza corpo; il browser ha eseguito la freccia che lo implementa (`AdminAuthContext.tsx`, riga 94). È un ingresso osservato in più (una freccia in linea) e una scheda in più (823 → 824), con etichetta, evento `click` e gestore. Il test «nelle schede»: un controllo premuto il cui gestore il lettore statico non ha è una scheda con etichetta, evento e gestore (locale).
 - Flussi del riferimento: 33 controlli iniziali (frecce `attiva`, citati a `file:riga`): 23 in `react-app`, 6 in `admin-app`, 2 in `landing-app`, 2 fuori dall'app. Coperti dal solo lettore statico 8, da lettore statico e browser insieme 2, dal solo browser 0, da nessuno 23. L'esplorazione non aggiunge una citazione al lettore statico: ne conferma 2 (l'invio dei moduli di accesso di `admin-app` e `react-app`). Le 23 senza copertura stanno dietro l'accesso (15 in `react-app`, 5 in `admin-app`) o fuori dalla pagina; l'accesso resta una lacuna, perché manca una credenziale di prova.
@@ -534,7 +381,7 @@ Tetto raggiunto, detto: `explore_cap` con `revealed_per_press`, «20 more after 
 
 ## Eventi fra la pagina e il guscio Tauri
 
-Task 11b del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-flussi.md). Un `emit` da una parte e un `listen` dall'altra, dello stesso nome, sono un legame con le due posizioni (`resolver` `tauri-event`, il nome come `event`), come `invoke` lo è con il comando Rust (`flows.link_facts`; lettura in `languages/semantic.py`; prova: `tests/test_codebase_map_tauri_events.py`, 7 test).
+**Stato:** In uso, provato solo su fixture sintetiche dei test (task 11b del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-flussi.md)). Un `emit` da una parte e un `listen` dall'altra, dello stesso nome, sono un legame con le due posizioni (`resolver` `tauri-event`, il nome come `event`), come `invoke` lo è con il comando Rust (`flows.link_facts`; lettura in `languages/semantic.py`; prova: `tests/test_codebase_map_tauri_events.py`, 7 test).
 
 ### Parametri
 
@@ -554,9 +401,11 @@ Task 11b del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-fluss
 - `use tauri::prelude::*` e ogni `use` con un carattere jolly: non provano il tratto.
 - I nomi degli eventi di Tauri (`TauriEvent.*`): un nome non letterale, quindi una lacuna.
 
-## Tre corse sullo stesso progetto, 24 novembre 2026 (task 2b del piano dell'analisi unificata)
+## Tre corse sullo stesso progetto
 
-Domanda: quanto costa una corsa della pipeline da zero, quanto senza modifiche e quanto dopo la modifica di un solo modulo, e quanti dei collegamenti attesi ritrova ognuna. Serve prima di decidere le regole della sezione 7.3 della spec.
+**Stato:** Aperta: da approfondire. Gli strati non sono incrementali: un modulo cambiato costa il 95% di una corsa da zero. Serve prima di decidere le regole della sezione 7.3 della [spec della pipeline](../../docs/specs/2026-11-15-pipeline-di-analisi.md) (task 2b del piano dell'analisi unificata).
+
+Domanda: quanto costa una corsa della pipeline da zero, quanto senza modifiche e quanto dopo la modifica di un solo modulo, e quanti dei collegamenti attesi ritrova ognuna. Misurato il 24 novembre 2026.
 
 ### Parametri
 
@@ -586,4 +435,4 @@ Secondi per passo, da zero e dopo la modifica: scan 210,5 e 224,0; analyze 222,9
 
 - Il guadagno del ripristino condiviso (task 1b): serve un motore Docker vero in una VM Sandbox, non le sandbox di `sandbox_run`.
 - CPU, picco di memoria, spazio temporaneo; la varianza fra due corse dello stesso tipo; un progetto con un frontend più grande di due pulsanti.
-- Il rinnovo come lo fa la run di lavoro dell'app (`snapshot.py`, il percorso con `compare_files`): qui l'ho riprodotto con le stesse chiamate, non con la funzione stessa.
+- Il rinnovo come lo fa la run di lavoro dell'app (`snapshot.py`, il percorso con `compare_files`): qui è riprodotto con le stesse chiamate, non con la funzione stessa.
