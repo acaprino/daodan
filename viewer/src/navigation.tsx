@@ -17,12 +17,12 @@ const stepMeta = (step: FlowStep) => [step.route?.slice(1).join(' '), step.site,
 function FlowSteps({ model, flow }: { model: Model; flow: Flow }) {
   const { envelope } = model.state;
   return <>
-    <Column as="ol" gap="md" pad="sm" aria-label="Passi del flusso">{flow.steps.slice(0, 40).map((step, index) =>
+    <Column as="ol" gap="md" pad="sm" aria-label="Passi del flusso" data-selectable="">{flow.steps.slice(0, 40).map((step, index) =>
       <Column as="li" key={index} gap="xs">
         <Text pre>{index + 1}. {entityName(envelope, step.source)} <Text variant="strong">{LINK_LABEL[step.type] ?? step.type}</Text> {entityName(envelope, step.target)}</Text>
         <Text variant="note" pre>{stepMeta(step)}</Text>
       </Column>)}</Column>
-    {!!flow.gaps?.length && <Column gap="sm" pad="sm">
+    {!!flow.gaps?.length && <Column gap="sm" pad="sm" data-selectable="">
       <Heading size="label">Dove si ferma la prova</Heading>
       <Column as="ul" gap="sm">{flow.gaps.map((gap, index) =>
         <Column as="li" key={index} gap="xs"><Text variant="note" pre>{gap.site}</Text><Text pre>{gap.reason}</Text></Column>)}</Column>

@@ -22,7 +22,7 @@ function Technologies({ envelope, ids }: { envelope: Envelope; ids?: string[] })
 }
 
 function ProjectDetails({ envelope }: { envelope: Envelope }) {
-  return <Column gap="lg" aria-live="polite">
+  return <Column gap="lg" aria-live="polite" data-selectable="">
     <Column gap="xs">
       <Text variant="kicker">Come leggere la mappa</Text>
       <Heading size="small">{projectName(envelope) || 'Progetto'}</Heading>
@@ -47,7 +47,7 @@ function EntityDetails({ model, entity }: { model: Model; entity: Entity }) {
   const gaps = envelope.gaps.filter(gap => gap.refs.includes(entity.ref));
   const lines = Array.isArray(entity.lines) ? entity.lines.filter(Boolean).join('–') : entity.lines;
   const related = edges.filter(edge => edge.source.startsWith(`${entity.ref}@`) || edge.target.startsWith(`${entity.ref}@`));
-  return <Column gap="lg" aria-live="polite">
+  return <Column gap="lg" aria-live="polite" data-selectable="">
     <Column gap="xs">
       <Cluster gap="xs"><Icon name={iconFor({ nodeType: entity.node_type, type: entity.type })} />
         <Text variant="kicker">{entity.node_type ?? TYPE_LABEL[entity.type] ?? entity.type} · {entity.location === 'external' ? 'esterno' : 'interno'}</Text></Cluster>

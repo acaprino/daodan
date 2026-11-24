@@ -136,10 +136,10 @@ function App() {
   </Toolbar>;
   // The live event line is the run's, so it shows while its export is loading or unreadable too.
   const status = <>
-    <Text>{ready ? `${projectName(state.envelope)}${meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run ${String(meta.run_id ?? '')}`
+    <Text data-selectable="">{ready ? `${projectName(state.envelope)}${meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run ${String(meta.run_id ?? '')}`
       : noRuns ? 'Nessun run' : failure ? 'Export non leggibile' : "Carico l'export…"}</Text>
     {(ready || (runs && !noRuns)) && <><Spacer />
-      <Text>{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</Text></>}
+      <Text data-selectable="">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</Text></>}
   </>;
   const footer = !narrow && <>
     <Text>{ready
