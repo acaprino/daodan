@@ -139,9 +139,9 @@ def languages_section(cards, run_path: Path) -> list[str]:
                     if k not in languages.SUPPORTED_LANGUAGES and k != "tutti")
     out = ["## Linguaggi", "",
            f"{len(languages.SUPPORTED_LANGUAGES)} linguaggi letti dallo snapshot con "
-           f"{len(languages.SUPPORTED_EXTENSIONS)} estensioni (`scripts/languages/__init__.py`), "
-           f"{len(engine_pass.ENGINES)} analizzatori (`scripts/indexers/`) e {len(observers)} osservatori del "
-           "passo dinamico (`scripts/dynamic/`). Schede: aperte / buchi dichiarati / risolte del registro dei difetti "
+           f"{len(languages.SUPPORTED_EXTENSIONS)} estensioni (`daodan/core/languages/__init__.py`), "
+           f"{len(engine_pass.ENGINES)} analizzatori (`daodan/core/indexers/`) e {len(observers)} osservatori del "
+           "passo dinamico (`daodan/core/dynamic/`). Schede: aperte / buchi dichiarati / risolte del registro dei difetti "
            f"([{REGISTER.name}](../verification/{REGISTER.name})) con quel linguaggio fra i tag.", "",
            *_table(["Linguaggio", "Estensioni", "Analizzatore", "Osservatore", "Schede"], rows), ""]
     if others:
@@ -214,11 +214,11 @@ def build_section(report: dict, raw: dict, run_path: Path) -> list[str]:
                    | set(module_derive.LANGUAGE_TOOLS.values())
                    | {t for v in module_derive.INHERITED_TOOLS.values() for t in v})
     return ["## Build tool e toolchain", "",
-            f"La pre-mappa ha {len(premap.SOURCES)} fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge "
+            f"La pre-mappa ha {len(premap.SOURCES)} fonti (`daodan/core/premap/`, `SOURCES`); il grafo dei moduli legge "
             f"{sum(len(v) for v in manifests.values())} manifest di {len(manifests)} ecosistemi "
-            f"(`scripts/build_units.py`); un modulo riceve {len(tools)} toolchain dal suo ecosistema o linguaggio "
-            f"(`scripts/module_derive.py`); la preparazione porta {len(preparation.NEEDS)} toolchain nel container "
-            "(`scripts/preparation.py`, `NEEDS`).", "",
+            f"(`daodan/core/build_units.py`); un modulo riceve {len(tools)} toolchain dal suo ecosistema o linguaggio "
+            f"(`daodan/core/module_derive.py`); la preparazione porta {len(preparation.NEEDS)} toolchain nel container "
+            "(`daodan/core/preparation.py`, `NEEDS`).", "",
             "### Fonti della pre-mappa", "",
             f"Stati di ogni fonte nei casi del giro del {_date(run_path.name)} (`{_rel(run_path)}`): `ran` ha girato, "
             "`not_needed` il caso non aveva i suoi file.", "",
@@ -312,7 +312,7 @@ def stack_section(registry: dict, stack: dict) -> list[str]:
                f"Ognuna delle {_n(len(projects))} voci `project` riconoscibili ha la sua `category` scritta: nessuna "
                "è `framework` solo per il default.")
     return ["## Framework, librerie e strumenti", "",
-            "Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e "
+            "Lo step `stack` (`daodan/core/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e "
             "`tools`. La classe di una voce del catalogo (`data/service-registry.json`) la decide "
             "`service_registry.entry_category`: la `category` della voce se c'è, altrimenti `service` per una voce "
             "`service` e `framework` per ogni altra. I `frameworks` di un'unità sono le voci `framework`; le "
@@ -332,7 +332,7 @@ def stack_section(registry: dict, stack: dict) -> list[str]:
             "linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha "
             "analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo "
             f"per {_of(len(read_names), 'voce', 'voci')} ({', '.join(read_names)}). Rotte e collegamenti fra le parti "
-            "vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` "
+            "vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `daodan/core/flows.py` "
             "applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento "
             "del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix "
             "(`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle "
@@ -411,7 +411,7 @@ def flows_section() -> list[str]:
                  if row.startswith("| ") and not row.startswith(("| Tipo", "| ---"))]
         pairs.append([title, len(kinds), "; ".join(kinds)])
     return ["## Collegamenti dei flussi", "",
-            f"`scripts/flows.py` applica regole di collegamento di {len(flows.LINKS)} specie: "
+            f"`daodan/core/flows.py` applica regole di collegamento di {len(flows.LINKS)} specie: "
             + _codes(flows.LINKS) + "; un nodo di store ha uno di " + str(len(flows.NODE_TYPES)) + " tipi: "
             + _codes(flows.NODE_TYPES) + ". Il censimento "
             f"([{CENSUS.name}](../research/{CENSUS.name})) cataloga "

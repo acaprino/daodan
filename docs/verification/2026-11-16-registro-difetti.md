@@ -78,7 +78,7 @@ Nessun passo successivo riconosce tecnologie, e nessuna misura dopo il modello. 
 
 ### Dopo `resolve` (step `analyze`)
 
-Un buco di questo passo è una chiamata o un file senza risposta dell'indice. Il passo `observe` ne chiude una parte dove i test del progetto girano: la sola misura sull'intero progetto è quella di tududi JavaScript, nella riga di D-158. Dove la colonna dice «non misurato», nessun risultato del repository conta quel buco dopo `observe`.
+Un buco di questo passo è una chiamata o un file senza risposta dell'indice. Il passo `observe` ne chiude una parte dove i test del progetto girano: ogni giro scrive quanti, per caso e linguaggio (`steps.dynamic.languages.<linguaggio>.closed` nei file dei giri), ma non di quale causa. «Non misurato» nell'ultima colonna vuol dire questo: nessun risultato conta i buchi di quella scheda dopo `observe`. Le misure del passo dinamico, e ciò che resta aperto dopo l'intera pipeline, sono in `benchmarks/call-provenance/README.md`.
 
 | Id | Che cosa resta | Stato | Dopo `observe` |
 | --- | --- | --- | --- |
@@ -93,7 +93,7 @@ Un buco di questo passo è una chiamata o un file senza risposta dell'indice. Il
 | D-108 | Android: se le compilazioni delle varianti debug diano l'indice | aperto: manca la prova su un build con il suo `google-services.json` | non misurato |
 | D-109 | Android: build fermo senza `google-services.json` | buco dichiarato `build_input_missing` | non misurato |
 | D-112 | Un file Java che nessun javac del build compila | buco dichiarato, il motivo per file | non misurato |
-| D-114 | C#: 56,1 % di risposta nel `finale`; dopo le correzioni è rimisurato solo eShop | aperto: gli altri casi sono da rimisurare | su eShop dall'86,6 % all'87,3 % (D-114, D-241); gli altri casi non misurati |
+| D-114 | C#: 56,1 % di risposta nel `finale`; dopo le correzioni è rimisurato solo eShop | aperto: gli altri casi sono da rimisurare | su eShop la quota con e senza osservatore è nella scheda (D-241); gli altri casi non misurati |
 | D-119 | C#: membri dei source generator e `args` dei top-level statement | buco dichiarato, cause `GENERATED` e `TOP_LEVEL` | non misurato |
 | D-126 | Un configure che legge un submodule non scaricato | buco dichiarato `unavailable` | non misurato |
 | D-131 | Un configure che ha bisogno di ciò che l'unità scarica fuori dai registri | buco dichiarato `unavailable`, l'unità tiene i fatti statici | non misurato |
@@ -102,8 +102,8 @@ Un buco di questo passo è una chiamata o un file senza risposta dell'indice. Il
 | D-141 | robot-shop dispatch: il modulo Go dichiarato solo in un Dockerfile che oggi non costruisce | buco dichiarato `restore_failed` | non misurato |
 | D-142 | Un file cgo fuori dall'indice Go | buco dichiarato («a cgo file») | non misurato |
 | D-144 | Rust: file che nessun crate carica | buco dichiarato («no crate includes it») | non misurato |
-| D-158 | JavaScript: membri di un ricevente `any`, che l'indice non può nominare | buco dichiarato («a member of a value of type any») | su tududi il registro esatto del passo dinamico risponde all'82,8 % delle chiamate JavaScript che il motore lasciava senza risposta: misura del 12 novembre 2026 in `benchmarks/call-provenance/README.md`, «Registro esatto su tududi». Sugli altri progetti non misurato |
-| D-162 | Fogli di stile: i `no-rule` che nessun foglio definisce (marcatori `group`/`peer` di Tailwind, id, i 358 di hoppscotch non classificati) | aperto | non misurato: i `call` e i `parameter` sono del passo dinamico (D-162) |
+| D-158 | JavaScript: membri di un ricevente `any`, che l'indice non può nominare | buco dichiarato («a member of a value of type any») | su tududi il registro esatto dà un bersaglio all'82,8 % delle chiamate JavaScript che il passo statico lascia senza (misura del 12 novembre 2026: `benchmarks/call-provenance/README.md`, «Risultati validi oggi»); nei giri della pipeline ne chiude meno, e il perché è aperto nello stesso README |
+| D-162 | Fogli di stile: i `no-rule` che nessun foglio definisce (marcatori `group`/`peer` di Tailwind, id, quelli di hoppscotch non classificati) | aperto | non misurato: i `call` e i `parameter` sono del passo dinamico (D-162) |
 | D-164 | Fogli remoti senza testo | buco dichiarato `remote-sheet` | non misurato |
 | D-237 | Rust: riferimenti e file sotto un `#[cfg]` falso nella configurazione letta | buco dichiarato, il buco dice il cfg | non misurato |
 | D-272 | scip-clang v0.4.1 non scrive occorrenze per le funzioni `extern "C"` in C++ | aperto: va corretto a monte (scip-clang #544, PR #548); il buco porta la causa `EXTERN_C` | non misurato |
@@ -140,7 +140,7 @@ D-064: fra i registri che Gradle raggiunge c'è anche il Plugin Portal. È un li
 
 ### Aperte: da approfondire
 
-- **Misure dopo `observe`.** Per i buchi di `resolve` la sola misura sull'intero progetto è tududi JavaScript (D-158); per gli altri linguaggi e progetti nessun risultato conta i buchi dopo il passo dinamico.
+- **Buchi di `resolve` dopo `observe`, per causa.** I giri contano i buchi che `observe` chiude per caso e linguaggio, non per scheda: quali righe di «Dopo `resolve`» restino aperte dopo il passo dinamico non è misurato, salvo D-158 su tududi e D-114 su eShop.
 - **Classi di buchi senza scheda.** Nei rapporti dei giri (`benchmarks/project-model/results/pipeline/2026-11-16-<giro>.report.json`, `languages`) queste classi di `daodan/core/code_graph.py` non hanno una scheda che ne dica la causa: `undefined-project-symbol` in JavaScript, Java e Go; `no-occurrence` e `no-position` in Kotlin; `no-position` in C# e in Go; le cause dei fogli di stile diverse da `no-rule` e `remote-sheet` (`daodan/core/indexers/css.py`).
 - **Rimedi con l'effetto non rimisurato.** D-111 (jhipster, 135 file su 136 attesi), D-113 (zlib ed eShop dopo i commit), D-133 e D-140 (nessun giro dopo `d4e6d9046`), D-169, D-275, D-278 (tinyxml2), D-287 (un giro con lo step `stack`), D-313 (un passaggio intero su Windows).
 - **Schede risolte di cui il commit non dice la causa.** D-037, D-087, D-163, D-165, D-166, D-170, D-262.

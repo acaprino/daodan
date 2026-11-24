@@ -12,17 +12,17 @@ Misure, ognuna con il suo file e la sua data:
 
 ## Linguaggi
 
-17 linguaggi letti dallo snapshot con 63 estensioni (`scripts/languages/__init__.py`), 9 analizzatori (`scripts/indexers/`) e 7 osservatori del passo dinamico (`scripts/dynamic/`). Schede: aperte / buchi dichiarati / risolte del registro dei difetti ([2026-11-16-registro-difetti.md](../verification/2026-11-16-registro-difetti.md)) con quel linguaggio fra i tag.
+17 linguaggi letti dallo snapshot con 63 estensioni (`daodan/core/languages/__init__.py`), 9 analizzatori (`daodan/core/indexers/`) e 7 osservatori del passo dinamico (`daodan/core/dynamic/`). Schede: aperte / buchi dichiarati / risolte del registro dei difetti ([2026-11-16-registro-difetti.md](../verification/2026-11-16-registro-difetti.md)) con quel linguaggio fra i tag.
 
 | Linguaggio | Estensioni | Analizzatore | Osservatore | Schede |
 | --- | --- | --- | --- | --- |
-| Python | `.py` `.pyi` | scip-python | dynamic-record-python | 2 / 3 / 30 |
+| Python | `.py` `.pyi` | scip-python | dynamic-record-python | 1 / 3 / 31 |
 | Java | `.java` | scip-java | dynamic-record-jvm | 2 / 12 / 34 |
 | JavaScript | `.js` `.mjs` `.cjs` `.jsx` | scip-typescript | dynamic-record-javascript | 0 / 4 / 30 |
 | TypeScript | `.ts` `.tsx` `.mts` `.cts` | scip-typescript | dynamic-record-javascript | 1 / 1 / 24 |
 | SQL | `.sql` `.ddl` `.dml` | nessuno | nessuno | 0 / 0 / 0 |
 | PLSQL | `.pks` `.pkb` `.plsql` `.pls` `.pck` `.prc` `.fnc` `.trg` | nessuno | nessuno | 0 / 0 / 0 |
-| Rust | `.rs` | scip-rust | dynamic-callgrind-rust | 0 / 3 / 16 |
+| Rust | `.rs` | scip-rust | dynamic-callgrind-rust | 0 / 2 / 15 |
 | Go | `.go` | scip-go | dynamic-record-go | 1 / 2 / 13 |
 | CSS | `.css` `.scss` `.sass` `.less` `.pcss` `.postcss` | stylesheet | nessuno | 1 / 1 / 2 |
 | Kotlin | `.kt` `.kts` | scip-kotlin | dynamic-record-jvm | 3 / 8 / 27 |
@@ -60,7 +60,7 @@ Nel giro senza analizzatore: plsql (1 caso, 1 file), sql (7 casi, 51 file).
 
 ## Build tool e toolchain
 
-La pre-mappa ha 35 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
+La pre-mappa ha 35 fonti (`daodan/core/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`daodan/core/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`daodan/core/module_derive.py`); la preparazione porta 11 toolchain nel container (`daodan/core/preparation.py`, `NEEDS`).
 
 ### Fonti della pre-mappa
 
@@ -178,7 +178,7 @@ Riconosciute: `android-build-tools` `android-sdk` `autotools` `bazel` `buf` `bun
 
 ## Framework, librerie e strumenti
 
-Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e `tools`. La classe di una voce del catalogo (`data/service-registry.json`) la decide `service_registry.entry_category`: la `category` della voce se c'è, altrimenti `service` per una voce `service` e `framework` per ogni altra. I `frameworks` di un'unità sono le voci `framework`; le `libraries` sono tutti i pacchetti che dichiara, nel catalogo o no, con l'id della voce che il catalogo ne ha. Sul grafo dell'app un modulo mostra come tessere le voci `framework` e `library` che un suo file dichiara; uno strumento non è una tessera, un servizio è un nodo esterno.
+Lo step `stack` (`daodan/core/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e `tools`. La classe di una voce del catalogo (`data/service-registry.json`) la decide `service_registry.entry_category`: la `category` della voce se c'è, altrimenti `service` per una voce `service` e `framework` per ogni altra. I `frameworks` di un'unità sono le voci `framework`; le `libraries` sono tutti i pacchetti che dichiara, nel catalogo o no, con l'id della voce che il catalogo ne ha. Sul grafo dell'app un modulo mostra come tessere le voci `framework` e `library` che un suo file dichiara; uno strumento non è una tessera, un servizio è un nodo esterno.
 
 | Classe | Voci riconoscibili (con segni) | Voci con la categoria scritta, fra tutte |
 | --- | --- | --- |
@@ -202,7 +202,7 @@ Riconoscimento dello stack sul corpus, giro del 19 novembre 2026 (`benchmarks/pr
 | stack | 38 | 182 / 352 (51,7 %) | 290 / 653 (44,4 %), 37 sbagliati | 96 / 395 (24,3 %), 55 in più |
 | tutte | 178 | 362 / 568 (63,7 %) | 552 / 1.001 (55,1 %), 50 sbagliati | 141 / 518 (27,2 %), 65 in più |
 
-Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
+Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `daodan/core/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
 <details><summary>Framework, librerie e strumenti riconoscibili: 462 voci</summary>
 
@@ -1410,7 +1410,7 @@ Oltre al riconoscimento: i componenti Vue e Svelte entrano nell'indice di scip-t
 
 ## Collegamenti dei flussi
 
-`scripts/flows.py` applica regole di collegamento di 6 specie: `scrive` `legge` `rotta` `offre` `attiva` `ingresso`; un nodo di store ha uno di 11 tipi: `attore` `schermata` `funzionalità` `servizio o API` `gateway` `database` `coda` `autenticazione` `dispositivo` `filesystem` `altro`. Il censimento ([2026-11-14-punti-di-connessione.md](../research/2026-11-14-punti-di-connessione.md)) cataloga 26 tipi di punto di connessione; quali il prodotto unisce lo dice la sua sezione «Stato». Riconoscimento per tipo: non misurato.
+`daodan/core/flows.py` applica regole di collegamento di 6 specie: `scrive` `legge` `rotta` `offre` `attiva` `ingresso`; un nodo di store ha uno di 11 tipi: `attore` `schermata` `funzionalità` `servizio o API` `gateway` `database` `coda` `autenticazione` `dispositivo` `filesystem` `altro`. Il censimento ([2026-11-14-punti-di-connessione.md](../research/2026-11-14-punti-di-connessione.md)) cataloga 26 tipi di punto di connessione; quali il prodotto unisce lo dice la sua sezione «Stato». Riconoscimento per tipo: non misurato.
 
 | Coppia | Tipi nel censimento | Tipi |
 | --- | --- | --- |
