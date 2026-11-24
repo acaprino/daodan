@@ -5,19 +5,24 @@
   "type": "module",
   "scripts": {
     "test": "node --test \"test/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && vite build --mode app",
     "test:ui": "node test/browser.mjs"
   },
   "dependencies": {
     "@acaprino/imago": "github:acaprino/imago#v0.4.1",
+    "@acaprino/sigrid": "https://github.com/acaprino/sigrid/releases/download/v5.0.0/acaprino-sigrid-5.0.0.tgz",
     "elkjs": "0.12.1",
     "lucide-react": "1.70.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "playwright": "1.63.0",
+    "typescript": "5.9.3",
     "vite": "8.3.6"
   },
   "imago": {
