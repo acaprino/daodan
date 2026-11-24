@@ -1,8 +1,28 @@
 # Stack dal fork di stack-analyser
 
-**Stato:** proposta, quarta stesura, approvata dal proprietario il 21 novembre 2026 insieme alle «Scelte di chi scrive». Nessuna modifica proposta è nel codice. La stesura precedente è stata rivista in [`docs/reviews/2026-11-21-stack-dal-fork.md`](../reviews/2026-11-21-stack-dal-fork.md): questa ne risolve i rilievi B1, B2 e M1–M7.
+**Stato:** quarta stesura, approvata dal proprietario il 21 novembre 2026 insieme alle «Scelte di chi scrive». La stesura precedente è stata rivista in [`docs/reviews/2026-11-21-stack-dal-fork.md`](../reviews/2026-11-21-stack-dal-fork.md): questa ne risolve i rilievi B1, B2 e M1–M7. Il processo com'è nel codice: [Codebase Map, «Lo step `stack`»](../plugins/codebase-map.md#lo-step-stack).
 
-Il riconoscimento delle tecnologie di un progetto passa dal registro di Daodan al programma [`acaprino/stack-analyser`](https://github.com/acaprino/stack-analyser), il «fork». Tocca due repository: il fork e Daodan.
+Al 24 novembre 2026:
+
+- **Codice:** applicato e unito a `develop` il 24 novembre 2026, per decisione del proprietario, con la «Verifica» su Modal ancora aperta (sotto). Piani [1](../plans/2026-11-21-stack-dal-fork-1-fork.md) e [2](../plans/2026-11-21-stack-dal-fork-2-benchmark.md) consegnati; [3](../plans/2026-11-22-stack-dal-fork-3-passaggio.md), parte A fatta e pubblicata (rilasci `1.27.6-daodan.3`, `.4` e `.5`, fork rinominato `acaprino/stack-analyser-daodan`), B1–B5 nel ramo, B6 in corso.
+- **Scelte:** le sette «Scelte di chi scrive» del piano 3 confermate dal proprietario il 24 novembre 2026.
+- **Diverso dal disegno:** il fork gira sul Node che Daodan scarica al primo uso (`indexers.runtime.node`), non sul Node della macchina che dicono 2.1 e «Vincoli». Le menzioni delle variabili d'ambiente nei sorgenti non si fanno più (scelta 2 del piano 3).
+- **Prova con il rilascio vero `.3`**, suite locale con `DAODAN_STACK_ANALYSER` su un container Linux con Node 22: 4.401 passati, 11 falliti, 140 saltati. Gli 11: Quarkus non riconosciuto dalle sue estensioni (2), il valore di un'immagine Docker dichiarata ridotto dal fork (7), una distribuzione Python locale letta come esterna (2). Corretti nel fork, ramo `feature/stack-detection`, commit `69c77c2`…`348051b`, CI verde (run 45410124486). Il rilascio `.4` è pubblicato (tag `v1.27.6-daodan.4`, costruito da GitHub Actions da `ff2fef4`) . Il rilascio `.5` (tag `v1.27.6-daodan.5`, da `453a2a9`) riprende i segni veri che il porting aveva lasciato fuori e dà a uno starter di Spring Data il suo server: è la scelta del proprietario del 24 novembre 2026, «più cose riconosciamo e meglio è». Daodan è fissato a `.5`: suite locale, non Modal, con il rilascio `.5` vero sullo stesso container (Linux, Node v22.23.5): 4.415 passati, 0 falliti, 140 saltati; senza il rilascio (misurato con `.4` fissato): 4.316 passati, 0 falliti, 239 saltati.
+- **Aperti noti:** un test di `tests/test_codebase_map_app.py` instabile per una corsa in `engine_pass`, che a fine passaggio riscrive la pre-mappa senza runner (c'era prima, il nuovo tempo lo mostra); 4.441 problemi di lint vecchi nel fork, mostrati e non bloccanti nel suo flusso di rilascio; nel fork, `replace => ../local` di Go e i repository `path` di Composer ancora letti come esterni; 37 marchi nuovi in `daodan/data/marks` senza cornice, diversi dagli altri; la voce «Avro» del CNCF non si unisce più ad «Apache Avro» del fork e compare due volte (`avro`, `avro-cncf`); `technologies.state` non scrive più la pre-mappa quando legge lo stato.
+
+«Verifica», riga per riga (Modal non era raggiungibile dalla macchina di questo lavoro):
+
+| Riga | Stato |
+| --- | --- |
+| Nessuna perdita | Aperta. Il piano 2, con il rilascio `.2` e la traduzione nel benchmark, non perde nomi attesi su 178 fixture su 180. Il giro sul corpus dopo il passaggio aspetta Modal |
+| Scansione veloce | Scritta: `test_a_fast_scan_keeps_the_signs_of_the_sources_it_did_not_run` (`tests/test_codebase_map_stack_sources.py`) |
+| Senza Node | Scritta: `test_without_the_tool_the_previous_signs_stay_and_a_gap_says_why` (`tests/test_codebase_map_stack_sources.py`), `test_an_install_that_failed_is_not_tried_again_in_the_same_process` (`tests/test_codebase_map_stack_analyser.py`) |
+| Tempo | Aperta. «Prima» e «dopo» misurati dal piano 2, con `.2`: scansione veloce, mediana 0,013 s col registro, 0,523 s col fork. Dopo il passaggio non misurato: aspetta Modal |
+| Nessun codice eseguito | Aperta. La prova con l'installazione vera (`cli()` e il Node di Daodan) aspetta Modal (piano 3, B6) |
+
+Aspetta Modal anche la nuova misura su `develop` `68b784e` (piano 3, punto 7 di «Che cosa il piano 2 ha trovato»).
+
+Il riconoscimento delle tecnologie di un progetto passa dal registro di Daodan al programma [`acaprino/stack-analyser-daodan`](https://github.com/acaprino/stack-analyser-daodan) (prima `acaprino/stack-analyser`), il «fork». Tocca due repository: il fork e Daodan.
 
 ## Perché
 
@@ -125,7 +145,7 @@ Prese il 21 novembre 2026, nell'ordine.
 - I nomi dei campi della prova, delle opzioni del CLI e del campo che porta fonte e scansione nei segni.
 - La versione minima di Node e il numero di versione del rilascio.
 - Come generare la prima stesura delle regole dal registro e come dividerle in commit.
-- L'aggiornamento di `docs/plugins/`, `REGISTRY-NOTICES.md`, della tabella di supporto e della riga «Stack» in `2026-11-15-pipeline-di-analisi.md`, che oggi promette lo stack «in pochi millisecondi».
+- L'aggiornamento di `docs/plugins/`, `REGISTRY-NOTICES.md`, della tabella di supporto e della riga «Stack» in `2026-11-15-pipeline-di-analisi.md`, che prometteva lo stack in millisecondi: fatto nel piano 3, task B7.
 
 ## Misure
 

@@ -74,7 +74,7 @@ def _versions(tmp_path, files, source) -> dict:
 
 
 @pytest.mark.parametrize("source", ['workspace = true', 'path = "../sdk"'])
-def test_local_python_distribution_is_internal_only_for_its_declaring_consumer(tmp_path, source):
+def test_local_python_distribution_is_internal_only_for_its_declaring_consumer(real_stack, tmp_path, source):
     project = tmp_path / "project"
     local_manifest = "packages/app/pyproject.toml"
     external_manifest = "remote/requirements.txt"

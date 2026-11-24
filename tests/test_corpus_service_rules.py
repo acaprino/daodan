@@ -3,17 +3,25 @@
 import csv
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "benchmarks/project-model"
 sys.path.insert(0, str(ROOT / "daodan/core"))
 import service_registry  # noqa: E402
+import stack_analyser  # noqa: E402
+from test_codebase_map_stack_recognition import fact, package_signs, recognized  # noqa: E402
 
 
 class CorpusServiceRulesTests(unittest.TestCase):
+    def work(self) -> Path:
+        return Path(self.enterContext(tempfile.TemporaryDirectory(prefix="corpus-service-")))
+
     @classmethod
     def setUpClass(cls):
         cls.entries = {entry["id"]: entry for entry in service_registry.load()["entries"]}
@@ -32,20 +40,25 @@ class CorpusServiceRulesTests(unittest.TestCase):
                 self.assertGreater(int(row["line"]), 0)
                 self.assertEqual(service_registry.entry_category(self.entries[row["id"]]), "service")
 
+    @pytest.mark.usefixtures("real_stack")
     def test_corpus_signals_survive_the_registry_build(self):
+        # The `hosts` signals are the registry's (its `hosts`, from the release's catalogue), the `env` ones the
+        # catalogue's own (`dotenv`); a package is recognized by the release.
+        rules = {rule["tech"]: rule for rule in stack_analyser.catalogue()}
+        packages = [row for row in self.evidence if row["selector"] not in {"env", "hosts"}]
+        found = package_signs(recognized(self.work(), packages=[
+            fact(row["selector"], row["signal"], f"{row['path']}#L{row['line']}", "pre-map@1") for row in packages]))
         for row in self.evidence:
             ident, selector, signal = row["id"], row["selector"], row["signal"]
             with self.subTest(ident=ident, selector=selector, signal=signal):
-                signs = self.entries[ident]["signs"]
-                if selector in {"env", "hosts"}:
-                    self.assertIn(signal, signs[selector])
+                if selector == "hosts":
+                    self.assertIn(signal, self.entries[ident]["hosts"])
+                elif selector == "env":
+                    self.assertIn(signal, rules[ident]["dotenv"])
                 else:
-                    path, line = row["path"], int(row["line"])
-                    facts = [(selector, signal, path, line, None)]
-                    project = service_registry.Project(facts, [], lambda _: [])
-                    answer = service_registry.check_packages([self.entries[ident]], project)
-                    self.assertEqual(answer["signs"], [(ident, signal, path, line)])
+                    self.assertIn((ident, signal, row["path"], int(row["line"])), found)
 
+    @pytest.mark.usefixtures("real_stack")
     def test_related_packages_do_not_identify_specific_services(self):
         cases = (
             ("firebase.messaging", "maven", "com.google.firebase:firebase-bom"),
@@ -61,11 +74,12 @@ class CorpusServiceRulesTests(unittest.TestCase):
         )
         for ident, ecosystem, name in cases:
             with self.subTest(ident=ident, package=name):
-                project = service_registry.Project([(ecosystem, name, None, None, None)], [], lambda _: [])
-                self.assertEqual(service_registry.check_packages([self.entries[ident]], project)["signs"], [])
+                found = package_signs(recognized(self.work(), packages=[
+                    fact(ecosystem, name, "manifest", "pre-map@1")]))
+                self.assertNotIn(ident, {i for i, *_ in found})
 
+    @pytest.mark.usefixtures("real_stack")
     def test_azure_storage_clients_identify_the_supported_service(self):
-        entries = [self.entries["azure.storage"], self.entries["azure.blobstorage"]]
         choices = (
             ("rubygems", "azure-blob", "azure.blobstorage"),
             ("npm", "@azure/storage-blob", "azure.blobstorage"),
@@ -76,5 +90,7 @@ class CorpusServiceRulesTests(unittest.TestCase):
         )
         for ecosystem, name, ident in choices:
             with self.subTest(ecosystem=ecosystem, package=name):
-                project = service_registry.Project([(ecosystem, name, None, None, None)], [], lambda _: [])
-                self.assertEqual(service_registry.check_packages(entries, project)["signs"], [(ident, name, None, None)])
+                found = package_signs(recognized(self.work(), packages=[
+                    fact(ecosystem, name, "manifest", "pre-map@1")]))
+                self.assertEqual({i for i, *_ in found} & {"azure.storage", "azure.blobstorage"}, {ident})
+                self.assertIn((ident, name, "manifest", None), found)

@@ -1,5 +1,7 @@
 """Frameworks and services group: Specfy stack-analyser, @vercel/fs-detectors, @netlify/build-info, alizer and
-Railpack `info` read the corpus of `fixtures/` on Modal, against a read-only baseline (Daodan's service registry).
+Railpack `info` read the corpus of `fixtures/` on Modal. (Daodan's service registry, the baseline of the rounds kept in
+`results/daodan_registry.json` and `results/specfy_stack_analyser.json`, no longer recognizes: its adapters are gone, and
+the `stack` step by the fork is `modal_stack.py`'s.)
 
 Per tool and fixture the container copies the fixture without `expected.json` and `source.json`, makes it a git
 repository (as Daodan's snapshot expects) and runs the adapter in a fresh child process three times: traced (strace
@@ -11,7 +13,7 @@ tool and fixture; `fetch` scores them with `score.py` into `results/<tool>.json`
 
     modal deploy benchmarks/project-model/modal_frameworks.py
     python benchmarks/project-model/modal_frameworks.py smoke --tools alizer --fixtures js-nextjs   # answer on screen
-    python benchmarks/project-model/modal_frameworks.py smoke --tools specfy_stack_analyser,specfy_daodan --fixtures py-fastapi-compose
+    python benchmarks/project-model/modal_frameworks.py smoke --tools specfy_stack_analyser --fixtures py-fastapi-compose
     python benchmarks/project-model/modal_frameworks.py spawn [--tools a,b] [--fixtures x,y] [--no-tududi]
     python benchmarks/project-model/modal_frameworks.py fetch [--tools a,b]
 """
@@ -46,8 +48,7 @@ import modal  # noqa: E402
 LOCAL = modal.is_local()
 ROOT = HERE if LOCAL else Path("/pm")
 PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
-TOOLS = ("specfy_stack_analyser", "vercel_fs_detectors", "netlify_build_info", "alizer", "railpack_info",
-         "daodan_registry")
+TOOLS = ("specfy_stack_analyser", "vercel_fs_detectors", "netlify_build_info", "alizer", "railpack_info")
 STORE = "project-model/frameworks"
 RUN_TIMEOUT = 240  # seconds for one execution of one adapter on one fixture (the call may raise it); the function is capped below
 COMMIT_EVERY = 5  # a volume commit costs about 12 s
@@ -96,15 +97,11 @@ app = modal.App(APP, image=_image())
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 
-def code_sha256(tool: str) -> str:
+def code_sha256() -> str:
     """One hash over the adapters, compared with the local one before trusting a run."""
     digest = hashlib.sha256()
     for path in sorted((ROOT / "tools").glob("*.py")):
         if path.stem in TOOLS or path.stem == "_fw":
-            digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
-    if tool == "specfy_daodan":
-        for path in (ROOT / "tools/specfy_daodan.py", PLUGIN / "core/specfy_rules.mjs",
-                     PLUGIN / "data/service-registry.json"):
             digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
     return digest.hexdigest()
 
@@ -289,7 +286,7 @@ def run_tool(tool: str, fixtures: list[str], tududi: bool = True, store: bool = 
     Path("/tmp/pm_hook.js").write_text(HOOK, encoding="utf-8")
     sys.path.insert(0, "/pm/tools")
     adapter = __import__(tool)
-    code = code_sha256(tool)
+    code = code_sha256()
     print("code", code, flush=True)
     started = time.time()
     for cache in (f"/tmp/pm-home-{tool}", "/tmp/railpack"):  # the first fixture runs cold: downloads show there
@@ -329,12 +326,10 @@ def _expected_fixtures() -> list[str]:
 
 
 COMMANDS = {"specfy_stack_analyser": "stack-analyser <dir> --output=out.json",
-            "specfy_daodan": "node specfy_rules.mjs <pinned Specfy> <dir> out.json catalogue.json",
             "vercel_fs_detectors": "node vercel_detect.cjs <dir> (getWorkspaces, detectFrameworks, packageManagers, monorepoManagers)",
             "netlify_build_info": "build-info <dir> [--rootDir <root>] at the root and each workspace package",
             "alizer": "alizer analyze <dir>; alizer component <dir> --no-port-detection",
-            "railpack_info": "railpack info --format json <dir>",
-            "daodan_registry": "snapshot.py write <dir> --no-engine --no-index; service_registry.recognize(manifest)"}
+            "railpack_info": "railpack info --format json <dir>"}
 
 
 def fetch(tools: list[str]) -> None:
@@ -364,9 +359,7 @@ def fetch(tools: list[str]) -> None:
                 record["ids"] = detail.get("ids")
                 if detail.get("technologies"):  # the tool's own type of each technology it found
                     record["id_types"] = {k: v["type"] for k, v in detail["technologies"].items()}
-                if detail.get("entries"):  # the registry's kind of each entry it recognised
-                    record["id_kinds"] = {k: v["kind"] for k, v in detail["entries"].items()}
-                record["detail"] = {k: v for k, v in detail.items() if k not in ("ids", "technologies", "entries")}
+                record["detail"] = {k: v for k, v in detail.items() if k not in ("ids", "technologies")}
             fixtures[name] = record
         if "mix-real-tududi" in fixtures:  # the same checkout, run by the current code
             tududi = fixtures["mix-real-tududi"]
@@ -375,7 +368,7 @@ def fetch(tools: list[str]) -> None:
         data = {"tool": tool, "version": version, "group": "frameworks", "command": COMMANDS[tool], "fixtures": fixtures}
         if tududi:
             data["tududi"] = tududi
-        data["code"] = {"container": sorted(c for c in codes if c), "local_adapters": code_sha256(tool)}
+        data["code"] = {"container": sorted(c for c in codes if c), "local_adapters": code_sha256()}
         stale = sorted(n for c, names in codes.items() for n in names if c != max(codes, key=lambda k: len(codes[k])))
         if stale:
             data["mixed_code"] = stale
@@ -403,7 +396,7 @@ if __name__ == "__main__":
     if args.command == "fetch":
         fetch(chosen)
     else:
-        print("local code", {tool: code_sha256(tool) for tool in chosen})
+        print("local code", code_sha256())
         function = modal.Function.from_name(APP, "run_tool")
         if args.command == "smoke":
             for tool in chosen:
