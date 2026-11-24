@@ -37,14 +37,23 @@ jobs:
 
       - run: npm ci
 
-      # The design rules of Imago, which the viewer's agents are told to run before they say UI work is done.
+      # The design rules of Imago, for the App page: the one still on it (the `imago` block of package.json).
       - run: npx imago-check
+
+      - run: npm run typecheck
 
       - run: npm test
 
       - run: npm run build
 
-      # The committed pages are what the source builds.
+      # The map page is Sigrid's components alone: no class and no stylesheet of Daodan's (sigrid-check.config.json).
+      - run: npx --no sigrid-check src
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run test:ui
+
+      # The committed pages are what the source builds. Last, so one run shows the behaviour and the difference.
       - run: git diff --exit-code -- ../daodan/assets
 
       # When the committed pages differ, keep what the source builds so it can be committed (the pages are not built by hand).
@@ -54,7 +63,3 @@ jobs:
           name: built-assets
           path: daodan/assets
           retention-days: 3
-
-      - run: npx playwright install --with-deps chromium
-
-      - run: npm run test:ui

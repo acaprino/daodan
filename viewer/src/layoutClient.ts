@@ -11,7 +11,7 @@ export type WorkerLike = {
 
 export class LayoutError extends Error {
   reason: 'superseded' | 'timeout' | 'failed';
-  constructor(reason: 'superseded' | 'timeout' | 'failed', message = reason) {
+  constructor(reason: 'superseded' | 'timeout' | 'failed', message: string = reason) {
     super(message);
     this.reason = reason;
   }

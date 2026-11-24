@@ -27,9 +27,7 @@
   },
   "imago": {
     "src": [
-      "src",
-      "app",
-      "index.html"
+      "app"
     ],
     "tests": [
       "test"
@@ -38,7 +36,7 @@
       "../AGENTS.md",
       "../CLAUDE.md"
     ],
-    "entry": "src/main.tsx",
+    "entry": "app/app.js",
     "app": "daodan",
     "icons": {
       "public/favicon.svg": "favicon.svg",

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { appearanceOptions, applyStored, readAppearance } from '../src/page.ts';
+import { appearanceOptions, applyStored, readAppearance } from '../app/imago-page.ts';
 
 const store = (values: Record<string, string> = {}) => ({
   values, getItem: (key: string) => values[key] ?? null, setItem(key: string, value: string) { values[key] = value; },

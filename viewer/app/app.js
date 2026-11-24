@@ -1,7 +1,7 @@
 import '@acaprino/imago/css/imago.css';
 import { buttonHtml, confirm, createRegistry, fileTree, footerKeys, formatKeys, graphLegendHtml, iconButtonHtml, iconMarkup as icon, inspector, LOADING_DELAY_MS, metric, notify, noteHtml, openMenu, PALETTE_COMMAND, panelStateHtml, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, showAfter, stepList, tabNavigationHtml, textFieldHtml } from '@acaprino/imago/ui';
 import { graphView } from '@acaprino/imago/graph';
-import { applyStored, graphControls, mountPage, storageOrNull } from '../src/page';
+import { applyStored, graphControls, mountPage, storageOrNull } from './imago-page';
 
 
 const shell = document.querySelector('.im-shell');

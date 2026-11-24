@@ -97,7 +97,6 @@ try {
     };
   }, { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } });
   await page.goto('http://daodan.test/app/?token=test');
-  const appCss = await page.locator('link[rel="stylesheet"]').getAttribute('href');
   assert.equal(await page.locator('body > .im-shell').count(), 1);
   const selectable = locator => locator.evaluate(el => getComputedStyle(el).userSelect !== 'none');
   const palette = page.getByRole('dialog', { name: 'Cerca un comando' });
@@ -345,153 +344,242 @@ try {
   assert.deepEqual(engineRequests, [{ api_key: '' }]);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
+  // The Codebase Map, on Sigrid: what a person meets, by role, name and words. The scheme is what `applyTheme` writes on the root.
+  const schemeIs = (where, wanted) => where.waitForFunction(value => document.documentElement.dataset.scheme === value, wanted);
+  const kept = () => page.evaluate(() => localStorage.getItem('daodan.theme'));
+  const fits = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+  const focused = locator => locator.evaluate(el => el === document.activeElement);
+  const main = page.getByRole('main');
+  const line = text => page.getByRole('status').filter({ hasText: text });  // the status row, and what it says
+  const nav = page.getByRole('navigation', { name: 'Mappa' });
+  const info = page.getByRole('complementary', { name: 'Informazioni sul progetto' });
+  const details = page.getByRole('complementary', { name: 'Dettaglio' });
+  const closeIn = region => region.getByRole('button', { name: 'Chiudi', exact: true }).click();
+  const inMain = () => page.evaluate(() => !!document.activeElement?.closest('main'));
   await page.setViewportSize({ width: 1280, height: 850 });
-  mode.exportBroken = true;  // an export that cannot be read: a panel that waits, then fails, with Riprova
+  mode.exportBroken = true;  // an export that cannot be read: the page waits, then says what failed, with Riprova
   mode.exportDelay = 1000;
   await page.goto('http://daodan.test/');
-  await page.locator('[data-im-state-layer="loading"]').waitFor();
-  const unreadable = page.locator('.im-failure');
+  assert.equal(await page.title(), 'Codebase Map');
+  await main.getByRole('progressbar', { name: "Carico l'export…" }).waitFor();
+  await line("Carico l'export…").waitFor();
+  assert.equal(await main.locator('[aria-busy="true"]').count(), 1);
+  const unreadable = main.getByRole('alert');
   await unreadable.waitFor();
-  assert.match(await unreadable.innerText(), /Errore[\s\S]*Riprova/);
+  assert.match(await unreadable.innerText(), /Errore[\s\S]*Export non leggibile[\s\S]*Riprova/);
+  await line('Export non leggibile').waitFor();
+  assert.equal(await main.locator('[aria-busy="true"]').count(), 0);
   mode.exportBroken = false;
   mode.exportDelay = 0;
   await unreadable.getByRole('button', { name: 'Riprova' }).click();
-  const viewerCss = await page.locator('link[rel="stylesheet"]').getAttribute('href');
-  assert.deepEqual(await readFile(new URL('app/' + appCss, assets)), await readFile(new URL('viewer/' + viewerCss, assets)));
-  const canvas = page.getByRole('region', { name: 'Naviga il grafo' });
-  const node = canvas.locator('.im-graph-node').first();
-  await node.waitFor({ timeout: 15000 });
-  const name = await node.getAttribute('title');
-  const inspectorBox = page.locator('.im-inspector');
-  assert.ok(await inspectorBox.isHidden());
-  await node.click();
-  await page.waitForFunction(label => document.querySelector('.im-inspector h2')?.textContent === label, name, { timeout: 5000 });
-  assert.equal(await page.locator('.im-inspector h2').innerText(), name);
-  assert.equal(await page.locator('body > #app.im-root > .im-shell').count(), 1);
-  assert.match(await page.locator('.im-footer').innerText(), /entità[\s\S]*nodi/);
-  assert.match(await page.locator('.im-status').innerText(), /shop · run fixture/);
+  await line('shop · run fixture').waitFor();
+  assert.equal(await unreadable.count(), 0);
+  await schemeIs(page, 'dark');  // the theme chosen on the App page
+  const foot = page.getByRole('contentinfo');
+  assert.match(await foot.innerText(), /entità[\s\S]*nodi/);
+  assert.match(await foot.getByRole('list', { name: 'Tasti' }).innerText(), /Ctrl\s*K[\s\S]*Comandi[\s\S]*Ctrl\s*F[\s\S]*Cerca in questa vista[\s\S]*F6[\s\S]*Area successiva/);
+  // The views are places of the bar.
+  const view = name => page.getByRole('button', { name: new RegExp(`^${name}`) });
+  assert.equal(await view('Logica').getAttribute('aria-current'), 'page');
+  await view('Fisica').click();
+  await page.getByRole('main', { name: 'Mappa fisica' }).waitFor();
+  assert.equal(await view('Fisica').getAttribute('aria-current'), 'page');
+  assert.equal(await view('Logica').getAttribute('aria-current'), null);
+  await choose('Vista logica');
+  await page.getByRole('main', { name: 'Mappa logica' }).waitFor();
+  // The palette, by its key and by its button; its Escape closes it and nothing else.
+  await page.getByRole('button', { name: 'Comandi', exact: true }).click();
+  await palette.waitFor();
+  await page.keyboard.press('Escape');
+  await palette.waitFor({ state: 'detached' });
+  // What the project is, in the inspector: opened by its button or its command, closed by Escape or by its button.
+  assert.equal(await info.count(), 0);
+  await main.getByRole('button', { name: 'Informazioni sul progetto' }).click();
+  await info.waitFor();
+  assert.match(await info.innerText(), /Tecnologie[\s\S]*React[\s\S]*web\/checkout\.tsx/);
+  assert.ok(await selectable(info.getByText('web/checkout.tsx', { exact: true })));
   await page.keyboard.press('Control+k');
   await palette.waitFor();
   await page.keyboard.press('Escape');
   await palette.waitFor({ state: 'detached' });
-  assert.ok(await inspectorBox.isVisible());  // the palette took that Escape
-  await node.focus();
+  assert.ok(await info.isVisible());  // the palette took that Escape
   await page.keyboard.press('Escape');
-  await inspectorBox.waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: 'Informazioni sul progetto' }).click();
-  assert.equal(await inspectorBox.locator('.im-panel-title').innerText(), 'Informazioni sul progetto');
-  assert.match(await inspectorBox.innerText(), /Tecnologie[\s\S]*React/);
-  await inspectorBox.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  assert.ok(await inspectorBox.isHidden());
-  await node.click();
-  await inspectorBox.waitFor();
-  const flow = page.locator('.im-sidebar .im-row').first();
-  await flow.click();
-  assert.equal(await flow.getAttribute('aria-pressed'), 'true');
-  assert.ok(await page.locator('.im-timeline li').count() > 0);
-  assert.ok(await selectable(page.locator('.im-timeline li').first()));
-  assert.ok(await selectable(page.locator('.im-inspector code').first()));
-  await page.locator('.im-canvas-message').waitFor({ state: 'hidden' });
-  await canvas.locator('.im-graph-node').first().waitFor();
-  assert.ok((await canvas.boundingBox()).height >= 320);
-  assert.equal(await theme(), 'dark');
+  await info.waitFor({ state: 'hidden' });
+  await choose('Informazioni sul progetto');
+  await info.waitFor();
+  await closeIn(info);
+  await info.waitFor({ state: 'hidden' });
+  // The sidebar: the flows with their steps, and the elements in view, whose details are in the inspector.
+  await nav.getByRole('button', { name: /^pay/ }).click();
+  await nav.getByRole('button', { name: /^pay/, pressed: true }).waitFor();
+  const steps = nav.getByRole('list', { name: 'Passi del flusso' }).getByRole('listitem');
+  assert.equal(await steps.count(), 8);
+  assert.match(await steps.first().innerText(), /pay chiama apiPost[\s\S]*web\/checkout\.tsx:12 · diretto/);
+  assert.ok(await selectable(steps.first().getByText('web/checkout.tsx:12', { exact: false })));
+  assert.match(await foot.innerText(), /flusso su \d+ nodi/);
+  await nav.getByRole('button', { name: /^pay/ }).click();
+  await steps.first().waitFor({ state: 'detached' });
+  await nav.getByRole('button', { name: /^nightlyReconcile/ }).click();
+  await nav.getByText('call to refund is unresolved').waitFor();
+  await nav.getByRole('button', { name: /^web/ }).click();
+  await details.getByRole('heading', { name: 'web', exact: true }).waitFor();
+  assert.match(await details.innerText(), /componente · interno[\s\S]*Schermate del negozio/);
+  await details.getByRole('button', { name: 'Entra in web' }).click();
+  const place = main.getByRole('navigation', { name: 'Posizione' });
+  await place.getByText('web', { exact: true }).waitFor();
+  await details.waitFor({ state: 'hidden' });
+  await place.getByRole('button', { name: 'Su', exact: true }).click();
+  await place.getByText('web', { exact: true }).waitFor({ state: 'detached' });
+  await details.waitFor();  // what was left is chosen
+  await closeIn(details);
+  await details.waitFor({ state: 'hidden' });
+  // Ctrl+F is the search of the view; a search that leaves nothing says so, with the way back.
+  const search = main.getByLabel('Cerca per nome');
   await page.keyboard.press('Control+f');
-  assert.equal(await page.evaluate(() => document.activeElement?.id), 'map-search');
-  assert.ok(await page.getByLabel('Cerca per nome').isVisible());
-  if (await inspectorBox.isVisible()) await inspectorBox.getByRole('button', { name: 'Chiudi dettaglio' }).click();  // a selected node stays visible
-  await page.getByLabel('Cerca per nome').fill('zzzz');  // nothing is left to draw: the empty state says so and offers the way back
-  const emptyMap = page.locator('[data-im-state-layer="empty"]');
-  await emptyMap.getByRole('button', { name: 'Azzera filtri' }).click();
-  await canvas.locator('.im-graph-node').first().waitFor();
-  assert.equal(await emptyMap.count(), 0);
-  assert.equal(await page.getByLabel('Cerca per nome').inputValue(), '');
-  assert.ok(await page.evaluate(() => [...document.querySelectorAll('button svg')]
-    .filter(svg => !svg.closest('[data-im-node], .im-graph-host')).every(svg => svg.classList.contains('im-icon'))));
-  await page.locator('.im-sidebar .im-row').first().focus();
+  assert.ok(await focused(search));
+  await search.fill('zzzz');
+  await main.getByText('Nessun elemento visibile.').waitFor();
+  assert.ok(await main.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).isVisible());
+  await main.getByRole('button', { name: 'Azzera filtri', exact: true }).click();
+  await main.getByText('Nessun elemento visibile.').waitFor({ state: 'detached' });
+  assert.equal(await search.inputValue(), '');
+  await main.getByRole('combobox', { name: 'Tipo di entità' }).click();
+  await page.getByRole('option', { name: 'componente', exact: true }).click();
+  await main.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).click();
+  await main.getByRole('button', { name: /Azzera filtri/ }).waitFor({ state: 'detached' });
+  // F6 and Shift+F6 go from a region to the next.
+  await nav.getByRole('button').first().focus();
   await page.keyboard.press('F6');
-  assert.ok(await inContent());
+  assert.ok(await inMain());
+  await page.keyboard.press('Shift+F6');
+  assert.ok(await nav.evaluate(el => el.closest('aside').contains(document.activeElement)));
+  // The rail is the person's choice, and from 620 to 850 the frame's.
+  await page.getByRole('button', { name: 'Riduci la barra laterale' }).click();
+  await page.getByRole('button', { name: 'Espandi la barra laterale' }).waitFor();
+  assert.ok((await nav.boundingBox()).width < 100);
+  await page.getByRole('button', { name: 'Espandi la barra laterale' }).click();
+  await page.waitForFunction(() => document.querySelector('nav[aria-label="Mappa"]').getBoundingClientRect().width > 200);
+  // Light, dark and the system's theme, kept for both pages.
   await choose('Tema come il sistema');
   await page.emulateMedia({ colorScheme: 'light' });
-  await page.waitForFunction(() => document.documentElement.dataset.imTheme === 'light');
-  const file = page.locator('.im-file-selector');
-  await file.setInputFiles({ name: 'shop.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(envelope)) });
-  await page.getByRole('tab', { name: 'Logica' }).press('ArrowRight');
-  await page.keyboard.press('Enter');
-  assert.equal(await page.getByRole('tab', { name: 'Fisica' }).getAttribute('aria-selected'), 'true');
-  await canvas.locator('.im-graph-node').first().waitFor();
+  await schemeIs(page, 'light');
+  assert.equal(await kept(), 'system');
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.waitForFunction(() => document.documentElement.dataset.imTheme === 'dark');
-  await tonesAreCanon();
-  await page.setViewportSize({ width: 700, height: 820 });  // the sidebar is the rail: a row is its rail item
-  const rows = await page.locator('.im-sidebar .im-row').count();
-  assert.ok(rows > 0);
-  assert.equal(await page.locator('.im-sidebar .im-row > .im-rail-item:visible').count(), rows);
-  await page.setViewportSize({ width: 900, height: 820 });  // the inspector covers the content's edge
-  await node.click();
-  await inspectorBox.waitFor();
-  await inspectorBox.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  assert.ok(await inspectorBox.isHidden());
-  await page.setViewportSize({ width: 390, height: 820 });
-  await page.locator('.im-sidebar-toggle').click();  // under 620 the sidebar is an overlay the toggle opens
-  await page.waitForFunction(() => document.querySelector('.im-shell').hasAttribute('data-im-sidebar-open'));
-  assert.ok(await page.locator('.im-sidebar .im-row').first().isVisible());
+  await schemeIs(page, 'dark');
+
+  await page.setViewportSize({ width: 700, height: 820 });  // the sidebar is the rail: a row is its icon, with its name
+  await page.waitForFunction(() => document.querySelector('nav[aria-label="Mappa"]').getBoundingClientRect().width < 100);
+  assert.ok(await nav.getByRole('button', { name: /^web/ }).isVisible());
+  assert.equal(await nav.getByText('call to refund is unresolved').count(), 0);
+  await page.setViewportSize({ width: 900, height: 820 });  // the inspector covers the end of the content, not modal
+  await main.getByRole('button', { name: 'Informazioni sul progetto' }).click();
+  const overlay = page.getByRole('dialog', { name: 'Informazioni sul progetto' });
+  await overlay.waitFor();
+  await closeIn(overlay);
+  await overlay.waitFor({ state: 'detached' });
+  await page.setViewportSize({ width: 390, height: 820 });  // the sidebar is a drawer, and the views are at the foot
+  const drawer = page.getByRole('dialog', { name: 'Mappa' });
+  await page.getByRole('button', { name: 'Apri il menu' }).click();
+  await drawer.getByRole('button', { name: /^web/ }).waitFor();
   await page.keyboard.press('Escape');
-  await page.waitForFunction(() => !document.querySelector('.im-shell').hasAttribute('data-im-sidebar-open'));
-  await page.getByRole('button', { name: 'Viste', exact: true }).click();
-  await page.getByRole('menuitemradio', { name: 'Logica' }).click();
-  await page.waitForFunction(() => document.getElementById('logical-tab').getAttribute('aria-selected') === 'true');
-  await page.getByRole('button', { name: 'Viste', exact: true }).click();
-  await page.getByRole('menuitemradio', { name: 'Fisica' }).click();
-  await page.waitForFunction(() => document.getElementById('physical-tab').getAttribute('aria-selected') === 'true');
-  await canvas.locator('.im-graph-node').first().waitFor();
-  assert.ok((await canvas.boundingBox()).height >= 200);
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await drawer.waitFor({ state: 'detached' });
+  const footViews = page.getByRole('toolbar', { name: 'Viste in basso' });
+  assert.equal(await view('Logica').count(), 1);
+  await footViews.getByRole('button', { name: 'Fisica' }).click();
+  await page.getByRole('main', { name: 'Mappa fisica' }).waitFor();
+  await footViews.getByRole('button', { name: 'Logica' }).click();
+  await page.getByRole('main', { name: 'Mappa logica' }).waitFor();
+  assert.ok(await fits());
   await page.setViewportSize({ width: 1280, height: 850 });
+
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [] } }));
   await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
   await context.route('**/api/findings', route => route.fulfill({ json: { findings: [], gaps: [] } }));
   await page.reload();
-  await page.getByText('Nessun run: creane uno qui sotto, o avvia una mappa nella sessione.').waitFor();
-  await page.getByLabel('Nome del run').waitFor();
-  await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'demo', readable: true }] } }));
+  await main.getByText('Creane uno qui sotto, o avvia una mappa nella sessione.').waitFor();
+  await line('Nessun run').waitFor();
+  await page.keyboard.press('Control+f');  // no map, no search
+  await page.getByText('Questa vista non ha una ricerca.').waitFor();
+  await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'prima', readable: true }, { run_id: 'rotto', readable: false }, { run_id: 'demo', readable: true }] } }));
   await context.route('**/api/events?*', route => route.fulfill({ json: { events: [{ cursor: 1, timestamp: '10:00', event: 'phase_completed', message: 'fatto', phase: 2 }], next_cursor: 1, has_more: false } }));
-  await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
   mode.exportBroken = true;  // a run in progress has no readable export yet: its live event line shows all the same
   await page.reload();
-  await page.locator('.im-failure').waitFor();
-  await page.locator('.im-status-end').getByText('10:00 · phase_completed · fase 2 · fatto').waitFor();
+  await main.getByRole('alert').waitFor();
+  await line('10:00 · phase_completed · fase 2 · fatto').waitFor();
   mode.exportBroken = false;
   await context.route('**/api/findings', route => route.fulfill({ json: { findings: [{ file: 'web/checkout.tsx', line: 12, severity: 'High', title: 'Premessa', request: 1 }], gaps: ['lacuna della sessione'] } }));
   await page.reload();
-  await page.locator('.im-status-end').getByText('10:00 · phase_completed · fase 2 · fatto').waitFor();
-  const disclosure = page.locator('summary', { hasText: 'Sessione e review' });
-  await disclosure.press('Enter');
-  await page.getByRole('button', { name: 'Invia' }).waitFor();
-  assert.ok(await page.getByLabel('Perimetro').isVisible());
-  assert.ok(await page.locator('.im-btn--primary:visible').count() <= 1);  // "Entra in ..." is the page's only primary
-  for (const name of ['Invia', 'Crea il run']) assert.ok(!(await page.getByRole('button', { name }).getAttribute('class')).includes('im-btn--primary'));
-  await page.getByText('lacuna della sessione').waitFor();  // the session's gaps are a note
-  await page.getByRole('button', { name: /High/ }).click();  // a finding selects its file
-  assert.equal(await page.locator('.im-inspector h2').innerText(), 'checkout.tsx');
-  await page.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  await page.getByRole('button', { name: /^(web)/ }).first().click();  // the scope: into a component and back up
-  await page.getByRole('button', { name: /^Entra in web/ }).click();
-  assert.equal(await page.locator('nav[aria-label="Posizione"] [aria-current="page"]').innerText(), 'web');
-  await page.getByRole('button', { name: 'Su', exact: true }).click();
-  await page.locator('nav[aria-label="Posizione"] [aria-current="page"]').waitFor({ state: 'detached' });
-  await page.getByLabel('Tipo di entità').selectOption({ index: 1 });  // the type filter hides the other types
-  assert.ok(await page.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).isVisible());
-  await page.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).click();
-  await disclosure.press('Enter');
-  await page.getByRole('button', { name: 'Invia' }).waitFor({ state: 'detached' });
-  // The look and theme the user picks on one page are followed live by the other one (the storage event).
+  await line('10:00 · phase_completed · fase 2 · fatto').waitFor();
+  const runPicker = main.getByRole('combobox', { name: 'Run' });  // the last readable run is the one shown
+  assert.match(await runPicker.innerText(), /demo/);
+  await runPicker.click();
+  await page.getByRole('option', { name: 'prima', exact: true }).waitFor();
+  assert.equal(await page.getByRole('option').count(), 2);
+  const asked = page.waitForRequest(request => request.url().includes('/data/visual.json?run=prima'));
+  await page.getByRole('option', { name: 'prima', exact: true }).click();
+  await asked;
+  assert.match(await runPicker.innerText(), /prima/);
+  await line('shop · run fixture').waitFor();
+
+  // ticket 17/18: the contract of what they port, in Imago's selectors: to restore by role and name, then delete from here.
+  // ticket 17, the canvas and the flows on it
+  // const canvas = page.getByRole('region', { name: 'Naviga il grafo' });
+  // const node = canvas.locator('.im-graph-node').first();
+  // await node.waitFor({ timeout: 15000 });
+  // const name = await node.getAttribute('title');
+  // await node.click();
+  // await page.waitForFunction(label => document.querySelector('.im-inspector h2')?.textContent === label, name, { timeout: 5000 });
+  // await node.focus();
+  // await page.keyboard.press('Escape');
+  // await inspectorBox.waitFor({ state: 'hidden' });
+  // await node.click();
+  // await inspectorBox.waitFor();
+  // const flow = page.locator('.im-sidebar .im-row').first();
+  // await flow.click();
+  // await page.locator('.im-canvas-message').waitFor({ state: 'hidden' });
+  // await canvas.locator('.im-graph-node').first().waitFor();
+  // assert.ok((await canvas.boundingBox()).height >= 320);
+  // await emptyMap.getByRole('button', { name: 'Azzera filtri' }).click();
+  // await canvas.locator('.im-graph-node').first().waitFor();
+  // (on the physical view) await canvas.locator('.im-graph-node').first().waitFor();
+  // (at 900) await node.click(); await inspectorBox.waitFor();
+  // (at 390) assert.ok((await canvas.boundingBox()).height >= 200);
+  // ticket 18, the session, the findings and the other export
+  // const file = page.locator('.im-file-selector');
+  // await file.setInputFiles({ name: 'shop.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(envelope)) });
+  // (with no runs) await page.getByLabel('Nome del run').waitFor();
+  // const disclosure = page.locator('summary', { hasText: 'Sessione e review' });
+  // await disclosure.press('Enter');
+  // await page.getByRole('button', { name: 'Invia' }).waitFor();
+  // assert.ok(await page.getByLabel('Perimetro').isVisible());
+  // assert.ok(await page.locator('.im-btn--primary:visible').count() <= 1);  // "Entra in ..." is the page's only primary
+  // for (const name of ['Invia', 'Crea il run']) assert.ok(!(await page.getByRole('button', { name }).getAttribute('class')).includes('im-btn--primary'));
+  // await page.getByText('lacuna della sessione').waitFor();  // the session's gaps are a note
+  // await page.getByRole('button', { name: /High/ }).click();  // a finding selects its file
+  // assert.equal(await page.locator('.im-inspector h2').innerText(), 'checkout.tsx');
+  // await page.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  // await disclosure.press('Enter');
+  // await page.getByRole('button', { name: 'Invia' }).waitFor({ state: 'detached' });
+  // end of ticket 17/18
+
+  // The theme the person picks on one page is followed live by the other one (the storage event), on Sigrid or on Imago.
   await choose('Tema chiaro');
-  const other = await context.newPage();
-  await other.goto('http://daodan.test/');
-  await other.waitForFunction(() => document.documentElement.dataset.imTheme === 'light');
+  await schemeIs(page, 'light');
+  const tab = await context.newPage(), app = await context.newPage();
+  await tab.goto('http://daodan.test/');
+  await schemeIs(tab, 'light');
+  await app.goto('http://daodan.test/app/?token=test');
+  await app.waitForFunction(() => document.documentElement.dataset.imTheme === 'light');
+  await page.bringToFront();
   await choose('Tema scuro');
-  await other.waitForFunction(() => document.documentElement.dataset.imTheme === 'dark');
-  await other.close();
+  await schemeIs(tab, 'dark');
+  await app.waitForFunction(() => document.documentElement.dataset.imTheme === 'dark');
+  await app.bringToFront();
+  await app.keyboard.press('Control+k');
+  await app.getByRole('dialog', { name: 'Cerca un comando' }).getByRole('option', { name: 'Tema chiaro' }).click();
+  await schemeIs(page, 'light');
+  await tab.close();
+  await app.close();
   assert.deepEqual(errors, []);
-  console.log('Passed app navigation, tree, dialog, pipeline, graph groups, mobile drawer, ELK worker, JSON import and theme.');
+  console.log('Passed the App on Imago (navigation, tree, dialog, pipeline, graph groups) and the map on Sigrid (frame, palette, details, flows, filters, runs, theme).');
 } finally { await browser.close(); }

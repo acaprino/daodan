@@ -1,16 +1,20 @@
-// A generic icon per node type (the closed list of the flow model), else per entity type.
-import { Archive, Boxes, Braces, CircleDot, Cpu, Database, FileCode, Folder, Globe, KeyRound, ListOrdered, Monitor,
-  Package, Router, Server, Sparkles, User } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+// The words of the model's closed lists, and the icon of each kind of node, by Sigrid's names.
+import type { IconName } from '@acaprino/sigrid';
 
-const BY_NODE_TYPE: Record<string, LucideIcon> = {
-  attore: User, schermata: Monitor, 'funzionalità': Sparkles, 'servizio o API': Server, gateway: Router,
-  database: Database, coda: ListOrdered, autenticazione: KeyRound, dispositivo: Cpu, altro: CircleDot,
+// shortcut: Sigrid 5.0.0 has no branch, code, external, package, key, device or gateway: the closest name it has stands in, until the release of Sigrid that has them
+const BRANCH: IconName = 'moveRight', CODE: IconName = 'tag', EXTERNAL: IconName = 'link', PACKAGE: IconName = 'archive',
+  KEY: IconName = 'profile', DEVICE: IconName = 'settings', GATEWAY: IconName = 'importExport';
+
+// The icon of a generic node type (the closed list of the flow model), else of the entity type.
+const BY_NODE_TYPE: Record<string, IconName> = {
+  attore: 'account', schermata: 'layout', 'funzionalità': 'now', 'servizio o API': 'service', gateway: GATEWAY,
+  database: 'data', coda: 'listOrdered', autenticazione: KEY, dispositivo: DEVICE, altro: 'more',
 };
-const BY_TYPE: Record<string, LucideIcon> = {
-  component: Boxes, feature: Sparkles, external: Globe, build: Package, directory: Folder, file: FileCode,
-  symbol: Braces, store: Archive, group: Folder,
+const BY_TYPE: Record<string, IconName> = {
+  component: 'structure', feature: 'now', external: EXTERNAL, build: PACKAGE, directory: 'folder', file: 'file',
+  symbol: CODE, store: 'data', group: 'folder',
 };
+export const FLOW_ICON = BRANCH;
 
 export const TYPE_LABEL: Record<string, string> = {
   component: 'componente', feature: 'funzionalità', external: 'esterno', build: 'unità di build', directory: 'cartella',
@@ -27,6 +31,6 @@ export const LINK_LABEL: Record<string, string> = {
 };
 export const ENTRY_LABEL: Record<string, string> = { azione: 'azione dell\'utente', rotta: 'rotta', 'lavoro pianificato': 'lavoro pianificato' };
 
-export function iconFor(node: { nodeType?: string; type: string }): LucideIcon {
-  return (node.nodeType && BY_NODE_TYPE[node.nodeType]) || BY_TYPE[node.type] || CircleDot;
+export function iconFor(node: { nodeType?: string; type: string }): IconName {
+  return (node.nodeType && BY_NODE_TYPE[node.nodeType]) || BY_TYPE[node.type] || 'more';
 }
