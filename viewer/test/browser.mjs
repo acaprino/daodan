@@ -1596,10 +1596,10 @@ try {
   assert.ok(await fits());
   // The ranks go down where the sidebar is the rail, and along where it is whole.
   const ranks = async () => {
-    const [from, to] = await Promise.all(['Cliente', 'web'].map(name => thing(name).boundingBox()));
+    const [from, to] = await Promise.all(['Terminale POS', 'server'].map(name => thing(name).boundingBox()));
     return to.y > from.y + from.height ? 'down' : to.x > from.x + from.width ? 'right' : '';
   };
-  await thing('Cliente').waitFor();
+  await thing('Terminale POS').waitFor();
   await until(async () => await ranks() === 'down', 'the ranks down');
   await page.setViewportSize({ width: 900, height: 820 });  // the inspector covers the end of the content, not modal
   await until(async () => await ranks() === 'right', 'the ranks along');
