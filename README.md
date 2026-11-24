@@ -141,7 +141,7 @@ checks the viewer against Imago's design rules; the Viewer workflow runs it with
 - [Languages and tools](docs/plugins/codebase-map-linguaggi.md) · [What is supported, generated with its measures](docs/plugins/codebase-map-supporto.md)
 - [Design: Codebase Map and semantic review](docs/specs/2026-11-03-semantic-review-foundation.md) · [Pipeline](docs/specs/2026-11-15-pipeline-di-analisi.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
-- Flows, in three phases: [1, working run and review rules](docs/specs/2026-11-09-working-run-and-review-fixes.md) · [2, flows and units](docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) · [3, do they help review](docs/specs/2026-11-09-flows-in-review.md) · [literature](docs/research/2026-11-11-flow-reconstruction-detailed.md)
+- Flows: [working run](docs/specs/2026-11-09-working-run-and-review-fixes.md) · [flows and system map](docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) · [do they help review](docs/specs/2026-11-09-flows-in-review.md) · [literature](docs/research/2026-11-11-flow-reconstruction-detailed.md)
 - Dynamic step, tests in a container: [spec](docs/specs/2026-11-12-passo-dinamico.md) · [program execution](docs/specs/2026-11-19-esecuzione-del-programma.md) · [UI recognition and web execution](docs/specs/2026-11-19-interfacce-del-progetto.md)
 - [Roadmap](docs/roadmap.md)
 - [Working rules for agents in this repository](AGENTS.md)
