@@ -16,11 +16,7 @@
   "Conda": ["repo.anaconda.com", "conda.anaconda.org"],
   "CPAN": ["www.cpan.org"],
   "Deno": ["jsr.io"],
-  "Docker": ["registry-1.docker.io", "auth.docker.io", "production.cloudflare.docker.com"],
   "Nix": ["cache.nixos.org", "channels.nixos.org", "releases.nixos.org"],
-  "dpkg": ["archive.ubuntu.com", "security.ubuntu.com", "ports.ubuntu.com"],
-  "GitHub Packages": ["ghcr.io", "npm.pkg.github.com"],
-  "vcpkg": ["github.com", "api.github.com", "codeload.github.com", "objects.githubusercontent.com",
-            "release-assets.githubusercontent.com", "raw.githubusercontent.com"]
+  "dpkg": ["http://archive.ubuntu.com", "http://security.ubuntu.com", "http://ports.ubuntu.com"]
  }
 }
