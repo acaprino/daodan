@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { accessFeedback, preferredBranch, preparation, repositoryContext, repositoryReason, repositorySlug } from '../app/repository.ts';
-import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps } from '../app/run.ts';
+import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, runBar, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps } from '../app/run.ts';
 import type { RunEvent } from '../app/server.ts';
 import type { Snapshot } from '../app/snapshot.ts';
 import { STAGE_WORD, stages } from '../app/stages.ts';
@@ -73,6 +73,14 @@ test('the steps follow their own events, with the progress, the gaps and the cau
   const over = of({ context, run: { pass: { state: 'unavailable', reason: 'nessun container' } } });
   assert.deepEqual([steps(over)[0].status, steps(over)[0].note, runPercent(over)], ['skipped', 'Non eseguita · nessun container', 0]);
   assert.equal(runPercent(of(null)), 0);
+});
+
+test('the bar of the steps stops where a step failed once the run is over', () => {
+  const events = [{ kind: 'step.started', step: 'parse' }, { kind: 'step.finished', step: 'parse' }, { kind: 'step.started', step: 'stack' }, { kind: 'step.failed', step: 'stack', message: 'interrotto' }];
+  assert.deepEqual(runBar(run('running', events)), { value: 17 });
+  assert.deepEqual(runBar(run('fresh', events)), { value: 17, status: 'error', valueText: 'Non riuscito · 17%' });
+  assert.deepEqual(runBar(run('fresh', [...events, { kind: 'step.started', step: 'union' }])), { value: 17 });  // one still runs
+  assert.deepEqual(runBar(run('failed', events.slice(0, 2))), { value: 17 });  // the pass failed, no step did
 });
 
 test('the run says its phase, its state and what the last progress was', () => {

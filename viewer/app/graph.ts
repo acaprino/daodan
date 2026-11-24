@@ -75,6 +75,7 @@ export function nodeFacts(n: GraphNode): string {
   return n.kind === 'symbol' ? ['righe ' + (n.lines ?? []).join('–'), n.members ? `${n.members.length} simboli` : '', n.node_type].filter(Boolean).join(' · ')
     : `${n.files.length} file · ${nodeState(n)}`;
 }
+export const responsibilityOf = (n: GraphNode) => n.responsibility || 'Responsabilità non descritta nel grafo.';
 // The name of a node or of an open group, for a line that ends on either.
 export function endName(graph: Graph, id: string): string {
   const n = graph.nodes.find(item => item.id === id);

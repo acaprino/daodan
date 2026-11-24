@@ -12,7 +12,7 @@ envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lu
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
 const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [];
-const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false };
+const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false, pathsBroken: false };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
@@ -32,6 +32,7 @@ try {
   await context.route('http://daodan.test/**', async route => {
     const url = new URL(route.request().url()), path = url.pathname;
     if (path === '/api/app/paths') {
+      if (mode.pathsBroken) return route.fulfill({ status: 500, json: { error: 'percorsi non letti' } });
       const offset = Number(url.searchParams.get('offset'));
       const card = { card_id: 'save', handler: 'ui.ts::save', kind: 'azione', site: 'ui.ts:4',
         event: 'onClick', label: 'Salva ordine' };
@@ -109,6 +110,7 @@ try {
         window.setMapState = mapped => publish({ ...state, mapped });
         window.setServerState = patch => publish({ ...state, ...patch });
         window.failServer = error => send('failure', { error });
+        window.sendEvents = events => send('update', { run_events: { run_id: 'demo', next_cursor: 0, events: [], pipeline: { next_cursor: 0, events } }, pulse: { next_cursor: 0 } });
         setTimeout(() => publish(state), 0);
       }
       close() {}
@@ -445,63 +447,230 @@ try {
 
   // The contract of the screens not yet drawn, in Imago's selectors: each to restore by role and name, then delete from here.
   // ticket 21: the run and the synthesis
-  // await tabs.getByRole('tab', { name: /^Analisi/ }).click();
-  // await page.locator('#stage-analysis').click();
-  // await page.locator('#preview-diagram .im-graph-node').first().waitFor();
-  // assert.equal(await page.locator('#pipeline-steps li').count(), 6);
-  // await page.waitForFunction(() => !document.querySelector('img.im-inline-mark'));  // the mark that does not load is the icon
-  // assert.ok(await page.locator('#preview-diagram [data-im-node="Client"] .im-icon').count() > 0);
-  // mode.linkStatus = 500;
-  // await page.getByRole('button', { name: 'Trova i legami' }).click();
-  // const linkError = page.locator('.im-notice', { hasText: 'collegamento non riuscito' });
-  // await linkError.waitFor();
-  // assert.match(await linkError.innerText(), /Errore/);
-  // await page.waitForTimeout(6500);
-  // assert.equal(await linkError.count(), 1);
-  // await linkError.getByRole('button', { name: 'Chiudi' }).click();
-  // assert.equal(await linkError.count(), 0);
-  // const partialMap = { state: 'incomplete', cause: 'the recorded map still has stale or incomplete records',
-  //   needs_review: { nodes: { count: 2, ids: ['a', 'b'] }, flows: { count: 1, ids: ['c'] },
-  //     refused_proposals: { count: 1, ids: ['request:d'] } } };
-  // await page.evaluate(mapped => window.setMapState(mapped), partialMap);
-  // const notice = page.locator('#map-status .im-note');
-  // await notice.getByText('Mappa del sistema parziale').waitFor();
-  // assert.match(await notice.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata/);
-  // assert.match(await notice.innerText(), /revisione precedente/);
-  // await page.locator('#stage-synthesis').click();
-  // const paths = page.getByRole('region', { name: 'Percorsi per ingresso' });
-  // await paths.getByText('Nessun ingresso classificato per questo snapshot.').waitFor();
-  // pathsClassified = true;
-  // await page.evaluate(() => window.setMapState({ state: 'done', discovery: { count: 2 } }));
-  // await paths.getByRole('button', { name: /Salva ordine/ }).click();
-  // await paths.getByText('store:ordini', { exact: true }).waitFor();
-  // await paths.getByText('Effetto', { exact: true }).waitFor();
-  // await paths.getByRole('button', { name: 'Passaggi successivi' }).click();
-  // await paths.getByText('Destinazione campionata', { exact: true }).waitFor();
-  // assert.match(await paths.innerText(), /campionata dal profiler/);
-  // await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
-  // await paths.getByRole('button', { name: 'Ingressi successivi' }).click();
-  // await paths.getByRole('button', { name: /Annulla ordine/ }).waitFor();
-  // await paths.getByRole('button', { name: 'Ingressi precedenti' }).click();
-  // await paths.getByRole('button', { name: 'Scritture senza ingresso' }).click();
-  // await paths.getByText('store:registro', { exact: true }).waitFor();
-  // assert.match(await paths.innerText(), /2 di 3 scritture/);
-  // await paths.getByRole('button', { name: 'Scritture successive' }).click();
-  // await paths.getByText('store:audit', { exact: true }).waitFor();
-  // await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
-  // await paths.getByRole('button', { name: /Salva ordine/ }).waitFor();
-  // await page.evaluate(mapped => window.setMapState(mapped), partialMap);
-  // await page.getByText('Mappa del sistema parziale').waitFor();
-  // await page.getByText('1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto').waitFor();
-  // await page.evaluate(() => window.setMapState({ state: 'done' }));
-  // await page.getByText('Mappa del sistema registrata').waitFor();
-  // assert.equal(await page.getByText('Mappa del sistema parziale').count(), 0);
-  // await page.locator('#stage-analysis').click();
-  // await page.locator('#preview-diagram .im-graph-node').first().click();
-  // const preview = page.getByRole('region', { name: 'Client' });
-  // await preview.getByRole('button', { name: 'Apri nel grafo' }).waitFor();
-  // await page.keyboard.press('Escape');
-  // assert.ok(await preview.isHidden());
+  {
+    const tab = name => page.getByRole('toolbar', { name: 'Daodan', exact: true }).getByRole('button', { name: new RegExp(`^${name}`) });
+    const stage = name => main.getByRole('list', { name: 'Percorso di analisi', exact: true }).getByRole('button', { name: new RegExp(`^${name}`) });
+    const screen = name => page.getByRole('main', { name, exact: true }).waitFor();
+    const run = main.getByRole('region', { name: 'Analisi', exact: true }), synthesis = main.getByRole('region', { name: 'Sintesi', exact: true });
+    const button = (where, name) => where.getByRole('button', { name, exact: true });
+    const alertIn = (where, text) => where.getByRole('alert').filter({ hasText: text });
+    const says = (where, text) => where.getByText(text, { exact: typeof text === 'string' }).waitFor();  // a note's title follows its tone's word: a pattern
+    const detail = name => page.getByRole('complementary', { name, exact: true });
+    const notices = page.getByRole('status', { name: 'Avvisi', exact: true });
+    const serve = patch => page.evaluate(state => window.setServerState(state), patch);
+    const map = mapped => page.evaluate(state => window.setMapState(state), mapped);
+    const send = events => page.evaluate(list => window.sendEvents(list), events);
+    const closeNotice = async text => {
+      await page.getByRole('button', { name: `Chiudi l'avviso: ${text}`, exact: true }).click();
+      await notices.getByText(text, { exact: true }).waitFor({ state: 'detached' });
+    };
+    const linesOf = text => text.split('\n').map(part => part.trim()).filter(Boolean);
+    const at = '2026-11-24T10:00:00Z';
+    await tab('Analisi').click();
+    await stage('Analisi').click();
+    await run.waitFor();
+    // A run that is over: its phase, its state and its steps in words. What it leads to is in the action bar.
+    await says(run, 'Pipeline completata');
+    await says(run, 'Completata');
+    await says(run, 'Pipeline conclusa: sintesi e grafo sono pronti da leggere.');
+    await says(run, 'Repository: demo/shop · main · intero progetto');
+    assert.match(await run.innerText(), /Analisi del commit 1{12}\.[\s\S]*Avanzamento ed eventi sono quelli del run demo\./);
+    const steps = run.getByRole('list', { name: 'Passi della pipeline', exact: true }).getByRole('listitem');
+    const stepNotes = async () => (await steps.allInnerTexts()).map(text => linesOf(text).at(-1));
+    assert.deepEqual(await stepNotes(), Array(6).fill('Non eseguita'));
+    await says(run, 'Nessun evento ancora.');
+    assert.equal(await page.getByRole('link', { name: 'Apri l’esploratore', exact: true }).getAttribute('href'), '/?token=test&run=demo');
+    await button(page, 'Leggi sintesi').waitFor();
+    // A run under way: the progress of a step, the cause of one that failed, the percent, the events to read and copy.
+    await serve({ run: { pass: { state: 'running' }, progress: { step: 'analyze', analyzer: 'pyright', done: 1, total: 4 } } });
+    await send([
+      { kind: 'step.started', step: 'parse', message: '', at }, { kind: 'step.finished', step: 'parse', message: '', at },
+      { kind: 'step.started', step: 'stack', message: '', at }, { kind: 'log', level: 'error', step: 'stack', message: 'x', data: { cause: 'manifest illeggibile' }, at },
+      { kind: 'step.started', step: 'analyze', message: '', data: { inputs: ['modules.json'] }, at },
+    ]);
+    await steps.filter({ hasText: 'In corso · 1/4' }).waitFor();
+    assert.deepEqual(await stepNotes(), ['Completata', 'In attesa', 'Non riuscita · manifest illeggibile', 'In corso · 1/4', 'In attesa', 'In attesa']);
+    assert.match(await run.locator('[aria-current="step"]').innerText(), /4\. Analyze · analyzer per linguaggio/);
+    assert.ok(await selectable(steps.getByText('Non riuscita · manifest illeggibile', { exact: true })));
+    const bar = run.getByRole('progressbar', { name: 'Passi completati della pipeline', exact: true });
+    assert.equal(await bar.getAttribute('aria-valuetext'), '21%');  // one of six, and a quarter
+    for (const text of ['21%', 'Analyze · analyzer per linguaggio', 'In esecuzione', 'Ultimo avanzamento: Analyze · pyright · 1/4']) await says(run, text);
+    await busyNow(button(page, 'Analisi in corso'));
+    const log = run.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem');
+    assert.equal(await log.count(), 5);
+    assert.match(await log.first().innerText(), /Analyze · avviato[\s\S]*Legge: modules\.json/);  // the newest first
+    assert.match(await log.filter({ hasText: 'Stack · nota' }).innerText(), /Errore/);
+    assert.ok(await selectable(log.first().getByText('Legge: modules.json', { exact: true })));
+    await send(Array.from({ length: 5 }, (_, n) => ({ kind: 'log', step: 'analyze', level: 'info', message: `nota ${n}`, at })));
+    await says(run, '10 eventi');
+    assert.equal(await log.count(), 8);
+    assert.match(await log.first().innerText(), /nota 4/);
+    await button(run, 'Altri 2 eventi').click();
+    const others = run.getByRole('list', { name: 'Altri 2 eventi', exact: true }).getByRole('listitem');
+    await others.first().waitFor();
+    assert.deepEqual((await others.allInnerTexts()).map(text => linesOf(text)[0]), ['Parse · completato', 'Parse · avviato']);
+    // The run is over with a step that failed; a pass that could not go says why, and one that failed is tried again.
+    await send([{ kind: 'step.finished', step: 'analyze', message: '', at }]);
+    await serve({ run: { pass: { state: 'unavailable', reason: 'nessun container' } } });
+    await alertIn(run, 'Lacuna: il passaggio che rifinisce il grafo delle chiamate non è disponibile.').filter({ hasText: 'nessun container' }).waitFor();
+    const unreached = 'Non eseguita · nessun container';
+    assert.deepEqual(await stepNotes(), ['Completata', unreached, 'Non riuscita · manifest illeggibile', 'Completata', unreached, unreached]);
+    assert.equal(await bar.getAttribute('aria-valuetext'), 'Non riuscito · 33%');
+    await serve({ run: { pass: { state: 'failed', reason: 'memoria' } } });
+    const pass = alertIn(run, 'Il passaggio che rifinisce il grafo delle chiamate non è riuscito.');
+    assert.match(await pass.innerText(), /Errore[\s\S]*memoria/);
+    await button(pass, 'Riprova il passaggio').click();
+    await notices.getByText('il server ha risposto 404', { exact: true }).waitFor();  // the fixture has no answer to it
+    await closeNotice('il server ha risposto 404');
+    await page.reload();
+    await run.waitFor();
+    // The graph as it takes shape: the canvas lays it out; a thing chosen is in the details, and goes to the graph.
+    const canvas = run.getByRole('group', { name: 'Costruzione del grafo', exact: true });
+    const thing = name => canvas.getByRole('button', { name: new RegExp(`^${name},`) });
+    await button(canvas, 'Client, 1 file · confermato').waitFor();
+    await button(canvas, 'Server, 6 file · confermato').waitFor();
+    assert.equal(await canvas.getByRole('button', { name: /^Apri / }).count(), 0);  // nothing opens in the preview
+    assert.match(await run.getByRole('list', { name: 'Tipi di linea', exact: true }).innerText(),
+      /Relazioni\s*1[\s\S]*Osservata in esecuzione\s*1[\s\S]*Campionata dal profiler\s*1[\s\S]*Incerta o in conflitto\s*1/);
+    for (const text of ['Codice', '2 directory · 4 relazioni · 2 file', 'Costruzione conclusa']) await says(run, text);
+    await thing('Client').click();
+    await detail('Client').waitFor();
+    assert.match(await detail('Client').innerText(), /Directory del grafo di questo run\.[\s\S]*Responsabilità non descritta nel grafo\.[\s\S]*1 file · confermato · commit 1{12}[\s\S]*Apri nel grafo/);
+    await thing('Client').and(page.locator('[aria-current="true"]')).waitFor();
+    await page.keyboard.press('Escape');
+    await detail('Client').waitFor({ state: 'hidden' });
+    await canvas.locator('[aria-current]').waitFor({ state: 'detached' });
+    await thing('Client').focus();
+    await page.keyboard.press('ArrowRight');
+    await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label')?.startsWith('Server,'));
+    await page.keyboard.press('Enter');
+    await detail('Server').waitFor();
+    await button(detail('Server'), 'Apri nel grafo').click();
+    await screen('Grafo');
+    await detail('Server').waitFor({ state: 'hidden' });
+    await tab('Analisi').click();
+    await thing('Client').waitFor();
+    // The links: a refusal is a notice that stays; the search is busy, and a note whose tone changes does not take the focus.
+    const find = button(run, 'Trova i legami');
+    await says(run, /^Non ancora cercati/);
+    mode.linkStatus = 500;
+    await find.click();
+    const refused = notices.getByText('collegamento non riuscito', { exact: true });
+    await refused.waitFor();
+    assert.match(await notices.innerText(), /Errore/);
+    await page.waitForTimeout(6500);
+    assert.equal(await refused.count(), 1);
+    await closeNotice('collegamento non riuscito');
+    mode.linkStatus = 200;
+    await find.focus();
+    await serve({ links: { state: 'running' } });
+    await busyNow(find);
+    await serve({ links: { state: 'failed', cause: 'nessuna regola' } });
+    await alertIn(run, 'Legami tra i moduli').filter({ hasText: 'Non trovati. nessuna regola' }).waitFor();
+    assert.ok(await focused(find));
+    await serve({ engine: { engine: null, engines: ['claude'] } });
+    await says(run, /Scegli e salva prima un motore\.$/);
+    assert.ok(await find.isDisabled());
+    await button(run, 'Scegli il motore').click();
+    await screen('Motore e domande');
+    await tab('Analisi').click();
+    await serve({});
+    // New links are a new graph: one that cannot be read says why, and is asked again.
+    mode.graphStatus = 500;
+    await serve({ links: { state: 'done', routes: { called: 1, offered: 2, linked: 1 }, gaps: 0 } });
+    await says(run, /1 richiesta, 2 rotte, 1 legame, 0 lacune\.$/);
+    const unread = alertIn(run, 'Grafo non disponibile.');
+    assert.match(await unread.innerText(), /grafo non letto/);
+    assert.equal(await canvas.count(), 0);
+    mode.graphStatus = 200;
+    await button(unread, 'Riprova').click();
+    await thing('Client').waitFor();
+    assert.ok(await inMain());
+    // The map of the system: a note whose tone changes is drawn anew, so it is announced.
+    const partialMap = { state: 'incomplete', cause: 'the recorded map still has stale or incomplete records',
+      needs_review: { nodes: { count: 2, ids: ['a', 'b'] }, flows: { count: 1, ids: ['c'] }, refused_proposals: { count: 1, ids: ['request:d'] } } };
+    await map(partialMap);
+    const partial = alertIn(run, 'Mappa del sistema parziale');
+    assert.match(await partial.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata[\s\S]*revisione precedente/);
+    await partial.evaluate(el => { window.partialNote = el; });
+    await map({ state: 'failed', cause: 'motore fermo' });
+    await alertIn(run, 'Mappa del sistema interrotta').filter({ hasText: 'motore fermo' }).waitFor();
+    assert.equal(await page.evaluate(() => window.partialNote.isConnected), false);
+    await map({ state: 'done' });
+    await says(run, /Mappa del sistema registrata/);
+    assert.equal(await run.getByRole('alert').count(), 0);
+    // The synthesis: the paths by entry, a page at a time, and the writes without an entry.
+    await button(page, 'Leggi sintesi').click();
+    await synthesis.waitFor();
+    const paths = synthesis.getByRole('region', { name: 'Percorsi per ingresso', exact: true });
+    await says(paths, 'Nessun ingresso classificato per questo snapshot.');
+    pathsClassified = true;
+    await map({ state: 'done', discovery: { count: 2, effect_coverage: { without_entry: 2 } } });
+    await says(paths, '2 scritture senza un percorso provato da un ingresso.');
+    await says(paths, 'Ingressi 1–1 di 2');
+    await paths.getByRole('button', { name: /^Salva ordine/ }).click();
+    await says(paths, 'store:ordini');
+    await says(paths, 'Effetto');
+    assert.ok(await focused(paths));  // what was pressed has gone with its page
+    assert.match(await paths.innerText(), /Evento\s+onClick · azione\s+Gestore\s+ui\.ts::save\s+Ingresso\s+ui\.ts:4/);
+    await button(paths, 'Passaggi successivi').click();
+    await says(paths, 'Destinazione campionata');
+    assert.match(await paths.innerText(), /Passaggio 2[\s\S]*Lacuna[\s\S]*campionata dal profiler/);
+    await button(paths, 'Passaggi precedenti').click();
+    await says(paths, 'store:ordini');
+    await button(paths, 'Torna agli ingressi').click();
+    await button(paths, 'Ingressi successivi').click();
+    await paths.getByRole('button', { name: /^Annulla ordine/ }).waitFor();
+    await button(paths, 'Ingressi precedenti').click();
+    await paths.getByRole('button', { name: /^Salva ordine/ }).waitFor();
+    await button(paths, 'Scritture senza ingresso').click();
+    await says(paths, 'store:registro');
+    assert.match(await paths.innerText(), /2 di 3 scritture[\s\S]*Le prove si fermano in ui\.ts:8\./);
+    mode.pathsBroken = true;  // a page that cannot be read says why, and is asked again
+    await button(paths, 'Scritture successive').click();
+    await alertIn(paths, 'Percorsi non disponibili.').filter({ hasText: 'percorsi non letti' }).waitFor();
+    mode.pathsBroken = false;
+    await button(paths, 'Riprova').click();
+    await says(paths, 'store:audit');
+    await button(paths, 'Torna agli ingressi').click();
+    await paths.getByRole('button', { name: /^Salva ordine/ }).waitFor();
+    // What the graph counts, the inventory, what is missing, and where to start.
+    await says(synthesis, '1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto');
+    await says(synthesis, '0 voci con versione risolta nel modello di build.');
+    await says(synthesis, 'Nessuna lacuna registrata dal run.');
+    await map(partialMap);
+    await alertIn(synthesis, 'Mappa del sistema parziale').waitFor();
+    await map({ state: 'done' });
+    await says(synthesis, /Mappa del sistema registrata/);
+    assert.equal(await page.getByText('Mappa del sistema parziale').count(), 0);
+    await button(synthesis, 'Provenienza e lacune').click();
+    const provenance = detail('Provenienza e lacune del grafo');
+    await provenance.waitFor();
+    assert.match(await provenance.innerText(), /Repository\s+demo\/shop[\s\S]*Directory \/ relazioni\s+2 \/ 4[\s\S]*Passaggio del grafo\s+fresh[\s\S]*Limiti dichiarati/);
+    await page.keyboard.press('Escape');
+    await provenance.waitFor({ state: 'hidden' });
+    const largest = synthesis.getByRole('list', { name: 'Responsabilità da esplorare', exact: true }).getByRole('button');
+    assert.match((await largest.allInnerTexts()).join('\n'), /Server[\s\S]*6 file · confermato[\s\S]*Client/);
+    await largest.first().click();
+    await screen('Grafo');
+    await tab('Analisi').click();
+    await synthesis.waitFor();
+    await button(page, 'Esplora il grafo completo').click();
+    await screen('Grafo');
+    await tab('Analisi').click();
+    // A narrow window holds both. Then what was kept of where the person looked goes: what follows starts as a first opening.
+    await page.setViewportSize({ width: 390, height: 820 });
+    await synthesis.waitFor();
+    assert.ok(await fits());
+    await button(main, 'Percorso').click();
+    await stage('Analisi').click();
+    await thing('Client').waitFor();
+    assert.ok(await fits());
+    await page.setViewportSize({ width: 1280, height: 850 });
+    await page.evaluate(() => localStorage.removeItem('daodan-app-v2'));
+    await page.reload();
+    await stage('Repository').waitFor();
+  }
   // ticket 22: the graph
   // mode.graphStatus = 500;
   // await tabs.getByRole('tab', { name: 'Grafo' }).click();

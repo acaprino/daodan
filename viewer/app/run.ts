@@ -49,6 +49,13 @@ export function runPercent(s: Run): number {
   return Math.round(100 * (list.filter(t => t.status === 'done').length + part) / list.length);
 }
 
+// The bar of the steps: how far it is. It stopped when the run is over with a step that failed, and says it.
+export function runBar(s: Run): { value: number; status?: 'error'; valueText?: string } {
+  const list = steps(s), value = runPercent(s);
+  const stopped = complete(s) && list.some(t => t.status === 'failed') && !list.some(t => t.status === 'running');
+  return stopped ? { value, status: 'error', valueText: `Non riuscito · ${value}%` } : { value };
+}
+
 const PHASE: Record<string, string> = {
   fresh: 'Pipeline completata', unavailable: 'Pipeline completata con lacune',
   failed: 'Pipeline conclusa, grafo delle chiamate non rifinito', off: 'Passaggio del grafo spento',

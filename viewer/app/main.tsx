@@ -10,6 +10,7 @@ import {
 } from '@acaprino/sigrid';
 import type { IconName } from '@acaprino/sigrid';
 import '@acaprino/sigrid/styles.css';
+import '@acaprino/sigrid/graph.css';
 import { LOOK } from '../src/page.ts';
 import { WORDS } from '../src/words.ts';
 import { analysisActions, AnalysisScreen } from './analysis.tsx';

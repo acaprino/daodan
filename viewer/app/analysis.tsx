@@ -5,19 +5,19 @@ import { Badge, Column, ContentSplit, ItemList, ItemRow, Progress, Text } from '
 import { FrameContext, ScreenPanel, useFrame } from './frame.tsx';
 import { PremapActions, PremapScreen } from './premap-screen.tsx';
 import { RepositoryActions, RepositoryScreen } from './repository-screen.tsx';
-import { RunScreen } from './run-screen.tsx';
+import { RunActions, RunScreen } from './run-screen.tsx';
 import type { Snapshot } from './snapshot.ts';
 import { STAGE_WORD, stages } from './stages.ts';
 import type { Stage } from './storage.ts';
-import { SynthesisScreen } from './synthesis-screen.tsx';
+import { SynthesisActions, SynthesisScreen } from './synthesis-screen.tsx';
 import { model, useModel } from './use-model.ts';
 
 // What each stage draws and, in the window's action bar, what it leads to. The notices sit above the bar, never over the action.
 const STAGE: Record<Stage, { Screen: ComponentType; Actions?: ComponentType }> = {
   repository: { Screen: RepositoryScreen, Actions: RepositoryActions },
   premap: { Screen: PremapScreen, Actions: PremapActions },
-  analysis: { Screen: RunScreen },
-  synthesis: { Screen: SynthesisScreen },
+  analysis: { Screen: RunScreen, Actions: RunActions },
+  synthesis: { Screen: SynthesisScreen, Actions: SynthesisActions },
 };
 export function analysisActions(s: Snapshot): ReactNode {
   const { Actions } = STAGE[s.kept.analysisStage];
