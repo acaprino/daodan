@@ -1,7 +1,8 @@
 // The run: how far its steps are, what is missing and why, the graph as it takes shape, and what happened.
 import { useMemo, useState } from 'react';
-import { Badge, Button, Cluster, Column, Disclosure, Icon, Note, Progress, ScrollArea, Section, Text } from '@acaprino/sigrid';
-import type { IconName } from '@acaprino/sigrid';
+import { Badge, Button, Cluster, Column, Icon, Progress, ScrollArea, Section, Text } from '@acaprino/sigrid/primitives';
+import { Disclosure, Note } from '@acaprino/sigrid/components';
+import type { IconName } from '@acaprino/sigrid/primitives';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import { Preview } from './preview.tsx';
 import { short } from './repository.ts';

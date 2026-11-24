@@ -2,10 +2,8 @@
 // session takes it (`codebase_map_ui_requests`).
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode, SyntheticEvent } from 'react';
-import {
-  Badge, Button, Cluster, Column, Disclosure, Dot, FormField, Grid, Icon, Input, ItemList, ItemRow, Note, Progress, ScrollArea, Section, Select, Split,
-  Text,
-} from '@acaprino/sigrid';
+import { Badge, Button, Cluster, Column, Dot, Grid, Icon, Input, Progress, ScrollArea, Section, Select, Split, Text } from '@acaprino/sigrid/primitives';
+import { Disclosure, FormField, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
 import {
   askedState, askedText, askedTitle, askedTone, findingPlace, findingSeverity, findingText, findingTone, gapText, KINDS, needsText, questionProblem,
   runProblem, SCOPES,

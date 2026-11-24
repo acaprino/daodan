@@ -1,7 +1,9 @@
 // The graph of the code: its filters, the canvas with its groups opened in place, and the details of the one chosen in the inspector.
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { Button, Cluster, Column, Empty, Icon, SearchField, Select, Split, Text, useMedia } from '@acaprino/sigrid';
+import { Button, Cluster, Column, Icon, Select, Split, Text } from '@acaprino/sigrid/primitives';
+import { Empty, SearchField } from '@acaprino/sigrid/components';
+import { useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
 import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
 import { ScreenPanel, useFocusKept, useFrame } from './frame.tsx';

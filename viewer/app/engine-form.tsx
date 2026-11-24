@@ -1,7 +1,8 @@
 // The engine: which one, its endpoint and key where it has them, whether it answers; and the key's removal, confirmed first.
 import { useRef, useState } from 'react';
-import { Badge, Button, Cluster, Column, Dialog, FormField, Icon, Input, Note, Section, Select, Text } from '@acaprino/sigrid';
-import type { NoteTone } from '@acaprino/sigrid';
+import { Badge, Button, Cluster, Column, Icon, Input, Section, Select, Text } from '@acaprino/sigrid/primitives';
+import { Dialog, FormField, Note } from '@acaprino/sigrid/components';
+import type { NoteTone } from '@acaprino/sigrid/components';
 import { engineOptions, hasKey, keyHelp, needsEndpoint, NO_ENGINE } from './engine.ts';
 import type { Snapshot } from './snapshot.ts';
 import { model, useModel } from './use-model.ts';

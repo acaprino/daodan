@@ -2,7 +2,10 @@
 // there in every state and never move: those that do nothing now are disabled (R14).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
-import { Button, Cluster, Column, Empty, Icon, Note, Panel, Progress, SearchField, Select, Text, useAppShell, useMedia } from '@acaprino/sigrid';
+import { Button, Cluster, Column, Icon, Progress, Select, Text } from '@acaprino/sigrid/primitives';
+import { Empty, Note, SearchField } from '@acaprino/sigrid/components';
+import { Panel, useAppShell } from '@acaprino/sigrid/layout';
+import { useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
 import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
 import { createLayoutClient } from './layoutClient.ts';

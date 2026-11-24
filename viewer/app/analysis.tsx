@@ -1,7 +1,9 @@
 // The analysis: its stages in their order, and the one chosen beside them.
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
-import { Badge, Column, ContentSplit, ItemList, ItemRow, Progress, Text } from '@acaprino/sigrid';
+import { Badge, Column, Progress, Text } from '@acaprino/sigrid/primitives';
+import { ItemList, ItemRow } from '@acaprino/sigrid/components';
+import { ContentSplit } from '@acaprino/sigrid/layout';
 import { FrameContext, ScreenPanel, useFocusKept, useFrame } from './frame.tsx';
 import { PremapActions, PremapScreen } from './premap-screen.tsx';
 import { RepositoryActions, RepositoryScreen } from './repository-screen.tsx';

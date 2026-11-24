@@ -4,12 +4,12 @@ import { Fragment, StrictMode, useCallback, useLayoutEffect, useMemo, useRef, us
 import type { ComponentType, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
-import {
-  applyKeptScheme, AppShell, Badge, Cluster, Column, CommandPalette, CommandsProvider, Count, formatKeys, Heading, Icon, Inspector, KeyHints, Logo,
-  Progress, Spacer, Text, TitleBar, Toasts, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs, useCommand, useCommandPalette,
-  useMedia, useSchemeCommands, WordsProvider,
-} from '@acaprino/sigrid';
-import type { IconName } from '@acaprino/sigrid';
+import { Badge, Cluster, Column, Count, Heading, Icon, Logo, Progress, Spacer, Text } from '@acaprino/sigrid/primitives';
+import { Toasts } from '@acaprino/sigrid/components';
+import { AppShell, Inspector, TitleBar, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs } from '@acaprino/sigrid/layout';
+import { applyKeptScheme, CommandPalette, CommandsProvider, formatKeys, KeyHints, useCommand, useCommandPalette, useSchemeCommands } from '@acaprino/sigrid/assemblies';
+import { useMedia, WordsProvider } from '@acaprino/sigrid';
+import type { IconName } from '@acaprino/sigrid/primitives';
 import '@acaprino/sigrid/styles.css';
 import '@acaprino/sigrid/graph.css';
 import { LOOK } from '../src/page.ts';

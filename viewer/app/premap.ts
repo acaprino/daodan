@@ -1,6 +1,7 @@
 // The pre-map, read for its screen: its trees as Sigrid's `Tree` takes them, what a search finds, what is chosen, and its facts in
 // words.
-import type { IconName, TreeNode } from '@acaprino/sigrid';
+import type { IconName } from '@acaprino/sigrid/primitives';
+import type { TreeNode } from '@acaprino/sigrid/assemblies';
 import { short } from './repository.ts';
 import type { Context } from './server.ts';
 import { number, slug } from './snapshot.ts';

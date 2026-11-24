@@ -1,5 +1,6 @@
 // The synthesis: the paths by entry, what the graph counts, where to start reading, and what is missing from the picture.
-import { Badge, Button, Cluster, Column, DescriptionList, Icon, ItemList, ItemRow, Note, Section, Text } from '@acaprino/sigrid';
+import { Badge, Button, Cluster, Column, Icon, Section, Text } from '@acaprino/sigrid/primitives';
+import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import { buildCounts, levelsName, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
 import type { Graph } from './graph.ts';

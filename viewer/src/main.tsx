@@ -2,12 +2,13 @@
 // export it draws that file.
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import {
-  applyKeptScheme, AppShell, Badge, Button, Column, CommandPalette, CommandsProvider, DrawerButton, Empty, formatKeys, Icon, KeyHints, Note,
-  Progress, Select, Spacer, Text, TitleBar, Toasts, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs, useCommand,
-  useCommandPalette, useMedia, useSchemeCommands, WordsProvider,
-} from '@acaprino/sigrid';
-import type { IconName, ToastItem } from '@acaprino/sigrid';
+import { Badge, Button, Column, Icon, Progress, Select, Spacer, Text } from '@acaprino/sigrid/primitives';
+import { Empty, Note, Toasts } from '@acaprino/sigrid/components';
+import { AppShell, DrawerButton, TitleBar, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs } from '@acaprino/sigrid/layout';
+import { applyKeptScheme, CommandPalette, CommandsProvider, formatKeys, KeyHints, useCommand, useCommandPalette, useSchemeCommands } from '@acaprino/sigrid/assemblies';
+import { useMedia, WordsProvider } from '@acaprino/sigrid';
+import type { IconName } from '@acaprino/sigrid/primitives';
+import type { ToastItem } from '@acaprino/sigrid/components';
 import '@acaprino/sigrid/styles.css';
 import '@acaprino/sigrid/graph.css';
 import { Details } from './details.tsx';

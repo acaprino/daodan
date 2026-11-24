@@ -1,6 +1,8 @@
 // The details in the inspector: the element chosen, else the flow with its steps, else what the project is and how its map is read.
 import type { ReactNode } from 'react';
-import { Button, Cluster, Column, DescriptionList, Disclosure, Heading, Icon, Inspector, ItemList, ItemRow, Note, Section, Text } from '@acaprino/sigrid';
+import { Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino/sigrid/primitives';
+import { DescriptionList, Disclosure, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
+import { Inspector } from '@acaprino/sigrid/layout';
 import type { Entity, Envelope, Flow } from './envelope.ts';
 import { flowsThrough, indexOf } from './projection.ts';
 import { Mark } from './mark.tsx';

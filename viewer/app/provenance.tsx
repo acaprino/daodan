@@ -1,5 +1,6 @@
 // Where the graph of the run comes from and what it does not know, in the inspector.
-import { Column, DescriptionList, Icon, Note, Section, Text } from '@acaprino/sigrid';
+import { Column, Icon, Section, Text } from '@acaprino/sigrid/primitives';
+import { DescriptionList, Note } from '@acaprino/sigrid/components';
 import type { Detail } from './frame.tsx';
 import { levelLabel } from './graph.ts';
 import { short } from './repository.ts';

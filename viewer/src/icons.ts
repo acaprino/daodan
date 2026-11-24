@@ -1,5 +1,5 @@
 // The words of the model's closed lists, and the icon of each kind of node, by Sigrid's names.
-import type { IconName } from '@acaprino/sigrid';
+import type { IconName } from '@acaprino/sigrid/primitives';
 
 // The empty slot (R6): a kind Sigrid has no name for takes no other thing's icon.
 export const NO_ICON = '';

@@ -1,6 +1,6 @@
 // What the canvas draws of the graph of the run: its things, the groups open in place around what they hold, its lines and the key of
 // the lines.
-import type { IconName } from '@acaprino/sigrid';
+import type { IconName } from '@acaprino/sigrid/primitives';
 import type { GraphEdge as Line, GraphLegendEntry, GraphNode as Drawn } from '@acaprino/sigrid/graph';
 import { iconFor } from '../src/icons.ts';
 import { isOpenGroup, nodeFacts, nodeName, opens, outside, relationWords } from './graph.ts';

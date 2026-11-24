@@ -1,6 +1,7 @@
 // The graph as it takes shape: its groups and relations on the canvas, which lays them out, and the details of the one chosen.
 import { memo, useCallback, useMemo } from 'react';
-import { Badge, Button, Icon, Section, Split, Text, useMedia } from '@acaprino/sigrid';
+import { Badge, Button, Icon, Section, Split, Text } from '@acaprino/sigrid/primitives';
+import { useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
 import { useFrame } from './frame.tsx';
 import { buildCounts, levelLabel, levelsName } from './graph.ts';

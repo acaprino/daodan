@@ -1,6 +1,7 @@
 // The repository: its address, whether it can be read, the branch to analyse, and the context in use.
 import { useRef } from 'react';
-import { Badge, Button, Cluster, Column, DescriptionList, FormField, Icon, Input, Note, Progress, Section, Select, Text } from '@acaprino/sigrid';
+import { Badge, Button, Cluster, Column, Icon, Input, Progress, Section, Select, Text } from '@acaprino/sigrid/primitives';
+import { DescriptionList, FormField, Note } from '@acaprino/sigrid/components';
 import { ScreenPanel } from './frame.tsx';
 import { accessFeedback, accessible, isPreparing, preparation, repositoryContext, repositoryReason, repositorySlug, short } from './repository.ts';
 import { ctx, slug } from './snapshot.ts';

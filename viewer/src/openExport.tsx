@@ -1,7 +1,7 @@
 // «Apri altro export»: a map kept in a file takes the place of the one shown. A file that holds none says why, and the map stays.
 import { useState } from 'react';
-import { Dialog, FileDrop } from '@acaprino/sigrid';
-import type { FileDropReason } from '@acaprino/sigrid';
+import { Dialog, FileDrop } from '@acaprino/sigrid/components';
+import type { FileDropReason } from '@acaprino/sigrid/components';
 
 const REFUSED: Record<FileDropReason, string> = {
   type: 'Serve un file JSON.', size: 'Il file è troppo grande.', count: 'Scegli un solo file.',

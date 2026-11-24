@@ -1,5 +1,6 @@
 // The engine and the questions: a question on the run in view, its answer with the tools it took, the engine, and the MCP server.
-import { Badge, Button, Column, DescriptionList, Empty, FormField, Grid, Icon, Note, Progress, Section, Text, Textarea } from '@acaprino/sigrid';
+import { Badge, Button, Column, Grid, Icon, Progress, Section, Text, Textarea } from '@acaprino/sigrid/primitives';
+import { DescriptionList, Empty, FormField, Note } from '@acaprino/sigrid/components';
 import { EngineForm } from './engine-form.tsx';
 import { askedWord, askFailed, askNote, lastQuestion, mcpFacts, toolUse } from './engine.ts';
 import { ScreenPanel } from './frame.tsx';

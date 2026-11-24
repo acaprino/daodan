@@ -1,8 +1,11 @@
 // What the screens share: the field Ctrl+F goes to, the details, where the focus goes, and the panel each screen is drawn in.
 import { createContext, useContext, useLayoutEffect } from 'react';
 import type { ReactNode, RefObject } from 'react';
-import { Button, Column, Icon, Note, Panel, Text } from '@acaprino/sigrid';
-import type { IconName, PanelProps } from '@acaprino/sigrid';
+import { Button, Column, Icon, Text } from '@acaprino/sigrid/primitives';
+import { Note } from '@acaprino/sigrid/components';
+import { Panel } from '@acaprino/sigrid/layout';
+import type { IconName } from '@acaprino/sigrid/primitives';
+import type { PanelProps } from '@acaprino/sigrid/layout';
 import { useModelSlice } from './use-model.ts';
 
 // What the details show. `content` reads the model by itself, so it follows what it shows.

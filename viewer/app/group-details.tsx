@@ -1,7 +1,8 @@
 // The details of a group of the graph, in the inspector: a few facts beside the preview, all that is known of it on the graph.
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Badge, Button, Cluster, Column, DescriptionList, Disclosure, Icon, Logo, ScrollArea, Section, Text } from '@acaprino/sigrid';
+import { Badge, Button, Cluster, Column, Icon, Logo, ScrollArea, Section, Text } from '@acaprino/sigrid/primitives';
+import { DescriptionList, Disclosure } from '@acaprino/sigrid/components';
 import type { Detail } from './frame.tsx';
 import { isOpenGroup, nodeFacts, nodeName, opens, responsibilityOf, thingById } from './graph.ts';
 import type { Graph, GraphNode, Technology, Thing } from './graph.ts';

@@ -1,6 +1,8 @@
 // The sidebar of the map: the flows are its places (the whole map, or what one flow goes through), the elements in view its things.
 import { useState } from 'react';
-import { Badge, Button, Count, Icon, ItemRow, NavItem, Sidebar, SidebarGroup, Text, useAppShell } from '@acaprino/sigrid';
+import { Badge, Button, Count, Icon, Text } from '@acaprino/sigrid/primitives';
+import { ItemRow } from '@acaprino/sigrid/components';
+import { NavItem, Sidebar, SidebarGroup, useAppShell } from '@acaprino/sigrid/layout';
 import type { Model, Phase, Shown } from './model.ts';
 import { Mark } from './mark.tsx';
 import { FLOW_ICON, iconFor } from './icons.ts';

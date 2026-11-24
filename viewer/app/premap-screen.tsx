@@ -1,11 +1,10 @@
 // The pre-map: the repository before its analysis. The context and what it holds, its tree, what it is made with and what it
 // depends on; what is chosen in the tree, and where all this comes from, are in the inspector.
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import {
-  Badge, Button, Cluster, Column, DescriptionList, Empty, Grid, Icon, ScrollArea, SearchField, Section, Table, TableBody, TableCell, TableHead,
-  TableHeader, TableRow, Text, ToggleGroup, ToggleGroupItem, Tree,
-} from '@acaprino/sigrid';
-import type { TreeNode } from '@acaprino/sigrid';
+import { Badge, Button, Cluster, Column, Grid, Icon, ScrollArea, Section, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Text, ToggleGroup, ToggleGroupItem } from '@acaprino/sigrid/primitives';
+import { DescriptionList, Empty, SearchField } from '@acaprino/sigrid/components';
+import { Tree } from '@acaprino/sigrid/assemblies';
+import type { TreeNode } from '@acaprino/sigrid/assemblies';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import type { Detail } from './frame.tsx';
 import {

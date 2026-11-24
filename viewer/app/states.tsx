@@ -1,5 +1,6 @@
 // What the run and the synthesis both say: how the map of the system is, and that something is being read or could not be.
-import { Button, Column, Empty, Icon, Note, Progress, Text } from '@acaprino/sigrid';
+import { Button, Column, Icon, Progress, Text } from '@acaprino/sigrid/primitives';
+import { Empty, Note } from '@acaprino/sigrid/components';
 import { focusContent } from './frame.tsx';
 import { mapNotice } from './run.ts';
 import { model, useModel } from './use-model.ts';
