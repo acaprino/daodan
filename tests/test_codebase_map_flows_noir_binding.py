@@ -416,3 +416,21 @@ def test_no_declaration_has_another_node_but_the_closures_noir_cites_as_routes_a
     # the closures of `api/users.js` and the callback inside the first, the function at the top of `src/auth.js` and the two lambdas of `api/Cat.cs`: not the closure of
     # `/health` (Noir names no handler), not the lambda `Three(x => x)`, not the closure a rule had named, not what is in `routes/other.js`
     assert changed == {("api/users.js", 12), ("api/users.js", 13), ("api/users.js", 15), ("api/users.js", 18), ("src/auth.js", 2), ("api/Cat.cs", 5), ("api/Cat.cs", 6)}
+
+
+def test_a_spring_method_noir_names_with_its_class_is_an_offered_route_that_a_call_of_another_module_meets(tmp_path):
+    """Noir names a Kotlin method `Class.method` and cites the line of its `fun`, where the snapshot's declaration starts at the
+    annotation above it and its qualified name is `Class.method`. When the binder compared Noir's name with the bare name only,
+    that row was a gap, no Spring route was offered, and the brief of a Next.js and Spring project read `routes 1 offered,
+    33 called, 0 linked` (measured on 23 November 2026). The route comes from Noir; the function, from the Kotlin tree."""
+    files = {"api/ShopController.kt": source("class ShopController {", '    @PostMapping("/api/v1/checkout")',
+                                              '    fun checkout(): String = "ok"', "}"),  # fun on line 3
+             "web/client.ts": source("function post(path: string) {", "  return path;", "}", "",
+                                     "export function pay() {", '  return post("/api/v1/checkout");', "}")}
+    answer = [endpoint("/api/v1/checkout", "POST", "api/ShopController.kt", "ShopController.checkout", 3)]
+    rules = [{"written": "post", "in": ["web"], "link": "rotta", "route": {"service": "api", "method": "POST", "path": "arg0"}}]
+    links = links_of(tmp_path, answer, files, rules)
+    assert links["routes"] == {"offered": 1, "called": 1, "linked": 1}
+    assert {(e["from"], e["to"], tuple(e["route"])) for e in links["edges"] if e.get("route")} == {
+        ("web/client.ts::pay", "api/ShopController.kt::ShopController.checkout", ("*", "POST", "/api/v1/checkout"))}
+    assert entry_of(links, "POST", "/api/v1/checkout")["symbol"] == "api/ShopController.kt::ShopController.checkout"

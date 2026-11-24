@@ -627,6 +627,53 @@ NETWORK_PROBE = """import urllib.request
 for name, url in (("registry", "https://pypi.org/simple/"), ("outside", "https://example.com/"),
                   ("plain", "http://pypi.org/simple/"), ("address", "https://1.1.1.1/")):
     try:
+@app.function(cpu=4, memory=16384, timeout=3 * 3600, volumes={"/results": volume}, single_use_containers=True)
+def routes_case(name: str, case: dict, archive: bytes | None, rules: str, tag: str) -> dict:
+    """The routes of a case at the code of this image, with the rules an earlier rules session wrote (`rules`, the text of
+    its `rules.json`): the engine pass with its containers on Modal Sandboxes, then `flows.link_facts`. No model. Saved under
+    TAG/routes/NAME.json: the counts `offered`, `called` and `linked` of the brief, the entries by reader, the gaps by
+    their words, and the calls no route met."""
+    import collections
+    work = Path("/work") / name
+    target = _source(work / "src", case, archive)
+    manifest = work / "snapshot/manifest.sqlite"
+    _run([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out", str(manifest), "--no-engine",
+          "--no-index"])
+    engine = _engine_pass(manifest)
+    answer = {"case": name, "engine": engine, "stopped": _engine_failure(engine)}
+    if not answer["stopped"]:
+        sys.path.insert(0, SCRIPTS)
+        import flows
+        links = flows.link_facts(manifest, json.loads(rules)["rules"])
+        gaps = links.get("gaps") or []
+        answer.update(
+            routes=links["routes"],
+            entries_by_reader=dict(collections.Counter(e.get("reader") for e in links["entries"])),
+            gaps_by_words=dict(collections.Counter(
+                str(g.get("reason") or g.get("detail") or g.get("kind"))[:90] for g in gaps).most_common(25)),
+            calls_no_route=[g for g in gaps if "no handler" in str(g.get("reason") or g.get("detail"))][:60])
+        # what Noir's rows that no function holds say, and what the snapshot declares in the files they cite
+        import edge_view
+        import semantic_store
+        from premap import noir
+        from snapshot_store import open_snapshot
+        with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+            view = edge_view.load_edge_view(store)
+            facts = flows.Facts(store, db, view)
+            rows = flows.bind_declared(noir.recorded(manifest), facts, view, json.loads(rules)["rules"])
+            failed = [row for row in rows if row.get("gap")]
+            answer["noir_gaps"] = [{"site": row["site"], "handler": row.get("handler"), "method": row.get("method"),
+                                    "path": row.get("path"), "gap": row["gap"][:240]} for row in failed][:90]
+            cited = list(dict.fromkeys(row["site"].rpartition(":")[0] for row in failed))
+            answer["gap_files"] = len(cited)
+            answer["declarations_in_gap_files"] = {
+                file: [{key: d.get(key) for key in ("name", "qualified_name", "kind", "line", "end")}
+                       for d in facts.functions.get(file, ())][:30] for file in cited[:8]}
+    _save(tag, f"routes/{name}.json", answer)
+    volume.commit()
+    return answer
+
+
         urllib.request.urlopen(url, timeout=20).close()
         print(name, "reached")
     except Exception as error:

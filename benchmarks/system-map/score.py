@@ -451,6 +451,50 @@ def _case_columns(folder: Path, reference_file: Path) -> dict:
     return columns
 
 
+def _masked(run: Path) -> dict | None:
+    """What the answers of the tools gave a run's model, as the streams of its two sessions keep them: how many
+    answers, how many were read as JSON, and the secrets they report masked (`masked_secrets`, which
+    `secret_mask.tool_result` puts in every answer). None when the run kept no stream."""
+    streams = [run / name for name in ("stream.jsonl", "rules-stream.jsonl") if (run / name).is_file()]
+    if not streams:
+        return None
+    counts = {"answers": 0, "read": 0, "masked_secrets": 0}
+    for stream in streams:
+        for line in stream.read_text(encoding="utf-8", errors="replace").splitlines():
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            blocks = ((event.get("message") or {}).get("content") or []) if isinstance(event, dict) else []
+            for block in blocks:
+                if not (isinstance(block, dict) and block.get("type") == "tool_result"):
+                    continue
+                content = block.get("content")
+                text = ("".join(part.get("text", "") for part in content if isinstance(part, dict))
+                        if isinstance(content, list) else str(content or ""))
+                counts["answers"] += 1
+                try:
+                    answer = json.loads(text)
+                except ValueError:
+                    continue  # an error text, or one the host cut: not counted as read
+                if isinstance(answer, dict):
+                    counts["read"] += 1
+                    counts["masked_secrets"] += int(answer.get("masked_secrets") or 0)
+    return counts
+
+
+def _usage(group: list) -> dict:
+    """Tokens, seconds and turns of the sessions of a row's runs, by session (`rules`, `mapper`)."""
+    tokens, seconds, turns = Counter(), Counter(), Counter()
+    for item, _ in group:
+        for name, session in (item.get("sessions") or {}).items():
+            seconds[name] += session.get("seconds") or 0
+            turns[name] += session.get("turns") or 0
+            for key in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens"):
+                tokens[key] += (session.get("usage") or {}).get(key) or 0
+    return {"tokens": dict(tokens), "seconds": dict(seconds), "turns": dict(turns)}
+
+
 def _row(group: list, folder: Path, reference_file: Path) -> dict:
     """One row of `whole`: the runs of a case, model, scope and rules, by repetition."""
     group = sorted(group, key=lambda item: item[0].get("rep", 0))
@@ -476,7 +520,14 @@ def _row(group: list, folder: Path, reference_file: Path) -> dict:
     row["cost"] = (_unmeasured("no run recorded its cost") if all(cost is None for cost in costs)
                    else _measured({"cost_usd": round(sum(cost or 0 for cost in costs), 6),
                                    "budget_stop": any(item.get("budget_stop") for item, _ in group),
-                                   "prepared_seconds": [item.get("prepared_seconds") for item, _ in group]}))
+                                   "prepared_seconds": [item.get("prepared_seconds") for item, _ in group],
+                                   "usage": _usage(group)}))
+    if row["secrets"]["state"] == "misurato":  # the archive's count is there: add what the models were given
+        seen = [counts for counts in (_masked(folder_run) for _, folder_run in group) if counts is not None]
+        row["secrets"]["value"]["in_the_texts_sent_out"] = (
+            _unmeasured("no run kept a stream.jsonl: the texts the models were given are not there") if not seen
+            else _measured({key: sum(counts[key] for counts in seen) for key in ("answers", "read", "masked_secrets")}
+                           | {"runs": len(seen)}))
     return row
 
 
