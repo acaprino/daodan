@@ -8,8 +8,10 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
 1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`). It reads only the inventory
    (`file_inventory.write`), so it runs before the files are read.
-2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
-   signs (`technologies.ensure`); it too reads only the inventory, the modules and the pre-map.
+2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, recognized by the
+   pinned stack-analyser release from the pre-map's declarations and the files it reads by itself, executing
+   nothing of the project (`technologies.ensure`, `stack_recognition.run`); it too reads only the inventory, the
+   modules and the pre-map. A fast scan keeps the signs of the sources it did not run (`technologies.merge`).
 3. `parse`: the files the inventory lists, read into the snapshot (`snapshot.write_reading`); a caller that wrote
    the snapshot with `write_snapshot` finds it fresh. It also says the plan (`pipeline.plan`, spec 8.4): which
    adapter runs on which files, executed by `write_reading`, `engine_pass.pass_plan` and `dynamic.run`.

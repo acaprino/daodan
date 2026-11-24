@@ -5,8 +5,9 @@
 """Step 2 (`stack`): per-module frameworks, libraries, services and tools from Step 1's map and facts.
 
 Reads Step 1's module graph and pre-map facts (`packages`, `configured_services`, `services`, `docker_builds`, `excluded`, `toolchains`)
-without parsing a manifest again; what the project's files show is recognized by stack-analyser (`stack_recognition`, which
-reads files and executes nothing of the project). Every concrete, logical and virtual module receives its
+without parsing a manifest again; what the project's files show is recognized only by the pinned stack-analyser release
+(`stack_recognition`, which reads files and executes nothing of the project); the registry gives each entry's name,
+category, type, site and mark. Every concrete, logical and virtual module receives its
 languages, toolchains, frameworks, declared libraries (cataloged or not), external services and tools.
 `configured_services` preserves Compose and CI declarations, including names and images outside the registry.
 For build modules with a native package graph, `resolved_libraries` records the reachable external packages
@@ -14,7 +15,9 @@ and their exact versions. A resolved package can be conditional on a target or f
 An entry with no `declared` sign, only lines of text that mention it, is no module's: it stays in `mentioned` with its
 signs. Every sign carries its `source` and the `scan` (the pre-map's `inputs_digest`) that produced it: a scan replaces the
 signs of the sources it ran and keeps the others while their file exists and the pre-map does not leave it
-out (`merge`). `checkers` gives each checker's status (`stack-analyser`, `host`) and `gaps` what they could not establish.
+out (`merge`), and says what it kept (`signs_kept`). A record made while the tool could not run is derived again once
+this process remembers no failed install (`_read`). `checkers` gives each checker's status (`stack-analyser`, `host`)
+and `gaps` what they could not establish. The process: docs/plugins/codebase-map.md, «Lo step `stack`».
 """
 from __future__ import annotations
 

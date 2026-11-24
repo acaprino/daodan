@@ -95,7 +95,7 @@ flowchart LR
 | Step | Domanda a cui risponde | Adattatori | Strumento sotto | Esegue il progetto |
 | --- | --- | --- | --- | --- |
 | 1 `scan` | Quali cartelle e file ha il progetto, e quali moduli, unità di build e comandi di test dichiara? | scanner | il percorso dell'albero; cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
-| 2 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork; oggi il registro delle tecnologie | No |
+| 2 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork ([Lo step `stack`](#lo-step-stack)) | No |
 | 3 `plan` (manca) | Quale adattatore gira su quale parte, con che cosa gli serve, e quale no? | nessuno | — | No |
 | 4 `parse` | Che cosa c'è in ogni sorgente che il piano gli dà: simboli, import, chiamate? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
 | 5 `resolve` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
@@ -130,7 +130,7 @@ flowchart LR
     b2([npm, tsc])
   end
   subgraph recognize
-    c1[registro<br>React, Vite]
+    c1[stack-analyser<br>React, Vite]
   end
   subgraph plan
     d1[2 resolver<br>1 observer]
@@ -163,7 +163,7 @@ flowchart LR
     b2([gradle])
   end
   subgraph recognize
-    c1[registro<br>Spring Boot, JUnit]
+    c1[stack-analyser<br>Spring Boot, JUnit]
   end
   subgraph plan
     d1[2 resolver<br>1 observer]
@@ -197,7 +197,7 @@ flowchart LR
     b2["model_not_run:<br>uv"]:::gap
   end
   subgraph recognize
-    c1[registro<br>dai pacchetti dichiarati]
+    c1[stack-analyser<br>dai pacchetti dichiarati]
   end
   subgraph plan
     d1["1 resolver<br>observer: lacuna"]
@@ -226,13 +226,13 @@ scip-python non chiede il container: su Linux e macOS gira sull'host, perché le
 Lo snapshot si scrive in due scritture sullo stesso store: l'inventario di cartelle e file (`file_inventory.py`: dimensione, data, hash e linguaggio di ogni file), che nel disegno è di `scan`, e la lettura dei sorgenti (`snapshot.write_reading`, adattatori di `scripts/languages/`), che è `parse` e prende file e linguaggio solo dall'inventario. `snapshot.write_snapshot` le chiama una dopo l'altra e pubblica una volta sola. Poi `snapshot.py write` e `codebase_map_create_run` eseguono gli step della pipeline (`scripts/pipeline/`), ognuno con i suoi eventi nel giornale accanto al manifest:
 
 1. `scan` (resta `scan`): legge solo l'inventario. Scrive il grafo dei moduli senza gli archi `imports` e `calls`, e la pre-mappa (`references/premap.md`): unità, toolchain, registri, comandi di test, servizi e passi della CI e build dei Dockerfile che il progetto dichiara. I comandi di modello dei build system girano nel container.
-2. `stack` (diventa `recognize`) scrive `technologies.json` accanto al manifest. Assegna a ogni modulo le tecnologie dichiarate nei file di sua competenza. Le menzioni testuali restano disponibili come indizi. Il campo `configured_services` conserva nome e provenienza delle dichiarazioni Compose e CI, anche per servizi fuori catalogo. L'avvio effettivo si verifica nel passo dinamico. Un errore dello stack viene registrato e l'analisi prosegue in background (`resolve_edges.py --pass`).
+2. `stack` (diventa `recognize`) riconosce le tecnologie con stack-analyser e scrive `technologies.json` accanto al manifest ([Lo step `stack`](#lo-step-stack)). Assegna a ogni modulo le tecnologie dichiarate nei file di sua competenza. Gli host negli URL restano menzioni, disponibili come indizi. Il campo `configured_services` conserva nome e provenienza delle dichiarazioni Compose e CI, anche per servizi fuori catalogo. L'avvio effettivo si verifica nel passo dinamico. Un errore dello stack viene registrato e l'analisi prosegue in background (`resolve_edges.py --pass`).
 3. `parse`: legge uno store che ha solo l'inventario; dopo `write_snapshot` è fresco. Dice il piano (`pipeline/plan.py`): quale adattatore gira su quali file.
 4. `analyze` (diventa `resolve`): un analyzer per tecnologia della pre-mappa (`indexers/`), uno alla volta.
 5. `dynamic` (diventa `observe`): i test del progetto sotto un registratore (sezione Passo dinamico).
 6. `union` (diventa `connect`): i grafi delle tecnologie come grafo completo, con ciò che la corsa ha osservato e ciò che il grafo non contiene: file che un indice ha lasciato fuori, linguaggi senza analyzer, chiamate fra i linguaggi di due analyzer.
 
-Oggi inventario e lettura riscoprono ancora ciò che nel disegno chiedono a `scan`. L'inventario decide il linguaggio di un file con espressioni regolari sul contenuto, mentre `scan` lo chiede a go-enry. `parse` legge `tsconfig` a mano, mentre `scan` lo chiede a `tsc`, e legge anche i file che `scan` poi dichiara generati o di terze parti. Gli archi `imports` e `calls` fra moduli e il legame degli ingressi dei flussi ai simboli leggono ciò che `parse` produce. Li fanno il primo lettore del grafo intero (`modules.ensure_graph`, anche lo step `union`) e i collegamenti (`binder.bind`); nel disegno stanno in `connect` (spec, 8.2 e 8.3). Il piano non è uno step: `write_reading`, `engine_pass.pass_plan` e il passo dinamico chiamano la sua funzione con i fatti che hanno. Il riconoscimento usa ancora il registro (`service_registry.py`): il passaggio al fork di stack-analyser è approvato (`docs/specs/2026-11-21-stack-dal-fork.md`) e non applicato. Mancano anche le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
+Oggi inventario e lettura riscoprono ancora ciò che nel disegno chiedono a `scan`. L'inventario decide il linguaggio di un file con espressioni regolari sul contenuto, mentre `scan` lo chiede a go-enry. `parse` legge `tsconfig` a mano, mentre `scan` lo chiede a `tsc`, e legge anche i file che `scan` poi dichiara generati o di terze parti. Gli archi `imports` e `calls` fra moduli e il legame degli ingressi dei flussi ai simboli leggono ciò che `parse` produce. Li fanno il primo lettore del grafo intero (`modules.ensure_graph`, anche lo step `union`) e i collegamenti (`binder.bind`); nel disegno stanno in `connect` (spec, 8.2 e 8.3). Il piano non è uno step: `write_reading`, `engine_pass.pass_plan` e il passo dinamico chiamano la sua funzione con i fatti che hanno. Mancano le cartelle con i nomi nuovi (`parsers/`, `scanners/`, `resolvers/`, `observers/`) e, in `connect`, l'unione ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle).
 
 Spec: `docs/specs/2026-11-15-pipeline-di-analisi.md`.
 
@@ -247,6 +247,99 @@ Spec: `docs/specs/2026-11-15-pipeline-di-analisi.md`.
 **Dockerfile.** La pre-mappa legge ogni Dockerfile con il frontend di BuildKit v0.34.2 (fatto `docker_builds`), con contesto e argomenti da Compose dove un file Compose lo dichiara. Per i file che solo uno stadio di build porta in un'unità, `docker_build.py` riproduce nella preparazione quello stadio, e quelli da cui parte, fino al suo ultimo `RUN`, la build: l'immagine di base per il digest che il registro dà, la rete aperta anche agli host che i `RUN` nominano in un URL, l'esecuzione che parte da ciò che la preparazione ha scritto (`keep_root`: il suo container salvato come immagine con `commit` su Docker, Podman e il Kiri di Daodan, un motore che non lo salva una lacuna; sul driver di Modal lo snapshot del sandbox, `benchmarks/project-model/modal_pipeline.py`). Un'istruzione che non riproduce è una lacuna `not_reproduced` con la sua riga. Un argomento che nomina una variabile di un `.env` tracciato resta `${NOME}` nel fatto, e un Dockerfile o un contesto che una tale variabile nomina vale solo se dà un percorso tracciato, altrimenti è una lacuna che nomina la variabile (`premap/dockerfile.py`); i valori arrivano alla preparazione e all'esecuzione dello stadio solo nel container, come BuildKit dà un ARG a ogni `RUN` (`container.py`). La via la prendono Go, C e C++; un passo che fallisce è una lacuna con la riga d'errore dello strumento. Per Go, un file che nessun modulo contiene ma che uno stadio copia ha una corsa di scip-go dentro quello stadio, che registra Dockerfile, stadio e il `go.mod` e il `go.sum` che i passi hanno risolto. Per C e C++, una radice CMake che la via principale non indicizza si costruisce e si indicizza nello stadio che ne copia il `CMakeLists.txt`, con gli header builtin di clang al posto di quelli di GCC, ogni cartella di include nominata dal pacchetto apk o dpkg che ne possiede più file, o dal progetto che un'installazione CMake vi ha scritto, e le diagnostiche dello stadio nel risultato (`_docker` in `indexers/clang.py`). La JVM non ha la via: quando un build Gradle si ferma su nomi che darebbero i `.proto` e solo il Dockerfile li copia nella cartella, il motivo nomina la riga del Dockerfile (`indexers/jvm.py`).
 
 Strumenti, versioni e licenze per linguaggio: `docs/plugins/codebase-map-linguaggi.md`. Cosa Daodan supporta, per tipo, con le misure: `docs/plugins/codebase-map-supporto.md`, generato.
+
+### Lo step `stack`
+
+Riconosce framework, librerie, strumenti e servizi.
+Lo fa solo stack-analyser, nel fork `acaprino/stack-analyser-daodan`, in entrambe le scansioni.
+Il rilascio è fissato e verificato con sha256: `stack_analyser.VERSION` (`1.27.6-daodan.3`), `URL`, `SHA256`.
+Il registro (`data/service-registry.json`) è solo anagrafica: nome, tipo, categoria, sito, marchio, host. Non ha segni.
+Disegno e motivi: [spec dello stack dal fork](../specs/2026-11-21-stack-dal-fork.md).
+
+**Una scansione, in ordine** (`stack_recognition.run`, poi `technologies.derive`):
+
+1. `scan` scrive la pre-mappa: i fatti e lo stato di ogni fonte (`premap.ensure`).
+2. Pacchetti, immagini dei servizi e basi dei Dockerfile diventano dichiarazioni, una per fonte (`stack_recognition.declarations`).
+3. Il perimetro va al fork in un file: cartelle da saltare, percorsi esclusi dalla pre-mappa, file vietati o dal nome segreto, ogni link (`stack_recognition.perimeter`).
+4. Il fork gira sull'host, con il Node di Daodan, in una cartella sua: legge file, non esegue nulla del progetto (`stack_analyser.run`).
+5. Le sue prove diventano segni; gli host negli URL dei sorgenti si aggiungono come menzioni (`stack_recognition._signs`, `registry_hosts.check_hosts`, `stack_recognition.found`).
+6. I segni nuovi si uniscono a quelli conservati dal record di prima (`technologies.merge`).
+7. Ogni modulo riceve le tecnologie dichiarate nei suoi file; il record va in `technologies.json` (`technologies.derive`, `technologies.ensure`).
+
+Niente di ciò che il fork incontra ferma lo step: diventa un controllore `failed` e un buco `checker_failed` con causa e rimedio (`stack_recognition._failed`).
+
+**La regola delle fonti** (`technologies.merge`):
+
+- Una scansione sostituisce i segni delle fonti che ha eseguito.
+- Conserva gli altri, ognuno con la scansione da cui viene, finché il suo file esiste e la pre-mappa non lo esclude.
+- Quando conserva qualcosa scrive il buco `signs_kept`, con le fonti e le scansioni.
+- Una tecnologia resta finché ha un segno.
+- Le fonti eseguite (`ran`): `registry_hosts`; `stack-analyser`, se il fork ha girato; e solo allora le fonti della pre-mappa in stato `ran` o `not_needed` (`stack_recognition._premap_sources`).
+
+**Veloce e completa.**
+
+| | Scansione veloce | Scansione completa |
+| --- | --- | --- |
+| Chi la avvia | Ogni modifica (hook `PostToolUse`) e `MapService.create_run`, sotto `project_lock` (`Context.fast_scan`) | Il passaggio staccato (`resolve_edges.py --pass`) e `snapshot.py write` |
+| Fonti della pre-mappa | Solo i lettori; le fonti con comandi sono `not_run` | I lettori e i comandi di modello nel container (Renovate, Compose, i build tool, go-enry) |
+| Fonti che sostituiscono i loro segni | `stack-analyser`, `registry_hosts`, i lettori | In più le fonti con comandi che hanno girato |
+| Che cosa conserva | I segni delle fonti con comandi | I segni delle fonti che questa volta non hanno girato |
+| Da quale record parte | Quello della completa, copiato nel run di lavoro quando questo nasce (`snapshot._refresh_locked`) | Quello accanto al manifest (`technologies.recorded`) |
+| Dove va il tempo | I lettori, l'avvio di Node, il fork | In più i comandi nel container |
+| Tempo misurato, piano 2 (rilascio `.2`, Linux, 178 fixture) | Mediana 0,523 s, massimo 5,791 s (`fork_fast`); col registro di prima 0,013 s | Lo step `stack` da solo: mediana 0,548 s, massimo 16,736 s |
+| Tempo dopo il passaggio (rilascio `.3`, perimetro in un file) | Non misurato | Non misurato |
+
+Le misure del piano 2: [README di project-model](../../benchmarks/project-model/README.md), «Lo step `stack` dal fork».
+
+**I campi di un segno** (`stack_recognition._signs`, `found`; `technologies.merge`):
+
+| Campo | Che cosa dice |
+| --- | --- |
+| `sign` | Il tipo di prova: `package` (anche un'immagine, un'azione, una risorsa Terraform: `SIGN_OF`), `file`, `source`, `env`, `host`. Una prova `extension` non dà segni |
+| `value` | Ciò che ha riconosciuto: il pacchetto, l'immagine, il file, l'host |
+| `path` | Il file, relativo alla radice del progetto |
+| `line` | La riga, quando la fonte la conosce; altrimenti `null` |
+| `strength` | `declared`; `mentioned` per `env` e `host`. Una tecnologia con soli segni `mentioned` sta in `mentioned`, non in `technologies` |
+| `source` | Chi l'ha letto: `stack-analyser` (il fork da solo), l'etichetta di una fonte della pre-mappa (`nome@versione`), `registry_hosts` |
+| `scan` | L'`inputs_digest` della pre-mappa della scansione che l'ha prodotto |
+
+Lo stesso pacchetto nello stesso file può avere due segni: la lettura del fork e la dichiarazione della pre-mappa, con la riga.
+Restano entrambi. `technologies.sites` ne fa un sito per (`sign`, `path`, `value`), con la riga che uno dei due conosce.
+Le variabili d'ambiente nei sorgenti non danno più menzioni. I servizi generici del fork (`aws`, `azure`, `google`, …) restano come li dà.
+
+**Node.** Il fork gira sul Node di Daodan, mai su quello della macchina:
+
+- Node `v22.23.4` (`indexers.runtime.NODE_VERSION`): scaricato da nodejs.org al primo uso, verificato con il `SHASUMS256.txt` del rilascio (`runtime.node`). Con meno di 1 GB libero non si scarica (`runtime.room`).
+- Il rilascio del fork: scaricato da github.com al primo uso, verificato con `SHA256` (`stack_analyser.cli`).
+- Tutti e due vanno, una volta per macchina, nella cartella condivisa di Daodan: `engines/node/`, `engines/stack-analyser/` (`engine_tools.shared_engine_dir`; `DAODAN_SHARED_DIR` la sposta).
+
+**Che cosa succede se…**
+
+| Caso | Che cosa succede | Dove |
+| --- | --- | --- |
+| Al primo uso manca la rete | Node o il rilascio non si scaricano. Lo step finisce, conserva i segni di prima (`signs_kept`) e scrive `checker_failed` con causa e rimedio. Il processo ricorda il fallimento: non riprova a ogni scansione, e il rimedio dice di riavviare Daodan | `stack_analyser._remembered`, `cli`, `node` |
+| Node non si installa (meno di 1 GB libero, `DAODAN_SHARED_DIR` non assoluta, sha256 diverso) | Come sopra | `stack_analyser.node`, `runtime.room`, `runtime.fetching` |
+| Il fork fallisce (non parte, esce con un errore, non scrive JSON, non risponde in 300 s) | Come sopra, ma il fallimento non è ricordato: la scansione dopo riprova | `stack_analyser._start`, `_answer`, `TIMEOUT` |
+| Il fork dà una prova malformata | La prova si scarta e si conta (`evidence_malformed`); le altre restano | `stack_recognition._item`, `_signs` |
+| C'è un record scritto con il fork fermo | Alla lettura dopo è vecchio e si deriva di nuovo, se il processo non ricorda un'installazione fallita | `technologies._read` |
+| Un file è cancellato | I segni conservati su quel file se ne vanno | `technologies.merge` (`exists`) |
+| Un percorso diventa escluso | Il fork non lo apre; le sue prove e i segni conservati lì si scartano; una dichiarazione lì è il buco `declaration_not_sent` | `stack_recognition.perimeter`, `_signs`, `declarations`; `technologies.derive` (`exists`) |
+| Si fissa un rilascio nuovo | Il record è vecchio (`VERSION` e `SHA256` sono fra i suoi ingressi); il rilascio si scarica al primo uso. Un id che il registro non ha esce con il suo nome e il buco `not_in_registry`, finché `registry_build.py build` non rigenera il registro | `technologies._inputs`, `stack_recognition.found` |
+
+**Dove sta ogni cosa** (in `daodan/core/`):
+
+| Modulo | Responsabilità |
+| --- | --- |
+| `premap/` | I fatti della pre-mappa e lo stato di ogni fonte (`premap.ensure`) |
+| `stack_recognition.py` | La traduzione: dichiarazioni, perimetro, prove in segni, menzioni di host (`run`) |
+| `stack_analyser.py` | Il rilascio fissato: installarlo, lanciarlo, leggerne il catalogo (`cli`, `node`, `run`, `catalogue`) |
+| `indexers/runtime.py` | Il Node di Daodan (`node`) |
+| `registry_hosts.py` | Gli host negli URL dei sorgenti, letti con tree-sitter, come menzioni (`check_hosts`) |
+| `technologies.py` | La regola delle fonti, i moduli, il record e la sua freschezza (`merge`, `derive`, `_read`, `ensure`) |
+| `service_registry.py` | Il registro e la categoria di una voce (`load`, `entry_category`) |
+| `registry_build.py` | Il registro, generato dal catalogo del rilascio, da Simple Icons, dal CNCF Landscape e dalle aggiunte (`build`); le aggiunte non hanno segni (`check`) |
+
+Che cosa non è ancora misurato né provato dopo il passaggio: spec dello stack dal fork, «Stato».
 
 ## Passo dinamico
 
