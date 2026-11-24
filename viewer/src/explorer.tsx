@@ -16,10 +16,12 @@ import { TYPE_LABEL } from './icons.ts';
 import { counted } from './names.ts';
 
 type ExplorerProps = {
-  model: Model; title: string; search: RefObject<HTMLInputElement | null>; canvas: RefObject<GraphCanvasHandle | null>;
-  ready: boolean;       // the map is shown: without it the body is `children` alone
-  runs: ReactNode;      // the choice of the run, where there is one
-  children: ReactNode;  // over the canvas, or in its place
+  model: Model; title: string; search: RefObject<HTMLInputElement | null>;
+  toShow: { ref: string } | null;  // what was last chosen outside the canvas, to bring into its view
+  ready: boolean;                  // the map is shown: without it the body is `children` alone
+  runs: ReactNode;                 // the choice of the run, where there are runs: it comes and goes, so it is at the loose end of its row
+  openOther: ReactNode;            // the button that opens another export
+  children: ReactNode;             // over the canvas, or in its place
 };
 
 // The places of what is in view, from ELK in its worker. A drawing is of one layout: until the answer for a new one comes, the
@@ -47,41 +49,52 @@ function useLayout(drawing: Drawing, ready: boolean) {
     return () => { left = true; };
   }, [key, ready, attempt]);
   return {
-    layout: placed?.layout, drawing: placed && !current ? placed.drawing : drawing,
+    layout: placed?.layout, drawing: placed && !current ? placed.drawing : drawing, drawn: current,
     waiting: wanted && !current && failure === null, failure, retry: () => setAttempt(count => count + 1),
   };
 }
 
-export function Explorer({ model, title, search, canvas, ready, runs, children }: ExplorerProps) {
+export function Explorer({ model, title, search, toShow, ready, runs, openOther, children }: ExplorerProps) {
   const { state, dispatch, projection, edges } = model;
   const { envelope, view, scope, open } = state;
-  // Beside a docked inspector, and on a phone, the header has no room for the run: it goes with the filters, which wrap.
+  // Beside a docked inspector, and on a phone, the header has no room for the run and the other export: they go with the filters,
+  // which wrap.
   const tight = useMedia('(width < 1200px)');
   const direction = useMedia('(width < 850px)') ? 'down' : 'right';
   const graph = useLayout(useMemo<Drawing>(() => ({ projection, edges, direction }), [projection, edges, direction]), ready);
   const scene = useMemo(() => graph.layout && sceneOf(graph.drawing, graph.layout, state.selected, envelope.flows.find(flow => flow.ref === state.flow)),
     [graph.drawing, graph.layout, state.selected, envelope, state.flow]);
+  // What was chosen outside the canvas is brought into its view once, when the canvas draws that choice. Where it draws no node of
+  // it (outside the place, or hidden by the filters) the view stays where the person left it.
+  const canvas = useRef<GraphCanvasHandle>(null);
+  const shown = useRef<typeof toShow>(null);
+  useEffect(() => {
+    if (!toShow || shown.current === toShow || !graph.drawn || !scene) return;
+    shown.current = toShow;
+    if (state.selected === toShow.ref && scene.selected.length) canvas.current?.focus(scene.selected);
+  }, [toShow, graph.drawn, scene]);
   const chosen = state.filters.types?.[0] ?? '';
   const types = useMemo(() => typesIn(envelope, view, scope, open, chosen), [envelope, view, scope, open, chosen]);
   const filtered = ready ? projection.counts.filtered : 0;
   const reset = () => dispatch({ type: 'resetFilters' });
   const info = ready && shownDetails(state) === 'project';
-  const message = state.error ?? state.warning;
   const filters = <>
     <SearchField ref={search} disabled={!ready} aria-label="Cerca per nome" placeholder="Cerca per nome" value={state.filters.text ?? ''}
       onValueChange={text => dispatch({ type: 'filter', filters: { text } })} />
     <Select size="sm" aria-label="Tipo di entità" disabled={!ready} value={chosen} onValueChange={type => dispatch({ type: 'filter', filters: { types: type ? [type] : [] } })}
       options={[{ value: '', label: 'Tutti i tipi' }, ...types.map(type => ({ value: type, label: TYPE_LABEL[type] ?? type }))]} />
-    {tight && runs}
+    {tight && openOther}
     <Button variant="ghost" size="sm" disabled={filtered === 0} onClick={reset}><Icon name="clearFilter" />Azzera filtri ({counted(filtered, 'nascosto', 'nascosti')})</Button>
+    {tight && runs}
   </>;
   const inView = graph.waiting ? ['Dispongo il grafo…']
     : [counted(projection.nodes.length, 'nodo', 'nodi'), counted(projection.edges.length, 'relazione visibile', 'relazioni visibili')];
   return <Panel title={title}
     subtitle={ready ? [placeOf(state).join(' / '), ...inView].join(' · ') : undefined}
     actions={<>
-      <Button variant="ghost" size="sm" disabled={!ready || scope === null} onClick={() => dispatch({ type: 'up' })}><Icon name="back" />Su</Button>
       {!tight && runs}
+      <Button variant="ghost" size="sm" disabled={!ready || scope === null} onClick={() => dispatch({ type: 'up' })}><Icon name="back" />Su</Button>
+      {!tight && openOther}
       <Button variant={info ? 'secondary' : 'ghost'} size="sm" aria-label="Informazioni sul progetto" aria-pressed={info} disabled={!ready}
         onClick={() => dispatch({ type: info ? 'close' : 'info' })}>{tight ? 'Informazioni' : 'Informazioni sul progetto'}</Button>
     </>}
@@ -89,7 +102,7 @@ export function Explorer({ model, title, search, canvas, ready, runs, children }
     <Column fill>
       {children}
       {ready && <Column fill pad="lg" aria-busy={graph.waiting || undefined}>
-        {message && <Note tone={state.error ? 'error' : 'warning'} title={<Text data-selectable="">{message}</Text>} />}
+        {state.warning && <Note tone="warning" title={<Text data-selectable="">{state.warning}</Text>} />}
         {!projection.nodes.length
           ? <Empty fill title="Nessun elemento visibile." action={filtered > 0 && <Button variant="outline" size="sm" onClick={reset}>Azzera filtri</Button>} />
           : graph.failure !== null

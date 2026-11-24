@@ -1,14 +1,16 @@
 // What the page asks the host session and what the session answered. The server starts no model: a request waits until the
 // session takes it (`codebase_map_ui_requests`).
 import { useEffect, useRef, useState } from 'react';
-import type { SyntheticEvent } from 'react';
+import type { ReactNode, SyntheticEvent } from 'react';
 import {
-  Badge, Button, Cluster, Column, Disclosure, FormField, Grid, Icon, Input, ItemList, ItemRow, Note, Progress, ScrollArea, Section, Select, Text,
+  Badge, Button, Cluster, Column, Disclosure, Dot, FormField, Grid, Icon, Input, ItemList, ItemRow, Note, Progress, ScrollArea, Section, Select, Split,
+  Text,
 } from '@acaprino/sigrid';
 import {
-  askedState, askedText, askedTitle, findingPlace, findingSeverity, findingText, gapText, KINDS, needsText, questionProblem, runProblem, SCOPES,
+  askedState, askedText, askedTitle, askedTone, findingPlace, findingSeverity, findingText, findingTone, gapText, KINDS, needsText, questionProblem,
+  runProblem, SCOPES,
 } from './requests.ts';
-import type { Asked, Finding, Question } from './requests.ts';
+import type { Asked, Finding, Question, Tone } from './requests.ts';
 
 export const POLL_MS = 2000;
 
@@ -20,6 +22,7 @@ const auth = TOKEN ? { 'X-Daodan-Token': TOKEN } : undefined;
 export const getJson = (url: string) => fetch(url, { headers: auth }).then(answer);
 const postJson = (url: string, body: unknown) =>
   fetch(url, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer);
+const reasonOf = (reason: unknown) => String((reason as Error)?.message ?? reason);
 
 // A form that posts: it is sending until the server answers, and keeps what the server said when it refuses.
 function usePost(url: string) {
@@ -32,7 +35,7 @@ function usePost(url: string) {
       await postJson(url, body);
       done();
     } catch (reason) {
-      setFailure(String((reason as Error)?.message ?? reason));
+      setFailure(reasonOf(reason));
     } finally {
       setSending(false);
     }
@@ -92,35 +95,77 @@ function RunForm({ onRun }: { onRun: (id: string) => void }) {
   </Section>;
 }
 
+// What a route answers, asked again as long as it is drawn, one request at a time. Each route is asked by itself, so one that
+// fails hides nothing of the others; what was answered once stays in sight, and the next poll asks again.
+function usePoll<T>(url: string) {
+  const [answered, setAnswered] = useState<T | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const busy = useRef(false);
+  const ask = async () => {
+    if (busy.current) return;
+    busy.current = true;
+    try {
+      setAnswered(await getJson(url));
+      setFailure(null);
+    } catch (reason) {
+      setFailure(reasonOf(reason));
+    } finally {
+      busy.current = false;
+    }
+  };
+  useEffect(() => { ask(); const timer = window.setInterval(ask, POLL_MS); return () => window.clearInterval(timer); }, []);
+  return { answered, failure, ask, retry: () => { setFailure(null); ask(); } };
+}
+
+// Until a route has answered once nothing is said of what it holds: it is waited for, or its failure is said while it is asked again.
+function Unanswered({ poll, waiting, failed }: { poll: { failure: string | null; retry: () => void }; waiting: string; failed: string }) {
+  if (poll.failure === null) return <Progress aria-label={waiting} value={null} />;
+  return <Note tone="error" title={failed} actions={<Button variant="outline" onClick={poll.retry}><Icon name="refresh" />Riprova</Button>}>
+    <Text data-selectable="">{poll.failure}</Text></Note>;
+}
+
+// A state or a severity: its word, in the tone Sigrid has for it.
+function Mark({ tone, word }: { tone: Tone; word: string }) {
+  return <Badge variant={tone === 'danger' ? 'destructive' : 'secondary'}>{(tone === 'warning' || tone === 'success') && <Dot tone={tone} />}{word}</Badge>;
+}
+
+// An entry that does nothing: text to read and copy, so not a row to press.
+function Entry({ title, mark, text }: { title: string; mark: ReactNode; text: string }) {
+  return <Column as="li" gap="xs" pad="md" data-selectable="">
+    <Split gap="sm"><Text variant="strong">{title}</Text>{mark}</Split>
+    {text && <Text variant="soft" pre>{text}</Text>}
+  </Column>;
+}
+
 type SessionProps = { onPick: (file: string) => void; onRun: (id: string) => void };
-type Answers = { requests: Asked[]; findings: Finding[]; gaps: unknown[] };
 
 // The forms and the answers. It asks the server as long as it is drawn, and no longer.
 function Exchange({ onPick, onRun }: SessionProps) {
-  const [answers, setAnswers] = useState<Answers | null>(null);  // nothing is said of them until the server has answered once
-  const refresh = () => Promise.all([getJson('./api/requests'), getJson('./api/findings')]).then(([asked, found]) => {
-    setAnswers({ requests: asked.requests, findings: found.findings, gaps: found.gaps });
-  }).catch(() => undefined);  // the next poll retries
-  useEffect(() => { refresh(); const timer = window.setInterval(refresh, POLL_MS); return () => window.clearInterval(timer); }, []);
+  const asked = usePoll<{ requests: Asked[] }>('./api/requests');
+  const found = usePoll<{ findings: Finding[]; gaps: unknown[] }>('./api/findings');
+  const requests = asked.answered?.requests, findings = found.answered?.findings, gaps = found.answered?.gaps ?? [];
   return <Grid gap="xl">
     <Column gap="xl">
-      <AskForm onSent={refresh} />
+      <AskForm onSent={asked.ask} />
       <RunForm onRun={onRun} />
     </Column>
-    <Section title={answers ? `Richieste · ${answers.requests.length}` : 'Richieste'} level={3} icon={<Icon name="tasks" />}>
-      {!answers ? <Progress aria-label="Carico le richieste…" value={null} />
-        : !answers.requests.length ? <Text as="p" variant="muted">Nessuna richiesta.</Text>
-        : <ItemList aria-label="Richieste">{answers.requests.slice().reverse().map(item =>
-          <ItemRow key={item.id} title={askedTitle(item)} description={askedText(item) && <Text pre>{askedText(item)}</Text>}
-            end={<Badge variant="secondary">{askedState(item)}</Badge>} />)}</ItemList>}
+    <Section title={requests ? `Richieste · ${requests.length}` : 'Richieste'} level={3} icon={<Icon name="tasks" />}>
+      {!requests ? <Unanswered poll={asked} waiting="Carico le richieste…" failed="Richieste non lette" />
+        : !requests.length ? <Text as="p" variant="muted">Nessuna richiesta.</Text>
+        : <Column as="ul" gap="xs" aria-label="Richieste">{requests.slice().reverse().map(item =>
+          <Entry key={item.id} title={askedTitle(item)} mark={<Mark tone={askedTone(item)} word={askedState(item)} />} text={askedText(item)} />)}</Column>}
     </Section>
-    <Section title={answers ? `Finding · ${answers.findings.length}` : 'Finding'} level={3} icon={<Icon name="alert" />}>
-      {!answers ? <Progress aria-label="Carico i finding…" value={null} />
-        : !answers.findings.length ? <Text as="p" variant="muted">Nessun finding: compaiono quando la sessione chiude una review.</Text>
-        : <ItemList aria-label="Finding">{answers.findings.map((item, index) =>
-          <ItemRow key={index} title={findingPlace(item)} wrapTitle description={<Text pre>{findingText(item)}</Text>}
-            end={<Badge variant="secondary">{findingSeverity(item)}</Badge>} onClick={() => { if (item.file) onPick(item.file); }} />)}</ItemList>}
-      {!!answers?.gaps.length && <Note tone="warning" announce={false} data-selectable="" title={`Lacune · ${answers.gaps.length}`} items={answers.gaps.map(gapText)} />}
+    <Section title={findings ? `Finding · ${findings.length}` : 'Finding'} level={3} icon={<Icon name="alert" />}>
+      {!findings ? <Unanswered poll={found} waiting="Carico i finding…" failed="Finding non letti" />
+        : !findings.length ? <Text as="p" variant="muted">Nessun finding: compaiono quando la sessione chiude una review.</Text>
+        : <ItemList aria-label="Finding">{findings.map((item, index) => {
+          const { file } = item;
+          const mark = <Mark tone={findingTone(item)} word={findingSeverity(item)} />;
+          return file  // only one that names a file has somewhere to go
+            ? <ItemRow key={index} title={findingPlace(item)} wrapTitle description={<Text pre>{findingText(item)}</Text>} end={mark} onClick={() => onPick(file)} />
+            : <Entry key={index} title={findingPlace(item)} mark={mark} text={findingText(item)} />;
+        })}</ItemList>}
+      {gaps.length > 0 && <Note tone="warning" announce={false} data-selectable="" title={`Lacune · ${gaps.length}`} items={gaps.map(gapText)} />}
     </Section>
   </Grid>;
 }

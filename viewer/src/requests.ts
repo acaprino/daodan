@@ -3,8 +3,9 @@ export type Asked = { id: number; kind: string; scope: string; text: string; sta
 export type Finding = { file?: string; line?: number; severity?: string; title?: string; premise?: string; example?: string; request: number };
 export type Question = Pick<Asked, 'kind' | 'scope' | 'text'>;
 
-export const KINDS = [{ value: 'review', label: 'Review' }, { value: 'map', label: 'Mappa' }];
-export const SCOPES = [
+type Choice = { value: string; label: string };
+export const KINDS: Choice[] = [{ value: 'review', label: 'Review' }, { value: 'map', label: 'Mappa' }];
+export const SCOPES: Choice[] = [
   { value: 'global', label: 'Globale' }, { value: 'changeset', label: 'Changeset' }, { value: 'feature', label: 'Funzionalità' },
   { value: 'prompt', label: 'Prompt libero' },
 ];
@@ -25,13 +26,19 @@ export function runProblem(name: string): string {
   return RUN_NAME.test(name) ? '' : 'Solo minuscole, cifre e trattini, come in nome-del-run.';
 }
 
-export const askedTitle = (item: Asked): string => `#${item.id} ${item.kind} · ${item.scope}`;
+const wordOf = (choices: Choice[], value: string): string => choices.find(choice => choice.value === value)?.label ?? value;
+export const askedTitle = (item: Asked): string => `#${item.id} ${wordOf(KINDS, item.kind)} · ${wordOf(SCOPES, item.scope)}`;
 export const askedText = (item: Asked): string => [item.text, item.message].filter(Boolean).join('\n');
 export const askedState = (item: Asked): string => STATES[item.state] ?? item.state;
 
-// A finding is as the review wrote it: what it does not say is said to be unknown.
-export const findingPlace = (item: Finding): string => `${item.file ?? 'unknown'}:${item.line ?? '?'}`;
-export const findingText = (item: Finding): string => [item.title ?? item.premise ?? 'unknown', item.example].filter(Boolean).join(' · ');
-export const findingSeverity = (item: Finding): string => item.severity ?? 'unknown';
+// The tone of a word, where Sigrid has one for what it says: the word says the same, so the tone is never alone.
+export type Tone = 'danger' | 'warning' | 'success' | null;
+export const askedTone = (item: Asked): Tone => (item.state === 'done' ? 'success' : null);
+
+// A finding is as the review wrote it: what it does not say is said to be missing.
+export const findingPlace = (item: Finding): string => (item.file ? `${item.file}:${item.line ?? '?'}` : 'file non indicato');
+export const findingText = (item: Finding): string => [item.title ?? item.premise ?? 'senza titolo', item.example].filter(Boolean).join(' · ');
+export const findingSeverity = (item: Finding): string => item.severity ?? 'gravità non indicata';
+export const findingTone = (item: Finding): Tone => (['Critical', 'High'].includes(item.severity ?? '') ? 'danger' : 'warning');
 
 export const gapText = (gap: unknown): string => (typeof gap === 'string' ? gap : JSON.stringify(gap));

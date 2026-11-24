@@ -831,12 +831,15 @@ try {
   await row(/^card payment provider/).click();
   await details.getByRole('heading', { name: 'card payment provider', exact: true }).waitFor();
   await canvas.getByRole('button', { name: 'card payment provider, esterno, servizio o API', exact: true }).waitFor();
-  const inSight = async () => {
-    const [box, node] = await Promise.all([canvas.boundingBox(), thing('card payment provider').boundingBox()]);
+  const inSight = async name => {
+    const [box, node] = await Promise.all([canvas.boundingBox(), thing(name).boundingBox({ timeout: 200 }).catch(() => null)]);  // out of the view a node is not drawn
     return !!node && node.x >= box.x && node.x + node.width <= box.x + box.width && node.y >= box.y && node.y + node.height <= box.y + box.height;
   };
-  for (let tries = 0; tries < 30 && !await inSight(); tries += 1) await page.waitForTimeout(100);
-  assert.ok(await inSight());
+  const comes = async (name, wanted = true) => {
+    for (let tries = 0; tries < 30 && await inSight(name) !== wanted; tries += 1) await page.waitForTimeout(100);
+    assert.equal(await inSight(name), wanted, name);
+  };
+  await comes('card payment provider');
   await closeIn(details);
   await details.waitFor({ state: 'hidden' });
   // A group is entered by the inspector's action, by its row's own control, or by a double press; «Su» goes back.
@@ -985,7 +988,7 @@ try {
   assert.equal(await opener.getByRole('alert').count(), 0);
   await give('scelto.json', 'application/json', exported('scelto'));
   await opener.waitFor({ state: 'detached' });
-  await line('shop · run scelto').waitFor();
+  await line('shop · run scelto · dal file scelto.json').waitFor();
   await thing('web').waitFor();
   await page.waitForFunction(() => document.activeElement?.textContent === 'Apri altro export');  // the focus goes back
   await openOther.click();
@@ -1000,7 +1003,11 @@ try {
   await line('shop · run lasciato').waitFor();
 
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [] } }));
-  await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
+  const asks = { refused: 'progetto occupato', held: null };
+  await context.route('**/api/requests', async route => {
+    if (asks.held) await asks.held.promise;
+    return route.fulfill(asks.refused ? { status: 503, json: { error: asks.refused } } : { json: { requests: [] } });
+  });
   await context.route('**/api/findings', route => route.fulfill({ json: { findings: [], gaps: [] } }));
   await page.reload();
   const noRuns = main.getByText('Creane uno qui sotto, o avvia una mappa nella sessione.');
@@ -1011,15 +1018,35 @@ try {
   await page.getByText('Questa vista non ha una ricerca.').waitFor();
   // With no run the session is in sight under the words that say so, and its form makes the first run.
   const session = main.getByRole('region', { name: 'Sessione e review', exact: true });
-  await session.getByText('Nessuna richiesta.').waitFor();
+  // Each list is asked by itself: one that is not read says so and can be asked again, beside one that is.
   await session.getByText('Nessun finding: compaiono quando la sessione chiude una review.').waitFor();
+  const listOf = name => session.getByRole('region', { name: new RegExp(`^${name}\\b`) });
+  const unread = name => listOf(name).getByRole('alert');
+  await unread('Richieste').waitFor();
+  assert.match(await unread('Richieste').innerText(), /Errore[\s\S]*Richieste non lette[\s\S]*progetto occupato[\s\S]*Riprova/);
+  Object.assign(asks, { refused: '', held: Promise.withResolvers() });
+  await unread('Richieste').getByRole('button', { name: 'Riprova' }).click();
+  await listOf('Richieste').getByRole('progressbar', { name: 'Carico le richieste…' }).waitFor();
+  asks.held.resolve();
+  await session.getByText('Nessuna richiesta.').waitFor();
   assert.ok((await session.boundingBox()).y > (await noRuns.boundingBox()).y);
   assert.ok(await openOther.isDisabled());
-  const server = { runs: [], posted: [], refuses: 'run già presente', delay: 1000 };
+  // Where the controls are, in the header and, on a tighter window, with the filters: nothing moves when the choice of the run comes.
+  const controls = async () => {
+    const places = [];
+    for (const width of [1100, 1280]) {
+      await page.setViewportSize({ width, height: 850 });
+      await infoButton.filter({ hasText: width < 1200 ? /^Informazioni$/ : /progetto$/ }).waitFor();
+      for (const control of [openOther, up]) { const { x, y } = await control.boundingBox(); places.push(Math.round(x), Math.round(y)); }
+    }
+    return places;
+  };
+  const withNoRun = await controls();
+  const server = { runs: [], posted: [], refuses: 'run già presente', held: Promise.withResolvers() };
   await context.route('**/api/runs', async route => {
     if (route.request().method() === 'GET') return route.fulfill({ json: { runs: server.runs } });
     server.posted.push(route.request().postDataJSON());
-    await new Promise(resolve => setTimeout(resolve, server.delay));
+    await server.held.promise;
     return route.fulfill(server.refuses ? { status: 400, json: { error: server.refuses } } : { json: {} });
   });
   const said = text => session.getByRole('alert').filter({ hasText: text });  // what a form says is wrong, or the server refuses
@@ -1037,13 +1064,15 @@ try {
   await create.click();
   await create.and(page.locator('[aria-busy="true"]')).waitFor();
   await runName.press('Enter');  // a form that is sending is not sent again
+  server.held.resolve();
   await said('Richiesta non riuscita').waitFor();
   assert.match(await said('Richiesta non riuscita').innerText(), /Errore[\s\S]*Richiesta non riuscita[\s\S]*run già presente/);
   assert.deepEqual([server.posted, await runName.inputValue()], [[{ target: '.', run_id: 'primo-run' }], 'primo-run']);
-  Object.assign(server, { refuses: '', delay: 0, runs: [{ run_id: 'primo-run', readable: true }] });
+  Object.assign(server, { refuses: '', runs: [{ run_id: 'primo-run', readable: true }] });
   await create.click();
   await line('shop · run fixture').waitFor();
   assert.match(await main.getByRole('combobox', { name: 'Run' }).innerText(), /Run primo-run/);
+  assert.deepEqual(await controls(), withNoRun);
   assert.equal(await session.count(), 0);  // over a map it is behind its row
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'prima', readable: true }, { run_id: 'rotto', readable: false }, { run_id: 'demo', readable: true }] } }));
   await context.route('**/api/events?*', route => route.fulfill({ json: { events: [{ cursor: 1, timestamp: '10:00', event: 'phase_completed', message: 'fatto', phase: 2 }], next_cursor: 1, has_more: false } }));
@@ -1052,7 +1081,14 @@ try {
   await main.getByRole('alert').waitFor();
   await line('10:00 · phase_completed · fase 2 · fatto').waitFor();
   mode.exportBroken = false;
-  await context.route('**/api/findings', route => route.fulfill({ json: { findings: [{ file: 'web/checkout.tsx', line: 12, severity: 'High', title: 'Premessa', request: 1 }], gaps: ['lacuna della sessione'] } }));
+  const results = { refused: 'risultati occupati', held: Promise.withResolvers() };
+  await context.route('**/api/findings', async route => {
+    await results.held.promise;
+    return route.fulfill(results.refused ? { status: 503, json: { error: results.refused } } : { json: {
+      findings: [{ file: 'web/checkout.tsx', line: 12, severity: 'High', title: 'Premessa', request: 1 }, { severity: 'Low', title: 'Senza file', request: 1 }],
+      gaps: ['lacuna della sessione'],
+    } });
+  });
   await page.reload();
   await line('10:00 · phase_completed · fase 2 · fatto').waitFor();
   const runPicker = main.getByRole('combobox', { name: 'Run' });  // the last readable run is the one shown
@@ -1065,6 +1101,23 @@ try {
   await asked;
   assert.match(await runPicker.innerText(), /Run prima/);
   await line('shop · run fixture').waitFor();
+  // An export opened there stays until a run is chosen, also the one it took the place of: a phase that ends, here at every poll,
+  // does not take it away, and what happens in the run is not said beside it.
+  await line('phase_completed').waitFor();
+  await openOther.click();
+  await opener.waitFor();
+  await give('aperto.json', 'application/json', exported('aperto'));
+  await opener.waitFor({ state: 'detached' });
+  await line('shop · run aperto · dal file aperto.json').waitFor();
+  assert.match(await runPicker.innerText(), /File aperto/);
+  await page.waitForTimeout(2500);
+  assert.deepEqual([await line('shop · run aperto · dal file aperto.json').count(), await line('phase_completed').count()], [1, 0]);
+  await runPicker.click();
+  await page.getByRole('option', { name: 'Run prima', exact: true }).click();
+  await line('phase_completed').waitFor();
+  await line('shop · run fixture').waitFor();
+  assert.equal(await line('dal file').count(), 0);
+  assert.match(await runPicker.innerText(), /Run prima/);
 
   // The session and its review, behind their row: drawn, and asked of the server, only while it is open.
   const requests = [];
@@ -1080,8 +1133,17 @@ try {
   await page.waitForTimeout(2500);
   assert.deepEqual([await sessionRow.getAttribute('aria-expanded'), await session.count(), polls], ['false', 0, 0]);
   await sessionRow.press('Enter');
-  await session.getByRole('heading', { name: 'Finding · 1', exact: true }).waitFor();
+  await session.getByText('Nessuna richiesta.').waitFor();
   assert.equal(await sessionRow.getAttribute('aria-expanded'), 'true');
+  // A route that has not answered yet is not asked again; one that fails at first says so, and the next poll reads it.
+  await listOf('Finding').getByRole('progressbar', { name: 'Carico i finding…' }).waitFor();
+  await page.waitForTimeout(2500);
+  assert.equal(polls, 1);
+  results.held.resolve();
+  await unread('Finding').waitFor();
+  assert.match(await unread('Finding').innerText(), /Finding non letti[\s\S]*risultati occupati/);
+  results.refused = '';
+  await session.getByRole('heading', { name: 'Finding · 2', exact: true }).waitFor();
   // A request: what it asks, the text a feature needs, what the server refuses, and its state as the session moves it.
   const scope = session.getByRole('combobox', { name: 'Perimetro' });
   const send = session.getByRole('button', { name: 'Invia', exact: true });
@@ -1105,19 +1167,57 @@ try {
   assert.deepEqual(requests, [{ id: 1, state: 'pending', kind: 'review', scope: 'feature', text: 'Pagamenti' }]);
   assert.equal(await feature.inputValue(), '');
   const request = session.getByRole('list', { name: 'Richieste', exact: true }).getByRole('listitem');
-  assert.match(await request.innerText(), /#1 review · feature[\s\S]*Pagamenti[\s\S]*in attesa della sessione/);
+  assert.match(await request.innerText(), /#1 Review · Funzionalità[\s\S]*in attesa della sessione[\s\S]*Pagamenti/);
   Object.assign(requests[0], { state: 'done', message: 'Un finding' });
   await request.filter({ hasText: 'Un finding' }).filter({ hasText: 'conclusa' }).waitFor();
+  assert.deepEqual([await request.getByRole('button').count(), await selectable(request.getByText('Pagamenti'))], [0, true]);  // to read and copy
   // The session's gaps are a note that is not announced; a finding says its severity and selects its file.
   await session.getByText('Lacune · 1').waitFor();
   await session.getByText('lacuna della sessione').waitFor();
   assert.equal(await main.getByRole('alert').count(), 0);
-  const finding = session.getByRole('list', { name: 'Finding', exact: true }).getByRole('button', { name: /High/ });
+  const findings = session.getByRole('list', { name: 'Finding', exact: true });
+  const unplaced = findings.getByRole('listitem').filter({ hasText: 'Senza file' });  // it goes nowhere: to read and copy
+  assert.match(await unplaced.innerText(), /file non indicato[\s\S]*Low[\s\S]*Senza file/);
+  assert.deepEqual([await unplaced.getByRole('button').count(), await selectable(unplaced.getByText('Senza file'))], [0, true]);
+  const finding = findings.getByRole('button', { name: /High/ });
   assert.match(await finding.innerText(), /web\/checkout\.tsx:12[\s\S]*Premessa[\s\S]*High/);
+  // Wherever the view is, the node that stands for the file is brought into it.
+  const zoomIn = () => canvas.getByRole('button', { name: 'Ingrandisci', exact: true }).click();
+  await row(/^card payment provider/).click();
+  await details.getByRole('heading', { name: 'card payment provider', exact: true }).waitFor();
+  await comes('card payment provider');
+  for (let presses = 0; presses < 3; presses += 1) await zoomIn();
+  await comes('web', false);
   await finding.click();
   await details.getByRole('heading', { name: 'checkout.tsx', exact: true }).waitFor();
+  await comes('web');
+  await thing('web').and(page.locator('[aria-current="true"]')).waitFor();
+  // One solid button in the whole page, the forms of the session in sight: the «Entra» of the details.
+  const enter = details.getByRole('button', { name: 'Entra in checkout.tsx', exact: true });
+  const fill = await enter.evaluate(el => getComputedStyle(el).backgroundColor);
+  const solid = (buttons, color) => buttons.filter(el => getComputedStyle(el).backgroundColor === color).map(el => el.getAttribute('aria-label') ?? el.textContent);
+  assert.deepEqual(await page.getByRole('button').evaluateAll(solid, fill), ['Entra in checkout.tsx']);
+  // Where the canvas draws no node of the file, the file is chosen and the view stays as the person left it.
+  await row('Entra in server').click();
+  await place('Sistema / server').waitFor();
+  await row(/^routes\.ts/).click();
+  await details.getByRole('heading', { name: 'routes.ts', exact: true }).waitFor();
+  await comes('routes.ts');
+  await page.waitForTimeout(300);  // the canvas has its width beside the details
+  await zoomIn();
+  const viewAt = async () => {
+    const [box, node] = await Promise.all([canvas.boundingBox(), thing('routes.ts').boundingBox()]);
+    return [node.x - box.x, node.y - box.y, node.width].map(Math.round);
+  };
+  const left = await viewAt();
+  await finding.click();
+  await details.getByRole('heading', { name: 'checkout.tsx', exact: true }).waitFor();
+  await page.waitForTimeout(300);
+  assert.deepEqual(await viewAt(), left);
   await closeIn(details);
   await details.waitFor({ state: 'hidden' });
+  await choose('Torna al sistema');
+  await place('Sistema').waitFor();
   await sessionRow.press('Enter');
   await session.waitFor({ state: 'detached' });
   const pollsAtClose = polls;

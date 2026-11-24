@@ -17,10 +17,8 @@ test('switching view keeps the selection only when its ref resolves', () => {
   assert.equal(state.selected, null);
 });
 
-test('replaceEnvelope with an unknown schema leaves the previous envelope and reports the error', () => {
-  const state = reduce(initialState(env), { type: 'replaceEnvelope', json: { ...raw, schema: 'something/else@9' } });
-  assert.equal(state.envelope, env);
-  assert.match(state.error ?? '', /unknown schema/);
+test('an export of another schema is refused where it is read, before it reaches the state', () => {
+  assert.throws(() => parseEnvelope({ ...raw, schema: 'something/else@9' }), /unknown schema: something\/else@9/);
 });
 
 test('replaceEnvelope drops vanished refs from the selection and returns a warning', () => {
@@ -32,10 +30,9 @@ test('replaceEnvelope drops vanished refs from the selection and returns a warni
     memberships: raw.memberships.filter((item: { member: string; group: string }) => item.member !== gone && item.group !== gone),
   };
   let state = reduce(initialState(env), { type: 'select', ref: gone });
-  state = reduce(state, { type: 'replaceEnvelope', json: next });
+  state = reduce(state, { type: 'replaceEnvelope', envelope: parseEnvelope(next) });
   assert.equal(state.selected, null);
   assert.match(state.warning ?? '', /pos terminal/);
-  assert.equal(state.error, null);
 });
 
 test('open enters a group, up returns with the group selected', () => {
@@ -92,7 +89,7 @@ test('the project does not come back when a chosen element is left, and a flow d
 });
 
 test('a flow that is not in the new export takes its steps away', () => {
-  const state = reduce(after({ type: 'flow', ref: FLOW }), { type: 'replaceEnvelope', json: { ...raw, flows: [] } });
+  const state = reduce(after({ type: 'flow', ref: FLOW }), { type: 'replaceEnvelope', envelope: parseEnvelope({ ...raw, flows: [] }) });
   assert.deepEqual([shownDetails(state), state.flow], [null, null]);
 });
 

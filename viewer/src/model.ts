@@ -15,7 +15,7 @@ export function useExplorer(envelope: Envelope | null) {
   const shown = useRef<Envelope | null>(null);
   useEffect(() => {  // the first export of a run starts clean, a later one keeps the person's place
     if (!envelope) { shown.current = null; return; }
-    dispatch(shown.current ? { type: 'replaceEnvelope', json: envelope } : { type: 'load', envelope });
+    dispatch(shown.current ? { type: 'replaceEnvelope', envelope } : { type: 'load', envelope });
     shown.current = envelope;
   }, [envelope]);
   const projection = useMemo(() => project(state.envelope, state.view, state.scope, state.filters, state.open, state.selected),

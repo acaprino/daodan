@@ -1,23 +1,22 @@
 // The explorer's state and its transitions; the projection is computed from it, never stored.
-import { EnvelopeError, parseEnvelope } from './envelope.ts';
 import type { Envelope, View } from './envelope.ts';
 import { childrenOf, indexOf, resolves } from './projection.ts';
 import type { Filters } from './projection.ts';
 
 export type ExplorerState = {
   envelope: Envelope; view: View; scope: string | null; selected: string | null; filters: Filters;
-  open: string[]; flow: string | null; panel: Panel; error: string | null; warning: string | null;
+  open: string[]; flow: string | null; panel: Panel; warning: string | null;
 };
 // What the inspector shows when no element is chosen: the flow or the project, the one asked for last.
 export type Panel = 'flow' | 'project' | null;
 export type Action =
   | { type: 'select'; ref: string | null } | { type: 'open'; ref: string } | { type: 'up' } | { type: 'root' }
   | { type: 'view'; view: View } | { type: 'filter'; filters: Filters } | { type: 'resetFilters' }
-  | { type: 'toggleGroup'; ref: string } | { type: 'flow'; ref: string | null } | { type: 'replaceEnvelope'; json: unknown }
+  | { type: 'toggleGroup'; ref: string } | { type: 'flow'; ref: string | null } | { type: 'replaceEnvelope'; envelope: Envelope }
   | { type: 'load'; envelope: Envelope } | { type: 'info' } | { type: 'close' };
 
 export function initialState(envelope: Envelope): ExplorerState {
-  return { envelope, view: 'logical', scope: null, selected: null, filters: {}, open: [], flow: null, panel: null, error: null, warning: null };
+  return { envelope, view: 'logical', scope: null, selected: null, filters: {}, open: [], flow: null, panel: null, warning: null };
 }
 
 // What the inspector shows: the element chosen first, then the flow or the project.
@@ -53,7 +52,7 @@ export function reduce(state: ExplorerState, action: Action): ExplorerState {
   switch (action.type) {
     case 'select':
       if (!known(action.ref)) return state;
-      return { ...state, selected: action.ref, panel: action.ref === null ? state.panel : underChoice(state.panel), error: null };
+      return { ...state, selected: action.ref, panel: action.ref === null ? state.panel : underChoice(state.panel) };
     case 'open': {
       const entity = indexOf(state.envelope).byRef.get(action.ref);
       if (!entity || entity.type === 'feature' || !childrenOf(state.envelope, action.ref, state.view).length) return state;
@@ -83,17 +82,12 @@ export function reduce(state: ExplorerState, action: Action): ExplorerState {
     case 'close':  // the flow stays chosen: pressing its place shows its steps again
       return { ...state, selected: null, panel: null };
     case 'replaceEnvelope': {
-      let envelope: Envelope;
-      try {
-        envelope = parseEnvelope(action.json);
-      } catch (error) {
-        return { ...state, error: error instanceof EnvelopeError ? error.message : String(error) };
-      }
+      const { envelope } = action;
       const present = new Set(envelope.entities.map(entity => entity.ref));
       const vanished = [state.selected, state.scope].filter((ref): ref is string => ref !== null && !present.has(ref));
       const flow = state.flow && envelope.flows.some(item => item.ref === state.flow) ? state.flow : null;
       return {
-        ...state, envelope, error: null, flow, panel: state.panel === 'flow' && !flow ? null : state.panel,
+        ...state, envelope, flow, panel: state.panel === 'flow' && !flow ? null : state.panel,
         selected: state.selected && present.has(state.selected) ? state.selected : null,
         scope: state.scope && present.has(state.scope) ? state.scope : null,
         open: state.open.filter(ref => present.has(ref)),

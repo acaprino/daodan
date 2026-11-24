@@ -8,7 +8,6 @@ import {
   useCommandPalette, useMedia, useSchemeCommands, WordsProvider,
 } from '@acaprino/sigrid';
 import type { IconName, ToastItem } from '@acaprino/sigrid';
-import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
 import '@acaprino/sigrid/styles.css';
 import '@acaprino/sigrid/graph.css';
 import { Details } from './details.tsx';
@@ -49,13 +48,13 @@ function App() {
   const [runs, setRuns] = useState<string[] | null>(null);
   const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
   const [events, setEvents] = useState<LiveEvent[]>([]);
-  const [pick, setPick] = useState<{ file: string } | null>(null);
+  const [opened, setOpened] = useState('');  // the file whose map is shown in place of the run's
+  const [toShow, setToShow] = useState<{ ref: string } | null>(null);
   const [menu, setMenu] = useState(false);
   const [opening, setOpening] = useState(false);  // the dialog of another export
   const [notices, setNotices] = useState<ToastItem[]>([]);
   const noticeId = useRef(0);  // not crypto.randomUUID, which a page served over plain http does not have
   const search = useRef<HTMLInputElement>(null);
-  const canvas = useRef<GraphCanvasHandle>(null);
   const model = useExplorer(envelope);
   const palette = useCommandPalette();
   // Under this width the frame is laid out as on a phone: the sidebar is a drawer and the views are at the foot.
@@ -67,7 +66,7 @@ function App() {
   const say = (text: string) => { noticeId.current += 1; const id = String(noticeId.current); setNotices(list => [...list, { id, text }]); };
   const close = () => dispatch({ type: 'close' });
   // What is chosen outside the canvas is brought into its view; what is chosen on it is in view already.
-  const show = (ref: string) => canvas.current?.focus(model.projection.owners[ref] ?? []);
+  const show = (ref: string) => setToShow({ ref });
 
   // Ctrl+F: the search of the map in view; a page that shows no map has none.
   useCommand({ id: 'daodan.search', label: 'Cerca in questa vista', group: 'Vista', keys: 'Ctrl+F', icon: <Icon name="search" />,
@@ -82,26 +81,27 @@ function App() {
   useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Vista', keys: 'Escape', icon: <Icon name="close" />, when: detailsOpen, run: close });
   useSchemeCommands(LOOK);
 
-  useEffect(() => {
-    const ref = pick && envelope && fileRef(envelope, pick.file);
-    if (ref) { model.dispatch({ type: 'select', ref }); show(ref); }
-  }, [pick]);
   const addressOf = (id: string) => `./data/visual.json?run=${encodeURIComponent(id)}`;
-  const load = (url: string, stale = () => false) => getJson(url).then(json => {
-    if (!stale()) { setEnvelope(parseEnvelope(json)); setFailure(''); }
-  }).catch(reason => { if (!stale()) setFailure(String(reason?.message ?? reason)); });
+  const asked = useRef(0);  // what was asked for last is what is shown: an export that comes late takes the place of nothing
+  const load = (url: string) => {
+    asked.current += 1;
+    const mine = asked.current;
+    return getJson(url).then(json => {
+      if (mine === asked.current) { setEnvelope(parseEnvelope(json)); setFailure(''); }
+    }).catch(reason => { if (mine === asked.current) setFailure(String(reason?.message ?? reason)); });
+  };
   const listRuns = (wanted?: string) => getJson('./api/runs').then(json => {
     const ids = (json.runs as { run_id: string; readable?: boolean }[]).filter(item => item.readable).map(item => item.run_id);
     setRuns(ids);
     setRun(current => [wanted, current].find(id => id && ids.includes(id)) ?? ids[ids.length - 1] ?? '');
+    if (wanted && ids.includes(wanted)) setOpened('');  // the run just made takes the place of a file too
   });
   useEffect(() => { listRuns().catch(() => load('./data/visual.json')); }, []);
   useEffect(() => {
-    if (!runs || !run) return;
+    if (!runs || !run || opened) return;  // nothing of the run takes away a file the person opened: they go back to it by choosing it
     const address = addressOf(run);
     let cursor = 0, first = true, stopped = false, busy = false;
-    const stale = () => stopped;
-    setEnvelope(null); setEvents([]); load(address, stale);
+    setEnvelope(null); setEvents([]); load(address);
     // Reads every page the journal has, so the status line shows the latest event, not the 100th.
     const poll = async () => {
       if (busy) return;
@@ -116,23 +116,29 @@ function App() {
         }
         if (stopped) return;
         if (fresh.length) setEvents(current => [...current, ...fresh].slice(-20));
-        if (!first && fresh.some(item => item.event === 'phase_completed')) load(address, stale);
+        if (!first && fresh.some(item => item.event === 'phase_completed')) load(address);
         first = false;
       } catch { /* the next poll retries */ } finally { busy = false; }
     };
     poll();
     const timer = window.setInterval(poll, POLL_MS);
     return () => { stopped = true; window.clearInterval(timer); };
-  }, [runs, run]);
+  }, [runs, run, opened]);
   const last = events[events.length - 1];
   const meta = state.envelope.meta;
   // Another export takes the place of the map shown; of a file that holds none the dialog says why.
   const openFile = async (file: File) => {
-    dispatch({ type: 'replaceEnvelope', json: parseEnvelope(JSON.parse(await file.text())) });
-    setOpening(false);
+    const read = parseEnvelope(JSON.parse(await file.text()));
+    asked.current += 1;
+    setOpened(file.name); setEnvelope(read); setFailure(''); setOpening(false);
+  };
+  // A finding's file: one this map does not hold changes nothing.
+  const pick = (file: string) => {
+    const ref = fileRef(state.envelope, file);
+    if (ref) { dispatch({ type: 'select', ref }); show(ref); }
   };
   const toView = (view: string) => dispatch({ type: 'view', view: view as View });
-  const session = { onPick: (file: string) => setPick({ file }), onRun: (id: string) => { listRuns(id).catch(() => undefined); } };
+  const session = { onPick: pick, onRun: (id: string) => { listRuns(id).catch(() => undefined); } };
   const title = VIEWS.find(view => view.value === state.view)!.title;
 
   const titleBar = <TitleBar><Toolbar aria-label="Daodan">
@@ -147,12 +153,12 @@ function App() {
     <ToolbarTabs aria-label="Viste" value={state.view} onValueChange={toView} edge="top" layout="stacked">{VIEWS.map(view =>
       <ToolbarTab key={view.value} value={view.value} icon={<Icon name={view.icon} />}>{view.label}</ToolbarTab>)}</ToolbarTabs>
   </Toolbar>;
-  // The live event line is the run's, so it shows while its export is loading or unreadable too.
+  // The live event line is the run's, so it shows while its export is loading or unreadable too, and not beside the map of a file.
   const status = <>
     {phase === 'ready'
-      ? <Text variant="soft" data-selectable="">{projectName(state.envelope)}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}</Text>
+      ? <Text variant="soft" data-selectable="">{projectName(state.envelope)}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}{opened && ` · dal file ${opened}`}</Text>
       : <>{STATUS[phase].badge && <Badge variant="secondary">{STATUS[phase].badge}</Badge>}<Text variant="soft">{STATUS[phase].text}</Text></>}
-    {(ready || !!runs?.length) && <><Spacer />
+    {!opened && (ready || !!runs?.length) && <><Spacer />
       <Text data-selectable="">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</Text></>}
   </>;
   // The foot: what the whole export holds (what is in view the panel says), and the keys no control in sight shows.
@@ -161,16 +167,15 @@ function App() {
     <Spacer />
     <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
   </>;
-  // Which map is shown: the run, where there are runs, or the export of a file.
-  const source = <>
-    {!!runs?.length && <Select size="sm" aria-label="Run" value={run} onValueChange={setRun} options={runs.map(id => ({ value: id, label: `Run ${id}` }))} />}
-    <Button variant="ghost" size="sm" disabled={!ready} onClick={() => setOpening(true)}>Apri altro export</Button>
-  </>;
+  // Which map is shown, where there are runs: the run's or, until one is chosen, that of the file opened (the status says its name).
+  const runPicker = !!runs?.length && <Select size="sm" aria-label="Run" value={opened ? '' : run} placeholder="File aperto"
+    onValueChange={id => { setOpened(''); setRun(id); }} options={runs.map(id => ({ value: id, label: `Run ${id}` }))} />;
+  const openOther = <Button variant="ghost" size="sm" disabled={!ready} onClick={() => setOpening(true)}>Apri altro export</Button>;
   return <>
     <AppShell frame="sheet" titleBar={titleBar} status={status} footer={footer} bottomBar={bottomBar} contentLabel={title}
       sidebar={<Navigation model={model} phase={phase} show={show} open={menu} onOpenChange={setMenu} />}
       inspector={<Details model={model} open={detailsOpen} close={close} />}>
-      <Explorer model={model} title={title} search={search} canvas={canvas} ready={ready} runs={source}>
+      <Explorer model={model} title={title} search={search} toShow={toShow} ready={ready} runs={runPicker} openOther={openOther}>
         {!!runs?.length && <Column pad="lg"><SessionDisclosure {...session} /></Column>}
         {phase === 'none' && <Column pad="lg" gap="xl">
           <Empty title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />

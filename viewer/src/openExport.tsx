@@ -6,7 +6,7 @@ import type { FileDropReason } from '@acaprino/sigrid';
 const REFUSED: Record<FileDropReason, string> = {
   type: 'Serve un file JSON.', size: 'Il file è troppo grande.', count: 'Scegli un solo file.',
 };
-// The dialog opens on the zone: before it, in the page, is only the picker's own input, which the keyboard does not reach.
+// A workaround: Sigrid's Dialog focuses the first input it holds, whatever its tabindex, and here that is the picker's hidden one.
 const takeFocus = (button: HTMLButtonElement | null) => button?.focus();
 
 function ExportDrop({ onFile }: { onFile: (file: File) => Promise<void> }) {
