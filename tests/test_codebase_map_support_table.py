@@ -3,6 +3,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "daodan/core"
@@ -14,6 +15,11 @@ import support_table  # noqa: E402
 class SupportTableTests(unittest.TestCase):
     def test_the_committed_document_is_the_one_the_script_writes(self):
         self.assertEqual(support_table.check(), [])
+
+    def test_the_document_does_not_change_with_the_library_version_the_environment_installs(self):
+        from premap import module_graph
+        with mock.patch.object(module_graph, "VERSION", module_graph.DOCUMENTED.format("0.0.0")):
+            self.assertEqual(support_table.check(), [])
 
     def test_a_document_that_differs_is_a_problem(self):
         with tempfile.TemporaryDirectory() as folder:

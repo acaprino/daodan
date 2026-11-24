@@ -195,7 +195,8 @@ def build_section(report: dict, raw: dict, run_path: Path) -> list[str]:
         count = states.get(source.NAME)
         cell = ("non misurato: non era nel giro" if not count else
                 ", ".join(f"{state} {n}" for state, n in sorted(count.items())))
-        rows.append([f"`{source.NAME}`", source.VERSION, RANKS[source.RANK],
+        declared = source.DOCUMENTED.format("installata") if hasattr(source, "DOCUMENTED") else source.VERSION
+        rows.append([f"`{source.NAME}`", declared, RANKS[source.RANK],
                      f"`premap/{source.__name__.rsplit('.', 1)[-1]}.py`", cell])
     facets = [[f"`{face}`", _ratio(item["found"], item["expected"]), _n(item["extra"]), _n(item["wrong"])]
               for face, item in report["premap"].items() if item["given"] and item["expected"]]

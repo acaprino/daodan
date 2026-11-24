@@ -24,7 +24,9 @@ try:
     _yaml_version = metadata.version("PyYAML")
 except metadata.PackageNotFoundError:
     _yaml_version = "unavailable"
-NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.3.image.2", "reader"
+# DOCUMENTED is the identity without the PyYAML the environment installs: what a document can print and stay the same
+DOCUMENTED = f"{modules.SCHEMA}+compose.1.pyyaml.{{}}.unit-resolution.3.image.2"
+NAME, VERSION, RANK = "modules.py", DOCUMENTED.format(_yaml_version), "reader"
 PACKAGE_ECOSYSTEM = {
     "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
     "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
