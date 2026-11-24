@@ -79,11 +79,14 @@ FETCH_SECRETLINT = ("python -c \"import hashlib, urllib.request; data = urllib.r
                     "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s', 'wb').write(data)\"" % SECRETLINT)
 # The stack-analyser release (`daodan/core/stack_analyser.py`: its URL and SHA256, repeated here because this launcher
 # does not import daodan/core; tests/test_codebase_map_stack_analyser.py compares them) in /opt/stack-analyser, the
-# archive kept beside what it unpacks to: the test that starts the real release on a trap project
-# (test_codebase_map_host_programs.py) finds it through DAODAN_STACK_ANALYSER and checks the archive's sha256 again.
-STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser/releases/download/v1.27.6-daodan.2/"
-                  "specfy-stack-analyser-1.27.6-daodan.2.tgz",
-                  "57dfe8d1b2e37ecb95c331b3f74c8c2aecead59a4ef95835c71a02d5397a9774", "/opt/stack-analyser")
+# archive kept beside what it unpacks to: `real_stack` (conftest.py) and the naive starts of the proof on a trap project
+# (test_codebase_map_host_programs.py) find it through DAODAN_STACK_ANALYSER, and the proof checks the archive's sha256
+# again. The proof itself installs the release and Daodan's Node the product's way (`stack_analyser.cli` and `node`, into a
+# folder of the test): the container needs github.com and nodejs.org when it runs: the image's Node is another one and its copy of the release
+# serves the naive starts.
+STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser-daodan/releases/download/v1.27.6-daodan.5/"
+                  "stack-analyser-daodan-1.27.6-daodan.5.tgz",
+                  "e87658b2d630df6cb90de21070e86f91efdbe6a7b841dbeb3aab6add6332475c", "/opt/stack-analyser")
 FETCH_STACK_ANALYSER = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
                         "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s/release.tgz', 'wb').write(data)\""
                         % STACK_ANALYSER)

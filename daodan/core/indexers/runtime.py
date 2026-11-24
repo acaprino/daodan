@@ -13,6 +13,7 @@ or `failed` with the stderr tail of the last run and `errors`, how many `ERROR` 
 from __future__ import annotations
 
 import contextlib
+import http.client
 import json
 import os
 import shutil
@@ -178,7 +179,7 @@ def fetching(what: str, source: str):
         detail = excerpt(detail.decode("utf-8", "replace") if isinstance(detail, bytes) else detail)
         raise Unavailable(f"{what} could not be installed (exit code {error.returncode}): {detail}",
                           f"check the network: Daodan installs {what} from {source}") from error
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, http.client.HTTPException, subprocess.SubprocessError) as error:
         raise Unavailable(f"{what} could not be downloaded: {error}",
                           f"check the network: Daodan downloads {what} from {source}") from error
 

@@ -5,6 +5,7 @@ and free memory, which decide what runs."""
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import os
 import re
@@ -177,7 +178,7 @@ def download(url: str, target: Path, *, sha256: str | None = None, sha1_url: str
                 raise ValueError(f"checksum mismatch for {url}")
             os.replace(partial, target)
             return target
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, http.client.HTTPException) as error:  # a cut-off body is not an OSError
             last = error
             partial.unlink(missing_ok=True)
             time.sleep(2 * (attempt + 1))

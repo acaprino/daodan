@@ -260,10 +260,10 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
         ref = f"external:{item['id']}"
         proposed = {} if ref in entities else {  # a module the project declares keeps its own states and evidence
             "provenance": "registry", "status": "inferred",
-            "evidence": [{"path": s["path"], "line": s["line"]} for s in item["signs"] if s["strength"] == "declared" and s["path"]][:20]}
+            "evidence": [{"path": s["path"], "line": s["line"]} for s in technologies.sites(item["signs"]) if s["strength"] == "declared" and s["path"]][:20]}
         entity(ref, "external", item["name"], location="external", node_type=item["type"], site=item["site"],
                mark=item["id"] if item["id"] in marked else None, **proposed)
-        for sign in item["signs"]:
+        for sign in technologies.sites(item["signs"]):
             source, certain = f"file:{sign['path']}", sign["strength"] == "declared"
             if source in entities:
                 key = f"uses:{source}->{ref}" + ("" if certain else " uncertain")
@@ -302,7 +302,7 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
                           "paths": sorted({sign["path"] for sign in item["signs"]
                                            if sign["strength"] == "declared" and sign["path"]}),
                           # the declared sites by which a module's stack holds it, as `technologies.ensure` matches them
-                          "evidence": [{"path": sign["path"], "line": sign["line"]} for sign in item["signs"]
+                          "evidence": [{"path": sign["path"], "line": sign["line"]} for sign in technologies.sites(item["signs"])
                                        if technologies.module_declaration(sign)]}
                          for item in stack["technologies"]],
     }

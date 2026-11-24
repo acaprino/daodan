@@ -7,6 +7,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+
+import pytest
 from unittest.mock import patch
 from pathlib import Path
 
@@ -154,6 +156,7 @@ class AnswerSizeTests(unittest.TestCase):
 
 
 class DeclaredTests(unittest.TestCase):
+    @pytest.mark.usefixtures("real_stack")
     def test_a_technology_of_a_target_inside_the_repository_cites_its_path_from_the_root(self):
         work = Path(tempfile.mkdtemp(prefix="brief-"))
         self.addCleanup(shutil.rmtree, work, True)
@@ -169,6 +172,7 @@ class DeclaredTests(unittest.TestCase):
         fastapi = next(e for e in system_brief.brief(manifest, [])["externals"] if e["id"] == "fastapi")
         self.assertEqual((fastapi["from"], fastapi["paths"]), (["registry"], ["server/pyproject.toml"]))
 
+    @pytest.mark.usefixtures("real_stack")
     def test_the_links_the_brief_uses_hold_the_services_it_lists_whether_the_stack_record_is_missing_or_stale(self):
         work = Path(tempfile.mkdtemp(prefix="brief-"))
         self.addCleanup(shutil.rmtree, work, True)
@@ -196,6 +200,7 @@ class DeclaredTests(unittest.TestCase):
             self.assertIn("stripe", listed, state)
             self.assertEqual({e["id"] for e in used[0]["external"]}, listed, state)
 
+    @pytest.mark.usefixtures("real_stack")
     def test_compose_declares_services_and_the_image_is_recognized(self):
         work = Path(tempfile.mkdtemp(prefix="brief-"))
         self.addCleanup(shutil.rmtree, work, True)
