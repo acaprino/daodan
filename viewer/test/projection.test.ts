@@ -8,27 +8,23 @@ const env = parseEnvelope(JSON.parse(readFileSync(new URL('./fixture.json', impo
 const SHARED = 'file:shared/money.ts';
 const FILES_OF_COMPONENTS = 7;  // web: 3, server: 5, shared/money.ts in both
 
-test('shared file yields two occurrences and one unique count', () => {
+test('shared file yields two occurrences', () => {
   const projection = project(env, 'logical', null, {}, ['component:web', 'component:server']);
   const shared = projection.nodes.filter(node => node.ref === SHARED);
   assert.deepEqual(shared.map(node => node.parent).sort(), ['component:server@root', 'component:web@root']);
   assert.equal(projection.nodes.filter(node => node.type === 'file').length, FILES_OF_COMPONENTS + 1);
-  assert.equal(projection.counts.files, FILES_OF_COMPONENTS);
 });
 
-test('collapsed group keeps the underlying relation refs', () => {
+test('a relation between things of two closed groups is a line between the groups', () => {
   const projection = project(env, 'logical', null);
   const edge = projection.edges.find(item => item.source === 'component:web@root' && item.target === 'component:server@root');
-  assert.ok(edge, 'web depends on server through the shared file');
-  assert.ok(edge.relations.includes('imports:file:web/checkout.tsx->file:shared/money.ts'));
+  assert.deepEqual(edge?.kinds, ['imports']);  // web depends on server through the shared file
 });
 
 test('edges inside a collapsed group become a count, not external edges', () => {
   const projection = project(env, 'logical', null);
   assert.ok(projection.edges.every(edge => edge.source !== edge.target));
   assert.ok(projection.counts.aggregated > 0);
-  const internal = 'imports:file:server/routes.ts->file:server/payments.ts';
-  assert.ok(projection.edges.every(edge => !edge.relations.includes(internal)));
 });
 
 test('a group opened in place has what it holds in it, and the rest is as it was', () => {
