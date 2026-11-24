@@ -1,6 +1,6 @@
 # Benchmark: il passo dinamico e la provenienza delle chiamate
 
-**Stato:** In uso. I registri esatti di JavaScript e di Python sono quelli del prodotto (`daodan/core/dynamic/javascript_record.js`, `python_record.py`). Il passo dei motori per posizione, che dà il denominatore di tududi, non è più nel prodotto: resta qui come termine di confronto (sezione 4).
+**Stato:** In uso. I registri esatti di JavaScript e di Python sono quelli del prodotto (`daodan/core/dynamic/javascript_record.js`, `python_record.py`). La misura di tududi è fatta sopra il passo dei motori per posizione del 12 novembre 2026, che non è più nel prodotto e resta qui come termine di confronto (sezione 4). La stessa misura sopra l'indice di scip-typescript, il passo statico di oggi, non c'è.
 
 ## Domanda
 
@@ -42,6 +42,8 @@ Mancano dal repository:
 | tududi, JavaScript (12 novembre 2026) | 11.148 risolte su 29.382 risolvibili, 37,9% (passo per posizione) | 11.824 su 16.381, 72,2%: soglia raggiunta | 13.677 su 16.527 (82,8%): 13.001 verso una libreria, 676 verso il progetto | 46, nessuna un errore del motore; 2 da guardare | 274 s con 12 blocchi in parallelo |
 | python-semver, Python (14 novembre 2026) | grafo dall'indice: 19 chiamate mancate, 16 senza bersaglio da nessuna fonte statica, 64 buchi | 16 su 16 con la destinazione osservata; 31 buchi su 64 | come a sinistra | 0 con l'indice, 0 con Jedi | da 6 a 10 volte il tempo della suite |
 
+**Aperta: da approfondire.** Le 16.527 chiamate di tududi sono quelle che il passo dei motori per posizione lasciava senza bersaglio. Sopra l'indice di scip-typescript, che oggi è il passo statico del prodotto e lascia 15.445 chiamate JavaScript senza occorrenza, il registro esatto non è stato unito: né questo benchmark né `inference-audit` hanno quel numero. I giri della pipeline del prodotto contano i buchi chiusi con un altro conteggio (tabella sotto).
+
 Dove il registro tace: una chiamata che i test non eseguono; in Python dove non gira codice Python (attributi semplici, `__slots__`); in JavaScript chiamate opzionali (`?.`), metodi privati, `super`, `import`, `require`, `eval`, membri calcolati e le chiamate sull'oggetto `jest`.
 
 ## Che cosa resta aperto dopo l'intera pipeline
@@ -55,7 +57,7 @@ Dove il registro tace: una chiamata che i test non eseguono; in Python dove non 
 | Python su un progetto con test che eseguono meno | semver esegue il 97,8% delle chiamate | lo stesso registro su un altro caso | non misurato; nella pipeline del prodotto python-semver chiude 32 buchi con 1.046 siti (`2026-11-16-conferma.json`) |
 | Memoria di picco dei container e crediti Modal della misura di tududi | — | — | non misurati |
 
-## 1. Registro esatto, JavaScript: tududi
+## 1. Registro esatto su tududi: misura
 
 ### Base statica
 
@@ -67,7 +69,7 @@ Da `results/environment/engine-count-tududi.json` (passo per posizione, typescri
 
 Dopo la correzione dell'estrattore sui bersagli delle assegnazioni (`daodan/core/languages/semantic.py`, `binding`) la base è 72.890 chiamate, 11.258 risolte su 29.350 (38,4%); la lettura lessicale ne risolve 5.878 invece di 3.304. Un bersaglio come `obj.x = …` o `a[i] += …` marcava lo scope come non risolto: su tududi 935 file JavaScript e TypeScript su 1.648 avevano uno scope bloccato, ora 14, tutti per i parametri di tipo generici di TypeScript. Misura: `benchmarks/flow-model/modal_engine_count.py`, tag `assign-20261112` sul volume. Il registro è stato unito alla base precedente.
 
-### Misura
+### Risultato
 
 `modal run --detach benchmarks/call-provenance/modal_dynamic.py --shards 12 --out <dir> --tag <nome>`. L'immagine contiene l'archivio del commit e il suo `npm ci`; in ogni blocco `dynamic_tests.sh /work/src backend /out 12 exact`. Un mock di Jest risulta definito in `jest-mock` e non conta.
 
@@ -117,7 +119,7 @@ La durata dei test senza registro né profiler non è misurata.
 - La rete è aperta verso tutto mentre si costruisce l'immagine, non solo verso i registri dei pacchetti.
 - Node 22 e Postgres girano su Debian 12, non su Alpine.
 
-## 2. Registro esatto, Python: python-semver
+## 2. Registro esatto per Python su python-semver
 
 **Verdetto.** Il registro chiude ciò che l'analisi statica lascia aperto: 16 mancati veri su 16 ricevono la destinazione osservata, e anche 31 dei 64 buchi. Non contraddice mai un arco statico, né dell'indice né di Jedi. Costa da 6 a 10 volte il tempo della suite: 534 test passano in 16 s invece che in 2,5 s.
 

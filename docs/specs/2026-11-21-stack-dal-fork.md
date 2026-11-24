@@ -1,6 +1,6 @@
 # Stack dal fork di stack-analyser
 
-**Stato:** proposta, quarta stesura, approvata dal proprietario il 21 novembre 2026 insieme alle «Scelte di chi scrive». Nessuna modifica proposta è nel codice.
+**Stato:** In parte. Approvata dal proprietario insieme alle «Scelte di chi scrive». Fatto: il rilascio del fork `1.27.6-daodan.2`; in Daodan lo strumento (2.1, `daodan/core/stack_analyser.py`: rilascio fissato con sha256, avviato fuori dal progetto; prova di non esecuzione in `tests/test_codebase_map_host_programs.py` e `tests/test_codebase_map_stack_analyser.py`) e il benchmark (2.7). Non nel codice: 2.2–2.6. Lo step `stack` riconosce ancora dal registro (`technologies.derive` chiama `service_registry.run`). La misura sul corpus c'è (README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «Lo step `stack` dal fork»: 0 nomi attesi persi) e la decisione di passare torna al proprietario. **Piano del passaggio:** [`2026-11-22-stack-dal-fork-3-passaggio.md`](../plans/2026-11-22-stack-dal-fork-3-passaggio.md).
 Il riconoscimento delle tecnologie di un progetto passa dal registro di Daodan al programma [`acaprino/stack-analyser`](https://github.com/acaprino/stack-analyser), il «fork». Tocca due repository: il fork e Daodan.
 
 ## Perché
@@ -19,7 +19,7 @@ Il proprietario chiede «confinamento di responsabilità, pulizia, ordine e unic
 
 ## Decisioni del proprietario
 
-Prese il 21 novembre 2026, nell'ordine.
+Nell'ordine.
 
 1. **Un confine a tre.** Il fork riconosce ciò che il progetto dichiara. L'analisi successiva (flussi e mappa del sistema) trova ciò che il codice usa senza dichiararlo, come una chiamata HTTP a un servizio senza SDK. Il registro è anagrafica: nome, categoria, tipo, sito, marchio.
 2. **Riconosce sempre il fork**, anche nella scansione veloce. Fra veloce e completa cambia solo l'ingresso.
@@ -50,7 +50,7 @@ Prese il 21 novembre 2026, nell'ordine.
 ## Vincoli
 
 - **Nessun codice del progetto eseguito.** Il fork legge file e basta. Gira sulla macchina, fuori dal container, quindi ha il test che AGENTS.md chiede a ogni strumento lanciato sull'host: un file del progetto che, se eseguito, lascia un segno.
-- **Node sulla macchina.** È un requisito nuovo di Daodan. Senza Node il fork non gira e vale la decisione 4: i risultati restano quelli dell'ultima scansione riuscita, con la causa fra i gap.
+- **Node.** Il fork è un programma Node. *Nel codice lo avvia il Node che Daodan scarica e fissa (`stack_analyser.node`), non quello della macchina: il requisito nuovo per chi installa non c'è.* Senza Node il fork non gira e vale la decisione 4: i risultati restano quelli dell'ultima scansione riuscita, con la causa fra i gap.
 - **Tempo della scansione veloce.** Gira a ogni modifica sotto `project_lock`. Oggi il fork impiega circa 3,3 secondi solo per caricare le regole («Misure»).
 - **ID stabili.** Li citano `review_roster.TECHNOLOGY_ROLE`, gli `id` dei nodi esterni della mappa, i marchi in `data/marks/` e gli attesi di `benchmarks/system-map`. Eccezioni, entrambe per doppioni: `react-email` diventa `reactemail`, l'ID che stack-analyser 1.27.6 aveva già; la regola `jinja2` del fork, nata in questo ramo, prende `jinja`, l'ID del registro.
 - **Forma di `technologies.json`.** I consumatori (`system_brief.py`, `visual.py`, `app_view.py`, `review_roster.py`, `mcp_service.py`, `snapshot.py`) leggono di ogni voce `category`, `type`, `mark` e `signs` con `sign`, `value`, `path`, `line`, `strength`. La forma resta; a ogni segno si aggiunge la fonte.
@@ -99,6 +99,11 @@ Prese il 21 novembre 2026, nell'ordine.
 - **Tempo.** Il benchmark riporta il tempo della scansione veloce prima e dopo.
 - **Nessun codice eseguito.** Il test del vincolo.
 
+## Aperto
+
+- **Aperta: da approfondire:** il tempo della scansione veloce con il fork sotto `project_lock` (vincolo «Tempo della scansione veloce», rischio 1): l'obiettivo di 1.5, meno di un secondo, decide se il passaggio si fa.
+- I tre casi del registro dei servizi esterni di `benchmarks/system-map` dopo lo stack dal fork non sono misurati.
+
 ## Rischi
 
 | Rischio | Che cosa si fa |
@@ -128,7 +133,7 @@ Prese il 21 novembre 2026, nell'ordine.
 
 ## Misure
 
-Tutte del 21 novembre 2026, con script provvisori che 2.7 e i benchmark del fork rendono ripetibili.
+Del 21 novembre 2026, con script provvisori; quelle sul corpus, ripetibili, sono nel README del benchmark (2.7).
 
 - **Regole contro registro.** Le regole del fork a `c8476c6`, esportate con il raccoglitore di `registry_build.py`, confrontate con il registro distribuito (2.562 voci, 1.162 con segni): da qui i numeri di 1.6.
 - **Avvio.** Su questa macchina, tre prove: circa 3,3 secondi per caricare le regole e riconoscere tre pacchetti; circa 4,8 secondi per analizzare `py-fastapi-compose`; 0,2 secondi per Node da solo.
