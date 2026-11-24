@@ -1,6 +1,6 @@
 # Registro dell'esecuzione: come funziona il programma, visto girare
 
-**Stato:** proposta, 19 novembre 2026. Nulla è applicato. Allineata il 20 novembre alle decisioni del proprietario di quel giorno (sezione 4); ogni scelta rimanda al suo motivo, in «Motivi delle scelte». È la «spec a parte» delle review dinamiche che la [spec del passo dinamico](2026-11-12-passo-dinamico.md) annuncia nella sezione 6, e ne riusa container, registri e fatti osservati.
+**Stato:** In parte. Nel codice: l'avvio dichiarato per i pacchetti Node (faccette `starts` e `builds`, `premap/npm_start.py`), l'app avviata nel container e i suoi controlli premuti in un browser (`dynamic/app.py`, `explore.cjs`: sezione 4, per la sola via dell'interfaccia), la riproduzione di un finding solo nel container (`review-quality-gates/SKILL.md`, `investigation-method/SKILL.md`). Proposta, nulla nel codice: l'albero delle chiamate (1), le frontiere e il conto di sistema (2), il richiedente per gli ingressi senza pagina (4), le letture per simbolo e per radice (5). Usa container, registri e fatti osservati del [passo dinamico](2026-11-12-passo-dinamico.md): è il passo che riceve ciò che i siti osservati lasciano aperto (come si arriva a una funzione, che cosa esce dal processo).
 
 Daodan deve saper rispondere a due domande che oggi restano aperte: «che cosa attraversa davvero un'esecuzione: quali funzioni, classi, file, processi, query e connessioni, e in che ordine?» e «la lacuna che un revisore ha dichiarato si chiude guardando il programma girare?».
 
@@ -20,8 +20,8 @@ Daodan deve saper rispondere a due domande che oggi restano aperte: «che cosa a
 - I registri scrivono siti: per ogni punto di chiamata, l'insieme dei chiamati (`dynamic/__init__.py`, `python_record.py`, `javascript_record.js`). Non scrivono l'ordine, la catena né quante volte. Da quei siti si ricava chi chiama chi, non come si arriva a una funzione.
 - Un chiamato fuori dal progetto è scritto con il suo pacchetto e la versione. Che cosa ha chiesto (quale query, quale host, quale file) non è scritto.
 - I registri partono già in ogni processo e thread che la corsa avvia; ogni processo scrive il suo file, senza dire chi lo ha avviato.
-- Il passo dinamico esegue solo il comando dei test. Il programma parte solo come `webServer` di un test Playwright (`dynamic/javascript.py`). La pre-mappa non tiene un comando di avvio del progetto.
-- Un revisore che non può stabilire un fatto dal codice lo dichiara lacuna (`reviewer-common.md`). I ruoli di sicurezza chiedono fatti che solo un'esecuzione dà: la risposta effettiva (`browser-security-auditor`), ciò che arriva al client in caso di errore (`secret-exposure-auditor`), il percorso fino al sink. La classe `reproduced` esiste (`review-quality-gates/SKILL.md`), ma la riproduzione gira sull'host.
+- Il passo dinamico esegue i test e avvia l'app che un pacchetto Node dichiara, premendone i controlli (`dynamic/app.py`; solo con npm). Un avvio dichiarato altrove (Python, Cargo, .NET, Dockerfile) non è letto.
+- Un revisore che non può stabilire un fatto dal codice lo dichiara lacuna (`daodan/review/reviewer-common.md`). I ruoli di sicurezza chiedono fatti che solo un'esecuzione dà: la risposta effettiva (`browser-security-auditor`), ciò che arriva al client in caso di errore (`secret-exposure-auditor`), il percorso fino al sink. La classe `reproduced` esiste (`review-quality-gates/SKILL.md`) e la riproduzione gira nel container; nessun fatto dell'esecuzione arriva però al revisore prima che lo chieda.
 
 ## Proposta
 
@@ -50,7 +50,7 @@ Motivo 2.
 
 Motivo 3.
 
-- La faccetta `starts` della pre-mappa, con `builds` e la scelta dell'esecutore, è definita in [Interfacce del progetto](2026-11-19-interfacce-del-progetto.md), sezione 5. Si legge solo da ciò che il progetto dichiara, mai da una convenzione di Daodan, e Daodan non modifica il comando dichiarato.
+- La faccetta `starts` della pre-mappa, con `builds` e la scelta dell'esecutore, è definita in [Interfacce del progetto](2026-11-19-interfacce-del-progetto.md), sezione 5; nel codice per `package.json`. Si legge solo da ciò che il progetto dichiara, mai da una convenzione di Daodan, e Daodan non modifica il comando dichiarato.
 - Un progetto senza avvio dichiarato è una lacuna `no_start_command`. Una porta che il comando non dichiara e che il processo non stampa all'avvio è una lacuna `port_not_declared` ([interfacce del progetto](2026-11-19-interfacce-del-progetto.md), 7.3): nessuna scansione.
 
 ### 4. Corsa del programma
@@ -60,7 +60,7 @@ Motivo 4.
 - Una corsa in più dell'osservatore, nello stesso container e con le regole della spec del passo dinamico (sezione 4): preparazione con i soli registri, esecuzione senza rete, servizi della CI accanto (`container.beside`). Parte dal container che la preparazione unica dell'analisi ha lasciato, senza ripristinare di nuovo le dipendenze ([pipeline di analisi](2026-11-15-pipeline-di-analisi.md), «Preparazione»; motivo 6).
 - Daodan aspetta la porta come aspetta quella di un servizio; un programma che non risponde entro il limite è una lacuna `not_ready` con la coda del suo log.
 - Un richiedente di Daodan, nello stesso pod, manda una richiesta alla volta a ogni ingresso `GET` senza parametri. Ogni altro ingresso è una lacuna `entry_not_exercised` con la causa (parametro, corpo, metodo che scrive), finché il progetto non dichiara un esempio (sezione «Da decidere»). Dove c'è un'interfaccia, rotte, collegamenti e controlli raggiungibili li prova l'esplorazione della fonte osservata ([interfacce del progetto](2026-11-19-interfacce-del-progetto.md), 7.4; motivo 7); questo richiedente resta per gli ingressi senza pagina.
-- La radice di una catena che parte dal gestore della richiesta è l'ingresso. Una chiamata che gira fra l'invio e la fine della risposta per un'altra causa (un timer, un lavoro partito prima) resta senza radice: la finestra di tempo da sola non la attribuisce (revisione esterna del 20 novembre). Di ogni ingresso esercitato si tiene lo scambio.
+- La radice di una catena che parte dal gestore della richiesta è l'ingresso. Una chiamata che gira fra l'invio e la fine della risposta per un'altra causa (un timer, un lavoro partito prima) resta senza radice: la finestra di tempo da sola non la attribuisce. Di ogni ingresso esercitato si tiene lo scambio.
 - Alla fine il programma riceve il segnale su cui il registro scrive, come per i test oltre il limite.
 
 ### 5. Dove sta e chi lo legge
@@ -71,7 +71,7 @@ Motivo 5.
 - Due letture: per simbolo (le catene che arrivano lì, con le loro radici) e per radice (l'albero sotto un test o un ingresso, con le sue frontiere).
 - **Grafo e flussi:** le frontiere con `resource` danno ai flussi gli accessi osservati a store e servizi; le radici dicono quale ingresso arriva a quale funzione. Una frontiera `legge` o `scrive` su un file è un collegamento osservato verso il nodo `filesystem` proposto nella spec del 18 novembre.
 - **Review:** il revisore riceve le catene dei simboli nel suo perimetro. Un fatto letto dall'albero ha `evidence_class` `measured`, con comando, radice e registro; `reproduced` resta per un esito diverso su base e candidato, come lo definisce `review-quality-gates`. Nessuna classe nuova.
-- **Riproduzione:** la riproduzione di un finding e il test di un'indagine girano in questo container, non più sull'host (spec del passo dinamico, sezione 6). Oggi `review-quality-gates` e `investigation-method` la concedono con un workspace e un runner, senza chiedere il container: si correggono per primi (piano del 20 novembre, task 0).
+- **Riproduzione:** la riproduzione di un finding e il test di un'indagine girano nel container, non sull'host (in uso: `review-quality-gates/SKILL.md`, `investigation-method/SKILL.md`).
 
 Lacune che l'albero chiude, a titolo di esempio:
 
@@ -109,17 +109,19 @@ Parametri e soglie nei README dei benchmark, scritti prima di ogni misura.
 
 ## Motivi delle scelte
 
-Una voce per scelta; la regola la cita con «motivo n». Nessuna è ancora misurata: le prove sono quelle della sezione «Prova».
+Una voce per scelta; la regola la cita con «motivo n». Nessuna è misurata: le prove sono quelle della sezione «Prova».
 
 1. **L'albero delle chiamate** (1). Perché: i registri scrivono siti, non l'ordine né la catena, e da un sito si ricava chi chiama chi, non come si arriva a una funzione («Comportamento attuale»). Il registro esatto di oggi costa già da 6 a 10 volte il tempo della suite (534 test in 16 s invece di 2,5 s: [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md), «Verdetto»), per questo il costo dell'albero è la prova 1. Scartato: tenere i valori e l'ordine fra catene sorelle (vedi «Limiti»).
 2. **Le frontiere e il conto di sistema** (2). Perché: di un chiamato fuori dal progetto si scrive il pacchetto, non ciò che ha chiesto, e i ruoli di sicurezza chiedono proprio quello. La tabella delle frontiere è chiusa e si corregge solo su una lacuna `frontier_not_in_table`, mai a intuito. Scartato: tenere i valori dei parametri e i contenuti.
 3. **L'avvio solo dichiarato** (3). Perché: la pre-mappa non tiene un comando di avvio, e un comando o una porta presunti avvierebbero il programma sbagliato. Scartato: convenzioni di Daodan e la scansione delle porte.
-4. **La corsa del programma nel container** (4). Perché: oggi il programma parte solo come `webServer` di un test Playwright, e la riproduzione di un finding gira sull'host, contro la regola di `AGENTS.md`. Scartato: un richiedente che manda corpi e parametri inventati.
+4. **La corsa del programma nel container** (4). Perché: senza un avvio dichiarato il programma parte solo come `webServer` di un test Playwright, e nessun codice del progetto gira sull'host (`AGENTS.md`, «Regola invalicabile»). Scartato: un richiedente che manda corpi e parametri inventati.
 5. **L'albero accanto agli archi osservati** (5). Perché: due letture, per simbolo e per radice, servono sia ai flussi sia alla review, e le classi `measured` e `reproduced` esistono già. Scartato: una classe di evidenza nuova.
-6. **Una preparazione per analisi** (4). Deciso dal proprietario il 20 novembre 2026, contro la raccomandazione di rimandarlo: [flussi e mappa](2026-11-18-flussi-e-mappa-del-sistema.md), motivo 15.
-7. **L'esplorazione della fonte osservata** (4). Deciso dal proprietario il 20 novembre 2026, diverso dalla raccomandazione di aprire solo le pagine dichiarate: [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), motivo 11.
+6. **Una preparazione per analisi** (4). Decisione del proprietario: [pipeline di analisi](2026-11-15-pipeline-di-analisi.md), «Scelte», 7.
+7. **L'esplorazione della fonte osservata** (4). Decisione del proprietario: [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), motivo 11.
 
 ## Da decidere
+
+**Aperta: da approfondire:** ogni punto qui sotto è senza decisione.
 
 - L'ordine: l'albero sui test di oggi prima (sezioni 1, 2 e 5, senza avvio), poi la corsa del programma (sezioni 3 e 4). È l'ordine consigliato: dà catene vere subito, senza una faccetta nuova.
 - Il primo linguaggio: Python o JavaScript, che hanno un registro di Daodan.
