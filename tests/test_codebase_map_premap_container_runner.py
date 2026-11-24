@@ -228,7 +228,9 @@ def test_bazel_reaches_its_own_hosts_beside_the_registries_and_no_other_tool_doe
         container_runner.runner(manifest)([command("bazel", "registries")])
         container_runner.runner(manifest)([command("cmake")])
     bazel_run, cmake_run = calls
-    assert set(bazel_run["registries"]) - set(container.REGISTRIES) == {"bcr.bazel.build", "mirror.bazel.build"}
+    assert set(bazel_run["registries"]) - set(container.REGISTRIES) == {
+        "bcr.bazel.build", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com",
+        "mirror.bazel.build", "codeload.github.com"}
     assert cmake_run["registries"] == container.REGISTRIES and cmake_run["commands"][0]["network"] == "none"
 
 

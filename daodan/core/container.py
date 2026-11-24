@@ -103,8 +103,10 @@ HEADER_CAP = 2**13  # a pax or GNU long-name header: a 4096-byte path and the ti
 UNSAFE_PART = re.compile(r'(?is)(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?|.*[\x00-\x1f\\:*?"<>|].*|.*[. ]')
 # The registries a preparation may reach, by host; everything else is refused by the proxy.
 # They are the hosts of `package-managers.json`: the managers Wikipedia's list names (the revision in `source`) that
-# a Linux container restores from, with Go's, each with the hosts its own documentation gives. GitHub is among them
-# (vcpkg's registry, and where Composer, CocoaPods and Homebrew take their archives), by the owner's choice.
+# a Linux container restores from, with Go's. The hosts were written from memory, not from each manager's
+# documentation; `benchmarks/registry-hosts/` reaches each one. Hosts that take uploads beyond a package publish
+# (GitHub and its API, container registries) stay out: a preparation runs project code, and GitHub opens only for a
+# project that declares it (`preparation.declared`). An `http://<host>` entry is an apt archive (`PROXY_SCRIPT`).
 REGISTRIES = tuple(dict.fromkeys(host for hosts in json.loads(
     (Path(__file__).resolve().parents[1] / "data/package-managers.json").read_text(encoding="utf-8"))["managers"].values()
     for host in hosts))

@@ -700,9 +700,11 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn("oldid=", data["source"])  # the revision of Wikipedia's list the names were read from
         self.assertEqual(sorted(container.REGISTRIES), sorted(set(hosts)))
         self.assertEqual(len(hosts), len(set(hosts)))  # a host under one manager only
-        for host in hosts:  # names only: a scheme, a port, a path or a wildcard would widen what the proxy opens
-            self.assertRegex(host, r"\A[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\Z")
-        self.assertLessEqual({"registry.npmjs.org", "pypi.org", "github.com"}, set(container.REGISTRIES))
+        for host in hosts:  # names only (`http://` for an apt archive): a port, a path or a wildcard would widen
+            self.assertRegex(host, r"\A(http://)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\Z")
+        self.assertLessEqual({"registry.npmjs.org", "pypi.org", "http://archive.ubuntu.com"}, set(hosts))
+        for host in hosts:  # hosts that take more than a package publish: a preparation runs project code
+            self.assertFalse(host == "ghcr.io" or "github" in host or "docker" in host, host)
 
     def test_proxy_refuses_every_host_outside_the_registries(self):
         server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
