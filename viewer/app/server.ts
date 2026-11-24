@@ -1,5 +1,8 @@
-// What the local server answers, and how the page asks it: the token goes in a header, and in the address of the stream,
-// which takes no headers.
+// What the local server answers, and how the page asks it: as the map's page does, and by a stream, which takes no headers, so the
+// token is in its address.
+import { createHttp } from '../src/http.ts';
+import type { Fetch } from '../src/http.ts';
+
 export type Context = { repository: { owner: string; name: string }; branch: string; commit: string; run_id: string };
 export type Job = { state: string; step?: string | null; detail?: string };
 export type Pass = { state?: string | null; reason?: string | null };
@@ -45,29 +48,14 @@ export type Checked = {
 // What the page takes from where it runs: the browser, or a test.
 export type Host = {
   token: string;
-  fetch: (path: string, init?: RequestInit) => Promise<Response>;
+  fetch: Fetch;
   stream: (address: string) => EventSource;
   storage: () => Pick<Storage, 'getItem' | 'setItem'>;  // called inside a try: a browser may refuse it
 };
 
-async function answer(response: Response) {
-  const body = await response.json().catch(() => ({}));
-  if (response.status === 503) throw Object.assign(new Error('Daodan è occupato'), { busy: true });  // another helper holds the project now
-  if (!response.ok) throw new Error(body.error || `il server ha risposto ${response.status}`);
-  return body;
-}
-
-export const isBusy = (error: unknown) => (error as { busy?: boolean } | null)?.busy === true;
-export const causeOf = (error: unknown) => (error instanceof Error ? error.message : String(error));
-
-export function createServer({ token, fetch, stream }: Host) {
-  const auth = { 'X-Daodan-Token': token };
-  return {
-    get: <T>(path: string): Promise<T> => fetch(path, { headers: auth, cache: 'no-store' }).then(answer),
-    post: <T>(path: string, body: unknown): Promise<T> =>
-      fetch(path, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer),
-    stream: (run: string, cursors: Cursors) => stream(`/api/stream?${new URLSearchParams({
-      token, max_seconds: '60', run, after: String(cursors.after), pipeline_after: String(cursors.pipeline_after), pulse_after: String(cursors.pulse_after),
-    })}`),
-  };
-}
+export const createServer = ({ token, fetch, stream }: Host) => ({
+  ...createHttp(fetch, token),
+  stream: (run: string, cursors: Cursors) => stream(`/api/stream?${new URLSearchParams({
+    token, max_seconds: '60', run, after: String(cursors.after), pipeline_after: String(cursors.pipeline_after), pulse_after: String(cursors.pulse_after),
+  })}`),
+});

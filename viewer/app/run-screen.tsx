@@ -3,12 +3,13 @@ import { useMemo, useState } from 'react';
 import { Badge, Button, Cluster, Column, Icon, Progress, ScrollArea, Section, Text } from '@acaprino/sigrid/primitives';
 import { Disclosure, Note } from '@acaprino/sigrid/components';
 import type { IconName } from '@acaprino/sigrid/primitives';
+import { plural } from '../src/words.ts';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import { Preview } from './preview.tsx';
 import { short } from './repository.ts';
 import { linksNote, logItems, passAlert, runBar, runCount, runHelp, runPhaseLabel, statusLabel, steps } from './run.ts';
 import type { LogItem, StepStatus } from './run.ts';
-import { complete, ctx, pass, plural, slug } from './snapshot.ts';
+import { complete, ctx, pass, slug } from './snapshot.ts';
 import { MapNote } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 

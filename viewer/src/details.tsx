@@ -7,9 +7,10 @@ import type { Entity, Envelope, Flow } from './envelope.ts';
 import { flowsThrough, indexOf } from './projection.ts';
 import { Mark } from './mark.tsx';
 import type { Model, Shown } from './model.ts';
-import { FLOW_ICON, FRESHNESS_LABEL, LINK_LABEL, STATUS_LABEL } from './icons.ts';
-import { bindingSite, entityName, entryName, flowTitle, headOf, kindOf, MORE, stepMeta } from './names.ts';
+import { FLOW_ICON } from './icons.ts';
+import { bindingSite, entityName, entryName, flowTitle, headOf, kindOf, stepMeta } from './names.ts';
 import { canEnter, shownDetails } from './state.ts';
+import { FRESHNESS_LABEL, LINK_LABEL, MORE, number, PROVENANCE_LABEL, STATUS_LABEL } from './words.ts';
 
 // How many entries of a long list are in sight at first.
 const FIRST = { steps: 40, links: 20, evidence: 8, files: 8 };
@@ -45,17 +46,17 @@ function ProjectDetails({ model }: { model: Model }) {
   return <>
     <Text as="p" variant="soft">Scegli un elemento per vederne il ruolo, i collegamenti e i flussi che lo attraversano. La freccia di un gruppo lo apre e lo chiude sul posto; «Entra», o un doppio clic su un gruppo chiuso, mostra soltanto quello che contiene. Un elemento si sposta trascinandolo o con Alt e una freccia, e «Riordina» rimette tutto a posto. Nei flussi leggi il sito e la provenienza della prova di ogni passaggio.</Text>
     <DescriptionList items={[
-      { name: 'Entità', value: envelope.entities.length },
-      { name: 'Relazioni', value: envelope.relations.length },
-      { name: "Flussi dai punti d'ingresso", value: envelope.flows.length },
-      { name: 'Lacune dichiarate', value: envelope.gaps.length },
+      { name: 'Entità', value: number(envelope.entities.length) },
+      { name: 'Relazioni', value: number(envelope.relations.length) },
+      { name: "Flussi dai punti d'ingresso", value: number(envelope.flows.length) },
+      { name: 'Lacune dichiarate', value: number(envelope.gaps.length) },
     ]} />
     <Section title="In questa vista" level={3} icon={<Icon name="graph" />}>
       <DescriptionList items={[
-        { name: 'Nodi', value: projection.nodes.length },
-        { name: 'Relazioni visibili', value: projection.edges.length },
-        { name: 'Collegamenti di dati (tratteggiati)', value: data.length },
-        { name: 'Relazioni dentro i gruppi', value: projection.counts.aggregated },
+        { name: 'Nodi', value: number(projection.nodes.length) },
+        { name: 'Relazioni visibili', value: number(projection.edges.length) },
+        { name: 'Collegamenti di dati (tratteggiati)', value: number(data.length) },
+        { name: 'Relazioni dentro i gruppi', value: number(projection.counts.aggregated) },
       ]} />
     </Section>
     <Technologies envelope={envelope} />
@@ -102,7 +103,7 @@ function EntityDetails({ model, show, entity }: { model: Model; show: (asked: Sh
       { name: 'Tipo', value: kindOf(entity) },
       { name: 'Posizione', value: entity.location === 'external' ? 'esterno' : 'interno' },
       entity.path ? { name: 'Percorso', value: `${entity.path}${lines ? `:${lines}` : ''}`, code: true } : null,
-      entity.provenance ? { name: 'Provenienza', value: entity.provenance } : null,
+      entity.provenance ? { name: 'Provenienza', value: PROVENANCE_LABEL[entity.provenance] ?? entity.provenance } : null,
       entity.status ? { name: 'Stato', value: STATUS_LABEL[entity.status] ?? entity.status } : null,
       entity.freshness ? { name: 'Scheda', value: FRESHNESS_LABEL[entity.freshness] ?? entity.freshness } : null,
     ]} />

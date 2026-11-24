@@ -2,9 +2,10 @@
 // words.
 import type { IconName } from '@acaprino/sigrid/primitives';
 import type { TreeNode } from '@acaprino/sigrid/assemblies';
+import { CATEGORY_LABEL, number } from '../src/words.ts';
 import { short } from './repository.ts';
 import type { Context } from './server.ts';
-import { number, slug } from './snapshot.ts';
+import { slug } from './snapshot.ts';
 import type { Dependency, Premap, PremapFound, Unit } from './snapshot.ts';
 import type { Kept } from './storage.ts';
 
@@ -132,7 +133,7 @@ export const inventory = (premap: Premap): { name: string; value: string; of: st
 ];
 
 // A technology's category and version, in words.
-export const technologyFacts = (technology: PremapFound['technologies'][number]) => [technology.category,
+export const technologyFacts = (technology: PremapFound['technologies'][number]) => [CATEGORY_LABEL[technology.category] ?? technology.category,
   technology.version || (technology.state === 'declared' ? 'Versione non dichiarata' : 'Versione non registrata')].filter(Boolean).join(' · ');
 
 type Version = { version: string; source: string } | null;

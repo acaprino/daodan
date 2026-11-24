@@ -38,7 +38,8 @@ export const askedTone = (item: Asked): Tone => (item.state === 'done' ? 'succes
 // A finding is as the review wrote it: what it does not say is said to be missing.
 export const findingPlace = (item: Finding): string => (item.file ? `${item.file}:${item.line ?? '?'}` : 'file non indicato');
 export const findingText = (item: Finding): string => [item.title ?? item.premise ?? 'senza titolo', item.example].filter(Boolean).join(' · ');
-export const findingSeverity = (item: Finding): string => item.severity ?? 'gravità non indicata';
+const SEVERITIES: Record<string, string> = { Critical: 'critica', High: 'alta', Medium: 'media', Low: 'bassa' };
+export const findingSeverity = (item: Finding): string => (item.severity ? `gravità ${SEVERITIES[item.severity] ?? item.severity}` : 'gravità non indicata');
 export const findingTone = (item: Finding): Tone => (['Critical', 'High'].includes(item.severity ?? '') ? 'danger' : 'warning');
 
 export const gapText = (gap: unknown): string => (typeof gap === 'string' ? gap : JSON.stringify(gap));

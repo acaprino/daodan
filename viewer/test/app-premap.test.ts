@@ -84,6 +84,7 @@ test('a technology says its category and its version, or why it has none', () =>
   assert.equal(technologyFacts({ ...technology, version: '19' }), 'framework · 19');
   assert.equal(technologyFacts({ ...technology, state: 'declared', version: '' }), 'framework · Versione non dichiarata');
   assert.equal(technologyFacts({ ...technology, state: 'recognized' }), 'framework · Versione non registrata');
+  assert.equal(technologyFacts({ ...technology, category: 'library', state: 'recognized' }), 'libreria · Versione non registrata');
 });
 
 test('the four counts, and where they come from', () => {

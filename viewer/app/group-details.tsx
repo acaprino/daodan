@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Badge, Button, Cluster, Column, Icon, Logo, ScrollArea, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, Disclosure } from '@acaprino/sigrid/components';
+import { CATEGORY_LABEL, MORE, number } from '../src/words.ts';
 import type { Detail } from './frame.tsx';
 import { isOpenGroup, nodeFacts, nodeName, opens, responsibilityOf, thingById } from './graph.ts';
 import type { Graph, GraphNode, Technology, Thing } from './graph.ts';
@@ -12,7 +13,7 @@ import {
 import type { Row } from './group.ts';
 import { short } from './repository.ts';
 import { iconOf } from './scene.ts';
-import { ctx, number, plural } from './snapshot.ts';
+import { ctx } from './snapshot.ts';
 import { Failed, Loading } from './states.tsx';
 import { model, useModel, useModelSlice, useSymbols } from './use-model.ts';
 
@@ -69,7 +70,7 @@ function Stack({ projects, others = 0 }: { projects: Technology[]; others?: numb
       <Cluster>
         <Logo src={model.markUrl(project.mark)} decorative icon="package" />
         <Text variant="strong">{project.name}</Text>
-        <Badge variant="secondary">{project.category}</Badge>
+        <Badge variant="secondary">{CATEGORY_LABEL[project.category] ?? project.category}</Badge>
       </Cluster>
       {project.evidence.map((at, index) => <Text key={index} variant="note" pre>{siteOf(at)}</Text>)}
     </>)} /> : muted('Nessun framework o libreria riconosciuti dal registro.')}

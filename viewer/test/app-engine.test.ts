@@ -41,5 +41,5 @@ test('a tool is its name and what it was given; the server is its command and ho
   assert.deepEqual(mcpFacts({ mcp, mcp_ready: 'ready' }), [
     { name: 'Comando', value: 'uv run mcp_server.py', code: true }, { name: 'Pacchetti del server', value: 'pronti' },
   ]);
-  assert.equal(mcpFacts({ mcp, mcp_ready: 'not ready: timeout' })![1].value, 'not ready: timeout');
+  assert.deepEqual(['not ready: timeout', 'not prepared', undefined].map(mcp_ready => mcpFacts({ mcp, mcp_ready })![1].value), ['non pronti: timeout', 'non preparati', '']);
 });

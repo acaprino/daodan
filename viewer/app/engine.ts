@@ -34,8 +34,11 @@ export function toolUse(tool: string) {
   return { name: at < 0 ? tool : tool.slice(0, at), value: at < 0 ? '' : tool.slice(at + 1), code: true };
 }
 
+const NOT_READY = 'not ready: ';  // and the cause
+const readiness = (ready = '') => (ready === 'ready' ? 'pronti' : ready === 'not prepared' ? 'non preparati'
+  : ready.startsWith(NOT_READY) ? `non pronti: ${ready.slice(NOT_READY.length)}` : ready);
 // The server of the operations, for a session of the person's own.
 export const mcpFacts = (server: Pick<AppState, 'mcp' | 'mcp_ready'>) => (server.mcp ? [
   { name: 'Comando', value: [server.mcp.command, ...server.mcp.args].join(' '), code: true },
-  { name: 'Pacchetti del server', value: server.mcp_ready === 'ready' ? 'pronti' : server.mcp_ready ?? '' },
+  { name: 'Pacchetti del server', value: readiness(server.mcp_ready) },
 ] : null);

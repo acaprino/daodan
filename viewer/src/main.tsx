@@ -12,18 +12,20 @@ import type { ToastItem } from '@acaprino/sigrid/components';
 import '@acaprino/sigrid/styles.css';
 import '@acaprino/sigrid/graph.css';
 import { Details } from './details.tsx';
-import { parseEnvelope } from './envelope.ts';
+import { parseEnvelope, readEnvelope } from './envelope.ts';
 import type { Envelope, View } from './envelope.ts';
 import { Explorer } from './explorer.tsx';
+import { causeOf, whenFree } from './http.ts';
 import { useExplorer } from './model.ts';
 import type { Phase, Shown } from './model.ts';
-import { counted, projectName } from './names.ts';
+import { projectName } from './names.ts';
 import { Navigation } from './navigation.tsx';
 import { OpenExport } from './openExport.tsx';
 import { LOOK } from './page.ts';
-import { getJson, POLL_MS, Session, SessionDisclosure } from './session.tsx';
+import { get } from './server.ts';
+import { POLL_MS, Session, SessionDisclosure } from './session.tsx';
 import { canEnter, shownDetails } from './state.ts';
-import { WORDS } from './words.ts';
+import { EVENT_LABEL, FAILURE, plural, WORDS } from './words.ts';
 
 // The views of the map: their word in the bar, their command, and the name of the content.
 const VIEWS: { value: View; label: string; icon: IconName; command: string; title: string }[] = [
@@ -43,6 +45,10 @@ function fileRef(envelope: Envelope, file: string): string | null {
 }
 
 type LiveEvent = { cursor: number; timestamp: string; event: string; message: string; phase?: number };
+type EventsPage = { events: LiveEvent[]; next_cursor: number; has_more: boolean };
+type Run = { run_id: string; readable?: boolean };
+const BUSY = 'server.busy';  // its notice
+
 function App() {
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
   const [failure, setFailure] = useState('');
@@ -84,17 +90,21 @@ function App() {
   useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Vista', keys: 'Escape', icon: <Icon name="close" />, when: detailsOpen, run: close });
   useSchemeCommands(LOOK);
 
+  // That the server is busy is said once, whoever found it so: while its notice is there, an attempt says nothing more.
+  const sayBusy = () => setNotices(list => (list.some(notice => notice.id === BUSY) ? list : [...list, { id: BUSY, text: FAILURE.retried }]));
+  const read = <T,>(url: string, wanted?: () => boolean) => whenFree(() => get<T>(url), sayBusy, wanted);
   const addressOf = (id: string) => `./data/visual.json?run=${encodeURIComponent(id)}`;
   const asked = useRef(0);  // what was asked for last is what is shown: an export that comes late takes the place of nothing
   const load = (url: string) => {
     asked.current += 1;
     const mine = asked.current;
-    return getJson(url).then(json => {
-      if (mine === asked.current) { setEnvelope(parseEnvelope(json)); setFailure(''); }
-    }).catch(reason => { if (mine === asked.current) setFailure(String(reason?.message ?? reason)); });
+    const wanted = () => mine === asked.current;
+    return read(url, wanted).then(json => {
+      if (wanted()) { setEnvelope(parseEnvelope(json)); setFailure(''); }
+    }).catch(reason => { if (wanted()) setFailure(causeOf(reason)); });
   };
-  const listRuns = (wanted?: string) => getJson('./api/runs').then(json => {
-    const ids = (json.runs as { run_id: string; readable?: boolean }[]).filter(item => item.readable).map(item => item.run_id);
+  const listRuns = (wanted?: string) => read<{ runs: Run[] }>('./api/runs').then(json => {
+    const ids = json!.runs.filter(item => item.readable).map(item => item.run_id);
     setRuns(ids);
     setRun(current => [wanted, current].find(id => id && ids.includes(id)) ?? ids[ids.length - 1] ?? '');
     if (wanted && ids.includes(wanted)) setOpened('');  // the run just made takes the place of a file too
@@ -112,8 +122,9 @@ function App() {
       try {
         const fresh: LiveEvent[] = [];
         for (let more = true; more && !stopped;) {
-          const json = await getJson(`./api/events?run=${encodeURIComponent(run)}&after=${cursor}`);
-          fresh.push(...(json.events as LiveEvent[]));
+          const json = await read<EventsPage>(`./api/events?run=${encodeURIComponent(run)}&after=${cursor}`, () => !stopped);
+          if (!json) return;
+          fresh.push(...json.events);
           cursor = json.next_cursor;
           more = json.has_more;
         }
@@ -131,7 +142,7 @@ function App() {
   const meta = state.envelope.meta;
   // Another export takes the place of the map shown; of a file that holds none the dialog says why.
   const openFile = async (file: File) => {
-    const read = parseEnvelope(JSON.parse(await file.text()));
+    const read = readEnvelope(await file.text());
     asked.current += 1;
     setOpened(file.name); setEnvelope(read); setFailure(''); setOpening(false);
   };
@@ -141,7 +152,7 @@ function App() {
     if (ref) { dispatch({ type: 'select', ref }); show({ ref }); }
   };
   const toView = (view: string) => dispatch({ type: 'view', view: view as View });
-  const session = { onPick: pick, onRun: (id: string) => { listRuns(id).catch(() => undefined); } };
+  const session = { onPick: pick, onRun: (id: string) => { listRuns(id).catch(() => undefined); }, onBusy: sayBusy };
   const title = VIEWS.find(view => view.value === state.view)!.title;
 
   const titleBar = <TitleBar><Toolbar aria-label="Daodan">
@@ -162,11 +173,11 @@ function App() {
       ? <Text variant="soft" data-selectable="">{projectName(state.envelope)}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}{opened && ` · dal file ${opened}`}</Text>
       : <>{STATUS[phase].badge && <Badge variant="secondary">{STATUS[phase].badge}</Badge>}<Text variant="soft">{STATUS[phase].text}</Text></>}
     {!opened && (ready || !!runs?.length) && <><Spacer />
-      <Text data-selectable="">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</Text></>}
+      <Text data-selectable="">{last ? `${last.timestamp} · ${EVENT_LABEL[last.event] ?? last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</Text></>}
   </>;
   // The foot: what the whole export holds (what is in view the panel says), and the keys no control in sight shows.
   const footer = !narrow && <>
-    <Text>{ready ? `${counted(state.envelope.entities.length, 'entità', 'entità')} · ${counted(state.envelope.relations.length, 'relazione', 'relazioni')}` : 'Nessuna mappa'}</Text>
+    <Text>{ready ? `${plural(state.envelope.entities.length, 'entità', 'entità')} · ${plural(state.envelope.relations.length, 'relazione', 'relazioni')}` : 'Nessuna mappa'}</Text>
     <Spacer />
     <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
   </>;

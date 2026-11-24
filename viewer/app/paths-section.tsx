@@ -1,8 +1,9 @@
 // The paths of the synthesis, a page at a time: the entries, the steps proven from one, and the writes with no entry.
 import { Badge, Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, Empty, ItemList, ItemRow } from '@acaprino/sigrid/components';
+import { number, plural } from '../src/words.ts';
 import { handlerSource, listingOf, paging, stepWords } from './paths.ts';
-import { number, ORPHAN_WRITES, plural } from './snapshot.ts';
+import { ORPHAN_WRITES } from './snapshot.ts';
 import type { PathPage, PathResult } from './snapshot.ts';
 import { Failed, Loading } from './states.tsx';
 import { model, useModel } from './use-model.ts';

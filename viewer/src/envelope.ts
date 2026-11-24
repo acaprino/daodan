@@ -1,4 +1,5 @@
 // The export the viewer draws (`daodan/visual@1`, written by visual.py). Nothing is inferred here.
+import { NO_EXPORT } from './words.ts';
 
 export const SCHEMA = 'daodan/visual@1';
 export const NODE_TYPES = ['attore', 'schermata', 'funzionalità', 'servizio o API', 'gateway', 'database', 'coda',
@@ -41,19 +42,19 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 function list(value: unknown, field: string): unknown[] {
-  if (!Array.isArray(value)) throw new EnvelopeError(`${field} is not a list`);
+  if (!Array.isArray(value)) throw new EnvelopeError(NO_EXPORT.list(field));
   return value;
 }
 
 // The envelope, or EnvelopeError with the reason: a wrong schema, a missing list, or a reference to no entity.
 export function parseEnvelope(json: unknown): Envelope {
-  if (!isObject(json)) throw new EnvelopeError('the export is not a JSON object');
-  if (json.schema !== SCHEMA) throw new EnvelopeError(`unknown schema: ${String(json.schema)}`);
+  if (!isObject(json)) throw new EnvelopeError(NO_EXPORT.object);
+  if (json.schema !== SCHEMA) throw new EnvelopeError(NO_EXPORT.schema(json.schema));
   const entities = list(json.entities, 'entities') as Entity[];
   const known = new Set<string>();
   for (const entity of entities) {
     if (!isObject(entity) || typeof entity.ref !== 'string' || typeof entity.type !== 'string')
-      throw new EnvelopeError('an entity has no ref or type');
+      throw new EnvelopeError(NO_EXPORT.entity);
     known.add(entity.ref);
   }
   const relations = list(json.relations, 'relations') as Relation[];
@@ -70,12 +71,12 @@ export function parseEnvelope(json: unknown): Envelope {
     return { ...flow, ref };
   });
   const check = (ref: unknown, owner: string) => {
-    if (typeof ref !== 'string' || !known.has(ref)) throw new EnvelopeError(`${owner} names an unknown entity: ${String(ref)}`);
+    if (typeof ref !== 'string' || !known.has(ref)) throw new EnvelopeError(NO_EXPORT.unknown(owner, ref));
   };
   for (const relation of relations) { check(relation.source, relation.ref); check(relation.target, relation.ref); }
   for (const item of memberships) {
-    if (item.view !== 'logical' && item.view !== 'physical') throw new EnvelopeError(`unknown view: ${String(item.view)}`);
-    check(item.member, 'a membership'); check(item.group, 'a membership');
+    if (item.view !== 'logical' && item.view !== 'physical') throw new EnvelopeError(NO_EXPORT.view(item.view));
+    check(item.member, NO_EXPORT.membership); check(item.group, NO_EXPORT.membership);
   }
   for (const flow of flows) {
     for (const node of list(flow.nodes, `${flow.ref} nodes`)) check(node, flow.ref);
@@ -86,4 +87,11 @@ export function parseEnvelope(json: unknown): Envelope {
     gaps: list(json.gaps ?? [], 'gaps') as Gap[], flows,
     technologies: list(json.technologies ?? [], 'technologies') as Technology[],
   };
+}
+
+// The envelope a file holds.
+export function readEnvelope(text: string): Envelope {
+  let json: unknown;
+  try { json = JSON.parse(text); } catch (error) { throw new EnvelopeError(NO_EXPORT.json, { cause: error }); }
+  return parseEnvelope(json);
 }

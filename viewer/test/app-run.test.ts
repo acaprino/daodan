@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { accessFeedback, preferredBranch, preparation, repositoryContext, repositoryReason, repositorySlug } from '../app/repository.ts';
-import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, runBar, runCount, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps } from '../app/run.ts';
+import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, passWord, runBar, runCount, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps } from '../app/run.ts';
 import type { RunEvent } from '../app/server.ts';
 import type { Snapshot } from '../app/snapshot.ts';
 import { STAGE_WORD, stages } from '../app/stages.ts';
@@ -112,6 +112,8 @@ test('the status row and the foot say the server that is read, lost, idle or at 
 
 test('the pass, the map and the links say what is missing and why', () => {
   assert.equal(passAlert(run('fresh')), null);
+  assert.deepEqual(['fresh', 'unavailable', 'failed', 'off', 'running', undefined].map(state => passWord(run(state))),
+    ['completato', 'non disponibile', 'non riuscito', 'spento', 'in corso', '']);
   assert.deepEqual([passAlert(run('failed'))!.tone, passAlert(run('failed'))!.retry, passAlert(run('off'))!.tone, passAlert(run('off'))!.retry], ['error', true, 'warning', false]);
   assert.equal(passAlert(run('failed'))!.message, 'Nessuna causa registrata.');
   const mapped = (map: object | undefined) => mapNotice(of({ mapped: map }));
@@ -134,7 +136,7 @@ test('the pass, the map and the links say what is missing and why', () => {
 
 test('the log says each event in words and leaves out progress and debug', () => {
   const items = logItems(of(null, { events: [
-    { run: true, event: 'engine_failed', message: 'caduto', timestamp: '10:00' }, { run: true, event: 'altro', message: 'm' },
+    { run: true, event: 'engine_failed', message: 'caduto', timestamp: '10:00' }, { run: true, event: 'phase_completed', message: 'm' }, { run: true, event: 'altro', message: 'm' },
     { kind: 'progress', step: 'scan', message: '1/2' }, { kind: 'log', level: 'debug', message: 'interno' },
     { kind: 'step.finished', step: 'scan', message: '', data: { outputs: ['modules.json'] } }, { kind: 'step.started', step: 'union', message: '', data: { inputs: ['a', 'b'] } },
     { kind: 'gap', step: 'stack', message: 'x', data: { gap: { detail: 'manifest assente', remedy: 'aggiungilo' } } },
@@ -142,7 +144,7 @@ test('the log says each event in words and leaves out progress and debug', () =>
     { kind: 'log', level: 'error', message: 'rotto' },
   ] }));
   assert.deepEqual(items.map(item => [item.title, item.detail, item.type]), [
-    ['Passaggio del grafo interrotto', 'caduto', 'error'], ['altro', 'm', ''], ['Scan · completato', 'Scritti: modules.json', ''], ['Union · avviato', 'Legge: a, b', ''],
+    ['Passaggio del grafo interrotto', 'caduto', 'error'], ['Fase completata', 'm', ''], ['altro', 'm', ''], ['Scan · completato', 'Scritti: modules.json', ''], ['Union · avviato', 'Legge: a, b', ''],
     ['Stack · lacuna', 'manifest assente Rimedio: aggiungilo', 'gap'], ['Analyze · analyzer non disponibile · pyright', 'manca', ''], ['Pipeline · nota', 'rotto', 'error'],
   ]);
 });

@@ -33,7 +33,8 @@ test('a request says what was asked, its state, and what the session said when i
 
 test('a finding says its place, its words and its severity, and what it does not say is said to be missing', () => {
   const finding = { file: 'web/checkout.tsx', line: 12, severity: 'High', title: 'Premessa', example: 'un esempio', request: 1 };
-  assert.deepEqual([findingPlace(finding), findingText(finding), findingSeverity(finding)], ['web/checkout.tsx:12', 'Premessa · un esempio', 'High']);
+  assert.deepEqual([findingPlace(finding), findingText(finding), findingSeverity(finding)], ['web/checkout.tsx:12', 'Premessa · un esempio', 'gravità alta']);
+  assert.equal(findingSeverity({ severity: 'altra', request: 1 }), 'gravità altra');
   assert.equal(findingText({ premise: 'Solo la premessa', request: 1 }), 'Solo la premessa');
   assert.equal(findingPlace({ file: 'web/api.ts', request: 1 }), 'web/api.ts:?');
   assert.deepEqual([findingPlace({ request: 1 }), findingText({ request: 1 }), findingSeverity({ request: 1 })],

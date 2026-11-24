@@ -1,6 +1,7 @@
 // The run, read from its state and its events: its steps, percent, notices, log and gaps, in words.
+import { EVENT_LABEL, number, plural } from '../src/words.ts';
 import { isPreparing, preparation } from './repository.ts';
-import { complete, ctx, number, pass, plural } from './snapshot.ts';
+import { complete, ctx, pass } from './snapshot.ts';
 import type { Links, Mapped } from './server.ts';
 import type { Snapshot } from './snapshot.ts';
 
@@ -69,6 +70,13 @@ const PHASE: Record<string, string> = {
 export const runPhaseLabel = (s: Run) =>
   steps(s).find(t => t.status === 'running')?.label ?? PHASE[pass(s).state ?? ''] ?? 'In attesa del passaggio del grafo';
 
+const PASS: Record<string, string> = { fresh: 'completato', unavailable: 'non disponibile', failed: 'non riuscito', off: 'spento' };
+// The state of the pass that refines the graph of the calls; empty where the run says none.
+export function passWord(s: Pick<Snapshot, 'server'>): string {
+  const { state } = pass(s);
+  return state ? PASS[state] ?? 'in corso' : '';
+}
+
 const STATUS: Record<string, string> = { fresh: 'Completata', unavailable: 'Completata con lacune', failed: 'Da riprovare', off: 'Spenta' };
 export const statusLabel = (s: Pick<Snapshot, 'server'>) => STATUS[pass(s).state ?? ''] ?? 'In esecuzione';
 
@@ -93,12 +101,8 @@ export function passAlert(s: Pick<Snapshot, 'server'>): (Message & { retry: bool
   };
 }
 
-const RUN_EVENT: Record<string, string> = {
-  run_created: 'Run creato', engine_started: 'Passaggio del grafo avviato', engine_unavailable: 'Passaggio del grafo non disponibile',
-  engine_failed: 'Passaggio del grafo interrotto', index_failed: 'Indice lessicale non costruito', modules_failed: 'Grafo dei moduli non costruito',
-};
 const KIND: Record<string, string> = {
-  'step.started': 'avviato', 'step.finished': 'completato', 'analyzer.started': 'analyzer avviato', 'analyzer.unavailable': 'analyzer non disponibile',
+  'step.started': 'avviato', 'step.finished': 'completato', 'step.failed': 'non riuscito', 'step.skipped': 'saltato', 'analyzer.started': 'analyzer avviato', 'analyzer.unavailable': 'analyzer non disponibile',
   'analyzer.finished': 'analyzer completato', gap: 'lacuna', 'graph.ready': 'grafo pronto', log: 'nota',
 };
 export type LogItem = { title: string; detail: string; type: 'error' | 'gap' | ''; at?: string };
@@ -106,7 +110,7 @@ export function logItems(s: Pick<Snapshot, 'events'>): LogItem[] {
   return s.events.filter(e => e.run || (e.kind !== 'progress' && e.level !== 'debug')).map((e): LogItem => {
     if (e.run) {
       const event = e.event ?? '';
-      return { title: RUN_EVENT[event] || event, detail: e.message, type: /failed/.test(event) ? 'error' : /unavailable/.test(event) ? 'gap' : '', at: e.timestamp };
+      return { title: EVENT_LABEL[event] || event, detail: e.message, type: /failed/.test(event) ? 'error' : /unavailable/.test(event) ? 'gap' : '', at: e.timestamp };
     }
     const kind = e.kind ?? '', gap = e.data?.gap;
     return {
@@ -164,7 +168,7 @@ export function linksNote(s: Pick<Snapshot, 'server'>): Message & { running: boo
 // What the run says it does not know.
 export function gapLines(s: Pick<Snapshot, 'server' | 'events' | 'graph'>): string[] {
   const lines: string[] = [];
-  if (passAlert(s)) lines.push('Grafo delle chiamate non rifinito: ' + (pass(s).reason || pass(s).state));
+  if (passAlert(s)) lines.push('Grafo delle chiamate non rifinito: ' + (pass(s).reason || passWord(s)));
   if (s.graph?.unassigned.count) lines.push(`${number(s.graph.unassigned.count)} file non assegnati a un modulo.`);
   for (const e of pipelineEvents(s)) if (e.kind === 'gap') lines.push(e.data?.gap?.detail || e.message);
   for (const gap of s.graph?.gaps ?? []) lines.push(gap.reason);

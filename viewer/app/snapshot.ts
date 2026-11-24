@@ -71,6 +71,3 @@ export const pass = (s: Run): Pass => s.server?.run?.pass ?? {};
 export const complete = (s: Run) => ctx(s) !== null && FINAL.includes(pass(s).state);  // the pipeline is over, well or not
 export const viewingPaths = (s: Pick<Snapshot, 'kept' | 'server'>) =>
   s.kept.screen === 'analysis' && s.kept.analysisStage === 'synthesis' && complete(s);
-
-export const number = (n: number | null | undefined) => Number(n || 0).toLocaleString('it-IT');
-export const plural = (n: number, one: string, many: string) => `${number(n)} ${Number(n) === 1 ? one : many}`;

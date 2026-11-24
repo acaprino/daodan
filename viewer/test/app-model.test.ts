@@ -336,7 +336,7 @@ test('a busy server is asked again once by each reader, and said once', async t 
   sources[0].send('app', { ...ready });  // a frame that comes meanwhile asks nothing more
   sources[0].send('app', { ...ready });
   await turn();
-  assert.deepEqual([times(), said(), now().graphLoading], [[1, 1], ['Daodan è occupato, riprovo'], false]);
+  assert.deepEqual([times(), said(), now().graphLoading], [[1, 1], ['Daodan è occupato, riprovo'], true]);
   const id = now().notices[0].id;
   t.mock.timers.tick(2000);
   await turn();
@@ -392,7 +392,7 @@ test('the graph is asked with the groups open on its own screen, and a group the
   assert.deepEqual([openAsked(), now().kept.graphRoot], ['["a"]', 'a/x']);  // the focus stays inside the group
   model.openGroup('gone');
   await turn();
-  assert.deepEqual(now().notices.at(-1), { id: '1', text: 'the graph shows no group to open: "gone"', kind: 'error' });
+  assert.deepEqual(now().notices.at(-1), { id: '1', text: 'Il gruppo «gone» non si può più aprire nel grafo di questo run.', kind: 'error' });
   assert.deepEqual([now().kept.graphOpen, openAsked()], [['a'], '["a"]']);
   model.selectStage('analysis');  // elsewhere the first grouping alone
   await turn();

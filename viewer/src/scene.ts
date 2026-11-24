@@ -5,8 +5,9 @@ import type { Flow } from './envelope.ts';
 import type { Layout, LayoutGraph } from './layoutClient.ts';
 import { markAddress } from './marks.ts';
 import type { ProjectedEdge, ProjectedNode, Projection } from './projection.ts';
-import { iconFor, LINK_LABEL } from './icons.ts';
+import { iconFor } from './icons.ts';
 import { nodeMeta } from './names.ts';
+import { LINK_LABEL } from './words.ts';
 
 // What is laid out: the nodes in view, the lines on them, and the way their ranks go; with the flow that is followed on them.
 export type Drawing = { projection: Projection; edges: ProjectedEdge[]; direction: 'right' | 'down'; flow?: Flow };

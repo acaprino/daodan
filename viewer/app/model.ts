@@ -1,18 +1,19 @@
 // The App's model: its state, what it asks the server and what it keeps in the browser. It draws nothing: the page reads
 // `snapshot()`, which is one object until something changes, and calls the functions below.
-import { graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
+import { causeOf, whenFree } from '../src/http.ts';
+import { FAILURE } from '../src/words.ts';
+import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { accessible, preferredBranch, repositorySlug, urlError } from './repository.ts';
 import { isAsking } from './run.ts';
-import { causeOf, createServer, isBusy } from './server.ts';
+import { createServer } from './server.ts';
 import type { AppState, Checked, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
 import { complete, ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
 import type { Asked, EngineDraft, EngineWork, PathPage, PathResult, PremapFound, Snapshot, Symbols } from './snapshot.ts';
 import { readKept, STORAGE } from './storage.ts';
 import type { Kept, Place, Stage } from './storage.ts';
 
-const RETRY_MS = 2000;      // a busy server is asked again after this
-const RECONNECT_MS = 4000;  // and a stream that said nothing is opened again after this
+const RECONNECT_MS = 4000;  // a stream that said nothing is opened again after this
 const ANSWER_MS = 700;
 const BUSY = 'server.busy';  // the key of its notice
 
@@ -31,9 +32,9 @@ export function createModel(host: Host) {
     engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null, notices: [],
   };
   const listeners = new Set<() => void>();
-  // What no screen draws: which run and groups the last answers are of, the question whose answer is awaited, whether a busy server
-  // is to be asked again, the check and the choice in course, and where the stream arrived.
-  let premapRun = '', graphRun = '', premapAsked = 0, graphAsked = 0, premapWaits = false, graphWaits = false;
+  // What no screen draws: which run and groups the last answers are of, the question whose answer is awaited, the check and the
+  // choice in course, and where the stream arrived.
+  let premapRun = '', graphRun = '', premapAsked = 0, graphAsked = 0;
   let generation = 0, choosing = false, noticeId = 0;
   let eventsRun = '', cursors: Cursors = { after: 0, pipeline_after: 0, pulse_after: 0 };
 
@@ -53,10 +54,8 @@ export function createModel(host: Host) {
   }
   const dismiss = (id: string) => set({ notices: now.notices.filter(notice => notice.id !== id) });
   // That the server is busy is said once, whoever found it so: while its notice is there, an attempt says nothing more.
-  function busy(error: unknown): boolean {
-    if (!isBusy(error)) return false;
-    if (!now.notices.some(notice => notice.key === BUSY)) say(causeOf(error) + ', riprovo', undefined, BUSY);
-    return true;
+  function sayBusy() {
+    if (!now.notices.some(notice => notice.key === BUSY)) say(FAILURE.retried, undefined, BUSY);
   }
 
   // -- the server --------------------------------------------------------------------------------------------------
@@ -143,57 +142,53 @@ export function createModel(host: Host) {
 
   async function loadPremap(): Promise<void> {
     const run = ctx(now)?.run_id;
-    if (!run || premapRun === run || premapWaits) return;
-    const mine = ++premapAsked;
+    if (!run || premapRun === run) return;
+    const mine = ++premapAsked, wanted = () => mine === premapAsked;
     premapRun = run;
     set({ premapError: '', premap: null });
     try {
-      const found = await get<PremapFound>('/api/app/premap');
-      if (mine !== premapAsked) return;
-      set({ premap: { ...found, dependencies: found.units.flatMap(u => u.dependencies.map(d => ({ ...d, unit: u.name }))) } });
+      const found = await whenFree(() => get<PremapFound>('/api/app/premap'), sayBusy, wanted);
+      if (found && wanted()) set({ premap: { ...found, dependencies: found.units.flatMap(u => u.dependencies.map(d => ({ ...d, unit: u.name }))) } });
     } catch (error) {
-      if (mine !== premapAsked) return;
+      if (!wanted()) return;
       premapRun = '';
-      if (busy(error)) {
-        premapWaits = true;
-        setTimeout(() => { premapWaits = false; loadPremap(); }, RETRY_MS);
-        return;
-      }
       set({ premapError: causeOf(error) });
     }
   }
 
   async function loadGraph(): Promise<void> {
-    const run = ctx(now)?.run_id, open = shownOpen(now.kept), key = graphKey(run, now.kept);
-    if (!run || now.graphLoading || graphWaits) return;
-    const mine = ++graphAsked;
+    const run = ctx(now)?.run_id;
+    if (!run || now.graphLoading) return;
+    const mine = ++graphAsked, wanted = () => mine === graphAsked;
+    let open = shownOpen(now.kept), key = graphKey(run, now.kept);
+    const ask = () => {  // a busy server is asked again for the groups that are open by then
+      open = shownOpen(now.kept);
+      key = graphKey(run, now.kept);
+      return get<Graph>('/api/app/graph' + (open.length ? `?${new URLSearchParams({ open: JSON.stringify(open) })}` : ''));
+    };
     // The first grouping is never drawn from an opened graph; on the graph screen the last group to close stays drawn until the answer.
     const left = now.kept.screen !== 'graph' && !open.length && now.graph !== null && now.graph.open.length > 0;
     set({ graphLoading: true, ...(left && { graph: null }) });
     try {
-      const found = await get<Graph>('/api/app/graph' + (open.length ? `?${new URLSearchParams({ open: JSON.stringify(open) })}` : ''));
-      if (mine !== graphAsked) return;
+      const found = await whenFree(ask, sayBusy, wanted);
+      if (!found || !wanted()) return;
       graphRun = key;
       const graphRoot = rootOf(found, now.kept.graphRoot);  // a group just opened keeps the focus inside it
       set({ graph: found, graphError: '', symbols: null, ...(graphRoot !== now.kept.graphRoot && { kept: { ...now.kept, graphRoot } }) });
     } catch (error) {
-      if (mine !== graphAsked) return;
-      if (busy(error)) {  // what is drawn stays
-        graphWaits = true;
-        setTimeout(() => { graphWaits = false; loadGraph(); }, RETRY_MS);
-        return;
-      }
+      if (!wanted()) return;
       const cause = causeOf(error);
       const refused = open.length > 0 && /to open: (".*")$/.exec(cause);  // a group the run no longer shows: dropped, the others stay
       if (refused) {
+        const id: string = JSON.parse(refused[1]);
         graphRun = '';
-        keep({ graphOpen: openWithout(now.kept.graphOpen, now.graph, JSON.parse(refused[1])) });
-        say(cause, 'error');
+        keep({ graphOpen: openWithout(now.kept.graphOpen, now.graph, id) });
+        say(`Il gruppo «${now.graph ? endName(now.graph, id) : id}» non si può più aprire nel grafo di questo run.`, 'error');
       } else { graphRun = key; set({ graphError: cause }); }
     } finally {
-      if (mine === graphAsked) set({ graphLoading: false });
+      if (wanted()) set({ graphLoading: false });
     }
-    if (mine === graphAsked && graphRun !== graphKey(run, now.kept)) return loadGraph();  // the groups wanted changed meanwhile
+    if (wanted() && graphRun !== graphKey(run, now.kept)) return loadGraph();  // the groups wanted changed meanwhile
   }
 
   // -- the repository ----------------------------------------------------------------------------------------------
@@ -244,7 +239,8 @@ export function createModel(host: Host) {
     if (id === ORPHAN_WRITES) query.set('effects', '1');
     else if (typeof id === 'string') query.set('id', id);
     try {
-      const result = await get<PathResult>(`/api/app/paths?${query}`);
+      const result = await whenFree(() => get<PathResult>(`/api/app/paths?${query}`), sayBusy, () => ctx(now)?.run_id === run);
+      if (!result) return;
       if (result.run_id && result.run_id !== page.run) throw new Error('Il run attivo è cambiato.');
       const rows = id === ORPHAN_WRITES ? result.effects : id ? result.steps : result.cards;
       if (!Array.isArray(rows)) throw new Error(result.reason || 'La pagina dei percorsi non è disponibile.');
@@ -314,10 +310,9 @@ export function createModel(host: Host) {
     const mine = () => now.symbols === asked;  // not asked again, nor dropped with the graph it was asked on
     set({ symbols: asked });
     try {
-      const found = await get<Symbols>(`/api/app/symbols?${new URLSearchParams({ file })}`);
-      if (mine()) set({ symbols: found });
+      const found = await whenFree(() => get<Symbols>(`/api/app/symbols?${new URLSearchParams({ file })}`), () => undefined, mine);
+      if (found && mine()) set({ symbols: found });
     } catch (error) {
-      if (isBusy(error)) { setTimeout(() => { if (mine()) askSymbols(file); }, RETRY_MS); return; }
       if (mine()) set({ symbols: { file, error: causeOf(error) } });
     }
   }
@@ -368,7 +363,7 @@ export function createModel(host: Host) {
     try {
       await post('/api/app/ask', { question: now.question });
       for (let after = 0; ;) {
-        const found = await get<Answer>(`/api/app/answer?after=${after}`);
+        const found = (await whenFree(() => get<Answer>(`/api/app/answer?after=${after}`), sayBusy))!;
         after = found.next;
         const tools = found.events.filter(e => e.kind === 'tool').map(e => `${e.name} ${typeof e.arguments === 'string' ? e.arguments : JSON.stringify(e.arguments ?? '')}`);
         show({ state: found.state, text: found.text, cause: found.cause, tools: [...asked.tools, ...tools] });

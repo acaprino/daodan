@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { NODE_TYPES } from '../src/envelope.ts';
-import { FLOW_ICON, iconFor, NO_ICON, TYPE_LABEL } from '../src/icons.ts';
+import { FLOW_ICON, iconFor, NO_ICON } from '../src/icons.ts';
+import { TYPE_LABEL } from '../src/words.ts';
 
 const UNKNOWN = { type: 'nothing the model names' };
 

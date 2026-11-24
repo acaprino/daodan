@@ -32,14 +32,15 @@ test('its perimeter is its files, or its lines, or what it holds open', () => {
   assert.deepEqual(values(node('s', { kind: 'symbol', lines: [1, 5], members: ['t'] })),
     ['Righe: 1–5', 'Simboli dentro: 1', 'Relazioni nel grafo: 0', 'Provenienza: Outline del file']);
   assert.deepEqual(values(node('s', { kind: 'symbol', files: [], provenance: 'scip' })), ['Righe: —', 'Relazioni nel grafo: 0', 'Provenienza: scip']);
+  assert.equal(values(node('m', { kind: 'build', provenance: 'build' })).at(-1), 'Provenienza: strumento di build');
   assert.deepEqual(values(node('m', { kind: 'component' })).at(-1), 'Provenienza: Non registrata');
   assert.deepEqual(values(web), ['Elementi dentro: 2', 'Relazioni nel grafo: 1']);
 });
 
 test('its relations are read from where it is, and those proven at run time are apart', () => {
-  assert.deepEqual(relationsOf(graph, 'web').map(item => relationRow(graph, 'web', item)), [{ name: '← api', about: 'calls: 2, imports: 1' }]);
+  assert.deepEqual(relationsOf(graph, 'web').map(item => relationRow(graph, 'web', item)), [{ name: '← api', about: '2 chiamate, 1 import' }]);
   assert.deepEqual(relationsOf(graph, 'api').map(item => relationRow(graph, 'api', item)),
-    [{ name: '→ web', about: 'calls: 2, imports: 1' }, { name: '→ db', about: 'calls: 1 · destinazioni in conflitto' }]);
+    [{ name: '→ web', about: '2 chiamate, 1 import' }, { name: '→ db', about: '1 chiamata · destinazioni in conflitto' }]);
   assert.deepEqual(graph.edges.map(isProven), [false, true, false, true]);
   assert.deepEqual(graph.edges.filter(isProven).map(item => proofRow(graph, item).name),
     ['main.ts → db · osservata in esecuzione', 'api → db · destinazioni in conflitto']);
@@ -47,10 +48,10 @@ test('its relations are read from where it is, and those proven at run time are 
 
 test('a file says the relations recorded in it, or that name it', () => {
   assert.deepEqual(recordedIn(graph, 'web/main.ts'), [
-    { name: 'main.ts → db', about: 'calls · save · osservata in esecuzione · riga 3 · store.ts' },
+    { name: 'main.ts → db', about: 'chiama · save · osservata in esecuzione · riga 3 · store.ts' },
     { name: 'main.ts → db', about: 'incerta' },
   ]);
-  assert.deepEqual(recordedIn(graph, 'store.ts'), [{ name: 'main.ts → db', about: 'calls · save · osservata in esecuzione · riga 3' }]);
+  assert.deepEqual(recordedIn(graph, 'store.ts'), [{ name: 'main.ts → db', about: 'chiama · save · osservata in esecuzione · riga 3' }]);
   assert.deepEqual(recordedIn(graph, 'README.md'), []);
   assert.deepEqual([siteOf({ path: 'a.ts', line: 4 }), siteOf({ path: 'a.ts' }), shortPath('src/lib/util.ts'), shortPath('a.ts')], ['a.ts:4', 'a.ts', 'lib/util.ts', 'a.ts']);
 });

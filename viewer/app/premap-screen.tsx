@@ -5,6 +5,7 @@ import { Badge, Button, Cluster, Column, Grid, Icon, ScrollArea, Section, Table,
 import { DescriptionList, Empty, SearchField } from '@acaprino/sigrid/components';
 import { Tree } from '@acaprino/sigrid/assemblies';
 import type { TreeNode } from '@acaprino/sigrid/assemblies';
+import { number, plural } from '../src/words.ts';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import type { Detail } from './frame.tsx';
 import {
@@ -13,7 +14,7 @@ import {
 } from './premap.ts';
 import { RunName } from './provenance.tsx';
 import { ContextFacts } from './repository-screen.tsx';
-import { ctx, number, plural } from './snapshot.ts';
+import { ctx } from './snapshot.ts';
 import type { Premap } from './snapshot.ts';
 import { Failed, Loading } from './states.tsx';
 import { model, useModel } from './use-model.ts';

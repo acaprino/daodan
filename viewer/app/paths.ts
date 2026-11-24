@@ -1,6 +1,6 @@
 // A page of the paths in words: what it lists, which part of the list is in view, and each step with its proof.
-import { proofLabel } from './graph.ts';
-import { number, ORPHAN_WRITES } from './snapshot.ts';
+import { number, proofLabel } from '../src/words.ts';
+import { ORPHAN_WRITES } from './snapshot.ts';
 import type { PathCard, PathPage, PathStep } from './snapshot.ts';
 
 export type Listing = 'entries' | 'steps' | 'writes';

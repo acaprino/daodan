@@ -18,7 +18,7 @@ test('switching view keeps the selection only when its ref resolves', () => {
 });
 
 test('an export of another schema is refused where it is read, before it reaches the state', () => {
-  assert.throws(() => parseEnvelope({ ...raw, schema: 'something/else@9' }), /unknown schema: something\/else@9/);
+  assert.throws(() => parseEnvelope({ ...raw, schema: 'something/else@9' }), /schema sconosciuto: something\/else@9/);
 });
 
 test('replaceEnvelope drops vanished refs from the selection and returns a warning', () => {

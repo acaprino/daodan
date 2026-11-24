@@ -1,6 +1,7 @@
 // The synthesis: the paths by entry, what the graph counts, where to start reading, and what is missing from the picture.
 import { Badge, Button, Cluster, Column, Icon, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
+import { number, plural } from '../src/words.ts';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import { buildCounts, levelsName, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
 import type { Graph } from './graph.ts';
@@ -8,7 +9,7 @@ import { Mark } from './group-details.tsx';
 import { Paths } from './paths-section.tsx';
 import { Gaps, PROVENANCE } from './provenance.tsx';
 import type { Context } from './server.ts';
-import { ctx, number, plural } from './snapshot.ts';
+import { ctx } from './snapshot.ts';
 import { Failed, GraphFailed, Loading, MapNote } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 

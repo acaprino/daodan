@@ -41,11 +41,11 @@ test('a line says its kind by its dash and its words, and each is a line of its 
     edge('confirmed', { counts: { calls: 2, imports: 1 } }), edge('observed'), edge('sampled'), edge('uncertain'), edge('observed', { conflict: true }),
   ] });
   assert.deepEqual(edges.map(line => [line.id, line.style, line.tone, line.label]), [
-    ['0', 'solid', 'default', 'calls: 2, imports: 1'],
-    ['1', 'solid', 'accent', 'calls: 1 · osservata in esecuzione'],
-    ['2', 'dashed', 'accent', 'calls: 1 · campionata dal profiler'],
-    ['3', 'dashed', 'warning', 'calls: 1 · incerta'],
-    ['4', 'dashed', 'warning', 'calls: 1 · osservata in esecuzione · destinazioni in conflitto'],
+    ['0', 'solid', 'default', '2 chiamate, 1 import'],
+    ['1', 'solid', 'accent', '1 chiamata · osservata in esecuzione'],
+    ['2', 'dashed', 'accent', '1 chiamata · campionata dal profiler'],
+    ['3', 'dashed', 'warning', '1 chiamata · incerta'],
+    ['4', 'dashed', 'warning', '1 chiamata · osservata in esecuzione · destinazioni in conflitto'],
   ]);
   assert.ok(edges.every(line => line.from === 'a' && line.to === 'b' && line.directed && line.labelShown === 'chosen' && line.points === undefined));
   assert.deepEqual(legend.map(entry => [entry.label, entry.count]), [

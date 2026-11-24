@@ -1,5 +1,5 @@
 // The graph of the run: what is in view with the person's filters, its groups open in place, and its words.
-import { plural, number } from './snapshot.ts';
+import { number, plural, proofLabel, relationCounts, STATUS_LABEL } from '../src/words.ts';
 import type { Kept } from './storage.ts';
 
 export type Evidence = { path: string; line?: number };
@@ -82,8 +82,7 @@ export function visibleGraph(graph: Graph, kept: Filters): { nodes: GraphNode[];
 }
 
 export const nodeName = (n: { kind?: string; name: string }) => (n.kind === 'directory' && n.name === '.' ? 'radice del repository' : n.name);
-const NODE_STATUS: Record<string, string> = { confirmed: 'confermato', inferred: 'inferito', incomplete: 'incompleto', proposed: 'proposto' };
-export const nodeState = (n: GraphNode) => (n.location === 'external' ? 'esterno' : NODE_STATUS[n.status ?? ''] || n.status || 'senza stato');
+export const nodeState = (n: GraphNode) => (n.location === 'external' ? 'esterno' : STATUS_LABEL[n.status ?? ''] || n.status || 'senza stato');
 export function nodeFacts(n: GraphNode): string {
   if (n.location === 'external') return [n.node_type, 'esterno'].filter(Boolean).join(' · ');
   return n.kind === 'symbol' ? ['righe ' + (n.lines ?? []).join('–'), n.members ? `${n.members.length} simboli` : '', n.node_type].filter(Boolean).join(' · ')
@@ -99,12 +98,9 @@ export const levelLabel = (graph: Graph | null) => (graph?.grouping === 'modules
 // The levels of the system map the graph shows, by their own names.
 export const levelsName = (graph: Graph | null) => (graph?.levels ?? []).map(level => level[0].toUpperCase() + level.slice(1)).join(' · ');
 
-const PROOF: Record<string, string> = { observed: 'osservata in esecuzione', sampled: 'campionata dal profiler', uncertain: 'incerta' };
-export const proofLabel = (status: string | undefined, conflict = false) =>
-  [PROOF[status ?? ''] ?? '', conflict && 'destinazioni in conflitto'].filter(Boolean).join(' · ');
-// What a relation counts, and what proves it: «calls: 2, imports: 1 · osservata in esecuzione».
+// What a relation counts, and what proves it: «2 chiamate, 1 import · osservata in esecuzione».
 export const relationWords = (edge: Pick<GraphEdge, 'counts' | 'status' | 'conflict'>) =>
-  [Object.entries(edge.counts).map(([kind, count]) => `${kind}: ${count}`).join(', '), proofLabel(edge.status, edge.conflict)].filter(Boolean).join(' · ');
+  [relationCounts(edge.counts), proofLabel(edge.status, edge.conflict)].filter(Boolean).join(' · ');
 export function runtimeSummary(edges: readonly Pick<GraphEdge, 'status' | 'conflict'>[]): string {
   const observed = edges.filter(e => !e.conflict && e.status === 'observed').length;
   const sampled = edges.filter(e => !e.conflict && e.status === 'sampled').length;

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Dialog, FileDrop } from '@acaprino/sigrid/components';
 import type { FileDropReason } from '@acaprino/sigrid/components';
+import { causeOf } from './http.ts';
 
 const REFUSED: Record<FileDropReason, string> = {
   type: 'Serve un file JSON.', size: 'Il file è troppo grande.', count: 'Scegli un solo file.',
@@ -16,7 +17,7 @@ function ExportDrop({ onFile }: { onFile: (file: File) => Promise<void> }) {
     setReading(file.name);
     setError('');
     try { await onFile(file); }
-    catch (reason) { setError(`${file.name} non è un export leggibile: ${String((reason as Error)?.message ?? reason)}`); }
+    catch (reason) { setError(`${file.name} non è un export leggibile: ${causeOf(reason)}`); }
     finally { setReading(''); }
   };
   return <FileDrop ref={takeFocus} label="Trascina qui un export, o scegli il file" hint="JSON" dropLabel="Lascialo qui"

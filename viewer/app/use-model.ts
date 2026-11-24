@@ -1,10 +1,11 @@
 // The App's one model, on the browser, and what a component reads of it.
 import { useEffect, useSyncExternalStore } from 'react';
+import { TOKEN } from '../src/token.ts';
 import { createModel } from './model.ts';
 import type { Snapshot, Symbols } from './snapshot.ts';
 
 export const model = createModel({
-  token: new URLSearchParams(window.location.search).get('token') ?? '',
+  token: TOKEN,
   fetch: (path, init) => window.fetch(path, init),
   stream: address => new window.EventSource(address),
   storage: () => window.localStorage,

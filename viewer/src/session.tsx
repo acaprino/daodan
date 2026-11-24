@@ -9,42 +9,35 @@ import {
   runProblem, SCOPES,
 } from './requests.ts';
 import type { Asked, Finding, Question, Tone } from './requests.ts';
-import { TOKEN } from './token.ts';
+import { causeOf, whenFree } from './http.ts';
+import { get, post } from './server.ts';
 
 export const POLL_MS = 2000;
-
-const answer = (response: Response) => response.json().catch(() => ({})).then(json =>
-  (response.ok ? json : Promise.reject(new Error(json.error ?? `HTTP ${response.status}`))));
-const auth = TOKEN ? { 'X-Daodan-Token': TOKEN } : undefined;
-export const getJson = (url: string) => fetch(url, { headers: auth }).then(answer);
-const postJson = (url: string, body: unknown) =>
-  fetch(url, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer);
-const reasonOf = (reason: unknown) => String((reason as Error)?.message ?? reason);
 
 // A form that posts: it is sending until the server answers, and keeps what the server said when it refuses.
 function usePost(url: string) {
   const [sending, setSending] = useState(false);
   const [failure, setFailure] = useState('');
-  const post = async (body: unknown, done: () => void) => {
+  const send = async (body: unknown, done: () => void) => {
     setSending(true);
     setFailure('');
     try {
-      await postJson(url, body);
+      await post(url, body);
       done();
     } catch (reason) {
-      setFailure(reasonOf(reason));
+      setFailure(causeOf(reason));
     } finally {
       setSending(false);
     }
   };
-  return { sending, post, refusal: failure && <Note tone="error" title="Richiesta non riuscita"><Text data-selectable="">{failure}</Text></Note> };
+  return { sending, send, refusal: failure && <Note tone="error" title="Richiesta non riuscita"><Text data-selectable="">{failure}</Text></Note> };
 }
 
 function AskForm({ onSent }: { onSent: () => void }) {
   const [form, setForm] = useState<Question>({ kind: 'review', scope: 'changeset', text: '' });
   const [problem, setProblem] = useState('');
   const field = useRef<HTMLInputElement>(null);
-  const { sending, post, refusal } = usePost('./api/requests');
+  const { sending, send, refusal } = usePost('./api/requests');
   const feature = form.scope === 'feature';
   const change = (part: Partial<Question>) => { setForm(current => ({ ...current, ...part })); setProblem(''); };
   const submit = (event: SyntheticEvent) => {
@@ -52,7 +45,7 @@ function AskForm({ onSent }: { onSent: () => void }) {
     const wrong = questionProblem(form);
     setProblem(wrong);
     if (wrong) field.current?.focus();
-    else post(form, () => { change({ text: '' }); onSent(); });
+    else send(form, () => { change({ text: '' }); onSent(); });
   };
   return <Section title="Chiedi alla sessione" level={3} icon={<Icon name="send" />}>
     <form noValidate onSubmit={submit}><Column gap="md">
@@ -73,13 +66,13 @@ function RunForm({ onRun }: { onRun: (id: string) => void }) {
   const [name, setName] = useState('');
   const [problem, setProblem] = useState('');
   const field = useRef<HTMLInputElement>(null);
-  const { sending, post, refusal } = usePost('./api/runs');
+  const { sending, send, refusal } = usePost('./api/runs');
   const submit = (event: SyntheticEvent) => {
     event.preventDefault();
     const wrong = runProblem(name);
     setProblem(wrong);
     if (wrong) field.current?.focus();
-    else post({ target: '.', run_id: name }, () => { setName(''); onRun(name); });
+    else send({ target: '.', run_id: name }, () => { setName(''); onRun(name); });
   };
   return <Section title="Analisi statica, senza modello" level={3} icon={<Icon name="code" />}>
     <form noValidate onSubmit={submit}><Column gap="md">
@@ -94,23 +87,30 @@ function RunForm({ onRun }: { onRun: (id: string) => void }) {
 
 // What a route answers, asked again as long as it is drawn, one request at a time. Each route is asked by itself, so one that
 // fails hides nothing of the others; what was answered once stays in sight, and the next poll asks again.
-function usePoll<T>(url: string) {
+function usePoll<T>(url: string, onBusy: () => void) {
   const [answered, setAnswered] = useState<T | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
-  const busy = useRef(false);
+  const asking = useRef(false), drawn = useRef(false);
   const ask = async () => {
-    if (busy.current) return;
-    busy.current = true;
+    if (asking.current) return;
+    asking.current = true;
     try {
-      setAnswered(await getJson(url));
+      const found = await whenFree(() => get<T>(url), onBusy, () => drawn.current);
+      if (found === undefined) return;
+      setAnswered(found);
       setFailure(null);
     } catch (reason) {
-      setFailure(reasonOf(reason));
+      setFailure(causeOf(reason));
     } finally {
-      busy.current = false;
+      asking.current = false;
     }
   };
-  useEffect(() => { ask(); const timer = window.setInterval(ask, POLL_MS); return () => window.clearInterval(timer); }, []);
+  useEffect(() => {
+    drawn.current = true;
+    ask();
+    const timer = window.setInterval(ask, POLL_MS);
+    return () => { drawn.current = false; window.clearInterval(timer); };
+  }, []);
   return { answered, failure, ask, retry: () => { setFailure(null); ask(); } };
 }
 
@@ -134,12 +134,12 @@ function Entry({ title, mark, text }: { title: string; mark: ReactNode; text: st
   </Column>;
 }
 
-type SessionProps = { onPick: (file: string) => void; onRun: (id: string) => void };
+type SessionProps = { onPick: (file: string) => void; onRun: (id: string) => void; onBusy: () => void };
 
 // The forms and the answers. It asks the server as long as it is drawn, and no longer.
-function Exchange({ onPick, onRun }: SessionProps) {
-  const asked = usePoll<{ requests: Asked[] }>('./api/requests');
-  const found = usePoll<{ findings: Finding[]; gaps: unknown[] }>('./api/findings');
+function Exchange({ onPick, onRun, onBusy }: SessionProps) {
+  const asked = usePoll<{ requests: Asked[] }>('./api/requests', onBusy);
+  const found = usePoll<{ findings: Finding[]; gaps: unknown[] }>('./api/findings', onBusy);
   const requests = asked.answered?.requests, findings = found.answered?.findings, gaps = found.answered?.gaps ?? [];
   return <Grid gap="xl">
     <Column gap="xl">

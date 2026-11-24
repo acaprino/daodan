@@ -8,6 +8,7 @@ import { Panel, useAppShell } from '@acaprino/sigrid/layout';
 import { useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
 import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
+import { causeOf } from './http.ts';
 import { createLayoutClient } from './layoutClient.ts';
 import type { Layout } from './layoutClient.ts';
 import type { Model, Shown } from './model.ts';
@@ -17,8 +18,7 @@ import type { Drawing, Scene } from './scene.ts';
 import { inSight, onceDrawn } from './sight.ts';
 import { placeOf, shownDetails } from './state.ts';
 import { TOKEN } from './token.ts';
-import { TYPE_LABEL } from './icons.ts';
-import { counted } from './names.ts';
+import { plural, TYPE_LABEL } from './words.ts';
 
 const CANVAS = 'Naviga il grafo';
 
@@ -53,7 +53,7 @@ function useLayout(drawing: Drawing, ready: boolean) {
     let left = false;
     client.current!.request(graphOf(drawing), drawing.direction === 'down' ? 'DOWN' : 'RIGHT')
       .then(layout => { if (!left) setPlaced({ key, drawing, layout }); })
-      .catch(reason => { if (!left) setFailure(String(reason?.message ?? reason)); });
+      .catch(reason => { if (!left) setFailure(causeOf(reason)); });
     return () => { left = true; };
   }, [key, ready, attempt]);
   return {
@@ -102,12 +102,12 @@ export function Explorer({ model, title, search, toShow, show, ready, runs, open
     <Select size="sm" aria-label="Tipo di entità" disabled={!ready} value={chosen} onValueChange={type => dispatch({ type: 'filter', filters: { types: type ? [type] : [] } })}
       options={[{ value: '', label: 'Tutti i tipi' }, ...types.map(type => ({ value: type, label: TYPE_LABEL[type] ?? type }))]} />
     {tight && openOther}
-    <Button variant="ghost" size="sm" disabled={filtered === 0} onClick={reset}><Icon name="clearFilter" />Azzera filtri ({counted(filtered, 'nascosto', 'nascosti')})</Button>
+    <Button variant="ghost" size="sm" disabled={filtered === 0} onClick={reset}><Icon name="clearFilter" />Azzera filtri ({plural(filtered, 'nascosto', 'nascosti')})</Button>
     {tight && runs}
   </>;
   // Said as it changes, also where the line is cut: that the layout is waited for, then what is in view.
   const inView = graph.waiting ? 'Dispongo il grafo…'
-    : `${counted(projection.nodes.length, 'nodo', 'nodi')} · ${counted(projection.edges.length, 'relazione visibile', 'relazioni visibili')}`;
+    : `${plural(projection.nodes.length, 'nodo', 'nodi')} · ${plural(projection.edges.length, 'relazione visibile', 'relazioni visibili')}`;
   return <Panel title={title}
     subtitle={ready ? <>{placeOf(state).join(' / ')} · <Text role="status">{inView}</Text></> : undefined}
     actions={<>

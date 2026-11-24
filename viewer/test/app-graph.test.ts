@@ -1,11 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  buildCounts, endName, filtersOn, graphKey, isOpenGroup, levelsName, nodeById, nodeFacts, nodeName, openWithout, proofLabel, relationWords, rootOf,
+  buildCounts, endName, filtersOn, graphKey, isOpenGroup, levelsName, nodeById, nodeFacts, nodeName, openWithout, relationWords, rootOf,
   runtimeSummary, shownOpen, thingById, toggledGroup, visibleGraph,
 } from '../app/graph.ts';
 import type { Graph, GraphNode } from '../app/graph.ts';
 import { DEFAULTS } from '../app/storage.ts';
+import { proofLabel } from '../src/words.ts';
 
 const node = (id: string, more: Partial<GraphNode> = {}): GraphNode => ({ id, name: id, kind: 'directory', files: [`${id}/a.ts`], location: 'internal', status: 'confirmed', group: null, ...more });
 const edge = (source: string, target: string, counts: Record<string, number> = { calls: 1 }) => ({ source, target, counts, evidence: [] });
@@ -47,7 +48,8 @@ test('a group that closes closes what is open inside it, and the groups are aske
 test('a filter is on when it is not the one the graph opens with', () => {
   assert.equal(filtersOn(DEFAULTS), false);
   for (const patch of [{ graphSearch: ' ' }, { graphDirection: 'in' }, { graphDepth: '1' }, { graphKind: 'calls' }] as const) assert.equal(filtersOn({ ...DEFAULTS, ...patch }), true);
-  assert.equal(filtersOn({ ...DEFAULTS, graphRoot: 'a', graphOpen: ['a'] }), false);
+  const elsewhere = { ...DEFAULTS, graphRoot: 'a', graphOpen: ['a'] };
+  assert.equal(filtersOn(elsewhere), false);
 });
 
 test('what the graph shows is a node or an open group, and the group opened or closed is told from one reading to the next', () => {
@@ -74,7 +76,7 @@ test('nodes, lines and the whole graph are said in words', () => {
     ['1 file · confermato', 'database · esterno', 'righe 1–5 · 2 simboli']);
   assert.deepEqual([proofLabel('observed'), proofLabel('sampled', true), proofLabel('confirmed')], ['osservata in esecuzione', 'campionata dal profiler · destinazioni in conflitto', '']);
   assert.deepEqual([relationWords({ counts: { calls: 2, imports: 1 }, status: 'sampled' }), relationWords({ counts: { uses: 1 } })],
-    ['calls: 2, imports: 1 · campionata dal profiler', 'uses: 1']);
+    ['2 chiamate, 1 import · campionata dal profiler', '1 utilizzo']);
   assert.equal(runtimeSummary([{ status: 'observed' }, { status: 'observed' }, { status: 'sampled' }, { status: 'observed', conflict: true }]),
     '2 osservate in esecuzione · 1 campionata dal profiler · 1 in conflitto');
   assert.deepEqual([buildCounts(null), levelsName(graph)], ['—', 'Codice · Infrastruttura']);

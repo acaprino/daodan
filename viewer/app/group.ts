@@ -1,8 +1,7 @@
 // The details of a group of the graph, in words: what it is, its relations and what proves them, its files and its symbols.
-import { FRESHNESS_LABEL } from '../src/icons.ts';
-import { endName, isOpenGroup, nodeState, proofLabel, relationWords } from './graph.ts';
+import { FRESHNESS_LABEL, LINK_LABEL, number, proofLabel, PROVENANCE_LABEL } from '../src/words.ts';
+import { endName, isOpenGroup, nodeState, relationWords } from './graph.ts';
 import type { Evidence, Graph, GraphEdge, Thing } from './graph.ts';
-import { number } from './snapshot.ts';
 import type { Symbols } from './snapshot.ts';
 
 export type Row = { name: string; about: string };  // a line of a list, and the note under it
@@ -33,7 +32,7 @@ export function perimeter(graph: Graph, thing: Thing): { name: string; value: st
   }
   const size = thing.kind !== 'symbol' ? [fact('File assegnati', thing.files.length)]
     : [{ name: 'Righe', value: span(thing.lines) || '—' }, ...(thing.members ? [fact('Simboli dentro', thing.members.length)] : [])];
-  return [...size, relations, { name: 'Provenienza', value: thing.provenance || ORIGIN[thing.kind] || 'Non registrata' }];
+  return [...size, relations, { name: 'Provenienza', value: PROVENANCE_LABEL[thing.provenance ?? ''] || thing.provenance || ORIGIN[thing.kind] || 'Non registrata' }];
 }
 
 // A relation, from where the group is.
@@ -49,7 +48,7 @@ export const proofRow = (graph: Graph, edge: GraphEdge): Row =>
 export function recordedIn(graph: Graph, path: string): Row[] {
   return graph.edges.flatMap(edge => edge.evidence.filter(at => at.path === path || at.target === path).map(at => ({
     name: ends(graph, edge),
-    about: [at.kind, at.key, proofLabel(edge.status, edge.conflict), at.line ? `riga ${at.line}` : '', at.path === path ? at.target : '']
+    about: [at.kind && (LINK_LABEL[at.kind] ?? at.kind), at.key, proofLabel(edge.status, edge.conflict), at.line ? `riga ${at.line}` : '', at.path === path ? at.target : '']
       .filter(Boolean).join(' · '),
   })));
 }

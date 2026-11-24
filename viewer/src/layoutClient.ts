@@ -1,4 +1,5 @@
 // Layout requests to a worker: only the latest answer counts, and a worker that overruns its time is ended.
+import { FAILURE } from './words.ts';
 
 // `parent` is the node that holds it: one that holds others is as large as they need. In the answer the place of a node is from the
 // corner of what holds it, and the points of a line from the corner of the drawing.
@@ -38,7 +39,7 @@ export function createLayoutClient(make: () => WorkerLike, timeoutMs = 5000) {
       const { resolve, reject, timer } = pending;
       pending = null;
       clearTimeout(timer);
-      if (data.error !== undefined || !data.layout) reject(new LayoutError('failed', data.error ?? 'empty layout'));
+      if (data.error !== undefined || !data.layout) reject(new LayoutError('failed', data.error ?? FAILURE.layoutEmpty));
       else resolve(data.layout);
     };
     worker = created;
@@ -62,7 +63,7 @@ export function createLayoutClient(make: () => WorkerLike, timeoutMs = 5000) {
           pending = null;
           worker?.terminate();
           worker = null;
-          reject(new LayoutError('timeout', `layout took more than ${timeoutMs} ms`));
+          reject(new LayoutError('timeout', FAILURE.layoutSlow(timeoutMs)));
         }, timeoutMs);
         pending = { id, resolve, reject, timer };
         ensure().postMessage({ id, graph, direction });
