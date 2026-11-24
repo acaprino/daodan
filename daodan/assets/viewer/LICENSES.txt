@@ -1,4 +1,4 @@
-@acaprino/sigrid 5.0.1 (MIT)
+@acaprino/sigrid 5.0.3 (MIT)
 
 MIT License
 
