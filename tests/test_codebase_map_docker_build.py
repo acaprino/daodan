@@ -585,8 +585,9 @@ def test_a_step_that_fails_in_the_preparation_names_its_line_and_the_host_it_cou
         "lookup proxy.golang.org: no such host")
     [failed] = [g for g in result["gaps"] if g["kind"] == "restore_failed"]
     assert failed["path"] == "dispatch/Dockerfile:7"
-    [unreached] = [g for g in result["gaps"] if g["kind"] == "host_unreachable"]
-    assert unreached["host"] == "proxy.golang.org" and unreached["declared_in"] == ["dispatch/Dockerfile"]
+    unreached = [g for g in result["gaps"] if g["kind"] == "host_unreachable"]  # github.com: the module's path names it
+    assert {g["host"] for g in unreached} == {"github.com", "proxy.golang.org"}
+    assert all(g["declared_in"] == ["dispatch/Dockerfile"] for g in unreached)
 
 
 def test_a_preparation_that_stops_after_the_stage_s_steps_says_its_last_line(sandbox, monkeypatch):

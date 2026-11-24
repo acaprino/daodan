@@ -102,12 +102,12 @@ HEADER_CAP = 2**13  # a pax or GNU long-name header: a 4096-byte path and the ti
 # A member name no system may receive as written: a Windows device, a character Windows refuses or a control.
 UNSAFE_PART = re.compile(r'(?is)(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?|.*[\x00-\x1f\\:*?"<>|].*|.*[. ]')
 # The registries a preparation may reach, by host; everything else is refused by the proxy.
-REGISTRIES = (
-    "registry.npmjs.org", "registry.yarnpkg.com", "pypi.org", "files.pythonhosted.org",
-    "repo1.maven.org", "repo.maven.apache.org", "plugins.gradle.org", "proxy.golang.org",
-    "sum.golang.org", "index.crates.io", "static.crates.io", "api.nuget.org", "rubygems.org",
-    "plugins-artifacts.gradle.org",
-)
+# They are the hosts of `package-managers.json`: the managers Wikipedia's list names (the revision in `source`) that
+# a Linux container restores from, with Go's, each with the hosts its own documentation gives. GitHub is among them
+# (vcpkg's registry, and where Composer, CocoaPods and Homebrew take their archives), by the owner's choice.
+REGISTRIES = tuple(dict.fromkeys(host for hosts in json.loads(
+    (Path(__file__).resolve().parents[1] / "data/package-managers.json").read_text(encoding="utf-8"))["managers"].values()
+    for host in hosts))
 # Set on every container, empty when closed: the CLI adds its configured proxies only to unset names.
 PROXY_VARIABLES = ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "FTP_PROXY", "ALL_PROXY",
                    "http_proxy", "https_proxy", "no_proxy", "ftp_proxy", "all_proxy")
