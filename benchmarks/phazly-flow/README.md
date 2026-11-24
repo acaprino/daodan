@@ -22,7 +22,7 @@ Il codice di phazly-app non è copiato qui; le run e i loro artefatti restano fu
 | Quanti flussi del riferimento chiude il grafo? | 18 su 38 con i collegamenti certi, 19 con i possibili; 129 frecce certe su 240 | no |
 | Quanti flussi può provare una scheda del percorso? | al più 7 su 38 | no |
 
-**Passo successivo della pipeline.** I collegamenti di queste misure vengono dalla pipeline fino ad `analyze` (statico). Il passo dinamico (`observe`) non è misurato su phazly; sulle chiamate lo misura [`call-provenance`](../call-provenance/README.md). Un modello che conferma i collegamenti possibili o legge le schede dei percorsi su questi 38 flussi non è misurato: il protocollo è in [`system-map`](../system-map/README.md#grafo-contro-modello-il-confronto-ancora-da-fare).
+**Passo successivo della pipeline.** I collegamenti di queste misure vengono dalla pipeline fino ad `analyze` (statico). Il passo dinamico (`observe`) non è misurato su phazly; sulle chiamate lo misura [`call-provenance`](../call-provenance/README.md). Un modello che conferma i collegamenti possibili o legge le schede dei percorsi su questi 38 flussi non è misurato: il protocollo è in [`system-map`](../system-map/README.md#quanta-base-serve-a-un-modello-il-confronto-ancora-da-fare).
 
 ## Parametri del caso
 

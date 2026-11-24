@@ -134,25 +134,46 @@ Il mappatore elenca le schede dei percorsi e passa alla proposta libera senza ap
 
 **Perché il risultato è così basso:** la sessione del mappatore con Haiku dura da 5 a 12 turni e spende da 0,008 a 0,05 dollari, con il tetto di 1 dollaro intatto, e usa solo lo strumento `flows`: si ferma da sola con «con il budget rimasto non l'ho fatto» davanti a centinaia di schede dei percorsi da rivedere (798 in un caso); in quel caso il riepilogo dice anche 0 rotte collegate su 33 chiamate, quindi le frecce dal sito alle API e dalle API ai dati non si provano. Due cause diverse: l'agente si ferma presto (prompt o modello) e il legame delle rotte non c'è nel grafo. **Il legame delle rotte, riprovato il 24 novembre** (`modal_map.py::routes_case`, lo stesso caso e le stesse regole salvate, senza modello, al codice con `97b5851bc`): rotte offerte da 1 a 121, chiamate 33, collegate da 0 a 23; 120 righe di Noir legate a una funzione. La causa (due investigatori indipendenti, Opus e Fable, in sola lettura, concordi) era il nome che Noir dà ai metodi Spring, `Classe.metodo`, confrontato con il solo `metodo`: corretto da `97b5851bc`, e la prova che mancava è `test_a_spring_method_noir_names_with_its_class_is_an_offered_route_that_a_call_of_another_module_meets` (fallisce sul codice precedente con offerte 0 e collegate 0, passa sull'attuale). Restano 10 chiamate senza rotta: 5 di un controller il cui file non dà dichiarazioni a Noir (5 righe «no function starts at the line»), 1 con un buco incollato a un testo fisso (`/properties{}`) e 4 senza il prefisso della base (`/parts/{}`, `/complete`, `/retry`, `/logout`). Il secondo controllo, con i testi completi delle lacune, ha corretto una mia ipotesi: Noir cita la riga del `fun` e non quella dell'annotazione, e il file del controller ha 0 dichiarazioni nello snapshot; delle altre 50 righe di Noir senza gestore, quasi tutte non hanno una funzione da legare per natura (un server di prova, file OpenAPI, endpoint di Actuator dichiarati in `build.gradle.kts`, script). **Rotte dichiarate solo da una specifica (24 novembre):** le righe di Noir con l'etichetta `spec-only` (qui 5, tra cui `POST /logout`, una delle chiamate senza rotta) non sono più lacune: `flows._spec_routes` le offre al nodo del file della specifica quando nessun codice offre lo stesso metodo e percorso, e l'arco che le incontra porta `spec`; tre test in `tests/test_codebase_map_flows_noir_binding.py`, il principale rosso prima del codice, 192 test verdi nelle suite collegate. **Un difetto trovato dalla suite intera:** gli archivi apt `http://` dei registri passano per indirizzo alla lista di rete della sandbox di preparazione, e Modal rifiuta gli indirizzi IPv6 (`Network access allowlist does not support IPv6 CIDRs`): ora solo IPv4, con un test; un host solo IPv6 è una lacuna `network_archive_unresolved`. **Il file Kotlin con 0 dichiarazioni**, riprodotto su uno snapshot di quel solo file: il parser Kotlin segnala `has_error` sul corpo della classe senza nodo `ERROR` né token mancante (un `companion object { const val A=..; private val b=.. }` su una riga), `check_syntax_errors` scriveva «line 1» e `semantic_store` leggeva il file `lexical` (`source-not-successfully-parsed`), senza dichiarazioni. Ora il nodo che ha l'errore quando nessun figlio ce l'ha è il luogo dell'errore (`semantic._around`, `_treesitter.check_syntax_errors`): il file è `partial`, con le righe non lette, e le dichiarazioni restano; test `tests/test_codebase_map_syntax_error_without_place.py`, rosso prima del codice. **Errore mio, trovato dal caso vero:** nell'uscita di Noir le etichette sono oggetti con `name`, non stringhe; i test con stringhe passavano e la funzione non scattava (ora entrambe le forme, con il test nella forma vera). **Esito sul caso vero**, senza modello e con le regole salvate, rotte offerte e chiamate collegate su 33: 1 e 0 (23 novembre), 121 e 23 (con `97b5851bc`), 126 e 28 (con il parser Kotlin corretto), **131 e 29** (con le rotte della specifica). Restano 4 chiamate senza rotta: `/properties{}` (un buco incollato a un testo fisso) e `/parts/{}`, `/complete`, `/retry` (il prefisso della base perso sul lato che chiama, cioè i wrapper HTTP, non ancora esaminati). Nei 270 testi di strumenti consegnati ai modelli nelle 10 run, 206 letti come JSON, i segreti mascherati sono 0 (nell'archivio sono 16).
 
-### Grafo contro modello: il confronto ancora da fare
+### Quanta base serve a un modello: il confronto ancora da fare
 
-**Stato:** Aperta: da approfondire. La domanda: partendo dal grafo che la macchina costruisce a strati, un modello che nomina processi e varianti dà una mappa migliore, e a quale costo, di un modello che propone da solo? Finora è misurata solo la variante A.
+**Stato:** Aperta: da approfondire. Nulla è eseguito. La domanda del proprietario (24 novembre 2026): la mappa dei flussi la può fare un modello piccolo locale, se il codice gli dà solo la base? E quanta base: a quale strato la macchina può fermarsi?
 
-| Variante | Compito | Stato |
+Stesso compito, stesso modello, stessi casi; cambia solo ciò che la macchina dà al modello. Ogni strato aggiunge l'uscita di uno step che esiste già.
+
+| Strato | Che cosa riceve il modello | Step che lo produce |
 | --- | --- | --- |
-| A, attuale | il mappatore attuale sull'intero sistema | misurata: le due sezioni qui sopra |
-| B, grafo | parte da ingressi ed effetti dell'intero inventario; il modello identifica processi e varianti, la macchina verifica i percorsi | non eseguita |
-| C, grafo e schede | come B, con l'accesso mirato alle schede di simbolo aggiornate | non eseguita |
+| S0, solo il codice | elenco dei file, lettura di un file, ricerca nel testo; nessuna uscita di Daodan | nessuno |
+| S1, inventario | S0 più moduli, linguaggi, tecnologie, simboli e import | `scan`, `stack`, `parse` |
+| S2, chiamate | S1 più chi chiama chi, con il grado di ogni arco | `analyze` |
+| S3, osservato | S2 più gli archi che i test eseguono | `dynamic` |
+| S4, ingressi e collegamenti | S3 più ingressi, rotte, chiamate HTTP e store legati fra moduli | ingressi e `flows` |
+| S5, schede dei percorsi | S4 più i percorsi che la macchina compone e certifica: il mappatore di oggi | percorsi e schede |
 
-Protocollo, per la spec del 18 novembre:
+Parametri:
 
-- **Scoperta cieca.** Stessa richiesta («analizza questo sistema») e stesso snapshot completo per ogni variante. Prompt, regole e schede senza etichette del valutatore; riferimenti, aree attese, nomi e numero di processi fuori dall'ambiente dell'agente. Il valutatore confronta la mappa salvata prima di ogni richiesta di review.
-- **Casi.** Su phazly i tre flussi dell'area pagamenti; gli altri flussi scoperti si giudicano a parte prima di contarli come errati. Per il richiamo sull'intero sistema serve una fixture nel repository con inventario manuale esaustivo: più funzionalità, una con ramo utente e cron, un modulo condiviso con un altro processo, un effetto il cui ingresso resta irrisolto. **Da produrre.**
-- **Misure.** Due ripetizioni indipendenti per variante e caso, a parità di grafo, modello, tetto di contesto e budget. Flussi e varianti mancanti, estranei, accorpati o duplicati, verificati per ingressi, effetti e membri anche quando il nome differisce. Estremi spiegati, esclusi con motivo, irrisolti e non esaminati. Token, aperture e costo dell'intero run, distinguendo riuso e prima generazione delle schede.
-- **Criteri sulla fixture completa.** Tutti i processi e le varianti attesi, il modulo condiviso una sola volta, ogni estremo reso conto, nessun arco causale senza evidenza. Aprire il processo mostra i due rami e richiuderlo ripristina la selezione, con zero chiamate al modello. Poi una review della funzionalità e una del solo ramo automatico.
-- **Attribuzione.** Se il grafo non espone un ingresso o un effetto, l'omissione è della raccolta delle evidenze; se il riferimento è visibile al modello e viene interpretato male, è della scoperta semantica. A qualità uguale vince il minor consumo totale.
+- **Modello.** Un modello piccolo locale dietro un endpoint compatibile OpenAI (`daodan/core/engines.py`, motore `openai`), scelto dal proprietario; Haiku 5.5 come ponte con le misure già fatte. Stesso prompt, stesso tetto di turni e di contesto a ogni strato.
+- **Casi.** Prima il caso più piccolo dell'intero sistema (178 file, 19 flussi, 22 ingressi, 24 effetti nel riferimento); poi gli altri quattro solo se il primo distingue gli strati.
+- **Uscita.** La stessa a ogni strato: una mappa `daodan/system-map/v1`, contata da `score.py system` contro il riferimento, che resta fuori dall'ambiente del modello.
+- **Ripetizioni.** Due indipendenti per strato e modello.
 
-Ciò che c'è già senza modello, da mettere a confronto: [flussi chiusi dal grafo](../phazly-flow/README.md#flussi-del-riferimento-chiusi-dal-grafo-senza-modello) e [tetto della scheda del percorso](../phazly-flow/README.md#il-tetto-della-scheda-del-percorso-senza-modello).
+Che cosa si conta, per strato:
+
+- flussi, ingressi ed effetti ritrovati; nodi ritrovati e precisione dei nodi;
+- frecce senza una riga del progetto che le prova (un modello dà una risposta, il grafo dà la prova);
+- costo del modello (token, turni, secondi) e costo della base (secondi della macchina per produrre lo strato, container compreso);
+- accordo fra le due ripetizioni.
+
+Regola di decisione, scritta prima di misurare e che il proprietario può cambiare: il codice si ferma allo strato più basso che, in tutte e due le ripetizioni, ritrova almeno l'80% dei flussi dello strato migliore. Gli strati sopra restano solo se danno ciò che il modello non può dare: la prova di una freccia.
+
+Limiti noti prima di partire:
+
+- **Il risultato di oggi a S5 è 0 flussi** (sezione sopra), per due cause che non sono dello strato: l'agente si ferma presto, e le rotte non erano legate (corretto il 24 novembre). Se anche lo strato migliore dà 0, la misura dice che va cambiato il prompt o il giro dell'agente, non quale strato serve.
+- **I riferimenti dell'intero sistema sono bozze:** il proprietario ha confermato le regole, non i nodi né i flussi.
+- **Attribuzione.** Se lo strato non espone un ingresso o un effetto, l'omissione è della base; se è visibile al modello e viene letto male, è del modello.
+
+Da costruire: la lista degli strumenti che il modello vede a ogni strato (oggi il mappatore li ha tutti); gli strumenti di S0, che non passano da Daodan; l'endpoint del modello locale su Modal.
+
+Ciò che c'è già senza modello, come termine di confronto: [flussi chiusi dal grafo](../phazly-flow/README.md#flussi-del-riferimento-chiusi-dal-grafo-senza-modello) e [tetto della scheda del percorso](../phazly-flow/README.md#il-tetto-della-scheda-del-percorso-senza-modello).
 
 ### Che cosa dà il grafo senza modello, sull'area dei pagamenti di phazly
 
@@ -292,7 +313,7 @@ Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la 
 
 ## Aperto
 
-- **Grafo contro modello:** varianti B e C e fixture completa, sopra.
+- **Quanta base serve a un modello:** gli strati S0–S5 con un modello locale, sopra.
 - **Soglie:** quelle dell'intero sistema sono proposte; il proprietario non ha confermato nodi e flussi dei riferimenti.
 - **Passo dinamico sui flussi:** quante frecce mancanti chiude, non misurato su nessun caso con riferimento.
 - **Registro:** i tre casi dopo lo stack dal fork.

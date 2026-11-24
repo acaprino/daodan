@@ -58,12 +58,16 @@ Difetti trovati e corretti, con la loro prova: [registro](verification/2026-11-1
 
 Domande senza decisione o senza misura. Ognuna vive nel documento indicato, segnato `Aperta: da approfondire`; qui c'è solo l'indice.
 
+**Quanta base serve a un modello per la mappa dei flussi.** La domanda del proprietario del 24 novembre: forse il codice deve dare solo la base, e la mappa la fa un modello piccolo locale. Lo stesso modello su sei strati di base, dal solo codice (S0) alle schede dei percorsi (S5), con la regola di decisione scritta prima di misurare. Mai eseguito.
+
+- Dove vive: [`benchmarks/system-map`](../benchmarks/system-map/README.md), «Quanta base serve a un modello».
+- Che cosa è misurato oggi: il mappatore con Haiku sullo strato più alto dà 0 flussi su cinque casi, per cause che non sono dello strato; senza modello il grafo chiude 18 flussi su 38 su phazly ([`benchmarks/phazly-flow`](../benchmarks/phazly-flow/README.md)).
+
 **La review a pacchetti progressivi.** Una review in cui il modello riceve pacchetti sempre più dettagliati costruiti dal grafo (sistema, flusso, unità, codice), contro il modello che legge il codice da solo. Mai eseguita.
 
 - Dove vive: [spec del pacchetto di review](specs/2026-11-20-ricerca-e-pacchetto-di-review.md).
 - Che cosa è misurato: unità e flussi dati tutti insieme non portano nel rapporto i difetti attesi, su un caso ([`flows-in-review`](specs/2026-11-09-flows-in-review.md), [`benchmarks/phazly-flow`](../benchmarks/phazly-flow/README.md)); sul solo perimetro il modello batte il resolver ([`benchmarks/scope-resolution`](../benchmarks/scope-resolution/README.md)).
 - Che cosa dice la letteratura raccolta: nessun lavoro confronta statico, poi dinamico, poi modello sullo stesso grafo; il confronto è proposto come esperimento ([rassegna](research/2026-11-11-flow-reconstruction-detailed.md), sezioni 10 e 14.3).
-- Domanda vicina, distinta: sulla mappa del sistema, un modello che nomina sopra il grafo contro uno che propone da solo ([`benchmarks/system-map`](../benchmarks/system-map/README.md), varianti B e C non eseguite).
 
 **Buchi misurati su un passo solo.**
 
