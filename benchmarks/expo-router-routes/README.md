@@ -17,7 +17,7 @@ Expo Router dà, con uno strumento ufficiale eseguito nel container, ogni rotta 
 
 ## Risultato valido oggi
 
-Nessuna misura. Su tre applicazioni vere Noir dà 36 endpoint dei moduli `+api` e 32 dei 34 con nome si legano ([noir-binding](../noir-binding/README.md)); le schermate (`app/…`) non sono nel report di Noir. Se il passo dinamico le osserva (l'esplorazione nel browser di `daodan/core/dynamic/app.py` riguarda le app web): non misurato.
+Nessuna misura dello strumento. Quanti endpoint dei moduli `+api` Noir dà e quanti si legano, su tre applicazioni vere, è misurato in [noir-binding](../noir-binding/README.md); le schermate (`app/…`) non sono nel report di Noir. Se il passo dinamico le osserva (l'esplorazione nel browser di `daodan/core/dynamic/app.py` riguarda le app web): non misurato.
 
 ## Aperto, da misurare su Modal
 

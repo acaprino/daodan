@@ -15,7 +15,7 @@ NestJS dà, con uno strumento ufficiale eseguito nel container, ogni rotta con m
 
 ## Risultato valido oggi
 
-Nessuna misura dello strumento. Su tre applicazioni vere Noir dà 156 endpoint `http`, 137 con nome e riga del metodo, e 131 su 137 si legano ([noir-binding](../noir-binding/README.md)): `createDocument` aggiungerebbe solo le rotte che Noir non vede, che non sono contate. Se il passo dinamico le osserva: non misurato.
+Nessuna misura dello strumento. Quanti endpoint Noir dà e quanti si legano a una funzione, su tre applicazioni vere, è misurato in [noir-binding](../noir-binding/README.md): quasi tutti quelli con nome. `createDocument` aggiungerebbe solo le rotte che Noir non vede, che non sono contate. Se il passo dinamico le osserva: non misurato.
 
 ## Aperto, da misurare su Modal, in ordine
 

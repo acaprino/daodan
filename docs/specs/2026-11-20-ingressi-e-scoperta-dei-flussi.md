@@ -130,8 +130,6 @@ Con il numero che hanno nella spec della mappa. «README» è quello di [`benchm
 
 - La prima prova delle schede (51 nomi; 15 dei 23 flussi riconosciuti a una lettura a mano) è stata presa a sostegno della macchina che mostra; il contratto in quattro punti ha mostrato che su quel caso nessun flusso si certifica: quei nomi erano ipotesi.
 - La prima lettura dall'albero perdeva legami (959 contro 1.223) ed è stata riparata (1.720); il README dà 959 come «lettura generica dall'albero», e il confronto del lettore del framework poggia su quel numero.
-- Il 19 novembre il README conclude che il modello più grande «non cambia l'ordine di grandezza» (Sonnet contro Haiku); il 20, con la sequenza, Opus arriva in fondo e Haiku no.
-- Il README contava 111 comandi trovati da Noir: sono 119 (13, 75, 25, 3 e 3 nei cinque casi), corretto dopo la revisione esterna.
 
 ## Decisioni aperte
 

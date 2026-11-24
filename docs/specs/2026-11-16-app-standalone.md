@@ -1,12 +1,12 @@
 # Daodan standalone: confini applicativi
 
-**Stato:** proposta tecnica sulla destinazione concordata. Questo documento definisce i confini; server applicativo, coordinatore e adattatori dei motori restano da implementare.
+**Stato:** In parte. Nel codice: il launcher e il server locale (`daodan app`, `daodan/core/app.py`), l'ingresso da una repository GitHub pubblica con il checkout a un commit (`repository.py`), la selezione di repository e branch fuori dalla richiesta, gli eventi e lo stato in `/api/stream`, i tre motori (`engines.py`: `OpenAICompatible`, `ClaudeCode`, `Codex`) con la scelta salvata e la chiave nel deposito del sistema, le domande al motore (`ask`), i collegamenti e la mappa del sistema a fine analisi (`link`, `map`). Mancano: il login GitHub e le repository private, il coordinatore di una review nell'app, pausa e ripresa di un lavoro, l'MCP che inoltra all'app avviata, l'app desktop Tauri, la cartella applicativa unica e il collegamento degli harness con Muro. Prova dei confini: [`benchmarks/standalone-app`](../../benchmarks/standalone-app/README.md).
 
 ## Problema
 
 Daodan possiede già analisi, dati persistenti e report, ma la sessione host esegue il ragionamento e coordina i worker. La web app deve poter avviare e seguire lo stesso lavoro con Claude Code locale, Codex locale o un endpoint compatibile OpenAI, mantenendo una sola logica applicativa.
 
-Oggi `MapService` è indipendente dal runtime MCP. `make_server`, `live_routes` e `live_actions` espongono già run, eventi, richieste e finding. L'avvio HTTP vive nel tool MCP; le richieste passano da `pending` a `taken` e `done`, ma nessun consumer autonomo avvia gli agenti.
+`MapService` è indipendente dal runtime MCP; `make_server`, `live_routes` e `live_actions` espongono run, eventi, richieste e finding, e `daodan app` li compone in un server suo. Le richieste di review passano da `pending` a `taken` e `done`, ma nell'app nessun coordinatore le prende ancora in carico.
 
 ## Soluzione
 
@@ -48,7 +48,7 @@ Finché il motore non produce un perimetro per un nuovo obiettivo, la UI lo indi
 
 ## Decisioni architetturali
 
-- **Riuso prima dell'estrazione.** I moduli canonici vivono nell'applicazione (`daodan/core/`, comando `daodan`); i plugin sono skill che la chiamano e non contengono codice (dal 18 novembre; script, catalogo e ruoli di senior-review in `daodan/core/` e `daodan/review/`). Separare bootstrap HTTP e MCP senza copiare `MapService` o la pipeline. Il nome attuale del modulo non impone una dipendenza dal trasporto.
+- **Riuso prima dell'estrazione.** I moduli canonici vivono nell'applicazione (`daodan/core/`, comando `daodan`); i plugin sono skill che la chiamano e non contengono codice (script, catalogo e ruoli di senior-review in `daodan/core/` e `daodan/review/`). Separare bootstrap HTTP e MCP senza copiare `MapService` o la pipeline. Il nome attuale del modulo non impone una dipendenza dal trasporto.
 - **GitHub prepara l'ingresso, non analizza.** Un adattatore concreto gestisce repository e branch e consegna al nucleo un checkout locale legato a repository e commit immutabile. Ogni `MapService` resta vincolato al proprio checkout. Memorizzare l'identità GitHub e il branch insieme al commit effettivo della run; risultati e cache appartengono a quel contesto. Cambiare repository/branch invalida la vista corrente, preservando lo storico; durante un lavoro attivo la selezione resta bloccata finché si termina o si interrompe.
 - **Accesso privato.** Per l'app locale usare una GitHub App con device flow abilitato e permessi repository in lettura per metadata e contenuti; il backend conserva i token nel portachiavi del sistema e gestisce scadenza/revoca. Mostrare soltanto repository autorizzate sia all'utente sia all'app; il login da solo non concede accesso a tutte le repository private. Le pubbliche possono essere indicate senza login. Il token non entra nell'URL persistito del clone, negli argomenti registrati o nei log. La registrazione della GitHub App e il suo client ID sono prerequisiti dell'integrazione reale. [Autenticazione](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app), [permessi](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app).
 - **Lavoro fuori dalle richieste HTTP.** La UI deposita una richiesta e legge eventi/esiti; un coordinatore la prende in carico. Anche preparazione e snapshot, oggi sincroni nella rotta di creazione, passano nel lavoro in background. Iniziare con un lavoro alla volta per progetto, preservando il parallelismo interno necessario ai reviewer.
@@ -63,9 +63,9 @@ Finché il motore non produce un perimetro per un nuovo obiettivo, la UI lo indi
 
 ## Servizio sul PC, codice del progetto in Kiri
 
-**Decisione** del proprietario, 19 novembre 2026. Il servizio resta un processo sul PC, come oggi `daodan app`: server Python, store SQLite, checkout e motori (`engines`). In Kiri gira solo il codice del progetto analizzato, in container che Daodan avvia da solo (`find_engine`). Gli harness si usano in due modi: il servizio avvia Claude Code o Codex con il login dell'utente, oppure l'utente chiede analisi e review dalla sua sessione attraverso l'MCP. Scartato il servizio dentro Kiri: chiedeva MCP via HTTP, segreti fuori dal portachiavi, inoltro della porta e un ponte verso ogni strumento del PC, senza rendere l'utente più sicuro.
+**Decisione** del proprietario. Il servizio resta un processo sul PC, come oggi `daodan app`: server Python, store SQLite, checkout e motori (`engines`). In Kiri gira solo il codice del progetto analizzato, in container che Daodan avvia da solo (`find_engine`). Gli harness si usano in due modi: il servizio avvia Claude Code o Codex con il login dell'utente, oppure l'utente chiede analisi e review dalla sua sessione attraverso l'MCP. Scartato il servizio dentro Kiri: chiedeva MCP via HTTP, segreti fuori dal portachiavi, inoltro della porta e un ponte verso ogni strumento del PC, senza rendere l'utente più sicuro.
 
-Proposte:
+Proposte, non nel codice salvo dove è detto:
 
 - **Una cartella applicativa.** Tutto in una cartella portabile, come Shinatama e Muro: l'app Tauri, un Python privato con il nucleo, `muroctl` e `mukade`. Anche Kiri e la base Alpine della distribuzione possono starci: oggi sono 51 MB scaricati al primo uso (47,4 il pacchetto di Kiri 0.2.0 per x64, 3,7 Alpine). Resterebbero da scaricare solo le immagini dei container.
 - **Piattaforme.** Ora: app desktop su Windows, pagina web su Linux con `daodan app` e il Docker o Podman dell'utente. Poi: guscio desktop su Linux. Un'app Android non può ospitare server e container: sarebbe un client di un server remoto, che è fuori dal primo rilascio.
@@ -78,7 +78,7 @@ Lacune:
 
 - **Kiri nella cartella.** La licenza di Kiri deve permettere di ridistribuirlo [da verificare]. `pasta` oggi si installa nella distribuzione dalla rete: per un primo avvio senza altri download va messo in una base già pronta. Il peso su disco dopo l'estrazione è [da misurare].
 - **Muro.** `plan` copre tutta la lista di Muro: con quella dell'utente il clic applicherebbe anche modifiche estranee a Daodan; una lista propria con `--data` lo evita [da verificare].
-- **Persistenza.** Fatto per il motore (`engines.kept`, `engines.recalled`): la scelta sta in `settings.sqlite` nella cartella di lavoro, la chiave nel deposito. Una sola voce nel deposito: cambiando endpoint senza ridare la chiave, la stessa chiave lo segue. Con il deposito bloccato una chiave nuova resta in memoria e al riavvio torna quella già depositata. Su Linux senza desktop un portachiavi chiuso può fermare l'avvio in attesa dello sblocco [da verificare]. Il token GitHub non ha ancora codice. Per un server Linux senza deposito, il file cifrato con password di `keyrings.cryptfile`, pacchetto di terzi, è [da valutare]. `keyrings.alt` non si installa: porta un deposito non cifrato che `keyring` può scegliere da solo.
+- **Persistenza.** Nel codice per il motore (`engines.kept`, `engines.recalled`): la scelta sta in `settings.sqlite` nella cartella di lavoro, la chiave nel deposito. Una sola voce nel deposito: cambiando endpoint senza ridare la chiave, la stessa chiave lo segue. Con il deposito bloccato una chiave nuova resta in memoria e al riavvio torna quella già depositata. Su Linux senza desktop un portachiavi chiuso può fermare l'avvio in attesa dello sblocco [da verificare]. Il token GitHub non ha ancora codice. Per un server Linux senza deposito, il file cifrato con password di `keyrings.cryptfile`, pacchetto di terzi, è [da valutare]. `keyrings.alt` non si installa: porta un deposito non cifrato che `keyring` può scegliere da solo.
 
 ## Verifica
 
@@ -94,4 +94,9 @@ In questo passo: backend completo, modifica della pipeline, distribuzione instal
 
 ## Note
 
-La spec della pipeline rimane autorevole per step, analyzer e listener; questa proposta aggiunge gestione applicativa senza ridisegnarli. Il benchmark pubblica nel proprio README parametri e risultati misurati. I successivi tagli verticali vanno concordati dopo questa definizione dei confini.
+La [spec della pipeline](2026-11-15-pipeline-di-analisi.md) rimane autorevole per step, adattatori e listener; questa aggiunge la gestione applicativa senza ridisegnarli. I prossimi tagli verticali vanno concordati.
+
+## Aperto
+
+- **Aperta: da approfondire:** i punti [da verificare], [da misurare] e [da valutare] di «Lacune».
+- **Aperta: da approfondire:** un intero lavoro con un motore controllato (eventi, completamento, errore, timeout, annullamento, riavvio) non è provato: il benchmark non dimostra esecuzione LLM, cancellazione di processi né compatibilità di un provider API.

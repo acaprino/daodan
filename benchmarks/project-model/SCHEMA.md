@@ -1,5 +1,7 @@
 # Forma della pre-mappa e regole del punteggio
 
+**Stato:** In uso: è il contratto di `score.py`, degli adattatori `tools/<tool>.py` e di ogni `expected.json`.
+
 Una sola forma per tre cose: `fixtures/<famiglia>-<nome>/expected.json` (la verità scritta a mano), l'uscita di ogni adattatore `tools/<tool>.py` (`run(fixture_dir, work_dir) -> dict`) e il campo `output` di `results/<tool>.json`. Il punteggio lo calcola `score.py`, solo libreria standard.
 
 ## Forma
