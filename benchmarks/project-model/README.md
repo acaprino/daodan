@@ -553,3 +553,37 @@ Task 11b del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-fluss
 - Un tipo del progetto con un `emit` suo in un file che importa il tratto di Tauri sarebbe letto (`shortcut:` in `semantic.py`: la proprietà del ricevitore è del motore).
 - `use tauri::prelude::*` e ogni `use` con un carattere jolly: non provano il tratto.
 - I nomi degli eventi di Tauri (`TauriEvent.*`): un nome non letterale, quindi una lacuna.
+
+## Tre corse sullo stesso progetto, 24 novembre 2026 (task 2b del piano dell'analisi unificata)
+
+Domanda: quanto costa una corsa della pipeline da zero, quanto senza modifiche e quanto dopo la modifica di un solo modulo, e quanti dei collegamenti attesi ritrova ognuna. Serve prima di decidere le regole della sezione 7.3 della spec.
+
+### Parametri
+
+- Fixture `fixtures/mix-poly-firebase`, sintetica: una pagina React con due pulsanti, un guscio Tauri con un comando nativo, funzioni Python di un backend, un modulo Android in Kotlin.
+- `modal_runs.py`: una funzione Modal esegue `pipeline.run` tre volte di seguito sullo stesso progetto e sulla stessa cartella dello snapshot. Da zero; senza modifiche; dopo una riga aggiunta a `react-app/src/checkout.ts`, con lo snapshot riscritto sul vecchio (`snapshot.write_snapshot(..., previous=...)`, dopo `reset_pass`, come il rinnovo di una run di lavoro).
+- Tempi, ripristini, avvii di indicizzatori e dell'app dagli eventi della pipeline e dai registri dei container (`score.py runs` in `benchmarks/system-map`). Collegamenti attesi (`EXPECTED`, scritti da una persona): il pulsante «Buy» al suo gestore, il pulsante «Receipt» al suo gestore, il gestore della ricevuta al comando nativo `save_receipt`, il gestore del pagamento alla funzione Python `create_checkout_session`.
+- Su Modal i container sono Sandbox che non condividono volumi: ogni passo ripristina le dipendenze per sé, come prima del ripristino condiviso del task 1b. Questa è la base; il guadagno del ripristino condiviso non si misura qui, ma con un motore vero. CPU, picco di memoria e spazio temporaneo sono delle sandbox e nessun evento li porta: non misurati.
+
+### Risultati
+
+`results/runs/three-runs-2/`, una corsa di ogni tipo (nessuna ripetizione: la varianza fra corse non è misurata).
+
+| Corsa | Secondi | Ripristini e preparazioni | Indicizzatori avviati | Avvii dell'app | Collegamenti attesi |
+| --- | --- | --- | --- | --- | --- |
+| Da zero | 525,6 | 10 (2 `node-restore`, 8 `prepare`) | 5 | 1 | 3 su 4 |
+| Senza modifiche | 82,9 | 1 | 1 | 1 (riusata) | 3 su 4 |
+| Un modulo cambiato | 501,1 | 10 | 5 | 1 | 3 su 4 |
+
+Secondi per passo, da zero e dopo la modifica: scan 210,5 e 224,0; analyze 222,9 e 192,1; dynamic 92,0 e 84,9.
+
+- Un solo modulo cambiato costa il 95% di una corsa da zero: la pre-mappa si rifà intera, e ripartono tutti e cinque gli indicizzatori (fogli di stile, scip-python, scip-typescript, scip-kotlin, scip-rust), non solo quello del linguaggio del file. Lo spiega `engine_pass.pass_plan`: un archivio degli archi legato a un altro snapshot non dà nessun linguaggio fresco.
+- Senza modifiche ripartono solo gli indicizzatori che non hanno riuscito: Kotlin fallisce (la build Android di un progetto sintetico) e viene ritentato a ogni corsa, 72 dei 83 secondi. Gli altri quattro dicono «già freschi»; l'esplorazione dell'app è riusata.
+- Il collegamento «il gestore del pagamento chiama la funzione Python» manca in tutte e tre le corse (i tre altri si trovano sempre): il gestore chiama il backend con `httpsCallable` di Firebase e nessun legame lo unisce alla funzione.
+- Nessuna corsa che costa meno ritrova meno collegamenti: la corsa senza modifiche costa un sesto e ne ritrova tanti quanti la prima.
+
+### Non misurato
+
+- Il guadagno del ripristino condiviso (task 1b): serve un motore Docker vero in una VM Sandbox, non le sandbox di `sandbox_run`.
+- CPU, picco di memoria, spazio temporaneo; la varianza fra due corse dello stesso tipo; un progetto con un frontend più grande di due pulsanti.
+- Il rinnovo come lo fa la run di lavoro dell'app (`snapshot.py`, il percorso con `compare_files`): qui l'ho riprodotto con le stesse chiamate, non con la funzione stessa.
