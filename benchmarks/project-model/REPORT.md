@@ -1,6 +1,8 @@
 # Pre-mappa del progetto: cosa danno gli strumenti esistenti
 
-**Data:** 14 novembre 2026. **Corpus:** 122 fixture (js 20, py 21, jvm 16, sys 25, mix 30, real 10), tutte valide con `python score.py --check all`. **Numeri:** ogni numero viene da `results/*.json` ripunteggiato con `score.py` di questa cartella. "Trovate" vuol dire voce abbinata con ogni campo dato giusto; fra parentesi le voci abbinate, comprese quelle con un campo sbagliato; "+n" le voci in più. **In corso:** le celle segnate così arrivano in un secondo passaggio.
+**Stato:** In uso. La combinazione scelta qui è nel codice come sorgenti della pre-mappa; che cosa è stato adottato e che cosa no è in «Che cosa ne è oggi nel codice». I numeri sono l'unica misura degli strumenti esterni, faccetta per faccetta; le misure di Daodan (unità, stack, grafo) hanno giri successivi in [README.md](README.md).
+
+**Misura:** 14 novembre 2026. **Corpus di allora:** 122 fixture (js 20, py 21, jvm 16, sys 25, mix 30, real 10), tutte valide con `python score.py --check all`. **Numeri:** ogni numero viene da `results/*.json` ripunteggiato con `score.py` di questa cartella. "Trovate" vuol dire voce abbinata con ogni campo dato giusto; fra parentesi le voci abbinate, comprese quelle con un campo sbagliato; "+n" le voci in più. **In corso:** le celle segnate così arrivano in un secondo passaggio.
 
 ## 1. Verdetto
 
@@ -10,22 +12,19 @@
 4. **Versioni di toolchain dichiarate:** Renovate 122 su 381; mise, proto e Railpack fra 22 e 25. Su 381 dichiarazioni, 225 non le riporta nessuno strumento.
 5. **Unità del build system:** senza eseguire codice del progetto si arriva a 137 unità su 447. Con i comandi di modello eseguiti nel container (Gradle, .NET, CMake, Meson, Swift, Mix) si sale a 236. Il `modules.py` di Daodan da solo ne abbina 266 e ne trova esatte 197, più di qualunque strumento esterno.
 6. **Cartelle sorgente, source set, task di compilazione, alias, tsconfig** vengono solo dai comandi nativi, un ecosistema alla volta: 132 cartelle sorgente su 489, 155 fatti di configurazione su 828.
-7. **Framework e servizi** sono deboli ovunque: Specfy 29 framework su 330, il registro di Daodan 45 servizi su 123.
+7. **Framework e servizi** erano deboli ovunque: Specfy 29 framework su 330, il registro di Daodan 45 servizi su 123. Questa misura è superata: lo step `stack` di oggi è misurato in [README.md](README.md), «Lo step `stack` sul corpus».
 8. **Combinazione consigliata,** ognuno nel suo pezzo:
    - go-enry per linguaggi ed esclusi;
    - Renovate (AGPL-3.0, eseguito come processo separato) per toolchain e dipendenze dichiarate;
    - Trivy per le versioni bloccate dai lockfile;
-   - sull'host i comandi di modello di Go, Cargo, npm/pnpm, uv e `tsc --showConfig`;
-   - nel container Gradle, Maven, .NET, CMake e Swift.
-9. **L'adattatore sottile di Daodan deve ancora:**
-   - unire le fonti per unità;
-   - leggere le versioni dove nessuno le legge (release Java nel pom, matrici di CI);
-   - dichiarare buchi per framework e servizi;
-   - decidere `needs`.
-10. **Finding su Daodan:**
-    - la lettura di base scarica in silenzio le grammatiche tree-sitter da GitHub;
-    - si ferma sui link simbolici di python-semver;
-    - impiega fino a 334 s su un repository vero.
+   - i comandi di modello di ogni build tool per unità, sorgenti e configurazione.
+
+### Che cosa ne è oggi nel codice
+
+- **Adottati** come sorgenti della pre-mappa (`daodan/core/premap/`, elenco in `premap.SOURCES`): go-enry (`enry.py`), Renovate (`renovate.py`), i comandi di modello di Go, Cargo, npm, uv, `tsc`, Gradle, Maven, .NET, CMake, Meson, Bazel e sbt. La pre-mappa unisce le fonti per fatto e tiene i conflitti con la loro fonte.
+- **Tutti i comandi di modello girano nel container di Daodan**, anche quelli che questa misura dava «senza codice del progetto» (Go, Cargo, npm, uv, `tsc`): è la regola invalicabile di `AGENTS.md`.
+- **Non nel codice:** Trivy o un altro scanner di lockfile; Swift e Mix come comandi di modello; deptry e dependency-cruiser per i progetti senza build tool; `affected` e BSP (valutati sotto, non usati).
+- **Aperta: da approfondire.** `needs` (il bisogno di un container) non lo dà nessuno strumento (0 su 122); i lettori di manifest di Daodan (`modules.py`, punto 5) trovano più unità di ogni strumento esterno: da decidere se si tolgono dove un comando di modello esiste. Le due questioni sono in [2026-11-14-project-model-detection.md](../../docs/research/2026-11-14-project-model-detection.md), sezione 4.
 
 ### La ricerca alla prova
 
@@ -215,16 +214,16 @@ Dalla nota del runner nativo, misurata nel container.
 
 ## 6. Daodan
 
+Misure del 14 novembre 2026 sul codice di allora.
+
 | Fatto | Misura | Causa |
 | --- | --- | --- |
 | `modules.py` contro gli strumenti | Unità: 197 esatte (266 abbinate) su 447, contro 137 di tutti gli strumenti senza codice del progetto e 236 con il container. Dipendenze fra unità 70 su 199. Membri del workspace 64, ma +486 in più. Dipendenze 508 (573) | i 30 lettori di manifest coprono più tipi di ogni scanner; i suoi errori principali sono il nome della radice Gradle e i membri in più |
-| Download nascosto delle grammatiche | `snapshot.py write --no-engine --no-index` tenta la rete su 90 fixture su 122 (6-7 tentativi), verso `github.com` e `release-assets.githubusercontent.com` | `tree-sitter-language-pack` 1.13.5 scarica il pacchetto di grammatiche al primo `get_parser()` (`languages/_treesitter.py:124-126`, chiamato da `snapshot.py:316-320`), in `~/.cache/tree-sitter-language-pack/`, fuori dalla cache di Daodan. La versione non è fissata (`requirements.txt:31-33`, `>=1.0`). Offline il download fallisce e il file passa al lettore a espressioni regolari, più debole (`_treesitter.py:127-132`). Le 32 fixture senza tentativi non hanno file di un linguaggio tree-sitter |
-| Arresto sui link simbolici | mix-real-python-semver: `sqlite3.IntegrityError: UNIQUE constraint failed: files.path` | `snapshot_store.py:429`, `put_file` chiamato da `snapshot.py:873`: due percorsi per lo stesso file |
-| Tempi sui repository grandi | 333,9 s su kotlinconf, 208,8 s su eShop, 104,4 s su tududi, 90,6 s su memos; mediana sul corpus 0,93 s | non misurata per passo |
 | Tabella dei linguaggi | 190 linguaggi su 313 e 323 file su 486, contro 305-308 e 460-463 di go-enry e Linguist | la tabella dei suffissi non ha euristiche |
-| Wrapper `stack_analyser.py` | Sui servizi, contro il registro: 48 servizi che il registro non ha, di cui 1 vero (Redis in mix-php-laravel) e 47 in più; il registro da solo ne trova 45 | il CLI di Specfy rilegge le stesse regole già nel registro: tenerlo aggiunge un servizio e 47 errori |
 
-Servizi del registro, letti voce per voce dal punteggio (`score.py daodan_registry all --json`):
+Gli altri fatti di quel giorno non valgono più: il pacchetto delle grammatiche tree-sitter è fissato e Daodan lo scarica nella sua cache con verifica sha256 (`languages/_treesitter.py`, `tree-sitter-language-pack==1.13.5`); python-semver, che fermava la lettura sui link simbolici, è analizzato nei giri del 16 novembre (README.md, «Il grafo completo sul corpus»); il wrapper del CLI di Specfy non c'è più (`stack_analyser.py` è oggi il rilascio fissato del fork, README.md, «Lo step `stack` dal fork»). I tempi per repository di oggi sono nei rapporti di `results/pipeline/`.
+
+Servizi del registro di allora (45 su 123), letti voce per voce dal punteggio (`score.py daodan_registry all --json`); la misura di oggi è in README.md, «Lo step `stack` sul corpus»:
 
 | Voci | Quante | Quali |
 | --- | --- | --- |
@@ -272,20 +271,7 @@ Campi letti dallo spec al tag `v2.2.0-M3` del repository. Il file `version` dice
 
 Gli autori hanno usato 80 chiavi diverse di `config`, circa 50 una volta sola: il resto è specifico di ogni build system.
 
-## 7. Costi Modal
-
-Da `modal billing report --for today --resolution h`, cifre per app riportate dai runner.
-
-| Gruppo | Speso letto (USD) | Tetto (USD) | Note |
-| --- | --- | --- | --- |
-| lang | 0,3216 | 0,25 + 0,15 per i repository veri | sopra il primo tetto: una scrittura del volume per fixture (circa 12 s l'una), un repository Git nuovo per fixture |
-| sbom | 0,3755 | 0,30 + 0,40 per i repository veri + 0,06 per gli strumenti aggiunti | primo passaggio 0,3197, appena sopra il suo tetto, con i repository veri dentro (il tetto di 0,40 non è stato usato a parte); strumenti aggiunti (component-detection, deptry, dependency-cruiser, uv, correzione di cdxgen) 0,0558 |
-| native | 0,5182, ultima ora aperta | 0,40 + 1,00 | 0,389 corpus, 0,129 repository veri, compresa una chiamata a build-server-for-gradle bloccata e annullata |
-| versions | 0,406, ore recenti fatturate in ritardo | 0,30 + 0,10 + 0,25 | la riesecuzione del corpus ha superato il suo tetto (circa 0,17 contro 0,10): quattro container invece di uno |
-| frameworks | 0,5905 (0,5872 dell'app più 0,0033 di sei app di sonda) | 0,25 + 0,25 per i repository veri | sopra il primo tetto: due giri completi con una scrittura del volume per fixture; il passaggio sui repository veri è costato 0,078 |
-| **Totale** | **2,212** | 3,71 | quattro gruppi su cinque sopra il primo tetto: lang, sbom (di 0,02), versions (riesecuzione), frameworks |
-
-## 8. Cosa non è stato misurato
+## 7. Non misurato
 
 - ScanCode sugli 8 repository veri saltati per il costo.
 - Il registro di Daodan sui quattro repository più grandi: una sola esecuzione cronometrata, a 1 cpu e 2 GB, senza traccia né prova offline; i suoi tempi non si confrontano con le altre esecuzioni.
@@ -294,3 +280,5 @@ Da `modal billing report --for today --resolution h`, cifre per app riportate da
 - Binari per Windows di Syft, Trivy, Renovate, mise e dei comandi nativi.
 - La lettura offline di base di Daodan: dedotta dal codice, non eseguita.
 - Le voci in più di linguaggi ed esclusi: il corpus non dice se i formati di dati e i documenti contano. Le tabelle le riportano senza correggerle.
+
+Costo della misura su Modal: 2,212 USD in tutto (`modal billing report`, cifre per app riportate dai runner).

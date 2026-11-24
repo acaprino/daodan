@@ -1,7 +1,13 @@
 # CSS parsers compared
 
-The proof of the choice of `@eslint/css-tree` 4.1.3 for the stylesheet graph: the same inputs, the same comparator and the
-same corpus through every candidate, re-run on Modal. Run 2026-11-22. `results/` holds the output of the last run.
+**Status:** In use: the chosen parser is the one in the product. What the choice changed in the graph's records is in
+[`../README.md`](../README.md).
+
+**Question.** Which CSS parser should the stylesheet graph use? The same inputs, the same comparator and the same corpus
+through every candidate, re-run on Modal. Run 2026-11-22; `results/` holds the output of the last run. No model is used.
+
+**Result.** `@eslint/css-tree` 4.1.3: 144 of 155 expectations met, relaxed nesting read (22 of 22), a grammar and a
+property lexer, no install script; why not each of the others is below.
 
     PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/css-parser/candidates/modal_candidates.py
 

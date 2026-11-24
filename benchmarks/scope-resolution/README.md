@@ -6,11 +6,11 @@
 
 **Risultati validi oggi.**
 
-| Chi risolve | Con un modello? | Esito uguale all'atteso | File indispensabili | Precision |
-|---|---|---|---|---|
-| resolver deterministico (`resolver.py`) | no | 9/9 | 8/9 | 0.53 |
-| Haiku | sì | 7/9 | 9/9 | 0.82 |
-| Opus | sì | 9/9 | 9/9 | 0.90 |
+| Chi risolve | Con un modello? | Esito uguale all'atteso | File indispensabili | File vietati inclusi | Precision | Recall |
+|---|---|---|---|---|---|---|
+| resolver deterministico (`resolver.py`) | no | 9/9 | 8/9 | 0 | 0.53 | 0.94 |
+| Haiku | sì | 7/9 | 9/9 | 0 | 0.82 | 1.00 |
+| Opus | sì | 9/9 | 9/9 | 0 | 0.90 | 1.00 |
 
 Il resolver senza modello arriva agli stessi file indispensabili tranne uno, con molti file in più; il modello taglia i file in più. La mappa del run è quella lessicale più il grafo dello snapshot: l'effetto dei passi `resolve` e `observe` della pipeline sul perimetro non è misurato.
 
@@ -35,7 +35,7 @@ di protocollo. Precision e recall sono riportate ma non asserite: oltre i file i
 
 | Parametro | Dove | Valori provati | Risultato misurato |
 |---|---|---|---|
-| Modello | sessioni | Haiku, Opus | Esito 7/9 e 9/9; file indispensabili 9/9 per entrambi; precision 0.82 e 0.90 |
+| Modello | sessioni | Haiku, Opus | la tabella in testa |
 | Budget | testo, `POLICY` | circa 6 query, 10 letture | Query medie: Haiku 5.7, Opus 8.4 (massimo 13). Opus supera 6 query in 7 casi su 9. Costo da valutare |
 | Frase sui chiamanti di una modifica | testo | senza, con | C1 su Opus: `service.py` mancante in 2 prove su 2, presente con la frase (n=1) |
 | Formulazione di `partial` | testo | «what is missing», «what the request still needs» | Nessun effetto: Haiku resta `partial` su C2 e C3b |
@@ -62,12 +62,6 @@ Misura a parte, sul costo e sull'esito della Phase 1 (`review-preparation/refere
 
 Tabella per caso in `results/model-runs/SUMMARY.md`.
 
-| | Esito uguale all'atteso | File indispensabili | File vietati inclusi | Precision | Recall |
-|---|---|---|---|---|---|
-| Resolver | 9/9 | 8/9 | 0 | 0.53 | 0.94 |
-| Haiku | 7/9 | 9/9 | 0 | 0.82 | 1.00 |
-| Opus | 9/9 | 9/9 | 0 | 0.90 | 1.00 |
-
 Nessun modello ha inventato un collegamento: su C6 entrambi dichiarano che la destinazione non è confermabile. Le due
 mancate corrispondenze di Haiku sono `partial` al posto di `resolved`, con i file richiesti presenti: i due esiti proseguono
 allo stesso modo. Lezioni e correzioni in `results/findings.md`.
@@ -78,5 +72,5 @@ allo stesso modo. Lezioni e correzioni in `results/findings.md`.
 - C3, C4, C5 e C7 vengono dal giro precedente alle due correzioni del testo.
 - Isolamento dichiarato dalle sessioni, non verificabile dalla traccia. Opus è lo stesso modello che ha scritto il benchmark.
 - Attese scritte da chi ha scritto spec e fixture; quella di C8 è cambiata dopo aver visto le sessioni.
-- Fixture cambiata il 18 novembre 2026: `orders`, `payments` e `shipping` hanno ciascuno il proprio `pyproject.toml`. Dal 14 novembre (`708eae48f`) il lettore dei moduli non inventa i membri di un workspace: senza manifest restava un solo modulo, e C4 dava `resolved` al posto di `clarify`.
+- Ogni package di `app/` (`orders`, `payments`, `shipping`) ha il proprio `pyproject.toml`: senza manifest il lettore dei moduli vede un solo modulo e C4 dà `resolved` al posto di `clarify`. Le sessioni con il modello sono precedenti a questa forma della fixture (18 novembre 2026) e non sono state ripetute.
 - Non provati: diff e PR reali, `symbols_at`, `stale_callers`, repository grandi, import tra package, una review completa con questa Phase 0.

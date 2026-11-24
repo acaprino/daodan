@@ -1,8 +1,21 @@
 # The CSS parser of the stylesheet graph
 
-The proof that the stylesheet graph reads plain CSS through `@eslint/css-tree` 4.1.3 (the ESLint fork of CSSTree, MIT) and
-not through the hand-written reader it had (`languages/stylesheet.py`, `_sheet` in `indexers/css.py`). Run on Modal on
-2026-11-22. Nothing runs on the host: exact pins go into the image with `--ignore-scripts` and the corpus is read as data and
+**Status:** In use. The engine is in the product (`daodan/core/indexers/css_csstree.js`, pinned in
+`daodan/core/indexers/css_engines/package.json`; `css.tree_records`, `css.engine_sheets`). The hand reader
+(`daodan/core/languages/stylesheet.py`) stays for the Sass, Less and Stylus sheets of packages and for the values of
+those trees.
+
+**Question.** Does the stylesheet graph read plain CSS better through `@eslint/css-tree` 4.1.3 (the ESLint fork of
+CSSTree, MIT) than through the hand-written reader it had, and what does the change cost?
+
+**Results today** (Modal, 2026-11-22): on 1,860 `.css` files every node is the same; the engine finds every one of the
+449,958 uses of a custom property the tokenizer lists (the old reader missed 3,669 and gave another fallback for
+4,681) and declares 264 holes; 78 references the old reader found are lost, each at a line with a hole. No model is used anywhere in this benchmark.
+
+**Next step of the pipeline.** This measures one static reader. Whether a later step closes any of the 264 holes
+(`value-not-matched`, `unparsed`) is not measured: no dynamic step reads stylesheets today.
+
+Run on Modal on 2026-11-22. Nothing runs on the host: exact pins go into the image with `--ignore-scripts` and the corpus is read as data and
 never executed. The runs on the corpus (`ab_run`, `measure_run`, `probe_run`) have `block_network=True`; `lock_check`,
 `record_fixtures`, `cssinjs_run` and `lang_css.py`'s cases keep the network open, to install packages (always with
 `--ignore-scripts`) or to fetch a checkout.
@@ -224,5 +237,9 @@ in the scripts' CSS come from the `${mixin}` statement without a `;` (the two ho
 that the 3 rules lost in `styles.ejs` are all behind an EJS tag (the holes' texts show it). Not measured: the cost of the
 engine's one run per sheet from outside the snapshot (they are not batched).
 
-The hand reader stays for the Sass, Less and Stylus sheets of packages and for the values of those trees; the 60 regular
-expressions of `css.py` are 59: the one gone is `EJS_RE`, which was already unused, the change removed none of its own.
+The hand reader stays for the Sass, Less and Stylus sheets of packages and for the values of those trees. At the time of
+the measure the regular expressions of `css.py` went from 60 to 59 (`EJS_RE`, already unused); the count in today's file
+is not re-checked here.
+
+**Open: to look into.** The better source for the values of Sass trees is the Sass parser itself, which has the function
+calls as nodes: not measured.
