@@ -1,16 +1,18 @@
 // The synthesis: the paths by entry, what the graph counts, where to start reading, and what is missing from the picture.
 import { Badge, Button, Cluster, Column, Icon, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
+import { Mark } from '../src/mark.tsx';
+import { Failed, Loading } from '../src/states.tsx';
 import { number, plural } from '../src/words.ts';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import { buildCounts, levelsName, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
 import type { Graph } from './graph.ts';
-import { Mark } from './group-details.tsx';
 import { Paths } from './paths-section.tsx';
 import { Gaps, PROVENANCE } from './provenance.tsx';
 import type { Context } from './server.ts';
 import { ctx } from './snapshot.ts';
-import { Failed, GraphFailed, Loading, MapNote } from './states.tsx';
+import { iconOf } from './scene.ts';
+import { GraphFailed, MapNote } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 
 export function SynthesisActions() {
@@ -23,13 +25,13 @@ function Counts({ graph, commit }: { graph: Graph; commit: string }) {
   const modules = graph.grouping === 'modules';
   const fact = (name: string, count: number, about: string) =>
     ({ name, value: <Column gap="xs"><Text>{number(count)}</Text><Text variant="note">{about}</Text></Column> });
-  return <DescriptionList aria-label="Conteggi del grafo" items={[
+  return <Column data-selectable=""><DescriptionList aria-label="Conteggi del grafo" items={[
     fact(modules ? 'Moduli' : 'Directory con file', graph.nodes.length, 'Gruppi del grafo'),
     fact('Relazioni nel grafo', graph.edges.length, runtimeSummary(graph.edges) || 'Tra i gruppi visualizzati'),
     fact('File nel grafo', graph.files, `Snapshot del commit ${commit.slice(0, 7)}`),
     modules ? fact('File senza modulo', graph.unassigned.count, 'Lacuna esplicita del grafo')
       : fact('Nodi esterni', graph.nodes.filter(n => n.location === 'external').length, 'Servizi riconosciuti dallo stack'),
-  ]} />;
+  ]} /></Column>;
 }
 
 // The largest groups, to start from: the one pressed is shown on the graph.
@@ -40,7 +42,7 @@ function Responsibilities({ graph }: { graph: Graph }) {
   return <Section title="Responsabilità da esplorare" level={3} icon={<Icon name="layers" />} end={levels && <Badge variant="secondary">{levels}</Badge>}>
     {!largest.length ? <Text as="p" variant="muted">Nessun gruppo nel grafo.</Text>
       : <ItemList aria-label="Responsabilità da esplorare">{largest.map(n =>
-        <ItemRow key={n.id} title={nodeName(n)} wrapTitle leading={<Mark n={n} />} description={<Text pre>{responsibilityOf(n)}</Text>}
+        <ItemRow key={n.id} title={nodeName(n)} wrapTitle leading={<Mark image={model.markUrl(n.mark)} icon={iconOf(n)} />} description={<Text pre>{responsibilityOf(n)}</Text>}
           facts={[{ text: nodeFacts(n) }]} end={<Icon name="chevron" />} onClick={() => go(() => model.showNode(n.id))} />)}</ItemList>}
   </Section>;
 }

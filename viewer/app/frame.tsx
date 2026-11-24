@@ -1,11 +1,11 @@
 // What the screens share: the field Ctrl+F goes to, the details, where the focus goes, and the panel each screen is drawn in.
 import { createContext, useContext, useLayoutEffect } from 'react';
 import type { ReactNode, RefObject } from 'react';
-import { Button, Column, Icon, Text } from '@acaprino/sigrid/primitives';
-import { Note } from '@acaprino/sigrid/components';
+import { Button, Column, Icon } from '@acaprino/sigrid/primitives';
 import { Panel } from '@acaprino/sigrid/layout';
 import type { IconName } from '@acaprino/sigrid/primitives';
 import type { PanelProps } from '@acaprino/sigrid/layout';
+import { Failed, focusContent } from '../src/states.tsx';
 import { useModelSlice } from './use-model.ts';
 
 // What the details show. `content` reads the model by itself, so it follows what it shows.
@@ -32,8 +32,6 @@ export function useFrame(): Frame {
   return frame;
 }
 
-export const focusContent = () => document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
-
 let held: EventTarget | null = null;  // what had the focus last: once hidden or removed the page no longer says it
 document.addEventListener('focusin', event => { held = event.target; });
 // Where what had the focus has gone with what held it (a pane that hides, a stage that gives way to another, the screens that move to
@@ -51,7 +49,7 @@ export function ScreenPanel({ actions, children, ...panel }: PanelProps) {
   const { back } = useFrame();
   return <Panel {...panel} actions={back ? <><Button variant="ghost" size="sm" onClick={back}><Icon name="back" />Percorso</Button>{actions}</> : actions}>
     <Column fill>
-      {serverError && <Column pad="lg"><Note tone="error" title="Server non raggiungibile."><Text data-selectable="">{serverError}</Text></Note></Column>}
+      {serverError && <Column pad="lg"><Failed title="Server non raggiungibile." cause={serverError} /></Column>}
       {children}
     </Column>
   </Panel>;

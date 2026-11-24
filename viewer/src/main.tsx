@@ -2,8 +2,8 @@
 // export it draws that file.
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Badge, Button, Column, Icon, Progress, Select, Spacer, Text } from '@acaprino/sigrid/primitives';
-import { Empty, Note, Toasts } from '@acaprino/sigrid/components';
+import { Badge, Button, Column, Icon, Select, Spacer, Text } from '@acaprino/sigrid/primitives';
+import { Empty, Toasts } from '@acaprino/sigrid/components';
 import { AppShell, DrawerButton, TitleBar, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs } from '@acaprino/sigrid/layout';
 import { applyKeptScheme, CommandPalette, CommandsProvider, formatKeys, KeyHints, useCommand, useCommandPalette, useSchemeCommands } from '@acaprino/sigrid/assemblies';
 import { useMedia, WordsProvider } from '@acaprino/sigrid';
@@ -25,6 +25,7 @@ import { LOOK } from './page.ts';
 import { get } from './server.ts';
 import { POLL_MS, Session, SessionDisclosure } from './session.tsx';
 import { canEnter, shownDetails } from './state.ts';
+import { Failed, Loading } from './states.tsx';
 import { EVENT_LABEL, FAILURE, plural, WORDS } from './words.ts';
 
 // The views of the map: their word in the bar, their command, and the name of the content.
@@ -161,7 +162,7 @@ function App() {
     {!narrow && <ToolbarTabs aria-label="Viste" value={state.view} onValueChange={toView}>{VIEWS.map(view =>
       <ToolbarTab key={view.value} value={view.value}>{view.label}</ToolbarTab>)}</ToolbarTabs>}
     <ToolbarSpacer />
-    <ToolbarButton label="Comandi" icon={<Icon name="search" />} shortcut={formatKeys('Ctrl+K')} variant="outline" onClick={() => palette.setOpen(true)}>Comandi</ToolbarButton>
+    <ToolbarButton label="Comandi" shortcut={formatKeys('Ctrl+K')} variant="outline" onClick={() => palette.setOpen(true)}>Comandi</ToolbarButton>
   </Toolbar></TitleBar>;
   const bottomBar = narrow && <Toolbar aria-label="Viste in basso">
     <ToolbarTabs aria-label="Viste" value={state.view} onValueChange={toView} edge="top" layout="stacked">{VIEWS.map(view =>
@@ -195,9 +196,9 @@ function App() {
           <Empty title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />
           <Session {...session} />
         </Column>}
-        {phase === 'failed' && <Column pad="lg"><Note tone="error" title="Export non leggibile" actions={<Button variant="outline"
-          onClick={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }}><Icon name="refresh" />Riprova</Button>}><Text data-selectable="">{failure}</Text></Note></Column>}
-        {phase === 'loading' && <Column pad="lg" aria-busy><Progress aria-label="Carico l'export…" value={null} /></Column>}
+        {phase === 'failed' && <Column pad="lg"><Failed title="Export non leggibile" cause={failure}
+          retry={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }} /></Column>}
+        {phase === 'loading' && <Column pad="lg"><Loading label="Carico l'export…" /></Column>}
       </Explorer>
     </AppShell>
     <OpenExport open={opening} onOpenChange={setOpening} onFile={openFile} />

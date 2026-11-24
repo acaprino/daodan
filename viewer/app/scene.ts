@@ -3,22 +3,16 @@
 import type { IconName } from '@acaprino/sigrid/primitives';
 import type { GraphEdge as Line, GraphLegendEntry, GraphNode as Drawn } from '@acaprino/sigrid/graph';
 import { iconFor } from '../src/icons.ts';
+import { legendOf, LINES } from '../src/lines.ts';
+import type { LineKind } from '../src/lines.ts';
+import type { ImageOf } from '../src/scene.ts';
 import { isOpenGroup, nodeFacts, nodeName, opens, outside, relationWords } from './graph.ts';
 import type { Graph, GraphEdge, GraphNode, OpenGroup, Thing } from './graph.ts';
 
 // `key` is the name of what is laid out: the canvas fits its view again when it changes.
 export type Scene = { nodes: Drawn[]; edges: Line[]; legend: GraphLegendEntry[]; key: string };
 
-// The kinds of line, in the order of their key: a kind has one look, on the canvas and in the key.
-const KINDS = ['relation', 'observed', 'sampled', 'doubtful'] as const;
-type Kind = (typeof KINDS)[number];
-const LINES: Record<Kind, Pick<GraphLegendEntry, 'label' | 'style' | 'tone'>> = {
-  relation: { label: 'Relazioni', style: 'solid', tone: 'default' },
-  observed: { label: 'Osservata in esecuzione', style: 'solid', tone: 'accent' },
-  sampled: { label: 'Campionata dal profiler', style: 'dashed', tone: 'accent' },
-  doubtful: { label: 'Incerta o in conflitto', style: 'dashed', tone: 'warning' },
-};
-const kindOf = (edge: GraphEdge): Kind => (edge.conflict || edge.status === 'uncertain' ? 'doubtful'
+const kindOf = (edge: GraphEdge): LineKind => (edge.conflict || edge.status === 'uncertain' ? 'uncertain'
   : edge.status === 'observed' || edge.status === 'sampled' ? edge.status : 'relation');
 
 // What a thing is, by its kind; a group of any other kind is layers.
@@ -40,11 +34,11 @@ function inOrder(nodes: readonly GraphNode[], open: readonly OpenGroup[]): Thing
   return within(null);
 }
 
-function drawn(thing: Thing, imageOf: (mark: string) => string): Drawn {
+function drawn(thing: Thing, imageOf: ImageOf): Drawn {
   if (isOpenGroup(thing)) return { id: thing.id, label: nodeName(thing), icon: iconOf(thing), open: true, group: thing.parent ?? undefined };
   const external = thing.location === 'external';
   return {
-    id: thing.id, label: nodeName(thing), icon: iconOf(thing), image: thing.mark ? imageOf(thing.mark) : undefined,
+    id: thing.id, label: nodeName(thing), icon: iconOf(thing), image: imageOf(thing.mark),
     external, detail: external ? thing.node_type || undefined : nodeFacts(thing),  // «esterno» is the canvas's own word
     open: opens(thing) ? false : undefined, group: thing.group ?? undefined,
   };
@@ -56,12 +50,11 @@ function lineOf(edge: GraphEdge, index: number): Line {
   return { id: String(index), from: edge.source, to: edge.target, directed: true, style, tone, label: relationWords(edge), labelShown: 'chosen' };
 }
 
-// `imageOf`: the address of the logo of a thing that has one.
-export function sceneOf({ nodes, edges, open = [] }: Pick<Graph, 'nodes' | 'edges'> & Partial<Pick<Graph, 'open'>>, imageOf: (mark: string) => string): Scene {
-  const things = inOrder(nodes, open), kinds = edges.map(kindOf);
+export function sceneOf({ nodes, edges, open = [] }: Pick<Graph, 'nodes' | 'edges'> & Partial<Pick<Graph, 'open'>>, imageOf: ImageOf): Scene {
+  const things = inOrder(nodes, open);
   return {
     nodes: things.map(thing => drawn(thing, imageOf)), edges: edges.map(lineOf),
-    legend: KINDS.map(kind => ({ ...LINES[kind], count: kinds.filter(item => item === kind).length })).filter(entry => entry.count > 0),
+    legend: legendOf(edges.map(kindOf)),
     key: `${things.map(thing => (isOpenGroup(thing) ? `+${thing.id}` : thing.id)).join(',')}|${edges.map(edge => `${edge.source}→${edge.target}`).join(',')}`,
   };
 }

@@ -1,41 +1,29 @@
 // The details in the inspector: the element chosen, else the flow with its steps, else what the project is and how its map is read.
-import type { ReactNode } from 'react';
 import { Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino/sigrid/primitives';
-import { DescriptionList, Disclosure, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
+import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
 import { Inspector } from '@acaprino/sigrid/layout';
 import type { Entity, Envelope, Flow } from './envelope.ts';
 import { flowsThrough, indexOf } from './projection.ts';
+import { List, Listed } from './listed.tsx';
 import { Mark } from './mark.tsx';
 import type { Model, Shown } from './model.ts';
 import { FLOW_ICON } from './icons.ts';
 import { bindingSite, entityName, entryName, flowTitle, headOf, kindOf, stepMeta } from './names.ts';
+import { markOf } from './server.ts';
 import { canEnter, shownDetails } from './state.ts';
 import { FRESHNESS_LABEL, LINK_LABEL, MORE, number, PROVENANCE_LABEL, STATUS_LABEL } from './words.ts';
 
-// How many entries of a long list are in sight at first.
-const FIRST = { steps: 40, links: 20, evidence: 8, files: 8 };
-
-// Text to read and copy, so not rows to press. Nothing is cut off in silence: the first entries are in sight, and the others
-// behind a row that says how many they are.
-function Listed({ label, kind, items, ordered = false }: { label: string; kind: keyof typeof FIRST; items: ReactNode[]; ordered?: boolean }) {
-  const list = (name: string, part: ReactNode[]) => <Column as={ordered ? 'ol' : 'ul'} gap={ordered ? 'md' : 'xs'} aria-label={name}>
-    {part.map((item, index) => <Column as="li" key={index} gap="xs">{item}</Column>)}</Column>;
-  const rest = items.slice(FIRST[kind]);
-  const more = MORE[kind](rest.length);
-  return <>
-    {list(label, items.slice(0, FIRST[kind]))}
-    {rest.length > 0 && <Disclosure label={more}>{list(more, rest)}</Disclosure>}
-  </>;
-}
+// How many steps and links of a long list are in sight at first.
+const STEPS = 40, LINKS = 20;
 
 // The technologies of the project, or those of one build unit (`ids`), each with its logo and the files that show it, in words.
 function Technologies({ envelope, ids }: { envelope: Envelope; ids?: string[] }) {
   const shown = envelope.technologies.filter(item => !ids || ids.includes(item.id));
   if (!shown.length) return null;
   return <Section title="Tecnologie" level={3} icon={<Icon name="labels" />}>
-    <DescriptionList items={shown.map(item => ({ name: <Cluster wrap={false}><Mark mark={item.mark} icon="labels" />{item.name}</Cluster>, value: <Column gap="xs">
+    <DescriptionList items={shown.map(item => ({ name: <Cluster wrap={false}><Mark image={markOf(item.mark)} icon="labels" />{item.name}</Cluster>, value: <Column gap="xs">
       <Text>{item.type}</Text>
-      {item.paths.length > 0 && <Listed label={`File di ${item.name}`} kind="files" items={item.paths.map(path => <Text variant="note" pre>{path}</Text>)} />}
+      {item.paths.length > 0 && <Listed label={`File di ${item.name}`} more={MORE.files} items={item.paths.map(path => <Text variant="note" pre>{path}</Text>)} />}
     </Column> }))} />
   </Section>;
 }
@@ -76,14 +64,13 @@ function FlowDetails({ model, flow }: { model: Model; flow: Flow }) {
       flow.complete ? null : { name: 'Stato', value: 'incompleto' },
     ]} />
     {flow.steps.length > 0 && <Section title="Passi" level={3} icon={<Icon name="listOrdered" />}>
-      <Listed ordered label="Passi del flusso" kind="steps" items={flow.steps.map((step, index) => <>
+      <Listed ordered label="Passi del flusso" first={STEPS} more={MORE.steps} items={flow.steps.map((step, index) => <>
         <Text pre>{index + 1}. {entityName(envelope, step.source)} <Text variant="strong">{LINK_LABEL[step.type] ?? step.type}</Text> {entityName(envelope, step.target)}</Text>
         <Text variant="note" pre>{stepMeta(step)}</Text>
       </>)} />
     </Section>}
     {!!flow.gaps?.length && <Section title="Dove si ferma la prova" level={3} icon={<Icon name="alert" />}>
-      <Column as="ul" gap="sm" aria-label="Dove si ferma la prova">{flow.gaps.map((gap, index) =>
-        <Column as="li" key={index} gap="xs"><Text variant="note" pre>{gap.site}</Text><Text pre>{gap.reason}</Text></Column>)}</Column>
+      <List label="Dove si ferma la prova" items={flow.gaps.map(gap => <><Text variant="note" pre>{gap.site}</Text><Text pre>{gap.reason}</Text></>)} />
     </Section>}
   </>;
 }
@@ -114,13 +101,13 @@ function EntityDetails({ model, show, entity }: { model: Model; show: (asked: Sh
           onClick={() => { dispatch({ type: 'flow', ref: flow.ref }); show({ flow: flow.ref }); }} />)}</ItemList>
     </Section>}
     {related.length > 0 && <Section title="Collegamenti visibili" level={3} icon={<Icon name="link" />}>
-      <Listed label="Collegamenti visibili" kind="links" items={related.map(edge => {
+      <Listed label="Collegamenti visibili" first={LINKS} more={MORE.links} items={related.map(edge => {
         const outgoing = isIt(edge.source);
         return <Text pre>{outgoing ? '→' : '←'} {labels.get(outgoing ? edge.target : edge.source)} <Text variant="muted">{edge.kinds.map(kind => LINK_LABEL[kind] ?? kind).join(', ')}</Text></Text>;
       })} />
     </Section>}
     {entity.evidence.length > 0 && <Section title="Evidenze" level={3} icon={<Icon name="quote" />}>
-      <Listed label="Evidenze" kind="evidence" items={entity.evidence.map(item => <Text variant="note" pre>{item.path}{item.line ? `:${item.line}` : ''}</Text>)} />
+      <Listed label="Evidenze" more={MORE.evidence} items={entity.evidence.map(item => <Text variant="note" pre>{item.path}{item.line ? `:${item.line}` : ''}</Text>)} />
     </Section>}
     {gaps.length > 0 && <Note tone="warning" announce={false} title="Lacune" items={gaps.map(gap => gap.reason)} />}
   </>;
@@ -140,7 +127,7 @@ export function Details({ model, show, open, close }: { model: Model; show: (ask
     {open && <Column gap="lg" data-selectable="">
       {/* The one live region: it stays while what is chosen changes, and reads the name alone. */}
       <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
-        <Mark mark={entity?.mark} icon={head.icon} />
+        <Mark image={markOf(entity?.mark)} icon={head.icon} />
         <Column><Heading size="small"><Text pre>{head.name}</Text></Heading></Column>
       </Cluster>
       {entity ? <EntityDetails key={entity.ref} model={model} show={show} entity={entity} />

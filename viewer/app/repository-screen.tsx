@@ -2,6 +2,7 @@
 import { useRef } from 'react';
 import { Badge, Button, Cluster, Column, Icon, Input, Progress, Section, Select, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, FormField, Note } from '@acaprino/sigrid/components';
+import { Failed } from '../src/states.tsx';
 import { ScreenPanel } from './frame.tsx';
 import { accessFeedback, accessible, isPreparing, preparation, repositoryContext, repositoryReason, repositorySlug, short } from './repository.ts';
 import { ctx, slug } from './snapshot.ts';
@@ -63,8 +64,8 @@ export function RepositoryScreen() {
           <Text>Preparazione in corso: {[work.step, work.detail].filter(Boolean).join(' · ')}.</Text>
           <Progress aria-label="Preparazione in corso" value={null} />
         </Column>}
-        {work?.state === 'failed' && <Note tone="error" title={`Preparazione non riuscita (${work.step}).`}><Text pre data-selectable="">{work.detail}</Text></Note>}
-        {s.selectError && <Note tone="error" title="Selezione non riuscita."><Text pre data-selectable="">{s.selectError}</Text></Note>}
+        {work?.state === 'failed' && <Failed title={`Preparazione non riuscita (${work.step}).`} cause={work.detail} />}
+        {s.selectError && <Failed title="Selezione non riuscita." cause={s.selectError} />}
       </Section>
       <Section title="Contesto attivo" level={3} icon={<Icon name="branch" />}
         end={c && <Button variant="ghost" size="sm" onClick={() => model.selectStage('premap')}>Torna alla pre-mappa</Button>}>

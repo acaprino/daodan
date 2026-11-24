@@ -6,7 +6,9 @@ import { Empty, SearchField } from '@acaprino/sigrid/components';
 import { useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
 import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
+import { Loading } from '../src/states.tsx';
 import { plural } from '../src/words.ts';
+import { ExplorerLink } from './explorer-link.tsx';
 import { ScreenPanel, useFocusKept, useFrame } from './frame.tsx';
 import { filtersOn, isOpenGroup, levelsName, thingById, toggledGroup, visibleGraph } from './graph.ts';
 import type { Graph } from './graph.ts';
@@ -15,13 +17,12 @@ import { PROVENANCE } from './provenance.tsx';
 import { sceneOf } from './scene.ts';
 import { ctx } from './snapshot.ts';
 import type { Snapshot } from './snapshot.ts';
-import { GraphFailed, Loading, NoGroups } from './states.tsx';
+import { GraphFailed, NoGroups } from './states.tsx';
 import type { Kept } from './storage.ts';
 import { model, useModelSlice } from './use-model.ts';
 
 // In the window's action bar, where the run has the same link.
-export const graphActions = (s: Snapshot): ReactNode => ctx(s)
-  && <Button variant="outline" asChild><a href={model.explorerUrl()} target="_blank" rel="noopener"><Icon name="external" />Esploratore completo</a></Button>;
+export const graphActions = (s: Snapshot): ReactNode => ctx(s) && <ExplorerLink />;
 
 // The details of the group the graph is read from, when the person has just come to the screen or chosen it: as soon as the graph has it.
 function useWantedGroup() {
@@ -135,7 +136,7 @@ export function GraphScreen() {
   const ready = graph !== null && visible !== null && error === '';
   return <ScreenPanel title="Grafo del codice" tools={<Filters ready={ready} />}
     subtitle={ready && [levelsName(graph), `${visible.nodes.length} / ${graph.nodes.length} nodi`].filter(Boolean).join(' · ')}
-    actions={<Button variant="ghost" size="sm" disabled={!graph} onClick={() => show(PROVENANCE)}><Icon name="file" />Grafo e lacune</Button>}>
+    actions={<Button variant="ghost" size="sm" disabled={!graph} onClick={() => show(PROVENANCE)}><Icon name="file" />Provenienza e lacune</Button>}>
     {!read ? !serverError && <Column pad="lg"><Loading label="Lettura dello stato del server…" /></Column>
       : !context ? <Empty fill title="Nessun grafo" description="Seleziona prima una repository e un branch."
           action={<Button variant="outline" size="sm" onClick={() => go(() => model.selectStage('repository'))}>Vai al repository</Button>} />

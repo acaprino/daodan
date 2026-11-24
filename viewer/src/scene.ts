@@ -3,7 +3,8 @@
 import type { GraphEdge, GraphLegendEntry, GraphNode } from '@acaprino/sigrid/graph';
 import type { Flow } from './envelope.ts';
 import type { Layout, LayoutGraph } from './layoutClient.ts';
-import { markAddress } from './marks.ts';
+import { legendOf, LINES } from './lines.ts';
+import type { LineKind } from './lines.ts';
 import type { ProjectedEdge, ProjectedNode, Projection } from './projection.ts';
 import { iconFor } from './icons.ts';
 import { nodeMeta } from './names.ts';
@@ -18,18 +19,13 @@ export type Scene = {
   refs: ReadonlyMap<string, string>;  // node id -> entity ref
 };
 
+// The address of the logo of a thing, where it has one.
+export type ImageOf = (mark: string | undefined) => string | undefined;
+
 // Wide enough for the name of a group beside its count, its steps and its two arrows.
 const SIZE = { width: 256, height: 64 };
 
-// The kinds of line, in the order of their key: a kind has one look, on the canvas and in the key.
-const KINDS = ['relation', 'data', 'flow', 'uncertain'] as const;
-const LINES: Record<(typeof KINDS)[number], Pick<GraphLegendEntry, 'label' | 'style' | 'tone'>> = {
-  relation: { label: 'Relazioni', style: 'solid', tone: 'default' },
-  data: { label: 'Collegamenti di dati', style: 'dashed', tone: 'default' },
-  flow: { label: 'Linee del flusso', style: 'solid', tone: 'accent' },
-  uncertain: { label: 'Prova insufficiente', style: 'dashed', tone: 'warning' },
-};
-const kindOf = (edge: ProjectedEdge) => (edge.uncertain ? 'uncertain' : edge.flow ? 'flow' : edge.id.startsWith('data:') ? 'data' : 'relation');
+const kindOf = (edge: ProjectedEdge): LineKind => (edge.uncertain ? 'uncertain' : edge.flow ? 'flow' : edge.id.startsWith('data:') ? 'data' : 'relation');
 
 // The name of a layout: what it lays out, which groups are open, and which way. A group whose things are all hidden has the nodes of
 // a closed one, and is drawn open.
@@ -47,10 +43,10 @@ export function graphOf({ projection, edges }: Drawing): LayoutGraph {
 
 // A closed group has the two ways in: its arrow opens it in place (`open`, the canvas's «Apri»), and a double press, or the › beside
 // it, goes into it. An open one is closed by its arrow; the way into it is the «Entra» of the details, of its row or of the palette.
-function nodeOf(node: ProjectedNode, layout: Layout, token: string): GraphNode {
+function nodeOf(node: ProjectedNode, layout: Layout, imageOf: ImageOf): GraphNode {
   const closed = node.open === false;
   return {
-    ...SIZE, ...layout.nodes[node.id], id: node.id, label: node.label, icon: iconFor(node) || undefined, image: markAddress(node.mark, token),
+    ...SIZE, ...layout.nodes[node.id], id: node.id, label: node.label, icon: iconFor(node) || undefined, image: imageOf(node.mark),
     detail: nodeMeta({ ...node, location: undefined }),  // «esterno» is the canvas's own word
     external: node.location === 'external',
     open: node.open, group: node.parent ?? undefined,
@@ -88,17 +84,16 @@ function stepsOf(flow: Flow, owners: Projection['owners']): Map<string, readonly
 export const chosenIn = (projection: Projection, selected: string | null): string[] => (selected === null ? [] : projection.owners[selected] ?? []);
 
 // Without the choice, which changes nothing of it: choosing draws again only what is chosen and what was.
-export function sceneOf(drawing: Drawing, layout: Layout, token = ''): Scene {
+export function sceneOf(drawing: Drawing, layout: Layout, imageOf: ImageOf = () => undefined): Scene {
   const { projection, edges, direction, flow } = drawing;
   // A flow's lines first: of the lines of a node the arrows follow the first.
   const ordered = [...edges.filter(edge => edge.flow), ...edges.filter(edge => !edge.flow)];
-  const kinds = edges.map(kindOf);
   return {
-    nodes: projection.nodes.map(node => nodeOf(node, layout, token)),
+    nodes: projection.nodes.map(node => nodeOf(node, layout, imageOf)),
     edges: ordered.map(edge => edgeOf(edge, layout)),
     direction, layoutKey: layoutKeyOf(drawing),
     steps: flow && stepsOf(flow, projection.owners),
-    legend: KINDS.map(kind => ({ ...LINES[kind], count: kinds.filter(item => item === kind).length })).filter(entry => entry.count > 0),
+    legend: legendOf(edges.map(kindOf)),
     refs: new Map(projection.nodes.map(node => [node.id, node.ref])),
   };
 }

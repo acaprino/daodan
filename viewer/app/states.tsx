@@ -1,26 +1,13 @@
-// What the run and the synthesis both say: how the map of the system is, and that something is being read or could not be.
-import { Button, Column, Icon, Progress, Text } from '@acaprino/sigrid/primitives';
+// What the run and the synthesis both say: how the map of the system is, and that the graph could not be read or is empty.
+import { Text } from '@acaprino/sigrid/primitives';
 import { Empty, Note } from '@acaprino/sigrid/components';
-import { focusContent } from './frame.tsx';
+import { Failed } from '../src/states.tsx';
 import { mapNotice } from './run.ts';
 import { model, useModel } from './use-model.ts';
 
 export function MapNote() {
   const notice = mapNotice(useModel());
   return notice && <Note tone={notice.tone} title={notice.title}>{notice.message && <Text pre data-selectable="">{notice.message}</Text>}</Note>;
-}
-
-export function Loading({ label }: { label: string }) {
-  return <Column aria-busy><Progress aria-label={label} value={null} /></Column>;
-}
-
-// What could not be read, and why. The note goes when it is asked again, and its button with it: the focus goes to the content, unless
-// `retry` takes it nearer.
-export function Failed({ title, cause, retry }: { title: string; cause: string; retry: () => void }) {
-  const again = () => { focusContent(); retry(); };
-  return <Note tone="error" title={title} actions={<Button variant="outline" onClick={again}><Icon name="refresh" />Riprova</Button>}>
-    <Text pre data-selectable="">{cause}</Text>
-  </Note>;
 }
 
 export function GraphFailed() {

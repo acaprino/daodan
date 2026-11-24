@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type { GraphEdge, GraphNode, OpenGroup } from '../app/graph.ts';
 import { iconOf, sceneOf as drawnOf } from '../app/scene.ts';
 
-const sceneOf = (graph: Parameters<typeof drawnOf>[0]) => drawnOf(graph, mark => `/mark/${mark}`);
+const sceneOf = (graph: Parameters<typeof drawnOf>[0]) => drawnOf(graph, mark => mark && `/mark/${mark}`);
 const bare = { image: undefined, open: undefined, group: undefined };
 
 const node = (id: string, more: Partial<GraphNode> = {}): GraphNode => ({ id, name: id, kind: 'directory', files: [`${id}/a.ts`], location: 'internal', status: 'confirmed', group: null, ...more });
@@ -49,7 +49,7 @@ test('a line says its kind by its dash and its words, and each is a line of its 
   ]);
   assert.ok(edges.every(line => line.from === 'a' && line.to === 'b' && line.directed && line.labelShown === 'chosen' && line.points === undefined));
   assert.deepEqual(legend.map(entry => [entry.label, entry.count]), [
-    ['Relazioni', 1], ['Osservata in esecuzione', 1], ['Campionata dal profiler', 1], ['Incerta o in conflitto', 2],
+    ['Relazioni', 1], ['Osservata in esecuzione', 1], ['Campionata dal profiler', 1], ['Prova insufficiente', 2],
   ]);
   assert.deepEqual(sceneOf({ nodes: [], edges: [] }).legend, []);
 });

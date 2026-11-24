@@ -15,9 +15,10 @@ import type { Model, Shown } from './model.ts';
 import { typesIn } from './projection.ts';
 import { chosenIn, graphOf, layoutKeyOf, sceneOf } from './scene.ts';
 import type { Drawing, Scene } from './scene.ts';
+import { markOf } from './server.ts';
 import { inSight, onceDrawn } from './sight.ts';
 import { placeOf, shownDetails } from './state.ts';
-import { TOKEN } from './token.ts';
+import { Failed } from './states.tsx';
 import { plural, TYPE_LABEL } from './words.ts';
 
 const CANVAS = 'Naviga il grafo';
@@ -72,7 +73,7 @@ export function Explorer({ model, title, search, toShow, show, ready, runs, open
   const direction = useAppShell().sidebar === 'full' ? 'right' : 'down';
   const flow = envelope.flows.find(item => item.ref === state.flow);
   const graph = useLayout(useMemo<Drawing>(() => ({ projection, edges, direction, flow }), [projection, edges, direction, flow]), ready);
-  const scene = useMemo(() => graph.layout && sceneOf(graph.drawing, graph.layout, TOKEN), [graph.drawing, graph.layout]);
+  const scene = useMemo(() => graph.layout && sceneOf(graph.drawing, graph.layout, markOf), [graph.drawing, graph.layout]);
   const selected = chosenIn(graph.drawing.projection, state.selected);
   // What was asked for outside the canvas (an element, the nodes of a flow) is brought into its view once, when the canvas draws it,
   // and only where a part of it is out of sight: a new layout shows the whole map, which is most often enough. Where it draws no node
@@ -86,9 +87,8 @@ export function Explorer({ model, title, search, toShow, show, ready, runs, open
     if (!toShow || shown.current === toShow || !graph.drawn || !scene) return;
     return onceDrawn(() => {
       shown.current = toShow;
-      const ids = drawnFor(toShow, scene);
-      const labels = scene.nodes.filter(node => ids.includes(node.id)).map(node => node.label);
-      if (labels.length && !inSight(CANVAS, labels)) canvas.current?.focus(ids);
+      const ids = drawnFor(toShow, scene).filter(id => scene.refs.has(id));
+      if (ids.length && !inSight(CANVAS, ids)) canvas.current?.focus(ids);
     });
   }, [toShow, graph.drawn, scene]);
   const chosen = state.filters.types?.[0] ?? '';
@@ -127,10 +127,8 @@ export function Explorer({ model, title, search, toShow, show, ready, runs, open
           ? <Empty fill title="Nessun elemento visibile." action={filtered > 0 && <Button variant="outline" size="sm" onClick={reset}>Azzera filtri</Button>} />
           : graph.failure !== null
           // The canvas is not there to close a group: the groups opened on it are closed here.
-          ? <Note tone="error" title="Impossibile disporre il grafo" actions={<>
-              <Button variant="outline" onClick={graph.retry}><Icon name="refresh" />Riprova</Button>
-              {open.length > 0 && <Button variant="ghost" onClick={() => dispatch({ type: 'closeGroups' })}>Chiudi i gruppi aperti</Button>}
-            </>}><Text data-selectable="">{graph.failure}</Text></Note>
+          ? <Failed title="Impossibile disporre il grafo" cause={graph.failure} retry={graph.retry}
+              actions={open.length > 0 && <Button variant="ghost" onClick={() => dispatch({ type: 'closeGroups' })}>Chiudi i gruppi aperti</Button>} />
           : !scene
           ? <Progress aria-label="Dispongo il grafo…" valueText="Dispongo il grafo…" value={null} />
           : <>

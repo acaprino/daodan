@@ -1,11 +1,11 @@
 // The paths of the synthesis, a page at a time: the entries, the steps proven from one, and the writes with no entry.
 import { Badge, Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, Empty, ItemList, ItemRow } from '@acaprino/sigrid/components';
+import { Failed, Loading } from '../src/states.tsx';
 import { number, plural } from '../src/words.ts';
 import { handlerSource, listingOf, paging, stepWords } from './paths.ts';
 import { ORPHAN_WRITES } from './snapshot.ts';
 import type { PathPage, PathResult } from './snapshot.ts';
-import { Failed, Loading } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 
 // What is pressed may go with its page: the focus goes to the section, which stays.
@@ -79,17 +79,17 @@ function Writes({ page, result: { effects = [], without_entry, writes, reached }
   </Column>;
 }
 
-const LISTED = { entries: Entries, steps: Steps, writes: Writes };
+const LISTINGS = { entries: Entries, steps: Steps, writes: Writes };
 
 export function Paths() {
   const { pathPage: page } = useModel();
-  const listing = listingOf(page), Listed = LISTED[listing];
+  const listing = listingOf(page), Listing = LISTINGS[listing];
   return <Section id={SECTION} tabIndex={-1} title="Percorsi per ingresso" level={3} icon={<Icon name="branch" />} gap="md"
     end={listing === 'entries'
       ? <Button variant="ghost" size="sm" onClick={turn(() => model.openPaths(ORPHAN_WRITES))}>Scritture senza ingresso</Button>
       : <Button variant="ghost" size="sm" onClick={turn(model.listPaths)}>Torna agli ingressi</Button>}>
     {page?.error ? <Failed title="Percorsi non disponibili." cause={page.error} retry={turn(model.retryPaths)} />
-      : page?.result ? <Listed page={page} result={page.result} />
+      : page?.result ? <Listing page={page} result={page.result} />
       : <Loading label="Lettura dei percorsi…" />}
   </Section>;
 }

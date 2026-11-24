@@ -14,7 +14,7 @@ export type Unit = {
 };
 export type PremapFound = {
   files: string[]; languages: { name: string; files: number }[]; units: Unit[];
-  technologies: { name: string; category: string; state?: string; version?: string; source: string }[];
+  technologies: { name: string; category: string; state?: string; version?: string; source: string; mark?: string }[];
 };
 export type Premap = PremapFound & { dependencies: (Dependency & { unit: string })[] };
 

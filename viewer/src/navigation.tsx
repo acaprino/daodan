@@ -7,6 +7,7 @@ import type { Model, Phase, Shown } from './model.ts';
 import { Mark } from './mark.tsx';
 import { FLOW_ICON, iconFor } from './icons.ts';
 import { entryName, flowTitle, nodeMeta } from './names.ts';
+import { markOf } from './server.ts';
 
 const NO_MAP: Record<Exclude<Phase, 'ready'>, string> = {
   none: 'Nessuna mappa: non ci sono run.', failed: "Nessuna mappa: l'export non si legge.", loading: "In attesa dell'export.",
@@ -41,7 +42,7 @@ export function Navigation({ model, phase, show, open, onOpenChange }: Navigatio
       {/* The group draws the list (a `ul`): its rows go in it as they are, and an ItemList would be a list in a list. */}
       {!rail && projection.nodes.length > 0 && <SidebarGroup label="Elementi visibili" icon={<Icon name="bulletList" />}>{projection.nodes.map(node =>
         <ItemRow key={node.id} title={node.label} description={[nodeMeta(node), node.parent !== null && `in ${labels.get(node.parent)}`].filter(Boolean).join(' · ')}
-          leading={<Mark mark={node.mark} icon={iconFor(node)} />} current={selectedIds.has(node.id)}
+          leading={<Mark image={markOf(node.mark)} icon={iconFor(node)} />} current={selectedIds.has(node.id)}
           // The second press of a double press enters: a row takes no double press of its own.
           onClick={event => { if (node.open !== undefined && event.detail === 2) enter(node.ref); else choose(node.ref); }}
           controlSide="end" control={node.open !== undefined && <Button variant="ghost" size="xs" aria-label={`Entra in ${node.label}`} onClick={() => enter(node.ref)}>Entra</Button>} />)}

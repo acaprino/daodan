@@ -1,9 +1,11 @@
 // The run: how far its steps are, what is missing and why, the graph as it takes shape, and what happened.
-import { useMemo, useState } from 'react';
-import { Badge, Button, Cluster, Column, Icon, Progress, ScrollArea, Section, Text } from '@acaprino/sigrid/primitives';
-import { Disclosure, Note } from '@acaprino/sigrid/components';
+import { useMemo } from 'react';
+import { Badge, Button, Cluster, Column, Icon, Progress, Section, Text } from '@acaprino/sigrid/primitives';
+import { Note } from '@acaprino/sigrid/components';
 import type { IconName } from '@acaprino/sigrid/primitives';
-import { plural } from '../src/words.ts';
+import { LongFold } from '../src/listed.tsx';
+import { MORE, plural } from '../src/words.ts';
+import { ExplorerLink } from './explorer-link.tsx';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import { Preview } from './preview.tsx';
 import { short } from './repository.ts';
@@ -17,7 +19,7 @@ import { model, useModel } from './use-model.ts';
 export function RunActions() {
   const s = useModel();
   return <>
-    <Button variant="outline" asChild><a href={model.explorerUrl()} target="_blank" rel="noopener"><Icon name="external" />Apri l’esploratore</a></Button>
+    <ExplorerLink />
     <Button loading={!complete(s)} loadingText="Analisi in corso" onClick={() => model.selectStage('synthesis')}>Leggi sintesi</Button>
   </>;
 }
@@ -62,7 +64,7 @@ function Execution() {
     <Column>
       <Text as="p" variant="strong">{runPhaseLabel(s)}</Text>
       <Progress aria-label="Passi completati della pipeline" showValue {...runBar(s)} />
-      <Text as="p" variant="note">{runHelp(s)}</Text>
+      <Text as="p" variant="note" data-selectable="">{runHelp(s)}</Text>
     </Column>
     <Pipeline />
     {alert && <Note tone={alert.tone} title={alert.title}
@@ -92,19 +94,16 @@ function LogRow({ item }: { item: LogItem }) {
 // The events, the newest first. Those in sight are announced as they come; the others are drawn only while their row is open.
 function Activity() {
   const { events } = useModel();
-  const [open, setOpen] = useState(false);
   const items = useMemo(() => logItems({ events }), [events]);
   const row = (item: LogItem, index: number) => <LogRow key={index} item={item} />;  // an event keeps its place in the run
   const rows = items.map(row).reverse();
   const rest = rows.slice(FIRST);
-  const more = rest.length === 1 ? '1 altro evento' : `Altri ${rest.length} eventi`;
+  const more = MORE.events(rest.length);
   return <Section title="Eventi e feedback" level={3} icon={<Icon name="history" />} gap="md"
     end={<Text variant="note">{plural(items.length, 'evento', 'eventi')}</Text>}>
     {!rows.length && <Text as="p" variant="muted">Nessun evento ancora.</Text>}
     <Column as="ul" gap="md" aria-label="Ultimi eventi" aria-live="polite" aria-relevant="additions" data-selectable="">{rows.slice(0, FIRST)}</Column>
-    {rest.length > 0 && <Disclosure label={more} open={open} onOpenChange={setOpen}>
-      {open && <ScrollArea bounded pad="xs" aria-label={more}><Column as="ul" gap="md" aria-label={more} data-selectable="">{rest}</Column></ScrollArea>}
-    </Disclosure>}
+    {rest.length > 0 && <LongFold label={more}><Column as="ul" gap="md" aria-label={more} data-selectable="">{rest}</Column></LongFold>}
   </Section>;
 }
 

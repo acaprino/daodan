@@ -1,8 +1,10 @@
 // The details of a group of the graph, in the inspector: a few facts beside the preview, all that is known of it on the graph.
-import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Badge, Button, Cluster, Column, Icon, Logo, ScrollArea, Section, Text } from '@acaprino/sigrid/primitives';
-import { DescriptionList, Disclosure } from '@acaprino/sigrid/components';
+import { Badge, Button, Cluster, Column, Icon, Section, Text } from '@acaprino/sigrid/primitives';
+import { DescriptionList } from '@acaprino/sigrid/components';
+import { Fold, FoldedList, List, Listed } from '../src/listed.tsx';
+import { Mark } from '../src/mark.tsx';
+import { Failed, Loading } from '../src/states.tsx';
 import { CATEGORY_LABEL, MORE, number } from '../src/words.ts';
 import type { Detail } from './frame.tsx';
 import { isOpenGroup, nodeFacts, nodeName, opens, responsibilityOf, thingById } from './graph.ts';
@@ -14,13 +16,7 @@ import type { Row } from './group.ts';
 import { short } from './repository.ts';
 import { iconOf } from './scene.ts';
 import { ctx } from './snapshot.ts';
-import { Failed, Loading } from './states.tsx';
 import { model, useModel, useModelSlice, useSymbols } from './use-model.ts';
-
-// What stands before the name of a node in a row: its logo, or the icon of its kind.
-export function Mark({ n }: { n: GraphNode }) {
-  return n.mark ? <Logo src={model.markUrl(n.mark)} decorative icon={iconOf(n)} /> : <Icon name={iconOf(n)} />;
-}
 
 const muted = (text: string): ReactNode => <Text as="p" variant="muted">{text}</Text>;
 const GONE = 'Non è più nel grafo di questo run.';
@@ -36,31 +32,6 @@ function GroupFacts({ id }: { id: string }) {
   </Column>;
 }
 
-// Text to read and copy, so not rows to press.
-function List({ label, items }: { label: string; items: ReactNode[] }) {
-  return <Column as="ul" aria-label={label}>{items.map((item, index) => <Column as="li" key={index} gap="xs">{item}</Column>)}</Column>;
-}
-
-// A row that opens in place, with what is under it drawn only while it is open.
-function Fold({ label, children }: { label: string; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  return <Disclosure label={label} open={open} onOpenChange={setOpen}>{open && children}</Disclosure>;
-}
-
-function FoldedList({ label, items }: { label: string; items: ReactNode[] }) {
-  return <Fold label={label}><ScrollArea bounded pad="xs" aria-label={label}><List label={label} items={items} /></ScrollArea></Fold>;
-}
-
-// The first entries of a list, and the others behind a row that says how many they are.
-const FIRST = 8;
-function Listed({ label, items, more }: { label: string; items: ReactNode[]; more: (count: number) => string }) {
-  const rest = items.slice(FIRST);
-  return <>
-    <List label={label} items={items.slice(0, FIRST)} />
-    {rest.length > 0 && <FoldedList label={more(rest.length)} items={rest} />}
-  </>;
-}
-
 const line = ({ name, about }: Row): ReactNode => <><Text pre>{name}</Text>{about && <Text variant="note" pre>{about}</Text>}</>;
 
 // The frameworks and the libraries a group declares, and where.
@@ -68,7 +39,7 @@ function Stack({ projects, others = 0 }: { projects: Technology[]; others?: numb
   return <Section title="Stack" level={3} icon={<Icon name="labels" />}>
     {projects.length > 0 ? <List label="Stack" items={projects.map(project => <>
       <Cluster>
-        <Logo src={model.markUrl(project.mark)} decorative icon="package" />
+        <Mark image={model.markUrl(project.mark)} icon="package" />
         <Text variant="strong">{project.name}</Text>
         <Badge variant="secondary">{CATEGORY_LABEL[project.category] ?? project.category}</Badge>
       </Cluster>
@@ -89,9 +60,9 @@ function FileSymbols({ file }: { file: string }) {
     {found?.error !== undefined ? <Failed title="Simboli non disponibili." cause={found.error} retry={again} />
       : !found || found.loading ? <Loading label="Lettura dei simboli…" />
       : <>
-          {symbols.length > 0 ? <Listed label="Simboli" items={symbols.map(line)} more={count => plural(count, 'altro simbolo', 'altri simboli')} />
+          {symbols.length > 0 ? <Listed label="Simboli" items={symbols.map(line)} more={MORE.symbols} />
             : muted('Nessun simbolo nell’outline.')}
-          {calls.length > 0 ? <Listed label="Chiamate" items={calls.map(line)} more={count => plural(count, 'altra chiamata', 'altre chiamate')} />
+          {calls.length > 0 ? <Listed label="Chiamate" items={calls.map(line)} more={MORE.calls} />
             : muted('Nessuna chiamata risolta da o verso i suoi simboli.')}
         </>}
   </Section>;
@@ -106,7 +77,7 @@ function FileRow({ graph, path }: { graph: Graph; path: string }) {
       <Text as="p" variant="note">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</Text>
       <Text variant="strong">Relazioni registrate</Text>
       {rows.length > 0
-        ? <Listed label={`Relazioni registrate di ${path}`} items={rows.map(line)} more={count => plural(count, 'altra relazione', 'altre relazioni')} />
+        ? <Listed label={`Relazioni registrate di ${path}`} items={rows.map(line)} more={MORE.relations} />
         : muted('Nessuna relazione tra gruppi cita questo file.')}
     </Column>
   </Fold>;
@@ -144,7 +115,7 @@ function GroupDetails({ id }: { id: string }) {
     {n && <Section title="Evidenze" level={3} icon={<Icon name="quote" />}>
       {evidence.length > 0
         ? <Listed label="Evidenze" items={evidence.map(at => <Text variant="note" pre>{siteOf(at)}</Text>)}
-            more={count => plural(count, 'altra evidenza', 'altre evidenze')} />
+            more={MORE.evidence} />
         : muted('Nessuna evidenza dichiarata.')}
     </Section>}
     {n && n.kind !== 'symbol' && <Files graph={graph} n={n} />}
@@ -163,7 +134,7 @@ function GroupToggle({ id }: { id: string }) {
 const GROUP = 'graph.group';
 const face = (thing: Thing) => ({
   id: GROUP, key: thing.id, title: 'Dettaglio del gruppo', icon: iconOf(thing), name: nodeName(thing),
-  image: !isOpenGroup(thing) && thing.mark ? model.markUrl(thing.mark) : undefined,
+  image: isOpenGroup(thing) ? undefined : model.markUrl(thing.mark),
 });
 // Beside the preview.
 export const groupDetail = (n: GraphNode, footer?: ReactNode): Detail => ({ ...face(n), content: <GroupFacts id={n.id} />, footer });

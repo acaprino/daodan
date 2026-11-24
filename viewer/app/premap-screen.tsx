@@ -5,6 +5,9 @@ import { Badge, Button, Cluster, Column, Grid, Icon, ScrollArea, Section, Table,
 import { DescriptionList, Empty, SearchField } from '@acaprino/sigrid/components';
 import { Tree } from '@acaprino/sigrid/assemblies';
 import type { TreeNode } from '@acaprino/sigrid/assemblies';
+import { List } from '../src/listed.tsx';
+import { Mark } from '../src/mark.tsx';
+import { Failed, Loading } from '../src/states.tsx';
 import { number, plural } from '../src/words.ts';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import type { Detail } from './frame.tsx';
@@ -16,7 +19,6 @@ import { RunName } from './provenance.tsx';
 import { ContextFacts } from './repository-screen.tsx';
 import { ctx } from './snapshot.ts';
 import type { Premap } from './snapshot.ts';
-import { Failed, Loading } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 
 export function PremapActions() {
@@ -61,7 +63,7 @@ function Provenance() {
   return c && <>
     <Text as="p" variant="soft">Snapshot del checkout, manifest e risultati degli strumenti di build.</Text>
     <DescriptionList items={provenanceFacts(c, s.premap)} />
-    <Column as="ul" gap="md" aria-label="Che cosa prova">{PROVENANCE_NOTES.map(text => <Column as="li" key={text}><Text>{text}</Text></Column>)}</Column>
+    <List label="Che cosa prova" items={PROVENANCE_NOTES.map(text => <Text>{text}</Text>)} />
   </>;
 }
 
@@ -126,19 +128,24 @@ function Dependencies({ premap }: { premap: Premap }) {
   </Section>;
 }
 
+// A technology, with its logo where its registry entry has one.
+function Technology({ technology: { name, mark } }: { technology: Premap['technologies'][number] }) {
+  return <Cluster wrap={false}><Mark image={model.markUrl(mark)} icon="labels" />{name}</Cluster>;
+}
+
 function Found({ premap }: { premap: Premap }) {
   return <>
     <Structure premap={premap} />
     <Grid gap="xl">
-      <Section title="Linguaggi" level={3} icon={<Icon name="code" />} end={<Badge variant="secondary">Inventario</Badge>}>
+      <Section title="Linguaggi" level={3} icon={<Icon name="code" />} end={<Badge variant="secondary">Inventario</Badge>} data-selectable="">
         {premap.languages.length > 0
           ? <DescriptionList items={premap.languages.map(language => ({ name: language.name, value: plural(language.files, 'file', 'file') }))} />
           : <Empty title="Nessun file sorgente riconosciuto." />}
         <Text as="p" variant="note">File sorgente dello snapshot, per linguaggio riconosciuto da Daodan.</Text>
       </Section>
-      <Section title="Tecnologie e framework" level={3} icon={<Icon name="labels" />} end={<Badge variant="secondary">Riconosciuti</Badge>}>
+      <Section title="Tecnologie e framework" level={3} icon={<Icon name="labels" />} end={<Badge variant="secondary">Riconosciuti</Badge>} data-selectable="">
         {premap.technologies.length > 0
-          ? <DescriptionList items={premap.technologies.map(technology => ({ name: technology.name, value: <Column gap="xs">
+          ? <DescriptionList items={premap.technologies.map(technology => ({ name: <Technology technology={technology} />, value: <Column gap="xs">
               <Text>{technologyFacts(technology)}</Text>
               {technology.source && <Text variant="note" pre>{technology.source}</Text>}
             </Column> }))} />
@@ -164,7 +171,7 @@ export function PremapScreen() {
           <ContextFacts />
           <Cluster><Button variant="outline" size="sm" onClick={() => model.selectStage('repository')}>Cambia repository o branch</Button></Cluster>
         </Section>
-        {premap && <Section title="Inventario" level={3} icon={<Icon name="bulletList" />}>
+        {premap && <Section title="Inventario" level={3} icon={<Icon name="bulletList" />} data-selectable="">
           <DescriptionList items={inventory(premap).map(count => ({ name: count.name, value: <>{count.value} <Text variant="note">{count.of}</Text></> }))} />
         </Section>}
       </Grid>

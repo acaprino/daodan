@@ -1,6 +1,7 @@
 // The App's model: its state, what it asks the server and what it keeps in the browser. It draws nothing: the page reads
 // `snapshot()`, which is one object until something changes, and calls the functions below.
 import { causeOf, whenFree } from '../src/http.ts';
+import { markAddress } from '../src/marks.ts';
 import { FAILURE } from '../src/words.ts';
 import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
@@ -387,7 +388,7 @@ export function createModel(host: Host) {
     },
     say, dismiss, keep: choose, navigate, selectStage,
     explorerUrl: () => `/?${new URLSearchParams({ token: host.token, run: ctx(now)?.run_id ?? '' })}`,
-    markUrl: (id: string) => `/api/app/mark?${new URLSearchParams({ id, token: host.token })}`,  // the logo of an entry of the registry
+    markUrl: (mark: string | null | undefined) => markAddress('/api/app/mark', mark, host.token),
     setRepositoryUrl, verifyRepositoryUrl, selectRepository, setBranch: (branch: string) => set({ branch }),
     retryPremap() { premapRun = ''; loadPremap(); },
     retryGraph() { graphRun = ''; set({ graphError: '' }); loadGraph(); },

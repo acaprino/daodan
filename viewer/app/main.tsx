@@ -4,7 +4,7 @@ import { Fragment, StrictMode, useCallback, useLayoutEffect, useMemo, useRef, us
 import type { ComponentType, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
-import { Badge, Cluster, Column, Count, Heading, Icon, Logo, Progress, Spacer, Text } from '@acaprino/sigrid/primitives';
+import { Badge, Cluster, Column, Count, Heading, Icon, Progress, Spacer, Text } from '@acaprino/sigrid/primitives';
 import { Toasts } from '@acaprino/sigrid/components';
 import { AppShell, Inspector, TitleBar, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs } from '@acaprino/sigrid/layout';
 import { applyKeptScheme, CommandPalette, CommandsProvider, formatKeys, KeyHints, useCommand, useCommandPalette, useSchemeCommands } from '@acaprino/sigrid/assemblies';
@@ -12,11 +12,13 @@ import { useMedia, WordsProvider } from '@acaprino/sigrid';
 import type { IconName } from '@acaprino/sigrid/primitives';
 import '@acaprino/sigrid/styles.css';
 import '@acaprino/sigrid/graph.css';
+import { Mark } from '../src/mark.tsx';
 import { LOOK } from '../src/page.ts';
-import { WORDS } from '../src/words.ts';
+import { focusContent } from '../src/states.tsx';
+import { plural, WORDS } from '../src/words.ts';
 import { analysisActions, AnalysisScreen } from './analysis.tsx';
 import { engineActions, EngineScreen } from './engine-screen.tsx';
-import { focusContent, FrameContext, useFocusKept } from './frame.tsx';
+import { FrameContext, useFocusKept } from './frame.tsx';
 import type { Detail, Frame } from './frame.tsx';
 import { graphActions, GraphScreen } from './graph-screen.tsx';
 import { short } from './repository.ts';
@@ -94,15 +96,17 @@ function App() {
   useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Vista', keys: 'Escape', icon: <Icon name="close" />, when: detail !== null, run: close });
   useSchemeCommands(LOOK);
 
+  // How many groups the graph has is at the foot, and not on its tab: a number that changes would move the tab beside it (R14). On a
+  // narrow window the tabs are at the foot and share its width, so there it moves nothing.
   const groups = s.graph?.nodes.length ?? 0;
   const word = (item: typeof place) => (item.value === 'graph' && groups > 0
     ? <>{item.label} <Count value={groups} label={groups === 1 ? 'gruppo' : 'gruppi'} /></> : item.label);
   const titleBar = <TitleBar><Toolbar aria-label="Daodan">
     <ToolbarBrand name="Daodan" />
     {!narrow && <ToolbarTabs aria-label="Schermate" value={place.value} onValueChange={toScreen}>{PLACES.map(item =>
-      <ToolbarTab key={item.value} value={item.value}>{word(item)}</ToolbarTab>)}</ToolbarTabs>}
+      <ToolbarTab key={item.value} value={item.value}>{item.label}</ToolbarTab>)}</ToolbarTabs>}
     <ToolbarSpacer />
-    <ToolbarButton label="Comandi" icon={<Icon name="search" />} shortcut={formatKeys('Ctrl+K')} variant="outline" onClick={() => palette.setOpen(true)}>Comandi</ToolbarButton>
+    <ToolbarButton label="Comandi" shortcut={formatKeys('Ctrl+K')} variant="outline" onClick={() => palette.setOpen(true)}>Comandi</ToolbarButton>
   </Toolbar></TitleBar>;
   const bottomBar = narrow && <Toolbar aria-label="Schermate in basso">
     <ToolbarTabs aria-label="Schermate" value={place.value} onValueChange={toScreen} edge="top" layout="stacked">{PLACES.map(item =>
@@ -120,7 +124,7 @@ function App() {
     {c && <><Spacer /><Text data-selectable="">{narrow ? slug(c) : `${slug(c)} · ${c.branch} · ${short(c.commit)} · run ${c.run_id}`}</Text></>}
   </>;
   const footer = !narrow && <>
-    <Text>{serviceLine(s)}</Text>
+    <Text>{[serviceLine(s), groups > 0 && `${plural(groups, 'gruppo', 'gruppi')} nel grafo`].filter(Boolean).join(' · ')}</Text>
     <Spacer />
     <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
   </>;
@@ -130,7 +134,7 @@ function App() {
         <Column gap="lg" data-selectable="">
           {/* The one live region: it stays while what the details are of changes, and reads the name alone. */}
           <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
-            {detail && <>{detail.image ? <Logo src={detail.image} decorative icon={detail.icon} /> : <Icon name={detail.icon} />}<Column><Heading size="small"><Text pre>{detail.name}</Text></Heading></Column></>}
+            {detail && <><Mark image={detail.image} icon={detail.icon} /><Column><Heading size="small"><Text pre>{detail.name}</Text></Heading></Column></>}
           </Cluster>
           {detail && <Fragment key={`${detail.id} ${detail.key ?? ''}`}>{detail.content}</Fragment>}
         </Column>

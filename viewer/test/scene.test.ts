@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { parseEnvelope } from '../src/envelope.ts';
 import type { Envelope, Flow } from '../src/envelope.ts';
 import type { Layout } from '../src/layoutClient.ts';
+import { markAddress } from '../src/marks.ts';
 import { dataLinks, flowFocus, project } from '../src/projection.ts';
 import type { Filters } from '../src/projection.ts';
 import { chosenIn, graphOf, layoutKeyOf, sceneOf } from '../src/scene.ts';
@@ -26,7 +27,7 @@ const layoutFor = (of: Drawing): Layout => ({
   nodes: Object.fromEntries(of.projection.nodes.map((node, n) => [node.id, { x: 10 * n, y: 100 * n, width: node.open ? 600 : 256, height: node.open ? 300 : 64 }])),
   edges: Object.fromEntries(of.edges.map((edge, n) => [edge.id, [{ x: n, y: 1 }, { x: n, y: 2 }]])),
 });
-const scene = (of: Drawing, token?: string) => sceneOf(of, layoutFor(of), token);
+const scene = (of: Drawing, token = '') => sceneOf(of, layoutFor(of), mark => markAddress('./api/mark', mark, token));
 const node = (from: Scene, id: string) => from.nodes.find(item => item.id === id);
 const line = (from: Scene, id: string) => from.edges.find(item => item.id === id);
 const numbers = (of: Flow, scope: string | null = null, open: string[] = []) =>

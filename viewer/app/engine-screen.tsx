@@ -1,6 +1,7 @@
 // The engine and the questions: a question on the run in view, its answer with the tools it took, the engine, and the MCP server.
 import { Badge, Button, Column, Grid, Icon, Progress, Section, Text, Textarea } from '@acaprino/sigrid/primitives';
-import { DescriptionList, Empty, FormField, Note } from '@acaprino/sigrid/components';
+import { DescriptionList, Empty, FormField } from '@acaprino/sigrid/components';
+import { Failed, Loading } from '../src/states.tsx';
 import { EngineForm } from './engine-form.tsx';
 import { askedWord, askFailed, askNote, lastQuestion, mcpFacts, toolUse } from './engine.ts';
 import { ScreenPanel } from './frame.tsx';
@@ -40,7 +41,7 @@ function Answer() {
   return <Section title="Risposta" level={3} icon={<Icon name="reply" />} gap="lg"
     end={asked && <Badge variant={failed ? 'destructive' : 'secondary'}>{askedWord(asked.state)}</Badge>}>
     <Column gap="lg" aria-live="polite" aria-busy={running} data-selectable="">
-      {asked && asked.tools.length > 0 && <Section title="Operazioni di Daodan usate" level={4}><DescriptionList items={asked.tools.map(toolUse)} /></Section>}
+      {asked && asked.tools.length > 0 && <Section title="Operazioni di Daodan usate" level={4} icon={<Icon name="listOrdered" />}><DescriptionList items={asked.tools.map(toolUse)} /></Section>}
       {asked?.text && <Text as="p" pre>{asked.text}</Text>}
       {running && !asked?.text && <Column>
         <Text as="p" variant="muted">In attesa del motore…</Text>
@@ -49,7 +50,7 @@ function Answer() {
       {!asked && (last ? <Text as="p" variant="muted" pre>{last}</Text>
         : <Empty title="Nessuna domanda" description="La risposta del motore compare qui, con le operazioni di Daodan usate." />)}
     </Column>
-    {asked && failed && <Note tone="error" title={`Domanda ${askedWord(asked.state)}.`}>{asked.cause && <Text pre data-selectable="">{asked.cause}</Text>}</Note>}
+    {asked && failed && <Failed title={`Domanda ${askedWord(asked.state)}.`} cause={asked.cause} />}
   </Section>;
 }
 
@@ -68,7 +69,7 @@ export function EngineScreen() {
   const s = useModel();
   if (!s.server) {
     return <ScreenPanel title="Motore e domande">
-      {!s.serverError && <Column pad="lg" aria-busy><Progress aria-label="Lettura dello stato del server…" value={null} /></Column>}
+      {!s.serverError && <Column pad="lg"><Loading label="Lettura dello stato del server…" /></Column>}
     </ScreenPanel>;
   }
   return <ScreenPanel title="Motore e domande" subtitle={slug(ctx(s)) || 'Nessuna repository'}>

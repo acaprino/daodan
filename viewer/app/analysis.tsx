@@ -1,9 +1,10 @@
 // The analysis: its stages in their order, and the one chosen beside them.
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
-import { Badge, Column, Progress, Text } from '@acaprino/sigrid/primitives';
+import { Badge, Column, Text } from '@acaprino/sigrid/primitives';
 import { ItemList, ItemRow } from '@acaprino/sigrid/components';
 import { ContentSplit } from '@acaprino/sigrid/layout';
+import { Loading } from '../src/states.tsx';
 import { FrameContext, ScreenPanel, useFocusKept, useFrame } from './frame.tsx';
 import { PremapActions, PremapScreen } from './premap-screen.tsx';
 import { RepositoryActions, RepositoryScreen } from './repository-screen.tsx';
@@ -37,7 +38,7 @@ export function AnalysisScreen() {
   const inPane = useMemo(() => (alone ? { ...frame, back: () => setShown('aside') } : frame), [frame, alone]);
   if (!s.server) {
     return <ScreenPanel title="Analisi">
-      {!s.serverError && <Column pad="lg" aria-busy><Progress aria-label="Lettura dello stato del server…" value={null} /></Column>}
+      {!s.serverError && <Column pad="lg"><Loading label="Lettura dello stato del server…" /></Column>}
     </ScreenPanel>;
   }
   const { Screen } = STAGE[s.kept.analysisStage];
