@@ -81,8 +81,8 @@ def test_host_evidence_reaches_the_stack_without_claiming_a_configured_service(t
     snapshot.write_snapshot(project, manifest)
     result = technologies.ensure(manifest)
     mention = next(e for e in result["mentioned"] if e["id"] == "telegram")
-    assert mention["signs"] == [{"sign": "host", "strength": "mentioned", "value": "api.telegram.org",
-                                 "path": "settings.yaml", "line": 1}]
+    assert [{k: v for k, v in sign.items() if k != "scan"} for sign in mention["signs"]] == [
+        {"sign": "host", "strength": "mentioned", "value": "api.telegram.org", "path": "settings.yaml", "line": 1}]
     assert "telegram" not in {e["id"] for e in result["technologies"]}
     assert not any("telegram" in unit["services"] for unit in result["units"])
     assert result["configured_services"] == []

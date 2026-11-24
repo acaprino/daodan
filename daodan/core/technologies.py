@@ -11,7 +11,8 @@ languages, toolchains, frameworks, declared libraries (cataloged or not), extern
 For build modules with a native package graph, `resolved_libraries` records the reachable external packages
 and their exact versions. A resolved package can be conditional on a target or feature.
 An entry with no `declared` sign, only lines of text that mention it, is no module's: it stays in `mentioned` with its
-signs. `checkers` gives each checker's status (`service_registry.CHECKERS`) and `gaps` what they could not establish.
+signs. Every sign carries its `source` and the `scan` (the pre-map's `inputs_digest`) that produced it: a scan replaces the
+signs of the sources it ran and keeps the others while their file exists (`merge`). `checkers` gives each checker's status (`service_registry.CHECKERS`) and `gaps` what they could not establish.
 """
 from __future__ import annotations
 
@@ -33,11 +34,13 @@ from module_derive import PREMAP_KIND_ECOSYSTEM  # noqa: E402
 import modules  # noqa: E402
 import premap  # noqa: E402
 import service_registry  # noqa: E402
+import stack_analyser  # noqa: E402
+import stack_recognition  # noqa: E402
 from languages._treesitter import get_parser  # noqa: E402
 from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
 SCHEMA, FILE = "daodan/technologies/v1", "technologies.json"
-MATCHER_VERSION = 3  # Cache identity for recognition and attribution changes within the v1 output format.
+MATCHER_VERSION = 4  # Cache identity for recognition and attribution changes within the v1 output format.
 
 
 def _versions_only(rel: str | None) -> bool:
@@ -62,7 +65,7 @@ def _inputs(manifest: Path, registry: dict, facts: dict) -> tuple[str, str, str]
     graph_digest = modules.load_graph(Path(modules.ensure_structure(manifest)["graph"])).get("inputs_digest")
     with open_snapshot(manifest) as store:
         root, target = store["root"], store.get("target") or "."
-        value = [inventory_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION,
+        value = [inventory_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION, stack_analyser.VERSION, stack_analyser.SHA256,
                  facts.get("packages"), facts.get("package_graphs"), facts.get("services"), facts.get("configured_services"),
                  facts.get("docker_builds"), facts.get("excluded"), facts.get("toolchains"), facts.get("units")]
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest(), root, target
@@ -133,11 +136,39 @@ def _resolved_libraries(graph: dict, member: int) -> list[dict]:
     return sorted(result, key=lambda row: (not row["direct"], row["name"], row["version"]))
 
 
+def merge(found: list[dict], ran: set[str], previous: dict | None, scan: str, exists, registry: dict) -> tuple[list[dict], list[dict]]:
+    """The entries of this scan's `found`, each sign with its `scan`, and those of the `previous` record whose source is
+    not in `ran` (the label up to `@`) and whose file `exists`. A sign with no path is kept; one with no source (a
+    record of another shape) is not. A kept entry has the registry's data of now. A gap says what was kept."""
+    now = {e["id"]: {**e, "signs": [{**s, "scan": scan} for s in e["signs"]]} for e in found}
+    kept, sources, scans = {}, set(), set()
+    for old in [*(previous or {}).get("technologies", ()), *(previous or {}).get("mentioned", ())]:
+        for sign in old.get("signs") or ():
+            name = (sign.get("source") or "").partition("@")[0]
+            if name and name not in ran and (not sign.get("path") or exists(sign["path"])):
+                kept.setdefault(old["id"], []).append(sign)
+                sources.add(name)
+                scans.add(sign.get("scan"))
+    for ident in kept:
+        if ident in now:
+            now[ident]["signs"] += kept[ident]
+    entries, gaps = stack_recognition.found({}, registry, set(), (), [(i, s) for i in kept if i not in now for s in kept[i]])
+    entries = [*now.values(), *entries]
+    for item in entries:
+        item["signs"].sort(key=lambda s: (s["sign"], s["path"] or "", s["line"] or 0, s["value"]))
+    return sorted(entries, key=lambda e: e["id"]), gaps + (
+        [{"kind": "signs_kept", "sources": sorted(sources), "scans": sorted(scans, key=str)}] if kept else [])
+
+
 def derive(manifest: Path, registry: dict, facts: dict) -> dict:
-    """The stack record of `manifest` from the registry and Step 1's `facts`."""
-    recognized = service_registry.run(manifest, registry, facts)
+    """The stack record of `manifest` from the registry and Step 1's `facts`; the signs of the sources the recogniser did
+    not run come from the record beside `manifest`, as it is before this one replaces it (`merge`)."""
+    recognized = service_registry.run(manifest, registry, facts)  # B4: stack_recognition.run
+    digest, root, target = _inputs(manifest, registry, facts)
+    merged, kept = merge(recognized["found"], set(recognized.get("ran") or ()), recorded(manifest),
+                         facts.get("inputs_digest"), lambda rel: Path(root, rel).is_file(), registry)
     entries, mentioned = [], []
-    for found in recognized["found"]:
+    for found in merged:
         entry = {k: v for k, v in found.items() if k != "source"}
         (entries if any(s["strength"] == "declared" for s in entry["signs"]) else mentioned).append(entry)
     if "sources" in facts:
@@ -218,11 +249,10 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
         all_modules.append(item)
         if unit["provenance"] in modules.PHYSICAL:
             units.append(item)
-    digest, root, target = _inputs(manifest, registry, facts)
     return {"schema": SCHEMA, "manifest": manifest.as_posix(), "root": root, "target": target,
             "inputs_digest": digest, "technologies": entries, "mentioned": mentioned, "units": units,
             "configured_services": configured, "modules": all_modules,
-            "checkers": recognized["checkers"], "gaps": recognized["gaps"]}
+            "checkers": recognized["checkers"], "gaps": [*recognized["gaps"], *kept]}
 
 
 def _read(manifest: Path, digest: str) -> dict | None:
