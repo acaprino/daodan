@@ -37,17 +37,15 @@ jobs:
 
       - run: npm ci
 
-      # The design rules of Imago, for the App page: the one still on it (the `imago` block of package.json).
-      - run: npx imago-check
-
       - run: npm run typecheck
 
       - run: npm test
 
       - run: npm run build
 
-      # The map page is Sigrid's components alone: no class and no stylesheet of Daodan's (sigrid-check.config.json).
-      - run: npx --no sigrid-check src
+      # The two pages are Sigrid's components alone: no class and no stylesheet of Daodan's (sigrid-check.config.json). One
+      # folder at a time.
+      - run: npx --no sigrid-check src && npx --no sigrid-check app
 
       - run: npx playwright install --with-deps chromium
 

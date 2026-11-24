@@ -39,15 +39,13 @@ bisogno. Di Daodan sono solo il layout, che segue le sue funzioni, l'accento e l
 - È l'app ad adeguarsi al design system, mai il contrario. Sigrid cambia solo quando manca davvero un componente o una
   primitiva che serve a una funzione: allora si aggiunge a Sigrid, generico, per tutte le app. L'aspetto che Daodan
   aveva prima non è mai un motivo per cambiare Sigrid.
-- Finché il viewer non passa da Imago a Sigrid (il porting è in corso), l'interfaccia usa solo i pezzi di Imago e non ne
-  aggiunge di propri; un pezzo che manca si chiede a Sigrid e arriva con il porting.
 
 ## Interfaccia (viewer/)
 
-- Prima di lavorare sull'interfaccia leggi `viewer/node_modules/@acaprino/imago/docs/design-file.md` (da `viewer/`: `node_modules/@acaprino/imago/docs/design-file.md`, dopo `npm ci`) e i file che richiama.
-- Applica i suoi token e le scelte confermate entro la richiesta; usa le classi `im-` e i token `--im-` del pacchetto, e non costruire mai un controllo tuo («Un solo aspetto per tutta la suite»).
+- Prima di lavorare sull'interfaccia leggi l'`AGENTS.md` di Sigrid (`viewer/node_modules/@acaprino/sigrid/AGENTS.md`, dopo `npm ci`; nella versione di `viewer/package.json`) e i file che richiama: il catalogo dei componenti, `DESIGN.md`, `docs/patterns.md`.
+- Componi solo i componenti di Sigrid, nelle schermate di `viewer/src` (la mappa) e `viewer/app` (l'App): nessuna classe, nessuno stile, nessun foglio di stile, nessun controllo tuo («Un solo aspetto per tutta la suite»). La logica sta in moduli senza interfaccia, con i loro test.
 - Segnala i conflitti e lascia esplicite le scelte aperte.
-- Prima di dire che il lavoro sull'interfaccia è finito esegui `npx imago-check` in `viewer/`.
+- `sigrid-check`, con la regola `own-class`, è pulito su `src` e su `app` (`npx --no sigrid-check src`, `npx --no sigrid-check app`, una cartella per volta): lo esegue il workflow Viewer.
 
 ## Come rispondere
 

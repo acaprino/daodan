@@ -3,11 +3,9 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 
-// A page takes its styles from one design system: the map page from Sigrid, the App page from Imago until it is ported.
-// Any other stylesheet stops the build.
-function systemStyles(app: boolean): Plugin {
-  const system = app ? '@acaprino/imago' : '@acaprino/sigrid';
-  const css = dirname(fileURLToPath(import.meta.resolve(app ? '@acaprino/imago/css/imago.css' : '@acaprino/sigrid/styles.css')));
+// The pages take their styles from Sigrid alone. Any other stylesheet stops the build.
+function systemStyles(): Plugin {
+  const css = dirname(fileURLToPath(import.meta.resolve('@acaprino/sigrid/styles.css')));
   return {
     name: 'system-styles', enforce: 'pre',
     transform(_source, id) {
@@ -15,7 +13,7 @@ function systemStyles(app: boolean): Plugin {
       if (!path.endsWith('.css')) return;
       const fromSystem = relative(css, path);
       if (isAbsolute(fromSystem) || fromSystem === '..' || fromSystem.startsWith('..' + sep)) {
-        this.error(`This page's styles are ${system}'s only: ${path}`);
+        this.error(`The pages' styles are @acaprino/sigrid's only: ${path}`);
       }
     },
   };
@@ -55,7 +53,7 @@ export default defineConfig(({ mode }) => ({
   root: mode === 'app' ? 'app' : '.',
   publicDir: resolve('public'),
   base: './',
-  plugins: [systemStyles(mode === 'app'), licenseNotices(mode !== 'app')],
+  plugins: [systemStyles(), licenseNotices(mode !== 'app')],
   build: {
     outDir: mode === 'app' ? '../../daodan/assets/app' : '../daodan/assets/viewer',
     emptyOutDir: true, chunkSizeWarningLimit: 2500,

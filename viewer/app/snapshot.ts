@@ -57,7 +57,7 @@ export type Snapshot = Readonly<{
   events: readonly RunEvent[];
   engineDraft: EngineDraft | null; engineSaid: string; engineTone: '' | 'good' | 'bad';
   question: string; asked: Asked | null;
-  notices: readonly Notice[];
+  notices: Notice[];
 }>;
 
 type Run = Pick<Snapshot, 'server'>;

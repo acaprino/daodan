@@ -11,8 +11,8 @@ Object.assign(envelope.entities.find(entity => entity.ref === 'component:web'), 
 envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lungo', complete: true, gaps: [], steps: Array(43).fill(envelope.flows[1].steps[0]) });
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
-const engineRequests = [], askRequests = [];
-const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, exportBroken: false, exportDelay: 0, layoutLost: false };
+const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [];
+const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, layoutLost: false };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
@@ -60,9 +60,15 @@ try {
     if (path === '/api/app/answer') return route.fulfill({ json: { events: [{ kind: 'tool', name: 'cerca', arguments: 'token' }], next: 1, state: 'done', text: 'Lo firma auth.ts', cause: null } });
     if (path === '/api/app/link') return route.fulfill(mode.linkStatus === 200 ? { json: {} } : { status: mode.linkStatus, json: { error: 'collegamento non riuscito' } });
     if (path === '/api/app/check') {
+      checkRequests.push(route.request().postDataJSON());
       await new Promise(resolve => setTimeout(resolve, mode.checkDelay));
       return route.fulfill({ json: { state: 'accessible', repository: { owner: 'demo', name: 'shop' }, default: 'main',
-        branches: [{ name: 'main', commit: '1'.repeat(40) }] } });
+        branches: [{ name: 'main', commit: '1'.repeat(40) }, { name: 'dev', commit: '2'.repeat(40) }] } });
+    }
+    if (path === '/api/app/select') {
+      selectRequests.push(route.request().postDataJSON());
+      return route.fulfill(mode.selectRefused ? { status: 400, json: { error: mode.selectRefused } }
+        : { json: { context: null, job: { state: 'preparing', step: 'checkout', detail: 'dev' }, engine: { engine: 'claude', engines: ['claude'] } } });
     }
     if (path === '/api/app/graph') {
       if (mode.graphStatus !== 200) return route.fulfill({ status: mode.graphStatus, json: { error: 'grafo non letto' } });
@@ -93,269 +99,415 @@ try {
     window.EventSource = class extends EventTarget {
       constructor() {
         super();
-        const publish = frame => this.dispatchEvent(new MessageEvent('app', { data: JSON.stringify(frame) }));
+        const send = (name, frame) => this.dispatchEvent(new MessageEvent(name, { data: JSON.stringify(frame) }));
+        const publish = frame => send('app', frame);
         window.setMapState = mapped => publish({ ...state, mapped });
         window.setServerState = patch => publish({ ...state, ...patch });
+        window.failServer = error => send('failure', { error });
         setTimeout(() => publish(state), 0);
       }
       close() {}
     };
   }, { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } });
   await page.goto('http://daodan.test/app/?token=test');
-  assert.equal(await page.locator('body > .im-shell').count(), 1);
+  // What a person meets, by role, name and words, on the two pages. The scheme is what `applyTheme` writes on the root.
   const selectable = locator => locator.evaluate(el => getComputedStyle(el).userSelect !== 'none');
   const palette = page.getByRole('dialog', { name: 'Cerca un comando' });
-  // A tone is one of the four statuses; the accent stays on a chip or a dot, as data. The graph's edges, and the samples of its key, have their own.
-  const tonesAreCanon = async () => {
-    const found = await page.evaluate(() => [...document.querySelectorAll('[data-im-tone]')].filter(el => !el.closest('svg, .im-graph-legend'))
-      .map(el => [el.dataset.imTone, el.className]));
-    for (const [tone, name] of found) assert.ok(['ok', 'warn', 'err', 'info'].includes(tone) || (tone === 'accent' && /(^| )im-(chip|dot)( |$)/.test(name)), `${tone} on ${name}`);
-  };
   const choose = async command => {
     await page.keyboard.press('Control+k');
     await palette.getByRole('option', { name: command }).click();
   };
-  const inContent = () => page.evaluate(() => !!document.activeElement?.closest('.im-content'));
-  const theme = () => page.evaluate(() => document.documentElement.dataset.imTheme);
-  await page.keyboard.press('Control+k');
-  await palette.waitFor();
-  assert.ok(await palette.getByRole('option', { name: 'Tema scuro' }).isVisible());
-  await page.keyboard.press('Escape');
-  await choose('Tema scuro');
-  await page.waitForFunction(() => document.documentElement.dataset.imTheme === 'dark');
-  assert.equal(await page.evaluate(() => localStorage.getItem('daodan.theme')), 'dark');
-  await page.reload();
-  await page.locator('#stage-premap').waitFor();
-  assert.equal(await theme(), 'dark');
-  const tabs = page.getByRole('tablist', { name: 'Schermate' });
-  const screens = await tabs.getByRole('tab').allInnerTexts();
-  assert.deepEqual(screens, ['Analisi', 'Grafo', 'Motore e domande']);
-  assert.equal(await page.locator('.im-sidebar').count(), 0);
-  assert.ok(await page.locator('#use-repository').getAttribute('title'));
-  assert.ok(await page.getByLabel('Branch da analizzare').isDisabled());
-  await page.getByLabel('URL GitHub').waitFor();
-  await page.locator('#verify-repository').click();
-  assert.match(await page.locator('#repository-error').innerText(), /^Errore: /);
-  await page.locator('#repository-url').fill('https://github.com/demo/shop');
-  mode.checkDelay = 600;
-  await page.locator('#verify-repository').click();
-  await page.waitForFunction(() => document.getElementById('verify-repository').getAttribute('aria-busy') === 'true');
-  assert.equal(await page.locator('#verify-repository').innerText(), 'Verifica accesso');
-  await page.waitForFunction(() => document.getElementById('verify-repository').getAttribute('aria-busy') !== 'true');
-  await tonesAreCanon();
-  mode.graphStatus = 500;
-  mode.premapDelay = 1000;
-  await page.locator('#stage-premap').click();
-  await page.locator('[data-im-state-layer="loading"]').waitFor();
-  await page.getByRole('tree').waitFor();
-  mode.premapDelay = 0;
-  await page.locator('#context-repo').waitFor();
-  assert.equal(await page.locator('#context-repo').innerText(), 'demo/shop');
-  assert.equal(await page.locator('#context-branch').innerText(), 'main');
-  assert.equal(await page.locator('#context-commit').innerText(), '1'.repeat(12));
-  assert.equal(await page.locator('#context-run-id').innerText(), 'demo');
-  assert.ok(await selectable(page.locator('#context-commit')));
-  assert.ok(await selectable(page.locator('.im-table td strong', { hasText: 'left-pad' })));
-  const footer = page.locator('.im-footer');
-  assert.match(await footer.innerText(), /App locale/);
-  assert.match(await footer.locator('.im-footer-keys').innerText(), /Ctrl\s*K[\s\S]*Ctrl\s*F/);
-  assert.equal(await page.locator('#service-dot').getAttribute('data-im-tone'), 'ok');
-  await tabs.getByRole('tab', { name: 'Analisi' }).focus();
-  await page.keyboard.press('ArrowRight');
-  await page.keyboard.press('Enter');
-  assert.equal(await page.getByRole('tab', { name: /^Grafo/ }).getAttribute('aria-selected'), 'true');
-  await page.keyboard.press('ArrowLeft');
-  await page.keyboard.press('Enter');
-  assert.equal(await tabs.getByRole('tab', { name: 'Analisi' }).getAttribute('aria-selected'), 'true');
-  const directories = page.getByRole('radio', { name: 'Directory', exact: true });
-  const units = page.getByRole('radio', { name: 'Unità tecniche' });
-  await directories.focus();
-  await directories.press('ArrowRight');
-  assert.ok(await units.isChecked());
-  assert.ok(await units.evaluate(el => document.activeElement === el));
-  await units.press('ArrowLeft');
-  assert.ok(await directories.isChecked());
-  assert.equal(await page.locator('.im-metric').count(), 4);
-  const tree = page.getByRole('tree');
-  await tree.getByRole('treeitem', { name: 'main.ts' }).press('Enter');
-  assert.match(await page.locator('#tree-selection').innerText(), /src\/main.ts/);
-  const provenance = page.getByRole('button', { name: 'Provenienza', exact: true });
-  await provenance.click();
-  const detail = page.getByRole('region', { name: 'Provenienza della pre-mappa' });
-  assert.ok(await detail.isVisible());
-  await page.keyboard.press('Escape');
-  assert.ok(await detail.isHidden());
-  assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Provenienza');
-  await tabs.getByRole('tab', { name: 'Grafo' }).click();
-  const failed = page.locator('.im-failure');
-  assert.match(await failed.innerText(), /Errore[\s\S]*grafo non letto[\s\S]*Riprova/);
-  mode.graphStatus = 200;
-  await failed.getByRole('button', { name: 'Riprova' }).click();
-  await page.getByRole('region', { name: 'Grafo del codice' }).waitFor();
-  assert.equal(await tabs.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
-  await page.getByLabel('Relazioni', { exact: true }).selectOption('imports');  // the kind filter: no relation of that kind
-  await page.locator('.im-graph-legend').getByText('0 relazioni visibili').waitFor();
-  await page.getByRole('button', { name: 'Azzera filtri' }).click();
-  await page.locator('.im-graph-legend').getByText('4 relazioni visibili').waitFor();
-  const legend = await page.locator('.im-graph-legend').innerText();
-  assert.ok(legend.includes('Osservata in esecuzione') && legend.includes('Incerta') && !legend.includes('■'));
-  await tonesAreCanon();
-  await tabs.getByRole('tab', { name: /^Analisi/ }).click();
-  await page.locator('#stage-analysis').click();
-  await page.locator('#preview-diagram .im-graph-node').first().waitFor();
-  assert.equal(await page.locator('#pipeline-steps li').count(), 6);
-  await page.waitForFunction(() => !document.querySelector('img.im-inline-mark'));  // the mark that does not load is the icon
-  assert.ok(await page.locator('#preview-diagram [data-im-node="Client"] .im-icon').count() > 0);
-  mode.linkStatus = 500;
-  await page.getByRole('button', { name: 'Trova i legami' }).click();
-  const linkError = page.locator('.im-notice', { hasText: 'collegamento non riuscito' });
-  await linkError.waitFor();
-  assert.match(await linkError.innerText(), /Errore/);
-  await page.waitForTimeout(6500);
-  assert.equal(await linkError.count(), 1);
-  await linkError.getByRole('button', { name: 'Chiudi' }).click();
-  assert.equal(await linkError.count(), 0);
-  await tonesAreCanon();
-  const partialMap = { state: 'incomplete', cause: 'the recorded map still has stale or incomplete records',
-    needs_review: { nodes: { count: 2, ids: ['a', 'b'] }, flows: { count: 1, ids: ['c'] },
-      refused_proposals: { count: 1, ids: ['request:d'] } } };
-  await page.evaluate(mapped => window.setMapState(mapped), partialMap);
-  const notice = page.locator('#map-status .im-note');
-  await notice.getByText('Mappa del sistema parziale').waitFor();
-  assert.match(await notice.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata/);
-  assert.match(await notice.innerText(), /revisione precedente/);
-  await page.locator('#stage-synthesis').click();
-  const paths = page.getByRole('region', { name: 'Percorsi per ingresso' });
-  await paths.getByText('Nessun ingresso classificato per questo snapshot.').waitFor();
-  pathsClassified = true;
-  await page.evaluate(() => window.setMapState({ state: 'done', discovery: { count: 2 } }));
-  await paths.getByRole('button', { name: /Salva ordine/ }).click();
-  await paths.getByText('store:ordini', { exact: true }).waitFor();
-  await paths.getByText('Effetto', { exact: true }).waitFor();
-  await paths.getByRole('button', { name: 'Passaggi successivi' }).click();
-  await paths.getByText('Destinazione campionata', { exact: true }).waitFor();
-  assert.match(await paths.innerText(), /campionata dal profiler/);
-  await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
-  await paths.getByRole('button', { name: 'Ingressi successivi' }).click();
-  await paths.getByRole('button', { name: /Annulla ordine/ }).waitFor();
-  await paths.getByRole('button', { name: 'Ingressi precedenti' }).click();
-  await paths.getByRole('button', { name: 'Scritture senza ingresso' }).click();
-  await paths.getByText('store:registro', { exact: true }).waitFor();
-  assert.match(await paths.innerText(), /2 di 3 scritture/);
-  await paths.getByRole('button', { name: 'Scritture successive' }).click();
-  await paths.getByText('store:audit', { exact: true }).waitFor();
-  await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
-  await paths.getByRole('button', { name: /Salva ordine/ }).waitFor();
-  await page.evaluate(mapped => window.setMapState(mapped), partialMap);
-  await page.getByText('Mappa del sistema parziale').waitFor();
-  await page.getByText('1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto').waitFor();
-  await page.evaluate(() => window.setMapState({ state: 'done' }));
-  await page.getByText('Mappa del sistema registrata').waitFor();
-  assert.equal(await page.getByText('Mappa del sistema parziale').count(), 0);
-  await page.locator('#stage-analysis').click();
-  await page.locator('#preview-diagram .im-graph-node').first().click();
-  const preview = page.getByRole('region', { name: 'Client' });
-  await preview.getByRole('button', { name: 'Apri nel grafo' }).waitFor();
-  await page.keyboard.press('Escape');
-  assert.ok(await preview.isHidden());
-  await tabs.getByRole('tab', { name: /^Grafo/ }).click();
-  const diagram = page.getByRole('region', { name: 'Grafo del codice' });
-  await page.keyboard.press('Control+f');
-  assert.equal(await page.evaluate(() => document.activeElement?.id), 'graph-search');
-  await tabs.getByRole('tab', { name: /^Grafo/ }).focus();
-  await page.keyboard.press('F6');
-  assert.ok(await inContent());
-  await diagram.locator('[data-im-node="Client"] .im-graph-node').press('ArrowRight');
-  assert.equal(await page.evaluate(() => document.activeElement.closest('[data-im-node]').dataset.imNode), 'Server');
-  await page.keyboard.press('Enter');
-  const group = page.getByRole('region', { name: 'Dettaglio del gruppo' });
-  assert.equal(await group.locator('h2').innerText(), 'Server');
-  const titles = await diagram.locator('.im-graph-edge title').allTextContents();
-  assert.ok(titles.some(label => label.includes('osservata in esecuzione')));
-  assert.ok(titles.some(label => label.includes('campionata dal profiler')));
-  assert.ok(titles.some(label => label.includes('destinazioni in conflitto')));
-  await group.locator('summary', { hasText: 'Prove delle chiamate' }).click();
-  await page.getByText('Client → Server · osservata in esecuzione', { exact: true }).waitFor();
-  await page.getByText('Client → Server · campionata dal profiler', { exact: true }).waitFor();
-  await page.getByText('Client → Server · osservata in esecuzione · destinazioni in conflitto', { exact: true }).waitFor();
-  await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
-  assert.match(await page.locator('.im-inspector .im-panel-title:visible').innerText(), /File di Server/);
-  await page.keyboard.press('Escape');
-  assert.equal(await group.locator('h2').innerText(), 'Server');
-  // A node chosen while a file list is pushed on another group: the new group replaces both, and nothing stale comes back.
-  await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
-  await diagram.locator('[data-im-node="Client"] .im-graph-node').click();
-  assert.equal(await group.locator('h2:visible').innerText(), 'Client');
-  assert.equal(await page.locator('.im-inspector .im-panel-title:visible').innerText(), 'Dettaglio del gruppo');
-  await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  assert.ok(await page.locator('.im-inspector').isHidden());
-  await diagram.getByRole('button', { name: 'Apri Client' }).click();
-  await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
-  await diagram.locator('[data-im-node="child"] .im-graph-node').click();  // a file: its symbols are asked and drawn
-  await group.getByText('Simboli e chiamate').waitFor();
-  await group.locator('code', { hasText: 'save' }).waitFor();
-  assert.equal(await diagram.locator('.im-graph-group').count(), 1);
-  await diagram.getByRole('button', { name: 'Chiudi Client' }).click();
-  await diagram.getByRole('button', { name: 'Apri Client' }).waitFor();
-  await tabs.getByRole('tab', { name: 'Analisi' }).click();
-  assert.ok(await page.locator('.im-inspector').isHidden());
-  await tabs.getByRole('tab', { name: /^Grafo/ }).click();
-  await page.setViewportSize({ width: 900, height: 820 });
-  await group.waitFor();
-  const [content, inspector] = await Promise.all([page.locator('.im-content').boundingBox(), page.locator('.im-inspector').boundingBox()]);
-  assert.ok(inspector.x < content.x + content.width - 100);
-  await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
-  assert.ok(await page.locator('.im-inspector').isHidden());
-  assert.equal(await page.getByRole('dialog').count(), 0);
-  await page.setViewportSize({ width: 390, height: 820 });
-  assert.equal(await tabs.isVisible(), false);
-  await page.getByRole('button', { name: 'Schermate', exact: true }).click();
-  await page.getByRole('menuitemradio', { name: 'Motore e domande' }).click();
-  await page.getByRole('menu').waitFor({ state: 'detached' });
-  await page.locator('#question').waitFor({ state: 'visible' });
-  await tonesAreCanon();
-  assert.equal(await page.locator('textarea.im-textarea#question').count(), 1);
-  await page.locator('#question').fill('Dove si firma il token?');  // the question and its answer, with the tools used
-  await page.getByRole('button', { name: 'Chiedi' }).click();
-  await page.locator('#answer-box').getByText('Lo firma auth.ts').waitFor();
-  assert.match(await page.locator('#answer-box').innerText(), /cerca token/);
-  assert.notEqual(await page.getByRole('button', { name: 'Chiedi' }).getAttribute('aria-busy'), 'true');
-  // A busy button ignores the pointer, not the keyboard: Enter on it must not send the question a second time.
-  assert.equal(askRequests.length, 1);
-  await page.evaluate(() => window.setServerState({ asked: { state: 'running', question: 'Dove si firma il token?' } }));
-  await page.locator('#ask-button[aria-busy="true"]').waitFor();
-  await page.locator('#ask-button').focus();
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(300);
-  assert.equal(askRequests.length, 1);
-  await page.evaluate(() => window.setServerState({ asked: { state: 'done', question: 'Dove si firma il token?' } }));
-  await page.evaluate(() => window.setServerState({ engine: { engine: 'openai', engines: ['claude', 'openai'], api_key: 'set', base_url: 'https://api.test/v1', model: 'm' } }));
-  await page.getByRole('combobox', { name: 'Motore', exact: true }).waitFor();
-  await page.getByRole('combobox', { name: 'Motore', exact: true }).selectOption('openai');
-  for (const label of [/^Indirizzo dell’endpoint/, /^Modello/, /^Chiave/, 'Domanda']) await page.getByLabel(label, { exact: typeof label === 'string' }).waitFor();
-  assert.ok(await page.locator('.im-field-hint', { hasText: 'Chiave impostata' }).isVisible());
-  const forget = page.getByRole('button', { name: 'Rimuovi la chiave' });
-  await forget.click();
-  const sure = page.getByRole('alertdialog', { name: 'Rimuovere la chiave?' });
-  await sure.waitFor();
-  assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), 'Annulla');
-  assert.match(await sure.innerText(), /deposito delle credenziali[\s\S]*non si può recuperare/);
-  await page.keyboard.press('Escape');
-  await sure.waitFor({ state: 'detached' });
-  assert.equal(engineRequests.length, 0);
-  await forget.click();
-  await sure.getByRole('button', { name: 'Rimuovi la chiave' }).click();
-  await page.waitForFunction(() => document.querySelector('#engine-said')?.textContent.includes('Chiave rimossa'));
-  assert.deepEqual(engineRequests, [{ api_key: '' }]);
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-
-  // The Codebase Map, on Sigrid: what a person meets, by role, name and words. The scheme is what `applyTheme` writes on the root.
   const schemeIs = (where, wanted) => where.waitForFunction(value => document.documentElement.dataset.scheme === value, wanted);
   const kept = () => page.evaluate(() => localStorage.getItem('daodan.theme'));
   const fits = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
   const focused = locator => locator.evaluate(el => el === document.activeElement);
   const main = page.getByRole('main');
   const line = text => page.getByRole('status').filter({ hasText: text });  // the status row, and what it says
+  const inMain = () => page.evaluate(() => !!document.activeElement?.closest('main'));
+  const busyNow = button => button.and(page.locator('[aria-busy="true"]')).waitFor();
+
+  {  // The App.
+    const bar = page.getByRole('toolbar', { name: 'Daodan', exact: true });
+    const tab = name => bar.getByRole('button', { name: new RegExp(`^${name}`) });
+    const screen = name => page.getByRole('main', { name, exact: true }).waitFor();
+    const panel = name => main.getByRole('region', { name, exact: true });
+    const path = main.getByRole('list', { name: 'Percorso di analisi', exact: true });
+    const stage = name => path.getByRole('button', { name: new RegExp(`^${name}`) });
+    const stageSays = (name, text) => stage(name).filter({ hasText: text }).waitFor();
+    const wrong = text => main.getByRole('alert').filter({ hasText: text });  // what a field, or the server, says is wrong
+    const serve = patch => page.evaluate(state => window.setServerState(state), patch);
+    await stage('Repository').waitFor();
+    assert.equal(await page.title(), 'Daodan · Analisi');
+    // Light, dark and the system's theme are commands, and the choice is kept.
+    await page.keyboard.press('Control+k');
+    await palette.getByRole('option', { name: 'Tema scuro' }).waitFor();
+    await page.keyboard.press('Escape');
+    await palette.waitFor({ state: 'detached' });
+    await choose('Tema scuro');
+    await schemeIs(page, 'dark');
+    assert.equal(await kept(), 'dark');
+    await page.reload();
+    await stage('Repository').waitFor();
+    await schemeIs(page, 'dark');
+    await page.getByRole('button', { name: 'Comandi', exact: true }).click();
+    await palette.waitFor();
+    await page.keyboard.press('Escape');
+    await palette.waitFor({ state: 'detached' });
+    // The frame: the screens in the bar, no sidebar, the context in the status row, the service and the keys at the foot.
+    assert.deepEqual((await bar.getByRole('button').allInnerTexts()).slice(0, 3), ['Analisi', 'Grafo', 'Motore e domande']);
+    assert.equal(await tab('Analisi').getAttribute('aria-current'), 'page');
+    assert.equal(await page.getByRole('navigation').count(), 0);
+    await line('Contesto pronto').waitFor();
+    const where = line('Pipeline completata').getByText(`demo/shop · main · ${'1'.repeat(12)} · run demo`, { exact: true });
+    await where.waitFor();
+    assert.ok(await selectable(where));
+    const foot = page.getByRole('contentinfo');
+    assert.match(await foot.innerText(), /App locale: il codice resta sul tuo disco · Motore: claude/);
+    const keys = await foot.getByRole('list', { name: 'Tasti' }).innerText();  // Ctrl+K is on its button
+    assert.match(keys, /Ctrl\s*F[\s\S]*Cerca in questa vista[\s\S]*F6[\s\S]*Area successiva/);
+    assert.doesNotMatch(keys, /Ctrl\s*K/);
+    // The stages say how they are, and one that cannot be opened says why.
+    assert.equal(await stage('Repository').getAttribute('aria-current'), 'true');
+    for (const name of ['Repository', 'Pre-mappa', 'Analisi', 'Sintesi']) await stageSays(name, 'fatta');
+    await serve({ context: null, job: { state: 'idle' } });
+    await line('Nessuna repository').waitFor();
+    await stageSays('Repository', 'da fare');
+    for (const name of ['Pre-mappa', 'Analisi', 'Sintesi']) {
+      await stageSays(name, 'Scegli prima una repository e un branch.');
+      assert.ok(await stage(name).isDisabled());
+    }
+    await main.getByText('Nessuna repository selezionata sul server.').waitFor();
+    await serve({ run: { pass: { state: 'running' } } });
+    await stageSays('Analisi', 'in corso');
+    await stageSays('Sintesi', 'La sintesi è pronta quando la pipeline è conclusa.');
+    assert.ok(await stage('Sintesi').isDisabled());
+    await line('Analisi in corso').filter({ hasText: '0%' }).waitFor();
+    await page.getByRole('progressbar', { name: 'Passi completati della pipeline' }).waitFor();
+    await serve({ run: { pass: { state: 'failed' } } });
+    await stageSays('Analisi', 'non riuscita');
+    await serve({});
+    await stageSays('Analisi', 'fatta');
+    // The repository: its address is checked, then a branch is chosen; what cannot be done now says why.
+    const address = main.getByRole('textbox', { name: 'URL GitHub' });
+    const verify = main.getByRole('button', { name: 'Verifica accesso', exact: true });
+    const branch = main.getByRole('combobox', { name: 'Branch da analizzare' });
+    const prepare = page.getByRole('button', { name: 'Apri pre-mappa', exact: true });
+    const first = page.getByText('Verifica prima l’accesso alla repository.', { exact: true });
+    await first.waitFor();
+    assert.deepEqual([await branch.isDisabled(), await prepare.isDisabled()], [true, true]);
+    await verify.click();
+    await wrong('Inserisci l’URL GitHub della repository.').waitFor();
+    assert.ok(await focused(address));
+    await address.fill('https://github.com/demo');
+    await wrong('Inserisci l’URL').waitFor({ state: 'detached' });
+    await address.press('Enter');
+    await wrong('senza percorsi aggiuntivi').waitFor();
+    assert.equal(checkRequests.length, 0);
+    await address.fill('https://github.com/demo/shop');
+    mode.checkDelay = 1000;
+    await verify.click();
+    await busyNow(verify);
+    assert.equal((await verify.innerText()).trim(), 'Verifica accesso');
+    await page.getByText('Verifica in corso.', { exact: true }).waitFor();
+    await address.press('Enter');  // a check in course is not asked again
+    await page.getByText('demo/shop: 2 branch letti da GitHub.', { exact: true }).waitFor();
+    assert.deepEqual(checkRequests, [{ url: 'https://github.com/demo/shop' }]);
+    mode.checkDelay = 0;
+    assert.equal(await first.count(), 0);
+    assert.match(await branch.innerText(), /main · 1{12}/);
+    await branch.click();
+    await page.getByRole('option', { name: /^dev/ }).click();
+    assert.match(await branch.innerText(), /dev · 2{12}/);
+    mode.selectRefused = 'lavoro in corso';
+    await prepare.click();
+    await wrong('Selezione non riuscita.').filter({ hasText: 'lavoro in corso' }).waitFor();
+    mode.selectRefused = '';
+    await prepare.click();
+    await line('Preparazione in corso').waitFor();
+    assert.deepEqual(selectRequests.at(-1), { url: 'https://github.com/demo/shop', branch: 'dev' });
+    await busyNow(prepare);
+    await main.getByText('Preparazione in corso: Checkout del branch · dev.', { exact: true }).waitFor();
+    await main.getByRole('progressbar', { name: 'Preparazione in corso' }).waitFor();
+    await stageSays('Repository', 'in corso');
+    assert.equal(await wrong('Selezione non riuscita.').count(), 0);
+    await serve({ context: null, job: { state: 'failed', step: 'checkout', detail: 'branch non trovato' } });
+    await wrong('Preparazione non riuscita (Checkout del branch).').filter({ hasText: 'branch non trovato' }).waitFor();
+    await stageSays('Repository', 'non riuscita');
+    await prepare.click();
+    await line('Preparazione in corso').waitFor();
+    await serve({});  // the context is ready: its pre-map opens, and its graph is read
+    await page.getByText('Contesto pronto: demo/shop · main', { exact: true }).waitFor();
+    await panel('Pre-mappa').waitFor();
+    assert.equal(await stage('Pre-mappa').getAttribute('aria-current'), 'true');
+    await tab('Grafo').filter({ hasText: '2 gruppi' }).waitFor();
+    // Choosing a stage shows it. The context in use, to read and copy, is with the repository.
+    for (const name of ['Analisi', 'Sintesi', 'Repository']) {
+      await stage(name).click();
+      await panel(name).waitFor();
+      assert.equal(await path.locator('[aria-current="true"]').count(), 1);
+    }
+    const facts = panel('Contesto attivo');
+    for (const text of ['demo/shop', 'main', '1'.repeat(12), 'demo']) assert.ok(await selectable(facts.getByText(text, { exact: true })), text);
+    await facts.getByRole('button', { name: 'Torna alla pre-mappa' }).click();
+    await panel('Pre-mappa').waitFor();
+    // The screens are places: by a press, by the arrows and Enter, by their commands.
+    await tab('Grafo').click();
+    await screen('Grafo');
+    assert.deepEqual([await tab('Grafo').getAttribute('aria-current'), await tab('Analisi').getAttribute('aria-current')], ['page', null]);
+    await tab('Grafo').press('ArrowLeft');
+    await page.waitForFunction(() => document.activeElement?.textContent === 'Analisi');
+    await page.keyboard.press('Enter');
+    await screen('Analisi');
+    await choose('Vai a Motore e domande');
+    await screen('Motore e domande');
+    await choose('Vai al Grafo');
+    await screen('Grafo');
+    await choose('Vai ad Analisi');
+    await screen('Analisi');
+    await panel('Pre-mappa').waitFor();  // the stage is where it was left
+    // Ctrl+F on a screen with no search says so; F6 and Shift+F6 go from a region to the next; the skip link goes to the content.
+    await page.keyboard.press('Control+f');
+    await page.getByText('Questa schermata non ha una ricerca.').waitFor();
+    await tab('Analisi').focus();
+    await page.keyboard.press('F6');
+    assert.ok(await inMain());
+    await page.keyboard.press('Shift+F6');
+    assert.ok(await tab('Analisi').evaluate(el => el.closest('header').contains(document.activeElement)));
+    await page.getByRole('link', { name: 'Vai al contenuto' }).press('Enter');
+    await page.waitForFunction(() => document.activeElement?.tagName === 'MAIN');
+    // A server that cannot be reached is said on every screen, until it answers.
+    const unreachable = wrong('Server non raggiungibile.');
+    await page.evaluate(() => window.failServer('il run non si legge'));
+    await unreachable.waitFor();
+    assert.match(await unreachable.innerText(), /Errore[\s\S]*Server non raggiungibile\.[\s\S]*il run non si legge/);
+    assert.ok(await selectable(unreachable.getByText('il run non si legge')));
+    await line('Server non raggiungibile').waitFor();
+    assert.match(await foot.innerText(), /Server non raggiungibile · Motore: claude/);
+    for (const name of ['Motore e domande', 'Grafo', 'Analisi']) {
+      await tab(name).click();
+      await screen(name);
+      await unreachable.waitFor();
+    }
+    await serve({});
+    await unreachable.waitFor({ state: 'detached' });
+    await line('Pipeline completata').waitFor();
+    // Where the person was looking is kept.
+    await stage('Repository').click();
+    await tab('Motore').click();
+    await page.reload();
+    await screen('Motore e domande');
+    await tab('Analisi').click();
+    await panel('Repository').waitFor();
+    assert.equal(await address.inputValue(), 'https://github.com/demo/shop');
+    // A narrow window: the screens are at the foot, and the stages or the one chosen, one at a time.
+    await page.setViewportSize({ width: 700, height: 820 });
+    assert.deepEqual([await tab('Analisi').isVisible(), await stage('Repository').isVisible(), await fits()], [true, true, true]);
+    await page.setViewportSize({ width: 390, height: 820 });
+    const footScreens = page.getByRole('toolbar', { name: 'Schermate in basso' });
+    await footScreens.getByRole('button', { name: /^Motore/ }).click();
+    await screen('Motore e domande');
+    assert.equal(await tab('Analisi').count(), 0);
+    assert.ok(await fits());
+    await footScreens.getByRole('button', { name: /^Analisi/ }).click();
+    await panel('Repository').waitFor();
+    await path.waitFor({ state: 'hidden' });
+    assert.ok(await fits());
+    await main.getByRole('button', { name: 'Percorso', exact: true }).click();
+    await stage('Pre-mappa').click();
+    await panel('Pre-mappa').waitFor();
+    await path.waitFor({ state: 'hidden' });
+    assert.ok(await fits());
+    await page.setViewportSize({ width: 1280, height: 850 });
+    await path.waitFor();
+  }
+
+  // The contract of the screens not yet drawn, in Imago's selectors: each to restore by role and name, then delete from here.
+  // ticket 20: the pre-map
+  // mode.premapDelay = 1000;
+  // await page.locator('#stage-premap').click();
+  // await page.locator('[data-im-state-layer="loading"]').waitFor();
+  // await page.getByRole('tree').waitFor();
+  // mode.premapDelay = 0;
+  // assert.ok(await selectable(page.locator('.im-table td strong', { hasText: 'left-pad' })));
+  // const directories = page.getByRole('radio', { name: 'Directory', exact: true });
+  // const units = page.getByRole('radio', { name: 'Unità tecniche' });
+  // await directories.focus();
+  // await directories.press('ArrowRight');
+  // assert.ok(await units.isChecked());
+  // assert.ok(await units.evaluate(el => document.activeElement === el));
+  // await units.press('ArrowLeft');
+  // assert.ok(await directories.isChecked());
+  // assert.equal(await page.locator('.im-metric').count(), 4);
+  // const tree = page.getByRole('tree');
+  // await tree.getByRole('treeitem', { name: 'main.ts' }).press('Enter');
+  // assert.match(await page.locator('#tree-selection').innerText(), /src\/main.ts/);
+  // const provenance = page.getByRole('button', { name: 'Provenienza', exact: true });
+  // await provenance.click();
+  // const detail = page.getByRole('region', { name: 'Provenienza della pre-mappa' });
+  // assert.ok(await detail.isVisible());
+  // await page.keyboard.press('Escape');
+  // assert.ok(await detail.isHidden());
+  // assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Provenienza');
+  // ticket 21: the run and the synthesis
+  // await tabs.getByRole('tab', { name: /^Analisi/ }).click();
+  // await page.locator('#stage-analysis').click();
+  // await page.locator('#preview-diagram .im-graph-node').first().waitFor();
+  // assert.equal(await page.locator('#pipeline-steps li').count(), 6);
+  // await page.waitForFunction(() => !document.querySelector('img.im-inline-mark'));  // the mark that does not load is the icon
+  // assert.ok(await page.locator('#preview-diagram [data-im-node="Client"] .im-icon').count() > 0);
+  // mode.linkStatus = 500;
+  // await page.getByRole('button', { name: 'Trova i legami' }).click();
+  // const linkError = page.locator('.im-notice', { hasText: 'collegamento non riuscito' });
+  // await linkError.waitFor();
+  // assert.match(await linkError.innerText(), /Errore/);
+  // await page.waitForTimeout(6500);
+  // assert.equal(await linkError.count(), 1);
+  // await linkError.getByRole('button', { name: 'Chiudi' }).click();
+  // assert.equal(await linkError.count(), 0);
+  // const partialMap = { state: 'incomplete', cause: 'the recorded map still has stale or incomplete records',
+  //   needs_review: { nodes: { count: 2, ids: ['a', 'b'] }, flows: { count: 1, ids: ['c'] },
+  //     refused_proposals: { count: 1, ids: ['request:d'] } } };
+  // await page.evaluate(mapped => window.setMapState(mapped), partialMap);
+  // const notice = page.locator('#map-status .im-note');
+  // await notice.getByText('Mappa del sistema parziale').waitFor();
+  // assert.match(await notice.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata/);
+  // assert.match(await notice.innerText(), /revisione precedente/);
+  // await page.locator('#stage-synthesis').click();
+  // const paths = page.getByRole('region', { name: 'Percorsi per ingresso' });
+  // await paths.getByText('Nessun ingresso classificato per questo snapshot.').waitFor();
+  // pathsClassified = true;
+  // await page.evaluate(() => window.setMapState({ state: 'done', discovery: { count: 2 } }));
+  // await paths.getByRole('button', { name: /Salva ordine/ }).click();
+  // await paths.getByText('store:ordini', { exact: true }).waitFor();
+  // await paths.getByText('Effetto', { exact: true }).waitFor();
+  // await paths.getByRole('button', { name: 'Passaggi successivi' }).click();
+  // await paths.getByText('Destinazione campionata', { exact: true }).waitFor();
+  // assert.match(await paths.innerText(), /campionata dal profiler/);
+  // await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
+  // await paths.getByRole('button', { name: 'Ingressi successivi' }).click();
+  // await paths.getByRole('button', { name: /Annulla ordine/ }).waitFor();
+  // await paths.getByRole('button', { name: 'Ingressi precedenti' }).click();
+  // await paths.getByRole('button', { name: 'Scritture senza ingresso' }).click();
+  // await paths.getByText('store:registro', { exact: true }).waitFor();
+  // assert.match(await paths.innerText(), /2 di 3 scritture/);
+  // await paths.getByRole('button', { name: 'Scritture successive' }).click();
+  // await paths.getByText('store:audit', { exact: true }).waitFor();
+  // await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
+  // await paths.getByRole('button', { name: /Salva ordine/ }).waitFor();
+  // await page.evaluate(mapped => window.setMapState(mapped), partialMap);
+  // await page.getByText('Mappa del sistema parziale').waitFor();
+  // await page.getByText('1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto').waitFor();
+  // await page.evaluate(() => window.setMapState({ state: 'done' }));
+  // await page.getByText('Mappa del sistema registrata').waitFor();
+  // assert.equal(await page.getByText('Mappa del sistema parziale').count(), 0);
+  // await page.locator('#stage-analysis').click();
+  // await page.locator('#preview-diagram .im-graph-node').first().click();
+  // const preview = page.getByRole('region', { name: 'Client' });
+  // await preview.getByRole('button', { name: 'Apri nel grafo' }).waitFor();
+  // await page.keyboard.press('Escape');
+  // assert.ok(await preview.isHidden());
+  // ticket 22: the graph
+  // mode.graphStatus = 500;
+  // await tabs.getByRole('tab', { name: 'Grafo' }).click();
+  // const failed = page.locator('.im-failure');
+  // assert.match(await failed.innerText(), /Errore[\s\S]*grafo non letto[\s\S]*Riprova/);
+  // mode.graphStatus = 200;
+  // await failed.getByRole('button', { name: 'Riprova' }).click();
+  // await page.getByRole('region', { name: 'Grafo del codice' }).waitFor();
+  // assert.equal(await tabs.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
+  // await page.getByLabel('Relazioni', { exact: true }).selectOption('imports');  // the kind filter: no relation of that kind
+  // await page.locator('.im-graph-legend').getByText('0 relazioni visibili').waitFor();
+  // await page.getByRole('button', { name: 'Azzera filtri' }).click();
+  // await page.locator('.im-graph-legend').getByText('4 relazioni visibili').waitFor();
+  // const legend = await page.locator('.im-graph-legend').innerText();
+  // assert.ok(legend.includes('Osservata in esecuzione') && legend.includes('Incerta') && !legend.includes('■'));
+  // await tabs.getByRole('tab', { name: /^Grafo/ }).click();
+  // const diagram = page.getByRole('region', { name: 'Grafo del codice' });
+  // await page.keyboard.press('Control+f');
+  // assert.equal(await page.evaluate(() => document.activeElement?.id), 'graph-search');
+  // await tabs.getByRole('tab', { name: /^Grafo/ }).focus();
+  // await page.keyboard.press('F6');
+  // assert.ok(await inContent());
+  // await diagram.locator('[data-im-node="Client"] .im-graph-node').press('ArrowRight');
+  // assert.equal(await page.evaluate(() => document.activeElement.closest('[data-im-node]').dataset.imNode), 'Server');
+  // await page.keyboard.press('Enter');
+  // const group = page.getByRole('region', { name: 'Dettaglio del gruppo' });
+  // assert.equal(await group.locator('h2').innerText(), 'Server');
+  // const titles = await diagram.locator('.im-graph-edge title').allTextContents();
+  // assert.ok(titles.some(label => label.includes('osservata in esecuzione')));
+  // assert.ok(titles.some(label => label.includes('campionata dal profiler')));
+  // assert.ok(titles.some(label => label.includes('destinazioni in conflitto')));
+  // await group.locator('summary', { hasText: 'Prove delle chiamate' }).click();
+  // await page.getByText('Client → Server · osservata in esecuzione', { exact: true }).waitFor();
+  // await page.getByText('Client → Server · campionata dal profiler', { exact: true }).waitFor();
+  // await page.getByText('Client → Server · osservata in esecuzione · destinazioni in conflitto', { exact: true }).waitFor();
+  // await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
+  // assert.match(await page.locator('.im-inspector .im-panel-title:visible').innerText(), /File di Server/);
+  // await page.keyboard.press('Escape');
+  // assert.equal(await group.locator('h2').innerText(), 'Server');
+  // // A node chosen while a file list is pushed on another group: the new group replaces both, and nothing stale comes back.
+  // await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
+  // await diagram.locator('[data-im-node="Client"] .im-graph-node').click();
+  // assert.equal(await group.locator('h2:visible').innerText(), 'Client');
+  // assert.equal(await page.locator('.im-inspector .im-panel-title:visible').innerText(), 'Dettaglio del gruppo');
+  // await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  // assert.ok(await page.locator('.im-inspector').isHidden());
+  // await diagram.getByRole('button', { name: 'Apri Client' }).click();
+  // await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
+  // await diagram.locator('[data-im-node="child"] .im-graph-node').click();  // a file: its symbols are asked and drawn
+  // await group.getByText('Simboli e chiamate').waitFor();
+  // await group.locator('code', { hasText: 'save' }).waitFor();
+  // assert.equal(await diagram.locator('.im-graph-group').count(), 1);
+  // await diagram.getByRole('button', { name: 'Chiudi Client' }).click();
+  // await diagram.getByRole('button', { name: 'Apri Client' }).waitFor();
+  // await tabs.getByRole('tab', { name: 'Analisi' }).click();
+  // assert.ok(await page.locator('.im-inspector').isHidden());
+  // await tabs.getByRole('tab', { name: /^Grafo/ }).click();
+  // await page.setViewportSize({ width: 900, height: 820 });
+  // await group.waitFor();
+  // const [content, inspector] = await Promise.all([page.locator('.im-content').boundingBox(), page.locator('.im-inspector').boundingBox()]);
+  // assert.ok(inspector.x < content.x + content.width - 100);
+  // await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  // assert.ok(await page.locator('.im-inspector').isHidden());
+  // assert.equal(await page.getByRole('dialog').count(), 0);
+  // ticket 23: the engine and the questions
+  // await page.locator('#question').waitFor({ state: 'visible' });
+  // assert.equal(await page.locator('textarea.im-textarea#question').count(), 1);
+  // await page.locator('#question').fill('Dove si firma il token?');  // the question and its answer, with the tools used
+  // await page.getByRole('button', { name: 'Chiedi' }).click();
+  // await page.locator('#answer-box').getByText('Lo firma auth.ts').waitFor();
+  // assert.match(await page.locator('#answer-box').innerText(), /cerca token/);
+  // assert.notEqual(await page.getByRole('button', { name: 'Chiedi' }).getAttribute('aria-busy'), 'true');
+  // // A busy button ignores the pointer, not the keyboard: Enter on it must not send the question a second time.
+  // assert.equal(askRequests.length, 1);
+  // await page.evaluate(() => window.setServerState({ asked: { state: 'running', question: 'Dove si firma il token?' } }));
+  // await page.locator('#ask-button[aria-busy="true"]').waitFor();
+  // await page.locator('#ask-button').focus();
+  // await page.keyboard.press('Enter');
+  // await page.waitForTimeout(300);
+  // assert.equal(askRequests.length, 1);
+  // await page.evaluate(() => window.setServerState({ asked: { state: 'done', question: 'Dove si firma il token?' } }));
+  // await page.evaluate(() => window.setServerState({ engine: { engine: 'openai', engines: ['claude', 'openai'], api_key: 'set', base_url: 'https://api.test/v1', model: 'm' } }));
+  // await page.getByRole('combobox', { name: 'Motore', exact: true }).waitFor();
+  // await page.getByRole('combobox', { name: 'Motore', exact: true }).selectOption('openai');
+  // for (const label of [/^Indirizzo dell’endpoint/, /^Modello/, /^Chiave/, 'Domanda']) await page.getByLabel(label, { exact: typeof label === 'string' }).waitFor();
+  // assert.ok(await page.locator('.im-field-hint', { hasText: 'Chiave impostata' }).isVisible());
+  // const forget = page.getByRole('button', { name: 'Rimuovi la chiave' });
+  // await forget.click();
+  // const sure = page.getByRole('alertdialog', { name: 'Rimuovere la chiave?' });
+  // await sure.waitFor();
+  // assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), 'Annulla');
+  // assert.match(await sure.innerText(), /deposito delle credenziali[\s\S]*non si può recuperare/);
+  // await page.keyboard.press('Escape');
+  // await sure.waitFor({ state: 'detached' });
+  // assert.equal(engineRequests.length, 0);
+  // await forget.click();
+  // await sure.getByRole('button', { name: 'Rimuovi la chiave' }).click();
+  // await page.waitForFunction(() => document.querySelector('#engine-said')?.textContent.includes('Chiave rimossa'));
+  // assert.deepEqual(engineRequests, [{ api_key: '' }]);
+  // end of tickets 20 to 23
+
+  // The Codebase Map.
   const nav = page.getByRole('navigation', { name: 'Mappa' });
   const row = name => nav.getByRole('button', { name });
   const elements = nav.getByRole('list', { name: 'Elementi visibili', exact: true });
@@ -377,7 +529,6 @@ try {
   const kindOfLine = text => kinds.getByRole('listitem').filter({ hasText: text });
   const busy = main.locator('[aria-busy="true"]');
   const focusOn = start => page.waitForFunction(text => document.activeElement?.getAttribute('aria-label')?.startsWith(text), start);
-  const inMain = () => page.evaluate(() => !!document.activeElement?.closest('main'));
   await page.setViewportSize({ width: 1280, height: 850 });
   mode.exportBroken = true;  // an export that cannot be read: the page waits, then says what failed, with Riprova
   mode.exportDelay = 1000;
@@ -884,18 +1035,18 @@ try {
   await page.waitForTimeout(2500);
   assert.equal(polls, pollsAtClose);
 
-  // The theme the person picks on one page is followed live by the other one (the storage event), on Sigrid or on Imago.
+  // The theme the person picks on one page is followed live by the other one (the storage event).
   await choose('Tema chiaro');
   await schemeIs(page, 'light');
   const tab = await context.newPage(), app = await context.newPage();
   await tab.goto('http://daodan.test/');
   await schemeIs(tab, 'light');
   await app.goto('http://daodan.test/app/?token=test');
-  await app.waitForFunction(() => document.documentElement.dataset.imTheme === 'light');
+  await schemeIs(app, 'light');
   await page.bringToFront();
   await choose('Tema scuro');
   await schemeIs(tab, 'dark');
-  await app.waitForFunction(() => document.documentElement.dataset.imTheme === 'dark');
+  await schemeIs(app, 'dark');
   await app.bringToFront();
   await app.keyboard.press('Control+k');
   await app.getByRole('dialog', { name: 'Cerca un comando' }).getByRole('option', { name: 'Tema chiaro' }).click();
@@ -903,5 +1054,5 @@ try {
   await tab.close();
   await app.close();
   assert.deepEqual(errors, []);
-  console.log('Passed the App on Imago (navigation, tree, dialog, pipeline, graph groups) and the map on Sigrid (frame, palette, canvas, places and things, details, filters, runs, theme).');
+  console.log('Passed the App (frame, palette, stages, repository, server, theme) and the map (frame, palette, canvas, places and things, details, filters, runs, theme).');
 } finally { await browser.close(); }
