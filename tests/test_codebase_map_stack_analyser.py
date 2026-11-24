@@ -13,6 +13,7 @@ import hashlib
 import http.client
 import io
 import json
+import shutil
 import sys
 import tarfile
 from pathlib import Path
@@ -349,3 +350,42 @@ def test_a_node_that_cannot_be_installed_is_a_gap(tmp_path, monkeypatch):
         stack_analyser.node(tmp_path)
     assert gap.value.cause == "no room" and gap.value.remedy.startswith("free 1 GB; ")
     assert "restart Daodan" in gap.value.remedy
+
+
+def test_a_first_install_writes_nothing_on_stdout(tmp_path, monkeypatch, installed_under, capfd):
+    """The stdio MCP server and `snapshot.py hook` reach `run` (`technologies.ensure`): their stdout is a protocol
+    stream, so the release's and Node's lines of a first install go to stderr."""
+    url, digest = _release(tmp_path)
+    monkeypatch.setattr(stack_analyser, "URL", url)
+    monkeypatch.setattr(stack_analyser, "SHA256", digest)
+    program = fake_stack_analyser.install(tmp_path / "tool")
+
+    def first_node(_project):  # what `runtime.Tool._install` prints on a first use
+        print("installing node (first use)", flush=True)
+        return program.parent
+
+    monkeypatch.setattr(runtime, "node", first_node)
+    project = tmp_path / "project"
+    project.mkdir()
+    stack_analyser.run(project)
+    stack_analyser.cli.cache_clear()
+    for item in installed_under.parent.iterdir():  # another machine: the release is installed again
+        shutil.rmtree(item)
+    stack_analyser.catalogue()
+    out, err = capfd.readouterr()
+    assert out == "" and err.count("installing stack-analyser") == 2 and err.count("installing node") == 2
+
+
+def test_node_is_not_installed_when_the_release_cannot_be_had(started, monkeypatch):
+    project, _program, _cli = started
+    asked = []
+    monkeypatch.setattr(stack_analyser, "node", lambda project: asked.append(project))
+
+    def absent():
+        raise container.Gap("no release", "connect")
+
+    monkeypatch.setattr(stack_analyser, "cli", absent)
+    for call in (lambda: stack_analyser.run(project), stack_analyser.catalogue):
+        with pytest.raises(container.Gap):
+            call()
+    assert asked == []

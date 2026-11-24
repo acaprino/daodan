@@ -14,15 +14,16 @@ import http.client
 import json
 import os
 import subprocess
+import sys
 import tarfile
 import tempfile
 from pathlib import Path
 
 from container import Gap
 
-VERSION = "1.27.6-daodan.3"
+VERSION = "1.27.6-daodan.4"
 URL = f"https://github.com/acaprino/stack-analyser-daodan/releases/download/v{VERSION}/stack-analyser-daodan-{VERSION}.tgz"
-SHA256 = "dbd26252845ccfabcc95ff45dee15118eb611adc2222f2c0a3f46ad6933fc322"  # of the `.tgz` above
+SHA256 = "2b0d4dd045a92018fbd7e63c2a53020e00c7453df9e617e7cb92106cd375f6b5"  # of the `.tgz` above
 PROGRAM = "package/dist/cli.mjs"  # in the archive
 TIMEOUT = 300  # seconds for one project, start included; the real run time is not measured yet
 UNSET = "NODE_"  # what Node reads as its own options or module paths
@@ -87,6 +88,14 @@ def node(project: Path) -> Path:
     except OSError as error:
         raise Gap(f"Node could not be installed: {error}", "check the connection to nodejs.org, then analyze again") \
             from error
+
+
+def _installed(project: Path) -> tuple[Path, Path]:
+    """`cli()` and `node(project)`, the release first: without it Node is not downloaded. A first install's lines go to
+    stderr: the stdio MCP server and `snapshot.py hook` reach a run, and their stdout is a protocol stream."""
+    with contextlib.redirect_stdout(sys.stderr):
+        script = cli()
+        return script, node(project)
 
 
 def command(node: Path, cli: Path, project: Path, output: Path, declarations: Path | None,
@@ -166,7 +175,7 @@ def run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, .
     are written as UTF-8 JSON in the run's own folder. On a failure, a timeout or an output that is not a JSON object:
     `Gap`."""
     project = Path(project).resolve()
-    program, script = node(project), cli()
+    script, program = _installed(project)
     with _folder() as folder:
         output = folder / "output.json"
         declared = _write(folder / "declarations.json", declarations, "declarations") if declarations else None
@@ -181,10 +190,9 @@ def run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, .
 
 def catalogue() -> list[dict]:
     """The release's catalogue of rules (`--catalogue`), written to a file of the run's own folder. `Gap` as for `run`."""
-    script = cli()
     with _folder() as folder:
         output = folder / "catalogue.json"
-        program = node(folder)  # no project: Node's install is the one of the empty run folder
+        script, program = _installed(folder)  # no project: Node's install is the one of the empty run folder
         answer = _answer(_start([str(program), str(script), "--catalogue", str(output)], folder), output)
         if not isinstance(answer, list):
             raise Gap("stack-analyser's catalogue is not a JSON array",

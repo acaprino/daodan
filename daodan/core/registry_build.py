@@ -11,7 +11,8 @@ per entry in `data/marks/ID.svg` (the entry's `mark`), and the official marks of
 (`add-mark`: the owner's file, its URL, the day and its terms, or with `--own` a drawing of Daodan's, kept in the
 additions and in REGISTRY-NOTICES.md);
 the entries of the CNCF Landscape (CC BY 4.0) with name, category and site; and
-`registry-additions.json`, what the catalogs lack: a name, a site, a category, a mark. An entry has no signs: what a
+`registry-additions.json`, what the catalogs lack: a name, a site, a category, a mark, the name of the CNCF item that is the
+entry when the two write it otherwise (`cncf`). An entry has no signs: what a
 project shows is the release's, and the additions may not hold any.
 
     python registry_build.py build --out FILE [--cache DIR]
@@ -333,10 +334,13 @@ def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
 
 def build(cache: Path, additions: Path, data: Path) -> dict:
     entries, by_name = {}, {}
+    records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
     for rule in stack_analyser.catalogue():
         entry = _from_rule(rule)
         entries[entry["id"]] = entry
         by_name.setdefault(_norm(entry["name"]), entry["id"])
+    # A CNCF item whose name the rule writes otherwise (`Kafka`, `Apache Kafka`) joins the entry whose record names it.
+    by_name |= {_norm(r["cncf"]): r["id"] for r in records if r.get("cncf") and r["id"] in entries}
     for item in cncf_items(cache):
         if item["category"] in CNCF_SKIPPED or not item.get("name"):
             continue
@@ -354,7 +358,6 @@ def build(cache: Path, additions: Path, data: Path) -> dict:
                           "type": CNCF_TYPES.get(item["subcategory"], "servizio o API" if hosted else "altro"),
                           "site": item.get("homepage_url"), "mark": None, "from": ["cncf-landscape"]}
         by_name[_norm(item["name"])] = ident
-    records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
     apply_additions(entries, records)
     root = _tarball(*SIMPLE_ICONS, cache)
     refused = apply_marks(entries, simple_icons(cache), lambda slug: (root / "icons" / f"{slug}.svg").read_bytes(), data,

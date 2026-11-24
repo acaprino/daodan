@@ -67,9 +67,16 @@ class DistributedRegistryTests(unittest.TestCase):
         for category, idents in (("framework", ("angular", "django", "express", "nextjs")),
                                  ("library", ("numpy", "boto3", "sqlalchemy", "d3js", "fontawesome")),
                                  ("tool", ("jest", "biomejs", "ansible", "asdf", "alembic")),
-                                 ("service", ("kafka", "etcd", "keycloak"))):
+                                 ("service", ("apache_kafka", "etcd", "keycloak"))):
             for ident in idents:
                 self.assertEqual((ident, self.entries[ident].get("category")), (ident, category))
+
+    def test_a_renamed_rule_leaves_no_entry_under_its_old_id_and_its_curated_data_moves_with_it(self):
+        """The fork's renames (`react-email`, `kafka`, `vault`): the old id is no entry, the new one has what was curated."""
+        self.assertEqual({"react-email", "kafka", "vault"} & self.entries.keys(), set())
+        self.assertEqual(self.entries["reactemail"]["site"], "https://react.email")
+        self.assertEqual(self.entries["hashicorp_vault"]["type"], "servizio o API")
+        self.assertIn("cncf-landscape", self.entries["apache_kafka"]["from"])
 
     def test_the_built_file_is_what_its_additions_make_of_it(self):
         """The checked-in file agrees with `registry-additions.json` by the build's own merge rule."""
@@ -171,6 +178,16 @@ class BuildTests(unittest.TestCase):
                   "category": "tool", "by": "model"}
         entry = next(e for e in self.build([record], rules=[])["entries"] if e["id"] == "legacy")
         self.assertEqual((entry["from"], entry["category"], "hosts" in entry), (["additions"], "tool", False))
+
+    def test_a_cncf_item_the_additions_name_for_an_entry_joins_it(self):
+        """A name the CNCF Landscape writes otherwise than the rule (`Kafka`, `Apache Kafka`) joins the entry whose record
+        names it (`cncf`), instead of making an entry of its own."""
+        item = {"name": "Wdgt", "category": "App Definition", "subcategory": "Streaming & Messaging",
+                "homepage_url": "https://widget.test"}
+        entries = {e["id"]: e for e in self.build([{"id": "widget", "cncf": "Wdgt", "by": "catalog"}], items=[item])["entries"]}
+        self.assertNotIn("wdgt", entries)
+        self.assertEqual((entries["widget"]["site"], entries["widget"]["from"]),
+                         ("https://widget.test", ["additions", "cncf-landscape", "stack-analyser"]))
 
     def test_a_type_the_table_does_not_know_stops_the_build_with_its_name(self):
         with self.assertRaisesRegex(ValueError, "gizmo"):

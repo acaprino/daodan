@@ -220,6 +220,7 @@
   {
    "id": "apache_kafka",
    "site": "https://kafka.apache.org",
+   "cncf": "Kafka",
    "by": "model"
   },
   {
@@ -2689,6 +2690,11 @@
    "by": "catalog"
   },
   {
+   "id": "hashicorp_vault",
+   "type": "servizio o API",
+   "by": "model"
+  },
+  {
    "id": "hatchling",
    "by": "corpus",
    "name": "Hatchling",
@@ -3131,11 +3137,6 @@
   {
    "id": "k6",
    "category": "tool",
-   "by": "catalog"
-  },
-  {
-   "id": "kafka",
-   "category": "service",
    "by": "catalog"
   },
   {
@@ -4768,15 +4769,6 @@
    "site": "https://react.dev/reference/react-dom"
   },
   {
-   "id": "react-email",
-   "name": "React Email",
-   "kind": "project",
-   "category": "library",
-   "type": "altro",
-   "site": "https://react.email",
-   "by": "catalog"
-  },
-  {
    "id": "react-flow",
    "by": "catalog",
    "name": "React Flow",
@@ -4815,6 +4807,7 @@
   {
    "id": "reactemail",
    "category": "library",
+   "site": "https://react.email",
    "by": "catalog"
   },
   {
@@ -6072,14 +6065,6 @@
    "id": "valibot",
    "category": "library",
    "by": "catalog"
-  },
-  {
-   "id": "vault",
-   "name": "HashiCorp Vault",
-   "kind": "service",
-   "type": "servizio o API",
-   "site": "https://www.vaultproject.io",
-   "by": "model"
   },
   {
    "id": "vimeo",

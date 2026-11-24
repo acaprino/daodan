@@ -252,7 +252,7 @@ Strumenti, versioni e licenze per linguaggio: `docs/plugins/codebase-map-linguag
 
 Riconosce framework, librerie, strumenti e servizi.
 Lo fa solo stack-analyser, nel fork `acaprino/stack-analyser-daodan`, in entrambe le scansioni.
-Il rilascio è fissato e verificato con sha256: `stack_analyser.VERSION` (`1.27.6-daodan.3`), `URL`, `SHA256`.
+Il rilascio è fissato e verificato con sha256: `stack_analyser.VERSION` (`1.27.6-daodan.4`), `URL`, `SHA256`.
 Il registro (`data/service-registry.json`) è solo anagrafica: nome, tipo, categoria, sito, marchio, host. Non ha segni.
 Disegno e motivi: [spec dello stack dal fork](../specs/2026-11-21-stack-dal-fork.md).
 
@@ -304,7 +304,7 @@ Le misure del piano 2: [README di project-model](../../benchmarks/project-model/
 | `scan` | L'`inputs_digest` della pre-mappa della scansione che l'ha prodotto |
 
 Lo stesso pacchetto nello stesso file può avere due segni: la lettura del fork e la dichiarazione della pre-mappa, con la riga.
-Restano entrambi. `technologies.sites` ne fa un sito per (`sign`, `path`, `value`), con la riga che uno dei due conosce.
+Restano entrambi. `technologies.sites` ne fa un sito per (`sign`, `path`, `line`): un segno senza riga è il sito di una riga del suo file, se il file ne ha una per la tecnologia; altrimenti un sito per nome.
 Le variabili d'ambiente nei sorgenti non danno più menzioni. I servizi generici del fork (`aws`, `azure`, `google`, …) restano come li dà.
 
 **Node.** Il fork gira sul Node di Daodan, mai su quello della macchina:
@@ -319,9 +319,9 @@ Le variabili d'ambiente nei sorgenti non danno più menzioni. I servizi generici
 | --- | --- | --- |
 | Al primo uso manca la rete | Node o il rilascio non si scaricano. Lo step finisce, conserva i segni di prima (`signs_kept`) e scrive `checker_failed` con causa e rimedio. Il processo ricorda il fallimento: non riprova a ogni scansione, e il rimedio dice di riavviare Daodan | `stack_analyser._remembered`, `cli`, `node` |
 | Node non si installa (meno di 1 GB libero, `DAODAN_SHARED_DIR` non assoluta, sha256 diverso) | Come sopra | `stack_analyser.node`, `runtime.room`, `runtime.fetching` |
-| Il fork fallisce (non parte, esce con un errore, non scrive JSON, non risponde in 300 s) | Come sopra, ma il fallimento non è ricordato: la scansione dopo riprova | `stack_analyser._start`, `_answer`, `TIMEOUT` |
+| Il fork fallisce (non parte, esce con un errore, non scrive JSON, non risponde in 300 s) | Come sopra, ma il fallimento non è ricordato: riprova la scansione dopo che cambia gli ingressi, o un processo nuovo | `stack_analyser._start`, `_answer`, `TIMEOUT` |
 | Il fork dà una prova malformata | La prova si scarta e si conta (`evidence_malformed`); le altre restano | `stack_recognition._item`, `_signs` |
-| C'è un record scritto con il fork fermo | Alla lettura dopo è vecchio e si deriva di nuovo, se il processo non ricorda un'installazione fallita | `technologies._read` |
+| C'è un record scritto con il fork fermo | Alla lettura dopo è vecchio e si deriva di nuovo, se il processo non ricorda un'installazione fallita e non l'ha derivato lui con gli stessi ingressi | `technologies._read` |
 | Un file è cancellato | I segni conservati su quel file se ne vanno | `technologies.merge` (`exists`) |
 | Un percorso diventa escluso | Il fork non lo apre; le sue prove e i segni conservati lì si scartano; una dichiarazione lì è il buco `declaration_not_sent` | `stack_recognition.perimeter`, `_signs`, `declarations`; `technologies.derive` (`exists`) |
 | Si fissa un rilascio nuovo | Il record è vecchio (`VERSION` e `SHA256` sono fra i suoi ingressi); il rilascio si scarica al primo uso. Un id che il registro non ha esce con il suo nome e il buco `not_in_registry`, finché `registry_build.py build` non rigenera il registro | `technologies._inputs`, `stack_recognition.found` |

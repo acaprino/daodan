@@ -115,7 +115,7 @@ Commit: `feat: write the catalogue of rules`.
 - [x] **Step 2**: commit `chore(release): 1.27.6-daodan.3 as stack-analyser-daodan`.
 - [x] **Step 3 (chi coordina, dopo la conferma del proprietario)**: rinomina del repository (`gh repo rename`), aggiornamento del remoto locale, tag, push, `gh release create`, verifica dello sha256 dell'asset scaricato.
 
-*Stato, 24 novembre 2026: `.3` pubblicato. Il rilascio `.4`, con le correzioni trovate dalla prova di B4 (ramo `feature/stack-detection`, `69c77c2`…`348051b`, CI verde), aspetta la pubblicazione del tag; Daodan resta fissato a `.3`.*
+*Stato, 24 novembre 2026: `.3` pubblicato. Il rilascio `.4`, con le correzioni trovate dalla prova di B4 (ramo `feature/stack-detection`, `69c77c2`…`348051b`, CI verde), è pubblicato (tag `v1.27.6-daodan.4`, costruito da GitHub Actions da `ff2fef4`); Daodan è fissato a `.4`.*
 
 ---
 
@@ -210,7 +210,7 @@ Test:
 
 - [ ] **Step 1**: `conftest.py` e i test adattati; **Step 2**: il cambio in `derive` e le rimozioni; **Step 3**: `python -B -m pytest -q -p no:cacheprovider tests` in locale (nessun fallimento; i salti con il motivo); **Step 4 (chi coordina, dopo conferma)**: la suite su Modal, dove `real_stack` è attivo; commit `feat: lo stack riconosce solo attraverso stack-analyser`.
 
-*Stato, 24 novembre 2026: Step 1–2 e commit fatti (`091c093`, poi `2f57d91`). Step 3 con il rilascio vero `.3` (`DAODAN_STACK_ANALYSER`, container Linux con Node 22): 4.401 passati, 11 falliti, 140 saltati; gli 11 si correggono con `.4` (Task A3). Step 4 aspetta Modal, che dalla macchina di questo lavoro non si raggiunge.*
+*Stato, 24 novembre 2026: Step 1–2 e commit fatti (`091c093`, poi `2f57d91`). Step 3 con il rilascio vero `.3` (`DAODAN_STACK_ANALYSER`, container Linux con Node 22): 4.401 passati, 11 falliti, 140 saltati; gli 11 si correggono con `.4` (Task A3). Con `.4` fissato, suite locale (non Modal) sullo stesso container, Node v22.23.5: 4.415 passati, 0 falliti, 140 saltati; senza il rilascio 4.316 passati, 0 falliti, 239 saltati. Step 4 aspetta Modal, che dalla macchina di questo lavoro non si raggiunge.*
 
 ### Task B5: Il registro come anagrafica
 

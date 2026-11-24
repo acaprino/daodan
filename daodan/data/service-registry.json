@@ -1,7 +1,7 @@
 {
  "schema": "daodan/service-registry/v1",
  "versions": {
-  "stack-analyser": "1.27.6-daodan.3",
+  "stack-analyser": "1.27.6-daodan.4",
   "simple-icons": "16.37.0",
   "cncf-landscape": "75b47639d132b3a7afa31ecc84a90f61b8072dd6"
  },
@@ -1352,6 +1352,7 @@
    "mark": "marks/apache_kafka.svg",
    "from": [
     "additions",
+    "cncf-landscape",
     "simple-icons",
     "stack-analyser"
    ],
@@ -11834,10 +11835,11 @@
    "id": "hashicorp_vault",
    "name": "Vault",
    "kind": "service",
-   "type": "database",
+   "type": "servizio o API",
    "site": "https://www.vaultproject.io/",
    "mark": "marks/hashicorp_vault.svg",
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
@@ -13850,19 +13852,6 @@
    "from": [
     "cncf-landscape"
    ]
-  },
-  {
-   "id": "kafka",
-   "name": "Kafka",
-   "kind": "project",
-   "type": "coda",
-   "site": "https://kafka.apache.org/",
-   "mark": null,
-   "from": [
-    "additions",
-    "cncf-landscape"
-   ],
-   "category": "service"
   },
   {
    "id": "kagent",
@@ -23202,18 +23191,6 @@
    "category": "library"
   },
   {
-   "id": "react-email",
-   "name": "React Email",
-   "kind": "project",
-   "type": "altro",
-   "site": "https://react.email",
-   "mark": null,
-   "from": [
-    "additions"
-   ],
-   "category": "library"
-  },
-  {
    "id": "react-flow",
    "name": "React Flow",
    "kind": "project",
@@ -23272,7 +23249,7 @@
    "name": "React Email",
    "kind": "project",
    "type": "altro",
-   "site": null,
+   "site": "https://react.email",
    "mark": null,
    "from": [
     "additions",
@@ -29229,18 +29206,6 @@
    "mark": null,
    "from": [
     "cncf-landscape"
-   ]
-  },
-  {
-   "id": "vault",
-   "name": "HashiCorp Vault",
-   "kind": "service",
-   "type": "servizio o API",
-   "site": "https://www.vaultproject.io",
-   "mark": "marks/vault.svg",
-   "from": [
-    "additions",
-    "simple-icons"
    ]
   },
   {

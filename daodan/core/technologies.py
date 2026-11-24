@@ -16,7 +16,7 @@ An entry with no `declared` sign, only lines of text that mention it, is no modu
 signs. Every sign carries its `source` and the `scan` (the pre-map's `inputs_digest`) that produced it: a scan replaces the
 signs of the sources it ran and keeps the others while their file exists and the pre-map does not leave it
 out (`merge`), and says what it kept (`signs_kept`). A record made while the tool could not run is derived again once
-this process remembers no failed install (`_read`). `checkers` gives each checker's status (`stack-analyser`, `host`)
+this process remembers no failed install and did not derive it itself (`_read`). `checkers` gives each checker's status (`stack-analyser`, `host`)
 and `gaps` what they could not establish. The process: docs/plugins/codebase-map.md, «Lo step `stack`».
 """
 from __future__ import annotations
@@ -46,6 +46,7 @@ from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
 SCHEMA, FILE = "daodan/technologies/v1", "technologies.json"
 MATCHER_VERSION = 4  # Cache identity for recognition and attribution changes within the v1 output format.
+_derived: set[tuple[str, str]] = set()  # (record, inputs digest) derived by this process: not derived again here
 
 
 def _versions_only(rel: str | None) -> bool:
@@ -62,14 +63,16 @@ def module_declaration(sign: dict) -> bool:
 
 
 def sites(signs: list[dict]) -> list[dict]:
-    """One sign per site of a technology, its kind, file and value: the record keeps each source's sign, and a file the
-    tool reads by itself and the pre-map declares too is one site, with the line any of its signs knows. In the order
-    of the record's signs, except that in a file a site with its line comes before one without."""
+    """One sign per site of a technology, its kind, file and line: the record keeps each source's sign. A sign without a
+    line (the tool reading a file by itself, the name as written) is the site of a line of its file when the file has
+    one for this technology (a declaration of the pre-map, the name as it keeps it); in a file with none, each name is a
+    site. In the order of kind, file and line, a site with its line before one without."""
+    lined = {(sign.get("sign"), sign.get("path")) for sign in signs if sign.get("line")}
     out = {}
     for sign in signs:
-        site = out.setdefault((sign.get("sign"), sign.get("path"), sign.get("value")), dict(sign))
-        if not site.get("line") and sign.get("line"):
-            site["line"] = sign["line"]
+        where = (sign.get("sign"), sign.get("path"))
+        if sign.get("line") or where not in lined:
+            out.setdefault((*where, sign.get("line") or sign.get("value")), dict(sign))
     return sorted(out.values(), key=lambda s: (s["sign"], s["path"] or "", not s["line"], s["line"] or 0, s["value"]))
 
 
@@ -211,9 +214,10 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     known_pkg: dict[tuple[str, str | None], dict] = {}
     declarations_by_path: dict[str, list[tuple[str, dict]]] = {}
     for entry in entries:
-        for sign in sites(entry["signs"]):
+        for sign in entry["signs"]:
             if sign["sign"] == "package":
                 known_pkg.setdefault((sign["value"].casefold(), sign["path"]), entry)
+        for sign in sites(entry["signs"]):
             if module_declaration(sign):
                 declarations_by_path.setdefault(sign["path"], []).append((entry["id"], sign))
 
@@ -293,9 +297,11 @@ def _read(manifest: Path, digest: str) -> dict | None:
         missing = {g["language"] for g in record.get("gaps", ()) if g.get("kind") == "source_grammar_unavailable"}
         if any(get_parser(language) is not None for language in missing):
             return None
-        # Node or the network may have come since the tool failed, unless this process remembers the failure.
-        if not stack_analyser._failed and any(g.get("kind") == "checker_failed" and g.get("checker") == "stack-analyser"
-                                              for g in record.get("gaps", ())):
+        # Node or the network may have come since the tool failed, unless this process remembers the failure or
+        # derived this record itself: a timeout or an exit with an error is not remembered as an install is.
+        if (not stack_analyser._failed and (str(path(manifest)), digest) not in _derived
+                and any(g.get("kind") == "checker_failed" and g.get("checker") == "stack-analyser"
+                        for g in record.get("gaps", ()))):
             return None
         return record
     return None
@@ -360,4 +366,5 @@ def ensure(manifest: Path, *, facts: dict | None = None) -> dict:
         with os.fdopen(descriptor, "wb") as stream:
             stream.write(json.dumps(record, indent=1, ensure_ascii=False, sort_keys=True).encode("utf-8"))
         os.replace(name, target)
+        _derived.add((str(target), record["inputs_digest"]))
     return record

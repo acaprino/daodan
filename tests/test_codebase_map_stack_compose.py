@@ -60,7 +60,7 @@ x-example: {image: bitnami/kafka}
     assert "image" not in api["worker"]
     assert api["custom"]["image"] == "${REGISTRY:-docker.io}/redis"
     assert {"postgresql", "redis"} <= set(by_name["api"]["services"])
-    assert not {"kafka", "mailpit"} & set(by_name["api"]["services"])
+    assert not {"apache_kafka", "mailpit"} & set(by_name["api"]["services"])
     # the release reads the Compose file by itself (no line) and is given the pre-map's declaration (with its line)
     assert {(s["line"], s["source"].partition("@")[0]) for entry in record["technologies"] if entry["id"] == "redis"
             for s in entry["signs"] if s["sign"] == "package"} == {(12, "modules.py"), (None, "stack-analyser")}

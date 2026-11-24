@@ -84,9 +84,9 @@ FETCH_SECRETLINT = ("python -c \"import hashlib, urllib.request; data = urllib.r
 # again. The proof itself installs the release and Daodan's Node the product's way (`stack_analyser.cli` and `node`, into a
 # folder of the test): the container needs github.com and nodejs.org when it runs: the image's Node is another one and its copy of the release
 # serves the naive starts.
-STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser-daodan/releases/download/v1.27.6-daodan.3/"
-                  "stack-analyser-daodan-1.27.6-daodan.3.tgz",
-                  "dbd26252845ccfabcc95ff45dee15118eb611adc2222f2c0a3f46ad6933fc322", "/opt/stack-analyser")
+STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser-daodan/releases/download/v1.27.6-daodan.4/"
+                  "stack-analyser-daodan-1.27.6-daodan.4.tgz",
+                  "2b0d4dd045a92018fbd7e63c2a53020e00c7453df9e617e7cb92106cd375f6b5", "/opt/stack-analyser")
 FETCH_STACK_ANALYSER = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
                         "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s/release.tgz', 'wb').write(data)\""
                         % STACK_ANALYSER)

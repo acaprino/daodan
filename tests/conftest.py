@@ -40,18 +40,20 @@ def _forgotten_failures():
 
 @pytest.fixture(autouse=True)
 def _no_release(request, monkeypatch):
-    """A test reaches no download of the stack-analyser release: without `real_stack` its install is a `Gap`, as for a
-    machine with no network, and the process remembers it (`stack_analyser._failed`) as it does there. The tests of the
-    install itself (`stack_analyser.cli`) and of the real proof use the real one."""
+    """A test reaches no download of the stack-analyser release nor of Daodan's Node: without `real_stack` their install
+    is a `Gap`, as for a machine with no network, and the process remembers the release's (`stack_analyser._failed`) as
+    it does there. The tests of the install itself (`stack_analyser.cli`, `node`) and of the real proof use the real
+    ones."""
     module = sys.modules.get("stack_analyser")
     if (module is not None and not getattr(module.cli, "real", False)
             and request.module.__name__ not in ("test_codebase_map_stack_analyser", "test_codebase_map_host_programs")):
         from container import Gap
 
-        def absent():
+        def absent(*_project):
             raise Gap("no stack-analyser release in this test", "the test takes `real_stack` to recognize with the real one")
 
         monkeypatch.setattr(module, "cli", absent)
+        monkeypatch.setattr(module, "node", absent)
         monkeypatch.setitem(module._failed, "cli", Gap("no stack-analyser release in this test", "take `real_stack`"))
 
 

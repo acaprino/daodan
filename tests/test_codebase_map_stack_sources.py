@@ -145,10 +145,28 @@ def test_a_record_the_tool_failed_for_is_stale_once_this_process_remembers_no_fa
     cause = {"kind": "checker_failed", "checker": "stack-analyser", "detail": "no Node"}
     scan(1, answer(ran=["registry_hosts"], gaps=[cause], checkers=[failed]))
     facts = {"packages": [], "excluded": [{"path": "skipped-1/", "why": "test"}], "inputs_digest": "scan-1"}
+    monkeypatch.setattr(technologies, "_derived", set())  # a later process
     monkeypatch.setattr(stack_analyser, "_failed", {})
     assert technologies.state(manifest, facts=facts) == "stale"
     monkeypatch.setattr(stack_analyser, "_failed", {"cli": RuntimeError("no network")})
     assert technologies.state(manifest, facts=facts) == "fresh"
+
+
+def test_a_failure_that_is_not_an_install_is_derived_once_per_process(scan, manifest, monkeypatch):
+    """A timeout or an exit with an error is not remembered as an install is: the record this process derived for the
+    same inputs stays fresh in it, and a later process derives it once again."""
+    failed = {"checker": "stack-analyser", "state": "failed", "reason": "no answer within 300 s"}
+    cause = {"kind": "checker_failed", "checker": "stack-analyser", "detail": "no answer within 300 s"}
+    monkeypatch.setattr(stack_analyser, "_failed", {})
+    scan(1, answer(ran=["registry_hosts"], gaps=[cause], checkers=[failed]))
+    facts = {"packages": [], "excluded": [{"path": "skipped-1/", "why": "test"}], "inputs_digest": "scan-1"}
+    assert technologies.state(manifest, facts=facts) == "fresh"
+    runs = []
+    monkeypatch.setattr(stack_recognition, "run", lambda *args, **kwargs: runs.append(1) or answer())
+    technologies.ensure(manifest, facts=facts)
+    assert runs == []
+    monkeypatch.setattr(technologies, "_derived", set())  # a later process
+    assert technologies.state(manifest, facts=facts) == "stale"
 
 
 def test_a_kept_sign_leaves_when_the_premap_leaves_its_file_out(scan, manifest, monkeypatch):
@@ -176,3 +194,38 @@ def test_reading_the_state_writes_no_premap(scan, manifest):
     written.write_text("{}", encoding="utf-8")
     assert technologies.state(manifest) == "stale"
     assert written.read_text(encoding="utf-8") == "{}"
+
+
+def test_a_site_is_a_line_of_a_file_and_the_tool_s_reading_of_a_declared_file_is_not_another():
+    """The release reads a file by itself (no line, the name as written) and is given the pre-map's declaration of it
+    (its line, the name as the pre-map keeps it): one site, whatever the spelling (`Sentry_SDK`, `sentry-sdk`; an image
+    with or without its registry). Two packages of a technology in one file are two sites, by their lines, or, when
+    only the release read the file, by their names."""
+    def values(*signs):
+        return [(s["path"], s["line"], s["value"]) for s in technologies.sites(list(signs))]
+
+    assert values(sign("requirements.txt", "Sentry_SDK", line=None),
+                  sign("requirements.txt", "sentry-sdk", "requirements@1", line=2)) == [
+        ("requirements.txt", 2, "sentry-sdk")]
+    assert values(sign("compose.yaml", "docker.io/library/postgres", line=None),
+                  sign("compose.yaml", "postgres", "modules.py@1", line=3)) == [("compose.yaml", 3, "postgres")]
+    assert values(sign("package.json", "@sentry/node", line=None), sign("package.json", "@sentry/react", line=None)) == [
+        ("package.json", None, "@sentry/node"), ("package.json", None, "@sentry/react")]
+    assert values(sign("package.json", "@sentry/node", line=None), sign("package.json", "@sentry/node", "npm@1", line=4),
+                  sign("package.json", "@sentry/react", "npm@1", line=5)) == [
+        ("package.json", 4, "@sentry/node"), ("package.json", 5, "@sentry/react")]
+
+
+def test_a_grammar_placed_later_makes_the_record_stale(tmp_path, monkeypatch):
+    """A record written while the host check had no grammar for a source (`source_grammar_unavailable`) is derived
+    again once the grammar is there."""
+    import registry_hosts
+    manifest = snapshot_of(tmp_path, {"api/client.py": 'URL = "https://api.telegram.org/bot"\n'})
+    facts = {"packages": [], "inputs_digest": "scan-1"}
+    monkeypatch.setattr(registry_hosts.ts, "get_parser", lambda _grammar: None)
+    monkeypatch.setattr(technologies, "get_parser", lambda _grammar: None)
+    record = technologies.ensure(manifest, facts=facts)
+    assert {"python"} == {g["language"] for g in record["gaps"] if g["kind"] == "source_grammar_unavailable"}
+    assert technologies.state(manifest, facts=facts) == "fresh"
+    monkeypatch.undo()  # the grammar is placed
+    assert technologies.state(manifest, facts=facts) == "stale"
