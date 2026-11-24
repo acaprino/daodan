@@ -10,7 +10,7 @@ import service_registry
 
 
 HOST = "api.example.org"
-ENTRIES = [{"id": "example", "signs": {"hosts": [HOST]}}]
+ENTRIES = [{"id": "example", "hosts": [HOST]}, {"id": "named", "name": "Named"}]  # an entry with no hosts has none to find
 
 
 def check(files):

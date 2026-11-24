@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "benchmarks/project-model"
 sys.path.insert(0, str(ROOT / "daodan/core"))
 import service_registry  # noqa: E402
+import stack_analyser  # noqa: E402
 from test_codebase_map_stack_recognition import fact, package_signs, recognized  # noqa: E402
 
 
@@ -41,15 +42,19 @@ class CorpusServiceRulesTests(unittest.TestCase):
 
     @pytest.mark.usefixtures("real_stack")
     def test_corpus_signals_survive_the_registry_build(self):
-        # The `env` and `hosts` signals are the registry's (the registry's build, B5); a package is the release's.
+        # The `hosts` signals are the registry's (its `hosts`, from the release's catalogue), the `env` ones the
+        # catalogue's own (`dotenv`); a package is recognized by the release.
+        rules = {rule["tech"]: rule for rule in stack_analyser.catalogue()}
         packages = [row for row in self.evidence if row["selector"] not in {"env", "hosts"}]
         found = package_signs(recognized(self.work(), packages=[
             fact(row["selector"], row["signal"], f"{row['path']}#L{row['line']}", "pre-map@1") for row in packages]))
         for row in self.evidence:
             ident, selector, signal = row["id"], row["selector"], row["signal"]
             with self.subTest(ident=ident, selector=selector, signal=signal):
-                if selector in {"env", "hosts"}:
-                    self.assertIn(signal, self.entries[ident]["signs"][selector])
+                if selector == "hosts":
+                    self.assertIn(signal, self.entries[ident]["hosts"])
+                elif selector == "env":
+                    self.assertIn(signal, rules[ident]["dotenv"])
                 else:
                     self.assertIn((ident, signal, row["path"], int(row["line"])), found)
 

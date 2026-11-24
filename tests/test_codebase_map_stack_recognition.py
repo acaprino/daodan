@@ -48,11 +48,11 @@ def registry(*entries):
 
 
 REDIS = {"id": "redis", "name": "Redis", "kind": "service", "type": "database", "site": "https://redis.io/",
-         "mark": "marks/redis.svg", "signs": {}}
+         "mark": "marks/redis.svg"}
 PYTHON = {"id": "python", "name": "Python", "kind": "project", "category": "tool", "type": "altro",
-          "site": "https://www.python.org", "mark": "marks/python.svg", "signs": {}}
+          "site": "https://www.python.org", "mark": "marks/python.svg"}
 STRIPE = {"id": "stripe", "name": "Stripe", "kind": "service", "type": "gateway", "site": "https://stripe.com",
-          "mark": None, "signs": {"hosts": ["api.stripe.com"]}}
+          "mark": None, "hosts": ["api.stripe.com"]}
 
 
 def snapshot_of(work: Path, files: dict[str, str]) -> Path:
@@ -385,7 +385,7 @@ def test_the_recorded_payload_gives_the_expected_technologies():
     files = {"docker-compose.yml", "Dockerfile", "pyproject.toml", "app/__init__.py", "app/main.py"}
     out, gaps = stack_recognition.found(payload, service_registry.load(), files, ())
     assert {e["id"] for e in out} == {"docker", "fastapi", "postgresql", "python", "redis", "setuptools", "sqlalchemy"}
-    assert gaps == [{"kind": "not_in_registry", "entry": "setuptools"}]
+    assert gaps == []  # every rule of the release is an entry of the registry
     by_id = {e["id"]: e for e in out}
     assert [(s["sign"], s["path"]) for s in by_id["python"]["signs"]] == [("package", "Dockerfile")]  # `.py` proves nothing
     assert [(s["sign"], s["path"]) for s in by_id["redis"]["signs"]] == [("package", "docker-compose.yml"),

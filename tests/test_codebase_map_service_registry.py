@@ -1,6 +1,8 @@
 """Registry of external services and projects: the distributed file and the rules that build it."""
 
+import contextlib
 import copy
+import io
 import json
 import sys
 import tempfile
@@ -16,6 +18,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import registry_build  # noqa: E402
 import service_registry  # noqa: E402
+import stack_analyser  # noqa: E402
 import stack_recognition  # noqa: E402
 
 REGISTRY = ROOT / "daodan/data/service-registry.json"
@@ -35,8 +38,8 @@ class DistributedRegistryTests(unittest.TestCase):
         self.assertGreaterEqual(len(self.entries), 1000)
 
     def test_it_knows_the_common_ones(self):
-        self.assertEqual(self.entries["stripe"]["signs"]["packages"]["pypi"], ["stripe"])
-        for ident in ("mongodb", "fastapi", "react", "docker"):
+        self.assertEqual(self.entries["telegram"]["hosts"], ["api.telegram.org"])
+        for ident in ("mongodb", "fastapi", "react", "docker", "stripe"):
             self.assertIn(ident, self.entries)
         self.assertEqual(self.entries["stripe"]["mark"], "marks/stripe.svg")
 
@@ -44,6 +47,11 @@ class DistributedRegistryTests(unittest.TestCase):
         sources = {source for entry in self.entries.values() for source in entry["from"]}
         self.assertLessEqual(sources, set(registry_build.SOURCES))
         self.assertNotIn("webappanalyzer", json.dumps(self.value).lower())
+
+    def test_it_is_the_register_of_names_of_the_release_in_use(self):
+        """The rules are the fork's: an entry carries no sign, and the release that made the file is the one pinned."""
+        self.assertEqual(self.value["versions"]["stack-analyser"], stack_analyser.VERSION)
+        self.assertEqual([i for i, e in self.entries.items() if "signs" in e], [])
 
     def test_a_category_is_the_entry_s_own_field_never_its_name(self):
         for ident, category in (("eslint", "tool"), ("docker", "tool"), ("renovate", "tool"), ("nodejs", "tool"),
@@ -53,29 +61,15 @@ class DistributedRegistryTests(unittest.TestCase):
         self.assertEqual(service_registry.entry_category({"id": "playwright", "kind": "service"}), "service")
         self.assertEqual(service_registry.entry_category({"id": "x", "kind": "service", "category": "tool"}), "tool")
 
-    def test_every_recognisable_project_has_its_category_written_and_none_is_a_framework_by_default(self):
-        """A model proposed the categories (`REGISTRY-NOTICES.md`); the machine checks the value, these the classes."""
-        self.assertEqual([i for i, e in self.entries.items()
-                          if e["kind"] == "project" and e.get("signs") and not e.get("category")], [])
+    def test_every_entry_with_a_rule_has_its_category_written_and_none_is_a_framework_by_default(self):
+        """The curated one from the additions, else the one of its rule's type (`CATEGORY_OF_TYPE`)."""
+        self.assertEqual([i for i, e in self.entries.items() if "stack-analyser" in e["from"] and not e.get("category")], [])
         for category, idents in (("framework", ("angular", "django", "express", "nextjs")),
                                  ("library", ("numpy", "boto3", "sqlalchemy", "d3js", "fontawesome")),
                                  ("tool", ("jest", "biomejs", "ansible", "asdf", "alembic")),
                                  ("service", ("kafka", "etcd", "keycloak"))):
             for ident in idents:
-                self.assertEqual((ident, self.entries[ident]["kind"], self.entries[ident].get("category")),
-                                 (ident, "project", category))
-
-    def test_a_sign_a_catalog_gives_wrongly_is_taken_away_by_an_addition(self):
-        self.assertNotIn("passport-google-oauth20", self.entries["gcp"]["signs"]["packages"]["npm"])
-        self.assertNotIn("postman-collection", self.entries["postman"]["signs"]["packages"]["npm"])
-        signs = {"packages": {"npm": ["googleapis", "passport-google-oauth20"], "pypi": ["x"]}, "patterns": {},
-                 "env": ["GOOGLE_CLOUD_PROJECT"], "hosts": [], "files": []}
-        entries = {"gcp": {"id": "gcp", "name": "GCP", "kind": "service", "type": "servizio o API", "site": None,
-                           "mark": None, "signs": signs, "from": ["stack-analyser"]}}
-        registry_build.apply_additions(entries, [{"id": "gcp", "wrong_signs": {
-            "packages": {"npm": ["passport-google-oauth20"], "pypi": ["x"]}}, "by": "catalog"}])
-        self.assertEqual(entries["gcp"]["signs"]["packages"], {"npm": ["googleapis"]})
-        self.assertEqual(entries["gcp"]["from"], ["additions", "stack-analyser"])
+                self.assertEqual((ident, self.entries[ident].get("category")), (ident, category))
 
     def test_the_built_file_is_what_its_additions_make_of_it(self):
         """The checked-in file agrees with `registry-additions.json` by the build's own merge rule."""
@@ -83,99 +77,111 @@ class DistributedRegistryTests(unittest.TestCase):
         registry_build.apply_additions(entries, json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"])
         self.assertEqual(entries, self.entries)
 
+    def test_the_additions_hold_no_sign(self):
+        records = json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"]
+        self.assertEqual(registry_build.check(self.value, additions=records), [])
+
+
+def test_every_rule_of_the_release_has_a_registry_entry(real_stack):
+    """What the fork recognizes the registry names: its id, name, type and hosts, from the release in use."""
+    entries = {e["id"]: e for e in json.loads(REGISTRY.read_text(encoding="utf-8"))["entries"]}
+    rules = stack_analyser.catalogue()
+    assert len(rules) > 1000
+    assert [r["tech"] for r in rules if r["tech"] not in entries] == []
+    for rule in rules:
+        entry = entries[rule["tech"]]
+        assert "stack-analyser" in entry["from"], rule["tech"]
+        assert entry.get("hosts") == (rule.get("hosts") or None), rule["tech"]
+        assert entry.get("category"), rule["tech"]
+
+
+def test_the_table_of_categories_has_every_type_of_the_catalogue(real_stack):
+    types = {rule["type"] for rule in stack_analyser.catalogue()}
+    assert sorted(types - set(registry_build.CATEGORY_OF_TYPE)) == []
+    assert set(registry_build.CATEGORY_OF_TYPE.values()) <= set(registry_build.CATEGORIES)
+
 
 class CheckTests(unittest.TestCase):
     ENTRY = {"id": "stripe", "name": "Stripe", "kind": "service", "type": "gateway", "site": "https://stripe.com",
-             "mark": None, "signs": {"packages": {"npm": ["stripe"]}, "patterns": {}, "env": ["STRIPE_"],
-                                         "hosts": [], "files": []}, "from": ["stack-analyser"]}
+             "mark": None, "hosts": ["api.stripe.com"], "from": ["stack-analyser"]}
 
-    def problems(self, change, size=1000):
+    def problems(self, change, size=1000, additions=None):
         entries = []
         for number in range(size):
             entry = copy.deepcopy(self.ENTRY)
             entry["id"] = f"e{number}"
             entries.append(entry)
         change(entries)
-        return registry_build.check({"schema": registry_build.SCHEMA, "entries": entries})
+        return registry_build.check({"schema": registry_build.SCHEMA, "entries": entries}, additions=additions)
 
     def test_each_rule_names_what_breaks_it(self):
         self.assertEqual(self.problems(lambda e: None), [])
         self.assertIn("1000", " ".join(self.problems(lambda e: None, size=999)))
         self.assertIn("e0: the id repeats", " ".join(self.problems(lambda e: e[1].update(id="e0"))))
         self.assertIn("type", " ".join(self.problems(lambda e: e[0].update(type="pagamento"))))
-        self.assertIn("signs", " ".join(self.problems(lambda e: e[0].update(signs={"packages": {}, "patterns": {},
-                                                                                 "env": [], "hosts": [], "files": []}))))
-        self.assertEqual(self.problems(lambda e: e[0].update(signs=None)), [])
+        self.assertIn("hosts", " ".join(self.problems(lambda e: e[0].update(hosts=[]))))
+        self.assertIn("hosts", " ".join(self.problems(lambda e: e[0].update(hosts="api.stripe.com"))))
+        self.assertEqual(self.problems(lambda e: e[0].pop("hosts")), [])
         self.assertIn("kind", " ".join(self.problems(lambda e: e[0].update(kind="vendor"))))
 
+    def test_a_sign_is_refused_in_an_entry_and_in_the_additions(self):
+        """The rules are the fork's: the registry names, it does not recognize."""
+        self.assertIn("e0: no signs", " ".join(self.problems(lambda e: e[0].update(signs={"packages": {"npm": ["stripe"]}}))))
+        self.assertIn("e0: no signs", " ".join(self.problems(lambda e: e[0].update(signs=None))))
+        for field in ("signs", "wrong_signs"):
+            found = self.problems(lambda e: None, additions=[{"id": "stripe", "by": "catalog", field: {"files": ["x"]}}])
+            self.assertEqual(found, [f"additions: stripe has {field}, the rules are the fork's"])
+        self.assertEqual(self.problems(lambda e: None, additions=[{"id": "stripe", "category": "service", "by": "catalog"}]), [])
 
-class DeriveTests(unittest.TestCase):
-    def test_build_keeps_an_entry_after_its_last_sign_is_removed(self):
-        rule = {"tech": "widget", "name": "Widget", "type": "tool", "files": ["unrelated.json"]}
-        correction = {"id": "widget", "wrong_signs": {"files": ["unrelated.json"]}}
+
+class BuildTests(unittest.TestCase):
+    RULES = [{"tech": "widget", "name": "Widget", "type": "linter", "files": ["unrelated.json"],
+              "dependencies": [{"type": "npm", "name": "widget"}]},
+             {"tech": "payhub", "name": "PayHub", "type": "payment", "hosts": ["api.payhub.test"]},
+             {"tech": "kernel", "name": "Kernel", "type": "framework"}]
+
+    def build(self, records, rules=None, items=()):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             additions = root / "additions.json"
-            additions.write_text(json.dumps({"entries": [correction]}), encoding="utf-8")
-            with (patch.object(registry_build, "stack_analyser_rules", return_value=[rule]),
-                  patch.object(registry_build, "cncf_items", return_value=[]),
+            additions.write_text(json.dumps({"entries": records}), encoding="utf-8")
+            with (patch.object(registry_build.stack_analyser, "catalogue", return_value=self.RULES if rules is None else rules),
+                  patch.object(registry_build, "cncf_items", return_value=list(items)),
                   patch.object(registry_build, "_tarball", return_value=root),
                   patch.object(registry_build, "simple_icons", return_value=[])):
-                (entry,) = registry_build.build(root, additions, root)["entries"]
-        self.assertEqual(entry["id"], "widget")
-        self.assertIsNone(entry["signs"])
+                return registry_build.build(root, additions, root)
 
-    def test_specfy_file_regexp_does_not_declare_a_file_named_regex(self):
-        rule = {"tech": "jest", "name": "Jest", "type": "test", "files": {"regex": r"^jest\.config\."}}
-        self.assertEqual(registry_build._from_rule(rule)["signs"]["files"], [])
-        rule["files"] = ["jest.config.js"]
-        self.assertEqual(registry_build._from_rule(rule)["signs"]["files"], ["jest.config.js"])
+    def test_an_entry_is_made_of_a_rule_with_its_hosts_its_category_and_no_sign(self):
+        value = self.build([])
+        entries = {e["id"]: e for e in value["entries"]}
+        self.assertEqual(entries["widget"], {"id": "widget", "name": "Widget", "kind": "project", "type": "altro",
+                                             "site": None, "mark": None, "from": ["stack-analyser"], "category": "tool"})
+        self.assertEqual((entries["payhub"]["kind"], entries["payhub"]["type"], entries["payhub"]["category"],
+                          entries["payhub"]["hosts"]), ("service", "gateway", "service", ["api.payhub.test"]))
+        self.assertNotIn("hosts", entries["kernel"])
+        self.assertEqual(value["versions"]["stack-analyser"], stack_analyser.VERSION)
+        self.assertEqual([i for i, e in entries.items() if "signs" in e], [])
 
-    def test_candidates_drop_a_scope_a_prefix_and_a_suffix(self):
-        self.assertEqual(registry_build.candidates("stripe"), ["stripe"])
-        self.assertEqual(registry_build.candidates("@google/genai"), ["google-genai", "google"])
-        self.assertEqual(registry_build.candidates("pusher-js"), ["pusher-js", "pusher"])
-        self.assertEqual(registry_build.candidates("node-mysql"), ["node-mysql", "mysql"])
+    def test_the_curated_category_is_kept_and_the_table_decides_only_where_there_is_none(self):
+        entries = {e["id"]: e for e in self.build([{"id": "widget", "category": "library", "by": "catalog"}])["entries"]}
+        self.assertEqual((entries["widget"]["category"], entries["kernel"]["category"]), ("library", "framework"))
 
-    def test_a_go_module_is_one_with_its_own_go_mod(self):
-        self.assertTrue(registry_build.real_go_mod(b"module github.com/stripe/stripe-go/v76\n\ngo 1.15\n"))
-        self.assertFalse(registry_build.real_go_mod(b"module github.com/withastro/astro\n"))
+    def test_an_entry_the_fork_has_no_rule_for_stays_as_a_name(self):
+        record = {"id": "legacy", "name": "Legacy", "kind": "project", "type": "altro", "site": "https://legacy.test",
+                  "category": "tool", "by": "model"}
+        entry = next(e for e in self.build([record], rules=[])["entries"] if e["id"] == "legacy")
+        self.assertEqual((entry["from"], entry["category"], "hosts" in entry), (["additions"], "tool", False))
 
-    def test_a_package_found_for_several_entries_speaks_for_none(self):
-        found = [{"id": "azure.sql", "signs": {"packages": {"pypi": ["azure"]}}},
-                 {"id": "azure.mysql", "signs": {"packages": {"pypi": ["azure"], "go": ["github.com/x/y"]}}},
-                 {"id": "stripe", "signs": {"packages": {"pypi": ["stripe"]}}}]
-        self.assertEqual(registry_build.unambiguous(found),
-                         [{"id": "azure.mysql", "signs": {"packages": {"go": ["github.com/x/y"]}}},
-                          {"id": "stripe", "signs": {"packages": {"pypi": ["stripe"]}}}])
+    def test_a_type_the_table_does_not_know_stops_the_build_with_its_name(self):
+        with self.assertRaisesRegex(ValueError, "gizmo"):
+            self.build([], rules=[{"tech": "x", "name": "X", "type": "gizmo"}])
 
-    def test_derive_starts_from_the_catalogs_not_from_its_last_run(self):
-        entry = {"id": "stripe", "signs": {"packages": {"npm": ["stripe"], "pypi": ["stripe"], "go": ["github.com/stripe/stripe-go"]}}}
-        last = [{"id": "stripe", "signs": {"packages": {"pypi": ["stripe"]}}, "by": "derive"}]
-        self.assertEqual(registry_build.catalog_packages(entry, last), {"npm": ["stripe"], "go": ["github.com/stripe/stripe-go"]})
-
-    def test_a_model_proposal_keeps_only_what_the_machine_verifies(self):
-        entries = {"mongodb": {"id": "mongodb", "name": "MongoDB", "site": "https://www.mongodb.com/",
-                               "signs": {"packages": {"npm": ["mongodb"], "rubygems": ["mongo"]}}}}
-        owners = {("npm", "mongodb"): {"github.com/mongodb"}, ("pypi", "pymongo"): {"github.com/mongodb"},
-                  ("pypi", "mongoengine"): {"github.com/mongoengine"}, ("pypi", "fastapi"): {"github.com/fastapi"}}
-        check = {"owners": lambda eco, name: owners.get((eco, name)), "site": lambda url: url != "https://nowhere.example"}
-        kept, refused = registry_build.accept([
-            {"id": "mongodb", "packages": {"pypi": ["pymongo", "mongoengine"], "rubygems": ["mongoid"]}},
-            {"id": "fastapi", "name": "FastAPI", "kind": "project", "type": "altro", "site": "https://fastapi.tiangolo.com",
-             "packages": {"pypi": ["fastapi"]}},
-            {"id": "ghost-sdk", "name": "Ghost", "kind": "project", "type": "altro", "site": "https://nowhere.example",
-             "packages": {"pypi": ["nope"]}}], entries, check)
-        self.assertEqual(kept[0], {"id": "mongodb", "signs": {"packages": {"pypi": ["pymongo"]}}, "by": "model"})
-        self.assertEqual(kept[1]["signs"]["packages"], {"pypi": ["fastapi"]})
-        self.assertEqual(len(kept), 2)
-        self.assertTrue(any("mongoengine" in r for r in refused) and any("ghost-sdk" in r for r in refused))
-
-    def test_the_owner_of_two_repositories(self):
-        self.assertEqual(registry_build.owner("git+https://github.com/stripe/stripe-node.git"), "github.com/stripe")
-        self.assertEqual(registry_build.owner("https://github.com/Stripe/stripe-python"), "github.com/stripe")
-        self.assertEqual(registry_build.owner("git@github.com:getsentry/sentry-javascript.git"), "github.com/getsentry")
-        self.assertIsNone(registry_build.owner("https://stripe.com"))
+    def test_the_commands_that_wrote_signs_are_gone(self):
+        for command in ("derive", "verify-additions", "model-input", "accept"):
+            with self.subTest(command), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                registry_build.main([command])
+        for name in ("_COLLECT", "stack_analyser_rules", "derive", "accept", "verify_additions", "model_input", "STACK_ANALYSER"):
+            self.assertFalse(hasattr(registry_build, name), name)
 
 
 if __name__ == "__main__":
@@ -420,7 +426,8 @@ class DistributedMarkTests(unittest.TestCase):
 
     def test_the_recognisable_services_that_have_a_mark_do_not_drop_below_432(self):
         """Count marked services using the category the module stack actually reports."""
-        with_mark = [e for e in self.entries if service_registry.entry_category(e) == "service" and e["signs"] and e["mark"]]
+        with_mark = [e for e in self.entries if service_registry.entry_category(e) == "service"
+                     and "stack-analyser" in e["from"] and e["mark"]]
         self.assertGreaterEqual(len(with_mark), 432)
 
     def test_a_shipped_mark_that_is_not_of_simple_icons_says_where_it_comes_from(self):
@@ -584,39 +591,6 @@ class PackageMarkTests(unittest.TestCase):
                              [("daodan", "marks/aws.x.svg", False, ["date", "drawn_by"])])
 
 
-class NewServiceFromAMarkTests(unittest.TestCase):
-    ICONS = MarkJoinTests.ICONS
-    OWNERS = {"acme": {"github.com/acme"}, "acme-py": {"github.com/acme"}, "acme-known": {"github.com/acme"},
-              "acme-other": {"github.com/other"}}
-    CHECK = {"owners": lambda eco, name: NewServiceFromAMarkTests.OWNERS.get(name), "site": lambda url: "ok" in url}
-
-    def test_the_prompt_lists_the_marks_that_have_no_entry_and_no_other(self):
-        registry = {"entries": [{"id": "stripe", "name": "Stripe", "kind": "service", "from": []}]}
-        prompt = registry_build.model_input(registry, self.ICONS)
-        lines = prompt.splitlines()
-        self.assertIn("Acme", lines)
-        self.assertNotIn("Stripe", lines)
-
-    def test_a_new_entry_is_kept_with_packages_of_one_owner_and_no_package_another_entry_has(self):
-        entries = {"known": {"id": "known", "name": "Known", "signs": {"packages": {"npm": ["acme-known"]}}}}
-
-        def one(**change):
-            proposal = {"id": "acme", "name": "Acme", "kind": "service", "type": "servizio o API", "site": "https://ok.example",
-                        "packages": {"npm": ["acme"], "pypi": ["acme-py"]}}
-            return registry_build.accept([{**proposal, **change}], entries, self.CHECK)
-
-        kept, refused = one()
-        self.assertEqual((kept[0]["id"], kept[0]["signs"]["packages"], refused), ("acme", {"npm": ["acme"], "pypi": ["acme-py"]}, []))
-        kept, refused = one(packages={"npm": ["acme"], "pypi": ["acme-other"]})
-        self.assertEqual(kept[0]["signs"]["packages"], {"npm": ["acme"]})
-        self.assertIn("another owner", " ".join(refused))
-        kept, refused = one(packages={"npm": ["acme-known"]})
-        self.assertEqual(kept, [])
-        self.assertIn("already has", " ".join(refused))
-        kept, refused = one(site="https://down.example")
-        self.assertEqual(kept, [])
-
-
 def test_a_record_that_only_adds_to_an_entry_may_come_before_the_one_that_makes_it():
     """`build` applies the additions in the order of their file, by id and by `by`: a `catalog` record that only gives
     a category comes before the `model` record that makes the entry, and the entry is made all the same."""
@@ -624,6 +598,5 @@ def test_a_record_that_only_adds_to_an_entry_may_come_before_the_one_that_makes_
     registry_build.apply_additions(entries, [
         {"id": "new", "category": "library", "by": "catalog"},
         {"id": "new", "name": "New", "kind": "project", "type": "altro", "site": "https://new.example",
-         "signs": {"packages": {"npm": ["new"]}}, "by": "model"}])
+         "by": "model"}])
     assert (entries["new"]["name"], entries["new"]["category"]) == ("New", "library")
-    assert entries["new"]["signs"]["packages"] == {"npm": ["new"]}

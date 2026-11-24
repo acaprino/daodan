@@ -39,18 +39,15 @@ def _git_project(root: Path, files: dict[str, str]) -> Path:
     return root
 
 
-def test_distributed_registry_supports_jvm_dotnet_pub_hex_swift_and_passes_check():
+def test_distributed_registry_names_jvm_dotnet_pub_hex_swift_and_passes_check():
     reg = service_registry.load()
     assert registry_build.check(reg) == []
     by_id = {e["id"]: e for e in reg["entries"]}
     for ident in ("spring-boot", "junit-jupiter", "jackson", "hibernate", "aspnetcore",
-                  "entity-framework-core", "xunit", "flutter", "phoenix", "chi", "sqlmodel"):
+                  "entity-framework-core", "xunit", "flutter", "phoenix", "chi", "sqlmodel", "rails"):
         assert ident in by_id, ident
-    assert "maven" in by_id["spring-boot"]["signs"]["packages"]
-    assert "nuget" in by_id["aspnetcore"]["signs"]["packages"]
-    assert "pub" in by_id["flutter"]["signs"]["packages"]
-    assert "hex" in by_id["phoenix"]["signs"]["packages"]
-    assert "rubygems" in by_id["rails"]["signs"]["packages"]
+        assert "stack-analyser" in by_id[ident]["from"], ident  # the fork has a rule for it
+        assert "signs" not in by_id[ident], ident
 
 
 def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logical_and_virtual_modules(real_stack, tmp_path):
