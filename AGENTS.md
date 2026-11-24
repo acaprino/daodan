@@ -39,6 +39,10 @@ bisogno. Di Daodan sono solo il layout, che segue le sue funzioni, l'accento e l
 - È l'app ad adeguarsi al design system, mai il contrario. Sigrid cambia solo quando manca davvero un componente o una
   primitiva che serve a una funzione: allora si aggiunge a Sigrid, generico, per tutte le app. L'aspetto che Daodan
   aveva prima non è mai un motivo per cambiare Sigrid.
+- La base dell'app è Imago, la shell della suite in stile Xiox (finestra, barra del titolo, cornice, comandi, palette, tema,
+  notifiche), costruita con Sigrid; i componenti sono di Sigrid. L'app porta solo le sue schermate, composte con i componenti di
+  Sigrid, e non ha una cornice, una finestra o un look propri. Ciò che manca alla shell si aggiunge a Imago, ciò che manca a un
+  componente a Sigrid. Finché la shell di Imago su Sigrid non esiste, l'app tiene la cornice che ha oggi e non ne aggiunge.
 
 ## Interfaccia (viewer/)
 
