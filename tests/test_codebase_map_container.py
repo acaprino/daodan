@@ -693,6 +693,17 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual(len(self.created()), 2)
         self.assertEqual(len([call for call in self.calls() if call[:2] == ["volume", "rm"]]), 2)
 
+    def test_the_registries_are_the_hosts_of_the_package_managers_file(self):
+        data = json.loads((Path(container.__file__).resolve().parents[1] / "data/package-managers.json")
+                          .read_text(encoding="utf-8"))
+        hosts = [host for names in data["managers"].values() for host in names]
+        self.assertIn("oldid=", data["source"])  # the revision of Wikipedia's list the names were read from
+        self.assertEqual(sorted(container.REGISTRIES), sorted(set(hosts)))
+        self.assertEqual(len(hosts), len(set(hosts)))  # a host under one manager only
+        for host in hosts:  # names only: a scheme, a port, a path or a wildcard would widen what the proxy opens
+            self.assertRegex(host, r"\A[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\Z")
+        self.assertLessEqual({"registry.npmjs.org", "pypi.org", "github.com"}, set(container.REGISTRIES))
+
     def test_proxy_refuses_every_host_outside_the_registries(self):
         server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
                                   stdout=subprocess.PIPE, text=True)
