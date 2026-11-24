@@ -145,7 +145,7 @@ try {
   };
   const schemeIs = (where, wanted) => where.waitForFunction(value => document.documentElement.dataset.scheme === value, wanted);
   const kept = () => page.evaluate(() => localStorage.getItem('daodan.theme'));
-  const fits = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+  const fits = () => page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth).then(() => true, () => false);  // once the frame has the width
   const focused = locator => locator.evaluate(el => el === document.activeElement);
   const main = page.getByRole('main');
   const line = text => page.getByRole('status').filter({ hasText: text });  // the status row, and what it says
