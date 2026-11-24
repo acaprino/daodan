@@ -52,4 +52,6 @@ Le soglie si scrivono nel README del benchmark prima delle run e valgono per ogn
 3. Il campo di testo resta se porta nei primi cinque risultati almeno tre simboli che l'indice lessicale da solo non porta, senza peggiorare le ricerche per nome.
 4. Se né B né C superano A, la review resta com'è, e lo si scrive con i numeri.
 
+**Aperta: da approfondire: review a strati contro il modello da solo.** Una review in cui il modello riceve pacchetti sempre più dettagliati costruiti dal grafo, a strati, trova più difetti, e a quale costo, di una review in cui il modello legge il codice da solo? Qui c'è l'unica misura, su un caso: unità e flussi dati tutti insieme non portano i difetti attesi su phazly. Dare il dettaglio a strati non è misurato; il disegno del pacchetto è in [ricerca dei flussi e pacchetto di una review](2026-11-20-ricerca-e-pacchetto-di-review.md), «Decisioni aperte».
+
 **Aperta: da approfondire:** come passare un'unità a `composition.py bind`; come scrivere il flusso in `01-context.md`; se due run per prova bastano, vista la variabilità misurata; come si combinano gli esiti di casi diversi.
