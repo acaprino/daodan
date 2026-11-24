@@ -255,7 +255,7 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
     # Services the stack recognises (one it only saw mentioned is no module's, nor a node): external modules the
     # registry proposes, with type, site and mark, used by each file that shows them; a mention is an uncertain use.
     import service_registry
-    marked = {entry["id"] for entry in service_registry.load()["entries"] if entry.get("mark") or entry.get("mark_source")}
+    marked = service_registry.marked()
     for item in stack["technologies"]:
         if item["category"] != "service":
             continue

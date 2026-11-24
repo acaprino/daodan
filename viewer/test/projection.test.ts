@@ -130,6 +130,13 @@ test('the logo of a service reaches its node', () => {
   assert.deepEqual(projection.nodes.filter(node => node.mark).map(node => [node.label, node.mark]), [['card payment provider', 'stripe']]);
 });
 
+test('a group of code has the logo of the one framework it declares', () => {
+  const technology = (id: string, category: string) => ({ id, name: id, type: 'altro', category, paths: [], mark: id });
+  const made = (...technologies: string[]) => project(parseEnvelope({ ...env, technologies: [technology('react', 'framework'), technology('nextjs', 'framework'), technology('zod', 'library')],
+    entities: env.entities.map(entity => (entity.ref === 'component:web' ? { ...entity, technologies } : entity)) }), 'logical', null).nodes.filter(node => node.mark).map(node => [node.label, node.mark]);
+  assert.deepEqual([made('zod', 'react'), made('react', 'nextjs'), made('zod')], [[['web', 'react']], [], []]);
+});
+
 test('old exports with a shared handler still allow selecting either event', () => {
   const first = env.flows[0];
   const repeated = parseEnvelope({ ...env, flows: [first, { ...first, steps: [], complete: false }] });

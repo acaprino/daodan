@@ -6,7 +6,7 @@ import { iconFor } from '../src/icons.ts';
 import { legendOf, LINES } from '../src/lines.ts';
 import type { LineKind } from '../src/lines.ts';
 import type { ImageOf } from '../src/scene.ts';
-import { isOpenGroup, nodeFacts, nodeName, opens, outside, relationWords } from './graph.ts';
+import { isOpenGroup, markOf, nodeFacts, nodeName, opens, outside, relationWords } from './graph.ts';
 import type { Graph, GraphEdge, GraphNode, OpenGroup, Thing } from './graph.ts';
 
 // `key` is the name of what is laid out: the canvas fits its view again when it changes.
@@ -35,10 +35,11 @@ function inOrder(nodes: readonly GraphNode[], open: readonly OpenGroup[]): Thing
 }
 
 function drawn(thing: Thing, imageOf: ImageOf): Drawn {
-  if (isOpenGroup(thing)) return { id: thing.id, label: nodeName(thing), icon: iconOf(thing), open: true, group: thing.parent ?? undefined };
+  const face = { id: thing.id, label: nodeName(thing), icon: iconOf(thing), image: imageOf(markOf(thing)) };
+  if (isOpenGroup(thing)) return { ...face, open: true, group: thing.parent ?? undefined };
   const external = thing.location === 'external';
   return {
-    id: thing.id, label: nodeName(thing), icon: iconOf(thing), image: imageOf(thing.mark),
+    ...face,
     external, detail: external ? thing.node_type || undefined : nodeFacts(thing),  // «esterno» is the canvas's own word
     open: opens(thing) ? false : undefined, group: thing.group ?? undefined,
   };

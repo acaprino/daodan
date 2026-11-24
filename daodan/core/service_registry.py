@@ -71,6 +71,11 @@ def mark_file(entry: dict, data: Path | None = None) -> Path | None:
         return None
 
 
+def marked() -> set[str]:
+    """The ids of the entries with a mark (`mark_file`): what a page may ask the image of."""
+    return {entry["id"] for entry in load()["entries"] if entry.get("mark") or entry.get("mark_source")}
+
+
 class Marks:
     """The marks of the registry's entries, for the servers of the pages. An id is only looked up among the entries,
     so none is a path; without a registry no id is known."""

@@ -1,5 +1,6 @@
 // What one view of the envelope shows: nodes with their occurrences, edges lifted to what is visible, flows on top.
 import type { Entity, Envelope, Flow, View } from './envelope.ts';
+import { frameworkMark } from './marks.ts';
 
 export type Filters = { text?: string; types?: string[] };
 // `parent` is the open group a node is drawn in; `open` says whether a group is (a node that holds nothing is no group).
@@ -75,6 +76,10 @@ export function rootsOf(env: Envelope, view: View): string[] {
   return [...groups, ...loose];
 }
 
+// The logo of an entity: its own, or that of the framework it is made with.
+export const markOfEntity = (env: Envelope, entity: Entity): string | undefined =>
+  entity.mark ?? frameworkMark(env.technologies.filter(item => entity.technologies?.includes(item.id)));
+
 const topOf = (env: Envelope, view: View, scope: string | null) => (scope === null ? rootsOf(env, view) : childrenOf(env, scope, view));
 
 function descendants(env: Envelope, ref: string, view: View, seen = new Set<string>()): Set<string> {
@@ -120,7 +125,7 @@ export function project(env: Envelope, view: View, scope: string | null, filters
     nodes.push({
       id, ref, type: entity.type, label: entity.name, parent, open: kids.length > 0 ? expanded : undefined,
       count: new Set(kids).size, nodeType: entity.node_type, location: entity.location, status: entity.status,
-      freshness: entity.freshness, mark: entity.mark,
+      freshness: entity.freshness, mark: markOfEntity(env, entity),
     });
     let shown = matches(entity, filters) || ref === kept;
     if (expanded) for (const kid of kids) shown = visit(kid, id, id, [...inside, ref]) || shown;

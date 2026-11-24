@@ -5,7 +5,7 @@ import { Mark } from '../src/mark.tsx';
 import { Failed, Loading } from '../src/states.tsx';
 import { number, plural } from '../src/words.ts';
 import { ScreenPanel, useFrame } from './frame.tsx';
-import { buildCounts, levelsName, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
+import { buildCounts, levelsName, markOf, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { Paths } from './paths-section.tsx';
 import { Gaps, PROVENANCE } from './provenance.tsx';
@@ -42,7 +42,7 @@ function Responsibilities({ graph }: { graph: Graph }) {
   return <Section title="Responsabilità da esplorare" level={3} icon={<Icon name="layers" />} end={levels && <Badge variant="secondary">{levels}</Badge>}>
     {!largest.length ? <Text as="p" variant="muted">Nessun gruppo nel grafo.</Text>
       : <ItemList aria-label="Responsabilità da esplorare">{largest.map(n =>
-        <ItemRow key={n.id} title={nodeName(n)} wrapTitle leading={<Mark image={model.markUrl(n.mark)} icon={iconOf(n)} />} description={<Text pre>{responsibilityOf(n)}</Text>}
+        <ItemRow key={n.id} title={nodeName(n)} wrapTitle leading={<Mark image={model.markUrl(markOf(n))} icon={iconOf(n)} />} description={<Text pre>{responsibilityOf(n)}</Text>}
           facts={[{ text: nodeFacts(n) }]} end={<Icon name="chevron" />} onClick={() => go(() => model.showNode(n.id))} />)}</ItemList>}
   </Section>;
 }

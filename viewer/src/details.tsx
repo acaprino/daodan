@@ -3,7 +3,7 @@ import { Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino
 import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
 import { Inspector } from '@acaprino/sigrid/layout';
 import type { Entity, Envelope, Flow } from './envelope.ts';
-import { flowsThrough, indexOf } from './projection.ts';
+import { flowsThrough, indexOf, markOfEntity } from './projection.ts';
 import { List, Listed } from './listed.tsx';
 import { Mark } from './mark.tsx';
 import type { Model, Shown } from './model.ts';
@@ -127,7 +127,7 @@ export function Details({ model, show, open, close }: { model: Model; show: (ask
     {open && <Column gap="lg" data-selectable="">
       {/* The one live region: it stays while what is chosen changes, and reads the name alone. */}
       <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
-        <Mark image={markOf(entity?.mark)} icon={head.icon} />
+        <Mark image={markOf(entity && markOfEntity(envelope, entity))} icon={head.icon} />
         <Column><Heading size="small"><Text pre>{head.name}</Text></Heading></Column>
       </Cluster>
       {entity ? <EntityDetails key={entity.ref} model={model} show={show} entity={entity} />

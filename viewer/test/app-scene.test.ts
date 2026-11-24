@@ -30,10 +30,18 @@ test('a group open in place is a thing that holds what is in it, also an open gr
     ['api', false, undefined], ['s', undefined, undefined], ['t', false, undefined],
     ['web', true, undefined], ['web/main.ts', false, 'web'], ['web/ui', true, 'web'], ['web/ui/a.ts', false, 'web/ui'],
   ]);
-  assert.deepEqual(nodes.find(thing => thing.id === 'web/ui'), { id: 'web/ui', label: 'ui', icon: 'folder', open: true, group: 'web' });
+  assert.deepEqual(nodes.find(thing => thing.id === 'web/ui'), { id: 'web/ui', label: 'ui', icon: 'folder', image: undefined, open: true, group: 'web' });
   assert.match(key, /^api,s,t,[+]web,web\/main.ts,[+]web\/ui,web\/ui\/a.ts[|]api→web$/);  // an open group is another layout than a closed one
   // A group that is not open holds nothing: the thing is on the canvas as the others.
   assert.deepEqual(sceneOf({ nodes: [node('x', { group: 'gone' })], edges: [], open: [] }).nodes.map(thing => thing.id), ['x']);
+});
+
+test('a group has the logo of the one framework its files declare, closed and open, and a thing its own first', () => {
+  const projects = [{ mark: 'react', name: 'React', category: 'framework', evidence: [] }, { mark: 'zod', name: 'Zod', category: 'library', evidence: [] }];
+  const several = [...projects, { mark: 'nextjs', name: 'Next.js', category: 'framework', evidence: [] }];
+  const { nodes } = sceneOf({ nodes: [node('a', { projects, mark: null }), node('b', { projects: several }), node('c', { projects, mark: 'stripe' })], edges: [],
+    open: [{ id: 'd', name: 'd', parent: null, projects }] });
+  assert.deepEqual(nodes.map(thing => [thing.id, thing.image]), [['a', '/mark/react'], ['b', undefined], ['c', '/mark/stripe'], ['d', '/mark/react']]);
 });
 
 test('a line says its kind by its dash and its words, and each is a line of its own', () => {

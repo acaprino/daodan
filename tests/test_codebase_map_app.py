@@ -473,8 +473,9 @@ def test_the_pre_map_lists_the_units_with_their_declared_libraries_and_the_unit_
         ("root", None, None, None), ("pkg", "root", "pkg/pyproject.toml", "confirmed")]
     assert found["units"][1]["dependencies"] == [{"name": "pytest", "scope": "pypi", "state": "declared",
                                                   "source": "pkg/pyproject.toml:9"}]
-    assert [(item["name"], item["source"], item["state"]) for item in found["technologies"]] == [
-        ("pytest", "pkg/pyproject.toml:9", "recognized"), ("python", "pkg/pyproject.toml", "declared")]
+    # a recognized technology names the mark of its registry entry, as the envelope does; a toolchain has no entry
+    assert [(item["name"], item["source"], item["state"], item.get("mark")) for item in found["technologies"]] == [
+        ("pytest", "pkg/pyproject.toml:9", "recognized", "pytest"), ("python", "pkg/pyproject.toml", "declared", None)]
     with pytest.raises(ValueError, match="stale"):
         app_view.premap({"state": "needs_refresh", "reason": "stale"}, {}, {})
 

@@ -7,7 +7,7 @@ import { Mark } from '../src/mark.tsx';
 import { Failed, Loading } from '../src/states.tsx';
 import { CATEGORY_LABEL, MORE, number } from '../src/words.ts';
 import type { Detail } from './frame.tsx';
-import { isOpenGroup, nodeFacts, nodeName, opens, responsibilityOf, thingById } from './graph.ts';
+import { isOpenGroup, markOf, nodeFacts, nodeName, opens, responsibilityOf, thingById } from './graph.ts';
 import type { Graph, GraphNode, Technology, Thing } from './graph.ts';
 import {
   callRows, isProven, perimeter, proofRow, recordedIn, relationRow, relationsOf, shortPath, siteOf, stateOf, symbolRows, whatIs,
@@ -134,7 +134,7 @@ function GroupToggle({ id }: { id: string }) {
 const GROUP = 'graph.group';
 const face = (thing: Thing) => ({
   id: GROUP, key: thing.id, title: 'Dettaglio del gruppo', icon: iconOf(thing), name: nodeName(thing),
-  image: isOpenGroup(thing) ? undefined : model.markUrl(thing.mark),
+  image: model.markUrl(markOf(thing)),
 });
 // Beside the preview.
 export const groupDetail = (n: GraphNode, footer?: ReactNode): Detail => ({ ...face(n), content: <GroupFacts id={n.id} />, footer });

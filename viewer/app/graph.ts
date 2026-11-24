@@ -1,4 +1,5 @@
 // The graph of the run: what is in view with the person's filters, its groups open in place, and its words.
+import { frameworkMark } from '../src/marks.ts';
 import { number, plural, proofLabel, relationCounts, STATUS_LABEL } from '../src/words.ts';
 import type { Kept } from './storage.ts';
 
@@ -7,7 +8,7 @@ export type EdgeEvidence = Evidence & { target?: string; kind?: string; key?: st
 export type Technology = { mark: string; name: string; category: string; evidence: Evidence[] };
 export type GraphNode = {
   id: string; name: string; kind: string; files: string[]; location: string; status?: string; group: string | null; level?: string;
-  node_type?: string | null; responsibility?: string; provenance?: string; lines?: number[]; members?: string[]; mark?: string;
+  node_type?: string | null; responsibility?: string; provenance?: string; lines?: number[]; members?: string[]; mark?: string | null;
   evidence?: Evidence[]; projects?: Technology[]; other_dependencies?: number;
 };
 export type GraphEdge = { source: string; target: string; counts: Record<string, number>; status?: string; conflict?: boolean; evidence: EdgeEvidence[] };
@@ -81,6 +82,8 @@ export function visibleGraph(graph: Graph, kept: Filters): { nodes: GraphNode[];
   return { nodes, edges: edges.filter(e => ids.has(e.source) && ids.has(e.target)) };
 }
 
+// The logo of a thing: its own, or that of the framework its files declare.
+export const markOf = (thing: Thing): string | undefined => (isOpenGroup(thing) ? null : thing.mark) ?? frameworkMark(thing.projects ?? []);
 export const nodeName = (n: { kind?: string; name: string }) => (n.kind === 'directory' && n.name === '.' ? 'radice del repository' : n.name);
 export const nodeState = (n: GraphNode) => (n.location === 'external' ? 'esterno' : STATUS_LABEL[n.status ?? ''] || n.status || 'senza stato');
 export function nodeFacts(n: GraphNode): string {
