@@ -4,15 +4,16 @@
 # ///
 """Step 2 (`stack`): per-module frameworks, libraries, services and tools from Step 1's map and facts.
 
-Reads only Step 1's module graph and pre-map facts (`packages`, `configured_services`, `services`, `docker_builds`, `excluded`, `toolchains`),
-with zero tool execution and zero duplicate manifest parsing. Every concrete, logical and virtual module receives its
+Reads Step 1's module graph and pre-map facts (`packages`, `configured_services`, `services`, `docker_builds`, `excluded`, `toolchains`)
+without parsing a manifest again; what the project's files show is recognized by stack-analyser (`stack_recognition`, which
+reads files and executes nothing of the project). Every concrete, logical and virtual module receives its
 languages, toolchains, frameworks, declared libraries (cataloged or not), external services and tools.
 `configured_services` preserves Compose and CI declarations, including names and images outside the registry.
 For build modules with a native package graph, `resolved_libraries` records the reachable external packages
 and their exact versions. A resolved package can be conditional on a target or feature.
 An entry with no `declared` sign, only lines of text that mention it, is no module's: it stays in `mentioned` with its
 signs. Every sign carries its `source` and the `scan` (the pre-map's `inputs_digest`) that produced it: a scan replaces the
-signs of the sources it ran and keeps the others while their file exists (`merge`). `checkers` gives each checker's status (`service_registry.CHECKERS`) and `gaps` what they could not establish.
+signs of the sources it ran and keeps the others while their file exists (`merge`). `checkers` gives each checker's status (`stack-analyser`, `host`) and `gaps` what they could not establish.
 """
 from __future__ import annotations
 
@@ -163,7 +164,7 @@ def merge(found: list[dict], ran: set[str], previous: dict | None, scan: str, ex
 def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     """The stack record of `manifest` from the registry and Step 1's `facts`; the signs of the sources the recogniser did
     not run come from the record beside `manifest`, as it is before this one replaces it (`merge`)."""
-    recognized = service_registry.run(manifest, registry, facts)  # B4: stack_recognition.run
+    recognized = stack_recognition.run(manifest, registry, facts)
     digest, root, target = _inputs(manifest, registry, facts)
     merged, kept = merge(recognized["found"], set(recognized.get("ran") or ()), recorded(manifest),
                          facts.get("inputs_digest"), lambda rel: Path(root, rel).is_file(), registry)

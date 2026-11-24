@@ -7,6 +7,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+
+import pytest
 from pathlib import Path
 from unittest import mock
 
@@ -115,6 +117,7 @@ class EnvelopeTests(unittest.TestCase):
         self.service.create_run(".", "r1", engine=False)
         self.envelope = visual.build_envelope(self.project / ".daodan/map/runs/r1")
 
+    @pytest.mark.usefixtures("real_stack")
     def test_the_technologies_of_the_stack_step_and_of_each_build_unit(self):
         (self.project / "requirements.txt").write_text("fastapi==0.110\n", encoding="utf-8")
         git_project(self.project)
@@ -348,6 +351,7 @@ class LinkRelationTests(unittest.TestCase):
         self.assertIn((worker, server, {"reads": 1}), [(e["source"], e["target"], e["counts"]) for e in graph["edges"]])
 
 
+@pytest.mark.usefixtures("real_stack")
 class ServiceNodeTests(unittest.TestCase):
     """A service the stack recognises is an external node with its name, type and mark, used by the files that show
     it; a framework is the stack of a module, not a node, and a service only mentioned in a line is no node."""

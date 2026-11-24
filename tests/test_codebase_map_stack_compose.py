@@ -13,7 +13,7 @@ import snapshot
 import technologies
 
 
-def test_stack_keeps_compose_declarations_local_even_without_a_catalog_entry(tmp_path):
+def test_stack_keeps_compose_declarations_local_even_without_a_catalog_entry(real_stack, tmp_path):
     project = tmp_path / "project"
     files = {
         "api/pyproject.toml": '[project]\nname = "api"\n',

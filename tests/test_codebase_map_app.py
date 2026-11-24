@@ -528,7 +528,7 @@ def test_the_graph_groups_files_by_their_smallest_module_or_else_by_their_direct
 
 
 @pytest.fixture(scope="module")
-def levels(tmp_path_factory):
+def levels(real_stack, tmp_path_factory):
     """A run with three build units, a service the stack recognises, a framework two of them declare, a framework
     only mentioned, a library the registry knows, a tool and a library it does not know, a deduced link between two units and a module with a
     directory whose files call each other, one holding a class with two methods."""

@@ -69,6 +69,18 @@ def snapshot_of(work: Path, files: dict[str, str]) -> Path:
     return manifest
 
 
+def recognized(work: Path, files: dict[str, str] | None = None, **facts) -> dict:
+    """`stack_recognition.run` with the registry shipped, over a project of `files` and the pre-map's `facts` (a test that
+    uses it takes `real_stack`: what the project shows is what the release recognizes)."""
+    return stack_recognition.run(snapshot_of(work, files or {"README.md": "# app\n"}), service_registry.load(), facts)
+
+
+def package_signs(answer: dict) -> set[tuple]:
+    """`(id, value, path, line)` of the package signs of `answer["found"]`."""
+    return {(item["id"], sign["value"], sign["path"], sign["line"]) for item in answer["found"]
+            for sign in item["signs"] if sign["sign"] == "package"}
+
+
 
 # ---------------------------------------------------------------------------------------------- declarations
 
@@ -324,7 +336,6 @@ def test_an_environment_variable_is_a_mention(tmp_path, monkeypatch):
     manifest = snapshot_of(tmp_path, {"api/pay.py": "import os\nKEY = os.environ['REDIS_URL']\n"})
     payload = component(evidence("redis", "env", "REDIS_URL", "/api/pay.py", line=2))
     monkeypatch.setattr(stack_analyser, "run", lambda *args, **kwargs: payload)
-    monkeypatch.setattr(service_registry, "run", stack_recognition.run)  # the benchmark's substitution
     record = technologies.derive(manifest, registry(REDIS), {"packages": [], "excluded": []})
     assert record["technologies"] == []
     assert [(e["id"], [(s["sign"], s["strength"]) for s in e["signs"]]) for e in record["mentioned"]] == [

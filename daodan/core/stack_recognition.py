@@ -1,5 +1,5 @@
 """The `stack` step by stack-analyser: Daodan's pre-map facts go in as declarations, the tool's evidence comes out as the
-registry entries `service_registry.run` returns, with the host mentions it adds and the sources whose signs the run made.
+registry entries (each with its signs), with the host mentions it adds and the sources whose signs the run made.
 
 `declarations` turns the pre-map's packages, service images and Dockerfile bases into what the tool takes, `perimeter`
 names the folders and files it must not enter (only folders are listed on the disk, never entered when the snapshot
@@ -226,7 +226,7 @@ def _signs(payload: dict, files: set[str], excluded: tuple[str, ...]) -> tuple[d
 
 def found(payload: dict, registry: dict, files: set[str], excluded: tuple[str, ...],
           mentions: list[tuple[str, dict]] = ()) -> tuple[list[dict], list[dict]]:
-    """The entries of the tool's `payload` in the form of `service_registry.run()["found"]`, with the gaps; `mentions`
+    """The entries of the tool's `payload` as registry entries with their signs, and the gaps; `mentions`
     are signs already made, `(entry id, sign)`. An id the registry lacks comes out with its own name and a gap."""
     signs, gaps = _signs(payload, files, excluded)
     for ident, sign in mentions:
@@ -258,7 +258,7 @@ def _premap_sources(facts: dict) -> set[str]:
 
 
 def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:
-    """`service_registry.run`'s answer for `manifest`, from the tool's evidence and the host mentions, and `ran`: the
+    """`{"found", "checkers", "gaps", "ran"}` for `manifest`, from the tool's evidence and the host mentions; `ran` is the
     sources whose signs this run made, sorted: `stack-analyser` when the tool ran, `registry_hosts` when the host check
     did, and, only when the tool ran, the pre-map's sources that ran. A failure of the tool is a gap with its cause and remedy; the host mentions
     stay. The snapshot's store is closed while the tool runs."""
@@ -291,7 +291,7 @@ def run(manifest: Path, registry: dict | None = None, facts: dict | None = None)
         checkers.append({"checker": "host", "state": "ran"})
         ran.add("registry_hosts")
         gaps += [{**gap, "checker": "host"} for gap in answer.get("gaps") or ()]
-    except Exception as error:  # as `service_registry.run`: a checker's failure is its gap, never the end
+    except Exception as error:  # a checker's failure is its gap, never the end of the others
         _failed("host", f"{type(error).__name__}: {error}", checkers, gaps)
     entries, more = found(payload, registry, set(files), left_out, mentions)
     return {"found": entries, "checkers": checkers, "gaps": gaps + more, "ran": sorted(ran)}

@@ -114,15 +114,6 @@ def check(value: object, data: Path | None = None) -> list[str]:
         if signs is not None and (not isinstance(signs, dict) or set(signs).difference({"source"}) != set(SIGNS)
                                   or not any(signs.values())):
             problems.append(f"{ident}: signs are null or have at least one of {', '.join(SIGNS)}")
-        if isinstance(signs, dict) and "source" in signs:
-            from stack_source import QUERIES
-            source = signs["source"]
-            if not isinstance(source, dict) or not source or any(
-                kind not in QUERIES or not isinstance(names, list) or not names
-                or any(not isinstance(name, str) or not name.strip() for name in names)
-                for kind, names in source.items()
-            ):
-                problems.append(f"{ident}: source signs require a known syntax query and its names")
         if not entry.get("from") or not set(entry["from"]) <= set(SOURCES):
             problems.append(f"{ident}: from names one or more of {', '.join(SOURCES)}")
         mark, package = entry.get("mark"), entry.get("mark_source")

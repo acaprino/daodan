@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "daodan/core"))
 sys.path.insert(0, str(ROOT / "tests"))
 
-import service_registry  # noqa: E402
+import stack_recognition  # noqa: E402
 import stack_analyser  # noqa: E402
 import technologies  # noqa: E402
 from test_codebase_map_stack_recognition import snapshot_of  # noqa: E402
@@ -47,7 +47,7 @@ def manifest(tmp_path):
 def scan(manifest, monkeypatch):
     """`scan(number, answer)`: the stack step of the pre-map `scan-<number>`, the recogniser answering `answer`."""
     def run(number, recognized):
-        monkeypatch.setattr(service_registry, "run", lambda *args, **kwargs: recognized)
+        monkeypatch.setattr(stack_recognition, "run", lambda *args, **kwargs: recognized)
         facts = {"packages": [], "excluded": [{"path": f"skipped-{number}/", "why": "test"}],
                  "inputs_digest": f"scan-{number}"}
         return technologies.ensure(manifest, facts=facts)

@@ -16,7 +16,7 @@ import pytest
 REPO = Path(__file__).resolve().parents[1]
 HELD = ("daodan/__main__.py", "daodan/core/mcp_server.py", "daodan/core/app.py", "daodan/core/indexers/css_sass.js",
         "daodan/core/premap/enry_facts.go", "daodan/core/dynamic/jvm_record/Agent.java",
-        "daodan/core/specfy_rules.mjs", "daodan/data/registry-additions.json", "daodan/data/service-registry.json",
+        "daodan/data/registry-additions.json", "daodan/data/service-registry.json",
         "daodan/assets/app/index.html", "daodan/assets/viewer/index.html",
         "daodan/references/system-map.md", "daodan/core/composition.py", "daodan/review/catalog.toml",
         "daodan/review/roles/premise-auditor.md", "daodan/review/contracts/reviewer-binding.toml",

@@ -34,7 +34,6 @@ https://api.example.org/as-key: unrelated
     result = check({"settings.yml": config, "package-lock.json": '{"uri": "https://api.example.org"}',
                     "review.md": "https://api.example.org", "app.json": '{"x": ["https://api.example.org."]}'})
     assert result == {"signs": [("example", HOST, "app.json", 1), ("example", HOST, "settings.yml", 2)], "gaps": []}
-    assert dict((name, strength) for name, strength, _ in service_registry.CHECKERS)["host"] == "mentioned"
 
 
 @pytest.mark.parametrize(("grammar", "path", "source"), [
@@ -68,7 +67,7 @@ def test_unreadable_input_returns_a_gap_without_sensitive_values(monkeypatch):
     assert "private" not in repr(result)
 
 
-def test_host_evidence_reaches_the_stack_without_claiming_a_configured_service(tmp_path):
+def test_host_evidence_reaches_the_stack_without_claiming_a_configured_service(real_stack, tmp_path):
     import snapshot
     import technologies
 
@@ -81,8 +80,10 @@ def test_host_evidence_reaches_the_stack_without_claiming_a_configured_service(t
     snapshot.write_snapshot(project, manifest)
     result = technologies.ensure(manifest)
     mention = next(e for e in result["mentioned"] if e["id"] == "telegram")
-    assert [{k: v for k, v in sign.items() if k != "scan"} for sign in mention["signs"]] == [
-        {"sign": "host", "strength": "mentioned", "value": "api.telegram.org", "path": "settings.yaml", "line": 1}]
+    (sign,) = mention["signs"]
+    assert sign.pop("scan")  # the pre-map's digest of this scan: its value is not this test's
+    assert sign == {"sign": "host", "strength": "mentioned", "value": "api.telegram.org", "path": "settings.yaml",
+                    "line": 1, "source": "registry_hosts"}
     assert "telegram" not in {e["id"] for e in result["technologies"]}
     assert not any("telegram" in unit["services"] for unit in result["units"])
     assert result["configured_services"] == []

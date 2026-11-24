@@ -50,7 +50,7 @@ def test_the_steps_are_scan_stack_then_parse():
     assert [step.NAME for step in pipeline.STEPS][:3] == ["scan", "stack", "parse"]
 
 
-def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(tmp_path):
+def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(real_stack, tmp_path):
     root = _project(tmp_path)
     read, listed = tmp_path / "read" / "manifest.sqlite", tmp_path / "listed" / "manifest.sqlite"
     snapshot.write_snapshot(root, read)

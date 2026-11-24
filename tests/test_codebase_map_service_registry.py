@@ -8,12 +8,15 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import registry_build  # noqa: E402
 import service_registry  # noqa: E402
+import stack_recognition  # noqa: E402
 
 REGISTRY = ROOT / "daodan/data/service-registry.json"
 ADDITIONS = ROOT / "daodan/data/registry-additions.json"
@@ -175,74 +178,11 @@ class DeriveTests(unittest.TestCase):
         self.assertIsNone(registry_build.owner("https://stripe.com"))
 
 
-class CheckerTests(unittest.TestCase):
-    """One checker per kind of sign, each `checker(entries, project) -> {"signs", "gaps"}`, over data in memory."""
-    ENTRIES = [
-        {"id": "acme", "name": "Acme", "signs": {"packages": {"maven": ["web"], "go": ["github.com/acme/a"]},
-                                                  "patterns": {"npm": ["^@acme\\/"]}, "env": ["ACME_"],
-                                                  "files": ["acme.yml"]}},
-        {"id": "redis", "name": "Redis", "signs": {"packages": {"npm": ["redis"]}, "patterns": {}, "env": [],
-                                                   "files": []}},
-        {"id": "minio", "name": "MinIO", "signs": None},
-    ]
-    LINES = {"api/pay.py": ["import os", "", "KEY = os.environ['ACME_SECRET_KEY']"],
-             "known.json": ['{"schema": "daodan/service-registry/v1", "entries": [{"env": ["ACME_KEY"]}]}'],
-             "dist.js": ["var a=1;" * 2000 + "ACME_KEY"], "ci/acme.yml": ["on: push"]}
-
-    def project(self, packages=()):
-        return service_registry.Project(list(packages), sorted(self.LINES), lambda rel: self.LINES[rel])
-
-    def test_the_checkers_are_one_per_kind_of_sign_each_with_its_strength(self):
-        self.assertEqual([(name, strength) for name, strength, _ in service_registry.CHECKERS],
-                         [("package", "declared"), ("file", "declared"), ("env", "mentioned"), ("host", "mentioned"),
-                          ("source", "declared")])
-
-    def test_the_package_checker_reads_a_name_an_artifact_a_go_module_and_a_pattern(self):
-        answer = service_registry.check_packages(self.ENTRIES, self.project([
-            ("maven", "org.acme:web", "pom.xml", 3), ("go", "github.com/acme/a/v2", "go.mod", 5),
-            ("npm", "@acme/ui", "package.json", None), ("npm", "left-pad", "package.json", None)]))
-        self.assertEqual(answer["signs"], [("acme", "org.acme:web", "pom.xml", 3),
-                                           ("acme", "github.com/acme/a/v2", "go.mod", 5),
-                                           ("acme", "@acme/ui", "package.json", None)])
-        self.assertEqual(answer["gaps"], [])
-
-    def test_a_package_named_like_an_entry_without_signs_in_its_ecosystem_is_a_gap(self):
-        answer = service_registry.check_packages(self.ENTRIES, self.project([
-            ("crates", "redis", "Cargo.toml", 7), ("crates", "redis", "sub/Cargo.toml", 2),
-            ("pypi", "minio", "requirements.txt", 1), ("maven", "io.minio:minio", "pom.xml", 9),
-            ("npm", "redis-mock", "package.json", None)]))
-        self.assertEqual(answer["signs"], [])
-        self.assertEqual(answer["gaps"], [
-            {"kind": "no_ecosystem_sign", "entry": "redis", "ecosystem": "crates", "value": "redis",
-             "path": "Cargo.toml", "line": 7},
-            {"kind": "no_ecosystem_sign", "entry": "minio", "ecosystem": "pypi", "value": "minio",
-             "path": "requirements.txt", "line": 1},
-            {"kind": "no_ecosystem_sign", "entry": "minio", "ecosystem": "maven", "value": "io.minio:minio",
-             "path": "pom.xml", "line": 9}])
-
-    def test_pypi_name_variants_match_without_changing_the_sign_or_collapsing_npm_names(self):
-        sentry = next(entry for entry in service_registry.load()["entries"] if entry["id"] == "sentry")
-        npm = {"id": "example", "signs": {"packages": {"npm": ["some_sdk"]}}}
-        for spelling in ("sentry-sdk", "sentry_sdk", "Sentry.SDK", "SENTRY._-Sdk"):
-            with self.subTest(spelling=spelling):
-                project = self.project([("pypi", spelling, "backend/pyproject.toml", 7),
-                                        ("npm", "some-sdk", "web/package.json", 3),
-                                        ("npm", "some_sdk", "web/package.json", 4)])
-                answer = service_registry.check_packages([sentry, npm], project)
-                self.assertEqual(answer["signs"], [("sentry", spelling, "backend/pyproject.toml", 7),
-                                                   ("example", "some_sdk", "web/package.json", 4)])
-
-    def test_the_file_checker_reads_a_name_and_the_env_checker_a_token_outside_the_registry_s_files(self):
-        self.assertEqual(service_registry.check_files(self.ENTRIES, self.project())["signs"],
-                         [("acme", "acme.yml", "ci/acme.yml", None)])
-        self.assertEqual(service_registry.check_env(self.ENTRIES, self.project())["signs"],
-                         [("acme", "ACME_SECRET_KEY", "api/pay.py", 3)])
-
-
 if __name__ == "__main__":
     unittest.main()
 
 
+@pytest.mark.usefixtures("real_stack")
 class RecognizeTests(unittest.TestCase):
     FILES = {
         "package.json": '{"name": "root", "private": true, "workspaces": ["web", "packages/*"]}',
@@ -274,10 +214,15 @@ class RecognizeTests(unittest.TestCase):
         manifest = cls.work / "snapshot/manifest.sqlite"
         snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
         cls.manifest = manifest
-        cls.found = {r["id"]: r for r in service_registry.recognize(manifest)}
-        import technologies
-        cls.record = technologies.ensure(manifest)
-        cls.units = {u["name"]: u for u in cls.record["units"]}
+
+    def setUp(self):
+        """What the release recognizes, once for the class: the first test runs it, with the release `real_stack` names."""
+        cls = type(self)
+        if not hasattr(cls, "record"):
+            import technologies
+            cls.found = {r["id"]: r for r in stack_recognition.run(cls.manifest)["found"]}
+            cls.record = technologies.ensure(cls.manifest)
+            cls.units = {u["name"]: u for u in cls.record["units"]}
 
     @classmethod
     def tearDownClass(cls):
@@ -286,8 +231,7 @@ class RecognizeTests(unittest.TestCase):
 
     def test_each_sign_says_where_it_is(self):
         signs = {(s["sign"], s["value"], s["path"], s["line"]) for s in self.found["stripe"]["signs"]}
-        self.assertEqual(signs, {("package", "stripe", "web/package.json", 1), ("package", "stripe", "api/requirements.txt", 1),
-                                 ("env", "STRIPE_SECRET_KEY", "api/pay.py", 3)})
+        self.assertEqual(signs, {("package", "stripe", "web/package.json", 1), ("package", "stripe", "api/requirements.txt", 1)})
         self.assertEqual((self.found["stripe"]["source"], self.found["stripe"]["type"]), ("registry", "gateway"))
 
     def test_packages_files_and_images_are_recognized(self):
@@ -318,7 +262,7 @@ class RecognizeTests(unittest.TestCase):
         self.assertEqual(technologies.ensure(self.manifest), self.record)
         self.assertEqual((self.record["target"], self.record["root"] != ""), (".", True))
         ensure = technologies.premap.ensure
-        technologies.premap.ensure = lambda manifest: {"excluded": [{"path": "api/pay.py", "why": "generated"}]}
+        technologies.premap.ensure = lambda manifest: {"excluded": [{"path": "api/requirements.txt", "why": "generated"}]}
         try:
             self.assertEqual(technologies.state(self.manifest), "stale")
             again = technologies.ensure(self.manifest)
@@ -326,40 +270,18 @@ class RecognizeTests(unittest.TestCase):
             technologies.premap.ensure = ensure
             technologies.path(self.manifest).unlink()
         signs = {(s["sign"], s["path"]) for e in again["technologies"] if e["id"] == "stripe" for s in e["signs"]}
-        self.assertNotIn(("env", "api/pay.py"), signs)
+        self.assertIn(("package", "api/requirements.txt"), {(s["sign"], s["path"]) for e in self.record["technologies"]
+                                                           if e["id"] == "stripe" for s in e["signs"]})
+        self.assertNotIn(("package", "api/requirements.txt"), signs)
         self.assertEqual(sorted(p.name for p in Path(self.manifest).parent.glob(".technologies-*")), [])
 
     def test_a_service_of_the_premap_is_a_sign_at_the_file_declaring_it(self):
-        import service_registry
-        ensure, workflow = service_registry.premap.ensure, ".github/workflows/ci.yml"
-        service_registry.premap.ensure = lambda manifest: {"services": [
-            {"name": "db", "image": "postgres:16-alpine", "declared_in": workflow + "#jobs.test.services.db"}]}
-        try:
-            found = {r["id"]: r for r in service_registry.recognize(self.manifest)}
-        finally:
-            service_registry.premap.ensure = ensure
+        workflow = ".github/workflows/ci.yml"
+        found = {r["id"]: r for r in stack_recognition.run(self.manifest, facts={"services": [
+            {"name": "db", "image": "postgres:16-alpine", "declared_in": workflow + "#jobs.test.services.db",
+             "sources": ["renovate@1"]}]})["found"]}
         self.assertEqual(found["postgresql"]["signs"], [{"sign": "package", "value": "postgres", "path": workflow,
-                                                         "line": None, "strength": "declared"}])
-
-    def test_a_checker_that_fails_is_a_gap_with_its_cause_and_the_others_still_run(self):
-        import service_registry
-
-        def broken(entries, project):
-            raise ValueError("no lines")
-
-        checkers = service_registry.CHECKERS
-        service_registry.CHECKERS = tuple(("file", "declared", broken) if name == "file" else (name, strength, check)
-                                          for name, strength, check in checkers)
-        try:
-            answer = service_registry.run(self.manifest)
-        finally:
-            service_registry.CHECKERS = checkers
-        self.assertEqual([(c["checker"], c["state"]) for c in answer["checkers"]],
-                         [("package", "ran"), ("file", "failed"), ("env", "ran"), ("host", "ran"), ("source", "ran")])
-        self.assertIn({"kind": "checker_failed", "checker": "file", "detail": "ValueError: no lines"}, answer["gaps"])
-        found = {e["id"]: {(s["sign"], s["value"]) for s in e["signs"]} for e in answer["found"]}
-        self.assertTrue({("package", "stripe"), ("env", "STRIPE_SECRET_KEY")} <= found["stripe"])
-        self.assertNotIn("file", {sign for signs in found.values() for sign, _ in signs})
+                                                         "line": None, "strength": "declared", "source": "renovate@1"}])
 
 
 HOSTILE = b"""<?xml version="1.0"?>
