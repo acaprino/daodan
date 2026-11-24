@@ -1,0 +1,205 @@
+[
+ {
+  "host": "registry.npmjs.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "registry.yarnpkg.com",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "pypi.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "files.pythonhosted.org",
+  "status": 404,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "repo1.maven.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "repo.maven.apache.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "plugins.gradle.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "plugins-artifacts.gradle.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "proxy.golang.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "sum.golang.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "index.crates.io",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "static.crates.io",
+  "status": 404,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "api.nuget.org",
+  "status": 400,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "rubygems.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "index.rubygems.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "repo.packagist.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "packagist.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "cdn.cocoapods.org",
+  "status": 403,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "repo.anaconda.com",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "conda.anaconda.org",
+  "status": 302,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "www.cpan.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "jsr.io",
+  "status": 403,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "cache.nixos.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "channels.nixos.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "releases.nixos.org",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "http://archive.ubuntu.com",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "http://security.ubuntu.com",
+  "status": 200,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "http://ports.ubuntu.com",
+  "status": 404,
+  "expected": "reached",
+  "ok": true
+ },
+ {
+  "host": "github.com",
+  "status": null,
+  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+  "expected": "refused",
+  "ok": true
+ },
+ {
+  "host": "api.github.com",
+  "status": null,
+  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+  "expected": "refused",
+  "ok": true
+ },
+ {
+  "host": "raw.githubusercontent.com",
+  "status": null,
+  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+  "expected": "refused",
+  "ok": true
+ },
+ {
+  "host": "ghcr.io",
+  "status": null,
+  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+  "expected": "refused",
+  "ok": true
+ },
+ {
+  "host": "registry-1.docker.io",
+  "status": null,
+  "error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+  "expected": "refused",
+  "ok": true
+ }
+]

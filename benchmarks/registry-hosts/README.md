@@ -12,6 +12,10 @@ Un host è raggiunto se risponde con un qualsiasi codice HTTP; non lo è se il p
 
 ## Risultati misurati
 
-Non ancora eseguita: questa sessione non ha le credenziali di Modal. L'esito andrà in `results/<data>.json`.
+24 novembre 2026, su Modal (`results/2026-11-24.json`): 33 righe su 33 come atteso.
+
+- Raggiunti 28 host: 25 HTTPS e i 3 archivi apt `http://` (`archive.ubuntu.com`, `security.ubuntu.com`, `ports.ubuntu.com`). Rispondono 200, 404 (`files.pythonhosted.org`, `static.crates.io`, `ports.ubuntu.com`), 400 (`api.nuget.org`), 403 (`cdn.cocoapods.org`, `jsr.io`: risposte del sito, non del proxy) e 302 (`conda.anaconda.org`).
+- Rifiutati dal proxy 5 host che devono restare fuori: `github.com`, `api.github.com`, `raw.githubusercontent.com`, `ghcr.io`, `registry-1.docker.io`.
+- Nessun host dell'elenco è stato corretto o tolto. Corretta la prova, non l'elenco: la prima esecuzione dava `conda.anaconda.org` non raggiunto perché `urllib` seguiva il suo 302 verso `anaconda.org`, che il proxy rifiuta; ora il reindirizzamento non si segue (è la risposta dell'host) e `anaconda.org` non entra nell'elenco. Il canale `conda-forge` risponde 200 su `conda.anaconda.org` (`curl`, fuori dal proxy). Corretto anche `REPO`, che nel container usciva dal percorso del file.
 
 Prova preliminare, non ripetibile (24 novembre 2026, `curl` diretto da una sessione cloud, senza il proxy di Daodan): tutti gli host HTTPS dell'elenco hanno risposto con un codice HTTP.

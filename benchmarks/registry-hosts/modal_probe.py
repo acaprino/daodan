@@ -3,10 +3,10 @@
     python benchmarks/registry-hosts/modal_probe.py
 
 In a Modal function with the network, `container.PROXY_SCRIPT` runs with `container.REGISTRIES`, as a preparation's
-proxy does. Through it: an HTTPS GET of `/` of each host (any HTTP answer is a reached host; a 403 of the proxy or no
-answer is not), apt's `dists/noble/Release` of each `http://` archive, and the hosts that must stay out (GitHub and
-its API, Docker Hub, GitHub's container registry), which the proxy must refuse. The client prints one JSON row a host
-and writes it to `results/<date>.json`.
+proxy does. Through it: an HTTPS GET of `/` of each host (any HTTP answer is a reached host, a redirect too, which is
+not followed: its target is another host; a 403 of the proxy or no answer is not), apt's `dists/noble/Release` of each
+`http://` archive, and the hosts that must stay out (GitHub and its API, Docker Hub, GitHub's container registry),
+which the proxy must refuse. The client prints one JSON row a host and writes it to `results/<date>.json`.
 """
 from __future__ import annotations
 
@@ -18,7 +18,6 @@ from datetime import date
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
 PROXIES = ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy")
 OUTSIDE = ("github.com", "api.github.com", "raw.githubusercontent.com", "ghcr.io", "registry-1.docker.io")
 
@@ -28,6 +27,7 @@ if __name__ == "__main__":  # the launcher: Modal's client does not go through a
 
 import modal  # noqa: E402
 
+REPO = HERE.parents[1] if modal.is_local() else HERE  # in the container the file sits in /root
 image = modal.Image.debian_slim(python_version="3.13").pip_install("tree-sitter==0.26.0", "PyYAML>=6")
 if modal.is_local():
     image = (image.add_local_dir(REPO / "daodan/core", "/daodan/core", ignore=["**/__pycache__/**"])
@@ -40,7 +40,11 @@ def ask(proxy: str, host: str) -> dict:
     import urllib.error
     import urllib.request
     url = f"{host}/ubuntu/dists/noble/Release" if host.startswith("http://") else f"https://{host}/"
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+    class Stay(urllib.request.HTTPRedirectHandler):  # a redirect is the host's answer; its target is another host
+        def redirect_request(self, *args, **kwargs):
+            return None
+
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy, "https": proxy}), Stay)
     try:
         with opener.open(urllib.request.Request(url, method="GET"), timeout=30) as answer:
             return {"host": host, "status": answer.status}
