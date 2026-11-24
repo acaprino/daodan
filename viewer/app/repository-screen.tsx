@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { Badge, Button, Cluster, Column, DescriptionList, FormField, Icon, Input, Note, Progress, Section, Select, Text } from '@acaprino/sigrid';
 import { ScreenPanel } from './frame.tsx';
 import { accessFeedback, accessible, isPreparing, preparation, repositoryContext, repositoryReason, repositorySlug, short } from './repository.ts';
-import { ctx } from './snapshot.ts';
+import { ctx, slug } from './snapshot.ts';
 import { model, useModel } from './use-model.ts';
 
 // The run in view: its repository, branch, commit and id, to read and copy.
@@ -20,10 +20,10 @@ export function ContextFacts() {
 const WHY = 'repository-why';
 export function RepositoryActions() {
   const s = useModel();
-  const preparing = isPreparing(s), reason = repositoryReason(s);
+  const busy = isPreparing(s) || s.selecting, reason = repositoryReason(s);
   return <>
     <Text id={WHY} variant="note">{reason || 'Un altro repository o branch prepara un nuovo checkout; lo stesso commit riusa l’analisi già fatta.'}</Text>
-    <Button loading={preparing} disabled={!preparing && reason !== ''} aria-describedby={WHY} onClick={() => { model.selectRepository(); }}>Apri pre-mappa</Button>
+    <Button loading={busy} disabled={!busy && reason !== ''} aria-describedby={WHY} onClick={() => { model.selectRepository(); }}>Apri pre-mappa</Button>
   </>;
 }
 
@@ -34,8 +34,9 @@ export function RepositoryScreen() {
   const feedback = accessFeedback(s.checked), work = preparation(s.server?.job);
   const help = ['Preferenza automatica: main, poi master, altrimenti il branch predefinito della repository.',
     repo && `${repo.branches.length} branch letti ora da GitHub; predefinito ${repo.default || '—'}.`].filter(Boolean).join(' ');
-  return <ScreenPanel title="Repository" subtitle="Scegli repository e branch.">
+  return <ScreenPanel title="Repository" subtitle={c && `${slug(c)} · ${c.branch}`}>
     <Column pad="lg" gap="lg" width="page">
+      <Text as="p" variant="soft">Inserisci un URL pubblico, verifica l’accesso e scegli il branch da analizzare.</Text>
       <Note title="Repository GitHub pubblica">Daodan legge i branch e scarica quello scelto in sola lettura; nulla del progetto viene eseguito su questa macchina. Il login GitHub non è disponibile in questa versione.</Note>
       <Section title="Repository GitHub" level={3} icon={<Icon name="globe" />} gap="lg">
         <form noValidate onSubmit={event => {

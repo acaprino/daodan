@@ -1,5 +1,6 @@
 // What the run and the synthesis both say: how the map of the system is, and that something is being read or could not be.
 import { Button, Column, Icon, Note, Progress, Text } from '@acaprino/sigrid';
+import { focusContent } from './frame.tsx';
 import { mapNotice } from './run.ts';
 import { model, useModel } from './use-model.ts';
 
@@ -12,9 +13,10 @@ export function Loading({ label }: { label: string }) {
   return <Column aria-busy><Progress aria-label={label} value={null} /></Column>;
 }
 
-// What could not be read, and why. The note goes when it is asked again, and its button with it: the focus goes to the content.
+// What could not be read, and why. The note goes when it is asked again, and its button with it: the focus goes to the content, unless
+// `retry` takes it nearer.
 export function Failed({ title, cause, retry }: { title: string; cause: string; retry: () => void }) {
-  const again = () => { retry(); document.querySelector('main')?.focus({ preventScroll: true }); };
+  const again = () => { focusContent(); retry(); };
   return <Note tone="error" title={title} actions={<Button variant="outline" onClick={again}><Icon name="refresh" />Riprova</Button>}>
     <Text pre data-selectable="">{cause}</Text>
   </Note>;

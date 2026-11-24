@@ -1,7 +1,7 @@
 // The synthesis: the paths by entry, what the graph counts, where to start reading, and what is missing from the picture.
 import { Badge, Button, Cluster, Column, DescriptionList, Icon, ItemList, ItemRow, Note, Section, Text } from '@acaprino/sigrid';
 import { ScreenPanel, useFrame } from './frame.tsx';
-import { levelsName, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
+import { buildCounts, levelsName, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { Paths } from './paths-section.tsx';
 import { Gaps, PROVENANCE } from './provenance.tsx';
@@ -12,8 +12,8 @@ import { Failed, GraphFailed, Loading, MapNote } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 
 export function SynthesisActions() {
-  const { close } = useFrame();
-  return <Button onClick={() => { close(); model.showFullGraph(); }}><Icon name="graph" />Esplora il grafo completo</Button>;
+  const { go } = useFrame();
+  return <Button onClick={() => go(model.showFullGraph)}><Icon name="graph" />Esplora il grafo completo</Button>;
 }
 
 // What the graph counts, each with what it is of.
@@ -32,14 +32,14 @@ function Counts({ graph, commit }: { graph: Graph; commit: string }) {
 
 // The largest groups, to start from: the one pressed is shown on the graph.
 function Responsibilities({ graph }: { graph: Graph }) {
-  const { close } = useFrame();
+  const { go } = useFrame();
   const largest = [...graph.nodes].sort((a, b) => b.files.length - a.files.length).slice(0, 3);
   const levels = levelsName(graph);
   return <Section title="Responsabilità da esplorare" level={3} icon={<Icon name="layers" />} end={levels && <Badge variant="secondary">{levels}</Badge>}>
     {!largest.length ? <Text as="p" variant="muted">Nessun gruppo nel grafo.</Text>
       : <ItemList aria-label="Responsabilità da esplorare">{largest.map(n =>
         <ItemRow key={n.id} title={nodeName(n)} wrapTitle leading={<Icon name={iconOf(n)} />} description={<Text pre>{responsibilityOf(n)}</Text>}
-          facts={[{ text: nodeFacts(n) }]} end={<Icon name="chevron" />} onClick={() => { close(); model.showNode(n.id); }} />)}</ItemList>}
+          facts={[{ text: nodeFacts(n) }]} end={<Icon name="chevron" />} onClick={() => go(() => model.showNode(n.id))} />)}</ItemList>}
   </Section>;
 }
 
@@ -74,9 +74,11 @@ function Overview({ context }: { context: Context }) {
 }
 
 export function SynthesisScreen() {
-  const c = ctx(useModel());
-  return <ScreenPanel title="Sintesi" subtitle="Dalla mappa alla comprensione.">
+  const s = useModel();
+  const c = ctx(s);
+  return <ScreenPanel title="Sintesi" subtitle={s.graph && buildCounts(s.graph)}>
     {c && <Column pad="lg" gap="xl" width="page">
+      <Text as="p" variant="soft">Gruppi, relazioni e lacune del grafo di questo run.</Text>
       <MapNote />
       <Paths />
       <Note title="Sintesi testuale in attesa.">Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run {c.run_id}. Le domande al motore sono in «Motore e domande».</Note>

@@ -1,12 +1,10 @@
 // The engine and the questions: a question on the run in view, its answer with the tools it took, the engine, and the MCP server.
-import type { ReactNode } from 'react';
 import { Badge, Button, Column, DescriptionList, Empty, FormField, Grid, Icon, Note, Progress, Section, Text, Textarea } from '@acaprino/sigrid';
 import { EngineForm } from './engine-form.tsx';
 import { askedWord, askFailed, askNote, lastQuestion, mcpFacts, toolUse } from './engine.ts';
 import { ScreenPanel } from './frame.tsx';
 import { askReason, isAsking } from './run.ts';
 import { ctx, slug } from './snapshot.ts';
-import type { Snapshot } from './snapshot.ts';
 import { model, useModel } from './use-model.ts';
 
 // Why the question waits, said once, beside the action.
@@ -20,13 +18,12 @@ function EngineActions() {
   </>;
 }
 // In the window's action bar: the question is the one solid action of the screen.
-export const engineActions = (s: Snapshot): ReactNode => (s.kept.screen === 'engine' && s.server ? <EngineActions /> : null);
+export const engineActions = () => <EngineActions />;
 
 function Question() {
   const s = useModel();
   const c = ctx(s);
   return <Section title="Domanda sul repository" level={3} icon={<Icon name="threads" />} gap="lg">
-    <Text as="p" variant="soft">Il motore legge la mappa solo con le operazioni di Daodan: cerca, poi legge quello che serve.</Text>
     <FormField label="Domanda" help={c ? `Il motore usa il run ${c.run_id} di ${slug(c)}.` : 'Seleziona prima una repository: il motore la legge dal suo run.'}>
       <Textarea rows={4} placeholder="Dove viene firmato un token, e chi lo verifica?" disabled={!c} value={s.question}
         onChange={event => model.setQuestion(event.target.value)} />
@@ -73,8 +70,9 @@ export function EngineScreen() {
       {!s.serverError && <Column pad="lg" aria-busy><Progress aria-label="Lettura dello stato del server…" value={null} /></Column>}
     </ScreenPanel>;
   }
-  return <ScreenPanel title="Motore e domande" subtitle="Chiedi al codice.">
-    <Column pad="lg">
+  return <ScreenPanel title="Motore e domande" subtitle={slug(ctx(s)) || 'Nessuna repository'}>
+    <Column pad="lg" gap="xl">
+      <Text as="p" variant="soft">Il motore legge la mappa solo con le operazioni di Daodan: cerca, poi legge quello che serve.</Text>
       <Grid min="lg" gap="xl">
         <Column gap="xl"><Question /><Answer /></Column>
         <Column gap="xl"><EngineForm /><McpServer /></Column>

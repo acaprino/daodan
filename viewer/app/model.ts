@@ -14,6 +14,7 @@ import type { Kept, Place, Stage } from './storage.ts';
 const RETRY_MS = 2000;      // a busy server is asked again after this
 const RECONNECT_MS = 4000;  // and a stream that said nothing is opened again after this
 const ANSWER_MS = 700;
+const BUSY = 'server.busy';  // the key of its notice
 
 type Answer = { events: { kind: string; name?: string; arguments?: unknown }[]; next: number; state: string; text: string; cause: string | null };
 export type Model = ReturnType<typeof createModel>;
@@ -25,12 +26,15 @@ export function createModel(host: Host) {
   let now: Snapshot = {
     kept: stored.kept, server: null, serverError: '',
     checked: null, checkedUrl: '', branch: '', checking: false, checkError: '', selecting: false, selectError: '',
-    premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, pathPage: null, symbols: null, events: [],
+    premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, groupWanted: stored.kept.screen === 'graph',
+    pathPage: null, symbols: null, events: [],
     engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null, notices: [],
   };
   const listeners = new Set<() => void>();
-  // What no screen draws: which run and groups the last answers are of, the check in course, and where the stream arrived.
-  let premapRun = '', graphRun = '', generation = 0, noticeId = 0;
+  // What no screen draws: which run and groups the last answers are of, the question whose answer is awaited, whether a busy server
+  // is to be asked again, the check and the choice in course, and where the stream arrived.
+  let premapRun = '', graphRun = '', premapAsked = 0, graphAsked = 0, premapWaits = false, graphWaits = false;
+  let generation = 0, choosing = false, noticeId = 0;
   let eventsRun = '', cursors: Cursors = { after: 0, pipeline_after: 0, pulse_after: 0 };
 
   function save() { try { host.storage().setItem(STORAGE, JSON.stringify(now.kept)); } catch { storageAvailable = false; } }
@@ -41,13 +45,19 @@ export function createModel(host: Host) {
   }
   const keep = (patch: Partial<Kept>) => set({ kept: { ...now.kept, ...patch } });
 
-  // A result is a notice, which goes by itself; an error stays until it is dismissed.
-  function say(text: string, kind?: 'error') {
+  // A result is a notice, which goes by itself and takes the place of the one of its key; an error stays until it is dismissed.
+  function say(text: string, kind?: 'error', key = text) {
     noticeId += 1;  // not crypto.randomUUID, which a page served over plain http does not have
-    set({ notices: [...now.notices, { id: String(noticeId), text, ...(kind && { kind }) }] });
+    const id = String(noticeId);
+    set({ notices: kind ? [...now.notices, { id, text, kind }] : [...now.notices.filter(notice => notice.key !== key), { id, text, key }] });
   }
   const dismiss = (id: string) => set({ notices: now.notices.filter(notice => notice.id !== id) });
-  const busy = (error: unknown) => { if (!isBusy(error)) return false; say(causeOf(error) + ', riprovo'); return true; };
+  // That the server is busy is said once, whoever found it so: while its notice is there, an attempt says nothing more.
+  function busy(error: unknown): boolean {
+    if (!isBusy(error)) return false;
+    if (!now.notices.some(notice => notice.key === BUSY)) say(causeOf(error) + ', riprovo', undefined, BUSY);
+    return true;
+  }
 
   // -- the server --------------------------------------------------------------------------------------------------
 
@@ -73,13 +83,13 @@ export function createModel(host: Host) {
     const patch: { -readonly [K in keyof Snapshot]?: Snapshot[K] } = { server: found, serverError: '' };
     let kept = now.kept, ready = false;
     if (now.engineDraft === null) patch.engineDraft = { ...found.engine, api_key: '' };
+    if (kept.runId !== (c?.run_id ?? '')) Object.assign(patch, dropRun());
     if (c && kept.runId !== c.run_id) {  // what the browser kept belongs to another run
       kept = { ...kept, analysisStage: kept.runId && kept.analysisStage !== 'repository' ? 'premap' : kept.analysisStage,
         runId: c.run_id, treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphOpen: [] };
-      patch.premap = patch.graph = null;
     }
     if (!c && kept.runId) kept = { ...kept, runId: '' };
-    if (now.selecting && found.job?.state !== 'preparing') {
+    if (now.selecting && !choosing && found.job?.state !== 'preparing') {  // until the choice is answered, a frame is of what was before it
       patch.selecting = false;
       if (c && found.job?.state === 'ready') { ready = true; kept = { ...kept, analysisStage: 'premap' }; }
     }
@@ -123,34 +133,54 @@ export function createModel(host: Host) {
     if (shown !== stage) keep({ analysisStage: shown });
   }
 
+  // Another run is in view, or the same one chosen again: what was read of it goes, and an answer still to come changes nothing.
+  function dropRun(): Partial<Snapshot> {
+    premapRun = graphRun = '';
+    premapAsked += 1;
+    graphAsked += 1;
+    return { premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, symbols: null };
+  }
+
   async function loadPremap(): Promise<void> {
     const run = ctx(now)?.run_id;
-    if (!run || premapRun === run) return;
+    if (!run || premapRun === run || premapWaits) return;
+    const mine = ++premapAsked;
     premapRun = run;
     set({ premapError: '', premap: null });
     try {
       const found = await get<PremapFound>('/api/app/premap');
-      if (ctx(now)?.run_id !== run) return;
+      if (mine !== premapAsked) return;
       set({ premap: { ...found, dependencies: found.units.flatMap(u => u.dependencies.map(d => ({ ...d, unit: u.name }))) } });
     } catch (error) {
+      if (mine !== premapAsked) return;
       premapRun = '';
-      if (busy(error)) { setTimeout(loadPremap, RETRY_MS); return; }
+      if (busy(error)) {
+        premapWaits = true;
+        setTimeout(() => { premapWaits = false; loadPremap(); }, RETRY_MS);
+        return;
+      }
       set({ premapError: causeOf(error) });
     }
   }
 
   async function loadGraph(): Promise<void> {
     const run = ctx(now)?.run_id, open = shownOpen(now.kept), key = graphKey(run, now.kept);
-    if (!run || now.graphLoading) return;
+    if (!run || now.graphLoading || graphWaits) return;
+    const mine = ++graphAsked;
     set({ graphLoading: true, ...(now.graph?.open.length && !open.length ? { graph: null } : {}) });  // the first grouping is never drawn from an opened graph
     try {
       const found = await get<Graph>('/api/app/graph' + (open.length ? `?${new URLSearchParams({ open: JSON.stringify(open) })}` : ''));
-      if (ctx(now)?.run_id !== run) return;
+      if (mine !== graphAsked) return;
       graphRun = key;
       const graphRoot = rootOf(found, now.kept.graphRoot);  // a group just opened keeps the focus inside it
       set({ graph: found, graphError: '', symbols: null, ...(graphRoot !== now.kept.graphRoot && { kept: { ...now.kept, graphRoot } }) });
     } catch (error) {
-      if (busy(error)) { setTimeout(loadGraph, RETRY_MS); return; }  // what is drawn stays
+      if (mine !== graphAsked) return;
+      if (busy(error)) {  // what is drawn stays
+        graphWaits = true;
+        setTimeout(() => { graphWaits = false; loadGraph(); }, RETRY_MS);
+        return;
+      }
       const cause = causeOf(error);
       const refused = open.length > 0 && /to open: (".*")$/.exec(cause);  // a group the run no longer shows: dropped, the others stay
       if (refused) {
@@ -159,9 +189,9 @@ export function createModel(host: Host) {
         say(cause, 'error');
       } else { graphRun = key; set({ graphError: cause }); }
     } finally {
-      set({ graphLoading: false });
+      if (mine === graphAsked) set({ graphLoading: false });
     }
-    if (ctx(now)?.run_id === run && graphRun !== graphKey(run, now.kept)) return loadGraph();  // the groups wanted changed meanwhile
+    if (mine === graphAsked && graphRun !== graphKey(run, now.kept)) return loadGraph();  // the groups wanted changed meanwhile
   }
 
   // -- the repository ----------------------------------------------------------------------------------------------
@@ -189,14 +219,15 @@ export function createModel(host: Host) {
 
   async function selectRepository(): Promise<void> {
     if (!accessible(now) || now.selecting) return;
-    set({ selectError: '' });
+    choosing = true;
+    set({ selecting: true, selectError: '' });  // before the request: a second press asks nothing
     try {
       const server = await post<AppState>('/api/app/select', { url: now.checkedUrl, branch: now.branch });
-      premapRun = graphRun = '';
-      set({ server, selecting: true, premap: null, graph: null });
+      set({ server, ...dropRun() });
     } catch (error) {
-      set({ selectError: causeOf(error) });
+      set({ selecting: false, selectError: causeOf(error) });
     }
+    choosing = false;
     settle();
   }
 
@@ -237,22 +268,29 @@ export function createModel(host: Host) {
 
   // -- where the person looks, and the graph ---------------------------------------------------------------------------
 
+  // What the person chose on a screen: other groups open are another graph.
+  function choose(patch: Partial<Kept>) {
+    keep(patch);
+    if (patch.graphOpen) loadViews();
+  }
   function navigate(screen: Place) {
-    keep({ screen });
+    set({ kept: { ...now.kept, screen }, groupWanted: screen === 'graph' });
     loadViews();  // the graph screen draws its level, the analysis the first one
     settle();
   }
   function selectStage(analysisStage: Stage) {
-    keep({ screen: 'analysis', analysisStage });
+    set({ kept: { ...now.kept, screen: 'analysis', analysisStage }, groupWanted: false });
     loadViews();
     settle();
   }
+  // A group chosen on the graph screen, which shows its details.
+  const chosen = (graphRoot: string, graphOpen = now.kept.graphOpen) => set({ kept: { ...now.kept, graphRoot, graphOpen }, groupWanted: true });
   function openGroup(id: string) {
-    keep({ graphOpen: [...new Set([...now.kept.graphOpen, id])], graphRoot: id });
+    chosen(id, [...new Set([...now.kept.graphOpen, id])]);
     loadGraph();
   }
   function closeGroup(id: string) {  // the group closed is chosen again
-    keep({ graphOpen: openWithout(now.kept.graphOpen, now.graph, id), graphRoot: id });
+    chosen(id, openWithout(now.kept.graphOpen, now.graph, id));
     loadGraph();
   }
   function showNode(graphRoot: string) {  // from another screen: the node and what is next to it
@@ -269,8 +307,9 @@ export function createModel(host: Host) {
   }
 
   async function askSymbols(file: string): Promise<void> {
-    const mine = () => now.symbols?.file === file;
-    set({ symbols: { file, loading: true } });
+    const asked: Symbols = { file, loading: true };
+    const mine = () => now.symbols === asked;  // not asked again, nor dropped with the graph it was asked on
+    set({ symbols: asked });
     try {
       const found = await get<Symbols>(`/api/app/symbols?${new URLSearchParams({ file })}`);
       if (mine()) set({ symbols: found });
@@ -279,7 +318,7 @@ export function createModel(host: Host) {
       if (mine()) set({ symbols: { file, error: causeOf(error) } });
     }
   }
-  // The symbols of a file, once for each time it is chosen.
+  // The symbols of a file, once for each time it is chosen; a new graph drops them, and the details ask again (`useSymbols`).
   const loadSymbols = (file: string) => { if (now.symbols?.file !== file) askSymbols(file); };
 
   // -- the engine and the questions ----------------------------------------------------------------------------------
@@ -290,7 +329,8 @@ export function createModel(host: Host) {
     return { engine: draft.engine || null, base_url: (draft.base_url ?? '').trim(), model: (draft.model ?? '').trim(), ...(key && { api_key: key }) };
   }
   const editEngine = (patch: Partial<EngineDraft>) => set({ engineDraft: { ...(now.engineDraft ?? { api_key: '' }), ...patch } });
-  const withEngine = (engine: Engine) => ({ server: { ...now.server, engine } });
+  // Before the first frame there is no state to put it in: the engine comes with the frame.
+  const withEngine = (engine: Engine): Partial<Snapshot> => (now.server ? { server: { ...now.server, engine } } : {});
 
   // What the form asks, one of each at a time: a busy button's press, from the keyboard, does nothing. What came of it is said.
   async function engineWork(work: EngineWork, run: () => Promise<Partial<Snapshot>>): Promise<void> {
@@ -347,12 +387,13 @@ export function createModel(host: Host) {
       if (!storageAvailable) say('Archiviazione del browser non disponibile: le scelte durano questa apertura.');
       observe();
     },
-    say, dismiss, keep, navigate, selectStage,
+    say, dismiss, keep: choose, navigate, selectStage,
     explorerUrl: () => `/?${new URLSearchParams({ token: host.token, run: ctx(now)?.run_id ?? '' })}`,
     setRepositoryUrl, verifyRepositoryUrl, selectRepository, setBranch: (branch: string) => set({ branch }),
     retryPremap() { premapRun = ''; loadPremap(); },
     retryGraph() { graphRun = ''; set({ graphError: '' }); loadGraph(); },
-    selectNode: (graphRoot: string) => keep({ graphRoot }), openGroup, closeGroup, showNode, showFullGraph, clearGraphFilters,
+    selectNode: (id: string) => chosen(id), groupShown: () => set({ groupWanted: false }), openGroup, closeGroup,
+    showNode, showFullGraph, clearGraphFilters,
     loadSymbols, retrySymbols: askSymbols,
     openPaths, nextPaths, previousPaths, listPaths, retryPaths,
     retryPass: () => act('/api/app/retry'), findLinks: () => act('/api/app/link'),

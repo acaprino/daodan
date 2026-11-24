@@ -144,6 +144,63 @@ test('what the person looks at is kept, and a storage that refuses it is said on
   assert.deepEqual(blocked.snapshot().notices, []);
 });
 
+test('a plain notice takes the place of the one of its key, and an error never does', () => {
+  const { model, now, said } = setup();
+  model.say('Nessuna ricerca.');
+  const first = now().notices[0].id;
+  model.say('Filtri azzerati.');
+  model.say('Nessuna ricerca.');
+  assert.deepEqual(said(), ['Filtri azzerati.', 'Nessuna ricerca.']);
+  assert.notEqual(now().notices[1].id, first);  // another one: it is read again
+  model.say('letto a metà', undefined, 'lettura');
+  model.say('letto', undefined, 'lettura');
+  assert.deepEqual(said(), ['Filtri azzerati.', 'Nessuna ricerca.', 'letto']);
+  model.say('letto', 'error');
+  model.say('letto', 'error');
+  assert.deepEqual(said().slice(2), ['letto', 'letto', 'letto']);
+});
+
+test('a run in view again, after none or chosen anew, is read again', async () => {
+  const { model, sources, now, asked } = setup({ '/api/app/premap': () => premap, '/api/app/graph': () => graph() },
+    { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
+  const times = () => [asked('/api/app/premap').length, asked('/api/app/graph').length];
+  model.start();
+  sources[0].send('app', ready);
+  await turn();
+  assert.deepEqual([times(), now().premap !== null, now().graph !== null], [[1, 1], true, true]);
+  sources[0].send('app', none);
+  assert.deepEqual([now().premap, now().graph], [null, null]);  // the count of the groups goes with its repository
+  sources[0].send('app', ready);
+  model.selectStage('premap');
+  await turn();
+  assert.deepEqual([times(), now().premap !== null, now().graph !== null], [[2, 2], true, true]);
+});
+
+test('an answer for a run no longer in view changes nothing of the one that is', async () => {
+  const graphs: ((found: unknown) => void)[] = [], premaps: ((found: unknown) => void)[] = [];
+  const { model, sources, now } = setup({
+    '/api/app/graph': () => new Promise(resolve => { graphs.push(resolve); }), '/api/app/premap': () => new Promise(resolve => { premaps.push(resolve); }),
+  }, { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
+  model.start();
+  sources[0].send('app', ready);
+  sources[0].send('app', { ...ready, context: { ...context, run_id: 'r2' } });
+  assert.deepEqual([graphs.length, premaps.length], [2, 2]);  // the new run does not wait for the answers of the old one
+  graphs[0](graph({ files: 1 }));
+  premaps[0](fails(500, 'manifest illeggibile'));
+  await turn();
+  assert.deepEqual([now().graph, now().graphLoading, now().premap, now().premapError], [null, true, null, '']);
+  graphs[1](graph({ files: 9 }));
+  premaps[1](premap);
+  await turn();
+  assert.deepEqual([now().graph!.files, now().graphLoading, now().premap!.units.length, graphs.length, premaps.length], [9, false, 1, 2, 2]);
+  sources[0].send('app', { ...ready, context: { ...context, run_id: 'r3' } });
+  sources[0].send('app', { ...ready, context: { ...context, run_id: 'r4' } });
+  graphs[2](fails(500, 'grafo non letto'));  // a failure of the old one is not the new one's either
+  premaps[2](premap);
+  await turn();
+  assert.deepEqual([now().graphError, now().graphLoading, now().premap], ['', true, null]);
+});
+
 test('what was kept of another run is dropped; without a context the analysis is the repository alone', () => {
   const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'synthesis', runId: 'r0', treeSearch: 'x', graphOpen: ['a'], graphRoot: 'a' });
   model.start();
@@ -238,6 +295,65 @@ test('a branch chosen is prepared, and the pre-map opens when its context is rea
   assert.equal(said().at(-1), 'Contesto pronto: demo/shop · main');
 });
 
+test('a choice is asked once, and a frame that comes before its answer is of what was before it', async () => {
+  let answer: (found: unknown) => void = () => {};
+  const { model, sources, now, asked, said } = setup({
+    '/api/app/check': () => ({ state: 'accessible', repository: context.repository, default: 'main', branches: [{ name: 'main', commit: context.commit }] }),
+    '/api/app/select': () => new Promise(resolve => { answer = resolve; }), '/api/app/graph': () => graph(), '/api/app/premap': () => premap,
+  });
+  model.start();
+  sources[0].send('app', ready);
+  model.setRepositoryUrl('https://github.com/demo/shop');
+  await model.verifyRepositoryUrl();
+  model.selectRepository();
+  model.selectRepository();
+  await turn();
+  assert.deepEqual([asked('/api/app/select').length, now().selecting], [1, true]);
+  sources[0].send('app', { ...ready, mcp_ready: 'ready' });
+  assert.deepEqual([now().selecting, now().kept.analysisStage, said().length], [true, 'repository', 1]);
+  answer(fails(400, 'lavoro in corso'));
+  await turn();
+  assert.deepEqual([now().selecting, now().selectError], [false, 'lavoro in corso']);
+  model.selectRepository();
+  answer({ ...ready, job: { state: 'preparing' } });
+  await turn();
+  assert.deepEqual([now().selecting, asked('/api/app/select').length], [true, 2]);
+  sources[0].send('app', ready);  // the same run, prepared again
+  await turn();
+  assert.deepEqual([now().selecting, now().kept.analysisStage, asked('/api/app/premap').length], [false, 'premap', 1]);
+});
+
+test('a busy server is asked again once by each reader, and said once', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let free = false;
+  const { model, sources, now, asked, said } = setup({
+    '/api/app/premap': () => (free ? premap : fails(503)), '/api/app/graph': () => (free ? graph() : fails(503)),
+  }, { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
+  const times = () => [asked('/api/app/premap').length, asked('/api/app/graph').length];
+  model.start();
+  sources[0].send('app', ready);
+  await turn();
+  sources[0].send('app', { ...ready });  // a frame that comes meanwhile asks nothing more
+  sources[0].send('app', { ...ready });
+  await turn();
+  assert.deepEqual([times(), said(), now().graphLoading], [[1, 1], ['Daodan è occupato, riprovo'], false]);
+  const id = now().notices[0].id;
+  t.mock.timers.tick(2000);
+  await turn();
+  assert.deepEqual([times(), now().notices.map(notice => notice.id)], [[2, 2], [id]]);  // the one there stays: it is not read again
+  model.dismiss(id);
+  t.mock.timers.tick(2000);
+  await turn();
+  assert.deepEqual([times(), said()], [[3, 3], ['Daodan è occupato, riprovo']]);
+  free = true;
+  t.mock.timers.tick(2000);
+  await turn();
+  assert.deepEqual([times(), now().premap !== null, now().graph !== null], [[4, 4], true, true]);
+  t.mock.timers.tick(2000);
+  await turn();
+  assert.deepEqual(times(), [4, 4]);
+});
+
 test('the pre-map is read once a run; a busy server is asked again, and a failure can be tried again', async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   let answer: unknown = fails(503);
@@ -286,6 +402,55 @@ test('the graph is asked with the groups open on its own screen, and a group the
   model.closeGroup('a');
   await turn();
   assert.deepEqual([now().kept.graphOpen, now().kept.graphRoot, now().graphLoading], [[], 'a', false]);
+});
+
+test('the groups opened while the graph is read are asked when it is, and so are those a screen keeps', async () => {
+  const answers: ((found: unknown) => void)[] = [];
+  const { model, sources, now, asked } = setup({ '/api/app/graph': () => new Promise(resolve => { answers.push(resolve); }) },
+    { ...DEFAULTS, screen: 'graph', runId: 'r1' });
+  const opened = () => asked('/api/app/graph').map(call => call.query.get('open'));
+  const holding = (...ids: string[]) => graph({ open: ids.map(id => ({ id, name: id, parent: null })) });
+  model.start();
+  sources[0].send('app', ready);
+  model.openGroup('a');
+  model.openGroup('b');
+  assert.deepEqual(opened(), [null]);
+  answers[0](graph());
+  await turn();
+  assert.deepEqual([opened(), now().graphLoading], [[null, '["a","b"]'], true]);
+  answers[1](holding('a', 'b'));
+  await turn();
+  assert.deepEqual([opened().length, now().graphLoading, now().graph!.open.length], [2, false, 2]);
+  model.keep({ graphOpen: ['b'] });
+  assert.deepEqual(opened().at(-1), '["b"]');
+  answers[2](holding('b'));
+  await turn();
+  model.keep({ graphOpen: ['b'], graphSearch: 'x' });  // the same groups: the same graph
+  model.keep({ graphKind: 'calls' });
+  assert.equal(opened().length, 3);
+});
+
+test('the graph screen is to show the details of the group the person came for, chose, opened or closed', () => {
+  const { model, now } = setup();
+  const wanted = () => now().groupWanted;
+  assert.equal(wanted(), false);
+  model.showNode('b');
+  assert.deepEqual([wanted(), now().kept.graphRoot], [true, 'b']);
+  model.groupShown();
+  assert.equal(wanted(), false);
+  for (const act of [() => model.selectNode('a'), () => model.openGroup('a'), () => model.closeGroup('a'), () => model.navigate('graph')]) {
+    act();
+    assert.equal(wanted(), true);
+    model.groupShown();
+  }
+  assert.deepEqual([now().kept.graphRoot, now().kept.graphOpen], ['a', []]);
+  model.navigate('graph');
+  model.navigate('engine');  // anywhere else it is void
+  assert.equal(wanted(), false);
+  model.showNode('b');
+  model.selectStage('analysis');
+  assert.equal(wanted(), false);
+  assert.equal(setup({}, { ...DEFAULTS, screen: 'graph' }).now().groupWanted, true);  // the page opens there
 });
 
 test('from another screen a node is shown with what is next to it, and the whole graph with no filter', () => {
@@ -380,6 +545,35 @@ test('the symbols of a file are asked when it is chosen, once', async () => {
   assert.deepEqual(now().symbols, answer);
 });
 
+test('a busy server is asked again for the symbols, unless the file is left or a new graph drops them', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let answer: unknown = fails(503);
+  const { model, sources, now, asked, said } = setup({ '/api/app/symbols': () => answer, '/api/app/graph': () => graph() },
+    { ...DEFAULTS, screen: 'graph', runId: 'r1' });
+  const times = () => asked('/api/app/symbols').length;
+  model.start();
+  sources[0].send('app', ready);
+  await turn();
+  model.loadSymbols('file:a.ts');
+  await turn();
+  assert.deepEqual([now().symbols, said()], [{ file: 'file:a.ts', loading: true }, []]);
+  model.loadSymbols('file:b.ts');  // another file
+  await turn();
+  t.mock.timers.tick(2000);
+  await turn();
+  assert.deepEqual([times(), asked('/api/app/symbols').at(-1)!.query.get('file')], [3, 'file:b.ts']);
+  model.retryGraph();
+  await turn();
+  assert.equal(now().symbols, null);
+  t.mock.timers.tick(2000);
+  await turn();
+  assert.equal(times(), 3);
+  answer = { file: 'file:b.ts', symbols: [], calls: [] };
+  model.loadSymbols('file:b.ts');
+  await turn();
+  assert.deepEqual([now().symbols, times()], [answer, 4]);
+});
+
 test('the setting of the engine is saved without a key left empty; the key is forgotten, the engine tried', async () => {
   const described = { engine: 'openai', engines: ['openai'], api_key: 'unset', base_url: 'https://api.test/v1', model: 'm' };
   let found: unknown = { engine: 'openai', reachable: true, tools: true };
@@ -410,7 +604,7 @@ test('the engine is asked each thing once at a time, and is busy with it until i
   await model.probeEngine();
   assert.deepEqual([asked('/api/app/probe').length, now().engineBusy, now().engineSaid], [1, ['probe'], 'Prova in corso…']);
   await model.saveEngine();
-  assert.deepEqual([now().engineBusy, now().engineSaid], [['probe'], 'Motore salvato.']);
+  assert.deepEqual([now().engineBusy, now().engineSaid, now().server], [['probe'], 'Motore salvato.', null]);  // no frame yet: the state is still to be read
   refuse(new Error('caduto'));
   await tried;
   assert.deepEqual([now().engineBusy, now().engineSaid, now().engineTone], [[], 'caduto', 'bad']);

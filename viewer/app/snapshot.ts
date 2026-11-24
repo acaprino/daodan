@@ -3,7 +3,8 @@ import type { Graph } from './graph.ts';
 import type { AppState, Checked, Context, Engine, Pass, RunEvent } from './server.ts';
 import type { Kept } from './storage.ts';
 
-export type Notice = { id: string; text: string; kind?: 'error' };
+// A plain notice has the key of what it is about; an error has none.
+export type Notice = { id: string; text: string; key?: string; kind?: 'error' };
 
 export type Dependency = {
   name: string; scope: string; state: string; source: string; version?: string; resolved_version?: string; resolution_source?: string; direct?: boolean;
@@ -53,6 +54,7 @@ export type Snapshot = Readonly<{
   selecting: boolean; selectError: string;
   premap: Premap | null; premapError: string;
   graph: Graph | null; graphError: string; graphLoading: boolean;
+  groupWanted: boolean;  // the graph screen is to show the details of the group it is read from: the person came there, or chose it
   pathPage: PathPage | null;
   symbols: Symbols | null;
   events: readonly RunEvent[];

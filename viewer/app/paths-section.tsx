@@ -86,7 +86,7 @@ export function Paths() {
     end={listing === 'entries'
       ? <Button variant="ghost" size="sm" onClick={turn(() => model.openPaths(ORPHAN_WRITES))}>Scritture senza ingresso</Button>
       : <Button variant="ghost" size="sm" onClick={turn(model.listPaths)}>Torna agli ingressi</Button>}>
-    {page?.error ? <Failed title="Percorsi non disponibili." cause={page.error} retry={model.retryPaths} />
+    {page?.error ? <Failed title="Percorsi non disponibili." cause={page.error} retry={turn(model.retryPaths)} />
       : page?.result ? <Listed page={page} result={page.result} />
       : <Loading label="Lettura dei percorsi…" />}
   </Section>;

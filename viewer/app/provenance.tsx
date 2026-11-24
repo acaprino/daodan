@@ -41,4 +41,9 @@ function Provenance() {
   </>;
 }
 
-export const PROVENANCE: Detail = { title: 'Provenienza e lacune del grafo', content: <Provenance /> };
+// The name of the run in view, as the heading of the details that are of the whole run.
+export function RunName() {
+  return slug(ctx(useModel())) || '—';
+}
+
+export const PROVENANCE: Detail = { id: 'provenance', title: 'Provenienza e lacune del grafo', icon: 'info', name: <RunName />, content: <Provenance /> };

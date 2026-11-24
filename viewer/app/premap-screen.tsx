@@ -2,18 +2,21 @@
 // depends on; what is chosen in the tree, and where all this comes from, are in the inspector.
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
-  Badge, Button, Cluster, Column, DescriptionList, Empty, Grid, Heading, Icon, Note, Progress, ScrollArea, SearchField, Section, Table, TableBody,
-  TableCell, TableHead, TableHeader, TableRow, Text, ToggleGroup, ToggleGroupItem, Tree,
+  Badge, Button, Cluster, Column, DescriptionList, Empty, Grid, Icon, ScrollArea, SearchField, Section, Table, TableBody, TableCell, TableHead,
+  TableHeader, TableRow, Text, ToggleGroup, ToggleGroupItem, Tree,
 } from '@acaprino/sigrid';
 import type { TreeNode } from '@acaprino/sigrid';
 import { ScreenPanel, useFrame } from './frame.tsx';
+import type { Detail } from './frame.tsx';
 import {
   CHOICE_TITLE, choiceDetails, choiceOf, countFound, dependencyFacts, directoryTree, finds, inventory, keptBranches, openBranches, PROVENANCE_NOTES,
   provenanceFacts, rowOf, technologyFacts, unitTree,
 } from './premap.ts';
+import { RunName } from './provenance.tsx';
 import { ContextFacts } from './repository-screen.tsx';
 import { ctx, number, plural } from './snapshot.ts';
 import type { Premap } from './snapshot.ts';
+import { Failed, Loading } from './states.tsx';
 import { model, useModel } from './use-model.ts';
 
 export function PremapActions() {
@@ -25,29 +28,26 @@ function ChoiceDetails() {
   const s = useModel();
   const c = ctx(s), choice = choiceOf(s.premap, s.kept.treeSelected);
   if (!c || !choice) return null;
-  const { icon, name, facts, text } = choiceDetails(choice, c);
+  const { facts, text } = choiceDetails(choice, c);
   return <>
-    {/* The one live region: it stays while what is chosen changes, and reads the name alone. */}
-    <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
-      <Icon name={icon} />
-      <Column><Heading size="small"><Text pre>{name}</Text></Heading></Column>
-    </Cluster>
     {text && <Text as="p" variant="soft">{text}</Text>}
     <DescriptionList items={facts} />
   </>;
 }
-const CHOICE = <ChoiceDetails />;  // one element: the inspector shows the choice when its content is this
+const CHOICE = 'premap.choice';  // the details of it are these
 
 // As on the map, what is chosen is in the details, and closing them leaves it; another stage takes the details away.
 function useChoice() {
   const s = useModel();
   const { detail, show, close } = useFrame();
-  const choice = choiceOf(s.premap, s.kept.treeSelected);
-  const shown = detail?.content === CHOICE, wasShown = useRef(false);
+  const c = ctx(s), choice = choiceOf(s.premap, s.kept.treeSelected);
+  const shown = detail?.id === CHOICE, wasShown = useRef(false);
   useEffect(() => {
-    if (choice) show({ title: CHOICE_TITLE[choice.kind], content: CHOICE });
-    else if (shown) close();
-  }, [choice ? s.kept.treeSelected : '']);
+    if (c && choice) {
+      const { icon, name } = choiceDetails(choice, c);
+      show({ id: CHOICE, key: s.kept.treeSelected, title: CHOICE_TITLE[choice.kind], icon, name, content: <ChoiceDetails /> });
+    } else if (shown) close();
+  }, [c && choice ? s.kept.treeSelected : '']);
   useEffect(() => {
     if (wasShown.current && !shown) model.keep({ treeSelected: '' });
     wasShown.current = shown;
@@ -64,6 +64,8 @@ function Provenance() {
     <Column as="ul" gap="md" aria-label="Che cosa prova">{PROVENANCE_NOTES.map(text => <Column as="li" key={text}><Text>{text}</Text></Column>)}</Column>
   </>;
 }
+
+const PROVENANCE: Detail = { id: 'premap.provenance', title: 'Provenienza della pre-mappa', icon: 'info', name: <RunName />, content: <Provenance /> };
 
 // The directories or the technical units, filtered by the search.
 function Structure({ premap }: { premap: Premap }) {
@@ -152,9 +154,11 @@ export function PremapScreen() {
   const { show } = useFrame();
   const premap = s.premap;
   useChoice();
-  return <ScreenPanel title="Pre-mappa" subtitle="Conosci il punto di partenza." actions={<Button variant="ghost" size="sm" disabled={!premap}
-    onClick={() => show({ title: 'Provenienza della pre-mappa', content: <Provenance /> })}><Icon name="info" />Provenienza</Button>}>
+  return <ScreenPanel title="Pre-mappa"
+    subtitle={premap && `${plural(premap.files.length, 'file', 'file')} · ${plural(premap.units.length, 'unità tecnica', 'unità tecniche')}`}
+    actions={<Button variant="ghost" size="sm" disabled={!premap} onClick={() => show(PROVENANCE)}><Icon name="info" />Provenienza</Button>}>
     <Column pad="lg" gap="xl">
+      <Text as="p" variant="soft">Tecnologie dichiarate, file e unità tecniche: una vista del repository prima di interpretarne il comportamento.</Text>
       <Grid gap="xl">
         <Section title="Contesto attivo" level={3} icon={<Icon name="branch" />}>
           <ContextFacts />
@@ -165,12 +169,9 @@ export function PremapScreen() {
         </Section>}
       </Grid>
       {s.premapError
-        ? <Note tone="error" title="Pre-mappa non disponibile." actions={<Button variant="outline" onClick={event => {
-            event.currentTarget.closest('main')?.focus({ preventScroll: true });  // the button goes: the focus stays in the content
-            model.retryPremap();
-          }}><Icon name="refresh" />Riprova</Button>}><Text pre data-selectable="">{s.premapError}</Text></Note>
+        ? <Failed title="Pre-mappa non disponibile." cause={s.premapError} retry={model.retryPremap} />
         : premap ? <Found premap={premap} />
-        : <Column aria-busy><Progress aria-label="Lettura della pre-mappa…" value={null} /></Column>}
+        : <Loading label="Lettura della pre-mappa…" />}
     </Column>
   </ScreenPanel>;
 }

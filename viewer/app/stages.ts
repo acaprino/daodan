@@ -7,7 +7,7 @@ import type { Stage } from './storage.ts';
 
 export type StageState = 'done' | 'now' | 'todo' | 'failed';
 export const STAGE_WORD: Record<StageState, string> = { done: 'fatta', now: 'in corso', todo: 'da fare', failed: 'non riuscita' };
-export const STAGE_LABEL: Record<Stage, string> = { repository: 'Repository', premap: 'Pre-mappa', analysis: 'Analisi', synthesis: 'Sintesi' };
+export const STAGE_LABEL: Record<Stage, string> = { repository: 'Repository', premap: 'Pre-mappa', analysis: 'Analisi', synthesis: 'Sintesi e grafo' };
 const STAGE_DETAIL: Record<Stage, string> = {
   repository: 'GitHub e branch', premap: 'Inventario e tecnologie', analysis: 'Pipeline e costruzione', synthesis: 'Risultati e lacune',
 };

@@ -5,7 +5,7 @@ import type { IconName } from '@acaprino/sigrid';
 import { ScreenPanel, useFrame } from './frame.tsx';
 import { Preview } from './preview.tsx';
 import { short } from './repository.ts';
-import { linksNote, logItems, passAlert, runBar, runHelp, runPhaseLabel, statusLabel, steps } from './run.ts';
+import { linksNote, logItems, passAlert, runBar, runCount, runHelp, runPhaseLabel, statusLabel, steps } from './run.ts';
 import type { LogItem, StepStatus } from './run.ts';
 import { complete, ctx, pass, plural, slug } from './snapshot.ts';
 import { MapNote } from './states.tsx';
@@ -40,14 +40,14 @@ const WHY = 'links-why';
 // The buttons are beside the note, not in it: a note whose tone changes is drawn anew, and would take the focus with it.
 function Links() {
   const s = useModel();
-  const { close } = useFrame();
+  const { go } = useFrame();
   const { tone, title, message, running, reason } = linksNote(s);
   return <Column>
     <Note tone={tone} title={title}><Text pre id={WHY} data-selectable="">{message}</Text></Note>
     <Cluster>
       <Button variant="outline" loading={running} disabled={!running && reason !== ''} aria-describedby={WHY} onClick={() => { model.findLinks(); }}>
         <Icon name="play" />Trova i legami</Button>
-      {reason && <Button variant="ghost" onClick={() => { close(); model.navigate('engine'); }}><Icon name="ai" />Scegli il motore</Button>}
+      {reason && <Button variant="ghost" onClick={() => go(() => model.navigate('engine'))}><Icon name="ai" />Scegli il motore</Button>}
     </Cluster>
   </Column>;
 }
@@ -107,9 +107,11 @@ function Activity() {
 }
 
 export function RunScreen() {
-  const c = ctx(useModel());
-  return <ScreenPanel title="Analisi" subtitle="Il grafo prende forma.">
+  const s = useModel();
+  const c = ctx(s);
+  return <ScreenPanel title="Analisi" subtitle={c && runCount(s)}>
     {c && <Column pad="lg" gap="xl" width="page">
+      <Text as="p" variant="soft">Segui passi, analyzer, avanzamento ed eventi del run.</Text>
       <Note title={`Analisi del commit ${short(c.commit)}.`}>Avanzamento ed eventi sono quelli del run {c.run_id}. Il grafo cresce solo quando la pipeline scrive un artefatto.</Note>
       <Execution />
       <Preview />

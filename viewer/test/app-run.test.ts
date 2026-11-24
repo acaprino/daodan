@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { accessFeedback, preferredBranch, preparation, repositoryContext, repositoryReason, repositorySlug } from '../app/repository.ts';
-import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, runBar, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps } from '../app/run.ts';
+import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, runBar, runCount, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps } from '../app/run.ts';
 import type { RunEvent } from '../app/server.ts';
 import type { Snapshot } from '../app/snapshot.ts';
 import { STAGE_WORD, stages } from '../app/stages.ts';
@@ -92,6 +92,11 @@ test('the run says its phase, its state and what the last progress was', () => {
   assert.equal(runHelp(run('running', [], { progress: { step: 'scan', analyzer: 'ctags', done: 2, total: 3 } })), 'Ultimo avanzamento: Scan · ctags · 2/3');
   assert.equal(buildStatus(run('running')), 'Costruzione in corso');
   assert.equal(buildStatus(run('running', [{ kind: 'graph.ready' }])), 'Grafo del codice scritto');
+});
+
+test('the count of the steps done is beside the title', () => {
+  assert.equal(runCount(run('running')), '0 di 6 passi completati');
+  assert.equal(runCount(run('running', [{ kind: 'step.started', step: 'parse' }, { kind: 'step.finished', step: 'parse' }])), '1 di 6 passi completati');
 });
 
 test('the status row and the foot say the server that is read, lost, idle or at work', () => {

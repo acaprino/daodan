@@ -41,12 +41,18 @@ export function steps(s: Run): RunStep[] {
   });
 }
 
+const completed = (list: readonly RunStep[]) => list.filter(t => t.status === 'done').length;
+// How many of its steps are done, beside the screen's title.
+export function runCount(s: Run): string {
+  const list = steps(s);
+  return `${completed(list)} di ${list.length} passi completati`;
+}
 export function runPercent(s: Run): number {
   if (!ctx(s)) return 0;
   const list = steps(s), progress = s.server?.run?.progress;
   const running = list.find(t => t.status === 'running');
   const part = running && progress?.step === running.id && progress.total ? progress.done / progress.total : 0;
-  return Math.round(100 * (list.filter(t => t.status === 'done').length + part) / list.length);
+  return Math.round(100 * (completed(list) + part) / list.length);
 }
 
 // The bar of the steps: how far it is. It stopped when the run is over with a step that failed, and says it.
