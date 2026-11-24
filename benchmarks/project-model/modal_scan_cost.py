@@ -13,6 +13,9 @@ B. On the real projects, `repetitions` times, one after the other: the inventory
    (the semantic store and the publication). Medians.
 C. Angular: the TypeScript files whose tree `premap.angular` reads now and before 648efd2b7, and its seconds; and the
    rhythm of `premap.angular._components` on the TypeScript files of every project, to size it on the largest.
+D. (`--languages`, `results/scan-cost/languages.json`) the language go-enry gives each file against the inventory's
+   (`file_inventory.write`), from the recorded answer of `daodan-enry .` alone: the pairs that differ, by kind, with examples.
+E. In the same mode, the files each reason of exclusion holds, `submodule` too, and the entries `.gitmodules` states.
 
     PYTHONUTF8=1 python -m modal run benchmarks/project-model/modal_scan_cost.py --cases js-angular,mix-real-klaxon --out OUT.json
     DAODAN_SCRIPTS=<clean clone>/daodan/core python -m modal run benchmarks/project-model/modal_scan_cost.py
@@ -34,7 +37,8 @@ import sys
 import tempfile
 import time
 import traceback
-from pathlib import Path
+import types
+from pathlib import Path, PurePosixPath
 
 import modal
 
@@ -189,6 +193,115 @@ def rhythm(fixtures: dict) -> dict:
             "all": {"projects": len(sweeps), **total, **(rate(total["files"], total["bytes"], total["seconds"]) or {})}}
 
 
+# ------------------------------------------------------------------ the languages: go-enry against the inventory
+
+# What `premap.suffix_table.NAMES` (Daodan's name -> Linguist's, with `premap.ALSO`) does not say: the Linguist names that a
+# coarse name of Daodan covers, from its extension table (`languages.SUPPORTED_EXTENSIONS`), and the one Linguist spells apart.
+FAMILIES = {
+    "css": ("CSS", "SCSS", "Sass", "Less", "PostCSS"),
+    "markup": ("HTML", "HTML+ERB", "HTML+Razor", "EJS", "FreeMarker", "Handlebars", "Jinja", "Java Server Pages", "Liquid",
+               "Mustache", "Nunjucks", "Twig", "Velocity Template Language"),
+    "javascript": ("JSX",),
+}
+NONE = "(none)"
+SUFFIXES = (".h", ".ts", ".sql")  # the languages Daodan gives by the text too (`languages.detect_language`)
+KINDS = ("a-reads-other", "a-unreadable", "a-enry-none", "b-readable", "b-other")
+LANGUAGES_OUT = HERE / "results/scan-cost/languages.json"
+
+
+def equivalents(names: dict, also: dict) -> dict:
+    """Each language of Daodan with the Linguist names that mean it: the product's own table (`names`, `also`) and `FAMILIES`."""
+    return {language: frozenset([*([names[language]] if language in names else ()), *also.get(language, ()),
+                                 *FAMILIES.get(language, ())])
+            for language in {*names, *also, *FAMILIES}}
+
+
+def language_pairs(rows, enry: dict, same: dict, limit: int = 2) -> dict:
+    """The inventory's `rows` (`(path, {"language": ...})`) against go-enry's answer (`enry`, `{path: language}`): only the files
+    of `rows` count, one go-enry does not list is `no_answer`. `agree` where go-enry's name is one of those that mean Daodan's
+    (`same`), `both_none` where neither has a language, and the rest as `pairs` (`"<go-enry> -> <Daodan>"`, `(none)` for none),
+    each with `limit` example paths. For the `SUFFIXES`, the pairs of every file, those that agree too."""
+    found = {"files": 0, "agree": 0, "both_none": 0, "no_answer": 0, "pairs": collections.Counter(), "suffix": {},
+             "examples": {}}
+    for path, row in rows:
+        found["files"] += 1
+        if path not in enry:
+            found["no_answer"] += 1
+            continue
+        theirs, daodan = enry[path] or None, row.get("language") or None
+        pair = f"{theirs or NONE} -> {daodan or NONE}"
+        suffix = PurePosixPath(path).suffix.lower()
+        if suffix in SUFFIXES:
+            found["suffix"].setdefault(suffix, collections.Counter())[pair] += 1
+        if theirs is None and daodan is None:
+            found["both_none"] += 1
+        elif daodan is not None and theirs in same.get(daodan, ()):
+            found["agree"] += 1
+        else:
+            found["pairs"][pair] += 1
+            seen = found["examples"].setdefault(pair, [])
+            if len(seen) < limit:
+                seen.append(path)
+    return {**found, "pairs": dict(found["pairs"]), "suffix": {key: dict(value) for key, value in found["suffix"].items()}}
+
+
+def classify(theirs: str | None, daodan: str | None, readable) -> str:
+    """What a pair of languages that differ is. `a-`: Daodan gives the file a language (so a parser reads it) and go-enry
+    another: the file `a-reads-other` (go-enry's language is one Daodan reads, `readable`), `a-unreadable` (it is not: the file
+    would be file-level) or go-enry gives it none (`a-enry-none`). `b-`: Daodan gives none and go-enry one, `b-readable` or `b-other`."""
+    if daodan is not None:
+        return "a-enry-none" if theirs is None else "a-reads-other" if theirs in readable else "a-unreadable"
+    return "b-readable" if theirs in readable else "b-other"
+
+
+def summarize_languages(fixtures: dict, same: dict) -> dict:
+    """The projects of `language_pairs` added up per corpus: the pairs that differ by kind (`classify`) with the most frequent ten
+    of each and an example, the pairs of the `SUFFIXES`, and the exclusion entries and files per reason (measure E). A project
+    without a recording is in `not_recorded`."""
+    readable = set().union(*same.values()) if same else set()
+    found = {corpus: {"projects": 0, "files": 0, "agree": 0, "both_none": 0, "no_answer": 0, "differ": 0} for corpus in CORPORA}
+    pairs = {corpus: {kind: {} for kind in KINDS} for corpus in CORPORA}
+    suffixes = {corpus: {} for corpus in CORPORA}
+    excluded = {"entries": collections.Counter(), "files": collections.Counter(), "projects": collections.Counter()}
+    not_recorded = []
+    for name, item in sorted(fixtures.items()):
+        if not item.get("recorded"):
+            not_recorded.append(name)
+            continue
+        compare, total = item["compare"], found[item["corpus"]]
+        total["projects"] += 1
+        for key in ("files", "agree", "both_none", "no_answer"):
+            total[key] += compare[key]
+        total["differ"] += sum(compare["pairs"].values())
+        for pair, count in compare["pairs"].items():
+            theirs, daodan = (None if part == NONE else part for part in pair.split(" -> "))
+            entry = pairs[item["corpus"]][classify(theirs, daodan, readable)].setdefault(
+                pair, {"pair": pair, "files": 0, "projects": 0, "example": f"{name}: {compare['examples'][pair][0]}"})
+            entry["files"] += count
+            entry["projects"] += 1
+        for suffix, counts in compare["suffix"].items():
+            counter = suffixes[item["corpus"]].setdefault(suffix, collections.Counter())
+            counter.update(counts)
+        for why, count in item["excluded"]["entries"].items():
+            excluded["entries"][why] += count
+            excluded["projects"][why] += count > 0
+        for why, count in item["excluded"]["files"].items():
+            excluded["files"][why] += count
+
+    def agrees(pair: str) -> bool:
+        theirs, daodan = pair.split(" -> ")
+        return daodan != NONE and theirs in same.get(daodan, ())
+
+    for corpus in CORPORA:
+        found[corpus]["classes"] = {kind: {"files": sum(entry["files"] for entry in table.values()),
+                                         "pairs": sorted(table.values(), key=lambda entry: (-entry["files"], entry["pair"]))[:10]}
+                                  for kind, table in pairs[corpus].items()}
+        found[corpus]["suffix"] = {suffix: [{"pair": pair, "files": count, "agrees": agrees(pair)}
+                                            for pair, count in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))[:10]]
+                                   for suffix, counter in sorted(suffixes[corpus].items())}
+    return {**found, "excluded": {key: dict(value) for key, value in excluded.items()}, "not_recorded": not_recorded}
+
+
 # ------------------------------------------------------------------ what runs on Modal
 
 class Counted:
@@ -314,6 +427,18 @@ def typescript_rhythm(manifest: Path, store, ts_files: list[str], before: list[s
             "before_seconds": round(sum(sweep.by_file.get(path, 0.0) for path in before), 4)}
 
 
+def lay_out(name: str, work: Path) -> tuple[Path, bool]:
+    """The project as the recording's container laid it out (`premap_replay`): a miniature copied whole, `expected.json` too, a
+    real one unpacked from its archive on the volume. Its path, and whether it is a real one."""
+    import premap_replay as replay
+    fixture = Path(mp.REMOTE_PM) / "fixtures" / name
+    if not (fixture / "source.json").is_file():
+        return Path(shutil.copytree(fixture, work / name)), False
+    if not (ARCHIVES / f"{name}.tar.gz").is_file():
+        raise FileNotFoundError(f"no archive of {name} on the volume")
+    return replay.real_project(name, ARCHIVES, work), True
+
+
 def one(name: str, reps: int, work: Path) -> dict:
     """The three measures on one project of the corpus."""
     import file_inventory
@@ -323,14 +448,7 @@ def one(name: str, reps: int, work: Path) -> dict:
     from pipeline import plan
     from snapshot_store import open_snapshot
     started = time.perf_counter()
-    fixture = Path(mp.REMOTE_PM) / "fixtures" / name
-    real = (fixture / "source.json").is_file()
-    if real:
-        if not (ARCHIVES / f"{name}.tar.gz").is_file():
-            return {"error": f"no archive of {name} on the volume"}
-        project = replay.real_project(name, ARCHIVES, work)
-    else:
-        project = Path(shutil.copytree(fixture, work / name))  # as `premap_replay` lays it out, `expected.json` too
+    project, real = lay_out(name, work)
     out = {"corpus": "real" if real else "miniature"}
     runs, count = [], reps if real else 1  # a miniature is read once: its seconds are not measured
     for number in range(count):
@@ -402,6 +520,59 @@ def measure(names: list, reps: int = REPS) -> dict:
     return answer
 
 
+def languages_one(name: str, work: Path, same: dict) -> dict:
+    """Measures D and E on one project, from its inventory and the recorded answer of `daodan-enry .` alone: no snapshot, no
+    pre-map. The exclusion entries are what `premap.enry.read` and `premap.gitmodules.run` state, in the pre-map's order (a
+    reader's first), and the files they hold `pipeline.plan.excluded`."""
+    import file_inventory
+    import premap_replay as replay
+    from pipeline import plan
+    from premap import enry, gitmodules
+    from snapshot_store import open_snapshot
+    project, real = lay_out(name, work)
+    out = {"corpus": "real" if real else "miniature", "recorded": False}
+    recording = replay.RUNS / f"{name}.json.gz"
+    if not recording.is_file():
+        return out
+    data = json.loads(gzip.decompress(recording.read_bytes()).decode("utf-8"))
+    result = next((run["result"] for run in data["runs"] if run["command"]["tool"] == "daodan-enry"), None)
+    if result is None:
+        return out
+    inventory = work / "inventory.sqlite"
+    file_inventory.write(project, inventory)
+    with open_snapshot(inventory) as store:
+        rows = list(store.iter_inventory())
+    answered = json.loads(result["stdout"]) if result["returncode"] == 0 else []
+    # a dot folder is outside the map's perimeter: `premap.enry.read` leaves its files out, so does this
+    theirs = {row["path"]: row.get("language") or None for row in answered
+              if not any(part.startswith(".") for part in row["path"].split("/")[:-1])}
+    submodules = gitmodules.run(types.SimpleNamespace(root=project)) or {}
+    entries = [*submodules.get("facts", {}).get("excluded", []), *enry.read(None, None, [result])["facts"].get("excluded", [])]
+    held = collections.Counter(plan.excluded(rows, {"excluded": entries}).values())
+    stated = collections.Counter(entry["why"] for entry in entries)
+    out.update(recorded=True, compare=language_pairs(rows, theirs, same),
+               excluded={"entries": dict(stated), "files": {why: held.get(why, 0) for why in {*stated, *held}}},
+               submodule_absent=sum(1 for gap in submodules.get("gaps", []) if gap["kind"] == "submodule_absent"))
+    return out
+
+
+@app.function(image=image, cpu=(CPU, CPU), memory=(MEMORY, MEMORY), timeout=3600, volumes={"/results": mp.volume})
+def inventory_languages(names: list) -> dict:
+    sys.path[:0] = [mp.REMOTE_SCRIPTS, mp.REMOTE_PM, f"{BENCH}/tools"]
+    from premap import ALSO, suffix_table
+    same = equivalents(suffix_table.NAMES, ALSO)
+    answer = {"machine": machine(), "equivalents": {key: sorted(value) for key, value in same.items()}, "fixtures": {}}
+    for name in names:
+        work = Path(tempfile.mkdtemp(prefix=f"scan-cost-languages-{name}-"))
+        try:
+            answer["fixtures"][name] = languages_one(name, work, same)
+        except Exception as error:  # noqa: BLE001 - a project's failure is its result
+            answer["fixtures"][name] = {"error": f"{type(error).__name__}: {error}", "trace": traceback.format_exc()[-1500:]}
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
+    return answer
+
+
 def save(target: Path, runs: list, machines: list, fixtures: dict) -> None:
     """The result so far: `runs` the calls that made it (each its code, cases and repetitions), the first one's code is `code`."""
     document = {"code": runs[0]["code"], "runs": runs, "machine": machines, "summary": summarize(fixtures),
@@ -410,8 +581,27 @@ def save(target: Path, runs: list, machines: list, fixtures: dict) -> None:
     target.write_text(json.dumps(document, indent=1), encoding="utf-8")
 
 
+def languages_main(batches: list, target: Path) -> None:
+    """Measures D and E on `batches`, the languages of go-enry against the inventory's: `results/scan-cost/languages.json`."""
+    ran, fixtures, machines, same = mp.code(mp.REPO, mp.UPLOADED), {}, [], {}
+    for answer in inventory_languages.map(batches, order_outputs=False, return_exceptions=True):
+        if isinstance(answer, Exception):
+            print("a container failed:", answer, flush=True)
+            continue
+        fixtures.update(answer["fixtures"])
+        same = {key: frozenset(value) for key, value in answer["equivalents"].items()}
+        machines += [answer["machine"]] if answer["machine"] not in machines else []
+        document = {"code": ran, "machine": machines, "equivalents": answer["equivalents"],
+                    "summary": summarize_languages(fixtures, same), "fixtures": dict(sorted(fixtures.items()))}
+        target.write_text(json.dumps(document, indent=1), encoding="utf-8")
+        for name, item in answer["fixtures"].items():
+            print(name, item.get("error") or {key: item.get(key) for key in ("corpus", "recorded")}, flush=True)
+    print("ran", len(fixtures), "->", target, flush=True)
+
+
 @app.local_entrypoint()
-def main(cases: str = "mini,real", out: str = str(OUT), chunk: int = 8, reps: int = REPS, resume: bool = False):
+def main(cases: str = "mini,real", out: str = "", chunk: int = 8, reps: int = REPS, resume: bool = False,
+         languages: bool = False):
     names = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
     real = [name for name in names if (HERE / "fixtures" / name / "source.json").is_file()]
     batches = []
@@ -420,11 +610,14 @@ def main(cases: str = "mini,real", out: str = str(OUT), chunk: int = 8, reps: in
             small = [name for name in names if name not in real]
             batches += [small[i:i + chunk] for i in range(0, len(small), chunk)]
         elif spec == "real":
-            batches += [[name] for name in real]
+            group = chunk if languages else 1  # an inventory is quick: several real projects in one function
+            batches += [real[i:i + group] for i in range(0, len(real), group)]
         else:
             batches.append([spec])
-    target = Path(out)
+    target = Path(out or (LANGUAGES_OUT if languages else OUT))
     target.parent.mkdir(parents=True, exist_ok=True)
+    if languages:
+        return languages_main(batches, target)
     ran, fixtures, machines, runs = mp.code(mp.REPO, mp.UPLOADED), {}, [], []
     scripts = Path(os.environ.get("DAODAN_SCRIPTS") or mp.REPO / "daodan/core")  # the commit of what was uploaded
     ran["scripts_commit"] = subprocess.run(["git", "-C", str(scripts), "rev-parse", "HEAD"], capture_output=True,

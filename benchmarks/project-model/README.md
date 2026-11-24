@@ -629,7 +629,7 @@ Secondi per passo, da zero e dopo la modifica: scan 210,5 e 224,0; analyze 222,9
 
 ## Il costo di `scan` sul corpus, 24 novembre 2026 (8.10 della spec della pipeline)
 
-Domande: quanti file la lettura di oggi legge e `scan` poi esclude, per motivo (8.3 punto 3, 8.11 passo 5 pezzo E1); quanto pesa la doppia lettura dei byte (8.6 punto 6); quanto costa in `scan` l'albero di ogni file TypeScript di un progetto Angular (8.11 passo 5 pezzo D).
+Domande: quanti file la lettura di oggi legge e `scan` poi esclude, per motivo (8.3 punto 3, 8.11 passo 5 pezzo E1); quanto pesa la doppia lettura dei byte (8.6 punto 6); quanto costa in `scan` l'albero di ogni file TypeScript di un progetto Angular (8.11 passo 5 pezzo D); che linguaggio dà go-enry a ogni file, contro quello dell'inventario (8.3 punto 2); e il motivo `submodule` accanto agli altri.
 
 ### Parametri
 
@@ -641,12 +641,15 @@ Domande: quanti file la lettura di oggi legge e `scan` poi esclude, per motivo (
 
 `code.differs` del JSON elenca tre percorsi: due file di `fixtures/mix-edge-vendored/node_modules/left-pad`, che git traccia e `git add -A` ignora, e `modal_pipeline.py`, che ha lo stesso contenuto di HEAD (blob `90381c557`): `modal_pipeline.code` dà elenchi diversi in chiamate successive senza che un file cambi, quindi la riga non prova una modifica.
 
+- **D.** Modalità `--languages`, che non rifà A-C: per ogni progetto con la risposta registrata di `daodan-enry .`, `file_inventory.write` (il linguaggio dell'inventario, `detect_language`) contro il `language` di ogni riga di go-enry (senza le cartelle con il punto, come `premap.enry.read`). Solo i file dell'inventario. La tabella dei nomi che il codice ha è `premap.suffix_table.NAMES` (nome di Daodan → nome di Linguist, 16 nomi) con `premap.ALSO` (TSX): la usano `premap._unlisted` e `indexed_by`. Non dice `markup`, né che `css` copre Sass e Less: la mappa minima `FAMILIES` del benchmark (non in `daodan/`) aggiunge i nomi di `css` e `markup` dalla tabella delle estensioni di Daodan, e JSX a `javascript`; la tabella usata è `equivalents` del JSON. Tutti i 17 linguaggi di Daodan hanno un parser (`languages.SUPPORTED_LANGUAGES`): «Daodan legge quel nome» vuol dire che il nome è in quella tabella.
+- **E.** Nella stessa modalità, le voci della faccetta `excluded` (`premap.enry.read`, poi `premap.gitmodules.run`, nell'ordine della pre-mappa) e i file dell'inventario che ognuna tiene (`pipeline.plan.excluded`), per motivo.
+
 Comando (clone pulito di HEAD in `<clone>`), risultato in `results/scan-cost/scan-cost.json` (solo conteggi e tempi):
 
     PYTHONUTF8=1 PYTHONIOENCODING=utf-8 DAODAN_SCRIPTS=<clone>/daodan/core \
       uv run --no-project --with modal python -m modal run benchmarks/project-model/modal_scan_cost.py
 
-`--cases a,b` sceglie i progetti, `--resume` aggiunge a un JSON che c'è quelli che mancano. Il test della parte pura: `uv run --no-project --with modal --with pytest python -m pytest benchmarks/project-model/test_modal_scan_cost.py`.
+`--cases a,b` sceglie i progetti, `--resume` aggiunge a un JSON che c'è quelli che mancano; `--languages` fa solo D ed E e scrive `results/scan-cost/languages.json` (un minuto, 180 progetti). Il test della parte pura: `uv run --no-project --with modal --with pytest python -m pytest benchmarks/project-model/test_modal_scan_cost.py`.
 
 ### Risultati
 
@@ -657,11 +660,13 @@ Comando (clone pulito di HEAD in `<clone>`), risultato in `results/scan-cost/sca
 | miniature | `vendored` | 9 | 12 | 10 | 13 | 8 | 0 |
 | miniature | `generated` | 10 | 12 | 6 | 13 | 15 | 1 |
 | miniature | `documentation` | 4 | 6 | 1 | 0 | 0 | 0 |
+| miniature | `submodule` | 0 | 0 | 0 | 0 | 0 | 0 |
 | miniature | totale | 122 | 30 | 17 | 27 | 23 | 1 |
 | real | `documentation` | 56 | 1.746 | 438 | 16.386 | 1.498 | 24 (23 file) |
 | real | `generated` | 32 | 774 | 717 | 43.842 | 9.543 | 10 (10) |
 | real | `vendored` | 43 | 462 | 339 | 8.767 | 8.838 | 60 (58) |
 | real | `binary` | 2 | 2 | 2 | 729 | 4 | 2 (2) |
+| real | `submodule` | 0 | 0 | 0 | 0 | 0 | 0 |
 | real | totale | 56 | 2.984 | 1.496 | 69.724 | 19.883 | 96 (93) |
 
 I file che oggi un parser legge e `scan` esclude sono il 4,4% dei letti nelle miniature e il 4,5% nei real. Nessuno dei 56 real è senza file esclusi; 40 ne hanno di letti da un parser. Gli import nell'altro verso (da un file escluso a uno che resta) sono 231 nei real: `vendored` 113, `documentation` 93, `generated` 24, `binary` 1; chi non legge i file esclusi perde quegli archi.
@@ -722,10 +727,65 @@ I cinque progetti (di quelli con tre ripetizioni) che impiegano di più, mediana
 - Gli alberi sono letti due volte per pre-mappa (`commands` e `read` chiamano `_plan`; i testi restano in cache): 8, 576, 48 e 892 chiamate a `_components`.
 - Ritmo di `_components`, con la lettura del file, l'hash, la decodifica, l'albero e la query: sul progetto TypeScript più grande del corpus per byte, `real-stack-mattermost-mobile` (React Native, non Angular), 3.278 file, 18,3 MB, 5,47 s: 599 file/s e 3,35 MB/s. Su tutti i 40 progetti con file TypeScript: 15.251 file, 72,2 MB, 26,6 s, 572 file/s e 2,71 MB/s. A quel ritmo, una lettura di tutti gli alberi di un progetto di quella dimensione costerebbe 5,5 s, due volte per pre-mappa.
 
+**D. Il linguaggio di go-enry contro quello dell'inventario** (`results/scan-cost/languages.json`: i 178 progetti con la risposta di go-enry registrata; senza `real-stack-jellyfin` e `real-stack-kuvasz`). Nessun file dell'inventario manca dalla risposta di go-enry. Le miniature hanno anche il loro `expected.json` (come le posa il container), che conta fra i `JSON`.
+
+| Corpus | File | Stesso linguaggio | Nessuno dei due | Diversi | (a) Daodan ne dà uno e go-enry un altro o nessuno | (b) Daodan nessuno e go-enry uno che Daodan legge | Daodan nessuno e go-enry uno che non legge |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| miniature | 806 | 362 | 1 | 443 | 26 | 0 | 417 |
+| real | 46.737 | 33.151 | 13 | 13.573 | 61 | 0 | 13.512 |
+
+- (a) sono i file che oggi un parser legge: 26 nelle miniature, 61 nei real. In 5 (real) il nome di go-enry è uno che Daodan legge (`JavaScript` su file `.ts`: un altro parser li leggerebbe); in 80 (26 e 54) è uno che Daodan non legge (con quel nome sarebbero file senza parser); in 2 go-enry non dà un linguaggio.
+- (b) è zero in tutti e due i corpora: nessun file senza linguaggio in Daodan è chiamato da go-enry con un nome che Daodan legge. I 13.929 file con go-enry sì e Daodan no sono linguaggi che Daodan non ha: nei real `PHP` 3.732 (8 progetti), `Elixir` 2.416 (3), `Markdown` 1.871 (55), `JSON` 1.849 (48), `YAML` 1.095 (48).
+
+Le coppie di (a) (miniature e real insieme) e una di (b), con un esempio ciascuna:
+
+| go-enry → Daodan | File | Progetti | Parser di Daodan per il nome di go-enry | Esempio |
+| --- | ---: | ---: | --- | --- |
+| `Gradle Kotlin DSL` → `kotlin` | 55 | 13 | no (i `.kts` si leggono come Kotlin) | `build.gradle.kts` in `mix-real-klaxon` |
+| `PLpgSQL` → `sql` | 9 | 6 | no (SQL generico) | `packages/hoppscotch-backend/prisma/migrations/20251016080714_mock_server/migration.sql` in `real-app-hoppscotch` |
+| `Fluent` → `markup` | 8 | 1 | no (`.ftl` è nella tabella dei template) | `crates/atuin/i18n/en-US/atuin.ftl` in `real-stack-atuin` |
+| `JavaScript` → `typescript` | 5 | 2 | sì | `packages/ci-actions/bin/get-next-package-version.ts` in `real-stack-actual` |
+| `Objective-C` → `c` | 3 | 2 | no | `app/ios/Runner/Runner-Bridging-Header.h` in `real-stack-localsend` |
+| `XML` → `rust` | 3 | 2 | no | `server/src/schema.rs` in `real-stack-lldap` |
+| `(none)` → `typescript` | 2 | 2 | - | `web/src/components/MemoEditor/view/useSearchMatchHighlight.ts` in `real-app-memos` (lo stesso file di `binary`) |
+| `TSQL` → `sql` | 1 | 1 | no | `db/sqlserver/usp_get_orders.sql` in `mix-edge-sql` |
+| `Ruby` → `python` | 1 | 1 | no | `bin/stackprof-gprof2dot.py` in `real-stack-lobsters` |
+| `PHP` → `(none)` (b) | 3.732 | 8 | no | `app/Access/EmailConfirmationService.php` in `real-stack-bookstack` |
+
+I tre suffissi che Daodan decide anche dal testo, a parte (tutti i file con quel suffisso; `=` dove i due nomi coincidono):
+
+| Suffisso | go-enry → Daodan | File |
+| --- | --- | ---: |
+| `.h` | `C` → `c` `=` | 40 |
+| `.h` | `C++` → `cpp` `=` | 14 |
+| `.h` | `Objective-C` → `(none)` | 9 |
+| `.h` | `Objective-C` → `c` | 3 |
+| `.ts` | `TypeScript` → `typescript` `=` | 9.977 |
+| `.ts` | `JavaScript` → `typescript` | 5 |
+| `.ts` | `(none)` → `typescript` | 2 |
+| `.ts` | `XML` → `(none)` (`i18n/app_it.ts` in `mix-edge-extensions`: una traduzione Qt) | 1 |
+| `.sql` | `SQL` → `sql` `=` | 431 |
+| `.sql` | `PLpgSQL` → `sql` | 9 |
+| `.sql` | `PLSQL` → `plsql` `=` | 1 |
+| `.sql` | `TSQL` → `sql` | 1 |
+
+**E. Il motivo `submodule`.** Le voci della faccetta `excluded` che ognuno dei cinque motivi stabilisce e i file dell'inventario che tengono, sui 178 progetti con la registrazione:
+
+| Motivo | Voci | Progetti con voci | File dell'inventario |
+| --- | ---: | ---: | ---: |
+| `vendored` | 549 | 71 | 474 |
+| `generated` | 798 | 64 | 786 |
+| `documentation` | 851 | 60 | 1.752 |
+| `binary` | 1.416 | 52 | 2 |
+| `submodule` | 5 | 4 | 0 |
+
+Nessun progetto ha un submodule con file: le 5 voci (`mix-edge-submodules` 2, `sys-git-submodule-absent` 1, `real-stack-localsend` 1, `real-stack-mattermost-mobile` 1) hanno tutte la cartella assente o vuota (5 lacune `submodule_absent`). Per `submodule` i file letti, i simboli e gli import verso sono quindi zero (righe nella tabella di A), e il motivo non si può misurare sul corpus. I 3.014 file esclusi (30 e 2.984) sono gli stessi di A.
+
 ### Non misurato
 
 - Il tempo del container nella pre-mappa (comandi registrati, non rieseguiti) e la `read` delle sorgenti i cui comandi non sono registrati (`noir` in tutti i progetti): i secondi della pre-mappa sono quindi un limite inferiore della parte che non è il container, e le sorgenti `angular` dei progetti sopra hanno letto gli alberi ma non le righe del compilatore (comandi `angular` non registrati).
 - `real-stack-jellyfin` per intero (una ripetizione non è finita in oltre due ore: non so se dichiara Angular né quanti TypeScript abbia); le due ripetizioni oltre la prima di `real-stack-kuvasz` (tre superano le due ore); l'esclusione dei file di entrambi (nessuna registrazione).
 - Il secondo hash dei byte: `snapshot.py` ricalcola `sha256` in `_SnapshotPass.sources` e in `file_entry`, fuori dalla misura dei byte riletti.
 - La scomposizione di `seal`; i progetti con un frontend Angular più grande di 446 file TypeScript.
+- D ed E su `real-stack-jellyfin` e `real-stack-kuvasz` (nessuna registrazione); in D, quanti dei file con una coppia diversa un parser legge davvero (stato `parsed`): si conta il linguaggio dell'inventario, non lo stato della lettura; nel JSON, delle coppie per suffisso restano le dieci più frequenti.
 - La varianza fra corse intere: ogni progetto ha avuto una sola funzione Modal (con le ripetizioni di B dentro); il container può essere stato rilanciato dopo una prelazione (`preemption`: due volte nella corsa).

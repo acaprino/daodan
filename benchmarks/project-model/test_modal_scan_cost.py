@@ -127,3 +127,59 @@ def test_the_reading_totals_add_the_medians_and_give_the_share_of_the_re_read_by
     assert found["reread_share"] == round(2.0 / 12.0, 4)
     assert found["repetitions"] == {1: 2}  # how many projects have each number of repetitions
     assert [row["project"] for row in found["slowest"]] == ["real-b", "real-a"]
+
+
+SAME = cost.equivalents({"typescript": "TypeScript", "css": "CSS", "c": "C", "cpp": "C++", "python": "Python"},
+                        {"typescript": ("TSX",)})
+READABLE = set().union(*SAME.values())
+ROWS = [("a.ts", {"language": "typescript"}), ("b.tsx", {"language": "typescript"}), ("c.scss", {"language": "css"}),
+        ("d.json", {"language": None}), ("e.h", {"language": "c"}), ("f.h", {"language": None}),
+        ("g.md", {"language": None}), ("h.py", {"language": "python"}), ("ours.txt", {"language": None}),
+        ("i.py", {"language": "python"})]
+ENRY = {"a.ts": "TypeScript", "b.tsx": "TSX", "c.scss": "SCSS", "d.json": "JSON", "e.h": "C++", "f.h": "Objective-C",
+        "g.md": None, "h.py": "Text", "i.py": "Python", "theirs.txt": "Text"}
+
+
+def test_a_coarse_name_of_daodan_covers_the_linguist_names_of_its_family_and_the_product_table_is_kept():
+    assert SAME["typescript"] == {"TypeScript", "TSX"}
+    assert {"CSS", "SCSS", "Less"} <= SAME["css"]
+    assert {"HTML", "Jinja"} <= SAME["markup"] and "JSX" in SAME["javascript"]
+
+
+def test_the_languages_of_go_enry_and_of_the_inventory_are_counted_per_pair_where_they_differ_or_one_is_empty():
+    found = cost.language_pairs(ROWS, ENRY, SAME)
+    assert (found["files"], found["agree"], found["both_none"], found["no_answer"]) == (10, 4, 1, 1)
+    assert found["pairs"] == {"JSON -> (none)": 1, "C++ -> c": 1, "Objective-C -> (none)": 1, "Text -> python": 1}
+    assert found["examples"]["C++ -> c"] == ["e.h"]  # a file only go-enry lists (`theirs.txt`) is outside the perimeter
+
+
+def test_the_pairs_of_the_suffixes_with_a_content_rule_are_kept_apart_with_those_that_agree():
+    found = cost.language_pairs(ROWS, ENRY, SAME)
+    assert found["suffix"][".h"] == {"C++ -> c": 1, "Objective-C -> (none)": 1}
+    assert found["suffix"][".ts"] == {"TypeScript -> typescript": 1}
+    assert ".py" not in found["suffix"]
+
+
+def test_a_pair_is_read_as_another_language_unreadable_or_without_a_language_and_a_file_left_without_one_is_readable_or_not():
+    assert cost.classify("C++", "c", READABLE) == "a-reads-other"
+    assert cost.classify("Text", "python", READABLE) == "a-unreadable"
+    assert cost.classify(None, "python", READABLE) == "a-enry-none"
+    assert cost.classify("TypeScript", None, READABLE) == "b-readable"
+    assert cost.classify("JSON", None, READABLE) == "b-other"
+
+
+def test_the_language_totals_add_the_projects_per_corpus_with_the_most_frequent_pairs_of_each_kind():
+    one = cost.language_pairs(ROWS, ENRY, SAME)
+    other = cost.language_pairs([("x.h", {"language": "c"}), ("y.h", {"language": "c"})], {"x.h": "C++", "y.h": "C++"}, SAME)
+    fixtures = {"js-a": {"corpus": "miniature", "recorded": True, "compare": one, "excluded": {"entries": {}, "files": {}}},
+                "real-b": {"corpus": "real", "recorded": True, "compare": other,
+                           "excluded": {"entries": {"submodule": 2}, "files": {"submodule": 0}}},
+                "real-c": {"corpus": "real", "recorded": False}}
+    found = cost.summarize_languages(fixtures, SAME)
+    assert found["real"]["projects"] == 1 and found["real"]["files"] == 2 and found["real"]["agree"] == 0
+    top = found["real"]["classes"]["a-reads-other"]["pairs"]
+    assert top == [{"pair": "C++ -> c", "files": 2, "projects": 1, "example": "real-b: x.h"}]
+    assert found["miniature"]["classes"]["b-other"]["files"] == 2  # JSON and Objective-C
+    assert found["real"]["suffix"][".h"] == [{"pair": "C++ -> c", "files": 2, "agrees": False}]
+    assert found["excluded"] == {"entries": {"submodule": 2}, "files": {"submodule": 0}, "projects": {"submodule": 1}}
+    assert found["not_recorded"] == ["real-c"]
