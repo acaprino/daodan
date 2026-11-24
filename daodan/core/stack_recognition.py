@@ -8,6 +8,7 @@ malformed fact or evidence item is a gap with its cause, never an error: the oth
 """
 from __future__ import annotations
 
+import fnmatch
 import os
 import posixpath
 import sys
@@ -18,7 +19,6 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import container  # noqa: E402
-import flows  # noqa: E402
 import premap  # noqa: E402
 import registry_build  # noqa: E402
 import service_registry  # noqa: E402
@@ -26,7 +26,8 @@ import stack_analyser  # noqa: E402
 from premap.module_graph import declared_image  # noqa: E402
 from registry_hosts import check_hosts  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
-from source_files import is_forbidden  # noqa: E402
+from module_inventory import _Inventory  # noqa: E402
+from source_files import SECRET_NAME_GLOBS, is_forbidden  # noqa: E402
 
 TYPES = ("deno", "docker", "githubAction", "golang", "hex", "maven", "npm", "nuget", "php", "pub", "python", "ruby",
          "rust", "swiftpm", "terraform", "terraform.resource")  # the declaration types of the release's README
@@ -38,12 +39,14 @@ _MALFORMED = (None, None, None, None, None, ())
 
 
 def _left_out(facts: dict) -> tuple[str, ...]:
-    return tuple(item["path"] for item in facts.get("excluded") or () if isinstance(item, dict) and item.get("path"))
+    return tuple(item["path"] for item in facts.get("excluded") or ()
+                 if isinstance(item, dict) and isinstance(item.get("path"), str) and item["path"])
 
 
 def _row(ecosystem, name, version, path, line, sources) -> tuple:
-    """The row of one fact, or `TypeError` when a field is not of the kind the tool takes."""
-    if not (isinstance(ecosystem, str) and isinstance(version, (str, type(None))) and isinstance(line, (int, type(None)))
+    """The row of one fact, or `TypeError` when a field is not of the kind the tool takes (a `line` is a positive integer)."""
+    if not (isinstance(ecosystem, str) and isinstance(version, (str, type(None)))
+            and (line is None or isinstance(line, int) and not isinstance(line, bool) and line > 0)
             and isinstance(sources, (list, tuple))):
         raise TypeError("fact of a malformed kind")
     return ecosystem, name, version, path, line, sources
@@ -133,10 +136,12 @@ def _refused(option: str, entry: str) -> bool:
 def perimeter(root: Path, files: list[str], excluded: tuple[str, ...]) -> tuple[tuple[str, ...], tuple[str, ...], list[dict]]:
     """`(skip_dirs, ignore, gaps)`: a folder is live when a snapshot file is inside it, at any depth. Only what lies in a
     live folder is listed. A folder that is not live goes by its name to `skip_dirs` (the tool skips it at every depth),
-    or, when a live folder has that name, by its path to `ignore`, as does a link, which is never followed, each path
-    the pre-map leaves out and each file of a live folder that `source_files.is_forbidden` forbids Daodan, which the tool
-    would open. An entry the tool refuses (`_refused`) is left out of both and is a gap
-    `perimeter_entry_left_out`: the tool enters that folder, and the evidence outside the snapshot is dropped afterwards."""
+    or, when a live folder has that name or the tool refuses it as a name (`_refused`), by its path to `ignore`, as does
+    every link (never followed; `skipDirs` does not stop the tool opening a link to a file), each path the pre-map leaves
+    out and each file of a live folder whose name `source_files.is_forbidden` forbids or speaks of secrets
+    (`SECRET_NAME_GLOBS`), decided by the name alone, which the tool would open. An `ignore` entry the tool refuses
+    (`_refused`) is left out and is a gap `perimeter_entry_left_out`: the tool enters that folder, and the evidence
+    outside the snapshot is dropped afterwards."""
     live = {"."} | {parent.as_posix() for rel in files for parent in PurePosixPath(rel).parents}
     names = {PurePosixPath(folder).name for folder in live}
     skip, ignore, pending = set(), {path.rstrip("/") for path in excluded if path.rstrip("/")}, ["."]
@@ -150,21 +155,20 @@ def perimeter(root: Path, files: list[str], excluded: tuple[str, ...]) -> tuple[
             continue
         for name, is_folder, link in listed:
             rel = (PurePosixPath(folder) / name).as_posix()
-            if not is_folder and is_forbidden(name, root / rel):
+            if link or (not is_folder and (is_forbidden(name) or any(
+                    fnmatch.fnmatchcase(name.lower(), glob) for glob in SECRET_NAME_GLOBS))):
                 ignore.add(rel)
-            elif not (is_folder or link):
+            elif not is_folder:
                 continue
-            elif rel in live and not link:
+            elif rel in live:
                 pending.append(rel)
-            elif name in names:
+            elif name in names or _refused("skipDirs", name):
                 ignore.add(rel)
             else:
                 skip.add(name)
-    gaps = [{"kind": "perimeter_entry_left_out", "option": option, "entry": entry}
-            for option, entries in (("skipDirs", skip), ("ignore", ignore)) for entry in sorted(entries)
-            if _refused(option, entry)]
-    return (tuple(sorted(n for n in skip if not _refused("skipDirs", n))),
-            tuple(sorted(n for n in ignore if not _refused("ignore", n))), gaps)
+    gaps = [{"kind": "perimeter_entry_left_out", "option": "ignore", "entry": entry}
+            for entry in sorted(ignore) if _refused("ignore", entry)]
+    return tuple(sorted(skip)), tuple(sorted(n for n in ignore if not _refused("ignore", n))), gaps
 
 
 def _item(item) -> tuple | None:
@@ -256,32 +260,32 @@ def _premap_sources(facts: dict) -> set[str]:
 def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:
     """`service_registry.run`'s answer for `manifest`, from the tool's evidence and the host mentions, and `ran`: the
     sources whose signs this run made, sorted: `stack-analyser` when the tool ran, `registry_hosts` when the host check
-    did, and the pre-map's sources that ran. A failure of the tool is a gap with its cause and remedy; the host mentions
+    did, and, only when the tool ran, the pre-map's sources that ran. A failure of the tool is a gap with its cause and remedy; the host mentions
     stay. The snapshot's store is closed while the tool runs."""
     manifest = Path(manifest)
     facts = premap.ensure(manifest) if facts is None else facts
     registry = registry or service_registry.load()
     left_out = _left_out(facts)
     sent, gaps = declarations(facts)
-    checkers, payload, mentions, ran = [], {}, [], _premap_sources(facts)
-    with open_snapshot(manifest) as store:
+    checkers, payload, mentions, ran = [], {}, [], set()
+    with open_snapshot(manifest) as store:  # the files the inventory lists: `stack` runs before `parse`
         root = Path(store["root"])
-        files = [rel for rel in sorted(dict(store.iter_file_headers_only()))
-                 if not service_registry._is_excluded(rel, left_out)]
+        files = [rel for rel in _Inventory(store).files if not service_registry._is_excluded(rel, left_out)]
     skip_dirs, ignore, more = perimeter(root, files, left_out)
     gaps += more
     try:
         payload = stack_analyser.run(root, declarations=sent, skip_dirs=skip_dirs, ignore=ignore)
         checkers.append({"checker": "stack-analyser", "state": "ran"})
-        ran.add("stack-analyser")
+        ran |= {"stack-analyser", *_premap_sources(facts)}  # their signs exist only through the tool
     except container.Gap as gap:
         _failed("stack-analyser", f"{gap.cause} ({gap.remedy})", checkers, gaps)
     except Exception as error:  # nothing the tool meets ends the step
         _failed("stack-analyser", f"{type(error).__name__}: {error}", checkers, gaps)
     try:
         with open_snapshot(manifest) as store:
-            source = flows.Source(store)
-            answer = check_hosts(registry["entries"], service_registry.Project([], files, lambda rel: source.lines(rel) or []))
+            inventory = _Inventory(store)
+            answer = check_hosts(registry["entries"], service_registry.Project(
+                [], files, lambda rel: service_registry._lines(inventory, rel)))
         mentions = [(ident, {"sign": "host", "value": value, "path": path, "line": line, "strength": "mentioned",
                              "source": "registry_hosts"}) for ident, value, path, line in answer["signs"]]
         checkers.append({"checker": "host", "state": "ran"})

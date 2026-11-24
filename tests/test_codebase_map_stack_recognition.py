@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import container  # noqa: E402
 import service_registry  # noqa: E402
+import file_inventory  # noqa: E402
 import snapshot  # noqa: E402
 import stack_analyser  # noqa: E402
 import stack_recognition  # noqa: E402
@@ -590,9 +591,10 @@ def test_a_perimeter_entry_the_fork_would_refuse_is_left_out_with_a_gap(tmp_path
                                           {"path": "third_party"}]}
     answer = stack_recognition.run(manifest, REGISTRY, facts)
     [(_, kwargs)] = started
-    assert kwargs["skip_dirs"] == (".git", "c,d", "gen2,x", "node_modules") and kwargs["ignore"] == ("gen/p,q", "third_party")
+    # `back\slash` is no name for `skipDirs` but is a path for `ignore`: the tool does not enter it
+    assert kwargs["skip_dirs"] == (".git", "c,d", "gen2,x", "node_modules")
+    assert kwargs["ignore"] == ("back\\slash", "gen/p,q", "third_party")
     assert [g for g in answer["gaps"] if g["kind"] == "perimeter_entry_left_out"] == [
-        {"kind": "perimeter_entry_left_out", "option": "skipDirs", "entry": "back\\slash"},
         {"kind": "perimeter_entry_left_out", "option": "ignore", "entry": "C:/x"},
         {"kind": "perimeter_entry_left_out", "option": "ignore", "entry": "a/../b"},
         {"kind": "perimeter_entry_left_out", "option": "ignore", "entry": "up\\..\\y"}]
@@ -637,8 +639,97 @@ def test_ran_names_the_sources_of_this_run(manifest, started, monkeypatch):
         raise container.Gap("stack-analyser failed (exit 1): boom", "analyze again")
 
     monkeypatch.setattr(stack_analyser, "run", broken)
-    assert stack_recognition.run(manifest, REGISTRY, {**FACTS, "sources": sources})["ran"] == [
-        "registry_hosts", "renovate", "requirements"]
+    # no sign of a pre-map source is made without the tool: only the host check ran
+    assert stack_recognition.run(manifest, REGISTRY, {**FACTS, "sources": sources})["ran"] == ["registry_hosts"]
     monkeypatch.setattr(stack_analyser, "run", lambda project, **kwargs: FORK)
     monkeypatch.setattr(stack_recognition, "check_hosts", lambda entries, project: 1 / 0)
     assert stack_recognition.run(manifest, REGISTRY, FACTS)["ran"] == ["stack-analyser"]
+
+
+# ---------------------------------------------------------------------------------------------- the review of B2
+
+def inventory_of(work: Path, files: dict[str, str]) -> Path:
+    """The manifest the inventory step alone writes (`stack` runs before `parse`): the `files` table is empty."""
+    app = work / "app"
+    for rel, text in files.items():
+        (app / rel).parent.mkdir(parents=True, exist_ok=True)
+        (app / rel).write_text(text, encoding="utf-8", newline="\n")
+    for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                    ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+        subprocess.run(command, cwd=app, check=True, capture_output=True)
+    manifest = work / "snapshot/manifest.sqlite"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    file_inventory.write(app, manifest)
+    return manifest
+
+
+def test_the_files_come_from_the_inventory_not_from_the_parse_table(tmp_path, started):
+    manifest = inventory_of(tmp_path, FILES)
+    with open_snapshot(manifest) as store:
+        assert dict(store.iter_file_headers_only()) == {}  # the `parse` step has not run
+    (tmp_path / "app/api/node_modules").mkdir()
+    (tmp_path / "app/api/node_modules/x.js").write_text("var a = 1;\n", encoding="utf-8")
+    answer = stack_recognition.run(manifest, REGISTRY, FACTS)
+    [(_, kwargs)] = started
+    assert kwargs["skip_dirs"] == (".git", "gen", "node_modules") and kwargs["ignore"] == ("api/gen",)  # `api` is live
+    assert answer["gaps"] == [OUTSIDE]  # the evidence in an inventoried file is kept, the other is dropped
+    by_id = {e["id"]: e for e in answer["found"]}
+    assert [s["path"] for s in by_id["redis"]["signs"]] == ["api/requirements.txt"]
+    assert [s["value"] for s in by_id["stripe"]["signs"]] == ["api.stripe.com"]  # the host mention is read
+
+
+def test_a_failed_tool_makes_no_sign_of_the_pre_map_sources(manifest, monkeypatch):
+    def broken(project, **kwargs):
+        raise RuntimeError("down")
+
+    monkeypatch.setattr(stack_analyser, "run", broken)
+    sources = [{"source": "renovate@41", "state": "ran"}]
+    assert stack_recognition.run(manifest, REGISTRY, {**FACTS, "sources": sources})["ran"] == ["registry_hosts"]
+
+
+def test_every_link_is_in_the_perimeter_by_its_path_even_to_a_file(tmp_path, started):
+    manifest = snapshot_of(tmp_path, {"web/a.ts": "export {}\n", "private/.env": "KEY=1\n"})
+    os.symlink("private/.env", tmp_path / "app/package.json")  # a link to a file, its name is no live folder's
+    os.symlink("private", tmp_path / "app/web/shortcut")
+    stack_recognition.run(manifest, REGISTRY, {"packages": [], "excluded": []})
+    [(_, kwargs)] = started
+    assert "package.json" in kwargs["ignore"] and "web/shortcut" in kwargs["ignore"]
+    assert "package.json" not in kwargs["skip_dirs"] and "shortcut" not in kwargs["skip_dirs"]
+
+
+def test_a_secret_named_file_is_ignored_by_its_name_and_never_opened(tmp_path, monkeypatch):
+    for rel in ("web/a.ts", "web/my-secret.txt", "web/Aws_Credentials.json", "web/notes.txt"):
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_text("x\n", encoding="utf-8")
+    real_stat, real_open = Path.stat, Path.open
+
+    def refused(path, *args, **kwargs):
+        if Path(path).name in ("my-secret.txt", "Aws_Credentials.json"):
+            raise AssertionError(f"opened {path}")
+
+    monkeypatch.setattr(Path, "stat", lambda self, *a, **k: refused(self) or real_stat(self, *a, **k))
+    monkeypatch.setattr(Path, "open", lambda self, *a, **k: refused(self) or real_open(self, *a, **k))
+    monkeypatch.setattr("builtins.open", lambda file, *a, **k: refused(file) or open_real(file, *a, **k))
+    skip, ignore, gaps = stack_recognition.perimeter(tmp_path, ["web/a.ts"], ())
+    assert ignore == ("web/Aws_Credentials.json", "web/my-secret.txt") and gaps == []
+
+
+open_real = open
+
+
+def test_a_line_that_is_not_a_positive_integer_is_a_gap_not_a_failure():
+    for line in (True, 0, -3, "2", 1.5):
+        with pytest.raises(TypeError):
+            stack_recognition._row("npm", "x", None, "package.json", line, ["npm@1"])
+    assert [stack_recognition._row("npm", "x", None, "package.json", line, ["npm@1"])[4] for line in (None, 4)] == [None, 4]
+    builds = [{"dockerfile": "Dockerfile", "sources": ["d@1"], "stages": [{"base": base, "line": line}]}
+              for base, line in (("node:20", True), ("python:3", 0), ("nginx:1", 2))]
+    sent, gaps = stack_recognition.declarations({"docker_builds": builds})
+    assert [d["name"] for d in sent] == ["nginx"] and [g["detail"] for g in gaps] == ["the pre-map's fact is malformed"] * 2
+
+
+def test_an_excluded_item_whose_path_is_not_text_is_ignored(tmp_path):
+    facts = {"packages": [fact("npm", "z", "package.json#L3", "npm@1")],
+             "excluded": [{"path": 5}, {"path": ["a"]}, {"path": None}, "x", {"path": "gen/"}]}
+    assert stack_recognition._left_out(facts) == ("gen/",)
+    assert [d["name"] for d in stack_recognition.declarations(facts)[0]] == ["z"]
