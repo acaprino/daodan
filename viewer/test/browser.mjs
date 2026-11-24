@@ -199,7 +199,7 @@ try {
   await tabs.getByRole('tab', { name: /^Analisi/ }).click();
   await page.locator('#stage-analysis').click();
   await page.locator('#preview-diagram .im-graph-node').first().waitFor();
-  assert.equal(await page.locator('#pipeline-steps li').count(), 5);
+  assert.equal(await page.locator('#pipeline-steps li').count(), 6);
   await page.waitForFunction(() => !document.querySelector('img.im-inline-mark'));  // the mark that does not load is the icon
   assert.ok(await page.locator('#preview-diagram [data-im-node="Client"] .im-icon').count() > 0);
   mode.linkStatus = 500;
