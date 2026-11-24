@@ -1,0 +1,22 @@
+{
+ "variant": "ctfd-environment",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-c",
+  "import importlib.metadata as m, sys\ndef version(name):\n    try:\n        return m.version(name)\n    except m.PackageNotFoundError:\n        return None\nprint(repr({'python': sys.version, 'executable': sys.executable, 'flask': version('flask'), 'werkzeug': version('werkzeug'),\n            'extensions': {n: version(n) for n in ('flask-restx', 'flask-restful', 'flask-admin', 'flask-smorest', 'apifairy', 'flask-appbuilder', 'flask-dotenv', 'python-dotenv')\n                           if version(n)}, 'packages': len(list(m.distributions()))}))\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{'python': '3.11.15 (main, Jun 23 2026, 15:19:43) [Clang 22.1.3 ]', 'executable': '/daodan/state/venvs/bin/python', 'flask': '2.2.5', 'werkzeug': '2.2.3', 'extensions': {'flask-restx': '1.3.2', 'python-dotenv': '0.21.1'}, 'packages': 93}\n",
+ "stderr": "",
+ "seconds": 0.35,
+ "max_rss_mb": 34.7,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "files": 1051,
+ "setup": {
+  "exit": "0",
+  "seconds": "9",
+  "stderr": ""
+ }
+}

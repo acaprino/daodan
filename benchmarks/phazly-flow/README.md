@@ -266,6 +266,32 @@ Misura del task 18 del piano degli ingressi e dei flussi: una regola di store co
 - Una versione precedente leggeva `self.NOME` dalla dichiarazione della classe che racchiude: dava 17 flussi chiusi, ma con il motore vero produceva legami certi sbagliati (tupla, `+=`, `cls.NOME = ...`, `Classe.NOME = ...` a livello di modulo) ed è stata tolta.
 - Non misurato: un altro progetto; la pre-mappa non è rigenerata col codice di oggi.
 
+## Il wrapper di un client HTTP e il membro `store:` senza chiave, 23 novembre 2026
+
+Due cause dei flussi aperti di phazly, misurate sulla stessa analisi fresca (Modal, `measure_links.py`: la pipeline fino ad `analyze` con l'albero di oggi, perché lo store del motore registrato il pomeriggio è rifiutato dopo il cambio degli adattatori; `rules.json`; il riferimento di sistema di phazly; nessun modello).
+
+| Parametro | Valore |
+|---|---|
+| Prova del wrapper | `daodan/core/http_wrappers.py` (`python flows.py wrappers MANIFEST`), tabella dei client in `daodan/data/http-clients.json` |
+| Regole | `rules.json` da solo (`full`), poi con le regole `rotta` che la prova propone (`full+wrappers`) |
+| Membro `store:` senza chiave | `system_map._check_nodes`: il nodo è accettato con `unlinked` (piano degli ingressi, 7b) |
+
+**Il membro `store:` senza chiave** (`possible.py` in locale, stessi collegamenti del pomeriggio, prima e dopo il cambio): frecce certe 104 → 118, «non misurabile» 25 → 4, «mancante con lacuna» 17 → 24, flussi con ogni effetto raggiunto 15 → 16 su 38. Il flusso in più si chiude sul file dello store locale, membro dello stesso nodo, non sulla chiave, che resta in `unlinked`.
+
+**Il wrapper** (analisi fresca, che ha già il cambio sopra):
+
+| Misura | `full` | `full+wrappers` |
+|---|---|---|
+| Chiamate a rotte, e di queste collegate | 50, 50 | 119, 119 |
+| Frecce certe del riferimento | 119 | 129 |
+| Flussi chiusi su 38, collegamenti certi | 16 | 18 |
+| Flussi chiusi su 38, con `ritorno` e `incerto` | 17 | 19 |
+| Lacune dei collegamenti | 296 | 298 |
+
+La prova propone tre regole e una lacuna, senza regole scritte a mano: `adminFetch` (70 chiamate, 69 con l'URL letterale: la stessa regola scritta a mano nella verifica precedente, POST e `arg0`), `apiGet` (nessuna chiamata risolta) e `fetchAsDataUrl` (una chiamata, URL non letterale); rifiutato con la causa `checkVerificationStatus`, che costruisce l'URL con un template. I due flussi in più sono «Revisione delle immagini dei piatti» e «Chiavi API». Le due lacune in più sono chiamate a un wrapper con una rotta non letterale, prima invisibili.
+
+**Limiti.** `fetchAsDataUrl` chiama un URL di altri e riceve il servizio `api`, l'unico che le regole `offre` nominano: è una regola candidata, da confermare, e qui non collega nulla. Un wrapper di un wrapper non è provato. La tabella ha solo `fetch` (tre simboli). La tabella è della misura finale (seconda analisi fresca, con il codice dopo le due revisioni): 115 rotte offerte; le due corse precedenti dello stesso giorno davano gli stessi flussi e le stesse chiamate.
+
 ## Il tetto della scheda del percorso, senza modello, 23 novembre 2026
 
 Domanda: prima di pagare un modello, quanti flussi del riferimento una scheda del percorso del prodotto (`daodan/core/flow_paths.py`) può provare, e gli altri perché no. Serve a non scambiare un buco del grafo per un difetto di come la scheda è data al modello.

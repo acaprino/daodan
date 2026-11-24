@@ -1,0 +1,21 @@
+{
+ "variant": "launch-b-manage-no-call",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\" \"$3\"",
+  "django",
+  "60",
+  "/daodan/state/in/launch.py",
+  "b"
+ ],
+ "cwd": ".",
+ "returncode": 4,
+ "stdout": "",
+ "stderr": "manage.py with no command\nmanage.py did not run the command\n",
+ "seconds": 0.08,
+ "max_rss_mb": 34.6,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

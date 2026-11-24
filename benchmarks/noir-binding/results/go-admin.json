@@ -1,0 +1,448 @@
+{
+ "name": "go-admin",
+ "framework": "gin",
+ "repository": "go-admin-team/go-admin",
+ "commit": "f24c303f6156f82fb626afa8f22860feefcc2ff5",
+ "licence": "MIT",
+ "licence_file": "LICENSE.md",
+ "noir": {
+  "endpoints": 152,
+  "protocols": {
+   "http": 142,
+   "cli": 10
+  },
+  "errors": 0,
+  "seconds": 2.0,
+  "peak_memory_mb": 179.2,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name joined by '.'": 91,
+   "none": 59,
+   "closure": 2
+  },
+  "http_handler_forms": {
+   "name joined by '.'": 91,
+   "none": 49,
+   "closure": 2
+  },
+  "http_endpoints_in_the_json": 142,
+  "tagged_spec_only": 12,
+  "with_handler_name_in_the_json": 93,
+  "with_name_and_path_and_line": 93
+ },
+ "before_the_binder": {
+  "other_protocol": 10,
+  "no_path": 0,
+  "dropped": 3,
+  "dropped_by_reason": {
+   "outside_snapshot (.png)": 2,
+   "outside_snapshot (.jpg)": 1
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 412,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 381,
+  "functions": 4687,
+  "functions_by_suffix": {
+   ".js": 2757,
+   ".go": 1930
+  },
+  "files_by_suffix": {
+   ".go": 336,
+   ".md": 9,
+   ".yml": 8,
+   ".sql": 5,
+   ".js": 5,
+   ".sh": 4,
+   "": 3,
+   ".mod": 3,
+   ".json": 2,
+   ".html": 2,
+   ".css": 2,
+   ".yaml": 1,
+   ".txt": 1
+  },
+  "seconds": 31.0
+ },
+ "http": {
+  "endpoints": 139,
+  "with_handler_name": 93,
+  "bound_to_one_function": 0,
+  "unbound": 139,
+  "by_file_suffix": {
+   ".go": {
+    "endpoints": 108,
+    "with_handler_name": 93,
+    "bound": 0
+   },
+   ".json": {
+    "endpoints": 12,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".js": {
+    "endpoints": 10,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".css": {
+    "endpoints": 4,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".html": {
+    "endpoints": 4,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".txt": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 93,
+  "no function of the project serves the endpoint": 19,
+  "Noir gives no handler": 15,
+  "the snapshot holds no function where Noir cites": 12
+ },
+ "causes": {
+  "the last part of the name is a covering function's name, with a receiver or object variable in front": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 91,
+   "by_file_suffix": {
+    ".go": 91
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/v1/sys-api",
+     "site": "app/admin/apis/sys_api.go:33",
+     "noir_handler": {
+      "name": "api.GetPage",
+      "path": "app/admin/apis/sys_api.go",
+      "line": 33
+     },
+     "covering": [
+      "SysApi.GetPage 33-56"
+     ],
+     "named_in_file": [
+      "SysApi.GetPage 33-56"
+     ],
+     "after": [
+      "SysApi.Get 66-87",
+      "SysApi.Update 99-119"
+     ],
+     "named_elsewhere": [
+      "app/admin/apis/sys_config.go: SysConfig.GetPage 31",
+      "app/admin/apis/sys_dept.go: SysDept.GetPage 30"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "GET",
+     "url": "/api/v1/sys-api/:id",
+     "site": "app/admin/apis/sys_api.go:66",
+     "noir_handler": {
+      "name": "api.Get",
+      "path": "app/admin/apis/sys_api.go",
+      "line": 66
+     },
+     "covering": [
+      "SysApi.Get 66-87"
+     ],
+     "named_in_file": [
+      "SysApi.Get 66-87"
+     ],
+     "after": [
+      "SysApi.Update 99-119",
+      "SysApi.DeleteSysApi 129-148"
+     ],
+     "named_elsewhere": [
+      "app/admin/apis/sys_config.go: SysConfig.Get 62",
+      "app/admin/apis/sys_dept.go: SysDept.Get 60"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "PUT",
+     "url": "/api/v1/sys-api/:id",
+     "site": "app/admin/apis/sys_api.go:99",
+     "noir_handler": {
+      "name": "api.Update",
+      "path": "app/admin/apis/sys_api.go",
+      "line": 99
+     },
+     "covering": [
+      "SysApi.Update 99-119"
+     ],
+     "named_in_file": [
+      "SysApi.Update 99-119"
+     ],
+     "after": [
+      "SysApi.DeleteSysApi 129-148"
+     ],
+     "named_elsewhere": [
+      "app/admin/apis/sys_config.go: SysConfig.Update 129",
+      "app/admin/apis/sys_dept.go: SysDept.Update 131"
+     ],
+     "file_language": "go"
+    }
+   ]
+  },
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 19,
+   "by_file_suffix": {
+    ".js": 10,
+    ".css": 4,
+    ".html": 4,
+    ".txt": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/form-generator/css/index.1a124643.css",
+     "site": "static/form-generator/css/index.1a124643.css",
+     "noir_handler": null,
+     "file_language": "css"
+    },
+    {
+     "method": "GET",
+     "url": "/static/form-generator/css/index.1a124643.css",
+     "site": "static/form-generator/css/index.1a124643.css",
+     "noir_handler": null,
+     "file_language": "css"
+    },
+    {
+     "method": "GET",
+     "url": "/form-generator/css/parser-example.69e16e51.css",
+     "site": "static/form-generator/css/parser-example.69e16e51.css",
+     "noir_handler": null,
+     "file_language": "css"
+    }
+   ]
+  },
+  "Noir names no handler, the line is inside a function (the registration)": {
+   "group": "Noir gives no handler",
+   "endpoints": 15,
+   "by_file_suffix": {
+    ".go": 15
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/swagger/admin/*any",
+     "site": "app/admin/router/sys_router.go:59",
+     "noir_handler": null,
+     "covering": [
+      "sysSwaggerRouter 58-60"
+     ],
+     "after": [
+      "sysCheckRoleRouterInit 62-83",
+      "registerBaseRouter 85-95"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "GET",
+     "url": "/ws/:id/:channel",
+     "site": "app/admin/router/sys_router.go:65",
+     "noir_handler": null,
+     "covering": [
+      "sysCheckRoleRouterInit 62-83"
+     ],
+     "after": [
+      "registerBaseRouter 85-95"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "GET",
+     "url": "/wslogout/:id/:channel",
+     "site": "app/admin/router/sys_router.go:66",
+     "noir_handler": null,
+     "covering": [
+      "sysCheckRoleRouterInit 62-83"
+     ],
+     "after": [
+      "registerBaseRouter 85-95"
+     ],
+     "file_language": "go"
+    }
+   ]
+  },
+  "the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 12,
+   "by_file_suffix": {
+    ".json": 12
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/v1/menuTreeselect/{roleId}",
+     "site": "docs/admin/admin_swagger.json:1009",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "PUT",
+     "url": "/api/v1/role-status/{id}",
+     "site": "docs/admin/admin_swagger.json:1405",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "DELETE",
+     "url": "/api/v1/sys-api",
+     "site": "docs/admin/admin_swagger.json:1687",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  },
+  "Noir names a closure and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 2,
+   "by_file_suffix": {
+    ".go": 2
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/v1/health",
+     "site": "app/other/router/monitor.go:52",
+     "noir_handler": {
+      "name": "closure",
+      "path": "app/other/router/monitor.go",
+      "line": 52
+     },
+     "covering": [
+      "RegisterMonitorRouter.(func) 52-54",
+      "RegisterMonitorRouter 43-82"
+     ],
+     "after": [
+      "RegisterMonitorRouter.(func) 63-80"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "GET",
+     "url": "/api/v1/ready",
+     "site": "app/other/router/monitor.go:63",
+     "noir_handler": {
+      "name": "closure",
+      "path": "app/other/router/monitor.go",
+      "line": 63
+     },
+     "covering": [
+      "RegisterMonitorRouter.(func) 63-80",
+      "RegisterMonitorRouter 43-82"
+     ],
+     "file_language": "go"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 139
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "one": 91,
+    "none": 48
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 91
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 139
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "one": 93,
+    "none": 46
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 93
+  },
+  "combined": {
+   "unbound": {
+    "one": 93,
+    "none": 46
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 93
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 46
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 139
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "one": 91,
+    "none": 48
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 91
+  },
+  "name-in-project": {
+   "unbound": {
+    "many": 63,
+    "one": 28,
+    "none": 48
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 28
+  },
+  "innermost-covering": {
+   "unbound": {
+    "one": 15,
+    "none": 31
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 5
+  }
+ },
+ "fixes_agree": {
+  "both bind, same function": 91,
+  "only starts-at-line binds": 2
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

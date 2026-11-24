@@ -1,0 +1,1696 @@
+{
+ "name": "redash-redis",
+ "application": "redash",
+ "repository": "getredash/redash",
+ "commit": "f561a53dc55eeb3f20615be951560dc78bb23f4c",
+ "licence": "BSD-2-Clause",
+ "folder": ".",
+ "script": {
+  "variant": "redash-frozen-script-redis",
+  "exit": 0,
+  "seconds": 4.32,
+  "peak_memory_mb": 233.7,
+  "left_in_the_project": []
+ },
+ "noir": {
+  "variant": "redash-noir",
+  "exit": 0,
+  "seconds": 2.81,
+  "peak_memory_mb": 249.7
+ },
+ "gaps": [
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "website/public/_redirects",
+   "detail": "Noir cites a file outside the snapshot"
+  }
+ ],
+ "flask": {
+  "rules": 100,
+  "not_served": 0,
+  "static": 1,
+  "dispatch": null,
+  "by_category": {
+   "project function": 28,
+   "class-based view": 71
+  },
+  "package_views": {},
+  "routes_by_method": 157
+ },
+ "source": {
+  "rows": 157,
+  "bound_to_a_function": 34,
+  "class_based_gap_rows": 123,
+  "other_unbound": []
+ },
+ "noir_report": {
+  "endpoints": 318,
+  "protocols": {
+   "http": 311,
+   "cli": 7
+  },
+  "errors": 0,
+  "python_files": [
+   [
+    ".py",
+    166
+   ],
+   [
+    "",
+    134
+   ],
+   [
+    ".astro",
+    17
+   ],
+   [
+    ".mjs",
+    1
+   ]
+  ],
+  "http_rows": 177,
+  "python_rows": 160,
+  "python_bound_to_a_function": 160,
+  "python_with_a_handler_name": 160,
+  "python_with_a_qualified_name": 123,
+  "python_bound_before_the_qualified_name_match": 37,
+  "python_bound_with_the_method_name_alone": 160,
+  "unbound_after": [],
+  "bound_by_the_name_alone_and_not_by_the_qualified_name": []
+ },
+ "comparison": {
+  "both": 157,
+  "agreement": {
+   "same function": 34,
+   "same site": 34,
+   "framework gives no function": 123,
+   "class view: same class and file": 121,
+   "same file": 123,
+   "class view: another class or file": 2
+  },
+  "class_view_mismatches": [
+   {
+    "flask": {
+     "method": "GET",
+     "path": "/api/queries/archive",
+     "site": "redash/handlers/queries.py",
+     "function": null,
+     "gap": "QueryArchiveResource is a class-based view: which of its methods answers GET is not read"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/queries/archive",
+     "site": "redash/handlers/queries.py:132",
+     "function": "redash/handlers/queries.py::BaseQueryListResource.get"
+    }
+   },
+   {
+    "flask": {
+     "method": "GET",
+     "path": "/api/queries",
+     "site": "redash/handlers/queries.py",
+     "function": null,
+     "gap": "QueryListResource is a class-based view: which of its methods answers GET is not read"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/queries",
+     "site": "redash/handlers/queries.py:132",
+     "function": "redash/handlers/queries.py::BaseQueryListResource.get"
+    }
+   }
+  ],
+  "differences": [
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/alerts/<alert_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>",
+     "site": "redash/handlers/alerts.py:50",
+     "function": "redash/handlers/alerts.py::AlertResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/alerts/<alert_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>",
+     "site": "redash/handlers/alerts.py:24",
+     "function": "redash/handlers/alerts.py::AlertResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>",
+     "site": "redash/handlers/alerts.py:30",
+     "function": "redash/handlers/alerts.py::AlertResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/mute",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/alerts/<alert_id>/mute",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertMuteResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/mute",
+     "site": "redash/handlers/alerts.py:83",
+     "function": "redash/handlers/alerts.py::AlertMuteResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/mute",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>/mute",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertMuteResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/mute",
+     "site": "redash/handlers/alerts.py:74",
+     "function": "redash/handlers/alerts.py::AlertMuteResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/eval",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>/eval",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertEvaluateResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/eval",
+     "site": "redash/handlers/alerts.py:58",
+     "function": "redash/handlers/alerts.py::AlertEvaluateResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/alerts/<alert_id>/subscriptions",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertSubscriptionListResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "site": "redash/handlers/alerts.py:151",
+     "function": "redash/handlers/alerts.py::AlertSubscriptionListResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>/subscriptions",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertSubscriptionListResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "site": "redash/handlers/alerts.py:124",
+     "function": "redash/handlers/alerts.py::AlertSubscriptionListResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/subscriptions/<subscriber_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/alerts/<alert_id>/subscriptions/<subscriber_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertSubscriptionResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/subscriptions/<subscriber_id>",
+     "site": "redash/handlers/alerts.py:160",
+     "function": "redash/handlers/alerts.py::AlertSubscriptionResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/alerts",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/alerts",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertListResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/alerts",
+     "site": "redash/handlers/alerts.py:118",
+     "function": "redash/handlers/alerts.py::AlertListResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertListResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts",
+     "site": "redash/handlers/alerts.py:94",
+     "function": "redash/handlers/alerts.py::AlertListResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/dashboards",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/dashboards",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardListResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/dashboards",
+     "site": "redash/handlers/dashboards.py:40",
+     "function": "redash/handlers/dashboards.py::DashboardListResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/dashboards",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/dashboards",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardListResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/dashboards",
+     "site": "redash/handlers/dashboards.py:89",
+     "function": "redash/handlers/dashboards.py::DashboardListResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/dashboards/<dashboard_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/dashboards/<dashboard_id>",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/dashboards/<dashboard_id>",
+     "site": "redash/handlers/dashboards.py:257",
+     "function": "redash/handlers/dashboards.py::DashboardResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/dashboards/<dashboard_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/dashboards/<dashboard_id>",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/dashboards/<dashboard_id>",
+     "site": "redash/handlers/dashboards.py:144",
+     "function": "redash/handlers/dashboards.py::DashboardResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/dashboards/<dashboard_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/dashboards/<dashboard_id>",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/dashboards/<dashboard_id>",
+     "site": "redash/handlers/dashboards.py:204",
+     "function": "redash/handlers/dashboards.py::DashboardResource.post"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 0,
+  "only_flask_by_category": {},
+  "only_flask_packages": {},
+  "only_flask_examples": [],
+  "only_noir": 3,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/<org_slug>/oidc",
+    "site": "redash/authentication/oidc.py:93",
+    "function": "redash/authentication/oidc.py::create_oidc_blueprint.org_login"
+   },
+   {
+    "method": "GET",
+    "path": "/oidc",
+    "site": "redash/authentication/oidc.py:98",
+    "function": "redash/authentication/oidc.py::create_oidc_blueprint.login"
+   },
+   {
+    "method": "GET",
+    "path": "/oidc/callback",
+    "site": "redash/authentication/oidc.py:111",
+    "function": "redash/authentication/oidc.py::create_oidc_blueprint.authorized"
+   }
+  ]
+ },
+ "comparison_with_the_method_name_alone": {
+  "both": 157,
+  "agreement": {
+   "same function": 34,
+   "same site": 34,
+   "framework gives no function": 123,
+   "class view: same class and file": 121,
+   "same file": 123,
+   "class view: another class or file": 2
+  },
+  "class_view_mismatches": [
+   {
+    "flask": {
+     "method": "GET",
+     "path": "/api/queries/archive",
+     "site": "redash/handlers/queries.py",
+     "function": null,
+     "gap": "QueryArchiveResource is a class-based view: which of its methods answers GET is not read"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/queries/archive",
+     "site": "redash/handlers/queries.py:132",
+     "function": "redash/handlers/queries.py::BaseQueryListResource.get"
+    }
+   },
+   {
+    "flask": {
+     "method": "GET",
+     "path": "/api/queries",
+     "site": "redash/handlers/queries.py",
+     "function": null,
+     "gap": "QueryListResource is a class-based view: which of its methods answers GET is not read"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/queries",
+     "site": "redash/handlers/queries.py:132",
+     "function": "redash/handlers/queries.py::BaseQueryListResource.get"
+    }
+   }
+  ],
+  "differences": [
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/alerts/<alert_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>",
+     "site": "redash/handlers/alerts.py:50",
+     "function": "redash/handlers/alerts.py::AlertResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/alerts/<alert_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>",
+     "site": "redash/handlers/alerts.py:24",
+     "function": "redash/handlers/alerts.py::AlertResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>",
+     "site": "redash/handlers/alerts.py:30",
+     "function": "redash/handlers/alerts.py::AlertResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/mute",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/alerts/<alert_id>/mute",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertMuteResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/mute",
+     "site": "redash/handlers/alerts.py:83",
+     "function": "redash/handlers/alerts.py::AlertMuteResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/mute",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>/mute",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertMuteResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/mute",
+     "site": "redash/handlers/alerts.py:74",
+     "function": "redash/handlers/alerts.py::AlertMuteResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/eval",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>/eval",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertEvaluateResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/eval",
+     "site": "redash/handlers/alerts.py:58",
+     "function": "redash/handlers/alerts.py::AlertEvaluateResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/alerts/<alert_id>/subscriptions",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertSubscriptionListResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "site": "redash/handlers/alerts.py:151",
+     "function": "redash/handlers/alerts.py::AlertSubscriptionListResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts/<alert_id>/subscriptions",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertSubscriptionListResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts/<alert_id>/subscriptions",
+     "site": "redash/handlers/alerts.py:124",
+     "function": "redash/handlers/alerts.py::AlertSubscriptionListResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/subscriptions/<subscriber_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/alerts/<alert_id>/subscriptions/<subscriber_id>",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertSubscriptionResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/alerts/<alert_id>/subscriptions/<subscriber_id>",
+     "site": "redash/handlers/alerts.py:160",
+     "function": "redash/handlers/alerts.py::AlertSubscriptionResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/alerts",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/alerts",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertListResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/alerts",
+     "site": "redash/handlers/alerts.py:118",
+     "function": "redash/handlers/alerts.py::AlertListResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/alerts",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/alerts",
+      "site": "redash/handlers/alerts.py",
+      "function": null,
+      "gap": "AlertListResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/alerts",
+     "site": "redash/handlers/alerts.py:94",
+     "function": "redash/handlers/alerts.py::AlertListResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/dashboards",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/dashboards",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardListResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/dashboards",
+     "site": "redash/handlers/dashboards.py:40",
+     "function": "redash/handlers/dashboards.py::DashboardListResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/dashboards",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/dashboards",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardListResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/dashboards",
+     "site": "redash/handlers/dashboards.py:89",
+     "function": "redash/handlers/dashboards.py::DashboardListResource.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/dashboards/<dashboard_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/dashboards/<dashboard_id>",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardResource is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/dashboards/<dashboard_id>",
+     "site": "redash/handlers/dashboards.py:257",
+     "function": "redash/handlers/dashboards.py::DashboardResource.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/dashboards/<dashboard_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/dashboards/<dashboard_id>",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardResource is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/dashboards/<dashboard_id>",
+     "site": "redash/handlers/dashboards.py:144",
+     "function": "redash/handlers/dashboards.py::DashboardResource.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/dashboards/<dashboard_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/dashboards/<dashboard_id>",
+      "site": "redash/handlers/dashboards.py",
+      "function": null,
+      "gap": "DashboardResource is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/dashboards/<dashboard_id>",
+     "site": "redash/handlers/dashboards.py:204",
+     "function": "redash/handlers/dashboards.py::DashboardResource.post"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 0,
+  "only_flask_by_category": {},
+  "only_flask_packages": {},
+  "only_flask_examples": [],
+  "only_noir": 3,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/<org_slug>/oidc",
+    "site": "redash/authentication/oidc.py:93",
+    "function": "redash/authentication/oidc.py::create_oidc_blueprint.org_login"
+   },
+   {
+    "method": "GET",
+    "path": "/oidc",
+    "site": "redash/authentication/oidc.py:98",
+    "function": "redash/authentication/oidc.py::create_oidc_blueprint.login"
+   },
+   {
+    "method": "GET",
+    "path": "/oidc/callback",
+    "site": "redash/authentication/oidc.py:111",
+    "function": "redash/authentication/oidc.py::create_oidc_blueprint.authorized"
+   }
+  ]
+ }
+}

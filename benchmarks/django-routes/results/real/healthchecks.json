@@ -1,0 +1,86 @@
+{
+ "name": "healthchecks",
+ "script_as_the_runner_restores": null,
+ "second_environment": false,
+ "sources": {
+  "django": "ran",
+  "noir": "ran"
+ },
+ "gaps": {
+  "django/model_partial": 1
+ },
+ "gap_details": [
+  "django: 77 routes of the URLconf are views of packages of the restored environment, not of the project: Django (77: /admin/, /admin/login/, /admin/logout/ and 74 more)"
+ ],
+ "script": {
+  "returncode": 0,
+  "seconds": 2.35,
+  "max_rss_mb": 117.0,
+  "stderr_tail": null
+ },
+ "noir": {
+  "returncode": 0,
+  "seconds": 1.01,
+  "max_rss_mb": 161.2,
+  "stderr_tail": null,
+  "endpoints": 258,
+  "with_handler_name": 257,
+  "bound_to_a_function": 257,
+  "unbound": 1,
+  "protocols": {
+   "http": 258
+  },
+  "methods": {
+   "GET": 153,
+   "POST": 102,
+   "DELETE": 3
+  }
+ },
+ "framework": {
+  "routes": 255,
+  "unread_includes": 0,
+  "locale": null,
+  "environment_routes": 77,
+  "project_routes": 178,
+  "with_schema": 200,
+  "rows": 178,
+  "rows_bound_to_a_function": 178,
+  "rows_on_a_class_with_file_and_line": 0,
+  "rows_unbound": 0,
+  "routes_with_a_bound_row": 178
+ },
+ "by_function": {
+  "framework_functions": 132,
+  "framework_classes_with_a_gap": 0,
+  "noir_sites": 133,
+  "functions_both": 132,
+  "functions_only_framework": 0,
+  "classes_noir_cites": 0,
+  "classes_only_framework": 0,
+  "only_noir": 1,
+  "only_noir_in_documentation_files": 0
+ },
+ "comparison": {
+  "framework_routes_with_a_row": 178,
+  "noir_cites_the_same_function": 178,
+  "of_which_same_path": 178,
+  "of_which_path_written_differently": 0,
+  "only_framework": 0,
+  "noir_http_endpoints_distinct_site_and_path": 179,
+  "of_which_on_a_function_the_framework_lists": 178,
+  "of_which_on_a_site_the_framework_does_not_list": 1,
+  "noir_paths_with_an_unresolved_prefix": 0,
+  "function_views_the_framework_gives_no_method_for": 178,
+  "of_which_noir_gives_a_method_at_that_function": 178
+ },
+ "examples": {
+  "path_written_differently": [],
+  "only_framework": [],
+  "only_noir_site": [
+   "/admin/ (hc/urls.py:17)"
+  ],
+  "noir_unbound": [
+   "GET /admin/ (hc/urls.py:17): noir reports this entry without a unique snapshot handler at its site"
+  ]
+ }
+}

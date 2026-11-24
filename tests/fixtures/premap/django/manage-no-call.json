@@ -1,0 +1,5 @@
+{
+ "returncode": 4,
+ "stdout": "",
+ "stderr": "manage.py with no command\nmanage.py ran and did not run the shell command\n"
+}

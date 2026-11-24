@@ -1,0 +1,20 @@
+{
+ "variant": "launch-a-two-projects-a",
+ "argv": [
+  "sh",
+  "-c",
+  "exec 3>&1 1>&2; exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/a/bin/python manage.py shell -c \"$2\"",
+  "django",
+  "60",
+  "import runpy; runpy.run_path('/daodan/state/in/launch.py', run_name='a')"
+ ],
+ "cwd": "a",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"settings_module\": \"proj.settings\", \"settings_wrapped\": \"proj.settings\", \"root_urlconf\": \"proj.urls\", \"top_level\": 1, \"version\": \"6.1.3\", \"argv\": [\"/daodan/state/in/launch.py\", \"shell\", \"-c\", \"import runpy; runpy.run_path('/daodan/state/in/launch.py', run_name='a')\"], \"path0\": \"/work/a\", \"setup_seconds\": 0.001, \"max_rss_mb\": 59.0}",
+ "stderr": "",
+ "seconds": 0.91,
+ "max_rss_mb": 59.0,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 349
+}

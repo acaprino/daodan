@@ -62,6 +62,7 @@ if LOCAL:
                            " && go build -o /usr/local/bin/daodan-enry .")
              .add_local_dir(REPO / "daodan/core", REMOTE_SCRIPTS,
                                  ignore=["**/__pycache__/**"])
+             .add_local_dir(REPO / "daodan/data", "/daodan/map/data")  # `container` reads package-managers.json
              .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures")
              .add_local_file(HERE / "score.py", f"{REMOTE_PM}/score.py")
              .add_local_file(HERE / "tools/daodan_modules.py", f"{REMOTE_PM}/tools/daodan_modules.py")

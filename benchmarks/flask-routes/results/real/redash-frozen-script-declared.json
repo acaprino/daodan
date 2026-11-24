@@ -1,0 +1,25 @@
+{
+ "variant": "redash-frozen-script-declared",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "flask",
+  "900",
+  "/daodan/state/tools/flask_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "Exception: You must set the REDASH_COOKIE_SECRET environment variable. Visit http://redash.io/help/open-source/admin-guide/secrets for more information.\n",
+ "seconds": 1.4,
+ "max_rss_mb": 89.0,
+ "left_in_the_project": [
+  "redash/__pycache__/__init__.cpython-313.pyc",
+  "redash/settings/__pycache__/__init__.cpython-313.pyc",
+  "redash/settings/__pycache__/helpers.cpython-313.pyc",
+  "redash/settings/__pycache__/organization.cpython-313.pyc"
+ ],
+ "changed_in_the_project": [],
+ "files": 1976
+}

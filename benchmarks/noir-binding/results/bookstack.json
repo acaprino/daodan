@@ -1,0 +1,233 @@
+{
+ "name": "bookstack",
+ "framework": "laravel",
+ "repository": "BookStackApp/BookStack",
+ "commit": "0326409ecde003f63f4e15cceb880a1cc0f088b2",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 349,
+  "protocols": {
+   "cli": 4,
+   "http": 345
+  },
+  "errors": 0,
+  "seconds": 1.1,
+  "peak_memory_mb": 272.4,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name joined by '@'": 341,
+   "none": 8
+  },
+  "http_handler_forms": {
+   "name joined by '@'": 341,
+   "none": 4
+  },
+  "http_endpoints_in_the_json": 345,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 341,
+  "with_name_and_path_and_line": 341
+ },
+ "before_the_binder": {
+  "other_protocol": 4,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 2625,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 2375,
+  "functions": 21012,
+  "functions_by_suffix": {
+   ".js": 15490,
+   ".ts": 5502,
+   ".mjs": 15,
+   ".mts": 5
+  },
+  "files_by_suffix": {
+   ".php": 1845,
+   ".ts": 260,
+   ".js": 118,
+   ".json": 76,
+   ".scss": 26,
+   ".md": 17,
+   ".css": 14,
+   ".txt": 5,
+   ".mjs": 3,
+   ".sh": 3,
+   ".yml": 2,
+   ".xml": 2,
+   "": 1,
+   ".sql": 1,
+   ".ini": 1
+  },
+  "seconds": 41.1
+ },
+ "http": {
+  "endpoints": 345,
+  "with_handler_name": 341,
+  "bound_to_one_function": 0,
+  "unbound": 345,
+  "by_file_suffix": {
+   ".php": {
+    "endpoints": 345,
+    "with_handler_name": 341,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "the snapshot holds no function where Noir cites": 344,
+  "no function of the project serves the endpoint": 1
+ },
+ "causes": {
+  "the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 344,
+   "by_file_suffix": {
+    ".php": 344
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/image-gallery/url/data",
+     "site": "app/Uploads/Controllers/ImageGalleryApiController.php:121",
+     "noir_handler": {
+      "name": "ImageGalleryApiController@readDataForUrl",
+      "path": "app/Uploads/Controllers/ImageGalleryApiController.php",
+      "line": 121
+     },
+     "file_language": null
+    },
+    {
+     "method": "GET",
+     "url": "/api/search",
+     "site": "app/Search/SearchApiController.php:50",
+     "noir_handler": {
+      "name": "SearchApiController@all",
+      "path": "app/Search/SearchApiController.php",
+      "line": 50
+     },
+     "file_language": null
+    },
+    {
+     "method": "GET",
+     "url": "/api/tags/values-for-name",
+     "site": "app/Activity/Controllers/TagApiController.php:54",
+     "noir_handler": {
+      "name": "TagApiController@listValues",
+      "path": "app/Activity/Controllers/TagApiController.php",
+      "line": 54
+     },
+     "file_language": null
+    }
+   ]
+  },
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".php": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/index.php",
+     "site": "public/index.php",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 345
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 345
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 345
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 345
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 345
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 4
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 345
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 345
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 216,
+    "many": 120,
+    "one": 9
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 7
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 4
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

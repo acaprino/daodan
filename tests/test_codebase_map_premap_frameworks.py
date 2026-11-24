@@ -61,6 +61,14 @@ def test_both_ends_of_what_a_tool_said():
     assert frameworks.excerpt({"stderr": long, "stdout": ""}) == f"{'a' * 300} [...] {'b' * 300}"
 
 
+def test_why_a_script_did_not_answer_is_one_wording_for_every_source_that_runs_one():
+    """`nuxt`, `astro` and `flask` each kept the same function; the limit that ended the script, or what it wrote, both ends of it."""
+    assert frameworks.stopped({"returncode": 124, "stderr": "", "stdout": ""}, "x.py", "900", 3) == "x.py did not end in 900 seconds"
+    assert frameworks.stopped({"returncode": 137, "stderr": "", "stdout": ""}, "x.py", "900", 3) == (
+        "x.py was killed (exit 137): it did not end in 900 seconds, or it ran out of memory (3 GB)")
+    assert frameworks.stopped({"returncode": 3, "stderr": "Error: boom\n", "stdout": ""}, "x.py", "900", 3) == "x.py exited with 3: Error: boom"
+
+
 def test_no_framework_source_keeps_a_copy_of_a_shared_helper_or_borrows_another_sources():
     sources = (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)
     names = {source.__name__.rsplit(".", 1)[-1] for source in sources}

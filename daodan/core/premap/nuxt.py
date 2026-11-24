@@ -127,15 +127,6 @@ def _printed(result: dict) -> tuple[bool, list[dict]]:
     return printed["called"], _pages(printed.get("pages"))
 
 
-def _stopped(result: dict, seconds: str) -> str:
-    """Why the script did not give its answer, in the words of the tool: the cause it wrote first, or the limit that ended it."""
-    if result["returncode"] == 124:  # `timeout` ended the command
-        return f"{SCRIPT} did not end in {seconds} seconds"
-    if result["returncode"] == 137:  # `timeout` had to kill it, or the memory of the run did: the signal does not say which
-        return f"{SCRIPT} was killed (exit 137): it did not end in {seconds} seconds, or it ran out of memory ({MEMORY_GB} GB)"
-    return f"{SCRIPT} exited with {result['returncode']}: {frameworks.excerpt(result)}"
-
-
 def read(context, commands, results):
     import entries
     import flows
@@ -187,7 +178,7 @@ def read(context, commands, results):
     for command, result in zip(commands[2 * count:], results[2 * count:]):
         folder = command["cwd"]
         if result["returncode"] != 0:
-            gaps.append({"kind": "model_failed", "path": folder, "detail": _stopped(result, command["argv"][2])})
+            gaps.append({"kind": "model_failed", "path": folder, "detail": frameworks.stopped(result, SCRIPT, command["argv"][2], MEMORY_GB)})
             continue
         try:
             called, found = _printed(result)

@@ -1,0 +1,5 @@
+{
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"application\": \"app.main:app\", \"found\": \"entrypoint-pyproject\", \"root_path\": \"\", \"competing\": {\"others\": [], \"shadowed\": []}, \"routes\": [{\"kind\": \"http\", \"path\": \"/openapi.json\", \"methods\": [\"GET\"], \"docs\": true, \"parts\": [[false, \"/openapi.json\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"fastapi.applications\", \"qualname\": \"FastAPI.setup.<locals>.openapi\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/fastapi/applications.py\", \"line\": 1153, \"environment\": true, \"distribution\": null}}, {\"kind\": \"http\", \"path\": \"/docs\", \"methods\": [\"GET\"], \"docs\": false, \"parts\": [[false, \"/docs\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"app.main\", \"qualname\": \"my_docs\", \"file\": \"app/main.py\", \"line\": 7, \"environment\": false, \"distribution\": null}}], \"unread\": []}",
+ "stderr": ""
+}

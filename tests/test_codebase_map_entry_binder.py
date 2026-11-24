@@ -95,6 +95,67 @@ def test_a_noir_endpoint_with_no_handler_name_is_a_row_at_its_position_that_the_
     assert "without a unique snapshot handler" in bound["gap"] and bound["symbol"] == "app.py::<module>"
 
 
+def test_a_method_noir_names_with_its_class_is_bound_by_the_snapshot_s_qualified_name():
+    """Noir names a class view's method `Class.method` (measured on CTFd: `AudienceList.get`); the snapshot's simple name is
+    `get`, its qualified name the same `Class.method`. Two classes of one file with a `get` each are told apart by the lines."""
+    import binder
+    from premap import noir
+    report = {"endpoints": [{"method": "GET", "url": url, "protocol": "http",
+                             "handler": {"name": name, "path": "/src/api.py", "line": line}}
+                            for url, name, line in (("/a", "AudienceList.get", 4), ("/b", "Other.get", 9), ("/c", "Other.get", 4))]}
+    declared = [{"id": "api.py::AudienceList.get", "name": "get", "qualified_name": "AudienceList.get", "line": 3, "end": 5},
+                {"id": "api.py::Other.get", "name": "get", "qualified_name": "Other.get", "line": 8, "end": 10}]
+    facts = types.SimpleNamespace(functions={"api.py": declared}, node=lambda ident: ident)
+    a, b, c = binder.bind(noir.rows(report, "/src"), facts, resolver=None)
+    assert (a["symbol"], a.get("gap")) == ("api.py::AudienceList.get", None)
+    assert (b["symbol"], b.get("gap")) == ("api.py::Other.get", None)
+    assert "without a unique snapshot handler" in c["gap"]  # the class Noir names is not the one at that line
+
+
+# ------------------------------------------- a handler Noir cites by its position: the cases that need no real snapshot (the rest: test_codebase_map_flows_noir_binding.py)
+
+def _row(name, line):
+    from premap import noir
+    place = {"path": "/src/api.js", "line": line}
+    [row] = noir.rows({"endpoints": [{"method": "GET", "url": "/x", "protocol": "http",
+                                      **({"handler": {"name": name, **place}} if name else {"handler": None, "details": {"code_paths": [place]}})}]}, "/src")
+    return row
+
+
+def test_a_row_with_no_handler_name_never_binds_where_a_function_starts_at_its_line():
+    """Noir cites the registration, not a handler: the name is the datum that its place is the handler's (`noir.rows` reads it only there)."""
+    import binder
+    facts = types.SimpleNamespace(functions={"api.js": [{"id": "api.js::route", "name": "route", "line": 2, "end": 4, "span": [2, 0, 4, 1]}]},
+                                  node=lambda ident: ident)
+    [gap] = binder.bind([_row(None, 2)], facts, resolver=None)
+    assert gap["gap"] == "noir reports this entry without a unique snapshot handler at its site" and gap["symbol"] == "api.js::<module>"
+
+
+def test_the_name_noir_gives_still_binds_first_and_a_function_that_starts_at_its_line_does_not_replace_it():
+    import binder
+    functions = [{"id": "api.js::handle", "name": "handle", "line": 1, "end": 9, "span": [1, 0, 9, 1]},
+                 {"id": "api.js::handle.inner", "name": "inner", "qualified_name": "handle.inner", "line": 3, "end": 4, "span": [3, 2, 4, 3]}]
+    [row] = binder.bind([_row("handle", 3)], types.SimpleNamespace(functions={"api.js": functions}, node=lambda ident: ident), resolver=None)
+    assert row["symbol"] == "api.js::handle"
+
+
+def test_a_row_bound_to_a_function_with_no_node_is_a_gap_never_a_row_with_no_symbol():
+    """A symbol None among the entries fails the links' sort (`TypeError: '<' not supported between NoneType and str`)."""
+    import binder
+    functions = [{"id": "api.js::(anonymous)@3", "name": "(anonymous)", "qualified_name": "register.(anonymous)", "line": 3, "end": 5, "span": [3, 0, 5, 1]}]
+    [gap] = binder.bind([_row("register.(anonymous)", 4)], types.SimpleNamespace(functions={"api.js": functions}, node=lambda ident: None), resolver=None)
+    assert gap["symbol"] and "has no node" in gap["gap"] and "handler_source" not in gap
+
+
+def test_a_source_that_names_the_function_itself_binds_by_its_name_only():
+    """Flask, Django and FastAPI give the function they introspect, with its place: a lambda or another function at that line is not it."""
+    import binder
+    functions = [{"id": "app.py::(lambda)", "name": "(lambda)", "qualified_name": "(lambda)", "line": 3, "end": 3, "span": [3, 0, 3, 20]}]
+    row = {"reader": "fastapi", "shape": "route", "site": "app.py:3", "symbol": "app.py::<module>", "path": "/lambda", "method": "GET", "kind": "rotta", "handler": "<lambda>"}
+    [gap] = binder.bind([row], types.SimpleNamespace(functions={"app.py": functions}, node=lambda ident: ident), resolver=None)
+    assert gap["gap"] == "fastapi reports this entry without a unique snapshot handler at its site"
+
+
 def test_no_source_of_the_entries_tuple_binds_a_row_itself():
     """The sources of `FRAMEWORK_SOURCES` read their tool's output; binding is the binder's, so none opens the snapshot's
     semantic store or looks an export up."""

@@ -1,0 +1,333 @@
+{
+ "name": "fixture",
+ "application": "fixture",
+ "repository": "this repository: benchmarks/fastapi-routes/fixture",
+ "script": {
+  "variant": "path:D:\\Projects\\daodan\\benchmarks\\fastapi-routes\\results\\routes.json",
+  "exit": 0,
+  "seconds": 1.12,
+  "peak_memory_mb": 72.5,
+  "application": "app.main:app",
+  "found": "entrypoint-pyproject",
+  "root_path": "",
+  "routes": 42,
+  "http": 41,
+  "websocket": 1,
+  "documentation": 8,
+  "unread": [
+   {
+    "path": "/static",
+    "type": "starlette.staticfiles.StaticFiles"
+   },
+   {
+    "path": "/raw",
+    "type": "builtins.function"
+   }
+  ],
+  "competing": {
+   "others": [],
+   "shadowed": []
+  }
+ },
+ "noir": {
+  "variant": "path:D:\\Projects\\daodan\\benchmarks\\fastapi-routes\\results\\noir.json",
+  "exit": 0,
+  "seconds": 0.88,
+  "peak_memory_mb": 148.8
+ },
+ "gaps": [
+  {
+   "source": "fastapi",
+   "kind": "outside_snapshot",
+   "path": ".",
+   "detail": "/callable: app.main.Counter has no source file of the project the snapshot holds (none)"
+  },
+  {
+   "source": "fastapi",
+   "kind": "outside_snapshot",
+   "path": ".",
+   "detail": "/partial: functools.partial has no source file of the project the snapshot holds (none)"
+  },
+  {
+   "source": "fastapi",
+   "kind": "outside_snapshot",
+   "path": ".",
+   "detail": "/stdlib: dumps has no source file of the project the snapshot holds (../usr/local/lib/python3.12/json/__init__.py)"
+  },
+  {
+   "source": "fastapi",
+   "kind": "model_partial",
+   "path": ".",
+   "detail": "1 route of the application is a view of packages of the restored environment, not of the project: /third-party (fastapi)"
+  },
+  {
+   "source": "fastapi",
+   "kind": "model_partial",
+   "path": ".",
+   "detail": "2 routes of the application are of a kind the script does not read (a mount whose application has no routes, a route of a class Starlette does not have): /static (starlette.staticfiles.StaticFiles), /raw (builtins.function)"
+  }
+ ],
+ "framework": {
+  "rows": 34,
+  "http_rows": 33,
+  "bound_to_a_function": 31,
+  "websocket_rows": 1,
+  "unbound": [
+   {
+    "path": "/lambda",
+    "method": "GET",
+    "gap": "fastapi reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/endpoint",
+    "method": null,
+    "gap": "Endpoint is a class-based endpoint: which of its methods answers a request is not read"
+   }
+  ]
+ },
+ "noir_report": {
+  "endpoints": 40,
+  "protocols": {
+   "http": 39,
+   "ws": 1
+  },
+  "errors": 0,
+  "with_a_handler_name": 28,
+  "rows": 39,
+  "bound_to_a_function": 27,
+  "unbound": [
+   {
+    "path": "/static/*",
+    "method": "GET",
+    "site": "app/main.py:17",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/multi",
+    "method": "POST",
+    "site": "app/main.py:66",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/both",
+    "method": "HEAD",
+    "site": "app/main.py:71",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/lambda",
+    "method": "GET",
+    "site": "app/main.py:96",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/page",
+    "method": "GET",
+    "site": "app/main.py:97",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/callable",
+    "method": "GET",
+    "site": "app/main.py:98",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ },
+ "comparison": {
+  "both": 31,
+  "agreement": {
+   "same function": 24,
+   "same site": 25,
+   "different function": 1,
+   "same file": 6,
+   "noir gives no function": 5,
+   "neither gives a function": 1
+  },
+  "differences": [
+   {
+    "verdict": "different function",
+    "framework": {
+     "method": "GET",
+     "path": "/unwrapped",
+     "site": "app/main.py:38",
+     "function": "app/main.py::plain.wrapper"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/unwrapped",
+     "site": "app/main.py:62",
+     "function": "app/main.py::read_unwrapped"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "framework": {
+     "method": "POST",
+     "path": "/plain",
+     "site": "app/main.py:155",
+     "function": "app/main.py::plain_text"
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/plain",
+     "site": "app/main.py:167",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "framework": {
+     "method": "GET",
+     "path": "/page",
+     "site": "app/main.py:86",
+     "function": "app/main.py::Pages.show"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/page",
+     "site": "app/main.py:97",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "framework": {
+     "method": "POST",
+     "path": "/multi",
+     "site": "app/main.py:67",
+     "function": "app/main.py::multi"
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/multi",
+     "site": "app/main.py:66",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "framework": {
+     "method": "GET",
+     "path": "/lambda",
+     "site": "app/main.py:96",
+     "function": null,
+     "gap": "fastapi reports this entry without a unique snapshot handler at its site"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/lambda",
+     "site": "app/main.py:96",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "framework": {
+     "method": "GET",
+     "path": "/plain",
+     "site": "app/main.py:155",
+     "function": "app/main.py::plain_text"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/plain",
+     "site": "app/main.py:167",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "framework": {
+     "method": "HEAD",
+     "path": "/both",
+     "site": "app/main.py:72",
+     "function": "app/main.py::both"
+    },
+    "noir": {
+     "method": "HEAD",
+     "path": "/both",
+     "site": "app/main.py:71",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   }
+  ],
+  "same_function_other_path": 1,
+  "other_path_examples": [
+   {
+    "framework": {
+     "method": "GET",
+     "path": "/api/embedded/leaf",
+     "site": "app/sub.py:24",
+     "function": "app/sub.py::embedded_leaf"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/leaf",
+     "site": "app/sub.py:24",
+     "function": "app/sub.py::embedded_leaf"
+    }
+   }
+  ],
+  "only_framework": 1,
+  "only_framework_examples": [
+   {
+    "method": null,
+    "path": "/endpoint",
+    "site": "app/main.py",
+    "function": null,
+    "gap": "Endpoint is a class-based endpoint: which of its methods answers a request is not read"
+   }
+  ],
+  "only_noir": 7,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/api/users/embedded/leaf",
+    "site": "app/sub.py:24",
+    "function": "app/sub.py::embedded_leaf"
+   },
+   {
+    "method": "GET",
+    "path": "/partial",
+    "site": "app/main.py:99",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/third-party",
+    "site": "app/main.py:101",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/stdlib",
+    "site": "app/main.py:100",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/endpoint",
+    "site": "app/main.py:168",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/callable",
+    "site": "app/main.py:98",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ }
+}

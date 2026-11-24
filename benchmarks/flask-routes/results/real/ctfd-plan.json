@@ -1,0 +1,79 @@
+{
+ "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+ "env": {
+  "PATH": "/daodan/state/tools/bin:/daodan/state/tools/node/bin:/daodan/state/tools/npm/bin:/daodan/state/tools/go/bin:/daodan/state/tools/rust/bin:/daodan/state/tools/cmake/bin:/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+  "HOME": "/daodan/state/home",
+  "GOPATH": "/daodan/state/go",
+  "GOCACHE": "/daodan/state/go-build",
+  "GOTELEMETRY": "off",
+  "CARGO_HOME": "/daodan/state/cargo",
+  "UV_CACHE_DIR": "/daodan/state/uv",
+  "npm_config_cache": "/daodan/state/npm-cache",
+  "npm_config_update_notifier": "false",
+  "VCPKG_ROOT": "/daodan/state/tools/vcpkg",
+  "VCPKG_DISABLE_METRICS": "1",
+  "VCPKG_BINARY_SOURCES": "clear",
+  "CONAN_HOME": "/daodan/state/conan-home"
+ },
+ "setup": {
+  "tool": "flask",
+  "argv": [
+   "sh",
+   "-c",
+   "( mkdir -p /daodan/state/tools/bin /daodan/state/home ) && ( cp /daodan/state/in/flask_routes.py /daodan/state/tools/flask_routes.py ) && ( { mkdir -p /daodan/state/tools/uvc /daodan/state/tools/bin && tar -xzf /daodan/state/in/uv.tar.gz -C /daodan/state/tools/uvc && ln -sf /daodan/state/tools/uvc/*/uv /daodan/state/tools/bin/uv ; } >&2 || echo 'DAODAN-MISSING uv@0.11.28' >&2 ) && ( mkdir -p /daodan/state/venvs ) && ( export UV_PYTHON_DOWNLOADS=never UV_NO_PROGRESS=1; for f in '.'; do ( cd \"$f\" && UV_PYTHON_DOWNLOADS=automatic UV_PROJECT_ENVIRONMENT=\"/daodan/state/venvs/$f\" uv sync --locked --all-packages --no-install-project ) > /tmp/daodan-restore.log 2>&1 || if [ -s /daodan/state/without-vcs.txt ]; then mv /tmp/daodan-restore.log /tmp/daodan-restore.log.vcs; ( cd \"$f\" && UV_PYTHON_DOWNLOADS=automatic UV_PROJECT_ENVIRONMENT=\"/daodan/state/venvs/$f\" uv sync --locked --all-packages --no-install-project $(sed 's/ .*//; s/^/--no-install-package /' /daodan/state/without-vcs.txt) ) > /tmp/daodan-restore.log 2>&1 && { printf 'DAODAN-VCS-FAILED uv %s\\n' \"$f\"; { grep -E '^error|needs to be updated|No solution|^ *[\u00d7\u2502\u251c\u2570]|^ *Caused by' /tmp/daodan-restore.log.vcs || tail -n 30 /tmp/daodan-restore.log.vcs; } | head -n 30; echo DAODAN-VCS-END; } >&2 || { cat /tmp/daodan-restore.log >> /tmp/daodan-restore.log.vcs; { printf 'DAODAN-RESTORE-FAILED uv %s\\n' \"$f\"; { grep -E '^error|needs to be updated|No solution|^ *[\u00d7\u2502\u251c\u2570]|^ *Caused by' /tmp/daodan-restore.log.vcs || tail -n 30 /tmp/daodan-restore.log.vcs; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; else { printf 'DAODAN-RESTORE-FAILED uv %s\\n' \"$f\"; { grep -E '^error|needs to be updated|No solution|^ *[\u00d7\u2502\u251c\u2570]|^ *Caused by' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; fi; done; true )"
+  ],
+  "cwd": ".",
+  "env": {
+   "PATH": "/daodan/state/tools/bin:/daodan/state/tools/node/bin:/daodan/state/tools/npm/bin:/daodan/state/tools/go/bin:/daodan/state/tools/rust/bin:/daodan/state/tools/cmake/bin:/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+   "HOME": "/daodan/state/home",
+   "GOPATH": "/daodan/state/go",
+   "GOCACHE": "/daodan/state/go-build",
+   "GOTELEMETRY": "off",
+   "CARGO_HOME": "/daodan/state/cargo",
+   "UV_CACHE_DIR": "/daodan/state/uv",
+   "npm_config_cache": "/daodan/state/npm-cache",
+   "npm_config_update_notifier": "false",
+   "VCPKG_ROOT": "/daodan/state/tools/vcpkg",
+   "VCPKG_DISABLE_METRICS": "1",
+   "VCPKG_BINARY_SOURCES": "clear",
+   "CONAN_HOME": "/daodan/state/conan-home"
+  },
+  "network": "registries"
+ },
+ "files": [
+  [
+   null,
+   null,
+   "flask_routes.py"
+  ],
+  [
+   "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
+   "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224",
+   "uv.tar.gz"
+  ]
+ ],
+ "hosts": [],
+ "gaps": [],
+ "commands": [
+  {
+   "tool": "flask",
+   "argv": [
+    "sh",
+    "-c",
+    "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+    "flask",
+    "900",
+    "/daodan/state/tools/flask_routes.py"
+   ],
+   "cwd": ".",
+   "env": {},
+   "network": "none",
+   "venv": "."
+  }
+ ],
+ "version": "daodan/premap/v3",
+ "state": "/daodan/state",
+ "inputs": "/daodan/state/in",
+ "tools": "/daodan/state/tools",
+ "venvs": "/daodan/state/venvs"
+}

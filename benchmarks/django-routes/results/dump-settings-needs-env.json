@@ -1,0 +1,20 @@
+{
+ "variant": "dump-settings-needs-env",
+ "argv": [
+  "sh",
+  "-c",
+  "exec 3>&1 1>&2; exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python manage.py shell -c \"$2\"",
+  "django",
+  "60",
+  "exec(open('/daodan/state/in/dump.py').read())"
+ ],
+ "cwd": ".",
+ "returncode": 1,
+ "stdout": "",
+ "stderr": "Traceback (most recent call last):\n  File \"/work/manage.py\", line 14, in <module>\n    main()\n  File \"/work/manage.py\", line 10, in main\n    execute_from_command_line(sys.argv)\n  File \"/daodan/state/venvs/lib/python3.12/site-packages/django/core/management/__init__.py\", line 443, in execute_from_command_line\n    utility.execute()\n  File \"/daodan/state/venvs/lib/python3.12/site-packages/django/core/management/__init__.py\", line 383, in execute\n    settings.INSTALLED_APPS\n  File \"/daodan/state/venvs/lib/python3.12/site-packages/django/conf/__init__.py\", line 122, in __getattr__\n    self._setup(name)\n  File \"/daodan/state/venvs/lib/python3.12/site-packages/django/conf/__init__.py\", line 109, in _setup\n    self._wrapped = Settings(settings_module)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/daodan/state/venvs/lib/python3.12/site-packages/django/conf/__init__.py\", line 253, in __init__\n    mod = importlib.import_module(self.SETTINGS_MODULE)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/importlib/__init__.py\", line 90, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen importlib._bootstrap>\", line 1387, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 935, in _load_unlocked\n  File \"<frozen importlib._bootstrap_external>\", line 994, in exec_module\n  File \"<frozen importlib._bootstrap>\", line 488, in _call_with_frames_removed\n  File \"/work/config/settings.py\", line 3, in <module>\n    SECRET_KEY = os.environ[\"SECRET_KEY\"]\n                 ~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"<frozen os>\", line 685, in __getitem__\nKeyError: 'SECRET_KEY'\n",
+ "seconds": 0.46,
+ "max_rss_mb": 51.0,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

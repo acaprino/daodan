@@ -623,6 +623,53 @@ def whole_case(name: str, case: dict, archive: bytes | None, counts: str | None,
     return {"case": name, "engine": engine, "stopped": failure}
 
 
+@app.function(cpu=4, memory=16384, timeout=3 * 3600, volumes={"/results": volume}, single_use_containers=True)
+def routes_case(name: str, case: dict, archive: bytes | None, rules: str, tag: str) -> dict:
+    """The routes of a case at the code of this image, with the rules an earlier rules session wrote (`rules`, the text of
+    its `rules.json`): the engine pass with its containers on Modal Sandboxes, then `flows.link_facts`. No model. Saved under
+    TAG/routes/NAME.json: the counts `offered`, `called` and `linked` of the brief, the entries by reader, the gaps by
+    their words, and the calls no route met."""
+    import collections
+    work = Path("/work") / name
+    target = _source(work / "src", case, archive)
+    manifest = work / "snapshot/manifest.sqlite"
+    _run([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out", str(manifest), "--no-engine",
+          "--no-index"])
+    engine = _engine_pass(manifest)
+    answer = {"case": name, "engine": engine, "stopped": _engine_failure(engine)}
+    if not answer["stopped"]:
+        sys.path.insert(0, SCRIPTS)
+        import flows
+        links = flows.link_facts(manifest, json.loads(rules)["rules"])
+        gaps = links.get("gaps") or []
+        answer.update(
+            routes=links["routes"],
+            entries_by_reader=dict(collections.Counter(e.get("reader") for e in links["entries"])),
+            gaps_by_words=dict(collections.Counter(
+                str(g.get("reason") or g.get("detail") or g.get("kind"))[:90] for g in gaps).most_common(25)),
+            calls_no_route=[g for g in gaps if "no handler" in str(g.get("reason") or g.get("detail"))][:60])
+        # what Noir's rows that no function holds say, and what the snapshot declares in the files they cite
+        import edge_view
+        import semantic_store
+        from premap import noir
+        from snapshot_store import open_snapshot
+        with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+            view = edge_view.load_edge_view(store)
+            facts = flows.Facts(store, db, view)
+            rows = flows.bind_declared(noir.recorded(manifest), facts, view, json.loads(rules)["rules"])
+            failed = [row for row in rows if row.get("gap")]
+            answer["noir_gaps"] = [{"site": row["site"], "handler": row.get("handler"), "method": row.get("method"),
+                                    "path": row.get("path"), "gap": row["gap"][:240]} for row in failed][:90]
+            cited = list(dict.fromkeys(row["site"].rpartition(":")[0] for row in failed))
+            answer["gap_files"] = len(cited)
+            answer["declarations_in_gap_files"] = {
+                file: [{key: d.get(key) for key in ("name", "qualified_name", "kind", "line", "end")}
+                       for d in facts.functions.get(file, ())][:30] for file in cited[:8]}
+    _save(tag, f"routes/{name}.json", answer)
+    volume.commit()
+    return answer
+
+
 NETWORK_PROBE = """import urllib.request
 for name, url in (("registry", "https://pypi.org/simple/"), ("outside", "https://example.com/"),
                   ("plain", "http://pypi.org/simple/"), ("address", "https://1.1.1.1/")):
@@ -949,12 +996,12 @@ def _arguments(argv: list[str] | None = None):
     every.add_argument("--cases", required=True, help=f"comma-separated, of {', '.join(CASES)}")
     every.add_argument("--tar", action="append", default=[], metavar="CASE=PATH",
                        help="the archive of a case (`code_archive.py`), repeatable; its counts are PATH with .json")
+    every.add_argument("--no-cases", action="store_true",
+                       help="start only the runs of the map, under a TAG whose cases an earlier job already kept")
     every.add_argument("--models", default="", help=f"comma-separated, of {', '.join(MODELS)}; none: only the cases")
     every.add_argument("--reps", type=int, default=2, help="independent runs per case and model")
     every.add_argument("--budget", type=float, default=BUDGET_USD, help="USD per session")
     by_links = commands.add_parser("spawn-links", help="the links of a cloned case; the volume gets links-CASE.json")
-    every.add_argument("--no-cases", action="store_true",
-                       help="start only the runs of the map, under a TAG whose cases an earlier job already kept")
     by_links.add_argument("case", choices=[name for name, case in CASES.items() if "repo" in case and "rules" in case])
     by_links.add_argument("tag")
     args = parser.parse_args(argv)

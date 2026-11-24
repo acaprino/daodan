@@ -1,0 +1,31 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "60",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/aot-boot27/target/unpacked/BOOT-INF/classes:/work/aot-boot27/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/aot-boot27.json",
+   "handler-methods",
+   "aot",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 420,
+  "returncode": 1,
+  "seconds": 1.6,
+  "stderr": "",
+  "stdout": "2026-11-24 00:38:46.242  INFO 3204 --- [           main] o.s.boot.SpringApplication               : Starting application using Java 17.0.20.1 with PID 3204 (started by root in /work/aot-boot27)\n2026-11-24 00:38:46.245  INFO 3204 --- [           main] o.s.boot.SpringApplication               : No active profile set, falling back to 1 default profile: \"default\"\n",
+  "written": "{\"error\": \"java.lang.ClassNotFoundException: org.springframework.aot.hint.RuntimeHints\"}",
+  "written_bytes": 88
+ }
+]

@@ -1,0 +1,193 @@
+{
+ "name": "shhh-testing",
+ "application": "shhh",
+ "repository": "smallwat3r/shhh",
+ "commit": "448acf4bed058d27a28a939b1ff5fba1601e2273",
+ "licence": "MIT",
+ "folder": ".",
+ "script": {
+  "variant": "shhh-script-testing",
+  "exit": 0,
+  "seconds": 3.26,
+  "peak_memory_mb": 102.3,
+  "left_in_the_project": [
+   "shhh/static/dist/css/styles.min.css",
+   "shhh/static/dist/js/create.min.js",
+   "shhh/static/dist/js/created.min.js",
+   "shhh/static/dist/js/read.min.js"
+  ]
+ },
+ "noir": {
+  "variant": "shhh-noir",
+  "exit": 0,
+  "seconds": 0.92,
+  "peak_memory_mb": 147.5
+ },
+ "gaps": [],
+ "flask": {
+  "rules": 6,
+  "not_served": 0,
+  "static": 1,
+  "dispatch": null,
+  "by_category": {
+   "class-based view": 1,
+   "project function": 4
+  },
+  "package_views": {},
+  "routes_by_method": 6
+ },
+ "source": {
+  "rows": 6,
+  "bound_to_a_function": 4,
+  "class_based_gap_rows": 2,
+  "other_unbound": []
+ },
+ "noir_report": {
+  "endpoints": 6,
+  "protocols": {
+   "http": 6
+  },
+  "errors": 0,
+  "python_files": [
+   [
+    ".py",
+    6
+   ]
+  ],
+  "http_rows": 6,
+  "python_rows": 6,
+  "python_bound_to_a_function": 6,
+  "python_with_a_handler_name": 6,
+  "python_with_a_qualified_name": 2,
+  "python_bound_before_the_qualified_name_match": 4,
+  "python_bound_with_the_method_name_alone": 6,
+  "unbound_after": [],
+  "bound_by_the_name_alone_and_not_by_the_qualified_name": []
+ },
+ "comparison": {
+  "both": 6,
+  "agreement": {
+   "framework gives no function": 2,
+   "class view: same class and file": 2,
+   "same file": 2,
+   "same function": 4,
+   "same site": 4
+  },
+  "class_view_mismatches": [],
+  "differences": [
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/secret",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/secret",
+      "site": "shhh/api/api.py",
+      "function": null,
+      "gap": "Api is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/secret",
+     "site": "shhh/api/api.py:33",
+     "function": "shhh/api/api.py::Api.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/secret",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/secret",
+      "site": "shhh/api/api.py",
+      "function": null,
+      "gap": "Api is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/secret",
+     "site": "shhh/api/api.py:37",
+     "function": "shhh/api/api.py::Api.post"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 0,
+  "only_flask_by_category": {},
+  "only_flask_packages": {},
+  "only_flask_examples": [],
+  "only_noir": 0,
+  "only_noir_examples": []
+ },
+ "comparison_with_the_method_name_alone": {
+  "both": 6,
+  "agreement": {
+   "framework gives no function": 2,
+   "class view: same class and file": 2,
+   "same file": 2,
+   "same function": 4,
+   "same site": 4
+  },
+  "class_view_mismatches": [],
+  "differences": [
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/secret",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/secret",
+      "site": "shhh/api/api.py",
+      "function": null,
+      "gap": "Api is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/secret",
+     "site": "shhh/api/api.py:33",
+     "function": "shhh/api/api.py::Api.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/secret",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/secret",
+      "site": "shhh/api/api.py",
+      "function": null,
+      "gap": "Api is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/secret",
+     "site": "shhh/api/api.py:37",
+     "function": "shhh/api/api.py::Api.post"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 0,
+  "only_flask_by_category": {},
+  "only_flask_packages": {},
+  "only_flask_examples": [],
+  "only_noir": 0,
+  "only_noir_examples": []
+ }
+}

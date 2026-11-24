@@ -1,0 +1,5 @@
+{
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "ImproperlyConfigured: Error loading psycopg2 or psycopg module\n"
+}

@@ -1,0 +1,38 @@
+Compiled from "OwnerResource.java"
+class org.springframework.samples.petclinic.customers.web.OwnerResource {
+  public org.springframework.samples.petclinic.customers.model.Owner createOwner(org.springframework.samples.petclinic.customers.web.OwnerRequest);
+    descriptor: (Lorg/springframework/samples/petclinic/customers/web/OwnerRequest;)Lorg/springframework/samples/petclinic/customers/model/Owner;
+    LineNumberTable:
+      line 60: 0
+  public java.util.Optional<org.springframework.samples.petclinic.customers.model.Owner> findOwner(int);
+    descriptor: (I)Ljava/util/Optional;
+    LineNumberTable:
+      line 69: 0
+  public java.util.List<org.springframework.samples.petclinic.customers.model.Owner> findAll();
+    descriptor: ()Ljava/util/List;
+    LineNumberTable:
+      line 77: 0
+  public void updateOwner(int, org.springframework.samples.petclinic.customers.web.OwnerRequest);
+    descriptor: (ILorg/springframework/samples/petclinic/customers/web/OwnerRequest;)V
+    LineNumberTable:
+      line 86: 0
+}
+Compiled from "PetResource.java"
+class org.springframework.samples.petclinic.customers.web.PetResource {
+  public java.util.List<org.springframework.samples.petclinic.customers.model.PetType> getPetTypes();
+    descriptor: ()Ljava/util/List;
+    LineNumberTable:
+      line 52: 0
+  public org.springframework.samples.petclinic.customers.model.Pet processCreationForm(org.springframework.samples.petclinic.customers.web.PetRequest, int);
+    descriptor: (Lorg/springframework/samples/petclinic/customers/web/PetRequest;I)Lorg/springframework/samples/petclinic/customers/model/Pet;
+    LineNumberTable:
+      line 61: 0
+  public void processUpdateForm(org.springframework.samples.petclinic.customers.web.PetRequest, int);
+    descriptor: (Lorg/springframework/samples/petclinic/customers/web/PetRequest;I)V
+    LineNumberTable:
+      line 73: 0
+  public org.springframework.samples.petclinic.customers.web.PetDetails findPet(int);
+    descriptor: (I)Lorg/springframework/samples/petclinic/customers/web/PetDetails;
+    LineNumberTable:
+      line 91: 0
+}

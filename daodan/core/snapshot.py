@@ -1591,10 +1591,12 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
                      engine=pstate.get("engine", True))
         for stale in (working / "snapshot").glob("manifest.*"):
             stale.unlink()
-        if (published / "snapshot/proposals.json").is_file():
-            shutil.copy2(published / "snapshot/proposals.json", working / "snapshot/proposals.json")
-        else:
-            (working / "snapshot/proposals.json").unlink(missing_ok=True)
+        # The stack record goes too: the fast scan keeps the signs of the sources only a full scan runs.
+        for carried in ("proposals.json", "technologies.json"):
+            if (published / "snapshot" / carried).is_file():
+                shutil.copy2(published / "snapshot" / carried, working / "snapshot" / carried)
+            else:
+                (working / "snapshot" / carried).unlink(missing_ok=True)
         _write_json_atomic(working / "state.json", state)
     manifest = working / state["snapshot"]["path"]
     target = _project_target(root, state["target"])

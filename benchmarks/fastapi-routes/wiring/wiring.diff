@@ -1,0 +1,71 @@
+diff --git a/daodan/core/premap/__init__.py b/daodan/core/premap/__init__.py
+index f350bc2..81f0ab0 100644
+--- a/daodan/core/premap/__init__.py
++++ b/daodan/core/premap/__init__.py
+@@ -38,8 +38,8 @@ import module_derive  # noqa: E402
+ import modules  # noqa: E402
+ from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
+ 
+-from premap import (angular, astro, autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, flask_app, gitmodules, go,  # noqa: E402
+-                    gradle, jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_start, npm_tests, nuxt, project_files,
++from premap import (angular, astro, autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, fastapi_app, flask_app, gitmodules,  # noqa: E402
++                    go, gradle, jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_start, npm_tests, nuxt, project_files,
+                     python_build, python_tests, react_router, renovate, requirements, sbt, suffix_table, sveltekit, tsc, uv)
+ 
+ SCHEMA = "daodan/premap/v1"
+@@ -48,12 +48,12 @@ RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run
+ RANKS = ("model", "reader", "scanner")
+ SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, npm_start, jvm_files, project_files,
+            gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
+-           gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, flask_app, angular, astro)
++           gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, flask_app, fastapi_app, angular, astro)
+ # The sources whose `framework_entries` rows are entries of their own (a page, a route handler): `flow_entries.evidence` reads
+ # each one's rows and gaps, and the key of the cached links hashes each one's file (`flows._links_reader_digest`). Another
+ # framework's source is one more name here, with its table in `entry-queries.json` under its `NAME`. `angular` and `astro` are not:
+ # their rows stand for, or join, the tree reader's at the same events (`entries.compiled`), and their gaps are told on their own.
+-FRAMEWORK_SOURCES = (nextjs, react_router, nuxt, sveltekit, flask_app)
++FRAMEWORK_SOURCES = (nextjs, react_router, nuxt, sveltekit, flask_app, fastapi_app)
+ # The sources whose rows stand for, or join, the tree reader's at the same events (`entries.compiled`: the events of a template): their
+ # gaps are told by `flow_entries.evidence`, and the key of the cached links hashes each one's file. Their script is not in it: a
+ # pre-map is fresh for the `NAME@VERSION` that made it, and the version goes with the script (each one's test of the recorded print).
+diff --git a/daodan/core/premap/container_runner.py b/daodan/core/premap/container_runner.py
+index b5700ea..eb48a64 100644
+--- a/daodan/core/premap/container_runner.py
++++ b/daodan/core/premap/container_runner.py
+@@ -124,6 +124,11 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the
+     # the setup restores for each folder (`_python`, `premap/flask_app.py`); measured on Modal, `benchmarks/flask-routes/README.md`
+     "flask": {"files": [(None, None, "flask_routes.py")], "setup": [f"cp {IN}/flask_routes.py {T}/flask_routes.py"],
+               "registries": True, "restores": "python", "memory": 3},
++    # the same for FastAPI: its script loads the application the way `fastapi-cli` finds it (`premap/fastapi_app.py`); `python_script.py` is what the
++    # Python scripts share and `fastapi_routes.py` loads by its path
++    "fastapi": {"files": [(None, None, "fastapi_routes.py"), (None, None, "python_script.py")],
++                "setup": [f"cp {IN}/fastapi_routes.py {T}/fastapi_routes.py && cp {IN}/python_script.py {T}/python_script.py"],
++                "registries": True, "restores": "python", "memory": 3},
+     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
+     "compose": {"files": [(*compose.DOWNLOAD, "docker-compose")],  # Compose's own binary: it reads, no engine runs
+                 "setup": [f"cp {IN}/docker-compose {T}/bin/docker-compose && chmod 755 {T}/bin/docker-compose"]},
+diff --git a/daodan/data/entry-queries.json b/daodan/data/entry-queries.json
+index 29ea976..0fdc0ec 100644
+--- a/daodan/data/entry-queries.json
++++ b/daodan/data/entry-queries.json
+@@ -21,6 +21,7 @@
+                    "layout-data": {"kind": "rotta", "exports": ["loader", "clientLoader"]}},
+   "nuxt": {"server-route": {"kind": "rotta", "exports": ["default"]}, "page": {"kind": "rotta"}},
+   "flask": {"route": {"kind": "rotta"}},
++  "fastapi": {"route": {"kind": "rotta"}, "websocket": {"kind": "rotta"}},
+   "sveltekit": {"+server": {"kind": "rotta", "exports": ["GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE", "PATCH", "fallback"]},
+                 "+page.server": {"kind": "rotta", "exports": ["load", "actions"]},
+                 "+page": {"kind": "rotta", "exports": ["load"]},
+diff --git a/tests/test_codebase_map_premap_container_runner.py b/tests/test_codebase_map_premap_container_runner.py
+index 0a0ef0b..8b09131 100644
+--- a/tests/test_codebase_map_premap_container_runner.py
++++ b/tests/test_codebase_map_premap_container_runner.py
+@@ -259,7 +259,7 @@ def test_every_model_source_of_the_premap_has_a_setup():
+              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
+              "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs,
+              "react-router": premap.react_router, "nuxt": premap.nuxt, "sveltekit": premap.sveltekit, "angular": premap.angular, "astro": premap.astro,
+-             "flask": premap.flask_app}
++             "flask": premap.flask_app, "fastapi": premap.fastapi_app}
+     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
+     assert set(tools) <= set(container_runner.TOOLS)
+ 

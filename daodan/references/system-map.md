@@ -37,7 +37,7 @@ In the language of the product. The machine refuses a flow whose first word is e
 ## Nodes
 
 - `type`: attore, schermata, funzionalità, servizio o API, gateway, database, coda, autenticazione, dispositivo, filesystem (a file or folder on disk the program reads or writes while it runs), altro, entità (a named piece of data, its members are the store keys that hold it), applicazione (a whole app or site a person opens, holding screens and logic), lavoro a orario (a job a schedule starts; a queue consumer stays a coda).
-- `position`: `internal` (default) has `members`: `path`, `path::Symbol`, `store:<store>/<key>`, `module:<name>`; a route is cited by its handler. `external` (an actor, a device, an external service or project) has no members and cites `evidence`. `unseen` (part of the system outside the snapshot) says `where`.
+- `position`: `internal` (default) has `members`: `path`, `path::Symbol`, `store:<store>/<key>`, `module:<name>`; a route is cited by its handler. A `store:` member no rule reads yet does not refuse the node when another member resolves: the answer lists it in `unlinked`, the node does not hold it and no arrow is proved through it. `external` (an actor, a device, an external service or project) has no members and cites `evidence`. `unseen` (part of the system outside the snapshot) says `where`.
 - One node is the whole system: type `altro`, named as the product, members `.`, no `inside`. Inside it go the parts a person names, also without a manifest (an app, a site, a server, an admin panel), and the database, with its entities inside it. Inside a part go its screens, groups of routes, scheduled jobs and stores.
 - Above every interface sits its device: an external `dispositivo` the interface names in `on`.
 - A node's members are its whole part, the folder or the files it is made of, not an example file; `path::Symbol` only when the node is that function. Never a symbol you were not shown.
@@ -65,7 +65,7 @@ funzionale (the product does it for its user), operativo (runs without a person)
 
 ## Report
 
-The answer lists each node and flow with `status` (`accepted`, `incomplete`, `refused`, `confirmed`), explains incomplete and refused records, lists each arrow as `proved`, `declared` or `refused`, and reports the coverage of complete flows over entry points, store keys and routes. It gives the ids `created`, `updated`, `removed`, `kept`, and `not_removed` with the reason. Names the project confirmed in `codebase-system-map.json` do not change.
+The answer lists each node and flow with `status` (`accepted`, `incomplete`, `refused`, `confirmed`), explains incomplete and refused records, names in `unlinked` the store members of an accepted node that the links lack, lists each arrow as `proved`, `declared` or `refused`, and reports the coverage of complete flows over entry points, store keys and routes. It gives the ids `created`, `updated`, `removed`, `kept`, and `not_removed` with the reason. Names the project confirmed in `codebase-system-map.json` do not change.
 
 ## Reading the map
 

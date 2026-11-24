@@ -1,0 +1,22 @@
+{
+ "variant": "plain-environment",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-c",
+  "import importlib.metadata as m, os, sys, sysconfig\npaths = sysconfig.get_paths()\ndef version(name):\n    try:\n        return m.version(name)\n    except m.PackageNotFoundError:\n        return None\nprint(repr({'version': sys.version, 'executable': sys.executable, 'prefix': sys.prefix, 'base_prefix': sys.base_prefix,\n            'purelib': paths['purelib'], 'platlib': paths['platlib'], 'stdlib': paths['stdlib'],\n            'fastapi': version('fastapi'), 'fastapi-cli': version('fastapi-cli'), 'starlette': version('starlette'),\n            'uvicorn': version('uvicorn'), 'pydantic': version('pydantic'),\n            'fastapi-cli requires': m.requires('fastapi-cli') if version('fastapi-cli') else None,\n            'fastapi requires': m.requires('fastapi'),\n            'packages': sorted(f\"{d.metadata['Name']} {d.version}\" for d in m.distributions())}))\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{'version': '3.12.1 (main, Jan  8 2024, 04:46:10) [Clang 17.0.6 ]', 'executable': '/daodan/state/venvs/bin/python', 'prefix': '/daodan/state/venvs', 'base_prefix': '/usr/local', 'purelib': '/daodan/state/venvs/lib/python3.12/site-packages', 'platlib': '/daodan/state/venvs/lib/python3.12/site-packages', 'stdlib': '/usr/local/lib/python3.12', 'fastapi': '0.165.0', 'fastapi-cli': None, 'starlette': '1.10.0', 'uvicorn': None, 'pydantic': '2.14.4', 'fastapi-cli requires': None, 'fastapi requires': ['starlette>=1.6.0', 'anyio>=4.1.0', 'pydantic>=2.9.0', 'typing-extensions>=4.8.0', 'typing-inspection>=0.4.2', 'annotated-doc>=0.0.2', 'opentelemetry-api>=1.44.0', 'opentelemetry-sdk>=1.44.0; extra == \"opentelemetry\"', 'opentelemetry-exporter-otlp-proto-http>=1.44.0; extra == \"opentelemetry\"', 'opentelemetry-sdk>=1.44.0; extra == \"standard\"', 'opentelemetry-exporter-otlp-proto-http>=1.44.0; extra == \"standard\"', 'fastapi-cli[standard]>=0.0.32; extra == \"standard\"', 'fastar>=0.9.0; extra == \"standard\"', 'httpx<1.0.0,>=0.23.0; extra == \"standard\"', 'httpx2>=2.0.0; extra == \"standard\"', 'jinja2>=3.1.5; extra == \"standard\"', 'python-multipart>=0.0.18; extra == \"standard\"', 'email-validator>=2.0.0; extra == \"standard\"', 'uvicorn[standard]>=0.12.0; extra == \"standard\"', 'pydantic-settings>=2.0.0; extra == \"standard\"', 'pydantic-extra-types>=2.0.0; extra == \"standard\"', 'opentelemetry-sdk>=1.44.0; extra == \"standard-no-fastapi-cloud-cli\"', 'opentelemetry-exporter-otlp-proto-http>=1.44.0; extra == \"standard-no-fastapi-cloud-cli\"', 'fastapi-cli[standard-no-fastapi-cloud-cli]>=0.0.32; extra == \"standard-no-fastapi-cloud-cli\"', 'httpx<1.0.0,>=0.23.0; extra == \"standard-no-fastapi-cloud-cli\"', 'httpx2>=2.0.0; extra == \"standard-no-fastapi-cloud-cli\"', 'jinja2>=3.1.5; extra == \"standard-no-fastapi-cloud-cli\"', 'python-multipart>=0.0.18; extra == \"standard-no-fastapi-cloud-cli\"', 'email-validator>=2.0.0; extra == \"standard-no-fastapi-cloud-cli\"', 'uvicorn[standard]>=0.12.0; extra == \"standard-no-fastapi-cloud-cli\"', 'pydantic-settings>=2.0.0; extra == \"standard-no-fastapi-cloud-cli\"', 'pydantic-extra-types>=2.0.0; extra == \"standard-no-fastapi-cloud-cli\"', 'opentelemetry-sdk>=1.44.0; extra == \"all\"', 'opentelemetry-exporter-otlp-proto-http>=1.44.0; extra == \"all\"', 'fastapi-cli[standard]>=0.0.32; extra == \"all\"', 'httpx<1.0.0,>=0.23.0; extra == \"all\"', 'httpx2>=2.0.0; extra == \"all\"', 'jinja2>=3.1.5; extra == \"all\"', 'python-multipart>=0.0.18; extra == \"all\"', 'itsdangerous>=1.1.0; extra == \"all\"', 'pyyaml>=5.3.1; extra == \"all\"', 'email-validator>=2.0.0; extra == \"all\"', 'uvicorn[standard]>=0.12.0; extra == \"all\"', 'pydantic-settings>=2.0.0; extra == \"all\"', 'pydantic-extra-types>=2.0.0; extra == \"all\"'], 'packages': ['annotated-doc 0.0.7', 'annotated-types 0.8.0', 'anyio 4.16.0', 'fastapi 0.165.0', 'idna 3.20', 'opentelemetry-api 1.45.2', 'pydantic 2.14.4', 'pydantic_core 2.50.5', 'starlette 1.10.0', 'typing-inspection 0.4.5', 'typing_extensions 4.16.0']}\n",
+ "stderr": "",
+ "seconds": 0.18,
+ "max_rss_mb": 40.4,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "setup": {
+  "exit": "0",
+  "seconds": "2",
+  "stderr": ""
+ },
+ "stdout_chars": 2987
+}

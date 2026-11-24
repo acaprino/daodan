@@ -1,6 +1,10 @@
 from fastapi import APIRouter
 
+from app import orders, sub
+
 router = APIRouter(prefix="/users", tags=["users"])
+router.include_router(orders.router)
+router.mount("/embedded", sub.embedded)
 
 
 @router.get("/{user_id}")

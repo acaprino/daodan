@@ -1,0 +1,217 @@
+{
+ "name": "lobsters",
+ "framework": "rails",
+ "repository": "lobsters/lobsters",
+ "commit": "d23941fd73b7a0a7280f1f40c54013b4e4db5328",
+ "licence": "BSD-3-Clause (GitHub: NOASSERTION)",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 245,
+  "protocols": {
+   "http": 245
+  },
+  "errors": 0,
+  "seconds": 0.6,
+  "peak_memory_mb": 157.6,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name joined by '#'": 207,
+   "none": 38
+  },
+  "http_handler_forms": {
+   "name joined by '#'": 207,
+   "none": 38
+  },
+  "http_endpoints_in_the_json": 245,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 207,
+  "with_name_and_path_and_line": 207
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 237,
+  "dropped_by_reason": {
+   "outside_snapshot (.rb)": 236,
+   "outside_snapshot (.txt)": 1
+  },
+  "dropped_with_name_and_path": 207
+ },
+ "checkout": {
+  "files": 827,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 173,
+  "functions": 104,
+  "functions_by_suffix": {
+   ".js": 104
+  },
+  "files_by_suffix": {
+   ".erb": 126,
+   ".css": 10,
+   ".yml": 9,
+   ".html": 9,
+   ".md": 7,
+   "": 2,
+   ".yaml": 2,
+   ".js": 2,
+   ".txt": 2,
+   ".py": 1,
+   ".json": 1,
+   ".xml": 1,
+   ".sh": 1
+  },
+  "seconds": 1.0
+ },
+ "http": {
+  "endpoints": 8,
+  "with_handler_name": 0,
+  "bound_to_one_function": 0,
+  "unbound": 8,
+  "by_file_suffix": {
+   ".html": {
+    "endpoints": 4,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".txt": {
+    "endpoints": 2,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".json": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".xml": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "no function of the project serves the endpoint": 8
+ },
+ "causes": {
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 8,
+   "by_file_suffix": {
+    ".html": 4,
+    ".txt": 2,
+    ".json": 1,
+    ".xml": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/422.html",
+     "site": "public/422.html",
+     "noir_handler": null,
+     "file_language": "markup"
+    },
+    {
+     "method": "GET",
+     "url": "/500.html",
+     "site": "public/500.html",
+     "noir_handler": null,
+     "file_language": "markup"
+    },
+    {
+     "method": "GET",
+     "url": "/502.html",
+     "site": "public/502.html",
+     "noir_handler": null,
+     "file_language": "markup"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

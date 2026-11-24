@@ -1,0 +1,21 @@
+{
+ "variant": "users-cli-environment",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-c",
+  "import importlib.metadata as m, sys\ndef version(name):\n    try:\n        return m.version(name)\n    except m.PackageNotFoundError:\n        return None\nprint(repr({'python': sys.version, 'executable': sys.executable, 'fastapi': version('fastapi'), 'fastapi-cli': version('fastapi-cli'),\n            'starlette': version('starlette'), 'uvicorn': version('uvicorn'), 'pydantic': version('pydantic'), 'packages': len(list(m.distributions()))}))\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{'python': '3.12.1 (main, Jan  8 2024, 04:46:10) [Clang 17.0.6 ]', 'executable': '/daodan/state/venvs/bin/python', 'fastapi': '0.165.0', 'fastapi-cli': '0.0.34', 'starlette': '1.10.0', 'uvicorn': '0.54.0', 'pydantic': '2.14.4', 'packages': 45}\n",
+ "stderr": "",
+ "seconds": 0.17,
+ "max_rss_mb": 40.1,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "setup": {
+  "exit": "0",
+  "seconds": "3",
+  "stderr": ""
+ }
+}

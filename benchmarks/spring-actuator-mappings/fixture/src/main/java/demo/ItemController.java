@@ -30,4 +30,19 @@ public class ItemController {
 
     @RequestMapping(path = "/multi", method = {RequestMethod.GET, RequestMethod.HEAD})
     public String multi() { return "multi"; }
+
+    // one mapping with two paths: one handler, two routes
+    @GetMapping({"/alias-a", "/alias-b"})
+    public String alias() { return "alias"; }
+
+    // annotation, signature and body over several lines: which line does the class file give the method?
+    @GetMapping(
+        path = "/spread")
+    public String spread(
+            @RequestParam(defaultValue = "x") String a,
+            @RequestParam(defaultValue = "y") String b) {
+        String joined = a
+            + b;
+        return joined;
+    }
 }

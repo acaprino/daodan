@@ -1,0 +1,24 @@
+{
+ "launcher_routes": 15,
+ "noir_routes": 17,
+ "both": 15,
+ "both_with_a_handler_in_noir": 14,
+ "same_handlers": 14,
+ "route_without_handler_in_noir": [
+  [
+   "GET",
+   "/base/{id}"
+  ]
+ ],
+ "only_launcher": [],
+ "only_noir": [
+  [
+   "GET",
+   "/fn/hello"
+  ],
+  [
+   "GET",
+   "/prod-only"
+  ]
+ ]
+}

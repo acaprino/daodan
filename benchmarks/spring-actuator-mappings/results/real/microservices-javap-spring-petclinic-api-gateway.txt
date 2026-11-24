@@ -1,0 +1,14 @@
+Compiled from "ApiGatewayController.java"
+public class org.springframework.samples.petclinic.api.boundary.web.ApiGatewayController {
+  public reactor.core.publisher.Mono<org.springframework.samples.petclinic.api.dto.OwnerDetails> getOwnerDetails(int);
+    descriptor: (I)Lreactor/core/publisher/Mono;
+    LineNumberTable:
+      line 56: 0
+}
+Compiled from "FallbackController.java"
+public class org.springframework.samples.petclinic.api.boundary.web.FallbackController {
+  public org.springframework.http.ResponseEntity<java.lang.String> fallback();
+    descriptor: ()Lorg/springframework/http/ResponseEntity;
+    LineNumberTable:
+      line 15: 0
+}

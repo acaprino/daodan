@@ -1,0 +1,65 @@
+{
+ "name": "users",
+ "application": "users",
+ "repository": "fastapi-users/fastapi-users",
+ "commit": "e9c57ff7ff2fd385bb0f6f795b524e9736b64290",
+ "licence": "MIT",
+ "folder": "examples/sqlalchemy",
+ "script": {
+  "variant": "users-script",
+  "exit": 3,
+  "seconds": 0.12,
+  "peak_memory_mb": 39.5,
+  "stopped": "ModuleNotFoundError: No module named 'fastapi_cli'"
+ },
+ "noir": {
+  "variant": "users-noir",
+  "exit": 0,
+  "seconds": 1.09,
+  "peak_memory_mb": 146.7
+ },
+ "gaps": [
+  {
+   "source": "fastapi",
+   "kind": "model_failed",
+   "path": ".",
+   "detail": "fastapi_routes.py exited with 3: ModuleNotFoundError: No module named 'fastapi_cli' (the Python of the environment restored for '.')"
+  }
+ ],
+ "framework": {
+  "rows": 0,
+  "http_rows": 0,
+  "bound_to_a_function": 0,
+  "websocket_rows": 0,
+  "unbound": []
+ },
+ "noir_report": {
+  "endpoints": 1,
+  "protocols": {
+   "http": 1
+  },
+  "errors": 0,
+  "with_a_handler_name": 1,
+  "rows": 1,
+  "bound_to_a_function": 1,
+  "unbound": []
+ },
+ "comparison": {
+  "both": 0,
+  "agreement": {},
+  "differences": [],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_framework": 0,
+  "only_framework_examples": [],
+  "only_noir": 1,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/authenticated-route",
+    "site": "app/app.py:45",
+    "function": "app/app.py::authenticated_route"
+   }
+  ]
+ }
+}

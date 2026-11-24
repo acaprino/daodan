@@ -1,0 +1,39 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "60",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/access-args/target/unpacked/BOOT-INF/classes:/work/access-args/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/access-args.json",
+   "actuator",
+   "started",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.865,
+    "gone_s": 2.887,
+    "owner": "1045 java -Xmx1g -cp /work/access-args/target/unpacked/BOOT-INF/classes:/work/access-args/target/unpacked/BOOT-INF/lib/* /lau",
+    "port": 24348
+   }
+  ],
+  "peak_memory_mb": 515,
+  "returncode": 2,
+  "seconds": 3.0,
+  "stderr": "",
+  "stdout": "2026-11-24T00:36:51.391Z  INFO 1045 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 1045 (/launcher/Launcher.java started by root in /work/access-args)\n2026-11-24T00:36:51.395Z  INFO 1045 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:36:52.327Z  INFO 1045 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:36:52.337Z  INFO 1045 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:36:52.338Z  INFO 1045 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:36:52.370Z  INFO 1045 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:36:52.371Z  INFO 1045 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 907 ms\n2026-11-24T00:36:52.743Z  INFO 1045 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 0 endpoints beneath base path '/actuator'\n2026-11-24T00:36:52.797Z  INFO 1045 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:36:52.809Z  INFO 1045 --- [           main] Launcher                                 : Started Launcher in 1.83 seconds (process running for 2.881)\n2026-11-24T00:36:52.814Z  INFO 1045 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:36:52.816Z  INFO 1045 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": "{\"error\": \"no bean of an endpoint with the id mappings\"}",
+  "written_bytes": 56
+ }
+]

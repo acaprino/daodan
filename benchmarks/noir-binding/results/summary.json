@@ -1,0 +1,1759 @@
+{
+ "noir": [
+  "https://github.com/owasp-noir/noir/releases/download/v1.5.0/noir-v1.5.0-linux-x86_64",
+  "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70"
+ ],
+ "by_framework": {
+  "flask": {
+   "applications": 1,
+   "noir_endpoints": 6,
+   "http_endpoints": 6,
+   "with_handler_name": 6,
+   "bound_to_one_function": 6,
+   "unbound": 0,
+   "by_file_suffix": {
+    ".py": {
+     "endpoints": 6,
+     "with_handler_name": 6,
+     "bound": 6
+    }
+   },
+   "unbound_by_group": {},
+   "causes": {},
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {},
+     "bound": {
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {},
+     "bound": {
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {},
+     "bound": {
+      "none": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {},
+     "bound": {
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "combined": {
+     "unbound": {},
+     "bound": {
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "nested-below": {
+     "unbound": {},
+     "bound": {
+      "none": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {},
+     "bound": {
+      "none": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {},
+     "bound": {
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {},
+     "bound": {
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {},
+     "bound": {
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    }
+   }
+  },
+  "laravel": {
+   "applications": 2,
+   "noir_endpoints": 717,
+   "http_endpoints": 684,
+   "with_handler_name": 629,
+   "bound_to_one_function": 0,
+   "unbound": 684,
+   "by_file_suffix": {
+    ".php": {
+     "endpoints": 666,
+     "with_handler_name": 629,
+     "bound": 0
+    },
+    ".yaml": {
+     "endpoints": 18,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "the snapshot holds no function where Noir cites": 682,
+    "no function of the project serves the endpoint": 2
+   },
+   "causes": {
+    "the snapshot holds no function where Noir cites: the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": 682,
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 2
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 684
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 684
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 684
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 684
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "combined": {
+     "unbound": {
+      "none": 684
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 55
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 684
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 684
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 497,
+      "many": 175,
+      "one": 12
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 10
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 55
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    }
+   }
+  },
+  "rails": {
+   "applications": 2,
+   "noir_endpoints": 501,
+   "http_endpoints": 20,
+   "with_handler_name": 0,
+   "bound_to_one_function": 0,
+   "unbound": 20,
+   "by_file_suffix": {
+    ".html": {
+     "endpoints": 13,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".txt": {
+     "endpoints": 3,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".xml": {
+     "endpoints": 2,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".css": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".json": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "no function of the project serves the endpoint": 20
+   },
+   "causes": {
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 20
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "combined": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 20
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    }
+   }
+  },
+  "gin": {
+   "applications": 3,
+   "noir_endpoints": 403,
+   "http_endpoints": 385,
+   "with_handler_name": 94,
+   "bound_to_one_function": 0,
+   "unbound": 385,
+   "by_file_suffix": {
+    ".go": {
+     "endpoints": 331,
+     "with_handler_name": 94,
+     "bound": 0
+    },
+    ".json": {
+     "endpoints": 34,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".js": {
+     "endpoints": 10,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".css": {
+     "endpoints": 4,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".html": {
+     "endpoints": 4,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".yaml": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".txt": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "Noir gives no handler": 237,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 94,
+    "the snapshot holds no function where Noir cites": 35,
+    "no function of the project serves the endpoint": 19
+   },
+   "causes": {
+    "Noir gives no handler: Noir names no handler, the line is inside a function (the registration)": 237,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the last part of the name is a covering function's name, with a receiver or object variable in front": 91,
+    "the snapshot holds no function where Noir cites: the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": 35,
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 19,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: Noir names a closure and a function starts at the cited line": 3
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 385
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 294,
+      "one": 91
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 91
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 385
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 291,
+      "one": 94
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 94
+    },
+    "combined": {
+     "unbound": {
+      "none": 291,
+      "one": 94
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 94
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 291
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 385
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 294,
+      "one": 91
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 91
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 294,
+      "many": 63,
+      "one": 28
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 28
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 54,
+      "one": 237
+     },
+     "bound": {},
+     "distinct_functions_of_the_unbound_one": 34
+    }
+   }
+  },
+  "nestjs": {
+   "applications": 3,
+   "noir_endpoints": 159,
+   "http_endpoints": 156,
+   "with_handler_name": 137,
+   "bound_to_one_function": 131,
+   "unbound": 25,
+   "by_file_suffix": {
+    ".ts": {
+     "endpoints": 137,
+     "with_handler_name": 137,
+     "bound": 131
+    },
+    ".json": {
+     "endpoints": 19,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "no function of the project serves the endpoint": 19,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 6
+   },
+   "causes": {
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 19,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the name is the end of a covering function's qualified name (the class or function around it is not in Noir's name)": 6
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "one": 6,
+      "none": 19
+     },
+     "bound": {
+      "same": 131
+     },
+     "distinct_functions_of_the_unbound_one": 6
+    },
+    "last-part-covering": {
+     "unbound": {
+      "one": 6,
+      "none": 19
+     },
+     "bound": {
+      "same": 131
+     },
+     "distinct_functions_of_the_unbound_one": 6
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 25
+     },
+     "bound": {
+      "none": 131
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "one": 6,
+      "none": 19
+     },
+     "bound": {
+      "same": 131
+     },
+     "distinct_functions_of_the_unbound_one": 6
+    },
+    "combined": {
+     "unbound": {
+      "one": 6,
+      "none": 19
+     },
+     "bound": {
+      "same": 131
+     },
+     "distinct_functions_of_the_unbound_one": 6
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 19
+     },
+     "bound": {
+      "none": 131
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 25
+     },
+     "bound": {
+      "none": 131
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "one": 6,
+      "none": 19
+     },
+     "bound": {
+      "same": 131
+     },
+     "distinct_functions_of_the_unbound_one": 6
+    },
+    "name-in-project": {
+     "unbound": {
+      "many": 5,
+      "one": 1,
+      "none": 19
+     },
+     "bound": {
+      "many": 93,
+      "same": 38
+     },
+     "distinct_functions_of_the_unbound_one": 1
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 19
+     },
+     "bound": {
+      "same": 131
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    }
+   }
+  },
+  "express": {
+   "applications": 3,
+   "noir_endpoints": 647,
+   "http_endpoints": 627,
+   "with_handler_name": 484,
+   "bound_to_one_function": 5,
+   "unbound": 622,
+   "by_file_suffix": {
+    ".js": {
+     "endpoints": 369,
+     "with_handler_name": 367,
+     "bound": 4
+    },
+    ".ts": {
+     "endpoints": 188,
+     "with_handler_name": 117,
+     "bound": 1
+    },
+    ".json": {
+     "endpoints": 70,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 479,
+    "the snapshot holds no function where Noir cites": 98,
+    "Noir gives no handler": 45
+   },
+   "causes": {
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: Noir names a closure and a function starts at the cited line": 353,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the name carries call parentheses (`f()`) and a covering function has that name": 102,
+    "the snapshot holds no function where Noir cites: the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": 70,
+    "Noir gives no handler: Noir names no handler, the line is inside a function (the registration)": 39,
+    "the snapshot holds no function where Noir cites: the snapshot holds no function in the cited code file": 28,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: no declaration ends with the last part of the name, and a function starts at the cited line": 13,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the last part of the name is a covering function's name, with a receiver or object variable in front": 10,
+    "Noir gives no handler: Noir names no handler, no function covers the line": 6,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: no declaration has that name, and a function starts at the cited line": 1
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 537,
+      "one": 85,
+      "one, the name has call parentheses (the function bound makes the handler)": 85
+     },
+     "bound": {
+      "same": 5
+     },
+     "distinct_functions_of_the_unbound_one": 61
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 510,
+      "one": 112,
+      "one, the name has call parentheses (the function bound makes the handler)": 102
+     },
+     "bound": {
+      "same": 5
+     },
+     "distinct_functions_of_the_unbound_one": 88
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 618,
+      "one": 4,
+      "one, the name has call parentheses (the function bound makes the handler)": 4
+     },
+     "bound": {
+      "none": 5
+     },
+     "distinct_functions_of_the_unbound_one": 4
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 143,
+      "one": 472,
+      "many": 7,
+      "one, the name has call parentheses (the function bound makes the handler)": 96
+     },
+     "bound": {
+      "same": 5
+     },
+     "distinct_functions_of_the_unbound_one": 436
+    },
+    "combined": {
+     "unbound": {
+      "none": 143,
+      "one": 472,
+      "many": 7,
+      "one, the name has call parentheses (the function bound makes the handler)": 96
+     },
+     "bound": {
+      "same": 5
+     },
+     "distinct_functions_of_the_unbound_one": 436
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 143
+     },
+     "bound": {
+      "none": 5
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 622
+     },
+     "bound": {
+      "none": 5
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 510,
+      "one": 112,
+      "one, the name has call parentheses (the function bound makes the handler)": 102
+     },
+     "bound": {
+      "same": 5
+     },
+     "distinct_functions_of_the_unbound_one": 88
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 505,
+      "one": 86,
+      "one, the name has call parentheses (the function bound makes the handler)": 80,
+      "many": 31
+     },
+     "bound": {
+      "same": 5
+     },
+     "distinct_functions_of_the_unbound_one": 62
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 104,
+      "one": 39
+     },
+     "bound": {
+      "same": 5
+     },
+     "distinct_functions_of_the_unbound_one": 2
+    }
+   }
+  },
+  "expo-router": {
+   "applications": 3,
+   "noir_endpoints": 39,
+   "http_endpoints": 36,
+   "with_handler_name": 34,
+   "bound_to_one_function": 32,
+   "unbound": 4,
+   "by_file_suffix": {
+    ".ts": {
+     "endpoints": 34,
+     "with_handler_name": 34,
+     "bound": 32
+    },
+    ".json": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".jsonc": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "no function of the project serves the endpoint": 2,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 2
+   },
+   "causes": {
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 2,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: no declaration has that name, and a function starts at the cited line": 2
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 4
+     },
+     "bound": {
+      "same": 32
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 4
+     },
+     "bound": {
+      "same": 32
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 4
+     },
+     "bound": {
+      "none": 32
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 2,
+      "one": 2
+     },
+     "bound": {
+      "same": 32
+     },
+     "distinct_functions_of_the_unbound_one": 2
+    },
+    "combined": {
+     "unbound": {
+      "none": 2,
+      "one": 2
+     },
+     "bound": {
+      "same": 32
+     },
+     "distinct_functions_of_the_unbound_one": 2
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 2
+     },
+     "bound": {
+      "none": 32
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 4
+     },
+     "bound": {
+      "none": 32
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 4
+     },
+     "bound": {
+      "same": 32
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 4
+     },
+     "bound": {
+      "many": 26,
+      "same": 6
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 2
+     },
+     "bound": {
+      "same": 32
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    }
+   }
+  },
+  "spring": {
+   "applications": 2,
+   "noir_endpoints": 553,
+   "http_endpoints": 473,
+   "with_handler_name": 321,
+   "bound_to_one_function": 321,
+   "unbound": 152,
+   "by_file_suffix": {
+    ".java": {
+     "endpoints": 323,
+     "with_handler_name": 321,
+     "bound": 321
+    },
+    ".js": {
+     "endpoints": 90,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".css": {
+     "endpoints": 41,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".xml": {
+     "endpoints": 16,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".txt": {
+     "endpoints": 2,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".html": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "no function of the project serves the endpoint": 134,
+    "the snapshot holds no function where Noir cites": 16,
+    "Noir gives no handler": 2
+   },
+   "causes": {
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 134,
+    "the snapshot holds no function where Noir cites: the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": 16,
+    "Noir gives no handler: Noir names no handler, the line is inside a function (the registration)": 2
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "same": 321
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "same": 321
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "none": 321
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "none": 321
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "combined": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "same": 321
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "none": 320,
+      "different": 1
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "none": 321
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "same": 314,
+      "many": 7
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 152
+     },
+     "bound": {
+      "many": 189,
+      "same": 132
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 150,
+      "one": 2
+     },
+     "bound": {
+      "same": 321
+     },
+     "distinct_functions_of_the_unbound_one": 1
+    }
+   }
+  },
+  "spring-kotlin": {
+   "applications": 1,
+   "noir_endpoints": 49,
+   "http_endpoints": 33,
+   "with_handler_name": 18,
+   "bound_to_one_function": 18,
+   "unbound": 15,
+   "by_file_suffix": {
+    ".kt": {
+     "endpoints": 18,
+     "with_handler_name": 18,
+     "bound": 18
+    },
+    ".kts": {
+     "endpoints": 14,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".css": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "the snapshot holds no function where Noir cites": 14,
+    "no function of the project serves the endpoint": 1
+   },
+   "causes": {
+    "the snapshot holds no function where Noir cites: the snapshot holds no function in the cited code file": 14,
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 1
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "same": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "same": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "none": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "none": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "combined": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "same": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "none": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "none": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "same": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "many": 4,
+      "same": 14
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 15
+     },
+     "bound": {
+      "same": 18
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    }
+   }
+  },
+  "aspnet": {
+   "applications": 2,
+   "noir_endpoints": 120,
+   "http_endpoints": 115,
+   "with_handler_name": 91,
+   "bound_to_one_function": 62,
+   "unbound": 53,
+   "by_file_suffix": {
+    ".cs": {
+     "endpoints": 83,
+     "with_handler_name": 81,
+     "bound": 62
+    },
+    ".cshtml": {
+     "endpoints": 18,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".razor": {
+     "endpoints": 14,
+     "with_handler_name": 10,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "the snapshot holds no function where Noir cites": 33,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 16,
+    "no function of the project serves the endpoint": 3,
+    "Noir gives no handler": 1
+   },
+   "causes": {
+    "the snapshot holds no function where Noir cites: the cited file is markup (a template or a component with its code inside)": 32,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: Noir names a closure and a function starts at the cited line": 16,
+    "no function of the project serves the endpoint: Noir names a closure and no function starts at the cited line (a mapping the framework answers, a health check)": 3,
+    "the snapshot holds no function where Noir cites: the snapshot holds no function in the cited code file": 1,
+    "Noir gives no handler: Noir names no handler, the line is inside a function (the registration)": 1
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 53
+     },
+     "bound": {
+      "same": 62
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 53
+     },
+     "bound": {
+      "same": 62
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 53
+     },
+     "bound": {
+      "none": 62
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 37,
+      "one": 16
+     },
+     "bound": {
+      "none": 49,
+      "same": 13
+     },
+     "distinct_functions_of_the_unbound_one": 16
+    },
+    "combined": {
+     "unbound": {
+      "none": 37,
+      "one": 16
+     },
+     "bound": {
+      "same": 62
+     },
+     "distinct_functions_of_the_unbound_one": 16
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 24
+     },
+     "bound": {
+      "none": 62
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 53
+     },
+     "bound": {
+      "none": 62
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 53
+     },
+     "bound": {
+      "many": 14,
+      "same": 48
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 53
+     },
+     "bound": {
+      "many": 25,
+      "same": 37
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 23,
+      "one": 1
+     },
+     "bound": {
+      "same": 62
+     },
+     "distinct_functions_of_the_unbound_one": 1
+    }
+   }
+  },
+  "django": {
+   "applications": 2,
+   "noir_endpoints": 949,
+   "http_endpoints": 936,
+   "with_handler_name": 829,
+   "bound_to_one_function": 749,
+   "unbound": 187,
+   "by_file_suffix": {
+    ".py": {
+     "endpoints": 929,
+     "with_handler_name": 826,
+     "bound": 749
+    },
+    ".toml": {
+     "endpoints": 4,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".js": {
+     "endpoints": 3,
+     "with_handler_name": 3,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "Noir gives no handler": 96,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 80,
+    "no function of the project serves the endpoint": 6,
+    "the snapshot holds no function where Noir cites": 5
+   },
+   "causes": {
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the name is the class that owns the covering function (a class-based view)": 77,
+    "Noir gives no handler: Noir names no handler and cites the header of a class (its actions are inherited: the class is the handler, not a function)": 50,
+    "Noir gives no handler: Noir names no handler and a function nested in the covering function starts just below the cited line (a decorator or attribute line)": 39,
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 6,
+    "the snapshot holds no function where Noir cites: the snapshot holds no function in the cited code file": 5,
+    "Noir gives no handler: Noir names no handler, no function covers the line": 4,
+    "Noir gives no handler: Noir names no handler, the line is inside a function (the registration)": 3,
+    "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: Noir names a closure and a function starts at the cited line": 3
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 187
+     },
+     "bound": {
+      "same": 749
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 187
+     },
+     "bound": {
+      "same": 749
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 110,
+      "one": 77
+     },
+     "bound": {
+      "none": 749
+     },
+     "distinct_functions_of_the_unbound_one": 52
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 107,
+      "one": 80
+     },
+     "bound": {
+      "same": 749
+     },
+     "distinct_functions_of_the_unbound_one": 55
+    },
+    "combined": {
+     "unbound": {
+      "none": 107,
+      "one": 80
+     },
+     "bound": {
+      "same": 749
+     },
+     "distinct_functions_of_the_unbound_one": 55
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 68,
+      "one": 39
+     },
+     "bound": {
+      "none": 746,
+      "different": 3
+     },
+     "distinct_functions_of_the_unbound_one": 39
+    },
+    "name-above": {
+     "unbound": {
+      "none": 187
+     },
+     "bound": {
+      "none": 749
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 187
+     },
+     "bound": {
+      "same": 749
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 187
+     },
+     "bound": {
+      "many": 222,
+      "same": 527
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 65,
+      "one": 42
+     },
+     "bound": {
+      "same": 749
+     },
+     "distinct_functions_of_the_unbound_one": 10
+    }
+   }
+  },
+  "fastapi": {
+   "applications": 2,
+   "noir_endpoints": 569,
+   "http_endpoints": 529,
+   "with_handler_name": 313,
+   "bound_to_one_function": 313,
+   "unbound": 216,
+   "by_file_suffix": {
+    ".py": {
+     "endpoints": 314,
+     "with_handler_name": 313,
+     "bound": 313
+    },
+    ".yaml": {
+     "endpoints": 207,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".tsx": {
+     "endpoints": 7,
+     "with_handler_name": 0,
+     "bound": 0
+    },
+    ".yml": {
+     "endpoints": 1,
+     "with_handler_name": 0,
+     "bound": 0
+    }
+   },
+   "unbound_by_group": {
+    "the snapshot holds no function where Noir cites": 207,
+    "Noir gives no handler": 8,
+    "no function of the project serves the endpoint": 1
+   },
+   "causes": {
+    "the snapshot holds no function where Noir cites: the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": 207,
+    "Noir gives no handler: Noir names no handler, no function covers the line": 8,
+    "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 1
+   },
+   "fixes": {
+    "qualified-suffix": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "same": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "last-part-covering": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "same": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "class-of-covering": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "none": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "starts-at-line": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "same": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "combined": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "same": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "nested-below": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "none": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-above": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "none": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-file": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "same": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "name-in-project": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "same": 272,
+      "many": 41
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    },
+    "innermost-covering": {
+     "unbound": {
+      "none": 216
+     },
+     "bound": {
+      "same": 313
+     },
+     "distinct_functions_of_the_unbound_one": 0
+    }
+   }
+  }
+ },
+ "all": {
+  "applications": 25,
+  "noir_endpoints": 4706,
+  "http_endpoints": 3994,
+  "with_handler_name": 2950,
+  "bound_to_one_function": 1631,
+  "unbound": 2363,
+  "by_file_suffix": {
+   ".py": {
+    "endpoints": 1243,
+    "with_handler_name": 1139,
+    "bound": 1062
+   },
+   ".php": {
+    "endpoints": 666,
+    "with_handler_name": 629,
+    "bound": 0
+   },
+   ".js": {
+    "endpoints": 472,
+    "with_handler_name": 370,
+    "bound": 4
+   },
+   ".ts": {
+    "endpoints": 359,
+    "with_handler_name": 288,
+    "bound": 164
+   },
+   ".go": {
+    "endpoints": 331,
+    "with_handler_name": 94,
+    "bound": 0
+   },
+   ".java": {
+    "endpoints": 323,
+    "with_handler_name": 321,
+    "bound": 321
+   },
+   ".yaml": {
+    "endpoints": 226,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".json": {
+    "endpoints": 125,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".cs": {
+    "endpoints": 83,
+    "with_handler_name": 81,
+    "bound": 62
+   },
+   ".css": {
+    "endpoints": 47,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".html": {
+    "endpoints": 18,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".xml": {
+    "endpoints": 18,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".kt": {
+    "endpoints": 18,
+    "with_handler_name": 18,
+    "bound": 18
+   },
+   ".cshtml": {
+    "endpoints": 18,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  },
+  "unbound_by_group": {
+   "the snapshot holds no function where Noir cites": 1090,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 677,
+   "Noir gives no handler": 389,
+   "no function of the project serves the endpoint": 207
+  },
+  "causes": {
+   "the snapshot holds no function where Noir cites: the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": 1010,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: Noir names a closure and a function starts at the cited line": 375,
+   "Noir gives no handler: Noir names no handler, the line is inside a function (the registration)": 282,
+   "no function of the project serves the endpoint: Noir cites a file and no line (a static file it serves)": 204,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the name carries call parentheses (`f()`) and a covering function has that name": 102,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the last part of the name is a covering function's name, with a receiver or object variable in front": 101,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the name is the class that owns the covering function (a class-based view)": 77,
+   "Noir gives no handler: Noir names no handler and cites the header of a class (its actions are inherited: the class is the handler, not a function)": 50,
+   "the snapshot holds no function where Noir cites: the snapshot holds no function in the cited code file": 48,
+   "Noir gives no handler: Noir names no handler and a function nested in the covering function starts just below the cited line (a decorator or attribute line)": 39,
+   "the snapshot holds no function where Noir cites: the cited file is markup (a template or a component with its code inside)": 32,
+   "Noir gives no handler: Noir names no handler, no function covers the line": 18,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: no declaration ends with the last part of the name, and a function starts at the cited line": 13,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: the name is the end of a covering function's qualified name (the class or function around it is not in Noir's name)": 6,
+   "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch: no declaration has that name, and a function starts at the cited line": 3,
+   "no function of the project serves the endpoint: Noir names a closure and no function starts at the cited line (a mapping the framework answers, a health check)": 3
+  },
+  "fixes": {
+   "qualified-suffix": {
+    "unbound": {
+     "none": 2272,
+     "one": 91,
+     "one, the name has call parentheses (the function bound makes the handler)": 85
+    },
+    "bound": {
+     "same": 1631
+    },
+    "distinct_functions_of_the_unbound_one": 67
+   },
+   "last-part-covering": {
+    "unbound": {
+     "none": 2154,
+     "one": 209,
+     "one, the name has call parentheses (the function bound makes the handler)": 102
+    },
+    "bound": {
+     "same": 1631
+    },
+    "distinct_functions_of_the_unbound_one": 185
+   },
+   "class-of-covering": {
+    "unbound": {
+     "none": 2282,
+     "one": 81,
+     "one, the name has call parentheses (the function bound makes the handler)": 4
+    },
+    "bound": {
+     "none": 1631
+    },
+    "distinct_functions_of_the_unbound_one": 56
+   },
+   "starts-at-line": {
+    "unbound": {
+     "none": 1686,
+     "one": 670,
+     "many": 7,
+     "one, the name has call parentheses (the function bound makes the handler)": 96
+    },
+    "bound": {
+     "same": 1243,
+     "none": 388
+    },
+    "distinct_functions_of_the_unbound_one": 609
+   },
+   "combined": {
+    "unbound": {
+     "none": 1686,
+     "one": 670,
+     "many": 7,
+     "one, the name has call parentheses (the function bound makes the handler)": 96
+    },
+    "bound": {
+     "same": 1631
+    },
+    "distinct_functions_of_the_unbound_one": 609
+   },
+   "nested-below": {
+    "unbound": {
+     "none": 1005,
+     "one": 39
+    },
+    "bound": {
+     "none": 1627,
+     "different": 4
+    },
+    "distinct_functions_of_the_unbound_one": 39
+   },
+   "name-above": {
+    "unbound": {
+     "none": 2363
+    },
+    "bound": {
+     "none": 1631
+    },
+    "distinct_functions_of_the_unbound_one": 0
+   },
+   "name-in-file": {
+    "unbound": {
+     "none": 2154,
+     "one": 209,
+     "one, the name has call parentheses (the function bound makes the handler)": 102
+    },
+    "bound": {
+     "same": 1610,
+     "many": 21
+    },
+    "distinct_functions_of_the_unbound_one": 185
+   },
+   "name-in-project": {
+    "unbound": {
+     "none": 1962,
+     "many": 274,
+     "one": 127,
+     "one, the name has call parentheses (the function bound makes the handler)": 80
+    },
+    "bound": {
+     "many": 600,
+     "same": 1031
+    },
+    "distinct_functions_of_the_unbound_one": 101
+   },
+   "innermost-covering": {
+    "unbound": {
+     "none": 723,
+     "one": 321
+    },
+    "bound": {
+     "same": 1631
+    },
+    "distinct_functions_of_the_unbound_one": 48
+   }
+  }
+ },
+ "failed": {
+  "btcpayserver": "FunctionTimeoutError: Task's current input in-01M85RS29Y7Y0MANY15K0BHV7X:1795490089278-0 hit its timeout of 3600s"
+ }
+}

@@ -12,7 +12,13 @@ def test_committed_result_equals_a_fresh_run():
     assert json.loads(compare.RESULT.read_text()) == compare.compare()
 
 
-def test_angular_root_unit_is_same():
-    # tsc and Daodan both give dist/ui-kit for the root unit of js-angular.
-    unit = compare.compare()["fixtures"]["js-angular"]["units"]["."]["ui-kit"]
-    assert unit == {"class": "same", "tsc": ["dist/ui-kit"], "daodan": ["dist/ui-kit"]}
+def test_no_pattern_differs_from_tsc():
+    assert compare.compare()["counts"]["different"] == 0
+
+
+def test_angular_units_are_same():
+    # `paths` is declared in the root tsconfig and inherited by projects/ui-kit: tsc resolves it against the file that
+    # declares it, so both units give dist/ui-kit, in tsc and in Daodan.
+    units = compare.compare()["fixtures"]["js-angular"]["units"]
+    for root in (".", "projects/ui-kit"):
+        assert units[root]["ui-kit"] == {"class": "same", "tsc": ["dist/ui-kit"], "daodan": ["dist/ui-kit"]}

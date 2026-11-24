@@ -162,3 +162,17 @@ def test_a_child_process_gets_the_engine_in_container_and_in_engine_pass(tmp_pat
          "print('engine on modal')"],
         env=environment, cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert child.returncode == 0 and child.stdout.strip() == "engine on modal", child.stderr
+
+
+def test_the_addresses_of_an_apt_archive_are_ipv4_only_because_modals_allowlist_refuses_ipv6(monkeypatch):
+    """Measured on Modal: `Network access allowlist does not support IPv6 CIDRs`. The lookup asks for IPv4 and writes /32."""
+    import socket
+    asked = {}
+
+    def lookup(host, port, family=0, type=0, **options):
+        asked["family"] = family
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("151.101.0.1", 80)),
+                (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("151.101.0.1", 80))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", lookup)
+    assert modal_pipeline._addresses("deb.debian.org") == ["151.101.0.1/32"] and asked["family"] == socket.AF_INET

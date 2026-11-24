@@ -1,0 +1,158 @@
+{
+ "name": "nestjs-boilerplate",
+ "framework": "nestjs",
+ "repository": "brocoders/nestjs-boilerplate",
+ "commit": "9620f159eefe38f47747d02ab162852367c5472c",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 22,
+  "protocols": {
+   "http": 22
+  },
+  "errors": 0,
+  "seconds": 1.0,
+  "peak_memory_mb": 199.0,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name joined by '.'": 22
+  },
+  "http_handler_forms": {
+   "name joined by '.'": 22
+  },
+  "http_endpoints_in_the_json": 22,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 22,
+  "with_name_and_path_and_line": 22
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 489,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 249,
+  "functions": 369,
+  "functions_by_suffix": {
+   ".ts": 369
+  },
+  "files_by_suffix": {
+   ".ts": 170,
+   ".json": 35,
+   ".md": 18,
+   ".sh": 12,
+   ".yaml": 7,
+   ".hbs": 3,
+   ".js": 2,
+   "": 1,
+   ".mjs": 1
+  },
+  "seconds": 3.6
+ },
+ "http": {
+  "endpoints": 22,
+  "with_handler_name": 22,
+  "bound_to_one_function": 22,
+  "unbound": 0,
+  "by_file_suffix": {
+   ".ts": {
+    "endpoints": 22,
+    "with_handler_name": 22,
+    "bound": 22
+   }
+  }
+ },
+ "unbound_by_group": {},
+ "causes": {},
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {},
+   "bound": {
+    "same": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {},
+   "bound": {
+    "same": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {},
+   "bound": {
+    "none": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {},
+   "bound": {
+    "same": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {},
+   "bound": {
+    "same": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {},
+   "bound": {
+    "none": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {},
+   "bound": {
+    "none": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {},
+   "bound": {
+    "same": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {},
+   "bound": {
+    "many": 17,
+    "same": 5
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {},
+   "bound": {
+    "same": 22
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

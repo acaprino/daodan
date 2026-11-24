@@ -1,0 +1,38 @@
+[
+ {
+  "build": {
+   "argv": [
+    "go",
+    "build",
+    "-o",
+    "/work/cold.bin",
+    "."
+   ],
+   "peak_memory_mb": 977,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 0,
+   "seconds": 23.47,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  },
+  "download": {
+   "argv": [
+    "go",
+    "mod",
+    "download"
+   ],
+   "peak_memory_mb": 70,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 0,
+   "seconds": 1.89,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  }
+ }
+]

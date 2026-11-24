@@ -1,0 +1,259 @@
+{
+ "name": "fastapi-template",
+ "framework": "fastapi",
+ "repository": "fastapi/full-stack-fastapi-template",
+ "commit": "77e550a73bb49dd2967622c5ed11bf7a49603c93",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 34,
+  "protocols": {
+   "http": 31,
+   "cli": 3
+  },
+  "errors": 1,
+  "seconds": 0.7,
+  "peak_memory_mb": 202.9,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name": 23,
+   "none": 11
+  },
+  "http_handler_forms": {
+   "name": 23,
+   "none": 8
+  },
+  "http_endpoints_in_the_json": 31,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 23,
+  "with_name_and_path_and_line": 23
+ },
+ "before_the_binder": {
+  "other_protocol": 3,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 248,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 191,
+  "functions": 723,
+  "functions_by_suffix": {
+   ".tsx": 359,
+   ".ts": 224,
+   ".py": 140
+  },
+  "files_by_suffix": {
+   ".tsx": 70,
+   ".py": 43,
+   ".ts": 39,
+   ".json": 10,
+   ".md": 8,
+   ".sh": 8,
+   ".html": 4,
+   ".yml": 3,
+   ".toml": 2,
+   ".yaml": 1,
+   "": 1,
+   ".ini": 1,
+   ".css": 1
+  },
+  "seconds": 14.7
+ },
+ "http": {
+  "endpoints": 31,
+  "with_handler_name": 23,
+  "bound_to_one_function": 23,
+  "unbound": 8,
+  "by_file_suffix": {
+   ".py": {
+    "endpoints": 23,
+    "with_handler_name": 23,
+    "bound": 23
+   },
+   ".tsx": {
+    "endpoints": 7,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".yml": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir gives no handler": 7,
+  "no function of the project serves the endpoint": 1
+ },
+ "causes": {
+  "Noir names no handler, no function covers the line": {
+   "group": "Noir gives no handler",
+   "endpoints": 7,
+   "by_file_suffix": {
+    ".tsx": 7
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/admin",
+     "site": "frontend/src/routes/_layout/admin.tsx:20",
+     "noir_handler": null,
+     "after": [
+      "(anonymous) 22-29",
+      "(anonymous) 30-36"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/items",
+     "site": "frontend/src/routes/_layout/items.tsx:20",
+     "noir_handler": null,
+     "after": [
+      "(anonymous) 22-28",
+      "ItemsTableContent 31-47"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/settings",
+     "site": "frontend/src/routes/_layout/settings.tsx:15",
+     "noir_handler": null,
+     "after": [
+      "(anonymous) 17-23",
+      "UserSettings 26-61"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  },
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".yml": 1
+   },
+   "examples": [
+    {
+     "method": "ANY",
+     "url": "/",
+     "site": "compose.deploy.yml",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "same": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "same": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "none": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "same": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "same": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "none": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "none": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "same": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "same": 19,
+    "many": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 8
+   },
+   "bound": {
+    "same": 23
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

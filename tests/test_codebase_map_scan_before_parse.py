@@ -21,7 +21,7 @@ import technologies  # noqa: E402
 from test_codebase_map_module_edges_in_connect import FILES  # noqa: E402
 
 MORE = {"pyproject.toml": '[project]\nname = "tool"\ndependencies = ["flask"]\n\n[project.scripts]\ntool = "tool.cli:main"\n',
-        "tool/__init__.py": "", "tool/cli.py": "import os\n\nKEY = os.environ['ADYEN_API_KEY']\n\ndef main():\n    return 0\n",
+        "tool/__init__.py": "", "tool/cli.py": "import os\n\nKEY = 'https://api.pushbullet.com/v2'\n\ndef main():\n    return 0\n",
         "package.json": '{"name":"root","private":true,"workspaces":["libs/*"]}'}
 
 
@@ -50,7 +50,7 @@ def test_the_steps_are_scan_stack_then_parse():
     assert [step.NAME for step in pipeline.STEPS][:3] == ["scan", "stack", "parse"]
 
 
-def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(tmp_path):
+def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(real_stack, tmp_path):
     root = _project(tmp_path)
     read, listed = tmp_path / "read" / "manifest.sqlite", tmp_path / "listed" / "manifest.sqlite"
     snapshot.write_snapshot(root, read)
@@ -58,7 +58,7 @@ def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(
     for manifest in (read, listed):
         result = pipeline.run(manifest, start="scan", stop="stack", fast_scan=True)
         assert "failed" not in result["scan"] and "failed" not in result["stack"], result
-    assert "adyen" in {item["id"] for item in _written(read)[technologies.path(read).name]["mentioned"]}  # a sign read in the text
+    assert "pushbullet" in {item["id"] for item in _written(read)[technologies.path(read).name]["mentioned"]}  # a sign read in the text
     assert _written(listed) == _written(read)
 
 

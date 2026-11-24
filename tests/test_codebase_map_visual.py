@@ -7,6 +7,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+
+import pytest
 from pathlib import Path
 from unittest import mock
 
@@ -115,6 +117,7 @@ class EnvelopeTests(unittest.TestCase):
         self.service.create_run(".", "r1", engine=False)
         self.envelope = visual.build_envelope(self.project / ".daodan/map/runs/r1")
 
+    @pytest.mark.usefixtures("real_stack")
     def test_the_technologies_of_the_stack_step_and_of_each_build_unit(self):
         (self.project / "requirements.txt").write_text("fastapi==0.110\n", encoding="utf-8")
         git_project(self.project)
@@ -348,19 +351,22 @@ class LinkRelationTests(unittest.TestCase):
         self.assertIn((worker, server, {"reads": 1}), [(e["source"], e["target"], e["counts"]) for e in graph["edges"]])
 
 
+@pytest.mark.usefixtures("real_stack")
 class ServiceNodeTests(unittest.TestCase):
     """A service the stack recognises is an external node with its name, type and mark, used by the files that show
-    it; a framework is the stack of a module, not a node, and a service only mentioned in a line is no node."""
+    it; a framework is the stack of a module, not a node, and a service only mentioned in a line is no node. A line
+    mentions a service by a host of its in a URL (`registry_hosts`): Lemon Squeezy, declared too, and Pushbullet."""
 
     MANIFEST = ('{\n  "name": "shop",\n  "version": "1.0.0",\n  "dependencies": {\n    "express": "^4.18.0",\n'
-                '    "stripe": "^14.0.0",\n    "@adobe/aio-lib-analytics": "^3.0.0"\n  }\n}\n')
+                '    "stripe": "^14.0.0",\n    "@adobe/aio-lib-analytics": "^3.0.0",\n    "lemonsqueezy.ts": "^0.1.0"\n'
+                '  }\n}\n')
 
     @classmethod
     def setUpClass(cls):
         cls.project = Path(tempfile.mkdtemp(prefix="map-visual-services-")).resolve()
         files = {"package.json": cls.MANIFEST,
-                 "src/pay.js": 'const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);\nmodule.exports = stripe;\n',
-                 "src/config.js": "module.exports = { key: process.env.FIREBASE_API_KEY };\n"}
+                 "src/pay.js": 'module.exports = "https://api.lemonsqueezy.com/v1/checkouts";\n',
+                 "src/config.js": 'module.exports = { push: "https://api.pushbullet.com/v2" };\n'}
         for rel, text in files.items():
             (cls.project / rel).parent.mkdir(parents=True, exist_ok=True)
             (cls.project / rel).write_text(text, encoding="utf-8")
@@ -391,7 +397,7 @@ class ServiceNodeTests(unittest.TestCase):
         self.assertEqual((declared["status"], declared["counts"], declared["evidence"]),
                          ("confirmed", {"uses": 1}, [{"path": "package.json", "line": self.line}]))
         # a line that names it, in a file that does not declare it, is a use the graph keeps uncertain
-        mentioned = uses["uses:file:src/pay.js->external:stripe uncertain"]
+        mentioned = uses["uses:file:src/pay.js->external:lemonsqueezy uncertain"]
         self.assertEqual((mentioned["status"], mentioned["evidence"]), ("uncertain", [{"path": "src/pay.js", "line": 1}]))
 
     def test_the_app_graph_draws_the_node_beside_the_groups_used_by_the_group_of_each_file(self):
@@ -404,7 +410,7 @@ class ServiceNodeTests(unittest.TestCase):
         uses = {(edge["source"], edge["target"], edge["status"]): edge for edge in graph["edges"] if "uses" in edge["counts"]}
         self.assertEqual(uses[("directory:.", "external:stripe", "confirmed")]["evidence"],
                          [{"kind": "uses", "path": "package.json", "line": self.line}])
-        self.assertEqual(uses[("directory:src", "external:stripe", "uncertain")]["counts"], {"uses": 1})
+        self.assertEqual(uses[("directory:src", "external:lemonsqueezy", "uncertain")]["counts"], {"uses": 1})
 
     def test_an_entry_without_a_mark_is_a_node_all_the_same_with_no_image_to_ask(self):
         adobe = self.refs["external:adobe.analytics"]
@@ -419,12 +425,15 @@ class ServiceNodeTests(unittest.TestCase):
     def test_a_framework_or_a_library_is_no_node(self):
         externals = {ref for ref, item in self.refs.items() if item["type"] == "external"}
         self.assertIn("express", {item["id"] for item in self.envelope["technologies"]})  # the stack has it
-        self.assertEqual(externals, {"external:stripe", "external:adobe.analytics"})
+        # `adobe`, the generic service the release gives beside `adobe.analytics`, stays as it gives it (the owner's
+        # confirmed choice 6 of docs/plans/2026-11-22-stack-dal-fork-3-passaggio.md)
+        self.assertEqual(externals, {"external:stripe", "external:lemonsqueezy", "external:adobe.analytics",
+                                     "external:adobe"})
 
     def test_a_service_only_mentioned_in_a_line_is_no_node(self):
-        self.assertIn("firebase", {item["id"] for item in self.stack["mentioned"]})  # the stack keeps it apart
-        self.assertNotIn("external:firebase", self.refs)
-        self.assertNotIn("firebase", {item["target"].removeprefix("external:") for item in self.envelope["relations"]})
+        self.assertIn("pushbullet", {item["id"] for item in self.stack["mentioned"]})  # the stack keeps it apart
+        self.assertNotIn("external:pushbullet", self.refs)
+        self.assertNotIn("pushbullet", {item["target"].removeprefix("external:") for item in self.envelope["relations"]})
 
 
 def visual_app_graph(envelope):

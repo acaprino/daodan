@@ -1,0 +1,583 @@
+{
+ "name": "juice-shop",
+ "framework": "express",
+ "repository": "juice-shop/juice-shop",
+ "commit": "c9f99228d9d56afb5f5ca7925376292f7fa44b13",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 206,
+  "protocols": {
+   "http": 201,
+   "ws": 4,
+   "cli": 1
+  },
+  "errors": 0,
+  "seconds": 2.0,
+  "peak_memory_mb": 290.4,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "none": 89,
+   "name joined by '()'": 86,
+   "name joined by '().'": 17,
+   "name joined by '.'": 10,
+   "closure": 3,
+   "name": 1
+  },
+  "http_handler_forms": {
+   "name joined by '()'": 86,
+   "none": 84,
+   "name joined by '().'": 17,
+   "name joined by '.'": 10,
+   "closure": 3,
+   "name": 1
+  },
+  "http_endpoints_in_the_json": 201,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 117,
+  "with_name_and_path_and_line": 117
+ },
+ "before_the_binder": {
+  "other_protocol": 5,
+  "no_path": 0,
+  "dropped": 13,
+  "dropped_by_reason": {
+   "outside_snapshot (.json)": 4,
+   "outside_snapshot (.asc)": 3,
+   "outside_snapshot (.sha512)": 3,
+   "outside_snapshot (.csv)": 1,
+   "outside_snapshot (.txt)": 1,
+   "outside_snapshot (.conf)": 1
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 1498,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 1082,
+  "functions": 8868,
+  "functions_by_suffix": {
+   ".ts": 7197,
+   ".js": 1658,
+   ".mjs": 13
+  },
+  "files_by_suffix": {
+   ".ts": 664,
+   ".json": 106,
+   ".scss": 84,
+   ".html": 83,
+   ".yml": 80,
+   ".md": 13,
+   ".tf": 11,
+   ".js": 9,
+   ".mjs": 7,
+   ".xml": 7,
+   "": 3,
+   ".css": 3,
+   ".py": 3,
+   ".mts": 2,
+   ".sh": 2
+  },
+  "seconds": 38.6
+ },
+ "http": {
+  "endpoints": 188,
+  "with_handler_name": 117,
+  "bound_to_one_function": 1,
+  "unbound": 187,
+  "by_file_suffix": {
+   ".ts": {
+    "endpoints": 188,
+    "with_handler_name": 117,
+    "bound": 1
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 116,
+  "Noir gives no handler": 44,
+  "the snapshot holds no function where Noir cites": 27
+ },
+ "causes": {
+  "the name carries call parentheses (`f()`) and a covering function has that name": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 102,
+   "by_file_suffix": {
+    ".ts": 102
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/Recycles",
+     "site": "routes/recycles.ts:23",
+     "noir_handler": {
+      "name": "recycles.blockRecycleItems()",
+      "path": "routes/recycles.ts",
+      "line": 23
+     },
+     "covering": [
+      "blockRecycleItems 23-26",
+      "blockRecycleItems.(anonymous) 23-26"
+     ],
+     "named_in_file": [
+      "blockRecycleItems 23-26"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/api/Recycles/:id",
+     "site": "routes/recycles.ts:11",
+     "noir_handler": {
+      "name": "recycles.getRecycleItem()",
+      "path": "routes/recycles.ts",
+      "line": 11
+     },
+     "covering": [
+      "getRecycleItem 11-21",
+      "getRecycleItem.(anonymous) 11-21"
+     ],
+     "named_in_file": [
+      "getRecycleItem 11-21"
+     ],
+     "after": [
+      "getRecycleItem.(anonymous).(anonymous) 16-18",
+      "getRecycleItem.(anonymous).(anonymous) 18-20"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "PUT",
+     "url": "/api/BasketItems/:id",
+     "site": "routes/basketItems.ts:65",
+     "noir_handler": {
+      "name": "basketItems.quantityCheckBeforeBasketItemUpdate()",
+      "path": "routes/basketItems.ts",
+      "line": 65
+     },
+     "covering": [
+      "quantityCheckBeforeBasketItemUpdate 65-85"
+     ],
+     "named_in_file": [
+      "quantityCheckBeforeBasketItemUpdate 65-85"
+     ],
+     "after": [
+      "quantityCheckBeforeBasketItemUpdate.(anonymous) 66-84",
+      "quantityCheckBeforeBasketItemUpdate.(anonymous).(anonymous) 70-70"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  },
+  "Noir names no handler, the line is inside a function (the registration)": {
+   "group": "Noir gives no handler",
+   "endpoints": 39,
+   "by_file_suffix": {
+    ".ts": 39
+   },
+   "examples": [
+    {
+     "method": "OPTIONS",
+     "url": "/*",
+     "site": "server.ts:184",
+     "noir_handler": null,
+     "covering": [
+      "configureApp 172-723"
+     ],
+     "after": [
+      "configureApp.(anonymous) 199-202",
+      "configureApp.(anonymous) 205-208"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/.well-known/security.txt",
+     "site": "server.ts:216",
+     "noir_handler": null,
+     "covering": [
+      "configureApp 172-723"
+     ],
+     "after": [
+      "configureApp.(anonymous) 221-221",
+      "configureApp.serveIndexMiddleware 246-270"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/security.txt",
+     "site": "server.ts:216",
+     "noir_handler": null,
+     "covering": [
+      "configureApp 172-723"
+     ],
+     "after": [
+      "configureApp.(anonymous) 221-221",
+      "configureApp.serveIndexMiddleware 246-270"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  },
+  "the snapshot holds no function in the cited code file": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 27,
+   "by_file_suffix": {
+    ".ts": 27
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/Users",
+     "site": "data/static/codefixes/changeProductChallenge_1.ts:10",
+     "noir_handler": null,
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/api/Users/:id",
+     "site": "data/static/codefixes/changeProductChallenge_1.ts:12",
+     "noir_handler": null,
+     "file_language": "typescript"
+    },
+    {
+     "method": "PUT",
+     "url": "/api/Users/:id",
+     "site": "data/static/codefixes/changeProductChallenge_1.ts:13",
+     "noir_handler": null,
+     "file_language": "typescript"
+    }
+   ]
+  },
+  "the last part of the name is a covering function's name, with a receiver or object variable in front": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 10,
+   "by_file_suffix": {
+    ".ts": 10
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/.well-known/passkey-endpoints",
+     "site": "routes/passkey.ts:276",
+     "noir_handler": {
+      "name": "passkey.passkeyEndpoints",
+      "path": "routes/passkey.ts",
+      "line": 276
+     },
+     "covering": [
+      "passkeyEndpoints 276-279"
+     ],
+     "named_in_file": [
+      "passkeyEndpoints 276-279"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "POST",
+     "url": "/rest/2fa/verify",
+     "site": "routes/2fa.ts:16",
+     "noir_handler": {
+      "name": "twoFactorAuth.verify",
+      "path": "routes/2fa.ts",
+      "line": 16
+     },
+     "covering": [
+      "verify 16-51"
+     ],
+     "named_in_file": [
+      "verify 16-51"
+     ],
+     "after": [
+      "verify.(anonymous) 38-38",
+      "status 58-86"
+     ],
+     "named_elsewhere": [
+      "frontend/src/app/Services/two-factor-auth-service.ts: TwoFactorAuthService.verify 36",
+      "frontend/src/app/two-factor-auth-enter/two-factor-auth-enter.component.ts: TwoFactorAuthEnterComponent.verify 49"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/rest/2fa/status",
+     "site": "routes/2fa.ts:58",
+     "noir_handler": {
+      "name": "twoFactorAuth.status",
+      "path": "routes/2fa.ts",
+      "line": 58
+     },
+     "covering": [
+      "status 58-86"
+     ],
+     "named_in_file": [
+      "status 58-86"
+     ],
+     "after": [
+      "setup 97-137",
+      "disable 142-170"
+     ],
+     "named_elsewhere": [
+      "frontend/src/app/Services/two-factor-auth-service.ts: TwoFactorAuthService.status 43"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  },
+  "Noir names no handler, no function covers the line": {
+   "group": "Noir gives no handler",
+   "endpoints": 5,
+   "by_file_suffix": {
+    ".ts": 5
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/ftp",
+     "site": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts:2",
+     "noir_handler": null,
+     "after": [
+      "setStaticFileHeaders 17-21"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/.well-known",
+     "site": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts:6",
+     "noir_handler": null,
+     "after": [
+      "setStaticFileHeaders 17-21"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/encryptionkeys",
+     "site": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts:10",
+     "noir_handler": null,
+     "after": [
+      "setStaticFileHeaders 17-21"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  },
+  "Noir names a closure and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 3,
+   "by_file_suffix": {
+    ".ts": 3
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/dataerasure/",
+     "site": "routes/dataErasure.ts:24",
+     "noir_handler": {
+      "name": "closure",
+      "path": "routes/dataErasure.ts",
+      "line": 24
+     },
+     "covering": [
+      "(anonymous) 24-66"
+     ],
+     "after": [
+      "(anonymous).(anonymous) 25-65",
+      "(anonymous) 74-132"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "POST",
+     "url": "/dataerasure/",
+     "site": "routes/dataErasure.ts:74",
+     "noir_handler": {
+      "name": "closure",
+      "path": "routes/dataErasure.ts",
+      "line": 74
+     },
+     "covering": [
+      "(anonymous) 74-132"
+     ],
+     "after": [
+      "(anonymous).(anonymous) 75-131",
+      "(anonymous).(anonymous).(anonymous) 110-118"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "POST",
+     "url": "/api/Users",
+     "site": "server.ts:440",
+     "noir_handler": {
+      "name": "closure",
+      "path": "server.ts",
+      "line": 440
+     },
+     "covering": [
+      "configureApp.(anonymous) 440-451",
+      "configureApp 172-723"
+     ],
+     "after": [
+      "configureApp.(anonymous) 550-555",
+      "configureApp.(anonymous).(anonymous) 551-553"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  },
+  "no declaration has that name, and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".ts": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/rest/user/authentication-details",
+     "site": "routes/authenticatedUsers.ts:37",
+     "noir_handler": {
+      "name": "authenticatedUsers()",
+      "path": "routes/authenticatedUsers.ts",
+      "line": 37
+     },
+     "covering": [
+      "(anonymous) 37-37"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 102,
+    "one": 85,
+    "one, the name has call parentheses (the function bound makes the handler)": 85
+   },
+   "bound": {
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 61
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 75,
+    "one": 112,
+    "one, the name has call parentheses (the function bound makes the handler)": 102
+   },
+   "bound": {
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 88
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 183,
+    "one": 4,
+    "one, the name has call parentheses (the function bound makes the handler)": 4
+   },
+   "bound": {
+    "none": 1
+   },
+   "distinct_functions_of_the_unbound_one": 4
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 71,
+    "many": 7,
+    "one": 109,
+    "one, the name has call parentheses (the function bound makes the handler)": 96
+   },
+   "bound": {
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 85
+  },
+  "combined": {
+   "unbound": {
+    "none": 71,
+    "many": 7,
+    "one": 109,
+    "one, the name has call parentheses (the function bound makes the handler)": 96
+   },
+   "bound": {
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 85
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 71
+   },
+   "bound": {
+    "none": 1
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 187
+   },
+   "bound": {
+    "none": 1
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 75,
+    "one": 112,
+    "one, the name has call parentheses (the function bound makes the handler)": 102
+   },
+   "bound": {
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 88
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 75,
+    "one": 81,
+    "one, the name has call parentheses (the function bound makes the handler)": 80,
+    "many": 31
+   },
+   "bound": {
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 57
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 32,
+    "one": 39
+   },
+   "bound": {
+    "same": 1
+   },
+   "distinct_functions_of_the_unbound_one": 2
+  }
+ },
+ "fixes_agree": {
+  "only last-part-covering binds": 7,
+  "both bind, same function": 105,
+  "only starts-at-line binds": 4
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

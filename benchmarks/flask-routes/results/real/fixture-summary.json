@@ -1,0 +1,666 @@
+{
+ "name": "fixture",
+ "application": "fixture",
+ "repository": "this repository: benchmarks/flask-routes/fixture",
+ "script": {
+  "variant": "routes.json",
+  "exit": 0,
+  "seconds": 0.68,
+  "peak_memory_mb": 53.5,
+  "left_in_the_project": []
+ },
+ "noir": {
+  "variant": "fixture-noir",
+  "exit": 0,
+  "seconds": 0.89,
+  "peak_memory_mb": 146.8
+ },
+ "gaps": [
+  {
+   "source": "flask",
+   "kind": "outside_snapshot",
+   "path": ".",
+   "detail": "/partial: functools.partial has no source file of the project the snapshot holds (none)"
+  },
+  {
+   "source": "flask",
+   "kind": "outside_snapshot",
+   "path": ".",
+   "detail": "/callable: wsgi.Counter has no source file of the project the snapshot holds (none)"
+  },
+  {
+   "source": "flask",
+   "kind": "outside_snapshot",
+   "path": ".",
+   "detail": "/stdlib: dumps has no source file of the project the snapshot holds (../usr/local/lib/python3.12/json/__init__.py)"
+  },
+  {
+   "source": "flask",
+   "kind": "model_partial",
+   "path": ".",
+   "detail": "1 rule of the application is a view of packages of the restored environment, not of the project: /third-party (werkzeug)"
+  }
+ ],
+ "flask": {
+  "rules": 38,
+  "not_served": 2,
+  "static": 2,
+  "dispatch": null,
+  "by_category": {
+   "project function": 28,
+   "no file": 3,
+   "class-based view": 2,
+   "package view": 1
+  },
+  "package_views": {
+   "werkzeug": 1
+  },
+  "routes_by_method": 38
+ },
+ "source": {
+  "rows": 34,
+  "bound_to_a_function": 30,
+  "class_based_gap_rows": 3,
+  "other_unbound": [
+   {
+    "path": "/lambda",
+    "method": "GET",
+    "gap": "flask reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ },
+ "noir_report": {
+  "endpoints": 40,
+  "protocols": {
+   "http": 40
+  },
+  "errors": 0,
+  "python_files": [
+   [
+    ".py",
+    40
+   ]
+  ],
+  "http_rows": 40,
+  "python_rows": 40,
+  "python_bound_to_a_function": 31,
+  "python_with_a_handler_name": 31,
+  "python_with_a_qualified_name": 3,
+  "python_bound_before_the_qualified_name_match": 28,
+  "python_bound_with_the_method_name_alone": 31,
+  "unbound_after": [
+   {
+    "method": "GET",
+    "path": "/page",
+    "site": "wsgi.py:77",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/lambda",
+    "site": "wsgi.py:78",
+    "handler": null,
+    "covering_the_line": [
+     {
+      "name": "(lambda)",
+      "qualified_name": "(lambda)",
+      "line": 78,
+      "end": 78
+     }
+    ],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/partial",
+    "site": "wsgi.py:85",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/callable",
+    "site": "wsgi.py:93",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/stdlib",
+    "site": "wsgi.py:190",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/built",
+    "site": "wsgi.py:203",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/old",
+    "site": "wsgi.py:204",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/third-party",
+    "site": "wsgi.py:205",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   },
+   {
+    "method": "GET",
+    "path": "/docs",
+    "site": "wsgi.py:215",
+    "handler": null,
+    "covering_the_line": [],
+    "same_name_elsewhere": []
+   }
+  ],
+  "bound_by_the_name_alone_and_not_by_the_qualified_name": []
+ },
+ "comparison": {
+  "both": 38,
+  "agreement": {
+   "same function": 27,
+   "same site": 28,
+   "different function": 1,
+   "same file": 6,
+   "noir gives no function": 2,
+   "neither gives a function": 5,
+   "framework gives no function": 3,
+   "class view: same class and file": 3
+  },
+  "class_view_mismatches": [],
+  "differences": [
+   {
+    "verdict": "different function",
+    "flask": {
+     "method": "GET",
+     "path": "/unwrapped",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/unwrapped",
+      "site": "wsgi.py:44",
+      "function": "wsgi.py::plain.wrapper"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/unwrapped",
+     "site": "wsgi.py:68",
+     "function": "wsgi.py::unwrapped"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/page",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/page",
+      "site": "wsgi.py:73",
+      "function": "wsgi.py::Pages.show"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/page",
+     "site": "wsgi.py:77",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/lambda",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/lambda",
+      "site": "wsgi.py:78",
+      "function": null,
+      "gap": "flask reports this entry without a unique snapshot handler at its site"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/lambda",
+     "site": "wsgi.py:78",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/partial",
+     "category": "no file"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/partial",
+     "site": "wsgi.py:85",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/callable",
+     "category": "no file"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/callable",
+     "site": "wsgi.py:93",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/orders",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/orders",
+      "site": "wsgi.py",
+      "function": null,
+      "gap": "Orders is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/orders",
+     "site": "wsgi.py:97",
+     "function": "wsgi.py::Orders.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/orders",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/orders",
+      "site": "wsgi.py",
+      "function": null,
+      "gap": "Orders is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/orders",
+     "site": "wsgi.py:100",
+     "function": "wsgi.py::Orders.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/hello",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/hello",
+      "site": "wsgi.py",
+      "function": null,
+      "gap": "Hello is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/hello",
+     "site": "wsgi.py:107",
+     "function": "wsgi.py::Hello.dispatch_request"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/stdlib",
+     "category": "no file"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/stdlib",
+     "site": "wsgi.py:190",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/third-party",
+     "category": "package view"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/third-party",
+     "site": "wsgi.py:205",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/docs",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/docs",
+      "site": "wsgi.py:209",
+      "function": "wsgi.py::Docs.page"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/docs",
+     "site": "wsgi.py:215",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 0,
+  "only_flask_by_category": {},
+  "only_flask_packages": {},
+  "only_flask_examples": [],
+  "only_noir": 2,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/built",
+    "site": "wsgi.py:203",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/old",
+    "site": "wsgi.py:204",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ },
+ "comparison_with_the_method_name_alone": {
+  "both": 38,
+  "agreement": {
+   "same function": 27,
+   "same site": 28,
+   "different function": 1,
+   "same file": 6,
+   "noir gives no function": 2,
+   "neither gives a function": 5,
+   "framework gives no function": 3,
+   "class view: same class and file": 3
+  },
+  "class_view_mismatches": [],
+  "differences": [
+   {
+    "verdict": "different function",
+    "flask": {
+     "method": "GET",
+     "path": "/unwrapped",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/unwrapped",
+      "site": "wsgi.py:44",
+      "function": "wsgi.py::plain.wrapper"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/unwrapped",
+     "site": "wsgi.py:68",
+     "function": "wsgi.py::unwrapped"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/page",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/page",
+      "site": "wsgi.py:73",
+      "function": "wsgi.py::Pages.show"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/page",
+     "site": "wsgi.py:77",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/lambda",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/lambda",
+      "site": "wsgi.py:78",
+      "function": null,
+      "gap": "flask reports this entry without a unique snapshot handler at its site"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/lambda",
+     "site": "wsgi.py:78",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/partial",
+     "category": "no file"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/partial",
+     "site": "wsgi.py:85",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/callable",
+     "category": "no file"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/callable",
+     "site": "wsgi.py:93",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/orders",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/orders",
+      "site": "wsgi.py",
+      "function": null,
+      "gap": "Orders is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/orders",
+     "site": "wsgi.py:97",
+     "function": "wsgi.py::Orders.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/orders",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/orders",
+      "site": "wsgi.py",
+      "function": null,
+      "gap": "Orders is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/orders",
+     "site": "wsgi.py:100",
+     "function": "wsgi.py::Orders.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/hello",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/hello",
+      "site": "wsgi.py",
+      "function": null,
+      "gap": "Hello is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/hello",
+     "site": "wsgi.py:107",
+     "function": "wsgi.py::Hello.dispatch_request"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/stdlib",
+     "category": "no file"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/stdlib",
+     "site": "wsgi.py:190",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "neither gives a function",
+    "flask": {
+     "method": "GET",
+     "path": "/third-party",
+     "category": "package view"
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/third-party",
+     "site": "wsgi.py:205",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   },
+   {
+    "verdict": "noir gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/docs",
+     "category": "project function",
+     "row": {
+      "method": "GET",
+      "path": "/docs",
+      "site": "wsgi.py:209",
+      "function": "wsgi.py::Docs.page"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/docs",
+     "site": "wsgi.py:215",
+     "function": null,
+     "gap": "noir reports this entry without a unique snapshot handler at its site"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 0,
+  "only_flask_by_category": {},
+  "only_flask_packages": {},
+  "only_flask_examples": [],
+  "only_noir": 2,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/built",
+    "site": "wsgi.py:203",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/old",
+    "site": "wsgi.py:204",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ }
+}

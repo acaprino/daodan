@@ -13,7 +13,7 @@ import snapshot
 import technologies
 
 
-def test_stack_keeps_compose_declarations_local_even_without_a_catalog_entry(tmp_path):
+def test_stack_keeps_compose_declarations_local_even_without_a_catalog_entry(real_stack, tmp_path):
     project = tmp_path / "project"
     files = {
         "api/pyproject.toml": '[project]\nname = "api"\n',
@@ -60,11 +60,13 @@ x-example: {image: bitnami/kafka}
     assert "image" not in api["worker"]
     assert api["custom"]["image"] == "${REGISTRY:-docker.io}/redis"
     assert {"postgresql", "redis"} <= set(by_name["api"]["services"])
-    assert not {"kafka", "mailpit"} & set(by_name["api"]["services"])
-    assert {s["line"] for entry in record["technologies"] if entry["id"] == "redis"
-            for s in entry["signs"] if s["sign"] == "package"} == {12}
-    assert {s["line"] for entry in record["technologies"] if entry["id"] == "postgresql"
-            for s in entry["signs"] if s["sign"] == "package" and s["path"] == "api/compose.override.yml"} == {2}
+    assert not {"apache_kafka", "mailpit"} & set(by_name["api"]["services"])
+    # the release reads the Compose file by itself (no line) and is given the pre-map's declaration (with its line)
+    assert {(s["line"], s["source"].partition("@")[0]) for entry in record["technologies"] if entry["id"] == "redis"
+            for s in entry["signs"] if s["sign"] == "package"} == {(12, "modules.py"), (None, "stack-analyser")}
+    assert {(s["line"], s["source"].partition("@")[0]) for entry in record["technologies"] if entry["id"] == "postgresql"
+            for s in entry["signs"] if s["sign"] == "package" and s["path"] == "api/compose.override.yml"} == {
+        (2, "modules.py"), (None, "stack-analyser")}
     assert {s["name"] for s in by_name["web"]["configured_services"]} == {"worker", "testing"}
     public = record["configured_services"]
     assert any(s["name"] == "ci_mail" and s["path"] == ".github/workflows/test.yml" for s in public)

@@ -1,0 +1,20 @@
+{
+ "variant": "environment",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-c",
+  "import importlib.metadata as m, os, sys\nprint(repr({'version': sys.version, 'executable': sys.executable, 'prefix': sys.prefix, 'base_prefix': sys.base_prefix,\n            'flask': m.version('flask'), 'packages': sorted(d.metadata['Name'] for d in m.distributions())}))\n"
+ ],
+ "returncode": 1,
+ "stdout": "",
+ "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 2, in <module>\n  File \"/usr/local/lib/python3.12/subprocess.py\", line 548, in run\n    with Popen(*popenargs, **kwargs) as process:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/subprocess.py\", line 1026, in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n  File \"/usr/local/lib/python3.12/subprocess.py\", line 1950, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: '/daodan/state/venvs/./bin/python'\n",
+ "seconds": 0.05,
+ "max_rss_mb": null,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "setup": {
+  "exit": "0",
+  "seconds": "0",
+  "stderr": "DAODAN-RESTORE-FAILED pip .\nerror: Failed to create virtual environment\n  Caused by: failed to create directory `/daodan/state/venvs/.`: No such file or directory (os error 2)\nDAODAN-RESTORE-END"
+ }
+}

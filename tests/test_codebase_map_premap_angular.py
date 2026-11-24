@@ -428,11 +428,11 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
     its rows and its gaps are what the script's recorded answer gives here."""
     scan = json.loads((FIXTURE.parent / "results/pipeline-scan.json").read_text(encoding="utf-8"))
     record, gaps, manifest = read(tmp_path)
-    record = bound(record, manifest)
+    assert scan["framework_entries"] == record["framework_entries"]
     key = lambda row: (row["site"], row["column"], row["shape"], row["event"], row["owner"], row["symbol"], row.get("gap"))
-    assert sorted(map(key, scan["framework_entries"])) == sorted(map(key, record["framework_entries"]))
-    assert len(scan["framework_entries"]) == 41 and all(SOURCE.replace("v2", "v1") in row["sources"] for row in scan["framework_entries"])
-    assert {s["source"]: s["state"] for s in scan["sources"]}[SOURCE.replace("v2", "v1")] == "ran"
+    assert sorted(map(key, bound(scan, manifest)["framework_entries"])) == sorted(map(key, bound(record, manifest)["framework_entries"]))
+    assert len(scan["framework_entries"]) == 41 and all(SOURCE in row["sources"] for row in scan["framework_entries"])
+    assert {s["source"]: s["state"] for s in scan["sources"]}[SOURCE] == "ran"
     assert sorted((g["kind"], g["path"], g["detail"]) for g in scan["gaps"]) == sorted((g["kind"], g["path"], g["detail"]) for g in gaps)
 
 

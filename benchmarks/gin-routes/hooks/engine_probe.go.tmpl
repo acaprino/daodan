@@ -1,0 +1,46 @@
+// Way (a) of benchmarks/gin-routes, «Applicazioni vere»: a main package added with `go build -overlay` in a new folder of a
+// copy of the project, which calls one exported function of the project that returns *gin.Engine (`DAODAN_PACKAGE` and
+// `DAODAN_FUNC` are replaced by the harness with what the finder listed; nothing chooses them by name) and writes
+// `Routes()`: for each route the handler's name and, from `HandlerFunc`, its pc, the name the runtime gives it and
+// `FileLine(pc)`. The route hook is set first and a panic is recovered, so a constructor that fails half-way still gives the
+// names it registered. Written for the oldest Go a project may declare (no `any`).
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"reflect"
+	"runtime"
+
+	"github.com/gin-gonic/gin"
+
+	target "DAODAN_PACKAGE"
+)
+
+func main() {
+	f, err := os.OpenFile(os.Getenv("DAODAN_OUT"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		os.Exit(5)
+	}
+	enc := json.NewEncoder(f)
+	gin.DebugPrintRouteFunc = func(method, path, handler string, handlers int) {
+		enc.Encode(map[string]interface{}{"kind": "route", "method": method, "path": path, "handler": handler, "handlers": handlers})
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			enc.Encode(map[string]interface{}{"kind": "panic", "value": fmt.Sprint(r)})
+			os.Exit(3)
+		}
+	}()
+	engine := target.DAODAN_FUNC()
+	for _, info := range engine.Routes() {
+		pc := reflect.ValueOf(info.HandlerFunc).Pointer()
+		fn := runtime.FuncForPC(pc)
+		file, line := fn.FileLine(pc)
+		enc.Encode(map[string]interface{}{"kind": "routes", "method": info.Method, "path": info.Path, "handler": info.Handler,
+			"func": fn.Name(), "entry": fn.Entry() == pc, "file": file, "line": line})
+	}
+	enc.Encode(map[string]interface{}{"kind": "done"})
+	os.Exit(0)
+}

@@ -144,7 +144,7 @@ def test_manifest_only_run_drives_model_scan_and_keeps_the_cause_without_a_conta
         assert spawn.call_count == 2
 
 
-def test_create_run_and_hook_refresh_never_probe_containers_under_lock_and_expose_stack(tmp_path):
+def test_create_run_and_hook_refresh_never_probe_containers_under_lock_and_expose_stack(real_stack, tmp_path):
     project = _make_project(tmp_path / "proj")
     with mock.patch.dict(os.environ, {"XDG_CACHE_HOME": str(tmp_path / ".shared"),
                                       "LOCALAPPDATA": str(tmp_path / ".shared")}):
@@ -242,7 +242,7 @@ def test_mcp_redacts_errors_and_nested_results(monkeypatch):
     _run_mcp_check(check())
 
 
-def test_ui_http_routes_pipeline_events_stack_envelope_and_sse_stream_with_clean_shutdown(tmp_path):
+def test_ui_http_routes_pipeline_events_stack_envelope_and_sse_stream_with_clean_shutdown(real_stack, tmp_path):
     project = _make_project(tmp_path / "proj")
     with mock.patch.dict(os.environ, {"XDG_CACHE_HOME": str(tmp_path / ".shared"),
                                       "LOCALAPPDATA": str(tmp_path / ".shared")}):

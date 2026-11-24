@@ -1,0 +1,204 @@
+{
+ "name": "healthchecks",
+ "framework": "django",
+ "repository": "healthchecks/healthchecks",
+ "commit": "c1039ad23395162c5e2f17d324d8ccdaa60a1d14",
+ "licence": "BSD-3-Clause",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 258,
+  "protocols": {
+   "http": 258
+  },
+  "errors": 0,
+  "seconds": 1.2,
+  "peak_memory_mb": 165.4,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name": 257,
+   "none": 1
+  },
+  "http_handler_forms": {
+   "name": 257,
+   "none": 1
+  },
+  "http_endpoints_in_the_json": 258,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 257,
+  "with_name_and_path_and_line": 257
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 1276,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 1078,
+  "functions": 4610,
+  "functions_by_suffix": {
+   ".py": 2787,
+   ".js": 1823
+  },
+  "files_by_suffix": {
+   ".py": 658,
+   ".html": 198,
+   ".less": 71,
+   ".css": 46,
+   ".js": 42,
+   ".md": 40,
+   ".txt": 17,
+   ".sh": 2,
+   ".ini": 1,
+   "": 1,
+   ".yml": 1,
+   ".json": 1
+  },
+  "seconds": 31.5
+ },
+ "http": {
+  "endpoints": 258,
+  "with_handler_name": 257,
+  "bound_to_one_function": 257,
+  "unbound": 1,
+  "by_file_suffix": {
+   ".py": {
+    "endpoints": 258,
+    "with_handler_name": 257,
+    "bound": 257
+   }
+  }
+ },
+ "unbound_by_group": {
+  "the snapshot holds no function where Noir cites": 1
+ },
+ "causes": {
+  "the snapshot holds no function in the cited code file": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".py": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/admin/",
+     "site": "hc/urls.py:17",
+     "noir_handler": null,
+     "file_language": "python"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "none": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "none": 255,
+    "different": 2
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "none": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "many": 123,
+    "same": 134
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 1
+   },
+   "bound": {
+    "same": 257
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

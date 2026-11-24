@@ -106,9 +106,16 @@ def measure_case(label: str, snapshot: str, source: str, rules: dict, expected: 
                           "adapters": _adapters(engine_pass)},
            "premap": held, "runs": {}}
     expected = json.loads(expected)
-    for name, text in rules.items():
+    import http_wrappers
+    cases = []
+    for name, text in rules.items():  # each rules file as it is, then with the `rotta` rules the wrapper proof proposes
+        own = flows.validate_rules(json.loads(text)["rules"])
+        proposed = http_wrappers.wrappers(manifest, own)
+        out.setdefault("wrappers", {})[name] = proposed
+        cases += [(name, own), (f"{name}+wrappers", flows.validate_rules(own + [c["rule"] for c in proposed["candidates"]]))]
+    for name, own in cases:
         started = time.time()
-        links = flows.link_facts(manifest, flows.validate_rules(json.loads(text)["rules"]))
+        links = flows.link_facts(manifest, own)
         seconds = round(time.time() - started)
         view = edge_view.load_edge_view(manifest)
         measured = {}

@@ -121,7 +121,8 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                                         f" && chmod 755 {T}/bin/daodan-astro"],
               "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
     # Daodan's script (beside this module) loads the application with the project's own Flask, run by the Python of the environment
-    # the setup restores for each folder (`_python`, `premap/flask_app.py`); written and not run: no measure of it exists yet
+    # the setup restores for each folder (`_python`, `premap/flask_app.py`); measured on Modal, `benchmarks/flask-routes/README.md`, which
+    # says why the source is not in `premap.SOURCES`
     "flask": {"files": [(None, None, "flask_routes.py")], "setup": [f"cp {IN}/flask_routes.py {T}/flask_routes.py"],
               "registries": True, "restores": "python", "memory": 3},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
@@ -187,24 +188,23 @@ def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=(), 
 def _node(project: Path) -> dict:
     """The restore of the Node packages the copy of the project holds (`preparation.node_prepare`), from the
     manifests and lockfiles the snapshot perimeter walks: the snapshot itself keeps no `yarn.lock`."""
-    from tree_scope import Perimeter
-    files = sorted((directory / name).relative_to(project).as_posix()
-                   for directory, names in Perimeter(project).walk() for name in names)
-    return preparation.node_prepare(files, lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
+    return preparation.node_prepare(preparation.perimeter_files(project),
+                                    lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
 
 
 def _python(project: Path) -> dict:
     """The restore of the Python environments the copy of the project holds, one per folder (`preparation.restores`, the
     family `python`: uv, Poetry or pip by the folder's lockfile), as the Node packages are restored: `{lines, needs, hosts, gaps}`,
     the lines that make each folder's environment under `preparation.VENVS`, the tools they need, the hosts beside the registries."""
-    from tree_scope import Perimeter
-    files = sorted((directory / name).relative_to(project).as_posix()
-                   for directory, names in Perimeter(project).walk() for name in names)
+    files = preparation.perimeter_files(project)
     # shortcut: no VCS requirement is overridden (`preparation.python_vcs`, `without`) and no host a project declares is added
     # (`preparation.declared`): a folder whose install needs them is a `restore_failed` gap; when one is met, take them as the analyzers do
     managers = {manager: folders for manager, folders in preparation.restores(files).items()
                 if preparation.RESTORES[manager].get("family") == "python"}
-    return {"lines": [preparation.restore(manager, folders) for manager, folders in managers.items()],
+    # measured on Modal (`benchmarks/flask-routes/results/venv-dir.json`): `uv venv "<venvs>/."`, the root folder's environment, fails
+    # when `<venvs>` is not there (`uv venv <venvs>/api` makes it): the setup makes `tools/bin` and `home`, not `venvs`
+    return {"lines": [f"mkdir -p {preparation.VENVS}", *(preparation.restore(manager, folders) for manager, folders in managers.items())]
+            if managers else [],
             "needs": [n for manager in managers for n in preparation.RESTORES[manager].get("needs", ())],
             "hosts": tuple(dict.fromkeys(h for manager in managers for h in preparation.RESTORES[manager]["hosts"])), "gaps": []}
 

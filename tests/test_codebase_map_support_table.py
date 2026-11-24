@@ -28,17 +28,14 @@ class SupportTableTests(unittest.TestCase):
         self.assertIn("non misurato", text)
 
 
-def _entry(ident, category, **signs):
+def _entry(ident, category, rule=True):
     return {"id": ident, "name": ident.capitalize(), "kind": "project", "type": "altro", "category": category,
-            "signs": {"packages": {}, "patterns": {}, "env": [], "hosts": [], "files": [], **signs}}
+            "from": ["stack-analyser"] if rule else ["additions"]}
 
 
 class StackSectionTests(unittest.TestCase):
-    REGISTRY = {"entries": [_entry("vue", "framework", packages={"npm": ["vue"]}),
-                            _entry("zod", "library", packages={"npm": ["zod"]}),
-                            _entry("twig", "library", packages={"composer": ["twig/twig"], "docker": ["twig"]}),
-                            _entry("asdf", "tool", files=[".tool-versions"]),
-                            _entry("kafka", "service", packages={"maven": ["kafka-clients"]})]}
+    REGISTRY = {"entries": [_entry("vue", "framework"), _entry("zod", "library"), _entry("twig", "library"),
+                            _entry("asdf", "tool"), _entry("kafka", "service"), _entry("legacy", "tool", rule=False)]}
 
     def rows(self, registry):
         lines = support_table.stack_section(registry, {"fixtures": {}})
@@ -48,30 +45,29 @@ class StackSectionTests(unittest.TestCase):
     def test_the_classes_and_their_sentence_follow_the_registry(self):
         text, _ = self.rows(self.REGISTRY)
         self.assertIn("| library | 2 | 2 |", text)
-        self.assertIn("Ognuna delle 5 voci `project` riconoscibili ha la sua `category` scritta", text)
-        defaulted = {"entries": [*self.REGISTRY["entries"], _entry("numpy", None, packages={"pypi": ["numpy"]})]}
+        self.assertIn("| tool | 1 | 2 |", text)  # a rule of the fork for one, the category written for both
+        self.assertIn("Ognuna delle 5 voci `project` con una regola del fork ha la sua `category` scritta", text)
+        defaulted = {"entries": [*self.REGISTRY["entries"], _entry("numpy", None)]}
         text = self.rows(defaulted)[0]
         self.assertIn("| framework | 2 | 1 |", text)
-        self.assertIn("Delle 6 voci `project` riconoscibili, 1 è `framework` solo per il default", text)
+        self.assertIn("Delle 6 voci `project` con una regola del fork, 1 è `framework` solo per il default", text)
         self.assertNotIn("Ognuna delle", text)
 
     def test_a_project_of_category_service_is_in_the_services_list(self):
         text = "\n".join(support_table.services_section(self.REGISTRY, {"fixtures": {}}))
-        self.assertIn("Servizi riconoscibili: 1 voci", text)
+        self.assertIn("Servizi con una regola del fork: 1 voci", text)
         self.assertIn("| Kafka | `kafka` | altro |", text)
 
-    def test_a_row_says_the_languages_analysed_among_its_ecosystems_and_an_ecosystem_without_an_analyzer(self):
+    def test_a_row_says_whether_the_fork_has_a_rule_for_the_entry_and_no_column_lists_signs(self):
         text, rows = self.rows(self.REGISTRY)
-        self.assertIn("Framework, librerie e strumenti riconoscibili: 4 voci", text)
+        self.assertIn("Framework, librerie e strumenti: 5 voci", text)
         self.assertNotIn("kafka", rows)  # a service is in the services' list
         head = next(line for line in text.splitlines() if line.startswith("| Voce |"))
-        column = head.split(" | ").index("Codice analizzato")
-        self.assertEqual(rows["zod"][column], "JavaScript, TypeScript")
-        self.assertEqual(rows["twig"][column], "php: nessun analizzatore")  # an image is no code
-        self.assertEqual(rows["asdf"][column], "—")
-        self.assertTrue(set(support_table.PACKAGE_LANGUAGES) >= {
-            ecosystem for e in support_table._json(support_table.service_registry.REGISTRY)["entries"]
-            for kind in ("packages", "patterns") for ecosystem in ((e.get("signs") or {}).get(kind) or {})})
+        column = head.split(" | ").index("Regola del fork")
+        self.assertEqual((rows["zod"][column], rows["legacy"][column]), ("sì", "no"))
+        for gone in ("Segni", "Codice analizzato"):
+            self.assertNotIn(gone, head)
+        self.assertFalse(hasattr(support_table, "PACKAGE_LANGUAGES"))
 
     def test_an_own_reading_is_what_its_readers_read_and_every_reader_is_tied_to_an_entry(self):
         from unittest import mock
@@ -92,7 +88,7 @@ class StackSectionTests(unittest.TestCase):
                     if isinstance(languages.get_adapter(language), type(sfc.vue_adapter))}
         self.assertEqual(set(support_table.OWN_READINGS.values()),
                          set(components.SUFFIXES) | set(css.COMPONENTS) | sfc_read | {css_tailwind.PACKAGE})
-        self.assertIn(css_tailwind.PACKAGE, registry["tailwind"]["signs"]["packages"]["npm"])
+        self.assertIn("stack-analyser", registry["tailwind"]["from"])  # the package it asks for is the fork's rule's
         self.assertIn("del template solo gli eventi (`premap/astro.py`)", support_table.own_reading(".astro"))
         with mock.patch.dict(css.COMPONENTS, clear=True):  # a reading the code no longer has is not said
             self.assertNotIn("indexers/css_", support_table.own_reading(".vue"))

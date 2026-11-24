@@ -1,0 +1,38 @@
+{
+ "variant": "template-script-env",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "fastapi",
+  "900",
+  "/daodan/state/tools/fastapi_routes.py"
+ ],
+ "cwd": "backend",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "/work/backend/app/core/config.py:75: UserWarning: The value of SECRET_KEY is \"changethis\", for security, please change it, at least for deployments.\n  warnings.warn(message, stacklevel=1)\n/work/backend/app/core/config.py:75: UserWarning: The value of DATABASE_URL password is \"changethis\", for security, please change it, at least for deployments.\n  warnings.warn(message, stacklevel=1)\n/work/backend/app/core/config.py:75: UserWarning: The value of FIRST_SUPERUSER_PASSWORD is \"changethis\", for security, please change it, at least for deployments.\n  warnings.warn(message, stacklevel=1)\nRuntimeError: Frontend directory '/work/backend/app/frontend' does not exist. Resolved absolute path: '/work/backend/app/frontend'\n",
+ "seconds": 4.33,
+ "max_rss_mb": 145.7,
+ "left_in_the_project": [
+  "backend/app/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/__pycache__/crud.cpython-314.pyc",
+  "backend/app/__pycache__/main.cpython-314.pyc",
+  "backend/app/__pycache__/models.cpython-314.pyc",
+  "backend/app/__pycache__/utils.cpython-314.pyc",
+  "backend/app/api/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/api/__pycache__/deps.cpython-314.pyc",
+  "backend/app/api/__pycache__/main.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/items.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/login.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/private.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/users.cpython-314.pyc",
+  "backend/app/api/routes/__pycache__/utils.cpython-314.pyc",
+  "backend/app/core/__pycache__/__init__.cpython-314.pyc",
+  "backend/app/core/__pycache__/config.cpython-314.pyc",
+  "backend/app/core/__pycache__/db.cpython-314.pyc",
+  "backend/app/core/__pycache__/security.cpython-314.pyc"
+ ],
+ "changed_in_the_project": []
+}

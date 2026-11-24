@@ -23,7 +23,9 @@ def rows(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dic
     with no rule: the protocol is the shape and decides the kind (`entries.QUERIES["noir"]`; another protocol is a shape to
     classify) unless the endpoint's own `kind` is one Daodan knows (`entries.QUERIES["noir_kinds"]`: a server action), which
     is then the shape and the kind, method and path as Noir writes them, and the handler when Noir names it. The site is the handler's,
-    else the first code path's, relative to `root`; an endpoint with neither is none. The symbol is the function
+    else the first code path's, relative to `root`; an endpoint with neither is none. The name is read only from the handler's place, so
+    a row with a name is at the place of its handler and one with none at the registration's (the first code path): that presence is the
+    datum with which the binder may bind by place. The symbol is the function
     Noir names in that file, else the file's code outside any function: Noir does not name a method's class."""
     import entries
     import flows
@@ -49,6 +51,9 @@ def rows(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dic
                     "site": f"{file}:{where['line']}" if where.get("line") else file,
                     "symbol": f"{file}::{name or flows.MODULE}", "method": endpoint["method"], "path": endpoint["url"],
                     "handler": name, **({"kind": kind} if kind else {}),
+                    # Noir's own tag, an object with a `name` (a plain string is read too): only a specification declares it
+                    **({"spec_only": True} if "spec-only" in {t.get("name") if isinstance(t, dict) else t
+                                                              for t in endpoint.get("tags") or ()} else {}),
                     **({"schema": flows.path_schema(endpoint["url"])} if kind == "rotta" else {})})  # the name or None: the links' binder says the gap
     return out
 

@@ -1,0 +1,45 @@
+[
+ {
+  "build": {
+   "argv": [
+    "go",
+    "build",
+    "-o",
+    "/work/hook-release-env.bin",
+    "-overlay",
+    "/work/hook-release-env-overlay.json",
+    "."
+   ],
+   "peak_memory_mb": 324,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 0,
+   "seconds": 1.38,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  },
+  "changed_in_the_project": [],
+  "left_in_the_project": [],
+  "run": {
+   "argv": [
+    "timeout",
+    "--kill-after=5",
+    "20",
+    "/work/hook-release-env.bin"
+   ],
+   "peak_memory_mb": 75,
+   "ports_listening": [
+    8080
+   ],
+   "processes_left": [],
+   "returncode": 124,
+   "seconds": 20.01,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  }
+ }
+]

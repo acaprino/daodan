@@ -60,7 +60,7 @@ NOIR = {"endpoints": [
     noir_route("/requestAccountDeletion", "POST", "server/accounts.py", "request_account_deletion", 1),
     noir_route("/twin", "GET", "server/accounts.py", "twin_a", 4),
     noir_route("/twin", "GET", "server/accounts.py", "twin_b", 7),
-    noir_route("/ghost", "POST", "server/accounts.py", "ghost", 1),  # no such function: no unique handler
+    noir_route("/ghost", "POST", "server/accounts.py", "ghost", 2),  # no such function, and no function starts there: no unique handler
     noir_route("/legacy", "POST", "server/routes.js", "legacy", 3),
     noir_route("/api/orders/:id", "GET", "app/api/orders/[id]/route.ts", "GET", 1),
     noir_route("/checkout", "GET", "app/checkout/page.tsx", "Checkout", 3),   # on the page: it is that page's own
@@ -103,7 +103,7 @@ def test_the_declared_routes_are_entries_on_the_functions_the_snapshot_resolves(
             ("next", "app/api/pay/route.ts::POST", "POST", "/api/pay"),
             ("next", "app/checkout/page.tsx::Checkout", None, "/checkout")} <= found  # a page has no method of its own: Noir's is not copied
     assert not any(path == "/ghost" for *_, path in found)
-    assert any(g["site"] == "server/accounts.py:1" and "without a unique snapshot handler" in g["reason"]
+    assert any(g["site"] == "server/accounts.py:2" and "without a unique snapshot handler" in g["reason"]
                for g in links["gaps"])
 
 

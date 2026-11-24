@@ -1,0 +1,35 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "60",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/full-props/target/unpacked/BOOT-INF/classes:/work/full-props/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/full-props.json",
+   "actuator",
+   "started",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "management.server.port=-1",
+   "management.endpoint.mappings.enabled=true",
+   "management.endpoints.access.max-permitted=unrestricted",
+   "management.endpoint.mappings.access=unrestricted"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 468,
+  "returncode": 1,
+  "seconds": 2.01,
+  "stderr": "",
+  "stdout": "2026-11-24T00:37:22.058Z  INFO 1533 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 1533 (/launcher/Launcher.java started by root in /work/full-props)\n2026-11-24T00:37:22.068Z  INFO 1533 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:37:22.463Z  WARN 1533 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanDefinitionStoreException: Failed to process import candidates for configuration class [demo.DemoApplication]: Error processing condition on org.springframework.boot.actuate.autoconfigure.web.mappings.MappingsEndpointAutoConfiguration\n2026-11-24T00:37:22.471Z  INFO 1533 --- [           main] .s.b.a.l.ConditionEvaluationReportLogger : \n\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.\n2026-11-24T00:37:22.486Z ERROR 1533 --- [           main] o.s.b.d.LoggingFailureAnalysisReporter   : \n\n***************************\nAPPLICATION FAILED TO START\n***************************\n\nDescription:\n\nThe following configuration properties are mutually exclusive:\n\n\tmanagement.endpoint.mappings.access\n\tmanagement.endpoint.mappings.enabled\n\nHowever, more than one of those properties has been configured at the same time:\n\n\tmanagement.endpoint.mappings.access\n\tmanagement.endpoint.mappings.enabled\n\n\nAction:\n\nUpdate your configuration so that only one of the mutually exclusive properties is configured.\n\n",
+  "written": "{\"error\": \"org.springframework.beans.factory.BeanDefinitionStoreException: Failed to process import candidates for configuration class [demo.DemoApplication]: Error processing condition on org.springframework.boot.actuate.autoconfigure.web.mappings.MappingsEndpointAutoConfiguration <- java.lang.IllegalStateException: Error processing condition on org.springframework.boot.actuate.autoconfigure.web.mappings.MappingsEndpointAutoConfiguration <- org.springframework.boot.context.properties.source.MutuallyExclusiveConfigurationPropertiesException: The configuration properties 'management.endpoint.mappings.access, management.endpoint.mappings.enabled' are mutually exclusive and 'management.endpoint.mappings.access, management.endpoint.mappings.enabled' have been configured together\"}",
+  "written_bytes": 787
+ }
+]
