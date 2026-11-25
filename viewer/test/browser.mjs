@@ -1046,6 +1046,7 @@ try {
     }
   };
   const logoIn = async where => await where.locator('img').count() === 1 && where.locator('img').evaluate(img => img.complete && img.naturalWidth > 0);
+  const wide = 1720;  // the whole map fits beside the details at the size a name reads, which is the smallest the canvas fits to
   // The layout can be held, so that a test sees what the page does while it waits for one.
   await page.addInitScript(() => {
     const post = Worker.prototype.postMessage;
@@ -1054,7 +1055,7 @@ try {
       else post.apply(this, message);
     };
   });
-  await page.setViewportSize({ width: 1280, height: 850 });
+  await page.setViewportSize({ width: wide, height: 850 });
   mode.exportBroken = true;  // an export that cannot be read: the page waits, then says what failed, with Riprova
   mode.exportBusy = 1;       // and before that a busy project, which is asked again
   mode.exportDelay = 1000;
@@ -1518,10 +1519,10 @@ try {
   assert.ok(await fits());
   // The ranks go down where the sidebar is the rail, and along where it is whole.
   const ranks = async () => {
-    const [from, to] = await Promise.all(['Terminale POS', 'server'].map(name => thing(name).boundingBox()));
+    const [from, to] = await Promise.all(['web', 'API gateway'].map(name => thing(name).boundingBox()));
     return to.y > from.y + from.height ? 'down' : to.x > from.x + from.width ? 'right' : '';
   };
-  await thing('Terminale POS').waitFor();
+  await thing('API gateway').waitFor();
   await until(async () => await ranks() === 'down', 'the ranks down');
   await page.setViewportSize({ width: 900, height: 820 });  // the inspector covers the end of the content, not modal
   await until(async () => await ranks() === 'right', 'the ranks along');
@@ -1557,7 +1558,7 @@ try {
   await footViews.getByRole('button', { name: 'Logica' }).click();
   await page.getByRole('main', { name: 'Mappa logica' }).waitFor();
   assert.ok(await fits());
-  await page.setViewportSize({ width: 1280, height: 850 });
+  await page.setViewportSize({ width: wide, height: 850 });
 
   // Another export, chosen or dropped, takes the place of the map; a file that holds none says why, and the map stays.
   const opener = page.getByRole('dialog', { name: 'Apri altro export' });
@@ -1642,7 +1643,7 @@ try {
   // Where the controls are, in the header and, on a tighter window, with the filters: nothing moves when the choice of the run comes.
   const controls = async () => {
     const places = [];
-    for (const width of [1100, 1280]) {
+    for (const width of [1100, wide]) {
       await page.setViewportSize({ width, height: 850 });
       await infoButton.filter({ hasText: width < 1200 ? /^Informazioni$/ : /progetto$/ }).waitFor();
       for (const control of [openOther, up]) { const { x, y } = await control.boundingBox(); places.push(Math.round(x), Math.round(y)); }
