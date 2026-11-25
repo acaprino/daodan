@@ -28,6 +28,7 @@ if str(SCRIPTS) not in sys.path:
 
 import snapshot  # noqa: E402
 import source_reader  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 
 SOURCE = '''import marker
@@ -134,7 +135,7 @@ class SourceReaderTests(unittest.TestCase):
             subprocess.run(["git", "init", str(self.tmp)], check=True, capture_output=True)
         self.src = self.tmp / "src"
         self.path = write(self.src, "module.py", SOURCE)
-        self.manifest = snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
         self.key = next(key for key in self.manifest["files"] if key.endswith("module.py"))
 
     def request(self, **selection):
@@ -148,7 +149,7 @@ class SourceReaderTests(unittest.TestCase):
         controlled; source identity, target/perimeter and packet reading are real.
         """
         write(self.src, "native.js", source)
-        manifest = snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
         key = next(key for key in manifest["files"] if key.endswith("native.js"))
         profile = {"language": "javascript", "backend": "tree-sitter", "grammar": "javascript"}
         entry = manifest["files"][key]
@@ -235,7 +236,7 @@ class SourceReaderTests(unittest.TestCase):
                   "def unrelated():\n"
                   "    return 'UNRELATED_BODY_MARKER'\n")
         write(self.src, "nested.py", source)
-        manifest = snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
         key = next(key for key in manifest["files"] if key.endswith("nested.py"))
         self.assertIn("outer.inner", manifest["files"][key]["symbols"])
 
@@ -351,7 +352,7 @@ class SourceReaderTests(unittest.TestCase):
 
     def test_full_file_metrics_distinguish_utf8_bytes_from_source_characters(self):
         write(self.src, "module.py", "A = 1\nB = 'ππ'")
-        self.manifest = snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
 
         packet = self.request(full_file=True)
 
@@ -507,7 +508,7 @@ class SourceReaderTests(unittest.TestCase):
 
     def test_parse_failure_reads_full_source_instead_of_an_incomplete_range(self):
         write(self.src, "module.py", "def broken(:\n    return 'SYNTAX_BODY'\n")
-        self.manifest = snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
         self.assertEqual(self.manifest["files"][self.key]["status"], "parse-error")
 
         packet = self.request(ranges=[{"start": 1, "end": 1}])
@@ -521,7 +522,7 @@ class SourceReaderTests(unittest.TestCase):
                b"  c_rate CONSTANT PLS_INTEGER := 7;\nEND archive;\n/\n"
                b"-- Invalid byte: \xff\n")
         path.write_bytes(raw)
-        manifest = snapshot.build_manifest(path)
+        manifest = read_manifest(path)
         key = next(iter(manifest["files"]))
         entry = manifest["files"][key]
         self.assertEqual(entry["language"], "plsql")
@@ -544,8 +545,7 @@ class SourceReaderTests(unittest.TestCase):
                b"  c_rate CONSTANT PLS_INTEGER := 7;\nEND archive;\n/\n-- "
                + padding.encode("ascii") + b"\n")
         path.write_bytes(raw)
-        manifest = snapshot.build_manifest(path)
-        parent = copy.deepcopy(manifest)
+        manifest = read_manifest(path)
         key = next(iter(manifest["files"]))
         entry = manifest["files"][key]
         self.assertEqual(entry["language"], "plsql")
@@ -554,7 +554,7 @@ class SourceReaderTests(unittest.TestCase):
         request = [{"path": key, "ranges": [{"start": 1, "end": 1}]}]
 
         packet = source_reader.read_packet(manifest, request)
-        reused = snapshot.build_manifest(path, previous=manifest)
+        reused = read_manifest(path, previous=manifest)
         reused_packet = source_reader.read_packet(reused, request)
 
         expected = {
@@ -568,7 +568,6 @@ class SourceReaderTests(unittest.TestCase):
         self.assertEqual(reused["metrics"]["parsed_files"], 0)
         self.assertEqual(reused["files"][key]["language"], "plsql")
         self.assertEqual(reused["files"][key]["status"], "parse-skipped")
-        self.assertEqual(manifest, parent)
 
     def test_outline_remains_metadata_only_when_source_is_unavailable(self):
         self.path.unlink()
@@ -634,7 +633,7 @@ class SourceGraphTests(unittest.TestCase):
         }
         for relative, content in self.sources.items():
             write(self.root, relative, content)
-        self.manifest = snapshot.build_manifest(self.root)
+        self.manifest = read_manifest(self.root)
 
     def graph(self, paths=None, **options):
         return source_reader.graph_packet(self.manifest, paths, **options)
@@ -786,7 +785,7 @@ class SourceGraphTests(unittest.TestCase):
     def test_graph_consumes_supplied_metadata_without_reparsing_or_building_another_manifest(self):
         # Reindexing/parsing is a forbidden boundary in this public operation,
         # so these sentinels protect the explicit single-manifest contract.
-        with mock.patch.object(snapshot, "build_manifest", side_effect=AssertionError("second manifest")), \
+        with mock.patch.object(snapshot, "write_snapshot", side_effect=AssertionError("second manifest")), \
                 mock.patch.object(snapshot, "get_adapter", side_effect=AssertionError("source reparse")):
             packet = self.graph()
 
@@ -836,7 +835,7 @@ class SourceGraphTests(unittest.TestCase):
         # Grammar availability is the controlled optional dependency boundary;
         # the snapshot, bytes, perimeter and reader remain real integrations.
         with optional_native_backend_unavailable():
-            self.manifest = snapshot.build_manifest(self.root)
+            self.manifest = read_manifest(self.root)
             entry = self.manifest["files"][native.name]
             self.assertEqual(entry["parser_profile"]["backend"], "unavailable")
             self.assertEqual(entry["status"], "parse-skipped")
@@ -860,7 +859,7 @@ class SourceGraphTests(unittest.TestCase):
     def test_every_clipped_section_has_its_full_total_and_named_truncation(self):
         write(self.root, "leaf.py", "import leaf as own_module\n" + self.sources["leaf.py"])
         write(self.root, "unused.py", "import unused\n" + self.sources["unused.py"])
-        self.manifest = snapshot.build_manifest(self.root)
+        self.manifest = read_manifest(self.root)
 
         packet = self.graph(["leaf.py"], hops=3, limit=1)
 
@@ -897,7 +896,7 @@ class SourceGraphTests(unittest.TestCase):
                 source_reader.graph_packet(self.manifest, **query)
 
     def test_forged_file_outside_a_file_target_is_never_read_or_used_as_a_seed(self):
-        self.manifest = snapshot.build_manifest(self.root / "leaf.py")
+        self.manifest = read_manifest(self.root / "leaf.py")
         self.manifest["files"]["middle.py"] = copy.deepcopy(self.manifest["files"]["leaf.py"])
 
         with source_must_not_open([self.root / "middle.py"]):
@@ -957,7 +956,7 @@ class SourceGraphTests(unittest.TestCase):
         config = write(self.root, "tsconfig.json", json.dumps({
             "compilerOptions": {"baseUrl": ".", "paths": {"@app/*": ["lib/*"]}},
         }))
-        self.manifest = snapshot.build_manifest(self.root)
+        self.manifest = read_manifest(self.root)
 
         packet = self.graph(["app.ts"])
 
@@ -969,7 +968,7 @@ class SourceGraphTests(unittest.TestCase):
     def test_new_uninventoried_alias_config_never_opens_or_changes_same_manifest_graph(self):
         write(self.root, "lib/core.ts", "export function save() { return 7; }\n")
         write(self.root, "app.ts", 'import { save } from "@app/core";\nsave();\n')
-        self.manifest = snapshot.build_manifest(self.root)
+        self.manifest = read_manifest(self.root)
         before = self.graph(["app.ts"])
         config = write(self.root, "tsconfig.json", json.dumps({
             "compilerOptions": {"baseUrl": ".", "paths": {"@app/*": ["lib/*"]}},

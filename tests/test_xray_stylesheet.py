@@ -38,6 +38,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from languages import SUPPORTED_EXTENSIONS, get_adapter  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 THEME_CSS = textwrap.dedent(
     """\
@@ -517,7 +518,7 @@ class StylesheetSnapshotTests(unittest.TestCase):
         import snapshot
 
         self.snapshot = snapshot
-        self.manifest = snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
 
     def key(self, suffix):
         return next(k for k in self.manifest["files"] if k.endswith(suffix))
@@ -560,7 +561,7 @@ class StylesheetSnapshotTests(unittest.TestCase):
 
     def test_a_multi_line_variable_spans_to_its_semicolon(self):
         (self.src / "styles/_variables.scss").write_text("$gap: (\n  sm: 4px,\n  md: 8px,\n);\n", encoding="utf-8")
-        self.manifest = self.snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
         entry = self.manifest["files"][self.key("styles/_variables.scss")]
         self.assertEqual((entry["symbols"]["$gap"]["start"], entry["symbols"]["$gap"]["end"]), (1, 4))
         (self.src / "styles/_variables.scss").write_text("$gap: (\n  sm: 4px,\n  md: 12px,\n);\n", encoding="utf-8")
@@ -571,7 +572,7 @@ class StylesheetSnapshotTests(unittest.TestCase):
     def test_a_minified_stylesheet_is_a_file_level_entry(self):
         rules = "".join(f".c{i}{{color:#{i:06x};margin:{i % 9}px}}" for i in range(1500))
         write(self.src, "public/app.min.css", rules)
-        manifest = self.snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
         entry = next(v for k, v in manifest["files"].items() if k.endswith("public/app.min.css"))
         self.assertEqual((entry["language"], entry["symbols"]), ("css", {}))
 

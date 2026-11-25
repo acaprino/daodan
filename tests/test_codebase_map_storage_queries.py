@@ -190,9 +190,8 @@ class StorageQueryTests(unittest.TestCase):
         import inspect
         self.assertIn("snapshot_path", inspect.signature(analyze_file.analyze_single_file).parameters)
         out = self.write()
-        with mock.patch.object(snapshot, "build_manifest", side_effect=AssertionError("global manifest rebuilt")):
-            with mock.patch.object(snapshot, "write_snapshot", side_effect=AssertionError("snapshot rebuilt")):
-                result = analyze_file.analyze_single_file(self.root / "a.py", project_root=self.root, snapshot_path=out)
+        with mock.patch.object(snapshot, "write_snapshot", side_effect=AssertionError("snapshot rebuilt")):
+            result = analyze_file.analyze_single_file(self.root / "a.py", project_root=self.root, snapshot_path=out)
         self.assertEqual(result["imported_by_count"], 1)
         self.assertEqual(result["semantic_analysis"]["counts"]["incoming_calls"], 1)
 

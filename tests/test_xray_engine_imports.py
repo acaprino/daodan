@@ -17,6 +17,7 @@ import snapshot
 import usage_finder
 from languages import get_adapter
 from languages.base import FunctionInfo, ParseResult
+from read_manifest import read_manifest  # noqa: E402
 
 
 class EngineImportTests(unittest.TestCase):
@@ -111,7 +112,7 @@ class EngineImportTests(unittest.TestCase):
         self.write("pkg/__init__.py", "")
         self.write("pkg/core.py", "class Engine: pass\n")
         self.write("pkg/child/main.py", "from ..core import Engine\nfrom .. import core\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         self.assertEqual(manifest["files"]["pkg/child/main.py"]["imports"], ["..", "..core"])
         self.assertIn("pkg/core.py", snapshot.module_targets(manifest)["pkg/child/main.py"])
 
@@ -119,7 +120,7 @@ class EngineImportTests(unittest.TestCase):
         self.write("pkg/__init__.py", "")
         self.write("pkg/core.py", "class Engine: pass\n")
         self.write("pkg/main.py", "from . import core\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         self.assertIn("pkg/core.py", snapshot.module_targets(manifest)["pkg/main.py"])
 
     def test_incremental_import_index_uses_fresh_from_import_bindings(self):
@@ -127,7 +128,7 @@ class EngineImportTests(unittest.TestCase):
         self.write("pkg/first.py", "VALUE = 1\n")
         self.write("pkg/other.py", "VALUE = 2\n")
         importer = self.write("pkg/main.py", "from . import first\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         importer.write_text("from . import other\n", encoding="utf-8")
         comparison = snapshot.compare_files(manifest, self.root, verify=True)
         symbols = snapshot.compare_symbols(manifest, comparison)
@@ -212,7 +213,7 @@ class EngineImportTests(unittest.TestCase):
         self.write("tsconfig.json", '{"compilerOptions":{"paths":{"engine":["src/core"]}}}')
         core = self.write("src/core.ts", "export class Engine {}\n")
         self.write("main.ts", "import { Engine } from 'engine';\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         core.unlink()
         comparison = snapshot.compare_files(manifest, self.root, verify=True)
         symbols = snapshot.compare_symbols(manifest, comparison)
@@ -237,7 +238,7 @@ class EngineImportTests(unittest.TestCase):
         self.write("main.py", "from core import Engine\nEngine()\n")
         self.write("generated/fake.py", "Engine()\n")
         self.write(".records/fake.py", "Engine()\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         manifest["files"][".records/fake.py"] = {"imports": []}
         self.write(".gitignore", "generated/\n")
         reads = []
@@ -262,7 +263,7 @@ class EngineImportTests(unittest.TestCase):
     def test_usage_batch_resolves_the_shared_graph_once(self):
         source = self.write("core.py", "class Engine: pass\ndef start(): pass\n")
         self.write("main.py", "from core import Engine, start\nEngine(); start()\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         with mock.patch.object(snapshot, "resolved_imports", wraps=snapshot.resolved_imports) as resolve:
             result = usage_finder.find_all_usages_batch(["Engine", "start", "Engine"], source, self.root, manifest=manifest)
         self.assertEqual(resolve.call_count, 1)
@@ -295,7 +296,7 @@ class EngineImportTests(unittest.TestCase):
         self.write("main.js", "import Other from './core.js';\n")
         self.write("dual.js", "import Other, { default as Second } from './core.js';\n")
         with mock.patch.object(javascript, "_ts_parse", return_value=None):
-            manifest = snapshot.build_manifest(self.root)
+            manifest = read_manifest(self.root)
         for entry in manifest["files"].values():
             self.assertEqual((entry["status"], entry["imports"]), ("parse-error", []))
             self.assertEqual(entry["parser_notes"][0], "parser=none")
@@ -309,7 +310,7 @@ class EngineImportTests(unittest.TestCase):
         self.write("named.js", "import { Other } from './core.js';\n")
         self.write("default-named.js", "import { default as Renamed } from './core.js';\n")
         self.write("barrel.js", "export { default as PublicEngine } from './core.js';\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         self.assertEqual(manifest["files"]["core.js"].get("default_export"), "Engine")
         self.assertEqual(manifest["files"]["main.js"]["import_bindings"][0].get("default_import"), "Renamed")
         result = usage_finder.find_all_usages_batch(["Engine", "Other"], source, self.root, manifest=manifest)
@@ -381,7 +382,7 @@ class EngineImportTests(unittest.TestCase):
         with mock.patch.object(Path, "read_bytes", reject_target_read), mock.patch.object(
             get_adapter("python"), "parse", side_effect=AssertionError("caller parse must be reused")
         ):
-            manifest = snapshot.build_manifest(self.root, parse_results={path: (content, result)})
+            manifest = read_manifest(self.root, parse_results={path: (content, result)})
         row = manifest["files"]["main.py"]
         self.assertEqual(row["size"], len(content.encode("utf-8")))
         self.assertEqual(row["hash"], snapshot.hash_text(content.replace("\r\n", "\n")))
@@ -400,8 +401,8 @@ class EngineImportTests(unittest.TestCase):
     def test_usage_batch_reuses_manifest_without_additional_parses(self):
         source = self.write("core.ts", "export class Engine {}\nexport function start() {}\n")
         self.write("main.ts", "import { Engine, start } from './core';\nnew Engine(); start();\n")
-        manifest = snapshot.build_manifest(self.root)
-        with mock.patch.object(snapshot, "build_manifest", side_effect=AssertionError("manifest must be reused")), mock.patch.object(
+        manifest = read_manifest(self.root)
+        with mock.patch.object(snapshot, "write_snapshot", side_effect=AssertionError("manifest must be reused")), mock.patch.object(
             get_adapter("typescript"), "parse", side_effect=AssertionError("manifest already parsed")
         ):
             result = usage_finder.find_all_usages_batch(["Engine", "start"], source, self.root, manifest=manifest)
@@ -437,7 +438,7 @@ class EngineImportTests(unittest.TestCase):
     def test_usage_batch_python_fallback_reads_each_importer_once(self):
         source = self.write("core.py", "class Engine: pass\ndef start(): pass\n")
         self.write("main.py", "from core import Engine, start\nEngine(); start()\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         observations = {"core.py": source.read_bytes()}
         observed = []
         read = Path.read_bytes

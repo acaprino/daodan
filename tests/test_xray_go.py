@@ -21,6 +21,7 @@ import snapshot  # noqa: E402
 import source_reader  # noqa: E402
 from languages import SUPPORTED_EXTENSIONS, SUPPORTED_LANGUAGES, _treesitter, detect_language, get_adapter  # noqa: E402
 from languages import go as go_module  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 HAS_GRAMMAR = _treesitter.get_parser("go") is not None
 
@@ -190,7 +191,7 @@ class GoSnapshotAndReadingTests(unittest.TestCase):
         (self.src / "billing.go").write_text(SOURCE, encoding="utf-8", newline="")
 
     def manifest(self):
-        manifest = snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
         key = next(k for k in manifest["files"] if k.endswith("billing.go"))
         return manifest, key
 

@@ -15,6 +15,7 @@ from unittest import mock
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 import snapshot
+from read_manifest import read_manifest  # noqa: E402
 
 
 class SnapshotStorageTests(unittest.TestCase):
@@ -33,8 +34,7 @@ class SnapshotStorageTests(unittest.TestCase):
 
     def test_default_is_sqlite(self):
         storage = self.api()
-        with mock.patch.object(snapshot, "build_manifest", side_effect=AssertionError("whole manifest built")):
-            result = snapshot.write_snapshot(self.root, self.out())
+        result = snapshot.write_snapshot(self.root, self.out())
         self.assertEqual(self.out().read_bytes()[:16], b"SQLite format 3\x00")
         self.assertEqual(result["metrics"]["parsed_files"], 1)
         with storage.open_snapshot(self.out(), expected_format="sqlite") as store:
@@ -82,7 +82,7 @@ class SnapshotStorageTests(unittest.TestCase):
     def test_unicode_and_fact_order_roundtrip(self):
         storage = self.api()
         (self.root / "caf\u00e9.py").write_text("def caf\u00e9():\n    return '\u4e2d\U0001f600'\n", encoding="utf-8")
-        expected = snapshot.build_manifest(self.root)["files"]
+        expected = read_manifest(self.root)["files"]
         for format in ("sqlite", "json"):
             out = self.out("facts." + format)
             snapshot.write_snapshot(self.root, out, format=format)
@@ -212,7 +212,7 @@ class SnapshotStorageTests(unittest.TestCase):
         storage = self.api()
         import json_snapshot
         (self.root / "caf\u00e9.py").write_text("def caf\u00e9():\n    return '\u4e2d\U0001f600'\n", encoding="utf-8")
-        value = snapshot.build_manifest(self.root)
+        value = read_manifest(self.root)
         self.out().parent.mkdir(parents=True, exist_ok=True)
         self.out("unicode.json").write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
         with mock.patch.object(json_snapshot, "CHUNK_BYTES", 13):

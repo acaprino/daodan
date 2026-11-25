@@ -27,6 +27,7 @@ if str(SCRIPTS) not in sys.path:
 import snapshot  # noqa: E402
 from languages import _treesitter  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 PLATFORMS = {"linux-aarch64", "linux-x86_64", "macos-arm64", "macos-x86_64", "windows-aarch64", "windows-x86_64"}
 
@@ -283,7 +284,7 @@ def no_grammars(fresh_loader):
 def test_a_missing_grammar_is_a_declared_gap_in_the_snapshot(tmp_path, no_grammars):
     (tmp_path / "billing.go").write_text(GO, encoding="utf-8", newline="")
     (tmp_path / "pay.py").write_text(PY, encoding="utf-8", newline="")
-    manifest = snapshot.build_manifest(tmp_path)
+    manifest = read_manifest(tmp_path)
     assert manifest["metrics"]["grammars_unavailable"] == {"go": "download failed: no network"}
     written = snapshot.write_snapshot(tmp_path, tmp_path / "out" / "manifest.sqlite")
     with open_snapshot(tmp_path / "out" / "manifest.sqlite") as stored:
@@ -303,7 +304,7 @@ def test_a_missing_grammar_is_a_declared_gap_in_the_snapshot(tmp_path, no_gramma
 def test_with_its_grammar_a_file_is_read_as_before(tmp_path, fresh_loader):
     """No gap, no reason in the profile, no list in the metrics: the snapshot of a machine with the grammars."""
     (tmp_path / "billing.go").write_text(GO, encoding="utf-8", newline="")
-    manifest = snapshot.build_manifest(tmp_path)
+    manifest = read_manifest(tmp_path)
     entry = manifest["files"]["billing.go"]
     assert entry["status"] == "parsed" and "Pay" in entry["symbols"]
     assert entry["parser_profile"]["backend"] == "tree-sitter" and "reason" not in entry["parser_profile"]

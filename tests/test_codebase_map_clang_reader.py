@@ -28,6 +28,7 @@ import resolution  # noqa: E402
 import snapshot  # noqa: E402
 from languages import SUPPORTED_EXTENSIONS, cfamily, detect_language, get_adapter  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 FIXTURES = HERE / "fixtures/clang-reader"
 
@@ -719,7 +720,7 @@ def test_the_index_and_the_store_answer_the_rule_alike(tmp_path):
     for root in (LINK, FIXTURES / "namespaces"):
         source = tmp_path / root.name
         shutil.copytree(root, source)
-        index = semantic_index.build_semantic_index(snapshot.build_manifest(source))
+        index = semantic_index.build_semantic_index(read_manifest(source))
         found = {}
         for item in index["references"]:
             if len(item["parts"]) == 1 and (item.get("reason") or "").startswith("included-"):

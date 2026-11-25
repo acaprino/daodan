@@ -1,13 +1,12 @@
-"""The snapshot in two writes, the inventory and the reading, is the store of the single pass (spec 8.10, proof 1).
+"""The snapshot in two writes, the inventory and the reading (spec 8.6 and 8.11, steps 1-2).
 
-docs/specs/2026-11-15-pipeline-di-analisi.md, 8.6 and 8.11 (steps 1-2). The single pass is `snapshot.build_manifest`,
-which walks and parses the tree in one go: on the graph fixtures its files and header are the store's, so the two
-writes must give the same logical digest, `created_at` aside.
+`write_snapshot` stages the inventory and reads it: the reading takes the files and their language from the inventory and
+keeps its rows. Proof 1 of 8.10 compared that with the single pass (`build_manifest`), removed on 24 November 2026; what is
+compared now is the reading with `write_snapshot` and with the JSON snapshot, and the inventory's order with the walk's.
 """
 from __future__ import annotations
 
 import hashlib
-import json
 import shutil
 import sys
 import tempfile
@@ -29,12 +28,6 @@ def _keys(store) -> list[str]:
     return sorted((set(store.metadata) | {"files"}) - {"created_at"})
 
 
-def _single_pass_digest(manifest: dict, keys: list[str]) -> str:
-    """`logical_digest` of the single pass's manifest over `keys` (the same JSON `logical_chunks` streams)."""
-    return hashlib.sha256(json.dumps({key: manifest.get(key) for key in keys}, sort_keys=True, ensure_ascii=True,
-                                     separators=(",", ":"), allow_nan=False).encode("utf-8")).hexdigest()
-
-
 class SnapshotSplitTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix="map-split-")
@@ -46,31 +39,38 @@ class SnapshotSplitTests(unittest.TestCase):
         shutil.copytree(fixture, root)
         return root
 
-    def test_inventory_then_reading_is_the_single_pass(self):
+    def test_inventory_then_reading_is_what_write_snapshot_writes_in_both_formats_and_keeps_the_walk(self):
+        """On the graph fixtures: the inventory lists the files in the walk's order, and its reading, `write_snapshot` (the
+        two writes in one call) and the JSON snapshot have the same keys and the same logical digest."""
         import file_inventory
         for fixture in GRAPHS:
             with self.subTest(fixture=f"{fixture.parent.name}/{fixture.name}"):
                 root = self.tree(fixture)
-                inventory, out = root.parent / f"{root.name}.inventory.sqlite", root.parent / f"{root.name}.sqlite"
+                inventory, split, together, as_json = (root.parent / f"{root.name}.{name}" for name in
+                                                       ("inventory.sqlite", "split.sqlite", "together.sqlite", "json"))
                 file_inventory.write(root, inventory)
-                single = snapshot.build_manifest(root)
                 with snapshot_store.open_snapshot(inventory) as store:
                     self.assertEqual(store.file_count, 0, "the inventory holds no reading")
                     rows = dict(store.iter_inventory())
-                self.assertEqual(list(rows), list(single["files"]), "every file of the single pass, in its order")
-                for path, row in rows.items():
-                    entry = single["files"][path]
-                    self.assertEqual({key: row[key] for key in ("size", "mtime", "raw_hash", "language")},
-                                     {key: entry[key] for key in ("size", "mtime", "raw_hash", "language")}, path)
-                snapshot.write_reading(inventory, out)
-                with snapshot_store.open_snapshot(out) as store:
-                    keys = _keys(store)
-                    self.assertEqual(set(keys), set(single) - {"created_at"})
-                    self.assertEqual(snapshot_store.logical_digest(store, keys=keys), _single_pass_digest(single, keys))
-                    self.assertEqual(dict(store.iter_inventory()), rows, "the store keeps the inventory it read")
-                snapshot.write_snapshot(root, out)  # the two writes behind the one call every caller makes
-                with snapshot_store.open_snapshot(out) as store:
-                    self.assertEqual(snapshot_store.logical_digest(store, keys=keys), _single_pass_digest(single, keys))
+                top = snapshot.repo_root(root).resolve()
+                self.assertEqual(list(rows), [snapshot.relative_to_root(path, top) for path in snapshot.iter_files(root)])
+                snapshot.write_reading(inventory, split)
+                snapshot.write_snapshot(root, together)
+                snapshot.write_snapshot(root, as_json, format="json")
+                seen = {}
+                for name, path in (("split", split), ("together", together), ("json", as_json)):
+                    with snapshot_store.open_snapshot(path) as store:
+                        keys = _keys(store)
+                        seen[name] = (set(keys), snapshot_store.logical_digest(store, keys=keys))
+                        if name == "split":
+                            entries = dict(store.iter_files())
+                            self.assertEqual(dict(store.iter_inventory()), rows, "the store keeps the inventory it read")
+                self.assertEqual(seen["together"], seen["split"])
+                self.assertEqual(seen["json"], seen["split"])
+                self.assertEqual(sorted(entries), sorted(rows), "every file of the inventory")
+                for path, row in rows.items():  # the reading measures the bytes again: the inventory's numbers hold
+                    self.assertEqual({key: row[key] for key in ("size", "mtime", "raw_hash")},
+                                     {key: entries[path][key] for key in ("size", "mtime", "raw_hash")}, path)
 
     def test_the_reading_takes_files_and_language_from_the_inventory(self):
         import file_inventory
@@ -146,21 +146,21 @@ class SnapshotSplitTests(unittest.TestCase):
             self.assertEqual({key: rows[path][key] for key in ("size", "mtime", "raw_hash", "language")},
                              {key: entry[key] for key in ("size", "mtime", "raw_hash", "language")}, path)
 
-    def test_json_and_supplied_content_give_the_single_pass(self):
+    def test_json_and_sqlite_give_the_same_store_and_supplied_content_is_read(self):
         root = self.base / "tree"
         root.mkdir()
         (root / "one.py").write_text("def one():\n    return 1\n", encoding="utf-8")
         (root / "two.py").write_text("def two():\n    return 2\n", encoding="utf-8")
         supplied = {str(root / "two.py"): ("def edited():\n    return 22\n", None)}
-        single = snapshot.build_manifest(root, parse_results=supplied)
+        digests = {}
         for format in ("sqlite", "json"):
             with self.subTest(format=format):
                 out = self.base / f"manifest.{format}"
                 snapshot.write_snapshot(root, out, format=format, parse_results=supplied)
                 with snapshot_store.open_snapshot(out) as store:
-                    keys = _keys(store)
-                    self.assertEqual(snapshot_store.logical_digest(store, keys=keys), _single_pass_digest(single, keys))
+                    digests[format] = snapshot_store.logical_digest(store, keys=_keys(store))
                     self.assertIn("edited", store.get_file("two.py")["symbols"])
+        self.assertEqual(digests["json"], digests["sqlite"])
 
     def test_a_refused_write_creates_nothing(self):
         out = self.base / "absent" / "deeper" / "manifest.sqlite"
@@ -177,6 +177,24 @@ class SnapshotSplitTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "inventory"):
             snapshot.write_reading(read, self.base / "again.sqlite")
         self.assertFalse((self.base / "again.sqlite").exists())
+
+    def test_the_reading_is_written_by_write_snapshot_alone(self):
+        """One path reads the files (the owner's decision of 24 November 2026): no module of the product calls
+        `write_reading` but `snapshot.py`, whose `write_snapshot` stages the inventory and reads it, and none defines, calls
+        or exports `build_manifest`, the single pass that read them a second way. The names are found in each module's
+        syntax tree (`ast`, Python's own parser)."""
+        import ast
+        product = SCRIPTS.parent
+        found = []
+        for path in sorted(product.rglob("*.py")):
+            names = {"build_manifest"} | (set() if path == Path(snapshot.__file__).resolve() else {"write_reading"})
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                name = (node.name if isinstance(node, (ast.FunctionDef, ast.alias)) else node.attr
+                        if isinstance(node, ast.Attribute) else node.id if isinstance(node, ast.Name)
+                        else node.value if isinstance(node, ast.Constant) else None)
+                if name in names:
+                    found.append(f"{path.relative_to(product).as_posix()}:{node.lineno} {name}")
+        self.assertEqual(found, [])
 
 
 if __name__ == "__main__":
