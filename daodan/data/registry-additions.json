@@ -26,7 +26,7 @@
    "id": "actixweb",
    "name": "Actix Web",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://actix.rs",
    "by": "model"
   },
@@ -34,6 +34,11 @@
    "id": "adonisjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "adonisjs",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "aftership",
@@ -105,7 +110,7 @@
    "id": "alembic",
    "name": "Alembic",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://alembic.sqlalchemy.org",
    "by": "model"
   },
@@ -144,6 +149,11 @@
    "by": "catalog"
   },
   {
+   "id": "alpinejs",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "android",
    "name": "Android",
    "kind": "project",
@@ -156,6 +166,11 @@
    "id": "angular",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "angular",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "angularjs",
@@ -175,6 +190,11 @@
    "id": "antd",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "antd",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "antdicons",
@@ -213,6 +233,11 @@
    "by": "catalog"
   },
   {
+   "id": "apacheCordova",
+   "by": "model",
+   "type": "dispositivo"
+  },
+  {
    "id": "apache_cassandra",
    "site": "https://cassandra.apache.org",
    "by": "model"
@@ -229,6 +254,11 @@
    "by": "catalog"
   },
   {
+   "id": "apache_thrift",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "apicurio-registry",
    "category": "service",
    "by": "catalog"
@@ -239,6 +269,11 @@
    "by": "catalog"
   },
   {
+   "id": "apiplatform",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "apollo-server",
    "name": "Apollo Server",
    "kind": "project",
@@ -246,6 +281,11 @@
    "type": "altro",
    "site": "https://www.apollographql.com/docs/apollo-server/",
    "by": "catalog"
+  },
+  {
+   "id": "apollo-server",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "app-store",
@@ -294,6 +334,11 @@
    "by": "catalog"
   },
   {
+   "id": "ariakitui",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "arktype",
    "category": "library",
    "by": "catalog"
@@ -302,6 +347,11 @@
    "id": "arkui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "arkui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "artillery",
@@ -332,14 +382,29 @@
    "by": "catalog"
   },
   {
+   "id": "aspnetcore",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "assemble",
    "category": "framework",
    "by": "catalog"
   },
   {
+   "id": "assemble",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "astro",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "astro",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "astro-compiler",
@@ -354,6 +419,11 @@
    "id": "atlasgo",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "atlasgo",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "atuin-hub",
@@ -842,7 +912,7 @@
    "id": "axum",
    "name": "Axum",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://github.com/tokio-rs/axum",
    "by": "model"
   },
@@ -1048,9 +1118,19 @@
    "site": "https://basecoatui.com/"
   },
   {
+   "id": "basecoat",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "baseui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "baseui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "binance",
@@ -1109,6 +1189,11 @@
    "by": "catalog"
   },
   {
+   "id": "bootstrap",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "bootstrapicons",
    "category": "library",
    "by": "catalog"
@@ -1157,6 +1242,11 @@
    "site": "https://hex.pm/packages/broadway"
   },
   {
+   "id": "broadway",
+   "by": "model",
+   "type": "coda"
+  },
+  {
    "id": "browserless",
    "name": "Browserless",
    "kind": "service",
@@ -1175,6 +1265,11 @@
    "by": "catalog"
   },
   {
+   "id": "builtwithfern",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "bullmq",
    "by": "catalog",
    "name": "BullMQ",
@@ -1182,6 +1277,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://bullmq.io/"
+  },
+  {
+   "id": "bullmq",
+   "by": "model",
+   "type": "coda"
   },
   {
    "id": "bundler",
@@ -1228,6 +1328,11 @@
    "by": "catalog"
   },
   {
+   "id": "capacitorjs",
+   "by": "model",
+   "type": "dispositivo"
+  },
+  {
    "id": "capybara",
    "by": "catalog",
    "name": "Capybara",
@@ -1244,6 +1349,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://pkg.go.dev/github.com/casbin/casbin"
+  },
+  {
+   "id": "casbin",
+   "by": "model",
+   "type": "autenticazione"
   },
   {
    "id": "cats",
@@ -1264,12 +1374,18 @@
   {
    "id": "celery",
    "site": "https://docs.celeryq.dev",
-   "by": "model"
+   "by": "model",
+   "type": "coda"
   },
   {
    "id": "chakraui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "chakraui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "chargebee",
@@ -1307,6 +1423,11 @@
    "type": "altro",
    "site": "https://go-chi.io",
    "by": "catalog"
+  },
+  {
+   "id": "chi",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "chromatic",
@@ -1404,6 +1525,11 @@
    "by": "catalog"
   },
   {
+   "id": "codemirror",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "codesandbox",
    "name": "CodeSandbox",
    "kind": "service",
@@ -1441,6 +1567,11 @@
    "category": "framework"
   },
   {
+   "id": "compose-for-wear-os",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "compose-multiplatform",
    "name": "Compose Multiplatform",
    "kind": "project",
@@ -1465,6 +1596,11 @@
    "category": "framework",
    "type": "altro",
    "site": "https://pkg.go.dev/connectrpc.com/connect"
+  },
+  {
+   "id": "connectrpc",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "containerd",
@@ -1502,6 +1638,11 @@
    "site": "https://create-react-app.dev/"
   },
   {
+   "id": "create-react-app",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "cypressci",
    "category": "tool",
    "by": "catalog",
@@ -1521,9 +1662,19 @@
    "by": "catalog"
   },
   {
+   "id": "d3js",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "daisyui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "daisyui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "dart-mappable",
@@ -1570,7 +1721,7 @@
    "id": "dbt",
    "name": "dbt",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://www.getdbt.com",
    "by": "model"
   },
@@ -1618,9 +1769,19 @@
    "by": "catalog"
   },
   {
+   "id": "dieselrs",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "dioxus",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "dioxus",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "directus",
@@ -1646,7 +1807,8 @@
   {
    "id": "django",
    "site": "https://www.djangoproject.com",
-   "by": "model"
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "django-channels",
@@ -1657,12 +1819,22 @@
    "category": "framework"
   },
   {
+   "id": "django-channels",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "django-rest-framework",
    "by": "corpus",
    "name": "Django REST framework",
    "kind": "project",
    "type": "altro",
    "category": "framework"
+  },
+  {
+   "id": "django-rest-framework",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "docker",
@@ -1680,10 +1852,20 @@
    "by": "catalog"
   },
   {
+   "id": "docsify",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "doctrinephp",
    "category": "library",
    "by": "catalog",
    "name": "Doctrine ORM"
+  },
+  {
+   "id": "doctrinephp",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "docus",
@@ -1695,9 +1877,19 @@
    "site": "https://docus.dev/"
   },
   {
+   "id": "docus",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "docusaurus",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "docusaurus",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "docusign",
@@ -1755,6 +1947,11 @@
    "by": "catalog"
   },
   {
+   "id": "drizzleorm",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "dropbox",
    "site": "https://www.dropbox.com",
    "by": "model"
@@ -1785,7 +1982,7 @@
    "id": "echo",
    "name": "Echo",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://echo.labstack.com",
    "by": "model"
   },
@@ -1797,6 +1994,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://hex.pm/packages/ecto"
+  },
+  {
+   "id": "ecto",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "effectjs",
@@ -1822,6 +2024,11 @@
    "by": "catalog"
   },
   {
+   "id": "electron",
+   "by": "model",
+   "type": "dispositivo"
+  },
+  {
    "id": "element-plus",
    "by": "catalog",
    "name": "Element Plus",
@@ -1829,6 +2036,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://element-plus.org/"
+  },
+  {
+   "id": "element-plus",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "elevenlabs",
@@ -1839,6 +2051,11 @@
    "id": "eleventy",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "eleventy",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "elkjs",
@@ -1855,9 +2072,19 @@
    "by": "catalog"
   },
   {
+   "id": "elysiajs",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "emberjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "emberjs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "enable-banking",
@@ -1875,6 +2102,11 @@
    "type": "altro",
    "site": "https://learn.microsoft.com/ef/core/",
    "by": "catalog"
+  },
+  {
+   "id": "entity-framework-core",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "envoy",
@@ -1924,6 +2156,11 @@
    "site": "https://docs.expo.dev/router/introduction/"
   },
   {
+   "id": "expo-router",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "expodev",
    "mark": "marks/expodev.svg",
    "mark_origin": {
@@ -1940,6 +2177,11 @@
    "name": "Expo"
   },
   {
+   "id": "expojs",
+   "by": "model",
+   "type": "dispositivo"
+  },
+  {
    "id": "exposed",
    "name": "Exposed",
    "kind": "project",
@@ -1949,9 +2191,19 @@
    "by": "catalog"
   },
   {
+   "id": "exposed",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "express",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "express",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "exunit",
@@ -1971,7 +2223,7 @@
    "id": "fastapi",
    "name": "FastAPI",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://fastapi.tiangolo.com",
    "by": "model"
   },
@@ -1992,9 +2244,19 @@
    "category": "framework"
   },
   {
+   "id": "fastendpoints",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "fastify",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "fastify",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "fastmcp",
@@ -2004,6 +2266,11 @@
    "type": "altro",
    "site": "https://gofastmcp.com",
    "by": "catalog"
+  },
+  {
+   "id": "fastmcp",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "feathericons",
@@ -2018,6 +2285,11 @@
    "category": "framework",
    "type": "altro",
    "site": "https://pkg.go.dev/github.com/gofiber/fiber"
+  },
+  {
+   "id": "fiber",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "firebase",
@@ -2073,7 +2345,7 @@
    "id": "flask",
    "name": "Flask",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://flask.palletsprojects.com",
    "by": "model"
   },
@@ -2087,6 +2359,11 @@
    "id": "fluentui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "fluentui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "flutter",
@@ -2119,6 +2396,11 @@
    "id": "flyway",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "flyway",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "fontawesome",
@@ -2160,6 +2442,11 @@
    "by": "catalog"
   },
   {
+   "id": "fumadocs",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "gatling",
    "name": "Gatling",
    "kind": "project",
@@ -2172,6 +2459,11 @@
    "id": "gatsby",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "gatsby",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "gcp",
@@ -2448,7 +2740,7 @@
    "id": "gin",
    "name": "Gin",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://gin-gonic.com",
    "by": "model"
   },
@@ -2486,6 +2778,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://github.github.io/catalyst/"
+  },
+  {
+   "id": "github-catalyst",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "github.oauth",
@@ -2526,6 +2823,11 @@
    "id": "goent",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "goent",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "goenv",
@@ -2580,6 +2882,11 @@
    "by": "catalog"
   },
   {
+   "id": "gorm",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "gotenberg",
    "name": "Gotenberg",
    "kind": "service",
@@ -2591,6 +2898,11 @@
    "id": "gradio",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "gradio",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "grafana.lgtm",
@@ -2608,6 +2920,11 @@
    "type": "altro",
    "category": "tool",
    "site": "https://github.com/graphql/graphiql"
+  },
+  {
+   "id": "graphiql",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "graphql-client-rust",
@@ -2645,6 +2962,11 @@
    "by": "catalog"
   },
   {
+   "id": "gridsome",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "groq",
    "site": "https://groq.com",
    "by": "model"
@@ -2659,6 +2981,11 @@
    "by": "catalog"
   },
   {
+   "id": "grpc",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "grpc-gateway",
    "by": "catalog",
    "name": "gRPC-Gateway",
@@ -2666,6 +2993,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://pkg.go.dev/github.com/grpc-ecosystem/grpc-gateway"
+  },
+  {
+   "id": "grpc-gateway",
+   "by": "model",
+   "type": "gateway"
   },
   {
    "id": "gunicorn",
@@ -2676,7 +3008,7 @@
    "id": "gunicorn",
    "name": "Gunicorn",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://gunicorn.org",
    "by": "model"
   },
@@ -2716,6 +3048,11 @@
    "by": "catalog"
   },
   {
+   "id": "headlessui",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "helm",
    "category": "tool",
    "by": "catalog"
@@ -2739,6 +3076,11 @@
    "by": "catalog"
   },
   {
+   "id": "heroui",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "hetzner",
    "site": "https://www.hetzner.com",
    "by": "model"
@@ -2747,6 +3089,11 @@
    "id": "hexojs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "hexojs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "hibernate",
@@ -2758,12 +3105,22 @@
    "by": "catalog"
   },
   {
+   "id": "hibernate",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "hibernate-reactive",
    "by": "corpus",
    "name": "Hibernate Reactive",
    "kind": "project",
    "type": "altro",
    "category": "library"
+  },
+  {
+   "id": "hibernate-reactive",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "honeycomb",
@@ -2778,12 +3135,22 @@
    "name": "Hono"
   },
   {
+   "id": "honojs",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "horologist",
    "by": "corpus",
    "name": "Horologist",
    "kind": "project",
    "type": "altro",
    "category": "library"
+  },
+  {
+   "id": "horologist",
+   "by": "model",
+   "type": "dispositivo"
   },
   {
    "id": "hotwire-turbo",
@@ -2793,6 +3160,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://turbo.hotwired.dev/"
+  },
+  {
+   "id": "hotwire-turbo",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "hsqldb",
@@ -2807,6 +3179,11 @@
    "id": "htmx",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "htmx",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "httpx",
@@ -2850,6 +3227,11 @@
    "by": "catalog"
   },
   {
+   "id": "hugo",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "hyper-rust",
    "by": "catalog",
    "name": "Hyper",
@@ -2868,6 +3250,11 @@
    "site": "https://hyperscript.org/"
   },
   {
+   "id": "hyperscript",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "imago",
    "by": "catalog",
    "name": "Imago",
@@ -2875,6 +3262,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://github.com/acaprino/imago"
+  },
+  {
+   "id": "imago",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "immich",
@@ -2893,6 +3285,11 @@
    "id": "infernojs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "infernojs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "instana",
@@ -2919,6 +3316,11 @@
    "id": "ionic",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "ionic",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "ionicons",
@@ -2975,6 +3377,11 @@
    "by": "catalog"
   },
   {
+   "id": "jekyll",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "jellyfin",
    "site": "https://jellyfin.org",
    "by": "catalog"
@@ -2991,6 +3398,11 @@
    "kind": "project",
    "type": "altro",
    "category": "framework"
+  },
+  {
+   "id": "jetpack-compose",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "jfrog",
@@ -3082,6 +3494,11 @@
    "category": "library"
   },
   {
+   "id": "jooq",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "json-net",
    "by": "corpus",
    "name": "Json.NET",
@@ -3102,6 +3519,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://crates.io/crates/juniper"
+  },
+  {
+   "id": "juniper",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "junit",
@@ -3188,9 +3610,19 @@
    "by": "catalog"
   },
   {
+   "id": "knex",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "koa",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "koa",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "koin",
@@ -3240,6 +3672,11 @@
    "category": "library"
   },
   {
+   "id": "kotlinx-html",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "kotlinx-serialization",
    "name": "kotlinx.serialization",
    "kind": "project",
@@ -3261,6 +3698,11 @@
    "id": "kysely",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "kysely",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "langchain",
@@ -3287,6 +3729,11 @@
    "id": "laravel",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "laravel",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "laravel-nightwatch",
@@ -3327,6 +3774,11 @@
    "by": "catalog"
   },
   {
+   "id": "lexicaleditor",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "lighthouse",
    "category": "tool",
    "by": "catalog"
@@ -3358,6 +3810,11 @@
    "by": "catalog"
   },
   {
+   "id": "liquibase",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "listenbrainz",
    "name": "ListenBrainz",
    "kind": "service",
@@ -3377,6 +3834,11 @@
    "id": "litjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "litjs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "livechat",
@@ -3529,6 +3991,11 @@
    "by": "catalog"
   },
   {
+   "id": "mantineui",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "mapkit",
    "name": "MapKit",
    "kind": "project",
@@ -3536,6 +4003,11 @@
    "site": "https://developer.apple.com/documentation/mapkit",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "mapkit",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "mapstruct",
@@ -3586,9 +4058,19 @@
    "site": "https://materializeweb.com/"
   },
   {
+   "id": "materialize-css",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "materialui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "materialui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "matplotlib",
@@ -3629,6 +4111,11 @@
    "category": "library",
    "by": "catalog",
    "name": "Model Context Protocol SDK"
+  },
+  {
+   "id": "mcp",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "meilisearch",
@@ -3672,6 +4159,11 @@
    "type": "altro",
    "site": "https://micronaut.io",
    "by": "catalog"
+  },
+  {
+   "id": "micronaut",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "microsoft-entra-oauth",
@@ -3730,6 +4222,11 @@
    "by": "catalog"
   },
   {
+   "id": "mintlify",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "mistralai",
    "site": "https://mistral.ai",
    "by": "model"
@@ -3738,6 +4235,11 @@
    "id": "mithriljs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "mithriljs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "mixpanel",
@@ -3750,12 +4252,22 @@
    "by": "catalog"
   },
   {
+   "id": "mkdocs",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "mkdocs-material",
    "by": "corpus",
    "name": "Material for MkDocs",
    "kind": "project",
    "type": "altro",
    "category": "tool"
+  },
+  {
+   "id": "mkdocs-material",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "mlflow",
@@ -3828,6 +4340,11 @@
    "by": "catalog"
   },
   {
+   "id": "monacoeditor",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "mongoose",
    "by": "catalog",
    "name": "Mongoose",
@@ -3835,6 +4352,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://mongoosejs.com/"
+  },
+  {
+   "id": "mongoose",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "mono-cecil",
@@ -3862,6 +4384,11 @@
    "category": "framework"
   },
   {
+   "id": "mudblazor",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "muiicons",
    "category": "library",
    "by": "catalog"
@@ -3883,9 +4410,19 @@
    "category": "framework"
   },
   {
+   "id": "mybatis",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "nestjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "nestjs",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "netbox-census",
@@ -3996,6 +4533,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://hex.pm/packages/oban"
+  },
+  {
+   "id": "oban",
+   "by": "model",
+   "type": "coda"
   },
   {
    "id": "okta",
@@ -4183,6 +4725,11 @@
    "category": "library"
   },
   {
+   "id": "panache",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "pandas",
    "category": "library",
    "by": "catalog"
@@ -4239,6 +4786,11 @@
    "category": "library"
   },
   {
+   "id": "pebble",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "percy",
    "name": "Percy",
    "kind": "service",
@@ -4268,6 +4820,11 @@
    "by": "catalog"
   },
   {
+   "id": "phaserjs",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "phoenix",
    "name": "Phoenix",
    "kind": "project",
@@ -4275,6 +4832,11 @@
    "type": "altro",
    "site": "https://www.phoenixframework.org",
    "by": "catalog"
+  },
+  {
+   "id": "phoenix",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "phoenix-liveview",
@@ -4330,6 +4892,11 @@
    "site": "https://picocss.com/"
   },
   {
+   "id": "pico-css",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "picocli",
    "name": "picocli",
    "kind": "project",
@@ -4374,6 +4941,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://pinia.vuejs.org/"
+  },
+  {
+   "id": "pinia",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "pip",
@@ -4509,6 +5081,11 @@
    "by": "catalog"
   },
   {
+   "id": "preactjs",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "prettier",
    "category": "tool",
    "by": "catalog"
@@ -4517,6 +5094,11 @@
    "id": "prisma",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "prisma",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "prismic",
@@ -4652,6 +5234,11 @@
    "site": "https://pkg.go.dev/github.com/qiniu/qmgo"
   },
   {
+   "id": "qmgo",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "quarkus",
    "name": "Quarkus",
    "kind": "project",
@@ -4659,6 +5246,11 @@
    "type": "altro",
    "site": "https://quarkus.io",
    "by": "catalog"
+  },
+  {
+   "id": "quarkus",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "quarkus-rest",
@@ -4669,12 +5261,22 @@
    "category": "framework"
   },
   {
+   "id": "quarkus-rest",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "quarkus-websockets-next",
    "by": "corpus",
    "name": "Quarkus WebSockets Next",
    "kind": "project",
    "type": "altro",
    "category": "framework"
+  },
+  {
+   "id": "quarkus-websockets-next",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "quinoa",
@@ -4693,9 +5295,19 @@
    "category": "library"
   },
   {
+   "id": "qute",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "qwikjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "qwikjs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "radixicons",
@@ -4708,6 +5320,11 @@
    "by": "catalog"
   },
   {
+   "id": "radixui",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "rails",
    "name": "Ruby on Rails",
    "kind": "project",
@@ -4715,6 +5332,11 @@
    "type": "altro",
    "site": "https://rubyonrails.org",
    "by": "catalog"
+  },
+  {
+   "id": "rails",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "rarible",
@@ -4732,6 +5354,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://crates.io/crates/ratatui"
+  },
+  {
+   "id": "ratatui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "ray",
@@ -4760,6 +5387,11 @@
    "by": "catalog"
   },
   {
+   "id": "react",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "react-dom",
    "by": "catalog",
    "name": "React DOM",
@@ -4769,6 +5401,11 @@
    "site": "https://react.dev/reference/react-dom"
   },
   {
+   "id": "react-dom",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "react-flow",
    "by": "catalog",
    "name": "React Flow",
@@ -4776,6 +5413,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://reactflow.dev/"
+  },
+  {
+   "id": "react-flow",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "react-native",
@@ -4796,6 +5438,11 @@
    "site": "https://reactnativeelements.com/"
   },
   {
+   "id": "react-native-elements",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "react-navigation",
    "by": "catalog",
    "name": "React Navigation",
@@ -4803,6 +5450,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://reactnavigation.org/"
+  },
+  {
+   "id": "react-navigation",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "reactemail",
@@ -4821,6 +5473,11 @@
    "by": "catalog"
   },
   {
+   "id": "reactrouterdom",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "readme",
    "name": "ReadMe",
    "kind": "service",
@@ -4832,6 +5489,11 @@
    "id": "readthedocs",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "readthedocs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "redwoodjs",
@@ -4848,14 +5510,29 @@
    "site": "https://pub.dev/packages/refena_flutter"
   },
   {
+   "id": "refena",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "refinedev",
    "category": "framework",
    "by": "catalog"
   },
   {
+   "id": "refinedev",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "rekaui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "rekaui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "remixicons",
@@ -4866,6 +5543,11 @@
    "id": "remixrouter",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "remixrouter",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "remixrun",
@@ -4981,6 +5663,11 @@
    "category": "framework"
   },
   {
+   "id": "roq",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "routerino",
    "by": "catalog",
    "name": "Routerino",
@@ -4990,12 +5677,22 @@
    "site": "https://pub.dev/packages/routerino"
   },
   {
+   "id": "routerino",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "rq",
    "by": "corpus",
    "name": "RQ",
    "kind": "project",
    "type": "altro",
    "category": "library"
+  },
+  {
+   "id": "rq",
+   "by": "model",
+   "type": "coda"
   },
   {
    "id": "rspack",
@@ -5062,6 +5759,11 @@
    "id": "sandpackeditor",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "sandpackeditor",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "sass-parser",
@@ -5146,6 +5848,11 @@
    "site": "https://crates.io/crates/sea-orm"
   },
   {
+   "id": "sea-orm",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "segment",
    "site": "https://segment.com",
    "by": "model"
@@ -5166,9 +5873,19 @@
    "by": "catalog"
   },
   {
+   "id": "sequelize",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "sequelruby",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "sequelruby",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "serde",
@@ -5198,6 +5915,11 @@
    "by": "catalog"
   },
   {
+   "id": "shadcn",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "sharpfuzz",
    "by": "corpus",
    "name": "SharpFuzz",
@@ -5209,6 +5931,11 @@
    "id": "shopify.hydrogen",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "shopify.hydrogen",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "shortcut",
@@ -5258,6 +5985,11 @@
    "by": "catalog"
   },
   {
+   "id": "sinatra",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "slack",
    "site": "https://slack.com",
    "by": "model"
@@ -5266,6 +5998,11 @@
    "id": "slatedocs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "slatedocs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "slim",
@@ -5277,12 +6014,22 @@
    "by": "catalog"
   },
   {
+   "id": "slim",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "smallrye-reactive-messaging",
    "by": "corpus",
    "name": "SmallRye Reactive Messaging",
    "kind": "project",
    "type": "altro",
    "category": "library"
+  },
+  {
+   "id": "smallrye-reactive-messaging",
+   "by": "model",
+   "type": "coda"
   },
   {
    "id": "smartthings",
@@ -5296,6 +6043,11 @@
    "id": "socketio",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "socketio",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "solana",
@@ -5315,9 +6067,19 @@
    "site": "https://github.com/rails/solid_queue"
   },
   {
+   "id": "solid-queue",
+   "by": "model",
+   "type": "coda"
+  },
+  {
    "id": "solidjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "solidjs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "sonarlint",
@@ -5362,7 +6124,7 @@
    "id": "sphinx",
    "name": "Sphinx",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://www.sphinx-doc.org",
    "by": "model"
   },
@@ -5384,6 +6146,11 @@
    "category": "framework"
   },
   {
+   "id": "spring-amqp",
+   "by": "model",
+   "type": "coda"
+  },
+  {
    "id": "spring-boot",
    "name": "Spring Boot",
    "kind": "project",
@@ -5391,6 +6158,11 @@
    "type": "altro",
    "site": "https://spring.io/projects/spring-boot",
    "by": "catalog"
+  },
+  {
+   "id": "spring-boot",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "spring-boot-admin",
@@ -5437,6 +6209,11 @@
    "category": "framework"
   },
   {
+   "id": "spring-data-elasticsearch",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "spring-data-jpa",
    "name": "Spring Data JPA",
    "kind": "project",
@@ -5444,6 +6221,11 @@
    "type": "altro",
    "site": "https://spring.io/projects/spring-data-jpa",
    "by": "catalog"
+  },
+  {
+   "id": "spring-data-jpa",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "spring-data-mongodb",
@@ -5454,12 +6236,22 @@
    "category": "framework"
   },
   {
+   "id": "spring-data-mongodb",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "spring-data-redis",
    "by": "corpus",
    "name": "Spring Data Redis",
    "kind": "project",
    "type": "altro",
    "category": "framework"
+  },
+  {
+   "id": "spring-data-redis",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "spring-mvc",
@@ -5469,6 +6261,11 @@
    "type": "altro",
    "site": "https://spring.io/projects/spring-framework",
    "by": "catalog"
+  },
+  {
+   "id": "spring-mvc",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "spring-security",
@@ -5489,6 +6286,11 @@
    "by": "catalog"
   },
   {
+   "id": "spring-webflux",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "sqlalchemy",
    "category": "library",
    "by": "catalog"
@@ -5496,7 +6298,8 @@
   {
    "id": "sqlalchemy",
    "site": "https://www.sqlalchemy.org",
-   "by": "model"
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "sqlc",
@@ -5508,12 +6311,22 @@
    "site": "https://pkg.go.dev/github.com/sqlc-dev/sqlc"
   },
   {
+   "id": "sqlc",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "sqldelight",
    "by": "corpus",
    "name": "SQLDelight",
    "kind": "project",
    "type": "altro",
    "category": "tool"
+  },
+  {
+   "id": "sqldelight",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "sqlglot",
@@ -5538,6 +6351,11 @@
    "by": "catalog"
   },
   {
+   "id": "sqlmodel",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "sqlx-go",
    "by": "catalog",
    "name": "sqlx",
@@ -5545,6 +6363,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://pkg.go.dev/github.com/jmoiron/sqlx"
+  },
+  {
+   "id": "sqlx-go",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "sqlx-rust",
@@ -5556,9 +6379,19 @@
    "site": "https://crates.io/crates/sqlx"
   },
   {
+   "id": "sqlx-rust",
+   "by": "model",
+   "type": "database"
+  },
+  {
    "id": "stenciljs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "stenciljs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "stimulus",
@@ -5570,9 +6403,19 @@
    "site": "https://stimulus.hotwired.dev/"
   },
   {
+   "id": "stimulus",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "storybook",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "storybook",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "strawberry-graphql",
@@ -5583,6 +6426,11 @@
    "category": "framework"
   },
   {
+   "id": "strawberry-graphql",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "streamlit",
    "category": "framework",
    "by": "catalog"
@@ -5591,7 +6439,7 @@
    "id": "streamlit",
    "name": "Streamlit",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://streamlit.io",
    "by": "model"
   },
@@ -5680,6 +6528,11 @@
    "by": "catalog"
   },
   {
+   "id": "sveltejs",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "sveltekit",
    "category": "framework",
    "by": "catalog"
@@ -5699,9 +6552,19 @@
    "by": "catalog"
   },
   {
+   "id": "swiftui",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "symfony",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "symfony",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "tabler",
@@ -5711,6 +6574,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://tabler.io/"
+  },
+  {
+   "id": "tabler",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "tablericons",
@@ -5724,9 +6592,19 @@
    "by": "catalog"
   },
   {
+   "id": "tailwind",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "tanstackrouter",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "tanstackrouter",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "tanstackstart",
@@ -5737,6 +6615,11 @@
    "id": "tauri",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "tauri",
+   "by": "model",
+   "type": "dispositivo"
   },
   {
    "id": "tempfile-rust",
@@ -5828,6 +6711,11 @@
    "by": "catalog"
   },
   {
+   "id": "thymeleaf",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "ticketmaster",
    "name": "Ticketmaster",
    "kind": "service",
@@ -5847,6 +6735,11 @@
    "id": "tiptap",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "tiptap",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "tmdb",
@@ -5910,6 +6803,11 @@
    "by": "catalog"
   },
   {
+   "id": "trpc",
+   "by": "model",
+   "type": "servizio o API"
+  },
+  {
    "id": "ts-rest",
    "by": "catalog",
    "name": "ts-rest",
@@ -5917,6 +6815,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://ts-rest.com/"
+  },
+  {
+   "id": "ts-rest",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "turborepo",
@@ -5937,6 +6840,11 @@
    "id": "twigphp",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "twigphp",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "twilio",
@@ -5960,6 +6868,11 @@
    "id": "typeorm",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "typeorm",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "typer",
@@ -5999,6 +6912,11 @@
    "by": "catalog"
   },
   {
+   "id": "uikit",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "ultracite",
    "category": "tool",
    "by": "catalog"
@@ -6007,6 +6925,11 @@
    "id": "umijs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "umijs",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "unocss",
@@ -6115,6 +7038,11 @@
    "by": "catalog"
   },
   {
+   "id": "vitepress",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "vitest",
    "category": "tool",
    "by": "catalog"
@@ -6131,6 +7059,11 @@
    "id": "vue",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "vue",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "vue-router",
@@ -6151,9 +7084,19 @@
    "site": "https://github.com/vuejs/core/tree/main/packages/compiler-sfc"
   },
   {
+   "id": "vuejs",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "vuepress",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "vuepress",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "vuetify",
@@ -6165,12 +7108,22 @@
    "site": "https://vuetifyjs.com/"
   },
   {
+   "id": "vuetify",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "wagtail",
    "by": "corpus",
    "name": "Wagtail",
    "kind": "project",
    "type": "altro",
    "category": "framework"
+  },
+  {
+   "id": "wagtail",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "wakatime",
@@ -6201,6 +7154,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://watermelondb.dev/"
+  },
+  {
+   "id": "watermelondb",
+   "by": "model",
+   "type": "database"
   },
   {
    "id": "weaviate",
@@ -6239,6 +7197,11 @@
    "site": "https://crates.io/crates/webview2-com"
   },
   {
+   "id": "webview2-com",
+   "by": "model",
+   "type": "dispositivo"
+  },
+  {
    "id": "what3words",
    "name": "what3words",
    "kind": "service",
@@ -6262,6 +7225,11 @@
    "category": "library",
    "type": "altro",
    "site": "https://crates.io/crates/windows-sys"
+  },
+  {
+   "id": "winui",
+   "by": "model",
+   "type": "schermata"
   },
   {
    "id": "wiremock-java",
@@ -6329,9 +7297,19 @@
    "site": "https://crates.io/crates/yew"
   },
   {
+   "id": "yew",
+   "by": "model",
+   "type": "schermata"
+  },
+  {
    "id": "yii2",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "yii2",
+   "by": "model",
+   "type": "servizio o API"
   },
   {
    "id": "zig",

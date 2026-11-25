@@ -60,7 +60,7 @@
    "id": "actixweb",
    "name": "Actix Web",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://actix.rs",
    "mark": null,
    "from": [
@@ -147,7 +147,7 @@
    "id": "adonisjs",
    "name": "AdonisJS",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/adonisjs.svg",
    "from": [
@@ -576,7 +576,7 @@
    "id": "alembic",
    "name": "Alembic",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://alembic.sqlalchemy.org",
    "mark": null,
    "from": [
@@ -778,7 +778,7 @@
    "id": "alpinejs",
    "name": "Alpine.js",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/alpinejs.svg",
    "from": [
@@ -917,7 +917,7 @@
    "id": "angular",
    "name": "Angular",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/angular.svg",
    "from": [
@@ -959,7 +959,7 @@
    "id": "antd",
    "name": "Ant Design",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/antd.svg",
    "from": [
@@ -1240,7 +1240,7 @@
    "id": "apacheCordova",
    "name": "Cordova",
    "kind": "project",
-   "type": "altro",
+   "type": "dispositivo",
    "site": null,
    "mark": "marks/apachecordova.svg",
    "from": [
@@ -1403,7 +1403,7 @@
    "id": "apache_thrift",
    "name": "Apache Thrift",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://thrift.apache.org/",
    "mark": null,
    "from": [
@@ -1500,7 +1500,7 @@
    "id": "apiplatform",
    "name": "Api Platform",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -1546,7 +1546,7 @@
    "id": "apollo-server",
    "name": "Apollo Server",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.apollographql.com/docs/apollo-server/",
    "mark": null,
    "from": [
@@ -1848,7 +1848,7 @@
    "id": "ariakitui",
    "name": "AriaKit UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -1896,7 +1896,7 @@
    "id": "arkui",
    "name": "Ark UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -2039,7 +2039,7 @@
    "id": "aspnetcore",
    "name": "ASP.NET Core",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://dotnet.microsoft.com/apps/aspnet",
    "mark": null,
    "from": [
@@ -2052,7 +2052,7 @@
    "id": "assemble",
    "name": "Assemble",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -2065,7 +2065,7 @@
    "id": "astro",
    "name": "Astro",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/astro.svg",
    "from": [
@@ -2158,7 +2158,7 @@
    "id": "atlasgo",
    "name": "AtlasGo",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -3140,7 +3140,7 @@
    "id": "axum",
    "name": "Axum",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://github.com/tokio-rs/axum",
    "mark": null,
    "from": [
@@ -3634,7 +3634,7 @@
    "id": "basecoat",
    "name": "Basecoat",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://basecoatui.com/",
    "mark": null,
    "from": [
@@ -3647,7 +3647,7 @@
    "id": "baseui",
    "name": "Base UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/baseui.svg",
    "from": [
@@ -3977,7 +3977,7 @@
    "id": "bootstrap",
    "name": "Bootstrap",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/bootstrap.svg",
    "from": [
@@ -4149,7 +4149,7 @@
    "id": "broadway",
    "name": "Broadway",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": "https://hex.pm/packages/broadway",
    "mark": null,
    "from": [
@@ -4292,7 +4292,7 @@
    "id": "builtwithfern",
    "name": "Fern",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -4305,7 +4305,7 @@
    "id": "bullmq",
    "name": "BullMQ",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": "https://bullmq.io/",
    "mark": null,
    "from": [
@@ -4554,7 +4554,7 @@
    "id": "capacitorjs",
    "name": "Capacitor",
    "kind": "project",
-   "type": "altro",
+   "type": "dispositivo",
    "site": null,
    "mark": "marks/capacitorjs.svg",
    "from": [
@@ -4671,7 +4671,7 @@
    "id": "casbin",
    "name": "Casbin",
    "kind": "project",
-   "type": "altro",
+   "type": "autenticazione",
    "site": "https://pkg.go.dev/github.com/casbin/casbin",
    "mark": null,
    "from": [
@@ -4818,7 +4818,7 @@
    "id": "celery",
    "name": "Celery",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": "https://docs.celeryq.dev",
    "mark": "marks/celery.svg",
    "from": [
@@ -4910,7 +4910,7 @@
    "id": "chakraui",
    "name": "Chakra UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/chakraui.svg",
    "from": [
@@ -5123,7 +5123,7 @@
    "id": "chi",
    "name": "Chi",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://go-chi.io",
    "mark": null,
    "from": [
@@ -5903,7 +5903,7 @@
    "id": "codemirror",
    "name": "CodeMirror",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/codemirror.svg",
    "from": [
@@ -6064,7 +6064,7 @@
    "id": "compose-for-wear-os",
    "name": "Compose for Wear OS",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -6174,7 +6174,7 @@
    "id": "connectrpc",
    "name": "Connect",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://pkg.go.dev/connectrpc.com/connect",
    "mark": null,
    "from": [
@@ -6591,7 +6591,7 @@
    "id": "create-react-app",
    "name": "Create React App",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://create-react-app.dev/",
    "mark": "marks/create-react-app.svg",
    "from": [
@@ -6860,7 +6860,7 @@
    "id": "d3js",
    "name": "D3.js",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/d3js.svg",
    "from": [
@@ -6874,7 +6874,7 @@
    "id": "daisyui",
    "name": "daisyUI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/daisyui.svg",
    "from": [
@@ -7203,7 +7203,7 @@
    "id": "dbt",
    "name": "dbt",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://www.getdbt.com",
    "mark": null,
    "from": [
@@ -7583,7 +7583,7 @@
    "id": "dieselrs",
    "name": "Diesel",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -7632,7 +7632,7 @@
    "id": "dioxus",
    "name": "Dioxus",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -7731,7 +7731,7 @@
    "id": "django",
    "name": "Django",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.djangoproject.com",
    "mark": "marks/django.svg",
    "from": [
@@ -7745,7 +7745,7 @@
    "id": "django-channels",
    "name": "Django Channels",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -7758,7 +7758,7 @@
    "id": "django-rest-framework",
    "name": "Django REST framework",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -7840,7 +7840,7 @@
    "id": "docsify",
    "name": "Docsify",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/docsify.svg",
    "from": [
@@ -7854,11 +7854,12 @@
    "id": "doctrinephp",
    "name": "Doctrine ORM",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/doctrinephp.svg",
    "from": [
     "additions",
+    "simple-icons",
     "stack-analyser"
    ],
    "category": "library"
@@ -7867,7 +7868,7 @@
    "id": "docus",
    "name": "Docus",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://docus.dev/",
    "mark": null,
    "from": [
@@ -7880,7 +7881,7 @@
    "id": "docusaurus",
    "name": "Docusaurus",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/docusaurus.svg",
    "from": [
@@ -8050,7 +8051,7 @@
    "id": "drizzleorm",
    "name": "Drizzle ORM",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -8257,7 +8258,7 @@
    "id": "echo",
    "name": "Echo",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://echo.labstack.com",
    "mark": null,
    "from": [
@@ -8282,7 +8283,7 @@
    "id": "ecto",
    "name": "Ecto",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://hex.pm/packages/ecto",
    "mark": null,
    "from": [
@@ -8462,7 +8463,7 @@
    "id": "electron",
    "name": "Electron",
    "kind": "project",
-   "type": "altro",
+   "type": "dispositivo",
    "site": null,
    "mark": "marks/electron.svg",
    "from": [
@@ -8476,7 +8477,7 @@
    "id": "element-plus",
    "name": "Element Plus",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://element-plus.org/",
    "mark": null,
    "from": [
@@ -8503,7 +8504,7 @@
    "id": "eleventy",
    "name": "Eleventy",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/eleventy.svg",
    "from": [
@@ -8554,7 +8555,7 @@
    "id": "elysiajs",
    "name": "ElysiaJS",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -8567,7 +8568,7 @@
    "id": "emberjs",
    "name": "Ember",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/emberjs.svg",
    "from": [
@@ -8674,7 +8675,7 @@
    "id": "entity-framework-core",
    "name": "Entity Framework Core",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://learn.microsoft.com/ef/core/",
    "mark": null,
    "from": [
@@ -8906,7 +8907,7 @@
    "id": "expo-router",
    "name": "Expo Router",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://docs.expo.dev/router/introduction/",
    "mark": null,
    "from": [
@@ -8932,7 +8933,7 @@
    "id": "expojs",
    "name": "Expo",
    "kind": "project",
-   "type": "altro",
+   "type": "dispositivo",
    "site": null,
    "mark": "marks/expojs.svg",
    "from": [
@@ -8957,7 +8958,7 @@
    "id": "exposed",
    "name": "Exposed",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://github.com/JetBrains/Exposed",
    "mark": null,
    "from": [
@@ -8970,7 +8971,7 @@
    "id": "express",
    "name": "Express",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/express.svg",
    "from": [
@@ -9124,7 +9125,7 @@
    "id": "fastapi",
    "name": "FastAPI",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://fastapi.tiangolo.com",
    "mark": "marks/fastapi.svg",
    "from": [
@@ -9151,7 +9152,7 @@
    "id": "fastendpoints",
    "name": "FastEndpoints",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -9164,7 +9165,7 @@
    "id": "fastify",
    "name": "Fastify",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/fastify.svg",
    "from": [
@@ -9202,7 +9203,7 @@
    "id": "fastmcp",
    "name": "FastMCP",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://gofastmcp.com",
    "mark": null,
    "from": [
@@ -9308,7 +9309,7 @@
    "id": "fiber",
    "name": "Fiber",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://pkg.go.dev/github.com/gofiber/fiber",
    "mark": null,
    "from": [
@@ -9504,7 +9505,7 @@
    "id": "flask",
    "name": "Flask",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://flask.palletsprojects.com",
    "mark": "marks/flask.svg",
    "from": [
@@ -9610,7 +9611,7 @@
    "id": "fluentui",
    "name": "Fluent UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -9710,7 +9711,7 @@
    "id": "flyway",
    "name": "Flyway",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": "marks/flyway.svg",
    "from": [
@@ -9894,7 +9895,7 @@
    "id": "fumadocs",
    "name": "FumaDocs",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -9945,7 +9946,7 @@
    "id": "gatsby",
    "name": "Gatsby",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/gatsby.svg",
    "from": [
@@ -10468,7 +10469,7 @@
    "id": "gin",
    "name": "Gin",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://gin-gonic.com",
    "mark": "marks/gin.svg",
    "from": [
@@ -10553,7 +10554,7 @@
    "id": "github-catalyst",
    "name": "Catalyst",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://github.github.io/catalyst/",
    "mark": null,
    "from": [
@@ -10833,7 +10834,7 @@
    "id": "goent",
    "name": "ent.",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -11258,7 +11259,7 @@
    "id": "gorm",
    "name": "GORM",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -11284,7 +11285,7 @@
    "id": "gradio",
    "name": "Gradio",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/gradio.svg",
    "from": [
@@ -11426,7 +11427,7 @@
    "id": "graphiql",
    "name": "GraphiQL",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://github.com/graphql/graphiql",
    "mark": null,
    "from": [
@@ -11562,7 +11563,7 @@
    "id": "gridsome",
    "name": "Gridsome",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/gridsome.svg",
    "from": [
@@ -11600,7 +11601,7 @@
    "id": "grpc",
    "name": "gRPC",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://grpc.io",
    "mark": null,
    "from": [
@@ -11614,7 +11615,7 @@
    "id": "grpc-gateway",
    "name": "gRPC-Gateway",
    "kind": "project",
-   "type": "altro",
+   "type": "gateway",
    "site": "https://pkg.go.dev/github.com/grpc-ecosystem/grpc-gateway",
    "mark": null,
    "from": [
@@ -11693,7 +11694,7 @@
    "id": "gunicorn",
    "name": "Gunicorn",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://gunicorn.org",
    "mark": "marks/gunicorn.svg",
    "from": [
@@ -11946,7 +11947,7 @@
    "id": "headlessui",
    "name": "Headless UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/headlessui.svg",
    "from": [
@@ -12064,7 +12065,7 @@
    "id": "heroui",
    "name": "Hero UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/heroui.svg",
    "from": [
@@ -12114,7 +12115,7 @@
    "id": "hexojs",
    "name": "HexoJS",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -12127,7 +12128,7 @@
    "id": "hibernate",
    "name": "Hibernate",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://hibernate.org",
    "mark": "marks/hibernate.svg",
    "from": [
@@ -12141,7 +12142,7 @@
    "id": "hibernate-reactive",
    "name": "Hibernate Reactive",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -12249,7 +12250,7 @@
    "id": "honojs",
    "name": "Hono",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/honojs.svg",
    "from": [
@@ -12263,7 +12264,7 @@
    "id": "horologist",
    "name": "Horologist",
    "kind": "project",
-   "type": "altro",
+   "type": "dispositivo",
    "site": null,
    "mark": null,
    "from": [
@@ -12313,7 +12314,7 @@
    "id": "hotwire-turbo",
    "name": "Turbo",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://turbo.hotwired.dev/",
    "mark": "marks/hotwire-turbo.svg",
    "from": [
@@ -12373,7 +12374,7 @@
    "id": "htmx",
    "name": "HTMX",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/htmx.svg",
    "from": [
@@ -12522,7 +12523,7 @@
    "id": "hugo",
    "name": "Hugo",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/hugo.svg",
    "from": [
@@ -12606,7 +12607,7 @@
    "id": "hyperscript",
    "name": "_hyperscript",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://hyperscript.org/",
    "mark": null,
    "from": [
@@ -12778,7 +12779,7 @@
    "id": "imago",
    "name": "Imago",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://github.com/acaprino/imago",
    "mark": null,
    "from": [
@@ -12851,7 +12852,7 @@
    "id": "infernojs",
    "name": "Inferno",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -13140,7 +13141,7 @@
    "id": "ionic",
    "name": "Ionic",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/ionic.svg",
    "from": [
@@ -13376,7 +13377,7 @@
    "id": "jekyll",
    "name": "Jekyll",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/jekyll.svg",
    "from": [
@@ -13443,7 +13444,7 @@
    "id": "jetpack-compose",
    "name": "Jetpack Compose",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/jetpack-compose.svg",
    "from": [
@@ -13616,7 +13617,7 @@
    "id": "jooq",
    "name": "jOOQ",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -13700,7 +13701,7 @@
    "id": "juniper",
    "name": "Juniper",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://crates.io/crates/juniper",
    "mark": null,
    "from": [
@@ -14378,7 +14379,7 @@
    "id": "knex",
    "name": "Knex",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -14413,7 +14414,7 @@
    "id": "koa",
    "name": "Koa",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/koa.svg",
    "from": [
@@ -14564,7 +14565,7 @@
    "id": "kotlinx-html",
    "name": "kotlinx.html",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -15635,7 +15636,7 @@
    "id": "kysely",
    "name": "Kysely",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -15769,7 +15770,7 @@
    "id": "laravel",
    "name": "Laravel",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/laravel.svg",
    "from": [
@@ -15928,7 +15929,7 @@
    "id": "lexicaleditor",
    "name": "Lexical Editor",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -16142,7 +16143,7 @@
    "id": "liquibase",
    "name": "Liquibase",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://www.liquibase.org",
    "mark": "marks/liquibase.svg",
    "from": [
@@ -16187,7 +16188,7 @@
    "id": "litjs",
    "name": "Lit",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/litjs.svg",
    "from": [
@@ -16901,7 +16902,7 @@
    "id": "mantineui",
    "name": "Mantine UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -16927,7 +16928,7 @@
    "id": "mapkit",
    "name": "MapKit",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://developer.apple.com/documentation/mapkit",
    "mark": null,
    "from": [
@@ -17065,7 +17066,7 @@
    "id": "materialize-css",
    "name": "Materialize",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://materializeweb.com/",
    "mark": null,
    "from": [
@@ -17078,7 +17079,7 @@
    "id": "materialui",
    "name": "Material UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/materialui.svg",
    "from": [
@@ -17195,7 +17196,7 @@
    "id": "mcp",
    "name": "Model Context Protocol SDK",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/mcp.svg",
    "from": [
@@ -17571,7 +17572,7 @@
    "id": "micronaut",
    "name": "Micronaut",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://micronaut.io",
    "mark": null,
    "from": [
@@ -17760,7 +17761,7 @@
    "id": "mintlify",
    "name": "Mintlify",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/mintlify.svg",
    "from": [
@@ -17834,7 +17835,7 @@
    "id": "mithriljs",
    "name": "Mithril",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -17861,7 +17862,7 @@
    "id": "mkdocs",
    "name": "MkDocs",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -17874,7 +17875,7 @@
    "id": "mkdocs-material",
    "name": "Material for MkDocs",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/mkdocs-material.svg",
    "from": [
@@ -18078,7 +18079,7 @@
    "id": "monacoeditor",
    "name": "Monaco Editor",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -18152,7 +18153,7 @@
    "id": "mongoose",
    "name": "Mongoose",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://mongoosejs.com/",
    "mark": "marks/mongoose.svg",
    "from": [
@@ -18303,7 +18304,7 @@
    "id": "mudblazor",
    "name": "MudBlazor",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -18376,7 +18377,7 @@
    "id": "mybatis",
    "name": "MyBatis",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -18545,7 +18546,7 @@
    "id": "nestjs",
    "name": "NestJS",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/nestjs.svg",
    "from": [
@@ -19316,7 +19317,7 @@
    "id": "oban",
    "name": "Oban",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": "https://hex.pm/packages/oban",
    "mark": null,
    "from": [
@@ -20833,7 +20834,7 @@
    "id": "panache",
    "name": "Panache",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -21042,7 +21043,7 @@
    "id": "pebble",
    "name": "Pebble",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -21211,7 +21212,7 @@
    "id": "phaserjs",
    "name": "Phaser",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -21224,7 +21225,7 @@
    "id": "phoenix",
    "name": "Phoenix",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.phoenixframework.org",
    "mark": null,
    "from": [
@@ -21343,7 +21344,7 @@
    "id": "pico-css",
    "name": "Pico CSS",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://picocss.com/",
    "mark": null,
    "from": [
@@ -21408,7 +21409,7 @@
    "id": "pinia",
    "name": "Pinia",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://pinia.vuejs.org/",
    "mark": "marks/pinia.svg",
    "from": [
@@ -22075,7 +22076,7 @@
    "id": "preactjs",
    "name": "Preact",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/preactjs.svg",
    "from": [
@@ -22162,7 +22163,7 @@
    "id": "prisma",
    "name": "Prisma",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": "marks/prisma.svg",
    "from": [
@@ -22619,7 +22620,7 @@
    "id": "qmgo",
    "name": "Qmgo",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://pkg.go.dev/github.com/qiniu/qmgo",
    "mark": null,
    "from": [
@@ -22679,7 +22680,7 @@
    "id": "quarkus",
    "name": "Quarkus",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://quarkus.io",
    "mark": "marks/quarkus.svg",
    "from": [
@@ -22694,7 +22695,7 @@
    "id": "quarkus-rest",
    "name": "Quarkus REST",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -22707,7 +22708,7 @@
    "id": "quarkus-websockets-next",
    "name": "Quarkus WebSockets Next",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -22800,7 +22801,7 @@
    "id": "qute",
    "name": "Qute",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -22813,7 +22814,7 @@
    "id": "qwikjs",
    "name": "Qwik",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/qwikjs.svg",
    "from": [
@@ -22901,7 +22902,7 @@
    "id": "radixui",
    "name": "Radix UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/radixui.svg",
    "from": [
@@ -22959,7 +22960,7 @@
    "id": "rails",
    "name": "Ruby on Rails",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://rubyonrails.org",
    "mark": "marks/rails.svg",
    "from": [
@@ -23070,7 +23071,7 @@
    "id": "ratatui",
    "name": "Ratatui",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://crates.io/crates/ratatui",
    "mark": "marks/ratatui.svg",
    "from": [
@@ -23167,7 +23168,7 @@
    "id": "react",
    "name": "React",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/react.svg",
    "from": [
@@ -23181,7 +23182,7 @@
    "id": "react-dom",
    "name": "React DOM",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://react.dev/reference/react-dom",
    "mark": null,
    "from": [
@@ -23194,7 +23195,7 @@
    "id": "react-flow",
    "name": "React Flow",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://reactflow.dev/",
    "mark": "marks/react-flow.svg",
    "from": [
@@ -23222,7 +23223,7 @@
    "id": "react-native-elements",
    "name": "React Native Elements",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://reactnativeelements.com/",
    "mark": null,
    "from": [
@@ -23235,7 +23236,7 @@
    "id": "react-navigation",
    "name": "React Navigation",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://reactnavigation.org/",
    "mark": null,
    "from": [
@@ -23285,7 +23286,7 @@
    "id": "reactrouterdom",
    "name": "React Router",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/reactrouterdom.svg",
    "from": [
@@ -23313,7 +23314,7 @@
    "id": "readthedocs",
    "name": "Read The Docs",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/readthedocs.svg",
    "from": [
@@ -23435,7 +23436,7 @@
    "id": "refena",
    "name": "Refena",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://pub.dev/packages/refena_flutter",
    "mark": null,
    "from": [
@@ -23448,7 +23449,7 @@
    "id": "refinedev",
    "name": "Refine",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/refinedev.svg",
    "from": [
@@ -23462,7 +23463,7 @@
    "id": "rekaui",
    "name": "Reka UI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/rekaui.svg",
    "from": [
@@ -23501,7 +23502,7 @@
    "id": "remixrouter",
    "name": "Remix Router",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -23909,7 +23910,7 @@
    "id": "roq",
    "name": "Roq",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -23922,7 +23923,7 @@
    "id": "routerino",
    "name": "Routerino",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://pub.dev/packages/routerino",
    "mark": null,
    "from": [
@@ -23935,7 +23936,7 @@
    "id": "rq",
    "name": "RQ",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": null,
    "mark": null,
    "from": [
@@ -24170,7 +24171,7 @@
    "id": "sandpackeditor",
    "name": "Sandpack",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -24710,7 +24711,7 @@
    "id": "sea-orm",
    "name": "SeaORM",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://crates.io/crates/sea-orm",
    "mark": null,
    "from": [
@@ -24943,7 +24944,7 @@
    "id": "sequelize",
    "name": "Sequelize",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": "marks/sequelize.svg",
    "from": [
@@ -24957,7 +24958,7 @@
    "id": "sequelruby",
    "name": "Sequel",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -25110,7 +25111,7 @@
    "id": "shadcn",
    "name": "Shadcn",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -25194,7 +25195,7 @@
    "id": "shopify.hydrogen",
    "name": "Shopify Hydrogen",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -25424,7 +25425,7 @@
    "id": "sinatra",
    "name": "Sinatra",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://sinatrarb.com",
    "mark": null,
    "from": [
@@ -25554,7 +25555,7 @@
    "id": "slatedocs",
    "name": "Slate",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -25567,7 +25568,7 @@
    "id": "slim",
    "name": "Slim",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.slimframework.com",
    "mark": null,
    "from": [
@@ -25624,7 +25625,7 @@
    "id": "smallrye-reactive-messaging",
    "name": "SmallRye Reactive Messaging",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": null,
    "mark": null,
    "from": [
@@ -25712,7 +25713,7 @@
    "id": "socketio",
    "name": "Socket.io",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/socketio.svg",
    "from": [
@@ -25806,7 +25807,7 @@
    "id": "solid-queue",
    "name": "Solid Queue",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": "https://github.com/rails/solid_queue",
    "mark": null,
    "from": [
@@ -25819,7 +25820,7 @@
    "id": "solidjs",
    "name": "Solid js",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -25991,7 +25992,7 @@
    "id": "sphinx",
    "name": "Sphinx",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://www.sphinx-doc.org",
    "mark": "marks/sphinx.svg",
    "from": [
@@ -26169,7 +26170,7 @@
    "id": "spring-amqp",
    "name": "Spring AMQP",
    "kind": "project",
-   "type": "altro",
+   "type": "coda",
    "site": null,
    "mark": null,
    "from": [
@@ -26182,7 +26183,7 @@
    "id": "spring-boot",
    "name": "Spring Boot",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://spring.io/projects/spring-boot",
    "mark": "marks/spring-boot.svg",
    "from": [
@@ -26270,7 +26271,7 @@
    "id": "spring-data-elasticsearch",
    "name": "Spring Data Elasticsearch",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -26283,7 +26284,7 @@
    "id": "spring-data-jpa",
    "name": "Spring Data JPA",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://spring.io/projects/spring-data-jpa",
    "mark": null,
    "from": [
@@ -26296,7 +26297,7 @@
    "id": "spring-data-mongodb",
    "name": "Spring Data MongoDB",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -26309,7 +26310,7 @@
    "id": "spring-data-redis",
    "name": "Spring Data Redis",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -26322,7 +26323,7 @@
    "id": "spring-mvc",
    "name": "Spring MVC",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://spring.io/projects/spring-framework",
    "mark": null,
    "from": [
@@ -26349,7 +26350,7 @@
    "id": "spring-webflux",
    "name": "Spring WebFlux",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://spring.io/projects/spring-framework",
    "mark": null,
    "from": [
@@ -26373,7 +26374,7 @@
    "id": "sqlalchemy",
    "name": "SQLAlchemy",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://www.sqlalchemy.org",
    "mark": "marks/sqlalchemy.svg",
    "from": [
@@ -26387,7 +26388,7 @@
    "id": "sqlc",
    "name": "sqlc",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://pkg.go.dev/github.com/sqlc-dev/sqlc",
    "mark": null,
    "from": [
@@ -26400,7 +26401,7 @@
    "id": "sqldelight",
    "name": "SQLDelight",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": null,
    "from": [
@@ -26440,7 +26441,7 @@
    "id": "sqlmodel",
    "name": "SQLModel",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://sqlmodel.tiangolo.com",
    "mark": null,
    "from": [
@@ -26453,7 +26454,7 @@
    "id": "sqlx-go",
    "name": "sqlx",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://pkg.go.dev/github.com/jmoiron/sqlx",
    "mark": null,
    "from": [
@@ -26466,7 +26467,7 @@
    "id": "sqlx-rust",
    "name": "SQLx",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://crates.io/crates/sqlx",
    "mark": null,
    "from": [
@@ -26717,7 +26718,7 @@
    "id": "stenciljs",
    "name": "Stencil",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/stenciljs.svg",
    "from": [
@@ -26731,7 +26732,7 @@
    "id": "stimulus",
    "name": "Stimulus",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://stimulus.hotwired.dev/",
    "mark": "marks/stimulus.svg",
    "from": [
@@ -26791,7 +26792,7 @@
    "id": "storybook",
    "name": "Storybook",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/storybook.svg",
    "from": [
@@ -26851,7 +26852,7 @@
    "id": "strawberry-graphql",
    "name": "Strawberry GraphQL",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
@@ -26864,7 +26865,7 @@
    "id": "streamlit",
    "name": "Streamlit",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://streamlit.io",
    "mark": "marks/streamlit.svg",
    "from": [
@@ -27140,7 +27141,7 @@
    "id": "sveltejs",
    "name": "Svelte",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/sveltejs.svg",
    "from": [
@@ -27195,7 +27196,7 @@
    "id": "swiftui",
    "name": "SwiftUI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://developer.apple.com/xcode/swiftui/",
    "mark": null,
    "from": [
@@ -27253,7 +27254,7 @@
    "id": "symfony",
    "name": "Symfony",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/symfony.svg",
    "from": [
@@ -27311,7 +27312,7 @@
    "id": "tabler",
    "name": "Tabler",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://tabler.io/",
    "mark": null,
    "from": [
@@ -27361,7 +27362,7 @@
    "id": "tailwind",
    "name": "Tailwind",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -27407,7 +27408,7 @@
    "id": "tanstackrouter",
    "name": "TanStack Router",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -27488,7 +27489,7 @@
    "id": "tauri",
    "name": "Tauri",
    "kind": "project",
-   "type": "altro",
+   "type": "dispositivo",
    "site": null,
    "mark": "marks/tauri.svg",
    "from": [
@@ -28032,7 +28033,7 @@
    "id": "thymeleaf",
    "name": "Thymeleaf",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://www.thymeleaf.org",
    "mark": "marks/thymeleaf.svg",
    "from": [
@@ -28195,7 +28196,7 @@
    "id": "tiptap",
    "name": "Tiptap",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -28520,7 +28521,7 @@
    "id": "trpc",
    "name": "TRPC",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/trpc.svg",
    "from": [
@@ -28557,7 +28558,7 @@
    "id": "ts-rest",
    "name": "ts-rest",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://ts-rest.com/",
    "mark": null,
    "from": [
@@ -28621,7 +28622,7 @@
    "id": "twigphp",
    "name": "Twig",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -28735,7 +28736,7 @@
    "id": "typeorm",
    "name": "TypeORM",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": null,
    "mark": "marks/typeorm.svg",
    "from": [
@@ -28813,7 +28814,7 @@
    "id": "uikit",
    "name": "UIKit",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://developer.apple.com/documentation/uikit",
    "mark": "marks/uikit.svg",
    "from": [
@@ -28840,7 +28841,7 @@
    "id": "umijs",
    "name": "UmiJS",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -29561,7 +29562,7 @@
    "id": "vitepress",
    "name": "VitePress",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/vitepress.svg",
    "from": [
@@ -29803,7 +29804,7 @@
    "id": "vue",
    "name": "Vue.js",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/vue.svg",
    "from": [
@@ -29843,10 +29844,11 @@
    "id": "vuejs",
    "name": "Vue",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": "marks/vuejs.svg",
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
    ],
@@ -29856,7 +29858,7 @@
    "id": "vuepress",
    "name": "VuePress",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
@@ -29869,7 +29871,7 @@
    "id": "vuetify",
    "name": "Vuetify",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://vuetifyjs.com/",
    "mark": "marks/vuetify.svg",
    "from": [
@@ -29916,7 +29918,7 @@
    "id": "wagtail",
    "name": "Wagtail",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": "marks/wagtail.svg",
    "from": [
@@ -30215,7 +30217,7 @@
    "id": "watermelondb",
    "name": "WatermelonDB",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://watermelondb.dev/",
    "mark": null,
    "from": [
@@ -30340,7 +30342,7 @@
    "id": "webview2-com",
    "name": "webview2-com",
    "kind": "project",
-   "type": "altro",
+   "type": "dispositivo",
    "site": "https://crates.io/crates/webview2-com",
    "mark": null,
    "from": [
@@ -30499,10 +30501,11 @@
    "id": "winui",
    "name": "WinUI",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": null,
    "mark": null,
    "from": [
+    "additions",
     "stack-analyser"
    ],
    "category": "framework"
@@ -30869,7 +30872,7 @@
    "id": "yew",
    "name": "Yew",
    "kind": "project",
-   "type": "altro",
+   "type": "schermata",
    "site": "https://crates.io/crates/yew",
    "mark": "marks/yew.svg",
    "from": [
@@ -30883,7 +30886,7 @@
    "id": "yii2",
    "name": "Yii2",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "from": [
