@@ -209,7 +209,15 @@ if (-not $ended) { Stop-Process -Id $other.Id -Force }
 
 Write-Host '--- the page closes the window'
 $null = Ask "localStorage.setItem('smoke', 'kept'), 1"
-Start-Sleep 12 # WebView2 writes the storage to the disk some seconds late
+# WebView2 writes the storage to the disk late, and the later the more often the page writes: until then a close may lose it.
+$late = [Diagnostics.Stopwatch]::StartNew()
+$written = Wait-For {
+  foreach ($file in Get-ChildItem "$env:LOCALAPPDATA\dev.daodan.desktop\EBWebView\Default\Local Storage\leveldb\*.log" -ErrorAction SilentlyContinue) {
+    $read = [IO.StreamReader]::new([IO.FileStream]::new($file.FullName, 'Open', 'Read', 'ReadWrite, Delete'), [Text.Encoding]::Latin1)
+    try { if ($read.ReadToEnd().Contains('smoke')) { return $true } } finally { $read.Dispose() }
+  }
+} 120
+Say ([bool]$written) "what the page keeps is on the disk after $($late.ElapsedMilliseconds) ms"
 $null = & $node "$PSScriptRoot/smoke-page.mjs" 9333 $server "window.__TAURI_INTERNALS__.invoke('plugin:window|close', { label: 'main' }), 1" 2>&1
 Say-Ended $p 0 'closed by the page'
 Say (-not (Get-Content "$data\server.log")) "the log of the server is empty: $(Get-Content "$data\server.log" -Raw)"
