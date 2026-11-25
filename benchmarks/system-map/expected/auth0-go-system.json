@@ -1,0 +1,1028 @@
+{
+ "case": "auth0-go",
+ "root": "auth0-golang-web-app",
+ "scope": "sistema",
+ "made": "2026-11-25",
+ "commit": "c497850bb91f05f452572aac022945ba9d5ab857",
+ "nodes": [
+  {
+   "name": "Auth0 Golang Web App",
+   "type": "altro",
+   "what": "L'esempio di Auth0 per un'app web in Go, scritto due volte: su Gin e sulla sola libreria standard.",
+   "members": [
+    "."
+   ],
+   "proof": [
+    {
+     "at": "01-Login/main.go:23",
+     "has": "router.New(auth)"
+    },
+    {
+     "at": "01-Login-Quickstart/main.go:26",
+     "has": "http.NewServeMux()"
+    }
+   ]
+  },
+  {
+   "name": "Utente",
+   "type": "attore",
+   "position": "external",
+   "what": "Chi visita il sito ed entra con il proprio account Auth0.",
+   "evidence": [
+    "01-Login/web/template/home.html",
+    "01-Login-Quickstart/templates/home.html"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/web/template/home.html:20",
+     "has": "qsLoginBtn"
+    }
+   ]
+  },
+  {
+   "name": "Browser",
+   "type": "dispositivo",
+   "position": "external",
+   "what": "Il browser che mostra le pagine e tiene il cookie della sessione.",
+   "evidence": [
+    "01-Login/web/template/home.html",
+    "01-Login-Quickstart/templates/home.html"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/web/static/js/user.js:3",
+     "has": "Cookies.remove"
+    }
+   ]
+  },
+  {
+   "name": "Auth0",
+   "type": "autenticazione",
+   "position": "external",
+   "what": "Il servizio che autentica l'utente e ne dà il profilo.",
+   "evidence": [
+    "01-Login/platform/authenticator/auth.go",
+    "01-Login/web/app/logout/logout.go",
+    "01-Login-Quickstart/auth.go",
+    "01-Login-Quickstart/handlers.go",
+    "01-Login/.env.example",
+    "01-Login-Quickstart/.env.example"
+   ],
+   "registry": "auth0",
+   "family": "provider",
+   "role": "accesso degli utenti: pagina di login, scambio dei token, profilo, uscita",
+   "mode": "OIDC e OAuth2 con go-oidc e x/oauth2 in 01-Login, SDK go-auth0 nel Quickstart; redirect del browser",
+   "proof": [
+    {
+     "at": "01-Login/platform/authenticator/auth.go:22",
+     "has": "AUTH0_DOMAIN"
+    },
+    {
+     "at": "01-Login-Quickstart/auth.go:27",
+     "has": "authentication.New("
+    }
+   ]
+  },
+  {
+   "name": "Github Actions",
+   "type": "servizio o API",
+   "position": "external",
+   "what": "Esegue a ogni push la costruzione dei due esempi e il test del login.",
+   "evidence": [
+    ".github/workflows/ci.yml"
+   ],
+   "registry": "github.actions",
+   "family": "provider",
+   "role": "costruzione, avvio e test del login dei due esempi",
+   "mode": "workflow letto dal servizio a ogni push e pull request",
+   "proof": [
+    {
+     "at": ".github/workflows/ci.yml:42",
+     "has": "docker build -t"
+    }
+   ]
+  },
+  {
+   "name": "01-Login",
+   "type": "applicazione",
+   "inside": "Auth0 Golang Web App",
+   "what": "L'esempio su Gin: un server che offre le pagine e le rotte di accesso sulla porta 3000.",
+   "members": [
+    "01-Login"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/main.go:26",
+     "has": "0.0.0.0:3000"
+    }
+   ]
+  },
+  {
+   "name": "Auth0 Example",
+   "type": "schermata",
+   "inside": "01-Login",
+   "what": "La pagina iniziale, con il pulsante SignIn.",
+   "members": [
+    "01-Login/web/template/home.html",
+    "01-Login/web/app/home/home.go"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/web/app/home/home.go:11",
+     "has": "home.html"
+    }
+   ]
+  },
+  {
+   "name": "Welcome",
+   "type": "schermata",
+   "inside": "01-Login",
+   "what": "La pagina dell'utente entrato: avatar, nickname e pulsante Logout.",
+   "members": [
+    "01-Login/web/template/user.html",
+    "01-Login/web/app/user/user.go",
+    "01-Login/web/static/js/user.js"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /user"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/web/app/user/user.go:15",
+     "has": "user.html"
+    }
+   ]
+  },
+  {
+   "name": "Rotte di accesso",
+   "type": "servizio o API",
+   "inside": "01-Login",
+   "what": "Le rotte /login, /callback e /logout e il client OIDC verso Auth0.",
+   "members": [
+    "01-Login/web/app/login/login.go",
+    "01-Login/web/app/callback/callback.go",
+    "01-Login/web/app/logout/logout.go",
+    "01-Login/platform/authenticator/auth.go"
+   ],
+   "routes": [
+    "GET /login",
+    "GET /callback",
+    "GET /logout"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/platform/router/router.go:34",
+     "has": "router.GET(\"/login\""
+    }
+   ]
+  },
+  {
+   "name": "Controllo dell'accesso",
+   "type": "funzionalità",
+   "inside": "01-Login",
+   "what": "Il middleware che lascia passare a /user solo chi ha un profilo in sessione.",
+   "members": [
+    "01-Login/platform/middleware/isAuthenticated.go"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/platform/middleware/isAuthenticated.go:13",
+     "has": "Get(\"profile\")"
+    }
+   ]
+  },
+  {
+   "name": "Sessione",
+   "type": "entità",
+   "inside": "01-Login",
+   "what": "Stato, profilo e token d'accesso dell'utente, in un cookie firmato.",
+   "members": [
+    "store:01-Login auth-session/state",
+    "store:01-Login auth-session/profile",
+    "store:01-Login auth-session/access_token"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "proof": [
+    {
+     "at": "01-Login/platform/router/router.go:28",
+     "has": "auth-session"
+    }
+   ]
+  },
+  {
+   "name": "01-Login-Quickstart",
+   "type": "applicazione",
+   "inside": "Auth0 Golang Web App",
+   "what": "Lo stesso esempio su net/http con l'SDK go-auth0, in un solo pacchetto.",
+   "members": [
+    "01-Login-Quickstart"
+   ],
+   "proof": [
+    {
+     "at": "01-Login-Quickstart/main.go:34",
+     "has": "0.0.0.0:3000"
+    }
+   ]
+  },
+  {
+   "name": "Go + Auth0",
+   "type": "schermata",
+   "inside": "01-Login-Quickstart",
+   "what": "La pagina iniziale del Quickstart, con il pulsante Sign In.",
+   "members": [
+    "01-Login-Quickstart/templates/home.html",
+    "01-Login-Quickstart/handlers.go::HomeHandler"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "/"
+   ],
+   "proof": [
+    {
+     "at": "01-Login-Quickstart/handlers.go:39",
+     "has": "home.html"
+    }
+   ]
+  },
+  {
+   "name": "Profile",
+   "type": "schermata",
+   "inside": "01-Login-Quickstart",
+   "what": "La pagina dell'utente entrato nel Quickstart: nome, nickname, email e pulsante Sign Out.",
+   "members": [
+    "01-Login-Quickstart/templates/user.html",
+    "01-Login-Quickstart/handlers.go::UserHandler"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "/user"
+   ],
+   "proof": [
+    {
+     "at": "01-Login-Quickstart/handlers.go:117",
+     "has": "user.html"
+    }
+   ]
+  },
+  {
+   "name": "Rotte di accesso del Quickstart",
+   "type": "servizio o API",
+   "inside": "01-Login-Quickstart",
+   "what": "Le rotte /login, /callback e /logout del Quickstart e il client go-auth0.",
+   "members": [
+    "01-Login-Quickstart/handlers.go::LoginHandler",
+    "01-Login-Quickstart/handlers.go::CallbackHandler",
+    "01-Login-Quickstart/handlers.go::LogoutHandler",
+    "01-Login-Quickstart/auth.go"
+   ],
+   "routes": [
+    "/login",
+    "/callback",
+    "/logout"
+   ],
+   "proof": [
+    {
+     "at": "01-Login-Quickstart/main.go:28",
+     "has": "mux.HandleFunc(\"/login\""
+    }
+   ]
+  },
+  {
+   "name": "Sessione del Quickstart",
+   "type": "entità",
+   "inside": "01-Login-Quickstart",
+   "what": "Stato, profilo e token d'accesso dell'utente del Quickstart, in un cookie firmato con SESSION_SECRET.",
+   "members": [
+    "store:01-Login-Quickstart auth-session/state",
+    "store:01-Login-Quickstart auth-session/profile",
+    "store:01-Login-Quickstart auth-session/access_token"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "proof": [
+    {
+     "at": "01-Login-Quickstart/handlers.go:22",
+     "has": "SESSION_SECRET"
+    }
+   ]
+  },
+  {
+   "name": "Test del login nel browser",
+   "type": "altro",
+   "inside": "Auth0 Golang Web App",
+   "what": "Il test Playwright che entra con Universal Login in un'app in ascolto sulla porta 3000.",
+   "members": [
+    "tests"
+   ],
+   "proof": [
+    {
+     "at": "tests/login.spec.js:3",
+     "has": "Log in using Universal Login"
+    }
+   ]
+  }
+ ],
+ "flows": [
+  {
+   "name": "Accesso con Auth0",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un visitatore entra con la pagina di login di Auth0",
+   "outcome": "il profilo del token è nel cookie della sessione e la pagina Welcome lo mostra",
+   "nodes": [
+    "Utente",
+    "Auth0 Example",
+    "Rotte di accesso",
+    "Sessione",
+    "Auth0",
+    "Controllo dell'accesso",
+    "Welcome"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme il pulsante"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "il profilo e il token sono scritti o tolti"
+    },
+    {
+     "node": "Welcome",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Auth0 Example",
+     "data": "clic su SignIn",
+     "kind": "attiva",
+     "cite": "01-Login/web/template/home.html:20",
+     "has": "href=\"/login\""
+    },
+    {
+     "from": "Auth0 Example",
+     "to": "Rotte di accesso",
+     "data": "richiesta GET /login",
+     "kind": "chiama",
+     "cite": "01-Login/web/template/home.html:20",
+     "has": "href=\"/login\""
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "lo stato casuale",
+     "kind": "scrive",
+     "cite": "01-Login/web/app/login/login.go:25",
+     "has": "session.Set(\"state\", state)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Auth0",
+     "data": "redirect alla pagina di login con client id, URL di ritorno e stato",
+     "kind": "trasferisce",
+     "cite": "01-Login/web/app/login/login.go:31",
+     "has": "auth.AuthCodeURL(state)"
+    },
+    {
+     "from": "Auth0",
+     "to": "Rotte di accesso",
+     "data": "richiesta GET /callback con codice e stato",
+     "kind": "chiama",
+     "cite": "01-Login/platform/router/router.go:35",
+     "has": "router.GET(\"/callback\""
+    },
+    {
+     "from": "Sessione",
+     "to": "Rotte di accesso",
+     "data": "lo stato da confrontare",
+     "kind": "legge",
+     "cite": "01-Login/web/app/callback/callback.go:16",
+     "has": "session.Get(\"state\")"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Auth0",
+     "data": "codice di autorizzazione in cambio dei token; verifica del token ID con le chiavi del servizio",
+     "kind": "chiama",
+     "cite": "01-Login/web/app/callback/callback.go:22",
+     "has": "auth.Exchange("
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "token d'accesso e profilo",
+     "kind": "scrive",
+     "cite": "01-Login/web/app/callback/callback.go:41",
+     "has": "session.Set(\"profile\", profile)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Controllo dell'accesso",
+     "data": "redirect a /user",
+     "kind": "chiama",
+     "cite": "01-Login/web/app/callback/callback.go:48",
+     "has": "\"/user\""
+    },
+    {
+     "from": "Sessione",
+     "to": "Controllo dell'accesso",
+     "data": "il profilo, presente o no",
+     "kind": "legge",
+     "cite": "01-Login/platform/middleware/isAuthenticated.go:13",
+     "has": "Get(\"profile\") == nil"
+    },
+    {
+     "from": "Controllo dell'accesso",
+     "to": "Welcome",
+     "data": "la richiesta, quando in sessione c'è un profilo",
+     "kind": "chiama",
+     "cite": "01-Login/platform/middleware/isAuthenticated.go:16",
+     "has": "ctx.Next()"
+    },
+    {
+     "from": "Sessione",
+     "to": "Welcome",
+     "data": "nickname e immagine",
+     "kind": "legge",
+     "cite": "01-Login/web/app/user/user.go:13",
+     "has": "session.Get(\"profile\")"
+    }
+   ]
+  },
+  {
+   "name": "Rifiuto della pagina del profilo senza accesso",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale",
+    "tecnico"
+   ],
+   "intent": "un visitatore apre /user senza sessione",
+   "outcome": "il visitatore torna alla pagina iniziale",
+   "nodes": [
+    "Utente",
+    "Controllo dell'accesso",
+    "Sessione",
+    "Auth0 Example"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "rotta",
+     "what": "apre /user"
+    },
+    {
+     "node": "Sessione",
+     "kind": "cambio di un dato",
+     "what": "la sessione non ha un profilo"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Auth0 Example",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Controllo dell'accesso",
+     "data": "richiesta GET /user",
+     "kind": "chiama",
+     "cite": "01-Login/platform/router/router.go:36",
+     "has": "router.GET(\"/user\""
+    },
+    {
+     "from": "Sessione",
+     "to": "Controllo dell'accesso",
+     "data": "nessun profilo",
+     "kind": "legge",
+     "cite": "01-Login/platform/middleware/isAuthenticated.go:13",
+     "has": "Get(\"profile\") == nil"
+    },
+    {
+     "from": "Controllo dell'accesso",
+     "to": "Auth0 Example",
+     "data": "redirect a /",
+     "kind": "chiama",
+     "cite": "01-Login/platform/middleware/isAuthenticated.go:14",
+     "has": "ctx.Redirect(http.StatusSeeOther, \"/\")"
+    }
+   ]
+  },
+  {
+   "name": "Uscita",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente entrato esce",
+   "outcome": "il cookie della sessione è tolto nel browser, la sessione di Auth0 è chiusa e il browser torna alla pagina iniziale",
+   "nodes": [
+    "Utente",
+    "Welcome",
+    "Sessione",
+    "Rotte di accesso",
+    "Auth0",
+    "Auth0 Example"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme il pulsante"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "il profilo e il token sono scritti o tolti"
+    },
+    {
+     "node": "Auth0",
+     "what": "la sessione del servizio è aperta o chiusa"
+    },
+    {
+     "node": "Auth0 Example",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Welcome",
+     "data": "clic su Logout",
+     "kind": "attiva",
+     "cite": "01-Login/web/template/user.html:21",
+     "has": "href=\"/logout\""
+    },
+    {
+     "from": "Welcome",
+     "to": "Sessione",
+     "data": "cancellazione del cookie auth-session, nel browser",
+     "kind": "scrive",
+     "cite": "01-Login/web/static/js/user.js:3",
+     "has": "Cookies.remove('auth-session')"
+    },
+    {
+     "from": "Welcome",
+     "to": "Rotte di accesso",
+     "data": "richiesta GET /logout",
+     "kind": "chiama",
+     "cite": "01-Login/web/template/user.html:21",
+     "has": "href=\"/logout\""
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Auth0",
+     "data": "redirect a /v2/logout con client id e indirizzo di ritorno",
+     "kind": "trasferisce",
+     "cite": "01-Login/web/app/logout/logout.go:35",
+     "has": "logoutUrl.String()"
+    },
+    {
+     "from": "Auth0",
+     "to": "Auth0 Example",
+     "data": "redirect all'indirizzo di ritorno, la radice del sito",
+     "kind": "chiama",
+     "cite": "01-Login/web/app/logout/logout.go:24",
+     "has": "returnTo, err := url.Parse("
+    }
+   ]
+  },
+  {
+   "name": "Accesso con Auth0 nel Quickstart",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un visitatore entra con la pagina di login di Auth0",
+   "outcome": "nickname, nome, immagine ed email sono nel cookie della sessione e la pagina Profile li mostra",
+   "nodes": [
+    "Utente",
+    "Go + Auth0",
+    "Rotte di accesso del Quickstart",
+    "Sessione del Quickstart",
+    "Auth0",
+    "Profile"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme il pulsante"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione del Quickstart",
+     "what": "il profilo e il token sono scritti o tolti"
+    },
+    {
+     "node": "Profile",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Go + Auth0",
+     "data": "clic su Sign In",
+     "kind": "attiva",
+     "cite": "01-Login-Quickstart/templates/home.html:75",
+     "has": "href=\"/login\""
+    },
+    {
+     "from": "Go + Auth0",
+     "to": "Rotte di accesso del Quickstart",
+     "data": "richiesta GET /login",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/templates/home.html:75",
+     "has": "href=\"/login\""
+    },
+    {
+     "from": "Rotte di accesso del Quickstart",
+     "to": "Sessione del Quickstart",
+     "data": "lo stato casuale",
+     "kind": "scrive",
+     "cite": "01-Login-Quickstart/handlers.go:54",
+     "has": "session.Values[\"state\"] = state"
+    },
+    {
+     "from": "Rotte di accesso del Quickstart",
+     "to": "Auth0",
+     "data": "redirect a /authorize con client id, URL di ritorno, scope e stato",
+     "kind": "trasferisce",
+     "cite": "01-Login-Quickstart/handlers.go:60",
+     "has": "auth.AuthorizationURL(state)"
+    },
+    {
+     "from": "Auth0",
+     "to": "Rotte di accesso del Quickstart",
+     "data": "richiesta GET /callback con codice e stato",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/main.go:29",
+     "has": "mux.HandleFunc(\"/callback\""
+    },
+    {
+     "from": "Sessione del Quickstart",
+     "to": "Rotte di accesso del Quickstart",
+     "data": "lo stato da confrontare",
+     "kind": "legge",
+     "cite": "01-Login-Quickstart/handlers.go:70",
+     "has": "session.Values[\"state\"]"
+    },
+    {
+     "from": "Rotte di accesso del Quickstart",
+     "to": "Auth0",
+     "data": "codice di autorizzazione in cambio dei token, poi token d'accesso in cambio del profilo",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/handlers.go:76",
+     "has": "auth.OAuth.LoginWithAuthCode("
+    },
+    {
+     "from": "Rotte di accesso del Quickstart",
+     "to": "Sessione del Quickstart",
+     "data": "token d'accesso e profilo",
+     "kind": "scrive",
+     "cite": "01-Login-Quickstart/handlers.go:93",
+     "has": "session.Values[\"profile\"]"
+    },
+    {
+     "from": "Rotte di accesso del Quickstart",
+     "to": "Profile",
+     "data": "redirect a /user",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/handlers.go:104",
+     "has": "http.Redirect(w, r, \"/user\""
+    },
+    {
+     "from": "Sessione del Quickstart",
+     "to": "Profile",
+     "data": "nickname, nome, immagine ed email",
+     "kind": "legge",
+     "cite": "01-Login-Quickstart/handlers.go:111",
+     "has": "session.Values[\"profile\"]"
+    }
+   ]
+  },
+  {
+   "name": "Rifiuto della pagina del profilo senza accesso nel Quickstart",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale",
+    "tecnico"
+   ],
+   "intent": "un visitatore apre /user senza sessione",
+   "outcome": "il visitatore torna alla pagina iniziale",
+   "nodes": [
+    "Utente",
+    "Profile",
+    "Sessione del Quickstart",
+    "Go + Auth0"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "rotta",
+     "what": "apre /user"
+    },
+    {
+     "node": "Sessione del Quickstart",
+     "kind": "cambio di un dato",
+     "what": "la sessione non ha un profilo"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Go + Auth0",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profile",
+     "data": "richiesta GET /user",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/main.go:30",
+     "has": "mux.HandleFunc(\"/user\""
+    },
+    {
+     "from": "Sessione del Quickstart",
+     "to": "Profile",
+     "data": "nessun profilo",
+     "kind": "legge",
+     "cite": "01-Login-Quickstart/handlers.go:111",
+     "has": "session.Values[\"profile\"]"
+    },
+    {
+     "from": "Profile",
+     "to": "Go + Auth0",
+     "data": "redirect a /",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/handlers.go:113",
+     "has": "http.Redirect(w, r, \"/\""
+    }
+   ]
+  },
+  {
+   "name": "Uscita dal Quickstart",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente entrato esce",
+   "outcome": "il cookie della sessione scade, la sessione di Auth0 è chiusa e il browser torna alla pagina iniziale",
+   "nodes": [
+    "Utente",
+    "Profile",
+    "Rotte di accesso del Quickstart",
+    "Sessione del Quickstart",
+    "Auth0",
+    "Go + Auth0"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme il pulsante"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione del Quickstart",
+     "what": "il profilo e il token sono scritti o tolti"
+    },
+    {
+     "node": "Auth0",
+     "what": "la sessione del servizio è aperta o chiusa"
+    },
+    {
+     "node": "Go + Auth0",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profile",
+     "data": "clic su Sign Out",
+     "kind": "attiva",
+     "cite": "01-Login-Quickstart/templates/user.html:130",
+     "has": "href=\"/logout\""
+    },
+    {
+     "from": "Profile",
+     "to": "Rotte di accesso del Quickstart",
+     "data": "richiesta GET /logout",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/templates/user.html:130",
+     "has": "href=\"/logout\""
+    },
+    {
+     "from": "Rotte di accesso del Quickstart",
+     "to": "Sessione del Quickstart",
+     "data": "scadenza del cookie",
+     "kind": "scrive",
+     "cite": "01-Login-Quickstart/handlers.go:126",
+     "has": "session.Options.MaxAge = -1"
+    },
+    {
+     "from": "Rotte di accesso del Quickstart",
+     "to": "Auth0",
+     "data": "redirect a /v2/logout con client id e indirizzo di ritorno",
+     "kind": "trasferisce",
+     "cite": "01-Login-Quickstart/handlers.go:141",
+     "has": "logoutURL.String()"
+    },
+    {
+     "from": "Auth0",
+     "to": "Go + Auth0",
+     "data": "redirect all'indirizzo di ritorno, la radice del sito",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/handlers.go:135",
+     "has": "returnTo, _ := url.Parse("
+    }
+   ]
+  },
+  {
+   "name": "Verifica del login a ogni push",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "intent": "un push o una pull request",
+   "outcome": "ogni esempio è costruito come immagine, avviato con credenziali di prova e provato da un browser vero",
+   "nodes": [
+    "Github Actions",
+    "01-Login",
+    "01-Login-Quickstart",
+    "Test del login nel browser",
+    "Auth0"
+   ],
+   "entries": [
+    {
+     "node": "Github Actions",
+     "kind": "evento del repository",
+     "what": "un push o una pull request"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Auth0",
+     "what": "la sessione del servizio è aperta o chiusa"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Github Actions",
+     "to": "01-Login",
+     "data": "costruzione e avvio dell'immagine con le credenziali di prova",
+     "kind": "attiva",
+     "cite": ".github/workflows/ci.yml:42",
+     "has": "docker build -t"
+    },
+    {
+     "from": "Github Actions",
+     "to": "01-Login-Quickstart",
+     "data": "costruzione e avvio dell'immagine con le credenziali di prova",
+     "kind": "attiva",
+     "cite": ".github/workflows/ci.yml:42",
+     "has": "docker build -t"
+    },
+    {
+     "from": "Github Actions",
+     "to": "Test del login nel browser",
+     "data": "avvio dei test",
+     "kind": "attiva",
+     "cite": ".github/workflows/ci.yml:61",
+     "has": "run: npm test"
+    },
+    {
+     "from": "Test del login nel browser",
+     "to": "01-Login",
+     "data": "pagina / e clic su #qsLoginBtn, sulla porta 3000",
+     "kind": "chiama",
+     "cite": "tests/login.spec.js:6",
+     "has": "#qsLoginBtn"
+    },
+    {
+     "from": "Test del login nel browser",
+     "to": "01-Login-Quickstart",
+     "data": "pagina / e clic su #qsLoginBtn, sulla porta 3000",
+     "kind": "chiama",
+     "cite": "tests/login.spec.js:6",
+     "has": "#qsLoginBtn"
+    },
+    {
+     "from": "01-Login",
+     "to": "Auth0",
+     "data": "l'accesso dell'utente di prova",
+     "kind": "chiama",
+     "cite": "01-Login/web/app/login/login.go:31",
+     "has": "auth.AuthCodeURL(state)"
+    },
+    {
+     "from": "01-Login-Quickstart",
+     "to": "Auth0",
+     "data": "l'accesso dell'utente di prova",
+     "kind": "chiama",
+     "cite": "01-Login-Quickstart/handlers.go:60",
+     "has": "auth.AuthorizationURL(state)"
+    }
+   ]
+  }
+ ],
+ "areas": [
+  {
+   "name": "accesso e identità",
+   "present": true
+  },
+  {
+   "name": "funzioni principali",
+   "present": false
+  },
+  {
+   "name": "pagamenti e abbonamenti",
+   "present": false
+  },
+  {
+   "name": "dati dell'utente",
+   "present": false
+  },
+  {
+   "name": "integrazioni esterne",
+   "present": false
+  },
+  {
+   "name": "comunicazioni",
+   "present": false
+  },
+  {
+   "name": "amministrazione",
+   "present": false
+  },
+  {
+   "name": "esercizio",
+   "present": true
+  }
+ ],
+ "packages": [
+  {
+   "path": "01-Login",
+   "manifest": "01-Login/go.mod",
+   "kind": "go-module"
+  },
+  {
+   "path": "01-Login-Quickstart",
+   "manifest": "01-Login-Quickstart/go.mod",
+   "kind": "go-module"
+  },
+  {
+   "path": "tests",
+   "manifest": "tests/package.json",
+   "kind": "npm-package"
+  }
+ ],
+ "gaps": [
+  {
+   "what": "chi chiama /callback",
+   "why": "è Auth0, da fuori, all'indirizzo di AUTH0_CALLBACK_URL: nessun file del progetto tiene quella chiamata, la freccia cita la dichiarazione della rotta"
+  },
+  {
+   "what": "un legame fra 01-Login e 01-Login-Quickstart",
+   "why": "sono lo stesso esempio scritto due volte, con le stesse rotte, lo stesso nome di cookie e la stessa porta: niente li unisce"
+  },
+  {
+   "what": ".github, tranne ci.yml",
+   "why": "strumenti del repository: Dependabot, Semgrep, modelli delle issue"
+  },
+  {
+   "what": "l'accesso completo in esecuzione",
+   "why": "serve un tenant Auth0 vero con un utente di prova, che hanno solo i segreti della CI del progetto"
+  }
+ ]
+}

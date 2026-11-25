@@ -1,0 +1,32 @@
+{
+ "auth0-go": {
+  "repo": "https://github.com/auth0-samples/auth0-golang-web-app",
+  "commit": "c497850bb91f05f452572aac022945ba9d5ab857",
+  "licence": "MIT",
+  "why": "the smallest case: one external service, Auth0, reached by redirects and by two different client libraries; the same sample written twice, on Gin and on net/http, with nothing joining the two"
+ },
+ "sveltekit-realworld": {
+  "repo": "https://github.com/sveltejs/realworld",
+  "commit": "df796708040f5200ec572b28ab7f88ecee5794dd",
+  "licence": "MIT",
+  "why": "one SvelteKit app whose pages, form actions and server routes all go to one external REST API; the framework's own tool lists the routes"
+ },
+ "microblog": {
+  "repo": "https://github.com/miguelgrinberg/microblog",
+  "commit": "a975ef64864354867c88e0ed3a17ba7d17dca752",
+  "licence": "MIT",
+  "why": "one Flask app with blueprints, a database through an ORM, a job queue with its worker, mail, a search engine and a translation API"
+ },
+ "next-subscriptions": {
+  "repo": "https://github.com/vercel/nextjs-subscription-payments",
+  "commit": "bdd0813206e47e6b218d42f15a7976c8a0d3c3eb",
+  "licence": "MIT",
+  "why": "one Next.js app between two services that call each other through it: Supabase for login and data, Stripe for checkout, with a webhook that writes back"
+ },
+ "bank-of-anthos": {
+  "repo": "https://github.com/GoogleCloudPlatform/bank-of-anthos",
+  "commit": "db35fea9fd090150e2398106aadb475576f80d94",
+  "licence": "Apache-2.0",
+  "why": "several services in two languages (Python and Java) that call each other over HTTP with a signed token, two databases, and a load generator"
+ }
+}
