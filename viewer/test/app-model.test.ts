@@ -242,6 +242,7 @@ test('a check is asked once, takes the branch it prefers, and its answer for an 
   const { model, now, calls, said } = setup({ '/api/app/check': () => new Promise(resolve => { answer = resolve; }) });
   const found = { state: 'accessible', repository: context.repository, default: 'dev',
     branches: [{ name: 'dev', commit: '2'.repeat(40) }, { name: 'master', commit: '1'.repeat(40) }] };
+  model.start();
   model.setRepositoryUrl(' https://github.com/demo/shop ');
   model.verifyRepositoryUrl();
   model.verifyRepositoryUrl();

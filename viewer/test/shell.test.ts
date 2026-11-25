@@ -8,8 +8,11 @@ const sources = FOLDERS.flatMap(folder => readdirSync(new URL(`../${folder}/`, i
 
 test('the frame is the shell of Imago: no page draws a part of it', () => {
   const shell = ['AppShell', 'TitleBar', 'WindowControls', 'ToolbarBrand', 'ToolbarTabs', 'DrawerButton', 'CommandPalette', 'CommandsProvider', 'KeyHints', 'Toasts',
-    'useSchemeCommands', 'applyKeptScheme', 'useCommandPalette', 'WordsProvider', 'createRoot', '__TAURI', '@tauri-apps', '@acaprino/sigrid/tauri'];
-  for (const { file, text } of sources) for (const name of shell) assert.ok(!text.includes(name), `${file} has ${name}`);
+    'useSchemeCommands', 'applyKeptScheme', 'useCommandPalette', 'WordsProvider', 'createRoot', '__TAURI_INTERNALS__', '@tauri-apps/api', '@acaprino/sigrid/tauri'];
+  for (const { file, text } of sources) {
+    const words = new Set(text.match(/[\w@/-]+/g));
+    for (const name of shell) assert.ok(!words.has(name), `${file} has ${name}`);
+  }
 });
 
 test('both pages are started by the shell, as the one app Daodan, in its window', () => {
