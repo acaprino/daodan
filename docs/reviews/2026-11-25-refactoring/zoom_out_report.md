@@ -120,6 +120,11 @@ Motivo: il campo `surface` (assente in `service-registry.json`), la lacuna `ui_e
 
 Gli altri rilievi non sono controllati.
 
+**Controlli successivi (agente che ha aggiornato i documenti).**
+- M2, «Syft non è nel repository»: **falso**. `benchmarks/project-model/` ha `tools/syft.py`, `results/syft.json` e la misura di Syft 1.57.1 in `REPORT.md` (verificato anche dal coordinatore). Resta aperto che cosa il confronto del piano debba decidere oltre a quella misura.
+- Gli altri fatti accertati sono scritti nel piano sotto le voci, come **[accertato nel repository]**.
+- La fase 1 non è stata rieseguita dopo le modifiche: l'utente ha chiesto di passare alla fase 2.
+
 **Modifica del documento dopo la lettura dei revisori.** I due revisori hanno letto il commit `78e070129`; i numeri di riga qui sopra sono di quella versione. Dopo, su richiesta dell'utente e fuori dai rilievi, `architettura.md` ha avuto la sezione «Nodi del grafo: tipo e logo» e la riga estesa dell'anagrafica delle tecnologie (non ancora in un commit).
 
 **Aggiornamento dello stesso giorno, su richiesta dell'utente.** Il rilievo qui sotto descrive lo stato di prima: le 37 tessere e quella di `doctrinephp` sono state copiate in `daodan/data/marks/` (non in un commit; test del registro non eseguiti, li esegue la CI). La causa resta e ora è scritta in T0 punto 3.
