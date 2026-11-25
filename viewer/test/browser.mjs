@@ -1603,6 +1603,7 @@ try {
   await kind.click();
   await page.getByRole('option', { name: 'dato', exact: true }).waitFor();
   assert.deepEqual((await page.getByRole('option').allInnerTexts()).map(text => text.trim()), ['Tutti i tipi', 'componente', 'esterno', 'dato']);
+  await page.waitForFunction(() => document.activeElement?.closest('[role="listbox"]'));  // the list has the keys once it is open
   await page.keyboard.press('Escape');
   await page.getByRole('option').first().waitFor({ state: 'hidden' });
   await main.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).click();
