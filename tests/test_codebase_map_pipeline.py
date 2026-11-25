@@ -130,7 +130,7 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
     project = tmp_path / "go"
     shutil.copytree(FIXTURES / "go", project, ignore=shutil.ignore_patterns("index.scip", "expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     indexer = {"name": "scip-go", "version": "v0.2.9", "seconds": 1.0, "peak_mb": None}
 
     def index(project_dir, work_dir, files=None, **given):
@@ -184,7 +184,7 @@ def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
-    snapshot.write_snapshot(tmp_path / "p", manifest)
+    snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
     assert list(result) == ["scan"]
@@ -202,7 +202,7 @@ def test_a_failure_of_the_dynamic_step_is_said_and_the_union_still_ends_the_run(
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
-    snapshot.write_snapshot(tmp_path / "p", manifest)
+    snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     with mock.patch.object(dynamic, "run", side_effect=RuntimeError("the recorder's file is gone")):
         result = pipeline.run(manifest, listeners=[seen.append], start="dynamic")
@@ -226,7 +226,7 @@ def test_a_failing_stack_step_says_why_and_does_not_stop_the_steps_after_it(tmp_
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
-    snapshot.write_snapshot(tmp_path / "p", manifest)
+    snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     with mock.patch.object(technologies, "ensure", side_effect=OSError("disk full")):
         result = pipeline.run(manifest, listeners=[seen.append], start="stack", stop="stack")
@@ -244,7 +244,7 @@ def test_the_union_says_why_no_run_was_observed_when_the_dynamic_step_gave_no_re
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
-    snapshot.write_snapshot(tmp_path / "p", manifest)
+    snapshot.read_project(tmp_path / "p", manifest)
 
     def details(**asked) -> list[str]:
         seen = []
@@ -263,7 +263,7 @@ def test_an_interrupted_step_says_it_ends_before_the_interruption_leaves(tmp_pat
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
-    snapshot.write_snapshot(tmp_path / "p", manifest)
+    snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     with mock.patch.object(pipeline.Analyze, "run", side_effect=KeyboardInterrupt), pytest.raises(KeyboardInterrupt):
         pipeline.run(manifest, listeners=[seen.append], start="analyze")
@@ -308,7 +308,7 @@ def test_the_pass_records_how_long_each_stage_took(tmp_path):
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
-    snapshot.write_snapshot(tmp_path / "p", manifest)
+    snapshot.read_project(tmp_path / "p", manifest)
     spec = engine_pass.ENGINE_LANGUAGES["go"]
     stage = {"available": True, "engine": "scip-go", "languages": {"go": {"state": "fresh"}}}
     with mock.patch.object(engine_pass, "pass_plan", return_value=([(spec, ["go"])], {}, "digest")), \
@@ -354,7 +354,7 @@ def test_an_error_a_step_the_others_need_does_not_foresee_is_said_before_it_leav
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
-    snapshot.write_snapshot(tmp_path / "p", manifest)
+    snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     with mock.patch.object(pipeline.Analyze, "run", side_effect=RuntimeError("the index is gone")), \
             pytest.raises(RuntimeError):
@@ -370,14 +370,14 @@ def test_the_pipeline_declares_its_steps_in_one_place():
     # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
     assert {step.NAME: bool(step.WITHOUT) for step in pipeline.STEPS} == {
         "scan": False, "stack": True, "parse": False, "analyze": False, "dynamic": True, "union": False}
-    # the reading is `write_snapshot`'s alone (the owner's decision of 24 November 2026): the step takes the read snapshot,
+    # the reading is `read_project`'s alone (the owner's decision of 24 November 2026): the step takes the read snapshot,
     # which the pipeline is given, and says the plan
     assert (pipeline.Parse.INPUTS, pipeline.Parse.OUTPUTS) == (("snapshot",), ("plan",))
     assert pipeline.INPUTS == ("inventory", "snapshot")
 
 
 def test_the_parse_step_stops_on_a_store_that_holds_only_its_inventory_and_only_says_the_plan_of_a_read_one(tmp_path):
-    """The reading is `snapshot.write_snapshot`'s alone (the owner's decision of 24 November 2026, spec 8.11 step 3): a store
+    """The reading is `snapshot.read_project`'s alone (the owner's decision of 24 November 2026, spec 8.11 step 3): a store
     with the inventory and no reading (8.6, point 3) stops the step with its remedy, read by no one; a read store is found as
     it is, and the step writes nothing."""
     import file_inventory
@@ -388,7 +388,7 @@ def test_the_parse_step_stops_on_a_store_that_holds_only_its_inventory_and_only_
     (project / "b.py").write_text("from a import answer\n\nVALUE = answer()\n", encoding="utf-8")
     listed, read = tmp_path / "listed" / "manifest.sqlite", tmp_path / "read" / "manifest.sqlite"
     file_inventory.write(project, listed)
-    snapshot.write_snapshot(project, read)
+    snapshot.read_project(project, read)
     with open_snapshot(listed) as store:
         assert (store.metadata["reading"], store.file_count) == ("not-started", 0)
     kept = {path: path.read_bytes() for path in (listed, read)}
@@ -487,7 +487,7 @@ def _go_snapshot(tmp_path):
     project = tmp_path / "go"
     shutil.copytree(FIXTURES / "go", project, ignore=shutil.ignore_patterns("index.scip", "expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return manifest
 
 

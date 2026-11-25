@@ -785,7 +785,7 @@ class SourceGraphTests(unittest.TestCase):
     def test_graph_consumes_supplied_metadata_without_reparsing_or_building_another_manifest(self):
         # Reindexing/parsing is a forbidden boundary in this public operation,
         # so these sentinels protect the explicit single-manifest contract.
-        with mock.patch.object(snapshot, "write_snapshot", side_effect=AssertionError("second manifest")), \
+        with mock.patch.object(snapshot, "read_project", side_effect=AssertionError("second manifest")), \
                 mock.patch.object(snapshot, "get_adapter", side_effect=AssertionError("source reparse")):
             packet = self.graph()
 

@@ -99,7 +99,7 @@ def write_project(folder: Path, files: dict = FILES) -> tuple[Path, Path]:
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = folder / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return project, manifest
 
 

@@ -45,7 +45,7 @@ def plan(folder: Path) -> dict:
         else:
             shutil.copytree(folder, project, ignore=shutil.ignore_patterns("__pycache__", ".venv"))
         manifest = Path(scratch) / "out" / "manifest.sqlite"
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         taken = []
 
         def run(commands):

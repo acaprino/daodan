@@ -26,7 +26,7 @@ class SnapshotStorageTests(unittest.TestCase):
         (self.root / "one.py").write_text("VALUE = 7\n\ndef answer():\n    return VALUE\n", encoding="utf-8")
 
     def api(self):
-        self.assertTrue(hasattr(snapshot, "write_snapshot"), "snapshot requires the streaming write_snapshot API")
+        self.assertTrue(hasattr(snapshot, "read_project"), "snapshot requires the streaming read_project API")
         return importlib.import_module("snapshot_store")
 
     def out(self, name="manifest.sqlite"):
@@ -34,7 +34,7 @@ class SnapshotStorageTests(unittest.TestCase):
 
     def test_default_is_sqlite(self):
         storage = self.api()
-        result = snapshot.write_snapshot(self.root, self.out())
+        result = snapshot.read_project(self.root, self.out())
         self.assertEqual(self.out().read_bytes()[:16], b"SQLite format 3\x00")
         self.assertEqual(result["metrics"]["parsed_files"], 1)
         with storage.open_snapshot(self.out(), expected_format="sqlite") as store:
@@ -48,7 +48,7 @@ class SnapshotStorageTests(unittest.TestCase):
     def test_progress_reports_observed_work_and_additional_metadata_is_bound(self):
         storage = self.api()
         events = []
-        snapshot.write_snapshot(self.root, self.out(), extra_metadata={"host": {"checkout": "one", "generation": 1}},
+        snapshot.read_project(self.root, self.out(), extra_metadata={"host": {"checkout": "one", "generation": 1}},
                                 progress=lambda phase, count: events.append((phase, count)))
         self.assertIn(("reading", 1), events)
         self.assertIn(("parsing", 1), events)
@@ -57,24 +57,24 @@ class SnapshotStorageTests(unittest.TestCase):
             self.assertEqual(store.metadata["host"], {"checkout": "one", "generation": 1})
         before = self.out().read_bytes()
         with self.assertRaisesRegex(ValueError, "metadata"):
-            snapshot.write_snapshot(self.root, self.out(), extra_metadata={"root": "foreign"})
+            snapshot.read_project(self.root, self.out(), extra_metadata={"root": "foreign"})
         def cancel(phase, count):
             if phase == "reading":
                 raise ValueError("cancelled")
         with self.assertRaisesRegex(ValueError, "cancelled"):
-            snapshot.write_snapshot(self.root, self.out(), progress=cancel)
+            snapshot.read_project(self.root, self.out(), progress=cancel)
         self.assertEqual(self.out().read_bytes(), before)
         self.assertEqual(list(self.out().parent.iterdir()), [self.out()])
 
     def test_explicit_json_roundtrip_and_reuse(self):
         storage = self.api()
-        snapshot.write_snapshot(self.root, self.out("first.json"), format="json")
+        snapshot.read_project(self.root, self.out("first.json"), format="json")
         self.assertEqual(json.loads(self.out("first.json").read_text())["schema"], snapshot.SCHEMA)
         with storage.open_snapshot(self.out("first.json")) as previous:
             self.assertEqual(previous.format, "json")
             original = previous.get_file("one.py")
             with mock.patch.object(snapshot, "file_entry", side_effect=AssertionError("unchanged file parsed")):
-                result = snapshot.write_snapshot(self.root, self.out(), previous=previous)
+                result = snapshot.read_project(self.root, self.out(), previous=previous)
             self.assertEqual(result["metrics"]["cache_hits"], 1)
         with storage.open_snapshot(self.out()) as current:
             self.assertEqual(current.get_file("one.py"), original)
@@ -85,7 +85,7 @@ class SnapshotStorageTests(unittest.TestCase):
         expected = read_manifest(self.root)["files"]
         for format in ("sqlite", "json"):
             out = self.out("facts." + format)
-            snapshot.write_snapshot(self.root, out, format=format)
+            snapshot.read_project(self.root, out, format=format)
             with storage.open_snapshot(out) as store:
                 self.assertEqual(dict(store.iter_files()), expected)
                 self.assertEqual(sorted(store.iter_symbols(path="caf\u00e9.py"), key=lambda row: row["name"])[0]["name"], "caf\u00e9")
@@ -103,7 +103,7 @@ class SnapshotStorageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "application|snapshot"):
             storage.open_snapshot(self.out())
         self.out().unlink()
-        snapshot.write_snapshot(self.root, self.out())
+        snapshot.read_project(self.root, self.out())
         with closing(sqlite3.connect(self.out())) as database:
             database.execute("PRAGMA user_version=99")
         with self.assertRaisesRegex(ValueError, "version"):
@@ -127,23 +127,23 @@ class SnapshotStorageTests(unittest.TestCase):
         def entry(*args, **kwargs):
             return Observed(original(*args, **kwargs))
         with mock.patch.object(snapshot, "file_entry", side_effect=entry):
-            result = snapshot.write_snapshot(self.root, self.out())
+            result = snapshot.read_project(self.root, self.out())
         self.assertEqual(result["metrics"]["files_read"], 19)
         self.assertLessEqual(peak, 2, "writer retained previous parsed entries")
 
     def test_failed_write_preserves_current_and_cleans_temporary(self):
         self.api()
-        snapshot.write_snapshot(self.root, self.out())
+        snapshot.read_project(self.root, self.out())
         before = self.out().read_bytes()
         with mock.patch.object(snapshot, "file_entry", side_effect=RuntimeError("cancelled")):
             with self.assertRaisesRegex(RuntimeError, "cancelled"):
-                snapshot.write_snapshot(self.root, self.out())
+                snapshot.read_project(self.root, self.out())
         self.assertEqual(self.out().read_bytes(), before)
         self.assertEqual([path.name for path in self.out().parent.iterdir()], ["manifest.sqlite"])
 
     def test_logical_and_artifact_digests_are_distinct_and_streamed(self):
         storage = self.api()
-        snapshot.write_snapshot(self.root, self.out())
+        snapshot.read_project(self.root, self.out())
         with storage.open_snapshot(self.out()) as store:
             logical = {**store.metadata, "files": dict(store.iter_files())}
             for ascii in (True, False):
@@ -163,14 +163,14 @@ class SnapshotStorageTests(unittest.TestCase):
             value["semantic"]["future"] = {"flag": False, "notes": ["one", "two"]}
             return value
         with mock.patch.object(snapshot, "file_entry", side_effect=extra):
-            snapshot.write_snapshot(self.root, self.out())
+            snapshot.read_project(self.root, self.out())
         with storage.open_snapshot(self.out()) as store:
             self.assertEqual(store.get_file("one.py")["semantic"]["_stored_lists"], ["retained"])
             self.assertEqual(store.get_file("one.py")["semantic"]["future"]["flag"], False)
 
     def test_corrupt_compressed_record_is_refused(self):
         storage = self.api()
-        snapshot.write_snapshot(self.root, self.out())
+        snapshot.read_project(self.root, self.out())
         with closing(sqlite3.connect(self.out())) as database:
             database.execute("UPDATE files SET header=?", (b"znot-valid-zlib",))
             database.commit()
@@ -181,7 +181,7 @@ class SnapshotStorageTests(unittest.TestCase):
     def test_corrupt_record_shapes_raise_storage_errors(self):
         storage = self.api()
         from snapshot_store import _pack
-        snapshot.write_snapshot(self.root, self.out())
+        snapshot.read_project(self.root, self.out())
         for column, value in (("header", []), ("semantic_header", {"header": [], "lists": ["references"]}),
                               ("semantic_header", {"header": {}, "lists": ["unknown"]})):
             with self.subTest(column=column, value=value):
@@ -191,13 +191,13 @@ class SnapshotStorageTests(unittest.TestCase):
                 with storage.open_snapshot(self.out()) as store:
                     with self.assertRaises(ValueError):
                         store.get_file("one.py")
-                snapshot.write_snapshot(self.root, self.out())
+                snapshot.read_project(self.root, self.out())
 
     def test_replacing_reused_path_closes_its_reader_before_publication(self):
         storage = self.api()
-        snapshot.write_snapshot(self.root, self.out())
+        snapshot.read_project(self.root, self.out())
         with storage.open_snapshot(self.out()) as previous:
-            result = snapshot.write_snapshot(self.root, self.out(), previous=previous)
+            result = snapshot.read_project(self.root, self.out(), previous=previous)
             self.assertTrue(previous.closed)
             self.assertEqual(result["metrics"]["cache_hits"], 1)
         with storage.open_snapshot(self.out()) as current:
@@ -206,7 +206,7 @@ class SnapshotStorageTests(unittest.TestCase):
     def test_nonstring_format_is_refused(self):
         self.api()
         with self.assertRaises(ValueError):
-            snapshot.write_snapshot(self.root, self.out(), format=[])
+            snapshot.read_project(self.root, self.out(), format=[])
 
     def test_json_stream_handles_utf8_chunks_and_rejects_duplicates(self):
         storage = self.api()
@@ -251,18 +251,18 @@ class SnapshotStorageTests(unittest.TestCase):
 
     def test_format_mismatch_and_invalid_format_do_not_write(self):
         storage = self.api()
-        snapshot.write_snapshot(self.root, self.out())
+        snapshot.read_project(self.root, self.out())
         with self.assertRaisesRegex(ValueError, "format"):
             storage.open_snapshot(self.out(), expected_format="json")
         with self.assertRaisesRegex(ValueError, "format"):
-            snapshot.write_snapshot(self.root, self.out("invalid"), format="pickle")
+            snapshot.read_project(self.root, self.out("invalid"), format="pickle")
         self.assertFalse(self.out("invalid").exists())
 
     def test_meta_code_says_so_when_the_snapshot_is_json(self):
         storage = self.api()
         import semantic_store
         legacy = self.out("legacy.json")
-        snapshot.write_snapshot(self.root, legacy, format="json")
+        snapshot.read_project(self.root, legacy, format="json")
 
         with storage.open_snapshot(legacy) as store:
             with self.assertRaisesRegex(ValueError, "SQLite"):
@@ -282,7 +282,7 @@ class SnapshotStorageTests(unittest.TestCase):
         (run / "snapshot").mkdir(parents=True)
         (run / "state.json").write_text("{}", encoding="utf-8")
         bound = run / "snapshot" / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, bound)
+        snapshot.read_project(self.root, bound)
         before = artifact_digest(bound)
 
         self.assertEqual(card_store.default_cards_path(bound), (store_root / "cards.sqlite").resolve())
@@ -306,14 +306,14 @@ class SnapshotStorageTests(unittest.TestCase):
         unknown = {"commit": "abc123", "branch": "main", "dirty": None,
                    "dirty_unknown": "the checkout declares a Git filter, which Daodan does not run on the host"}
         with mock.patch.object(snapshot, "git_info", return_value=unknown):
-            snapshot.write_snapshot(self.root, snap_path)
+            snapshot.read_project(self.root, snap_path)
             with storage.open_snapshot(snap_path) as store:
                 semantic_store.upsert_meta_cards(store, cards_path, [
                     {"file": "pkg/b.py", "symbol": "helper", "purpose": "Increments numeric value"}])
             (self.root / "pkg/b.py").write_text("def helper(value):\n    step = 2\n    return value + step\n",
                                                 encoding="utf-8")
             with storage.open_snapshot(snap_path) as prev:
-                snapshot.write_snapshot(self.root, snap_path, previous=prev)
+                snapshot.read_project(self.root, snap_path, previous=prev)
         with storage.open_snapshot(snap_path) as store:
             meta = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta["summary"]["changesets"], 1)
@@ -334,7 +334,7 @@ class SnapshotStorageTests(unittest.TestCase):
         )
         snap_path = self.out()
         cards_path = self.out("cards.sqlite")
-        snapshot.write_snapshot(self.root, snap_path)
+        snapshot.read_project(self.root, snap_path)
 
         # Upsert Meta-Code cards for both pkg/a.py::run and pkg/b.py::helper
         with storage.open_snapshot(snap_path) as store:
@@ -362,7 +362,7 @@ class SnapshotStorageTests(unittest.TestCase):
             encoding="utf-8",
         )
         with storage.open_snapshot(snap_path) as prev:
-            snapshot.write_snapshot(self.root, snap_path, previous=prev)
+            snapshot.read_project(self.root, snap_path, previous=prev)
 
         with storage.open_snapshot(snap_path) as store:
             meta1 = semantic_store.query_meta_code(store, cards_path=cards_path)
@@ -386,7 +386,7 @@ class SnapshotStorageTests(unittest.TestCase):
             encoding="utf-8",
         )
         with storage.open_snapshot(snap_path) as prev:
-            snapshot.write_snapshot(self.root, snap_path, previous=prev)
+            snapshot.read_project(self.root, snap_path, previous=prev)
         with storage.open_snapshot(snap_path) as store:
             meta2 = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta2["summary"]["changesets"], 2)
@@ -401,7 +401,7 @@ class SnapshotStorageTests(unittest.TestCase):
             encoding="utf-8",
         )
         with storage.open_snapshot(snap_path) as prev:
-            snapshot.write_snapshot(self.root, snap_path, previous=prev)
+            snapshot.read_project(self.root, snap_path, previous=prev)
         with storage.open_snapshot(snap_path) as store:
             meta3 = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta3["summary"]["changesets"], 3)
@@ -418,7 +418,7 @@ class SnapshotStorageTests(unittest.TestCase):
                 encoding="utf-8",
             )
             with storage.open_snapshot(snap_path) as prev:
-                snapshot.write_snapshot(self.root, snap_path, previous=prev)
+                snapshot.read_project(self.root, snap_path, previous=prev)
         with storage.open_snapshot(snap_path) as store:
             meta_capped = semantic_store.query_meta_code(store, cards_path=cards_path)
         self.assertEqual(meta_capped["summary"]["changesets"], semantic_store.MAX_META_CHANGESETS)
@@ -445,7 +445,7 @@ class SnapshotStorageTests(unittest.TestCase):
                                             encoding="utf-8")
         (self.root / "pkg/b.py").write_text(base, encoding="utf-8")
         snap_path = self.out()
-        snapshot.write_snapshot(self.root, snap_path)
+        snapshot.read_project(self.root, snap_path)
 
         def edit(text):
             """Change kinds of the changesets this refresh recorded, by symbol name."""
@@ -453,7 +453,7 @@ class SnapshotStorageTests(unittest.TestCase):
                 seen = max((c["seq"] for c in semantic_store.query_meta_code(store)["changesets"]), default=0)
             (self.root / "pkg/b.py").write_text(text, encoding="utf-8")
             with storage.open_snapshot(snap_path) as prev:
-                snapshot.write_snapshot(self.root, snap_path, previous=prev)
+                snapshot.read_project(self.root, snap_path, previous=prev)
             with storage.open_snapshot(snap_path) as store:
                 changesets = semantic_store.query_meta_code(store)["changesets"]
             return {d["name"]: d["change_kind"] for c in changesets if c["seq"] > seen for d in c["deltas"]}

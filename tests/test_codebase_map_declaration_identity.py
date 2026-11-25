@@ -37,7 +37,7 @@ import flows  # noqa: E402
 import resolve_edges  # noqa: E402
 import test_codebase_map_code_graph as graph_tests  # noqa: E402
 from indexers import python as python_indexer  # noqa: E402
-from test_codebase_map_flows import write_snapshot  # noqa: E402
+from test_codebase_map_flows import read_project  # noqa: E402
 
 MORE = '''from dataclasses import dataclass
 from api import consts
@@ -296,7 +296,7 @@ def _index(written: int, without=()) -> bytes:
 
 def _analyzed(work: Path, written: int, without=()) -> Path:
     """The snapshot of the sources and its edge store, built from the documents as the Python stage builds it."""
-    manifest = write_snapshot(work, SOURCES)
+    manifest = read_project(work, SOURCES)
     (work / "index.scip").write_bytes(_index(written, without))
     with code_graph.Snapshot(manifest) as snapshot:
         index = code_graph.Index(snapshot.root)
@@ -418,7 +418,7 @@ class ReaderDeclarationTests(unittest.TestCase):
         import languages
         work = Path(tempfile.mkdtemp(prefix="declaration-identity-go-")).resolve()
         self.addCleanup(shutil.rmtree, work, True)
-        manifest = write_snapshot(work, GO)
+        manifest = read_project(work, GO)
         documents = b""
         for rel, items in GO_OCCURRENCES.items():
             lines = GO[rel].split("\n")

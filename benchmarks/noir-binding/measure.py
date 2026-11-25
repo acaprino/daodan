@@ -1,7 +1,7 @@
 """What runs inside the Modal container for one application (`modal_binding.py` ships this file to `/daodan/measure/`): the checkout is at `/work`
 (`container.WORKDIR`), fetched at its pinned commit while the image was built, and nothing of it runs here. Three things happen, all of them reading:
 
-1. Daodan's own snapshot of `/work` (`snapshot.write_snapshot`), the one the pre-map reads.
+1. Daodan's own snapshot of `/work` (`snapshot.read_project`), the one the pre-map reads.
 2. The pinned Noir, with the arguments `premap/noir.py` gives (`noir.commands`).
 3. For each endpoint of Noir's report: what `noir.read` makes of it (a candidate row, or the gap that drops it), then `binder.bind` over the candidate
    rows, and for each row the facts a cause is found from: the snapshot's declarations that cover its line, those with the handler's name in the file and
@@ -80,7 +80,7 @@ def run(name: str) -> dict:
     manifest.parent.mkdir(parents=True, exist_ok=True)
 
     started = time.monotonic()
-    snapshot.write_snapshot(pathlib.Path(ROOT), manifest)
+    snapshot.read_project(pathlib.Path(ROOT), manifest)
     out["snapshot_seconds"] = round(time.monotonic() - started, 1)
 
     [command] = noir.commands(types.SimpleNamespace(inventory=types.SimpleNamespace(files=True)))

@@ -459,10 +459,10 @@ def _checked_options(format: str, extra_metadata: dict | None) -> dict:
     return dict(extra_metadata or {})
 
 
-def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=None,
-                   parse_results: dict | None = None, extra_metadata: dict | None = None,
-                   progress=None) -> dict:
-    """Write bounded records in two writes, the file inventory and then its reading; progress may cancel either.
+def read_project(target: Path, out: Path, *, format: str = "sqlite", previous=None,
+                 parse_results: dict | None = None, extra_metadata: dict | None = None,
+                 progress=None) -> dict:
+    """Read the project into a snapshot, in two writes, the file inventory and then its reading; progress may cancel either.
 
     The inventory is staged beside `out` and removed at the end; only the reading publishes `out`.
     """
@@ -1470,7 +1470,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             if full:
                 # A full rebuild reuses nothing; Windows cannot replace the manifest this reader holds.
                 base.close()
-            written = write_snapshot(target, manifest, format=state["snapshot"]["format"],
+            written = read_project(target, manifest, format=state["snapshot"]["format"],
                                      previous=None if full else base)
         index = retrieval.ensure_index(manifest)
         if index["state"] != "fresh":
@@ -1710,7 +1710,7 @@ def cmd_write(args: argparse.Namespace) -> int:
     try:
         with ExitStack() as stack:
             previous = stack.enter_context(open_snapshot(Path(args.reuse))) if args.reuse else None
-            result = write_snapshot(Path(args.target), Path(args.out),
+            result = read_project(Path(args.target), Path(args.out),
                                     format=getattr(args, "format", "sqlite"), previous=previous)
         print(f"snapshot: {result['file_count']} files -> {args.out}")
     except (OSError, ValueError) as error:

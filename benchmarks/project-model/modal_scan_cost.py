@@ -473,7 +473,7 @@ def one(name: str, reps: int, work: Path) -> dict:
             runs.append(passes(project, folder))
         else:
             folder.mkdir(parents=True)
-            snapshot.write_snapshot(project, folder / "manifest.sqlite")
+            snapshot.read_project(project, folder / "manifest.sqlite")
         manifest = folder / "manifest.sqlite"
         if number < count - 1:  # the last store is the one the pre-map reads
             shutil.rmtree(folder)

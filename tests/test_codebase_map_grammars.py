@@ -286,7 +286,7 @@ def test_a_missing_grammar_is_a_declared_gap_in_the_snapshot(tmp_path, no_gramma
     (tmp_path / "pay.py").write_text(PY, encoding="utf-8", newline="")
     manifest = read_manifest(tmp_path)
     assert manifest["metrics"]["grammars_unavailable"] == {"go": "download failed: no network"}
-    written = snapshot.write_snapshot(tmp_path, tmp_path / "out" / "manifest.sqlite")
+    written = snapshot.read_project(tmp_path, tmp_path / "out" / "manifest.sqlite")
     with open_snapshot(tmp_path / "out" / "manifest.sqlite") as stored:
         assert stored.metadata["metrics"]["grammars_unavailable"] == {"go": "download failed: no network"}
         assert stored.get_file("billing.go")["status"] == "parse-skipped"
@@ -317,10 +317,10 @@ def test_the_file_is_read_again_once_its_grammar_is_there(tmp_path, fresh_loader
     with mock.patch.object(_treesitter, "place_grammars", lambda *args: "download failed: no network"), \
             mock.patch.object(_treesitter, "_GRAMMAR_MODULES", {}):
         _treesitter.get_parser.cache_clear()
-        snapshot.write_snapshot(tmp_path, tmp_path / "first.sqlite")
+        snapshot.read_project(tmp_path, tmp_path / "first.sqlite")
     _treesitter.get_parser.cache_clear()
     with open_snapshot(tmp_path / "first.sqlite") as previous:
-        second = snapshot.write_snapshot(tmp_path, tmp_path / "second.sqlite", previous=previous)
+        second = snapshot.read_project(tmp_path, tmp_path / "second.sqlite", previous=previous)
     assert second["metrics"]["cache_hits"] == 1
     with open_snapshot(tmp_path / "second.sqlite") as current:
         entry = current.get_file("billing.go")

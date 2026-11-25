@@ -135,7 +135,7 @@ class ProjectPacketTests(unittest.TestCase):
         out = self.root / '.daodan/map'
         out.mkdir(parents=True)
         self.manifest = out / 'snapshot.sqlite'
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.authority = {'root': str(self.root), 'read_boundary': ['.'], 'write_boundary': ['core.py']}
         self.request = {'schema': 'daodan/context-request/v1', 'task_id': 'packet-task',
             'intent': 'change', 'query': '', 'read_boundary': ['.'], 'write_boundary': ['core.py'],
@@ -272,7 +272,7 @@ class ProjectPacketTests(unittest.TestCase):
 
     def test_nested_method_keeps_its_closure_and_module_context(self):
         (self.root / 'core.py').write_bytes(b'class Outer:\n    def helper(self, value):\n        def nested():\n            return value\n        return nested()\n\nSECRET_CONTEXT = 4\n')
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.request['anchors'] = [{'entity_id': 'core.py::Outer.helper.nested'}]
         self.request['proposed_edits'] = []
         self.request['mandatory_requirements'] = []

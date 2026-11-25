@@ -104,7 +104,7 @@ def compare(name: str) -> dict:
             shutil.copytree(project, Path(scratch) / "project", ignore=shutil.ignore_patterns("__pycache__"))
             project = Path(scratch) / "project"
         manifest = Path(scratch) / "out" / "manifest.sqlite"
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
 
         def run(commands):
             tool = commands[0]["tool"]

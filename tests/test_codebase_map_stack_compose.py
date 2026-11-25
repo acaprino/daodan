@@ -41,7 +41,7 @@ x-example: {image: bitnami/kafka}
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text(content, encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     facts = premap.write(manifest)
     # Bind these workflow declarations to their own sites independently of the Compose files.
     facts["excluded"] = [{"path": "docs/", "why": "documentation"}]
@@ -100,7 +100,7 @@ def test_installing_yaml_refreshes_a_cached_scan_with_an_unavailable_reader(tmp_
     project.mkdir()
     (project / "compose.yml").write_text("services: {mailpit: {image: axllent/mailpit}}", encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     reader = premap.module_graph
     real_version = metadata.version
 

@@ -126,7 +126,7 @@ def product(tmp_path_factory):
         source = tmp_path_factory.mktemp(name) / name
         shutil.copytree(root, source, ignore=shutil.ignore_patterns("index.scip"))
         manifest = source.parent / "manifest.sqlite"
-        product_snapshot.write_snapshot(source, manifest)
+        product_snapshot.read_project(source, manifest)
         with scip_graph.Snapshot(manifest) as snapshot:
             index = scip_graph.Index(root)
             index.load(root / "index.scip")

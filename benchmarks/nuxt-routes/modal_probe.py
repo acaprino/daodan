@@ -339,7 +339,7 @@ def commands() -> dict:
     for name in NAMES:
         project, manifest = Path(f"/work/commands-{name}"), Path(f"/work/commands-out-{name}/manifest.sqlite")
         shutil.copytree(f"/lockwork/{name}", project)
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         with open_snapshot(manifest) as store:
             out[name] = premap.nuxt.commands(premap.Context(manifest, store))
     return out

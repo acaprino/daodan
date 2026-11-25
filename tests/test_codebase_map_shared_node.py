@@ -84,7 +84,7 @@ def test_tsc_index_and_observer_share_one_restore_and_isolate_every_consumer(tmp
     lock = project / "package-lock.json"
     lock.write_text('{"lockfileVersion":3}', encoding="utf-8")
     manifest = tmp_path / "snapshot" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     tsc = [{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": ".", "network": "none"}]
     plan = {"roots": ["."], "runs": [{"runner": "vitest", "root": ".", "declared_in": "package.json#scripts.test"}]}
     with node_preparation.analysis():
@@ -114,7 +114,7 @@ def test_partial_restore_is_reported_once_per_attempt_and_retried(tmp_path, monk
     (project / "package.json").write_text('{"name":"app"}')
     (project / "package-lock.json").write_text('{"lockfileVersion":3}')
     manifest = tmp_path / "snapshot" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     tsc = [{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": ".", "network": "none"}]
     original = container.phase
     def partial(_engine, name, **kwargs):
@@ -161,7 +161,7 @@ def test_failed_node_seed_is_removed_before_the_consumer_can_start(tmp_path, mon
     (project / "package.json").write_text('{"name":"app"}')
     (project / "package-lock.json").write_text('{"lockfileVersion":3}')
     manifest = tmp_path / "snapshot" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     original = container.phase
     def fail(_engine, name, **kwargs):
         row = original(_engine, name, **kwargs)
@@ -180,7 +180,7 @@ def test_a_step_without_a_container_is_a_gap_with_its_cause_and_starts_nothing(t
     (project / "package.json").write_text('{"name":"app"}')
     (project / "package-lock.json").write_text('{"lockfileVersion":3}')
     manifest = tmp_path / "snapshot" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
 
     def no_engine():
         raise container.Gap("no engine can run here", "start one")

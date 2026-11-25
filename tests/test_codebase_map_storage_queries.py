@@ -29,7 +29,7 @@ class StorageQueryTests(unittest.TestCase):
 
     def write(self, format="sqlite"):
         out = self.root / ".daodan/map" / ("manifest." + format)
-        snapshot.write_snapshot(self.root, out, format=format)
+        snapshot.read_project(self.root, out, format=format)
         return out
 
     def assert_graph_parity(self, actual, reference, *, format="sqlite", enriched=True):
@@ -143,7 +143,7 @@ class StorageQueryTests(unittest.TestCase):
         (self.root / "a.py").write_text("def replacement():\n    return 8\n")
         second = self.root / ".daodan/map/second.sqlite"
         with open_snapshot(first) as previous:
-            result = snapshot.write_snapshot(self.root, second, previous=previous)
+            result = snapshot.read_project(self.root, second, previous=previous)
         self.assertEqual(result["metrics"]["cache_hits"], 2)
         with open_snapshot(second) as store:
             reference = {**store.metadata, "files": dict(store.iter_files())}
@@ -190,7 +190,7 @@ class StorageQueryTests(unittest.TestCase):
         import inspect
         self.assertIn("snapshot_path", inspect.signature(analyze_file.analyze_single_file).parameters)
         out = self.write()
-        with mock.patch.object(snapshot, "write_snapshot", side_effect=AssertionError("snapshot rebuilt")):
+        with mock.patch.object(snapshot, "read_project", side_effect=AssertionError("snapshot rebuilt")):
             result = analyze_file.analyze_single_file(self.root / "a.py", project_root=self.root, snapshot_path=out)
         self.assertEqual(result["imported_by_count"], 1)
         self.assertEqual(result["semantic_analysis"]["counts"]["incoming_calls"], 1)

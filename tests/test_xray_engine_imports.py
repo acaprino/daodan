@@ -402,7 +402,7 @@ class EngineImportTests(unittest.TestCase):
         source = self.write("core.ts", "export class Engine {}\nexport function start() {}\n")
         self.write("main.ts", "import { Engine, start } from './core';\nnew Engine(); start();\n")
         manifest = read_manifest(self.root)
-        with mock.patch.object(snapshot, "write_snapshot", side_effect=AssertionError("manifest must be reused")), mock.patch.object(
+        with mock.patch.object(snapshot, "read_project", side_effect=AssertionError("manifest must be reused")), mock.patch.object(
             get_adapter("typescript"), "parse", side_effect=AssertionError("manifest already parsed")
         ):
             result = usage_finder.find_all_usages_batch(["Engine", "start"], source, self.root, manifest=manifest)

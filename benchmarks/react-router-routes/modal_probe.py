@@ -292,7 +292,7 @@ def commands() -> dict:
         project, manifest = Path(f"/work/commands-{name}"), Path(f"/work/commands-out-{name}/manifest.sqlite")
         import shutil
         shutil.copytree(f"/lockwork/{name}", project)
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         with open_snapshot(manifest) as store:
             out[name] = premap.react_router.commands(premap.Context(manifest, store))
     return out

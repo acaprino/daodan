@@ -565,7 +565,7 @@ def ignored_lockfiles(tmp_path, ignore):
     subprocess.run([git, *run, "init", "-q"], check=True)
     subprocess.run([git, *run, "add", "pyproject.toml", "api/pyproject.toml", ".gitignore"], check=True)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project_dir, manifest)
+    snapshot.read_project(project_dir, manifest)
     return project_dir, manifest
 
 

@@ -98,7 +98,7 @@ def run(name: str) -> dict:
     manifest = pathlib.Path("/tmp/noir-binding/after/manifest.sqlite")
     manifest.parent.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
-    snapshot.write_snapshot(pathlib.Path(ROOT), manifest)
+    snapshot.read_project(pathlib.Path(ROOT), manifest)
     out["snapshot_seconds"] = round(time.monotonic() - started, 1)
     [command] = noir.commands(types.SimpleNamespace(inventory=types.SimpleNamespace(files=True)))
     env = {"PATH": os.environ["PATH"], "HOME": "/tmp/noir-home", "LANG": "C.UTF-8"}

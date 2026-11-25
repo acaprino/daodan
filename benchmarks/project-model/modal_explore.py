@@ -51,7 +51,7 @@ def explore_folder(source: str) -> dict:
     if not (project / ".git").exists():  # the upload leaves `.git` out: a checkout of the folder, as the CI has one
         for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "x"]):
             subprocess.run(["git", *command], cwd=project, check=True)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     import dynamic
     said = []
     steps = pipeline.run(manifest, listeners=[said.append])  # the whole pipeline on this one snapshot, as `run_folder` runs it

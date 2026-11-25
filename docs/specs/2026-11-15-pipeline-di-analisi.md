@@ -183,7 +183,7 @@ Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tes
 | 1 `scan` | scanner | Il percorso dell'albero (`tree_scope.py`); go-enry; cargo, gradle, maven, npm, `tsc`, cmake, … | Lo step `scan` c'è; l'inventario lo scrive lo snapshot, prima della pipeline |
 | 2 `recognize` | recognizer | stack-analyser, il fork ([spec del 21 novembre](2026-11-21-stack-dal-fork.md)) | Step `stack`, con il fork (`stack_recognition.py`); legge solo i fatti dello step 1 e i file che il fork legge da sé |
 | 3 `plan` | nessuno | — | Una funzione, non uno step (`pipeline/plan.py`; 8.11, passo 4): la chiamano la lettura, `engine_pass.pass_plan` e il passo dinamico; lo step `parse` la emette come evento |
-| 4 `parse` | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari (`languages/sql.py`, `plsql.py`) | Step `parse`, terzo in `STEPS` (8.11, passi 3 e 5); ogni chiamante legge ancora prima, con `write_snapshot`, e lo step trova lo store letto |
+| 4 `parse` | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari (`languages/sql.py`, `plsql.py`) | Step `parse`, terzo in `STEPS` (8.11, passi 3 e 5); ogni chiamante legge ancora prima, con `read_project`, e lo step trova lo store letto |
 | 5 `resolve` | resolver | Un indicizzatore SCIP per tecnologia (scip-typescript serve quattro linguaggi); per i fogli di stile i loro parser | Step `analyze` |
 | 6 `observe` | observer | Un registratore per linguaggio (`*_record.*`); per l'app, Chromium senza interfaccia di Playwright (`dynamic/app.py`, `explore.cjs`) | Step `dynamic`; senza grafo statico non parte (`no-static-graph`); l'app si avvia solo con npm (`start_runner_not_supported` per pnpm, Yarn e Bun) |
 | 7 `connect` | nessuno | — | Step `union`: dice ciò che il grafo ha e non ha, non unisce ancora |
@@ -197,13 +197,15 @@ Perché `recognize` e `plan` stanno prima di `parse`: `recognize` non legge null
 3. **Quali file lasciare fuori:** legge anche quelli che `scan` poi dichiara generati, di terze parti o binari, e l'esclusione arriva dopo, come stato. Diventa: non li legge.
 4. **La configurazione degli import:** legge `tsconfig`, `jsconfig` e i workspace a mano (`import_resolution.py`: commenti, `extends`, `baseUrl`, `paths`). `scan` lo chiede a `tsc`. Diventa: radici e alias sono del modello del progetto; la lettura a mano è il ripiego dove `tsc` non è girato.
 
+*Nome: `read_project` si chiamava `write_snapshot` fino al 25 novembre 2026 (proprietario: il nome non diceva che legge).*
+
 **Scelte del 24 novembre 2026, dopo le misure di 8.10.** Criterio del proprietario: meno codice nostro possibile, e dati da sorgenti aggiornate. Le misure sono in [`benchmarks/project-model`](../../benchmarks/project-model/README.md).
 
 | Punto | Che cosa si fa | Chi l'ha deciso | Perché |
 | --- | --- | --- | --- |
 | 2, il linguaggio | Verrà da una libreria nostra, con il catalogo di Linguist come punto di partenza ([spec](2026-11-24-libreria-del-linguaggio.md)). **Nel prodotto oggi non c'è nulla:** resta `languages.detect_language` | Proprietario | go-enry gira nel container, dopo la lettura: la nostra tabella sarebbe rimasta come ripiego. Su 47.543 file i due linguaggi divergono in 87. Un primo lettore dei soli dati di Linguist, provato e non entrato: leggeva come C 95 header C++ su 6.857 e perdeva 8 `.ts` su 47.999 |
 | 3, quali file lasciare fuori | `parse` non esclude nulla: l'esclusione resta l'etichetta `excluded` della pre-mappa. E1 è tolto | Proprietario («C») | I predicati di Linguist rispondono a «conta nelle statistiche», non a «non è codice del progetto»: su 56 progetti veri toglierebbero 1.496 file letti, verso cui vanno 96 import (`CTFd/cache/__init__.py`, importato da 45 file) |
-| La lettura dentro lo step `parse` | Tolta: l'unica lettura è `write_snapshot`. Lo step dice solo il piano, e uno store di solo inventario ferma la pipeline | Proprietario («C») | Nessun chiamante la usava |
+| La lettura dentro lo step `parse` | Tolta: l'unica lettura è `read_project`. Lo step dice solo il piano, e uno store di solo inventario ferma la pipeline | Proprietario («C») | Nessun chiamante la usava |
 | 4, la configurazione degli import | Ferma: resta la lettura a mano | Chi scrive | Sui 25 progetti veri la configurazione di `tsc` guadagna 0 import e ne perde 110. Da rivalutare un risolutore pronto (`ts.resolveModuleName`, oxc-resolver) solo se riduce il codice |
 | I chiamanti verso «inventario + pipeline» | Fermi | Chi scrive | Con E1 e la lettura in `parse` tolti, non cambia nulla per il prodotto, e `create_run` e l'hook leggerebbero sotto il blocco del progetto |
 
@@ -233,7 +235,7 @@ Il proprietario, il 23 novembre 2026, fissa l'obiettivo e non la modalità («al
 
 Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto `scan`, e un test li confronta (8.10). L'altra modalità si ottiene cambiando solo ciò che i nodi di `parse` dichiarano di aspettare. Dopo la prima analisi le due coincidono: la struttura è nota e si aggiorna solo ciò che è cambiato. Senza container la seconda parte è una lacuna (`model_not_run`) e i ripieghi di 8.3 restano il dato, dichiarati.
 
-**8.6 Lo snapshot si divide.** Oggi `write_snapshot` è un passaggio solo sul perimetro (`_SnapshotPass`): per ogni file lo legge, ne calcola l'hash, riusa la voce di prima se vale ancora oppure lo legge a fondo, e scrive; lo store si pubblica intero, con una sostituzione. La sua impronta (`logical_digest`) lega ciò che viene dopo: pre-mappa, grafo dei moduli, tecnologie, schede, archi.
+**8.6 Lo snapshot si divide.** Oggi `read_project` è un passaggio solo sul perimetro (`_SnapshotPass`): per ogni file lo legge, ne calcola l'hash, riusa la voce di prima se vale ancora oppure lo legge a fondo, e scrive; lo store si pubblica intero, con una sostituzione. La sua impronta (`logical_digest`) lega ciò che viene dopo: pre-mappa, grafo dei moduli, tecnologie, schede, archi.
 
 1. **Due scritture sullo stesso store.** L'inventario (`scan`) scrive di ogni file percorso, dimensione, data, hash, linguaggio e motivo di esclusione. `parse` aggiunge simboli, import e riferimenti dei file che il piano gli dà. Ognuna pubblica intera, come oggi.
 2. **Due impronte.** Quella dell'inventario lega ciò che legge solo l'inventario: `scan`, `recognize`, `plan`. `logical_digest` continua a legare ciò che legge i simboli: `resolve`, `connect`, le schede. Oggi pre-mappa, moduli e tecnologie si legano a `logical_digest` (`premap/__init__.py`, `modules.py`, `technologies.py`): con `scan` per primo non potrebbero esistere prima di `parse`, e scadrebbero a ogni sua modifica.
@@ -251,7 +253,7 @@ Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto 
 | `scan`, più l'inventario di `snapshot.py write` | `scan` | scanner | `premap/` → `scanners/` |
 | `stack` | `recognize` | recognizer | `stack_analyser.py` |
 | manca come step; la funzione è `pipeline/plan.py` | `plan` | nessuno | `pipeline/` |
-| `parse`, più la lettura di `write_snapshot` | `parse` | parser | `languages/` → `parsers/` |
+| `parse`, più la lettura di `read_project` | `parse` | parser | `languages/` → `parsers/` |
 | `analyze` | `resolve` | resolver | `indexers/` → `resolvers/` |
 | `dynamic` | `observe` | observer | `dynamic/` → `observers/` |
 | `union` | `connect` | nessuno | `pipeline/` |
@@ -296,7 +298,7 @@ Aperto:
 
 **8.10 Prove.** Ogni prova resta nel repository. Sono scritte la 1, la 3, la 4 e la 6; le altre no.
 
-1. **Lo snapshot diviso dà lo stesso store.** *Ha fatto il suo lavoro:* sulle 27 fixture del grafo `logical_digest` dopo inventario e lettura era quello del passaggio solo, `build_manifest`, tolto il 24 novembre 2026. Oggi `tests/test_codebase_map_snapshot_split.py` confronta, sulle stesse fixture, `write_snapshot` con inventario più lettura, JSON con SQLite, e l'ordine delle righe con quello del perimetro. Lo step `parse` ha la sua prova in `tests/test_codebase_map_pipeline.py`.
+1. **Lo snapshot diviso dà lo stesso store.** *Ha fatto il suo lavoro:* sulle 27 fixture del grafo `logical_digest` dopo inventario e lettura era quello del passaggio solo, `build_manifest`, tolto il 24 novembre 2026. Oggi `tests/test_codebase_map_snapshot_split.py` confronta, sulle stesse fixture, `read_project` con inventario più lettura, JSON con SQLite, e l'ordine delle righe con quello del perimetro. Lo step `parse` ha la sua prova in `tests/test_codebase_map_pipeline.py`.
 2. **Le due modalità danno lo stesso grafo:** su una fixture con un file che go-enry dichiara generato e un alias di `tsconfig`, il grafo finale di «`parse` dopo la prima parte» è quello di «`parse` dopo tutto `scan`» (8.5).
 3. **Il piano copre tutto:** ogni file dell'inventario è in un nodo di `parse` o ha un motivo di esclusione; nessun adattatore parte senza il suo nodo (come il test che oggi impedisce a un indicizzatore di cercare file da solo).
 4. **Un bisogno fallito ferma solo chi ne ha bisogno:** con un parser che manca, il resolver di quel linguaggio non parte e dice perché; gli altri girano.
@@ -307,9 +309,9 @@ Misure, su Modal con gli strumenti veri, nel README di [`benchmarks/project-mode
 
 **8.11 Ordine del lavoro.** Ogni passo lascia i test verdi e le uscite uguali (sezione 5).
 
-1. `write_snapshot` in due scritture, inventario e lettura, chiamate una dopo l'altra come oggi: prova 1. *Fatto il 23 novembre:* `write_snapshot` resta la chiamata di tutti i chiamanti. L'inventario va in un file di appoggio accanto allo store, poi la lettura pubblica una volta sola: una scrittura fallita o interrotta lascia lo store di prima, come prima.
+1. `read_project` in due scritture, inventario e lettura, chiamate una dopo l'altra come oggi: prova 1. *Fatto il 23 novembre:* `read_project` resta la chiamata di tutti i chiamanti. L'inventario va in un file di appoggio accanto allo store, poi la lettura pubblica una volta sola: una scrittura fallita o interrotta lascia lo store di prima, come prima.
 2. La lettura prende file e linguaggio dall'inventario invece di percorrere l'albero. *Fatto il 23 novembre:* la lettura non percorre l'albero e non sceglie il linguaggio. Un file cambiato fra le due scritture è letto com'è, e la sua riga dell'inventario si corregge.
-3. L'inventario entra nello step `scan` e la lettura diventa lo step `parse`; le due impronte (8.6, punto 2). *Fatto il 23 novembre, con il passo 5:* `parse` legge uno store che ha solo l'inventario; dopo `write_snapshot` è fresco. `scan` e `stack` vengono prima e leggono solo l'inventario. L'inventario entra davvero in `scan` quando la pipeline riceve la cartella: oggi i chiamanti le danno ancora lo store di `write_snapshot`.
+3. L'inventario entra nello step `scan` e la lettura diventa lo step `parse`; le due impronte (8.6, punto 2). *Fatto il 23 novembre, con il passo 5:* `parse` legge uno store che ha solo l'inventario; dopo `read_project` è fresco. `scan` e `stack` vengono prima e leggono solo l'inventario. L'inventario entra davvero in `scan` quando la pipeline riceve la cartella: oggi i chiamanti le danno ancora lo store di `read_project`.
 4. La funzione del piano; `parse`, `resolve` e `observe` la eseguono: prove 3 e 4. *Fatto il 23 novembre* (`pipeline/plan.py`; prove in `tests/test_codebase_map_plan.py`, che guardano i lanci veri, spiati, e non il piano). Il piano non è uno step: è una funzione che `write_reading` (solo la parte di `parse`), il passaggio e il passo dinamico chiamano con i fatti che hanno. Un bisogno fallito dice quale (`need`); il blocco vale per linguaggio, come prima. Un file senza nodo di `parse` resta a livello di file, con il suo linguaggio e il motivo. Fuori dal passo: il nodo di preparazione, i comandi degli osservatori, la freschezza per nodo.
 5. `parse` prende da `scan` linguaggio, esclusioni e configurazione degli import, con i ripieghi dichiarati; archi fra moduli e ingressi dei flussi passano a `connect`: prove 2 e 5. Con loro passano a valle le letture dei simboli delle quattro sorgenti di framework (passo 3), `parse` va dopo `scan`, e ogni consumatore che smette di leggere simboli si lega all'impronta dell'inventario. *Fatto in parte il 23 novembre, in quattro pezzi:*
    - A: gli archi `imports` e `calls` fra moduli escono da `scan`. Li aggiunge il primo lettore del grafo intero (`modules.ensure_graph`, anche lo step `union`): il grafo che i lettori ricevono è quello di prima.
@@ -321,7 +323,7 @@ Misure, su Modal con gli strumenti veri, nel README di [`benchmarks/project-mode
    - Misurato su Modal il 24 novembre 2026, da un clone pulito di `76f1e2aa9` con un'analisi fresca: phazly 15/38 flussi chiusi e 105/240 frecce certe (base 15 e 104); Kotlin fallito come nella corsa di base (build Android).
    - Suite: 4054 passati, 0 falliti, dopo `68b784ee7` (prima 2 falliti: la mappa dell'app costruita due volte, il documento di supporto vecchio).
    - Rimisurato il 25 novembre su `3960973d8`, dopo i due pezzi della lettura unica: phazly 16/38 e 119/240 con `rules.json`, 18/38 e 129/240 con le regole dei wrapper; gli stessi numeri della misura dei wrapper del 23 novembre, quindi la lettura unica non cambia nulla. Kotlin fallito come prima.
-   - Restano: la sorgente Flask (task 14, in un'altra sessione), che lega ancora i gestori ai simboli quando legge la risposta del comando; i chiamanti che passano da `write_snapshot` all'inventario seguito dalla pipeline, dopo la misura di 8.10 (quanti file la lettura di oggi legge e `scan` poi esclude); il linguaggio da go-enry; la configurazione degli import da `tsc`, con la lettura a mano come ripiego dichiarato; le prove 2 e 5.
+   - Restano: la sorgente Flask (task 14, in un'altra sessione), che lega ancora i gestori ai simboli quando legge la risposta del comando; i chiamanti che passano da `read_project` all'inventario seguito dalla pipeline, dopo la misura di 8.10 (quanti file la lettura di oggi legge e `scan` poi esclude); il linguaggio da go-enry; la configurazione degli import da `tsc`, con la lettura a mano come ripiego dichiarato; le prove 2 e 5.
 6. I nomi, una famiglia per volta (8.7), e la dichiarazione comune (8.8).
 
 Il recognizer entra con il passaggio al fork, nella sua spec: lo step `stack` riconosce solo con stack-analyser.

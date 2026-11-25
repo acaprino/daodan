@@ -27,7 +27,7 @@ def build(tmp_path, name, *, sources=None, extra=None, runner=None):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return project, manifest, premap.write(manifest, sources=sources, runner=runner)
 
 
@@ -92,7 +92,7 @@ def test_fresh_until_the_snapshot_changes(tmp_path):
     project, manifest, _ = build(tmp_path, "mixed")
     assert premap.state(manifest)["state"] == "fresh"
     (project / "web" / "index.js").write_text("export const b = 2;\n", encoding="utf-8")
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     assert premap.state(manifest)["state"] == "stale"
     assert premap.ensure(manifest)["schema"] == premap.SCHEMA
     assert premap.state(manifest)["state"] == "fresh"
@@ -679,7 +679,7 @@ def _renovate(tmp_path, files: dict, package_files: dict) -> dict:
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     report = {"repositories": {"local": {"packageFiles": package_files}}}
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)

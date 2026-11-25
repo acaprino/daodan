@@ -138,7 +138,7 @@ def store_outputs(names: list) -> dict:
     for name in names:
         project, manifest = _case(name, projects[name])
         os.environ["PREMAP_ROOT"] = str(project)
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         log: list = []
         premap.write(manifest, runner=_runner(log))
         out["store"][name] = log
@@ -166,7 +166,7 @@ def score_fixtures(names: list) -> dict:
             else:
                 project, manifest = _case(name, None)
             os.environ["PREMAP_ROOT"] = str(project)
-            snapshot.write_snapshot(project, manifest)
+            snapshot.read_project(project, manifest)
             graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
             middle = time.monotonic()
             log = []

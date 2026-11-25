@@ -134,7 +134,7 @@ def commands() -> dict:
 
     project, manifest = Path("/work/project"), Path("/work/out/manifest.sqlite")
     shutil.copytree("/lockwork", project)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
         return {"commands": premap.astro.commands(context), "gaps": premap.astro._plan(context)["gaps"],

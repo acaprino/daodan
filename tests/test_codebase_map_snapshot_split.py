@@ -1,8 +1,8 @@
 """The snapshot in two writes, the inventory and the reading (spec 8.6 and 8.11, steps 1-2).
 
-`write_snapshot` stages the inventory and reads it: the reading takes the files and their language from the inventory and
+`read_project` stages the inventory and reads it: the reading takes the files and their language from the inventory and
 keeps its rows. Proof 1 of 8.10 compared that with the single pass (`build_manifest`), removed on 24 November 2026; what is
-compared now is the reading with `write_snapshot` and with the JSON snapshot, and the inventory's order with the walk's.
+compared now is the reading with `read_project` and with the JSON snapshot, and the inventory's order with the walk's.
 """
 from __future__ import annotations
 
@@ -39,8 +39,8 @@ class SnapshotSplitTests(unittest.TestCase):
         shutil.copytree(fixture, root)
         return root
 
-    def test_inventory_then_reading_is_what_write_snapshot_writes_in_both_formats_and_keeps_the_walk(self):
-        """On the graph fixtures: the inventory lists the files in the walk's order, and its reading, `write_snapshot` (the
+    def test_inventory_then_reading_is_what_read_project_writes_in_both_formats_and_keeps_the_walk(self):
+        """On the graph fixtures: the inventory lists the files in the walk's order, and its reading, `read_project` (the
         two writes in one call) and the JSON snapshot have the same keys and the same logical digest."""
         import file_inventory
         for fixture in GRAPHS:
@@ -55,8 +55,8 @@ class SnapshotSplitTests(unittest.TestCase):
                 top = snapshot.repo_root(root).resolve()
                 self.assertEqual(list(rows), [snapshot.relative_to_root(path, top) for path in snapshot.iter_files(root)])
                 snapshot.write_reading(inventory, split)
-                snapshot.write_snapshot(root, together)
-                snapshot.write_snapshot(root, as_json, format="json")
+                snapshot.read_project(root, together)
+                snapshot.read_project(root, as_json, format="json")
                 seen = {}
                 for name, path in (("split", split), ("together", together), ("json", as_json)):
                     with snapshot_store.open_snapshot(path) as store:
@@ -122,7 +122,7 @@ class SnapshotSplitTests(unittest.TestCase):
                            ("shape.h", "int area(int side);\n")):
             (root / name).write_text(text, encoding="utf-8")
         previous_path, inventory, out = (self.base / f"{name}.sqlite" for name in ("previous", "inventory", "out"))
-        snapshot.write_snapshot(root, previous_path)
+        snapshot.read_project(root, previous_path)
         detect = file_inventory.detect_language
         with mock.patch.object(file_inventory, "detect_language",
                                side_effect=lambda path, text: "cpp" if path.suffix == ".h" else detect(path, text)):
@@ -156,7 +156,7 @@ class SnapshotSplitTests(unittest.TestCase):
         for format in ("sqlite", "json"):
             with self.subTest(format=format):
                 out = self.base / f"manifest.{format}"
-                snapshot.write_snapshot(root, out, format=format, parse_results=supplied)
+                snapshot.read_project(root, out, format=format, parse_results=supplied)
                 with snapshot_store.open_snapshot(out) as store:
                     digests[format] = snapshot_store.logical_digest(store, keys=_keys(store))
                     self.assertIn("edited", store.get_file("two.py")["symbols"])
@@ -165,7 +165,7 @@ class SnapshotSplitTests(unittest.TestCase):
     def test_a_refused_write_creates_nothing(self):
         out = self.base / "absent" / "deeper" / "manifest.sqlite"
         with self.assertRaisesRegex(ValueError, "does not exist"):
-            snapshot.write_snapshot(self.base / "missing", out)
+            snapshot.read_project(self.base / "missing", out)
         self.assertFalse((self.base / "absent").exists())
 
     def test_the_reading_refuses_a_store_that_is_not_an_inventory(self):
@@ -173,21 +173,21 @@ class SnapshotSplitTests(unittest.TestCase):
         root.mkdir()
         (root / "one.py").write_text("VALUE = 1\n", encoding="utf-8")
         read = self.base / "read.sqlite"
-        snapshot.write_snapshot(root, read)
+        snapshot.read_project(root, read)
         with self.assertRaisesRegex(ValueError, "inventory"):
             snapshot.write_reading(read, self.base / "again.sqlite")
         self.assertFalse((self.base / "again.sqlite").exists())
 
-    def test_the_reading_is_written_by_write_snapshot_alone(self):
+    def test_the_reading_is_written_by_read_project_alone(self):
         """One path reads the files (the owner's decision of 24 November 2026): no module of the product calls
-        `write_reading` but `snapshot.py`, whose `write_snapshot` stages the inventory and reads it, and none defines, calls
-        or exports `build_manifest`, the single pass that read them a second way. The names are found in each module's
+        `write_reading` but `snapshot.py`, whose `read_project` stages the inventory and reads it, and none defines, calls
+        or exports `build_manifest` (nor the old name of `read_project`), the single pass that read them a second way. The names are found in each module's
         syntax tree (`ast`, Python's own parser)."""
         import ast
         product = SCRIPTS.parent
         found = []
         for path in sorted(product.rglob("*.py")):
-            names = {"build_manifest"} | (set() if path == Path(snapshot.__file__).resolve() else {"write_reading"})
+            names = {"build_manifest", "write_" + "snapshot"} | (set() if path == Path(snapshot.__file__).resolve() else {"write_reading"})
             for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
                 name = (node.name if isinstance(node, (ast.FunctionDef, ast.alias)) else node.attr
                         if isinstance(node, ast.Attribute) else node.id if isinstance(node, ast.Name)

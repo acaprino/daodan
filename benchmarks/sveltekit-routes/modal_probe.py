@@ -235,7 +235,7 @@ def commands() -> dict:
 
     project, manifest = Path("/work/commands"), Path("/work/commands-out/manifest.sqlite")
     shutil.copytree("/lockwork/routes", project)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         return {"routes": premap.sveltekit.commands(premap.Context(manifest, store))}
 

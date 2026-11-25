@@ -77,7 +77,7 @@ def test_host_evidence_reaches_the_stack_without_claiming_a_configured_service(r
     (project / "settings.yaml").write_text('url: https://api.telegram.org/bot/credential', encoding="utf-8")
     (project / ".env").write_text('URL=https://api.telegram.org/not-read', encoding="utf-8")
     manifest = tmp_path / "output" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     result = technologies.ensure(manifest)
     mention = next(e for e in result["mentioned"] if e["id"] == "telegram")
     (sign,) = mention["signs"]

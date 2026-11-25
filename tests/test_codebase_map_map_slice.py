@@ -29,7 +29,7 @@ class MapSliceTests(unittest.TestCase):
         out = self.root / '.daodan/map/run-one'
         out.mkdir(parents=True)
         self.manifest = out / 'snapshot.sqlite'
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.authority = dict(root=str(self.root), read_boundary=['.'], write_boundary=['service.py'])
         self.request = dict(schema='daodan/context-request/v1', task_id='T1', intent='bug', query='',
             read_boundary=['.'], write_boundary=['service.py'],
@@ -155,7 +155,7 @@ class MapSliceTests(unittest.TestCase):
         out = root / '.daodan/map/run'
         out.mkdir(parents=True)
         manifest = out / 'snapshot.sqlite'
-        snapshot.write_snapshot(root, manifest)
+        snapshot.read_project(root, manifest)
         authority = dict(root=str(root), read_boundary=['.'], write_boundary=[])
         request = dict(self.request, anchors=[{'entity_id': e} for e in (
             'a.py::one', 'a.py::two', 'a.py::three', 'b.py::target', 'c.py::run', 'd.py::other')],

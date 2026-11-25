@@ -99,7 +99,7 @@ def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logica
         }),
     })
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     facts = premap.write(manifest)
     facts["excluded"] = [{"path": "docs/examples/", "why": "documentation"}]
     Path(premap.path(manifest)).write_text(json.dumps(facts), encoding="utf-8")
@@ -155,7 +155,7 @@ def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logica
 def _stack(tmp_path, files: dict[str, str]) -> dict:
     project = _git_project(tmp_path / "proj", files)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     premap.write(manifest)
     return technologies.ensure(manifest)
 
@@ -165,7 +165,7 @@ def test_stack_uses_recorded_cargo_resolution_only_for_its_own_crates(real_stack
     fixture = tmp_path / "workspace"
     shutil.copytree(bench / "fixtures/sys-rust-workspace", fixture)
     manifest = tmp_path / "out/manifest.sqlite"
-    snapshot.write_snapshot(fixture, manifest)
+    snapshot.read_project(fixture, manifest)
     with gzip.open(bench / "results/premap-runs/sys-rust-workspace.json.gz", "rt", encoding="utf-8") as stream:
         recorded = {json.dumps(r["command"], sort_keys=True): r["result"] for r in json.load(stream)["runs"]}
 
@@ -205,7 +205,7 @@ def test_local_registry_edit_invalidates_stack_and_matches_clean_rebuild(tmp_pat
         "package.json": '{"name":"web","dependencies":{"widget-client":"^1"}}',
     })
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     facts = premap.write(manifest)
     entry = {"id": "widget", "name": "Widget", "category": "library", "signs": {}}
     registry = {"versions": {"upstream": "1"}, "entries": [entry]}

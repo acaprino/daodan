@@ -104,7 +104,7 @@ def test_reader_only_scan_and_stack_identify_spring_boot_in_its_declaring_module
         'plugins {\n    id("org.springframework.boot") version "3.4.0"\n}\n', encoding="utf-8")
 
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
     facts = json.loads(Path(Scan.run(context)["premap"]).read_text(encoding="utf-8"))
     record = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))

@@ -818,7 +818,7 @@ class PerimeterTests(unittest.TestCase):
         self.linked_project()
         out = self.tmp / "snapshot.sqlite"
         with mock.patch.dict(os.environ, self.env):
-            snapshot.write_snapshot(self.project, out)
+            snapshot.read_project(self.project, out)
         with open_snapshot(out) as store:
             self.assertEqual(list(store.iter_paths()), ["src/app.py"])
 

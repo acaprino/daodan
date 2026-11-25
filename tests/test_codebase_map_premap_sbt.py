@@ -31,7 +31,7 @@ def build(tmp_path, name, sources=(sbt,)):
     project = tmp_path / "proj"
     shutil.copytree(ANSWERS / name, project)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return premap.write(manifest, sources=sources, runner=replay(name))
 
 

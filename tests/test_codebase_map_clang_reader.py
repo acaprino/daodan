@@ -145,7 +145,7 @@ SYMBOLS = {
 
 
 def _built(source: Path, manifest: Path) -> dict:
-    snapshot.write_snapshot(source, manifest)
+    snapshot.read_project(source, manifest)
     db = sqlite3.connect(manifest)
     try:
         out = {"languages": dict(db.execute("SELECT file, language FROM sem_coverage")),
@@ -698,11 +698,11 @@ def test_a_changed_header_reparses_the_files_whose_context_it_changes(tmp_path):
     reparses the file, the others are reused."""
     source = tmp_path / "macros"
     shutil.copytree(MACROS, source)
-    first = snapshot.write_snapshot(source, tmp_path / "first.sqlite")
+    first = snapshot.read_project(source, tmp_path / "first.sqlite")
     header = source / "zdefs.h"
     header.write_bytes(header.read_bytes().replace(b"#define local static", b"#define local"))
     with open_snapshot(tmp_path / "first.sqlite") as previous:
-        second = snapshot.write_snapshot(source, tmp_path / "second.sqlite", previous=previous)
+        second = snapshot.read_project(source, tmp_path / "second.sqlite", previous=previous)
     # zdefs.h changed; checksum.c, crc.c and tables.h use its `local`; split.c does not parse, so it is never kept.
     assert first["metrics"]["cache_hits"] == 0 and second["metrics"]["cache_hits"] == 3
     db = sqlite3.connect(tmp_path / "second.sqlite")
@@ -749,7 +749,7 @@ def test_on_modal_the_reference_sites_of_zlib_s_files_no_build_compiles(tmp_path
                     ["git", "-c", "core.hooksPath=/dev/null", "checkout", "-q", "FETCH_HEAD"]):
         subprocess.run(command, cwd=source, check=True, timeout=600)
     manifest = tmp_path / "snapshot/manifest.sqlite"
-    snapshot.write_snapshot(source, manifest)
+    snapshot.read_project(source, manifest)
     connection = sqlite3.connect(manifest)
     sites = dict(connection.execute(
         "SELECT r.file, COUNT(*) FROM sem_references r JOIN sem_coverage c ON c.file = r.file "

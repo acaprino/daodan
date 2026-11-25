@@ -69,7 +69,7 @@ def test_sdk_dependencies_and_windows_bindings_are_matched_at_their_manifests(re
         file.parent.mkdir(parents=True)
         file.write_text(content, encoding="utf-8")
     manifest = tmp_path / "out/manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     entries = stack_recognition.run(manifest, facts={})["found"]
     actual = {(item["id"], sign["value"], sign["path"]) for item in entries for sign in item["signs"]
               if sign["sign"] == "package"}
@@ -93,7 +93,7 @@ def test_source_only_frameworks_have_module_evidence_and_no_invented_packages(re
         file = root / path
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text(content, encoding="utf-8")
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     facts = {"packages": [], "excluded": [{"path": "app/example/", "why": "example"}]}
     record = technologies.ensure(manifest, facts=facts)
     actual = {(entry["id"], s["value"], s["path"], s["line"]) for entry in record["technologies"]

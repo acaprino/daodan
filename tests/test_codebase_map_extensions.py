@@ -378,7 +378,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 '#[tauri::command]\nfn persist() {}\n'
                 'fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![persist]).run(tauri::generate_context!()); }\n')
             manifest = Path(tmp) / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             button = next(c for c in flow_paths.page(manifest, [])["cards"] if c.get("label") == "Salva profilo")
             self.assertEqual((button["event"], button["handler"], button["site"]),
                              ("click", "src/view.tsx::save", "src/view.tsx:3"))
@@ -414,7 +414,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 "#[tauri::command]\nfn retired() {}\n"
                 "fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![persist]).run(tauri::generate_context!()); }\n")
             manifest = Path(tmp) / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             # SCIP identifies the TypeScript SDK function. The exact registration identifies the next hop.
             with open_snapshot(manifest) as store:
                 row = store.connection.execute(
@@ -481,7 +481,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
             self.assertEqual(app_calls[0]["span"][0], 5)
 
             db_path = root / "manifest.sqlite"
-            snapshot.write_snapshot(root, db_path)
+            snapshot.read_project(root, db_path)
             with open_snapshot(db_path) as store:
                 impact = semantic_store.build_edit_impact(store, ["src-tauri/src/commands.rs::load_user_profile"])
                 callers = impact["targets"][0]["callers"]["listed"]
@@ -503,7 +503,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 write(f"{app}/src-tauri/src/main.rs", rust)
             write("tools/helper.rs", "pub fn save() {}\n")
             old, new = Path(tmp) / "before.sqlite", Path(tmp) / "after.sqlite"
-            snapshot.write_snapshot(root, old)
+            snapshot.read_project(root, old)
             def targets(path):
                 with open_snapshot(path) as store:
                     return {file: target for file, target in store.connection.execute(
@@ -513,7 +513,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
             write("one/src-tauri/src/main.rs", "#[tauri::command]\nfn save() {}\n" + register)
             write("two/src-tauri/src/main.rs", "#[tauri::command]\nfn save() {}\n")
             with open_snapshot(old) as previous:
-                snapshot.write_snapshot(root, new, previous=previous)
+                snapshot.read_project(root, new, previous=previous)
             self.assertEqual(targets(new), {"one/src/ui.ts": "one/src-tauri/src/main.rs::function@2:0",
                                             "two/src/ui.ts": None, "three/src/ui.ts": None})
 
@@ -595,7 +595,7 @@ class SqlAstAndScipEngineTests(unittest.TestCase):
                 encoding="utf-8",
             )
             manifest = root.parent / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
 
             sym = "scip-typescript npm pkg 1.0.0 worker.ts/Worker#execute()."
             doc_worker = _pb_scip_document(

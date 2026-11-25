@@ -86,7 +86,7 @@ def test_without_an_interpreter_for_the_python_its_project_states_a_file_stays_a
 
     monkeypatch.setattr(engine_tools, "python_environment", refused)
     store = tmp_path / "snapshot.sqlite"
-    snapshot.write_snapshot(project, store)
+    snapshot.read_project(project, store)
     with open_snapshot(store) as opened:
         header = opened.get_file("app/deps.py")
     assert header["status"] == "parse-error"
@@ -113,7 +113,7 @@ def test_a_file_is_parsed_by_the_python_its_project_states_and_none_of_the_proje
         **{rel: marking(rel.replace("/", "-")) for rel in ("backend.py", "ast.py", "json.py", "platform.py",
                                                             "warnings.py", "sitecustomize.py", "app/json.py")}})
     store = tmp_path / "snapshot.sqlite"
-    snapshot.write_snapshot(project, store)
+    snapshot.read_project(project, store)
     with open_snapshot(store) as opened:
         header = opened.get_file("app/deps.py")
         calls = [row[0] for row in opened.connection.execute(

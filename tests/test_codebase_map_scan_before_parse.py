@@ -1,7 +1,7 @@
 """`scan` and `stack` run on the inventory, before `parse` (spec of the pipeline, 8.2 and 8.11 step 5, piece D).
 
 They read no symbol (pieces A, B and C), so on a store that holds only the inventory they write the same pre-map, module graph
-and technologies as on the store the reading has written (`snapshot.write_snapshot`, the one reading: `parse` only says the
+and technologies as on the store the reading has written (`snapshot.read_project`, the one reading: `parse` only says the
 plan); and since those are bound to the inventory's digest, reading the files afterwards leaves them fresh.
 """
 from __future__ import annotations
@@ -53,7 +53,7 @@ def test_the_steps_are_scan_stack_then_parse():
 def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(real_stack, tmp_path):
     root = _project(tmp_path)
     read, listed = tmp_path / "read" / "manifest.sqlite", tmp_path / "listed" / "manifest.sqlite"
-    snapshot.write_snapshot(root, read)
+    snapshot.read_project(root, read)
     file_inventory.write(root, listed)
     for manifest in (read, listed):
         result = pipeline.run(manifest, start="scan", stop="stack", fast_scan=True)
@@ -70,7 +70,7 @@ def test_the_module_graph_names_the_same_git_state_on_the_inventory(tmp_path):
     for args in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", "one"]):
         subprocess.run([*git, *args], check=True)
     read, listed = tmp_path / "read" / "manifest.sqlite", tmp_path / "listed" / "manifest.sqlite"
-    snapshot.write_snapshot(root, read)
+    snapshot.read_project(root, read)
     file_inventory.write(root, listed)
     gits = []
     for manifest in (read, listed):
@@ -85,7 +85,7 @@ def test_what_scan_and_stack_wrote_stays_fresh_once_the_files_are_read(tmp_path)
     file_inventory.write(root, manifest)
     result = pipeline.run(manifest, start="scan", stop="stack", fast_scan=True)
     assert "failed" not in result["scan"] and "failed" not in result["stack"], result
-    snapshot.write_snapshot(root, manifest)  # the reading replaces the store that held only the inventory
+    snapshot.read_project(root, manifest)  # the reading replaces the store that held only the inventory
     assert premap.state(manifest)["state"] == "fresh"
     assert modules.graph_state(manifest)["state"] == "fresh"
     assert technologies.state(manifest) == "fresh"
@@ -97,7 +97,7 @@ def _premap_on_both(tmp_path, files: dict, sources: tuple, runner) -> list[dict]
     for rel, text in files.items():
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         (root / rel).write_text(text, encoding="utf-8", newline="\n")
-    for name, write in (("read", snapshot.write_snapshot), ("listed", file_inventory.write)):
+    for name, write in (("read", snapshot.read_project), ("listed", file_inventory.write)):
         manifest = tmp_path / name / "manifest.sqlite"
         write(root, manifest)
         record = premap.write(manifest, sources=sources, runner=runner)
@@ -136,12 +136,12 @@ def test_a_declared_symbol_member_is_checked_once_the_file_is_read(tmp_path):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         (root / rel).write_text(text, encoding="utf-8", newline="\n")
     read, listed = tmp_path / "read" / "manifest.sqlite", tmp_path / "listed" / "manifest.sqlite"
-    snapshot.write_snapshot(root, read)
+    snapshot.read_project(root, read)
     file_inventory.write(root, listed)
     pipeline.run(read, start="scan", stop="scan", fast_scan=True)
     with mock.patch.object(snapshot_store.SnapshotStore, "get_file", side_effect=AssertionError("scan read a file's symbols")):
         pipeline.run(listed, start="scan", stop="scan", fast_scan=True)
-    snapshot.write_snapshot(root, listed)
+    snapshot.read_project(root, listed)
 
     def greeting(graph):
         return next(m for m in graph["modules"] if m["name"] == "Greeting")
@@ -159,14 +159,14 @@ SUBMODULE = {".gitmodules": '[submodule "lib"]\n\tpath = lib\n\turl = https://ex
 
 def test_a_file_the_pre_map_excludes_is_read_like_any_other_and_the_plan_counts_it(tmp_path):
     """The `excluded` facet of the pre-map is a label, not a choice of the reading (the owner's decision of 24 November
-    2026): the one reading, `write_snapshot`, reads a submodule's file, and the plan `parse` says counts it."""
+    2026): the one reading, `read_project`, reads a submodule's file, and the plan `parse` says counts it."""
     from snapshot_store import open_snapshot
     root = tmp_path / "proj"
     for rel, text in SUBMODULE.items():
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         (root / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     seen = []
     result = pipeline.run(manifest, listeners=[seen.append], start="scan", stop="parse", fast_scan=True)
     assert "failed" not in result["parse"], result

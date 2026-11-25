@@ -119,7 +119,7 @@ def pre_map(project: Path, folder: Path) -> dict:
     import premap
     import snapshot
     manifest = folder / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return premap.ensure(manifest)
 
 

@@ -230,7 +230,7 @@ def summarize(name: str, application: str, script: str, noir_variant: str, sourc
         if application != "fixture" and shared.exists():
             manifest = shared
         else:
-            snapshot.write_snapshot(project, manifest)
+            snapshot.read_project(project, manifest)
     noir_answer, script_answer = answer(noir_variant), answer(script)
 
     def run(commands):

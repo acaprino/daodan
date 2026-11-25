@@ -339,7 +339,7 @@ def one(name: str, work: Path) -> dict:
         return {**out, "skipped": "no tsconfig or jsconfig"}
     project = mp._project(name)
     manifest = work / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         headers = dict(store.iter_file_headers_only())
         files = set(headers)

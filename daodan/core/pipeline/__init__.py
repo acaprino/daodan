@@ -14,7 +14,7 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
    modules and the pre-map. A fast scan keeps the signs of the sources it did not run (`technologies.merge`).
 3. `parse`: says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files, executed by
    `snapshot.write_reading`, `engine_pass.pass_plan` and `dynamic.run`. It reads no file: the one reading is
-   `snapshot.write_snapshot`, which every caller runs first, and a store that holds only its inventory stops the step.
+   `snapshot.read_project`, which every caller runs first, and a store that holds only its inventory stops the step.
 4. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
 5. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
@@ -72,7 +72,7 @@ class Parse:
     @staticmethod
     def run(context: Context) -> dict:
         from snapshot_store import open_snapshot
-        # The reading is `write_snapshot`'s alone (the owner's decision of 24 November 2026): this step finds the store read
+        # The reading is `read_project`'s alone (the owner's decision of 24 November 2026): this step finds the store read
         # and says the plan. A store with only the inventory is a caller that skipped it: the run stops, and is not read here.
         if _inventory_only(context.manifest):
             raise StepFailed("the snapshot holds only its inventory: its files are not read", "write the snapshot again")
@@ -275,7 +275,7 @@ class Union:
 
 
 STEPS = (Scan, Stack, Parse, Analyze, Dynamic, Union)
-# What the pipeline is given, the snapshot `write_snapshot` wrote (its inventory, and the files read): every other input of a
+# What the pipeline is given, the snapshot `read_project` wrote (its inventory, and the files read): every other input of a
 # step is the output of a step before it.
 INPUTS = ("inventory", "snapshot")
 

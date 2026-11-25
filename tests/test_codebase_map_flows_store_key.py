@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import flows  # noqa: E402
-from test_codebase_map_flows import write_snapshot  # noqa: E402
+from test_codebase_map_flows import read_project  # noqa: E402
 
 COMPUTED = "legge db: receiver index not a literal"
 SOURCES = {
@@ -53,7 +53,7 @@ class StoreKeyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.work = Path(tempfile.mkdtemp(prefix="flow-store-key-")).resolve()
-        cls.links = flows.link_facts(write_snapshot(cls.work, SOURCES), flows.validate_rules(RULES))
+        cls.links = flows.link_facts(read_project(cls.work, SOURCES), flows.validate_rules(RULES))
 
     @classmethod
     def tearDownClass(cls):
@@ -137,7 +137,7 @@ class ClassAttributeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.work = Path(tempfile.mkdtemp(prefix="flow-store-class-")).resolve()
-        cls.links = flows.link_facts(write_snapshot(cls.work, CLASSES), flows.validate_rules(RULES[:1]))
+        cls.links = flows.link_facts(read_project(cls.work, CLASSES), flows.validate_rules(RULES[:1]))
 
     @classmethod
     def tearDownClass(cls):
@@ -170,7 +170,7 @@ class ImportedNameTests(unittest.TestCase):
         # the sources are under `svc/` and imported as `app.consts`: the snapshot reads that import as outside the project
         work = Path(tempfile.mkdtemp(prefix="flow-store-import-")).resolve()
         self.addCleanup(shutil.rmtree, work, True)
-        links = flows.link_facts(write_snapshot(work, NESTED), flows.validate_rules([{**RULES[0], "in": ["svc"]}]))
+        links = flows.link_facts(read_project(work, NESTED), flows.validate_rules([{**RULES[0], "in": ["svc"]}]))
         self.assertEqual(links["stores"], {})
         self.assertEqual([(g["symbol"], "imported" in g["reason"] and "links it to no declaration" in g["reason"])
                           for g in links["gaps"]], [("svc/app/a.py::f", True)])
@@ -187,7 +187,7 @@ class LooseRuleTests(unittest.TestCase):
     def test_the_object_indexed_is_not_told_from_the_store_so_the_rule_is_what_narrows_it(self):
         work = Path(tempfile.mkdtemp(prefix="flow-store-loose-")).resolve()
         self.addCleanup(shutil.rmtree, work, True)
-        links = flows.link_facts(write_snapshot(work, self.SOURCES), flows.validate_rules(RULES[:1]))
+        links = flows.link_facts(read_project(work, self.SOURCES), flows.validate_rules(RULES[:1]))
         self.assertEqual({k: v["reads"] for k, v in links["stores"].items()},
                          {"db/runs": ["api/loose.py::cached"], "db/k": ["api/loose.py::text"]})
         self.assertEqual([(g["symbol"], g["reason"]) for g in links["gaps"]],  # an index that is no text is no key

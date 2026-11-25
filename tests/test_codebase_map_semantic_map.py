@@ -38,9 +38,9 @@ class SemanticMapTests(unittest.TestCase):
     def refresh(self):
         if self.manifest.exists():
             with open_snapshot(self.manifest) as previous:
-                snapshot.write_snapshot(self.root, self.manifest, previous=previous)
+                snapshot.read_project(self.root, self.manifest, previous=previous)
         else:
-            snapshot.write_snapshot(self.root, self.manifest)
+            snapshot.read_project(self.root, self.manifest)
 
     def seed(self, *cards):
         with open_snapshot(self.manifest) as store:

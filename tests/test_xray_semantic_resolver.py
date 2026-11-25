@@ -526,7 +526,7 @@ class SemanticResolverTests(unittest.TestCase):
         directory = self.root / ".test-snapshots"
         directory.mkdir(exist_ok=True)
         path = directory / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, path)
+        snapshot.read_project(self.root, path)
         with open_snapshot(path) as store:
             persisted = {row[0]: _unpack(row[1]) for row in store.connection.execute(
                 "SELECT id,payload FROM sem_references WHERE kind='call'")}
@@ -731,7 +731,7 @@ class SemanticResolverTests(unittest.TestCase):
             self.assertEqual(usages["save"].resolved_count, 2)
             self.assertEqual(usages["save"].importing_modules, ["src/main.rs", "src/sub/child.rs"])
         db_path = self.root / ".daodan/map/manifest.sqlite"
-        snapshot.write_snapshot(self.root, db_path)
+        snapshot.read_project(self.root, db_path)
         with open_snapshot(db_path) as store1:
             meta1 = {s["name"]: s for s in semantic_store.query_meta_code(store1)["symbols"] if s["file"] == "src/core.rs"}
         self.assertIn("Store.method", meta1)
@@ -742,7 +742,7 @@ class SemanticResolverTests(unittest.TestCase):
         )
         db_path2 = self.root / ".daodan/map/manifest2.sqlite"
         with open_snapshot(db_path) as store1:
-            snapshot.write_snapshot(self.root, db_path2, previous=store1)
+            snapshot.read_project(self.root, db_path2, previous=store1)
         with open_snapshot(db_path2) as store2:
             meta2 = {s["name"]: s for s in semantic_store.query_meta_code(store2)["symbols"] if s["file"] == "src/core.rs"}
         self.assertEqual(meta1["Store.method"]["interface_hash"], meta2["Store.method"]["interface_hash"])

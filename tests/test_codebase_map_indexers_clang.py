@@ -1038,7 +1038,7 @@ def test_smoke_a_unit_that_configures_is_indexed_and_its_index_comes_back(tmp_pa
     import premap
     import snapshot
     manifest = tmp_path / "snapshot" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     given = clang.structure(premap.ensure(manifest))  # the units the stage hands the indexer
     assert {unit["kind"] for unit in given["units"]} == {"cmake-target"}
     result = clang.index(project, tmp_path / "work", cpus=2, **given)

@@ -39,7 +39,7 @@ def test_a_new_reading_of_the_same_files_leaves_the_pre_map_the_modules_and_the_
     root, manifest = _scanned(tmp_path)
     before = _digest(manifest)
     with mock.patch.object(snapshot, "parser_fingerprint", return_value="another parser"):
-        snapshot.write_snapshot(root, manifest)
+        snapshot.read_project(root, manifest)
     assert _digest(manifest) != before  # the reading changed
     # the modules first: `technologies.state` ensures the module graph itself
     assert modules.graph_state(manifest)["state"] == "fresh"
@@ -51,7 +51,7 @@ def test_a_new_reading_of_the_same_files_leaves_the_pre_map_the_modules_and_the_
 def test_a_changed_file_makes_them_all_stale(tmp_path):
     root, manifest = _scanned(tmp_path)
     (root / "libs/b/index.ts").write_text("export function b() {\n  return 2;\n}\n", encoding="utf-8")
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     assert modules.graph_state(manifest)["state"] == "stale"
     assert premap.state(manifest)["state"] == "stale"
     assert technologies.state(manifest) == "stale"

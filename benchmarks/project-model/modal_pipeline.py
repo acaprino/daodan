@@ -590,7 +590,7 @@ def run_folder(stop: str | None = None) -> dict:
     shutil.rmtree(manifest.parent, ignore_errors=True)
     shutil.copytree(REMOTE_FOLDER, project)
     started, events = time.monotonic(), []
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
 
     def listen(event):
         if event["kind"] != "progress":
@@ -623,7 +623,7 @@ def run_cases(names: list) -> dict:
             project = _project(name)
             manifest = Path("/runs") / name / "manifest.sqlite"
             shutil.rmtree(manifest.parent, ignore_errors=True)
-            snapshot.write_snapshot(project, manifest)
+            snapshot.read_project(project, manifest)
             seen, clock, said = [], {}, []
 
             def listen(event, seen=seen, clock=clock, said=said, started=started):

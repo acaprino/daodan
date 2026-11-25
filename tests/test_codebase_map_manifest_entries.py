@@ -27,7 +27,7 @@ def test_manifest_declarations_survive_reopening_without_a_source_read(tmp_path,
     (source / "binary.rs").write_text("fn main() {}\n")
     (app / "Cargo.toml").write_text('[package]\nname="reader"\nversion="1.0.0"\n')
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(app, manifest)
+    snapshot.read_project(app, manifest)
     # The saved form of cargo metadata: tests and custom build scripts are not product commands.
     unit = {"kind": "cargo-crate", "root": ".", "manifest": "Cargo.toml", "name": "reader",
             "config": {"targets": [{"kind": kind, "name": kind, "path": "src/binary.rs"}

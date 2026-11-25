@@ -97,7 +97,7 @@ Parole usate qui:
 ```mermaid
 flowchart TD
   P[/Progetto/] --> inv
-  subgraph T1["1 Lo snapshot: snapshot.write_snapshot"]
+  subgraph T1["1 Lo snapshot: snapshot.read_project"]
     inv["inventario<br>ogni file: hash e linguaggio"] --> let["lettura<br>simboli, import, chiamate"]
   end
   subgraph T2["2 In primo piano: pipeline.run fino a stack"]
@@ -115,18 +115,18 @@ flowchart TD
   union --> G[(Grafo completo)]
 ```
 
-1. **Lo snapshot.** `snapshot.write_snapshot` scrive l'inventario, poi la lettura, e pubblica lo store una volta sola. Subito dopo si scrive l'indice lessicale (`retrieval.ensure_index`).
+1. **Lo snapshot.** `snapshot.read_project` scrive l'inventario, poi la lettura, e pubblica lo store una volta sola. Subito dopo si scrive l'indice lessicale (`retrieval.ensure_index`).
 2. **In primo piano.** `pipeline.run(..., stop="stack")` esegue solo `scan` e `stack`. La mappa è subito utilizzabile.
 3. **In background.** `engine_pass.ensure_edges` avvia il passaggio, `resolve_edges.py --pass`, che arriva a `union`. Parte da `scan` se la pre-mappa non è fresca per qualunque motivo (manca, è vecchia, ha comandi di modello non eseguiti), altrimenti da `stack` (`resolve_edges.main`). `ensure_edges` non avvia niente se gli archi sono `fresh`, `running`, `stopped` o `unavailable`, o se lo snapshot è in formato JSON.
 
 Due cose che sorprendono:
 
-- **`parse` è il terzo step, ma non legge nulla.** I file li legge una strada sola, `write_snapshot`, che ogni chiamante esegue al tempo 1. Lo step `parse` dice solo il piano (`pipeline.Parse.run`); uno store con il solo inventario ferma la pipeline e dice di scrivere di nuovo lo snapshot.
+- **`parse` è il terzo step, ma non legge nulla.** I file li legge una strada sola, `read_project`, che ogni chiamante esegue al tempo 1. Lo step `parse` dice solo il piano (`pipeline.Parse.run`); uno store con il solo inventario ferma la pipeline e dice di scrivere di nuovo lo snapshot.
 - **`stack` gira due volte.** La seconda volta riscrive `technologies.json` solo se i suoi ingressi sono cambiati (`technologies.ensure`). Cambiano se lo `scan` in primo piano era veloce: in background si eseguono i comandi di modello e la pre-mappa ha fatti nuovi. Senza container non cambiano.
 
 #### Gli step
 
-L'ordine è `pipeline.STEPS`: `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`. Alla pipeline si danno l'inventario e lo snapshot letto, che scrive `write_snapshot` (`pipeline.INPUTS`): ogni altro ingresso di uno step è l'uscita di uno step prima.
+L'ordine è `pipeline.STEPS`: `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`. Alla pipeline si danno l'inventario e lo snapshot letto, che scrive `read_project` (`pipeline.INPUTS`): ogni altro ingresso di uno step è l'uscita di uno step prima.
 
 | Step oggi | Nome nel disegno | Legge | Scrive | Nel container | Se fallisce |
 | --- | --- | --- | --- | --- | --- |
@@ -156,7 +156,7 @@ Note sugli step:
 | 2. Lettura | `snapshot.write_reading` | Simboli, import e riferimenti dei file dell'inventario. Lo store letto non ha più `reading` |
 
 - La lettura non percorre l'albero e non sceglie il linguaggio: prende file e linguaggio dall'inventario.
-- `write_snapshot` mette l'inventario in un file di appoggio accanto allo store e lo cancella alla fine. Pubblica solo la lettura. Una scrittura fallita lascia lo store di prima.
+- `read_project` mette l'inventario in un file di appoggio accanto allo store e lo cancella alla fine. Pubblica solo la lettura. Una scrittura fallita lascia lo store di prima.
 - Il linguaggio lo decide l'inventario con `languages.detect_language`: l'estensione, più espressioni regolari sul contenuto per `.h`, `.ts` e `.sql`. Non lo chiede ancora a go-enry.
 - La lettura non esclude nulla: i file che la pre-mappa mette in `excluded` (generati, di terze parti, documentazione) si leggono come gli altri. `excluded` è solo un'etichetta, usata da chi la legge dalla pre-mappa.
 
@@ -173,13 +173,13 @@ In pratica: riscrivere lo snapshot sugli stessi file lascia fresche pre-mappa, s
 
 | Chiamante | Snapshot | In primo piano | In background |
 | --- | --- | --- | --- |
-| `snapshot.py write` (`snapshot.cmd_write`) | `write_snapshot` | `scan` intero, con i comandi nel container, e `stack`; niente con `--no-modules` | `ensure_edges`; niente con `--no-engine` |
-| `codebase_map_create_run` (`MapService.create_run`) | `write_snapshot` | `scan` veloce (`fast_scan`) e `stack`. Con il formato JSON solo il grafo dei moduli | `ensure_edges`, salvo `engine=false` |
+| `snapshot.py write` (`snapshot.cmd_write`) | `read_project` | `scan` intero, con i comandi nel container, e `stack`; niente con `--no-modules` | `ensure_edges`; niente con `--no-engine` |
+| `codebase_map_create_run` (`MapService.create_run`) | `read_project` | `scan` veloce (`fast_scan`) e `stack`. Con il formato JSON solo il grafo dei moduli | `ensure_edges`, salvo `engine=false` |
 | L'app (`App._prepare`) | Come `create_run`, che chiama; per un run che c'è già, `MapService.index` | Come `create_run` | Come `create_run` |
 | `codebase_map_index` (`MapService.index`) | Nessuno: ripara l'indice lessicale | Nessuna pipeline | `ensure_edges`, salvo `check` o `engine=false` |
-| Aggiornamento dell'hook (`snapshot._refresh_locked`) | `write_snapshot`, che riusa lo snapshot di prima, salvo in una ricostruzione intera | `scan` veloce e `stack` | `ensure_edges`, salvo `engine=false` |
+| Aggiornamento dell'hook (`snapshot._refresh_locked`) | `read_project`, che riusa lo snapshot di prima, salvo in una ricostruzione intera | `scan` veloce e `stack` | `ensure_edges`, salvo `engine=false` |
 | Processo staccato (`resolve_edges.py --pass`) | Nessuno: usa lo store che trova | — | Gli step fino a `union` |
-| Operazioni isolate (`store_consumers.temporary_snapshot`) | `write_snapshot` | Nessuna pipeline | — |
+| Operazioni isolate (`store_consumers.temporary_snapshot`) | `read_project` | Nessuna pipeline | — |
 
 `scan` veloce: solo i lettori dei file, senza container, perché gira sotto il blocco del progetto. I comandi di modello li esegue poi il passaggio. Con lo snapshot in formato JSON `ensure_edges` non avvia niente, per ogni chiamante.
 
@@ -199,7 +199,7 @@ I passi sono quelli della spec, 8.11: qui c'è solo lo stato, là i dettagli.
 | Archi fra moduli e legame degli ingressi dei flussi fuori da `scan` | Fatto: `modules.ensure_graph`, `binder.bind` | Passo 5, pezzi A e B |
 | Archi fra moduli e legame degli ingressi dentro `connect` | Da fare: oggi li fa il primo lettore | Passo 5; 8.2 |
 | I file che la pre-mappa esclude non si leggono (il pezzo E1 della spec) | Tolto: deciso il 24 novembre | Passo 5, pezzo E1 |
-| I chiamanti passano da `write_snapshot` a inventario e poi pipeline | Fermo: non cambia nulla per il prodotto | 8.3 |
+| I chiamanti passano da `read_project` a inventario e poi pipeline | Fermo: non cambia nulla per il prodotto | 8.3 |
 | Il linguaggio da una libreria nostra, con il catalogo di Linguist | Da fare: oggi `languages.detect_language`. go-enry non si usa per questo | 8.3 |
 | Radici e alias degli import da `tsc` | Fermo: sui 25 progetti veri 0 import guadagnati e 110 persi. Oggi la lettura a mano (`import_resolution.py`) | Passo 5, pezzo F |
 | I nomi nuovi di step, eventi e cartelle (`parsers/`, `scanners/`, `resolvers/`, `observers/`) | Da fare. Fatto solo `NAME` in `indexers/` | Passo 6 |

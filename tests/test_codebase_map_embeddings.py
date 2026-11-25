@@ -56,7 +56,7 @@ class EmbeddingTests(unittest.TestCase):
         (self.root / name).write_text(text, encoding='utf8')
 
     def resnapshot(self):
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         retrieval.refresh_index(self.manifest, self.lexical)
 
     def refresh(self, dest=None):
@@ -278,7 +278,7 @@ class EmbeddingTests(unittest.TestCase):
 
     def test_cli_report_cannot_replace_json_manifest_or_lexical_store(self):
         manifest = self.manifest.with_suffix('.json')
-        snapshot.write_snapshot(self.root, manifest, format='json')
+        snapshot.read_project(self.root, manifest, format='json')
         request = self.manifest.with_name('request.json')
         request.write_text(json.dumps({'schema': 'daodan/embedding-request/v1', 'operation': 'index',
             'manifest': str(manifest), 'index': str(self.index), 'model_dir': 'missing'}), encoding='utf8')

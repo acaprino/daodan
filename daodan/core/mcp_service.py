@@ -461,7 +461,7 @@ class MapService:
             temporary = Path(name)
             temporary.unlink()
         try:
-            metadata = snapshot.write_snapshot(bound, temporary, format=format)
+            metadata = snapshot.read_project(bound, temporary, format=format)
             with self._operation(write=True):
                 if self._target(target) != bound:
                     raise ValueError("target binding changed while building the snapshot")

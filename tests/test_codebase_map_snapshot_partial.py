@@ -83,7 +83,7 @@ def test_the_snapshot_and_the_graph_read_the_file_around_its_error_and_declare_t
     project.mkdir()
     (project / "main.cpp").write_text(XMLTEST, encoding="utf-8")
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with code_graph.Snapshot(manifest) as snap:
         status, = snap.connection.execute("SELECT status FROM sem_coverage WHERE file = 'main.cpp'").fetchone()
         assert status == "partial"
