@@ -61,8 +61,8 @@ Copy-Item $Probe "$real\Probe.exe"
 Copy-Item "$real\Daodan.exe" "$fakes\Daodan.exe"
 Copy-Item $Fake "$fakes\runtime\python.exe"
 
-# No Python and no uv, for what is started from here on: Windows alone.
-$env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+# No Python and no uv, for what is started from here on: Windows alone, without its folder, which may hold py.exe.
+$env:PATH = "$env:SystemRoot\System32"
 Say (-not (Get-Command python, python3, py, uv -ErrorAction SilentlyContinue)) 'the PATH has no Python and no uv'
 
 # What is left of Daodan: the programs of the two folders, and the engine on its profile.
@@ -123,6 +123,8 @@ Say ($page.href -match '^http://127\.0\.0\.1:\d+/app/$' -and $page.token -and $p
 Say ("$(Get-Content "$data\server-port")" -eq ([Uri]$origin).Port) "the port is kept: $(Get-Content "$data\server-port")"
 Say ([W]::Caption($h) -lt 10) "the window has no title bar of Windows: the page begins $([W]::Caption($h)) pixels under its edge"
 Say ([bool](Server)) 'the server is the private Python of the folder'
+$counted = Left | Group-Object Name -NoElement | ForEach-Object { "$($_.Count) $($_.Name)" }
+Say ("$counted" -match 'msedgewebview2' -and "$counted" -match 'python' -and "$counted" -match 'Probe') "what is counted as Daodan's while it runs: $($counted -join ', ')"
 Say (-not (Get-Content "$data\server.log")) "the log of the server is empty: $(Get-Content "$data\server.log" -Raw)"
 $answer = Ask "fetch('/api/app/state', { headers: { 'X-Daodan-Token': new URLSearchParams(location.search).get('token') } }).then((r) => r.status)"
 Say ($answer -eq 200) "the page reads the server ($answer)"
