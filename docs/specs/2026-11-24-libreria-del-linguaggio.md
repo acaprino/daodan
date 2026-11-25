@@ -1,6 +1,6 @@
 # Il linguaggio dei file: un modulo di Daodan con il catalogo di Linguist
 
-**Stato:** approvata dal proprietario il 24 novembre 2026, con le correzioni del consulente («A»). Nel prodotto non c'è nulla ancora: oggi decide `languages.detect_language`. Sostituisce la bozza di una libreria separata: un modulo dentro Daodan, con la stessa struttura, si estrae il giorno in cui un secondo programma la usa.
+**Stato:** ridotta dal proprietario il 25 novembre 2026, dopo la [prova dei `.h`](../../benchmarks/header-language/README.md): scelta «T», l'albero sintattico per C e C++ nei `.h`. Entra solo quel pezzo: le altre regole di oggi e le 63 estensioni restano, e il modulo con il catalogo di Linguist non si fa, perché aggiungerebbe codice senza cambiare le risposte. Il resto di questa spec è il disegno di prima.
 
 ## Perché
 
@@ -58,6 +58,8 @@ La regola di oggi è una regex su un testo senza commenti e stringhe, e AGENTS v
 | Due grammatiche | tree-sitter C e C++, si tiene quella con meno nodi `ERROR`; a parità, C |
 
 Limite noto: tree-sitter su un commento aperto mai chiuso cresce più che al quadrato (14,5 s a 8 KB). Se la via si sceglie, serve un tetto ai byte o un controllo lineare dei commenti prima. Il costo dell'errore non è simmetrico: un header C++ letto come C perde le classi, un header C letto come C++ perde poco.
+
+**Deciso (T).** Via `R3dx`: la regola Objective-C di oggi per prima (nessuna grammatica la sostituisce senza perdere header C); poi l'albero C++ e i nodi di dichiarazione che C non ha; senza nodi, la grammatica con meno `ERROR`/`MISSING`, a parità C. Prezzo misurato: +106 righe, 14–15 s su 4.795 header. Guadagno: 29 definizioni perse invece di 55, nessun C++ sbagliato visto contro 12 ± 6. Vincolo: il lavoro del parser ha un tetto deterministico, mai un orologio; oltre il tetto la risposta è quella dell'estensione (C) ed è dichiarata.
 
 ## Aggiornamento
 
