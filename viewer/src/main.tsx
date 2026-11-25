@@ -86,7 +86,7 @@ function App() {
   useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Viste', keys: 'Escape', icon: <Icon name="close" />, when: detailsOpen, run: close });
   useEffect(() => window_.setTitle(document.title), [window_]);  // the window's title is the page's
 
-  // That the server is busy is said once, whoever found it so: an attempt takes the place of its notice.
+  // That the server is busy is one notice, whoever found it so.
   const sayBusy = () => notify(FAILURE.retried, { id: BUSY });
   const read = <T,>(url: string, wanted?: () => boolean) => whenFree(() => get<T>(url), sayBusy, wanted);
   const addressOf = (id: string) => `./data/visual.json?run=${encodeURIComponent(id)}`;

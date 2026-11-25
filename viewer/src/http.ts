@@ -35,14 +35,14 @@ export function createHttp(fetch: Fetch, token: string) {
 }
 
 // What is read of a busy server is asked again until it answers, or until nobody waits for it any more (`wanted`): then there is
-// nothing. What is posted is not: it is the person who asks it again.
+// nothing: that it is busy is said once. What is posted is not asked again: it is the person who does.
 export async function whenFree<T>(ask: () => Promise<T>, onBusy: () => void, wanted: () => boolean = () => true): Promise<T | undefined> {
-  for (;;) {
+  for (let first = true; ; first = false) {
     try { return await ask(); }
     catch (error) {
       if (!isBusy(error)) throw error;
       if (!wanted()) return undefined;
-      onBusy();
+      if (first) onBusy();
     }
     await new Promise(resolve => setTimeout(resolve, RETRY_MS));
     if (!wanted()) return undefined;

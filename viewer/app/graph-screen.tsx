@@ -79,7 +79,7 @@ type Visible = Pick<Graph, 'nodes' | 'edges'>;
 function InView({ relations }: { relations: number }) {
   const loading = useModelSlice(s => s.graphLoading);
   return <Text variant="note">
-    <Text aria-live="polite">{loading ? 'Lettura del grafo…' : plural(relations, 'relazione visibile', 'relazioni visibili')}</Text> · seleziona un nodo, apri › sul posto
+    <Text aria-live="polite">{loading ? 'Lettura del grafo…' : plural(relations, 'relazione visibile', 'relazioni visibili')}</Text> · seleziona un nodo, apri un gruppo sul posto
   </Text>;
 }
 
@@ -117,9 +117,7 @@ function Drawing({ graph, visible }: { graph: Graph; visible: Visible }) {
     if (isOpenGroup(thing)) show(graphDetail(thing));  // the graph is read from a node, never from an open group
     else model.selectNode(thing.id);
   }, [graph, shown, show, close]);
-  // shortcut: an open group is not marked while its details are shown, since Sigrid 5.1.0 dims what a chosen group holds; until it keeps them
-  const selected = shown !== null && graph.open.some(group => group.id === shown) ? null : shown;
-  return <Canvas graph={graph} visible={visible} selected={selected} onSelect={choose} />;
+  return <Canvas graph={graph} visible={visible} selected={shown} onSelect={choose} />;
 }
 
 // What is in view of the graph with the filters. Where the whole graph is, a choice alone does not lay it out again: only the depth is

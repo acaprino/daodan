@@ -1,5 +1,4 @@
 // The details in the inspector: the element chosen, else the flow with its steps, else what the project is and how its map is read.
-import { useRef } from 'react';
 import { ScreenBoundary } from '@acaprino/imago';
 import { Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
@@ -34,7 +33,7 @@ function Technologies({ envelope, ids }: { envelope: Envelope; ids?: string[] })
 function ProjectDetails({ model }: { model: Model }) {
   const { state: { envelope }, projection, data } = model;
   return <>
-    <Text as="p" variant="soft">Scegli un elemento per vederne il ruolo, i collegamenti e i flussi che lo attraversano. La freccia di un gruppo lo apre e lo chiude sul posto; «Entra», o un doppio clic su un gruppo chiuso, mostra soltanto quello che contiene. Un elemento si sposta trascinandolo o con Alt e una freccia, e «Riordina» rimette tutto a posto. Nei flussi leggi il sito e la provenienza della prova di ogni passaggio.</Text>
+    <Text as="p" variant="soft">Scegli un elemento per vederne il ruolo, i collegamenti e i flussi che lo attraversano. «Apri» e «Chiudi» aprono e chiudono un gruppo sul posto; «Entra», o un doppio clic su un gruppo chiuso, mostra soltanto quello che contiene. Un elemento si sposta trascinandolo o con Alt e una freccia, e «Riordina» rimette tutto a posto. Nei flussi leggi il sito e la provenienza della prova di ogni passaggio.</Text>
     <DescriptionList items={[
       { name: 'Entità', value: number(envelope.entities.length) },
       { name: 'Relazioni', value: number(envelope.relations.length) },
@@ -121,9 +120,7 @@ export function Details({ model, show, open, close }: { model: Model; show: (ask
   const shown = open ? shownDetails(state) : null;
   const entity = shown === 'entity' ? indexOf(envelope).byRef.get(state.selected!) : undefined;
   const flow = shown === 'flow' ? envelope.flows.find(item => item.ref === state.flow) : undefined;
-  const last = useRef(headOf(envelope));
-  const head = open ? headOf(envelope, entity, flow) : last.current;  // one that closes keeps its title as it slides out
-  last.current = head;
+  const head = headOf(envelope, entity, flow);
   const enter = entity && canEnter(state, entity.ref)
     ? <Button size="sm" aria-label={`Entra in ${entity.name}`} onClick={() => dispatch({ type: 'open', ref: entity.ref })}><Icon name="folderOpen" />Entra</Button>
     : undefined;

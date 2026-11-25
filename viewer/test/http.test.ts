@@ -41,11 +41,11 @@ test('a busy server is asked again until it answers, and what fails otherwise is
   assert.equal(asked, 1);
   t.mock.timers.tick(1);
   await turn();
-  assert.deepEqual([asked, said], [2, 2]);
+  assert.deepEqual([asked, said], [2, 1]);  // said once
   t.mock.timers.tick(2000);
   assert.deepEqual(await found, { runs: [] });
   await assert.rejects(whenFree(() => createHttp(answers(500), '').get('./a'), () => { said += 1; }), { message: 'il server ha risposto 500' });
-  assert.equal(said, 2);
+  assert.equal(said, 1);
 });
 
 test('a busy server nobody waits for any more is left alone', async t => {

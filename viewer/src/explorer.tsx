@@ -132,9 +132,9 @@ export function Explorer({ model, title, search, toShow, show, ready, runs, open
           : !scene
           ? <Progress aria-label="Dispongo il grafo…" valueText="Dispongo il grafo…" value={null} />
           : <>
-              {/* A map is read whole first (`minFitZoom`); the canvas keeps what was moved, and its «Riordina» puts it back. */}
+              {/* The canvas keeps what was moved, and its «Riordina» puts it back. */}
               <GraphCanvas ref={canvas} aria-label={CANVAS} model="graph" fill nodes={scene.nodes} edges={scene.edges} direction={scene.direction}
-                layoutKey={scene.layoutKey} selected={selected} steps={scene.steps} minFitZoom={0} movable animated
+                layoutKey={scene.layoutKey} selected={selected} steps={scene.steps} movable animated
                 onSelect={id => dispatch({ type: 'select', ref: id === null ? null : scene.refs.get(id) ?? null })}
                 onToggle={id => { const ref = scene.refs.get(id); if (ref !== undefined) dispatch({ type: 'toggleGroup', ref }); }}
                 onOpen={id => { const ref = scene.refs.get(id); if (ref !== undefined) dispatch({ type: 'open', ref }); }} />

@@ -41,7 +41,7 @@ export function graphOf({ projection, edges }: Drawing): LayoutGraph {
   };
 }
 
-// A closed group has the two ways in: its arrow opens it in place (`open`, the canvas's «Apri»), and a double press, or the › beside
+// A closed group has the two ways in: its arrow opens it in place (`open`, the canvas's «Apri»), and a double press, or the → beside
 // it, goes into it. An open one is closed by its arrow; the way into it is the «Entra» of the details, of its row or of the palette.
 function nodeOf(node: ProjectedNode, layout: Layout, imageOf: ImageOf): GraphNode {
   const closed = node.open === false;

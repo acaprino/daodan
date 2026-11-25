@@ -992,7 +992,7 @@ try {
   // The canvas is a group named by the page; a node is a button named by its name, its step, «esterno», what it contains and its kind.
   const canvas = main.getByRole('group', { name: 'Naviga il grafo', exact: true });
   const thing = name => canvas.getByRole('button', { name: new RegExp(`^${name},`) });
-  // A group: the arrow that opens it in place, the one that closes it, its frame once open, and the › that goes into it.
+  // A group: the arrow that opens it in place, the one that closes it, its frame once open, and the → that goes into it.
   const onGroup = action => name => canvas.getByRole('button', { name: `${action} ${name}`, exact: true });
   const [opens, closes, enters] = ['Apri', 'Chiudi', 'Entra in'].map(onGroup);
   const frame = name => canvas.getByRole('group', { name: new RegExp(`^${name}, aperto, contiene`) });
@@ -1132,7 +1132,7 @@ try {
   await details.getByRole('heading', { name: 'server', exact: true }).waitFor();
   await canvas.click({ position: { x: 8, y: 8 } });
   await details.waitFor({ state: 'hidden' });
-  // By keyboard: the arrows follow the lines, Enter chooses; after a group are the arrow that opens it in place and the › that enters it.
+  // By keyboard: the arrows follow the lines, Enter chooses; after a group are the arrow that opens it in place and the → that enters it.
   await thing('web').focus();
   for (const [key, name] of [['ArrowRight', 'server,'], ['ArrowLeft', 'web,'], ['ArrowRight', 'server,']]) {
     await page.keyboard.press(key);
@@ -1151,7 +1151,7 @@ try {
   await thing('money.ts').waitFor();
   await choose('Torna al sistema');
   await place('Sistema').waitFor();
-  await enters('web').click();  // by its ›
+  await enters('web').click();  // by its →
   await place('Sistema / web').waitFor();
   await enters('checkout.tsx').click();
   await place('Sistema / web / checkout.tsx').waitFor();
@@ -1765,6 +1765,13 @@ try {
   await said('Scrivi il nome della funzionalità.').waitFor();
   assert.deepEqual([requests, await focused(feature)], [[], true]);
   await feature.fill('Pagamenti');
+  // The other view is the same screen: the session stays open, with what was typed.
+  await choose('Vista fisica');
+  await page.getByRole('main', { name: 'Mappa fisica' }).waitFor();
+  assert.deepEqual([await sessionRow.getAttribute('aria-expanded'), await feature.inputValue()], ['true', 'Pagamenti']);
+  await choose('Vista logica');
+  await page.getByRole('main', { name: 'Mappa logica' }).waitFor();
+  assert.deepEqual([await sessionRow.getAttribute('aria-expanded'), await feature.inputValue()], ['true', 'Pagamenti']);
   server.refuses = 'troppe richieste aperte';
   await send.click();
   await said('troppe richieste aperte').waitFor();

@@ -347,11 +347,11 @@ test('a busy server is asked again once by each reader, and said once', async t 
   assert.deepEqual([times(), said(), now().graphLoading], [[1, 1], ['Daodan è occupato, riprovo'], true]);
   t.mock.timers.tick(2000);
   await turn();
-  assert.deepEqual([times(), said()], [[2, 2], ['Daodan è occupato, riprovo']]);  // the one there, again
+  assert.deepEqual([times(), said()], [[2, 2], ['Daodan è occupato, riprovo']]);
   notices.length = 0;
   t.mock.timers.tick(2000);
   await turn();
-  assert.deepEqual([times(), said()], [[3, 3], ['Daodan è occupato, riprovo']]);
+  assert.deepEqual([times(), said()], [[3, 3], []]);  // closed, it is not said again
   free = true;
   t.mock.timers.tick(2000);
   await turn();
