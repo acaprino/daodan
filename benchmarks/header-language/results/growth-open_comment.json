@@ -1,0 +1,410 @@
+{
+ "code": {
+  "commit": "c85c3845298c58f5252e9c54eff9db8e93a741f8",
+  "differs": []
+ },
+ "rows": [
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.456
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.856
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 1.956
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 4.136
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 8.231
+  },
+  {
+   "target": "c",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 3.519,
+   "parse_ms": 3.204472,
+   "err": 2,
+   "missing": 199
+  },
+  {
+   "target": "c",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 8.096,
+   "parse_ms": 7.440828,
+   "err": 2,
+   "missing": 401
+  },
+  {
+   "target": "c",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 20.794,
+   "parse_ms": 19.262273,
+   "err": 2,
+   "missing": 804
+  },
+  {
+   "target": "c",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 35.399,
+   "parse_ms": 32.815395,
+   "err": 2,
+   "missing": 1611
+  },
+  {
+   "target": "c",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 60.685,
+   "parse_ms": 55.928328,
+   "err": 2,
+   "missing": 3225
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 7.427,
+   "parse_ms": 7.263757,
+   "err": 32,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 14.956,
+   "parse_ms": 14.681131,
+   "err": 64,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 32.491,
+   "parse_ms": 31.940292,
+   "err": 126,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 78.914,
+   "parse_ms": 77.9251,
+   "err": 250,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 125.184,
+   "parse_ms": 123.158906,
+   "err": 498,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 2.552,
+   "parse_ms": 2.166499,
+   "err": 2,
+   "missing": 199
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 4.844,
+   "parse_ms": 4.128053,
+   "err": 2,
+   "missing": 401
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 8.906,
+   "parse_ms": 7.730121,
+   "err": 2,
+   "missing": 804
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 20.854,
+   "parse_ms": 17.984856,
+   "err": 2,
+   "missing": 1611
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 36.356,
+   "parse_ms": 31.459045,
+   "err": 2,
+   "missing": 3225
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.012,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.013,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.02,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.026,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.361,
+   "open_at": 0
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 1.79
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "cut:8192",
+   "used": 8186,
+   "ms": 1.783
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "cut:8192",
+   "used": 8186,
+   "ms": 1.74
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 65536,
+   "mode": "cut:8192",
+   "used": 8186,
+   "ms": 1.97
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.017
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.016
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.014
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment",
+   "size": 65536,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.015
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 32.451,
+   "parse_ms": 32.008858,
+   "err": 126,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "cut:8192",
+   "used": 8186,
+   "ms": 31.649,
+   "parse_ms": 31.212046,
+   "err": 125,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "cut:8192",
+   "used": 8186,
+   "ms": 30.003,
+   "parse_ms": 29.40338,
+   "err": 125,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 65536,
+   "mode": "cut:8192",
+   "used": 8186,
+   "ms": 37.875,
+   "parse_ms": 37.35545,
+   "err": 125,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.018,
+   "parse_ms": 0.004278,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.02,
+   "parse_ms": 0.008526,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.012,
+   "parse_ms": 0.003376,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment",
+   "size": 65536,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.014,
+   "parse_ms": 0.003757,
+   "err": 0,
+   "missing": 0
+  }
+ ]
+}

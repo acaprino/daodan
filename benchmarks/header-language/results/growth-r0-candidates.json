@@ -1,0 +1,872 @@
+{
+ "code": {
+  "commit": "3960973d8afb1c4e49d97d0da9d9e0fc72857c63",
+  "differs": []
+ },
+ "rows": [
+  {
+   "target": "r0fix",
+   "kind": "blank_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.499
+  },
+  {
+   "target": "r0fix",
+   "kind": "blank_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1.015
+  },
+  {
+   "target": "r0fix",
+   "kind": "blank_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 1.985
+  },
+  {
+   "target": "r0fix",
+   "kind": "blank_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 3.959
+  },
+  {
+   "target": "r0fix",
+   "kind": "blank_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 7.915
+  },
+  {
+   "target": "r0fix",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "raw",
+   "used": 51200,
+   "ms": 12.404
+  },
+  {
+   "target": "r0fixq",
+   "kind": "blank_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.588
+  },
+  {
+   "target": "r0fixq",
+   "kind": "blank_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1.188
+  },
+  {
+   "target": "r0fixq",
+   "kind": "blank_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 2.287
+  },
+  {
+   "target": "r0fixq",
+   "kind": "blank_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 4.658
+  },
+  {
+   "target": "r0fixq",
+   "kind": "blank_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 9.266
+  },
+  {
+   "target": "r0fixq",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "raw",
+   "used": 51200,
+   "ms": 13.649
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "blank_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.584
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "blank_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1.202
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "blank_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 2.31
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "blank_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 4.641
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "blank_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 9.21
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "raw",
+   "used": 51200,
+   "ms": 14.359
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.037
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.065
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.126
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.25
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.492
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.041
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.076
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.355
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.292
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.603
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.041
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.078
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.145
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.294
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.575
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.041
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.077
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.155
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.294
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.615
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.046
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.09
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.186
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.34
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.679
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.047
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.087
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.169
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.384
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.67
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.042
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.081
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.159
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.307
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.573
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.046
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.081
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.165
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.327
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.635
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.045
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.081
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.162
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.322
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.647
+  },
+  {
+   "target": "r0fix",
+   "kind": "class_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 2.03
+  },
+  {
+   "target": "r0fix",
+   "kind": "class_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 7.382
+  },
+  {
+   "target": "r0fix",
+   "kind": "class_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 28.191
+  },
+  {
+   "target": "r0fix",
+   "kind": "class_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 109.307
+  },
+  {
+   "target": "r0fix",
+   "kind": "class_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 435.07
+  },
+  {
+   "target": "r0fixq",
+   "kind": "class_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 2.092
+  },
+  {
+   "target": "r0fixq",
+   "kind": "class_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 7.502
+  },
+  {
+   "target": "r0fixq",
+   "kind": "class_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 28.271
+  },
+  {
+   "target": "r0fixq",
+   "kind": "class_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 109.523
+  },
+  {
+   "target": "r0fixq",
+   "kind": "class_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 433.987
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "class_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.438
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "class_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.935
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "class_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 1.714
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "class_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 3.497
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "class_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 6.936
+  },
+  {
+   "target": "r0fix",
+   "kind": "nested_brace",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.453
+  },
+  {
+   "target": "r0fix",
+   "kind": "nested_brace",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.895
+  },
+  {
+   "target": "r0fix",
+   "kind": "nested_brace",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 1.794
+  },
+  {
+   "target": "r0fix",
+   "kind": "nested_brace",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 3.582
+  },
+  {
+   "target": "r0fix",
+   "kind": "nested_brace",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 7.212
+  },
+  {
+   "target": "r0fixq",
+   "kind": "nested_brace",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.531
+  },
+  {
+   "target": "r0fixq",
+   "kind": "nested_brace",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1.061
+  },
+  {
+   "target": "r0fixq",
+   "kind": "nested_brace",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 2.083
+  },
+  {
+   "target": "r0fixq",
+   "kind": "nested_brace",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 4.293
+  },
+  {
+   "target": "r0fixq",
+   "kind": "nested_brace",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 8.492
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "nested_brace",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.534
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "nested_brace",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1.115
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "nested_brace",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 2.157
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "nested_brace",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 4.191
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "nested_brace",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 8.306
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_string",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.361
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_string",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.679
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_string",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 1.353
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_string",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 2.737
+  },
+  {
+   "target": "r0fix",
+   "kind": "open_string",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 5.452
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_string",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.397
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_string",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.799
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_string",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 1.608
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_string",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 3.138
+  },
+  {
+   "target": "r0fixq",
+   "kind": "open_string",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 6.488
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_string",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.414
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_string",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.789
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_string",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 1.607
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_string",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 3.183
+  },
+  {
+   "target": "r0fixqc",
+   "kind": "open_string",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 6.075
+  }
+ ]
+}
