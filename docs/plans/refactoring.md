@@ -4,6 +4,8 @@
 
 **Traguardo attualmente aperto:** **T0**.
 
+I rimandi «ex ondata», «ex scelta», «prove» e «Task» vengono dalla spec unica rimossa, che cita a sua volta i documenti precedenti: `git show 66e09dbca~1:docs/specs/2026-11-25-refactoring-completo.md`.
+
 | Traguardo | Che cosa chiude | Dipende da | Stato |
 | --- | --- | --- | --- |
 | **T0** | Baseline verificata su Modal e chiusura contraddizioni codice/doc | — | **APERTO** |
@@ -19,12 +21,12 @@ Nessun riordino della pipeline prima di chiudere T0. Obiettivo: partire da uno s
 
 1. **[misura]** Eseguire la suite intera su Modal sul codice attuale (anagrafica formati, modulo linguaggio, `pipeline_tree.py`) e registrare revisione, comando ed esiti; confermare con una seconda esecuzione.
 2. **[misura]** Chiudere la «Verifica» dello stack dal fork su Modal: nessuna perdita sul corpus, tempo scansione veloce, prova che nulla del progetto gira sull'host con `cli()`/Node veri (rif. commit `614c940`, spec stack dal fork).
-3. **[difetto]** Classificare e risolvere (o documentare con riproduzione) i difetti bloccanti dello stack: test instabile `test_codebase_map_app.py`, `replace => ../local` Go e repo `path` Composer letti come esterni dal fork, 37 marchi senza cornice, Avro duplicato, `technologies.state`.
+3. **[difetto]** Classificare e risolvere (o documentare con riproduzione) i difetti bloccanti dello stack: test instabile `test_codebase_map_app.py`, `replace => ../local` Go e repo `path` Composer letti come esterni dal fork, Avro duplicato, `technologies.state`; marchi che una rigenerazione del registro rovinerebbe (`registry_build.apply_marks` scrive il simbolo di Simple Icons senza la tessera e toglie i file che non riconosce, come quello di `doctrinephp`, e il generatore delle tessere non è nel repository: le 37 tessere mancanti e quella di Doctrine sono state portate a mano il 25 novembre; letto nel codice, rigenerazione non eseguita).
 4. **[accertato nel codice]** Contraddizioni dei vecchi documenti risolte:
    - **Run di lavoro (`snapshot.py refresh`), hook e regole 1–4 review:** **implementati nel codice** (`daodan/core/snapshot.py`: `WORKING_RUN`, `query_gate`, `refresh_working`, `_refresh_locked`; hook `PostToolUse` in `plugins/codebase-map/hooks/hooks.json` -> `daodan mcp --hook`; `tests/test_codebase_map_working_run.py`; regole 1–4 presenti in `review-method/SKILL.md:15-17`, `review-preparation/references/team-review.md:164`, `daodan/review/reviewer-common.md:32-34`, `review-consolidation/references/team-review.md:5`). Esito test da confermare su Modal (punto 1).
    - **Copertura dell'intero sorgente (`whole-source-coverage`):** **Parte A implementata e misurata** (`daodan/core/composition.py`: `GROUP_BYTES`, `pack`, `coverage_scope`, `reviewer_cells`, `coverage_groups`, `bind`, `account`; `tests/test_senior_review_composition.py`; 3 run misurate l'8 novembre 2026 in `benchmarks/whole-source-coverage/README.md:54-86`). **Parte B (riuso celle) e prova preparazione 3 richieste:** non implementate / non eseguite (restano in [`docs/backlog.md`](../backlog.md)).
    - **Task 12 modello di build (pre-mappa):** **base implementata** (`daodan/core/premap/__init__.py` con 35 `SOURCES`, `join`, `derive`, `write`, `EXECUTES`, `python_runs`, 25 test `tests/test_codebase_map_premap*.py`; già gestiti `WRAPPER_SELF`, `WRITTEN_ELSEWHERE`, vincoli runtime come `toolchains` in `renovate.py`, `libs.versions.toml` in `jvm_files.py`, `Directory.Packages.props` in `project_files.py`, `external_packages` PyPI e `angular-project` in `module_graph.py`). **Restano aperti in T1 (punto 10):** `external_packages` oltre PyPI (Go/Maven/Gradle/Cargo/npm), tipo/campo dedicato per BOM/`platform()`/POM genitore, scope/extra toolchain residui e separazione delle 35 sorgenti autonome da `premap.SOURCES`.
-5. **Allineare documentazione operativa:** rigenerare `docs/plugins/codebase-map-supporto.md` (`support_table.py build`), portare `docs/pipeline/` nel repo, aggiornare i rimandi a 8 step in `README.md` e `docs/plugins/codebase-map.md`.
+5. **Allineare documentazione operativa:** rigenerare `docs/plugins/codebase-map-supporto.md` (`support_table.py build`), aggiornare i rimandi a 8 step in `README.md` e `docs/plugins/codebase-map.md`.
 6. **Fissare il campione di riferimento** (1 stack + 1 progetto reale con domande verificate, inclusi casi con callback, overload e dispatch dinamico per `link_calls`) e il protocollo del confronto cieco prima di aprire T1.
 7. **[deciso] Fissare il criterio di isolamento rete:** nessuna uscita diretta dal container, solo proxy verso registri autorizzati (inclusi redirect, DNS e IP letterali); il parser dei lockfile resta controllo preventivo. Se T0 scarica dipendenze, eseguire questo test già in T0; altrimenti collaudarlo in T3 prima del primo uso con rete.
 
@@ -40,13 +42,13 @@ Accorpa le ex ondate 1–4. Fuori: SCIP, Kiri, esecuzione dinamica e nuova UI.
 1. **[deciso]** Regola `.h` in `languages/detect/rules/` su tree-sitter con tetto deterministico (aggiornare `benchmarks/header-language`).
 2. **[deciso]** Riconoscimento per nome file (`Dockerfile`, `Makefile`) nello stesso formato.
 3. Tetto ai byte letti per regola e prova di costo lineare; fix **[difetto]** regola `.ts` su `<?xml` / `<!DOCTYPE` (112 divergenze).
-4. **[misura]** Gate su 180 progetti + piano 122 progetti invariato su Modal; verificare che nessun percorso invochi `go-enry`, poi rimuoverlo dall'immagine.
+4. **[misura]** Gate su 180 progetti + piano 122 progetti invariato su Modal. `go-enry` esce dall'immagine solo se la scelta aperta qui sotto lo toglie, dopo aver verificato che nessun percorso lo invochi (oggi `premap/__init__.py` lo usa per una lacuna).
 
 ### `read_code` — SQL e PL/SQL
 5. **[spike]** Provare una grammatica `tree-sitter` SQL su fixture reali (package body, trigger, quoting, SQL dinamico) verificando oggetti estratti e intervalli sorgente prima di estendere i lettori custom. Usare `SQLGlot` (SQL) e `ANTLR grammars-v4` (PL/SQL, comunitaria) solo come comparatori: l'adozione primaria richiede deroga esplicita al vincolo tree-sitter.
 
 ### `recognize_stack` e `find_modules` (ex ondata 2)
-6. **[deciso] / [misura]** Prima di aggiungere le 10 nuove famiglie di regole al fork `stack-analyser`, eseguire un confronto affiancato con **Syft** su monorepo e lockfile (tenendo il classificatore proprio per build system e moduli), insieme a `benchmarks/stack-build-tools/` su Modal.
+6. **[deciso] / [misura]** Prima di aggiungere le 10 nuove famiglie di regole al fork `stack-analyser`, eseguire un confronto affiancato con **Syft** su monorepo e lockfile (tenendo il classificatore proprio per build system e moduli), insieme a `benchmarks/stack-build-tools/` (da creare) su Modal.
 7. **[deciso]** Aggiungere al fork `stack-analyser` (rilascio `.6`) solo ciò che il confronto del punto 6 lascia scoperto: CMake, Bazel, Meson, Make, autotools, sbt, .NET SDK, Mix, Nx (`project.json`), Python su `pyproject.toml`/`requirements.txt`.
 8. **[deciso]** Creare `daodan/data/build-tools.json` con test di coerenza rispetto agli adattatori.
 9. **[deciso]** `recognize_stack` gira per primo su `list_files` (senza moduli); `find_modules` gira dopo per ogni strumento trovato e assegna le tecnologie ai moduli. Nessuna sorgente in `premap.SOURCES` decide più da sé se applicarsi.
@@ -81,7 +83,7 @@ Accorpa la ex ondata 5 e la parte statica della ex ondata 8.
 2. Aggiornamento incrementale indice SCIP (test su file cambiato, misura su `chi` e `tududi`, rimozione `engine-answers.sqlite`) e richieste mirate (`codebase_map_index` con `targets`, rimozione passo per posizione e `--engine scip`).
 3. JVM (`javapoet`, `klaxon`, rimozione `JavaEngine`/`KotlinEngine`/`KotlinResolver.kt`), C/C++ (immagine unica + `FETCHCONTENT_SOURCE_DIR_*` **[deciso]**, `zlib`, `tinyxml2`), fogli di stile.
 4. Pulizia doppioni (secondo Pyright, `typescript_unbound.js`), indagine **[difetto]** timeout ~6 min su 1/4 passaggi staccati e 154 chiamate `self.metodo()`, chiusura eventuale migrazione SQL/PL-SQL dallo spike di T1.
-5. **[deciso]** Unione statica in `assemble_graph` (archi cross-modulo, ingressi legati alle definizioni, motore generale dei legami da `feat/link-key-shape`, test che il codice dei legami non nomini framework).
+5. **[deciso]** Unione statica in `assemble_graph` (archi cross-modulo, ingressi legati alle definizioni, motore generale dei legami, test che il codice dei legami non nomini framework). Il ramo `feat/link-key-shape`, dove la spec rimossa collocava il motore generale, non è in questo repository né sul remoto; oggi `flows.py` accoppia una richiesta alla sua rotta per metodo e schema del percorso.
 
 **Cancello T2:** soglie SCIP (JVM, C/C++, CSS) registrate nei README dei benchmark; passo per posizione rimosso; *evidence model* e vista statica verificati sul campione fissato in T0; zero nuove regressioni rispetto a T1.
 

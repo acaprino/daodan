@@ -27,11 +27,13 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 | 7 | `run_and_observe` | Ciò che viene chiamato davvero | Comandi di test/avvio/build: da `find_modules`. Pagine da aprire: da `find_entry_points`. Grafo statico: da `link_calls` | Archi osservati; controlli premuti, con le funzioni partite |
 | 8 | `assemble_graph` | L'unione, e ciò che manca | Tutto | Grafo completo: archi fra moduli, ingressi uniti alle definizioni, osservato contro provato, lacune |
 
-- **La pre-mappa è il modello di build**, uscita di `find_modules`: non tiene più rotte, pagine ed eventi. Il lanciatore nel container (`premap/container_runner.py`) diventa un servizio comune a `find_modules` e `find_entry_points`.
+- **La pre-mappa è il modello di build**, uscita di `find_modules`: non tiene più rotte, pagine ed eventi. Il lanciatore nel container (`premap/container_runner.py`) esce dalla pre-mappa ed è un servizio comune (vedi «Servizi comuni»).
 - **Chi riconosce è uno solo.** Uno strumento di build o un framework che il fork `stack-analyser` non conosce si aggiunge al fork. In Daodan `daodan/data/build-tools.json` lega ogni voce dello stack all'adattatore di `find_modules` che la usa.
 - **Che cosa usa ogni step**, per linguaggio, strumento di build e framework: `docs/pipeline/`, generata dalle dichiarazioni del codice (`daodan/core/pipeline_tree.py`).
 
 ### Strumenti nativi, Noir e sorgenti dedicate
+
+**Noir** è lo scanner di rotte che gira nel container (`premap/noir.py`).
 
 | Famiglia | Esempi | Che cosa dà | Step |
 | --- | --- | --- | --- |
@@ -51,6 +53,24 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 - **Chi offre la rotta:** strumento del framework o Noir (`find_entry_points`).
 - **Chi la chiama:** compilatore del linguaggio fino a una funzione di `daodan/data/http-clients.json` (`link_calls`). Un wrapper del progetto si prova dai dati del compilatore, non dal nome.
 - **Unione:** in `assemble_graph` dove percorso e metodo coincidono. Lo stesso vale per eventi, code e tabelle: un adattatore per tipo di legame, senza nominare framework nel codice dei legami.
+
+### Nodi del grafo: tipo e logo
+
+L'anagrafica delle tecnologie (`daodan/data/service-registry.json`) dà a ogni framework, libreria, strumento e servizio un tipo di nodo e, dove la voce li ha, una categoria e un logo. Senza `category`, una voce di `kind` `service` vale `service` e le altre `framework`. Il grafo consulta l'anagrafica, senza nominare tecnologie nel codice.
+
+| Che cosa | Nel grafo | Tipo di nodo |
+| --- | --- | --- |
+| Voce `service` che un file dichiara | Nodo esterno con il logo della voce; arco `uses` da ogni file che la mostra (`uncertain` dove la menziona soltanto). Una voce solo menzionata nel progetto non è un nodo | `type` della voce |
+| Voce `framework` o `library` | Non è un nodo: sta nel gruppo i cui file la dichiarano, con il suo logo. Il gruppo porta il logo del framework quando ne dichiara uno solo | — |
+| Voce `tool` | Né nodo né elenco del gruppo | — |
+| Modulo esterno dichiarato dal progetto | Nodo esterno; se ha l'id di una voce `service`, prende tipo e logo della voce | `servizio o API` |
+| Funzione di una rotta; funzione che lega un'azione dell'utente | Il simbolo, se non ha già un tipo | `servizio o API`; `schermata` |
+| Store | Nodo `store` | `node_type` della regola di collegamento |
+
+- **Tipi di nodo:** elenco chiuso `NODE_TYPES` (`daodan/core/flows.py`): `attore`, `schermata`, `funzionalità`, `servizio o API`, `gateway`, `database`, `coda`, `autenticazione`, `dispositivo`, `filesystem`, `altro`. Un nodo di cui non si sa il tipo non ne ha.
+- **Logo di una tecnologia:** una tessera di Daodan in `daodan/data/marks/`; i servizi di AWS, Azure e Google Cloud hanno pittogrammi di Daodan.
+- **Senza logo:** il nodo ha l'icona del suo tipo (`viewer/src/icons.ts`). `filesystem` e `altro` prendono quella dell'entità, `funzionalità` nessuna.
+- **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`), ma oggi la vista (`system_levels.view`) non passa il logo.
 
 ### Superfici attive e regole comuni
 
@@ -96,7 +116,7 @@ Ogni anagrafica ha un controllo automatico di coerenza con il codice:
 | `file-formats.json` | Formati accettati, linguaggi, cartelle/nomi esclusi | `list_files` | Nel codice |
 | `linguist-catalog.json` | Nomi Linguist per ogni formato accettato | `list_files` | Nel codice |
 | `language-rules.toml` | Regole di disambiguazione estensioni condivise | `list_files` | Nel codice (mancano `.h` e nomi file) |
-| `service-registry.json`, `registry-additions.json` | Metadati tecnologie (+ `surface`) | `recognize_stack`, UI | Nel codice (senza `surface`) |
+| `service-registry.json`, `registry-additions.json`, `marks/` | Di ogni tecnologia nome, `kind` (`service`, `project`), tipo di nodo e sito; dove ci sono, `category` (`framework`, `library`, `tool`, `service`) e logo (+ `surface`) | `recognize_stack`, il grafo, UI | Nel codice (senza `surface`) |
 | `build-tools.json` | Strumenti di build/toolchain -> adattatore | `find_modules` | Da creare (T1) |
 | `package-managers.json` | Registri pacchetti consentiti nella preparazione | Preparazione container | Nel codice |
 | `entry-queries.json` | Query tree-sitter per ingressi | `find_entry_points` | Nel codice |
@@ -104,7 +124,7 @@ Ogni anagrafica ha un controllo automatico di coerenza con il codice:
 
 ### Servizi comuni
 
-- **Motore di container:** isola sempre il codice del progetto.
+- **Motore di container:** isola sempre il codice del progetto. Su Windows è il **Kiri** di Daodan, in una distribuzione WSL 2 propria; altrove è quello dell'utente (`docker`, poi `podman`).
 - **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy sui soli registri ammessi, strumenti verificati per sha256; tutto il resto gira senza rete. **Controllo decisivo sulla rete `[deciso]`:** nessuna uscita diretta dal container, solo proxy verso registri autorizzati (inclusi redirect, DNS e IP letterali); il parser dei lockfile resta un controllo preventivo, non il confine di isolamento.
 - **Lanciatore dei comandi:** servizio comune a `find_modules`, `find_entry_points`, `link_calls` e `run_and_observe`.
 - **Giornale:** traccia inizio, avanzamento, lacune e fine di ogni step e adattatore.
