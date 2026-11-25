@@ -82,7 +82,7 @@ def text(value: dict) -> str:
 
 
 def check(value: object | None = None) -> list[str]:
-    """What breaks the rules of register and catalogue, one line each; empty when they hold."""
+    """What breaks the rules of register, catalogue and language rules, one line each; empty when they hold."""
     import languages
     if value is None:
         value = json.loads(PATH.read_text(encoding="utf-8"))
@@ -112,7 +112,7 @@ def check(value: object | None = None) -> list[str]:
         if names and not set(names) & set(file_formats.LINGUIST_NAMES[language]):
             problems.append(f"{extension}: read as {language}, which the register does not join to any of "
                             f"Linguist's names for it ({', '.join(names)})")
-    return problems
+    return problems + languages.detect.problems(catalogue=value.get("extensions"))
 
 
 def main(argv: list[str] | None = None) -> int:

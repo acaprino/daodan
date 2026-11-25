@@ -69,3 +69,55 @@ def test_register_is_part_of_the_parser_fingerprint(tmp_path, monkeypatch):
     changed.write_text(file_formats.PATH.read_text(encoding="utf-8") + "\n", encoding="utf-8")
     monkeypatch.setattr(file_formats, "PATH", changed)
     assert parser_identity.parser_fingerprint() != before
+
+
+# ---------------------------------------------------------------- the rules of the content
+
+import languages  # noqa: E402
+from languages import detect as detection  # noqa: E402  (the package: `languages` does not rebind the name)
+
+CARD = {"id": "ts.sample", "extensions": [".ts"], "language": "XML", "test": "starts-with", "texts": ["<?xml"],
+        "why": "a sample", "source": "this test", "yes": ["<?xml?>"], "no": ["let a = 1;"]}
+
+
+def test_every_rule_holds_on_its_own_samples():
+    assert detection.problems() == []
+    assert {rule.id for group in detection.RULES.values() for rule in group} >= {
+        "ts.xml-document", "sql.oracle-words", "sql.anchored-type"}
+
+
+def test_a_shared_extension_is_decided_by_the_rule_that_answers_and_else_by_the_extension():
+    xml = detection.detect(Path("app_it.ts"), '<?xml version="1.0"?>\n<!DOCTYPE TS>\n<TS/>\n')
+    assert xml == detection.Detection(None, "ts.xml-document")  # XML: a name the register joins to no language
+    assert detection.detect(Path("a.ts"), "const a = 1;\n") == detection.Detection("typescript", "extension")
+    assert detection.detect(Path("a.DDL"), "x emp.sal%TYPE;") == detection.Detection("plsql", "sql.anchored-type")
+    assert detection.detect(Path("a.sql"), "PRAGMA AUTONOMOUS_TRANSACTION;").decided_by == "sql.oracle-words"
+    assert detection.detect(Path("a.sql")) == detection.Detection("sql", "extension")  # no text: no rule is asked
+    assert detection.detect(Path("a.tsx"), "<?xml?>").language == "typescript"  # the rule is `.ts`'s only
+    assert detection.detect(Path("a.zig"), "const a = 1;") == detection.Detection(None, "extension")
+    assert languages.detect_language(Path("a.sql"), "begin dbms_output.put_line(1); end;") == "plsql"
+
+
+@pytest.mark.parametrize("change,field", [
+    ({"pattern": "x"}, "pattern"), ({"test": "matches"}, "test"), ({"texts": []}, "texts"), ({"no": [1]}, "no"),
+    ({"ignore-case": "yes"}, "ignore-case"), ({"extensions": [".zig"]}, "extensions"), ({"language": None}, "language")])
+def test_a_rule_outside_the_schema_does_not_load_and_the_error_names_the_field(change, field):
+    with pytest.raises(ValueError, match=f"ts.sample: .*`{field}`"):
+        detection.load([{**CARD, **change}], classes=())
+
+
+def test_two_rules_with_one_id_do_not_load():
+    with pytest.raises(ValueError, match="two rules"):
+        detection.load([CARD, CARD], classes=())
+
+
+def test_rules_that_contradict_each_other_or_the_catalogue_are_named():
+    first = {**CARD, "id": "ts.first", "language": "TypeScript", "texts": ["<?"]}
+    rules = detection.load([first, CARD], classes=())
+    assert any(line.startswith("ts.sample: on .ts a `yes` sample is decided by ts.first")
+               for line in detection.problems(rules))
+    rules = detection.load([{**CARD, "no": ["<?xml too"]}], classes=())
+    assert any(line.startswith("ts.sample: answers a `no` sample") for line in detection.problems(rules))
+    rules = detection.load([{**CARD, "language": "Ruby"}], classes=())
+    assert detection.problems(rules, {".ts": ["TypeScript", "XML"]}) == [
+        "ts.sample: Linguist does not list Ruby for .ts (TypeScript, XML)"]

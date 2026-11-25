@@ -1,6 +1,17 @@
 # Il linguaggio dei file: un modulo di Daodan con il catalogo di Linguist
 
-**Stato:** ridotta dal proprietario il 25 novembre 2026, dopo la [prova dei `.h`](../../benchmarks/header-language/README.md): scelta «T», l'albero sintattico per C e C++ nei `.h`. Entra solo quel pezzo: le altre regole di oggi e le 63 estensioni restano, e il modulo con il catalogo di Linguist non si fa, perché aggiungerebbe codice senza cambiare le risposte. Il resto di questa spec è il disegno di prima.
+**Stato:** ripristinata dal proprietario il 25 novembre 2026: la riduzione dello stesso giorno («il modulo con il catalogo di Linguist non si fa») è ritirata. Linguist è la base di partenza e da lì si sviluppa un modulo nostro, in un formato standard che regge ogni linguaggio, con controlli ad hoc per le estensioni che più linguaggi condividono. Resta la scelta «T» per i `.h` (sotto).
+
+**Nel codice dal 25 novembre:** il catalogo, il modulo e le regole di `.ts` e `.sql`. Dove sta ogni pezzo, perché le anagrafiche sono dati globali in `daodan/data/` (richiesta del proprietario):
+
+| Pezzo della struttura | Dov'è |
+| --- | --- |
+| `catalog.json` | `daodan/data/linguist-catalog.json`, scritto da `daodan/core/format_catalog.py` dal gem `github-linguist` 9.7.0 |
+| Le estensioni accettate e la mappa verso i linguaggi di Daodan | `daodan/data/file-formats.json` (`daodan/core/file_formats.py`) |
+| `rules.toml` | `daodan/data/language-rules.toml`. Le regole rispondono con il nome di Linguist; l'anagrafica lo lega al linguaggio di Daodan |
+| `rules/` e `detect.py` | `daodan/core/languages/detect/` |
+
+**Da fare:** la regola dei `.h` è ancora in `languages.detect_language`, dove `benchmarks/header-language` la misura: diventa una classe di `detect/rules/` quando entra «T». Il riconoscimento per nome di file, il tetto ai byte, la corsa settimanale e i gate su Modal di «Come si prova» non ci sono. La regola `.ts` nuova non chiede la fine di parola dopo `<?xml` e `<!DOCTYPE`: è l'unica risposta che cambia, su testi che non sono TypeScript (112 casi su 186.124 generati).
 
 ## Perché
 

@@ -32,6 +32,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken
+from .detect import detect as _detect
 
 __all__ = [
     "LanguageAdapter",
@@ -93,33 +94,12 @@ SUPPORTED_LANGUAGES: tuple[str, ...] = (
 )
 
 
-# File extension to language map, from Daodan's register of file formats (`data/file-formats.json`). PL/SQL
-# detection also looks at content (see detect_language) because .sql is ambiguous between SQL and PL/SQL; a `.h`
-# header is C unless its text says C++ or Objective-C. Markup gives the rules of its `<style>` blocks; indented
-# Sass is read as the SCSS its indentation implies, and PostCSS sheets are CSS.
+# File extension to language map, from Daodan's register of file formats (`data/file-formats.json`). An extension
+# more than one language shares (`.sql`, `.ts`, `.h`) is decided on the content (see detect_language). Markup gives
+# the rules of its `<style>` blocks; indented Sass is read as the SCSS its indentation implies, and PostCSS sheets
+# are CSS.
 SUPPORTED_EXTENSIONS: dict[str, str] = SOURCES
 
-
-# Oracle-specific markers. We intentionally do NOT match generic "begin",
-# "exception", "create or replace function" - PostgreSQL plpgsql uses those
-# too. PL/SQL is only detected when the source uses Oracle-specific syntax.
-#
-# `%TYPE` and `%ROWTYPE` use a word-boundary regex so a SQL `LIKE '%type%'`
-# pattern (common in pg_catalog queries) does NOT false-route to PL/SQL.
-_PLSQL_LITERAL_MARKERS = (
-    "create or replace package",
-    "create or replace type body",
-    "dbms_output",
-    "utl_file",
-    "utl_http",
-    "bfilename",
-    "extproc",
-    "pragma autonomous",
-    "pragma serially_reusable",
-    "pragma exception_init",
-    "pragma restrict_references",
-)
-_PLSQL_ROWTYPE_RE = re.compile(r"\w%(?:rowtype|type)\b", re.IGNORECASE)
 
 # A `.h` header is C++ when its text, comments and string literals left out, has
 # a construct C does not: a namespace body (its name nested too, `a::b`), a class
@@ -140,20 +120,17 @@ _CPP_HEADER_RE = re.compile(
     re.MULTILINE,
 )
 _OBJC_HEADER_RE = re.compile(r"^[ \t]*@(?:interface|implementation|protocol|class|property|end)\b", re.MULTILINE)
-# A `.ts` file that is an XML document is a Qt Linguist translation (`<!DOCTYPE TS>`), not TypeScript.
-_XML_RE = re.compile(r"\s*<(?:\?xml|!DOCTYPE)\b")
 
 
 def detect_language(file_path: Path, content: str | None = None) -> str | None:
     """
-    Detect the language of a file by extension. For ambiguous .sql files,
-    inspect content for PL/SQL-specific markers; for .h and .ts files, for
-    another language's (C++, Objective-C, XML).
+    The language of a file: its extension, then the rules of that extension on its content (`languages.detect`),
+    then the extension's own language. Returns the canonical language identifier, or None if unsupported.
 
-    Returns the canonical language identifier or None if unsupported.
+    The `.h` rule stays here until the syntax-tree way replaces it (spec of 24 November, «T»):
+    `benchmarks/header-language` measures it where it is, and it then becomes a class of `detect/rules/`.
     """
     suffix = file_path.suffix.lower()
-    lang = SUPPORTED_EXTENSIONS.get(suffix)
 
     if suffix == ".h" and content is not None:
         code = _C_NOISE_RE.sub(" ", content)
@@ -161,18 +138,8 @@ def detect_language(file_path: Path, content: str | None = None) -> str | None:
             return None
         if _CPP_HEADER_RE.search(code):
             return Language.CPP
-    if suffix == ".ts" and content is not None and _XML_RE.match(content):
-        return None
 
-    # Disambiguate .sql vs PL/SQL by content if provided.
-    if lang == Language.SQL and content is not None:
-        lowered = content.lower()
-        if any(marker in lowered for marker in _PLSQL_LITERAL_MARKERS):
-            return Language.PLSQL
-        if _PLSQL_ROWTYPE_RE.search(content):
-            return Language.PLSQL
-
-    return lang
+    return _detect(file_path, content).language
 
 
 def get_adapter(language: str) -> LanguageAdapter:
