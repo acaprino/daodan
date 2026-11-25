@@ -1,5 +1,7 @@
 # Piano: il grafo del codice dall'indice del progetto
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 2, 5: lo stato di una voce si aggiorna là.
+
 **Stato:** approvato il 14 novembre 2026; risposte del proprietario nella sezione 6.
 C e C++ aggiunti il 14 novembre 2026 su richiesta del proprietario: task 10.
 Fogli di stile e loro dialetti aggiunti il 14 novembre 2026 su richiesta del proprietario: task 11.

@@ -1,5 +1,7 @@
 # Piano: mappa del sistema, parte 1
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 8, 10: lo stato di una voce si aggiorna là.
+
 > **Per chi esegue:** un task alla volta, nell'ordine; segnare solo i passi verificati. Sub-skill: `superpowers:executing-plans` oppure `superpowers:subagent-driven-development`.
 
 **Obiettivo:** Daodan produce e verifica la mappa del sistema di un progetto (nodi con nome, flussi, livelli) e misura quanto costa e quanto è giusta.

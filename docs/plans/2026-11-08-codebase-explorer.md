@@ -1,5 +1,7 @@
 # Piano: esploratore visuale della codebase
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondata 10: lo stato di una voce si aggiorna là.
+
 > **Per chi esegue:** usare superpowers:subagent-driven-development o superpowers:executing-plans, un task alla volta; segnare solo i passi verificati.
 
 **Obiettivo:** Codebase Map esporta un run in un file `daodan/visual@1` e un viewer locale lo rende navigabile nelle viste Logica e Fisica, con ispettore, filtri ed evidenze, senza flussi.

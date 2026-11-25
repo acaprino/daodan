@@ -1,5 +1,7 @@
 # Piano: passo dinamico in un container
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 6, 7: lo stato di una voce si aggiorna là.
+
 Eseguire i task nell'ordine e segnare solo i passi verificati. La Parte A misura senza toccare i plugin; la Parte B resta subordinata alla misura e al via dell'utente.
 
 **Obiettivo:** sapere quante chiamate senza risposta ricevono una destinazione quando i test del progetto girano in un container, e a quale costo; poi, se la misura lo giustifica, portare l'operazione e gli archi osservati in Codebase Map.

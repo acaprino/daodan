@@ -1,5 +1,7 @@
 # Risoluzione delle chiamate: motore di default e metrica
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondate 2, 5: lo stato di una voce si aggiorna là.
+
 Data: 8 novembre 2026.
 
 **Stato:** applicata in `plugins/codebase-map`, non ancora committata. Misurata su Daodan stesso. I requisiti 23 e 24 sono applicati. La copertura dipende dalle prove fornite dal motore; i benchmark completi dei progetti vanno rimisurati.

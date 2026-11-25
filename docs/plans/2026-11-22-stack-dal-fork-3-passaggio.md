@@ -1,5 +1,7 @@
 # Stack dal fork, piano 3 di 3: il passaggio
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 0, 2: lo stato di una voce si aggiorna là.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Il passo `stack` di Daodan riconosce solo attraverso il fork di stack-analyser, in entrambe le scansioni; ogni segno porta la sua fonte e la scansione da cui viene; il registro resta come anagrafica.

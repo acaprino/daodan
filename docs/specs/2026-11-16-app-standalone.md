@@ -1,5 +1,7 @@
 # Daodan standalone: confini applicativi
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 10: lo stato di una voce si aggiorna là.
+
 **Stato:** proposta tecnica sulla destinazione concordata. Questo documento definisce i confini; server applicativo, coordinatore e adattatori dei motori restano da implementare.
 
 ## Problema

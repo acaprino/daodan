@@ -1,5 +1,7 @@
 # Piano: la pipeline intera, dall'albero sintattico alla ricerca
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 3, 5, 6: lo stato di una voce si aggiorna là.
+
 **Obiettivo:** ogni pezzo dei due giorni attaccato a un passo che Daodan ha già, in ordine, e una prova che rifà tutto da zero sui cinque casi.
 **Vincoli:** quelli del [piano del 19 novembre](2026-11-19-verso-i-riferimenti.md#vincoli); in più, nessun pezzo legge o installa di nuovo ciò che un passo già legge o installa.
 

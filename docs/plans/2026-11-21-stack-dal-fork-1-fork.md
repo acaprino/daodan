@@ -1,5 +1,7 @@
 # Stack dal fork, piano 1 di 3: il fork
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 0, 2: lo stato di una voce si aggiorna là.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Portare `acaprino/stack-analyser` a un rilascio che Daodan può lanciare in entrambe le scansioni come unico riconoscitore: test verdi, una prova con la sua fonte per ogni tecnologia, le dichiarazioni di altri strumenti in ingresso, il perimetro deciso da chi lancia, un avvio sotto il secondo, le regole che oggi ha solo il registro di Daodan, un pacchetto che gira senza installare nulla.

@@ -1,5 +1,7 @@
 # Interfacce del progetto: schermate come nodi, comandi di build e avvio, esecuzione web
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 7: lo stato di una voce si aggiorna là.
+
 **Stato:** proposta, 19 novembre 2026, riscritta lo stesso giorno. Nulla è applicato. Allineata il 20 novembre alle decisioni del proprietario di quei due giorni (1.6, 3.6, 6.5, 7.1, 7.4); ogni scelta rimanda al suo motivo, in «Motivi delle scelte». Usa le parole di [Flussi e mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md) (nodo, tipo di nodo, ingresso, estremi, candidato) e completa il [registro dell'esecuzione](2026-11-19-esecuzione-del-programma.md). Le piattaforme rimandate stanno nella [roadmap](../roadmap.md).
 
 Daodan deve dire, senza eseguire codice del progetto: quali schermate ha il progetto, da dove cominciano, a che cosa sono collegate, e con quali comandi dichiarati si compilano e si avviano. Una schermata è un nodo del grafo, perché un flusso ci entra o ci esce. Non è un'etichetta su un pacchetto: il modulo che la toolchain vede e la parte dell'app che una persona nomina sono due cose diverse.

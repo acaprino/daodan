@@ -1,5 +1,7 @@
 # Registro dell'esecuzione: come funziona il programma, visto girare
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 7: lo stato di una voce si aggiorna là.
+
 **Stato:** proposta, 19 novembre 2026. Nulla è applicato. Allineata il 20 novembre alle decisioni del proprietario di quel giorno (sezione 4); ogni scelta rimanda al suo motivo, in «Motivi delle scelte». È la «spec a parte» delle review dinamiche che la [spec del passo dinamico](2026-11-12-passo-dinamico.md) annuncia nella sezione 6, e ne riusa container, registri e fatti osservati.
 
 Daodan deve saper rispondere a due domande che oggi restano aperte: «che cosa attraversa davvero un'esecuzione: quali funzioni, classi, file, processi, query e connessioni, e in che ordine?» e «la lacuna che un revisore ha dichiarato si chiude guardando il programma girare?».

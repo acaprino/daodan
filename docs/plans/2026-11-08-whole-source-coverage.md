@@ -1,5 +1,7 @@
 # Piano: review dell'intero sorgente con copertura esplicita
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 Eseguire i task nell'ordine e segnare solo i passi verificati. La Parte A produce una review completa; la Parte B resta subordinata alle misure e al via dell'utente.
 
 **Obiettivo:** dalla richiesta, anche incompleta, e dal contesto del progetto la preparazione ricava i sorgenti da esaminare e i controlli pertinenti. Dichiara i due perimetri e procede; chiede chiarimenti solo per alternative che cambiano sostanzialmente correttezza, ampiezza o costo, proseguendo sulle parti indipendenti già chiare. La review `branch` con base `content` divide i file in gruppi e restituisce problemi trovati, controlli conclusi e lavoro rimasto aperto. Nei dati, una `cella` è la coppia file × reviewer e un `job` è l'incarico su un gruppo.

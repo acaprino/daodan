@@ -1,5 +1,7 @@
 # Stack dal fork, piano 2 di 3: Daodan dietro il benchmark
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 0, 2: lo stato di una voce si aggiorna là.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Daodan sa scaricare e lanciare il rilascio fissato del fork senza eseguire nulla del progetto, e un benchmark dice, progetto per progetto, che cosa cambierebbe in `technologies.json` e quanto costa la scansione veloce. Il prodotto continua a riconoscere dal registro.

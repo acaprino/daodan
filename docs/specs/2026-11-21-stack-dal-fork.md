@@ -1,5 +1,7 @@
 # Stack dal fork di stack-analyser
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondate 0, 2: lo stato di una voce si aggiorna là.
+
 **Stato:** quarta stesura, approvata dal proprietario il 21 novembre 2026 insieme alle «Scelte di chi scrive». La stesura precedente è stata rivista in [`docs/reviews/2026-11-21-stack-dal-fork.md`](../reviews/2026-11-21-stack-dal-fork.md): questa ne risolve i rilievi B1, B2 e M1–M7. Il processo com'è nel codice: [Codebase Map, «Lo step `stack`»](../plugins/codebase-map.md#lo-step-stack).
 
 Al 24 novembre 2026:

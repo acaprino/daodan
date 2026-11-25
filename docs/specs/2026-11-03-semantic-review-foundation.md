@@ -1,5 +1,7 @@
 # Codebase Map e review semantica
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 Data: 3 novembre 2026.
 
 **Perimetro:** due soli proprietari, Codebase Map e senior-review. Semplicità, portabilità e riduzione dei token sono obiettivi da misurare.

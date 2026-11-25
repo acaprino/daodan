@@ -1,5 +1,7 @@
 # Subproject dimostrativo per scope resolution e ricerca per intent
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 Data: 4 novembre 2026.
 
 **Stato:** proposta, in attesa di approvazione.

@@ -1,5 +1,7 @@
 # Ingressi e scoperta dei flussi
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondate 3, 7, 8: lo stato di una voce si aggiorna là.
+
 **Stato:** Parte della [spec dei flussi e della mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), divisa per aspetto il 20 novembre 2026 su richiesta del proprietario. Parole e Principi sono quelli della spec della mappa. I numeri di sezione, di motivo, di limite e di decisione sono rimasti gli stessi: «6.5», «7.3» e «motivo 6» si citano come prima. Una sezione che qui manca è nelle altre spec: la [mappa](2026-11-18-flussi-e-mappa-del-sistema.md) (1–5, 6.1–6.4, 8–10), [ricerca dei flussi e pacchetto di una review](2026-11-20-ricerca-e-pacchetto-di-review.md) (3.8, 11, 12), la [pipeline di analisi](2026-11-15-pipeline-di-analisi.md) (preparazione e indicizzatori). Qui: come la macchina legge gli ingressi (un controllo dell'interfaccia, una rotta, un comando, un orario e gli altri tipi), che cosa dà al modello e come si scoprono i flussi. **Piano:** [ingressi e flussi](../plans/2026-11-20-ingressi-e-flussi.md).
 
 ## Stato verificato il 21 novembre 2026

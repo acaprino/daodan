@@ -1,5 +1,7 @@
 # Ricerca dei flussi e pacchetto di una review
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 **Stato:** Parte della [spec dei flussi e della mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), divisa per aspetto il 20 novembre 2026 su richiesta del proprietario. Parole e Principi sono quelli della spec della mappa. I numeri di sezione, di motivo, di limite e di decisione sono rimasti gli stessi: «3.8», «11.6» e «motivo 12» si citano come prima. Una sezione che qui manca è nelle altre spec: la [mappa](2026-11-18-flussi-e-mappa-del-sistema.md) (1–10), [ingressi e scoperta dei flussi](2026-11-20-ingressi-e-scoperta-dei-flussi.md) (6.5–6.8, 7), la [pipeline di analisi](2026-11-15-pipeline-di-analisi.md) (preparazione e indicizzatori). Qui: l'anagrafica dei flussi e i loro legami, la ricerca che da una richiesta in parole trova il flusso, il modulo logico o il componente, il perimetro di una review e dove serve l'embedder. Se unità e flussi fanno trovare più difetti si misura nella [fase 3](2026-11-09-flows-in-review.md). **Piano:** [ricerca e pacchetto di review](../plans/2026-11-20-ricerca-e-pacchetto-di-review.md).
 
 ## Stato al 20 novembre 2026

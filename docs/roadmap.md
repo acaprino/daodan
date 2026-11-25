@@ -1,5 +1,7 @@
 # Roadmap di Daodan
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](specs/2026-11-25-lavoro-residuo-a-ondate.md), ondata 7: lo stato di una voce si aggiorna là.
+
 Aggiornata al 19 novembre 2026. Distingue ciò che è in uso nel repository, ciò che è specificato per le prossime iterazioni e ciò che è rimandato come lacuna dichiarata. Vale ovunque la regola invalicabile di [`AGENTS.md`](../AGENTS.md): nessun codice, build, test o interfaccia del progetto analizzato gira mai sull'host, nemmeno su un browser o emulatore installato sulla macchina dell'utente.
 
 ## Stato generale dei filoni

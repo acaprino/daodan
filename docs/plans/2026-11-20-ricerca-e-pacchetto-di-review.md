@@ -1,5 +1,7 @@
 # Piano: ricerca dei flussi e pacchetto di una review
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 **Obiettivo:** da una richiesta in parole al flusso, al modulo logico o al componente giusto, e da lì al pacchetto da dare a un revisore; l'embedder propone, la macchina verifica.
 **Parte di:** [piano della pipeline intera](2026-11-20-pipeline-intera.md), diviso per aspetto il 20 novembre 2026 su richiesta del proprietario. Quel piano tiene l'ordine fra i tre piani (sezione 3), che cosa gira dove (sezione 2) e la prova da zero (sezione 4); i numeri dei task sono rimasti gli stessi. **Spec:** [ricerca dei flussi e pacchetto di una review](../specs/2026-11-20-ricerca-e-pacchetto-di-review.md).
 **Vincoli:** quelli del piano della pipeline intera. Ogni task: prima il test rosso, poi il codice; tocca solo i file che nomina. Vengono dopo il task 8: l'anagrafica lega flussi che devono prima esistere (task 7).

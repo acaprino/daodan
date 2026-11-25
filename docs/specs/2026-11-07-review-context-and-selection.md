@@ -1,5 +1,7 @@
 # Review: contesto, domande e selezione
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 Attua «Come si compone una review» del [disegno comune](2026-11-03-semantic-review-foundation.md) nella shape `branch` di senior-review. La shape `light` resta `review-method/references/light.md`.
 
 **Stato:** selezione e Phase 1 implementate. La validazione completa del metodo con reviewer selezionati resta distinta dagli esperimenti sui job di discovery.

@@ -1,5 +1,7 @@
 # Piano: ingressi e flussi, la macchina mostra e il modello nomina
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](../specs/2026-11-25-lavoro-residuo-a-ondate.md), ondate 3, 7, 8: lo stato di una voce si aggiorna là.
+
 **Obiettivo:** la macchina legge gli ingressi (controlli dell'interfaccia, rotte, comandi e gli altri tipi), compone un percorso per ingresso e lo certifica; ciò che esce verso un modello passa il controllo dei segreti.
 **Parte di:** [piano della pipeline intera](2026-11-20-pipeline-intera.md), diviso per aspetto il 20 novembre 2026 su richiesta del proprietario. Quel piano tiene l'ordine fra i tre piani (sezione 3), che cosa gira dove (sezione 2) e la prova da zero (sezione 4); i numeri dei task sono rimasti gli stessi. **Spec:** [ingressi e scoperta dei flussi](../specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md); per 7b la [mappa del sistema](../specs/2026-11-18-flussi-e-mappa-del-sistema.md), sezione 8; per 7c la [ricerca e pacchetto di review](../specs/2026-11-20-ricerca-e-pacchetto-di-review.md), 11.4 e 11.5.
 **Vincoli:** quelli del piano della pipeline intera. Ogni task: prima il test rosso, poi il codice; tocca solo i file che nomina. Nessun modello vede un progetto privato prima del task 8.

@@ -1,5 +1,7 @@
 # Fase 1: mappa sempre aggiornata e quattro regole per la review
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 **Stato:** approvata l'11 novembre 2026, pronta da implementare. **Data:** 9 novembre 2026; aggiornata l'11 novembre 2026. Fase 1 di 3: [fase 2](2026-11-18-flussi-e-mappa-del-sistema.md), [fase 3](2026-11-09-flows-in-review.md).
 
 Due interventi che usano solo meccanismi già presenti e misurati:

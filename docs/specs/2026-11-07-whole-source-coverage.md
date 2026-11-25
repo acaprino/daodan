@@ -1,5 +1,7 @@
 # Review per aspetto: copertura esplicita dell'intero sorgente
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 Descrivi cosa vuoi controllare, anche in modo incompleto. Il sistema ricava dal contesto i sorgenti e i controlli pertinenti, dichiara il perimetro scelto e procede. Divide i file in gruppi gestibili e restituisce un unico rapporto: problemi trovati, file controllati e lavoro rimasto aperto con il motivo.
 
 Attua «Verificare e rendere visibili le lacune» del [disegno comune](2026-11-03-semantic-review-foundation.md), riusando senior-review e Codebase Map. Riferimento: `cloudflare/security-audit-skill`, per il registro di copertura e il controllo delle lacune.

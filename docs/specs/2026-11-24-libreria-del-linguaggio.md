@@ -1,5 +1,7 @@
 # Il linguaggio dei file: un modulo di Daodan con il catalogo di Linguist
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 1: lo stato di una voce si aggiorna là.
+
 **Stato:** ripristinata dal proprietario il 25 novembre 2026: la riduzione dello stesso giorno («il modulo con il catalogo di Linguist non si fa») è ritirata. Linguist è la base di partenza e da lì si sviluppa un modulo nostro, in un formato standard che regge ogni linguaggio, con controlli ad hoc per le estensioni che più linguaggi condividono. Resta la scelta «T» per i `.h` (sotto).
 
 **Nel codice dal 25 novembre:** il catalogo, il modulo e le regole di `.ts` e `.sql`. Dove sta ogni pezzo, perché le anagrafiche sono dati globali in `daodan/data/` (richiesta del proprietario):

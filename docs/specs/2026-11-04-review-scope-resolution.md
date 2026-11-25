@@ -1,5 +1,7 @@
 # Identificazione del perimetro di review
 
+> Ciò che di questo documento resta da fare è condensato in [Il lavoro che resta, in ondate](2026-11-25-lavoro-residuo-a-ondate.md), ondata 9: lo stato di una voce si aggiorna là.
+
 Data: 4 novembre 2026, ridotta il 7 novembre 2026.
 
 **Stato:** applicata nel testo di `team-review.md`, non ancora eseguita in una review completa. Provata su `benchmarks/scope-resolution/`: una esecuzione per caso, risultati e limiti nel suo README.
