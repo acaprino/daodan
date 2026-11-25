@@ -5,10 +5,10 @@ name: Desktop
 on:
   push:
     branches: [develop]
-    paths: ['apps/desktop/**', 'daodan/**', 'pyproject.toml', 'tests/test_daodan_desktop.py', '.github/workflows/desktop.yml']
+    paths: ['apps/desktop/**', 'viewer/start/**', 'viewer/src/page.ts', 'viewer/src/states.tsx', 'viewer/src/words.ts', 'viewer/package*.json', 'viewer/vite.config.ts', 'daodan/**', 'pyproject.toml', 'tests/test_daodan_desktop.py', '.github/workflows/desktop.yml']
   pull_request:
     branches: [develop, main]
-    paths: ['apps/desktop/**', 'daodan/**', 'pyproject.toml', 'tests/test_daodan_desktop.py', '.github/workflows/desktop.yml']
+    paths: ['apps/desktop/**', 'viewer/start/**', 'viewer/src/page.ts', 'viewer/src/states.tsx', 'viewer/src/words.ts', 'viewer/package*.json', 'viewer/vite.config.ts', 'daodan/**', 'pyproject.toml', 'tests/test_daodan_desktop.py', '.github/workflows/desktop.yml']
   workflow_dispatch:
 
 permissions:
@@ -35,6 +35,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: viewer/package-lock.json
+
+      # Before the Rust, which takes it into the program.
+      - name: The page inside the program
+        working-directory: viewer
+        run: |
+          npm ci
+          if ($LASTEXITCODE) { exit 1 }
+          npm run build:start
+          exit $LASTEXITCODE
 
       # rustup installs what rust-toolchain.toml says.
       - name: The pinned Rust
@@ -114,13 +129,20 @@ jobs:
           $page = { param($root) (Get-FileHash "$root/daodan/assets/app/index.html").Hash }
           $installed = & $page "$runtime/Lib/site-packages"
           if ($installed -ne (& $page .)) { throw 'the installed page is not the one of the checkout' }
-          $size = (Get-ChildItem $runtime -Recurse -File | Measure-Object Length -Sum).Sum / 1MB
-          $first = & "$runtime/python.exe" -I -B -c "import subprocess, sys, time; before = time.monotonic(); p = subprocess.Popen([sys.executable, '-I', '-B', '-m', 'daodan', 'app', '--desktop', '--work', sys.argv[1]], stdin=subprocess.PIPE, stdout=subprocess.PIPE); p.stdout.readline(); print(round((time.monotonic() - before) * 1000)); p.stdin.close(); sys.exit(p.wait(30))" "$env:RUNNER_TEMP/first"
+          $bare = (Get-ChildItem $runtime -Recurse -File | Measure-Object Length -Sum).Sum / 1MB
+          $line = { $ms = & "$runtime/python.exe" -I -B -c "import subprocess, sys, time; before = time.monotonic(); p = subprocess.Popen([sys.executable, '-I', '-B', '-m', 'daodan', 'app', '--desktop', '--work', sys.argv[1]], stdin=subprocess.PIPE, stdout=subprocess.PIPE); p.stdout.readline(); print(round((time.monotonic() - before) * 1000)); p.stdin.close(); sys.exit(p.wait(30))" "$env:RUNNER_TEMP/first"; if ($LASTEXITCODE) { throw 'the server did not start' }; $ms }
+          $first = & $line
+          $second = & $line
+          # The bytecode, made here: a folder a person unzips has it at the first start. By the hash of the source and not by its time, which
+          # a zip rounds; unchecked, since nobody changes a file of the private Python.
+          & "$runtime/python.exe" -I -m compileall -q -j 0 --invalidation-mode unchecked-hash -x '[\\/](test|tests|idlelib|turtledemo)[\\/]' "$runtime/Lib"
           if ($LASTEXITCODE) { exit 1 }
+          $ready = & $line
+          $size = (Get-ChildItem $runtime -Recurse -File | Measure-Object Length -Sum).Sum / 1MB
           $summary = @"
           - app/index.html: $($installed.ToLower())
-          - the private Python: $(& "$runtime/python.exe" -I -V), $([Math]::Round($size)) MB
-          - from the start of the server's process to its first line, with no bytecode of Daodan's: $first ms
+          - the private Python: $(& "$runtime/python.exe" -I -V), $([Math]::Round($size)) MB, $([Math]::Round($bare)) with no bytecode
+          - from the start of the server's process to its first line: $first ms the first time and $second ms the second with no bytecode, $ready ms with it
           "@
           $summary >> $env:GITHUB_STEP_SUMMARY
           Write-Host $summary
@@ -144,7 +166,15 @@ jobs:
 
       - name: The window, on a real WebView2
         if: ${{ !cancelled() }}
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           ./apps/desktop/smoke.ps1 -Folder "$env:RUNNER_TEMP/stage/Daodan" -Probe "$env:RUNNER_TEMP/Probe.exe" -Fake "$PWD/apps/desktop/src-tauri/target/debug/examples/fake_server.exe" -Work "$env:RUNNER_TEMP/smoke"
           exit $LASTEXITCODE
+
+      # The page inside the program, in its states: the owner judges by the photographs.
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: start-shots
+          path: ${{ runner.temp }}/smoke/shots
+          retention-days: 14

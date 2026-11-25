@@ -43,9 +43,9 @@ jobs:
 
       - run: npm run build
 
-      # The two pages are Sigrid's components alone: no class and no stylesheet of Daodan's (sigrid-check.config.json). One
+      # The pages are Sigrid's components alone: no class and no stylesheet of Daodan's (sigrid-check.config.json). One
       # folder at a time.
-      - run: npx --no sigrid-check src && npx --no sigrid-check app
+      - run: npx --no sigrid-check src && npx --no sigrid-check app && npx --no sigrid-check start
 
       # The frame, the names that are gone, the icons and the agent files, as Imago says them.
       - run: npx --no imago-check

@@ -49,13 +49,21 @@ function licenseNotices(viewer: boolean): Plugin {
   };
 }
 
+// The pages, by the mode they are built in: the folder a page is in, and where it goes. The map is the one without a mode of its own;
+// `start` is the page inside Daodan's window, built by its workflow and not committed.
+const PAGES: Record<string, [root: string, outDir: string]> = {
+  app: ['app', '../../daodan/assets/app'],
+  start: ['start', '../../apps/desktop/start'],
+};
+const MAP: [string, string] = ['.', '../daodan/assets/viewer'];
+
 export default defineConfig(({ mode }) => ({
-  root: mode === 'app' ? 'app' : '.',
+  root: (PAGES[mode] ?? MAP)[0],
   publicDir: resolve('public'),
   base: './',
-  plugins: [systemStyles(), licenseNotices(mode !== 'app')],
+  plugins: [systemStyles(), licenseNotices(!PAGES[mode])],
   build: {
-    outDir: mode === 'app' ? '../../daodan/assets/app' : '../daodan/assets/viewer',
+    outDir: (PAGES[mode] ?? MAP)[1],
     emptyOutDir: true, chunkSizeWarningLimit: 2500,
   },
   worker: { format: 'es' },

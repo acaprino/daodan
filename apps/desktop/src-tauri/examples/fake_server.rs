@@ -63,6 +63,10 @@ fn main() {
             thread::sleep(Duration::from_millis(700));
             serve();
         }
+        Ok("slow") => {
+            thread::sleep(Duration::from_secs(6));
+            serve();
+        }
         Ok("twice") => {
             serve();
             thread::sleep(Duration::from_secs(2));

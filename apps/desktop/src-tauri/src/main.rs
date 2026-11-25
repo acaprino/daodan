@@ -1,7 +1,9 @@
 //! Daodan's window: its own server, started hidden from the Python beside this program, and the page
-//! the server serves in a window that `imago-shell` opens and watches.
+//! the server serves in a window that `imago-shell` opens and watches. Until the server answers, and
+//! when it dies, the window shows the page inside this program (`viewer/start`).
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 
+mod life;
 mod message;
 mod server;
 
@@ -10,38 +12,9 @@ use imago_shell::{
     single_instance::{launch, Launch, Quitting},
     Material, Options, DARK_GROUND, LIGHT_GROUND,
 };
-use server::{Fault, Output, Server, ANSWER, GRACE};
-use std::{
-    error::Error,
-    fs::{self, File},
-    path::{Path, PathBuf},
-    process::{exit, Command},
-    sync::{Mutex, PoisonError},
-    thread,
-};
-use tauri::{App, AppHandle, Manager, RunEvent, Url, WebviewUrl};
-
-/// The port of the last start, in the data folder: the same origin again, so that what the pages
-/// keep in the browser's storage is there at the next start.
-const PORT_FILE: &str = "server-port";
-
-/// What the server says of itself, in the data folder.
-const LOG_FILE: &str = "server.log";
-
-/// The server while the window shows it. Whoever takes it out ends it.
-struct Running {
-    server: Mutex<Option<Server>>,
-    data: PathBuf,
-}
-
-impl Running {
-    fn take(&self) -> Option<Server> {
-        self.server
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .take()
-    }
-}
+use life::Daodan;
+use std::{error::Error, process::exit, thread};
+use tauri::{App, AppHandle, Manager, RunEvent};
 
 fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     let mut options = Options::for_app(app)?;
@@ -55,90 +28,30 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
         // Without the signal Daodan still runs; two of them are two servers.
         Err(error) => eprintln!("daodan: single instance: {error}"),
     }
-    let (server, output, page) = match serve(&data) {
-        Ok(served) => served,
-        Err(fault) => {
-            message::tell(&said(&fault, &data));
-            exit(1);
-        }
-    };
+    life::new_log(&data);
     options.material = Material::Opaque {
         dark: DARK_GROUND,
         light: LIGHT_GROUND,
     };
-    options.origins.allow(page.as_str());
-    options.window.url = WebviewUrl::External(page);
     options.data_dir = Some(data.clone());
     options.reload_label = "Ricarica l'interfaccia".into();
     options.stopped_message = "L'interfaccia non risponde. Ricaricarla?".into();
     options.lost_message = "La finestra non si può ripristinare. Daodan si chiude.".into();
-    app.manage(Running {
-        server: Mutex::new(Some(server)),
-        data,
-    });
+    app.manage(Daodan::new(data, options.origins.clone()));
+    // Before the window, which takes its time: the server starts meanwhile.
+    let kept = app.handle().clone();
+    thread::spawn(move || life::keep(&kept));
     open_main(app.handle(), options)?;
-    let watched = app.handle().clone();
-    thread::spawn(move || watch(&watched, &output));
     Ok(())
-}
-
-/// Starts the server and waits for the address of its page.
-fn serve(data: &Path) -> Result<(Server, Output, Url), Fault> {
-    let log = fs::create_dir_all(data)
-        .and_then(|()| File::create(data.join(LOG_FILE)))
-        .map_err(Fault::NotStarted)?;
-    let python = std::env::current_exe()
-        .map(|program| program.with_file_name("runtime").join("python.exe"))
-        .map_err(Fault::NotStarted)?;
-    let port = fs::read_to_string(data.join(PORT_FILE))
-        .ok()
-        .and_then(|kept| kept.trim().parse::<u16>().ok())
-        .unwrap_or(0);
-    // `-I`: the server imports nothing from the folder it is started in, from the environment or
-    // from the person's own Python packages. The programs it starts get the same from the variables.
-    let (server, output) = Server::start(
-        Command::new(python)
-            .args(["-I", "-m", "daodan", "app", "--desktop", "--port"])
-            .arg(port.to_string())
-            .current_dir(data)
-            .env_remove("PYTHONHOME")
-            .env_remove("PYTHONPATH")
-            .env("PYTHONNOUSERSITE", "1")
-            .stderr(log),
-    )?;
-    let page = output.address(ANSWER)?;
-    if let Some(port) = page.port() {
-        // A port that cannot be kept costs the next start its storage, never this one.
-        let _ = fs::write(data.join(PORT_FILE), port.to_string());
-    }
-    Ok((server, output, page))
-}
-
-/// Waits for the server to fail. One that was told to stop is not a failure.
-fn watch(app: &AppHandle, output: &Output) {
-    let fault = output.fault();
-    let running = app.state::<Running>();
-    if let Some(server) = running.take() {
-        message::tell(&said(&fault, &running.data));
-        server.stop(GRACE);
-        app.exit(1);
-    }
-}
-
-fn said(fault: &Fault, data: &Path) -> String {
-    let log = data.join(LOG_FILE);
-    format!("{fault}\n\nIl registro è in:\n{}", log.display())
 }
 
 /// The window is gone: the server ends, and a copy started meanwhile waits for it.
 fn close(app: &AppHandle) {
-    let Some(running) = app.try_state::<Running>() else {
+    let Some(daodan) = app.try_state::<Daodan>() else {
         return;
     };
-    let _quitting = Quitting::mark(&running.data);
-    if let Some(server) = running.take() {
-        server.stop(GRACE);
-    }
+    let _quitting = Quitting::mark(daodan.data());
+    daodan.close();
 }
 
 fn main() {
@@ -146,6 +59,7 @@ fn main() {
     std::env::remove_var("WEBVIEW2_USER_DATA_FOLDER");
     tauri::Builder::default()
         .plugin(plugin())
+        .invoke_handler(tauri::generate_handler![life::start_state, life::start_again])
         .setup(|app| {
             setup(app).inspect_err(|error| {
                 message::tell(&format!("Daodan non si avvia: {error}."));
@@ -164,12 +78,31 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::collections::BTreeSet;
     use tauri::utils::acl::{capability::Capability, RemoteUrlPattern};
 
     fn capability() -> Capability {
         serde_json::from_str(include_str!("../capabilities/main.json")).unwrap()
+    }
+
+    fn granted(capability: &Capability) -> BTreeSet<&str> {
+        capability
+            .permissions
+            .iter()
+            .map(|permission| permission.identifier().get())
+            .collect()
+    }
+
+    #[test]
+    fn the_page_inside_has_two_commands_more_and_no_address_has_them() {
+        let start: Capability =
+            serde_json::from_str(include_str!("../capabilities/start.json")).unwrap();
+        assert!(start.local && start.remote.is_none());
+        assert_eq!(start.windows, ["main"]);
+        let main = capability();
+        let mut wanted = granted(&main);
+        wanted.extend(["allow-start-state", "allow-start-again"]);
+        assert_eq!(granted(&start), wanted);
     }
 
     #[test]
@@ -206,11 +139,6 @@ mod tests {
     fn the_capability_grants_the_window_and_nothing_else() {
         let capability = capability();
         assert_eq!(capability.windows, ["main"]);
-        let granted: BTreeSet<&str> = capability
-            .permissions
-            .iter()
-            .map(|permission| permission.identifier().get())
-            .collect();
         let wanted = BTreeSet::from([
             "core:event:allow-listen",
             "core:event:allow-unlisten",
@@ -223,12 +151,6 @@ mod tests {
             "core:window:allow-toggle-maximize",
             "imago-shell:default",
         ]);
-        assert_eq!(granted, wanted);
-    }
-
-    #[test]
-    fn a_fault_says_where_the_log_is() {
-        let said = said(&Fault::Silent, Path::new(r"C:\dati"));
-        assert!(said.contains("60 secondi") && said.contains(r"C:\dati\server.log"));
+        assert_eq!(granted(&capability), wanted);
     }
 }
