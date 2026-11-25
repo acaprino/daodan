@@ -40,14 +40,14 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 | Famiglia | Esempi | Che cosa dà | Step |
 | --- | --- | --- | --- |
 | Strumento di build | cargo, gradle, maven, npm, `tsc`, cmake, meson, bazel, make, `dotnet`, uv, go | Moduli, unità, pacchetti risolti, comandi | `find_modules` |
-| Strumento / introspezione del framework | `next typegen`, `react-router routes`, `nuxt prepare`, `svelte-kit sync`, compilatori Angular/Astro, sorgenti **Django, FastAPI, Flask** `[deciso]` | Rotte, pagine, eventi dei template | `find_entry_points` |
+| Strumento / introspezione del framework | `next typegen`, `react-router routes`, `nuxt prepare`, `svelte-kit sync`, compilatori Angular/Astro, sorgenti **Django, FastAPI, Flask** `[deciso]` *(verifica aperta: `B1` nel piano)* | Rotte, pagine, eventi dei template | `find_entry_points` |
 | Compilatore del linguaggio (via SCIP) | TypeScript, Pyright, Java (Maven/Gradle), rust-analyzer, Clang | Risoluzione dei destinatari di chiamata (primo adattatore dietro il modello di evidenza interno) | `link_calls` |
-| Esecutore dell'interfaccia e osservazione runtime | browser (Playwright/Chromium), webview (CDP/WebDriver), backend standard per tipo di evidenza (`sys.monitoring`, V8 coverage, OpenTelemetry, `strace`/eBPF) o registratori `*_record.*` | Quale controllo fa partire quale funzione, archi osservati e frontiere | `run_and_observe` |
+| Esecutore dell'interfaccia e osservazione runtime | browser (Playwright/Chromium), webview (CDP/WebDriver), backend standard per tipo di evidenza (`sys.monitoring`, V8 coverage, OpenTelemetry, `strace`/eBPF) o registratori `*_record.*` *(verifica aperta: `M6` nel piano)* | Quale controllo fa partire quale funzione, archi osservati e frontiere | `run_and_observe` |
 
 - **Framework senza strumento proprio:** letti dall'albero sintattico (tree-sitter) con query in `daodan/data/entry-queries.json` (es. `onClick` in React).
 - **Convivenza tra sorgente dedicata e Noir in `find_entry_points`:** quando il container è disponibile e l'introspezione ufficiale del framework riesce, la sorgente dedicata è **primaria**; Noir funge da integrazione/ripiego statico con provenienza dichiarata. Unione deduplicata su chiave che includa contesto/mount/router dove serve; eventuali conflitti restano in diagnostica. A introspezione fallita Noir fa da ripiego, con il motivo dichiarato. Senza container non girano né la sorgente dedicata né Noir: restano le query tree-sitter, che girano sull'host, e una lacuna. Un'introspezione riuscita con 0 ingressi non è un errore.
-- **Modello di evidenza in `link_calls` `[deciso]`:** un riferimento SCIP non equivale a una chiamata (es. in `f(g)` solo `f` è chiamato). Tree-sitter individua il sito di chiamata; SCIP agisce come primo adattatore risolutore dietro un piccolo modello di evidenza interno (`sito`, `candidati`, `fonte`, stato `risolto`/`ambiguo`/`ignoto`). Nessuna migrazione a LSIF/LSP; compiler API dedicate solo dove SCIP mostra lacune misurate.
-- **Osservazione runtime in `run_and_observe`:** i backend standard si scelgono per tipo di evidenza (`sys.monitoring` su Python 3.12+ per call events; V8 per copertura, non call graph; OpenTelemetry per frontiere/span; `strace`/eBPF solo processi/rete). Gli hook custom `*_record.*` si ritirano solo dopo prova di equivalenza e overhead.
+- **Modello di evidenza in `link_calls` `[deciso]` *(verifica aperta: `M5` nel piano)*:** un riferimento SCIP non equivale a una chiamata (es. in `f(g)` solo `f` è chiamato). Tree-sitter individua il sito di chiamata; SCIP agisce come primo adattatore risolutore dietro un piccolo modello di evidenza interno (`sito`, `candidati`, `fonte`, stato `risolto`/`ambiguo`/`ignoto`). Nessuna migrazione a LSIF/LSP; compiler API dedicate solo dove SCIP mostra lacune misurate.
+- **Osservazione runtime in `run_and_observe` *(verifica aperta: `M6` nel piano)*:** i backend standard si scelgono per tipo di evidenza (`sys.monitoring` su Python 3.12+ per call events; V8 per copertura, non call graph; OpenTelemetry per frontiere/span; `strace`/eBPF solo processi/rete). Gli hook custom `*_record.*` si ritirano solo dopo prova di equivalenza e overhead.
 - **Un controllo ha due prove:** quella statica (legato a una funzione) e quella dinamica (azionato, quella funzione parte).
 
 ### Chiamate HTTP e punti di connessione
@@ -58,13 +58,13 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 
 ### Superfici attive e regole comuni
 
-Un'interfaccia nasce da un ingresso, non da un manifesto. Il campo `surface` dell'anagrafica decide con che cosa `run_and_observe` la esegue (il campo non è nel codice e nessun traguardo del piano lo porta):
+Un'interfaccia nasce da un ingresso, non da un manifesto. Il campo `surface` dell'anagrafica decide con che cosa `run_and_observe` la esegue (non ancora nel codice; assegnato a `T3.B` nel piano):
 
 - **`web`** (attiva): Chromium senza interfaccia con Playwright (albero di accessibilità, azionamento controlli, registrazione funzioni partite).
 - **`webview`** (attiva in T3): Electron (CDP), Tauri e Wails (WebDriver) su `Xvfb`. Dove manca il driver si esercita la sola pagina e lo si dichiara.
-- **Superfici differite** (`desktop` Linux, GUI Python, `android`, `windows`): finché non implementate emettono la lacuna `ui_execution_deferred:<superficie>` (non nel codice; nessun traguardo del piano la porta). macOS e iOS restano fuori perimetro.
+- **Superfici differite** (`desktop` Linux, GUI Python, `android`, `windows`): finché non implementate emettono la lacuna `ui_execution_deferred:<superficie>` (non ancora nel codice; assegnata a `T3.B` nel piano). macOS e iOS restano fuori perimetro.
 
-Regole valide per tutte le superfici: nulla dell'host; download con licenza o di qualche GB solo dopo consenso esplicito (altrimenti `approval_required`, non nel codice e non portato da nessun traguardo del piano); solo dati e credenziali di prova già preparati dalla CI del progetto; progetti multipiattaforma eseguiti sul bersaglio `web` quando dichiarato.
+Regole valide per tutte le superfici: nulla dell'host; download con licenza o di qualche GB solo dopo consenso esplicito (altrimenti `approval_required`, non ancora nel codice; assegnata a `T1.D` e `T3.A` nel piano); solo dati e credenziali di prova già preparati dalla CI del progetto; progetti multipiattaforma eseguiti sul bersaglio `web` quando dichiarato.
 
 ### Come si sa che cosa lanciare (test, avvio, build)
 
@@ -72,14 +72,14 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 
 | Fonte | Che cosa dice | Grado | Stato |
 | --- | --- | --- | --- |
-| L'utente | Comando scritto da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto) | `confermato` | Proposta (T3) |
+| L'utente | Comando scritto da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto) | `confermato` | Proposta (da confermare prima di `T3.B`) |
 | Lo strumento di build | Comando previsto dallo strumento (`npm test`, `go test`, `cargo test`, Gradle/Maven, `dotnet test`, CTest) | `dichiarato` | Nel codice |
 | I file del progetto | Script `test`/`start`/`dev`, config pytest, makefile (vale per il runner lanciato, non per il nome) | `dichiarato` | Nel codice |
-| La CI del progetto | Passo dei test in CI, con servizi e passi preliminari | `dichiarato` | Parziale (T3) |
+| La CI del progetto | Passo dei test in CI, con servizi e passi preliminari | `dichiarato` | Parziale (`T3.B`) |
 
 ## Nodi del grafo: tipo e logo
 
-L'anagrafica delle tecnologie (`daodan/data/service-registry.json`) dà a ogni framework, libreria, strumento e servizio un tipo di nodo e, dove la voce li ha, una categoria e un logo. Senza `category`, una voce di `kind` `service` vale `service` e le altre `framework`. Il tipo di nodo è `type` nell'anagrafica e `node_type` sul nodo. Il grafo consulta l'anagrafica, senza nominare tecnologie nel codice.
+L'anagrafica delle tecnologie (`daodan/data/service-registry.json`) dà a ogni framework, libreria, strumento e servizio un tipo di nodo e, dove la voce li ha, una categoria e un logo (`recognize_stack` e `find_modules` attribuiscono le tecnologie ai moduli; `assemble_graph` costruisce i nodi del grafo). Senza `category`, una voce di `kind` `service` vale `service` e le altre `framework`. Il tipo di nodo è `type` nell'anagrafica e `node_type` sul nodo. Il grafo consulta l'anagrafica, senza nominare tecnologie nel codice.
 
 Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scritto a mano. `none`: il fork non ha una regola per la voce, quindi nessun progetto la mostra. Un servizio o uno strumento chiede solo di essere riconosciuto: con una regola è `full`, perché il grafo ha il suo nodo e le frecce che ci arrivano. Un framework o una libreria è `full` quando un lettore di Daodan legge come il progetto lo usa (rotte, eventi dei template, stili: la tabella `READERS`), `partial` quando è riconosciuto e basta. Una sorgente scritta e scollegata non conta: Django, FastAPI e Flask sono `partial` finché non entrano in `find_entry_points`.
 
@@ -87,7 +87,7 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 | --- | --- | --- |
 | Voce con `category: service` che un file dichiara | Nodo esterno con il logo della voce; arco `uses` da ogni file che la mostra (`uncertain` dove la menziona soltanto). Una voce solo menzionata nel progetto non è un nodo | `type` della voce |
 | Voce con `category: framework` o `library` | Non è un nodo: sta nel gruppo i cui file la dichiarano, con il suo logo. Il gruppo porta il logo del framework quando ne dichiara uno solo | — |
-| Voce con `category: tool` | Né nodo né elenco del gruppo | — |
+| Voce con `category: tool` | Non è un nodo, e nel grafo dell'app non è fra le tessere del gruppo; il modulo la elenca nel campo `tools` dell'involucro (`daodan/core/visual.py`) | — |
 | Modulo esterno dichiarato dal progetto | Nodo esterno; se ha l'id di una voce con `category: service`, prende tipo e logo della voce | `servizio o API` |
 | Funzione di una rotta; funzione che lega un'azione dell'utente | Il simbolo, se non ha già un tipo | `servizio o API`; `schermata` |
 | Store | Nodo `store` | `node_type` della regola di collegamento |
@@ -95,23 +95,23 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 - **Tipi di nodo:** elenco chiuso `NODE_TYPES` (`daodan/core/flows.py`): `attore`, `schermata`, `funzionalità`, `servizio o API`, `gateway`, `database`, `coda`, `autenticazione`, `dispositivo`, `filesystem`, `altro`. La mappa di sistema aggiunge `entità`, `applicazione` e `lavoro a orario` (`daodan/core/system_map.py`). Un nodo di cui non si sa il tipo non ne ha.
 - **Tipo di framework, librerie e strumenti:** l'anagrafica lo dà anche a loro dove la tecnologia lo determina: è ciò che più plausibilmente è la parte di programma costruita con essa; dove non lo dice resta `altro`. Questi tipi stanno in `daodan/data/registry-additions.json` con `by: model` e non sono verificati a campione.
   - **Oggi nel codice:** il grafo non li usa. Un nodo prende il tipo dall'anagrafica solo se la voce ha `category: service` (`daodan/core/visual.py`); delle altre voci il tipo viaggia nell'elenco `technologies`, e il pannello dei dettagli lo mostra come testo nell'elenco delle tecnologie (`viewer/src/details.tsx`). Il brief del mappatore (`daodan/core/system_brief.py`, sezione Externals) stampa invece il tipo di ogni tecnologia riconosciuta, `altro` dove manca (`technologies.externals`).
-  - **Scelta aperta:** se un modulo prende il tipo del suo framework.
+  - **Scelta aperta (tracciata nel piano, `T1`):** se un modulo prende il tipo del suo framework.
 - **Logo di una tecnologia:** una tessera di Daodan in `daodan/data/marks/`; i servizi di AWS, Azure e Google Cloud hanno pittogrammi di Daodan.
 - **Senza logo:** il nodo ha l'icona del suo tipo (`viewer/src/icons.ts`). `filesystem` e `altro` prendono quella dell'entità, `funzionalità` nessuna.
-- **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`), ma oggi la vista (`system_levels.view`) non passa il logo.
+- **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`), ma oggi la vista (`system_levels.view`) non passa il logo (allineamento tracciato nel piano, `T2.C`).
 
 ## Il piano: completo nei vincoli, incrementale nelle azioni
 
 Un solo oggetto condiviso tra interfaccia, MCP e riga di comando (il giornale degli eventi resta come cronaca).
 
 1. **Completo nei vincoli prima dell'avvio:** prima che parta qualunque cosa, il piano espone tutti gli step, le politiche, i permessi e le condizioni di arresto.
-2. **Incrementale nelle azioni concrete:** le azioni che dipendono dalla scoperta (moduli, download, build, suite di test, avvio app) vengono aggiunte e aggiornate nello stesso piano man mano che gli step `recognize_stack`, `find_modules` e `find_entry_points` le determinano. Se emerge un'azione che richiede consenso (download pesante, licenza) o eccede i permessi, l'esecuzione si ferma su quell'azione.
+2. **Incrementale nelle azioni concrete:** le azioni che dipendono dalla scoperta (moduli, download, build, suite di test, avvio app) vengono aggiunte e aggiornate nello stesso piano man mano che gli step `recognize_stack`, `find_modules` e `find_entry_points` le determinano. Se emerge un'azione che richiede consenso (download pesante, licenza) o eccede i permessi, l'esecuzione si ferma su quell'azione; per un host da approvare vale «Servizi comuni».
 3. **Dice che cosa fa, non come:** frasi leggibili («lancia i test di `api`»), con strumento/comando/versione come dettaglio apribile. Ogni azione indica bersaglio e tre fatti: se esegue codice del progetto, se gira nel container, se scarica dalla rete e quanto pesa.
-4. **Stato per azione** aggiornato in tempo reale: `da fare`, `in corso`, `fatta`, `fallita`, `saltata` (già fresca), `non possibile` (con causa e rimedio). Tipi di azione da elenco chiuso.
+4. **Stato per azione** aggiornato in tempo reale: `da fare`, `in corso`, `fatta`, `fallita`, `saltata` (già fresca), `non possibile` (con causa e rimedio), `in attesa di approvazione` (un suo host attende la risposta di una persona). Tipi di azione da elenco chiuso.
 
 ## L'interfaccia segue la pipeline
 
-La UI (solo componenti Sigrid nella shell Imago) legge il piano e i risultati degli step senza ricostruirli dagli eventi e senza tenere elenchi propri di fasi. Mostra gli otto step con i loro risultati, i consensi prima dell'esecuzione, l'azione in corso e le lacune. Le parole interne («pre-mappa», «scan», «stack», «analyze») escono dall'interfaccia.
+La UI (solo componenti Sigrid nella shell Imago) legge il piano e i risultati degli step senza ricostruirli dagli eventi e senza tenere elenchi propri di fasi. Mostra gli otto step con i loro risultati, i consensi prima dell'esecuzione, l'azione in corso e le lacune. Un host da approvare («Servizi comuni») è una notifica e un popup con host, porta, indirizzo risolto e il file che lo dichiara; un tentativo verso un host in blacklist è solo una notifica. Le parole interne («pre-mappa», «scan», «stack», «analyze») escono dall'interfaccia.
 
 ## Le anagrafiche (`daodan/data/`)
 
@@ -131,18 +131,30 @@ Ogni anagrafica deve avere un controllo automatico di coerenza con il codice:
 ## Servizi comuni
 
 - **Motore di container:** isola sempre il codice del progetto. Su Windows è il **Kiri** di Daodan, in una distribuzione WSL 2 propria; altrove è quello dell'utente (`docker`, poi `podman`).
-- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy sui soli registri ammessi, strumenti verificati per sha256; tutto il resto gira senza rete. **Controllo decisivo sulla rete `[deciso]`:** nessuna uscita diretta dal container, solo proxy verso registri autorizzati (inclusi redirect, DNS e IP letterali); il parser dei lockfile resta un controllo preventivo, non il confine di isolamento.
-  - **Nel codice** (`daodan/core/container.py`): esecuzione con `--network none`, preparazione dietro il proxy ai soli registri, `--security-opt no-new-privileges`. Non passa `--cap-drop` né `--user`. La prova su un container vero è nel piano (T3.1).
+- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy, strumenti verificati per sha256; tutto il resto gira senza rete. Il parser dei lockfile resta un controllo preventivo, non il confine di isolamento.
+  - **Nel codice** (`daodan/core/container.py`): esecuzione con `--network none`; preparazione su una rete interna con il proxy (`container.PROXY_SCRIPT`) come sola uscita; `--security-opt no-new-privileges`. Il proxy apre senza chiedere i registri di `package-managers.json`, gli host fissi degli strumenti (`premap/container_runner.py`, `preparation.py`) e gli host che il progetto dichiara, fra cui quelli delle sue dipendenze (`preparation.declared`), dei requisiti Python da Git (`preparation.python_vcs`) e, al secondo tentativo di Gradle, dei repository della build. Non passa `--cap-drop` né `--user`. La prova su un container vero è nel piano (`T3.A`, salvo anticipo in `T0.B.2a` per `M1/I1`).
+- **Uscita di rete con approvazione `[deciso]`** (non ancora nel codice; assegnata a `T3.A` nel piano, con esposizione dello stato di attesa nel piano unico in `T1.D`). Sostituisce «solo proxy verso registri autorizzati» e ritira l'apertura «come una CI» degli host dichiarati.
+  - **Confine:** nessuna uscita diretta dal container di analisi; il controllo sta fuori, nel proxy, unica uscita (inclusi redirect, DNS e IP letterali).
+  - **In whitelist:** passa senza chiedere. Sono gli host canonici (`daodan/data/package-managers.json`: i gestori dell'elenco di Wikipedia, con gli host scritti a mano e provati da `benchmarks/registry-hosts/`) e quelli approvati dall'utente.
+  - **In blacklist:** rifiutato subito; solo una notifica del tentativo, nessun popup.
+  - **Ogni altro host** (anche dichiarato dal progetto o assegnato da Daodan a uno strumento): notifica e popup, e l'utente deve approvare. Il proxy rifiuta subito, e dopo il sì il passo si rilancia; gli host dichiarati si chiedono prima che il passo parta. Se il passo riesce comunque con un host rifiutato, il risultato vale e la richiesta resta visibile. Il popup mostra l'indirizzo risolto e segnala quando è una macchina della rete dell'utente.
+  - **Risposte:** «sempre per questo progetto», «solo per questa analisi», «no», «blocca sempre» (va in blacklist). Whitelist e blacklist stanno nella cartella condivisa di Daodan, mai nel progetto.
+  - **Si approva solo dalla GUI.** MCP e riga di comando mostrano le richieste in attesa e non approvano mai: il modello legge il progetto analizzato, e un client MCP che è un agente può rispondere da sé a una elicitation.
+  - **Lacune:** `approval_required` senza risposta o senza schermo; `host_denied` dopo un no o per un host in blacklist.
+  - **Strumento del proxy:** lo sceglie una prova su Modal fra Smokescreen e il proxy attuale esteso, sugli stessi criteri: solo porta 443, eccezione apt, whitelist e blacklist da file, rifiuti leggibili con l'indirizzo risolto.
 - **Lanciatore dei comandi:** servizio comune a `find_modules`, `find_entry_points`, `link_calls` e `run_and_observe`.
 - **Giornale:** traccia inizio, avanzamento, lacune e fine di ogni step e adattatore.
 - **Secretlint:** ogni testo che lascia la macchina o va a un LLM passa prima da Secretlint. **Nel codice:** `secret_mask`, che lo lancia, è chiamato da `daodan/core/app.py` (risultati degli strumenti e prompt) e da `daodan/core/mcp_server.py` (risultati ed errori).
 
 ## Termini
 
+- **Cartella condivisa:** la cartella di Daodan sulla macchina, fuori da ogni progetto, dove stanno gli strumenti installati al primo uso (`embedding_worker.shared_cache_dir`).
+- **Host fisso, host dichiarato:** fisso è quello che il codice di Daodan assegna a uno strumento; dichiarato è quello che i file del progetto nominano per dipendenze o build.
 - **Kiri:** il motore di container che Daodan porta su Windows, in una distribuzione WSL 2 propria (`daodan/core/container.py`).
 - **Noir:** lo scanner di rotte OWASP Noir, che gira nel container (`daodan/core/premap/noir.py`).
 - **Fork `stack-analyser`:** il riconoscitore delle tecnologie, un fork di quello di Specfy (`daodan/core/stack_analyser.py`).
 - **Pre-mappa:** nel disegno il modello di build, uscita di `find_modules`; oggi `daodan/core/premap/` tiene anche rotte ed eventi.
+- **Smokescreen:** il proxy di uscita di Stripe, candidato a proxy della preparazione.
 - **SCIP:** il formato di indice del codice di un intero progetto, che `daodan/core/code_graph.py` legge come un grafo.
 - **Store:** ciò a cui il codice accede in scrittura o lettura, nominato con la sua chiave da una regola di collegamento (`daodan/core/flows.py`).
 - **Tessera:** il logo di una tecnologia dentro la cornice di Daodan.

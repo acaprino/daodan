@@ -449,6 +449,7 @@
   {
    "id": "avro",
    "site": "https://avro.apache.org/",
+   "cncf": "Avro",
    "by": "catalog"
   },
   {
@@ -1860,7 +1861,8 @@
    "id": "doctrinephp",
    "category": "library",
    "by": "catalog",
-   "name": "Doctrine ORM"
+   "name": "Doctrine ORM",
+   "simple_icon": "doctrine"
   },
   {
    "id": "doctrinephp",

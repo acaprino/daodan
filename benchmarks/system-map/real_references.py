@@ -5,7 +5,7 @@
     python real_references.py CASE CHECKOUT   # also every path, symbol and line it cites, in a checkout of the case
                                               # at the commit `expected/real/sources.json` names
 
-A case has two references. The system map (`expected/CASE-system.json`) is checked by `reference.py`. The graph
+A case has two references. The system map (`expected/real/CASE-system.json`) is checked by `reference.py`. The graph
 (`daodan/real-graph-expected/v1`) is what the eight steps should give below the map: modules, technologies, entry
 points, the routes with their callers, the calls to externals, the stores and the gaps. In a checkout a cited `path`
 exists, a `path:line` is a line of that file, the name after `path::` is written in that file, and a route's `at`

@@ -14,7 +14,7 @@ def test_every_case_has_its_two_references_and_the_graph_keeps_its_shape():
     assert real_references.cases() == sorted(sources)
     for case, source in sources.items():
         assert set(source) == {"repo", "commit", "licence", "why"} and len(source["commit"]) == 40, case
-        system = json.loads((real_references.REAL.parent / f"{case}-system.json").read_text(encoding="utf-8"))
+        system = json.loads((real_references.REAL / f"{case}-system.json").read_text(encoding="utf-8"))
         assert (system["case"], system["commit"]) == (case, source["commit"])
         assert real_references.shape(case) == []
 
