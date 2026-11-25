@@ -1,0 +1,20 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "The pages Daodan's own server serves on 127.0.0.1: the window's buttons, drag, zoom and events (TAURI_PERMISSIONS.basics of Sigrid) and the commands of Imago's shell. No page embedded in the program, and nothing of shell, file system or HTTP.",
+  "windows": ["main"],
+  "local": false,
+  "remote": { "urls": ["http://127.0.0.1:*"] },
+  "permissions": [
+    "core:window:allow-start-dragging",
+    "core:window:allow-internal-toggle-maximize",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-is-maximized",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:webview:allow-set-webview-zoom",
+    "imago-shell:default"
+  ]
+}

@@ -473,8 +473,9 @@ def test_the_pre_map_lists_the_units_with_their_declared_libraries_and_the_unit_
         ("root", None, None, None), ("pkg", "root", "pkg/pyproject.toml", "confirmed")]
     assert found["units"][1]["dependencies"] == [{"name": "pytest", "scope": "pypi", "state": "declared",
                                                   "source": "pkg/pyproject.toml:9"}]
-    assert [(item["name"], item["source"], item["state"]) for item in found["technologies"]] == [
-        ("pytest", "pkg/pyproject.toml:9", "recognized"), ("python", "pkg/pyproject.toml", "declared")]
+    # a recognized technology names the mark of its registry entry, as the envelope does; a toolchain has no entry
+    assert [(item["name"], item["source"], item["state"], item.get("mark")) for item in found["technologies"]] == [
+        ("pytest", "pkg/pyproject.toml:9", "recognized", "pytest"), ("python", "pkg/pyproject.toml", "declared", None)]
     with pytest.raises(ValueError, match="stale"):
         app_view.premap({"state": "needs_refresh", "reason": "stale"}, {}, {})
 
@@ -915,6 +916,7 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
         assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["scan"] == "fresh"
         assert state["mcp"]["args"][-2:] == ["--project", project.parent.as_posix()]
+        assert state["mcp"]["command"] == sys.executable  # its packages are the app's: no `uv` on the PATH
         # what Daodan writes about the checkout is beside it: a container's output may not be inside the project
         assert (project.parent / ".daodan").is_dir() and not (project / ".daodan").exists()
         # The page observes: the run's events from its start and the app's state, then again from the cursors.
@@ -1394,18 +1396,20 @@ def test_the_mark_of_a_registry_entry_is_served_by_its_id_and_nothing_else_is(tm
     monkeypatch.setattr(service_registry, "mark_file", mark_file)
     app = launcher.App(tmp_path / "work", environment={})
     # an entry whose mark is in its owner's package: the test's own, the distributed registry ships every mark it has
-    app.registry["packaged.example"] = {"id": "packaged.example", "mark": None,
-                                        "mark_source": {"url": "https://owner.example/icons.zip"}}
+    app.marks.entries["packaged.example"] = {"id": "packaged.example", "mark": None,
+                                             "mark_source": {"url": "https://owner.example/icons.zip"}}
     server = app.serve(token="t")
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         port = server.server_address[1]
         stripe = (service_registry.REGISTRY.parent / "marks/stripe.svg").read_bytes()
         assert raw(port, "/api/app/mark?id=stripe&token=t") == (200, "image/svg+xml", stripe)
+        assert raw(port, "/api/mark?id=stripe&token=t") == (200, "image/svg+xml", stripe)  # the map's page, on the same server
         assert raw(port, "/api/app/mark?id=stripe")[0] == 403
         for wrong in ("nope", "marks/stripe.svg", "../data/marks/stripe.svg", ""):
             assert raw(port, f"/api/app/mark?id={wrong}&token=t")[0] == 400, wrong
         assert raw(port, "/api/app/mark?token=t")[0] == 400
+        assert raw(port, "/api/mark?id=nope&token=t")[0] == 404 and raw(port, "/api/mark?id=stripe")[0] == 403
         assert raw(port, "/api/app/mark?id=adobe.analytics&token=t")[0] == 404  # an entry without a mark: no image
         started = time.monotonic()
         assert raw(port, "/api/app/mark?id=packaged.example&token=t")[0] == 404

@@ -56,7 +56,7 @@ La precedente misura Windows, Python 3.13.14, registrava 9 controlli in 2,477 s:
 
 Conferma del 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`, escludendo le modifiche locali: **9/9 controlli HTTP passati** con gli stessi parametri (3 cicli, 4 richieste, 2 consumer), in 1,678 s. Python 3.13.18 su Linux, container Daodan su Kiri 0.2.1, senza rete né mount host, con limiti di 1 GiB, 2 CPU e 256 processi.
 
-## Test delle interfacce Imago
+## Test delle interfacce Sigrid
 
 La [suite browser](../../viewer/test/browser.mjs) esercita gli asset distribuiti dell'app e dell'esploratore. Il comando è `npm run test:ui` dalla directory `viewer/`, in un ambiente con le dipendenze del viewer e Chromium di Playwright installati.
 

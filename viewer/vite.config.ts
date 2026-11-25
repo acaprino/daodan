@@ -3,17 +3,17 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 
-// Both distributed pages share Imago's styles. Reject a second control stylesheet at build time.
-function imagoStyles(): Plugin {
-  const css = dirname(fileURLToPath(import.meta.resolve('@acaprino/imago/css/imago.css')));
+// The pages take their styles from Sigrid alone. Any other stylesheet stops the build.
+function systemStyles(): Plugin {
+  const css = dirname(fileURLToPath(import.meta.resolve('@acaprino/sigrid/styles.css')));
   return {
-    name: 'imago-styles', enforce: 'pre',
+    name: 'system-styles', enforce: 'pre',
     transform(_source, id) {
       const path = id.split('?')[0];
       if (!path.endsWith('.css')) return;
-      const fromImago = relative(css, path);
-      if (isAbsolute(fromImago) || fromImago === '..' || fromImago.startsWith('..' + sep)) {
-        this.error(`Define shared styles in @acaprino/imago: ${path}`);
+      const fromSystem = relative(css, path);
+      if (isAbsolute(fromSystem) || fromSystem === '..' || fromSystem.startsWith('..' + sep)) {
+        this.error(`The pages' styles are @acaprino/sigrid's only: ${path}`);
       }
     },
   };
@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => ({
   root: mode === 'app' ? 'app' : '.',
   publicDir: resolve('public'),
   base: './',
-  plugins: [imagoStyles(), licenseNotices(mode !== 'app')],
+  plugins: [systemStyles(), licenseNotices(mode !== 'app')],
   build: {
     outDir: mode === 'app' ? '../../daodan/assets/app' : '../daodan/assets/viewer',
     emptyOutDir: true, chunkSizeWarningLimit: 2500,
