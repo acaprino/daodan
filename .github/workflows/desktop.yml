@@ -117,7 +117,7 @@ jobs:
           $summary = @"
           - app/index.html: $($installed.ToLower())
           - the private Python: $(& "$runtime/python.exe" -I -V), $([Math]::Round($size)) MB
-          - from the start of the server's process to its first line, with no bytecode written: $first ms
+          - from the start of the server's process to its first line, with no bytecode of Daodan's: $first ms
           "@
           $summary >> $env:GITHUB_STEP_SUMMARY
           Write-Host $summary
