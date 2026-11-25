@@ -114,6 +114,28 @@ Regole che valgono per tutte:
 5. **Le interfacce desktop Python** si riconoscono dal codice (deciso il 19 novembre); la loro osservazione dinamica ha avuto un «no per ora» (20 novembre) ed entra con l'ondata 11.
 6. **Una voce nuova dell'anagrafica** (NiceGUI, Wails, un toolkit desktop) entra con un caso reale nel corpus.
 
+### Come si sa che cosa lanciare
+
+Vale per ogni ecosistema, e per tre cose: come si lanciano i test, come parte l'app, come si costruisce. Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Dove nessuna fonte lo dà, il passo è una lacuna e non lancia nulla.
+
+Le fonti, dalla più forte alla più debole. Una fonte più forte vince su una più debole, che resta annotata.
+
+| Fonte | Che cosa dice | Grado | Stato |
+| --- | --- | --- | --- |
+| L'utente | Il comando, scritto da chi conosce il progetto, tenuto nell'archivio di Daodan e mai nel progetto | `confermato` | **[proposta del proprietario, 25 novembre]** |
+| Lo strumento di build | Il comando che lo strumento stesso prevede: `npm test`, `go test`, `cargo test`, i test di Gradle e Maven, `dotnet test`, CTest | `dichiarato` | Nel codice |
+| I file del progetto | Lo script `test`, `start` o `dev`; la configurazione di pytest; una riga `python -m unittest` in `tox.ini` o in un makefile. Uno script con un nome qualsiasi vale per il runner che lancia, non per come si chiama | `dichiarato` | Nel codice |
+| La CI del progetto | Il passo che la CI esegue per i test, con i servizi che avvia accanto e i passi di prima | `dichiarato` | In parte: servizi e passi di prima sì, il comando dei test no |
+| Un modello piccolo, in locale | Sceglie fra i comandi che il progetto scrive da qualche parte (script, bersagli di un makefile, passi della CI, blocchi di codice del README) quello che lancia i test | `proposto` | **[proposta del proprietario, 25 novembre]** |
+
+Regole per il modello:
+
+1. **Sceglie, non scrive.** Risponde con una chiamata di funzione il cui argomento è un comando già presente in un file del progetto, con file e riga. Un comando che non è in nessun file viene rifiutato.
+2. **Il suo esito è `proposto`**, mai `dichiarato`: lo si vede nel grafo e nelle lacune, e l'utente può confermarlo o correggerlo.
+3. **Gira dove gira tutto il resto:** il comando scelto parte solo nel container, senza rete. Il modello è facoltativo, in locale e senza rete, come gli embedding: senza, resta la lacuna.
+4. **Non entra nel nucleo:** è un adattatore dietro lo stesso contratto dei motori, e lo step che trova i comandi non sa quale modello risponde.
+5. **Prima la misura.** Il corpus ha già i comandi attesi di ogni progetto. Si confrontano, sugli stessi casi: i lettori di oggi; con la CI come fonte; un modello piccolo così com'è, con le chiamate di funzione; lo stesso modello specializzato. Si specializza solo se la versione così com'è non basta e quella specializzata sì.
+
 ### Le anagrafiche
 
 Dati globali in `daodan/data/`. Ognuna ha un controllo che dice dove lei e il codice non concordano.
@@ -273,8 +295,11 @@ Da: spec dell'esecuzione del programma e delle interfacce (entrambe proposte del
 6. L'esplorazione nel browser: la pagina offerta dal server del progetto, Electron con uno schermo virtuale, Tauri e Wails con il driver della webview. I controlli dietro un accesso non si raggiungono senza credenziali (interfacce, 7; piano, 11).
 7. La fonte osservata per i flussi: ruolo e nome dei controlli, le chiamate di un clic. Qt non è provato; mancano osservazioni dal vivo (spec degli ingressi, «Stato»).
 8. **[proposta]** La riproduzione di un finding e un'indagine nel container, dopo la correzione di `review-quality-gates` (esecuzione, 5).
-9. **[misura]** La corsa Python su Daodan con `--continue-on-collection-errors`; per C# il limite che il registro può chiudere (passo dinamico, «Stato» e 7).
-10. Finché l'ondata 11 non è fatta, un modulo con superficie `desktop`, `windows` o `android` è riconosciuto e non eseguito: lacuna `ui_execution_deferred:<superficie>`.
+9. **[proposta]** Il comando dei test dalla CI del progetto: oggi dalla CI si leggono i servizi e i passi di prima, non il passo che lancia i test («Come si sa che cosa lanciare»).
+10. **[proposta]** Il comando detto dall'utente, nell'archivio di Daodan, con il grado `confermato`.
+11. **[proposta, misura]** Il modello piccolo che sceglie il comando fra quelli scritti nel progetto: prima il benchmark a quattro bracci sul corpus, poi la scelta fra il modello così com'è e uno specializzato (candidati: Gemma 3 con le chiamate di funzione, FunctionGemma).
+12. **[misura]** La corsa Python su Daodan con `--continue-on-collection-errors`; per C# il limite che il registro può chiudere (passo dinamico, «Stato» e 7).
+13. Finché l'ondata 11 non è fatta, un modulo con superficie `desktop`, `windows` o `android` è riconosciuto e non eseguito: lacuna `ui_execution_deferred:<superficie>`.
 
 **Cancello:** le cinque prove della spec dell'esecuzione sono misurate; l'esplorazione gira su un progetto vero con un gestore diverso da npm.
 
@@ -372,6 +397,7 @@ Da: «Le superfici e come si eseguono», sopra; `docs/roadmap.md`, fase 3. **[de
 11. Le soglie di `benchmarks/system-map` e i riferimenti, mai confermati: ogni numero è una bozza (ondata 8).
 12. L'ordine fra albero delle chiamate e corsa del programma; il primo linguaggio (ondata 7).
 13. Il via per le prove a pagamento: la prova 0 con Qwen e Opus, la misura 8.
+14. Il comando dei test quando il progetto non lo dichiara: dall'utente, dalla CI, da un modello piccolo. Quali delle tre, e in che ordine (ondata 7).
 
 ## I documenti tolti
 
