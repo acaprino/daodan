@@ -108,3 +108,45 @@ Differenze dalle proposte scritte sopra:
 - G18: «Nodi del grafo» è stata spostata dopo «Come si sa che cosa lanciare», perché da H2 non assorbisse le due sezioni seguenti.
 - G19: i termini sono cambiati anche dentro il punto `[deciso]` sul modello di evidenza (solo i nomi); «modulo» e «unità» restano senza definizione, perché non ne ho trovata una citabile.
 - La fase 4 già avviata è stata fermata prima del rapporto, perché leggeva il testo di prima: superata, non «zero rilievi».
+
+# Fase 4: seconda visione d'insieme
+
+Rapporto in [`intermediate_zoom_out_report.md`](intermediate_zoom_out_report.md). L'utente ha risposto «Ok» alle tre scelte offerte, inteso come: correggere la riga sugli strumenti (Z5, errore del coordinatore, corretta) e passare alla fase 5. Gli altri rilievi Z1-Z11 restano aperti.
+
+# Fase 5: prontezza del piano, giro 1
+
+**Target:** `docs/plans/refactoring.md`. Rilievi in [`implementation_readiness_report.md`](implementation_readiness_report.md). Il piano contiene lavoro non in un commit scritto fuori da questa sessione.
+**Conteggio (50):** 17 ESCALATE, 19 PROPOSE FIX, 14 DECLINE, 0 CONTEST. Nessuna modifica applicata. Il giro non è pulito.
+
+## ESCALATE: decisioni del proprietario
+
+| Id | Che cosa va deciso |
+| --- | --- |
+| R-B1 | Per ogni difetto di T0.3: sintomo, correzione o quarantena, come proteggere le tessere |
+| R-B3 | Campione di riferimento, domande, oracolo, protocollo cieco |
+| R-M1, R-M2 | Se la sonda di rete è in T0, e che cosa prova |
+| R-M3, R-M5, P-B2 | Che cosa vuol dire «run coerenti» e con quali soglie si chiudono i cancelli |
+| R-M4 | Come la regola dello SHA convive con albero sporco e commit del bot di `modal.yml` |
+| R-M6, R-M7, R-M8 | Forma del dossier, come si raccolgono le decisioni, che cosa aggiorna T0.C.1 |
+| R-M9, P-M5 | Confini delle tranche di T1 e dove sta il punto 9; una sola descrizione per tranche |
+| P-B1 | `[deciso]` su punti riaperti dalle «Scelte aperte» |
+| C-M6 | La regola `.ts` è un difetto o una scelta da accettare |
+| C-M8, P-M4 | Un solo percorso e un solo esito per ogni step |
+
+## PROPOSE FIX
+
+| Id | Modifica proposta |
+| --- | --- |
+| C-B1 | In `architettura.md` e nel piano: scrivere che oltre ai registri il proxy apre gli host fissi per strumento e quelli che il progetto dichiara (indicizzatori, esecuzione osservata, dipendenze Python da Git, secondo tentativo di Gradle). Decisione del proprietario, non di questa correzione: «come una CI» o «solo registri» |
+| R-B2, C-M2 | Nominare il flake misurato (`test_codebase_map_playwright_controls.py`); l'instabilità di `test_codebase_map_app.py` non ha test né causa |
+| C-M1 | T2.3: `JavaEngine` e `KotlinEngine` non esistono; resta `KotlinResolver.kt` |
+| C-M3 | Dire che `modal.yml` con `corpus` o `baseline` fa commit e push, e che nessun workflow esegue `pytest` |
+| C-M4 | T0.A.2: aggiungere gli altri punti che usano la rete e le sonde già presenti (`container.leaves`, `container.reached`) |
+| C-M5 | Il parser dei lockfile, la tabella dei comandi e le neutralizzazioni non esistono: da creare in T3 |
+| C-M7 | T1.1 e T1.4: `header.py` esiste e va collegato; perimetro reale di go-enry |
+| P-M1, P-M2, P-M3, P-M6 | Titolo «accertate», legenda di `[misura]`, `[difetto]`, `[spike]`, un solo termine per concetto, un fatto per voce |
+| R-N1, R-N2, R-N4, C-N1, C-N2, C-N3, C-N7 | 27 file di test, percorsi dalla radice, `read` di `flask_app.py`, nome del test di `support_table` |
+
+## DECLINE: minori registrati
+
+R-N3, R-N5, C-N4, C-N5, C-N6, P-N1, P-N2, P-N3, P-N4, P-N5, P-N6, P-N7, P-N8, P-N9.

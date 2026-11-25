@@ -87,7 +87,7 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 | --- | --- | --- |
 | Voce con `category: service` che un file dichiara | Nodo esterno con il logo della voce; arco `uses` da ogni file che la mostra (`uncertain` dove la menziona soltanto). Una voce solo menzionata nel progetto non è un nodo | `type` della voce |
 | Voce con `category: framework` o `library` | Non è un nodo: sta nel gruppo i cui file la dichiarano, con il suo logo. Il gruppo porta il logo del framework quando ne dichiara uno solo | — |
-| Voce con `category: tool` | Né nodo né elenco del gruppo | — |
+| Voce con `category: tool` | Non è un nodo, e nel grafo dell'app non è fra le tessere del gruppo; il modulo la elenca nel campo `tools` dell'involucro (`daodan/core/visual.py`) | — |
 | Modulo esterno dichiarato dal progetto | Nodo esterno; se ha l'id di una voce con `category: service`, prende tipo e logo della voce | `servizio o API` |
 | Funzione di una rotta; funzione che lega un'azione dell'utente | Il simbolo, se non ha già un tipo | `servizio o API`; `schermata` |
 | Store | Nodo `store` | `node_type` della regola di collegamento |
@@ -105,13 +105,13 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 Un solo oggetto condiviso tra interfaccia, MCP e riga di comando (il giornale degli eventi resta come cronaca).
 
 1. **Completo nei vincoli prima dell'avvio:** prima che parta qualunque cosa, il piano espone tutti gli step, le politiche, i permessi e le condizioni di arresto.
-2. **Incrementale nelle azioni concrete:** le azioni che dipendono dalla scoperta (moduli, download, build, suite di test, avvio app) vengono aggiunte e aggiornate nello stesso piano man mano che gli step `recognize_stack`, `find_modules` e `find_entry_points` le determinano. Se emerge un'azione che richiede consenso (download pesante, licenza) o eccede i permessi, l'esecuzione si ferma su quell'azione.
+2. **Incrementale nelle azioni concrete:** le azioni che dipendono dalla scoperta (moduli, download, build, suite di test, avvio app) vengono aggiunte e aggiornate nello stesso piano man mano che gli step `recognize_stack`, `find_modules` e `find_entry_points` le determinano. Se emerge un'azione che richiede consenso (download pesante, licenza) o eccede i permessi, l'esecuzione si ferma su quell'azione; per un host da approvare vale «Servizi comuni».
 3. **Dice che cosa fa, non come:** frasi leggibili («lancia i test di `api`»), con strumento/comando/versione come dettaglio apribile. Ogni azione indica bersaglio e tre fatti: se esegue codice del progetto, se gira nel container, se scarica dalla rete e quanto pesa.
-4. **Stato per azione** aggiornato in tempo reale: `da fare`, `in corso`, `fatta`, `fallita`, `saltata` (già fresca), `non possibile` (con causa e rimedio). Tipi di azione da elenco chiuso.
+4. **Stato per azione** aggiornato in tempo reale: `da fare`, `in corso`, `fatta`, `fallita`, `saltata` (già fresca), `non possibile` (con causa e rimedio), `in attesa di approvazione` (un suo host attende la risposta di una persona). Tipi di azione da elenco chiuso.
 
 ## L'interfaccia segue la pipeline
 
-La UI (solo componenti Sigrid nella shell Imago) legge il piano e i risultati degli step senza ricostruirli dagli eventi e senza tenere elenchi propri di fasi. Mostra gli otto step con i loro risultati, i consensi prima dell'esecuzione, l'azione in corso e le lacune. Le parole interne («pre-mappa», «scan», «stack», «analyze») escono dall'interfaccia.
+La UI (solo componenti Sigrid nella shell Imago) legge il piano e i risultati degli step senza ricostruirli dagli eventi e senza tenere elenchi propri di fasi. Mostra gli otto step con i loro risultati, i consensi prima dell'esecuzione, l'azione in corso e le lacune. Un host da approvare («Servizi comuni») è un popup con host, porta, indirizzo risolto e il file che lo dichiara. Le parole interne («pre-mappa», «scan», «stack», «analyze») escono dall'interfaccia.
 
 ## Le anagrafiche (`daodan/data/`)
 
@@ -131,18 +131,28 @@ Ogni anagrafica deve avere un controllo automatico di coerenza con il codice:
 ## Servizi comuni
 
 - **Motore di container:** isola sempre il codice del progetto. Su Windows è il **Kiri** di Daodan, in una distribuzione WSL 2 propria; altrove è quello dell'utente (`docker`, poi `podman`).
-- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy sui soli registri ammessi, strumenti verificati per sha256; tutto il resto gira senza rete. **Controllo decisivo sulla rete `[deciso]`:** nessuna uscita diretta dal container, solo proxy verso registri autorizzati (inclusi redirect, DNS e IP letterali); il parser dei lockfile resta un controllo preventivo, non il confine di isolamento.
-  - **Nel codice** (`daodan/core/container.py`): esecuzione con `--network none`, preparazione dietro il proxy ai soli registri, `--security-opt no-new-privileges`. Non passa `--cap-drop` né `--user`. La prova su un container vero è nel piano (T3.1).
+- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy, strumenti verificati per sha256; tutto il resto gira senza rete. Il parser dei lockfile resta un controllo preventivo, non il confine di isolamento.
+  - **Nel codice** (`daodan/core/container.py`): esecuzione con `--network none`; preparazione su una rete interna con il proxy (`container.PROXY_SCRIPT`) come sola uscita; `--security-opt no-new-privileges`. Il proxy apre senza chiedere i registri di `package-managers.json`, gli host fissi degli strumenti (`premap/container_runner.py`, `preparation.py`) e gli host che il progetto dichiara, fra cui quelli delle sue dipendenze (`preparation.declared`), dei requisiti Python da Git (`preparation.python_vcs`) e, al secondo tentativo di Gradle, dei repository della build. Non passa `--cap-drop` né `--user`. La prova su un container vero è nel piano (T3.1).
+- **Uscita di rete con approvazione `[deciso]`** (non nel codice; nessun traguardo del piano la porta). Sostituisce «solo proxy verso registri autorizzati» e ritira l'apertura «come una CI» degli host dichiarati.
+  - **Confine:** nessuna uscita diretta dal container di analisi; il controllo sta fuori, nel proxy, unica uscita (inclusi redirect, DNS e IP letterali). Un indirizzo interno è rifiutato anche se il nome è approvato, salvo un sì apposito.
+  - **Senza chiedere** si aprono solo i registri ammessi e gli host fissi. Ogni altro host chiede a una persona: il proxy rifiuta subito, e dopo il sì il passo si rilancia; gli host dichiarati si chiedono prima che il passo parta. Se il passo riesce comunque con un host rifiutato, il risultato vale e la richiesta resta visibile.
+  - **Risposte:** «sempre per questo progetto», «solo per questa analisi», «no». La whitelist sta nella cartella condivisa di Daodan, mai nel progetto.
+  - **Si approva solo dalla GUI.** MCP e riga di comando mostrano le richieste in attesa e non approvano mai: il modello legge il progetto analizzato, e un client MCP che è un agente può rispondere da sé a una elicitation.
+  - **Lacune:** `approval_required` senza risposta o senza schermo; `host_denied` dopo un no.
+  - **Strumento del proxy:** lo sceglie una prova su Modal fra Smokescreen e il proxy attuale esteso, sugli stessi criteri: solo porta 443, eccezione apt, lista da file, rifiuti leggibili, indirizzi interni rifiutati.
 - **Lanciatore dei comandi:** servizio comune a `find_modules`, `find_entry_points`, `link_calls` e `run_and_observe`.
 - **Giornale:** traccia inizio, avanzamento, lacune e fine di ogni step e adattatore.
 - **Secretlint:** ogni testo che lascia la macchina o va a un LLM passa prima da Secretlint. **Nel codice:** `secret_mask`, che lo lancia, è chiamato da `daodan/core/app.py` (risultati degli strumenti e prompt) e da `daodan/core/mcp_server.py` (risultati ed errori).
 
 ## Termini
 
+- **Cartella condivisa:** la cartella di Daodan sulla macchina, fuori da ogni progetto, dove stanno gli strumenti installati al primo uso (`embedding_worker.shared_cache_dir`).
+- **Host fisso, host dichiarato:** fisso è quello che il codice di Daodan assegna a uno strumento; dichiarato è quello che i file del progetto nominano per dipendenze o build.
 - **Kiri:** il motore di container che Daodan porta su Windows, in una distribuzione WSL 2 propria (`daodan/core/container.py`).
 - **Noir:** lo scanner di rotte OWASP Noir, che gira nel container (`daodan/core/premap/noir.py`).
 - **Fork `stack-analyser`:** il riconoscitore delle tecnologie, un fork di quello di Specfy (`daodan/core/stack_analyser.py`).
 - **Pre-mappa:** nel disegno il modello di build, uscita di `find_modules`; oggi `daodan/core/premap/` tiene anche rotte ed eventi.
+- **Smokescreen:** il proxy di uscita di Stripe, candidato a proxy della preparazione.
 - **SCIP:** il formato di indice del codice di un intero progetto, che `daodan/core/code_graph.py` legge come un grafo.
 - **Store:** ciò a cui il codice accede in scrittura o lettura, nominato con la sua chiave da una regola di collegamento (`daodan/core/flows.py`).
 - **Tessera:** il logo di una tecnologia dentro la cornice di Daodan.
