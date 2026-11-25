@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25", "PyYAML>=6"]
+# dependencies = ["mcp>=2.0.0,<3", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25", "PyYAML>=6"]
 # ///
 """The standalone app: one local server, from the address of a public repository to its graph.
 
-    uv run --no-project --script app.py [--work DIR] [--port N]
+    uv run --no-project --script app.py [--work DIR] [--port N] [--desktop]
 
 The launcher composes what exists and owns its end: `repository` gives the checkout, `MapService` the run (snapshot,
 pre-map, stack, and the pass that builds the graph beside it), `visual.make_server` the transport on 127.0.0.1 with
@@ -123,7 +123,7 @@ class App:
         self.service: MapService | None = None
         self.context: dict | None = None
         self.job = {"state": "idle", "step": None, "detail": ""}
-        self.mcp_ready = "not prepared"  # whether the MCP server's own packages are fetched: said in the state
+        self.mcp_ready = "not prepared"  # whether the MCP server starts: said in the state
         self.environment = environment  # what `setting` reads again when a key is forgotten
         self.engine = engines.recalled(self.work, environment)
         self._saving = threading.Lock()  # one `configure` at a time: the folder, the deposit and `engine` agree
@@ -234,7 +234,7 @@ class App:
         return getattr(self, held)
 
     def _warm(self) -> None:
-        """Fetch the MCP server's own packages now, so that a command-line engine finds it ready when it starts."""
+        """Try the MCP server now, so that the state says whether a command-line engine will find it."""
         launch = self.mcp()
         try:
             done = subprocess.run([launch["command"], *launch["args"][:-2], "--help"], capture_output=True, text=True,
@@ -247,9 +247,8 @@ class App:
         """How a command-line engine, or a session of the person's, starts Daodan's MCP server on the checkout."""
         if self.context is None:
             return None
-        return {"command": "uv", "args": ["--directory", PACKAGE.as_posix(), "run", "--no-config", "--no-project",
-                                          "--script", (SCRIPT_DIR / "mcp_server.py").as_posix(), "--project",
-                                          Path(self.context["path"]).parent.as_posix()]}
+        return {"command": sys.executable, "args": [(SCRIPT_DIR / "mcp_server.py").as_posix(), "--project",
+                                                    Path(self.context["path"]).parent.as_posix()]}
 
     def _held(self) -> dict:
         """The part of the state this process holds, cheap to read: the run's states are read from its store."""
@@ -726,15 +725,47 @@ class App:
         self.marks.close()
 
 
+def _held_input() -> int:
+    """The standard input of a server in a window, kept for this process alone: the others it starts get an empty one.
+    While a read of a pipe waits, Windows makes any other process that holds the same end wait too, when it starts."""
+    held = os.dup(0)
+    empty = os.open(os.devnull, os.O_RDONLY)
+    os.dup2(empty, 0)
+    os.close(empty)
+    return held
+
+
+def _when_ended(held: int, stop) -> None:
+    """Call `stop` when the input `held` ends, or cannot be read."""
+    try:
+        while os.read(held, 4096):
+            pass
+    except OSError:
+        pass
+    stop()
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--work", type=Path, default=Path.home() / ".daodan" / "app",
                         help="where checkouts and their analysis live; default: .daodan/app in the home folder")
     parser.add_argument("--port", type=int, default=0, help="the port on 127.0.0.1; default: a free one")
+    parser.add_argument("--desktop", action="store_true",
+                        help="for Daodan's window: end when the standard input ends, print the address and nothing "
+                             "else, and take a free port when the one asked for cannot be had")
     args = parser.parse_args(argv)
+    held = _held_input() if args.desktop else None
     app, token = App(args.work), secrets.token_urlsafe(24)
-    server = app.serve(args.port, token)
+    try:
+        server = app.serve(args.port, token)
+    except OSError:
+        if not args.desktop or not args.port:
+            raise
+        server = app.serve(0, token)
     print(f"http://127.0.0.1:{server.server_address[1]}/app/?token={token}", flush=True)
+    if held is not None:
+        os.dup2(2, 1)  # what this process or one it starts prints from now on goes where the errors go
+        threading.Thread(target=_when_ended, args=(held, server.shutdown), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

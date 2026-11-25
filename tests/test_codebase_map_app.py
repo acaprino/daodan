@@ -916,6 +916,7 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
         assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["scan"] == "fresh"
         assert state["mcp"]["args"][-2:] == ["--project", project.parent.as_posix()]
+        assert state["mcp"]["command"] == sys.executable  # its packages are the app's: no `uv` on the PATH
         # what Daodan writes about the checkout is beside it: a container's output may not be inside the project
         assert (project.parent / ".daodan").is_dir() and not (project / ".daodan").exists()
         # The page observes: the run's events from its start and the app's state, then again from the cursors.

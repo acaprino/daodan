@@ -537,7 +537,9 @@ def export(run_dir: Path, store_root: Path) -> Path:
 _TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
           ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
           ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon", ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8"}
-_POLICY = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:"
+# `http://ipc.localhost` is where a page in Daodan's window speaks to the window (Tauri); no server answers there.
+_POLICY = ("default-src 'self'; connect-src 'self' http://ipc.localhost; img-src 'self' data:; "
+           "style-src 'self' 'unsafe-inline'; worker-src 'self' blob:")
 
 
 class _Server(ThreadingHTTPServer):
