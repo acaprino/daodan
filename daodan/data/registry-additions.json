@@ -1200,14 +1200,14 @@
   },
   {
    "id": "boto3",
-   "category": "library",
+   "category": "service",
    "by": "catalog"
   },
   {
    "id": "boto3",
    "name": "Boto3",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://boto3.amazonaws.com",
    "by": "model"
   },

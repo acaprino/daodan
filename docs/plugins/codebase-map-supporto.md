@@ -183,9 +183,9 @@ Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `lib
 | Classe | Voci con una regola del fork | Voci con la categoria scritta, fra tutte |
 | --- | --- | --- |
 | framework | 139 | 139 |
-| library | 197 | 197 |
+| library | 196 | 196 |
 | tool | 164 | 164 |
-| service | 718 | 718 |
+| service | 719 | 719 |
 
 Ognuna delle 499 voci `project` con una regola del fork ha la sua `category` scritta: nessuna è `framework` solo per il default.
 
@@ -204,7 +204,7 @@ Riconoscimento dello stack sul corpus, giro del 19 novembre 2026 (`benchmarks/pr
 
 Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: il fork di stack-analyser ha una regola per la voce (la colonna «Regola del fork»: `sì` se la voce viene dal catalogo del suo rilascio, `no` se il registro la nomina e il fork non la riconosce) e la riconosce da ciò che il progetto mostra (un pacchetto, un'immagine, un file, un sorgente). Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
-<details><summary>Framework, librerie e strumenti: 500 voci</summary>
+<details><summary>Framework, librerie e strumenti: 499 voci</summary>
 
 | Voce | Id | Classe | Regola del fork | Lettura propria | Fixture in cui lo step la trova (19 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
@@ -360,7 +360,6 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Basecoat | `basecoat` | library | sì | — | 0 |
 | Bootstrap | `bootstrap` | library | sì | — | 5 |
 | Bootstrap Icons | `bootstrapicons` | library | sì | — | 1 |
-| Boto3 | `boto3` | library | sì | — | 4 |
 | Broadway | `broadway` | library | sì | — | 0 |
 | BullMQ | `bullmq` | library | sì | — | 0 |
 | Casbin | `casbin` | library | sì | — | 0 |
@@ -713,18 +712,18 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 
 ## Servizi esterni
 
-Le voci di servizio del catalogo: 832, 830 di `kind` `service` e 2 di `kind` `project` con la `category` `service` (un software che gira accanto al sistema e a cui il codice si connette); 721 con una regola del fork per riconoscerle, 453 con un marchio: 453 con il file nel prodotto (`mark`), 0 scaricato al primo uso dalla fonte ufficiale (`mark_source`); 35 hanno gli host con cui le si menziona negli URL (`hosts`). Di quelle con una regola, 3 hanno un'altra categoria (`tool` 3) e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
+Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `project` con la `category` `service` (un software che gira accanto al sistema e a cui il codice si connette); 722 con una regola del fork per riconoscerle, 453 con un marchio: 453 con il file nel prodotto (`mark`), 0 scaricato al primo uso dalla fonte ufficiale (`mark_source`); 35 hanno gli host con cui le si menziona negli URL (`hosts`). Di quelle con una regola, 3 hanno un'altra categoria (`tool` 3) e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
 
 | Tipo | Voci | Con una regola del fork | Con marchio |
 | --- | --- | --- | --- |
-| servizio o API | 644 | 533 | 347 |
+| servizio o API | 645 | 534 | 347 |
 | database | 122 | 122 | 76 |
 | autenticazione | 29 | 29 | 10 |
 | gateway | 17 | 17 | 11 |
 | coda | 14 | 14 | 9 |
 | filesystem | 6 | 6 | 0 |
 
-<details><summary>Servizi con una regola del fork: 718 voci</summary>
+<details><summary>Servizi con una regola del fork: 719 voci</summary>
 
 | Servizio | Id | Tipo | Host | Marchio | Fixture in cui lo step lo trova (19 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
@@ -863,6 +862,7 @@ Le voci di servizio del catalogo: 832, 830 di `kind` `service` e 2 di `kind` `pr
 | Bitwarden | `bitwarden` | servizio o API | — | sì | 0 |
 | Blackfire | `blackfire` | servizio o API | — | no | 0 |
 | Bluesky | `bluesky` | servizio o API | — | sì | 0 |
+| Boto3 | `boto3` | servizio o API | — | no | 4 |
 | Box | `box` | servizio o API | — | sì | 0 |
 | Braintree | `braintree` | servizio o API | — | sì | 0 |
 | Braintrust | `braintrust` | servizio o API | — | sì | 0 |

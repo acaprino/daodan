@@ -39,7 +39,8 @@ class DistributedRegistryTests(unittest.TestCase):
 
     def test_every_entry_says_its_support_from_its_rule_and_the_readers(self):
         self.assertEqual([e["id"] for e in self.value["entries"] if e.get("support") != registry_build.support(e)], [])
-        for ident, level in (("nextjs", "full"), ("stripe", "full"), ("docker", "full"), ("django", "partial"),
+        for ident, level in (("nextjs", "full"), ("stripe", "full"), ("boto3", "full"), ("docker", "full"),
+                             ("django", "partial"),
                              ("sqlalchemy", "partial"), ("temporal", "none")):
             self.assertEqual((ident, self.entries[ident]["support"]), (ident, level))
         for ident, module in registry_build.READERS.items():
@@ -77,9 +78,9 @@ class DistributedRegistryTests(unittest.TestCase):
         """The curated one from the additions, else the one of its rule's type (`CATEGORY_OF_TYPE`)."""
         self.assertEqual([i for i, e in self.entries.items() if "stack-analyser" in e["from"] and not e.get("category")], [])
         for category, idents in (("framework", ("angular", "django", "express", "nextjs")),
-                                 ("library", ("numpy", "boto3", "sqlalchemy", "d3js", "fontawesome")),
+                                 ("library", ("numpy", "sqlalchemy", "d3js", "fontawesome")),
                                  ("tool", ("jest", "biomejs", "ansible", "asdf", "alembic")),
-                                 ("service", ("apache_kafka", "etcd", "keycloak"))):
+                                 ("service", ("apache_kafka", "etcd", "keycloak", "boto3"))):  # boto3: the client of a service
             for ident in idents:
                 self.assertEqual((ident, self.entries[ident].get("category")), (ident, category))
 
@@ -174,7 +175,8 @@ class BuildTests(unittest.TestCase):
         value = self.build([])
         entries = {e["id"]: e for e in value["entries"]}
         self.assertEqual(entries["widget"], {"id": "widget", "name": "Widget", "kind": "project", "type": "altro",
-                                             "site": None, "mark": None, "from": ["stack-analyser"], "category": "tool"})
+                                             "site": None, "mark": None, "from": ["stack-analyser"], "category": "tool",
+                                             "support": "full"})
         self.assertEqual((entries["payhub"]["kind"], entries["payhub"]["type"], entries["payhub"]["category"],
                           entries["payhub"]["hosts"]), ("service", "gateway", "service", ["api.payhub.test"]))
         self.assertNotIn("hosts", entries["kernel"])

@@ -4353,15 +4353,15 @@
    "id": "boto3",
    "name": "Boto3",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://boto3.amazonaws.com",
    "mark": null,
    "from": [
     "additions",
     "stack-analyser"
    ],
-   "category": "library",
-   "support": "partial"
+   "category": "service",
+   "support": "full"
   },
   {
    "id": "bouncy-castle",
