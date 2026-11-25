@@ -1,71 +1,71 @@
-# Lo stack prima degli strumenti di build, e i nomi degli step
+# Lo stack prima dei moduli, e i nomi degli step
 
 **Stato:** piano chiesto dal proprietario il 25 novembre 2026. Nessun codice è cambiato. Sostituisce l'ordine e i nomi della spec della pipeline (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8) dove dicono altro.
 
-**Goal:** stack-analyser dice per primo com'è fatto il progetto (moduli, pacchetti dichiarati, strumenti di build, tecnologie); gli strumenti di build veri, nel container, vengono dopo e partono solo per ciò che è stato trovato; il codice di Daodan che rilegge a mano gli stessi manifest va via.
+**Goal:** ogni step ha una competenza sola. stack-analyser analizza lo stack: dice quali strumenti di build, toolchain, framework e tecnologie ci sono, e dove. Non trova i moduli. Lo step dopo prende ciò che è stato trovato e usa quegli strumenti di build per trovare i moduli e le loro dipendenze.
 
-**Perché:** oggi gli stessi manifest si leggono tre volte: `daodan/core/build_units.py` (704 righe, circa 35 lettori scritti a mano, con un lettore YAML proprio), stack-analyser, e gli strumenti nel container. Del fork Daodan usa solo le prove delle tecnologie e ne butta via componenti e dipendenze.
+**Perché:** oggi il riconoscimento è sparso. Ogni sorgente della pre-mappa decide da sé se il suo strumento c'è, cercando il suo file nell'inventario; le sorgenti dei framework riaprono ogni `package.json` (`premap/frameworks.py`); e i moduli si trovano prima che lo stack sia noto.
 
 ## Decisioni del proprietario
 
-1. stack-analyser, il nostro fork, viene prima degli strumenti di build.
-2. Lo step che interroga gli strumenti di build nel container resta, dopo: dà ciò che un file non dice (membri risolti, grafo dei pacchetti, versioni risolte, comandi).
-3. Ciò che il fork già fa non si rifà in Daodan. Ciò che gli manca si aggiunge al fork.
+1. stack-analyser, il nostro fork, analizza lo stack e basta. I moduli non sono suoi.
+2. Uno step dopo trova i moduli, usando gli strumenti di build che lo stack ha trovato.
+3. Chi riconosce è uno solo: ciò che il fork già riconosce non si riconosce di nuovo in Daodan. Uno strumento che il fork non conosce si aggiunge al fork.
 4. Gli step hanno il numero d'ordine nel nome: `1_list_files`.
 
 ## Gli step
 
-| Nome | Che cosa fa | Oggi |
+| Nome | Competenza | Oggi |
 | --- | --- | --- |
-| `1_list_files` | Percorre la cartella; di ogni file hash e linguaggio | `file_inventory.write` |
+| `1_list_files` | L'elenco dei file: di ognuno hash e linguaggio | `file_inventory.write` |
 | `2_read_code` | Simboli, import e chiamate di ogni file | `snapshot.write_reading` |
-| `3_recognize_stack` | stack-analyser: componenti, pacchetti dichiarati, strumenti di build, tecnologie. Scrive i moduli | `stack`, più la metà di `scan` che legge i file |
-| `4_ask_build_tools` | Nel container, lo strumento vero di ogni modulo trovato al 3. Corregge e completa i moduli | i comandi di modello di `scan` |
+| `3_recognize_stack` | Lo stack: strumenti di build, toolchain, framework, tecnologie, ognuno con il file che lo prova | `stack` |
+| `4_find_modules` | I moduli, le loro dipendenze, i comandi di test e di avvio: per ogni strumento di build trovato al 3, il suo adattatore | `scan` |
 | `5_link_calls` | Quale funzione chiama quale | `analyze` |
 | `6_run_and_observe` | Test e app nel container | `dynamic` |
 | `7_assemble_graph` | Unisce e dice cosa manca | `union` |
 
-Il numero è nel nome dello step (`NAME`, eventi, giornale, documenti, interfaccia). Un modulo Python non può iniziare con una cifra: la cartella è `step_1_list_files/`, la classe `ListFiles`. `plan` non è uno step: resta la funzione che è (`pipeline/plan.py`). Lo step `parse` di oggi, che dice solo il piano, sparisce.
+Dopo il 4 le tecnologie si assegnano ai moduli: è una unione di due uscite, non un riconoscimento.
 
-## Che cosa dà oggi il fork: prova esplorativa
+Il numero è nel nome dello step (`NAME`, eventi, giornale, documenti, interfaccia). Un modulo Python non può iniziare con una cifra: la cartella è `step_1_list_files/`, la classe `ListFiles`. `plan` resta la funzione che è (`pipeline/plan.py`); lo step `parse` di oggi, che dice solo il piano, sparisce.
 
-Rilascio `1.27.6-daodan.5` su 104 fixture di `benchmarks/project-model`, contro `results/daodan_modules.json`. Girata fuori da Modal, con il Node della macchina e non quello di Daodan, non salvata: non è una verifica finché il Task 1 non la rifà.
+## Che cosa dice oggi il fork degli strumenti di build: prova esplorativa
 
-| | Nel fork | Mancanti |
-| --- | --- | --- |
-| Moduli di oggi (147) | 101 | 46 |
-| Fixture con tutti i moduli | 72 su 104 | |
-| Dipendenze dichiarate, per manifest (215) | 153 | 62 |
-| Legami fra moduli (23) | 11 | |
+Rilascio `1.27.6-daodan.5` su 104 fixture di `benchmarks/project-model`: per ogni modulo che Daodan trova oggi (`results/daodan_modules.json`), il fork nomina uno strumento o un runtime sul file che lo dichiara? Girata fuori da Modal, con il Node della macchina, non salvata: non è una verifica finché il Task 1 non la rifà.
 
-Che cosa manca, letto nel sorgente del fork (`feature/stack-detection`, `453a2a9`):
+| Tipo di modulo | Moduli | Con uno strumento nominato | Che cosa nomina |
+| --- | --- | --- | --- |
+| npm | 41 | 41 | `nodejs` |
+| Cargo | 14 | 14 | `cargo`, `rust` |
+| Go | 13 | 13 | `golang` |
+| Gradle | 18 | 17 | `gradle` |
+| Maven | 7 | 7 | `maven` |
+| Python | 24 | 21 | il backend di build (`hatchling`, `setuptools`), non Python |
+| .NET, Composer, Bundler, pub, mix, Swift, Deno | 11 | 11 | `nuget`, `phpcomposer`, `bundler`, `dart`, `elixir`, `swift`, `deno` |
+| CMake | 15 | 0 | nessuna regola nel fork |
+| Nx (`project.json`), sbt, Terraform | 4 | 0 | |
 
-- **Python, 24 moduli su 24.** Il fork legge `pyproject.toml` e `requirements.txt` (`src/rules/spec/python/lockfile.ts`), ma crea un payload di nome `virtual`, e `Payload.recurse` fonde un `virtual` nel padre invece di farne un componente. Il nome del progetto (`[project].name`) non lo usa.
-- **CMake, 15 su 15.** Nessuna regola: C e C++ sono riconosciuti solo dall'estensione.
-- **Casi singoli:** `project.json` di Nx (2), `deno.json`, `build.sbt`, un modulo Terraform, un `settings.gradle.kts` composito, un progetto Yarn Berry.
-- **Non dato:** l'appartenenza a un workspace, la riga di ogni dipendenza.
+Nel catalogo del fork mancano del tutto: CMake, Bazel, Meson, Make, autotools, sbt, .NET SDK e MSBuild, Mix. Daodan ha un adattatore per ognuno.
 
 ## Vincoli
 
-- **Regola invalicabile.** Il fork legge file e non esegue nulla del progetto; il passo 4 gira solo nel container.
-- **Senza motore di container** i moduli sono quelli del passo 3, con la lacuna che dice cosa il passo 4 avrebbe aggiunto.
-- **Un lettore di `build_units.py` si toglie solo quando** il benchmark del Task 1 dice che per il suo tipo di manifest il fork dà gli stessi moduli e le stesse dipendenze. Fino ad allora resta, con scritto accanto perché.
+- **Regola invalicabile.** Il fork legge file e non esegue nulla del progetto; uno strumento di build gira solo nel container.
+- **Una competenza per step.** Nessun codice di `4_find_modules` cerca da sé se uno strumento c'è: lo legge dall'uscita del 3.
+- **Senza motore di container** `4_find_modules` usa i lettori dei file dello strumento trovato (`build_units.py`) e dichiara la lacuna di ciò che lo strumento vero avrebbe aggiunto.
 - **Niente gira qui:** fork su GitHub Actions, Daodan su Modal.
 
 ## Task
 
-- [ ] **1. La misura, come benchmark.** `benchmarks/stack-components/`: per ogni fixture i componenti del fork contro i moduli di oggi, per tipo di manifest (moduli, dipendenze, legami, workspace). Su Modal, con il Node di Daodan. Il README dichiara parametri e risultati. È il cancello dei Task 5 e 6.
-- [ ] **2. Fork: Python.** Un `pyproject.toml` con `[project].name` (o `[tool.poetry].name`) è un componente con quel nome; un `requirements.txt` da solo resta com'è. Test nel fork.
-- [ ] **3. Fork: ciò che Daodan usa e il fork non dà.** Il tipo di unità (workspace, membro), i membri dichiarati di un workspace, la riga di ogni dipendenza. Poi i tipi mancanti, uno per volta e solo se il Task 1 li conta: Nx, Deno, sbt, Terraform, CMake.
-- [ ] **4. Fork: rilascio `.6`**, fissato in `stack_analyser.py`, `tests/modal_pytest.py` e nei benchmark.
-- [ ] **5. Daodan: i moduli dai componenti.** `3_recognize_stack` gira il fork sull'inventario e scrive `modules.json` dai componenti. I lettori di `build_units.py` e quelli dei pacchetti della pre-mappa si tolgono per tipo di manifest, secondo il Task 1.
-- [ ] **6. Daodan: `4_ask_build_tools` dopo.** Le sorgenti con comandi partono per gli strumenti che il passo 3 ha trovato. Le sorgenti dei framework (Next.js, Nuxt, SvelteKit, React Router, Angular, Astro) chiedono al passo 3 dov'è il loro framework invece di riaprire ogni `package.json` (`premap/frameworks.py`).
-- [ ] **7. Daodan: i nomi.** `NAME` degli step, eventi, giornale, cartelle, documenti, interfaccia. Un giornale scritto con i nomi di prima si legge ancora.
-- [ ] **8. Documenti.** `README.md` («How the graph is built»), `docs/plugins/codebase-map.md` («Pipeline»), la spec della pipeline.
+- [ ] **1. La misura, come benchmark.** `benchmarks/stack-build-tools/`: per ogni fixture, gli strumenti di build che il fork nomina (con cartella) contro quelli che le sorgenti di oggi trovano da sé. Su Modal, con il Node di Daodan. Il README dichiara parametri e risultati.
+- [ ] **2. Fork: gli strumenti che mancano.** Una regola per CMake, Bazel, Meson, Make, autotools, sbt, .NET SDK, Mix e Nx (`project.json`), e Python nominato su `pyproject.toml` e `requirements.txt`. Solo riconoscimento: nessun componente nuovo. Rilascio `.6`, fissato in Daodan.
+- [ ] **3. Daodan: l'anagrafica degli strumenti di build.** `daodan/data/build-tools.json`: per ogni tecnologia del fork che è uno strumento di build o una toolchain, l'adattatore di `4_find_modules` che la usa. Un test dice quale adattatore non ha una voce e quale voce non ha un adattatore.
+- [ ] **4. Daodan: `3_recognize_stack` prima.** Il fork gira sull'inventario, senza moduli e senza pre-mappa. Scrive lo stack con, di ogni voce, file e cartella.
+- [ ] **5. Daodan: `4_find_modules` dopo.** Per ogni strumento trovato parte il suo adattatore, lettore e comando. Si toglie da ogni sorgente la ricerca del proprio file nell'inventario, e da `premap/frameworks.py` la lettura dei `package.json`. Poi le tecnologie si assegnano ai moduli.
+- [ ] **6. Daodan: i nomi.** `NAME` degli step, eventi, giornale, cartelle, documenti, interfaccia. Un giornale scritto con i nomi di prima si legge ancora.
+- [ ] **7. Documenti.** `README.md` («How the graph is built»), `docs/plugins/codebase-map.md` («Pipeline»), la spec della pipeline.
 
 ## Da decidere
 
-1. **CMake nel fork o solo nel container?** Un `CMakeLists.txt` è codice: i target li dice solo CMake eseguito. Proposta: il fork riconosce che c'è CMake e in quali cartelle; i target restano del passo 4.
-2. **Le tecnologie dopo il passo 4.** Oggi `stack` gira due volte, perché i comandi nel container danno pacchetti nuovi (Renovate, Compose, lock). Proposta: il fork gira una volta sola al passo 3; il passo 4 aggiunge i suoi segni al record con `technologies.merge`, senza rilanciare il fork.
+1. **I pacchetti che solo il passo 4 conosce.** Oggi Daodan passa al fork i pacchetti risolti da lock, Compose e Renovate, e per questo `stack` gira due volte. Con lo stack prima, quei pacchetti arrivano dopo. Proposta: il fork gira una volta al passo 3; il passo 4 aggiunge i suoi segni al record (`technologies.merge`) senza rilanciarlo.
+2. **I lettori di `build_units.py`.** Restano come ripiego di `4_find_modules` senza container, scelti dallo stack, o si tolgono e senza container i moduli sono una lacuna?
 3. **`2_read_code` prima di `3_recognize_stack`.** È l'ordine in cui il codice gira oggi; il disegno del 22 novembre metteva la lettura dopo. Il numero dice l'ordine vero: se si sposta, cambiano i nomi da 2 a 4.
-4. **Renovate.** È un terzo lettore dei pacchetti. Dopo il Task 5 va misurato che cosa dà in più del fork.
