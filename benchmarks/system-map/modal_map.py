@@ -648,6 +648,20 @@ def routes_case(name: str, case: dict, archive: bytes | None, rules: str, tag: s
             gaps_by_words=dict(collections.Counter(
                 str(g.get("reason") or g.get("detail") or g.get("kind"))[:90] for g in gaps).most_common(25)),
             calls_no_route=[g for g in gaps if "no handler" in str(g.get("reason") or g.get("detail"))][:60])
+        # what the dynamic step said about this project: why the app was or was not started and explored
+        import premap
+        journal = manifest.with_name("pipeline-events.jsonl")
+        answer["dynamic_events"] = [
+            {"kind": e["kind"], "analyzer": e.get("analyzer"), "level": e.get("level"), "message": str(e["message"])[:220],
+             **{key: str((e.get("data") or {})[key])[:300] for key in ("gap", "cause", "remedy") if (e.get("data") or {}).get(key)}}
+            for e in (json.loads(line) for line in journal.read_text(encoding="utf-8").splitlines() if line.strip())
+            if e.get("step") == "dynamic"][:80] if journal.is_file() else []
+        record = json.loads(premap.path(manifest).read_text(encoding="utf-8"))
+        answer["premap_starts"] = json.dumps(record.get("starts"))[:3000]
+        controls = manifest.with_name("observed-controls.json")
+        answer["observed_controls"] = [{k: (len(v) if isinstance(v, (list, dict)) else v) for k, v in app.items()}
+                                       for app in json.loads(controls.read_text(encoding="utf-8")).get("apps", [])][:6] \
+            if controls.is_file() else None
         # what Noir's rows that no function holds say, and what the snapshot declares in the files they cite
         import edge_view
         import semantic_store
