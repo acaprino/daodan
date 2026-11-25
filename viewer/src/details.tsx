@@ -1,4 +1,5 @@
 // The details in the inspector: the element chosen, else the flow with its steps, else what the project is and how its map is read.
+import { useRef } from 'react';
 import { ScreenBoundary } from '@acaprino/imago';
 import { Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
@@ -120,7 +121,9 @@ export function Details({ model, show, open, close }: { model: Model; show: (ask
   const shown = open ? shownDetails(state) : null;
   const entity = shown === 'entity' ? indexOf(envelope).byRef.get(state.selected!) : undefined;
   const flow = shown === 'flow' ? envelope.flows.find(item => item.ref === state.flow) : undefined;
-  const head = headOf(envelope, entity, flow);
+  const last = useRef(headOf(envelope));
+  const head = open ? headOf(envelope, entity, flow) : last.current;  // one that closes keeps its title as it slides out
+  last.current = head;
   const enter = entity && canEnter(state, entity.ref)
     ? <Button size="sm" aria-label={`Entra in ${entity.name}`} onClick={() => dispatch({ type: 'open', ref: entity.ref })}><Icon name="folderOpen" />Entra</Button>
     : undefined;

@@ -77,6 +77,8 @@ function App() {
   const narrow = useMedia('(width < 620px)');  // as on a phone, the status row is short
   const place = PLACES.find(item => item.id === s.kept.screen)!;
   useFocusKept(s.kept.analysisStage);
+  const title = useRef('Dettaglio');
+  if (detail) title.current = detail.title;  // one that closes keeps its title as it slides out
   useEffect(() => {
     window_.setTitle(document.title);  // the window's title is the page's
     model.start(notify);
@@ -108,7 +110,7 @@ function App() {
     <AppWindow views={PLACES} view={place.id} onView={screen => { leave(); model.navigate(screen); }} search={field && (() => find(field))}
       status={status} actions={s.server && place.actions(s)}
       footer={<Text>{[serviceLine(s), groups > 0 && `${plural(groups, 'gruppo', 'gruppi')} nel grafo`].filter(Boolean).join(' · ')}</Text>}
-      inspector={<Inspector title={detail?.title ?? 'Dettaglio'} open={detail !== null} onOpenChange={open => { if (!open) close(); }} footer={detail?.footer}>
+      inspector={<Inspector title={title.current} open={detail !== null} onOpenChange={open => { if (!open) close(); }} footer={detail?.footer}>
         <Column gap="lg" data-selectable="">
           {/* The one live region: it stays while what the details are of changes, and reads the name alone. */}
           <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
