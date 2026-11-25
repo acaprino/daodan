@@ -19,6 +19,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from file_formats import SOURCES
+
 from .base import (
     ClassInfo,
     ExternalCallInfo,
@@ -91,67 +93,11 @@ SUPPORTED_LANGUAGES: tuple[str, ...] = (
 )
 
 
-# File extension to language map. PL/SQL detection also looks at content
-# (see detect_language) because .sql is ambiguous between SQL and PL/SQL.
-SUPPORTED_EXTENSIONS: dict[str, str] = {
-    ".py": Language.PYTHON,
-    ".pyi": Language.PYTHON,
-    ".java": Language.JAVA,
-    ".js": Language.JAVASCRIPT,
-    ".mjs": Language.JAVASCRIPT,
-    ".cjs": Language.JAVASCRIPT,
-    ".jsx": Language.JAVASCRIPT,
-    ".ts": Language.TYPESCRIPT,
-    ".tsx": Language.TYPESCRIPT,
-    ".mts": Language.TYPESCRIPT,
-    ".cts": Language.TYPESCRIPT,
-    ".sql": Language.SQL,
-    ".ddl": Language.SQL,
-    ".dml": Language.SQL,
-    # PL/SQL specific extensions (Oracle).
-    ".pks": Language.PLSQL,  # Package spec
-    ".pkb": Language.PLSQL,  # Package body
-    ".plsql": Language.PLSQL,
-    ".pls": Language.PLSQL,
-    ".pck": Language.PLSQL,
-    ".prc": Language.PLSQL,  # Procedure
-    ".fnc": Language.PLSQL,  # Function
-    ".trg": Language.PLSQL,  # Trigger
-    # Rust.
-    ".rs": Language.RUST,
-    # Go.
-    ".go": Language.GO,
-    # Kotlin.
-    ".kt": Language.KOTLIN,
-    ".kts": Language.KOTLIN,
-    # C#.
-    ".cs": Language.CSHARP,
-    # C and C++. A `.h` header is C unless its text says C++ or Objective-C (see detect_language).
-    ".c": Language.C,
-    ".h": Language.C,
-    ".cc": Language.CPP,
-    ".cpp": Language.CPP,
-    ".cxx": Language.CPP,
-    ".hpp": Language.CPP,
-    ".hh": Language.CPP,
-    ".hxx": Language.CPP,
-    # Single-file frontend components.
-    ".vue": Language.VUE,
-    ".svelte": Language.SVELTE,
-    ".astro": Language.ASTRO,
-    # Markup: the rules of its `<style>` blocks.
-    **dict.fromkeys((".cshtml", ".ejs", ".erb", ".ftl", ".handlebars", ".hbs", ".htm", ".html", ".j2",
-                     ".jinja", ".jsp", ".jspx", ".liquid", ".mustache", ".njk", ".razor", ".twig", ".vm",
-                     ".xhtml"), Language.MARKUP),
-    # Stylesheets. Indented Sass is read as the SCSS its indentation implies;
-    # PostCSS sheets are CSS.
-    ".css": Language.CSS,
-    ".scss": Language.CSS,
-    ".sass": Language.CSS,
-    ".less": Language.CSS,
-    ".pcss": Language.CSS,
-    ".postcss": Language.CSS,
-}
+# File extension to language map, from Daodan's register of file formats (`data/file-formats.json`). PL/SQL
+# detection also looks at content (see detect_language) because .sql is ambiguous between SQL and PL/SQL; a `.h`
+# header is C unless its text says C++ or Objective-C. Markup gives the rules of its `<style>` blocks; indented
+# Sass is read as the SCSS its indentation implies, and PostCSS sheets are CSS.
+SUPPORTED_EXTENSIONS: dict[str, str] = SOURCES
 
 
 # Oracle-specific markers. We intentionally do NOT match generic "begin",

@@ -51,7 +51,7 @@ Ogni ruolo dichiara una tabella `Method loads`: quali sezioni dei riferimenti le
 
 ## Linguaggi e parser
 
-Sedici linguaggi e 63 estensioni (`SUPPORTED_EXTENSIONS` in `scripts/languages/__init__.py`):
+Diciassette linguaggi e 63 estensioni. L'anagrafica dei formati è un dato solo, `daodan/data/file-formats.json`, letto da `daodan/core/file_formats.py`: le estensioni lette con i simboli e il loro linguaggio, quelle registrate solo come file, i manifest, le cartelle in cui non si entra e i nomi che non si aprono. Accanto, `linguist-catalog.json` dice come Linguist chiama ogni formato accettato: lo scrive `format_catalog.py build` dal `languages.yml` del gem `github-linguist` a versione fissata, e `format_catalog.py check` dice dove anagrafica e catalogo non concordano (`tests/test_codebase_map_file_formats.py`). I moduli tengono i nomi di prima (`languages.SUPPORTED_EXTENSIONS`, `source_files.DOC_EXTENSIONS`, `tree_scope.DEPENDENCY_DIRS`).
 
 | Linguaggio | Estensioni | Estrazione |
 |---|---|---|
@@ -200,7 +200,7 @@ I passi sono quelli della spec, 8.11: qui c'è solo lo stato, là i dettagli.
 | Archi fra moduli e legame degli ingressi dentro `connect` | Da fare: oggi li fa il primo lettore | Passo 5; 8.2 |
 | I file che la pre-mappa esclude non si leggono (il pezzo E1 della spec) | Tolto: deciso il 24 novembre | Passo 5, pezzo E1 |
 | I chiamanti passano da `write_snapshot` a inventario e poi pipeline | Fermo: non cambia nulla per il prodotto | 8.3 |
-| Il linguaggio da una libreria nostra, con il catalogo di Linguist | Da fare: oggi `languages.detect_language`. go-enry non si usa per questo | 8.3 |
+| Il linguaggio da una libreria nostra, con il catalogo di Linguist | In parte: il catalogo c'è (`daodan/data/linguist-catalog.json`) e le estensioni vengono dall'anagrafica. Le regole sul contenuto restano in `languages.detect_language`. go-enry non si usa per questo | 8.3 |
 | Radici e alias degli import da `tsc` | Fermo: sui 25 progetti veri 0 import guadagnati e 110 persi. Oggi la lettura a mano (`import_resolution.py`) | Passo 5, pezzo F |
 | I nomi nuovi di step, eventi e cartelle (`parsers/`, `scanners/`, `resolvers/`, `observers/`) | Da fare. Fatto solo `NAME` in `indexers/` | Passo 6 |
 | Le prove 2 e 5: le due modalità danno lo stesso grafo; un ripiego è dichiarato | Da fare | 8.10 |

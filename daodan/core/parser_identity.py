@@ -5,9 +5,11 @@ from __future__ import annotations
 import hashlib
 from importlib import metadata
 import json
+import os
 import sys
 from pathlib import Path
 
+import file_formats
 from languages import SUPPORTED_EXTENSIONS
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -36,9 +38,10 @@ def parser_fingerprint() -> str:
                 "semantic_store.py", "resolution.py", "store_graph.py", "store_graph_metrics.py",
                 "store_consumers.py")]
     helpers += sorted((SCRIPT_DIR / "languages").rglob("*.py"))
+    helpers += [SCRIPT_DIR / "file_formats.py", file_formats.PATH]  # which files are read, and as what
     for helper in helpers:
         if helper.is_file():
-            digest.update(helper.relative_to(SCRIPT_DIR).as_posix().encode("utf-8") + b"\0")
+            digest.update(Path(os.path.relpath(helper, SCRIPT_DIR)).as_posix().encode("utf-8") + b"\0")
             digest.update(helper.read_bytes())
             digest.update(b"\0")
     versions = {}

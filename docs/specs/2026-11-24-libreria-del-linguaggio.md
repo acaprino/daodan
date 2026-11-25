@@ -1,6 +1,6 @@
 # Il linguaggio dei file: un modulo di Daodan con il catalogo di Linguist
 
-**Stato:** approvata dal proprietario il 24 novembre 2026, con le correzioni del consulente («A»). Nel prodotto non c'è nulla ancora: oggi decide `languages.detect_language`. Sostituisce la bozza di una libreria separata: un modulo dentro Daodan, con la stessa struttura, si estrae il giorno in cui un secondo programma la usa.
+**Stato:** approvata dal proprietario il 24 novembre 2026, con le correzioni del consulente («A»). Nel prodotto, dal 25 novembre, c'è il catalogo; le regole no: sul contenuto decide ancora `languages.detect_language`. Sostituisce la bozza di una libreria separata: un modulo dentro Daodan, con la stessa struttura, si estrae il giorno in cui un secondo programma la usa.
 
 ## Perché
 
@@ -20,7 +20,7 @@ Già corretto (`e9bc57cac`): le righe vuote di un `.h` costavano 25,5 s, perché
 
 | Pezzo | Pattern | Responsabilità |
 | --- | --- | --- |
-| `catalog.json` e lo script che lo genera | Adapter | Da `languages.yml` di Linguist al nostro catalogo: estensione → nomi. Solo le estensioni accettate (le 63 di oggi); una nuova entra con una prova che non cambia il piano dell'analisi |
+| `catalog.json` e lo script che lo genera | Adapter | Da `languages.yml` di Linguist al nostro catalogo: estensione → nomi. Solo le estensioni accettate (le 63 di oggi); una nuova entra con una prova che non cambia il piano dell'analisi. **Fatto il 25 novembre, altrove:** su richiesta del proprietario le anagrafiche sono dati globali in `daodan/data/`, non dentro `languages/detect/`. Il catalogo è `linguist-catalog.json` (`format_catalog.py`); le estensioni accettate e la mappa verso i linguaggi di Daodan sono in `file-formats.json` (`file_formats.py`), con anche i formati registrati solo come file |
 | `rules.toml` | Dati | Le regole semplici (sotto) |
 | `rules/` | Strategy | Le regole che non sono dati: una classe per file, con la stessa scheda e `decide(testo) -> linguaggio o niente` |
 | `detect.py` | — | Estensione, poi le regole di quell'estensione nell'ordine, poi il ripiego dichiarato. Dà `Detection(language, decided_by)` |
