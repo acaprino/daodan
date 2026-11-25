@@ -102,6 +102,7 @@
     "typescript": {"query": "javascript"},
     "tsx": {"query": "javascript"},
     "java": {"query": ["(string_literal . (string_fragment) @text .)"]},
+    "kotlin": {"query": ["(string_literal . (string_content) @text .)"]},
     "go": {"query": ["(interpreted_string_literal . (interpreted_string_literal_content) @text .)",
                      "(raw_string_literal . (raw_string_literal_content) @text .)"]},
     "csharp": {"query": ["(string_literal . (string_literal_content) @text .)"]},
