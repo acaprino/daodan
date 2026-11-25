@@ -69,7 +69,7 @@ Otto step, ognuno con una competenza sola, decisi dal proprietario il 25 novembr
 
 **Chi riconosce è uno solo.** Uno strumento di build o un framework che stack-analyser non conosce si aggiunge al fork (oggi mancano CMake, Bazel, Meson, Make, autotools, sbt, .NET SDK, Mix). In Daodan un'anagrafica, `data/build-tools.json`, lega ogni voce dello stack all'adattatore del 4 che la usa.
 
-**I nomi.** Il numero d'ordine è nel nome dello step (`NAME`, eventi, giornale, documenti, interfaccia). Un modulo Python non può iniziare con una cifra: la cartella è `step_1_list_files/`, la classe `ListFiles`. `plan` non è uno step: resta la funzione che è (`pipeline/plan.py`).
+**I nomi.** Il numero d'ordine è nel nome dello step (`NAME`, eventi, giornale, documenti, interfaccia). Un modulo Python non può iniziare con una cifra: la cartella è `step_1_list_files/`, la classe `ListFiles`. Il piano non è uno step: è ciò che Daodan dà al chiamante prima e durante («Il piano: sempre intero, sempre al chiamante»).
 
 **Che cosa usa ogni step**, per linguaggio, strumento di build e framework: la pagina `docs/pipeline/`, scritta dalle dichiarazioni del codice (`daodan/core/pipeline_tree.py`).
 
@@ -137,6 +137,20 @@ Regole per il modello:
 3. **Gira dove gira tutto il resto:** il comando scelto parte solo nel container, senza rete. Il modello è facoltativo, in locale e senza rete, come gli embedding: senza, resta la lacuna.
 4. **Non entra nel nucleo:** è un adattatore dietro lo stesso contratto dei motori, e lo step che trova i comandi non sa quale modello risponde.
 5. **Prima la misura.** Il corpus ha già i comandi attesi di ogni progetto. Si confrontano, sugli stessi casi: i lettori di oggi; con la CI come fonte; un modello piccolo così com'è, con le chiamate di funzione; lo stesso modello specializzato. Si specializza solo se la versione così com'è non basta e quella specializzata sì.
+
+### Il piano: sempre intero, sempre al chiamante
+
+Deciso dal proprietario il 25 novembre 2026. Daodan dà sempre a chi lo chiama (l'interfaccia, un harness via MCP, la riga di comando) il piano completo di ciò che farà, e lo tiene aggiornato mentre lo fa.
+
+1. **Intero, e prima.** Il piano c'è prima che parta qualunque cosa, e contiene ogni step e, sotto ogni step, ogni azione: non solo le analisi, anche scaricare uno strumento, scaricare le dipendenze, preparare un container, costruire il progetto, lanciare una suite di test, avviare l'app, provare l'interfaccia.
+2. **Dice che cosa fa, non come.** Un'azione è una frase che chi usa Daodan capisce: «scarica le dipendenze del modulo `web`», «lancia i test di `api`», «avvia l'app `web` e prova i suoi controlli nel browser», «collega le chiamate del codice TypeScript». Lo strumento, il comando e la versione sono un dettaglio che si apre a richiesta, non il testo del piano.
+3. **Ogni azione dice su che cosa agisce** (quale modulo, quale cartella, quanti file) e tre fatti che contano per chi guarda: se esegue codice del progetto, se gira nel container, se scarica qualcosa dalla rete e quanto pesa.
+4. **Uno stato per azione, aggiornato mentre accade:** da fare, in corso (con l'avanzamento), fatta, fallita, saltata perché è già fresca, non possibile. Fallita e non possibile portano la causa e il rimedio.
+5. **Anche ciò che non si farà è nel piano**, con il motivo: manca il container, il progetto non dichiara come lanciare i test, serve un consenso. Un'azione che aspetta il consenso dell'utente (un download pesante, una licenza) si vede come tale, e parte solo dopo.
+6. **Un oggetto solo, uguale per ogni chiamante.** Chi chiama legge il piano con i suoi stati; non lo ricostruisce mettendo insieme gli eventi. Il giornale degli eventi resta, come cronaca.
+7. **I tipi di azione sono un elenco chiuso**, con le sue parole: così l'interfaccia, MCP e la riga di comando dicono la stessa cosa allo stesso modo.
+
+Oggi il piano copre solo la lettura, il collegamento delle chiamate e gli osservatori, e li nomina per come sono fatti (`resolve:scip-python`); esce una volta sola, come evento; preparazione, download, container, test e avvio dell'app non ci sono.
 
 ### Le anagrafiche
 
@@ -244,15 +258,16 @@ Da: spec della pipeline, 8.2 e 8.13; piano del 25 novembre, task 6; spec e piano
 Da: spec della pipeline, 8.7–8.12; piano del 25 novembre, task 7.
 
 1. **[deciso]** I nomi con il numero (`1_list_files` … `8_assemble_graph`) in `NAME`, eventi, giornale, cartelle (`step_N_…`), documenti e interfaccia. Un giornale scritto con i nomi di prima si legge ancora. Lo step `parse` di oggi, che dice solo il piano, sparisce.
-2. La dichiarazione comune per ogni famiglia di adattatori (8.8 punto 1).
-3. La freschezza controllata in un punto solo, con `step.skipped` (8.8 punto 2); l'uscita degli strumenti come `log` di livello `debug`.
-4. **[misura]** Un limite di tempo per stage, dalle durate registrate. Prima va letto che cosa resta del container di uno stage chiuso da fuori (8.9).
-5. Il giornale cresce e ogni lettura lo rilegge tutto: un cursore in byte cambierebbe il contratto MCP (8.9).
-6. Le prove 2 e 5 di 8.10, mai scritte: le due modalità danno lo stesso grafo; un ripiego è dichiarato accanto al dato.
-7. Tre funzioni oltre le 80 righe: `engine_pass.index_stage`, `snapshot.write_reading`, `snapshot._refresh_locked`.
-8. **[scelta aperta]** L'ordine delle sorgenti (lista scritta o bisogno dichiarato), `pass` contro `run`, quando cambiano i nomi sul disco, la colonna `producer` (A1).
+2. **[deciso]** Il piano intero al chiamante («Il piano: sempre intero, sempre al chiamante»): ogni step e ogni azione, detti per ciò che fanno, con lo stato aggiornato mentre accade; uguale per interfaccia, MCP e riga di comando. Entrano nel piano la preparazione, i download, i container, la build, le suite di test, l'avvio dell'app e la prova dell'interfaccia, che oggi non ci sono.
+3. La dichiarazione comune per ogni famiglia di adattatori (8.8 punto 1): ogni adattatore dichiara anche le azioni che compie, nelle parole del piano.
+4. La freschezza controllata in un punto solo, con `step.skipped` (8.8 punto 2); l'uscita degli strumenti come `log` di livello `debug`.
+5. **[misura]** Un limite di tempo per stage, dalle durate registrate. Prima va letto che cosa resta del container di uno stage chiuso da fuori (8.9).
+6. Il giornale cresce e ogni lettura lo rilegge tutto: un cursore in byte cambierebbe il contratto MCP (8.9).
+7. Le prove 2 e 5 di 8.10, mai scritte: le due modalità danno lo stesso grafo; un ripiego è dichiarato accanto al dato.
+8. Tre funzioni oltre le 80 righe: `engine_pass.index_stage`, `snapshot.write_reading`, `snapshot._refresh_locked`.
+9. **[scelta aperta]** L'ordine delle sorgenti (lista scritta o bisogno dichiarato), `pass` contro `run`, quando cambiano i nomi sul disco, la colonna `producer` (A1).
 
-**Cancello:** nessun nome di prima resta nel codice, salvo il lettore dei giornali vecchi; le prove 2 e 5 passano.
+**Cancello:** nessun nome di prima resta nel codice, salvo il lettore dei giornali vecchi; le prove 2 e 5 passano; su un progetto vero il piano letto prima dell'analisi elenca ogni azione che poi avviene, e nessuna azione avviene senza essere nel piano.
 
 ## Ondata 5: `6_link_calls`
 
