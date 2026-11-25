@@ -174,6 +174,17 @@ Start-Sleep 2
 $at = Ask 'location.origin'
 Say ($at -eq $origin) "the window leaves the server for no other address ($at)"
 
+Write-Host '--- the browser process is lost'
+$serving = (Server).ProcessId
+Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" | Where-Object { $_.ParentProcessId -eq $p.Id -and $_.CommandLine -notmatch '--type=' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+$rebuilt = Wait-For { $now = Window $p; $now -ne [IntPtr]::Zero -and $now -ne $h } 30
+$h = Window $p
+Say ($rebuilt -and -not $p.HasExited -and (Server).ProcessId -eq $serving) 'the window is built again, and the server is the one there was'
+Say ((Ask 'location.origin') -eq $origin) 'on the same page'
+$answer = Invoke-Page 'plugin:window|minimize' "{ label: 'main' }"
+$null = Wait-For { [W]::IsIconic($h) } 5
+Say ($answer.ok -and [W]::IsIconic($h)) "and its commands answer: $($answer.value)"
+
 Write-Host '--- started again while it runs'
 $other = Start-It "$real\Daodan.exe"
 $ended = $other.WaitForExit(10000)

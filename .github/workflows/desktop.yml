@@ -114,11 +114,13 @@ jobs:
           $size = (Get-ChildItem $runtime -Recurse -File | Measure-Object Length -Sum).Sum / 1MB
           $first = & "$runtime/python.exe" -I -B -c "import subprocess, sys, time; before = time.monotonic(); p = subprocess.Popen([sys.executable, '-I', '-B', '-m', 'daodan', 'app', '--desktop', '--work', sys.argv[1]], stdin=subprocess.PIPE, stdout=subprocess.PIPE); p.stdout.readline(); print(round((time.monotonic() - before) * 1000)); p.stdin.close(); sys.exit(p.wait(30))" "$env:RUNNER_TEMP/first"
           if ($LASTEXITCODE) { exit 1 }
-          @"
+          $summary = @"
           - app/index.html: $($installed.ToLower())
           - the private Python: $(& "$runtime/python.exe" -I -V), $([Math]::Round($size)) MB
           - from the start of the server's process to its first line, with no bytecode written: $first ms
-          "@ >> $env:GITHUB_STEP_SUMMARY
+          "@
+          $summary >> $env:GITHUB_STEP_SUMMARY
+          Write-Host $summary
 
       # Before the smoke, which starts the server and so writes bytecode: the zip is what was installed.
       - name: The folder to unzip and run
