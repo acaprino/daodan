@@ -103,7 +103,7 @@ Un'interfaccia nasce da un ingresso (una pagina dichiarata, la pagina di un meta
 | `web` | React, Vue, Angular, Svelte, Next.js, Nuxt, Astro, Streamlit, Gradio | Chromium senza interfaccia con Playwright: legge i controlli dall'albero di accessibilità, li aziona uno per uno e registra quale funzione parte | L'avvio dichiarato del progetto | Nel codice, solo per app avviate con npm |
 | `webview` | Electron, Tauri, Wails | Uno schermo virtuale (`Xvfb`) e lo stesso pilota del browser collegato alla webview: CDP per Electron, WebDriver per Tauri e Wails. Si osservano insieme la pagina e il processo nativo del guscio | Il driver della webview; dove manca si esercita la sola pagina e lo si dichiara | Ondata 7 |
 | `desktop` (Linux) | PyQt, PySide, Tkinter, GTK, Kivy, Flet, Avalonia, Uno Platform, JavaFX | `Xvfb` o un compositor Wayland senza schermo, con i registratori di linguaggio che esistono già; un pilota su AT-SPI o sull'introspezione del toolkit per azionare i controlli | Il pilota, da costruire | Ondata 11 |
-| `android` | Android SDK, React Native, Expo, Flutter, MAUI | L'emulatore ufficiale senza finestra, con una system image scaricata da `sdkmanager` | `/dev/kvm` dal motore; il consenso ai termini dell'SDK e a circa 4 GB | Ondata 11 |
+| `android` | Android SDK, React Native, Expo, Flutter, MAUI | L'emulatore ufficiale senza finestra, con una system image scaricata da `sdkmanager`; avvio con `adb` e controlli con UI Automator (proposta, ondata 11) | `/dev/kvm` dal motore; il consenso ai termini dell'SDK e a circa 4 GB | Ondata 11 |
 | `windows` | WinForms, WPF, WinUI 3, UWP | Wine con `Xvfb` per WinForms e WPF compatibili; una VM Windows in un container (QEMU/KVM) per WinUI 3, UWP e il resto | Per la VM `/dev/kvm`, circa 4 GB di RAM e da 25 a 32 GB di disco, con il consenso | Ondata 11 |
 | macOS e iOS | AppKit, SwiftUI, UIKit | — | — | Fuori perimetro: nessun simulatore gira in un container Linux e la licenza Apple lega l'esecuzione a un Mac |
 
@@ -113,7 +113,7 @@ Regole che valgono per tutte:
 2. **Il consenso prima del peso.** Un download con termini di licenza o di qualche gigabyte parte solo dopo l'approvazione esplicita dell'utente; senza, il passo è la lacuna `approval_required`.
 3. **Una superficie riconosciuta e non eseguita è una lacuna**, `ui_execution_deferred:<superficie>`; senza `/dev/kvm` è `kvm_unavailable`; senza pilota è `ui_driver_not_implemented`.
 4. **Un progetto multipiattaforma** (Flutter, Expo, Compose) si esegue sul suo bersaglio `web` o desktop Linux, quando lo dichiara: senza emulatore.
-5. **Le interfacce desktop Python** si riconoscono dal codice (deciso il 19 novembre); la loro osservazione dinamica ha avuto un «no per ora» (20 novembre) ed entra con l'ondata 11.
+5. **Le interfacce desktop Python** si riconoscono dal codice (deciso il 19 novembre); la loro osservazione dinamica è **decisa** il 25 novembre, insieme a quella delle app Android (supera il «no per ora» del 20 novembre), ed entra con l'ondata 11.
 6. **Una voce nuova dell'anagrafica** (NiceGUI, Wails, un toolkit desktop) entra con un caso reale nel corpus.
 
 ### Come si sa che cosa lanciare
@@ -322,7 +322,7 @@ Da: spec dell'esecuzione del programma e delle interfacce (entrambe proposte del
 1. **[proposta]** L'albero delle chiamate in ogni registro esatto, e le frontiere (accesso e risorsa) con la tabella chiusa per linguaggio (esecuzione, 1 e 2).
 2. **[proposta, con decisioni del 20 novembre]** La corsa del programma dal container preparato: attesa della porta, il richiedente solo sugli ingressi senza pagina. I dati e le credenziali di prova sono solo quelli che la CI del progetto già prepara **[deciso il 25 novembre]** (esecuzione, 4).
 3. **[proposta]** Il catalogo delle superfici: il campo `surface` nell'anagrafica (`web`, `webview`, `desktop`, `windows`, `android`). Entrano subito le voci web, tra cui Streamlit e Gradio, e le webview (Electron, Tauri). NiceGUI, Wails e i toolkit desktop, compresi quelli Python, entrano ognuno con un caso reale nel corpus (interfacce, 3).
-4. **[deciso il 19 novembre]** Le interfacce desktop Python riconosciute dal codice; l'osservazione dinamica ha avuto un «no per ora» (interfacce, 1.6).
+4. **[deciso]** Le interfacce desktop Python riconosciute dal codice (19 novembre); la loro osservazione dinamica è decisa il 25 novembre, insieme alle app Android, e si fa nell'ondata 11 (interfacce, 1.6).
 5. **[proposta]** `builds` e `starts` dalle altre fonti: `angular.json`, `tauri.conf.*`, `pyproject.toml`, i target di Cargo, Dockerfile e Compose. Oggi l'app parte solo con npm: mancano pnpm, Yarn e Bun (interfacce, 5; piano degli ingressi, 11).
 6. L'esplorazione nel browser: la pagina offerta dal server del progetto, Electron con uno schermo virtuale, Tauri e Wails con il driver della webview. I controlli dietro un accesso non si raggiungono senza credenziali (interfacce, 7; piano, 11).
 7. La fonte osservata per i flussi: ruolo e nome dei controlli, le chiamate di un clic. Qt non è provato; mancano osservazioni dal vivo (spec degli ingressi, «Stato»).
@@ -394,8 +394,13 @@ Da: «Le superfici e come si eseguono», sopra; `docs/roadmap.md`, fase 3. **[de
 
 1. **Desktop Linux.** L'esecuzione sotto `Xvfb` o Wayland senza schermo con i registratori che esistono già (Python, JVM, .NET): basta a tracciare l'avvio e la costruzione delle finestre.
 2. **Desktop Linux, il pilota.** Uno strumento che aziona i controlli attraverso AT-SPI o l'introspezione del toolkit; prima si valuta uno strumento pronto. Fino ad allora `ui_driver_not_implemented`.
-3. **GUI Python** (Tkinter, PyQt, PySide, Kivy, Flet): il riconoscimento dal codice è deciso; l'osservazione dinamica entra qui, con un caso reale nel corpus per ogni toolkit.
-4. **Android.** Prima il bersaglio `web` o desktop del progetto multipiattaforma. Per i moduli solo Android: `emulator` e una system image senza finestra scaricati con `sdkmanager` (già nella preparazione), dentro il container; serve `/dev/kvm`, altrimenti `kvm_unavailable`.
+3. **[deciso]** il 25 novembre **GUI Python** (Tkinter, PyQt, PySide, Kivy, Flet): oltre al riconoscimento dal codice (19 novembre), si osservano in esecuzione, insieme alle app Android (punto 4), con un caso reale nel corpus per ogni toolkit.
+4. **Android.** Prima il bersaglio `web` o desktop del progetto multipiattaforma. Per i moduli solo Android: `emulator` e una system image senza finestra scaricati con `sdkmanager` (già nella preparazione), dentro il container; serve `/dev/kvm`, altrimenti `kvm_unavailable`. **[proposta, da provare nel container]** Avvio e controlli, con gli strumenti ufficiali:
+   - **Costruire:** il compito di Gradle dichiarato dal progetto (`assembleDebug`) dà l'APK.
+   - **Che cosa avviare:** `aapt2 dump badging` sull'APK dà il pacchetto e l'attività di lancio (`launchable-activity`), senza leggere il manifest a mano. Senza un'attività di lancio il passo è una lacuna.
+   - **Avviare:** `adb install`, poi `adb shell am start`.
+   - **Azionare i controlli:** UI Automator di Google legge l'albero di ciò che è sullo schermo (`uiautomator dump`) e li aziona; prima di scriverci sopra un pilota nostro si provano gli strumenti pronti (Appium, Maestro).
+   - **Registrare le funzioni partite:** il tracciato dei metodi del runtime (`am profile`). Il registratore JVM di oggi non è stato provato su Android, e per React Native e Flutter il codice del progetto non è fra quei metodi: serve il loro strumento, ancora da scegliere.
 5. **Windows, gradino leggero.** Wine con `Xvfb` (circa 500 MB, senza KVM) per WinForms e WPF compatibili, con il registratore .NET.
 6. **Windows, gradino completo.** Una VM Windows in un container per WinUI 3, UWP e ciò che Wine non regge; scarica la ISO di valutazione di Microsoft dopo il consenso. Senza `/dev/kvm` o senza consenso, `kvm_unavailable` o `approval_required`.
 7. **[misura]** Su quali motori di container `/dev/kvm` è disponibile: Linux nativo, WSL 2 con la virtualizzazione annidata, le VM Sandbox di Modal.
