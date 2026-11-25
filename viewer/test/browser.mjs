@@ -2127,13 +2127,17 @@ try {
         }
         await shown.setViewportSize({ width: 1440, height: 850 });
         await shown.goto('http://daodan.test/?token=test');
+        const drawing = shown.getByRole('group', { name: 'Naviga il grafo', exact: true });
+        await drawing.waitFor();
         for (const [name, command, then] of MAPS) {
           await shown.setViewportSize({ width: 1440, height: 850 });
           for (const each of [command, then].filter(Boolean)) {
+            const commands = shown.getByRole('dialog', { name: 'Cerca un comando' });
             await shown.keyboard.press('Control+k');
-            await shown.getByRole('dialog', { name: 'Cerca un comando' }).getByRole('option', { name: each }).click();
+            await commands.getByRole('option', { name: each }).click();
+            await commands.waitFor({ state: 'detached' });
           }
-          await shown.getByRole('group', { name: 'Naviga il grafo', exact: true }).waitFor();
+          await drawing.waitFor();
           await shown.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
           await look(shown, name);
         }
