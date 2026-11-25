@@ -229,7 +229,56 @@ Uno o pochi moduli, un build tool.
 | jbeder/yaml-cpp | MIT | C++, CMake |
 | google/benchmark | Apache-2.0 | C++, CMake e Bazel |
 
-## Altre licenze con sorgente disponibile (40)
+## Scelti sulle tipologie del registro, Apache 2.0 e MIT (42)
+
+Scelti leggendo `daodan/data/service-registry.json` (2.562 voci, 1.162 con segni), per coprire le sue tipologie con servizi diversi.
+
+| Tipologia | Repository | Licenza | Che cosa prova |
+| --- | --- | --- | --- |
+| database | mem0ai/mem0 | Apache-2.0 | database vettoriali: Qdrant, Chroma, Pinecone, Milvus, Weaviate |
+| database | infiniflow/ragflow | Apache-2.0 | Python e React; Elasticsearch, MinIO, MySQL, Redis |
+| database | deepset-ai/haystack | Apache-2.0 | Python, archivi di documenti e fornitori di modelli |
+| database | dbt-labs/dbt-core | Apache-2.0 | Python e SQL, adattatori per data warehouse |
+| database | neo4j-examples/movies-java-spring-data-neo4j | Apache-2.0 | Spring Boot minimo su Neo4j |
+| coda | rabbitmq/rabbitmq-tutorials | Apache-2.0 | RabbitMQ da ogni linguaggio, unità indipendenti |
+| coda | ThreeDotsLabs/watermill | MIT | Go: Kafka, NATS, RabbitMQ, Pub/Sub, SQS |
+| coda | dapr/quickstarts | Apache-2.0 | code e archivi di stato da Go, C#, Java, Python e Node |
+| coda | spring-cloud/spring-cloud-stream-samples | Apache-2.0 | Kafka e RabbitMQ da Spring, unità Maven indipendenti |
+| coda | confluentinc/kafka-streams-examples | Apache-2.0 | Kafka Streams, Maven, con una parte Scala |
+| coda | kafbat/kafka-ui | Apache-2.0 | Spring WebFlux e React su Kafka |
+| coda | MassTransit/MassTransit | Apache-2.0 | C#: RabbitMQ, Azure Service Bus, SQS, Kafka |
+| coda | dotnetcore/CAP | MIT | C#: un pacchetto per ogni coda e database |
+| coda | triggerdotdev/trigger.dev | Apache-2.0 | job in background, workspace pnpm |
+| gateway | killbill/killbill | Apache-2.0 | Maven a molti moduli, pagamenti |
+| gateway | plaid/quickstart | MIT | Plaid da Node, Python, Go e Java, con un front end React |
+| gateway | plaid/pattern | MIT | app Node e React su Plaid |
+| gateway | stripe/stripe-cli | Apache-2.0 | Go su Stripe, rilascio con GoReleaser |
+| gateway | stripe-samples/checkout-one-time-payments | MIT | Stripe Checkout, un server per linguaggio |
+| gateway | stripe-samples/subscription-use-cases | MIT | abbonamenti Stripe, un server per linguaggio |
+| gateway | svix/svix-webhooks | MIT | server Rust, client in ogni linguaggio |
+| autenticazione | ory/kratos | Apache-2.0 | Go, provider OIDC |
+| autenticazione | dexidp/dex | Apache-2.0 | Go: LDAP, GitHub, GitLab, Google, Microsoft |
+| autenticazione | oauth2-proxy/oauth2-proxy | MIT | Go: un provider OAuth per file |
+| autenticazione | better-auth/better-auth | MIT | TypeScript, workspace pnpm, provider sociali |
+| filesystem | rclone/rclone | MIT | Go: S3, Azure Blob, OSS, COS, OBS, Swift, Dropbox, Drive |
+| filesystem | juicedata/juicefs | Apache-2.0 | Go: object storage e database di metadati |
+| filesystem | apache/opendal | Apache-2.0 | Rust con binding per Python, Node, Java, Go e C |
+| filesystem | thanos-io/thanos | Apache-2.0 | Go, object storage di più fornitori |
+| servizio o API | nikoksr/notify | MIT | Go piccolo: decine di servizi di notifica |
+| servizio o API | danny-avila/LibreChat | MIT | Node e React; MongoDB, Meilisearch, fornitori di modelli, OAuth |
+| servizio o API | simonw/llm | Apache-2.0 | Python piccolo, fornitori di modelli come plugin |
+| servizio o API | sanity-io/sanity | MIT | TypeScript, workspace pnpm, Sanity |
+| servizio o API | discordjs/discord.js | Apache-2.0 | Discord, workspace pnpm |
+| servizio o API | slackapi/bolt-js | MIT | Slack da Node |
+| servizio o API | slackapi/bolt-python | MIT | Slack da Python, adattatori per Flask, Django, FastAPI e Lambda |
+| servizio o API | temporalio/samples-python | MIT | Temporal, unità indipendenti |
+| servizio o API | spotDL/spotify-downloader | MIT | Python su Spotify e YouTube |
+| servizio o API | open-telemetry/opentelemetry-collector-contrib | Apache-2.0 | centinaia di moduli Go annidati, un esportatore per servizio |
+| servizio o API | fluent/fluent-bit | Apache-2.0 | C su CMake, un plugin di uscita per servizio |
+| servizio o API | influxdata/telegraf | MIT | Go, un plugin per servizio |
+| servizio o API | terraform-google-modules/terraform-google-kubernetes-engine | Apache-2.0 | Terraform su Google Cloud |
+
+## Altre licenze con sorgente disponibile (63)
 
 «non standard»: deps.dev non dà un identificativo; la licenza fra parentesi è quella che il progetto è noto per usare, da leggere nel suo file `LICENSE` prima di usarlo.
 
@@ -275,7 +324,37 @@ Uno o pochi moduli, un build tool.
 | localstack/localstack | non standard (Apache-2.0) | Python, emula i servizi AWS |
 | novuhq/novu | non standard (MIT, con parti commerciali) | NestJS e React, decine di fornitori di notifiche |
 | nextauthjs/next-auth | non standard (ISC) | decine di provider di identità, workspace pnpm |
+| PostHog/posthog | non standard (MIT, con parti commerciali) | Django e React; ClickHouse, Kafka, Redis; parti Rust e Go |
+| langgenius/dify | non standard (Dify Open Source License) | Flask e Next.js, database vettoriali e fornitori di modelli |
+| medusajs/medusa | non standard (MIT) | commercio in Yarn workspaces, moduli di pagamento |
+| saleor/saleor | BSD-3-Clause | Django e GraphQL, pagamenti |
+| supertokens/supertokens-core | non standard (Apache-2.0) | Java su Gradle |
+| logto-io/logto | non standard (MPL-2.0) | workspace pnpm, un connettore per provider |
+| goauthentik/authentik | non standard (MIT, con parti commerciali) | Django, Go e TypeScript in un repository |
+| zitadel/zitadel | AGPL-3.0 | Go e Angular |
+| caronc/apprise | non standard (BSD-2-Clause) | Python: un file per servizio di notifica |
+| activepieces/activepieces | non standard (MIT, con parti commerciali) | Nx, centinaia di pacchetti, uno per servizio |
+| BerriAI/litellm | non standard (MIT, con parti commerciali) | Python, ogni fornitore di modelli |
+| vercel/ai | non standard (Apache-2.0) | workspace pnpm, un pacchetto per fornitore |
+| vectordotdev/vector | non standard (MPL-2.0) | Rust, una destinazione per servizio |
+| anymail/django-anymail | BSD-3-Clause | Django, ogni fornitore di posta |
+| knadh/listmonk | AGPL-3.0 | Go e Vue; SMTP e S3 |
+| temporalio/samples-go | non standard (MIT) | Temporal da Go |
+| temporalio/samples-typescript | non standard (MIT) | Temporal, molte unità npm |
+| temporalio/samples-java | non standard (MIT) | Temporal da Java, Gradle |
+| Unleash/unleash | AGPL-3.0 | Node e React, feature flag |
+| langfuse/langfuse | non standard (MIT, con parti commerciali) | Next.js; ClickHouse, Redis, S3 |
+| growthbook/growthbook | non standard (MIT, con parti commerciali) | Node, Next.js e Python |
+| eclipse-mosquitto/mosquitto | non standard (EPL-2.0 o EDL-1.0) | C su CMake e Make, MQTT |
+| Infisical/infisical | non standard (MIT, con parti commerciali) | Node e React, integrazioni con i cloud |
+
+## Buchi del registro trovati
+
+Cercando nel registro i servizi che questi progetti usano, per nome e per ID, il 25 novembre 2026. Nulla è stato cambiato in `daodan/data/`: la spec approvata [`2026-11-21-stack-dal-fork.md`](../../docs/specs/2026-11-21-stack-dal-fork.md) mette i segni nuovi nel fork e li toglie dalle aggiunte.
+
+- **Senza voce:** Plaid, Mollie, Svix, Ably, Mux, imgix, UploadThing, Trigger.dev, GrowthBook, Doppler, Descope, Auth.js (NextAuth), Lucia, LangSmith, LiteLLM, Azure Service Bus, MQTT e Mosquitto, ZeroMQ, ActiveMQ fuori da AWS, SeaweedFS, Mastodon, OpenStreetMap, OpenWeather, Medusa, Saleor, Kill Bill, MassTransit, rclone, Apprise, listmonk, Activepieces.
+- **Voce senza segni**, quindi mai riconosciuta: Temporal, Langfuse, Unleash, Hasura, Zitadel, authentik, Authelia, Casdoor, Dex, Dapr, Dify, Redpanda, EMQX, Grafana Loki, Ceph, Azure Event Hubs, Vector, Argo.
 
 ## Scartati
 
-Non trovati su deps.dev, quindi senza licenza verificata: litestar-org/litestar-fullstack, trungvose/jira-clone-angular, joreilly/Confetti, dani-garcia/vaultwarden, oracle-samples/db-sample-schemas. aws-samples/retail-store-sample-app, aws-samples/aws-serverless-shopping-cart, ivangfr/springboot-react-keycloak, auth0-samples/auth0-python-web-app, auth0-samples/auth0-aspnetcore-mvc-samples, auth0-samples/auth0-vue-samples, auth0-samples/auth0-spring-security5-api-sample, stripe-samples/accept-a-payment, ixartz/SaaS-Boilerplate, vercel/ai-chatbot, vercel/next-forge, vercel/platforms, Azure-Samples/todo-nodejs-mongo, twilio-labs/function-templates. Senza licenza dichiarata: nrwl/nx-examples.
+Non trovati su deps.dev, quindi senza licenza verificata: litestar-org/litestar-fullstack, trungvose/jira-clone-angular, joreilly/Confetti, dani-garcia/vaultwarden, oracle-samples/db-sample-schemas. aws-samples/retail-store-sample-app, aws-samples/aws-serverless-shopping-cart, ivangfr/springboot-react-keycloak, auth0-samples/auth0-python-web-app, auth0-samples/auth0-aspnetcore-mvc-samples, auth0-samples/auth0-vue-samples, auth0-samples/auth0-spring-security5-api-sample, stripe-samples/accept-a-payment, ixartz/SaaS-Boilerplate, vercel/ai-chatbot, vercel/next-forge, vercel/platforms, Azure-Samples/todo-nodejs-mongo, twilio-labs/function-templates, Shopify/hydrogen, contentful/the-example-app.nodejs. Senza licenza dichiarata: nrwl/nx-examples.
