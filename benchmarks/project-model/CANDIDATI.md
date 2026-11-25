@@ -4,6 +4,7 @@ Raccolti il 25 novembre 2026: repository pubblici che non sono già fra le 50 ca
 
 - **Verificato:** esistenza, licenza e stelle, da `api.deps.dev/v3/projects` il 25 novembre 2026.
 - **Non verificato:** la colonna «Che cosa prova» viene da ciò che si sa del progetto, non dai file a un commit. Si conferma quando si scrive `source.json`, con il commit.
+- **Licenza:** va bene qualsiasi (decisione del proprietario, 25 novembre 2026). La colonna resta come informazione per `source.json`; la divisione fra «Apache 2.0 e MIT» e «Altre licenze» non è più un criterio di scelta.
 - Nessuno è ancora un caso: manca `source.json` e `expected.json`.
 
 ## Selezione rivista sul `support`
@@ -94,6 +95,7 @@ La tecnologia principale non ha una regola del fork, o nemmeno una voce nel regi
 | payloadcms/payload | MIT | Next.js, molti pacchetti pnpm, adattatori per database |
 | facebook/docusaurus | MIT | Docusaurus, Yarn workspaces con Lerna |
 | lerna/lerna | MIT | Lerna sopra Nx |
+| nrwl/nx-examples | nessuna dichiarata | workspace Nx di esempio, più app e librerie |
 | ionic-team/ionic-framework | MIT | Stencil, con i pacchetti Angular, React e Vue |
 | electron/fiddle | MIT | Electron con React |
 | bluesky-social/social-app | MIT | Expo e React Native, con un modulo Go |
@@ -327,7 +329,7 @@ Scelti leggendo `daodan/data/service-registry.json`, per coprire le sue tipologi
 
 ## Altre licenze con sorgente disponibile (63)
 
-«non standard»: deps.dev non dà un identificativo; la licenza fra parentesi è quella che il progetto è noto per usare, da leggere nel suo file `LICENSE` prima di usarlo.
+«non standard»: deps.dev non dà un identificativo; la licenza fra parentesi è quella che il progetto è noto per usare, da leggere nel suo file `LICENSE` quando si scrive `source.json`.
 
 | Repository | Licenza | Che cosa prova |
 | --- | --- | --- |
@@ -404,4 +406,4 @@ Cercando nel registro i servizi che questi progetti usano, per nome e per ID, su
 
 ## Scartati
 
-Non trovati su deps.dev, quindi senza licenza verificata: litestar-org/litestar-fullstack, trungvose/jira-clone-angular, joreilly/Confetti, dani-garcia/vaultwarden, oracle-samples/db-sample-schemas. aws-samples/retail-store-sample-app, aws-samples/aws-serverless-shopping-cart, ivangfr/springboot-react-keycloak, auth0-samples/auth0-python-web-app, auth0-samples/auth0-aspnetcore-mvc-samples, auth0-samples/auth0-vue-samples, auth0-samples/auth0-spring-security5-api-sample, stripe-samples/accept-a-payment, ixartz/SaaS-Boilerplate, vercel/ai-chatbot, vercel/next-forge, vercel/platforms, Azure-Samples/todo-nodejs-mongo, twilio-labs/function-templates, Shopify/hydrogen, contentful/the-example-app.nodejs. Senza licenza dichiarata: nrwl/nx-examples.
+Non trovati su deps.dev, quindi di esistenza non verificata: litestar-org/litestar-fullstack, trungvose/jira-clone-angular, joreilly/Confetti, dani-garcia/vaultwarden, oracle-samples/db-sample-schemas. aws-samples/retail-store-sample-app, aws-samples/aws-serverless-shopping-cart, ivangfr/springboot-react-keycloak, auth0-samples/auth0-python-web-app, auth0-samples/auth0-aspnetcore-mvc-samples, auth0-samples/auth0-vue-samples, auth0-samples/auth0-spring-security5-api-sample, stripe-samples/accept-a-payment, ixartz/SaaS-Boilerplate, vercel/ai-chatbot, vercel/next-forge, vercel/platforms, Azure-Samples/todo-nodejs-mongo, twilio-labs/function-templates, Shopify/hydrogen, contentful/the-example-app.nodejs.
