@@ -5,3 +5,11 @@ __pycache__/
 .jcode/local/
 .daodan/
 effectiveness-metrics.json*
+
+# Whole-system references of private projects: out of git until the owner decides (the remote is public).
+benchmarks/system-map/expected/*-system.json
+benchmarks/system-map/results/system/
+benchmarks/system-map/results/brief-hostay.json
+benchmarks/system-map/results/brief-qamille.json
+benchmarks/system-map/results/brief-qamille-enterprise.json
+benchmarks/system-map/results/brief-poc-data-extraction.json

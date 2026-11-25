@@ -59,6 +59,10 @@ RULES = ("session", "none")  # the rules a run writes itself, or leaves to the a
 
 CASES = {
     "phazly": {"tar": True, "target": ".", "rules": "benchmarks/phazly-flow/rules.json"},
+    "hostay": {"tar": True, "target": "."},
+    "qamille": {"tar": True, "target": "."},
+    "qamille-enterprise": {"tar": True, "target": "."},  # one archive: qamille/ and qamille-mail/ side by side
+    "poc-data-extraction": {"tar": True, "target": "."},
     "polar": {"repo": "https://github.com/polarsource/polar.git",
               "commit": "ee8e1c01492eeeb6bd773d35a51a01ed53e613dc", "target": "server"},
     "tududi": {"repo": "https://github.com/chrisvel/tududi.git",
