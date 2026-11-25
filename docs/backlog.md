@@ -17,6 +17,8 @@
 - Anagrafica dei flussi e legami `avvia`, `condivide`, `stesso dato` calcolati dalla mappa.
 - Embedding su anagrafica e nodi (EmbeddingGemma 2 non misurato; scelta aperta su chi scarica i pesi).
 - Pacchetto di review dalla ricerca: **onere della prova aperto** — la fase 3 ha già misurato che i flussi non aiutano la review; va esplicitata l'ipotesi nuova e misurata prima di adottarlo.
+- **Copertura dell'intero sorgente — Parte B (riuso celle) e prova preparazione 3 richieste:** non implementate / non eseguite *(accertato nel codice: la Parte A è già implementata in `daodan/core/composition.py` e misurata in `benchmarks/whole-source-coverage/README.md`)*.
+- **Run di lavoro e regole 1–4 della review:** già implementati nel codice *(accertato in T0 punto 4)*; restano in backlog solo le eventuali prove con modello delle regole 1 e 4.
 - Phase 0 «dalla richiesta ai file» (scritta, mai eseguita in review completa), micro skill e baseline per stack (confronto a 4 bracci mai fatto).
 - Revisori per framework: soppressione senza import per `react` e `tauri`, 3 segni al registro `[deciso]`.
 - **[difetto]** `graph` (`ValueError`) e `edit_impact` (`missing_store`).
