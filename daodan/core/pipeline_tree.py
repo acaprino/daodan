@@ -12,7 +12,7 @@ What is declared is read from the code (`declared`): the sources of the pre-map 
 not there, and a page's data that is not what `build` writes. The page is `viewer/pipeline/` (Sigrid's `Steps` and `ItemList`),
 built by the Viewer workflow into `docs/pipeline/`.
 
-Today's order is the code's; the plan's is `docs/specs/2026-11-25-refactoring-completo.md` («La pipeline, com'è decisa»). The tie
+Today's order is the code's; the plan's is `docs/specs/architettura.md` («La pipeline a otto step»). The tie
 between a language and its build tools, and between a framework and its languages, is this file's own (`CHOICES`).
 
     python pipeline_tree.py build

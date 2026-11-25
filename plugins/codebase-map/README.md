@@ -22,4 +22,4 @@ Installazione: `claude plugin install codebase-map@daodan` (marketplace `acaprin
 - Mappa del sistema: `codebase_map_flows` con `brief`, `map`, `about` e `levels` propone e verifica nodi con un nome, flussi e livelli; formato in `daodan/references/system-map.md`, agente `system-mapper`.
 - Esploratore: `daodan visual export <run>` pubblica la vista di un run e `visual.py serve <export>` la apre su `127.0.0.1`, con viste Logica e Fisica, flussi e tipi di nodo; comandi in `skills/map/references/standalone.md`.
 
-[Spec](../../docs/specs/2026-11-25-refactoring-completo.md) · [Riferimento del plugin](../../docs/plugins/codebase-map.md)
+[Architettura](../../docs/specs/architettura.md) · [Piano](../../docs/plans/refactoring.md) · [Riferimento del plugin](../../docs/plugins/codebase-map.md)

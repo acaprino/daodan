@@ -133,7 +133,7 @@ and the build.
 
 ## Documentation
 
-- [The spec: the complete refactoring, the design (the pipeline, what each step uses, the surfaces and how they run) and its waves](docs/specs/2026-11-25-refactoring-completo.md); the specs and plans before it are in git's history, at commit `614c940`
+- [The architecture contract (the 8-step pipeline, tools, surfaces and plan)](docs/specs/architettura.md), [the active refactoring plan (T0–T3)](docs/plans/refactoring.md), and [the deferred backlog & retired approaches](docs/backlog.md); the specs and plans before them are in git's history, at commit `614c940`
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
 - [Roadmap](docs/roadmap.md)
