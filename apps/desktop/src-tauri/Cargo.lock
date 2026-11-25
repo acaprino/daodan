@@ -455,6 +455,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "914a755b7c2d4af2bdcff7ce1739e2db9a1b81a9b07123d8015786ae03c0980d"
 
 [[package]]
+name = "daodan-desktop"
+version = "0.0.0"
+dependencies = [
+ "imago-shell",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tempfile",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "darling"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1443,23 +1455,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "imago-demo"
-version = "1.0.0"
-dependencies = [
- "imago-shell",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
 name = "imago-shell"
 version = "1.0.0"
+source = "git+https://github.com/acaprino/imago?tag=v1.0.0#2a3f397d3b7aeba8c10d29dd3ccacfcaac0ac122"
 dependencies = [
  "serde",
  "serde_json",
  "tauri",
  "tauri-plugin",
- "tempfile",
  "webview2-com",
  "windows-core",
  "windows-sys 0.61.2",

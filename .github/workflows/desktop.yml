@@ -1,0 +1,145 @@
+name: Desktop
+
+# Daodan's window on Windows (apps/desktop): checked, built, started on a real WebView2, and kept as a folder to unzip and
+# run. It is the only place its Rust is compiled.
+on:
+  push:
+    branches: [desktop, port-sigrid]
+    paths: ['apps/desktop/**', 'daodan/**', 'pyproject.toml', 'tests/test_daodan_desktop.py', '.github/workflows/desktop.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop:
+    name: Desktop (Windows x64)
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: '0' # a smaller cache, and the same for the same inputs
+      PYTHONUTF8: '1'
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # rustup installs what rust-toolchain.toml says.
+      - name: The pinned Rust
+        working-directory: apps/desktop/src-tauri
+        run: |
+          rustup show active-toolchain
+          if ($LASTEXITCODE) { exit 1 }
+          "TOOLCHAIN=$((rustc -V).Split(' ')[1])" >> $env:GITHUB_ENV
+
+      - name: The compiled dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            apps/desktop/src-tauri/target
+          key: desktop-cargo-${{ env.TOOLCHAIN }}-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock') }}
+          restore-keys: desktop-cargo-${{ env.TOOLCHAIN }}-
+
+      - name: The format
+        working-directory: apps/desktop/src-tauri
+        run: cargo fmt --check
+
+      - name: Clippy
+        if: ${{ !cancelled() }}
+        working-directory: apps/desktop/src-tauri
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      # Not by `cargo test`: the job Cargo puts the tests in lets no process leave it, and a test needs one that does.
+      - name: The tests
+        if: ${{ !cancelled() }}
+        working-directory: apps/desktop/src-tauri
+        run: |
+          $built = cargo test --locked --no-run --message-format=json | ForEach-Object { $_ | ConvertFrom-Json }
+          if ($LASTEXITCODE) { $built | Where-Object reason -EQ compiler-message | ForEach-Object { $_.message.rendered }; exit 1 }
+          $tests = @($built | Where-Object { $_.reason -eq 'compiler-artifact' -and $_.profile.test -and $_.executable -and $_.target.kind -contains 'bin' })
+          if ($tests.Count -ne 1) { throw "one test program, not $($tests.Count)" }
+          & $tests[0].executable
+          exit $LASTEXITCODE
+
+      # The program as it is shipped, and the same one with WebView2's debugging port open, which only the smoke starts. The
+      # arguments of a window replace those wry gives one that has none, so they are here too.
+      - name: The program
+        working-directory: apps/desktop/src-tauri
+        run: |
+          $built = 'target/release/daodan-desktop.exe'
+          Remove-Item $built -ErrorAction SilentlyContinue
+          cargo build --locked --release --features custom-protocol
+          if ($LASTEXITCODE) { exit 1 }
+          $null = New-Item -ItemType Directory "$env:RUNNER_TEMP/stage/Daodan"
+          Copy-Item $built "$env:RUNNER_TEMP/stage/Daodan/Daodan.exe"
+          $conf = Get-Content tauri.conf.json -Raw | ConvertFrom-Json
+          $browser = '--remote-debugging-port=9333 --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required'
+          $conf.app.windows[0] | Add-Member additionalBrowserArgs $browser
+          $env:TAURI_CONFIG = @{ app = @{ windows = $conf.app.windows } } | ConvertTo-Json -Depth 9 -Compress
+          cargo build --locked --release --features custom-protocol
+          if ($LASTEXITCODE) { exit 1 }
+          Copy-Item $built "$env:RUNNER_TEMP/Probe.exe"
+
+      # A whole CPython (python-build-standalone) in the folder, with the wheel of this checkout in it.
+      - name: The private Python
+        run: |
+          python -m pip install -q uv==0.11.28
+          if ($LASTEXITCODE) { exit 1 }
+          uv build --wheel --out-dir "$env:RUNNER_TEMP/wheel"
+          if ($LASTEXITCODE) { exit 1 }
+          uv python install 3.13 --install-dir "$env:RUNNER_TEMP/python" --no-bin --no-registry
+          if ($LASTEXITCODE) { exit 1 }
+          # uv also makes a link named by the minor version alone: the folder is the one that is not a link.
+          $python = @(Get-ChildItem "$env:RUNNER_TEMP/python" -Directory -Filter 'cpython-3.13.*' | Where-Object { -not $_.LinkType })
+          if ($python.Count -ne 1) { throw "one Python, not $($python.Count)" }
+          $runtime = "$env:RUNNER_TEMP/stage/Daodan/runtime"
+          Move-Item $python[0].FullName $runtime
+          uv pip install --python "$runtime/python.exe" --break-system-packages (Get-Item "$env:RUNNER_TEMP/wheel/*.whl").FullName
+          if ($LASTEXITCODE) { exit 1 }
+          $page = { param($root) (Get-FileHash "$root/daodan/assets/app/index.html").Hash }
+          $installed = & $page "$runtime/Lib/site-packages"
+          if ($installed -ne (& $page .)) { throw 'the installed page is not the one of the checkout' }
+          $size = (Get-ChildItem $runtime -Recurse -File | Measure-Object Length -Sum).Sum / 1MB
+          $first = & "$runtime/python.exe" -I -B -c "import subprocess, sys, time; before = time.monotonic(); p = subprocess.Popen([sys.executable, '-I', '-B', '-m', 'daodan', 'app', '--desktop', '--work', sys.argv[1]], stdin=subprocess.PIPE, stdout=subprocess.PIPE); p.stdout.readline(); print(round((time.monotonic() - before) * 1000)); p.stdin.close(); sys.exit(p.wait(30))" "$env:RUNNER_TEMP/first"
+          if ($LASTEXITCODE) { exit 1 }
+          @"
+          - app/index.html: $($installed.ToLower())
+          - the private Python: $(& "$runtime/python.exe" -I -V), $([Math]::Round($size)) MB
+          - from the start of the server's process to its first line, with no bytecode written: $first ms
+          "@ >> $env:GITHUB_STEP_SUMMARY
+
+      # Before the smoke, which starts the server and so writes bytecode: the zip is what was installed.
+      - name: The folder to unzip and run
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: daodan-desktop
+          path: ${{ runner.temp }}/stage
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: The server's contract, with the private Python
+        if: ${{ !cancelled() }}
+        timeout-minutes: 8
+        run: |
+          & "$env:RUNNER_TEMP/stage/Daodan/runtime/python.exe" -I -B tests/test_daodan_desktop.py
+          exit $LASTEXITCODE
+
+      - name: The window, on a real WebView2
+        if: ${{ !cancelled() }}
+        timeout-minutes: 15
+        run: |
+          ./apps/desktop/smoke.ps1 -Folder "$env:RUNNER_TEMP/stage/Daodan" -Probe "$env:RUNNER_TEMP/Probe.exe" -Fake "$PWD/apps/desktop/src-tauri/target/debug/examples/fake_server.exe" -Work "$env:RUNNER_TEMP/smoke"
+          exit $LASTEXITCODE
