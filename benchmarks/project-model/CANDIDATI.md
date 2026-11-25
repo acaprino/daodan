@@ -133,7 +133,103 @@ Raccolti il 25 novembre 2026: repository pubblici che non sono già fra le 50 ca
 | --- | --- | --- |
 | utPLSQL/utPLSQL | Apache-2.0 | PL/SQL: `.pks`, `.pkb`, `.sql` |
 
-## Altre licenze con sorgente disponibile (34)
+## Servizi esterni e pipeline di rilascio, Apache 2.0 e MIT (46)
+
+Aggiunti su richiesta del proprietario: progetti che chiamano servizi esterni o che rilasciano con una pipeline.
+
+| Repository | Licenza | Che cosa prova |
+| --- | --- | --- |
+| firebase/quickstart-js | Apache-2.0 | Firebase dal browser, un'unità per prodotto |
+| firebase/quickstart-android | Apache-2.0 | Firebase su Android, Gradle a più moduli |
+| firebase/quickstart-nodejs | Apache-2.0 | Firebase Admin SDK da Node |
+| firebase/functions-samples | Apache-2.0 | Cloud Functions, molte unità npm indipendenti |
+| firebase/friendlyeats-web | Apache-2.0 | Firestore e Auth da un'app web |
+| firebase/firebase-tools | MIT | CLI TypeScript sulle API di Firebase e Google Cloud, rilascio su npm |
+| GoogleCloudPlatform/microservices-demo | Apache-2.0 | servizi Go, C#, Java, Python e Node uniti da gRPC |
+| GoogleCloudPlatform/bank-of-anthos | Apache-2.0 | Spring Boot e Python, JWT, due database |
+| GoogleCloudPlatform/python-docs-samples | Apache-2.0 | client Google Cloud, centinaia di `requirements.txt` indipendenti |
+| GoogleCloudPlatform/golang-samples | Apache-2.0 | client Google Cloud, moduli Go annidati |
+| GoogleCloudPlatform/nodejs-docs-samples | Apache-2.0 | client Google Cloud, unità npm indipendenti |
+| GoogleCloudPlatform/java-docs-samples | Apache-2.0 | client Google Cloud, unità Maven indipendenti |
+| awsdocs/aws-doc-sdk-examples | Apache-2.0 | SDK di AWS in ogni linguaggio supportato |
+| aws-samples/aws-cdk-examples | Apache-2.0 | CDK in TypeScript, Python, Java, Go e C# |
+| awslabs/aws-lambda-web-adapter | Apache-2.0 | Rust per Lambda, esempi in più linguaggi |
+| awspring/spring-cloud-aws | Apache-2.0 | Spring su S3, SQS, SNS e DynamoDB, Maven |
+| sst/sst | MIT | infrastruttura AWS e Cloudflare da TypeScript, con una parte Go |
+| pulumi/examples | Apache-2.0 | AWS, Azure e Google Cloud da TypeScript, Python, Go e C# |
+| terraform-aws-modules/terraform-aws-vpc | Apache-2.0 | solo Terraform |
+| keycloak/keycloak | Apache-2.0 | Maven grande con Quarkus, console React su pnpm |
+| keycloak/keycloak-quickstarts | Apache-2.0 | client di Keycloak in Spring Boot, Jakarta EE e Node |
+| auth0-samples/auth0-react-samples | MIT | Auth0 da React |
+| auth0-samples/auth0-angular-samples | MIT | Auth0 da Angular |
+| auth0-samples/auth0-express-api-samples | MIT | Auth0 su un'API Express |
+| auth0-samples/auth0-golang-web-app | MIT | Auth0 da Go |
+| auth0/nextjs-auth0 | MIT | SDK di Auth0 per Next.js, rilascio su npm |
+| clerk/javascript | MIT | SDK di Clerk, workspace pnpm con Changesets |
+| vercel/commerce | MIT | Next.js su Shopify, pensato per Vercel |
+| vercel/examples | MIT | molte app indipendenti su Vercel, con servizi diversi |
+| vercel/nextjs-subscription-payments | MIT | Next.js, Stripe e Supabase |
+| boxyhq/saas-starter-kit | Apache-2.0 | Next.js, Prisma, SAML, Stripe, webhook |
+| supabase/supabase | Apache-2.0 | Next.js in pnpm con Turborepo, molti servizi |
+| Azure-Samples/azure-search-openai-demo | MIT | Python e React su Azure OpenAI e Azure AI Search |
+| cloudflare/workers-sdk | Apache-2.0 | Wrangler, workspace pnpm, rilascio con Changesets |
+| cloudflare/templates | MIT | molti Worker indipendenti: D1, R2, KV |
+| netlify/next-runtime | MIT | adattatore di Next.js per Netlify |
+| resend/react-email | MIT | React Email, workspace pnpm |
+
+Pipeline di rilascio come oggetto del progetto:
+
+| Repository | Licenza | Che cosa prova |
+| --- | --- | --- |
+| goreleaser/goreleaser | MIT | Go, rilascia se stesso con GoReleaser |
+| cli/cli | MIT | Go, rilascio a più piattaforme, chiama l'API di GitHub |
+| charmbracelet/gum | MIT | Go piccolo con GoReleaser |
+| semantic-release/semantic-release | MIT | rilascio su npm da CI |
+| changesets/changesets | MIT | Changesets, Yarn workspaces |
+| googleapis/release-please | Apache-2.0 | TypeScript, rilascio da pull request |
+| jreleaser/jreleaser | Apache-2.0 | Java su Gradle a molti moduli |
+| axodotdev/cargo-dist | Apache-2.0 | Rust, genera i workflow di rilascio |
+| pypa/sampleproject | MIT | il progetto Python minimo, con pubblicazione su PyPI |
+
+## Progetti semplici, Apache 2.0 e MIT (31)
+
+Uno o pochi moduli, un build tool.
+
+| Repository | Licenza | Che cosa prova |
+| --- | --- | --- |
+| fastapi/typer | MIT | Python, Click |
+| fastapi/sqlmodel | MIT | Python, SQLModel su SQLAlchemy e Pydantic |
+| psf/requests | Apache-2.0 | Python, `setup.py` |
+| Textualize/rich | MIT | Python, Poetry |
+| miguelgrinberg/microblog | MIT | app Flask piccola, SQLAlchemy, posta, ricerca, traduzione |
+| expressjs/express | MIT | JavaScript senza tipi |
+| koajs/koa | MIT | Koa |
+| sindresorhus/got | MIT | TypeScript, solo ESM |
+| vuejs/pinia | MIT | Pinia, workspace pnpm piccolo |
+| vuejs/vitepress | MIT | VitePress, Vue |
+| labstack/echo | MIT | Echo, un modulo Go |
+| charmbracelet/bubbletea | MIT | Go, esempi in un modulo annidato |
+| go-gorm/gorm | MIT | GORM |
+| gofiber/recipes | MIT | molti moduli Go indipendenti, Fiber con servizi diversi |
+| sharkdp/fd | Apache-2.0 | un crate Rust |
+| ratatui/ratatui | MIT | Ratatui, workspace Cargo piccolo |
+| clap-rs/clap | Apache-2.0 | clap, macro procedurali |
+| google/gson | Apache-2.0 | Maven a pochi moduli |
+| square/okhttp | Apache-2.0 | Gradle Kotlin, Kotlin Multiplatform |
+| InsertKoinIO/koin | Apache-2.0 | Koin, Kotlin Multiplatform |
+| JetBrains/Exposed | Apache-2.0 | Exposed, Gradle |
+| spring-projects/spring-data-examples | Apache-2.0 | Spring Data JPA, MongoDB, Redis, Elasticsearch |
+| spring-guides/gs-rest-service | Apache-2.0 | Spring Boot minimo, Maven e Gradle nella stessa radice |
+| android/architecture-samples | Apache-2.0 | app Android a un modulo, Jetpack Compose |
+| JamesNK/Newtonsoft.Json | MIT | una soluzione .NET a più target |
+| DaveGamble/cJSON | MIT | C, CMake e Make nella stessa radice |
+| zserge/jsmn | MIT | C, una sola intestazione, Make |
+| yhirose/cpp-httplib | MIT | C++, una sola intestazione, CMake e Meson |
+| jarro2783/cxxopts | MIT | C++, CMake e Bazel |
+| jbeder/yaml-cpp | MIT | C++, CMake |
+| google/benchmark | Apache-2.0 | C++, CMake e Bazel |
+
+## Altre licenze con sorgente disponibile (40)
 
 «non standard»: deps.dev non dà un identificativo; la licenza fra parentesi è quella che il progetto è noto per usare, da leggere nel suo file `LICENSE` prima di usarlo.
 
@@ -173,7 +269,13 @@ Raccolti il 25 novembre 2026: repository pubblici che non sono già fra le 50 ca
 | postgres/postgres | non standard (PostgreSQL License) | Autotools e Meson nella stessa radice, C, SQL |
 | raspberrypi/pico-examples | BSD-3-Clause | CMake con arm-none-eabi |
 | betaflight/betaflight | GPL-3.0 | Make con arm-none-eabi |
+| aws-samples/aws-serverless-airline-booking | non standard (MIT-0) | Lambda, AppSync, Cognito e Stripe; Vue e Python |
+| aws-powertools/powertools-lambda-python | non standard (MIT-0) | Python per Lambda, rilascio su PyPI da CI |
+| serverless/examples | non standard | funzioni su AWS, Azure e Google Cloud, unità indipendenti |
+| localstack/localstack | non standard (Apache-2.0) | Python, emula i servizi AWS |
+| novuhq/novu | non standard (MIT, con parti commerciali) | NestJS e React, decine di fornitori di notifiche |
+| nextauthjs/next-auth | non standard (ISC) | decine di provider di identità, workspace pnpm |
 
 ## Scartati
 
-Non trovati su deps.dev, quindi senza licenza verificata: litestar-org/litestar-fullstack, trungvose/jira-clone-angular, joreilly/Confetti, dani-garcia/vaultwarden, oracle-samples/db-sample-schemas. Senza licenza dichiarata: nrwl/nx-examples.
+Non trovati su deps.dev, quindi senza licenza verificata: litestar-org/litestar-fullstack, trungvose/jira-clone-angular, joreilly/Confetti, dani-garcia/vaultwarden, oracle-samples/db-sample-schemas. aws-samples/retail-store-sample-app, aws-samples/aws-serverless-shopping-cart, ivangfr/springboot-react-keycloak, auth0-samples/auth0-python-web-app, auth0-samples/auth0-aspnetcore-mvc-samples, auth0-samples/auth0-vue-samples, auth0-samples/auth0-spring-security5-api-sample, stripe-samples/accept-a-payment, ixartz/SaaS-Boilerplate, vercel/ai-chatbot, vercel/next-forge, vercel/platforms, Azure-Samples/todo-nodejs-mongo, twilio-labs/function-templates. Senza licenza dichiarata: nrwl/nx-examples.
