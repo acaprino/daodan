@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 
-const FOLDERS = ['src', 'app', 'start'];
+const FOLDERS = ['src', 'app', 'start', 'pipeline'];
 const sources = FOLDERS.flatMap(folder => readdirSync(new URL(`../${folder}/`, import.meta.url)).filter(name => /\.tsx?$/.test(name))
   .map(name => ({ file: `${folder}/${name}`, text: readFileSync(new URL(`../${folder}/${name}`, import.meta.url), 'utf8') })));
 
@@ -19,7 +19,9 @@ test('the pages are started by the shell, as the one app Daodan, in its window',
   const starts = sources.filter(({ text }) => text.includes('startApp(')).map(({ file }) => file);
   assert.deepEqual(starts, FOLDERS.map(folder => `${folder}/main.tsx`));
   for (const { file, text } of sources.filter(({ file }) => starts.includes(file))) {
-    for (const part of ['startApp(DAODAN,', '<AppWindow ', 'useNotify()']) assert.ok(text.includes(part), `${file}: ${part}`);
+    // The pipeline page reads no server and asks nothing: it has nothing to give notice of.
+    const parts = ['startApp(DAODAN,', '<AppWindow ', ...(file === 'pipeline/main.tsx' ? [] : ['useNotify()'])];
+    for (const part of parts) assert.ok(text.includes(part), `${file}: ${part}`);
   }
   assert.deepEqual(sources.filter(({ text }) => text.includes('defineApp(')).map(({ file }) => file), ['src/page.ts']);
 });

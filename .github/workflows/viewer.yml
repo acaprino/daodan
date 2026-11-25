@@ -45,7 +45,7 @@ jobs:
 
       # The pages are Sigrid's components alone: no class and no stylesheet of Daodan's (sigrid-check.config.json). One
       # folder at a time.
-      - run: npx --no sigrid-check src && npx --no sigrid-check app && npx --no sigrid-check start
+      - run: npx --no sigrid-check src && npx --no sigrid-check app && npx --no sigrid-check start && npx --no sigrid-check pipeline
 
       # The frame, the names that are gone, the icons and the agent files, as Imago says them.
       - run: npx --no imago-check
@@ -57,7 +57,10 @@ jobs:
       # The committed pages are what the source builds. Last, and also after a failed step (the job fails all the same), so one
       # run shows the behaviour and the difference.
       - if: ${{ !cancelled() }}
-        run: git diff --exit-code -- ../daodan/assets
+        run: |
+          git diff --exit-code -- ../daodan/assets ../docs/pipeline
+          # a page that was never committed is no difference to `git diff`
+          test -z "$(git status --porcelain -- ../docs/pipeline)"
 
       # When the committed pages differ, or anything else failed, keep what the source builds so it can be committed (the pages
       # are not built by hand).
@@ -66,6 +69,13 @@ jobs:
         with:
           name: built-assets
           path: daodan/assets
+          retention-days: 3
+
+      - if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: built-docs
+          path: docs/pipeline
           retention-days: 3
 
   # The two pages at the widths where the frame changes, with the font the suite has on Windows, and what they look like: the owner

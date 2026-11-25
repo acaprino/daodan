@@ -76,6 +76,8 @@ Un `.sql` con marcatori Oracle è PL/SQL. Python richiesto `>= 3.12`: gli script
 
 Daodan legge un progetto e ne scrive un grafo: file, simboli, chiamate, moduli e tecnologie, ognuno con la sua prova. Ogni step usa lo strumento ufficiale di ciò che legge, dietro un adattatore, e dice ciò che non è riuscito a fare.
 
+**L'albero di ciò che ogni step usa** (quando parte, con quale strumento e a che versione, dove gira, che cosa dà, per linguaggio, strumento di build e framework) è una pagina: `docs/pipeline/`, da aprire con un server di file (`python -m http.server -d docs/pipeline`). I suoi dati li scrive `daodan/core/pipeline_tree.py build` dalle dichiarazioni del codice, e `check` dice dove albero e codice non concordano (`tests/test_codebase_map_pipeline_tree.py`); la pagina è `viewer/pipeline/`, costruita dal workflow Viewer.
+
 Questa sezione è l'unico posto che spiega il processo; gli altri documenti rimandano qui. Ha due parti, da non confondere:
 
 - **Oggi nel codice:** sei step, con i nomi di prima. Ogni riga è letta sul codice il 24 novembre 2026 (commit `03161c8a6`).

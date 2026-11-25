@@ -54,6 +54,7 @@ function licenseNotices(viewer: boolean): Plugin {
 const PAGES: Record<string, [root: string, outDir: string]> = {
   app: ['app', '../../daodan/assets/app'],
   start: ['start', '../../apps/desktop/start'],
+  pipeline: ['pipeline', '../../docs/pipeline'],  // the tree of the pipeline, a page of the documentation
 };
 const MAP: [string, string] = ['.', '../daodan/assets/viewer'];
 

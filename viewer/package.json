@@ -7,13 +7,13 @@
     "test": "node --test \"test/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build && vite build --mode app && npm run build:start",
+    "build": "vite build && vite build --mode app && npm run build:start && vite build --mode pipeline",
     "build:start": "vite build --mode start",
     "test:ui": "node test/browser.mjs",
     "test:frame": "node test/shots.mjs"
   },
   "imago": {
-    "src": ["src", "app", "start"],
+    "src": ["src", "app", "start", "pipeline"],
     "tests": ["test"],
     "agents": ["../AGENTS.md", "../CLAUDE.md"],
     "app": "daodan",
