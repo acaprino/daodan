@@ -231,7 +231,7 @@ Uno o pochi moduli, un build tool.
 
 ## Scelti sulle tipologie del registro, Apache 2.0 e MIT (42)
 
-Scelti leggendo `daodan/data/service-registry.json` (2.562 voci, 1.162 con segni), per coprire le sue tipologie con servizi diversi.
+Scelti leggendo `daodan/data/service-registry.json`, per coprire le sue tipologie con servizi diversi.
 
 | Tipologia | Repository | Licenza | Che cosa prova |
 | --- | --- | --- | --- |
@@ -350,10 +350,10 @@ Scelti leggendo `daodan/data/service-registry.json` (2.562 voci, 1.162 con segni
 
 ## Buchi del registro trovati
 
-Cercando nel registro i servizi che questi progetti usano, per nome e per ID, il 25 novembre 2026. Nulla è stato cambiato in `daodan/data/`: la spec approvata [`2026-11-21-stack-dal-fork.md`](../../docs/specs/2026-11-21-stack-dal-fork.md) mette i segni nuovi nel fork e li toglie dalle aggiunte.
+Cercando nel registro i servizi che questi progetti usano, per nome e per ID, sul registro di `develop` del 25 novembre 2026 (`stack-analyser` 1.27.6-daodan.5). Le regole di riconoscimento sono del fork: un buco si chiude con una regola lì, non in `daodan/data/`.
 
 - **Senza voce:** Plaid, Mollie, Svix, Ably, Mux, imgix, UploadThing, Trigger.dev, GrowthBook, Doppler, Descope, Auth.js (NextAuth), Lucia, LangSmith, LiteLLM, Azure Service Bus, MQTT e Mosquitto, ZeroMQ, ActiveMQ fuori da AWS, SeaweedFS, Mastodon, OpenStreetMap, OpenWeather, Medusa, Saleor, Kill Bill, MassTransit, rclone, Apprise, listmonk, Activepieces.
-- **Voce senza segni**, quindi mai riconosciuta: Temporal, Langfuse, Unleash, Hasura, Zitadel, authentik, Authelia, Casdoor, Dex, Dapr, Dify, Redpanda, EMQX, Grafana Loki, Ceph, Azure Event Hubs, Vector, Argo.
+- **`support: none`**, cioè una voce senza regola del fork: Temporal, Langfuse, Unleash, Hasura, Zitadel, authentik, Authelia, Casdoor, Dex, Dify, Redpanda, EMQX, Grafana Loki, Ceph, Azure Event Hubs, Vector, Argo.
 
 ## Scartati
 
