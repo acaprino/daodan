@@ -7,6 +7,7 @@ import { Empty, SearchField } from '@acaprino/sigrid/components';
 import { useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
 import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
+import { onceDrawn } from '../src/sight.ts';
 import { Loading } from '../src/states.tsx';
 import { plural } from '../src/words.ts';
 import { ExplorerLink } from './explorer-link.tsx';
@@ -21,6 +22,8 @@ import type { Snapshot } from './snapshot.ts';
 import { GraphFailed, NoGroups } from './states.tsx';
 import type { Kept } from './storage.ts';
 import { model, useModelSlice } from './use-model.ts';
+
+const CANVAS = 'Grafo interattivo';
 
 // In the window's action bar, where the run has the same link.
 export const graphActions = (s: Snapshot): ReactNode => ctx(s) && <ExplorerLink />;
@@ -88,13 +91,15 @@ const Canvas = memo(function Canvas({ graph, visible, selected, onSelect }: {
   const scene = useMemo(() => sceneOf({ ...visible, open: graph.open }, model.markUrl), [graph, visible]);
   // A group just opened or closed is brought into the view, which a new layout fits to the whole graph, from its start where it is large.
   const canvas = useRef<GraphCanvasHandle>(null), before = useRef(graph);
+  // The details that open with the graph slide in beside it: the whole graph is brought into the view they leave.
+  useEffect(() => onceDrawn(CANVAS, () => canvas.current?.fit()), []);
   useEffect(() => {
     const toggled = toggledGroup(before.current, graph);
     before.current = graph;
     if (toggled !== null) canvas.current?.focus([toggled]);
   }, [graph]);
   return <>
-    <GraphCanvas ref={canvas} aria-label="Grafo interattivo" model="graph" fill movable animated nodes={scene.nodes} edges={scene.edges} direction={direction}
+    <GraphCanvas ref={canvas} aria-label={CANVAS} model="graph" fill movable animated nodes={scene.nodes} edges={scene.edges} direction={direction}
       layoutKey={`${direction}|${scene.key}`} selected={selected} onSelect={onSelect} onToggle={model.toggleGroup} />
     <Split>
       <GraphLegend aria-label="Tipi di linea" entries={scene.legend} />
