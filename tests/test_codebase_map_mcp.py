@@ -9,6 +9,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+
+import pytest
 from unittest import mock
 
 
@@ -54,6 +56,7 @@ class MapServiceTests(unittest.TestCase):
             for answer in (candidate, rule_prompt):
                 self.assertLessEqual(len(json.dumps(answer)), system_brief.LIMIT)
 
+    @pytest.mark.usefixtures("real_stack")
     def test_the_links_the_service_answers_hold_the_services_of_the_stack_whether_its_record_is_missing_or_stale(self):
         (self.source / "requirements.txt").write_text("stripe==14.3.0\n", encoding="utf-8")
         self.create()

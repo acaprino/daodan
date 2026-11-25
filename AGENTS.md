@@ -27,12 +27,32 @@ Per ogni framework, libreria o strumento che il progetto analizzato usa, Daodan 
 - Le spec si mettono alla prova in `benchmarks/`: ogni benchmark dichiara nel suo README i parametri da provare e i risultati misurati.
 - Una prova che sostiene un risultato o una scheda del registro resta nel repository, come test o benchmark che si riesegue; quella che chiede gli strumenti veri gira solo su Modal. Un test temporaneo poi cancellato non è una verifica.
 
+## Un solo aspetto per tutta la suite (la regola del proprietario, 2026-11-23)
+
+Ogni app della suite (Daodan, Xiox, Shinatama, Mukade, Muro e le altre su Sigrid) ha lo stesso aspetto e lo stesso
+comportamento: le stesse superfici, ombre, spaziature, tipografia e movimento, e lo stesso componente per lo stesso
+bisogno. Di Daodan sono solo il layout, che segue le sue funzioni, l'accento e l'icona.
+
+- Il design system della suite è Sigrid (`acaprino/sigrid`). L'interfaccia usa solo i suoi componenti: nessun
+  componente proprio che disegna (niente fogli di stile, classi, primitive, copie o ritocchi di un pezzo del design
+  system); il codice di Daodan compone i componenti del design system nelle schermate e li collega ai dati.
+- È l'app ad adeguarsi al design system, mai il contrario. Sigrid cambia solo quando manca davvero un componente o una
+  primitiva che serve a una funzione: allora si aggiunge a Sigrid, generico, per tutte le app. L'aspetto che Daodan
+  aveva prima non è mai un motivo per cambiare Sigrid.
+- La base dell'app è Imago, la shell della suite in stile Xiox (finestra, barra del titolo, cornice, comandi, palette, tema,
+  notifiche), costruita con Sigrid; i componenti sono di Sigrid. L'app porta solo le sue schermate, composte con i componenti di
+  Sigrid, e non ha una cornice, una finestra o un look propri. Ciò che manca alla shell si aggiunge a Imago, ciò che manca a un
+  componente a Sigrid.
+
 ## Interfaccia (viewer/)
 
-- Prima di lavorare sull'interfaccia leggi `viewer/node_modules/@acaprino/imago/docs/design-file.md` (da `viewer/`: `node_modules/@acaprino/imago/docs/design-file.md`, dopo `npm ci`) e i file che richiama.
-- Applica i suoi token e le scelte confermate entro la richiesta; usa le classi `im-` e i token `--im-` del pacchetto e costruisci un controllo tuo dai token, mai da colori o misure scritti a mano.
+- Prima di lavorare sull'interfaccia leggi `viewer/node_modules/@acaprino/imago/docs/design-file.md` (dopo `npm ci`) e i file che richiama.
+- La cornice delle due pagine è la shell di Imago: l'app è definita una volta (`defineApp` in `viewer/src/page.ts`: accento, parole italiane, chiavi delle scelte), ogni pagina la avvia con `startApp` e riempie le regioni di `AppWindow` (viste, stato, barra laterale, inspector, azioni, piede). Barra del titolo, palette, tema, notifiche (`useNotify`), finestra (`useWindow`), fuoco (`useFocusKept`) e pulsante della barra laterale sono della shell: nessuna pagina li disegna (`test/shell.test.ts`).
+- In una finestra propria l'App e la mappa si danno il cambio nella stessa finestra; in un browser la mappa si apre in un'altra scheda.
+- Prima di lavorare sull'interfaccia leggi l'`AGENTS.md` di Sigrid (`viewer/node_modules/@acaprino/sigrid/AGENTS.md`, dopo `npm ci`; nella versione di `viewer/package.json`) e i file che richiama: il catalogo dei componenti, `DESIGN.md`, `docs/patterns.md`.
+- Componi solo i componenti di Sigrid, nelle schermate di `viewer/src` (la mappa) e `viewer/app` (l'App): nessuna classe, nessuno stile, nessun foglio di stile, nessun controllo tuo («Un solo aspetto per tutta la suite»). La logica sta in moduli senza interfaccia, con i loro test.
 - Segnala i conflitti e lascia esplicite le scelte aperte.
-- Prima di dire che il lavoro sull'interfaccia è finito esegui `npx imago-check` in `viewer/`.
+- `sigrid-check`, con la regola `own-class`, è pulito su `src` e su `app` (`npx --no sigrid-check src`, `npx --no sigrid-check app`, una cartella per volta). `imago-check` (`npx --no imago-check`, da `viewer/`) è pulito: li esegue il workflow Viewer.
 
 ## Come rispondere
 

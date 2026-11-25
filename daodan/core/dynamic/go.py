@@ -36,7 +36,7 @@ import preparation
 from premap.container_runner import IMAGE  # gcc for cgo, git, timeout
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-record-go", "1", ("go",)
+NAME, VERSION, LANGUAGES = "dynamic-record-go", "1", ("go",)
 UNIT_KINDS = frozenset({"go-module"})
 RECORDER = Path(__file__).with_name("go_record.go")
 RUNNER, ARGV = "go test", ["go", "test", "-vet=off", "./..."]

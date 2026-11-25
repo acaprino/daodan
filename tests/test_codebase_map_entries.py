@@ -14,6 +14,7 @@ if str(SCRIPTS) not in sys.path:
 import flows  # noqa: E402
 import snapshot  # noqa: E402
 from daodan.core import entries  # noqa: E402  (by its package: benchmarks/system-map has an entries.py too)
+from daodan.core.premap import noir  # noqa: E402
 
 
 def edge(source: str, target: str, kind: str, site: str) -> dict:
@@ -313,6 +314,13 @@ class LabelTests(unittest.TestCase):
                  *[(grammar, "template_string", "g(`/o/${x}`)", "/o/${x}") for grammar in ("javascript", "typescript", "tsx")],
                  ("java", "string_literal", 'class A { void f() { g("/orders"); } }', "/orders"),
                  ("java", "string_literal", 'class A { void f() { g("a\\nb"); } }', None),
+                 ("kotlin", "string_literal", 'fun f() { g("/orders") }', "/orders"),
+                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/$x") }', "/o/${}"),  # a computed part is one hole
+                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/${x}") }', "/o/${}"),
+                 ("kotlin", "string_literal", 'fun f(x: String, y: Int) { g("/o/$x/${y}/p") }', "/o/${}/${}/p"),
+                 ("kotlin", "string_literal", 'fun f(a: String, b: String) { g("${a}${b}/p") }', "${}${}/p"),
+                 ("kotlin", "string_literal", 'fun f(a: String) { g("/o/${h("/in/$a")}/p") }', "/o/${}/p"),  # a string in a hole is no piece
+                 ("kotlin", "string_literal", 'fun f() { g("") }', None),
                  ("go", "interpreted_string_literal", 'package a\nfunc f() { g("/orders") }', "/orders"),
                  ("go", "raw_string_literal", "package a\nfunc f() { g(`/orders`) }", "/orders"),
                  ("csharp", "string_literal", 'class A { void F() { G("/orders"); } }', "/orders"),
@@ -1107,33 +1115,33 @@ class NoirTests(unittest.TestCase):
         "passive_results": [], "errors": []}
 
     def test_each_protocol_decides_the_kind_and_the_site_is_relative_to_the_scanned_root(self):
-        self.assertEqual(entries.noir(self.REPORT, "/work"), [
+        self.assertEqual(noir.rows(self.REPORT, "/work"), [
             {"reader": "noir", "shape": "http", "site": "app/api/healthz/route.ts:3",
              "symbol": "app/api/healthz/route.ts::GET", "method": "GET", "path": "/healthz", "kind": "rotta",
-             "handler": "GET"},
+             "handler": "GET", "schema": "/healthz"},
             {"reader": "noir", "shape": "http", "site": "server/routes.js:12", "symbol": "server/routes.js::<module>",
-             "method": "POST", "path": "/orders/:id", "kind": "rotta"},                   # no handler: its code path
+             "method": "POST", "path": "/orders/:id", "kind": "rotta", "handler": None, "schema": "/orders/{}"},   # no handler: its code path
             {"reader": "noir", "shape": "cli", "site": "bin/tool.py:8", "symbol": "bin/tool.py::<module>",
-             "method": "CLI", "path": "cli://deploy", "kind": "comando"},
+             "method": "CLI", "path": "cli://deploy", "kind": "comando", "handler": None},
             {"reader": "noir", "shape": "universal-link", "site": "ios/Shop.entitlements:6",
              "symbol": "ios/Shop.entitlements::<module>", "method": "GET", "path": "https://shop.example/cart",
-             "kind": "evento del sistema operativo"},
+             "kind": "evento del sistema operativo", "handler": None},
             {"reader": "noir", "shape": "mobile-scheme", "site": "android/AndroidManifest.xml:21",
              "symbol": "android/AndroidManifest.xml::<module>", "method": "GET", "path": "shop://open",
-             "kind": "evento del sistema operativo"},
+             "kind": "evento del sistema operativo", "handler": None},
             {"reader": "noir", "shape": "ws", "site": "server/live.js:4", "symbol": "server/live.js::<module>",
-             "method": "GET", "path": "/live"}])                                           # a shape to classify
+             "method": "GET", "path": "/live", "handler": None}])                                           # a shape to classify
 
     def test_a_report_of_another_root_is_refused(self):
         with self.assertRaises(ValueError):
-            entries.noir(self.REPORT, "/elsewhere")
+            noir.rows(self.REPORT, "/elsewhere")
 
     def test_a_server_action_is_its_own_shape_and_no_entry_while_another_kind_changes_nothing(self):
         def endpoint(url, kind):
             return {"url": url, "method": "POST", "protocol": "http", "kind": kind,
                     "handler": {"name": "pay", "path": "/work/app/actions.ts", "line": 3},
                     "details": {"code_paths": [{"path": "/work/app/actions.ts", "line": 3}], "technology": "js_nextjs"}}
-        found = entries.noir({"endpoints": [endpoint("/pay", "server-action"), endpoint("/a", "something-else"),
+        found = noir.rows({"endpoints": [endpoint("/pay", "server-action"), endpoint("/a", "something-else"),
                                             endpoint("/b", "")]}, "/work")
         self.assertEqual([(row["path"], row["shape"], row.get("kind")) for row in found], [
             ("/pay", "server-action", entries.NO_ENTRY), ("/a", "http", "rotta"), ("/b", "http", "rotta")])
@@ -1278,3 +1286,17 @@ class ClassifiedBindingsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_a_noir_row_of_a_premap_written_before_the_binder_has_no_handler_key_and_is_given_the_binder_s_gap():
+    """An older pre-map wrote no `handler` for an endpoint Noir names no function for: `from_record` gives it `None`, so the links'
+    binder says the gap instead of passing the row on as an entry."""
+    import types
+    from daodan.core import binder
+    row = {"reader": "noir", "shape": "http", "site": "app.py:3", "symbol": "app.py::<module>", "method": "GET", "path": "/x",
+           "kind": "rotta"}
+    report = {"sources": [{"source": f"{noir.NAME}@{noir.VERSION}"}], "noir_entries": [row], "gaps": []}
+    [read] = noir.from_record(report)[0]
+    assert read["handler"] is None
+    [bound] = binder.bind([read], types.SimpleNamespace(functions={}), None)
+    assert "without a unique snapshot handler" in bound["gap"]

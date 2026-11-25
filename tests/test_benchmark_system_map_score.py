@@ -1,6 +1,8 @@
 """score.py of benchmarks/system-map on two minimal maps."""
 
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -313,6 +315,203 @@ class SystemScoreTests(unittest.TestCase):
         result = score.score_system(proposed, expected, FILES)
         self.assertEqual(result["nodes"]["found"], 2)
         self.assertEqual(result["services"], {"of": 2, "family": 1, "role": 2, "mode": 1})
+
+
+class WholeTableTests(unittest.TestCase):
+    """`score.py whole` on synthetic outputs of a whole job: no run, no model."""
+
+    @staticmethod
+    def _write(path: Path, value) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(value if isinstance(value, str) else json.dumps(value), encoding="utf-8")
+
+    def _run(self, tag: Path, label: str, case: str, rep: int, **summary) -> Path:
+        run = tag / label
+        self._write(run / "summary.json", {"case": case, "model": "haiku", "scope": "system", "rules": "session",
+                                           "rep": rep, **summary})
+        return run
+
+    def test_a_measured_case_gives_its_columns_and_says_what_it_did_not_measure(self):
+        with tempfile.TemporaryDirectory() as folder:
+            tag, expected = Path(folder) / "tag", Path(folder) / "expected"
+            # the reference lists the kind of each entry, as `entries.py measure` reads it
+            reference = {**REFERENCE, "flows": [{**flow, "entries": [{**item, "kind": "controllo dell'interfaccia"}
+                                                                      for item in flow["entries"]]}
+                                                for flow in REFERENCE["flows"]]}
+            self._write(expected / "shop-system.json", reference)
+            for rep in (1, 2):
+                run = self._run(tag, f"shop-{rep}", "shop", rep, cost_usd=0.5 * rep, budget_stop=False,
+                                prepared_seconds=90, engine={"exit": 0, "timed_out": False,
+                                                             "languages": {"javascript": "fresh"}})
+                self._write(run / "map.json", as_proposal(REFERENCE))
+                self._write(run / "files.txt", "\n".join(FILES))
+            self._write(tag / "cases/shop/archive.json",
+                        {"/repo": {"kept": 21, "left": 0, "bytes": 1, "masked": {"web/lib/api.ts": 2}, "withheld": []}})
+            self._write(tag / "cases/shop/candidates.json",
+                        {"case": "shop", "candidates": [{"reader": "attribute", "symbol": "web/pages/cart.tsx::onClick"}],
+                         "calls": []})
+            self._write(tag / "cases/shop/files.txt", "\n".join(FILES))
+            row = score.whole(tag, expected)["shop"]["haiku system session"]
+        self.assertEqual(row["runs"], 2)
+        self.assertEqual(row["input"], {"state": "misurato", "value": "nothing left out"})
+        self.assertEqual(row["secrets"]["value"]["masked_in_the_archive"], 2)
+        self.assertEqual(row["secrets"]["value"]["in_the_texts_sent_out"]["state"], "non misurato")
+        self.assertEqual(row["engine"], {"state": "misurato", "value": {"javascript": "fresh"}})
+        self.assertEqual(row["entries"]["state"], "misurato")
+        self.assertEqual(row["entries"]["value"]["readers"][0]["by_kind"]["controllo dell'interfaccia"],
+                         {"found": 1, "of": 2})   # the Cart screen holds the candidate's file, the nightly job does not
+        self.assertEqual((row["system"]["state"], row["system"]["value"]["nodes"]["found"]), ("misurato", 14))
+        self.assertEqual((row["stable"]["state"], row["stable"]["value"]["of"]), ("misurato", 15))
+        self.assertEqual(row["cost"]["value"]["cost_usd"], 1.5)
+        for column, name in (("paths", "paths.json"), ("search", "search.json")):
+            self.assertEqual(row[column]["state"], "non misurato", column)
+            self.assertIn(name, row[column]["cause"])
+        self.assertEqual(row["handlers"]["state"], "non misurato")
+
+    def test_a_failed_run_is_not_a_zero_and_an_archive_that_left_files_out_is_said(self):
+        with tempfile.TemporaryDirectory() as folder:
+            tag, expected = Path(folder) / "tag", Path(folder) / "expected"
+            self._run(tag, "lost-1", "lost", 1, stopped="the rules session recorded no rules",
+                      engine={"exit": None, "timed_out": True})
+            self._write(tag / "cases/lost/archive.json",
+                        {"/repo": {"kept": 5, "left": 2, "bytes": 1, "masked": {}, "withheld": ["a.bin"]}})
+            self._run(tag, "bare-1", "bare", 1, cost_usd=None, engine=None)
+            row = score.whole(tag, expected)["lost"]["haiku system session"]
+            bare = score.whole(tag, expected)["bare"]["haiku system session"]
+        self.assertEqual(row["input"], {"state": "ingresso omesso", "left": 2, "withheld": 1})
+        self.assertEqual(row["entries"]["state"], "non misurato")
+        self.assertIn("candidates.json", row["entries"]["cause"])
+        self.assertEqual(row["engine"], {"state": "passo fallito", "cause": "the engine pass timed out"})
+        self.assertEqual(row["system"], {"state": "non misurato", "cause": "the rules session recorded no rules"})
+        self.assertEqual(row["stable"]["state"], "non misurato")
+        self.assertEqual(row["cost"]["state"], "non misurato")
+        self.assertEqual(bare["engine"]["state"], "non misurato")
+        self.assertEqual(bare["input"]["state"], "non misurato")
+
+    def test_a_map_with_no_node_found_is_zero_found_and_a_missing_reference_is_not_measured(self):
+        with tempfile.TemporaryDirectory() as folder:
+            tag, expected = Path(folder) / "tag", Path(folder) / "expected"
+            self._write(expected / "shop-system.json", REFERENCE)
+            run = self._run(tag, "shop-1", "shop", 1, cost_usd=0.1, engine={"exit": 0, "timed_out": False})
+            self._write(run / "map.json", {"nodes": [{"name": "Ghost", "type": "altro", "members": ["nowhere/ghost.py"]}],
+                                           "flows": []})
+            self._write(run / "files.txt", "\n".join(FILES))
+            other = self._run(tag, "free-1", "free", 1, cost_usd=0.1, engine={"exit": 0, "timed_out": False})
+            self._write(other / "map.json", as_proposal(REFERENCE))
+            self._write(other / "files.txt", "\n".join(FILES))
+            table = score.whole(tag, expected)
+        self.assertEqual(table["shop"]["haiku system session"]["system"]["state"], "zero trovati")
+        self.assertEqual(table["free"]["haiku system session"]["system"],
+                         {"state": "non misurato", "cause": "free-system.json is not there"})
+
+    def test_a_job_with_no_model_has_a_row_for_each_case_it_ran(self):
+        with tempfile.TemporaryDirectory() as folder:
+            tag, expected = Path(folder) / "tag", Path(folder) / "expected"
+            self._write(tag / "cases/only/archive.json",
+                        {"/repo": {"kept": 5, "left": 0, "bytes": 1, "masked": {"a.py": 3}, "withheld": []}})
+            self._write(tag / "cases/only/engine.json", {"exit": 2, "timed_out": False, "stderr": "boom"})
+            table = score.whole(tag, expected)
+        row = table["only"]["no model"]
+        self.assertEqual(row["runs"], 0)
+        self.assertEqual(row["input"], {"state": "misurato", "value": "nothing left out"})
+        self.assertEqual(row["secrets"]["value"]["masked_in_the_archive"], 3)
+        self.assertEqual(row["engine"], {"state": "passo fallito", "cause": "the engine pass exited with 2: boom"})
+        self.assertEqual(row["entries"]["state"], "non misurato")
+        self.assertNotIn("system", row)
+
+    def test_the_secrets_the_answers_masked_and_the_tokens_of_the_sessions_are_counted_from_what_a_run_kept(self):
+        answer = lambda text: {"type": "user", "message": {"content": [  # noqa: E731
+            {"type": "tool_result", "content": [{"type": "text", "text": text}]}]}}
+        stream = [answer(json.dumps({"status": "ok", "masked_secrets": 2})), answer(json.dumps({"status": "ok"})),
+                  answer("Error: not JSON"), {"type": "assistant", "message": {"content": []}}]
+        usage = {"input_tokens": 10, "cache_creation_input_tokens": 100, "cache_read_input_tokens": 1000,
+                 "output_tokens": 50}
+        with tempfile.TemporaryDirectory() as folder:
+            tag, expected = Path(folder) / "tag", Path(folder) / "expected"
+            self._write(tag / "cases/shop/archive.json",
+                        {"/repo": {"kept": 5, "left": 0, "bytes": 1, "masked": {"a.py": 1}, "withheld": []}})
+            for rep in (1, 2):
+                run = self._run(tag, f"shop-{rep}", "shop", rep, cost_usd=0.1, engine={"exit": 0, "languages": {}},
+                                sessions={"rules": {"seconds": 30, "turns": 4, "usage": usage},
+                                          "mapper": {"seconds": 10, "turns": 2, "usage": usage}})
+                self._write(run / "stream.jsonl", "\n".join(json.dumps(event) for event in stream))
+            row = score.whole(tag, expected)["shop"]["haiku system session"]
+            bare = self._run(tag, "bare-1", "bare", 1, cost_usd=0.1, engine=None)
+            self._write(tag / "cases/bare/archive.json", {"/r": {"kept": 1, "left": 0, "bytes": 1, "masked": {}, "withheld": []}})
+            self.assertEqual(score.whole(tag, expected)["bare"]["haiku system session"]["secrets"]["value"]
+                             ["in_the_texts_sent_out"]["state"], "non misurato")
+        self.assertEqual(row["secrets"]["value"]["masked_in_the_archive"], 1)
+        self.assertEqual(row["secrets"]["value"]["in_the_texts_sent_out"],
+                         {"state": "misurato", "value": {"answers": 6, "read": 4, "masked_secrets": 4, "runs": 2}})
+        self.assertEqual(row["cost"]["value"]["usage"], {
+            "tokens": {"input_tokens": 40, "cache_creation_input_tokens": 400, "cache_read_input_tokens": 4000,
+                       "output_tokens": 200},
+            "seconds": {"rules": 60, "mapper": 20}, "turns": {"rules": 8, "mapper": 4}})
+
+    def test_a_run_given_the_rules_of_another_is_not_a_second_independent_run(self):
+        with tempfile.TemporaryDirectory() as folder:
+            tag, expected = Path(folder) / "tag", Path(folder) / "expected"
+            for rep, origin in ((1, None), (2, "shop-1")):
+                run = self._run(tag, f"shop-{rep}", "shop", rep, rules_from=origin,
+                                engine={"exit": 1, "timed_out": False, "stderr": "Traceback: boom"})
+                self._write(run / "map.json", as_proposal(REFERENCE))
+            row = score.whole(tag, expected)["shop"]["haiku system session"]
+        self.assertEqual(row["stable"]["state"], "non misurato")
+        self.assertIn("given the first one's rules", row["stable"]["cause"])
+        # exit 1 with no report is a crash, not a measured engine
+        self.assertEqual(row["engine"], {"state": "passo fallito",
+                                         "cause": "the engine pass wrote no report: Traceback: boom"})
+
+
+class RunsTableTests(unittest.TestCase):
+    """`score.py runs` on synthetic outputs of three runs of one project."""
+
+    @staticmethod
+    def _run(folder: Path, name: str, seconds: int, restores: int, found: int | None) -> Path:
+        run = folder / name
+        run.mkdir(parents=True)
+        events = [("step.started", "scan", None), ("analyzer.started", "analyze", "scip-typescript"),
+                  ("analyzer.started", "dynamic", "app"), ("step.finished", "union", None)]
+        stamps = ["2026-11-23T10:00:00.000000Z", "2026-11-23T10:00:01.000000Z", "2026-11-23T10:00:02.000000Z",
+                  f"2026-11-23T10:{seconds // 60:02d}:{seconds % 60:02d}.000000Z"]
+        (run / "pipeline-events.jsonl").write_text(
+            "\n".join(json.dumps({"at": at, "step": step, "analyzer": analyzer, "kind": kind, "data": {}})
+                      for at, (kind, step, analyzer) in zip(stamps, events)), encoding="utf-8")
+        (run / "dynamic-runs").mkdir()
+        (run / "dynamic-runs" / "container-runs.jsonl").write_text(
+            "\n".join(json.dumps({"phase": phase}) for phase in ["node-restore"] * restores + ["execute"]),
+            encoding="utf-8")
+        if found is not None:
+            (run / "links.json").write_text(json.dumps({"found": found, "of": 10}), encoding="utf-8")
+        return run
+
+    def test_three_runs_side_by_side_and_a_cheaper_run_that_finds_less_is_marked(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base = Path(folder)
+            first = self._run(base, "from-scratch", 600, 3, 8)
+            second = self._run(base, "unchanged", 60, 0, 8)
+            third = self._run(base, "one-module", 120, 1, 5)
+            table = score.runs([first, second, third])["runs"]
+        self.assertEqual([row["run"] for row in table], ["from-scratch", "unchanged", "one-module"])
+        self.assertEqual(table[0]["seconds"], {"state": "misurato", "value": 600.0})
+        self.assertEqual(table[0]["restores"]["value"], 3)
+        self.assertEqual(table[1]["restores"], {"state": "misurato", "value": 0})
+        self.assertEqual((table[0]["analyzer_starts"]["value"], table[0]["app_starts"]["value"]), (1, 1))
+        self.assertEqual(table[0]["links"]["value"], {"found": 8, "of": 10})
+        self.assertNotIn("flag", table[1])   # cheaper and as many links: a gain
+        self.assertEqual(table[2]["flag"], "costs less and finds fewer links: not a gain")
+        for column in ("cpu", "peak_memory", "temporary_space"):
+            self.assertEqual(table[0][column]["state"], "non misurato", column)
+
+    def test_a_run_without_its_files_says_what_is_missing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            empty = Path(folder) / "empty"
+            empty.mkdir()
+            row = score.runs([empty])["runs"][0]
+        self.assertEqual(row["seconds"]["state"], "non misurato")
+        self.assertEqual(row["restores"]["state"], "non misurato")
+        self.assertEqual((row["analyzer_starts"]["state"], row["app_starts"]["state"]), ("non misurato",) * 2)
+        self.assertIn("links.json", row["links"]["cause"])
 
 
 if __name__ == "__main__":

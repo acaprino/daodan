@@ -1,0 +1,283 @@
+{
+ "summary": {
+  "rows": 23,
+  "placed": 16,
+  "gaps": [
+   "no handler method (a function or a resource handler)",
+   "the class is not in the project's classes"
+  ]
+ },
+ "rows": [
+  {
+   "predicate": "(GET && /fn/hello)",
+   "handler": "demo.Routes$$Lambda$1026/0x00002b1bcd4d7cf8@6a6da47a",
+   "gap": "no handler method (a function or a resource handler)"
+  },
+  {
+   "predicate": "/webjars/**",
+   "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/webjars/]]",
+   "gap": "no handler method (a function or a resource handler)"
+  },
+  {
+   "predicate": "/**",
+   "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resource",
+   "gap": "no handler method (a function or a resource handler)"
+  },
+  {
+   "method": "GET",
+   "path": "/",
+   "class": "demo.PageController",
+   "name": "home",
+   "descriptor": "()Ljava/lang/String;",
+   "file": "demo/PageController.java",
+   "line": 10,
+   "span": [
+    9,
+    10
+   ],
+   "first_line_in_class_file": 10
+  },
+  {
+   "method": "GET",
+   "path": "/actuator",
+   "class": "org.springframework.boot.actuate.endpoint.web.servlet.WebMvcEndpointHandlerMapping.WebMvcLinksHandler",
+   "name": "links",
+   "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Ljava/lang/Object;",
+   "gap": "the class is not in the project's classes"
+  },
+  {
+   "method": "GET",
+   "path": "/actuator/mappings",
+   "class": "org.springframework.boot.actuate.endpoint.web.servlet.AbstractWebMvcEndpointHandlerMapping.OperationHandler",
+   "name": "handle",
+   "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljava/util/Map;)Ljava/lang/Object;",
+   "gap": "the class is not in the project's classes"
+  },
+  {
+   "method": "GET",
+   "path": "/api/ping",
+   "class": "demo.Inherited.ApiImpl",
+   "name": "apiPing",
+   "descriptor": "()Ljava/lang/String;",
+   "file": "demo/Inherited.java",
+   "line": 28,
+   "span": [
+    28,
+    28
+   ],
+   "first_line_in_class_file": 28
+  },
+  {
+   "method": "GET",
+   "path": "/base/{id}",
+   "class": "demo.Inherited.Base",
+   "name": "byId",
+   "descriptor": "(I)Ljava/lang/Object;",
+   "file": "demo/Inherited.java",
+   "line": 11,
+   "span": [
+    10,
+    11
+   ],
+   "first_line_in_class_file": 11
+  },
+  {
+   "method": "ANY",
+   "path": "/error",
+   "class": "org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController",
+   "name": "error",
+   "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+   "gap": "the class is not in the project's classes"
+  },
+  {
+   "method": "ANY",
+   "path": "/error",
+   "class": "org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController",
+   "name": "errorHtml",
+   "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+   "gap": "the class is not in the project's classes"
+  },
+  {
+   "method": "GET",
+   "path": "/items",
+   "class": "demo.ItemController",
+   "name": "list",
+   "descriptor": "()Ljava/util/List;",
+   "file": "demo/ItemController.java",
+   "line": 10,
+   "span": [
+    9,
+    10
+   ],
+   "first_line_in_class_file": 10
+  },
+  {
+   "method": "POST",
+   "path": "/items",
+   "class": "demo.ItemController",
+   "name": "create",
+   "descriptor": "(Ljava/lang/String;)Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 16,
+   "span": [
+    15,
+    16
+   ],
+   "first_line_in_class_file": 16
+  },
+  {
+   "method": "GET",
+   "path": "/items/alias-a",
+   "class": "demo.ItemController",
+   "name": "alias",
+   "descriptor": "()Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 36,
+   "span": [
+    35,
+    36
+   ],
+   "first_line_in_class_file": 36
+  },
+  {
+   "method": "GET",
+   "path": "/items/alias-b",
+   "class": "demo.ItemController",
+   "name": "alias",
+   "descriptor": "()Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 36,
+   "span": [
+    35,
+    36
+   ],
+   "first_line_in_class_file": 36
+  },
+  {
+   "method": "GET",
+   "path": "/items/multi",
+   "class": "demo.ItemController",
+   "name": "multi",
+   "descriptor": "()Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 32,
+   "span": [
+    31,
+    32
+   ],
+   "first_line_in_class_file": 32
+  },
+  {
+   "method": "HEAD",
+   "path": "/items/multi",
+   "class": "demo.ItemController",
+   "name": "multi",
+   "descriptor": "()Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 32,
+   "span": [
+    31,
+    32
+   ],
+   "first_line_in_class_file": 32
+  },
+  {
+   "method": "GET",
+   "path": "/items/search",
+   "class": "demo.ItemController",
+   "name": "search",
+   "descriptor": "(I)Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 29,
+   "span": [
+    28,
+    29
+   ],
+   "first_line_in_class_file": 29
+  },
+  {
+   "method": "GET",
+   "path": "/items/search",
+   "class": "demo.ItemController",
+   "name": "search",
+   "descriptor": "(Ljava/lang/String;)Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 26,
+   "span": [
+    25,
+    26
+   ],
+   "first_line_in_class_file": 26
+  },
+  {
+   "method": "GET",
+   "path": "/items/spread",
+   "class": "demo.ItemController",
+   "name": "spread",
+   "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 41,
+   "span": [
+    39,
+    47
+   ],
+   "first_line_in_class_file": 44
+  },
+  {
+   "method": "DELETE",
+   "path": "/items/{id}",
+   "class": "demo.ItemController",
+   "name": "remove",
+   "descriptor": "(I)V",
+   "file": "demo/ItemController.java",
+   "line": 22,
+   "span": [
+    21,
+    22
+   ],
+   "first_line_in_class_file": 22
+  },
+  {
+   "method": "GET",
+   "path": "/items/{id}",
+   "class": "demo.ItemController",
+   "name": "one",
+   "descriptor": "(I)Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 13,
+   "span": [
+    12,
+    13
+   ],
+   "first_line_in_class_file": 13
+  },
+  {
+   "method": "PUT",
+   "path": "/items/{id}",
+   "class": "demo.ItemController",
+   "name": "replace",
+   "descriptor": "(ILjava/lang/String;)Ljava/lang/String;",
+   "file": "demo/ItemController.java",
+   "line": 19,
+   "span": [
+    18,
+    19
+   ],
+   "first_line_in_class_file": 19
+  },
+  {
+   "method": "GET",
+   "path": "/ping",
+   "class": "demo.PageController.Ping",
+   "name": "ping",
+   "descriptor": "()Ljava/lang/String;",
+   "file": "demo/PageController.java",
+   "line": 15,
+   "span": [
+    14,
+    15
+   ],
+   "first_line_in_class_file": 15
+  }
+ ]
+}

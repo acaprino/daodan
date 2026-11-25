@@ -1,0 +1,1017 @@
+{
+ "abseil/absl/base/internal/inline_variable_testing.h": {
+  "label": "cpp",
+  "why": "namespace, references, struct with initializer",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "59b1a7078915161c"
+ },
+ "abseil/absl/base/internal/per_thread_tls.h": {
+  "label": "either",
+  "why": "only preprocessor directives: no declaration outside them",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "e22d04465943f605"
+ },
+ "abseil/absl/base/internal/tsan_mutex_interface.h": {
+  "label": "either",
+  "why": "only #define lines: macro bodies are opaque to both grammars",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "99a9eef2a559df69"
+ },
+ "abseil/absl/base/policy_checks.h": {
+  "label": "either",
+  "why": "only #if/#error directives",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "e5c9f859998cf881"
+ },
+ "abseil/absl/crc/internal/crc32c.h": {
+  "label": "cpp",
+  "why": "namespace absl { namespace crc_internal",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "10b0d66c450ba04e"
+ },
+ "abseil/absl/hash/internal/low_level_hash.h": {
+  "label": "cpp",
+  "why": "namespaces",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "128cc1b0dfb76e77"
+ },
+ "abseil/absl/log/initialize.h": {
+  "label": "cpp",
+  "why": "namespace absl",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "ad7a048095985cb4"
+ },
+ "abseil/absl/log/internal/strip.h": {
+  "label": "either",
+  "why": "only #define; the `::absl::` names sit inside macro bodies, outside any declaration",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "13821558d803d500"
+ },
+ "abseil/absl/log/log.h": {
+  "label": "either",
+  "why": "only #define lines",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "b03f0bba852dd89b"
+ },
+ "abseil/absl/numeric/int128.h": {
+  "label": "cpp",
+  "why": "classes, operators, namespaces",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "06444327735f5f2c"
+ },
+ "abseil/absl/strings/charconv.h": {
+  "label": "cpp",
+  "why": "enum class, std::errc, namespace",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "dea0ffc1dfac2f6e"
+ },
+ "abseil/absl/strings/cord.h": {
+  "label": "cpp",
+  "why": "classes, templates",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "ced6488ab6ee1b84"
+ },
+ "afnetworking/UIKit+AFNetworking/UIRefreshControl+AFNetworking.h": {
+  "label": "objc",
+  "why": "@interface category",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "581e27458ae1931c"
+ },
+ "bitcoin/src/attributes.h": {
+  "label": "either",
+  "why": "only #define of attributes",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "a84dd4bf004ffbf7"
+ },
+ "bitcoin/src/checkqueue.h": {
+  "label": "cpp",
+  "why": "template class with std:: members",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "59e489934ca09d14"
+ },
+ "bitcoin/src/clientversion.h": {
+  "label": "cpp",
+  "why": "std::string and const references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "3b5a444c1833d39b"
+ },
+ "bitcoin/src/compat/endian.h": {
+  "label": "cpp",
+  "why": "`if constexpr (std::endian::native ...)`",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "f610dc82ef3d28c8"
+ },
+ "bitcoin/src/deploymentstatus.h": {
+  "label": "cpp",
+  "why": "`Consensus::Params&`: qualified names and references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "7cb50f0350d1a0df"
+ },
+ "bitcoin/src/kernel/cs_main.h": {
+  "label": "either",
+  "why": "one `extern RecursiveMutex cs_main;`: valid C text, no C++ syntax",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "c232a867bfeb21ff"
+ },
+ "bitcoin/src/logging.h": {
+  "label": "cpp",
+  "why": "namespace, enum class, classes",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "5139a8b2140a74aa"
+ },
+ "bitcoin/src/node/protocol_version.h": {
+  "label": "either",
+  "why": "`static const int` constants: valid in both",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "eabce9a9bfb37c3c"
+ },
+ "bitcoin/src/policy/fees_args.h": {
+  "label": "cpp",
+  "why": "`class ArgsManager;` `fs::path f(const ArgsManager&)`",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "50356ed6dabf353c"
+ },
+ "bitcoin/src/policy/policy.h": {
+  "label": "cpp",
+  "why": "forward class declarations, constexpr, references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "122536519ccd0fea"
+ },
+ "bitcoin/src/pow.h": {
+  "label": "cpp",
+  "why": "forward classes, `const Consensus::Params&`",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "2199cd654577ba27"
+ },
+ "bitcoin/src/qt/csvmodelwriter.h": {
+  "label": "cpp",
+  "why": "class deriving QObject",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "39525cf4a2743241"
+ },
+ "bitcoin/src/qt/initexecutor.h": {
+  "label": "cpp",
+  "why": "class deriving QObject, destructor",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "2b9aa66d5be42641"
+ },
+ "bitcoin/src/qt/walletframe.h": {
+  "label": "cpp",
+  "why": "class deriving QFrame",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "b3005140bf8b4982"
+ },
+ "bitcoin/src/randomenv.h": {
+  "label": "cpp",
+  "why": "prototypes with reference parameters (`CSHA512&`)",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "c85fa57383305bba"
+ },
+ "bitcoin/src/rpc/rawtransaction_util.h": {
+  "label": "cpp",
+  "why": "forward classes and std::map references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "43799a0ff70e83f1"
+ },
+ "bitcoin/src/support/events.h": {
+  "label": "cpp",
+  "why": "`auto`, std::runtime_error, throw, templates of std::unique_ptr",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "1900a2b9681b46a2"
+ },
+ "bitcoin/src/test/util/script.h": {
+  "label": "cpp",
+  "why": "lambda and std::vector",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "952168560af8b918"
+ },
+ "bitcoin/src/util/asmap.h": {
+  "label": "cpp",
+  "why": "prototypes with std::vector and references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "107a60ea8a027674"
+ },
+ "bitcoin/src/util/bip32.h": {
+  "label": "cpp",
+  "why": "std::string and references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "87a49cf0533c2250"
+ },
+ "bitcoin/src/util/trace.h": {
+  "label": "either",
+  "why": "only #define of DTRACE probes",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "03578e67b7897759"
+ },
+ "cppwinrt/cppwinrt/component_writers.h": {
+  "label": "cpp",
+  "why": "namespace, std::vector, references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "aa4dea03dbe62c30"
+ },
+ "cppwinrt/cppwinrt/helpers.h": {
+  "label": "cpp",
+  "why": "namespace, auto, std::chrono",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "2a3346a70fc14ad0"
+ },
+ "cppwinrt/cppwinrt/text_writer.h": {
+  "label": "cpp",
+  "why": "namespace, templates, std::ifstream",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "0efccf9c577daf46"
+ },
+ "cppwinrt/strings/base_collections_vector.h": {
+  "label": "cpp",
+  "why": "namespace winrt::impl, templates",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "7920851c633a13d1"
+ },
+ "cppwinrt/strings/base_coroutine_system_winui.h": {
+  "label": "cpp",
+  "why": "namespace, auto, qualified names, references",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "557d960213383171"
+ },
+ "cppwinrt/strings/base_identity.h": {
+  "label": "cpp",
+  "why": "templates, using aliases",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "9a829b1c26689f6c"
+ },
+ "cppwinrt/test/nuget/TestRuntimeComponentCX/pch.h": {
+  "label": "either",
+  "why": "`#pragma once` and includes",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "79d967c94f31ab28"
+ },
+ "cppwinrt/test/nuget/TestRuntimeComponentEmpty/pch.h": {
+  "label": "either",
+  "why": "`#pragma once` and includes",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "3aa4c7d61a82f34a"
+ },
+ "cppwinrt/test/nuget/TestStaticLibrary2/pch.h": {
+  "label": "either",
+  "why": "`#pragma once` and a #define",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "6055a7f70b631333"
+ },
+ "cppwinrt/test/test_component_derived/pch.h": {
+  "label": "either",
+  "why": "`#pragma once` and an include",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "1ed95ed463bcb896"
+ },
+ "cppwinrt/test/test_component_folders/pch.h": {
+  "label": "either",
+  "why": "`#pragma once`",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "b3adf106d95b8934"
+ },
+ "cpython/Include/internal/mimalloc/mimalloc/atomic.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "5d7c22f213c128f0"
+ },
+ "curl/include/curl/curl.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "33d9b50dd87eaa7f"
+ },
+ "googletest/googlemock/include/gmock/gmock-actions.h": {
+  "label": "cpp",
+  "why": "namespaces, templates",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "c69ba249cd20db3d"
+ },
+ "googletest/googlemock/include/gmock/gmock-matchers.h": {
+  "label": "cpp",
+  "why": "classes deriving, namespaces",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "cb20e1814e5c4d97"
+ },
+ "googletest/googlemock/include/gmock/internal/custom/gmock-port.h": {
+  "label": "either",
+  "why": "include guard only",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "ee2cc87202e75759"
+ },
+ "googletest/googletest/include/gtest/gtest_prod.h": {
+  "label": "either",
+  "why": "only #define",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "3c6301ef533db868"
+ },
+ "googletest/googletest/include/gtest/internal/custom/gtest-port.h": {
+  "label": "either",
+  "why": "include guard only",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "5e06747c9e8b86e9"
+ },
+ "googletest/googletest/include/gtest/internal/gtest-port.h": {
+  "label": "cpp",
+  "why": "namespaces, using declarations",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "881adbcca03a133d"
+ },
+ "iglistkit/Source/IGListDiffKit/IGListAssert.h": {
+  "label": "either",
+  "why": "only #define of assertion macros: no Objective-C syntax outside directives",
+  "declared": "objc",
+  "stratum": "all",
+  "sha": "5dfe0ab7f7f505fb"
+ },
+ "iglistkit/Source/IGListDiffKit/IGListCompatibility.h": {
+  "label": "objc",
+  "why": "only `#import` and #if lines: the directive is Objective-C's",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "e1949a5939118c29"
+ },
+ "iglistkit/Source/IGListKit/IGListBindingSectionControllerSelectionDelegate.h": {
+  "label": "objc",
+  "why": "@class, @protocol",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "1abc8d011a04db7a"
+ },
+ "iglistkit/Source/IGListKit/IGListCollectionViewDelegateLayout.h": {
+  "label": "objc",
+  "why": "@protocol with methods",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "2866a115d312a01b"
+ },
+ "iglistkit/Source/IGListKit/IGListCollectionViewLayout.h": {
+  "label": "objc",
+  "why": "@interface, @property",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "c3e151c31b1e0cd2"
+ },
+ "iglistkit/Source/IGListKit/Internal/IGListBindingSectionController+DebugDescription.h": {
+  "label": "objc",
+  "why": "@interface category",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "2e158633b1b83d15"
+ },
+ "iglistkit/Source/IGListKit/Internal/IGListCollectionViewLayoutInternal.h": {
+  "label": "objc",
+  "why": "a message expression `[[UIScreen mainScreen] scale]`",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "70ea057b0e94bd4d"
+ },
+ "iglistkit/Source/IGListKit/Internal/IGListDisplayHandler.h": {
+  "label": "objc",
+  "why": "@interface, @class",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "0aaf15038e1c1898"
+ },
+ "leveldb/helpers/memenv/memenv.h": {
+  "label": "cpp",
+  "why": "namespace and a class forward declaration",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "2955b13e4f6218f9"
+ },
+ "leveldb/include/leveldb/options.h": {
+  "label": "cpp",
+  "why": "namespace and classes",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "e21573bd1a639d5b"
+ },
+ "leveldb/port/port.h": {
+  "label": "either",
+  "why": "only #if/#include",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "8d973f5a330d8965"
+ },
+ "libuv/include/uv/win.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "eb0bde679d8b9f1d"
+ },
+ "libuv/src/win/fs-fd-hash-inl.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "1365f18d01c4117b"
+ },
+ "linux/include/linux/atomic/atomic-long.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "bc1842b39b3ef176"
+ },
+ "linux/include/linux/cpumask.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "1fbc7481dba56fee"
+ },
+ "linux/include/linux/device/class.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "6611c6322e086322"
+ },
+ "linux/include/linux/greybus/hd.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "e930b188e7459070"
+ },
+ "linux/include/linux/hashtable.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "399a72ba6bf52f6b"
+ },
+ "linux/include/linux/intel-ish-client-if.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "5ae422e026c9986d"
+ },
+ "linux/include/linux/io.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "234fe95326c21fa3"
+ },
+ "linux/include/linux/lsm_count.h": {
+  "label": "c",
+  "why": "kernel header of only directives: no construct of either language; kept as declared (C project)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "79021cd856909bb8"
+ },
+ "linux/include/linux/nsproxy.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "2b76160db39bb21e"
+ },
+ "linux/include/linux/phy.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "55b51b409e7eb973"
+ },
+ "linux/include/linux/sysfs.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "9a795a5fcb0fc379"
+ },
+ "llvm/llvm/include/llvm-c/LLJITUtils.h": {
+  "label": "c",
+  "why": "LLVM C API (LLVM_C_EXTERN_C_BEGIN); the qualified_identifier is a macro-wrapped declaration",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "e58a147071b045fa"
+ },
+ "llvm/llvm/include/llvm/ADT/BitVector.h": {
+  "label": "cpp",
+  "why": "templates, using",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "ee94e49c0a375d5b"
+ },
+ "llvm/llvm/include/llvm/ADT/GenericCycleInfo.h": {
+  "label": "cpp",
+  "why": "templates, friend",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "22ed2f29a5b1b3c9"
+ },
+ "llvm/llvm/include/llvm/Analysis/Passes.h": {
+  "label": "cpp",
+  "why": "namespace, class declarations",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "8208eee8bf1739b3"
+ },
+ "llvm/llvm/include/llvm/CodeGen/BasicTTIImpl.h": {
+  "label": "cpp",
+  "why": "templates, classes",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "243f880e8e903739"
+ },
+ "llvm/llvm/include/llvm/CodeGen/MachineFunction.h": {
+  "label": "cpp",
+  "why": "classes, namespace",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "d9adf972495023c0"
+ },
+ "llvm/llvm/include/llvm/DebugInfo/PDB/PDBSymbolFunc.h": {
+  "label": "cpp",
+  "why": "class with override",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "d902c9ee8a3022da"
+ },
+ "llvm/llvm/include/llvm/ExecutionEngine/Orc/Shared/AllocationActions.h": {
+  "label": "cpp",
+  "why": "using alias of std::vector",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "047881d99f911a90"
+ },
+ "llvm/llvm/include/llvm/ExecutionEngine/Orc/Shared/WrapperFunctionUtils.h": {
+  "label": "cpp",
+  "why": "classes, templates",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "6582f907541b8db4"
+ },
+ "llvm/llvm/include/llvm/IR/Operator.h": {
+  "label": "cpp",
+  "why": "class deriving, deleted operator new",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "36042a4aeb5ddd69"
+ },
+ "llvm/llvm/include/llvm/ProfileData/InstrProfReader.h": {
+  "label": "cpp",
+  "why": "templates, classes, namespaces",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "48e9af2a920b928b"
+ },
+ "llvm/llvm/include/llvm/ProfileData/RawMemProfReader.h": {
+  "label": "either",
+  "why": "forwarding include and directives",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "ace2e2ddd1bfe68f"
+ },
+ "llvm/llvm/include/llvm/Support/AMDGPUAddrSpace.h": {
+  "label": "cpp",
+  "why": "namespaces and `enum : unsigned`",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "b149cdce19421c4e"
+ },
+ "llvm/llvm/include/llvm/Support/ThreadPool.h": {
+  "label": "cpp",
+  "why": "virtual classes, std::function",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "3caa1dfd8397ebe1"
+ },
+ "llvm/llvm/include/llvm/Transforms/Utils/GuardUtils.h": {
+  "label": "cpp",
+  "why": "namespace and class declarations",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "ab9c12405e88e81f"
+ },
+ "mantle/Mantle/include/NSArray+MTLManipulationAdditions.h": {
+  "label": "objc",
+  "why": "@interface category",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "5a31391d4a7304f5"
+ },
+ "mantle/Mantle/include/NSValueTransformer+MTLInversionAdditions.h": {
+  "label": "objc",
+  "why": "@interface category",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "8d8516caf12cc853"
+ },
+ "mbedtls/library/alignment.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "d18086bed998b4cf"
+ },
+ "mbedtls/library/constant_time_impl.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "0ace551ecdcd72c8"
+ },
+ "musl/arch/microblaze/atomic_arch.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "27aca57f096e2fe7"
+ },
+ "nginx/src/os/unix/ngx_gcc_atomic_sparc64.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "17358acd5b11d8d0"
+ },
+ "openssl/crypto/asn1/asn1_local.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "9f1a31742b7d8940"
+ },
+ "openssl/crypto/ec/curve448/point_448.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "290d544ca267463e"
+ },
+ "openssl/include/crypto/modes.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "c9e8977e6fe4dae5"
+ },
+ "openssl/include/internal/quic_ackm.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "fcceec62aab3c0b9"
+ },
+ "protobuf/src/google/protobuf/compiler/cpp/helpers.h": {
+  "label": "cpp",
+  "why": "enum class, namespaces, constexpr",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "1acfaf6f05b7aba5"
+ },
+ "protobuf/src/google/protobuf/io/package_info.h": {
+  "label": "cpp",
+  "why": "nested namespaces only",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "fd3efbff1bd755cc"
+ },
+ "protobuf/src/google/protobuf/package_info.h": {
+  "label": "cpp",
+  "why": "namespaces only",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "33207ad98ea73bbe"
+ },
+ "protobuf/src/google/protobuf/stubs/platform_macros.h": {
+  "label": "either",
+  "why": "only #define/#error",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "4b8f13aa85f56893"
+ },
+ "reactiveobjc/ReactiveObjC/NSArray+RACSequenceAdditions.h": {
+  "label": "objc",
+  "why": "@interface category with generics",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "e0c620967cbf5168"
+ },
+ "reactiveobjc/ReactiveObjC/NSSet+RACSequenceAdditions.h": {
+  "label": "objc",
+  "why": "@interface category with generics",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "ef313b8363da600f"
+ },
+ "reactiveobjc/ReactiveObjC/RACAnnotations.h": {
+  "label": "either",
+  "why": "only #define of annotation macros",
+  "declared": "objc",
+  "stratum": "all",
+  "sha": "d0fc5bba8cd78712"
+ },
+ "reactiveobjc/ReactiveObjC/RACDynamicSignal.h": {
+  "label": "objc",
+  "why": "@interface",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "313a865c6fc7a966"
+ },
+ "reactiveobjc/ReactiveObjC/RACEagerSequence.h": {
+  "label": "objc",
+  "why": "@interface",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "48f4a097a220c1fb"
+ },
+ "reactiveobjc/ReactiveObjC/RACIndexSetSequence.h": {
+  "label": "objc",
+  "why": "@interface",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "559a4cb9753d1e6b"
+ },
+ "reactiveobjc/ReactiveObjC/RACQueueScheduler.h": {
+  "label": "objc",
+  "why": "@interface",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "80d839690b3ddbc5"
+ },
+ "reactiveobjc/ReactiveObjC/UIStepper+RACSignalSupport.h": {
+  "label": "objc",
+  "why": "@interface category",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "3874ddf0874e10cf"
+ },
+ "reactiveobjc/ReactiveObjC/UITableViewCell+RACSignalSupport.h": {
+  "label": "objc",
+  "why": "@interface category",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "d27f03e52a3900f0"
+ },
+ "rocksdb/db/attribute_group_iterator_impl.h": {
+  "label": "cpp",
+  "why": "class with base, std::vector",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "a3602496512fc80a"
+ },
+ "rocksdb/include/rocksdb/cache_bench_tool.h": {
+  "label": "cpp",
+  "why": "namespace with a prototype",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "c2b954187eb2303c"
+ },
+ "rocksdb/include/rocksdb/db_stress_tool.h": {
+  "label": "cpp",
+  "why": "namespace with a prototype",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "dbd8e143a2232ad3"
+ },
+ "rocksdb/include/rocksdb/rocksdb_namespace.h": {
+  "label": "either",
+  "why": "only `#define ROCKSDB_NAMESPACE`",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "b399f1829295841b"
+ },
+ "rocksdb/include/rocksdb/utilities/customizable_util.h": {
+  "label": "cpp",
+  "why": "templates, std::shared_ptr",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "7f48f1b7ecca9ee7"
+ },
+ "rocksdb/utilities/transactions/lock/range/range_tree/lib/portability/toku_assert_subst.h": {
+  "label": "either",
+  "why": "one `inline` C function, no C++ syntax",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "3f01d80bb9febf57"
+ },
+ "rocksdb/utilities/transactions/lock/range/range_tree/lib/portability/toku_time.h": {
+  "label": "either",
+  "why": "C code (structs, typedefs, static inline functions): the one `template_function` is a `<` expression",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "879b9b428d013382"
+ },
+ "sdwebimage/SDWebImage/Core/SDImageAWebPCoder.h": {
+  "label": "objc",
+  "why": "@interface",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "a8d7a4064489d422"
+ },
+ "sdwebimage/SDWebImage/Core/SDImageCoderHelper.h": {
+  "label": "objc",
+  "why": "@interface, NS_ENUM",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "39f8343040d6605c"
+ },
+ "sdwebimage/SDWebImage/Core/SDImageGIFCoder.h": {
+  "label": "objc",
+  "why": "@interface",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "465e513807ee4052"
+ },
+ "sdwebimage/SDWebImage/Core/SDImageHEICCoder.h": {
+  "label": "objc",
+  "why": "@interface",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "59e130f71f3af24d"
+ },
+ "sdwebimage/SDWebImage/Core/SDWebImageDownloaderOperation.h": {
+  "label": "objc",
+  "why": "@protocol",
+  "declared": "objc",
+  "stratum": "some",
+  "sha": "c027123f8003650a"
+ },
+ "snappy/snappy-c.h": {
+  "label": "c",
+  "why": "the C API of snappy: extern \"C\", enum, prototypes",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "205e85257ab386f5"
+ },
+ "spdlog/include/spdlog/async_logger-inl.h": {
+  "label": "cpp",
+  "why": "std::, qualified constructor definition",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "31b4b15051c19bf4"
+ },
+ "spdlog/include/spdlog/fmt/bundled/format-inl.h": {
+  "label": "cpp",
+  "why": "namespace, std::",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "c390df52884480b1"
+ },
+ "spdlog/include/spdlog/fmt/bundled/format.h": {
+  "label": "cpp",
+  "why": "templates",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "63bd5a34d139bfca"
+ },
+ "spdlog/include/spdlog/fmt/bundled/locale.h": {
+  "label": "either",
+  "why": "only include",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "db88ca5e9b9a24ab"
+ },
+ "spdlog/include/spdlog/fmt/bundled/std.h": {
+  "label": "cpp",
+  "why": "templates, if constexpr",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "06467b405f40291f"
+ },
+ "spdlog/include/spdlog/fmt/chrono.h": {
+  "label": "either",
+  "why": "only #if/#include",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "c423556694f9fba3"
+ },
+ "spdlog/include/spdlog/fmt/fmt.h": {
+  "label": "either",
+  "why": "only #if/#include",
+  "declared": "cpp",
+  "stratum": "all",
+  "sha": "dc488c1dc67d55c7"
+ },
+ "spdlog/include/spdlog/logger-inl.h": {
+  "label": "cpp",
+  "why": "namespace, constructor with initializer list",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "2b6d6c11dce4bd4c"
+ },
+ "sqlite/src/vdbeInt.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "45121dcb01affabb"
+ },
+ "wil/include/wil/com.h": {
+  "label": "cpp",
+  "why": "namespaces, templates",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "3f21fdaf2d615391"
+ },
+ "wil/include/wil/result_macros.h": {
+  "label": "cpp",
+  "why": "namespaces, enum class",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "65ea2577744b1766"
+ },
+ "wil/tests/common.h": {
+  "label": "cpp",
+  "why": "namespace, auto, extern \"C\" block with C++ after",
+  "declared": "cpp",
+  "stratum": "some",
+  "sha": "77ab0d6ea73727f8"
+ },
+ "zstd/lib/common/compiler.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "448fb9e526c75435"
+ },
+ "zstd/lib/common/cpu.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "e85b8b862de4e8c1"
+ },
+ "zstd/lib/common/portability_macros.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "06ee0244cb0b07b6"
+ },
+ "zstd/lib/compress/clevels.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "d764daa89b7a636d"
+ },
+ "zstd/lib/compress/zstd_compress_internal.h": {
+  "label": "c",
+  "why": "C source of a C project: the C++ nodes are spurious (macro annotations, `if` conditions, asm)",
+  "declared": "c",
+  "stratum": "some",
+  "sha": "db4e7da7d108ef40"
+ }
+}

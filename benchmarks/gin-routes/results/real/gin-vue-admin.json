@@ -1,0 +1,1139 @@
+{
+ "name": "gin-vue-admin",
+ "calibration": {
+  "http": 217,
+  "no_handler": 207,
+  "named": 1,
+  "expected": [
+   217,
+   207,
+   1
+  ],
+  "matches": true
+ },
+ "noir_bound_now": 1,
+ "noir_rows_without_after": 0,
+ "snapshot_seconds": 19.5,
+ "go_functions": 1431,
+ "prepared": {
+  "folders": [
+   "server"
+  ],
+  "line": "for f in 'server'; do ( cd \"$f\" && go mod download ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED go %s\\n' \"$f\"; { grep -E 'go: |go.mod:|error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+  "seconds": 10.4,
+  "returncode": 0,
+  "failed": [],
+  "stderr_tail": "",
+  "gomod_bytes": 1049598566,
+  "perimeter_files": 766
+ },
+ "go": "go version go1.27.3 linux/amd64",
+ "x_tools": "golang.org/x/tools v0.53.0",
+ "left_in_the_copy": [
+  "server/announcement/blender/model/dao/gen.go",
+  "server/announcement/blender/model/dao/gva_announcements_info.gen.go",
+  "server/log/2026-11-24/info.log"
+ ],
+ "left_count": 3,
+ "changed_in_the_copy": [],
+ "gomod_bytes": 1049598566,
+ "modules": {
+  "server": {
+   "engine_builders": [
+    {
+     "package": "github.com/flipped-aurora/gin-vue-admin/server/initialize",
+     "name": "Routers",
+     "exported": true,
+     "params": [],
+     "results": [
+      "*github.com/gin-gonic/gin.Engine"
+     ],
+     "pos": "server/initialize/router.go:36"
+    }
+   ],
+   "engine_calls": [
+    {
+     "callee": "gin.New",
+     "in": "github.com/flipped-aurora/gin-vue-admin/server/initialize.Routers",
+     "pos": "server/initialize/router.go:37"
+    }
+   ],
+   "main_packages": [
+    {
+     "package": "github.com/flipped-aurora/gin-vue-admin/server",
+     "dir": "server",
+     "depends_on_gin": true
+    },
+    {
+     "package": "github.com/flipped-aurora/gin-vue-admin/server/cmd/mcp",
+     "dir": "server/cmd/mcp",
+     "depends_on_gin": true
+    },
+    {
+     "package": "github.com/flipped-aurora/gin-vue-admin/server/plugin/announcement/gen",
+     "dir": "server/plugin/announcement/gen",
+     "depends_on_gin": true
+    }
+   ],
+   "registrars": 41,
+   "load_error_count": 0,
+   "seconds": 31.36,
+   "peak_memory_mb": 634,
+   "returncode": 0,
+   "handler_factories": 13
+  }
+ },
+ "builds": {
+  "server": {
+   "module": "server",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 29.84,
+     "peak_memory_mb": 1003,
+     "stderr_tail": ""
+    }
+   ]
+  },
+  "server/cmd/mcp": {
+   "module": "server",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 2.52,
+     "peak_memory_mb": 598,
+     "stderr_tail": ""
+    }
+   ]
+  },
+  "server/plugin/announcement/gen": {
+   "module": "server",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 4.17,
+     "peak_memory_mb": 508,
+     "stderr_tail": ""
+    }
+   ]
+  },
+  "/tmp/bin/server-0-plain": {
+   "module": "server",
+   "built": true,
+   "mod_flag": null,
+   "attempts": [
+    {
+     "returncode": 0,
+     "seconds": 4.17,
+     "peak_memory_mb": 1022,
+     "stderr_tail": ""
+    }
+   ]
+  }
+ },
+ "runs": [
+  {
+   "dir": "server",
+   "argv": [],
+   "label": "none",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": -9,
+   "seconds": 0.06,
+   "peak_memory_mb": 114,
+   "ended": {
+    "by": "listen",
+    "at_s": 0.053,
+    "ports": [
+     8888
+    ]
+   },
+   "debugging": true,
+   "hook_routes": 139,
+   "distinct": 139,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "2026/11/24 08:37:53 maxprocs: Updating GOMAXPROCS=20: determined from CPU quota"
+   ]
+  },
+  {
+   "dir": "server",
+   "argv": [
+    "-c",
+    "config.docker.yaml"
+   ],
+   "label": "Dockerfile: server/Dockerfile, ENTRYPOINT ./server -c config.docker.yaml",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": -9,
+   "seconds": 0.07,
+   "peak_memory_mb": 112,
+   "ended": {
+    "by": "listen",
+    "at_s": 0.067,
+    "ports": [
+     8888
+    ]
+   },
+   "debugging": true,
+   "hook_routes": 139,
+   "distinct": 139,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "2026/11/24 08:38:00 maxprocs: Updating GOMAXPROCS=20: determined from CPU quota"
+   ]
+  },
+  {
+   "dir": "server",
+   "argv": [],
+   "label": "none, built without the hook: Gin's own debug text (way b)",
+   "tags": null,
+   "plain": true,
+   "skipped": null,
+   "returncode": -9,
+   "seconds": 0.05,
+   "peak_memory_mb": 112,
+   "ended": {
+    "by": "listen",
+    "at_s": 0.049,
+    "ports": [
+     8888
+    ]
+   },
+   "debugging": null,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 139,
+   "before_steps": [],
+   "stderr_last": [
+    "2026/11/24 08:38:05 maxprocs: Updating GOMAXPROCS=20: determined from CPU quota"
+   ]
+  },
+  {
+   "dir": "server",
+   "argv": [
+    "-c",
+    "/tmp/gva-by-hand.yaml"
+   ],
+   "label": "by hand: config.yaml with system.db-type sqlite and a database file in /tmp (the plugins register their routes once a database is there)",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": -9,
+   "seconds": 0.24,
+   "peak_memory_mb": 117,
+   "ended": {
+    "by": "listen",
+    "at_s": 0.237,
+    "ports": [
+     8888
+    ]
+   },
+   "debugging": true,
+   "hook_routes": 205,
+   "distinct": 205,
+   "debug_route_lines": 0,
+   "before_steps": [
+    {
+     "returncode": 0,
+     "stderr_tail": ""
+    }
+   ],
+   "stderr_last": [
+    "2026/11/24 08:38:06 maxprocs: Updating GOMAXPROCS=20: determined from CPU quota"
+   ]
+  },
+  {
+   "dir": "server/cmd/mcp",
+   "argv": [],
+   "label": "none (a main package that depends on Gin)",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": -9,
+   "seconds": 0.02,
+   "peak_memory_mb": 99,
+   "ended": {
+    "by": "listen",
+    "at_s": 0.019,
+    "ports": [
+     8889
+    ]
+   },
+   "debugging": true,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "2026/11/24 08:38:07 maxprocs: Updating GOMAXPROCS=20: determined from CPU quota",
+    "2026-11-24T08:38:07.142Z\tINFO\tmcp/main.go:25\tmcp独立服务启动\t{\"config\": \"/copy/server/cmd/mcp/config.yaml\", \"addr\": \":8889\", \"path\": \"/mcp\", \"upstream\": \"http://127.0.0.1:8888\"}"
+   ]
+  },
+  {
+   "dir": "server/plugin/announcement/gen",
+   "argv": [],
+   "label": "none (a main package that depends on Gin)",
+   "tags": null,
+   "plain": false,
+   "skipped": null,
+   "returncode": 0,
+   "seconds": 2.0,
+   "peak_memory_mb": 99,
+   "ended": {
+    "by": "exit"
+   },
+   "debugging": true,
+   "hook_routes": 0,
+   "distinct": 0,
+   "debug_route_lines": 0,
+   "before_steps": [],
+   "stderr_last": [
+    "2026/11/24 08:38:09 generate query file: /copy/server/announcement/blender/model/dao/gen.go",
+    "2026/11/24 08:38:09 Generate code done."
+   ]
+  }
+ ],
+ "probes": [
+  {
+   "builder": "github.com/flipped-aurora/gin-vue-admin/server/initialize.Routers",
+   "pos": "server/initialize/router.go:36",
+   "built": true,
+   "build_seconds": 3.82,
+   "returncode": 3,
+   "ended": {
+    "by": "exit"
+   },
+   "seconds": 0.03,
+   "peak_memory_mb": 106,
+   "routes_from_Routes": 0,
+   "routes_from_hook": 3,
+   "panic": "'/swagger/*any' in new path '/swagger/*any' conflicts with existing wildcard '/*filepath' in existing prefix '/*filepath'",
+   "fm_handlers": 0,
+   "fm_autogenerated": 0,
+   "pc_is_entry": 0
+  }
+ ],
+ "gin": {
+  "routes": {
+   "none": 139,
+   "Dockerfile": 139,
+   "CI": 0,
+   "by hand": 205,
+   "Routes()": 0
+  },
+  "routes_every": 205,
+  "levels": {
+   "outside the project": 3,
+   "one function starts at the line": 201,
+   "no file and line": 1
+  },
+  "via": {
+   "name": 4,
+   "name without -fm": 200,
+   "autogenerated, no method symbol": 1
+  },
+  "nodes": {
+   "own, one function": 201
+  },
+  "name_agrees": {
+   "true": 201
+  },
+  "handler_from_a_factory_of_the_project": 0,
+  "generic_names": 0,
+  "handlers_in_chain": {
+   "3": 20,
+   "6": 72,
+   "5": 113
+  },
+  "registration_frame_in_the_project": 205,
+  "examples": [
+   {
+    "route": "GET /uploads/file/*filepath",
+    "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+    "via": "name",
+    "level": "outside the project",
+    "at": "github.com/gin-gonic/gin@v1.10.0/routergroup.go:220",
+    "function": null
+   },
+   {
+    "route": "HEAD /uploads/file/*filepath",
+    "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+    "via": "name",
+    "level": "outside the project",
+    "at": "github.com/gin-gonic/gin@v1.10.0/routergroup.go:220",
+    "function": null
+   },
+   {
+    "route": "GET /swagger/*any",
+    "handler": "github.com/swaggo/gin-swagger.CustomWrapHandler.func1",
+    "via": "name",
+    "level": "outside the project",
+    "at": "github.com/swaggo/gin-swagger@v1.6.0/swagger.go:145",
+    "function": null
+   },
+   {
+    "route": "GET /health",
+    "handler": "github.com/flipped-aurora/gin-vue-admin/server/initialize.Routers.func1",
+    "via": "name",
+    "level": "one function starts at the line",
+    "at": "server/initialize/router.go:72",
+    "function": "(func) 72-74"
+   },
+   {
+    "route": "POST /base/login",
+    "handler": "github.com/flipped-aurora/gin-vue-admin/server/api/v1/system.(*BaseApi).Login-fm",
+    "via": "name without -fm",
+    "level": "one function starts at the line",
+    "at": "server/api/v1/system/sys_user.go:27",
+    "function": "BaseApi.Login 27-99"
+   },
+   {
+    "route": "POST /base/captcha",
+    "handler": "github.com/flipped-aurora/gin-vue-admin/server/api/v1/system.(*BaseApi).Captcha-fm",
+    "via": "name without -fm",
+    "level": "one function starts at the line",
+    "at": "server/api/v1/system/sys_captcha.go:28",
+    "function": "BaseApi.Captcha 28-59"
+   }
+  ]
+ },
+ "noir_vs_gin": {
+  "none and Routes()": {
+   "named": {
+    "rows": 1,
+    "met": 1,
+    "how": {
+     "path": 1
+    },
+    "levels": {
+     "one function starts at the line": 1
+    },
+    "one_function_own_node": 1,
+    "one_function_own_node_by_via": {
+     "name": 1
+    },
+    "registration_line_equal": 1
+   },
+   "no_handler": {
+    "rows": 207,
+    "met": 135,
+    "how": {
+     "path": 135
+    },
+    "levels": {
+     "one function starts at the line": 135
+    },
+    "one_function_own_node": 135,
+    "one_function_own_node_by_via": {
+     "name without -fm": 135
+    },
+    "registration_line_equal": 135
+   },
+   "all_http": {
+    "rows": 217,
+    "met": 136,
+    "how": {
+     "path": 136
+    },
+    "levels": {
+     "one function starts at the line": 136
+    },
+    "one_function_own_node": 136,
+    "one_function_own_node_by_via": {
+     "name without -fm": 135,
+     "name": 1
+    },
+    "registration_line_equal": 136
+   },
+   "only_gin": {
+    "count": 3,
+    "levels": {
+     "outside the project": 3
+    },
+    "examples": [
+     {
+      "route": "GET /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "HEAD /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "GET /swagger/*any",
+      "handler": "github.com/swaggo/gin-swagger.CustomWrapHandler.func1",
+      "registered_at": "server/initialize/router.go:61"
+     }
+    ]
+   },
+   "only_noir": {
+    "count": 81,
+    "groups": {
+     "the snapshot holds no function where Noir cites": 9,
+     "Noir gives no handler": 72
+    },
+    "cited_files": {
+     "server/plugin/auto/router/sys_auto_code.go": 31,
+     "server/plugin/auto/router/sys_skills.go": 21,
+     "server/docs/swagger.json": 8,
+     "server/plugin/announcement/router/info.go": 8,
+     "server/mcp/server.go": 6,
+     "server/plugin/auto/router/sys_auto_code_history.go": 4,
+     "server/plugin/email/router/sys_email.go": 2,
+     "deploy/kubernetes/web/gva-web-ingress.yaml": 1
+    },
+    "examples": [
+     {
+      "route": "ANY /",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "deploy/kubernetes/web/gva-web-ingress.yaml:12"
+     },
+     {
+      "route": "POST /autoCode/addFunc",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:18"
+     },
+     {
+      "route": "POST /autoCode/createPackage",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:32"
+     },
+     {
+      "route": "POST /autoCode/createTemp",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:17"
+     },
+     {
+      "route": "POST /autoCode/delPackage",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:31"
+     },
+     {
+      "route": "POST /autoCode/delSysHistory",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code_history.go:14"
+     }
+    ]
+   }
+  },
+  "+ Dockerfile": {
+   "named": {
+    "rows": 1,
+    "met": 1,
+    "how": {
+     "path": 1
+    },
+    "levels": {
+     "one function starts at the line": 1
+    },
+    "one_function_own_node": 1,
+    "one_function_own_node_by_via": {
+     "name": 1
+    },
+    "registration_line_equal": 1
+   },
+   "no_handler": {
+    "rows": 207,
+    "met": 135,
+    "how": {
+     "path": 135
+    },
+    "levels": {
+     "one function starts at the line": 135
+    },
+    "one_function_own_node": 135,
+    "one_function_own_node_by_via": {
+     "name without -fm": 135
+    },
+    "registration_line_equal": 135
+   },
+   "all_http": {
+    "rows": 217,
+    "met": 136,
+    "how": {
+     "path": 136
+    },
+    "levels": {
+     "one function starts at the line": 136
+    },
+    "one_function_own_node": 136,
+    "one_function_own_node_by_via": {
+     "name without -fm": 135,
+     "name": 1
+    },
+    "registration_line_equal": 136
+   },
+   "only_gin": {
+    "count": 3,
+    "levels": {
+     "outside the project": 3
+    },
+    "examples": [
+     {
+      "route": "GET /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "HEAD /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "GET /swagger/*any",
+      "handler": "github.com/swaggo/gin-swagger.CustomWrapHandler.func1",
+      "registered_at": "server/initialize/router.go:61"
+     }
+    ]
+   },
+   "only_noir": {
+    "count": 81,
+    "groups": {
+     "the snapshot holds no function where Noir cites": 9,
+     "Noir gives no handler": 72
+    },
+    "cited_files": {
+     "server/plugin/auto/router/sys_auto_code.go": 31,
+     "server/plugin/auto/router/sys_skills.go": 21,
+     "server/docs/swagger.json": 8,
+     "server/plugin/announcement/router/info.go": 8,
+     "server/mcp/server.go": 6,
+     "server/plugin/auto/router/sys_auto_code_history.go": 4,
+     "server/plugin/email/router/sys_email.go": 2,
+     "deploy/kubernetes/web/gva-web-ingress.yaml": 1
+    },
+    "examples": [
+     {
+      "route": "ANY /",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "deploy/kubernetes/web/gva-web-ingress.yaml:12"
+     },
+     {
+      "route": "POST /autoCode/addFunc",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:18"
+     },
+     {
+      "route": "POST /autoCode/createPackage",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:32"
+     },
+     {
+      "route": "POST /autoCode/createTemp",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:17"
+     },
+     {
+      "route": "POST /autoCode/delPackage",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:31"
+     },
+     {
+      "route": "POST /autoCode/delSysHistory",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code_history.go:14"
+     }
+    ]
+   }
+  },
+  "+ CI": {
+   "named": {
+    "rows": 1,
+    "met": 1,
+    "how": {
+     "path": 1
+    },
+    "levels": {
+     "one function starts at the line": 1
+    },
+    "one_function_own_node": 1,
+    "one_function_own_node_by_via": {
+     "name": 1
+    },
+    "registration_line_equal": 1
+   },
+   "no_handler": {
+    "rows": 207,
+    "met": 135,
+    "how": {
+     "path": 135
+    },
+    "levels": {
+     "one function starts at the line": 135
+    },
+    "one_function_own_node": 135,
+    "one_function_own_node_by_via": {
+     "name without -fm": 135
+    },
+    "registration_line_equal": 135
+   },
+   "all_http": {
+    "rows": 217,
+    "met": 136,
+    "how": {
+     "path": 136
+    },
+    "levels": {
+     "one function starts at the line": 136
+    },
+    "one_function_own_node": 136,
+    "one_function_own_node_by_via": {
+     "name without -fm": 135,
+     "name": 1
+    },
+    "registration_line_equal": 136
+   },
+   "only_gin": {
+    "count": 3,
+    "levels": {
+     "outside the project": 3
+    },
+    "examples": [
+     {
+      "route": "GET /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "HEAD /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "GET /swagger/*any",
+      "handler": "github.com/swaggo/gin-swagger.CustomWrapHandler.func1",
+      "registered_at": "server/initialize/router.go:61"
+     }
+    ]
+   },
+   "only_noir": {
+    "count": 81,
+    "groups": {
+     "the snapshot holds no function where Noir cites": 9,
+     "Noir gives no handler": 72
+    },
+    "cited_files": {
+     "server/plugin/auto/router/sys_auto_code.go": 31,
+     "server/plugin/auto/router/sys_skills.go": 21,
+     "server/docs/swagger.json": 8,
+     "server/plugin/announcement/router/info.go": 8,
+     "server/mcp/server.go": 6,
+     "server/plugin/auto/router/sys_auto_code_history.go": 4,
+     "server/plugin/email/router/sys_email.go": 2,
+     "deploy/kubernetes/web/gva-web-ingress.yaml": 1
+    },
+    "examples": [
+     {
+      "route": "ANY /",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "deploy/kubernetes/web/gva-web-ingress.yaml:12"
+     },
+     {
+      "route": "POST /autoCode/addFunc",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:18"
+     },
+     {
+      "route": "POST /autoCode/createPackage",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:32"
+     },
+     {
+      "route": "POST /autoCode/createTemp",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:17"
+     },
+     {
+      "route": "POST /autoCode/delPackage",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code.go:31"
+     },
+     {
+      "route": "POST /autoCode/delSysHistory",
+      "group": "Noir gives no handler",
+      "cites": "server/plugin/auto/router/sys_auto_code_history.go:14"
+     }
+    ]
+   }
+  },
+  "+ by hand": {
+   "named": {
+    "rows": 1,
+    "met": 1,
+    "how": {
+     "path": 1
+    },
+    "levels": {
+     "one function starts at the line": 1
+    },
+    "one_function_own_node": 1,
+    "one_function_own_node_by_via": {
+     "name": 1
+    },
+    "registration_line_equal": 1
+   },
+   "no_handler": {
+    "rows": 207,
+    "met": 201,
+    "how": {
+     "path": 199,
+     "registration line": 2
+    },
+    "levels": {
+     "one function starts at the line": 200,
+     "no file and line": 1
+    },
+    "one_function_own_node": 200,
+    "one_function_own_node_by_via": {
+     "name without -fm": 200
+    },
+    "registration_line_equal": 201
+   },
+   "all_http": {
+    "rows": 217,
+    "met": 204,
+    "how": {
+     "path": 202,
+     "registration line": 2
+    },
+    "levels": {
+     "one function starts at the line": 203,
+     "no file and line": 1
+    },
+    "one_function_own_node": 203,
+    "one_function_own_node_by_via": {
+     "name without -fm": 202,
+     "name": 1
+    },
+    "registration_line_equal": 202
+   },
+   "only_gin": {
+    "count": 3,
+    "levels": {
+     "outside the project": 3
+    },
+    "examples": [
+     {
+      "route": "GET /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "HEAD /uploads/file/*filepath",
+      "handler": "github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1",
+      "registered_at": "server/initialize/router.go:54"
+     },
+     {
+      "route": "GET /swagger/*any",
+      "handler": "github.com/swaggo/gin-swagger.CustomWrapHandler.func1",
+      "registered_at": "server/initialize/router.go:61"
+     }
+    ]
+   },
+   "only_noir": {
+    "count": 13,
+    "groups": {
+     "the snapshot holds no function where Noir cites": 7,
+     "Noir gives no handler": 6
+    },
+    "cited_files": {
+     "server/docs/swagger.json": 6,
+     "server/mcp/server.go": 6,
+     "deploy/kubernetes/web/gva-web-ingress.yaml": 1
+    },
+    "examples": [
+     {
+      "route": "ANY /",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "deploy/kubernetes/web/gva-web-ingress.yaml:12"
+     },
+     {
+      "route": "POST /casbin/UpdateCasbin",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "server/docs/swagger.json:2059"
+     },
+     {
+      "route": "POST /fileUploadAndDownload/findFile",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "server/docs/swagger.json:2657"
+     },
+     {
+      "route": "GET /sysExportTemplate/ExportTemplate",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "server/docs/swagger.json:4572"
+     },
+     {
+      "route": "POST /sysOperationRecord/createSysOperationRecord",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "server/docs/swagger.json:4986"
+     },
+     {
+      "route": "PUT /user/SetSelfInfo",
+      "group": "the snapshot holds no function where Noir cites",
+      "cites": "server/docs/swagger.json:5972"
+     }
+    ]
+   }
+  }
+ },
+ "named_agreement": {
+  "same function": 1
+ },
+ "named_disagreements": [],
+ "static": {
+  "handler_calls": 347,
+  "named": {
+   "rows": 1,
+   "levels": {
+    "one function starts at the line": 1
+   },
+   "kinds": {
+    "function literal": 1
+   },
+   "one_function_own_node": 1,
+   "spread": 0
+  },
+  "no_handler": {
+   "rows": 207,
+   "levels": {
+    "one function starts at the line": 199,
+    "no call of Gin at the line": 6,
+    "the last argument is a variable": 2
+   },
+   "kinds": {
+    "method": 199,
+    "variable": 2
+   },
+   "one_function_own_node": 199,
+   "spread": 0
+  },
+  "all_http": {
+   "rows": 217,
+   "levels": {
+    "no call of Gin at the line": 15,
+    "one function starts at the line": 200,
+    "the last argument is a variable": 2
+   },
+   "kinds": {
+    "method": 199,
+    "function literal": 1,
+    "variable": 2
+   },
+   "one_function_own_node": 200,
+   "spread": 0
+  },
+  "against_gin": {
+   "same function": 199
+  },
+  "no_handler_only_gin": [
+   {
+    "route": "POST /emailTest",
+    "static": "the last argument is a variable",
+    "gin": "EmailApi.EmailTest 21-29"
+   },
+   {
+    "route": "POST /sendEmail",
+    "static": "the last argument is a variable",
+    "gin": "EmailApi.SendEmail 39-53"
+   }
+  ],
+  "no_handler_only_static": [
+   {
+    "route": "GET /info/getInfoPublic",
+    "function": "info.GetInfoPublic 180-183",
+    "gin": "no file and line"
+   }
+  ],
+  "no_handler_only_static_count": 1,
+  "named_against_the_binder": {
+   "same function as the binder": 1
+  },
+  "examples": [
+   {
+    "route": "POST /api/createApi",
+    "noir_cites": "server/router/system/sys_api.go:20",
+    "level": "one function starts at the line",
+    "kind": "method",
+    "function": "SystemApiApi.CreateApi 27-46",
+    "callee": null
+   },
+   {
+    "route": "POST /api/deleteApi",
+    "noir_cites": "server/router/system/sys_api.go:21",
+    "level": "one function starts at the line",
+    "kind": "method",
+    "function": "SystemApiApi.DeleteApi 148-167",
+    "callee": null
+   },
+   {
+    "route": "DELETE /api/deleteApisByIds",
+    "noir_cites": "server/router/system/sys_api.go:24",
+    "level": "one function starts at the line",
+    "kind": "method",
+    "function": "SystemApiApi.DeleteApisByIds 292-306",
+    "callee": null
+   },
+   {
+    "route": "POST /api/enterSyncApi",
+    "noir_cites": "server/router/system/sys_api.go:19",
+    "level": "one function starts at the line",
+    "kind": "method",
+    "function": "SystemApiApi.EnterSyncApi 123-137",
+    "callee": null
+   },
+   {
+    "route": "GET /api/freshCasbin",
+    "noir_cites": "server/router/system/sys_api.go:33",
+    "level": "one function starts at the line",
+    "kind": "method",
+    "function": "SystemApiApi.FreshCasbin 315-323",
+    "callee": null
+   },
+   {
+    "route": "POST /api/getAllApis",
+    "noir_cites": "server/router/system/sys_api.go:28",
+    "level": "one function starts at the line",
+    "kind": "method",
+    "function": "SystemApiApi.GetAllApis 272-281",
+    "callee": null
+   }
+  ],
+  "not_placed": [
+   {
+    "route": "DELETE /health",
+    "level": "no call of Gin at the line",
+    "callee": null,
+    "at": "None:None"
+   },
+   {
+    "route": "HEAD /health",
+    "level": "no call of Gin at the line",
+    "callee": null,
+    "at": "None:None"
+   },
+   {
+    "route": "OPTIONS /health",
+    "level": "no call of Gin at the line",
+    "callee": null,
+    "at": "None:None"
+   },
+   {
+    "route": "PATCH /health",
+    "level": "no call of Gin at the line",
+    "callee": null,
+    "at": "None:None"
+   },
+   {
+    "route": "POST /health",
+    "level": "no call of Gin at the line",
+    "callee": null,
+    "at": "None:None"
+   },
+   {
+    "route": "PUT /health",
+    "level": "no call of Gin at the line",
+    "callee": null,
+    "at": "None:None"
+   },
+   {
+    "route": "POST /emailTest",
+    "level": "the last argument is a variable",
+    "callee": null,
+    "at": "None:None"
+   },
+   {
+    "route": "POST /sendEmail",
+    "level": "the last argument is a variable",
+    "callee": null,
+    "at": "None:None"
+   }
+  ]
+ },
+ "no_handler_examples": [
+  {
+   "route": "POST /api/createApi",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:20",
+   "gin_handler": "m/flipped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).CreateApi-fm",
+   "at": "server/api/v1/system/sys_api.go:27",
+   "function": "SystemApiApi.CreateApi 27-46",
+   "level": "one function starts at the line"
+  },
+  {
+   "route": "POST /api/deleteApi",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:21",
+   "gin_handler": "m/flipped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).DeleteApi-fm",
+   "at": "server/api/v1/system/sys_api.go:148",
+   "function": "SystemApiApi.DeleteApi 148-167",
+   "level": "one function starts at the line"
+  },
+  {
+   "route": "DELETE /api/deleteApisByIds",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:24",
+   "gin_handler": "ped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).DeleteApisByIds-fm",
+   "at": "server/api/v1/system/sys_api.go:292",
+   "function": "SystemApiApi.DeleteApisByIds 292-306",
+   "level": "one function starts at the line"
+  },
+  {
+   "route": "POST /api/enterSyncApi",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:19",
+   "gin_handler": "lipped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).EnterSyncApi-fm",
+   "at": "server/api/v1/system/sys_api.go:123",
+   "function": "SystemApiApi.EnterSyncApi 123-137",
+   "level": "one function starts at the line"
+  },
+  {
+   "route": "GET /api/freshCasbin",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:33",
+   "gin_handler": "flipped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).FreshCasbin-fm",
+   "at": "server/api/v1/system/sys_api.go:315",
+   "function": "SystemApiApi.FreshCasbin 315-323",
+   "level": "one function starts at the line"
+  },
+  {
+   "route": "POST /api/getAllApis",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:28",
+   "gin_handler": "/flipped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).GetAllApis-fm",
+   "at": "server/api/v1/system/sys_api.go:272",
+   "function": "SystemApiApi.GetAllApis 272-281",
+   "level": "one function starts at the line"
+  },
+  {
+   "route": "POST /api/getApiById",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:22",
+   "gin_handler": "/flipped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).GetApiById-fm",
+   "at": "server/api/v1/system/sys_api.go:213",
+   "function": "SystemApiApi.GetApiById 213-232",
+   "level": "one function starts at the line"
+  },
+  {
+   "route": "GET /api/getApiGroups",
+   "met_by": "path",
+   "noir_cites": "server/router/system/sys_api.go:16",
+   "gin_handler": "lipped-aurora/gin-vue-admin/server/api/v1/system.(*SystemApiApi).GetApiGroups-fm",
+   "at": "server/api/v1/system/sys_api.go:78",
+   "function": "SystemApiApi.GetApiGroups 78-89",
+   "level": "one function starts at the line"
+  }
+ ]
+}

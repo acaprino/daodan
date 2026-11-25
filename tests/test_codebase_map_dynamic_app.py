@@ -76,6 +76,17 @@ def test_a_project_declaring_no_start_is_a_gap_and_nothing_runs():
     assert [gap["kind"] for gap in planned["gaps"]] == ["no_start_command", "no_start_command"]
 
 
+def test_the_pages_nextjs_declares_under_an_apps_folder_are_its_seeds():
+    record = {"starts": [start("web", "dev")], "framework_entries": [
+        {"shape": "AppPageConfig", "page": True, "schema": "/about", "site": "web/app/about/page.tsx", "path": "/about"},
+        {"shape": "AppPageConfig", "page": True, "schema": "/{}", "site": "web/app/[id]/page.tsx", "path": "/[id]"},  # a pattern: no page to open
+        {"shape": "RouteHandlerConfig", "schema": "/api/x", "site": "web/app/api/x/route.ts", "path": "/api/x"},  # an endpoint, not a page
+        {"shape": "AppPageConfig", "page": True, "schema": "/other", "site": "other/app/page.tsx", "path": "/other"}]}  # another app's
+    planned = app.plan(record, explore=True)
+    assert planned["apps"][0]["seeds"] == ["/about"]
+    assert "'[\"/about\"]'" in app.scripts(planned, [])[1] or '["/about"]' in app.scripts(planned, [])[1]
+
+
 # --- the scripts: the command is the declared one --------------------------------------------------------------
 
 def test_the_execution_runs_the_declared_command_and_never_one_of_ours():
@@ -310,6 +321,48 @@ def test_the_pages_the_exploration_saw_are_kept_beside_the_manifest_for_the_entr
     assert json.loads((tmp_path / observed_entries.FILE).read_text(encoding="utf-8"))["apps"] == [
         {"declared_in": "package.json#scripts.dev", "pages": pages}]
     assert app.record(tmp_path / "none" / "manifest.sqlite", planned, tmp_path / "nowhere") == 0
+
+
+def test_a_run_that_explored_nothing_takes_away_the_pages_of_a_former_one(tmp_path):
+    import observed_entries
+    (tmp_path / observed_entries.FILE).write_text('{"apps": [{"pages": []}]}', encoding="utf-8")
+    assert app.record(tmp_path / "manifest.sqlite", {"apps": [start(".", "dev")]}, tmp_path / "nowhere") == 0
+    assert not (tmp_path / observed_entries.FILE).exists()  # another snapshot's controls are not this one's
+
+
+# --- the step: plan, explore, keep, and reuse on the same snapshot ----------------------------------------------
+
+def explorer(calls: list):
+    """`app.observe` as a double: it explores one page and counts the runs."""
+    def observe(project, planned, out_dir, engine=None):
+        calls.append(planned)
+        back = Path(out_dir) / Path(app.OUT).name
+        back.mkdir(parents=True, exist_ok=True)
+        pages = [{"url": "http://localhost:5173/", "controls": [{"role": "button", "name": "Save", "state": "pressed"}]}]
+        (back / "explore-0.json").write_text(json.dumps({"pages": pages}), encoding="utf-8")
+        return {"state": "ran", "apps": [{"state": "ready"}], "gaps": [{"kind": "explore_cap", "detail": "stopped"}]}
+    return observe
+
+
+def test_the_step_explores_keeps_the_pages_and_reuses_them_while_the_snapshot_and_the_plan_stay(tmp_path):
+    import observed_entries
+    record = {"starts": [start(".", "dev")], "builds": []}
+    manifest, calls = tmp_path / "manifest.sqlite", []
+    with mock.patch.object(app, "observe", explorer(calls)):
+        first = app.explore(manifest, tmp_path, record, "digest-1", tmp_path / "runs")
+        again = app.explore(manifest, tmp_path, record, "digest-1", tmp_path / "runs")
+        later = app.explore(manifest, tmp_path, record, "digest-2", tmp_path / "runs")
+    assert (first["state"], first["kept"], first.get("reused")) == ("ran", 1, None) and len(calls) == 2
+    assert again["reused"] is True and [gap["kind"] for gap in again["gaps"]] == ["explore_cap"]  # the gaps are said again
+    assert later.get("reused") is None and (tmp_path / observed_entries.FILE).is_file()
+    assert calls[0]["explore"] is True
+
+
+def test_a_project_with_no_app_to_start_runs_nothing_and_leaves_no_pages(tmp_path):
+    with mock.patch.object(container, "run_in_container", side_effect=AssertionError("no container")):
+        seen = app.explore(tmp_path / "manifest.sqlite", tmp_path, {"starts": [], "builds": []}, "d", tmp_path / "runs")
+    assert seen["state"] == "ran" and seen["kept"] == 0 and [g["kind"] for g in seen["gaps"]] == ["no_start_command"]
+    assert not (tmp_path / "observed-controls.json").exists()
 
 
 # --- the example `.env` files the project publishes are the app's test values --------------------------------------

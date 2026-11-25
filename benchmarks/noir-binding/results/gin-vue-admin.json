@@ -1,0 +1,283 @@
+{
+ "name": "gin-vue-admin",
+ "framework": "gin",
+ "repository": "flipped-aurora/gin-vue-admin",
+ "commit": "dcac232afb56d17c167840f69864d2765c2ca512",
+ "licence": "Apache-2.0",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 222,
+  "protocols": {
+   "http": 221,
+   "cli": 1
+  },
+  "errors": 0,
+  "seconds": 2.2,
+  "peak_memory_mb": 193.5,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "none": 221,
+   "closure": 1
+  },
+  "http_handler_forms": {
+   "none": 220,
+   "closure": 1
+  },
+  "http_endpoints_in_the_json": 221,
+  "tagged_spec_only": 8,
+  "with_handler_name_in_the_json": 1,
+  "with_name_and_path_and_line": 1
+ },
+ "before_the_binder": {
+  "other_protocol": 1,
+  "no_path": 0,
+  "dropped": 4,
+  "dropped_by_reason": {
+   "outside_snapshot (.conf)": 4
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 778,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 689,
+  "functions": 3136,
+  "functions_by_suffix": {
+   ".go": 1431,
+   ".vue": 1271,
+   ".js": 434
+  },
+  "files_by_suffix": {
+   ".go": 412,
+   ".vue": 120,
+   ".js": 78,
+   ".md": 47,
+   ".yaml": 12,
+   ".scss": 5,
+   "": 4,
+   ".json": 4,
+   ".MD": 2,
+   ".sh": 1,
+   ".mod": 1,
+   ".mjs": 1,
+   ".html": 1,
+   ".css": 1
+  },
+  "seconds": 26.9
+ },
+ "http": {
+  "endpoints": 217,
+  "with_handler_name": 1,
+  "bound_to_one_function": 0,
+  "unbound": 217,
+  "by_file_suffix": {
+   ".go": {
+    "endpoints": 208,
+    "with_handler_name": 1,
+    "bound": 0
+   },
+   ".json": {
+    "endpoints": 8,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".yaml": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir gives no handler": 207,
+  "the snapshot holds no function where Noir cites": 9,
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 1
+ },
+ "causes": {
+  "Noir names no handler, the line is inside a function (the registration)": {
+   "group": "Noir gives no handler",
+   "endpoints": 207,
+   "by_file_suffix": {
+    ".go": 207
+   },
+   "examples": [
+    {
+     "method": "POST",
+     "url": "/api/createApi",
+     "site": "server/router/system/sys_api.go:20",
+     "noir_handler": null,
+     "covering": [
+      "ApiRouter.InitApiRouter 10-35"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "POST",
+     "url": "/api/deleteApi",
+     "site": "server/router/system/sys_api.go:21",
+     "noir_handler": null,
+     "covering": [
+      "ApiRouter.InitApiRouter 10-35"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "DELETE",
+     "url": "/api/deleteApisByIds",
+     "site": "server/router/system/sys_api.go:24",
+     "noir_handler": null,
+     "covering": [
+      "ApiRouter.InitApiRouter 10-35"
+     ],
+     "file_language": "go"
+    }
+   ]
+  },
+  "the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 9,
+   "by_file_suffix": {
+    ".json": 8,
+    ".yaml": 1
+   },
+   "examples": [
+    {
+     "method": "ANY",
+     "url": "/",
+     "site": "deploy/kubernetes/web/gva-web-ingress.yaml:12",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "POST",
+     "url": "/casbin/UpdateCasbin",
+     "site": "server/docs/swagger.json:2059",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "POST",
+     "url": "/email/emailTest",
+     "site": "server/docs/swagger.json:2454",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  },
+  "Noir names a closure and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".go": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/health",
+     "site": "server/initialize/router.go:72",
+     "noir_handler": {
+      "name": "closure",
+      "path": "server/initialize/router.go",
+      "line": 72
+     },
+     "covering": [
+      "Routers.(func) 72-74",
+      "Routers 36-114"
+     ],
+     "file_language": "go"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 217
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 217
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 217
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 216,
+    "one": 1
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 1
+  },
+  "combined": {
+   "unbound": {
+    "none": 216,
+    "one": 1
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 1
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 216
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 217
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 217
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 217
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 9,
+    "one": 207
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 28
+  }
+ },
+ "fixes_agree": {
+  "only starts-at-line binds": 1
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "variant": "replaced-stdout",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "flask",
+  "900",
+  "/daodan/state/tools/flask_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"dispatch\": null, \"routes\": [{\"rule\": \"/static/<path:filename>\", \"methods\": [\"GET\"], \"build_only\": false, \"redirect_to\": false, \"static\": true, \"parts\": [[false, \"/\"], [false, \"static\"], [false, \"/\"], [true, \"filename\"]], \"arguments\": {\"filename\": false}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"flask.app\", \"qualname\": \"Flask.__init__.<locals>.<lambda>\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/flask/app.py\", \"line\": 278, \"environment\": true, \"distribution\": null}}, {\"rule\": \"/x\", \"methods\": [\"GET\"], \"build_only\": false, \"redirect_to\": false, \"static\": false, \"parts\": [[false, \"/\"], [false, \"x\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"wsgi\", \"qualname\": \"x\", \"file\": \"wsgi.py\", \"line\": 9, \"environment\": false, \"distribution\": null}}]}",
+ "stderr": "",
+ "seconds": 0.25,
+ "max_rss_mb": 50.8,
+ "left_in_the_project": [
+  "__pycache__/wsgi.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 861
+}

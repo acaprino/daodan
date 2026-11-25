@@ -657,6 +657,9 @@ def _build_result(content: str, file_path: str, tree: ast.AST, notes: list[str],
 
 class _PythonAdapter:
     language = "python"
+    # The semantic reader never records an assignment's target as a read (`self.X = 1`, `X += 1`): an occurrence of a
+    # symbol that falls in no read is a write, which `code_graph.Traversal` relies on to tell a value written once.
+    assignment_targets_are_reads = False
 
     def parse(self, content: str, file_path: str) -> ParseResult:
         try:

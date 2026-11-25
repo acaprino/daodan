@@ -7,13 +7,15 @@
 A repository can track far more than code: screenshots, spreadsheets, the documents a program works on, files of
 environment variables. `kept` is the closed rule of what goes into the archive; everything else stays here. The archive
 is read from `git archive`, so it holds tracked files only and runs nothing of the repository: of `HEAD`, or of the
-commit a reference is bound to. A case that spans repositories keeps each one under its own folder. Every kept file
+commit a reference is bound to. Beside `OUT.tar` the command writes `OUT.json`: per repository, what was kept, left
+out, masked and withheld. A case that spans repositories keeps each one under its own folder. Every kept file
 goes through Secretlint (`secret_mask`): a secret it finds is masked and counted, and the file goes in; a file that is
 not UTF-8 text cannot be checked and stays here, named. Without Secretlint no archive is written.
 """
 from __future__ import annotations
 
 import io
+import json
 import re
 import subprocess
 import sys
@@ -117,7 +119,10 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 2
     try:
-        print(write(Path(argv[1]), [source(text) for text in argv[2:]]))
+        counts = write(Path(argv[1]), [source(text) for text in argv[2:]])
+        # what a whole job reads beside the archive (`score.py whole`): what was left out, withheld and masked
+        Path(argv[1]).with_suffix(".json").write_text(json.dumps(counts, indent=1), encoding="utf-8")
+        print(counts)
     except Gap as gap:
         print(f"no archive: {gap.cause}; {gap.remedy}", file=sys.stderr)
         return 1

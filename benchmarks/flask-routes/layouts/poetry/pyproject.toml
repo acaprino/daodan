@@ -1,0 +1,10 @@
+[tool.poetry]
+name = "poetry-app"
+version = "0.1.0"
+description = ""
+authors = ["Daodan <daodan@example.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+flask = "3.1.3"

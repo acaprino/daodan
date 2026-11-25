@@ -1,0 +1,167 @@
+node v24.22.3 @astrojs/compiler-rs 0.5.3
+
+=== src/pages/index.astro (1624 chars): keys ast,diagnostics; diagnostics 0; ast keys type,frontmatter,body,comments,start,end
+AstroRoot 0..1624
+frontmatter AstroFrontmatter 0..308
+JSXElement <Layout> 309..1623 selfClosing=false closing=1614..1623
+  @ JSXAttribute title (JSXIdentifier) 317..330 name at 317 value: JSXExpressionContainer of Identifier 323..330
+  JSXText 331..334 "\n  "
+  JSXElement <h1> 334..371 selfClosing=false closing=366..371
+    @ JSXAttribute id (JSXIdentifier) 338..346 name at 338 value: Literal "\"top\"" 341..346
+    @ JSXAttribute title (JSXIdentifier) 347..358 name at 347 value: Literal null 353..358
+    JSXExpressionContainer 359..366 "{title}" expression=Identifier
+  JSXText 371..374 "\n  "
+  JSXElement <button> 374..422 selfClosing=false closing=413..422
+    @ JSXAttribute id (JSXIdentifier) 382..391 name at 382 value: Literal "\"save\"" 385..391
+    @ JSXAttribute onclick (JSXIdentifier) 392..408 name at 392 value: Literal "\"save()\"" 400..408
+    JSXText 409..413 "Save"
+  JSXText 422..425 "\n  "
+  JSXElement <button> 425..499 selfClosing=false closing=490..499
+    @ JSXAttribute onclick (JSXIdentifier) 433..484 name at 433 value: Literal "\"this.disabled = true; confirmOrder(event)\"" 441..484
+    JSXText 485..490 "Order"
+  JSXText 499..502 "\n  "
+  JSXElement <button> 502..578 selfClosing=false closing=569..578
+    @ JSXAttribute class (JSXIdentifier) 510..519 name at 510 value: Literal "\"x\"" 516..519
+    @ JSXAttribute onclick (JSXIdentifier) 520..543 name at 520 value: Literal "'cancel(\"now\")'" 528..543
+    @ JSXAttribute data-id (JSXIdentifier) 544..562 name at 544 value: JSXExpressionContainer of MemberExpression 552..562
+    JSXText 563..569 "Cancel"
+  JSXText 578..581 "\n  "
+  JSXElement <button> 581..613 selfClosing=false closing=604..613
+    @ JSXAttribute onclick (JSXIdentifier) 589..601 name at 589 value: Literal null 597..601
+    JSXText 602..604 "Go"
+  JSXText 613..616 "\n  "
+  JSXElement <button> 616..685 selfClosing=false closing=676..685
+    @ JSXAttribute class (JSXIdentifier) 628..641 name at 628 value: Literal "\"multi\"" 634..641
+    @ JSXAttribute onclick (JSXIdentifier) 646..667 name at 646 value: Literal "\"multiLine()\"" 654..667
+    JSXText 671..676 "Multi"
+  JSXText 685..688 "\n  "
+  JSXElement <form> 688..772 selfClosing=false closing=765..772
+    @ JSXAttribute onsubmit (JSXIdentifier) 694..726 name at 694 value: Literal "\"return validate(this)\"" 703..726
+    JSXElement <input> 727..765 selfClosing=true closing=none
+      @ JSXAttribute oninput (JSXIdentifier) 734..762 name at 734 value: Literal "\"update(this.value)\"" 742..762
+  JSXText 772..775 "\n  "
+  JSXElement <ul> 775..872 selfClosing=false closing=867..872
+    JSXText 779..784 "\n    "
+    JSXExpressionContainer 784..864 "{items.map((item) => (\n      <" expression=CallExpression
+    JSXText 864..867 "\n  "
+  JSXText 872..875 "\n  "
+  JSXExpressionContainer 875..939 "{title === 'Shop' && <a href=\"" expression=LogicalExpression
+  JSXText 939..942 "\n  "
+  JSXElement <Card> 942..1004 selfClosing=false closing=997..1004
+    @ JSXAttribute heading (JSXIdentifier) 948..960 name at 948 value: Literal "\"Hi\"" 956..960
+    @ JSXAttribute onclick (JSXIdentifier) 961..982 name at 961 value: Literal "\"cardClick()\"" 969..982
+    @ JSXSpreadAttribute 983..992 "{...rest}"
+    JSXText 993..997 "text"
+  JSXText 1004..1007 "\n  "
+  JSXElement <Counter> 1007..1042 selfClosing=true closing=none
+    @ JSXAttribute client:load (JSXIdentifier) 1016..1027 name at 1016 value: no value 
+    @ JSXAttribute initial (JSXIdentifier) 1028..1039 name at 1028 value: JSXExpressionContainer of Literal 1036..1039
+  JSXText 1042..1045 "\n  "
+  JSXElement <Counter> 1045..1071 selfClosing=true closing=none
+    @ JSXAttribute client:visible (JSXIdentifier) 1054..1068 name at 1054 value: no value 
+  JSXText 1071..1074 "\n  "
+  JSXElement <button> 1074..1110 selfClosing=false closing=1101..1110
+    @ JSXAttribute onclick (JSXIdentifier) 1082..1091 name at 1083 value: JSXExpressionContainer of Identifier 1082..1091
+    JSXText 1092..1101 "Shorthand"
+  JSXText 1110..1113 "\n  "
+  JSXElement <my-widget> 1113..1155 selfClosing=false closing=1143..1155
+    @ JSXAttribute onclick (JSXIdentifier) 1124..1142 name at 1124 value: Literal "\"widget()\"" 1132..1142
+  JSXText 1155..1158 "\n  "
+  JSXElement <svg> 1158..1225 selfClosing=false closing=1219..1225
+    @ JSXAttribute onclick (JSXIdentifier) 1163..1183 name at 1163 value: Literal "\"svgClick()\"" 1171..1183
+    @ JSXAttribute viewBox (JSXIdentifier) 1184..1201 name at 1184 value: Literal "\"0 0 1 1\"" 1192..1201
+    JSXElement <path> 1202..1219 selfClosing=true closing=none
+      @ JSXAttribute d (JSXIdentifier) 1208..1216 name at 1208 value: Literal "\"M0 0\"" 1210..1216
+  JSXText 1225..1228 "\n  "
+  JSXElement <Fragment> 1228..1283 selfClosing=true closing=none
+    @ JSXAttribute set:html (JSXIdentifier) 1238..1280 name at 1238 value: JSXExpressionContainer of Literal 1247..1280
+  JSXText 1283..1286 "\n  "
+  AstroComment 1286..1336 value=" <button onclick=\"commented()\">no</butto"
+  JSXText 1336..1339 "\n  "
+  JSXElement <script> 1339..1449 selfClosing=false closing=1440..1449
+    @ JSXAttribute is:inline (JSXIdentifier) 1347..1356 name at 1347 value: no value 
+    AstroScript 1339..1449
+  JSXText 1449..1452 "\n  "
+  JSXElement <script> 1452..1569 selfClosing=false closing=1560..1569
+    AstroScript 1452..1569
+  JSXText 1569..1572 "\n  "
+  JSXElement <style> 1572..1613 selfClosing=false closing=1605..1613
+    JSXText 1579..1605 "\n    h1 { color: red; }\n  "
+  JSXText 1613..1614 "\n"
+JSXText 1623..1624 "\n"
+
+=== src/pages/unicode.astro (255 chars): keys ast,diagnostics; diagnostics 0; ast keys type,frontmatter,body,comments,start,end
+AstroRoot 0..255
+frontmatter AstroFrontmatter 0..27
+JSXElement <p> 28..47 selfClosing=false closing=43..47
+  JSXText 31..43 "héllo 日本語 😀"
+JSXElement <button> 47..87 selfClosing=false closing=78..87
+  @ JSXAttribute onclick (JSXIdentifier) 55..76 name at 55 value: Literal "\"afterText()\"" 63..76
+  JSXText 77..78 "é"
+JSXText 87..88 "\n"
+JSXElement <p> 88..97 selfClosing=false closing=93..97
+  JSXText 91..93 "😀"
+JSXText 97..98 "\n"
+JSXElement <div> 98..164 selfClosing=false closing=158..164
+  @ JSXAttribute class (JSXIdentifier) 103..114 name at 103 value: Literal "\"日本語\"" 109..114
+  @ JSXAttribute onclick (JSXIdentifier) 115..143 name at 115 value: Literal "\"afterUnicodeAttr()\"" 123..143
+  @ JSXAttribute title (JSXIdentifier) 144..156 name at 144 value: Literal "\"😀 é\"" 150..156
+  JSXText 157..158 "x"
+JSXText 164..165 "\n"
+JSXElement <script> 165..254 selfClosing=false closing=245..254
+  @ JSXAttribute is:inline (JSXIdentifier) 173..182 name at 173 value: no value 
+  AstroScript 165..254
+JSXText 254..255 "\n"
+
+=== src/pages/edge.astro (851 chars): keys ast,diagnostics; diagnostics 0; ast keys type,frontmatter,body,comments,start,end
+AstroRoot 0..851
+frontmatter AstroFrontmatter 0..102
+JSXElement <Layout> 103..850 selfClosing=false closing=841..850
+  @ JSXAttribute title (JSXIdentifier) 111..123 name at 111 value: Literal "\"Edge\"" 117..123
+  JSXText 124..127 "\n  "
+  JSXElement <style> 127..183 selfClosing=false closing=175..183
+    JSXText 134..175 "\n    .a::after { content: \"</d"
+  JSXText 183..186 "\n  "
+  JSXElement <script> 186..298 selfClosing=false closing=289..298
+    AstroScript 186..298
+  JSXText 298..301 "\n  "
+  JSXElement <script> 301..380 selfClosing=false closing=371..380
+    @ JSXAttribute is:inline (JSXIdentifier) 309..318 name at 309 value: no value 
+    @ JSXAttribute type (JSXIdentifier) 319..332 name at 319 value: Literal "\"module\"" 324..332
+    AstroScript 301..380
+  JSXText 380..383 "\n  "
+  JSXElement <button> 383..438 selfClosing=false closing=429..438
+    @ JSXAttribute onclick (JSXIdentifier) 391..415 name at 391 value: Literal "\"afterScripts()\"" 399..415
+    JSXText 416..429 "After scripts"
+  JSXText 438..441 "\n  "
+  JSXElement <p> 441..475 selfClosing=false closing=471..475
+    JSXExpressionContainer 444..471 "{label === '}' ? '>' : \"<\"}" expression=ConditionalExpression
+  JSXText 475..478 "\n  "
+  JSXElement <button> 478..531 selfClosing=false closing=522..531
+    @ JSXAttribute onclick (JSXIdentifier) 486..509 name at 486 value: Literal "\"afterString()\"" 494..509
+    JSXText 510..522 "After string"
+  JSXText 531..534 "\n  "
+  JSXElement <div> 534..616 selfClosing=false closing=610..616
+    @ JSXAttribute title (JSXIdentifier) 539..581 name at 539 value: JSXExpressionContainer of TemplateLiteral 545..581
+    @ JSXAttribute onclick (JSXIdentifier) 582..608 name at 582 value: Literal "\"afterMultiline()\"" 590..608
+    JSXText 609..610 "m"
+  JSXText 616..619 "\n  "
+  JSXElement <button> 619..675 selfClosing=false closing=666..675
+    @ JSXAttribute onclick (JSXIdentifier) 627..654 name at 627 value: Literal "\"fromFrontmatter()\"" 635..654
+    JSXText 655..666 "Frontmatter"
+  JSXText 675..678 "\n  "
+  JSXElement <button> 678..736 selfClosing=false closing=727..736
+    @ JSXAttribute onclick (JSXIdentifier) 686..717 name at 686 value: Literal "\"fromProcessedScript()\"" 694..717
+    JSXText 718..727 "Processed"
+  JSXText 736..739 "\n  "
+  JSXElement <button> 739..791 selfClosing=false closing=782..791
+    @ JSXAttribute onclick (JSXIdentifier) 747..775 name at 747 value: Literal "\"fromModuleScript()\"" 755..775
+    JSXText 776..782 "Module"
+  JSXText 791..794 "\n  "
+  JSXElement <button> 794..840 selfClosing=false closing=831..840
+    @ JSXAttribute onclick (JSXIdentifier) 802..824 name at 802 value: Literal "\"fromLayout()\"" 810..824
+    JSXText 825..831 "Layout"
+  JSXText 840..841 "\n"
+JSXText 850..851 "\n"
+
+--- exit 0

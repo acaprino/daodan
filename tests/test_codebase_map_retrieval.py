@@ -24,7 +24,7 @@ class RetrievalTests(unittest.TestCase):
         self.write("other.py", "def invoiceTotal(items):\n    return 0\n")
         self.manifest = self.root / ".daodan/map/manifest.sqlite"
         self.index = self.manifest.with_name("retrieval.sqlite")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
 
     def write(self, name, body):
         (self.root / name).write_text(body, encoding="utf-8")
@@ -49,7 +49,7 @@ class RetrievalTests(unittest.TestCase):
 
     def test_traceback_prefers_the_function_when_the_whole_file_has_its_span(self):
         self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.refresh()
         hits = self.search('File "billing.py", line 2, in invoiceTotal')["results"]
         self.assertEqual(hits[0]["entity_id"], "billing.py::invoiceTotal")
@@ -87,7 +87,7 @@ class RetrievalTests(unittest.TestCase):
 
     def test_module_context_remains_searchable_and_line_addressable(self):
         self.write("billing.py", 'API_ENDPOINT = "payments.example"\n\ndef send(data):\n    return data\n')
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.refresh()
         result = self.search("payments")
         self.assertEqual(result["results"][0]["entity_id"], "billing.py::@file")
@@ -98,7 +98,7 @@ class RetrievalTests(unittest.TestCase):
 
     def test_form_feed_preserves_physical_lines(self):
         self.write("billing.py", 'def execute():\n    text = "first\fsecond"\n    return text\n')
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.refresh()
         self.assertEqual(self.search("second")["results"][0]["entity_id"], "billing.py::execute")
 
@@ -127,7 +127,7 @@ class RetrievalTests(unittest.TestCase):
         (self.root / "other.py").unlink()
         self.write("billing.py", "def receiptTotal(items):\n    return sum(items)\n")
         self.write("exports.py", "def exported():\n    return 4\n")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.assertEqual(self.refresh()["removed"], 3)
         incremental = self.search("total exported")
         separate = self.manifest.with_name("fresh-retrieval.sqlite")
@@ -142,7 +142,7 @@ class RetrievalTests(unittest.TestCase):
         self.write("billing.py", original.replace("7", "9"))
         with self.assertRaisesRegex(ValueError, "source|stale"):
             self.search("tax")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         with self.assertRaisesRegex(ValueError, "snapshot|stale"):
             self.search("tax")
         self.refresh()
@@ -173,11 +173,11 @@ class RetrievalTests(unittest.TestCase):
 
     def test_empty_registry_and_absent_export_are_reindexed(self):
         self.write("registry.py", "")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.refresh()
         self.assertEqual(self.search("registeredHandler")["matched"], 0)
         self.write("registry.py", "registeredHandler = 'invoiceTotal'\n")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.refresh()
         result = self.search("registeredHandler")
         self.assertTrue(any(r["anchor"]["file"] == "registry.py" for r in result["results"]))
@@ -266,7 +266,7 @@ class IndexStateTests(unittest.TestCase):
     def test_stale_names_the_differing_binding_keys(self):
         self.refresh()
         self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)\n")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         stale = self.state()
         self.assertEqual(stale["state"], "stale")
         self.assertIn("manifest_digest", stale["reason"])
@@ -326,7 +326,7 @@ class IndexStateTests(unittest.TestCase):
         self.assertEqual((untouched["state"], untouched["action"]), ("fresh", "none"))
         self.assertNotIn("refresh", untouched)
         self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)\n")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         refreshed = retrieval.ensure_index(self.manifest, self.index)
         self.assertEqual((refreshed["state"], refreshed["action"], refreshed["previous"]), ("fresh", "refreshed", "stale"))
         self.assertEqual(refreshed["refresh"]["mode"], "incremental")
@@ -371,7 +371,7 @@ class IndexStateTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "tree read"):
                 retrieval.search(self.index, "tax adjustment", anchors=[], limit=5)
         self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)\n")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         with self.assertRaisesRegex(ValueError, "stale retrieval index"):
             retrieval.search(self.index, "tax adjustment", anchors=[], limit=5, verify=False)
 

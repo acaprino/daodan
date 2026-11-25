@@ -1,0 +1,386 @@
+{
+ "framework_entries": [
+  {
+   "gap": "no function found for the exports the framework starts /api/files/**:path from: default",
+   "kind": "rotta",
+   "method": "GET",
+   "path": "/api/files/**:path",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/files/[...path].get.ts",
+   "symbol": "server/api/files/[...path].get.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /api/health from: default",
+   "kind": "rotta",
+   "path": "/api/health",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/health.ts",
+   "symbol": "server/api/health.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /api/hello from: default",
+   "kind": "rotta",
+   "method": "GET",
+   "path": "/api/hello",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/hello.get.ts",
+   "symbol": "server/api/hello.get.ts::<module>"
+  },
+  {
+   "handler": "default",
+   "handler_source": "nuxt",
+   "kind": "rotta",
+   "method": "GET",
+   "path": "/api/plain",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/plain.get.ts:1",
+   "symbol": "server/api/plain.get.ts::plain"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /api/users/:id from: default",
+   "kind": "rotta",
+   "method": "DELETE",
+   "path": "/api/users/:id",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/users/[id].delete.ts",
+   "symbol": "server/api/users/[id].delete.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /api/users/:id from: default",
+   "kind": "rotta",
+   "method": "GET",
+   "path": "/api/users/:id",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/users/[id].get.ts",
+   "symbol": "server/api/users/[id].get.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /api/users from: default",
+   "kind": "rotta",
+   "method": "GET",
+   "path": "/api/users",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/users/index.get.ts",
+   "symbol": "server/api/users/index.get.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /api/users from: default",
+   "kind": "rotta",
+   "method": "POST",
+   "path": "/api/users",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/api/users/index.post.ts",
+   "symbol": "server/api/users/index.post.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /feed from: default",
+   "kind": "rotta",
+   "method": "GET",
+   "path": "/feed",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/routes/feed.get.ts",
+   "symbol": "server/routes/feed.get.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /sitemap.xml from: default",
+   "kind": "rotta",
+   "path": "/sitemap.xml",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/routes/sitemap.xml.ts",
+   "symbol": "server/routes/sitemap.xml.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /api/from-config from: default",
+   "kind": "rotta",
+   "method": "POST",
+   "path": "/api/from-config",
+   "reader": "nuxt",
+   "shape": "server-route",
+   "site": "server/custom/config-handler.ts",
+   "symbol": "server/custom/config-handler.ts::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/about",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/about.vue",
+   "symbol": "pages/about.vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/index.vue",
+   "symbol": "pages/index.vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/quokka-path",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/legacy.vue",
+   "symbol": "pages/legacy.vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/parent",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/parent.vue",
+   "symbol": "pages/parent.vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/parent/child",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/parent/child.vue",
+   "symbol": "pages/parent/child.vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/foo/bar",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/foo/bar.vue",
+   "symbol": "pages/foo/bar.vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/:slug(.*)*",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/[...slug].vue",
+   "symbol": "pages/[...slug].vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/foo",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/foo/index.vue",
+   "symbol": "pages/foo/index.vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/users/:id()",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/users/[id].vue",
+   "symbol": "pages/users/[id].vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/blog/:page?",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/blog/[[page]].vue",
+   "symbol": "pages/blog/[[page]].vue::<module>"
+  },
+  {
+   "kind": "rotta",
+   "path": "/from-hook",
+   "reader": "nuxt",
+   "shape": "page",
+   "site": "pages/about.vue",
+   "symbol": "pages/about.vue::<module>"
+  }
+ ],
+ "links": {
+  "entries": {
+   "nuxt rotta": 12
+  },
+  "entry_sites": [
+   [
+    "page",
+    "/",
+    "pages/index.vue",
+    null
+   ],
+   [
+    "page",
+    "/:slug(.*)*",
+    "pages/[...slug].vue",
+    null
+   ],
+   [
+    "page",
+    "/about",
+    "pages/about.vue",
+    null
+   ],
+   [
+    "page",
+    "/blog/:page?",
+    "pages/blog/[[page]].vue",
+    null
+   ],
+   [
+    "page",
+    "/foo",
+    "pages/foo/index.vue",
+    null
+   ],
+   [
+    "page",
+    "/foo/bar",
+    "pages/foo/bar.vue",
+    null
+   ],
+   [
+    "page",
+    "/from-hook",
+    "pages/about.vue",
+    null
+   ],
+   [
+    "page",
+    "/parent",
+    "pages/parent.vue",
+    null
+   ],
+   [
+    "page",
+    "/parent/child",
+    "pages/parent/child.vue",
+    null
+   ],
+   [
+    "page",
+    "/quokka-path",
+    "pages/legacy.vue",
+    null
+   ],
+   [
+    "page",
+    "/users/:id()",
+    "pages/users/[id].vue",
+    null
+   ],
+   [
+    "server-route",
+    "/api/plain",
+    "server/api/plain.get.ts:1",
+    "GET"
+   ]
+  ],
+  "gaps": {
+   "noir: no unique snapshot handler at its site": 10,
+   "nuxt: no function found for the exports": 10
+  },
+  "routes": {
+   "called": 0,
+   "linked": 0,
+   "offered": 0
+  }
+ },
+ "noir_entries": [
+  [
+   "ANY",
+   "/api/health",
+   "server/api/health.ts:1"
+  ],
+  [
+   "ANY",
+   "/sitemap.xml",
+   "server/routes/sitemap.xml.ts:1"
+  ],
+  [
+   "DELETE",
+   "/api/users/:id",
+   "server/api/users/[id].delete.ts:1"
+  ],
+  [
+   "GET",
+   "/api/files/:path",
+   "server/api/files/[...path].get.ts:1"
+  ],
+  [
+   "GET",
+   "/api/hello",
+   "server/api/hello.get.ts:1"
+  ],
+  [
+   "GET",
+   "/api/plain",
+   "server/api/plain.get.ts:1"
+  ],
+  [
+   "GET",
+   "/api/users",
+   "server/api/users/index.get.ts:1"
+  ],
+  [
+   "GET",
+   "/api/users/:id",
+   "server/api/users/[id].get.ts:1"
+  ],
+  [
+   "GET",
+   "/feed",
+   "server/routes/feed.get.ts:1"
+  ],
+  [
+   "POST",
+   "/api/users",
+   "server/api/users/index.post.ts:1"
+  ]
+ ],
+ "scan_seconds": 146.1,
+ "source_gaps": [
+  {
+   "detail": "nuxt prepare names node_modules/@nuxt/nitro-server/dist/runtime/handlers/renderer for /__nuxt_error, and the snapshot holds no file with that path",
+   "kind": "outside_snapshot",
+   "path": "node_modules/@nuxt/nitro-server/dist/runtime/handlers/renderer",
+   "source": "nuxt@daodan/premap/v1"
+  },
+  {
+   "detail": "nuxt prepare names server/#internal/nuxt/island-renderer for /__nuxt_island/**, and the snapshot holds no file with that path",
+   "kind": "outside_snapshot",
+   "path": "server/#internal/nuxt/island-renderer",
+   "source": "nuxt@daodan/premap/v1"
+  }
+ ],
+ "sources": {
+  "angular": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "next": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "noir": {
+   "seconds": 12.617,
+   "state": "ran"
+  },
+  "npm": {
+   "seconds": 6.823,
+   "state": "ran"
+  },
+  "nuxt": {
+   "seconds": 29.14,
+   "state": "ran"
+  },
+  "react-router": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "tsc": {
+   "seconds": 21.293,
+   "state": "ran"
+  }
+ }
+}

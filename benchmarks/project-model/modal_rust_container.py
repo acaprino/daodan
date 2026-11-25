@@ -68,7 +68,7 @@ def probe() -> dict:
     import snapshot
     manifest = Path("/runs/rust-probe/manifest.sqlite")
     shutil.rmtree(manifest.parent, ignore_errors=True)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.ensure(manifest)
     spec = next(item for item in engine_pass.ENGINES if item.name == "scip-rust")
     result = engine_pass.index_stage(spec, manifest, project)

@@ -1,0 +1,43 @@
+[
+ {
+  "build": {
+   "argv": [
+    "go",
+    "build",
+    "-o",
+    "/work/app-block.bin",
+    "-overlay",
+    "/work/app-block-overlay.json",
+    "."
+   ],
+   "peak_memory_mb": 320,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 0,
+   "seconds": 1.43,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  },
+  "changed_in_the_project": [],
+  "left_in_the_project": [],
+  "run": {
+   "argv": [
+    "timeout",
+    "--kill-after=5",
+    "20",
+    "/work/app-block.bin"
+   ],
+   "peak_memory_mb": 75,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 124,
+   "seconds": 20.01,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  }
+ }
+]

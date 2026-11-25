@@ -4,10 +4,14 @@ Nothing runs on this PC. A Modal function holds the plugin's scripts, with the d
 runs `pipeline.run` on each case; where the pipeline asks for a container (`container.run_in_container`), the
 function starts a Modal Sandbox from the same image, pinned by the same digest:
 
-- the copy of the project and its inputs travel on the volume `daodan-flow-results` and are unpacked at `/`;
-- with a preparation, a first sandbox runs it with the network open (Modal's allowlist is by address, not by
-  host: the registries-only proxy of Daodan's container is not reproduced here), its filesystem is snapshotted
-  and a second sandbox starts from the snapshot with the network blocked for the execution;
+- the copy of the project and its inputs travel on the volume `daodan-flow-results` and are unpacked at `/`; a
+  sandbox mounts only its run's folder of it, read only (`mount_plan`), never the volume's other results;
+- with a preparation, a first sandbox runs it with the network open only to the run's `registries`, by host
+  (`outbound_domain_allowlist`: TLS on port 443, matched on the name the client asks for, Modal's client from
+  1.5.0 on; an older client refuses the run, it never opens the network). Daodan's container does the same with
+  a proxy; with services, which pull images from hosts no `registries` names, this sandbox keeps the whole network
+  and the result says so (`network_open`). Its filesystem is snapshotted and a second sandbox starts from the
+  snapshot with the network blocked for the execution;
 - without one, a single sandbox with the network blocked;
 - a run whose execution starts Valgrind (the native observers) takes VM Sandboxes (`vm`): Valgrind grows a
   program's stack only on Linux's SEGV_MAPERR, and gVisor reports SEGV_ACCERR;
@@ -62,10 +66,12 @@ REMOTE_FOLDER = "/folder"
 SCRATCH = "project-model/pipeline-scratch"  # on the volume: each run's copy, removed when the run ends
 FAMILIES = ("js", "py", "jvm", "sys", "mix")
 PACKED = "/tmp/daodan-outputs.tar"
-SANDBOX_CPU = 2.0  # cores a build or an indexer is given: the default share would throttle Gradle and CMake
+SANDBOX_CPU = 8.0  # cores a build or an indexer is given: the default share would throttle Gradle and CMake; the cost of Modal is no limit here
 DOCKER = ("https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0.tgz",
           "7c1ebadc65c716cdc6d35fc78759ed0e4317debf43c21dd12f066f2006999def")  # the services' engine in a sandbox
 ENGINE = "/daodan/engine"  # where its binaries lie in a sandbox
+BUNDLES = "/project-model/engine"  # on the volume: where the binaries' archive is kept, for the function
+IN = "/mnt/daodan-in"  # where a sandbox sees its run's folder of the volume, and nothing else of it
 VM = {"vm_runtime": True}  # the `experimental_options` of a VM Sandbox (client 1.5: no `runtime` argument yet)
 
 SCRIPTS, DATA = "daodan/core", "daodan/data"
@@ -133,11 +139,65 @@ def _phase(sandbox, name: str, script: str, env: dict, timeout: float, out_dir: 
     return row
 
 
+def mount_plan(token: str) -> dict[str, tuple[str, bool]]:
+    """What a sandbox sees of the volume, by mount point: `(path in the volume, read only)`. Its run's folder, with
+    the copy and, with services, Docker's binaries (`docker.tgz`, put there by `sandbox_run`), and nothing else, never
+    `/results`: project code that runs in a sandbox cannot read another case's results, or write to the volume. One
+    mount only: Modal refuses the same Volume at two places of a sandbox."""
+    return {IN: (f"/{SCRATCH}/{token}", True)}
+
+
+def mounts(token: str) -> dict:
+    """`mount_plan` as `Sandbox.create`'s `volumes` (Modal's client from 1.4.3: `Volume.with_mount_options`)."""
+    return {point: volume.with_mount_options(sub_path=path, read_only=read_only)
+            for point, (path, read_only) in mount_plan(token).items()}
+
+
+def _addresses(host: str) -> list[str]:
+    """The IPv4 addresses `host` answers to now, as CIDRs: a plain-HTTP archive has no name Modal can allow by, and Modal's
+    allowlist refuses an IPv6 CIDR (`Network access allowlist does not support IPv6 CIDRs`, measured on 24 November 2026): a host
+    with only IPv6 addresses raises, and `preparation_network` says it as a gap."""
+    import socket
+    found = {item[4][0] for item in socket.getaddrinfo(host, 80, family=socket.AF_INET, type=socket.SOCK_STREAM)}
+    return sorted(f"{address}/32" for address in found)
+
+
+def preparation_network(registries, services: bool, resolve=_addresses) -> tuple[dict, list[dict]]:
+    """The network arguments of the preparation's sandbox and the gaps they leave. It reaches the hosts of
+    `registries`, the ones Daodan's proxy lets a container reach (`outbound_domain_allowlist`, from Modal's client
+    1.5.0: TLS on port 443, matched on the name the client asks for; DNS is not restricted). The `http://` entries
+    (apt archives, which the proxy serves at port 80 under `dists` and `pool` only) are allowed by the addresses they
+    have now (`outbound_cidr_allowlist`). With services, which pull images from hosts no `registries` names, it keeps
+    the whole network. The sandbox that executes has none (`block_network`), nor has one given no host (an empty
+    allowlist is not documented as closed).
+    shortcut: an archive is allowed at its address, every port and path, since Modal filters plain HTTP by address
+    only; upgrade when it filters by host."""
+    if services:
+        detail = ("the preparation's sandbox has the whole network: the services' images are pulled from hosts "
+                  "`registries` does not name")
+        return {}, [{"kind": "network_open", "detail": detail}]
+    hosts = sorted({host for host in registries if not host.startswith("http://")})
+    archives = sorted({host[len("http://"):] for host in registries if host.startswith("http://")})
+    options, gaps = {}, []
+    if hosts:
+        options["outbound_domain_allowlist"] = hosts
+    if archives:
+        try:
+            addresses = sorted({cidr for archive in archives for cidr in resolve(archive)})
+        except OSError as error:
+            addresses = []
+            gaps.append({"kind": "network_archive_unresolved",
+                         "detail": f"the apt archives {', '.join(archives)} have no address to allow: {error}"})
+        if addresses:
+            options["outbound_cidr_allowlist"] = addresses
+    return options or {"block_network": True}, gaps
+
+
 def _bundle() -> str:
-    """Docker's static binaries on the volume, downloaded once and checked by their sha256: the path a sandbox
-    reads them at."""
+    """Docker's static binaries on the volume, downloaded once and checked by their sha256: their path in this
+    function, from which `sandbox_run` copies them into the run's folder."""
     import urllib.request
-    path = Path("/results/project-model") / Path(DOCKER[0]).name
+    path = Path("/results") / BUNDLES.lstrip("/") / Path(DOCKER[0]).name
     if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != DOCKER[1]:
         path.parent.mkdir(parents=True, exist_ok=True)
         with urllib.request.urlopen(DOCKER[0], timeout=600) as answer:
@@ -204,9 +264,8 @@ def _dotenv(token: str, files: list, options: dict) -> tuple[dict, set]:
     box = modal.Sandbox.create(image=modal.Image.debian_slim(python_version="3.13"), block_network=True,
                                app=options["app"], volumes=options["volumes"], timeout=600, cpu=0.25, memory=256)
     try:
-        scratch = f"/results/{SCRATCH}/{token}"
-        process = box.exec("sh", "-c", f"tar -xf {scratch}/copy.tar -C / --verbatim-files-from --null -T "
-                           f"{scratch}/reader.list && cd {container.WORKDIR} && DAODAN_PUBLIC="
+        process = box.exec("sh", "-c", f"tar -xf {IN}/copy.tar -C / --verbatim-files-from --null -T "
+                           f"{IN}/reader.list && cd {container.WORKDIR} && DAODAN_PUBLIC="
                            f"{container.PUBLIC_SECONDS} exec python3 -c {shlex.quote(container.RESOLVE)} "
                            + " ".join(map(shlex.quote, files)), timeout=container.PUBLIC_SECONDS + 300)
         said = process.stdout.read()
@@ -225,11 +284,13 @@ def vm(command, services) -> bool:
 
 def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), env=None, timeout=600,
                 prepare_timeout=1800, memory=2 * 2**30, inputs=None, dotenv_env=(), blind=False, node_restore=None,
-                **_):
+                registries=None, **_):
     """`container.run_in_container` on Modal Sandboxes: the same arguments and result (the module's docstring),
     `container.beside`'s services, variables and steps included. With steps and services, the services start in
     the preparation's sandbox, the steps beside them, and start again from what they kept (the snapshot holds
-    Docker's own folders) beside the tests. `node_restore`, the restore an analysis shares between its runs
+    Docker's own folders) beside the tests. `registries`, the hosts the preparation may reach (default
+    `container.REGISTRIES`), is the preparation sandbox's allowlist (`preparation_network`): the same hosts Daodan's
+    proxy lets through, for TLS on port 443; a destination outside them is refused. `node_restore`, the restore an analysis shares between its runs
     (`node_preparation`), runs here in each run's own preparation sandbox, before `prepare`: no volume passes from
     one sandbox to the next, so a round on Modal does not measure the sharing."""
     import container
@@ -250,10 +311,12 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     env = {**variables, **(env or {})}
     env = {"HOME": container.HOME, **env} if prepare else env
     options = {"app": modal.App.lookup("daodan-pipeline-sandboxes", create_if_missing=True),
-               "volumes": {"/results": volume},
+               "volumes": mounts(token),
                "memory": int(memory / 2**20), "cpu": SANDBOX_CPU, "timeout": int(prepare_timeout + timeout + 900),
                **({"experimental_options": VM} if vm(command, services) else {})}
-    unpack = f"tar -xf /results/{SCRATCH}/{token}/copy.tar -C / && mkdir -p {container.WORKDIR} && cd {container.WORKDIR}"
+    network, open_gaps = preparation_network(container.REGISTRIES if registries is None else registries,
+                                             bool(services))  # gaps said once the preparation's sandbox exists
+    unpack = f"tar -xf {IN}/copy.tar -C / && mkdir -p {container.WORKDIR} && cd {container.WORKDIR}"
     boxes, pinned, served, kept = [], [], [], False  # `kept`: the services started beside the steps
     limits = {"memory": int(memory), "pids": 1024}
     hide = None  # the masks of the tracked .env files' values (`container.masker`)
@@ -275,6 +338,9 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
             except (OSError, RuntimeError) as error:
                 served += failed(services, error)
         scratch.mkdir(parents=True)
+        if bundle:  # in the run's own folder: a sandbox mounts that and nothing else of the volume
+            shutil.copyfile(bundle, scratch / "docker.tgz")
+            bundle = f"{IN}/docker.tgz"
         digest = container.copy_perimeter(Path(project), scratch / "copy.tar", given)
         if digest["gaps"]:  # what the copy left out of the project, as `run_in_container` says it
             result["gaps"] = digest["gaps"]
@@ -292,7 +358,9 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         exported = container.exported(dotenv_env, values)  # `("*", file)`: every variable of an example file
         base = modal.Image.from_registry(image)
         if prepare or bundle or node_restore:
-            boxes.append(modal.Sandbox.create(image=base, **options))
+            boxes.append(modal.Sandbox.create(image=base, **network, **options))
+            if open_gaps:
+                result["gaps"] = [*(result.get("gaps") or ()), *open_gaps]
             if node_restore:  # as `node_preparation._seed` and `clone`: the tools stay the restore's own
                 import preparation
                 hidden = container.named() if blind and digest.get("dotenv") else ""
@@ -415,23 +483,40 @@ def engine_on_modal(container) -> None:
     container.find_engine = lambda **_: container.Engine("modal", ())
 
 
-# An analyzer's stage is a process of its own: this `sitecustomize`, on its path, gives it the same engine.
+def engine_pass_on_modal(engine_pass) -> None:
+    """`engine_pass`, the plugin's module, whose stages run under uv in an environment of their own: Modal's client
+    is installed in it, which the sandboxes of `sandbox_run` need. A command already carrying it is left as it is."""
+    stage_command = engine_pass.stage_command
+
+    def with_modal(*args, **options):
+        argv = stage_command(*args, **options)
+        if argv and argv[1:2] == ["run"] and not any(str(part).startswith("modal==") for part in argv):
+            argv[2:2] = ["--with", f"modal=={modal.__version__}"]
+        return argv
+
+    engine_pass.stage_command = with_modal
+
+
+# A process that Daodan starts is a process of its own, an analyzer's stage or the whole pass (`resolve_edges.py
+# --pass`): this `sitecustomize`, on its path, gives it the same engine, in `container` and in `engine_pass`.
 SITE = """import importlib.machinery, sys
+
+HOOKS = {"container": "engine_on_modal", "engine_pass": "engine_pass_on_modal"}
 
 
 class Finder:
     @staticmethod
     def find_spec(name, path=None, target=None):
-        if name != "container":
+        if name not in HOOKS:
             return None
         spec = importlib.machinery.PathFinder.find_spec(name, path)
         if spec is not None:
-            load = spec.loader.exec_module
+            load, hook = spec.loader.exec_module, HOOKS[name]
 
             def exec_module(module):
                 load(module)
                 import modal_pipeline
-                modal_pipeline.engine_on_modal(module)
+                getattr(modal_pipeline, hook)(module)
 
             spec.loader.exec_module = exec_module
         return spec
@@ -439,6 +524,28 @@ class Finder:
 
 sys.meta_path.insert(0, Finder)
 """
+
+
+def engine_environment(site: Path = Path("/site")) -> dict:
+    """The environment of a process that runs the pipeline on Modal's sandboxes: its `sitecustomize` (`SITE`, written
+    in `site`) and this module's folder on its path. uv gives a stage its own environment, and this driver reaches
+    it by the path."""
+    site.mkdir(exist_ok=True)
+    (site / "sitecustomize.py").write_text(SITE, encoding="utf-8")
+    ours = [str(site), str(Path(__file__).resolve().parent)]
+    # A plain Python child (`resolve_edges.py --pass`, no uv) must import Modal's client as this process does. On
+    # Modal the client sits in `/pkg` and its dependencies elsewhere, neither in the interpreter's own site-packages
+    # (measured on 23 November 2026: `No module named 'grpclib'`): the folders they are imported from go on the path.
+    import importlib
+    client = []
+    for name in ("modal", "grpclib", "synchronicity"):
+        try:
+            client.append(str(Path(importlib.import_module(name).__file__).resolve().parents[1]))
+        except ImportError:
+            continue
+    # what the process already had stays after ours
+    kept = [part for part in (*client, *os.environ.get("PYTHONPATH", "").split(os.pathsep)) if part and part not in ours]
+    return {"PYTHONPATH": os.pathsep.join(dict.fromkeys([*ours, *kept]))}
 
 
 def _project(name: str) -> Path:
@@ -460,21 +567,9 @@ def _engine():
     """The plugin's `container` with its runs on Modal Sandboxes, in this process and in each stage's."""
     import container
     engine_on_modal(container)
-    site = Path("/site")
-    site.mkdir(exist_ok=True)
-    (site / "sitecustomize.py").write_text(SITE, encoding="utf-8")
-    # uv gives a stage its own environment: Modal's client is installed in it, and this driver reaches it by the path
-    os.environ["PYTHONPATH"] = os.pathsep.join([str(site), str(Path(__file__).resolve().parent)])
+    os.environ.update(engine_environment())
     import engine_pass
-    stage_command = engine_pass.stage_command
-
-    def with_modal(*args, **options):
-        argv = stage_command(*args, **options)
-        if argv and argv[1:2] == ["run"]:
-            argv[2:2] = ["--with", f"modal=={modal.__version__}"]
-        return argv
-
-    engine_pass.stage_command = with_modal
+    engine_pass_on_modal(engine_pass)
     return container
 
 
@@ -482,7 +577,7 @@ KEPT = ("manifest.sqlite", "engine-edges.sqlite", "engine-report.json", "premap.
         "modules.json", "technologies.json")
 
 
-@app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
+@app.function(cpu=(2.0, 16.0), memory=(4096, 32768), timeout=7200, volumes={"/results": volume})
 def run_folder(stop: str | None = None) -> dict:
     """The pipeline on the folder of `DAODAN_FOLDER`, through the step `stop` (default: all): the steps' results,
     the events, and the run's files (`KEPT`) as a tar.gz, for whoever reads the graph on the PC."""
@@ -495,7 +590,7 @@ def run_folder(stop: str | None = None) -> dict:
     shutil.rmtree(manifest.parent, ignore_errors=True)
     shutil.copytree(REMOTE_FOLDER, project)
     started, events = time.monotonic(), []
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
 
     def listen(event):
         if event["kind"] != "progress":
@@ -513,7 +608,7 @@ def run_folder(stop: str | None = None) -> dict:
 
 
 # A request and a limit: the function mostly waits for its sandboxes, and is billed for what it uses above the request.
-@app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
+@app.function(cpu=(2.0, 16.0), memory=(4096, 32768), timeout=7200, volumes={"/results": volume})
 def run_cases(names: list) -> dict:
     sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM]
     import pipeline
@@ -528,7 +623,7 @@ def run_cases(names: list) -> dict:
             project = _project(name)
             manifest = Path("/runs") / name / "manifest.sqlite"
             shutil.rmtree(manifest.parent, ignore_errors=True)
-            snapshot.write_snapshot(project, manifest)
+            snapshot.read_project(project, manifest)
             seen, clock, said = [], {}, []
 
             def listen(event, seen=seen, clock=clock, said=said, started=started):

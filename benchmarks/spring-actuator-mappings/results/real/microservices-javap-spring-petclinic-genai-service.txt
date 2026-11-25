@@ -1,0 +1,7 @@
+Compiled from "PetclinicChatClient.java"
+public class org.springframework.samples.petclinic.genai.PetclinicChatClient {
+  public java.lang.String exchange(java.lang.String);
+    descriptor: (Ljava/lang/String;)Ljava/lang/String;
+    LineNumberTable:
+      line 62: 0
+}

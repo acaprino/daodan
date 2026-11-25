@@ -1,0 +1,20 @@
+{
+ "variant": "launch-a-hangs",
+ "argv": [
+  "sh",
+  "-c",
+  "exec 3>&1 1>&2; exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python manage.py shell -c \"$2\"",
+  "django",
+  "5",
+  "import runpy; runpy.run_path('/daodan/state/in/launch.py', run_name='a')"
+ ],
+ "cwd": ".",
+ "returncode": 124,
+ "stdout": "",
+ "stderr": "",
+ "seconds": 5.06,
+ "max_rss_mb": 46.2,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

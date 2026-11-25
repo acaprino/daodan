@@ -1,0 +1,51 @@
+{
+ "kind": "restore-variants",
+ "name": "petclinic",
+ "variants": {
+  "pinned-go-offline": {
+   "missing": 9,
+   "offline_package": {
+    "peak_memory_mb": 467,
+    "returncode": 1,
+    "seconds": 3.04
+   },
+   "restore": [
+    {
+     "peak_memory_mb": 590,
+     "returncode": 0,
+     "seconds": 31.28
+    }
+   ]
+  },
+  "resolve": {
+   "missing": 0,
+   "offline_package": {
+    "peak_memory_mb": 828,
+    "returncode": 0,
+    "seconds": 9.6
+   },
+   "restore": [
+    {
+     "peak_memory_mb": 603,
+     "returncode": 0,
+     "seconds": 28.8
+    }
+   ]
+  },
+  "unpinned-go-offline": {
+   "missing": 0,
+   "offline_package": {
+    "peak_memory_mb": 805,
+    "returncode": 0,
+    "seconds": 9.02
+   },
+   "restore": [
+    {
+     "peak_memory_mb": 569,
+     "returncode": 0,
+     "seconds": 25.42
+    }
+   ]
+  }
+ }
+}

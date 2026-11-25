@@ -311,9 +311,9 @@ def _virtual_source_tree(inventory: _Inventory, build_modules: list[dict]) -> li
     }]
 
 
-def _verified_module(inventory: _Inventory, store, provenance: str, record: dict) -> dict:
+def _verified_module(inventory: _Inventory, store, provenance: str, record: dict, symbols: bool = True) -> dict:
     """A declared or proposed module with every member and evidence resolved against the snapshot."""
-    members = [_member(inventory, store, text) for text in record["members"]]
+    members = [_member(inventory, store, text, symbols) for text in record["members"]]
     evidence = [_evidence(inventory, text) for text in record["evidence"]]
     module_gaps = [{"kind": "member_missing", "detail": f"{m['id']}: {m['reason']}"} for m in members if not m["resolved"]]
     module_gaps.extend({"kind": "evidence_missing", "detail": f"{e['path']}: {e['reason']}"} for e in evidence if not e["resolved"])
@@ -337,7 +337,8 @@ def _verified_module(inventory: _Inventory, store, provenance: str, record: dict
     }
 
 
-def _declared_modules(inventory: _Inventory, store, ledger: list[dict] | None, gaps: list[dict]) -> list[dict]:
+def _declared_modules(inventory: _Inventory, store, ledger: list[dict] | None, gaps: list[dict],
+                      symbols: bool = True) -> list[dict]:
     """Declared and proposed modules, every member verified."""
     declared: list[dict] = []
     if DECLARED_FILE in inventory.headers:
@@ -350,7 +351,7 @@ def _declared_modules(inventory: _Inventory, store, ledger: list[dict] | None, g
     for record in proposals:
         if slug(record["name"]) in declared_names:
             gaps.append({"kind": "proposal_superseded", "detail": f"proposal {record['name']} is now declared in {DECLARED_FILE}"})
-    return [_verified_module(inventory, store, provenance, record)
+    return [_verified_module(inventory, store, provenance, record, symbols)
             for provenance, records in (("declared", declared),
                                         ("proposed", [r for r in proposals if slug(r["name"]) not in declared_names]))
             for record in records]
@@ -592,11 +593,12 @@ def _uses_edges(modules: list[dict], edges: _Edges) -> None:
 
 
 def _module_edges(store, inventory: _Inventory, modules: list[dict], units: list[dict], build_by_key: dict,
-                  file_owner: dict, symbol_owner: dict, by_id: dict, gaps: list[dict]) -> list[dict]:
+                  file_owner: dict, symbol_owner: dict, by_id: dict, gaps: list[dict], symbols: bool = True) -> list[dict]:
     edges = _Edges(by_id)
     _build_edges(inventory, modules, units, build_by_key, edges)
-    _import_edges(store, file_owner, symbol_owner, edges)
-    if symbol_owner or any(m["provenance"] not in PHYSICAL for m in modules):
+    if symbols:  # `imports` and `calls` join what `parse` reads to the modules: they are `connect`'s, not `scan`'s
+        _import_edges(store, file_owner, symbol_owner, edges)
+    if symbols and (symbol_owner or any(m["provenance"] not in PHYSICAL for m in modules)):
         try:
             for call in _call_edges(store, symbol_owner, file_owner):
                 edges.add("calls", call["source"], call["target"], edges.status(call["source"], call["target"]),
@@ -607,12 +609,16 @@ def _module_edges(store, inventory: _Inventory, modules: list[dict], units: list
     return edges.listed()
 
 
+def status_counts(modules: list[dict]) -> dict:
+    return {s: sum(1 for m in modules if m["status"] == s) for s in STATUSES}
+
+
 def _coverage_summary(inventory: _Inventory, modules: list[dict], edge_list: list[dict]) -> dict:
     return {
         "files": len(inventory.files), "ecosystems": ECOSYSTEMS,
         "modules": {p: sum(1 for m in modules if m["provenance"] == p) for p in PROVENANCES},
         "natures": {n: sum(1 for m in modules if m["nature"] == n) for n in NATURES},
-        "statuses": {s: sum(1 for m in modules if m["status"] == s) for s in STATUSES},
+        "statuses": status_counts(modules),
         "edges": {k: sum(1 for e in edge_list if e["kind"] == k) for k in ("declares", "contains", "imports", "calls", "uses")},
     }
 
@@ -655,19 +661,21 @@ def build_graph(inventory: _Inventory) -> dict:
     return {"modules": modules, "edges": edges.listed(), "gaps": gaps}
 
 
-def derive(store, *, ledger: list[dict] | None = None) -> dict:
-    """Derive the module graph of a snapshot; deterministic for the same inputs."""
+def derive(store, *, ledger: list[dict] | None = None, edges: bool = True) -> dict:
+    """Derive the module graph of a snapshot; deterministic for the same inputs. With `edges=False` no symbol is read
+    and the graph has no `imports` and `calls` edges."""
     inventory = _Inventory(store)
     units, by_directory, build_modules, gaps = _build_units(inventory)
     modules = [*build_modules, *_virtual_source_tree(inventory, build_modules),
-               *_declared_modules(inventory, store, ledger, gaps)]
+               *_declared_modules(inventory, store, ledger, gaps, edges)]
     _assign_identities(modules)
     by_id = {m["id"]: m for m in modules}
     _measure_modules(inventory, modules)
     attach_toolchains(modules)
     file_owner, symbol_owner = _ownership(inventory, modules, by_id, gaps)
     build_by_key = {key: module["id"] for key, module in zip(by_directory, build_modules)}
-    edge_list = _module_edges(store, inventory, modules, units, build_by_key, file_owner, symbol_owner, by_id, gaps)
+    edge_list = _module_edges(store, inventory, modules, units, build_by_key, file_owner, symbol_owner, by_id, gaps,
+                              edges)
     modules.sort(key=lambda m: m["id"])
     for module in modules:
         module.pop("path_dependencies", None)

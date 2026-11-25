@@ -1,0 +1,17 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no",
+   "react-router",
+   "routes",
+   "--json"
+  ],
+  "cwd": "npx-no",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 2.2,
+  "stderr": "",
+  "stdout": "[\n  {\n    \"id\": \"root\",\n    \"path\": \"\",\n    \"file\": \"root.tsx\",\n    \"children\": [\n      {\n        \"id\": \"routes/home\",\n        \"index\": true,\n        \"file\": \"routes/home.tsx\"\n      },\n      {\n        \"id\": \"routes/about\",\n        \"path\": \"about\",\n        \"file\": \"routes/about.tsx\"\n      },\n      {\n        \"id\": \"routes/shop/layout\",\n        \"file\": \"routes/shop/layout.tsx\",\n        \"children\": [\n          {\n            \"id\": \"routes/shop/checkout\",\n            \"path\": \"checkout\",\n            \"file\": \"routes/shop/checkout.tsx\"\n          },\n          {\n            \"id\": \"routes/shop/order\",\n            \"path\": \"orders/:id\",\n            \"file\": \"routes/shop/order.tsx\"\n          }\n        ]\n      },\n      {\n        \"id\": \"routes/api/pay\",\n        \"path\": \"api/pay\",\n        \"file\": \"routes/api/pay.ts\"\n      },\n      {\n        \"id\": \"routes/api/health\",\n        \"path\": \"api/health\",\n        \"file\": \"routes/api/health.ts\"\n      },\n      {\n        \"id\": \"routes/docs\",\n        \"path\": \"docs/*\",\n        \"file\": \"routes/docs.tsx\"\n      },\n      {\n        \"id\": \"routes/blog\",\n        \"path\": \":lang?/blog\",\n        \"file\": \"routes/blog.tsx\"\n      },\n      {\n        \"id\": \"user-detail\",\n        \"path\": \"users/:id\",\n        \"file\": \"routes/users/user.tsx\"\n      },\n      {\n        \"id\": \"user-edit\",\n        \"path\": \"users/:id/edit\",\n        \"caseSensitive\": true,\n        \"file\": \"routes/users/edit.tsx\"\n      },\n      {\n        \"id\": \"routes/nested/layout\",\n        \"path\": \"nested\",\n        \"file\": \"routes/nested/layout.tsx\",\n        \"children\": [\n          {\n            \"id\": \"routes/nested/index\",\n            \"index\": true,\n            \"file\": \"routes/nested/index.tsx\"\n          },\n          {\n            \"id\": \"routes/nested/child\",\n            \"path\": \"child\",\n            \"file\": \"routes/nested/child.tsx\"\n          }\n        ]\n      },\n      {\n        \"id\": \"routes/legacy\",\n        \"path\": \"legacy\",\n        \"file\": \"routes/legacy.jsx\"\n      },\n      {\n        \"id\": \"hello-en\",\n        \"path\": \"en/hello\",\n        \"file\": \"routes/hello.tsx\"\n      },\n      {\n        \"id\": \"hello-it\",\n        \"path\": \"it/hello\",\n        \"file\": \"routes/hello.tsx\"\n      }\n    ]\n  }\n]\n"
+ }
+]

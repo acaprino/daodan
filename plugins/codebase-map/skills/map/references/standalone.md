@@ -32,6 +32,7 @@ workflows require their method's authorization.
    under `.daodan/map/views/<run-id>/<digest>/`, once per input digest, and prints
    that directory. `visual.py serve <that directory>` prints
    `http://127.0.0.1:<port>/` and serves only the compiled viewer
-   (`assets/viewer/`) and the envelope. Flows appear when the run has link rules
+   (`assets/viewer/`), the envelope and the logos of the registry's entries
+   (`/api/mark?id=`). Flows appear when the run has link rules
    (`codebase_map_flows`). A run written by another parser identity is refused:
    refresh it first.

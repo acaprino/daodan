@@ -1,0 +1,28 @@
+[
+ {
+  "argv": [
+   "sh",
+   "-c",
+   "grep -n 'meta_data' node_modules/@sveltejs/kit/src/core/sync/write_types/index.js | head -60"
+  ],
+  "cwd": "kit-source",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 0.01,
+  "stderr": "",
+  "stdout": "59:\tconst meta_data_file = `${types_dir}/route_meta_data.json`;\n60:\tconst has_meta_data = fs.existsSync(meta_data_file);\n61:\tconst meta_data = has_meta_data\n62:\t\t? /** @type {Record<string, string[]>} */ (JSON.parse(fs.readFileSync(meta_data_file, 'utf-8')))\n120:\t\t\t!has_meta_data ||\n122:\t\t\t!meta_data[route.id]?.every((file) => input_files.includes(file));\n128:\t\t\tmeta_data[route.id] = input_files;\n132:\tfs.writeFileSync(meta_data_file, JSON.stringify(meta_data, null, '\\t'));\n"
+ },
+ {
+  "argv": [
+   "sh",
+   "-c",
+   "sed -n 62,134p node_modules/@sveltejs/kit/src/core/sync/write_types/index.js"
+  ],
+  "cwd": "kit-source",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 0.01,
+  "stderr": "",
+  "stdout": "\t\t? /** @type {Record<string, string[]>} */ (JSON.parse(fs.readFileSync(meta_data_file, 'utf-8')))\n\t\t: {};\n\tconst routes_map = create_routes_map(manifest_data);\n\t// For each directory, write $types.d.ts\n\tfor (const route of manifest_data.routes) {\n\t\tif (!route.leaf && !route.layout && !route.endpoint) continue; // nothing to do\n\n\t\tconst outdir = path.join(config.kit.outDir, 'types', routes_dir, route.id);\n\n\t\t// check if the types are out of date\n\t\t/** @type {string[]} */\n\t\tconst input_files = [];\n\n\t\t/** @type {import('types').PageNode | null} */\n\t\tlet node = route.leaf;\n\t\twhile (node) {\n\t\t\tif (node.universal) input_files.push(node.universal);\n\t\t\tif (node.server) input_files.push(node.server);\n\t\t\tnode = node.parent ?? null;\n\t\t}\n\n\t\t/** @type {import('types').PageNode | null} */\n\t\tnode = route.layout;\n\t\twhile (node) {\n\t\t\tif (node.universal) input_files.push(node.universal);\n\t\t\tif (node.server) input_files.push(node.server);\n\t\t\tnode = node.parent ?? null;\n\t\t}\n\n\t\tif (route.endpoint) {\n\t\t\tinput_files.push(route.endpoint.file);\n\t\t}\n\n\t\ttry {\n\t\t\tfs.mkdirSync(outdir, { recursive: true });\n\t\t} catch {}\n\n\t\tconst output_files = compact(\n\t\t\tfs.readdirSync(outdir).map((name) => {\n\t\t\t\tconst stats = fs.statSync(path.join(outdir, name));\n\t\t\t\tif (stats.isDirectory()) return;\n\t\t\t\treturn {\n\t\t\t\t\tname,\n\t\t\t\t\tupdated: stats.mtimeMs\n\t\t\t\t};\n\t\t\t})\n\t\t);\n\n\t\tconst source_last_updated = Math.max(\n\t\t\t// ctimeMs includes move operations whereas mtimeMs does not\n\t\t\t...input_files.map((file) => fs.statSync(file).ctimeMs)\n\t\t);\n\t\tconst types_last_updated = Math.max(...output_files.map((file) => file.updated));\n\n\t\tconst should_generate =\n\t\t\t// source files were generated more recently than the types\n\t\t\tsource_last_updated > types_last_updated ||\n\t\t\t// no meta data file exists yet\n\t\t\t!has_meta_data ||\n\t\t\t// some file was deleted\n\t\t\t!meta_data[route.id]?.every((file) => input_files.includes(file));\n\n\t\tif (should_generate) {\n\t\t\t// track which old files end up being surplus to requirements\n\t\t\tconst to_delete = new Set(output_files.map((file) => file.name));\n\t\t\tupdate_types(config, routes_map, route, to_delete);\n\t\t\tmeta_data[route.id] = input_files;\n\t\t}\n\t}\n\n\tfs.writeFileSync(meta_data_file, JSON.stringify(meta_data, null, '\\t'));\n}\n\n"
+ }
+]

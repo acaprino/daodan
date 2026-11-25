@@ -1,0 +1,501 @@
+{
+ "framework_entries": [
+  {
+   "kind": "nessun ingresso",
+   "path": "/",
+   "reader": "sveltekit",
+   "shape": "+layout.server",
+   "site": "src/routes/+layout.server.ts",
+   "symbol": "src/routes/+layout.server.ts::<module>"
+  },
+  {
+   "kind": "nessun ingresso",
+   "path": "/",
+   "reader": "sveltekit",
+   "shape": "+layout",
+   "site": "src/routes/+layout.ts",
+   "symbol": "src/routes/+layout.ts::<module>"
+  },
+  {
+   "handler": "load",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/",
+   "reader": "sveltekit",
+   "shape": "+page",
+   "site": "src/routes/+page.ts:3",
+   "symbol": "src/routes/+page.ts::load"
+  },
+  {
+   "kind": "nessun ingresso",
+   "path": "/(shop)",
+   "reader": "sveltekit",
+   "shape": "+layout.server",
+   "site": "src/routes/(shop)/+layout.server.ts",
+   "symbol": "src/routes/(shop)/+layout.server.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /(shop)/cart from: actions: unsupported-target-kind",
+   "kind": "rotta",
+   "path": "/(shop)/cart",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/(shop)/cart/+page.server.ts",
+   "symbol": "src/routes/(shop)/cart/+page.server.ts::<module>"
+  },
+  {
+   "handler": "load",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/(shop)/checkout",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/(shop)/checkout/+page.server.ts:4",
+   "symbol": "src/routes/(shop)/checkout/+page.server.ts::load"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /(shop)/checkout from: actions: unsupported-target-kind",
+   "kind": "rotta",
+   "path": "/(shop)/checkout",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/(shop)/checkout/+page.server.ts",
+   "symbol": "src/routes/(shop)/checkout/+page.server.ts::<module>"
+  },
+  {
+   "handler": "GET",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/api/health",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/api/health/+server.ts:1",
+   "symbol": "src/routes/api/health/+server.ts::GET"
+  },
+  {
+   "handler": "GET",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/api/items/[id]",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/api/items/[id]/+server.ts:5",
+   "symbol": "src/routes/api/items/[id]/+server.ts::GET"
+  },
+  {
+   "handler": "PUT",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/api/items/[id]",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/api/items/[id]/+server.ts:6",
+   "symbol": "src/routes/api/items/[id]/+server.ts::PUT"
+  },
+  {
+   "handler": "DELETE",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/api/items/[id]",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/api/items/[id]/+server.ts:7",
+   "symbol": "src/routes/api/items/[id]/+server.ts::DELETE"
+  },
+  {
+   "handler": "fallback",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/api/items/[id]",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/api/items/[id]/+server.ts:8",
+   "symbol": "src/routes/api/items/[id]/+server.ts::fallback"
+  },
+  {
+   "handler": "GET",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/api/pay",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/api/pay/+server.ts:6",
+   "symbol": "src/routes/api/pay/+server.ts::GET"
+  },
+  {
+   "handler": "POST",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/api/pay",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/api/pay/+server.ts:4",
+   "symbol": "src/routes/api/pay/+server.ts::POST"
+  },
+  {
+   "handler": "load",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/blog",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/blog/+page.server.ts:1",
+   "symbol": "src/routes/blog/+page.server.ts::load"
+  },
+  {
+   "handler": "load",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/blog/[slug]",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/blog/[slug]/+page.server.ts:4",
+   "symbol": "src/routes/blog/[slug]/+page.server.ts::load"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /blog/[slug] from: actions: unsupported-target-kind",
+   "kind": "rotta",
+   "path": "/blog/[slug]",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/blog/[slug]/+page.server.ts",
+   "symbol": "src/routes/blog/[slug]/+page.server.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /computed from: GET: unsupported-target-kind",
+   "kind": "rotta",
+   "path": "/computed",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/computed/+server.ts",
+   "symbol": "src/routes/computed/+server.ts::<module>"
+  },
+  {
+   "handler": "load",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/docs/[...rest]",
+   "reader": "sveltekit",
+   "shape": "+page",
+   "site": "src/routes/docs/[...rest]/+page.ts:3",
+   "symbol": "src/routes/docs/[...rest]/+page.ts::load"
+  },
+  {
+   "handler": "GET",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/hybrid",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/hybrid/+server.ts:3",
+   "symbol": "src/routes/hybrid/+server.ts::GET"
+  },
+  {
+   "handler": "load",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/legacy",
+   "reader": "sveltekit",
+   "shape": "+page",
+   "site": "src/routes/legacy/+page.js:2",
+   "symbol": "src/routes/legacy/+page.js::load"
+  },
+  {
+   "handler": "load",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/login",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/login/+page.server.ts:3",
+   "symbol": "src/routes/login/+page.server.ts::load"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /login from: actions: unsupported-target-kind",
+   "kind": "rotta",
+   "path": "/login",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/login/+page.server.ts",
+   "symbol": "src/routes/login/+page.server.ts::<module>"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /reexport from: load: reexport-unsupported",
+   "kind": "rotta",
+   "path": "/reexport",
+   "reader": "sveltekit",
+   "shape": "+page.server",
+   "site": "src/routes/reexport/+page.server.ts",
+   "symbol": "src/routes/reexport/+page.server.ts::<module>"
+  },
+  {
+   "handler": "GET",
+   "handler_source": "sveltekit",
+   "kind": "rotta",
+   "path": "/sitemap.xml",
+   "reader": "sveltekit",
+   "shape": "+server",
+   "site": "src/routes/sitemap.xml/+server.ts:1",
+   "symbol": "src/routes/sitemap.xml/+server.ts::GET"
+  }
+ ],
+ "links": {
+  "entries": {
+   "sveltekit rotta": 16
+  },
+  "entry_sites": [
+   [
+    "/",
+    "src/routes/+page.ts:3",
+    null
+   ],
+   [
+    "/(shop)/checkout",
+    "src/routes/(shop)/checkout/+page.server.ts:4",
+    null
+   ],
+   [
+    "/api/health",
+    "src/routes/api/health/+server.ts:1",
+    null
+   ],
+   [
+    "/api/items/[id]",
+    "src/routes/api/items/[id]/+server.ts:5",
+    null
+   ],
+   [
+    "/api/items/[id]",
+    "src/routes/api/items/[id]/+server.ts:6",
+    null
+   ],
+   [
+    "/api/items/[id]",
+    "src/routes/api/items/[id]/+server.ts:7",
+    null
+   ],
+   [
+    "/api/items/[id]",
+    "src/routes/api/items/[id]/+server.ts:8",
+    null
+   ],
+   [
+    "/api/pay",
+    "src/routes/api/pay/+server.ts:4",
+    null
+   ],
+   [
+    "/api/pay",
+    "src/routes/api/pay/+server.ts:6",
+    null
+   ],
+   [
+    "/blog",
+    "src/routes/blog/+page.server.ts:1",
+    null
+   ],
+   [
+    "/blog/[slug]",
+    "src/routes/blog/[slug]/+page.server.ts:4",
+    null
+   ],
+   [
+    "/docs/[...rest]",
+    "src/routes/docs/[...rest]/+page.ts:3",
+    null
+   ],
+   [
+    "/hybrid",
+    "src/routes/hybrid/+server.ts:3",
+    null
+   ],
+   [
+    "/legacy",
+    "src/routes/legacy/+page.js:2",
+    null
+   ],
+   [
+    "/login",
+    "src/routes/login/+page.server.ts:3",
+    null
+   ],
+   [
+    "/sitemap.xml",
+    "src/routes/sitemap.xml/+server.ts:1",
+    null
+   ]
+  ],
+  "gaps": {
+   "noir: no unique snapshot handler at its site": 25,
+   "sveltekit: no function found for the exports": 6
+  },
+  "routes": {
+   "called": 0,
+   "linked": 0,
+   "offered": 0
+  }
+ },
+ "noir_endpoints": [
+  [
+   "POST",
+   "/cart",
+   "src/routes/(shop)/cart/+page.server.ts:3"
+  ],
+  [
+   "GET",
+   "/cart",
+   "src/routes/(shop)/cart/+page.svelte:1"
+  ],
+  [
+   "POST",
+   "/checkout",
+   "src/routes/(shop)/checkout/+page.server.ts:6"
+  ],
+  [
+   "GET",
+   "/checkout",
+   "src/routes/(shop)/checkout/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/",
+   "src/routes/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/about",
+   "src/routes/about/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/api/health",
+   "src/routes/api/health/+server.ts:1"
+  ],
+  [
+   "GET",
+   "/api/items/{id}",
+   "src/routes/api/items/[id]/+server.ts:5"
+  ],
+  [
+   "PUT",
+   "/api/items/{id}",
+   "src/routes/api/items/[id]/+server.ts:6"
+  ],
+  [
+   "DELETE",
+   "/api/items/{id}",
+   "src/routes/api/items/[id]/+server.ts:7"
+  ],
+  [
+   "POST",
+   "/api/pay",
+   "src/routes/api/pay/+server.ts:4"
+  ],
+  [
+   "GET",
+   "/api/pay",
+   "src/routes/api/pay/+server.ts:6"
+  ],
+  [
+   "GET",
+   "/blog",
+   "src/routes/blog/+page.svelte:1"
+  ],
+  [
+   "POST",
+   "/blog/{slug}",
+   "src/routes/blog/[slug]/+page.server.ts:6"
+  ],
+  [
+   "GET",
+   "/blog/{slug}",
+   "src/routes/blog/[slug]/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/computed",
+   "src/routes/computed/+server.ts:3"
+  ],
+  [
+   "GET",
+   "/docs/{rest}",
+   "src/routes/docs/[...rest]/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/hybrid",
+   "src/routes/hybrid/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/items/{id}",
+   "src/routes/items/[id=integer]/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/lang/{opt}",
+   "src/routes/lang/[[opt]]/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/legacy",
+   "src/routes/legacy/+page.svelte:1"
+  ],
+  [
+   "POST",
+   "/login",
+   "src/routes/login/+page.server.ts:7"
+  ],
+  [
+   "GET",
+   "/login",
+   "src/routes/login/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/reexport",
+   "src/routes/reexport/+page.svelte:1"
+  ],
+  [
+   "GET",
+   "/sitemap.xml",
+   "src/routes/sitemap.xml/+server.ts:1"
+  ]
+ ],
+ "scan_seconds": 136.6,
+ "source_gaps": [],
+ "sources": {
+  "angular": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "next": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "noir": {
+   "seconds": 16.143,
+   "state": "ran"
+  },
+  "npm": {
+   "seconds": 9.893,
+   "state": "ran"
+  },
+  "nuxt": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "react-router": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "sveltekit": {
+   "seconds": 18.525,
+   "state": "ran"
+  },
+  "tsc": {
+   "seconds": 17.175,
+   "state": "ran"
+  }
+ }
+}

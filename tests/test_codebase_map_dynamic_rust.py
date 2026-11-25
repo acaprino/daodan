@@ -355,7 +355,7 @@ def test_without_the_readers_file_nothing_is_read(tmp_path):
 def test_the_sites_join_the_snapshots_references_and_close_what_only_a_run_shows(tmp_path):
     project = write_project(tmp_path / "project")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     sites, _facts = callgrind.read(observation(tmp_path / "observed"), project)
     with code_graph.Snapshot(manifest) as snap:
         rows, facts = dynamic.join(snap, "rust", sites, [], observer)

@@ -38,7 +38,7 @@ from premap.container_runner import IMAGE  # Ubuntu 24.04: gcc and the linker th
 
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-rust", ("rust",), frozenset({"cargo-crate"}), True
+NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-rust", ("rust",), frozenset({"cargo-crate"}), True
 BOXED = {"cargo": {"features": "all"}}  # rust-analyzer's defaults, build scripts and proc macros, all features
 OUT = "/daodan/out/rust-analyzer"
 ANALYZER = f"{preparation.IN}/rust-analyzer"

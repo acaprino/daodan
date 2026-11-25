@@ -1,0 +1,24 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "nuxt",
+   "prepare"
+  ],
+  "changed_in_the_project": [],
+  "cwd": "nuxt3-config-throws",
+  "left_in_home": [
+   ".npm/_logs/2026-11-23T10_03_54_170Z-debug-0.log"
+  ],
+  "left_in_the_project": [
+   "node_modules/.cache/jiti/nuxt3-config-throws-nuxt.config.4925bc93.mjs"
+  ],
+  "max_rss_mb": 209.0,
+  "nuxt_dir": {},
+  "returncode": 1,
+  "seconds": 1.09,
+  "stderr": "\n ERROR  nuxt.config needs a database\n\n    at nuxt.config.ts:1:116\n    at eval_evalModule (node_modules/jiti/dist/jiti.cjs:1:184467)\n    at jitiRequire (node_modules/jiti/dist/jiti.cjs:1:179335)\n    at Function.import (node_modules/jiti/dist/jiti.cjs:1:187724)\n    at resolveConfig (node_modules/c12/dist/index.mjs:318:45)\n    at loadConfig (node_modules/c12/dist/index.mjs:147:28)\n    at node_modules/@nuxt/kit/dist/index.mjs:2906:11\n    at withDefineNuxtConfig (node_modules/@nuxt/kit/dist/index.mjs:2998:18)\n    at loadNuxtConfig (node_modules/@nuxt/kit/dist/index.mjs:2905:26)\n    at async loadNuxt (node_modules/nuxt/dist/index.mjs:6420:19)\n    at async loadNuxt (node_modules/@nuxt/kit/dist/index.mjs:3029:19)\n    at async Object.run (node_modules/@nuxt/cli/dist/prepare-kyMoAaxl.mjs:29:16)\n    at async runCommand (node_modules/citty/dist/index.mjs:228:47)\n    at async runCommand (node_modules/citty/dist/index.mjs:217:5)\n    at async runMain (node_modules/citty/dist/index.mjs:394:10) \n\n\n",
+  "stdout": ""
+ }
+]

@@ -1,0 +1,143 @@
+{
+ "name": "microblog-api",
+ "application": "microblog-api",
+ "repository": "miguelgrinberg/microblog-api",
+ "commit": "e250d7115b47010ff0e7051d5868485fff4e32fb",
+ "licence": "MIT",
+ "folder": ".",
+ "script": {
+  "variant": "microblog-api-script",
+  "exit": 0,
+  "seconds": 2.46,
+  "peak_memory_mb": 152.0,
+  "left_in_the_project": []
+ },
+ "noir": {
+  "variant": "microblog-api-noir",
+  "exit": 0,
+  "seconds": 0.67,
+  "peak_memory_mb": 149.3
+ },
+ "gaps": [
+  {
+   "source": "flask",
+   "kind": "model_partial",
+   "path": ".",
+   "detail": "2 rules of the application are views of packages of the restored environment, not of the project: /apispec.json (apifairy), /docs (apifairy)"
+  }
+ ],
+ "flask": {
+  "rules": 31,
+  "not_served": 0,
+  "static": 1,
+  "dispatch": null,
+  "by_category": {
+   "package view": 2,
+   "project function": 28
+  },
+  "package_views": {
+   "apifairy": 2
+  },
+  "routes_by_method": 30
+ },
+ "source": {
+  "rows": 28,
+  "bound_to_a_function": 28,
+  "class_based_gap_rows": 0,
+  "other_unbound": []
+ },
+ "noir_report": {
+  "endpoints": 28,
+  "protocols": {
+   "http": 28
+  },
+  "errors": 0,
+  "python_files": [
+   [
+    ".py",
+    28
+   ]
+  ],
+  "http_rows": 28,
+  "python_rows": 28,
+  "python_bound_to_a_function": 28,
+  "python_with_a_handler_name": 28,
+  "python_with_a_qualified_name": 0,
+  "python_bound_before_the_qualified_name_match": 28,
+  "python_bound_with_the_method_name_alone": 28,
+  "unbound_after": [],
+  "bound_by_the_name_alone_and_not_by_the_qualified_name": []
+ },
+ "comparison": {
+  "both": 28,
+  "agreement": {
+   "same function": 28,
+   "same site": 28
+  },
+  "class_view_mismatches": [],
+  "differences": [],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 2,
+  "only_flask_by_category": {
+   "package view": 2
+  },
+  "only_flask_packages": {
+   "apifairy": 2
+  },
+  "only_flask_examples": [
+   {
+    "method": "GET",
+    "path": "/apispec.json",
+    "category": "package view",
+    "view": "APIFairy.init_app.<locals>.json",
+    "package": "apifairy"
+   },
+   {
+    "method": "GET",
+    "path": "/docs",
+    "category": "package view",
+    "view": "APIFairy.init_app.<locals>.docs",
+    "package": "apifairy"
+   }
+  ],
+  "only_noir": 0,
+  "only_noir_examples": []
+ },
+ "comparison_with_the_method_name_alone": {
+  "both": 28,
+  "agreement": {
+   "same function": 28,
+   "same site": 28
+  },
+  "class_view_mismatches": [],
+  "differences": [],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 2,
+  "only_flask_by_category": {
+   "package view": 2
+  },
+  "only_flask_packages": {
+   "apifairy": 2
+  },
+  "only_flask_examples": [
+   {
+    "method": "GET",
+    "path": "/apispec.json",
+    "category": "package view",
+    "view": "APIFairy.init_app.<locals>.json",
+    "package": "apifairy"
+   },
+   {
+    "method": "GET",
+    "path": "/docs",
+    "category": "package view",
+    "view": "APIFairy.init_app.<locals>.docs",
+    "package": "apifairy"
+   }
+  ],
+  "only_noir": 0,
+  "only_noir_examples": []
+ }
+}

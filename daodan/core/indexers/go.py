@@ -41,7 +41,7 @@ from premap.container_runner import IMAGE  # gcc for cgo, git, timeout
 VERSION = "v0.2.9"  # github.com/scip-code/scip-go
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"go-module"}), True
+NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"go-module"}), True
 # The container's memory, not measured yet: scip-go's build, then its runs (335 MB peak on chi on the host,
 # benchmarks/inference-audit, 13 November 2026).
 MIN_FREE = MEMORY = 4 * 2**30

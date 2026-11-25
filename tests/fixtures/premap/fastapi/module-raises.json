@@ -1,0 +1,5 @@
+{
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "RuntimeError: boom\n"
+}

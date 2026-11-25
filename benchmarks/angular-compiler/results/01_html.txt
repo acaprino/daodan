@@ -1,0 +1,377 @@
+file /fixture/src/app/app.component.html: 1225 chars, CR count 0
+parsed keys: preserveWhitespaces, errors, nodes, styleUrls, styles, ngContentSelectors
+errors: null
+top-level node kinds: Element<h1>, Element<button>, Element<button>, Element<button>, Element<button>, Element<button>, Element<button>, Element<button>, Element<button>, Element<button>, Element<button>, Element<form>, IfBlock, Element<ul>, ForLoopBlock, Template, Element<div>, Element<app-editor>, Element<router-outlet>
+
+=== POINT 1 + 3: every bound event, spans vs ground truth, handler AST ===
+bound events found by walking the nodes: 21
+
+[#0] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="save()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="save"), args=[])
+   sourceSpan  EXACT   1:8@24 .. 1:24@40 covers "(click)=\"save()\""
+   keySpan     EXACT   1:9@25 .. 1:14@30 covers "click"
+   handlerSpan EXACT   1:17@33 .. 1:23@39 covers "save()"
+   calls: 
+     Call: callee="save" receiver="<implicit component member>" method="save"  nameSpan 33..37 covers "save"  callSpan 33..39 covers "save()"
+
+[#1] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="this.save()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ThisReceiver(), name="save"), args=[])
+   sourceSpan  EXACT   2:8@69 .. 2:29@90 covers "(click)=\"this.save()\""
+   keySpan     EXACT   2:9@70 .. 2:14@75 covers "click"
+   handlerSpan EXACT   2:17@78 .. 2:28@89 covers "this.save()"
+   calls: 
+     Call: callee="this.save" receiver="<this>" method="save"  nameSpan 83..87 covers "save"  callSpan 78..89 covers "this.save()"
+
+[#2] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="svc.cancel()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=PropertyRead(receiver=ImplicitReceiver(), name="svc"), name="cancel"), args=[])
+   sourceSpan  EXACT   3:8@123 .. 3:30@145 covers "(click)=\"svc.cancel()\""
+   keySpan     EXACT   3:9@124 .. 3:14@129 covers "click"
+   handlerSpan EXACT   3:17@132 .. 3:29@144 covers "svc.cancel()"
+   calls: 
+     Call: callee="svc.cancel" receiver="svc" method="cancel"  nameSpan 136..142 covers "cancel"  callSpan 132..144 covers "svc.cancel()"
+
+[#3] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="!busy && save()"  handler AST kind=Binary
+   handler AST: Binary(operation="&&", left=PrefixNot(expression=PropertyRead(receiver=ImplicitReceiver(), name="busy")), right=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="save"), args=[]))
+   sourceSpan  EXACT   4:8@176 .. 4:33@201 covers "(click)=\"!busy && save()\""
+   keySpan     EXACT   4:9@177 .. 4:14@182 covers "click"
+   handlerSpan EXACT   4:17@185 .. 4:32@200 covers "!busy && save()"
+   calls: 
+     Call: callee="save" receiver="<implicit component member>" method="save"  nameSpan 194..198 covers "save"  callSpan 194..200 covers "save()"
+
+[#4] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="busy ? close() : reopen()"  handler AST kind=Conditional
+   handler AST: Conditional(condition=PropertyRead(receiver=ImplicitReceiver(), name="busy"), trueExp=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="close"), args=[]), falseExp=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="reopen"), args=[]))
+   sourceSpan  EXACT   5:8@232 .. 5:43@267 covers "(click)=\"busy ? close() : reopen()\""
+   keySpan     EXACT   5:9@233 .. 5:14@238 covers "click"
+   handlerSpan EXACT   5:17@241 .. 5:42@266 covers "busy ? close() : reopen()"
+   calls: 
+     Call: callee="close" receiver="<implicit component member>" method="close"  nameSpan 248..253 covers "close"  callSpan 248..255 covers "close()"
+     Call: callee="reopen" receiver="<implicit component member>" method="reopen"  nameSpan 258..264 covers "reopen"  callSpan 258..266 covers "reopen()"
+
+[#5] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="save(); close()"  handler AST kind=Chain
+   handler AST: Chain(expressions=[Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="save"), args=[]), Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="close"), args=[])])
+   sourceSpan  EXACT   6:8@292 .. 6:33@317 covers "(click)=\"save(); close()\""
+   keySpan     EXACT   6:9@293 .. 6:14@298 covers "click"
+   handlerSpan EXACT   6:17@301 .. 6:32@316 covers "save(); close()"
+   calls: 
+     Call: callee="save" receiver="<implicit component member>" method="save"  nameSpan 301..305 covers "save"  callSpan 301..307 covers "save()"
+     Call: callee="close" receiver="<implicit component member>" method="close"  nameSpan 309..314 covers "close"  callSpan 309..316 covers "close()"
+
+[#6] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="open = !open"  handler AST kind=Binary
+   handler AST: Binary(operation="=", left=PropertyRead(receiver=ImplicitReceiver(), name="open"), right=PrefixNot(expression=PropertyRead(receiver=ImplicitReceiver(), name="open")))
+   sourceSpan  EXACT   7:8@350 .. 7:30@372 covers "(click)=\"open = !open\""
+   keySpan     EXACT   7:9@351 .. 7:14@356 covers "click"
+   handlerSpan EXACT   7:17@359 .. 7:29@371 covers "open = !open"
+   calls: (none)
+
+[#7] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="router.navigate(['/orders'])"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=PropertyRead(receiver=ImplicitReceiver(), name="router"), name="navigate"), args=[LiteralArray(expressions=[LiteralPrimitive(value="/orders")])])
+   sourceSpan  EXACT   8:8@395 .. 8:46@433 covers "(click)=\"router.navigate(['/orders'])\""
+   keySpan     EXACT   8:9@396 .. 8:14@401 covers "click"
+   handlerSpan EXACT   8:17@404 .. 8:45@432 covers "router.navigate(['/orders'])"
+   calls: 
+     Call: callee="router.navigate" receiver="router" method="navigate"  nameSpan 411..419 covers "navigate"  callSpan 404..432 covers "router.navigate(['/orders'])"
+
+[#8] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="pay()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="pay"), args=[])
+   sourceSpan  EXACT   9:8@464 .. 9:23@479 covers "(click)=\"pay()\""
+   keySpan     EXACT   9:9@465 .. 9:14@470 covers "click"
+   handlerSpan EXACT   9:17@473 .. 9:22@478 covers "pay()"
+   calls: 
+     Call: callee="pay" receiver="<implicit component member>" method="pay"  nameSpan 473..476 covers "pay"  callSpan 473..478 covers "pay()"
+
+[#9] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="withIcon()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="withIcon"), args=[])
+   sourceSpan  EXACT   10:8@540 .. 10:28@560 covers "(click)=\"withIcon()\""
+   keySpan     EXACT   10:9@541 .. 10:14@546 covers "click"
+   handlerSpan EXACT   10:17@549 .. 10:27@559 covers "withIcon()"
+   calls: 
+     Call: callee="withIcon" receiver="<implicit component member>" method="withIcon"  nameSpan 549..557 covers "withIcon"  callSpan 549..559 covers "withIcon()"
+
+[#10] path: Element<form>
+   name="ngSubmit" type=0 target=null phase=null  handler.source="submit()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="submit"), args=[])
+   sourceSpan  EXACT   11:6@615 .. 11:27@636 covers "(ngSubmit)=\"submit()\""
+   keySpan     EXACT   11:7@616 .. 11:15@624 covers "ngSubmit"
+   handlerSpan EXACT   11:18@627 .. 11:26@635 covers "submit()"
+   calls: 
+     Call: callee="submit" receiver="<implicit component member>" method="submit"  nameSpan 627..633 covers "submit"  callSpan 627..635 covers "submit()"
+
+[#11] path: Element<form> > Element<input>
+   name="ngModelChange" type=2 target=null phase=null  handler.source="q"  handler AST kind=PropertyRead
+   handler AST: PropertyRead(receiver=ImplicitReceiver(), name="q")
+   sourceSpan  EXACT   12:18@656 .. 12:33@671 covers "[(ngModel)]=\"q\""
+   keySpan     EXACT   12:20@658 .. 12:27@665 covers "ngModel"
+   handlerSpan EXACT   12:31@669 .. 12:32@670 covers "q"
+   calls: (none)
+
+[#12] path: Element<form> > Element<input>
+   name="keyup.enter" type=0 target=null phase=null  handler.source="search()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="search"), args=[])
+   sourceSpan  EXACT   12:34@672 .. 12:58@696 covers "(keyup.enter)=\"search()\""
+   keySpan     EXACT   12:35@673 .. 12:46@684 covers "keyup.enter"
+   handlerSpan EXACT   12:49@687 .. 12:57@695 covers "search()"
+   calls: 
+     Call: callee="search" receiver="<implicit component member>" method="search"  nameSpan 687..693 covers "search"  callSpan 687..695 covers "search()"
+
+[#13] path: IfBlock > IfBlockBranch > Element<button>
+   name="click" type=0 target=null phase=null  handler.source="inIf()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="inIf"), args=[])
+   sourceSpan  EXACT   16:10@770 .. 16:26@786 covers "(click)=\"inIf()\""
+   keySpan     EXACT   16:11@771 .. 16:16@776 covers "click"
+   handlerSpan EXACT   16:19@779 .. 16:25@785 covers "inIf()"
+   calls: 
+     Call: callee="inIf" receiver="<implicit component member>" method="inIf"  nameSpan 779..783 covers "inIf"  callSpan 779..785 covers "inIf()"
+
+[#14] path: Element<ul> > Template<li>
+   name="click" type=0 target=null phase=null  handler.source="liClick(o)"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="liClick"), args=[PropertyRead(receiver=ImplicitReceiver(), name="o")])
+   sourceSpan  EXACT   19:31@844 .. 19:51@864 covers "(click)=\"liClick(o)\""
+   keySpan     EXACT   19:32@845 .. 19:37@850 covers "click"
+   handlerSpan EXACT   19:40@853 .. 19:50@863 covers "liClick(o)"
+   calls: 
+     Call: callee="liClick" receiver="<implicit component member>" method="liClick"  nameSpan 853..860 covers "liClick"  callSpan 853..863 covers "liClick(o)"
+
+[#15] path: Element<ul> > Template<li> > Element<li>
+   name="click" type=0 target=null phase=null  handler.source="liClick(o)"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="liClick"), args=[PropertyRead(receiver=ImplicitReceiver(), name="o")])
+   (no expectation matched this event)
+   calls: 
+     Call: callee="liClick" receiver="<implicit component member>" method="liClick"  nameSpan 853..860 covers "liClick"  callSpan 853..863 covers "liClick(o)"
+
+[#16] path: Element<ul> > Template<li> > Element<li> > Element<button>
+   name="click" type=0 target=null phase=null  handler.source="remove(o)"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="remove"), args=[PropertyRead(receiver=ImplicitReceiver(), name="o")])
+   sourceSpan  EXACT   20:12@878 .. 20:31@897 covers "(click)=\"remove(o)\""
+   keySpan     EXACT   20:13@879 .. 20:18@884 covers "click"
+   handlerSpan EXACT   20:21@887 .. 20:30@896 covers "remove(o)"
+   calls: 
+     Call: callee="remove" receiver="<implicit component member>" method="remove"  nameSpan 887..893 covers "remove"  callSpan 887..896 covers "remove(o)"
+
+[#17] path: ForLoopBlock > Element<button>
+   name="click" type=0 target=null phase=null  handler.source="removeFor(o)"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="removeFor"), args=[PropertyRead(receiver=ImplicitReceiver(), name="o")])
+   sourceSpan  EXACT   24:10@975 .. 24:32@997 covers "(click)=\"removeFor(o)\""
+   keySpan     EXACT   24:11@976 .. 24:16@981 covers "click"
+   handlerSpan EXACT   24:19@984 .. 24:31@996 covers "removeFor(o)"
+   calls: 
+     Call: callee="removeFor" receiver="<implicit component member>" method="removeFor"  nameSpan 984..993 covers "removeFor"  callSpan 984..996 covers "removeFor(o)"
+
+[#18] path: Template<ng-template> > Element<button>
+   name="click" type=0 target=null phase=null  handler.source="inTpl()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="inTpl"), args=[])
+   sourceSpan  EXACT   27:10@1054 .. 27:27@1071 covers "(click)=\"inTpl()\""
+   keySpan     EXACT   27:11@1055 .. 27:16@1060 covers "click"
+   handlerSpan EXACT   27:19@1063 .. 27:26@1070 covers "inTpl()"
+   calls: 
+     Call: callee="inTpl" receiver="<implicit component member>" method="inTpl"  nameSpan 1063..1068 covers "inTpl"  callSpan 1063..1070 covers "inTpl()"
+
+[#19] path: Element<div>
+   name="resize" type=0 target="window" phase=null  handler.source="onResize()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="onResize"), args=[])
+   sourceSpan  EXACT   29:5@1113 .. 29:33@1141 covers "(window:resize)=\"onResize()\""
+   keySpan     EXACT   29:6@1114 .. 29:19@1127 covers "window:resize"
+   handlerSpan EXACT   29:22@1130 .. 29:32@1140 covers "onResize()"
+   calls: 
+     Call: callee="onResize" receiver="<implicit component member>" method="onResize"  nameSpan 1130..1138 covers "onResize"  callSpan 1130..1140 covers "onResize()"
+
+[#20] path: Element<app-editor>
+   name="saved" type=0 target=null phase=null  handler.source="onSaved($event)"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="onSaved"), args=[PropertyRead(receiver=ImplicitReceiver(), name="$event")])
+   sourceSpan  EXACT   30:12@1167 .. 30:37@1192 covers "(saved)=\"onSaved($event)\""
+   keySpan     EXACT   30:13@1168 .. 30:18@1173 covers "saved"
+   handlerSpan EXACT   30:21@1176 .. 30:36@1191 covers "onSaved($event)"
+   calls: 
+     Call: callee="onSaved" receiver="<implicit component member>" method="onSaved"  nameSpan 1176..1183 covers "onSaved"  callSpan 1176..1191 covers "onSaved($event)"
+
+=== SUMMARY TABLE (html) ===
+(click)="save()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.save
+(click)="this.save()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <this>.save
+(click)="svc.cancel()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: svc.cancel
+(click)="!busy && save()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.save
+(click)="busy ? close() : reopen()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.close ; <implicit component member>.reopen
+(click)="save(); close()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.save ; <implicit component member>.close
+(click)="open = !open"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: (none; AST Binary)
+(click)="router.navigate(['/orders'])"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: router.navigate
+(click)="pay()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.pay
+(click)="withIcon()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.withIcon
+(ngSubmit)="submit()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.submit
+[(ngModel)]="q"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: (none; AST PropertyRead)
+(keyup.enter)="search()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.search
+(click)="inIf()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.inIf
+(click)="liClick(o)"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.liClick
+?liClick(o)
+    found=yes sourceSpan=undefined keySpan=undefined handlerSpan=undefined
+    calls: <implicit component member>.liClick
+(click)="remove(o)"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.remove
+(click)="removeFor(o)"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.removeFor
+(click)="inTpl()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.inTpl
+(window:resize)="onResize()"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.onResize
+(saved)="onSaved($event)"
+    found=yes sourceSpan=yes keySpan=yes handlerSpan=yes
+    calls: <implicit component member>.onSaved
+
+=== cross-check with the official visitor (tmplAstVisitAll + TmplAstRecursiveVisitor) ===
+visitor saw 21 bound events: "save()" "this.save()" "svc.cancel()" "!busy && save()" "busy ? close() : reopen()" "save(); close()" "open = !open" "router.navigate(['/orders'])" "pay()" "withIcon()" "submit()" "q" "search()" "inIf()" "liClick(o)" "liClick(o)" "remove(o)" "removeFor(o)" "inTpl()" "onResize()" "onSaved($event)"
+own walk saw 21; same set: true
+
+=== POINT 4: label (text children) of every element/template that owns an event ===
+
+<button> (Element) outputs=[click]
+   children: Text("Save order") 1:25@41..1:35@51
+   flattened label by walking Text/BoundText children: "Save order"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Save with this") 2:30@91..2:44@105
+   flattened label by walking Text/BoundText children: "Save with this"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Cancel order") 3:31@146..3:43@158
+   flattened label by walking Text/BoundText children: "Cancel order"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Guarded save") 4:34@202..4:46@214
+   flattened label by walking Text/BoundText children: "Guarded save"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Toggle") 5:44@268..5:50@274
+   flattened label by walking Text/BoundText children: "Toggle"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Save and close") 6:34@318..6:48@332
+   flattened label by walking Text/BoundText children: "Save and close"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Flip") 7:31@373..7:35@377
+   flattened label by walking Text/BoundText children: "Flip"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Go to orders") 8:47@434..8:59@446
+   flattened label by walking Text/BoundText children: "Go to orders"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: BoundText("{{ label }}") 9:55@511..9:66@522
+   flattened label by walking Text/BoundText children: "{{{{ label }}}}"
+   attributes: aria-label="Pay for the order"   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Element(span) 10:29@561..10:59@591 | Text(" Keep it") 10:60@592..10:67@599
+   flattened label by walking Text/BoundText children: "disk Keep it"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<form> (Element) outputs=[ngSubmit]
+   children: Element(input) 12:2@640..12:61@699 | Element(button) 13:2@702..13:37@737
+   flattened label by walking Text/BoundText children: "Send"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<input> (Element) outputs=[ngModelChange,keyup.enter]
+   children: (none)
+   flattened label by walking Text/BoundText children: ""
+   attributes: name="q"   inputs: ngModel[type 5]="q"   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Inside if") 16:27@787..16:36@796
+   flattened label by walking Text/BoundText children: "Inside if"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<li> (Template) outputs=[click]
+   children: Element(li) 19:2@815..21:7@925
+   flattened label by walking Text/BoundText children: "Remove one"
+   attributes: (none)   inputs: (none)   templateAttrs: ngFor,ngForOf
+
+<li> (Element) outputs=[click]
+   children: Element(button) 20:4@870..20:51@917
+   flattened label by walking Text/BoundText children: "Remove one"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Remove one") 20:32@898..20:42@908
+   flattened label by walking Text/BoundText children: "Remove one"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("Remove with for") 24:33@998..24:48@1013
+   flattened label by walking Text/BoundText children: "Remove with for"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<button> (Element) outputs=[click]
+   children: Text("In template") 27:28@1072..27:39@1083
+   flattened label by walking Text/BoundText children: "In template"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<div> (Element) outputs=[resize@window]
+   children: Text("resize") 29:34@1142..29:40@1148
+   flattened label by walking Text/BoundText children: "resize"
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+<app-editor> (Element) outputs=[saved]
+   children: (none)
+   flattened label by walking Text/BoundText children: ""
+   attributes: (none)   inputs: (none)   templateAttrs: (none)
+
+=== block nodes present (is @if/@for parsed as a block node?) ===
+IfBlock  path=(top)    
+IfBlockBranch  path=IfBlock    
+Template  path=Element<ul>  tagName=li templateAttrs=ngFor,ngForOf 
+ForLoopBlock  path=(top)    
+Template  path=(top)  tagName=ng-template  
+
+=== twoWay / [(ngModel)] raw ===
+input ngModel type=5 value=PropertyRead(receiver=ImplicitReceiver(), name="q") ; outputs=ngModelChange(type 2) handler=PropertyRead(receiver=ImplicitReceiver(), name="q") source="q"; keyup.enter(type 0) handler=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="search"), args=[]) source="search()"
+
+--- exit 0

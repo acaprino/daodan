@@ -1,0 +1,1277 @@
+{
+ "about": "The scan step of benchmarks/project-model/modal_pipeline.py --folder-stop scan on the public repository jhipster/jhipster-sample-app at 6b000b5d23a36c45e01472471b84a44fa2464044, on Modal, in Daodan's container: the angular source's state, rows and gaps, from the run's premap.json.",
+ "framework_entries": [
+  {
+   "column": 28,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/account/password-reset/finish/password-reset-finish.ts::PasswordResetFinish",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/account/password-reset/finish/password-reset-finish.html:37",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/account/password-reset/finish/password-reset-finish.ts::PasswordResetFinish.finishReset"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/account/password-reset/init/password-reset-init.ts::PasswordResetInit",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/account/password-reset/init/password-reset-init.html:12",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/account/password-reset/init/password-reset-init.ts::PasswordResetInit.requestReset"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/account/password/password.ts::Password",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/account/password/password.html:24",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/account/password/password.ts::Password.changePassword"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/account/register/register.ts::Register",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/account/register/register.html:39",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/account/register/register.ts::Register.register"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/account/settings/settings.ts::Settings",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/account/settings/settings.html:18",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/account/settings/settings.ts::Settings.save"
+  },
+  {
+   "column": 75,
+   "event": "(ngModelChange)",
+   "gap": "beansFilter.set is declared in node_modules/@angular/core/types/_chrome_dev_tools_performance-chunk.d.ts, which the snapshot does not hold (a package's, or outside the project)",
+   "owner": "src/main/webapp/app/admin/configuration/configuration.ts::Configuration",
+   "reader": "attributo",
+   "shape": "(ngModelChange)",
+   "site": "src/main/webapp/app/admin/configuration/configuration.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/configuration/configuration.ts::Configuration"
+  },
+  {
+   "column": 46,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/health/health.ts::Health",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/health/health.html:5",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/health/health.ts::Health.refresh"
+  },
+  {
+   "column": 34,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/health/health.ts::Health",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/health/health.html:51",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/health/health.ts::Health.showHealth"
+  },
+  {
+   "column": 61,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/health/modal/health-modal.ts::HealthModal",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/health/modal/health-modal.html:18",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/health/modal/health-modal.ts::HealthModal.dismiss"
+  },
+  {
+   "column": 62,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/health/modal/health-modal.ts::HealthModal",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/health/modal/health-modal.html:51",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/health/modal/health-modal.ts::HealthModal.dismiss"
+  },
+  {
+   "column": 61,
+   "event": "(ngModelChange)",
+   "gap": "filter.set is declared in node_modules/@angular/core/types/_chrome_dev_tools_performance-chunk.d.ts, which the snapshot does not hold (a package's, or outside the project)",
+   "owner": "src/main/webapp/app/admin/logs/logs.ts::Logs",
+   "reader": "attributo",
+   "shape": "(ngModelChange)",
+   "site": "src/main/webapp/app/admin/logs/logs.html:8",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/logs/logs.ts::Logs"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/logs/logs.ts::Logs",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/logs/logs.html:26",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/logs/logs.ts::Logs.changeLevel"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/logs/logs.ts::Logs",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/logs/logs.html:34",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/logs/logs.ts::Logs.changeLevel"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/logs/logs.ts::Logs",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/logs/logs.html:42",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/logs/logs.ts::Logs.changeLevel"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/logs/logs.ts::Logs",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/logs/logs.html:50",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/logs/logs.ts::Logs.changeLevel"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/logs/logs.ts::Logs",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/logs/logs.html:58",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/logs/logs.ts::Logs.changeLevel"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/logs/logs.ts::Logs",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/logs/logs.html:66",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/logs/logs.ts::Logs.changeLevel"
+  },
+  {
+   "column": 44,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/metrics/blocks/jvm-threads/jvm-threads.ts::JvmThreads",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/metrics/blocks/jvm-threads/jvm-threads.html:31",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/metrics/blocks/jvm-threads/jvm-threads.ts::JvmThreads.open"
+  },
+  {
+   "column": 42,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/metrics/blocks/metrics-modal-threads/metrics-modal-threads.ts::MetricsModalThreads",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/metrics/blocks/metrics-modal-threads/metrics-modal-threads.html:4",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/metrics/blocks/metrics-modal-threads/metrics-modal-threads.ts::MetricsModalThreads.dismiss"
+  },
+  {
+   "column": 62,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/metrics/blocks/metrics-modal-threads/metrics-modal-threads.ts::MetricsModalThreads",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/metrics/blocks/metrics-modal-threads/metrics-modal-threads.html:103",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/metrics/blocks/metrics-modal-threads/metrics-modal-threads.ts::MetricsModalThreads.dismiss"
+  },
+  {
+   "column": 46,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/admin/metrics/metrics.ts::Metrics",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/admin/metrics/metrics.html:5",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/admin/metrics/metrics.ts::Metrics.refresh"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/delete/authority-delete-dialog.ts::AuthorityDeleteDialog",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/admin/authority/delete/authority-delete-dialog.html:2",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/delete/authority-delete-dialog.ts::AuthorityDeleteDialog.confirmDelete"
+  },
+  {
+   "column": 54,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/delete/authority-delete-dialog.ts::AuthorityDeleteDialog",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/authority/delete/authority-delete-dialog.html:19",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/delete/authority-delete-dialog.ts::AuthorityDeleteDialog.cancel"
+  },
+  {
+   "column": 30,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/detail/authority-detail.ts::AuthorityDetail",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/authority/detail/authority-detail.html:22",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/detail/authority-detail.ts::AuthorityDetail.previousState"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/list/authority.ts::Authority",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/authority/list/authority.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/list/authority.ts::Authority.load"
+  },
+  {
+   "column": 48,
+   "event": "(sortChange)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/list/authority.ts::Authority",
+   "reader": "attributo",
+   "shape": "(sortChange)",
+   "site": "src/main/webapp/app/entities/admin/authority/list/authority.html:35",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/list/authority.ts::Authority.navigateToWithComponentValues"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/list/authority.ts::Authority",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/authority/list/authority.html:58",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/list/authority.ts::Authority.delete"
+  },
+  {
+   "column": 37,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/update/authority-update.ts::AuthorityUpdate",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/admin/authority/update/authority-update.html:3",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/update/authority-update.ts::AuthorityUpdate.save"
+  },
+  {
+   "column": 108,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/authority/update/authority-update.ts::AuthorityUpdate",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/authority/update/authority-update.html:43",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/authority/update/authority-update.ts::AuthorityUpdate.previousState"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/delete/user-management-delete-dialog.ts::UserManagementDeleteDialog",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/admin/user-management/delete/user-management-delete-dialog.html:2",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/delete/user-management-delete-dialog.ts::UserManagementDeleteDialog.confirmDelete"
+  },
+  {
+   "column": 54,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/delete/user-management-delete-dialog.ts::UserManagementDeleteDialog",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/user-management/delete/user-management-delete-dialog.html:19",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/delete/user-management-delete-dialog.ts::UserManagementDeleteDialog.cancel"
+  },
+  {
+   "column": 30,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/detail/user-management-detail.ts::UserManagementDetail",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/user-management/detail/user-management-detail.html:64",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/detail/user-management-detail.ts::UserManagementDetail.previousState"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/user-management/list/user-management.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement.load"
+  },
+  {
+   "column": 48,
+   "event": "(sortChange)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement",
+   "reader": "attributo",
+   "shape": "(sortChange)",
+   "site": "src/main/webapp/app/entities/admin/user-management/list/user-management.html:35",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement.navigateToWithComponentValues"
+  },
+  {
+   "column": 56,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/user-management/list/user-management.html:90",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement.setActive"
+  },
+  {
+   "column": 20,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/user-management/list/user-management.html:96",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement.setActive"
+  },
+  {
+   "column": 20,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/user-management/list/user-management.html:138",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement.delete"
+  },
+  {
+   "column": 10,
+   "event": "(pageChange)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement",
+   "reader": "attributo",
+   "shape": "(pageChange)",
+   "site": "src/main/webapp/app/entities/admin/user-management/list/user-management.html:168",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/list/user-management.ts::UserManagement.navigateToPage"
+  },
+  {
+   "column": 37,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/update/user-management-update.ts::UserManagementUpdate",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/admin/user-management/update/user-management-update.html:3",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/update/user-management-update.ts::UserManagementUpdate.save"
+  },
+  {
+   "column": 108,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/admin/user-management/update/user-management-update.ts::UserManagementUpdate",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/admin/user-management/update/user-management-update.html:135",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/admin/user-management/update/user-management-update.ts::UserManagementUpdate.previousState"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/delete/bank-account-delete-dialog.ts::BankAccountDeleteDialog",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/bank-account/delete/bank-account-delete-dialog.html:2",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/delete/bank-account-delete-dialog.ts::BankAccountDeleteDialog.confirmDelete"
+  },
+  {
+   "column": 54,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/delete/bank-account-delete-dialog.ts::BankAccountDeleteDialog",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/bank-account/delete/bank-account-delete-dialog.html:19",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/delete/bank-account-delete-dialog.ts::BankAccountDeleteDialog.cancel"
+  },
+  {
+   "column": 30,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/detail/bank-account-detail.ts::BankAccountDetail",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/bank-account/detail/bank-account-detail.html:34",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/detail/bank-account-detail.ts::BankAccountDetail.previousState"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/list/bank-account.ts::BankAccount",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/bank-account/list/bank-account.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/list/bank-account.ts::BankAccount.load"
+  },
+  {
+   "column": 48,
+   "event": "(sortChange)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/list/bank-account.ts::BankAccount",
+   "reader": "attributo",
+   "shape": "(sortChange)",
+   "site": "src/main/webapp/app/entities/bank-account/list/bank-account.html:35",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/list/bank-account.ts::BankAccount.navigateToWithComponentValues"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/list/bank-account.ts::BankAccount",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/bank-account/list/bank-account.html:86",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/list/bank-account.ts::BankAccount.delete"
+  },
+  {
+   "column": 37,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/update/bank-account-update.ts::BankAccountUpdate",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/bank-account/update/bank-account-update.html:3",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/update/bank-account-update.ts::BankAccountUpdate.save"
+  },
+  {
+   "column": 108,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/bank-account/update/bank-account-update.ts::BankAccountUpdate",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/bank-account/update/bank-account-update.html:63",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/bank-account/update/bank-account-update.ts::BankAccountUpdate.previousState"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/delete/label-delete-dialog.ts::LabelDeleteDialog",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/label/delete/label-delete-dialog.html:2",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/delete/label-delete-dialog.ts::LabelDeleteDialog.confirmDelete"
+  },
+  {
+   "column": 54,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/delete/label-delete-dialog.ts::LabelDeleteDialog",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/label/delete/label-delete-dialog.html:19",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/delete/label-delete-dialog.ts::LabelDeleteDialog.cancel"
+  },
+  {
+   "column": 30,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/detail/label-detail.ts::LabelDetail",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/label/detail/label-detail.html:33",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/detail/label-detail.ts::LabelDetail.previousState"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/list/label.ts::Label",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/label/list/label.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/list/label.ts::Label.load"
+  },
+  {
+   "column": 48,
+   "event": "(sortChange)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/list/label.ts::Label",
+   "reader": "attributo",
+   "shape": "(sortChange)",
+   "site": "src/main/webapp/app/entities/label/list/label.html:35",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/list/label.ts::Label.navigateToWithComponentValues"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/list/label.ts::Label",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/label/list/label.html:83",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/list/label.ts::Label.delete"
+  },
+  {
+   "column": 37,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/update/label-update.ts::LabelUpdate",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/label/update/label-update.html:3",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/update/label-update.ts::LabelUpdate.save"
+  },
+  {
+   "column": 108,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/label/update/label-update.ts::LabelUpdate",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/label/update/label-update.html:59",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/label/update/label-update.ts::LabelUpdate.previousState"
+  },
+  {
+   "column": 26,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/delete/operation-delete-dialog.ts::OperationDeleteDialog",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/operation/delete/operation-delete-dialog.html:2",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/delete/operation-delete-dialog.ts::OperationDeleteDialog.confirmDelete"
+  },
+  {
+   "column": 54,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/delete/operation-delete-dialog.ts::OperationDeleteDialog",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/operation/delete/operation-delete-dialog.html:19",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/delete/operation-delete-dialog.ts::OperationDeleteDialog.cancel"
+  },
+  {
+   "column": 30,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/detail/operation-detail.ts::OperationDetail",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/operation/detail/operation-detail.html:49",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/detail/operation-detail.ts::OperationDetail.previousState"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/list/operation.ts::Operation",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/operation/list/operation.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/list/operation.ts::Operation.load"
+  },
+  {
+   "column": 48,
+   "event": "(sortChange)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/list/operation.ts::Operation",
+   "reader": "attributo",
+   "shape": "(sortChange)",
+   "site": "src/main/webapp/app/entities/operation/list/operation.html:35",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/list/operation.ts::Operation.navigateToWithComponentValues"
+  },
+  {
+   "column": 31,
+   "event": "(scrolled)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/list/operation.ts::Operation",
+   "reader": "attributo",
+   "shape": "(scrolled)",
+   "site": "src/main/webapp/app/entities/operation/list/operation.html:69",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/list/operation.ts::Operation.loadNextPage"
+  },
+  {
+   "column": 40,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/list/operation.ts::Operation",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/operation/list/operation.html:97",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/list/operation.ts::Operation.delete"
+  },
+  {
+   "column": 37,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/update/operation-update.ts::OperationUpdate",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/entities/operation/update/operation-update.html:3",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/update/operation-update.ts::OperationUpdate.save"
+  },
+  {
+   "column": 108,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/entities/operation/update/operation-update.ts::OperationUpdate",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/entities/operation/update/operation-update.html:116",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/entities/operation/update/operation-update.ts::OperationUpdate.previousState"
+  },
+  {
+   "column": 32,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/home/home.ts::Home",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/home/home.html:21",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/home/home.ts::Home.login"
+  },
+  {
+   "column": 48,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:3",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 6,
+   "event": "click",
+   "gap": "isNavbarCollapsed.update is declared in node_modules/@angular/core/types/_chrome_dev_tools_performance-chunk.d.ts, which the snapshot does not hold (a package's, or outside the project)",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:14",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar"
+  },
+  {
+   "column": 45,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:21",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 18,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:50",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 18,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:62",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 18,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:74",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:106",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 16,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:118",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 93,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:126",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 92,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:132",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 99,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:138",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 90,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:144",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 92,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:151",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 104,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:159",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 20,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:182",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.changeLanguage"
+  },
+  {
+   "column": 20,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:182",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 18,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:218",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 18,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:230",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 41,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:238",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.logout"
+  },
+  {
+   "column": 41,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:245",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.login"
+  },
+  {
+   "column": 18,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/layouts/navbar/navbar.html:255",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/layouts/navbar/navbar.ts::Navbar.collapseNavbar"
+  },
+  {
+   "column": 25,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/login/login.ts::Login",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/main/webapp/app/login/login.html:10",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/login/login.ts::Login.login"
+  },
+  {
+   "column": 39,
+   "event": "(closed)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/shared/alert/alert-error.ts::AlertError",
+   "reader": "attributo",
+   "shape": "(closed)",
+   "site": "src/main/webapp/app/shared/alert/alert-error.html:5",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/shared/alert/alert-error.ts::AlertError.close"
+  },
+  {
+   "column": 39,
+   "event": "(closed)",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/shared/alert/alert.ts::Alert",
+   "reader": "attributo",
+   "shape": "(closed)",
+   "site": "src/main/webapp/app/shared/alert/alert.html:5",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/shared/alert/alert.ts::Alert.close"
+  },
+  {
+   "column": 24,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/shared/filter/filter.ts::Filter",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/shared/filter/filter.html:4",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/shared/filter/filter.ts::Filter.clearAllFilters"
+  },
+  {
+   "column": 32,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/main/webapp/app/shared/filter/filter.ts::Filter",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/main/webapp/app/shared/filter/filter.html:12",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/shared/filter/filter.ts::Filter.clearFilter"
+  },
+  {
+   "column": 46,
+   "event": "(sortChange)",
+   "gap": "TestSortByDirective does not declare transition: it is inherited, or assigned at run time",
+   "owner": "src/main/webapp/app/shared/sort/sort-by.directive.spec.ts::TestSortByDirective",
+   "reader": "attributo",
+   "shape": "(sortChange)",
+   "site": "src/main/webapp/app/shared/sort/sort-by.directive.spec.ts:18",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/shared/sort/sort-by.directive.spec.ts::TestSortByDirective"
+  },
+  {
+   "column": 46,
+   "event": "(sortChange)",
+   "gap": "TestSortDirective does not declare transition: it is inherited, or assigned at run time",
+   "owner": "src/main/webapp/app/shared/sort/sort.directive.spec.ts::TestSortDirective",
+   "reader": "attributo",
+   "shape": "(sortChange)",
+   "site": "src/main/webapp/app/shared/sort/sort.directive.spec.ts:14",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/main/webapp/app/shared/sort/sort.directive.spec.ts::TestSortDirective"
+  }
+ ],
+ "gaps": [
+  {
+   "detail": "node >=24.21.0: a range, not a version to install",
+   "kind": "toolchain_unavailable",
+   "path": "package.json",
+   "source": "angular@daodan/premap/v1",
+   "tool": "node",
+   "version": ">=24.21.0"
+  },
+  {
+   "detail": "src/main/resources/config/application-secret-samples.yml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+   "kind": "file_withheld",
+   "path": "src/main/resources/config/application-secret-samples.yml",
+   "source": "angular@daodan/premap/v1"
+  },
+  {
+   "detail": "src/main/resources/config/tls/keystore.p12 is a file Daodan never reads (its name matches *.p12) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+   "kind": "file_withheld",
+   "path": "src/main/resources/config/tls/keystore.p12",
+   "source": "angular@daodan/premap/v1"
+  }
+ ],
+ "seconds": 293.2,
+ "sources": [
+  {
+   "seconds": 82.053,
+   "source": "tsc@6.0.3",
+   "state": "ran"
+  },
+  {
+   "seconds": 9.077,
+   "source": "npm@11.19.1",
+   "state": "ran"
+  },
+  {
+   "seconds": 9.057,
+   "source": "noir@1.5.0",
+   "state": "ran"
+  },
+  {
+   "seconds": 0.003,
+   "source": "next@daodan/premap/v2",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 84.068,
+   "source": "angular@daodan/premap/v1",
+   "state": "ran"
+  }
+ ]
+}

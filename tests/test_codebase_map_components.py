@@ -33,6 +33,7 @@ import code_graph  # noqa: E402
 import container  # noqa: E402
 import preparation  # noqa: E402
 from indexers import components, typescript  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 FIXTURE = HERE / "fixtures/components"
 SVELTEKIT = HERE.parent / "benchmarks/project-model/fixtures/js-sveltekit"
@@ -432,8 +433,7 @@ def test_no_code_of_the_project_runs_on_the_host(tmp_path, monkeypatch):
             if rel.endswith((".js", "svelte-kit")):
                 subprocess.run(["node", str(probe / rel)], check=True, capture_output=True)
         assert len(list(probe.rglob("MARK-*"))) == 3
-    import snapshot
-    snapshot.build_manifest(project)
+    read_manifest(project)
     result, seen = _indexed(tmp_path / "run", monkeypatch, project)
     components.rewrite(Path(result["indexes"][0][0]), FIXTURE / "components.json", project)
     assert not list(project.rglob("MARK-*")) and not list((tmp_path / "run").rglob("MARK-*"))

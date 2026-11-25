@@ -17,7 +17,7 @@ def temporary_snapshot(target, *, parse_results=None):
     import snapshot
     with tempfile.TemporaryDirectory(prefix="map-analysis-") as temporary:
         path = Path(temporary) / "manifest.sqlite"
-        snapshot.write_snapshot(target, path, parse_results=parse_results)
+        snapshot.read_project(target, path, parse_results=parse_results)
         with open_snapshot(path, expected_format="sqlite") as store:
             yield store
 

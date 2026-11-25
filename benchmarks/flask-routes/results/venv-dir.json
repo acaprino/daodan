@@ -1,0 +1,50 @@
+[
+ {
+  "line": "uv venv -q --python python3 /a/b/.",
+  "returncode": 2,
+  "stderr": "error: Failed to create virtual environment\n  Caused by: failed to create directory `/a/b/.`: No such file or directory (os error 2)",
+  "created": false
+ },
+ {
+  "line": "mkdir -p /a/c && uv venv -q --python python3 /a/c/.",
+  "returncode": 0,
+  "stderr": "",
+  "created": true
+ },
+ {
+  "line": "uv venv -q --python python3 /a/d/x",
+  "returncode": 0,
+  "stderr": "",
+  "created": true
+ },
+ {
+  "line": "uv venv -q --python python3 /a/e/f/g/.",
+  "returncode": 2,
+  "stderr": "error: Failed to create virtual environment\n  Caused by: failed to create directory `/a/e/f/g/.`: No such file or directory (os error 2)",
+  "created": false
+ },
+ {
+  "line": "uv venv -q --python python3 /a/h/i/g",
+  "returncode": 0,
+  "stderr": "",
+  "created": true
+ },
+ {
+  "line": "mkdir -p /a/k && uv venv -q --python python3 /a/k/x/.",
+  "returncode": 2,
+  "stderr": "error: Failed to create virtual environment\n  Caused by: failed to create directory `/a/k/x/.`: No such file or directory (os error 2)",
+  "created": false
+ },
+ {
+  "line": "mkdir -p /m && uv venv -q --python python3 /m/. && uv venv -q --python python3 /m/api",
+  "returncode": 0,
+  "stderr": "",
+  "created": true
+ },
+ {
+  "line": "mkdir -p /n && uv venv -q --python python3 /n/api && uv venv -q --python python3 /n/.",
+  "returncode": 2,
+  "stderr": "error: Failed to create virtual environment\n  Caused by: A directory already exists at: /n/.\n\nhint: Use the `--clear` flag or set `UV_VENV_CLEAR=1` to replace the existing directory",
+  "created": false
+ }
+]

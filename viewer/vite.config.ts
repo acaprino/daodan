@@ -3,17 +3,17 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 
-// Both distributed pages share Imago's styles. Reject a second control stylesheet at build time.
-function imagoStyles(): Plugin {
-  const css = dirname(fileURLToPath(import.meta.resolve('@acaprino/imago/css/imago.css')));
+// The pages take their styles from Sigrid alone. Any other stylesheet stops the build.
+function systemStyles(): Plugin {
+  const css = dirname(fileURLToPath(import.meta.resolve('@acaprino/sigrid/styles.css')));
   return {
-    name: 'imago-styles', enforce: 'pre',
+    name: 'system-styles', enforce: 'pre',
     transform(_source, id) {
       const path = id.split('?')[0];
       if (!path.endsWith('.css')) return;
-      const fromImago = relative(css, path);
-      if (isAbsolute(fromImago) || fromImago === '..' || fromImago.startsWith('..' + sep)) {
-        this.error(`Define shared styles in @acaprino/imago: ${path}`);
+      const fromSystem = relative(css, path);
+      if (isAbsolute(fromSystem) || fromSystem === '..' || fromSystem.startsWith('..' + sep)) {
+        this.error(`The pages' styles are @acaprino/sigrid's only: ${path}`);
       }
     },
   };
@@ -49,13 +49,22 @@ function licenseNotices(viewer: boolean): Plugin {
   };
 }
 
+// The pages, by the mode they are built in: the folder a page is in, and where it goes. The map is the one without a mode of its own;
+// `start` is the page inside Daodan's window, built by its workflow and not committed.
+const PAGES: Record<string, [root: string, outDir: string]> = {
+  app: ['app', '../../daodan/assets/app'],
+  start: ['start', '../../apps/desktop/start'],
+  pipeline: ['pipeline', '../../docs/pipeline'],  // the tree of the pipeline, a page of the documentation
+};
+const MAP: [string, string] = ['.', '../daodan/assets/viewer'];
+
 export default defineConfig(({ mode }) => ({
-  root: mode === 'app' ? 'app' : '.',
+  root: (PAGES[mode] ?? MAP)[0],
   publicDir: resolve('public'),
   base: './',
-  plugins: [imagoStyles(), licenseNotices(mode !== 'app')],
+  plugins: [systemStyles(), licenseNotices(!PAGES[mode])],
   build: {
-    outDir: mode === 'app' ? '../../daodan/assets/app' : '../daodan/assets/viewer',
+    outDir: (PAGES[mode] ?? MAP)[1],
     emptyOutDir: true, chunkSizeWarningLimit: 2500,
   },
   worker: { format: 'es' },

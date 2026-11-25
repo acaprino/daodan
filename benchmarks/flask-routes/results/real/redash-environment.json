@@ -1,0 +1,22 @@
+{
+ "variant": "redash-environment",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-c",
+  "import importlib.metadata as m, sys\ndef version(name):\n    try:\n        return m.version(name)\n    except m.PackageNotFoundError:\n        return None\nprint(repr({'python': sys.version, 'executable': sys.executable, 'flask': version('flask'), 'werkzeug': version('werkzeug'),\n            'extensions': {n: version(n) for n in ('flask-restx', 'flask-restful', 'flask-admin', 'flask-smorest', 'apifairy', 'flask-appbuilder', 'flask-dotenv', 'python-dotenv')\n                           if version(n)}, 'packages': len(list(m.distributions()))}))\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{'python': '3.13.14 (main, Jun 23 2026, 15:18:27) [Clang 22.1.3 ]', 'executable': '/daodan/state/venvs/bin/python', 'flask': None, 'werkzeug': None, 'extensions': {}, 'packages': 0}\n",
+ "stderr": "",
+ "seconds": 0.23,
+ "max_rss_mb": 40.5,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "files": 1976,
+ "setup": {
+  "exit": "0",
+  "seconds": "7",
+  "stderr": "DAODAN-RESTORE-FAILED uv .\nerror: The lockfile at `uv.lock` needs to be updated, but `--locked` was provided.\nDAODAN-RESTORE-END"
+ }
+}

@@ -1,0 +1,7 @@
+---
+const { initial = 0 } = Astro.props;
+---
+<button class="counter" onclick="increment()">Count {initial}</button>
+<script is:inline>
+  function increment() { }
+</script>

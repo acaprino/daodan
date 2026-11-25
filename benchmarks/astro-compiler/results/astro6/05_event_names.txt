@@ -1,0 +1,15 @@
+astro 6.4.8
+typescript/lib/lib.dom.d.ts from the project: not resolvable (the project has no typescript)
+astro/astro-jsx.d.ts: 56494 bytes
+astro/dist/types/public/elements.d.ts: 1157 bytes
+astro/dist/types/public/index.d.ts: 1945 bytes
+astro/dist/types/astro-jsx.d.ts: absent
+astro/types.d.ts: 1446 bytes
+.d.ts files under astro: 640
+  "onclick" in: astro-jsx.d.ts(1)
+  "onend" in: astro-jsx.d.ts(4)
+  "GlobalEventHandlers" in: none
+  "on:click" in: none
+  "onClick" in: none
+
+--- exit 0

@@ -75,7 +75,7 @@ def _host(value):
 def check_hosts(entries, project):
     owners = {}
     for entry in entries:
-        for host in (entry.get("signs") or {}).get("hosts", ()):
+        for host in entry.get("hosts", ()):
             owners.setdefault(host.lower(), []).append(entry["id"])
     found, gaps = set(), []
     if not owners:

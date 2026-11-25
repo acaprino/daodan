@@ -212,6 +212,21 @@ class SnapshotStore:
         for (path,) in self.connection.execute("SELECT path FROM files ORDER BY path"):
             yield path, self.get_file(path, semantic=semantic)
 
+    def iter_inventory(self) -> Iterator[tuple[str, dict]]:
+        """The inventory rows in write order; none for a JSON snapshot or a store written before it."""
+        self._open()
+        if self._json:
+            return
+        if self.connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory'").fetchone() is None:
+            return
+        for path, payload in self.connection.execute("SELECT path,payload FROM inventory ORDER BY ordinal"):
+            yield path, _unpack(payload)
+
+    def iter_listed(self) -> Iterator[tuple[str, dict]]:
+        """The files the inventory lists: its rows, else (a JSON snapshot, a store written before it) the file headers."""
+        rows = list(self.iter_inventory())
+        return iter(rows or self.iter_file_headers_only())
+
     def get_file_header(self, path: str) -> dict | None:
         self._open()
         if self._json:
@@ -332,6 +347,7 @@ class SnapshotWriter:
         _plain(self.path)
         self.closed = False
         self._json_started = False
+        self._inventoried = 0
         self._metadata = {}
         self.connection = None
         self._handle = None
@@ -357,6 +373,7 @@ class SnapshotWriter:
                     PRIMARY KEY(file,kind,ordinal));
                 CREATE TABLE index_records(kind TEXT NOT NULL,ordinal INTEGER NOT NULL,payload BLOB NOT NULL,
                     PRIMARY KEY(kind,ordinal));
+                CREATE TABLE inventory(path TEXT PRIMARY KEY,ordinal INTEGER NOT NULL,payload BLOB NOT NULL);
                 CREATE TABLE file_json_cache(
                     path TEXT PRIMARY KEY,
                     row_sig BLOB NOT NULL,
@@ -455,6 +472,14 @@ class SnapshotWriter:
             "INSERT OR REPLACE INTO file_json_cache VALUES(?,?,?,?,?)",
             (path, row_sig, is_ascii, _pack_bytes(utf8_bytes), ascii_blob),
         )
+
+    def put_inventory(self, path: str, row: dict) -> None:
+        """One inventory row, ordered by the call that wrote it."""
+        self._open()
+        if self.format != "sqlite":
+            raise ValueError("the inventory needs a SQLite snapshot")
+        self.connection.execute("INSERT INTO inventory VALUES(?,?,?)", (path, self._inventoried, _pack(row)))
+        self._inventoried += 1
 
     def copy_file(self, previous: SnapshotStore, path: str) -> None:
         self.put_file(path, previous.get_file(path))
@@ -695,6 +720,17 @@ def logical_digest(store: SnapshotStore, *, ensure_ascii: bool = True, keys=None
     for chunk in logical_chunks(store, ensure_ascii=ensure_ascii, keys=keys):
         digest.update(chunk)
     return digest.hexdigest()
+
+
+def inventory_digest(store: SnapshotStore) -> str:
+    """What a reading that looks at no symbol depends on: the header's `schema`, `root`, `target` and `scope`, and each
+    file's `path`, `raw_hash` and `language`, from the inventory, else from the files' headers: the same value either
+    way. Another parser's identity changes the logical digest, not this."""
+    rows = sorted(store.iter_listed())
+    value = [[store.get(key) for key in ("schema", "root", "target", "scope")],
+             [[path, row.get("raw_hash"), row.get("language")] for path, row in rows]]
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+                          .encode("utf-8")).hexdigest()
 
 
 def artifact_digest(path: Path) -> str:

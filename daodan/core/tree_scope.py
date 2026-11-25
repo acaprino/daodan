@@ -30,7 +30,7 @@ could not have its snapshot written.
 A script may read less than the perimeter. None reads more: a usage found in a
 file the snapshot never recorded is a citation no phase file can carry.
 
-Standard library only.
+Standard library only, and Daodan's register of file formats (`file_formats.py`).
 """
 
 from __future__ import annotations
@@ -41,6 +41,8 @@ import stat
 import subprocess
 from pathlib import Path
 from typing import Iterator
+
+import file_formats
 
 __all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "git_executable", "work_tree", "workspace_glob"]
 
@@ -83,9 +85,7 @@ def program(name: str) -> str | None:
 
 # Dependency and build output. Git usually ignores these too. They are named
 # here because a project with no repository has no ignore rule to consult.
-DEPENDENCY_DIRS = frozenset({
-    "__pycache__", "build", "dist", "node_modules", "target", "vendor", "venv",
-})
+DEPENDENCY_DIRS = file_formats.DEPENDENCY_DIRECTORIES
 
 # Dot directories a reader does not need named back: the repository's own
 # store, and the Codebase Map's own output.

@@ -1,0 +1,3892 @@
+{
+ "build": {
+  "argv": [
+   "mvn",
+   "-o",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/m2/microservices",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "missing_have": {
+   "commons-codec:commons-codec:1.21.0": [
+    "1.11",
+    "1.16.1",
+    "1.17.0",
+    "1.17.1",
+    "1.19.0",
+    "1.22.0"
+   ],
+   "org.springframework.boot:spring-boot-jackson2:4.1.2": [
+    "4.0.9"
+   ],
+   "org.springframework.security:spring-security-crypto:7.1.2": [
+    "7.0.7",
+    "7.0.8"
+   ]
+  },
+  "peak_memory_mb": 468,
+  "returncode": 1,
+  "seconds": 3.81,
+  "stderr": "",
+  "stdout": "ould not resolve dependencies for project org.springframework.samples.petclinic.admin:spring-petclinic-admin-server:jar:4.1.2\n[ERROR] dependency: org.springframework.security:spring-security-crypto:jar:7.1.2 (compile)\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact org.springframework.security:spring-security-crypto:jar:7.1.2 has not been downloaded from it before.\n[ERROR] dependency: org.springframework.boot:spring-boot-jackson2:jar:4.1.2 (compile)\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact org.springframework.boot:spring-boot-jackson2:jar:4.1.2 has not been downloaded from it before.\n[ERROR] dependency: commons-codec:commons-codec:jar:1.21.0 (compile)\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact commons-codec:commons-codec:jar:1.21.0 has not been downloaded from it before.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/DependencyResolutionException\n[ERROR] \n[ERROR] After correcting the problems, you can resume the build with the command\n[ERROR]   mvn <args> -rf :spring-petclinic-admin-server\n",
+  "written": null,
+  "written_bytes": 0
+ },
+ "build_again": {
+  "argv": [
+   "mvn",
+   "-o",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/m2b/microservices",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 1481,
+  "returncode": 0,
+  "seconds": 15.12,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "built_log_tail": "",
+ "built_rc": "0",
+ "commit": "935ba9320a6514a6c31ff1316c29281b2191dcd3",
+ "jars_made": 8,
+ "kind": "real",
+ "left_behind": {
+  "changed_outside_target": [],
+  "files_in_target": 2246,
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ },
+ "licence": "Apache-2.0",
+ "m2_kb": "495864",
+ "m2b_kb": "285656",
+ "modules": [
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.admin.SpringBootAdminApplication",
+     "/work/aot-45924077/src",
+     "/work/aot-45924077/res",
+     "/work/aot-45924077/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 4,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 537,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 12
+    },
+    "seconds": 4.7,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "efault\": Connection refused. Will be trying the next url if available\n2026-11-24T00:27:15.213Z  WARN 593 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Could not locate PropertySource ([ConfigServerConfigDataResource@88d6f9b uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/admin-server/default\": Connection refused\n2026-11-24T00:27:15.213Z  INFO 593 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Fetching config from server at : http://localhost:8888/\n2026-11-24T00:27:15.213Z  INFO 593 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Exception on Url - http://localhost:8888/:org.springframework.web.client.ResourceAccessException: I/O error on GET request for \"http://localhost:8888/admin-server/default\": Connection refused. Will be trying the next url if available\n2026-11-24T00:27:15.214Z  WARN 593 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Could not locate PropertySource ([ConfigServerConfigDataResource@47d93e0d uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/admin-server/default\": Connection refused\n2026-11-24T00:27:16.336Z  INFO 593 --- [admin-server] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=7c209cde-1455-328d-b700-81eb43741688\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 0,
+    "named": 4
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-admin-server",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.admin.SpringBootAdminApplication",
+      "/work/actuator-45924077.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": "{\"error\": \"org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop' <- org.springframework.boot.web.server.WebServerException: Unable to start Netty <- java.lang.IllegalArgumentException: port out of range:-1\"}",
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [],
+     "peak_memory_mb": 602,
+     "returncode": 1,
+     "routes": [],
+     "seconds": 8.31,
+     "stderr": "00:26:51,112 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]\n",
+     "stdout": "art(WebServerStartStopLifecycle.java:29)\n\tat org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:420)\n\t... 19 common frames omitted\nCaused by: java.lang.IllegalArgumentException: port out of range:-1\n\tat java.base/java.net.InetSocketAddress.checkPort(InetSocketAddress.java:152)\n\tat java.base/java.net.InetSocketAddress.<init>(InetSocketAddress.java:197)\n\tat java.base/java.net.InetSocketAddress.<init>(InetSocketAddress.java:175)\n\tat org.springframework.boot.reactor.netty.NettyReactiveWebServerFactory.getListenAddress(NettyReactiveWebServerFactory.java:190)\n\tat reactor.netty.transport.ServerTransport.lambda$bind$0(ServerTransport.java:97)\n\tat reactor.core.publisher.MonoCreate.subscribe(MonoCreate.java:61)\n\tat reactor.core.publisher.Mono.subscribe(Mono.java:4569)\n\tat reactor.core.publisher.Mono.block(Mono.java:1799)\n\tat reactor.netty.transport.ServerTransport.bindNow(ServerTransport.java:160)\n\tat reactor.netty.transport.ServerTransport.bindNow(ServerTransport.java:145)\n\tat org.springframework.boot.reactor.netty.NettyWebServer.startHttpServer(NettyWebServer.java:176)\n\tat org.springframework.boot.reactor.netty.NettyWebServer.start(NettyWebServer.java:111)\n\t... 22 common frames omitted\n\tSuppressed: java.lang.Exception: #block terminated with an error\n\t\tat reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:145)\n\t\tat reactor.core.publisher.Mono.block(Mono.java:1800)\n\t\t... 26 common frames omitted\n\n",
+     "written": null,
+     "written_bytes": 252
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.admin.SpringBootAdminApplication",
+      "/work/actuator-port0-45924077.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=0",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled=",
+      "server.address=127.0.0.1"
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator-port0",
+     "listeners": [
+      {
+       "address": "0000000000000000FFFF00000100007F",
+       "at_s": 5.894,
+       "gone_s": 6.329,
+       "owner": "449 java -Xmx1g -cp /work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/classes:/work/microserv",
+       "port": 45178
+      }
+     ],
+     "peak_memory_mb": 610,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "(Ljava/lang/String;)Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET"
+       ],
+       "name": "instances",
+       "patterns": [
+        "/instances"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.reactive.InstancesProxyController",
+       "descriptor": "(Ljava/lang/String;Lorg/springframework/http/server/reactive/ServerHttpRequest;Lorg/springframework/http/server/reactive/ServerHttpResponse;)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "GET",
+        "HEAD",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+       ],
+       "name": "endpointProxy",
+       "patterns": [
+        "/instances/{instanceId}/actuator/**"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.ApplicationsController",
+       "descriptor": "()Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET"
+       ],
+       "name": "applicationsStream",
+       "patterns": [
+        "/applications"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.reactive.InstancesProxyController",
+       "descriptor": "(Ljava/lang/String;Lorg/springframework/http/server/reactive/ServerHttpRequest;)Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET",
+        "HEAD",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+       ],
+       "name": "endpointProxy",
+       "patterns": [
+        "/applications/{applicationName}/actuator/**"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.ApplicationsController",
+       "descriptor": "()V",
+       "methods": [
+        "POST"
+       ],
+       "name": "refreshApplications",
+       "patterns": [
+        "/applications"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "()Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET"
+       ],
+       "name": "eventStream",
+       "patterns": [
+        "/instances/events"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "()Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET"
+       ],
+       "name": "instances",
+       "patterns": [
+        "/instances"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.ui.web.UiController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "login",
+       "patterns": [
+        "/login"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "(Lde/codecentric/boot/admin/server/domain/values/Registration;Lorg/springframework/web/util/UriComponentsBuilder;)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "POST"
+       ],
+       "name": "register",
+       "patterns": [
+        "/instances"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "(Ljava/lang/String;)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "GET"
+       ],
+       "name": "instance",
+       "patterns": [
+        "/instances/{id}"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "(Ljava/lang/String;)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "GET"
+       ],
+       "name": "healthGroups",
+       "patterns": [
+        "/instances/{id}/health-groups"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.ApplicationsController",
+       "descriptor": "(Ljava/lang/String;)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "GET"
+       ],
+       "name": "application",
+       "patterns": [
+        "/applications/{name}"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.ui.web.UiController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "variablesCss",
+       "patterns": [
+        "/variables.css"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "(Ljava/lang/String;)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "DELETE"
+       ],
+       "name": "unregister",
+       "patterns": [
+        "/instances/{id}"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.ui.web.UiController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "sbaSettings",
+       "patterns": [
+        "/sba-settings.js"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.ApplicationsController",
+       "descriptor": "(Ljava/lang/String;)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "DELETE"
+       ],
+       "name": "unregister",
+       "patterns": [
+        "/applications/{name}"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.ui.web.UiController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "index",
+       "patterns": [
+        "/"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.ApplicationsController",
+       "descriptor": "()Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET"
+       ],
+       "name": "applications",
+       "patterns": [
+        "/applications"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "()Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET"
+       ],
+       "name": "events",
+       "patterns": [
+        "/instances/events"
+       ]
+      },
+      {
+       "class": "de.codecentric.boot.admin.server.web.InstancesController",
+       "descriptor": "(Ljava/lang/String;)Lreactor/core/publisher/Flux;",
+       "methods": [
+        "GET"
+       ],
+       "name": "instanceStream",
+       "patterns": [
+        "/instances/{id}"
+       ]
+      },
+      {
+       "function": null,
+       "handler": "ResourceWebHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceWebHandler [classpath [META-INF/spring-boot-admin-server-ui/]]",
+       "predicate": "/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceWebHandler [classpath [META-INF/spring-boot-admin-server-ui/extensions/]]",
+       "predicate": "/extensions/**"
+      }
+     ],
+     "seconds": 11.59,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 11452
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-admin-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.admin.SpringBootAdminApplication",
+      "/work/aot-45924077.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=0",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled=",
+      "server.address=127.0.0.1"
+     ],
+     "error": "{\"error\": \"java.lang.ClassNotFoundException: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping\"}",
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 521,
+     "returncode": 1,
+     "routes": [],
+     "seconds": 4.83,
+     "stderr": "00:27:11,051 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]\n",
+     "stdout": "default\": Connection refused. Will be trying the next url if available\n2026-11-24T00:27:11.315Z  WARN 541 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Could not locate PropertySource ([ConfigServerConfigDataResource@9b21bd3 uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/admin-server/default\": Connection refused\n2026-11-24T00:27:11.315Z  INFO 541 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Fetching config from server at : http://localhost:8888/\n2026-11-24T00:27:11.315Z  INFO 541 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Exception on Url - http://localhost:8888/:org.springframework.web.client.ResourceAccessException: I/O error on GET request for \"http://localhost:8888/admin-server/default\": Connection refused. Will be trying the next url if available\n2026-11-24T00:27:11.315Z  WARN 541 --- [admin-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Could not locate PropertySource ([ConfigServerConfigDataResource@a62c7cd uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/admin-server/default\": Connection refused\n2026-11-24T00:27:12.454Z  INFO 541 --- [admin-server] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=3f683e47-b2fe-3837-9f4b-e73a47dd2144\n",
+     "written": null,
+     "written_bytes": 129
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.admin.SpringBootAdminApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-admin-server/target/spring-petclinic-admin-server-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 229,
+    "returncode": 0,
+    "seconds": 0.37,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  },
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.api.ApiGatewayApplication",
+     "/work/aot-19534269/src",
+     "/work/aot-19534269/res",
+     "/work/aot-19534269/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 82,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 875,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 2
+    },
+    "seconds": 6.04,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "                ] o.s.c.c.c.ConfigServerConfigDataLoader   : Could not locate PropertySource ([ConfigServerConfigDataResource@5b43e173 uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/api-gateway/default\": Connection refused\n2026-11-24T00:27:49.988Z  INFO 874 --- [api-gateway] [           main] [                                                 ] o.s.cloud.context.scope.GenericScope     : BeanFactory id=60cbf260-3511-35bc-a3c5-86855e9c210c\n2026-11-24T00:27:50.982Z  WARN 874 --- [api-gateway] [           main] [                                                 ] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: filters\n2026-11-24T00:27:50.988Z  WARN 874 --- [api-gateway] [           main] [                                                 ] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: predicates\n2026-11-24T00:27:51.007Z  WARN 874 --- [api-gateway] [           main] [                                                 ] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: routes\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 2,
+    "named": 2
+   },
+   "javap": {
+    "argv": [
+     "javap",
+     "-l",
+     "-p",
+     "-s",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/classes",
+     "org.springframework.samples.petclinic.api.boundary.web.ApiGatewayController",
+     "org.springframework.samples.petclinic.api.boundary.web.FallbackController"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 243,
+    "returncode": 0,
+    "seconds": 0.34,
+    "stderr": "",
+    "written": null,
+    "written_bytes": 0
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-api-gateway",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.api.ApiGatewayApplication",
+      "/work/actuator-19534269.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": "{\"error\": \"org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop' <- org.springframework.boot.web.server.WebServerException: Unable to start Netty <- java.lang.IllegalArgumentException: port out of range:-1\"}",
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [],
+     "peak_memory_mb": 710,
+     "returncode": 1,
+     "routes": [],
+     "seconds": 8.85,
+     "stderr": "00:27:21,248 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]\n",
+     "stdout": "art(WebServerStartStopLifecycle.java:29)\n\tat org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:420)\n\t... 19 common frames omitted\nCaused by: java.lang.IllegalArgumentException: port out of range:-1\n\tat java.base/java.net.InetSocketAddress.checkPort(InetSocketAddress.java:152)\n\tat java.base/java.net.InetSocketAddress.<init>(InetSocketAddress.java:197)\n\tat java.base/java.net.InetSocketAddress.<init>(InetSocketAddress.java:175)\n\tat org.springframework.boot.reactor.netty.NettyReactiveWebServerFactory.getListenAddress(NettyReactiveWebServerFactory.java:190)\n\tat reactor.netty.transport.ServerTransport.lambda$bind$0(ServerTransport.java:97)\n\tat reactor.core.publisher.MonoCreate.subscribe(MonoCreate.java:61)\n\tat reactor.core.publisher.Mono.subscribe(Mono.java:4569)\n\tat reactor.core.publisher.Mono.block(Mono.java:1799)\n\tat reactor.netty.transport.ServerTransport.bindNow(ServerTransport.java:160)\n\tat reactor.netty.transport.ServerTransport.bindNow(ServerTransport.java:145)\n\tat org.springframework.boot.reactor.netty.NettyWebServer.startHttpServer(NettyWebServer.java:176)\n\tat org.springframework.boot.reactor.netty.NettyWebServer.start(NettyWebServer.java:111)\n\t... 22 common frames omitted\n\tSuppressed: java.lang.Exception: #block terminated with an error\n\t\tat reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:145)\n\t\tat reactor.core.publisher.Mono.block(Mono.java:1800)\n\t\t... 26 common frames omitted\n\n",
+     "written": null,
+     "written_bytes": 252
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.api.ApiGatewayApplication",
+      "/work/actuator-port0-19534269.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=0",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled=",
+      "server.address=127.0.0.1"
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator-port0",
+     "listeners": [
+      {
+       "address": "0000000000000000FFFF00000100007F",
+       "at_s": 7.37,
+       "gone_s": 7.893,
+       "owner": "732 java -Xmx1g -cp /work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/classes:/work/microservi",
+       "port": 43155
+      }
+     ],
+     "peak_memory_mb": 700,
+     "returncode": 0,
+     "routes": [
+      {
+       "function": "org.springframework.samples.petclinic.api.ApiGatewayApplication$$Lambda$1190/0x00002b4fe56e5428",
+       "handler": "org.springframework.samples.petclinic.api.ApiGatewayApplication$$Lambda$1190/0x00002b4fe56e5428@5c21",
+       "predicate": "((((((GET && /**) && org.springframework.samples.petclinic.api.ApiGatewayApplication$$Lambda$1189/0x00002b4fe56e4ab8@4c25687b) && !/api/**) && !/actuator/**) && !/webjars/**) && !/fallback)"
+      },
+      {
+       "class": "org.springframework.samples.petclinic.api.boundary.web.FallbackController",
+       "descriptor": "()Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET",
+        "POST"
+       ],
+       "name": "fallback",
+       "patterns": [
+        "/fallback"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.api.boundary.web.ApiGatewayController",
+       "descriptor": "(I)Lreactor/core/publisher/Mono;",
+       "methods": [
+        "GET"
+       ],
+       "name": "getOwnerDetails",
+       "patterns": [
+        "/api/gateway/owners/{ownerId}"
+       ]
+      },
+      {
+       "function": "org.springframework.boot.webflux.autoconfigure.WelcomePageRouterFunctionFactory$$Lambda$1452/0x00002b4fe57c8258",
+       "handler": "org.springframework.boot.webflux.autoconfigure.WelcomePageRouterFunctionFactory$$Lambda$1452/0x00002",
+       "predicate": "((GET && /) && Accept: text/html)"
+      },
+      {
+       "function": null,
+       "handler": "ResourceWebHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceWebHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], cl",
+       "predicate": "/**"
+      }
+     ],
+     "seconds": 13.56,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 2300
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-api-gateway/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.api.ApiGatewayApplication",
+      "/work/aot-19534269.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=0",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled=",
+      "server.address=127.0.0.1"
+     ],
+     "error": "{\"error\": \"java.lang.ClassNotFoundException: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping\"}",
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 567,
+     "returncode": 1,
+     "routes": [],
+     "seconds": 5.42,
+     "stderr": "00:27:43,854 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]\n",
+     "stdout": "PropertySource ([ConfigServerConfigDataResource@55d58825 uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/api-gateway/default\": Connection refused\n2026-11-24T00:27:44.082Z  INFO 821 --- [api-gateway] [           main] [                                                 ] o.s.c.c.c.ConfigServerConfigDataLoader   : Fetching config from server at : http://localhost:8888/\n2026-11-24T00:27:44.082Z  INFO 821 --- [api-gateway] [           main] [                                                 ] o.s.c.c.c.ConfigServerConfigDataLoader   : Exception on Url - http://localhost:8888/:org.springframework.web.client.ResourceAccessException: I/O error on GET request for \"http://localhost:8888/api-gateway/default\": Connection refused. Will be trying the next url if available\n2026-11-24T00:27:44.082Z  WARN 821 --- [api-gateway] [           main] [                                                 ] o.s.c.c.c.ConfigServerConfigDataLoader   : Could not locate PropertySource ([ConfigServerConfigDataResource@19a64eae uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/api-gateway/default\": Connection refused\n2026-11-24T00:27:45.526Z  INFO 821 --- [api-gateway] [           main] [                                                 ] o.s.cloud.context.scope.GenericScope     : BeanFactory id=fc1516e2-da93-3175-b1a8-7f545c500fc5\n",
+     "written": null,
+     "written_bytes": 129
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.api.ApiGatewayApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-api-gateway/target/spring-petclinic-api-gateway-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 228,
+    "returncode": 0,
+    "seconds": 0.46,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  },
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.config.ConfigServerApplication",
+     "/work/aot-61317520/src",
+     "/work/aot-61317520/res",
+     "/work/aot-61317520/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 1,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 589,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 20
+    },
+    "seconds": 4.5,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "\n  .   ____          _            __ _ _\n /\\\\ / ___'_ __ _ _(_)_ __  __ _ \\ \\ \\ \\\n( ( )\\___ | '_ | '_| | '_ \\/ _` | \\ \\ \\ \\\n \\\\/  ___)| |_)| | | | | || (_| |  ) ) ) )\n  '  |____| .__|_| |_|_| |_\\__, | / / / /\n =========|_|==============|___/=/_/_/_/\n\n :: Spring Boot ::                (v4.1.2)\n\n2026-11-24T00:28:10.571Z  INFO 1185 --- [           main] o.s.s.p.config.ConfigServerApplication   : Starting ConfigServerApplication using Java 17.0.20.1 with PID 1185 (/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/classes started by root in /work/microservices-built)\n2026-11-24T00:28:10.575Z  INFO 1185 --- [           main] o.s.s.p.config.ConfigServerApplication   : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:28:11.694Z  INFO 1185 --- [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=c2f3fb44-0f98-3af4-8078-bc2a2edaf44e\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 0,
+    "named": 4
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-config-server",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.config.ConfigServerApplication",
+      "/work/actuator-61317520.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": "{\"error\": \"no bean of an endpoint with the id mappings\"}",
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [
+      {
+       "address": "00000000000000000000000000000000",
+       "at_s": 5.087,
+       "gone_s": 5.109,
+       "owner": "979 java -Xmx1g -cp /work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/classes:/work/microser",
+       "port": 55428
+      }
+     ],
+     "peak_memory_mb": 548,
+     "returncode": 2,
+     "routes": [],
+     "seconds": 5.61,
+     "stderr": "",
+     "stdout": "-8078-bc2a2edaf44e\n2026-11-24T00:27:56.965Z  INFO 979 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)\n2026-11-24T00:27:56.984Z  INFO 979 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:27:56.984Z  INFO 979 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]\n2026-11-24T00:27:57.049Z  INFO 979 --- [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1264 ms\n2026-11-24T00:27:57.183Z  INFO 979 --- [           main] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]\n2026-11-24T00:27:57.631Z  WARN 979 --- [           main] o.s.cloud.commons.util.InetUtils         : Unable to retrieve localhost\n2026-11-24T00:27:57.998Z  INFO 979 --- [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:27:58.009Z  INFO 979 --- [           main] Launcher                                 : Started Launcher in 2.844 seconds (process running for 5.101)\n2026-11-24T00:27:58.015Z  INFO 979 --- [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:27:58.017Z  INFO 979 --- [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete\n",
+     "written": null,
+     "written_bytes": 56
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.config.ConfigServerApplication",
+      "/work/handler-methods-61317520.json",
+      "handler-methods",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "handler-methods",
+     "listeners": [
+      {
+       "address": "00000000000000000000000000000000",
+       "at_s": 5.037,
+       "gone_s": 5.07,
+       "owner": "1056 java -Xmx1g -cp /work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/classes:/work/microser",
+       "port": 56350
+      }
+     ],
+     "peak_memory_mb": 543,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "()Ljava/util/Map;",
+       "methods": [
+        "GET"
+       ],
+       "name": "status",
+       "patterns": [
+        "/encrypt/status"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "decrypt",
+       "patterns": [
+        "/decrypt/{name}/{profiles}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "decrypt",
+       "patterns": [
+        "/decrypt"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "yaml",
+       "patterns": [
+        "/{name}-{profiles}.yml",
+        "/{name}-{profiles}.yaml"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;ZLjava/lang/String;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "retrieve",
+       "patterns": [
+        "/{name}/{profile}/{label}/**"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "defaultLabelIncludeOrigin",
+       "patterns": [
+        "/{name}/{profiles:(?!.*\\b\\.(?:ya?ml|properties|json)\\b).*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledProperties",
+       "patterns": [
+        "/{label}/{name}-{profiles}.properties"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;)[B",
+       "methods": [
+        "GET"
+       ],
+       "name": "binaryDefault",
+       "patterns": [
+        "/{name}/{profile}/{path:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "getPublicKey",
+       "patterns": [
+        "/key/{name}/{profiles}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;)[B",
+       "methods": [
+        "GET"
+       ],
+       "name": "binary",
+       "patterns": [
+        "/{name}/{profile}/{label}/**"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelled",
+       "patterns": [
+        "/{name}/{profiles}/{label:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;ZLjava/lang/String;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "retrieveDefault",
+       "patterns": [
+        "/{name}/{profile}/{path:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "jsonProperties",
+       "patterns": [
+        "/{name}-{profiles}.json"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "properties",
+       "patterns": [
+        "/{name}-{profiles}.properties"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "defaultLabel",
+       "patterns": [
+        "/{name}/{profiles:(?!.*\\b\\.(?:ya?ml|properties|json)\\b).*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledYaml",
+       "patterns": [
+        "/{label}/{name}-{profiles}.yml",
+        "/{label}/{name}-{profiles}.yaml"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "encrypt",
+       "patterns": [
+        "/encrypt"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledJsonProperties",
+       "patterns": [
+        "/{label}/{name}-{profiles}.json"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "encrypt",
+       "patterns": [
+        "/encrypt/{name}/{profiles}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledIncludeOrigin",
+       "patterns": [
+        "/{name}/{profiles}/{label:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "getPublicKey",
+       "patterns": [
+        "/key"
+       ]
+      }
+     ],
+     "seconds": 5.61,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 14550
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-config-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.config.ConfigServerApplication",
+      "/work/aot-61317520.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 496,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "decrypt",
+       "patterns": [
+        "/decrypt/{name}/{profiles}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;)[B",
+       "methods": [
+        "GET"
+       ],
+       "name": "binary",
+       "patterns": [
+        "/{name}/{profile}/{label}/**"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "decrypt",
+       "patterns": [
+        "/decrypt"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;ZLjava/lang/String;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "retrieveDefault",
+       "patterns": [
+        "/{name}/{profile}/{path:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "defaultLabel",
+       "patterns": [
+        "/{name}/{profiles:(?!.*\\b\\.(?:ya?ml|properties|json)\\b).*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "()Ljava/util/Map;",
+       "methods": [
+        "GET"
+       ],
+       "name": "status",
+       "patterns": [
+        "/encrypt/status"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "jsonProperties",
+       "patterns": [
+        "/{name}-{profiles}.json"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledYaml",
+       "patterns": [
+        "/{label}/{name}-{profiles}.yml",
+        "/{label}/{name}-{profiles}.yaml"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledJsonProperties",
+       "patterns": [
+        "/{label}/{name}-{profiles}.json"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledIncludeOrigin",
+       "patterns": [
+        "/{name}/{profiles}/{label:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "yaml",
+       "patterns": [
+        "/{name}-{profiles}.yml",
+        "/{name}-{profiles}.yaml"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "()Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "getPublicKey",
+       "patterns": [
+        "/key"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "encrypt",
+       "patterns": [
+        "/encrypt"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "defaultLabelIncludeOrigin",
+       "patterns": [
+        "/{name}/{profiles:(?!.*\\b\\.(?:ya?ml|properties|json)\\b).*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelledProperties",
+       "patterns": [
+        "/{label}/{name}-{profiles}.properties"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;)[B",
+       "methods": [
+        "GET"
+       ],
+       "name": "binaryDefault",
+       "patterns": [
+        "/{name}/{profile}/{path:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/http/MediaType;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "encrypt",
+       "patterns": [
+        "/encrypt/{name}/{profiles}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.resource.ResourceController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/springframework/web/context/request/ServletWebRequest;ZLjava/lang/String;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "retrieve",
+       "patterns": [
+        "/{name}/{profile}/{label}/**"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.encryption.EncryptionController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "getPublicKey",
+       "patterns": [
+        "/key/{name}/{profiles}"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/springframework/cloud/config/environment/Environment;",
+       "methods": [
+        "GET"
+       ],
+       "name": "labelled",
+       "patterns": [
+        "/{name}/{profiles}/{label:.*}"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.config.server.environment.EnvironmentController",
+       "descriptor": "(Ljava/lang/String;Ljava/lang/String;Z)Lorg/springframework/http/ResponseEntity;",
+       "methods": [
+        "GET"
+       ],
+       "name": "properties",
+       "patterns": [
+        "/{name}-{profiles}.properties"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      }
+     ],
+     "seconds": 4.94,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 14550
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.config.ConfigServerApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-config-server/target/spring-petclinic-config-server-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 226,
+    "returncode": 0,
+    "seconds": 0.3,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  },
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.customers.CustomersServiceApplication",
+     "/work/aot-68729580/src",
+     "/work/aot-68729580/res",
+     "/work/aot-68729580/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 15,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 810,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 6
+    },
+    "seconds": 8.54,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "imeWeaver setup: ignoring JPA class transformer\n2026-11-24T00:28:41.315Z  INFO 1410 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:\n\tDatabase JDBC URL [undefined/unknown]\n\tDatabase driver: undefined/unknown\n\tDatabase dialect: SpringDataJpaAotDialect\n\tDatabase version: 0.0\n\tDefault catalog/schema: unknown/unknown\n\tAutocommit mode: undefined/unknown\n\tIsolation level: <unknown>\n\tJDBC fetch size: undefined/unknown\n\tPool: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown\n2026-11-24T00:28:41.508Z  WARN 1410 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.deprecation            : HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at org.springframework.samples.petclinic.customers.model.Pet.birthDate.\n2026-11-24T00:28:42.307Z  INFO 1410 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)\n2026-11-24T00:28:43.069Z  INFO 1410 --- [customers-service] [           main] [                                                 ] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 2,
+    "named": 3
+   },
+   "javap": {
+    "argv": [
+     "javap",
+     "-l",
+     "-p",
+     "-s",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/classes",
+     "org.springframework.samples.petclinic.customers.web.OwnerResource",
+     "org.springframework.samples.petclinic.customers.web.PetResource"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 244,
+    "returncode": 0,
+    "seconds": 0.35,
+    "stderr": "",
+    "written": null,
+    "written_bytes": 0
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-customers-service",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.customers.CustomersServiceApplication",
+      "/work/actuator-68729580.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [
+      {
+       "address": "00000000000000000000000000000000",
+       "at_s": 10.789,
+       "gone_s": 10.801,
+       "owner": "1264 java -Xmx1g -cp /work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/classes:/work/micr",
+       "port": 23273
+      }
+     ],
+     "peak_memory_mb": 747,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/customers/web/OwnerRequest;)Lorg/springframework/samples/petclinic/customers/model/Owner;",
+       "methods": [
+        "POST"
+       ],
+       "name": "createOwner",
+       "patterns": [
+        "/owners"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "(I)Ljava/util/Optional;",
+       "methods": [
+        "GET"
+       ],
+       "name": "findOwner",
+       "patterns": [
+        "/owners/{ownerId}"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "()Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "findAll",
+       "patterns": [
+        "/owners"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/customers/web/PetRequest;I)V",
+       "methods": [
+        "PUT"
+       ],
+       "name": "processUpdateForm",
+       "patterns": [
+        "/owners/*/pets/{petId}"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "()Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "getPetTypes",
+       "patterns": [
+        "/petTypes"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "(I)Lorg/springframework/samples/petclinic/customers/web/PetDetails;",
+       "methods": [
+        "GET"
+       ],
+       "name": "findPet",
+       "patterns": [
+        "/owners/*/pets/{petId}"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/customers/web/PetRequest;I)Lorg/springframework/samples/petclinic/customers/model/Pet;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processCreationForm",
+       "patterns": [
+        "/owners/{ownerId}/pets"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "(ILorg/springframework/samples/petclinic/customers/web/OwnerRequest;)V",
+       "methods": [
+        "PUT"
+       ],
+       "name": "updateOwner",
+       "patterns": [
+        "/owners/{ownerId}"
+       ]
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [stat",
+       "predicate": "/**"
+      }
+     ],
+     "seconds": 12.44,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 6598
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-customers-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.customers.CustomersServiceApplication",
+      "/work/aot-68729580.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 690,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "(I)Lorg/springframework/samples/petclinic/customers/web/PetDetails;",
+       "methods": [
+        "GET"
+       ],
+       "name": "findPet",
+       "patterns": [
+        "/owners/*/pets/{petId}"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "(ILorg/springframework/samples/petclinic/customers/web/OwnerRequest;)V",
+       "methods": [
+        "PUT"
+       ],
+       "name": "updateOwner",
+       "patterns": [
+        "/owners/{ownerId}"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "(I)Ljava/util/Optional;",
+       "methods": [
+        "GET"
+       ],
+       "name": "findOwner",
+       "patterns": [
+        "/owners/{ownerId}"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/customers/web/PetRequest;I)Lorg/springframework/samples/petclinic/customers/model/Pet;",
+       "methods": [
+        "POST"
+       ],
+       "name": "processCreationForm",
+       "patterns": [
+        "/owners/{ownerId}/pets"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "()Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "findAll",
+       "patterns": [
+        "/owners"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/customers/web/PetRequest;I)V",
+       "methods": [
+        "PUT"
+       ],
+       "name": "processUpdateForm",
+       "patterns": [
+        "/owners/*/pets/{petId}"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.OwnerResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/customers/web/OwnerRequest;)Lorg/springframework/samples/petclinic/customers/model/Owner;",
+       "methods": [
+        "POST"
+       ],
+       "name": "createOwner",
+       "patterns": [
+        "/owners"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.customers.web.PetResource",
+       "descriptor": "()Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "getPetTypes",
+       "patterns": [
+        "/petTypes"
+       ]
+      }
+     ],
+     "seconds": 8.59,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 5351
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.customers.CustomersServiceApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-customers-service/target/spring-petclinic-customers-service-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 227,
+    "returncode": 0,
+    "seconds": 0.5,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  },
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-discovery-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-discovery-server/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.discovery.DiscoveryServerApplication",
+     "/work/aot-67174246/src",
+     "/work/aot-67174246/res",
+     "/work/aot-67174246/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 2,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 537,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 3
+    },
+    "seconds": 4.34,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "taResource@57b75756 uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/discovery-server/default\": Connection refused\n2026-11-24T00:28:58.968Z  INFO 1658 --- [discovery-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Fetching config from server at : http://localhost:8888/\n2026-11-24T00:28:58.968Z  INFO 1658 --- [discovery-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Exception on Url - http://localhost:8888/:org.springframework.web.client.ResourceAccessException: I/O error on GET request for \"http://localhost:8888/discovery-server/default\": Connection refused. Will be trying the next url if available\n2026-11-24T00:28:58.968Z  WARN 1658 --- [discovery-server] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Could not locate PropertySource ([ConfigServerConfigDataResource@5327a06e uris = array<String>['http://localhost:8888/'], optional = true, profiles = 'default']): I/O error on GET request for \"http://localhost:8888/discovery-server/default\": Connection refused\n2026-11-24T00:28:59.914Z  INFO 1658 --- [discovery-server] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=37c41883-7e40-3dc6-8bd5-798f36ce8e0e\n2026-11-24T00:29:00.425Z  INFO 1658 --- [discovery-server] [           main] anValidationBeanRegistrationAotProcessor : No Bean Validation provider available - skipping validation constraint hint inference\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 0,
+    "named": 2
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-discovery-server",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-discovery-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-discovery-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.discovery.DiscoveryServerApplication",
+      "/work/actuator-67174246.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [
+      {
+       "address": "00000000000000000000000000000000",
+       "at_s": 6.462,
+       "gone_s": 6.484,
+       "owner": "1522 java -Xmx1g -cp /work/microservices-built/spring-petclinic-discovery-server/target/unpacked/BOOT-INF/classes:/work/micro",
+       "port": 43016
+      }
+     ],
+     "peak_memory_mb": 597,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.netflix.eureka.server.EurekaController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljava/util/Map;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "lastn",
+       "patterns": [
+        "/lastn"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.netflix.eureka.server.EurekaController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljava/util/Map;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "status",
+       "patterns": [
+        "/"
+       ]
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [stat",
+       "predicate": "/**"
+      }
+     ],
+     "seconds": 6.99,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 3892
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-discovery-server/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-discovery-server/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.discovery.DiscoveryServerApplication",
+      "/work/aot-67174246.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 532,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.cloud.netflix.eureka.server.EurekaController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljava/util/Map;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "status",
+       "patterns": [
+        "/"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.cloud.netflix.eureka.server.EurekaController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljava/util/Map;)Ljava/lang/String;",
+       "methods": [
+        "GET"
+       ],
+       "name": "lastn",
+       "patterns": [
+        "/lastn"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      }
+     ],
+     "seconds": 5.16,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 2253
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.discovery.DiscoveryServerApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-discovery-server/target/spring-petclinic-discovery-server-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 226,
+    "returncode": 0,
+    "seconds": 0.35,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  },
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.genai.GenAIServiceApplication",
+     "/work/aot-85290516/src",
+     "/work/aot-85290516/res",
+     "/work/aot-85290516/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 82,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 988,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 1
+    },
+    "seconds": 8.19,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "ing Spring Data JPA repositories in DEFAULT mode.\n2026-11-24T00:29:45.547Z  INFO 2000 --- [genai-service] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 16 ms. Found 0 JPA repository interfaces.\n2026-11-24T00:29:46.125Z  INFO 2000 --- [genai-service] [           main] [                                                 ] o.s.cloud.context.scope.GenericScope     : BeanFactory id=948329dc-021c-3bc2-91ed-8a8637e3b5ea\n2026-11-24T00:29:48.930Z  WARN 2000 --- [genai-service] [           main] [                                                 ] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: filters\n2026-11-24T00:29:48.939Z  WARN 2000 --- [genai-service] [           main] [                                                 ] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: predicates\n2026-11-24T00:29:48.957Z  WARN 2000 --- [genai-service] [           main] [                                                 ] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: routes\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 1,
+    "named": 1
+   },
+   "javap": {
+    "argv": [
+     "javap",
+     "-l",
+     "-p",
+     "-s",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/classes",
+     "org.springframework.samples.petclinic.genai.PetclinicChatClient"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 241,
+    "returncode": 0,
+    "seconds": 0.33,
+    "stderr": "",
+    "written": null,
+    "written_bytes": 0
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-genai-service",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.genai.GenAIServiceApplication",
+      "/work/actuator-85290516.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": "{\"error\": \"org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop' <- org.springframework.boot.web.server.WebServerException: Unable to start Netty <- java.lang.IllegalArgumentException: port out of range:-1\"}",
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [],
+     "peak_memory_mb": 828,
+     "returncode": 1,
+     "routes": [],
+     "seconds": 13.67,
+     "stderr": "00:29:04,886 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]\n",
+     "stdout": "art(WebServerStartStopLifecycle.java:29)\n\tat org.springframework.context.support.DefaultLifecycleProcessor.doStart(DefaultLifecycleProcessor.java:420)\n\t... 19 common frames omitted\nCaused by: java.lang.IllegalArgumentException: port out of range:-1\n\tat java.base/java.net.InetSocketAddress.checkPort(InetSocketAddress.java:152)\n\tat java.base/java.net.InetSocketAddress.<init>(InetSocketAddress.java:197)\n\tat java.base/java.net.InetSocketAddress.<init>(InetSocketAddress.java:175)\n\tat org.springframework.boot.reactor.netty.NettyReactiveWebServerFactory.getListenAddress(NettyReactiveWebServerFactory.java:190)\n\tat reactor.netty.transport.ServerTransport.lambda$bind$0(ServerTransport.java:97)\n\tat reactor.core.publisher.MonoCreate.subscribe(MonoCreate.java:61)\n\tat reactor.core.publisher.Mono.subscribe(Mono.java:4569)\n\tat reactor.core.publisher.Mono.block(Mono.java:1799)\n\tat reactor.netty.transport.ServerTransport.bindNow(ServerTransport.java:160)\n\tat reactor.netty.transport.ServerTransport.bindNow(ServerTransport.java:145)\n\tat org.springframework.boot.reactor.netty.NettyWebServer.startHttpServer(NettyWebServer.java:176)\n\tat org.springframework.boot.reactor.netty.NettyWebServer.start(NettyWebServer.java:111)\n\t... 22 common frames omitted\n\tSuppressed: java.lang.Exception: #block terminated with an error\n\t\tat reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:145)\n\t\tat reactor.core.publisher.Mono.block(Mono.java:1800)\n\t\t... 26 common frames omitted\n\n",
+     "written": null,
+     "written_bytes": 252
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.genai.GenAIServiceApplication",
+      "/work/actuator-port0-85290516.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=0",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled=",
+      "server.address=127.0.0.1"
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator-port0",
+     "listeners": [
+      {
+       "address": "0000000000000000FFFF00000100007F",
+       "at_s": 11.69,
+       "gone_s": 11.941,
+       "owner": "1828 java -Xmx1g -cp /work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/classes:/work/microser",
+       "port": 25790
+      }
+     ],
+     "peak_memory_mb": 882,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.samples.petclinic.genai.PetclinicChatClient",
+       "descriptor": "(Ljava/lang/String;)Ljava/lang/String;",
+       "methods": [
+        "POST"
+       ],
+       "name": "exchange",
+       "patterns": [
+        "/chatclient"
+       ]
+      },
+      {
+       "function": null,
+       "handler": "ResourceWebHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceWebHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], cl",
+       "predicate": "/**"
+      }
+     ],
+     "seconds": 18.52,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 840
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-genai-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.genai.GenAIServiceApplication",
+      "/work/aot-85290516.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=0",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled=",
+      "server.address=127.0.0.1"
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 764,
+     "returncode": 0,
+     "routes": [],
+     "seconds": 8.17,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 2
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.genai.GenAIServiceApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-genai-service/target/spring-petclinic-genai-service-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 227,
+    "returncode": 0,
+    "seconds": 0.62,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  },
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.vets.VetsServiceApplication",
+     "/work/aot-96523918/src",
+     "/work/aot-96523918/res",
+     "/work/aot-96523918/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 10,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 753,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 2
+    },
+    "seconds": 8.18,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "--- [vets-service] [           main] [                                                 ] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: AotMetamodel]\n2026-11-24T00:30:16.626Z  INFO 2255 --- [vets-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final\n2026-11-24T00:30:17.125Z  INFO 2255 --- [vets-service] [           main] [                                                 ] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer\n2026-11-24T00:30:17.159Z  INFO 2255 --- [vets-service] [           main] [                                                 ] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:\n\tDatabase JDBC URL [undefined/unknown]\n\tDatabase driver: undefined/unknown\n\tDatabase dialect: SpringDataJpaAotDialect\n\tDatabase version: 0.0\n\tDefault catalog/schema: unknown/unknown\n\tAutocommit mode: undefined/unknown\n\tIsolation level: <unknown>\n\tJDBC fetch size: undefined/unknown\n\tPool: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown\n2026-11-24T00:30:18.150Z  INFO 2255 --- [vets-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 1,
+    "named": 2
+   },
+   "javap": {
+    "argv": [
+     "javap",
+     "-l",
+     "-p",
+     "-s",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/classes",
+     "org.springframework.samples.petclinic.vets.web.VetResource"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 242,
+    "returncode": 0,
+    "seconds": 0.32,
+    "stderr": "",
+    "written": null,
+    "written_bytes": 0
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-vets-service",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.vets.VetsServiceApplication",
+      "/work/actuator-96523918.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [
+      {
+       "address": "00000000000000000000000000000000",
+       "at_s": 9.553,
+       "gone_s": 9.575,
+       "owner": "2110 java -Xmx1g -cp /work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/classes:/work/microserv",
+       "port": 20198
+      }
+     ],
+     "peak_memory_mb": 767,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.vets.web.VetResource",
+       "descriptor": "()Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showResourcesVetList",
+       "patterns": [
+        "/vets"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [stat",
+       "predicate": "/**"
+      }
+     ],
+     "seconds": 11.39,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 2978
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-vets-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.vets.VetsServiceApplication",
+      "/work/aot-96523918.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 685,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.vets.web.VetResource",
+       "descriptor": "()Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "showResourcesVetList",
+       "patterns": [
+        "/vets"
+       ]
+      }
+     ],
+     "seconds": 8.45,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 1606
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.vets.VetsServiceApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-vets-service/target/spring-petclinic-vets-service-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 230,
+    "returncode": 0,
+    "seconds": 0.4,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  },
+  {
+   "aot_processor": {
+    "argv": [
+     "timeout",
+     "--kill-after=10",
+     "120",
+     "java",
+     "-Xmx1g",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/lib/*",
+     "org.springframework.boot.SpringApplicationAotProcessor",
+     "org.springframework.samples.petclinic.visits.VisitsServiceApplication",
+     "/work/aot-84471855/src",
+     "/work/aot-84471855/res",
+     "/work/aot-84471855/cls",
+     "g",
+     "a",
+     "server.port=-1",
+     "management.server.port=-1",
+     "management.endpoints.web.exposure.include=mappings",
+     "spring.main.banner-mode=off",
+     "management.endpoints.access.max-permitted=unrestricted",
+     "management.endpoint.mappings.access=unrestricted",
+     "management.endpoint.mappings.enabled="
+    ],
+    "generated_files": 11,
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 834,
+    "returncode": 1,
+    "routes_named": {
+     "found": 0,
+     "of": 3
+    },
+    "seconds": 8.64,
+    "stderr": ".factory.aot.BeanDefinitionMethodGenerator.generateBeanDefinitionMethod(BeanDefinitionMethodGenerator.java:94)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.generateBeanRegistration(BeanRegistrationsAotContribution.java:289)\n\tat org.springframework.beans.factory.aot.BeanRegistrationsAotContribution$BeanDefinitionsRegistrationGenerator.lambda$generateRegisterBeanDefinitionMethods$0(BeanRegistrationsAotContribution.java:272)\n\t... 19 more\nCaused by: org.springframework.aot.generate.UnsupportedTypeValueCodeGenerationException: Code generation does not support org.springframework.cloud.context.scope.refresh.RefreshScope\n\tat org.springframework.aot.generate.ValueCodeGenerator.generateCode(ValueCodeGenerator.java:118)\n\t... 35 more\n",
+    "stdout": "fo      : No LoadTimeWeaver setup: ignoring JPA class transformer\n2026-11-24T00:30:45.911Z  INFO 2516 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:\n\tDatabase JDBC URL [undefined/unknown]\n\tDatabase driver: undefined/unknown\n\tDatabase dialect: SpringDataJpaAotDialect\n\tDatabase version: 0.0\n\tDefault catalog/schema: unknown/unknown\n\tAutocommit mode: undefined/unknown\n\tIsolation level: <unknown>\n\tJDBC fetch size: undefined/unknown\n\tPool: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown\n2026-11-24T00:30:46.105Z  WARN 2516 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.deprecation            : HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at org.springframework.samples.petclinic.visits.model.Visit.date.\n2026-11-24T00:30:46.937Z  INFO 2516 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)\n2026-11-24T00:30:47.843Z  INFO 2516 --- [visits-service] [           main] [                                                 ] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.\n",
+    "written": null,
+    "written_bytes": 0
+   },
+   "boot_version": "4.1.2",
+   "handler_classes": {
+    "in_project": 1,
+    "named": 2
+   },
+   "javap": {
+    "argv": [
+     "javap",
+     "-l",
+     "-p",
+     "-s",
+     "-cp",
+     "/work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/classes",
+     "org.springframework.samples.petclinic.visits.web.VisitResource"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 243,
+    "returncode": 0,
+    "seconds": 0.35,
+    "stderr": "",
+    "written": null,
+    "written_bytes": 0
+   },
+   "jdk": "17",
+   "module": "spring-petclinic-visits-service",
+   "runs": [
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.visits.VisitsServiceApplication",
+      "/work/actuator-84471855.json",
+      "actuator",
+      "started",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "actuator",
+     "listeners": [
+      {
+       "address": "00000000000000000000000000000000",
+       "at_s": 9.589,
+       "gone_s": 9.6,
+       "owner": "2367 java -Xmx1g -cp /work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/classes:/work/microse",
+       "port": 59846
+      }
+     ],
+     "peak_memory_mb": 746,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.visits.web.VisitResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/visits/model/Visit;I)Lorg/springframework/samples/petclinic/visits/model/Visit;",
+       "methods": [
+        "POST"
+       ],
+       "name": "create",
+       "patterns": [
+        "/owners/*/pets/{petId}/visits"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.visits.web.VisitResource",
+       "descriptor": "(I)Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "read",
+       "patterns": [
+        "/owners/*/pets/{petId}/visits"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.visits.web.VisitResource",
+       "descriptor": "(Ljava/util/List;)Lorg/springframework/samples/petclinic/visits/web/VisitResource$Visits;",
+       "methods": [
+        "GET"
+       ],
+       "name": "read",
+       "patterns": [
+        "/pets/visits"
+       ]
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/webjars/]]",
+       "predicate": "/webjars/**"
+      },
+      {
+       "function": null,
+       "handler": "ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [stat",
+       "predicate": "/**"
+      }
+     ],
+     "seconds": 10.73,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 4084
+    },
+    {
+     "argv": [
+      "timeout",
+      "--kill-after=10",
+      "120",
+      "java",
+      "-Xmx1g",
+      "-cp",
+      "/work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/classes:/work/microservices-built/spring-petclinic-visits-service/target/unpacked/BOOT-INF/lib/*",
+      "/launcher/Launcher.java",
+      "org.springframework.samples.petclinic.visits.VisitsServiceApplication",
+      "/work/aot-84471855.json",
+      "handler-methods",
+      "aot",
+      "args",
+      "server.port=-1",
+      "management.server.port=-1",
+      "management.endpoints.web.exposure.include=mappings",
+      "spring.main.banner-mode=off",
+      "management.endpoints.access.max-permitted=unrestricted",
+      "management.endpoint.mappings.access=unrestricted",
+      "management.endpoint.mappings.enabled="
+     ],
+     "error": null,
+     "java_left": [],
+     "label": "aot",
+     "listeners": [],
+     "peak_memory_mb": 690,
+     "returncode": 0,
+     "routes": [
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;",
+       "methods": [],
+       "name": "errorHtml",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.visits.web.VisitResource",
+       "descriptor": "(I)Ljava/util/List;",
+       "methods": [
+        "GET"
+       ],
+       "name": "read",
+       "patterns": [
+        "/owners/*/pets/{petId}/visits"
+       ]
+      },
+      {
+       "class": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+       "descriptor": "(Ljakarta/servlet/http/HttpServletRequest;)Lorg/springframework/http/ResponseEntity;",
+       "methods": [],
+       "name": "error",
+       "patterns": [
+        "/error"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.visits.web.VisitResource",
+       "descriptor": "(Ljava/util/List;)Lorg/springframework/samples/petclinic/visits/web/VisitResource$Visits;",
+       "methods": [
+        "GET"
+       ],
+       "name": "read",
+       "patterns": [
+        "/pets/visits"
+       ]
+      },
+      {
+       "class": "org.springframework.samples.petclinic.visits.web.VisitResource",
+       "descriptor": "(Lorg/springframework/samples/petclinic/visits/model/Visit;I)Lorg/springframework/samples/petclinic/visits/model/Visit;",
+       "methods": [
+        "POST"
+       ],
+       "name": "create",
+       "patterns": [
+        "/owners/*/pets/{petId}/visits"
+       ]
+      }
+     ],
+     "seconds": 8.95,
+     "stderr": "",
+     "stdout": "",
+     "written": null,
+     "written_bytes": 2771
+    }
+   ],
+   "start_class": "org.springframework.samples.petclinic.visits.VisitsServiceApplication",
+   "unpack": {
+    "argv": [
+     "jar",
+     "xf",
+     "/work/microservices-built/spring-petclinic-visits-service/target/spring-petclinic-visits-service-4.1.2.jar"
+    ],
+    "java_left": [],
+    "listeners": [],
+    "peak_memory_mb": 228,
+    "returncode": 0,
+    "seconds": 0.36,
+    "stderr": "",
+    "stdout": "",
+    "written": null,
+    "written_bytes": 0
+   }
+  }
+ ],
+ "name": "microservices",
+ "noir": {
+  "endpoints": [
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/microservices/spring-petclinic-api-gateway/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/microservices/spring-petclinic-api-gateway/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/health"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 54,
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/java/org/springframework/samples/petclinic/api/boundary/web/ApiGatewayController.java"
+     }
+    ],
+    "handler": {
+     "line": 55,
+     "name": "ApiGatewayController.getOwnerDetails",
+     "path": "/work/microservices/spring-petclinic-api-gateway/src/main/java/org/springframework/samples/petclinic/api/boundary/web/ApiGatewayController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/api/gateway/owners/{ownerId}"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 12,
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/java/org/springframework/samples/petclinic/api/boundary/web/FallbackController.java"
+     }
+    ],
+    "handler": {
+     "line": 14,
+     "name": "FallbackController.fallback",
+     "path": "/work/microservices/spring-petclinic-api-gateway/src/main/java/org/springframework/samples/petclinic/api/boundary/web/FallbackController.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fallback"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 12,
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/java/org/springframework/samples/petclinic/api/boundary/web/FallbackController.java"
+     }
+    ],
+    "handler": {
+     "line": 14,
+     "name": "FallbackController.fallback",
+     "path": "/work/microservices/spring-petclinic-api-gateway/src/main/java/org/springframework/samples/petclinic/api/boundary/web/FallbackController.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fallback"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 21,
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/application.yml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "ANY",
+    "params": 0,
+    "protocol": "http",
+    "url": "/api/vet/**"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 27,
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/application.yml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "ANY",
+    "params": 0,
+    "protocol": "http",
+    "url": "/api/visit/**"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 33,
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/application.yml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "ANY",
+    "params": 0,
+    "protocol": "http",
+    "url": "/api/customer/**"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 39,
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/application.yml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "ANY",
+    "params": 0,
+    "protocol": "http",
+    "url": "/api/genai/**"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/css/header.css"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/css/header.css"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/css/petclinic.css"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/css/petclinic.css"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/css/responsive.css"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/css/responsive.css"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/css/typography.css"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/css/typography.css"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/montserrat-webfont.eot"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/montserrat-webfont.eot"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/montserrat-webfont.svg"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/montserrat-webfont.svg"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/montserrat-webfont.ttf"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/montserrat-webfont.ttf"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/montserrat-webfont.woff"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/montserrat-webfont.woff"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/varela_round-webfont.eot"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/varela_round-webfont.eot"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/varela_round-webfont.svg"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/varela_round-webfont.svg"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/varela_round-webfont.ttf"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/varela_round-webfont.ttf"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/fonts/varela_round-webfont.woff"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/fonts/varela_round-webfont.woff"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/images/favicon.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/images/favicon.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/images/pets.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/images/pets.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/images/platform-bg.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/images/platform-bg.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/images/spring-logo-dataflow-mobile.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/images/spring-logo-dataflow-mobile.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/images/spring-logo-dataflow.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/images/spring-logo-dataflow.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/images/spring-pivotal-logo.png"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/images/spring-pivotal-logo.png"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/index.html"
+     },
+     {
+      "path": "/work/microservices/spring-petclinic-config-server/src/main/resources/static/index.html"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/index.html"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/RootApp.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/RootApp.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/api/client.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/api/client.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/components/AppFooter.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/components/AppFooter.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/components/AppNavigation.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/components/AppNavigation.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/components/ChatBox.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/components/ChatBox.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/components/LoadingState.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/components/LoadingState.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/main.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/main.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/pages/OwnerDetailsPage.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/pages/OwnerDetailsPage.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/pages/OwnerFormPage.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/pages/OwnerFormPage.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/pages/OwnersPage.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/pages/OwnersPage.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/pages/PetFormPage.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/pages/PetFormPage.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/pages/VetsPage.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/pages/VetsPage.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/pages/VisitsPage.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/pages/VisitsPage.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/pages/WelcomePage.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/pages/WelcomePage.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/router.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/router.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/state/errors.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/state/errors.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/utils/dates.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/utils/dates.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/utils/matchesQuery.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/utils/matchesQuery.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/utils/useRequest.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/utils/useRequest.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scripts/utils/useSubmission.js"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scripts/utils/useSubmission.js"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scss/header.scss"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scss/header.scss"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scss/petclinic.scss"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scss/petclinic.scss"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scss/responsive.scss"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scss/responsive.scss"
+   },
+   {
+    "code_paths": [
+     {
+      "path": "/work/microservices/spring-petclinic-api-gateway/src/main/resources/static/scss/typography.scss"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/scss/typography.scss"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 27,
+      "path": "/work/microservices/spring-petclinic-customers-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 27,
+      "path": "/work/microservices/spring-petclinic-customers-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/health"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 57,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+     }
+    ],
+    "handler": {
+     "line": 59,
+     "name": "OwnerResource.createOwner",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 5,
+    "protocol": "http",
+    "url": "/owners"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 67,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+     }
+    ],
+    "handler": {
+     "line": 68,
+     "name": "OwnerResource.findOwner",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/owners/{ownerId}"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 75,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+     }
+    ],
+    "handler": {
+     "line": 76,
+     "name": "OwnerResource.findAll",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/owners"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 83,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+     }
+    ],
+    "handler": {
+     "line": 85,
+     "name": "OwnerResource.updateOwner",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/OwnerResource.java"
+    },
+    "kind": "",
+    "method": "PUT",
+    "params": 6,
+    "protocol": "http",
+    "url": "/owners/{ownerId}"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 50,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+     }
+    ],
+    "handler": {
+     "line": 51,
+     "name": "PetResource.getPetTypes",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/petTypes"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 55,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+     }
+    ],
+    "handler": {
+     "line": 57,
+     "name": "PetResource.processCreationForm",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 4,
+    "protocol": "http",
+    "url": "/owners/{ownerId}/pets"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 69,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+     }
+    ],
+    "handler": {
+     "line": 71,
+     "name": "PetResource.processUpdateForm",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+    },
+    "kind": "",
+    "method": "PUT",
+    "params": 4,
+    "protocol": "http",
+    "url": "/owners/*/pets/{petId}"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 89,
+      "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+     }
+    ],
+    "handler": {
+     "line": 90,
+     "name": "PetResource.findPet",
+     "path": "/work/microservices/spring-petclinic-customers-service/src/main/java/org/springframework/samples/petclinic/customers/web/PetResource.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/owners/*/pets/{petId}"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/microservices/spring-petclinic-genai-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/microservices/spring-petclinic-genai-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/health"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 57,
+      "path": "/work/microservices/spring-petclinic-genai-service/src/main/java/org/springframework/samples/petclinic/genai/PetclinicChatClient.java"
+     }
+    ],
+    "handler": {
+     "line": 58,
+     "name": "PetclinicChatClient.exchange",
+     "path": "/work/microservices/spring-petclinic-genai-service/src/main/java/org/springframework/samples/petclinic/genai/PetclinicChatClient.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 1,
+    "protocol": "http",
+    "url": "/chatclient"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 40,
+      "path": "/work/microservices/spring-petclinic-vets-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 40,
+      "path": "/work/microservices/spring-petclinic-vets-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/health"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 44,
+      "path": "/work/microservices/spring-petclinic-vets-service/src/main/java/org/springframework/samples/petclinic/vets/web/VetResource.java"
+     }
+    ],
+    "handler": {
+     "line": 46,
+     "name": "VetResource.showResourcesVetList",
+     "path": "/work/microservices/spring-petclinic-vets-service/src/main/java/org/springframework/samples/petclinic/vets/web/VetResource.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/vets"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 26,
+      "path": "/work/microservices/spring-petclinic-visits-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 26,
+      "path": "/work/microservices/spring-petclinic-visits-service/pom.xml"
+     }
+    ],
+    "handler": null,
+    "kind": "",
+    "method": "GET",
+    "params": 0,
+    "protocol": "http",
+    "url": "/actuator/health"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 56,
+      "path": "/work/microservices/spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java"
+     }
+    ],
+    "handler": {
+     "line": 58,
+     "name": "VisitResource.create",
+     "path": "/work/microservices/spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java"
+    },
+    "kind": "",
+    "method": "POST",
+    "params": 5,
+    "protocol": "http",
+    "url": "/owners/*/pets/{petId}/visits"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 67,
+      "path": "/work/microservices/spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java"
+     }
+    ],
+    "handler": {
+     "line": 68,
+     "name": "VisitResource.read",
+     "path": "/work/microservices/spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/owners/*/pets/{petId}/visits"
+   },
+   {
+    "code_paths": [
+     {
+      "line": 72,
+      "path": "/work/microservices/spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java"
+     }
+    ],
+    "handler": {
+     "line": 73,
+     "name": "VisitResource.read",
+     "path": "/work/microservices/spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java"
+    },
+    "kind": "",
+    "method": "GET",
+    "params": 1,
+    "protocol": "http",
+    "url": "/pets/visits"
+   }
+  ],
+  "errors": 0,
+  "peak_memory_mb": 151,
+  "returncode": 0,
+  "seconds": 1.11,
+  "stderr": ""
+ },
+ "noir_ldd_missing": [],
+ "prep_left_behind": {
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ },
+ "repository": "spring-petclinic/spring-petclinic-microservices",
+ "restore_log_tail": "",
+ "restore_rc": "0",
+ "source_files": {
+  "all": 200,
+  "java": 64
+ }
+}

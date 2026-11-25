@@ -7,8 +7,8 @@ classifies the shapes; it does not look for entries.
 
 The residual net reads the links; the other readers read the snapshot the links come from (`candidates`), code from
 its syntax tree: the grammar the snapshot read the file with, and what a framework writes is the data of
-`daodan/data/entry-queries.json`, one query per grammar. `noir` reads the endpoints a ready-made tool reports, `typegen`
-the file a framework's own tool generates.
+`daodan/data/entry-queries.json`, one query per grammar. the reading of a tool's output (Noir's report, Nitro's routes file, Next.js's validator) is in the adapter of that tool
+(`premap/`), which uses this module's tree and queries.
 """
 from __future__ import annotations
 
@@ -269,12 +269,15 @@ def _function(facts: flows.Facts, classes: dict, anonymous: set, parsed: tuple, 
 
 def _string(node, source: bytes, grammar: str, exact: bool = False) -> str | None:
     """The text of a string literal node, by the grammar's `strings` query: its `@text`, or, for a template, the text
-    between its backticks (`@template`), with the `${...}` it holds for the caller to accept or refuse. A computed text
-    and a node of a grammar the data has no query for are none; with `exact`, so is a text with an escape, which is
-    not the value it is written as (a flow rule's value: `flows.py`)."""
+    between its backticks (`@template`), with the `${...}` it holds for the caller to accept or refuse. A string a grammar
+    holds as pieces (Kotlin: `@fragment` and `@hole`, which `"/o/$id"` and `"/o/${id}"` both have) is its fragments with
+    each computed part as `${}`, the one spelling of a hole. A computed text and a node of a grammar the data has no query
+    for are none; with `exact`, so is a text with an escape, which is not the value it is written as (a flow rule's value:
+    `flows.py`; Kotlin keeps an escape inside its fragment, so it is read as written)."""
     from tree_sitter import QueryCursor
 
     query = _query(grammar, "strings") if grammar in QUERIES["strings"] else None
+    pieces = {}  # by position: whether the piece is a hole, and its node
     for _, captures in QueryCursor(query).matches(node) if query is not None else ():
         for found in captures.get("text", []):
             if found.parent == node and not (exact and found.named_children):  # an escape in the text (Python) is a child
@@ -282,6 +285,10 @@ def _string(node, source: bytes, grammar: str, exact: bool = False) -> str | Non
         for found in captures.get("template", []):
             if found == node:
                 return _text(source, found)[1:-1]
+        for name in ("fragment", "hole"):
+            pieces.update({found.start_byte: (name == "hole", found) for found in captures.get(name, []) if found.parent == node})
+    if any(hole for hole, _ in pieces.values()):
+        return "".join("${}" if hole else _text(source, found) for _, (hole, found) in sorted(pieces.items()))
     return None
 
 
@@ -937,59 +944,12 @@ def _decorated(facts, file, source, grammar, root):
     return out
 
 
-def noir(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dict]:
-    """The endpoints OWASP Noir reports (`noir scan -f json`, run in Daodan's container over `root`) as candidates,
-    with no rule: the protocol is the shape and decides the kind (`QUERIES["noir"]`; another protocol is a shape to
-    classify) unless the endpoint's own `kind` is one Daodan knows (`QUERIES["noir_kinds"]`: a server action), which
-    is then the shape and the kind, method and path as Noir writes them, and the handler when Noir names it. The site is the handler's,
-    else the first code path's, relative to `root`; an endpoint with neither is none. The symbol is the function
-    Noir names in that file, else the file's code outside any function: Noir does not name a method's class."""
-    out = []
-    for endpoint in report.get("endpoints") or ():
-        handler = endpoint.get("handler") or {}
-        paths = (endpoint.get("details") or {}).get("code_paths") or [{}]
-        where = handler if handler.get("path") else paths[0]
-        if not where.get("path"):
-            continue
-        path = PurePosixPath(where["path"])
-        if not path.is_relative_to(root) or ".." in path.parts:
-            if gaps is None:
-                raise ValueError(f"Noir cites a path outside {root}: {path}")
-            gaps.append({"kind": "outside_snapshot", "path": str(path), "detail": "Noir cites a file outside the scanned root"})
-            continue
-        file = path.relative_to(root).as_posix()
-        known = endpoint.get("kind") in QUERIES["noir_kinds"]  # a kind of Noir's that Daodan knows is the shape
-        shape = endpoint["kind"] if known else endpoint["protocol"]
-        name = handler.get("name") if where is handler else None
-        kind = QUERIES["noir_kinds"][shape] if known else QUERIES["noir"].get(shape)
-        out.append({"reader": NOIR, "shape": shape,
-                    "site": f"{file}:{where['line']}" if where.get("line") else file,
-                    "symbol": f"{file}::{name or flows.MODULE}", "method": endpoint["method"], "path": endpoint["url"],
-                    **({"kind": kind} if kind else {}), **({"handler": name} if name else {})})
-    return out
-
-
-def typegen(text: str) -> tuple[list[dict], int | None, list[dict]]:
-    """The blocks of `.next/types/validator.ts` (`next typegen`, run in Daodan's container), read from its syntax tree
-    (`QUERIES["typegen"]`), the line of the first error the tree holds (None when it parses whole), and the blocks it
-    checks a file in that this reader does not read (`QUERIES["typegen_blocks"]`: a config type with no route). Each
-    block is a checked file: the type of config the tool checks it against (`shape`), the route that type is written
-    for (`path`) and the file it imports (`import`, relative to `.next/types`); an unread one gives its `import` and
-    its `block`. The comment above a block is not read. A tree that holds an error gives no block: a file cut short
-    must not pass as a short list."""
-    source = text.encode("utf-8")
-    root = _parse(source, "typescript")
-    if root is not None and root.has_error:
-        node = root
-        while not (node.is_error or node.is_missing):
-            node = next(child for child in node.children if child.has_error)
-        return [], node.start_point[0] + 1, []
-    matches = _matches(source, "typescript", "typegen", root)
-    read = {found["import"][0].start_byte for found in matches}
-    unread = [{"import": _text(source, found["import"][0]), "block": " ".join(_text(source, found["block"][0]).split())}
-              for found in _matches(source, "typescript", "typegen_blocks", root) if found["import"][0].start_byte not in read]
-    return ([{"shape": _text(source, found["shape"][0]), "path": _text(source, found["route"][0]),
-              "import": _text(source, found["import"][0])} for found in matches], None, unread)
+def _error_line(root) -> int:
+    """The line (from 1) of the first error a tree that holds one has."""
+    node = root
+    while not (node.is_error or node.is_missing):
+        node = next(child for child in node.children if child.has_error)
+    return node.start_point[0] + 1
 
 
 def _read_syntax(facts, db, view):
@@ -1033,6 +993,39 @@ def _syntax(manifest: Path, *, inputs=None) -> list[dict]:
 
 
 def _cached_rows(manifest: Path, inputs=None) -> list[dict]:
+    """The tree readers' candidates, persisted once (`_stored_rows`), with the rows of the framework's compiler in place of theirs
+    where it read the same events (`compiled`)."""
+    return compiled(_stored_rows(manifest, inputs), manifest)
+
+
+def compiled(rows: list[dict], manifest: Path) -> list[dict]:
+    """The rows of Angular's own compiler (`premap/angular.py`, `parseTemplate` run in Daodan's container) in place of the tree
+    reader's at the same events: an attribute row at the file, line and column of an event the compiler read is dropped, its
+    label (the tree reader reads the accessible name) goes to the compiler's rows, and the compiler's rows are added: they hold
+    the method the handler is, the events of a template written in a `.ts` and the calls on another object (a gap with its
+    cause). Astro's compiler (`premap/astro.py`) gives rows of the same shape for the events of a `.astro` template, which no tree
+    reader reads. Without a pre-map record of the compiler the rows are the tree reader's, whole."""
+    from premap import TEMPLATE_SOURCES
+    found = []
+    for source in TEMPLATE_SOURCES:
+        recorded = source.recorded(manifest)
+        if recorded and hasattr(source, "bind"):  # the binding to the snapshot's declarations runs here, not at `scan`
+            with open_snapshot(manifest) as store:
+                recorded = source.bind(recorded, store)
+        found += recorded
+    if not found:
+        return rows
+    events = {(row["site"], row["column"]) for row in found}
+    labels = {}
+    for row in rows:
+        if row["reader"] == ATTRIBUTE and (row["site"], row.get("column")) in events and (row.get("label") or row.get("label_gap")):
+            labels.setdefault((row["site"], row["column"]), {name: row[name] for name in ("label", "key", "label_gap") if row.get(name)})
+    merged = [row for row in rows if not (row["reader"] == ATTRIBUTE and (row["site"], row.get("column")) in events)]
+    merged += [{**row, **labels.get((row["site"], row["column"]), {})} for row in found]
+    return sorted(merged, key=lambda row: (row["site"], row.get("column", 0), row["reader"], row["shape"], row.get("symbol", "")))
+
+
+def _stored_rows(manifest: Path, inputs=None) -> list[dict]:
     """Persist verified AST bindings once, including unbound names that a store rule may resolve later."""
     import snapshot
     manifest = Path(manifest)
@@ -1074,8 +1067,16 @@ def _observed(manifest: Path, static: list[dict]) -> list[dict]:
 
 
 def _declared_rows(manifest):
+    """The declared rows as the links bind them (`flows.bind_declared`), with the rules recorded beside the snapshot, which the links are made
+    with: the pre-map's rows are on the module, with their exports, and a closure a rule names by its route is on that node here too."""
     from premap.flow_entries import evidence
-    return evidence(manifest)[0]
+    rows = evidence(manifest)[0]
+    if not rows:
+        return rows
+    recorded = Path(manifest).with_name("flow-rules.json")
+    with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+        view = edge_view.load_edge_view(store)
+        return flows.bind_declared(rows, flows.Facts(store, db, view), view, flows.load_rules(recorded) if recorded.is_file() else [])
 
 
 def cached_syntax(manifest: Path) -> list[dict]:

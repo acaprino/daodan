@@ -156,6 +156,12 @@ class CodebaseMapWireTests(unittest.TestCase):
             if status == 200:
                 self.assertIn("runs", json.loads(response.read()))
             connection.close()
+        for query, status in (("", 403), (f"&token={token}", 200)):  # an image sends no header
+            connection = http.client.HTTPConnection(address.hostname, address.port, timeout=10)
+            connection.request("GET", "/api/mark?id=stripe" + query)
+            response = connection.getresponse()
+            self.assertEqual(response.status, status)
+            connection.close()
 
     def test_real_tool_catalog_exposes_typed_tools_without_context(self):
         catalog = self.request("tools/list", {})["result"]["tools"]

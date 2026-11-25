@@ -1,0 +1,22 @@
+{
+ "variant": "old-environment",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-c",
+  "import importlib.metadata as m, os, sys, sysconfig\npaths = sysconfig.get_paths()\ndef version(name):\n    try:\n        return m.version(name)\n    except m.PackageNotFoundError:\n        return None\nprint(repr({'version': sys.version, 'executable': sys.executable, 'prefix': sys.prefix, 'base_prefix': sys.base_prefix,\n            'purelib': paths['purelib'], 'platlib': paths['platlib'], 'stdlib': paths['stdlib'],\n            'fastapi': version('fastapi'), 'fastapi-cli': version('fastapi-cli'), 'starlette': version('starlette'),\n            'uvicorn': version('uvicorn'), 'pydantic': version('pydantic'),\n            'fastapi-cli requires': m.requires('fastapi-cli') if version('fastapi-cli') else None,\n            'fastapi requires': m.requires('fastapi'),\n            'packages': sorted(f\"{d.metadata['Name']} {d.version}\" for d in m.distributions())}))\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{'version': '3.12.1 (main, Jan  8 2024, 04:46:10) [Clang 17.0.6 ]', 'executable': '/daodan/state/venvs/bin/python', 'prefix': '/daodan/state/venvs', 'base_prefix': '/usr/local', 'purelib': '/daodan/state/venvs/lib/python3.12/site-packages', 'platlib': '/daodan/state/venvs/lib/python3.12/site-packages', 'stdlib': '/usr/local/lib/python3.12', 'fastapi': '0.115.14', 'fastapi-cli': '0.0.34', 'starlette': '0.46.2', 'uvicorn': '0.54.0', 'pydantic': '2.14.4', 'fastapi-cli requires': ['typer>=0.26.1', 'uvicorn[standard]>=0.15.0', 'rich-toolkit>=0.14.8', 'uvicorn[standard]>=0.15.0; extra == \"standard\"', 'fastapi-cloud-cli>=0.1.1; extra == \"standard\"', 'uvicorn[standard]>=0.15.0; extra == \"standard-no-fastapi-cloud-cli\"', 'fastapi-new>=0.0.2; extra == \"new\"'], 'fastapi requires': ['starlette<0.47.0,>=0.40.0', 'pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4', 'typing-extensions>=4.8.0', 'fastapi-cli[standard]>=0.0.5; extra == \"standard\"', 'httpx>=0.23.0; extra == \"standard\"', 'jinja2>=3.1.5; extra == \"standard\"', 'python-multipart>=0.0.18; extra == \"standard\"', 'email-validator>=2.0.0; extra == \"standard\"', 'uvicorn[standard]>=0.12.0; extra == \"standard\"', 'fastapi-cli[standard]>=0.0.5; extra == \"all\"', 'httpx>=0.23.0; extra == \"all\"', 'jinja2>=3.1.5; extra == \"all\"', 'python-multipart>=0.0.18; extra == \"all\"', 'itsdangerous>=1.1.0; extra == \"all\"', 'pyyaml>=5.3.1; extra == \"all\"', 'ujson!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,>=4.0.1; extra == \"all\"', 'orjson>=3.2.1; extra == \"all\"', 'email-validator>=2.0.0; extra == \"all\"', 'uvicorn[standard]>=0.12.0; extra == \"all\"', 'pydantic-settings>=2.0.0; extra == \"all\"', 'pydantic-extra-types>=2.0.0; extra == \"all\"'], 'packages': ['Jinja2 3.1.6', 'MarkupSafe 3.0.4', 'PyYAML 6.0.4', 'Pygments 2.21.0', 'agent-detector 2.0.0', 'annotated-doc 0.0.7', 'annotated-types 0.8.0', 'anyio 4.16.0', 'certifi 2026.11.20', 'click 8.5.1', 'detect-installer 0.2.1', 'dnspython 2.9.2', 'email-validator 2.4.0', 'fastapi 0.115.14', 'fastapi-cli 0.0.34', 'fastapi-cloud-cli 0.28.0', 'fastar 0.12.0', 'h11 0.16.0', 'httpcore 1.0.9', 'httptools 0.9.0', 'httpx 0.28.1', 'idna 3.20', 'markdown-it-py 4.3.0', 'mdurl 0.1.2', 'pydantic 2.14.4', 'pydantic_core 2.50.5', 'python-dotenv 1.2.4', 'python-multipart 0.0.34', 'rich 15.0.0', 'rich-toolkit 0.20.6', 'rignore 0.8.1', 'sentry-sdk 3.0.0', 'shellingham 1.5.4', 'starlette 0.46.2', 'typer 0.29.2', 'typing-inspection 0.4.5', 'typing_extensions 4.16.0', 'urllib3 2.8.0', 'uvicorn 0.54.0', 'uvloop 0.23.0', 'watchfiles 1.3.0', 'websockets 17.4']}\n",
+ "stderr": "",
+ "seconds": 0.18,
+ "max_rss_mb": 40.3,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "setup": {
+  "exit": "0",
+  "seconds": "3",
+  "stderr": ""
+ },
+ "stdout_chars": 2557
+}

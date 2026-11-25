@@ -1,0 +1,98 @@
+{
+ "name": "petclinic",
+ "repository": "spring-projects/spring-petclinic",
+ "commit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+ "licence": "Apache-2.0",
+ "launcher_answers_used": [
+  "actuator"
+ ],
+ "needs_a_service": false,
+ "restore_rc": "0",
+ "built_rc": "0",
+ "build_offline_after_restore": {
+  "rc": 1,
+  "seconds": 2.84,
+  "missing": 9
+ },
+ "build_again_offline": {
+  "rc": 0,
+  "seconds": 7.93
+ },
+ "modules": [
+  {
+   "module": ".",
+   "start_class": "org.springframework.samples.petclinic.PetClinicApplication",
+   "boot_version": "4.1.0",
+   "runs": [
+    {
+     "label": "actuator",
+     "exit": 0,
+     "seconds": 6.86,
+     "peak_memory_mb": 809,
+     "rows": 21,
+     "listeners": [
+      [
+       48194,
+       6.525
+      ]
+     ],
+     "error": null
+    },
+    {
+     "label": "aot",
+     "exit": 0,
+     "seconds": 5.73,
+     "peak_memory_mb": 702,
+     "rows": 19,
+     "listeners": [],
+     "error": null
+    }
+   ],
+   "used": "actuator",
+   "rows": 21,
+   "project_rows": 17,
+   "framework_rows": 2,
+   "function_rows": 2,
+   "routes": 17,
+   "placed": 17,
+   "gaps": {}
+  }
+ ],
+ "launcher_routes": 17,
+ "placed": 17,
+ "gap_causes": {},
+ "noir": {
+  "seconds": 0.68,
+  "peak_memory_mb": 151,
+  "endpoints": 45,
+  "with_java_handler": 17,
+  "in_java_without_handler": [],
+  "other": {
+   "pom.xml": 14,
+   "a file of the project that is not code (static)": 14
+  }
+ },
+ "compare": {
+  "both": 17,
+  "only_launcher": 0,
+  "only_noir_java": 0,
+  "agree": {
+   "file": 17,
+   "line_in_span": 17,
+   "same_line": 17
+  },
+  "differ": []
+ },
+ "only_launcher_examples": [],
+ "only_noir_examples": [],
+ "left_behind": {
+  "changed_outside_target": [],
+  "files_in_target": 281,
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ },
+ "prep_left_behind": {
+  "new_outside_target": [],
+  "new_outside_target_count": 0
+ }
+}

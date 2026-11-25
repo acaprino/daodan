@@ -1,0 +1,60 @@
+{
+ "build_alone": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/tmp/m2-alone-ruoyi",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 1501,
+  "returncode": 0,
+  "seconds": 19.31,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "kind": "cold",
+ "name": "ruoyi",
+ "package": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/tmp/m2-cold-ruoyi",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 1356,
+  "returncode": 0,
+  "seconds": 18.43,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "restore": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline",
+   "-Dmaven.repo.local=/tmp/m2-cold-ruoyi"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 582,
+  "returncode": 1,
+  "seconds": 54.14,
+  "stderr": "",
+  "stdout": ": Failed to collect dependencies at org.ehcache:ehcache:jar:jakarta:3.12.0 -> org.glassfish.jaxb:jaxb-runtime:jar:2.3.0-b170127.1453 -> org.glassfish.jaxb:jaxb-core:jar:2.3.0-b170127.1453 -> javax.xml.bind:jaxb-api:jar:2.3.0-b161121.1438: Failed to read artifact descriptor for javax.xml.bind:jaxb-api:jar:2.3.0-b161121.1438: The following artifacts could not be resolved: javax.xml.bind:jaxb-api:pom:2.3.0-b161121.1438 (absent): Could not transfer artifact javax.xml.bind:jaxb-api:pom:2.3.0-b161121.1438 from/to maven-default-http-blocker (http://0.0.0.0/): Blocked mirror for repositories: [releases.java.net (http://maven.java.net/content/repositories/releases/, default, releases+snapshots), shapshots.java.net (http://maven.java.net/content/repositories/snapshots/, default, releases+snapshots), jvnet-nexus-staging (http://maven.java.net/content/repositories/staging/, default, releases+snapshots), netbeans (http://bits.netbeans.org/nexus/content/groups/netbeans, default, releases)] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException\n[ERROR] \n[ERROR] After correcting the problems, you can resume the build with the command\n[ERROR]   mvn <args> -rf :ruoyi-common\n",
+  "written": null,
+  "written_bytes": 0
+ }
+}

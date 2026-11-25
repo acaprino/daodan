@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
+import tempfile
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
@@ -87,6 +88,43 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
     # an analysis' shared restore is taken (`node_preparation.clone`)
     "next": {"files": [NODE], "setup": [UNPACK["node"]], "registries": True, "runs_on": ("node",),
              "restores": "node", "memory": 3},
+    # the project's own `react-router` or `remix` command (`@react-router/dev`, `@remix-run/dev`) is in the packages the setup
+    # restores: no install of its own, and a preparation, where an analysis' shared restore is taken (`premap/react_router.py`)
+    "react-router": {"files": [NODE], "setup": [UNPACK["node"]], "registries": True, "runs_on": ("node",),
+                     "restores": "node", "memory": 3},
+    # the project's own `nuxt` is in the packages the setup restores (its `postinstall`, `nuxt prepare`, ran there too, on the
+    # whole project): no install of its own, and a preparation, where an analysis' shared restore is taken; Daodan's script (beside
+    # this module) calls `loadNuxt` of the project's `@nuxt/kit`, run as `daodan-nuxt` (`premap/nuxt.py`). measured: the peak
+    # memory of either command on the two fixtures is 0.4 GB at most (`benchmarks/nuxt-routes/README.md`); `memory` is Next.js's, not
+    # measured on a project with many modules
+    "nuxt": {"files": [NODE, (None, None, "nuxt_pages.mjs")],
+             "setup": [UNPACK["node"], f"cp {IN}/nuxt_pages.mjs {T}/nuxt_pages.mjs"
+                                       f" && printf '%s\\n' '#!/bin/sh' 'exec node {T}/nuxt_pages.mjs \"$@\"' > {T}/bin/daodan-nuxt"
+                                       f" && chmod 755 {T}/bin/daodan-nuxt"],
+             "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
+    # the project's own `svelte-kit` (`@sveltejs/kit`) is in the packages the setup restores (its `prepare` script, which is usually
+    # `svelte-kit sync`, ran there too): no install of its own, and a preparation (`premap/sveltekit.py`)
+    "sveltekit": {"files": [NODE], "setup": [UNPACK["node"]], "registries": True, "runs_on": ("node",),
+                  "restores": "node", "memory": 3},
+    # the project's own `@angular/compiler` is in the packages the setup restores: Daodan's script (beside this module)
+    # calls its `parseTemplate`, run as `daodan-angular` (`premap/angular.py`)
+    "angular": {"files": [NODE, (None, None, "angular_templates.mjs")],
+                "setup": [UNPACK["node"], f"cp {IN}/angular_templates.mjs {T}/angular_templates.mjs"
+                                          f" && printf '%s\\n' '#!/bin/sh' 'exec node {T}/angular_templates.mjs \"$@\"' > {T}/bin/daodan-angular"
+                                          f" && chmod 755 {T}/bin/daodan-angular"],
+                "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
+    # the compiler the project's own `astro` depends on is in the packages the setup restores: Daodan's script calls its `parse`,
+    # run as `daodan-astro` (`premap/astro.py`)
+    "astro": {"files": [NODE, (None, None, "astro_templates.mjs")],
+              "setup": [UNPACK["node"], f"cp {IN}/astro_templates.mjs {T}/astro_templates.mjs"
+                                        f" && printf '%s\\n' '#!/bin/sh' 'exec node {T}/astro_templates.mjs \"$@\"' > {T}/bin/daodan-astro"
+                                        f" && chmod 755 {T}/bin/daodan-astro"],
+              "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
+    # Daodan's script (beside this module) loads the application with the project's own Flask, run by the Python of the environment
+    # the setup restores for each folder (`_python`, `premap/flask_app.py`); measured on Modal, `benchmarks/flask-routes/README.md`, which
+    # says why the source is not in `premap.SOURCES`
+    "flask": {"files": [(None, None, "flask_routes.py")], "setup": [f"cp {IN}/flask_routes.py {T}/flask_routes.py"],
+              "registries": True, "restores": "python", "memory": 3},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
     "compose": {"files": [(*compose.DOWNLOAD, "docker-compose")],  # Compose's own binary: it reads, no engine runs
                 "setup": [f"cp {IN}/docker-compose {T}/bin/docker-compose && chmod 755 {T}/bin/docker-compose"]},
@@ -130,14 +168,14 @@ def fetched(url: str | None, sha256: str | None, name: str) -> Path:
     return Path(__file__).with_name(name) if url is None else preparation.fetched(url, sha256, name)
 
 
-def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=()) -> tuple[dict, list, tuple, list]:
+def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=(), needs=()) -> tuple[dict, list, tuple, list]:
     """The setup command, the files it unpacks, the hosts beside the registries and the gaps known before it runs:
     the tool's own (`TOOLS`), the project's toolchains it runs on (`runs_on`, installed by mise at the version
     `stated`), what the commands name in `needs` (`preparation.NEEDS`), then the lines that restore the project's
     packages (`restores`)."""
     spec = TOOLS[tool]
     chains = preparation.toolchains([t for t in stated if t.get("tool") in spec.get("runs_on", ())])
-    needs = preparation.setup({n for c in commands for n in c.get("needs", ())})
+    needs = preparation.setup({*needs, *(n for c in commands for n in c.get("needs", ()))})
     network = "registries" if spec.get("registries") or needs["registries"] or chains["lines"] or restores or any(
         c.get("network") == "registries" for c in commands) else "none"
     lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"], *chains["lines"], *needs["lines"], *restores]
@@ -150,10 +188,25 @@ def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=()) 
 def _node(project: Path) -> dict:
     """The restore of the Node packages the copy of the project holds (`preparation.node_prepare`), from the
     manifests and lockfiles the snapshot perimeter walks: the snapshot itself keeps no `yarn.lock`."""
-    from tree_scope import Perimeter
-    files = sorted((directory / name).relative_to(project).as_posix()
-                   for directory, names in Perimeter(project).walk() for name in names)
-    return preparation.node_prepare(files, lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
+    return preparation.node_prepare(preparation.perimeter_files(project),
+                                    lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
+
+
+def _python(project: Path) -> dict:
+    """The restore of the Python environments the copy of the project holds, one per folder (`preparation.restores`, the
+    family `python`: uv, Poetry or pip by the folder's lockfile), as the Node packages are restored: `{lines, needs, hosts, gaps}`,
+    the lines that make each folder's environment under `preparation.VENVS`, the tools they need, the hosts beside the registries."""
+    files = preparation.perimeter_files(project)
+    # shortcut: no VCS requirement is overridden (`preparation.python_vcs`, `without`) and no host a project declares is added
+    # (`preparation.declared`): a folder whose install needs them is a `restore_failed` gap; when one is met, take them as the analyzers do
+    managers = {manager: folders for manager, folders in preparation.restores(files).items()
+                if preparation.RESTORES[manager].get("family") == "python"}
+    # measured on Modal (`benchmarks/flask-routes/results/venv-dir.json`): `uv venv "<venvs>/."`, the root folder's environment, fails
+    # when `<venvs>` is not there (`uv venv <venvs>/api` makes it): the setup makes `tools/bin` and `home`, not `venvs`
+    return {"lines": [f"mkdir -p {preparation.VENVS}", *(preparation.restore(manager, folders) for manager, folders in managers.items())]
+            if managers else [],
+            "needs": [n for manager in managers for n in preparation.RESTORES[manager].get("needs", ())],
+            "hosts": tuple(dict.fromkeys(h for manager in managers for h in preparation.RESTORES[manager]["hosts"])), "gaps": []}
 
 
 def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
@@ -174,9 +227,17 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if tool not in TOOLS or any(c["tool"] != tool for c in commands):
             raise ValueError(f"no container setup for the tool {tool}")
         spec = TOOLS[tool]
-        restored = _node(project) if spec.get("restores") == "node" else {"lines": [], "hosts": (), "gaps": []}
-        restore_lines, shared = node_preparation.options(restored, toolchains)
-        first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines)
+        # a command may carry files, `{name: text}`: what the container is given at `IN/name` beside the tool's own (a list too
+        # long for an argument); the engine is asked to run the command alone
+        carried = {name: text for c in commands for name, text in (c.get("inputs") or {}).items()}
+        if any("/" in name or name in ("", ".", "..") for name in carried):
+            raise ValueError(f"a file a command carries is a name, not a path: {sorted(carried)}")
+        commands = [{k: v for k, v in c.items() if k != "inputs"} for c in commands]
+        restored = ({"node": _node, "python": _python}.get(spec.get("restores"), lambda _project: {"lines": [], "hosts": (), "gaps": []})
+                    )(project)
+        restore_lines, shared = (node_preparation.options(restored, toolchains) if spec.get("restores") == "node"
+                                 else (restored["lines"], {}))
+        first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines, restored.get("needs", ()))
         gaps += restored["gaps"]  # a package folder no restore installs
         hosts = (*hosts, *restored["hosts"])
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
@@ -184,11 +245,17 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                                      c["tool"], *c["argv"]]}
                             if spec.get("java") else {})} for c in commands)]
         def contained(given: list[dict], allowed: tuple, out: str) -> dict:
-            return container.run_commands(
-                project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
-                values=spec.get("values", False), engine=engine, inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
-                registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
-                memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
+            with tempfile.TemporaryDirectory(prefix="daodan-inputs-") as scratch:
+                written = {}
+                for name, text in carried.items():
+                    (Path(scratch) / name).write_bytes(text.encode("utf-8"))
+                    written[f"{IN}/{name}"] = Path(scratch) / name
+                return container.run_commands(
+                    project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
+                    values=spec.get("values", False), engine=engine,
+                    inputs=lambda: {**{f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files}, **written},
+                    registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
+                    memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
 
         result = contained(ran, hosts, tool)
         if result["state"] == "gap":

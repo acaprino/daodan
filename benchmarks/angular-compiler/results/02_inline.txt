@@ -1,0 +1,179 @@
+
+##### inline.component.ts :: InlineComponent  template literal kind=FirstTemplateToken
+  range {"startPos":197,"startLine":5,"startCol":13,"endPos":359} ; cooked length 162, raw length 162, cooked===raw: true
+  raw: "\n    <section>\n      <h2>Inline</h2>\n      <button (click)=\"go()\">Go inline</button>\n      <button (click)=\"this.goThis()\">Go with this</button>\n    </section>\n  "
+  A cooked string, no options (offsets are inside the string): 2 events
+    "go()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 3:14@51 (+shift 0 => offset 51), expected offset 51
+    "this.goThis()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 4:14@99 (+shift 0 => offset 99), expected offset 99
+     errors: null
+  B threw Invalid code point NaN
+  C whole .ts text + range + escapedString=true: 2 events
+    "go()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 8:14@248 (+shift 0 => offset 248), expected offset 248
+    "this.goThis()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 9:14@296 (+shift 0 => offset 296), expected offset 296
+     errors: null
+  C whole .ts text + range + escapedString=false: 2 events
+    "go()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 8:14@248 (+shift 0 => offset 248), expected offset 248
+    "this.goThis()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 9:14@296 (+shift 0 => offset 296), expected offset 296
+     errors: null
+  E raw slice + escapedString=true (offsets inside the slice, shift = startPos): 2 events
+    "go()"  sourceSpan=offset-exact, line:col differ keySpan=offset-exact, line:col differ handlerSpan=offset-exact, line:col differ  sourceSpan start 3:14@51 (+shift 197 => offset 248), expected offset 248
+    "this.goThis()"  sourceSpan=offset-exact, line:col differ keySpan=offset-exact, line:col differ handlerSpan=offset-exact, line:col differ  sourceSpan start 4:14@99 (+shift 197 => offset 296), expected offset 296
+     errors: null
+
+##### inline.component.ts :: InlineEscapedComponent  template literal kind=StringLiteral
+  range {"startPos":528,"startLine":23,"startCol":13,"endPos":613} ; cooked length 83, raw length 85, cooked===raw: false
+  raw: "It\\'s <button (click)=\"esc()\">Esc</button>\\n<button (click)=\"esc2()\">Esc two</button>"
+  A cooked string, no options (offsets are inside the string): 2 events
+    "esc()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 0:13@13 (+shift 0 => offset 13), expected offset 13
+    "esc2()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 1:8@50 (+shift 0 => offset 50), expected offset 50
+     errors: null
+  B threw Invalid code point NaN
+  C whole .ts text + range + escapedString=true: 2 events
+    "esc()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 23:27@542 (+shift 0 => offset 542), expected offset 542
+    "esc2()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 23:65@580 (+shift 0 => offset 580), expected offset 580
+     errors: null
+  C whole .ts text + range + escapedString=false: 2 events
+    "esc()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 23:27@542 (+shift 0 => offset 542), expected offset 542
+    "esc2()"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 23:65@580 (+shift 0 => offset 580), expected offset 580
+     errors: null
+  E raw slice + escapedString=true (offsets inside the slice, shift = startPos): 2 events
+    "esc()"  sourceSpan=offset-exact, line:col differ keySpan=offset-exact, line:col differ handlerSpan=offset-exact, line:col differ  sourceSpan start 0:14@14 (+shift 528 => offset 542), expected offset 542
+    "esc2()"  sourceSpan=offset-exact, line:col differ keySpan=offset-exact, line:col differ handlerSpan=offset-exact, line:col differ  sourceSpan start 0:52@52 (+shift 528 => offset 580), expected offset 580
+     errors: null
+
+##### inline.component.ts :: InlineDoubleQuotedComponent  template literal kind=StringLiteral
+  range {"startPos":738,"startLine":32,"startCol":13,"endPos":785} ; cooked length 43, raw length 47, cooked===raw: false
+  raw: "<button (click)=\\\"dq()\\\">Dq \\\"quoted\\\"</button>"
+  A cooked string, no options (offsets are inside the string): 1 events
+    ?? handler "dq()" matches no expectation; sourceSpan 0:8@8
+     errors: null
+  B threw Invalid code point NaN
+  C whole .ts text + range + escapedString=true: 1 events
+    ?? handler "dq()" matches no expectation; sourceSpan 32:21@746
+     errors: null
+  C whole .ts text + range + escapedString=false: 0 events
+     errors: Opening tag "button" not terminated.,Unexpected closing tag "button". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags
+  E raw slice + escapedString=true (offsets inside the slice, shift = startPos): 1 events
+    ?? handler "dq()" matches no expectation; sourceSpan 0:8@8
+     errors: null
+
+##### editor.component.ts :: EditorComponent  template literal kind=FirstTemplateToken
+  range {"startPos":104,"startLine":4,"startCol":13,"endPos":162} ; cooked length 58, raw length 58, cooked===raw: true
+  raw: "<button (click)=\"saved.emit('done')\">Done editing</button>"
+  A cooked string, no options (offsets are inside the string): 1 events
+    "saved.emit('done')"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 0:8@8 (+shift 0 => offset 8), expected offset 8
+     errors: null
+  B threw Invalid code point NaN
+  C whole .ts text + range + escapedString=true: 1 events
+    "saved.emit('done')"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 4:21@112 (+shift 0 => offset 112), expected offset 112
+     errors: null
+  C whole .ts text + range + escapedString=false: 1 events
+    "saved.emit('done')"  sourceSpan=EXACT keySpan=EXACT handlerSpan=EXACT  sourceSpan start 4:21@112 (+shift 0 => offset 112), expected offset 112
+     errors: null
+  E raw slice + escapedString=true (offsets inside the slice, shift = startPos): 1 events
+    "saved.emit('done')"  sourceSpan=offset-exact, line:col differ keySpan=offset-exact, line:col differ handlerSpan=offset-exact, line:col differ  sourceSpan start 0:8@8 (+shift 104 => offset 112), expected offset 112
+     errors: null
+
+
+=== VERBOSE: variant C (whole .ts + range + escapedString=true) ===
+
+##### InlineComponent
+bound events found by walking the nodes: 2
+
+[#0] path: Element<section> > Element<button>
+   name="click" type=0 target=null phase=null  handler.source="go()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="go"), args=[])
+   sourceSpan  EXACT   8:14@248 .. 8:28@262 covers "(click)=\"go()\""
+   keySpan     EXACT   8:15@249 .. 8:20@254 covers "click"
+   handlerSpan EXACT   8:23@257 .. 8:27@261 covers "go()"
+   calls: 
+     Call: callee="go" receiver="<implicit component member>" method="go"  nameSpan 257..259 covers "go"  callSpan 257..261 covers "go()"
+
+[#1] path: Element<section> > Element<button>
+   name="click" type=0 target=null phase=null  handler.source="this.goThis()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ThisReceiver(), name="goThis"), args=[])
+   sourceSpan  EXACT   9:14@296 .. 9:37@319 covers "(click)=\"this.goThis()\""
+   keySpan     EXACT   9:15@297 .. 9:20@302 covers "click"
+   handlerSpan EXACT   9:23@305 .. 9:36@318 covers "this.goThis()"
+   calls: 
+     Call: callee="this.goThis" receiver="<this>" method="goThis"  nameSpan 310..316 covers "goThis"  callSpan 305..318 covers "this.goThis()"
+
+   file the spans point at: sourceSpan.start.file.url="/fixture/src/app/inline.component.ts" content===.ts text: true
+
+##### InlineEscapedComponent
+bound events found by walking the nodes: 2
+
+[#0] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="esc()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="esc"), args=[])
+   sourceSpan  EXACT   23:27@542 .. 23:42@557 covers "(click)=\"esc()\""
+   keySpan     EXACT   23:28@543 .. 23:33@548 covers "click"
+   handlerSpan EXACT   23:36@551 .. 23:41@556 covers "esc()"
+   calls: 
+     Call: callee="esc" receiver="<implicit component member>" method="esc"  nameSpan 551..554 covers "esc"  callSpan 551..556 covers "esc()"
+
+[#1] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="esc2()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="esc2"), args=[])
+   sourceSpan  EXACT   23:65@580 .. 23:81@596 covers "(click)=\"esc2()\""
+   keySpan     EXACT   23:66@581 .. 23:71@586 covers "click"
+   handlerSpan EXACT   23:74@589 .. 23:80@595 covers "esc2()"
+   calls: 
+     Call: callee="esc2" receiver="<implicit component member>" method="esc2"  nameSpan 589..593 covers "esc2"  callSpan 589..595 covers "esc2()"
+
+   file the spans point at: sourceSpan.start.file.url="/fixture/src/app/inline.component.ts" content===.ts text: true
+
+##### InlineDoubleQuotedComponent
+bound events found by walking the nodes: 1
+
+[#0] path: Element<button>
+   name="click" type=0 target=null phase=null  handler.source="dq()"  handler AST kind=Call
+   handler AST: Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="dq"), args=[])
+   (no expectation matched this event)
+   calls: 
+     Call: callee="dq" receiver="<implicit component member>" method="dq"  nameSpan 756..758 covers "dq"  callSpan 756..760 covers "dq()"
+
+   file the spans point at: sourceSpan.start.file.url="/fixture/src/app/inline.component.ts" content===.ts text: true
+
+=== label children, inline (variant C) ===
+InlineComponent <button> go(): children=Text("Go inline") 8:29@263
+InlineComponent <button> this.goThis(): children=Text("Go with this") 9:38@320
+InlineEscapedComponent <button> esc(): children=Text("Esc") 23:43@558
+InlineEscapedComponent <button> esc2(): children=Text("Esc two") 23:82@597
+InlineDoubleQuotedComponent <button> dq(): children=Text("Dq \"quoted\"") 32:38@763
+
+=== host metadata ===
+exports mentioning host: HOST_BINDING_GUARD_COMMENT_TEXT, TmplAstHostElement, createHostBindingsBlockGuard, createHostElement, parseHostBindings, verifyHostBindings
+InlineComponent host literal text: { '(click)': 'onHost()', '(window:keydown.escape)': 'onEsc()', '[class.active]': 'active' }
+as a JS object: {"(click)":"onHost()","(window:keydown.escape)":"onEsc()","[class.active]":"active"}
+parseHostBindings -> {
+ "attributes": {},
+ "listeners": {
+  "click": "onHost()",
+  "window:keydown.escape": "onEsc()"
+ },
+ "properties": {
+  "class.active": "active"
+ },
+ "specialAttributes": {}
+}
+TmplAstHostElement source: class HostElement {
+  tagNames;
+  bindings;
+  listeners;
+  sourceSpan;
+  constructor(tagNames, bindings, listeners, sourceSpan) {
+    this.tagNames = tagNames;
+    this.bindings = bindings;
+    this.listeners = listeners;
+    this.sourceSpan = sourceSpan;
+    if (tagNames.length === 0) {
+      throw new Error('HostElement must have at least one tag name.');
+    }
+  }
+  visit() {
+    throw new Error(`HostElement cannot be visited`);
+  }
+}
+
+--- exit 0

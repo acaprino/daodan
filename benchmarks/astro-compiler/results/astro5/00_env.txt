@@ -1,0 +1,239 @@
+node v24.22.3
+astro 5.18.2 | @astrojs/compiler 2.13.1 | entry node_modules/@astrojs/compiler/dist/node/index.cjs
+exports of the package: {".":{"types":"./dist/node/index.d.ts","browser":"./dist/browser/index.js","import":"./dist/node/index.js","require":"./dist/node/index.cjs","default":"./dist/browser/index.js"},"./sync":{"types":"./dist/node/sync.d.ts","import":"./dist/node/sync.js","require":"./dist/node/sync.cjs","default":"./dist/node/sync.js"},"./utils":{"types":"./dist/node/utils.d.ts","browser":"./dist/browser/utils.js","import":"./dist/node/utils.js","require":"./dist/node/utils.cjs","default":"./dist/browser/utils.js"},"./astro.wasm":"./dist/astro.wasm","./types":"./dist/shared/types.d.ts","./package.json":"./package.json"}
+dependencies: undefined optional: []
+exported by the module: compile, convertToTSX, default, module.exports, parse, teardown, transform
+--- README lines that mention position, span, incomplete, incorrect, parse or AST
+  - Position data is currently incomplete and in some cases incorrect. We're working on it!
+    position: false, // defaults to `true`
+--- type declarations: dist/browser/index.d.ts, dist/browser/utils.d.ts, dist/browser/wasm_exec.d.ts, dist/node/index.d.ts, dist/node/sync.d.ts, dist/node/utils.d.ts, dist/node/wasm_exec.d.ts, dist/shared/ast.d.ts, dist/shared/diagnostics.d.ts, dist/shared/types.d.ts, sync.d.ts, types.d.ts, utils.d.ts
+--- dist/shared/ast.d.ts
+type ParentNode = RootNode | ElementNode | ComponentNode | CustomElementNode | FragmentNode | ExpressionNode;
+type LiteralNode = TextNode | DoctypeNode | CommentNode | FrontmatterNode;
+type Node = RootNode | ElementNode | ComponentNode | CustomElementNode | FragmentNode | ExpressionNode | TextNode | FrontmatterNode | DoctypeNode | CommentNode;
+interface Position {
+    start: Point;
+    end?: Point;
+}
+interface Point {
+    /** 1-based line number */
+    line: number;
+    /** 1-based column number, per-line */
+    column: number;
+    /** 0-based byte offset */
+    offset: number;
+}
+interface BaseNode {
+    type: string;
+    position?: Position;
+}
+interface ParentLikeNode extends BaseNode {
+    type: 'element' | 'component' | 'custom-element' | 'fragment' | 'expression' | 'root';
+    children: Node[];
+}
+interface ValueNode extends BaseNode {
+    value: string;
+}
+interface RootNode extends ParentLikeNode {
+    type: 'root';
+}
+interface AttributeNode extends BaseNode {
+    type: 'attribute';
+    kind: 'quoted' | 'empty' | 'expression' | 'spread' | 'shorthand' | 'template-literal';
+    name: string;
+    value: string;
+    raw?: string;
+}
+interface TextNode extends ValueNode {
+    type: 'text';
+}
+interface ElementNode extends ParentLikeNode {
+    type: 'element';
+    name: string;
+    attributes: AttributeNode[];
+}
+interface FragmentNode extends ParentLikeNode {
+    type: 'fragment';
+    name: string;
+    attributes: AttributeNode[];
+}
+interface ComponentNode extends ParentLikeNode {
+    type: 'component';
+    name: string;
+    attributes: AttributeNode[];
+}
+interface CustomElementNode extends ParentLikeNode {
+    type: 'custom-element';
+    name: string;
+    attributes: AttributeNode[];
+}
+type TagLikeNode = ElementNode | FragmentNode | ComponentNode | CustomElementNode;
+interface DoctypeNode extends ValueNode {
+    type: 'doctype';
+}
+interface CommentNode extends ValueNode {
+    type: 'comment';
+}
+interface FrontmatterNode extends ValueNode {
+    type: 'frontmatter';
+}
+interface ExpressionNode extends ParentLikeNode {
+    type: 'expression';
+}
+
+export { AttributeNode, BaseNode, CommentNode, ComponentNode, CustomElementNode, DoctypeNode, ElementNode, ExpressionNode, FragmentNode, FrontmatterNode, LiteralNode, Node, ParentLikeNode, ParentNode, Point, Position, RootNode, TagLikeNode, TextNode, ValueNode };
+
+--- dist/shared/types.d.ts
+import { RootNode } from './ast.js';
+export { AttributeNode, BaseNode, CommentNode, ComponentNode, CustomElementNode, DoctypeNode, ElementNode, ExpressionNode, FragmentNode, FrontmatterNode, LiteralNode, Node, ParentLikeNode, ParentNode, Point, Position, TagLikeNode, TextNode, ValueNode } from './ast.js';
+import { DiagnosticCode } from './diagnostics.js';
+
+interface PreprocessorResult {
+    code: string;
+    map?: string;
+}
+interface PreprocessorError {
+    error: string;
+}
+interface ParseOptions {
+    position?: boolean;
+}
+declare enum DiagnosticSeverity {
+    Error = 1,
+    Warning = 2,
+    Information = 3,
+    Hint = 4
+}
+interface DiagnosticMessage {
+    severity: DiagnosticSeverity;
+    code: DiagnosticCode;
+    location: DiagnosticLocation;
+    hint?: string;
+    text: string;
+}
+interface DiagnosticLocation {
+    file: string;
+    line: number;
+    column: number;
+    length: number;
+}
+interface TransformOptions {
+    internalURL?: string;
+    filename?: string;
+    normalizedFilename?: string;
+    sourcemap?: boolean | 'inline' | 'external' | 'both';
+    astroGlobalArgs?: string;
+    compact?: boolean;
+    resultScopedSlot?: boolean;
+    scopedStyleStrategy?: 'where' | 'class' | 'attribute';
+    /**
+     * @deprecated "as" has been removed and no longer has any effect!
+     */
+    as?: 'document' | 'fragment';
+    transitionsAnimationURL?: string;
+    resolvePath?: (specifier: string) => Promise<string> | string;
+    preprocessStyle?: (content: string, attrs: Record<string, string>) => null | Promise<PreprocessorResult | PreprocessorError>;
+    annotateSourceFile?: boolean;
+    /**
+     * Render script tags to be processed (e.g. script tags that have no attributes or only a `src` attribute)
+     * using a `renderScript` function from `internalURL`, instead of stripping the script entirely.
+     * @experimental
+     */
+    renderScript?: boolean;
+    experimentalScriptOrder?: boolean;
+}
+type ConvertToTSXOptions = Pick<TransformOptions, 'filename' | 'normalizedFilename' | 'sourcemap'> & {
+    /** If set to true, script tags content will be included in the generated TSX
+     * Scripts will be wrapped in an arrow function to be compatible with JSX's spec
+     */
+    includeScripts?: boolean;
+    /** If set to true, style tags content will be included in the generated TSX
+     * Styles will be wrapped in a template literal to be compatible with JSX's spec
+     */
+    includeStyles?: boolean;
+};
+type HoistedScript = {
+    type: string;
+} & ({
+    type: 'external';
+    src: string;
+} | {
+    type: 'inline';
+    code: string;
+    map: string;
+});
+interface HydratedComponent {
+    exportName: string;
+    localName: string;
+    specifier: string;
+    resolvedPath: string;
+}
+interface TransformResult {
+    code: string;
+    map: string;
+    scope: string;
+    styleError: string[];
+    diagnostics: DiagnosticMessage[];
+    css: string[];
+    scripts: HoistedScript[];
+    hydratedComponents: HydratedComponent[];
+    clientOnlyComponents: HydratedComponent[];
+    serverComponents: HydratedComponent[];
+    containsHead: boolean;
+    propagation: boolean;
+}
+interface SourceMap {
+    file: string;
+    mappings: string;
+    names: string[];
+    sources: string[];
+    sourcesContent: string[];
+    version: number;
+}
+/**
+ * Represents a location in a TSX file.
+ * Both the `start` and `end` properties are 0-based, and are based off utf-16 code units. (i.e. JavaScript's `String.prototype.length`)
+ */
+interface TSXLocation {
+    start: number;
+    end: number;
+}
+interface TSXExtractedTag {
+    position: TSXLocation;
+    content: string;
+}
+interface TSXExtractedScript extends TSXExtractedTag {
+    type: 'processed-module' | 'module' | 'inline' | 'event-attribute' | 'json' | 'raw' | 'unknown';
+}
+interface TSXExtractedStyle extends TSXExtractedTag {
+    type: 'tag' | 'style-attribute';
+    lang: 'css' | 'scss' | 'sass' | 'less' | 'stylus' | 'styl' | 'postcss' | 'pcss' | 'unknown' | (string & {});
+}
+interface TSXResult {
+    code: string;
+    map: SourceMap;
+    diagnostics: DiagnosticMessage[];
+    metaRanges: {
+        frontmatter: TSXLocation;
+        body: TSXLocation;
+        scripts?: TSXExtractedScript[];
+        styles?: TSXExtractedStyle[];
+    };
+}
+interface ParseResult {
+    ast: RootNode;
+    diagnostics: DiagnosticMessage[];
+}
+declare function transform(input: string, options?: TransformOptions): Promise<TransformResult>;
+declare function parse(input: string, options?: ParseOptions): Promise<ParseResult>;
+declare function convertToTSX(input: string, options?: ConvertToTSXOptions): Promise<TSXResult>;
+declare function initialize(options: InitializeOptions): Promise<void>;
+/**
+ * When calling the core compiler APIs, e.g. `transform`, `parse`, etc, they
+ * would automatically instantiate a WASM instance to process the input. When
+ * done, you can call this to manually teardown the WASM instance.
+ *
+ * If the APIs are called again, they will automatically instantiate a new WASM
+ * instance. In browsers, you have to cal
+
+--- exit 0

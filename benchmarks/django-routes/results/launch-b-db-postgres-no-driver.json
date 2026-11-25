@@ -1,0 +1,21 @@
+{
+ "variant": "launch-b-db-postgres-no-driver",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\" \"$3\"",
+  "django",
+  "60",
+  "/daodan/state/in/launch.py",
+  "b"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "ImproperlyConfigured: Error loading psycopg2 or psycopg module\n",
+ "seconds": 0.4,
+ "max_rss_mb": 58.7,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

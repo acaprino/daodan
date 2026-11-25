@@ -1,0 +1,22 @@
+{
+ "variant": "api-name",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "fastapi",
+  "900",
+  "/daodan/state/tools/fastapi_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"application\": \"main:api\", \"found\": \"auto-discovery\", \"root_path\": \"\", \"competing\": {\"others\": [], \"shadowed\": []}, \"routes\": [{\"kind\": \"http\", \"path\": \"/openapi.json\", \"methods\": [\"GET\"], \"docs\": true, \"parts\": [[false, \"/openapi.json\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"fastapi.applications\", \"qualname\": \"FastAPI.setup.<locals>.openapi\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/fastapi/applications.py\", \"line\": 1153, \"environment\": true, \"distribution\": null}}, {\"kind\": \"http\", \"path\": \"/docs\", \"methods\": [\"GET\"], \"docs\": true, \"parts\": [[false, \"/docs\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"fastapi.applications\", \"qualname\": \"FastAPI.setup.<locals>.swagger_ui_html\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/fastapi/applications.py\", \"line\": 1168, \"environment\": true, \"distribution\": null}}, {\"kind\": \"http\", \"path\": \"/docs/oauth2-redirect\", \"methods\": [\"GET\"], \"docs\": true, \"parts\": [[false, \"/docs/oauth2-redirect\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"fastapi.applications\", \"qualname\": \"FastAPI.setup.<locals>.swagger_ui_redirect\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/fastapi/applications.py\", \"line\": 1186, \"environment\": true, \"distribution\": null}}, {\"kind\": \"http\", \"path\": \"/redoc\", \"methods\": [\"GET\"], \"docs\": true, \"parts\": [[false, \"/redoc\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"fastapi.applications\", \"qualname\": \"FastAPI.setup.<locals>.redoc_html\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/fastapi/applications.py\", \"line\": 1196, \"environment\": true, \"distribution\": null}}, {\"kind\": \"http\", \"path\": \"/by-api\", \"methods\": [\"GET\"], \"docs\": false, \"parts\": [[false, \"/by-api\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"main\", \"qualname\": \"by_api\", \"file\": \"main.py\", \"line\": 7, \"environment\": false, \"distribution\": null}}], \"unread\": []}",
+ "stderr": "",
+ "seconds": 1.12,
+ "max_rss_mb": 70.5,
+ "left_in_the_project": [
+  "__pycache__/main.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 2127
+}

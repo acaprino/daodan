@@ -1,14 +1,26 @@
-"""The pipeline's `stack` step on Modal: snapshot, pre-map and `technologies.ensure`, scored on the corpus.
+"""The pipeline's `stack` step on Modal: snapshot, pre-map and `technologies.ensure`, scored on the corpus. The step is
+the product's: the recogniser is stack-analyser (`stack_recognition.run`), and nothing else recognizes.
 
 Nothing runs on this PC, and the project's code runs nowhere: the container writes the snapshot, writes the
 pre-map with the answers `modal_premap.py --runs` recorded for its model commands (`results/premap-runs`, replayed
 as `tools/premap_replay.py` replays them: no tool runs), then `technologies.ensure(manifest)` derives the record
-`technologies.json`. A fixture without a recording has its model commands `not_run` (`model: none`), and the
-pre-map's facts that come from them (services of a CI job, `excluded`) are missing; a command the recording lacks
-is counted (`model: partial`). A process started during `ensure` is recorded (`spawned`); a fixture's result is
-`executed_project_code: no` when each is the perimeter's git with hooks and monitors off (GIT), else `unknown`. The container holds the plugin's scripts with the data they
-read beside their folder (`service_registry.REGISTRY`), `score.py` and this driver, at the paths of the repository
-under `/repo`; the code hash of those files is printed on both sides and must match. A fixture with `source.json` is
+`technologies.json`: the full scan, whose seconds are `seconds.stack`. A fixture without a recording has its model
+commands `not_run` (`model: none`), and the pre-map's facts that come from them (services of a CI job, `excluded`) are
+missing; a command the recording lacks is counted (`model: partial`). Then the fast scan: the pre-map again without its
+model commands, and `technologies.derive` on it, timed (`fast_seconds`; the pre-map is not in it). A fixture whose run of
+the tool failed is an `error`, not a result that found nothing. The result also has `declarations`, the number the step
+sent to the tool in the full scan, and `perimeter`, the entries of `skipDirs` and `ignore` it sent (`tools/fork_stack.py`).
+
+The tool is the image's Node (`indexers.runtime.NODE_VERSION`, the one the product starts) on the image's release (the
+pin of `daodan/core/stack_analyser.py`, fetched as `tests/modal_pytest.py` fetches it; `test_fork_stack.py` compares them):
+the container replaces `stack_analyser.node` and `stack_analyser.cli` by those two paths, so the install itself (the
+download in the product's tool folder) is not measured here; it is the proof `tests/test_codebase_map_host_programs.py`
+runs. Before its first fixture a batch runs the tool once on an empty folder, outside every timing, for Node's cold start; if
+it cannot start, every fixture of the batch has that error. A process started during the two scans is recorded
+(`spawned`); a fixture's result is `executed_project_code: no` when each is the perimeter's git with hooks and monitors off
+(GIT) or the image's Node on the release's `cli.mjs` (`fork_stack.executed`), else `unknown`. The container holds the
+plugin's scripts with the data they read beside their folder (`service_registry.REGISTRY`), `score.py` and this driver, at the
+paths of the repository under `/repo`; the code hash of those files is printed on both sides and must match. A fixture with `source.json` is
 a real repository: its clone from the archive `modal_native.py prepare` keeps on the volume, else a shallow clone at
 the pinned commit. `expected.json` and `source.json` never enter the project the step reads.
 
@@ -37,6 +49,7 @@ from pathlib import Path
 import modal
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE / "tools"))  # `fork_stack`: beside this file, on this PC and at /repo in the container
 LOCAL = modal.is_local()
 REPO = HERE.parents[1] if LOCAL else Path("/repo")
 FIXTURES = Path(os.environ.get("DAODAN_FIXTURES") or HERE / "fixtures")
@@ -49,16 +62,37 @@ UPLOADED = ((REPO / SCRIPTS, SCRIPTS), (REPO / DATA, DATA),
             (HERE / "tools/premap_replay.py", "benchmarks/project-model/tools/premap_replay.py"),
             (HERE / "tools/daodan_modules.py", "benchmarks/project-model/tools/daodan_modules.py"),
             (HERE / "tools/native_common.py", "benchmarks/project-model/tools/native_common.py"),
+            (HERE / "tools/fork_stack.py", "benchmarks/project-model/tools/fork_stack.py"),
             (HERE / "results/premap-runs", "benchmarks/project-model/results/premap-runs"),
             (HERE / "modal_stack.py", "benchmarks/project-model/modal_stack.py"))
 SKIPPED = ("expected.json", "source.json")
 GIT = "/usr/bin/git -c core.fsmonitor=false -c core.hooksPath=/dev/null "  # the perimeter: hooks and monitors off
 BATCH = {"hand": 20, "real": 4}  # fixtures per container: a family's hand-written ones, real repositories
-TIMEOUT = 1500  # seconds a container may spend over its batch
-FIXTURE_TIMEOUT = 900  # seconds one fixture may take (the largest answer in 360)
+TIMEOUT = 3000  # seconds a container may spend over its batch: two scans by the release per fixture
+FIXTURE_TIMEOUT = 1800  # seconds one fixture may take (the registry's one pass held its largest at 360 in 900)
+# The Node the product starts (`NODE_VERSION` of `daodan/core/indexers/runtime.py`; sha256 from the release's
+# SHASUMS256.txt), fetched and checked as `tests/modal_pytest.py` fetches its own; and the release of
+# `daodan/core/stack_analyser.py` as that launcher pins it, in /opt/stack-analyser. The launcher is not a module the
+# container can import, so its pin and commands are repeated: `test_fork_stack.py` reads them from its syntax tree.
+NODE_VERSION = "v22.23.4"
+NODE = ("https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.gz",
+        "b8492284c76a54baf58d61668dd0e41ee0fc98adabf9503d30f05d08f55b4406")
+FETCH_NODE = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
+              "assert hashlib.sha256(data).hexdigest() == '%s'; open('/tmp/node.tar.gz', 'wb').write(data)\"" % NODE)
+STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser-daodan/releases/download/v1.27.6-daodan.5/"
+                  "stack-analyser-daodan-1.27.6-daodan.5.tgz",
+                  "e87658b2d630df6cb90de21070e86f91efdbe6a7b841dbeb3aab6add6332475c", "/opt/stack-analyser")
+FETCH_STACK_ANALYSER = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
+                        "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s/release.tgz', 'wb').write(data)\""
+                        % STACK_ANALYSER)
+NODE_BIN = "/opt/node-v22.23.4-linux-x64/bin/node"  # where the tarball above unpacks, in /opt
+CLI = "/opt/stack-analyser/package/dist/cli.mjs"  # `stack_analyser.PROGRAM` of the unpacked release
 
 image = (modal.Image.debian_slim(python_version="3.12").apt_install("git", "ca-certificates")
-         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6"))
+         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6")
+         .run_commands(FETCH_NODE, "tar -xzf /tmp/node.tar.gz -C /opt && rm /tmp/node.tar.gz",
+                       f"mkdir -p {STACK_ANALYSER[2]}", FETCH_STACK_ANALYSER,
+                       f"tar -xzf {STACK_ANALYSER[2]}/release.tgz -C {STACK_ANALYSER[2]}"))
 if LOCAL:
     for _local, _repo in UPLOADED:
         image = (image.add_local_dir(_local, f"/repo/{_repo}", ignore=["**/__pycache__/**"]) if _local.is_dir()
@@ -148,37 +182,66 @@ def _recording(name: str) -> dict | None:
     return json.loads(gzip.decompress(file.read_bytes()).decode("utf-8")) if file.is_file() else None
 
 
+def _image_tool() -> None:
+    """The tool is the image's Node on the image's release, not an install of Daodan's own."""
+    import stack_analyser
+    stack_analyser.node = lambda _project: Path(NODE_BIN)
+    stack_analyser.cli = lambda: Path(CLI)
+
+
+def _ran(answer: dict, scan: str) -> None:
+    """The scan's run of the tool did not fail: a fixture whose run failed is an `error`, not a project that shows nothing."""
+    failed = [gap["detail"] for gap in answer["gaps"] if gap["kind"] == "checker_failed" and gap.get("checker") == "stack-analyser"]
+    if failed:
+        raise RuntimeError(f"stack-analyser failed in the {scan} scan: {failed[0]}"[:600])
+
+
 def _measure(name: str) -> dict:
     import premap
     import premap_replay
+    import service_registry
     import snapshot
+    import stack_analyser
     import technologies
+    from fork_stack import figures
+    _image_tool()
     started = time.monotonic()
     project = _project(name)
     manifest = Path("/work") / f"{name}.out" / "manifest.sqlite"
     shutil.rmtree(manifest.parent, ignore_errors=True)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     recording, missing = _recording(name), []
     if recording is not None:
         premap.write(manifest, runner=premap_replay.replayer(recording, missing))
     model = "none" if recording is None else "partial" if missing else "recorded"
     middle = time.monotonic()
     spawned, original = [], subprocess.Popen.__init__
+    passed, run = [], stack_analyser.run
 
     def watch(self, args, *rest, **keywords):
         spawned.append(" ".join(map(str, args if isinstance(args, (list, tuple)) else [args]))[:200])
         original(self, args, *rest, **keywords)
 
     subprocess.Popen.__init__ = watch
+    stack_analyser.run = lambda root, **keywords: passed.append(keywords) or run(root, **keywords)
     try:
-        record = technologies.ensure(manifest)
+        record = technologies.ensure(manifest)  # the full scan
+        states: dict[str, int] = {}
+        for source in json.loads(premap.path(manifest).read_text(encoding="utf-8"))["sources"]:
+            states[source["state"]] = states.get(source["state"], 0) + 1
+        ended = time.monotonic()
+        facts = premap.write(manifest, runner=None)  # the fast scan: the pre-map without its model commands, not timed
+        began = time.monotonic()
+        fast = technologies.derive(manifest, service_registry.load(), facts)  # derives, never a stored record
+        fast_seconds = round(time.monotonic() - began, 3)
     finally:
         subprocess.Popen.__init__ = original
-    states: dict[str, int] = {}
-    for source in json.loads(premap.path(manifest).read_text(encoding="utf-8"))["sources"]:
-        states[source["state"]] = states.get(source["state"], 0) + 1
+        stack_analyser.run = run
+    _ran(record, "full")
+    _ran(fast, "fast")
     return {**_trim(record), "premap_sources": states, "spawned": spawned, "model": model, "model_missing": len(missing),
-            "seconds": {"snapshot": round(middle - started, 2), "stack": round(time.monotonic() - middle, 2)}}
+            "seconds": {"snapshot": round(middle - started, 2), "stack": round(ended - middle, 2)},
+            "fast_seconds": fast_seconds, **figures(passed)}
 
 
 def bounded(seconds: int, function, *args, **keywords) -> dict:
@@ -211,16 +274,23 @@ def bounded(seconds: int, function, *args, **keywords) -> dict:
         return {"error": f"no answer in {seconds} s; stood at: {top}"[:900]}
 
 
-@app.function(cpu=1.0, memory=3072, timeout=TIMEOUT + FIXTURE_TIMEOUT + 300, volumes={"/results": volume})
+@app.function(cpu=1.0, memory=4096, timeout=TIMEOUT + FIXTURE_TIMEOUT + 300, volumes={"/results": volume})
 def run_batch(names: list[str]) -> dict:
     sys.path[:0] = [f"/repo/{SCRIPTS}", "/repo/benchmarks/project-model", "/repo/benchmarks/project-model/tools"]
+    import fork_stack
     code = code_hash(Path("/repo"))
     print("code", code, flush=True)
     folder = Path("/results") / STORE
     folder.mkdir(parents=True, exist_ok=True)
+    _image_tool()
+    cannot = fork_stack.start()  # Node's cold start, here and not in the first fixture's seconds
+    if cannot:
+        print("stack-analyser cannot start:", cannot, flush=True)
     began, done = time.monotonic(), []
     for name in names:
-        if time.monotonic() - began > TIMEOUT:
+        if cannot:
+            record = {"error": f"stack-analyser cannot start: {cannot}"}
+        elif time.monotonic() - began > TIMEOUT:
             record = {"error": f"not run: the batch used its {TIMEOUT} s"}
         else:
             record = bounded(FIXTURE_TIMEOUT, _measure, name)
@@ -247,7 +317,9 @@ def _chosen(arguments) -> list[str]:
 
 def fetch(names: list[str]) -> None:
     sys.path.insert(0, str(HERE))
+    import fork_stack
     import score
+    import stack_analyser
     local = code_hash(REPO)
     out, codes = {}, set()
     for name in names:
@@ -267,10 +339,13 @@ def fetch(names: list[str]) -> None:
                      "units": len(stored["units"]), "premap_sources": stored["premap_sources"],
                      "model": stored["model"], "model_missing": stored["model_missing"],
                      "seconds": round(sum(stored["seconds"].values()), 2), "seconds_detail": stored["seconds"],
-                     "executed_project_code": "no" if all(c.startswith(GIT) for c in stored["spawned"]) else "unknown",
+                     "fast_seconds": stored.get("fast_seconds"), "declarations": stored.get("declarations"),
+                     "perimeter": stored.get("perimeter"),
+                     "executed_project_code": fork_stack.executed(stored["spawned"], NODE_BIN, CLI, GIT),
                      "spawned": sorted(set(stored["spawned"]))}
-    data = {"tool": "daodan_stack", "version": "technologies.py (daodan/technologies/v1) of the checkout",
-            "group": "stack", "command": "snapshot.write_snapshot; technologies.ensure(manifest), no runner",
+    data = {"tool": "daodan_stack",
+            "version": f"technologies.py (daodan/technologies/v1) of the checkout, stack-analyser {stack_analyser.VERSION} on Node {NODE_VERSION}",
+            "group": "stack", "command": "snapshot.read_project; technologies.ensure(manifest), no runner; premap.write(runner=None); technologies.derive",
             "code": {"container": sorted(c for c in codes if c), "local": local}}
     target = HERE / "results" / "daodan_stack.json"
     target.parent.mkdir(exist_ok=True)

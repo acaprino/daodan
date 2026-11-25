@@ -11,17 +11,20 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import threading
 import unittest
 from pathlib import Path
 from unittest import mock
+from urllib.parse import urlsplit
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import mcp_service  # noqa: E402
+import service_registry  # noqa: E402
 import visual  # noqa: E402
 
 
@@ -125,6 +128,74 @@ class CommittedViewerTests(unittest.TestCase):
             finally:
                 server.shutdown()
                 server.server_close()
+
+
+class MarkTests(unittest.TestCase):
+    """`/api/mark`: the logo of a registry entry, by its id and nothing else, with the rules of the server's routes."""
+
+    STRIPE = (service_registry.REGISTRY.parent / "marks/stripe.svg").read_bytes()
+
+    def serve(self, token=None):
+        marks = service_registry.Marks()
+        self.addCleanup(marks.close)
+        server = visual.make_server(None, Path(__file__).parent / "no-assets", token=token, files=visual.mark_files(marks))
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        return server.server_address[1]
+
+    def get(self, port, path, headers=None):
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+        connection.request("GET", path, headers=headers or {})
+        response = connection.getresponse()
+        body = response.read()
+        connection.close()
+        return response, body
+
+    def test_a_known_id_is_an_svg_with_the_policy_of_every_answer(self):
+        port = self.serve()
+        response, body = self.get(port, "/api/mark?id=stripe")
+        self.assertEqual((response.status, response.getheader("Content-Type"), body), (200, "image/svg+xml", self.STRIPE))
+        self.assertIn("default-src 'self'", response.getheader("Content-Security-Policy"))
+        self.assertEqual(response.getheader("X-Content-Type-Options"), "nosniff")
+        self.assertIsNone(response.getheader("Access-Control-Allow-Origin"))
+        self.assertEqual(self.get(port, "/api/mark?id=stripe", {"Host": "evil.example"})[0].status, 421)
+
+    def test_an_unknown_id_a_path_or_an_entry_without_a_mark_is_404(self):
+        port = self.serve()
+        for query in ("?id=nope", "?id=stripe.svg", "?id=marks/stripe.svg", "?id=../data/marks/stripe.svg",
+                      "?id=%2e%2e%2fdata%2fmarks%2fstripe.svg", "?id=..%5C..%5Cservice-registry.json", "?id=%00", "?id=",
+                      "", "/../../data/marks/stripe.svg", "?id=adobe.analytics"):
+            with self.subTest(query=query):
+                self.assertEqual(self.get(port, "/api/mark" + query)[0].status, 404)
+
+    def test_without_a_registry_there_is_no_mark(self):
+        with mock.patch.object(service_registry, "REGISTRY", Path(__file__).parent / "no-registry.json"):
+            port = self.serve()
+            self.assertEqual(self.get(port, "/api/mark?id=stripe")[0].status, 404)
+
+    def test_a_server_with_a_token_takes_it_in_the_query_as_an_image_sends_no_header(self):
+        port = self.serve(token="secret-token")
+        for path, headers, status in (("", {}, 403), ("&token=wrong", {}, 403), ("&token=secret-token", {}, 200),
+                                      ("", {"X-Daodan-Token": "secret-token"}, 200)):
+            with self.subTest(path=path, headers=headers):
+                self.assertEqual(self.get(port, "/api/mark?id=stripe" + path, headers)[0].status, status)
+
+    def test_the_serve_command_answers_it_without_a_token(self):
+        with tempfile.TemporaryDirectory() as temp:
+            (Path(temp) / "visual.json").write_text('{"schema": "daodan/visual@1"}', encoding="utf-8")
+            process = subprocess.Popen([sys.executable, str(SCRIPTS / "visual.py"), "serve", temp], stdout=subprocess.PIPE,
+                                       text=True)
+            try:
+                port = urlsplit(process.stdout.readline().strip()).port
+                self.assertIsNotNone(port)
+                response, body = self.get(port, "/api/mark?id=stripe")
+                self.assertEqual((response.status, response.getheader("Content-Type"), body), (200, "image/svg+xml", self.STRIPE))
+                self.assertEqual(self.get(port, "/api/mark?id=nope")[0].status, 404)
+            finally:
+                process.terminate()
+                process.wait(timeout=30)
+                process.stdout.close()
 
 
 class LiveTests(unittest.TestCase):

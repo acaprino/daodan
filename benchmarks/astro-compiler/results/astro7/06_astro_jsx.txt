@@ -1,0 +1,151 @@
+1573 lines
+interfaces and namespaces:
+  11: declare namespace astroHTML.JSX {
+  15: interface ElementChildrenAttribute {
+  19: interface IntrinsicAttributes extends AstroComponentDirectives, AstroBuiltinAttributes {
+  40: interface DOMAttributes {
+  178: interface AriaAttributes {
+  521: interface CSSProperties extends StyleObject {
+  523: * Extend namespace to add properties or an index signature of your own.
+  530: interface HTMLAttributes extends AriaAttributes, DOMAttributes, AstroBuiltinAttributes {
+  624: interface AnchorHTMLAttributes extends HTMLAttributes {
+  637: interface AudioHTMLAttributes extends MediaHTMLAttributes {}
+  639: interface AreaHTMLAttributes extends HTMLAttributes {
+  652: interface BaseHTMLAttributes extends HTMLAttributes {
+  657: interface BlockquoteHTMLAttributes extends HTMLAttributes {
+  661: interface ButtonHTMLAttributes extends HTMLAttributes {
+  688: interface CanvasHTMLAttributes extends HTMLAttributes {
+  693: interface ColHTMLAttributes extends HTMLAttributes {
+  698: interface ColgroupHTMLAttributes extends HTMLAttributes {
+  702: interface DataHTMLAttributes extends HTMLAttributes {
+  706: interface DetailsHTMLAttributes extends HTMLAttributes {
+  711: interface DelHTMLAttributes extends HTMLAttributes {
+  716: interface DialogHTMLAttributes extends HTMLAttributes {
+  721: interface EmbedHTMLAttributes extends HTMLAttributes {
+  728: interface FieldsetHTMLAttributes extends HTMLAttributes {
+  734: interface FormHTMLAttributes extends HTMLAttributes {
+  746: interface HtmlHTMLAttributes extends HTMLAttributes {
+  750: interface IframeHTMLAttributes extends HTMLAttributes {
+  774: interface ImgHTMLAttributes extends HTMLAttributes {
+  789: interface InsHTMLAttributes extends HTMLAttributes {
+  818: interface InputHTMLAttributes extends HTMLAttributes {
+  856: interface KeygenHTMLAttributes extends HTMLAttributes {
+  865: interface LabelHTMLAttributes extends HTMLAttributes {
+  870: interface LiHTMLAttributes extends HTMLAttributes {
+  874: interface LinkHTMLAttributes extends HTMLAttributes {
+  893: interface MapHTMLAttributes extends HTMLAttributes {
+  897: interface MenuHTMLAttributes extends HTMLAttributes {
+  901: interface MediaHTMLAttributes extends HTMLAttributes {
+  916: interface MetaHTMLAttributes extends HTMLAttributes {
+  924: interface MeterHTMLAttributes extends HTMLAttributes {
+  934: interface QuoteHTMLAttributes extends HTMLAttributes {
+  938: interface ObjectHTMLAttributes extends HTMLAttributes {
+  950: interface OlHTMLAttributes extends HTMLAttributes {
+  956: interface OptgroupHTMLAttributes extends HTMLAttributes {
+  961: interface OptionHTMLAttributes extends HTMLAttributes {
+  968: interface OutputHTMLAttributes extends HTMLAttributes {
+  974: interface ParamHTMLAttributes extends HTMLAttributes {
+  979: interface ProgressHTMLAttributes extends HTMLAttributes {
+  984: interface SlotHTMLAttributes extends HTMLAttributes {
+  988: interface ScriptHTMLAttributes extends HTMLAttributes {
+  1002: interface SelectHTMLAttributes extends HTMLAttributes {
+  1014: interface SourceHTMLAttributes extends HTMLAttributes {
+  1024: interface StyleHTMLAttributes extends HTMLAttributes {
+  1031: interface TableHTMLAttributes extends HTMLAttributes {
+  1043: interface TextareaHTMLAttributes extends HTMLAttributes {
+  1061: interface TdHTMLAttributes extends HTMLAttributes {
+  1071: interface ThHTMLAttributes extends HTMLAttributes {
+  1080: interface TimeHTMLAttributes extends HTMLAttributes {
+  1084: interface TrackHTMLAttributes extends HTMLAttributes {
+  1092: interface VideoHTMLAttributes extends MediaHTMLAttributes {
+  1108: interface SVGAttributes extends AriaAttributes, DOMAttributes, AstroBuiltinAttributes {
+  1393: interface DefinedIntrinsicElements {
+  1568: interface IntrinsicElements extends DefinedIntrinsicElements {
+--- the first lines of interface DOMAttributes (line 40) and the last before the next interface
+40: 	interface DOMAttributes {
+41: 		children?: Children;
+42: 
+43: 		// Clipboard Events
+44: 		oncopy?: string | undefined | null;
+45: 		oncut?: string | undefined | null;
+170: 		// Global Events
+171: 		oncancel?: string | undefined | null;
+172: 		onclose?: string | undefined | null;
+173: 		onfullscreenchange?: string | undefined | null;
+174: 		onfullscreenerror?: string | undefined | null;
+175: 	}
+176: 
+177: 	// All the WAI-ARIA 1.2 attributes from https://www.w3.org/TR/wai-aria-1.2/#state_prop_def
+members of DOMAttributes: 98; their names that do not start with on: children
+--- "onclick" at line 106
+100: 		ontimeupdate?: string | undefined | null;
+101: 		onvolumechange?: string | undefined | null;
+102: 		onwaiting?: string | undefined | null;
+103: 
+104: 		// MouseEvents
+105: 		onauxclick?: string | undefined | null;
+106: 		onclick?: string | undefined | null;
+107: 		oncontextmenu?: string | undefined | null;
+108: 		ondblclick?: string | undefined | null;
+109: 		ondrag?: string | undefined | null;
+110: 		ondragend?: string | undefined | null;
+111: 		ondragenter?: string | undefined | null;
+112: 		ondragexit?: string | undefined | null;
+--- "onend" at line 49
+43: 		// Clipboard Events
+44: 		oncopy?: string | undefined | null;
+45: 		oncut?: string | undefined | null;
+46: 		onpaste?: string | undefined | null;
+47: 
+48: 		// Composition Events
+49: 		oncompositionend?: string | undefined | null;
+50: 		oncompositionstart?: string | undefined | null;
+51: 		oncompositionupdate?: string | undefined | null;
+52: 
+53: 		// Focus Events
+54: 		onfocus?: string | undefined | null;
+55: 		onfocusin?: string | undefined | null;
+--- "onend" at line 87
+81: 		oncanplay?: string | undefined | null;
+82: 		oncanplaythrough?: string | undefined | null;
+83: 		oncuechange?: string | undefined | null;
+84: 		ondurationchange?: string | undefined | null;
+85: 		onemptied?: string | undefined | null;
+86: 		onencrypted?: string | undefined | null;
+87: 		onended?: string | undefined | null;
+88: 		onloadeddata?: string | undefined | null;
+89: 		onloadedmetadata?: string | undefined | null;
+90: 		onloadstart?: string | undefined | null;
+91: 		onpause?: string | undefined | null;
+92: 		onplay?: string | undefined | null;
+93: 		onplaying?: string | undefined | null;
+--- "onend" at line 157
+151: 
+152: 		// Wheel Events
+153: 		onwheel?: string | undefined | null;
+154: 
+155: 		// Animation Events
+156: 		onanimationstart?: string | undefined | null;
+157: 		onanimationend?: string | undefined | null;
+158: 		onanimationiteration?: string | undefined | null;
+159: 
+160: 		// Transition Events
+161: 		ontransitionstart?: string | undefined | null;
+162: 		ontransitionrun?: string | undefined | null;
+163: 		ontransitionend?: string | undefined | null;
+--- "onend" at line 163
+157: 		onanimationend?: string | undefined | null;
+158: 		onanimationiteration?: string | undefined | null;
+159: 
+160: 		// Transition Events
+161: 		ontransitionstart?: string | undefined | null;
+162: 		ontransitionrun?: string | undefined | null;
+163: 		ontransitionend?: string | undefined | null;
+164: 		ontransitioncancel?: string | undefined | null;
+165: 
+166: 		// Message Events
+167: 		onmessage?: string | undefined | null;
+168: 		onmessageerror?: string | undefined | null;
+169: 
+
+--- exit 0

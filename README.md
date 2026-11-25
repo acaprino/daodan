@@ -13,29 +13,55 @@ Daodan gives a coding agent two things it cannot get from a prompt: a local,
 refreshable understanding of the repository, and a review whose findings cite
 source and survive independent verification. Sources remain the authority.
 
-## Analysis steps
+## How the graph is built
 
-| Step | What it does | Runs project code | State |
+Seven steps, always in this order: each starts from what the ones before it established, and none finds out
+again what another already knows. Each uses the official tool of what it reads, behind an adapter, and writes
+what it could not do as a gap. The seven steps and their names are the design approved on 22 November 2026, applied
+in part; the last column says where each step is in the code today.
+
+```mermaid
+flowchart LR
+  scan --> recognize --> plan --> parse --> resolve --> observe --> connect --> G[(Complete graph)]
+```
+
+| Step | What it does | Runs project code | In the code today |
 |---|---|---|---|
-| 1. Static | Parsers and the lexical resolver record files, symbols, imports and calls | No | In use |
-| 2. Inference | A language engine resolves calls with the project's libraries, which Daodan downloads | No | In use |
-| 3. Dynamic | The project's tests run in an isolated container and the observed calls join the graph | Only inside the container | [Proposed](docs/specs/2026-11-12-passo-dinamico.md) |
-| 4. Semantic | The model writes semantic cards and link rules; flows connect writers, readers and user actions | No | In use; flows on trial |
+| 1. `scan` | Walks every folder and file, then asks the build tools for modules, build units and test commands | Only inside the container | Step `scan`: of the snapshot it reads only the file inventory, written before the pipeline; of the project, the manifests and sources its tools need |
+| 2. `recognize` | Names frameworks, libraries, tools and services | No | Step `stack` |
+| 3. `plan` | Decides which adapter runs on which part, and what each needs | No | A function, not a step yet |
+| 4. `parse` | Reads the source files the plan gives it: symbols, imports, calls | No | Step `parse`, third; the files are still read before the pipeline, so it finds them read |
+| 5. `resolve` | Resolves each call to its target | Only inside the container | Step `analyze` |
+| 6. `observe` | Runs the project's tests and records what they call; starts the app the project declares and presses its controls in a browser | Only inside the container | Step `dynamic` |
+| 7. `connect` | Joins the graphs and lists what is missing | No | Step `union`: it lists, it does not join yet |
 
-Until step 3 is in place nothing runs the project, and runtime behavior needs
-the project's tests.
+After the pipeline the model writes semantic cards and link rules, and flows connect writers, readers and user
+actions. [The process as the code runs it today, what is left to reach the design, its tools and example graphs](docs/plugins/codebase-map.md#pipeline).
 
 ## How Daodan identifies the stack
 
-The stack step matches each module's package declarations, available dependency evidence from its build tools,
-container images and distinctive filenames against the shipped technology registry. It also reads Swift imports and
-qualified ExUnit calls. Each match keeps its file and, when available, its line. A configured service is reported
-separately from an SDK or a URL mention. For example, a Spring Boot starter in a Maven module identifies Spring Boot
-in that module. A Telegram API URL in configuration is a mention.
+Only [stack-analyser-daodan](https://github.com/acaprino/stack-analyser-daodan), a fork of Specfy's
+stack-analyser, recognizes frameworks, libraries, tools and services, in the fast and the full scan alike. Daodan
+runs a pinned release, checked by sha256, with its own Node: it reads files and executes nothing of the project.
+It receives the packages and images Daodan already read, each with its source, and reads the project's files itself.
+Each sign keeps its file, its line when known, its source and the scan it comes from; a scan keeps the signs of the
+sources it did not run. A URL host in the sources is a mention. For example, a Spring Boot starter in a Maven module
+identifies Spring Boot in that module.
 
-Daodan maintains its extra rules in [registry-additions.json](daodan/data/registry-additions.json).
-The [project-model benchmark](benchmarks/project-model/README.md) compares the shipped registry and upstream Specfy,
-and includes an adapter that loads compatible Daodan rules into Specfy.
+The technology registry ([service-registry.json](daodan/data/service-registry.json)) only names: name, category,
+type, site, mark. It is generated from the release's catalogue; [registry-additions.json](daodan/data/registry-additions.json)
+adds names, sites, categories and marks, never rules. [How a scan goes, step by step](docs/plugins/codebase-map.md#lo-step-stack).
+
+## Package registries of the preparation
+
+Project code runs only in Daodan's container. Its preparation reaches the package registries through a proxy, and
+nothing else; the tests run with no network. The registries are listed in
+[package-managers.json](daodan/data/package-managers.json). The managers' names come from Wikipedia's
+[List of software package management systems](https://en.wikipedia.org/w/index.php?title=List_of_software_package_management_systems&oldid=1379970373),
+revision 1379970373 of 13 October 2026, read on 24 November 2026. Only the managers a Linux container restores
+dependencies with are kept, plus Go modules. Wikipedia gives no hosts: they were written by hand and are probed by
+[registry-hosts](benchmarks/registry-hosts/README.md). Hosts that take uploads beyond a package publish, such as
+GitHub and container registries, stay out; GitHub opens only for a project that declares a dependency on it.
 
 ## Plugins
 
@@ -89,26 +115,27 @@ the skill `/codebase-map:map <request>`; its `codebase-map` MCP server is
 `daodan mcp`. `/reload-plugins` re-reads the plugin files but does not restart
 that server.
 
-Both packaged interfaces use Imago for controls, layouts and styles. Their sources are in `viewer/app/`
-and `viewer/src/`. To rebuild the offline pages packaged with Python, run `npm ci`
-and `npm run build` in `viewer/`. Run `npm test` for the explorer model and
-`npm run test:ui` for the packaged pages after installing Playwright Chromium. `npx imago-check`
-checks the viewer against Imago's design rules; the Viewer workflow runs it with the tests and the build.
+Both packaged interfaces are made of the components of [Sigrid](https://github.com/acaprino/sigrid), with no class and
+no stylesheet of their own. Their sources are in `viewer/app/` and `viewer/src/`. To rebuild the offline pages packaged
+with Python, run `npm ci` and `npm run build` in `viewer/`. Run `npm test` for the pages' models and
+`npm run test:ui` for the packaged pages after installing Playwright Chromium. `npx --no sigrid-check src` and
+`npx --no sigrid-check app` check the viewer against Sigrid's design rules; the Viewer workflow runs them with the tests
+and the build.
 
 ## Requirements
 
 - Python ≥ 3.12. The installation carries `mcp`, `tree-sitter` and `sqlglot`;
   `scip`/`jedi` are optional, for higher-fidelity resolution.
+- No Node of your own: on first use Daodan downloads its pinned Node from nodejs.org and the stack-analyser
+  release from github.com, into its shared folder. Offline, the stack step keeps its previous results and says why.
 - A host that can run shell commands and dispatch isolated agent contexts.
   Plugin content is host-generic; command and worker bindings come from the host.
 
 ## Documentation
 
-- [Design: Codebase Map and semantic review](docs/specs/2026-11-03-semantic-review-foundation.md)
+- [The architecture contract (the 8-step pipeline, tools, surfaces and plan)](docs/specs/architettura.md), [the active refactoring plan (T0–T3)](docs/plans/refactoring.md), and [the deferred backlog & retired approaches](docs/backlog.md); the specs and plans before them are in git's history, at commit `614c940`
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
-- Flows, in three phases: [1, working run and review rules](docs/specs/2026-11-09-working-run-and-review-fixes.md) · [2, flows and units](docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) · [3, do they help review](docs/specs/2026-11-09-flows-in-review.md) · [literature](docs/research/2026-11-09-flow-reconstruction-literature.md)
-- Dynamic step, tests in a container: [spec](docs/specs/2026-11-12-passo-dinamico.md) · [plan](docs/plans/2026-11-12-passo-dinamico.md) · [program execution](docs/specs/2026-11-19-esecuzione-del-programma.md) · [UI recognition and web execution](docs/specs/2026-11-19-interfacce-del-progetto.md)
 - [Roadmap](docs/roadmap.md)
 - [Working rules for agents in this repository](AGENTS.md)
 

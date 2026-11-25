@@ -1,6 +1,7 @@
 """The archive that leaves the machine holds code and configuration, never data or secrets."""
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import tarfile
@@ -111,3 +112,15 @@ def test_the_archive_is_of_the_commit_it_is_given(tmp_path, fake):
         assert [member.name for member in tar.getmembers()] == ["src/app.py"]   # the reference's commit, not the latest
     assert code_archive.source(f"{repository}@{commits[0]}=case/") == (repository, "case/", commits[0])
     assert code_archive.source(str(repository)) == (repository, "", "HEAD")
+
+
+def test_the_command_leaves_beside_the_archive_what_it_kept_left_and_masked(tmp_path, fake, capsys):
+    repository = tmp_path / "project"
+    for path in ["src/app.py", "data/pratiche/001.png"]:
+        (repository / path).parent.mkdir(parents=True, exist_ok=True)
+        (repository / path).write_text("x", encoding="utf-8")
+    _committed(repository)
+    assert code_archive.main(["code_archive.py", str(tmp_path / "out.tar"), str(repository)]) == 0
+    counts = json.loads((tmp_path / "out.json").read_text(encoding="utf-8"))
+    assert counts[str(repository)]["kept"] == 1 and counts[str(repository)]["left"] == 1
+    assert counts[str(repository)]["masked"] == {} and counts[str(repository)]["withheld"] == []

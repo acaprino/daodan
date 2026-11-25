@@ -32,7 +32,7 @@ def planned(tmp_path: Path, name: str) -> tuple[dict, list[str], object]:
                     ["git", "-c", "core.hooksPath=/dev/null", "checkout", "-q", "FETCH_HEAD"]):
         subprocess.run(command, cwd=source, check=True, timeout=600)
     manifest = tmp_path / "snapshot/manifest.sqlite"
-    snapshot.write_snapshot(source, manifest)
+    snapshot.read_project(source, manifest)
     files = sorted(path.relative_to(source).as_posix() for path in source.rglob("*")
                    if path.is_file() and ".git" not in path.relative_to(source).parts)
 

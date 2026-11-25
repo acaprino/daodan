@@ -1,0 +1,22 @@
+{
+ "source": "https://en.wikipedia.org/w/index.php?title=List_of_software_package_management_systems&oldid=1379970373",
+ "read": "2026-11-24",
+ "managers": {
+  "npm": ["registry.npmjs.org"],
+  "yarn": ["registry.yarnpkg.com"],
+  "pip": ["pypi.org", "files.pythonhosted.org"],
+  "Maven": ["repo1.maven.org", "repo.maven.apache.org"],
+  "Gradle": ["plugins.gradle.org", "plugins-artifacts.gradle.org"],
+  "Go modules": ["proxy.golang.org", "sum.golang.org"],
+  "Cargo": ["index.crates.io", "static.crates.io"],
+  "NuGet": ["api.nuget.org"],
+  "RubyGems": ["rubygems.org", "index.rubygems.org"],
+  "Composer": ["repo.packagist.org", "packagist.org"],
+  "CocoaPods": ["cdn.cocoapods.org"],
+  "Conda": ["repo.anaconda.com", "conda.anaconda.org"],
+  "CPAN": ["www.cpan.org"],
+  "Deno": ["jsr.io"],
+  "Nix": ["cache.nixos.org", "channels.nixos.org", "releases.nixos.org"],
+  "dpkg": ["http://archive.ubuntu.com", "http://security.ubuntu.com", "http://ports.ubuntu.com"]
+ }
+}

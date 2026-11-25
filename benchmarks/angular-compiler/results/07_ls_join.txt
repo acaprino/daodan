@@ -1,0 +1,122 @@
+project /fixture/tsconfig.json loaded in 2794 ms; Angular methods present: function
+
+=== external template: every event, key position and every call ===
+
+"24:save()"  event click
+   definition at the event name (keySpan.start 25): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "save": boundSpan "save" -> src/app/app.component.ts:22:2 method "save" container="AppComponent"
+
+"69:this.save()"  event click
+   definition at the event name (keySpan.start 70): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "this.save": boundSpan "save" -> src/app/app.component.ts:22:2 method "save" container="AppComponent"
+
+"123:svc.cancel()"  event click
+   definition at the event name (keySpan.start 124): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "svc.cancel": boundSpan "cancel" -> src/app/order.service.ts:4:2 method "cancel" container="OrderService"
+
+"176:!busy && save()"  event click
+   definition at the event name (keySpan.start 177): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "save": boundSpan "save" -> src/app/app.component.ts:22:2 method "save" container="AppComponent"
+
+"232:busy ? close() : reopen()"  event click
+   definition at the event name (keySpan.start 233): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "close": boundSpan "close" -> src/app/app.component.ts:23:2 method "close" container="AppComponent"
+   call "reopen": boundSpan "reopen" -> src/app/app.component.ts:24:2 method "reopen" container="AppComponent"
+
+"292:save(); close()"  event click
+   definition at the event name (keySpan.start 293): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "save": boundSpan "save" -> src/app/app.component.ts:22:2 method "save" container="AppComponent"
+   call "close": boundSpan "close" -> src/app/app.component.ts:23:2 method "close" container="AppComponent"
+
+"350:open = !open"  event click
+   definition at the event name (keySpan.start 351): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   (no call) definition at handlerSpan.start 359: boundSpan "open" -> src/app/app.component.ts:17:2 property "open" container="i0.AppComponent"
+
+"395:router.navigate(['/orders'])"  event click
+   definition at the event name (keySpan.start 396): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "router.navigate": boundSpan "navigate" -> node_modules/@angular/router/types/_router_module-chunk.d.ts:1675:4 method "navigate" container="Router"
+
+"464:pay()"  event click
+   definition at the event name (keySpan.start 465): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "pay": boundSpan "pay" -> src/app/app.component.ts:35:2 method "pay" container="AppComponent"
+
+"540:withIcon()"  event click
+   definition at the event name (keySpan.start 541): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "withIcon": boundSpan "withIcon" -> src/app/app.component.ts:34:2 method "withIcon" container="AppComponent"
+
+"615:submit()"  event ngSubmit
+   definition at the event name (keySpan.start 616): boundSpan "ngSubmit" -> node_modules/@angular/forms/types/forms.d.ts:4500:4 property "ngSubmit" container="i2.NgForm"
+   call "submit": boundSpan "submit" -> src/app/app.component.ts:25:2 method "submit" container="AppComponent"
+
+"656:q"  event ngModelChange
+   definition at the event name (keySpan.start 658): boundSpan "ngModel" -> node_modules/@angular/forms/types/forms.d.ts:4316:4 property "model" container="i2.NgModel" ; node_modules/@angular/forms/types/forms.d.ts:4289:14 class "NgModel" container="" ; node_modules/@angular/forms/types/forms.d.ts:3777:14 class "NgControlStatus" container="" ; node_modules/@angular/forms/types/forms.d.ts:478:14 class "DefaultValueAccessor" container="" ; node_modules/@angular/forms/types/forms.d.ts:4343:4 property "update" container="i2.NgModel"
+   (no call) definition at handlerSpan.start 669: boundSpan "q" -> src/app/app.component.ts:18:2 property "q" container="i0.AppComponent"
+
+"672:search()"  event keyup.enter
+   definition at the event name (keySpan.start 673): boundSpan "keyup.enter" -> node_modules/typescript/lib/lib.dom.d.ts:19085:4 method "addEventListener" container="HTMLInputElement"
+   call "search": boundSpan "search" -> src/app/app.component.ts:26:2 method "search" container="AppComponent"
+
+"770:inIf()"  event click
+   definition at the event name (keySpan.start 771): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "inIf": boundSpan "inIf" -> src/app/app.component.ts:27:2 method "inIf" container="AppComponent"
+
+"844:liClick(o)"  event click
+   definition at the event name (keySpan.start 845): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:19109:4 method "addEventListener" container="HTMLLIElement"
+   call "liClick": boundSpan "liClick" -> src/app/app.component.ts:30:2 method "liClick" container="AppComponent"
+
+"878:remove(o)"  event click
+   definition at the event name (keySpan.start 879): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "remove": boundSpan "remove" -> src/app/app.component.ts:28:2 method "remove" container="AppComponent"
+
+"975:removeFor(o)"  event click
+   definition at the event name (keySpan.start 976): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "removeFor": boundSpan "removeFor" -> src/app/app.component.ts:29:2 method "removeFor" container="AppComponent"
+
+"1054:inTpl()"  event click
+   definition at the event name (keySpan.start 1055): boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "inTpl": boundSpan "inTpl" -> src/app/app.component.ts:31:2 method "inTpl" container="AppComponent"
+
+"1113:onResize()"  event resize@window
+   definition at the event name (keySpan.start 1114): boundSpan "window:resize" -> node_modules/typescript/lib/lib.dom.d.ts:41614:4 method "addEventListener" container="Window"
+   call "onResize": boundSpan "onResize" -> src/app/app.component.ts:33:2 method "onResize" container="AppComponent"
+
+"1167:onSaved($event)"  event saved
+   definition at the event name (keySpan.start 1168): boundSpan "saved" -> src/app/editor.component.ts:7:2 property "saved" container="i4.EditorComponent"
+   call "onSaved": boundSpan "onSaved" -> src/app/app.component.ts:32:2 method "onSaved" container="AppComponent"
+
+=== inline templates in .ts: positions from parseTemplate (range + escapedString) given to the language service ===
+
+inline.component.ts event click "go()"  (sourceSpan.start 248)
+   definition at the event name: boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "go": boundSpan "go" -> src/app/inline.component.ts:17:2 method "go" container="InlineComponent"
+
+inline.component.ts event click "this.goThis()"  (sourceSpan.start 296)
+   definition at the event name: boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "this.goThis": boundSpan "goThis" -> src/app/inline.component.ts:18:2 method "goThis" container="InlineComponent"
+
+inline.component.ts event click "esc()"  (sourceSpan.start 542)
+   definition at the event name: boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "esc": boundSpan "esc" -> src/app/inline.component.ts:26:2 method "esc" container="InlineEscapedComponent"
+
+inline.component.ts event click "esc2()"  (sourceSpan.start 580)
+   definition at the event name: boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "esc2": boundSpan "esc2" -> src/app/inline.component.ts:27:2 method "esc2" container="InlineEscapedComponent"
+
+inline.component.ts event click "dq()"  (sourceSpan.start 746)
+   definition at the event name: boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "dq": boundSpan "dq" -> src/app/inline.component.ts:35:2 method "dq" container="InlineDoubleQuotedComponent"
+
+editor.component.ts event click "saved.emit('done')"  (sourceSpan.start 112)
+   definition at the event name: boundSpan "click" -> node_modules/typescript/lib/lib.dom.d.ts:17399:4 method "addEventListener" container="HTMLButtonElement"
+   call "saved.emit": boundSpan "emit" -> node_modules/@angular/core/types/_api-chunk.d.ts:32:4 method "emit" container="OutputEmitterRef"
+
+=== host: {...} listeners: definition at the handler text inside the string ===
+onHost (offset 105): boundSpan "onHost" -> src/app/inline.component.ts:15:2 method "onHost" container="InlineComponent"
+onEsc (offset 144): boundSpan "onEsc" -> src/app/inline.component.ts:16:2 method "onEsc" container="InlineComponent"
+active (offset 173): boundSpan "active" -> src/app/inline.component.ts:14:2 property "active" container="i0.InlineComponent"
+
+=== getTemplateLocationForComponent for the inline component ===
+InlineComponent: src/app/inline.component.ts textSpan {"start":196,"length":164} covers "`\n    <section>\n      <h2>Inline</h2>\n      <button (click)="...
+InlineEscapedComponent: src/app/inline.component.ts textSpan {"start":527,"length":87} covers "'It\\'s <button (click)=\"esc()\">Esc</button>\\n<button (click)"...
+
+--- exit 0

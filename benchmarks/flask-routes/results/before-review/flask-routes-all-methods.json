@@ -1,0 +1,21 @@
+{
+ "variant": "flask-routes-all-methods",
+ "argv": [
+  "/daodan/state/venvs/./bin/flask",
+  "routes",
+  "--all-methods"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "Endpoint             Methods                   Subdomain  Rule                      \n-------------------  ------------------------  ---------  --------------------------\nadmin.stats          GET, HEAD, OPTIONS                   /admin/stats              \nadmin.user           GET, HEAD, OPTIONS, POST             /admin/users/<int:user_id>\nbuilt                GET, HEAD, OPTIONS                   /built                    \nby_int               GET, HEAD, OPTIONS                   /int/<int:id>             \nby_pair              GET, HEAD, OPTIONS                   /pair/<pair:p>            \nby_path              GET, HEAD, OPTIONS, PUT              /files/<path:name>        \nby_slug              GET, HEAD, OPTIONS                   /slug/<slug:s>            \nby_string            GET, HEAD, OPTIONS                   /string/<string:name>     \nby_tail              GET, HEAD, OPTIONS                   /tail/<tail:rest>         \nby_tailre            GET, HEAD, OPTIONS                   /tailre/<tailre:rest>     \nby_uuid              GET, HEAD, OPTIONS                   /uuid/<uuid:u>            \ncallable             GET, HEAD, OPTIONS                   /callable                 \ncreate_item          OPTIONS, POST                        /items                    \ndocs                 GET, HEAD, OPTIONS                   /docs                     \nget_options          GET, HEAD, OPTIONS                   /get-options              \nglued                GET, HEAD, OPTIONS                   /glued/<a>-<b>            \nhead_only            HEAD, OPTIONS                        /head-only                \nhello                GET, HEAD, OPTIONS                   /hello                    \nindex                GET, HEAD, OPTIONS                   /                         \nlam                  GET, HEAD, OPTIONS                   /lambda                   \nloose_without_slash  GET, HEAD, OPTIONS                   /loose                    \nnested.inner         GET, HEAD, OPTIONS                   /nested/inner             \nnested_doc           GET, HEAD, OPTIONS                   /nested-doc               \nold                  GET, HEAD, OPTIONS                   /old                      \noptions_only         OPTIONS                              /options                  \norders               GET, HEAD, OPTIONS, POST             /orders                   \npartial              GET, HEAD, OPTIONS                   /partial                  \nrelaxed              GET, HEAD, OPTIONS                   /relaxed/                 \nshow                 GET, HEAD, OPTIONS                   /page                     \nstatic               GET, HEAD, OPTIONS                   /static/<path:filename>   \nstdlib               GET, HEAD, OPTIONS                   /stdlib                   \nstrict_with_slash    GET, HEAD, OPTIONS                   /strict/                  \nsub                  GET, HEAD, OPTIONS        api        /sub                      \nthird_party          GET, HEAD, OPTIONS                   /third-party              \ntwo                  GET, HEAD, OPTIONS                   /two/<int:x>/<int:y>      \nwrapped              GET, HEAD, OPTIONS                   /wrapped                  \nwrapper              GET, HEAD, OPTIONS                   /unwrapped                \n",
+ "stderr": "",
+ "seconds": 0.2,
+ "max_rss_mb": 48.4,
+ "left_in_the_project": [
+  "__pycache__/wsgi.cpython-312.pyc",
+  "admin/__pycache__/__init__.cpython-312.pyc",
+  "admin/__pycache__/blueprint.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 3315
+}

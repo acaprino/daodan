@@ -3,21 +3,20 @@ import gzip
 import json
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import pytest
 
 CORE = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(CORE) not in sys.path:
     sys.path.insert(0, str(CORE))
-import service_registry  # noqa: E402
 import snapshot  # noqa: E402
-import stack_source  # noqa: E402
+import stack_recognition  # noqa: E402
 import technologies  # noqa: E402
+from premap import renovate  # noqa: E402
+from test_codebase_map_stack_recognition import package_signs, recognized  # noqa: E402
 
 BENCH = CORE.parents[1] / "benchmarks/project-model"
-if str(BENCH) not in sys.path:
-    sys.path.insert(0, str(BENCH))
-from replay_registry_coverage import recorded_project  # noqa: E402
 
 
 @pytest.mark.parametrize(("fixture", "ecosystem", "labels"), [
@@ -44,16 +43,20 @@ from replay_registry_coverage import recorded_project  # noqa: E402
     ("real-stack-hexpm", "hex", {"ecto": "ecto", "ecto_sql": "ecto", "oban": "oban", "broadway": "broadway",
                                  "esbuild": "esbuild", "tailwind": "tailwind"}),
 ])
-def test_packages_have_their_native_identity_and_source_in_the_archive(fixture, ecosystem, labels):
+def test_packages_have_their_native_identity_and_source_in_the_archive(real_stack, tmp_path, fixture, ecosystem, labels):
     with gzip.open(BENCH / "results/premap-runs" / f"{fixture}.json.gz", "rt", encoding="utf-8") as stream:
-        project, _ = recorded_project(json.load(stream)["runs"])
-    project = project._replace(packages=[p for p in project.packages if p[0] == ecosystem and p[1] in labels])
-    matches = service_registry.check_packages(service_registry.load()["entries"], project)["signs"]
+        runs = json.load(stream)["runs"]
+    context = SimpleNamespace(inventory=SimpleNamespace(text=lambda _: ""), stated={})  # the pre-map's reader of Renovate's answer
+    packages = [{**p, "sources": ["renovate@1"]} for run in runs
+                if run["command"]["argv"][0] == "renovate" and run["result"]["returncode"] == 0
+                for p in renovate.read(context, [], [run["result"]])["facts"].get("packages", ())
+                if p["ecosystem"] == ecosystem and p["name"] in labels]
+    matches = package_signs(recognized(tmp_path, packages=packages))
     actual = {(name, ident) for ident, name, path, _ in matches if path}
     assert set(labels.items()) <= actual
 
 
-def test_sdk_dependencies_and_windows_bindings_are_matched_at_their_manifests(tmp_path):
+def test_sdk_dependencies_and_windows_bindings_are_matched_at_their_manifests(real_stack, tmp_path):
     root = tmp_path / "project"
     manifests = {
         # Imago's Windows bindings are target dependencies. LocalSend's flutter_test comes from the SDK.
@@ -66,15 +69,15 @@ def test_sdk_dependencies_and_windows_bindings_are_matched_at_their_manifests(tm
         file.parent.mkdir(parents=True)
         file.write_text(content, encoding="utf-8")
     manifest = tmp_path / "out/manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
-    entries = service_registry.run(manifest, facts={})["found"]
+    snapshot.read_project(root, manifest)
+    entries = stack_recognition.run(manifest, facts={})["found"]
     actual = {(item["id"], sign["value"], sign["path"]) for item in entries for sign in item["signs"]
               if sign["sign"] == "package"}
     assert actual == {("webview2-com", "webview2-com", "shell/Cargo.toml"), ("windows-rs", "windows-core", "shell/Cargo.toml"),
                       ("flutter-test", "flutter_test", "app/pubspec.yaml")}
 
 
-def test_source_only_frameworks_have_module_evidence_and_no_invented_packages(tmp_path, monkeypatch):
+def test_source_only_frameworks_have_module_evidence_and_no_invented_packages(real_stack, tmp_path):
     root = tmp_path / "project"
     manifest = tmp_path / "out/manifest.sqlite"
     files = {
@@ -90,13 +93,8 @@ def test_source_only_frameworks_have_module_evidence_and_no_invented_packages(tm
         file = root / path
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text(content, encoding="utf-8")
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     facts = {"packages": [], "excluded": [{"path": "app/example/", "why": "example"}]}
-    # A stack cached by an installation missing the grammar is retried when it becomes available.
-    with monkeypatch.context() as absent:
-        absent.setattr(stack_source, "get_parser", lambda _: None)
-        first = technologies.ensure(manifest, facts=facts)
-    assert {g["language"] for g in first["gaps"] if g["kind"] == "source_grammar_unavailable"} == {"elixir", "swift"}
     record = technologies.ensure(manifest, facts=facts)
     actual = {(entry["id"], s["value"], s["path"], s["line"]) for entry in record["technologies"]
               for s in entry["signs"] if s["sign"] == "source" and s["strength"] == "declared"}

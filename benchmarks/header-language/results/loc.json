@@ -1,0 +1,105 @@
+{
+ "today": {
+  "h_rule": 15,
+  "h_rule_ranges": [
+   [
+    185,
+    185
+   ],
+   [
+    189,
+    195
+   ],
+   [
+    196,
+    196
+   ],
+   [
+    212,
+    217
+   ]
+  ],
+  "objc_rule": 6,
+  "detection": 158,
+  "detection_range": [
+   1,
+   229
+  ]
+ },
+ "R1": {
+  "header_probe.py": {
+   "_CPP_SYNTHETIC": 8,
+   "_named": 2,
+   "_guard_spans": 13,
+   "_inside": 4,
+   "Probe._part": 17
+  },
+  "header_routes.py": {
+   "SYNTHETIC_CPP": 1,
+   "CPP_DECL": 5,
+   "CPP_EXT": 8,
+   "_found": 3,
+   "_r1": 4
+  },
+  "total": 65
+ },
+ "R1_objc": {
+  "header_probe.py": {
+   "_OBJC_SYNTHETIC": 1
+  },
+  "header_routes.py": {
+   "OBJC_DECL": 5,
+   "OBJC_EXT": 5
+  },
+  "total": 11
+ },
+ "R2": {
+  "header_probe.py": {
+   "_COMMON": 1,
+   "Probe._part": 17
+  },
+  "header_routes.py": {
+   "_score": 3,
+   "_r2": 3
+  },
+  "total": 24
+ },
+ "R3": {
+  "header_routes.py": {
+   "_r3": 2
+  },
+  "total": 2
+ },
+ "guard": {
+  "header_probe.py": {
+   "_guard_spans": 13,
+   "_inside": 4
+  },
+  "total": 17
+ },
+ "x": {
+  "header_routes.py": {
+   "_x": 2
+  },
+  "total": 2
+ },
+ "check": {
+  "header_routes.py": {
+   "open_comment_start": 19,
+   "_skip_quoted": 12,
+   "safe_prefix": 8
+  },
+  "total": 39
+ },
+ "totals": {
+  "R0": 15,
+  "R1": 65,
+  "R2": 24,
+  "R1+objc": 76,
+  "R2+objc": 24,
+  "R3": 74,
+  "check": 39,
+  "R1x": 56,
+  "R3x": 82
+ }
+}

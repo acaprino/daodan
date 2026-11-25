@@ -1,0 +1,590 @@
+{
+ "name": "defectdojo",
+ "framework": "django",
+ "repository": "DefectDojo/django-DefectDojo",
+ "commit": "cd0a4483a224707f72a0fc3112359089c1446b55",
+ "licence": "BSD-3-Clause",
+ "licence_file": "LICENSE.md",
+ "noir": {
+  "endpoints": 691,
+  "protocols": {
+   "http": 678,
+   "cli": 5,
+   "https": 7,
+   "android-intent": 1
+  },
+  "errors": 1,
+  "seconds": 3.2,
+  "peak_memory_mb": 479.2,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name": 544,
+   "none": 116,
+   "name joined by '.'": 28,
+   "closure": 3
+  },
+  "http_handler_forms": {
+   "name": 544,
+   "none": 103,
+   "name joined by '.'": 28,
+   "closure": 3
+  },
+  "http_endpoints_in_the_json": 678,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 575,
+  "with_name_and_path_and_line": 572
+ },
+ "before_the_binder": {
+  "other_protocol": 6,
+  "no_path": 0,
+  "dropped": 7,
+  "dropped_by_reason": {
+   "outside_snapshot (.conf)": 7
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 6659,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 5946,
+  "functions": 19582,
+  "functions_by_suffix": {
+   ".py": 19375,
+   ".js": 178,
+   ".c": 28,
+   ".java": 1
+  },
+  "files_by_suffix": {
+   ".py": 2599,
+   ".json": 1364,
+   ".md": 1332,
+   ".html": 254,
+   ".xml": 186,
+   ".yaml": 92,
+   ".txt": 46,
+   ".sh": 22,
+   ".js": 15,
+   ".c": 13,
+   ".toml": 8,
+   ".yml": 7,
+   ".css": 5,
+   ".scss": 2,
+   ".java": 1
+  },
+  "seconds": 128.0
+ },
+ "http": {
+  "endpoints": 678,
+  "with_handler_name": 572,
+  "bound_to_one_function": 492,
+  "unbound": 186,
+  "by_file_suffix": {
+   ".py": {
+    "endpoints": 671,
+    "with_handler_name": 569,
+    "bound": 492
+   },
+   ".toml": {
+    "endpoints": 4,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".js": {
+    "endpoints": 3,
+    "with_handler_name": 3,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir gives no handler": 96,
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 80,
+  "no function of the project serves the endpoint": 6,
+  "the snapshot holds no function where Noir cites": 4
+ },
+ "causes": {
+  "the name is the class that owns the covering function (a class-based view)": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 77,
+   "by_file_suffix": {
+    ".py": 77
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/product/{product_id}/import_scan_results",
+     "site": "dojo/engagement/ui/views.py:1047",
+     "noir_handler": {
+      "name": "ImportScanResultsView",
+      "path": "dojo/engagement/ui/views.py",
+      "line": 1047
+     },
+     "covering": [
+      "ImportScanResultsView.get 1047-1061"
+     ],
+     "after": [
+      "ImportScanResultsView.post 1063-1103",
+      "close_eng 1107-1115"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/product/{product_id}/ad_hoc_finding",
+     "site": "dojo/product/ui/views.py:1544",
+     "noir_handler": {
+      "name": "AdHocFindingView",
+      "path": "dojo/product/ui/views.py",
+      "line": 1544
+     },
+     "covering": [
+      "AdHocFindingView.get 1544-1554"
+     ],
+     "after": [
+      "AdHocFindingView.post 1556-1574",
+      "engagement_presets 1577-1586"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/asset/{product_id}/import_scan_results",
+     "site": "dojo/engagement/ui/views.py:1047",
+     "noir_handler": {
+      "name": "ImportScanResultsView",
+      "path": "dojo/engagement/ui/views.py",
+      "line": 1047
+     },
+     "covering": [
+      "ImportScanResultsView.get 1047-1061"
+     ],
+     "after": [
+      "ImportScanResultsView.post 1063-1103",
+      "close_eng 1107-1115"
+     ],
+     "file_language": "python"
+    }
+   ]
+  },
+  "Noir names no handler and cites the header of a class (its actions are inherited: the class is the handler, not a function)": {
+   "group": "Noir gives no handler",
+   "endpoints": 50,
+   "by_file_suffix": {
+    ".py": 50
+   },
+   "examples": [
+    {
+     "method": "POST",
+     "url": "/{}api/v2/technologies/",
+     "site": "dojo/api_v2/views.py:204",
+     "noir_handler": null,
+     "after": [
+      "AppAnalysisViewSet.get_queryset 217-218",
+      "SonarqubeIssueViewSet.get_queryset 231-232"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "DELETE",
+     "url": "/{}api/v2/technologies/{pk}/",
+     "site": "dojo/api_v2/views.py:204",
+     "noir_handler": null,
+     "after": [
+      "AppAnalysisViewSet.get_queryset 217-218",
+      "SonarqubeIssueViewSet.get_queryset 231-232"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "PATCH",
+     "url": "/{}api/v2/technologies/{pk}/",
+     "site": "dojo/api_v2/views.py:204",
+     "noir_handler": null,
+     "after": [
+      "AppAnalysisViewSet.get_queryset 217-218",
+      "SonarqubeIssueViewSet.get_queryset 231-232"
+     ],
+     "file_language": "python"
+    }
+   ]
+  },
+  "Noir names no handler and a function nested in the covering function starts just below the cited line (a decorator or attribute line)": {
+   "group": "Noir gives no handler",
+   "endpoints": 39,
+   "by_file_suffix": {
+    ".py": 39
+   },
+   "examples": [
+    {
+     "method": "POST",
+     "url": "/import",
+     "site": "dojo/api_v3/import_routes.py:193",
+     "noir_handler": null,
+     "covering": [
+      "build_import_router 189-276"
+     ],
+     "after": [
+      "build_import_router.import_endpoint 194-274"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/engagements",
+     "site": "dojo/engagement/api_v3/routes.py:173",
+     "noir_handler": null,
+     "covering": [
+      "build_engagements_router 162-330"
+     ],
+     "after": [
+      "build_engagements_router.list_engagements 174-194",
+      "build_engagements_router.list_engagements.serialize_row 187-188"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/engagements/export.csv",
+     "site": "dojo/engagement/api_v3/routes.py:198",
+     "noir_handler": null,
+     "covering": [
+      "build_engagements_router 162-330"
+     ],
+     "after": [
+      "build_engagements_router.export_engagements 199-206",
+      "build_engagements_router.get_engagement 209-218"
+     ],
+     "file_language": "python"
+    }
+   ]
+  },
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 6,
+   "by_file_suffix": {
+    ".toml": 4,
+    ".py": 2
+   },
+   "examples": [
+    {
+     "method": "ANY",
+     "url": "/admin/sso/PRO__auth0/",
+     "site": "docs/netlify.toml",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "ANY",
+     "url": "/admin/sso/PRO__google/",
+     "site": "docs/netlify.toml",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "ANY",
+     "url": "/en/customize_dojo/",
+     "site": "docs/netlify.toml",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  },
+  "the snapshot holds no function in the cited code file": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 4,
+   "by_file_suffix": {
+    ".py": 4
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/organization/{ptid}/add_product",
+     "site": "dojo/organization/urls.py:88",
+     "noir_handler": null,
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/password_reset/done/",
+     "site": "dojo/user/ui/urls.py:39",
+     "noir_handler": {
+      "name": "auth_views.PasswordResetDoneView"
+     },
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/reset/done/",
+     "site": "dojo/user/ui/urls.py:45",
+     "noir_handler": {
+      "name": "auth_views.PasswordResetCompleteView"
+     },
+     "file_language": "python"
+    }
+   ]
+  },
+  "Noir names no handler, no function covers the line": {
+   "group": "Noir gives no handler",
+   "endpoints": 4,
+   "by_file_suffix": {
+    ".py": 4
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/{get_system_setting('url_prefix')}api/v2/api-token-auth/",
+     "site": "dojo/urls.py:227",
+     "noir_handler": null,
+     "after": [
+      "(lambda) 269-269",
+      "drf_spectacular_preprocessing_filter_spec 293-299"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/{}api/v2/oa3/swagger-ui/",
+     "site": "dojo/urls.py:267",
+     "noir_handler": null,
+     "after": [
+      "(lambda) 269-269",
+      "drf_spectacular_preprocessing_filter_spec 293-299"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/{}django_metrics/",
+     "site": "dojo/urls.py:280",
+     "noir_handler": null,
+     "after": [
+      "drf_spectacular_preprocessing_filter_spec 293-299"
+     ],
+     "file_language": "python"
+    }
+   ]
+  },
+  "Noir names no handler, the line is inside a function (the registration)": {
+   "group": "Noir gives no handler",
+   "endpoints": 3,
+   "by_file_suffix": {
+    ".py": 3
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/findings/{finding_id}/locations",
+     "site": "dojo/location/api_v3/routes.py:167",
+     "noir_handler": null,
+     "covering": [
+      "build_finding_locations_router 159-187"
+     ],
+     "after": [
+      "build_finding_locations_router.list_finding_locations 172-185",
+      "build_asset_locations_router 190-217"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/assets/{asset_id}/locations",
+     "site": "dojo/location/api_v3/routes.py:198",
+     "noir_handler": null,
+     "covering": [
+      "build_asset_locations_router 190-217"
+     ],
+     "after": [
+      "build_asset_locations_router.list_asset_locations 203-215"
+     ],
+     "file_language": "python"
+    },
+    {
+     "method": "GET",
+     "url": "/robots.txt",
+     "site": "dojo/urls.py:269",
+     "noir_handler": null,
+     "covering": [
+      "(lambda) 269-269"
+     ],
+     "after": [
+      "drf_spectacular_preprocessing_filter_spec 293-299"
+     ],
+     "file_language": "python"
+    }
+   ]
+  },
+  "Noir names a closure and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 3,
+   "by_file_suffix": {
+    ".js": 3
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/run",
+     "site": "unittests/scans/njsscan/server.js:7",
+     "noir_handler": {
+      "name": "closure",
+      "path": "unittests/scans/njsscan/server.js",
+      "line": 7
+     },
+     "covering": [
+      "(anonymous) 7-11"
+     ],
+     "after": [
+      "(anonymous).(anonymous) 8-10",
+      "(anonymous) 13-15"
+     ],
+     "file_language": "javascript"
+    },
+    {
+     "method": "GET",
+     "url": "/eval",
+     "site": "unittests/scans/njsscan/server.js:13",
+     "noir_handler": {
+      "name": "closure",
+      "path": "unittests/scans/njsscan/server.js",
+      "line": 13
+     },
+     "covering": [
+      "(anonymous) 13-15"
+     ],
+     "after": [
+      "(anonymous) 17-19"
+     ],
+     "file_language": "javascript"
+    },
+    {
+     "method": "GET",
+     "url": "/hash",
+     "site": "unittests/scans/njsscan/server.js:17",
+     "noir_handler": {
+      "name": "closure",
+      "path": "unittests/scans/njsscan/server.js",
+      "line": 17
+     },
+     "covering": [
+      "(anonymous) 17-19"
+     ],
+     "file_language": "javascript"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 186
+   },
+   "bound": {
+    "same": 492
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 186
+   },
+   "bound": {
+    "same": 492
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 109,
+    "one": 77
+   },
+   "bound": {
+    "none": 492
+   },
+   "distinct_functions_of_the_unbound_one": 52
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 106,
+    "one": 80
+   },
+   "bound": {
+    "same": 492
+   },
+   "distinct_functions_of_the_unbound_one": 55
+  },
+  "combined": {
+   "unbound": {
+    "none": 106,
+    "one": 80
+   },
+   "bound": {
+    "same": 492
+   },
+   "distinct_functions_of_the_unbound_one": 55
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 67,
+    "one": 39
+   },
+   "bound": {
+    "none": 491,
+    "different": 1
+   },
+   "distinct_functions_of_the_unbound_one": 39
+  },
+  "name-above": {
+   "unbound": {
+    "none": 186
+   },
+   "bound": {
+    "none": 492
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 186
+   },
+   "bound": {
+    "same": 492
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 186
+   },
+   "bound": {
+    "same": 393,
+    "many": 99
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 64,
+    "one": 42
+   },
+   "bound": {
+    "same": 492
+   },
+   "distinct_functions_of_the_unbound_one": 10
+  }
+ },
+ "fixes_agree": {
+  "only starts-at-line binds": 80
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

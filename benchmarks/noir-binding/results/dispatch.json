@@ -1,0 +1,246 @@
+{
+ "name": "dispatch",
+ "framework": "fastapi",
+ "repository": "Netflix/dispatch",
+ "commit": "dd2837e82a0bf5565b1b4b4b91ea30b7262d4061",
+ "licence": "Apache-2.0",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 535,
+  "protocols": {
+   "http": 498,
+   "cli": 37
+  },
+  "errors": 0,
+  "seconds": 3.2,
+  "peak_memory_mb": 179.6,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name": 290,
+   "none": 245
+  },
+  "http_handler_forms": {
+   "name": 290,
+   "none": 208
+  },
+  "http_endpoints_in_the_json": 498,
+  "tagged_spec_only": 207,
+  "with_handler_name_in_the_json": 290,
+  "with_name_and_path_and_line": 290
+ },
+ "before_the_binder": {
+  "other_protocol": 37,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 1569,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 1337,
+  "functions": 8232,
+  "functions_by_suffix": {
+   ".py": 3133,
+   ".vue": 2872,
+   ".js": 2104,
+   ".ts": 113,
+   ".sql": 10
+  },
+  "files_by_suffix": {
+   ".py": 717,
+   ".vue": 428,
+   ".js": 137,
+   ".ts": 23,
+   ".json": 7,
+   ".css": 5,
+   ".yaml": 3,
+   ".md": 2,
+   ".ini": 2,
+   ".sh": 2,
+   ".sql": 2,
+   ".txt": 2,
+   ".scss": 2,
+   ".toml": 1,
+   "": 1
+  },
+  "seconds": 34.2
+ },
+ "http": {
+  "endpoints": 498,
+  "with_handler_name": 290,
+  "bound_to_one_function": 290,
+  "unbound": 208,
+  "by_file_suffix": {
+   ".py": {
+    "endpoints": 291,
+    "with_handler_name": 290,
+    "bound": 290
+   },
+   ".yaml": {
+    "endpoints": 207,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "the snapshot holds no function where Noir cites": 207,
+  "Noir gives no handler": 1
+ },
+ "causes": {
+  "the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 207,
+   "by_file_suffix": {
+    ".yaml": 207
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/organizations",
+     "site": "docs/scripts/openapi.yaml:7513",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "POST",
+     "url": "/organizations",
+     "site": "docs/scripts/openapi.yaml:7615",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "GET",
+     "url": "/organizations/{organization_id}",
+     "site": "docs/scripts/openapi.yaml:7671",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  },
+  "Noir names no handler, no function covers the line": {
+   "group": "Noir gives no handler",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".py": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/*",
+     "site": "src/dispatch/main.py:266",
+     "noir_handler": null,
+     "file_language": "python"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "same": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "same": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "none": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "same": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "same": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "none": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "none": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "same": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "same": 253,
+    "many": 37
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 208
+   },
+   "bound": {
+    "same": 290
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

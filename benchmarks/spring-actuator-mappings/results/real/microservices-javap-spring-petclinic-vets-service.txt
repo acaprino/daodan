@@ -1,0 +1,7 @@
+Compiled from "VetResource.java"
+class org.springframework.samples.petclinic.vets.web.VetResource {
+  public java.util.List<org.springframework.samples.petclinic.vets.model.Vet> showResourcesVetList();
+    descriptor: ()Ljava/util/List;
+    LineNumberTable:
+      line 47: 0
+}

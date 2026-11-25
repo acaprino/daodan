@@ -25,7 +25,7 @@ def declared(tmp_path, files: dict) -> list[dict]:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=READERS)
     assert not [gap for gap in record["gaps"] if gap["kind"] == "source_failed"]
     return [{key: value for key, value in entry.items() if key != "sources"} for entry in record.get("tests", [])]

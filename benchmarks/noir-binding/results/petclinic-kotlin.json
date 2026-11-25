@@ -1,0 +1,250 @@
+{
+ "name": "petclinic-kotlin",
+ "framework": "spring-kotlin",
+ "repository": "spring-petclinic/spring-petclinic-kotlin",
+ "commit": "9823b3aa97988854668e608750db88502775caa7",
+ "licence": "Apache-2.0",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 49,
+  "protocols": {
+   "http": 49
+  },
+  "errors": 0,
+  "seconds": 1.1,
+  "peak_memory_mb": 153.3,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "none": 31,
+   "name joined by '.'": 18
+  },
+  "http_handler_forms": {
+   "none": 31,
+   "name joined by '.'": 18
+  },
+  "http_endpoints_in_the_json": 49,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 18,
+  "with_name_and_path_and_line": 18
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 16,
+  "dropped_by_reason": {
+   "outside_snapshot (.png)": 6,
+   "outside_snapshot (.svg)": 4,
+   "outside_snapshot (.eot)": 2,
+   "outside_snapshot (.ttf)": 2,
+   "outside_snapshot (.woff)": 2
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 108,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 73,
+  "functions": 101,
+  "functions_by_suffix": {
+   ".kt": 101
+  },
+  "files_by_suffix": {
+   ".kt": 38,
+   ".html": 13,
+   ".sql": 5,
+   ".less": 4,
+   ".md": 2,
+   ".kts": 2,
+   ".yml": 2,
+   ".txt": 2,
+   "": 1,
+   ".bat": 1,
+   ".sh": 1,
+   ".css": 1,
+   ".xml": 1
+  },
+  "seconds": 4.0
+ },
+ "http": {
+  "endpoints": 33,
+  "with_handler_name": 18,
+  "bound_to_one_function": 18,
+  "unbound": 15,
+  "by_file_suffix": {
+   ".kt": {
+    "endpoints": 18,
+    "with_handler_name": 18,
+    "bound": 18
+   },
+   ".kts": {
+    "endpoints": 14,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".css": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "the snapshot holds no function where Noir cites": 14,
+  "no function of the project serves the endpoint": 1
+ },
+ "causes": {
+  "the snapshot holds no function in the cited code file": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 14,
+   "by_file_suffix": {
+    ".kts": 14
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/actuator",
+     "site": "build.gradle.kts:75",
+     "noir_handler": null,
+     "file_language": "kotlin"
+    },
+    {
+     "method": "GET",
+     "url": "/actuator/beans",
+     "site": "build.gradle.kts:75",
+     "noir_handler": null,
+     "file_language": "kotlin"
+    },
+    {
+     "method": "GET",
+     "url": "/actuator/caches",
+     "site": "build.gradle.kts:75",
+     "noir_handler": null,
+     "file_language": "kotlin"
+    }
+   ]
+  },
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 1,
+   "by_file_suffix": {
+    ".css": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/resources/css/petclinic.css",
+     "site": "src/main/resources/static/resources/css/petclinic.css",
+     "noir_handler": null,
+     "file_language": "css"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "same": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "same": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "none": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "none": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "same": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "none": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "none": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "same": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "many": 4,
+    "same": 14
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 15
+   },
+   "bound": {
+    "same": 18
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

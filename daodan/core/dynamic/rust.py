@@ -46,7 +46,7 @@ from dynamic import callgrind
 from premap.container_runner import IMAGE  # Ubuntu 24.04: gcc for linking, dpkg, python3
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-callgrind-rust", f"{callgrind.VALGRIND_VERSION}+1", ("rust",)
+NAME, VERSION, LANGUAGES = "dynamic-callgrind-rust", f"{callgrind.VALGRIND_VERSION}+1", ("rust",)
 UNIT_KINDS = frozenset({"cargo-crate"})
 RUNNER, ARGV = "cargo test", ["cargo", "test", "--workspace", "--no-fail-fast"]
 ENV = {"CARGO_NET_OFFLINE": "true", "CARGO_TERM_COLOR": "never", "CARGO_PROFILE_DEV_DEBUG": "line-tables-only",

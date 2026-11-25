@@ -1,0 +1,800 @@
+{
+ "code": {
+  "commit": "c85c3845298c58f5252e9c54eff9db8e93a741f8",
+  "differs": []
+ },
+ "rows": [
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 7.855
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 31.74
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 120.799
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 479.891
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1911.503
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 320.505,
+   "parse_ms": 319.28753,
+   "err": 684,
+   "missing": 0
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1234.569,
+   "parse_ms": 1223.038754,
+   "err": 1365,
+   "missing": 1
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 5645.85,
+   "parse_ms": 5624.527247,
+   "err": 2732,
+   "missing": 0
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 19470.522,
+   "parse_ms": 19438.680657,
+   "err": 5461,
+   "missing": 1
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "timeout": 60
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 267.988,
+   "parse_ms": 266.712197,
+   "err": 684,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1038.659,
+   "parse_ms": 1022.02384,
+   "err": 1365,
+   "missing": 1
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 4130.13,
+   "parse_ms": 4112.858915,
+   "err": 2732,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 17323.52,
+   "parse_ms": 17289.427952,
+   "err": 5461,
+   "missing": 1
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "timeout": 60
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 257.304,
+   "parse_ms": 256.157341,
+   "err": 684,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 1005.594,
+   "parse_ms": 992.977285,
+   "err": 1365,
+   "missing": 1
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 4190.559,
+   "parse_ms": 4174.972143,
+   "err": 2732,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 17845.611,
+   "parse_ms": 17797.040432,
+   "err": 5461,
+   "missing": 1
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "timeout": 60
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.025,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.025,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.029,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.037,
+   "open_at": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.059,
+   "open_at": 0
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 5.079
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 19.602
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 75.117
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 291.815
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1222.787
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 7.07,
+   "parse_ms": 6.647351,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 25.384,
+   "parse_ms": 24.456838,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 88.344,
+   "parse_ms": 86.646042,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 329.96,
+   "parse_ms": 326.900085,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "c",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1279.887,
+   "parse_ms": 1273.810001,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 7.038,
+   "parse_ms": 6.598488,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 23.552,
+   "parse_ms": 22.633833,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 88.707,
+   "parse_ms": 86.979599,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 338.718,
+   "parse_ms": 335.464861,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1308.06,
+   "parse_ms": 1301.568318,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 6.123,
+   "parse_ms": 5.718297,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 21.106,
+   "parse_ms": 20.298613,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 81.272,
+   "parse_ms": 79.5531,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 306.218,
+   "parse_ms": 303.053048,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "objc",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1311.089,
+   "parse_ms": 1304.137311,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.04,
+   "open_at": 7
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.037,
+   "open_at": 7
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.032,
+   "open_at": 7
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.048,
+   "open_at": 7
+  },
+  {
+   "target": "scan",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 0.06,
+   "open_at": 7
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 130.432
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "cut:8192",
+   "used": 0,
+   "ms": 0.019
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "cut:8192",
+   "used": 0,
+   "ms": 0.019
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 65536,
+   "mode": "cut:8192",
+   "used": 0,
+   "ms": 0.023
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.022
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.016
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.016
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_repeat",
+   "size": 65536,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.019
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 4324.493,
+   "parse_ms": 4298.411277,
+   "err": 2732,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "cut:8192",
+   "used": 0,
+   "ms": 0.012,
+   "parse_ms": 0.003267,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "cut:8192",
+   "used": 0,
+   "ms": 0.015,
+   "parse_ms": 0.004359,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 65536,
+   "mode": "cut:8192",
+   "used": 0,
+   "ms": 0.013,
+   "parse_ms": 0.003757,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.024,
+   "parse_ms": 0.008486,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.016,
+   "parse_ms": 0.004078,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.019,
+   "parse_ms": 0.008937,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_repeat",
+   "size": 65536,
+   "mode": "safe:8192",
+   "used": 0,
+   "ms": 0.014,
+   "parse_ms": 0.004439,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 82.3
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 73.272
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 79.063
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 65536,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 77.126
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.017
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.016
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.016
+  },
+  {
+   "target": "r0",
+   "kind": "open_comment_lines",
+   "size": 65536,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.016
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 91.697,
+   "parse_ms": 89.841506,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 89.691,
+   "parse_ms": 87.981058,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 88.248,
+   "parse_ms": 86.566552,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 65536,
+   "mode": "cut:8192",
+   "used": 8192,
+   "ms": 91.098,
+   "parse_ms": 89.326624,
+   "err": 1,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.018,
+   "parse_ms": 0.006513,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.018,
+   "parse_ms": 0.006352,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.02,
+   "parse_ms": 0.007424,
+   "err": 0,
+   "missing": 0
+  },
+  {
+   "target": "cpp",
+   "kind": "open_comment_lines",
+   "size": 65536,
+   "mode": "safe:8192",
+   "used": 7,
+   "ms": 0.019,
+   "parse_ms": 0.007103,
+   "err": 0,
+   "missing": 0
+  }
+ ]
+}

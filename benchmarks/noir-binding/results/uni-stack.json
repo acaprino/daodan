@@ -1,0 +1,223 @@
+{
+ "name": "uni-stack",
+ "framework": "expo-router",
+ "repository": "bidah/uni-stack",
+ "commit": "96d62ca4c6d598a7887ab6d97cf50d3a5cd4bae1",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 15,
+  "protocols": {
+   "http": 15
+  },
+  "errors": 0,
+  "seconds": 0.8,
+  "peak_memory_mb": 243.0,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name": 15
+  },
+  "http_handler_forms": {
+   "name": 15
+  },
+  "http_endpoints_in_the_json": 15,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 15,
+  "with_name_and_path_and_line": 15
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 145,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 107,
+  "functions": 98,
+  "functions_by_suffix": {
+   ".tsx": 61,
+   ".ts": 27,
+   ".js": 8,
+   ".mjs": 2
+  },
+  "files_by_suffix": {
+   ".tsx": 29,
+   ".ts": 28,
+   ".json": 19,
+   ".js": 10,
+   ".md": 4,
+   ".css": 4,
+   ".prisma": 4,
+   ".toml": 4,
+   ".sql": 4,
+   ".mjs": 1
+  },
+  "seconds": 3.5
+ },
+ "http": {
+  "endpoints": 15,
+  "with_handler_name": 15,
+  "bound_to_one_function": 13,
+  "unbound": 2,
+  "by_file_suffix": {
+   ".ts": {
+    "endpoints": 15,
+    "with_handler_name": 15,
+    "bound": 13
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 2
+ },
+ "causes": {
+  "no declaration has that name, and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 2,
+   "by_file_suffix": {
+    ".ts": 2
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/trpc/health",
+     "site": "with-tamagui/src/trpc-server/routers/_app.ts:5",
+     "noir_handler": {
+      "name": "health",
+      "path": "with-tamagui/src/trpc-server/routers/_app.ts",
+      "line": 5
+     },
+     "covering": [
+      "(anonymous) 5-7"
+     ],
+     "after": [
+      "(anonymous) 8-10"
+     ],
+     "file_language": "typescript"
+    },
+    {
+     "method": "GET",
+     "url": "/api/trpc/firstPost",
+     "site": "with-tamagui/src/trpc-server/routers/_app.ts:8",
+     "noir_handler": {
+      "name": "firstPost",
+      "path": "with-tamagui/src/trpc-server/routers/_app.ts",
+      "line": 8
+     },
+     "covering": [
+      "(anonymous) 8-10"
+     ],
+     "file_language": "typescript"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 2
+   },
+   "bound": {
+    "same": 13
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 2
+   },
+   "bound": {
+    "same": 13
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 2
+   },
+   "bound": {
+    "none": 13
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "one": 2
+   },
+   "bound": {
+    "same": 13
+   },
+   "distinct_functions_of_the_unbound_one": 2
+  },
+  "combined": {
+   "unbound": {
+    "one": 2
+   },
+   "bound": {
+    "same": 13
+   },
+   "distinct_functions_of_the_unbound_one": 2
+  },
+  "nested-below": {
+   "unbound": {},
+   "bound": {
+    "none": 13
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 2
+   },
+   "bound": {
+    "none": 13
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 2
+   },
+   "bound": {
+    "same": 13
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 2
+   },
+   "bound": {
+    "same": 5,
+    "many": 8
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {},
+   "bound": {
+    "same": 13
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {
+  "only starts-at-line binds": 2
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

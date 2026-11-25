@@ -1,0 +1,1311 @@
+Compiled from "GenController.java"
+public class com.ruoyi.generator.controller.GenController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String gen();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 56: 0
+  public com.ruoyi.common.core.page.TableDataInfo genList(com.ruoyi.generator.domain.GenTable);
+    descriptor: (Lcom/ruoyi/generator/domain/GenTable;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 67: 0
+  public com.ruoyi.common.core.page.TableDataInfo dataList(com.ruoyi.generator.domain.GenTable);
+    descriptor: (Lcom/ruoyi/generator/domain/GenTable;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 80: 0
+  public com.ruoyi.common.core.page.TableDataInfo columnList(com.ruoyi.generator.domain.GenTableColumn);
+    descriptor: (Lcom/ruoyi/generator/domain/GenTableColumn;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 93: 0
+  public java.lang.String importTable();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 107: 0
+  public com.ruoyi.common.core.domain.AjaxResult importTableSave(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 119: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 134: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.generator.domain.GenTable);
+    descriptor: (Lcom/ruoyi/generator/domain/GenTable;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 165: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 176: 0
+  public com.ruoyi.common.core.domain.AjaxResult preview(java.lang.Long) throws java.io.IOException;
+    descriptor: (Ljava/lang/Long;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 188: 0
+  public void download(jakarta.servlet.http.HttpServletResponse, java.lang.String) throws java.io.IOException;
+    descriptor: (Ljakarta/servlet/http/HttpServletResponse;Ljava/lang/String;)V
+    LineNumberTable:
+      line 200: 0
+  public com.ruoyi.common.core.domain.AjaxResult genCode(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 213: 0
+  public com.ruoyi.common.core.domain.AjaxResult synchDb(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 230: 0
+  public void batchGenCode(jakarta.servlet.http.HttpServletResponse, java.lang.String) throws java.io.IOException;
+    descriptor: (Ljakarta/servlet/http/HttpServletResponse;Ljava/lang/String;)V
+    LineNumberTable:
+      line 243: 0
+}
+Compiled from "SysJobController.java"
+public class com.ruoyi.quartz.controller.SysJobController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String job();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 48: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.quartz.domain.SysJob);
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJob;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 56: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.quartz.domain.SysJob);
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJob;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 67: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String) throws org.quartz.SchedulerException;
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 78: 0
+  public java.lang.String detail(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 86: 0
+  public com.ruoyi.common.core.domain.AjaxResult changeStatus(com.ruoyi.quartz.domain.SysJob) throws org.quartz.SchedulerException;
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJob;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 100: 0
+  public com.ruoyi.common.core.domain.AjaxResult run(com.ruoyi.quartz.domain.SysJob) throws org.quartz.SchedulerException;
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJob;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 114: 0
+  public java.lang.String add();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 125: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.quartz.domain.SysJob) throws org.quartz.SchedulerException, com.ruoyi.common.exception.job.TaskException;
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJob;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 137: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 172: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.quartz.domain.SysJob) throws org.quartz.SchedulerException, com.ruoyi.common.exception.job.TaskException;
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJob;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 185: 0
+  public boolean checkCronExpressionIsValid(com.ruoyi.quartz.domain.SysJob);
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJob;)Z
+    LineNumberTable:
+      line 219: 0
+  public java.lang.String cron();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 228: 0
+  public com.ruoyi.common.core.domain.AjaxResult queryCronExpression(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 238: 0
+}
+Compiled from "SysJobLogController.java"
+public class com.ruoyi.quartz.controller.SysJobLogController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String jobLog(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 47: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.quartz.domain.SysJobLog);
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJobLog;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 60: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.quartz.domain.SysJobLog);
+    descriptor: (Lcom/ruoyi/quartz/domain/SysJobLog;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 71: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 82: 0
+  public java.lang.String detail(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 89: 0
+  public com.ruoyi.common.core.domain.AjaxResult clean();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 100: 0
+}
+Compiled from "CommonController.java"
+public class com.ruoyi.web.controller.common.CommonController {
+  public void fileDownload(java.lang.String, java.lang.Boolean, jakarta.servlet.http.HttpServletResponse, jakarta.servlet.http.HttpServletRequest);
+    descriptor: (Ljava/lang/String;Ljava/lang/Boolean;Ljakarta/servlet/http/HttpServletResponse;Ljakarta/servlet/http/HttpServletRequest;)V
+    LineNumberTable:
+      line 51: 0
+  public com.ruoyi.common.core.domain.AjaxResult uploadFile(org.springframework.web.multipart.MultipartFile) throws java.lang.Exception;
+    descriptor: (Lorg/springframework/web/multipart/MultipartFile;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 82: 0
+  public com.ruoyi.common.core.domain.AjaxResult uploadFiles(java.util.List<org.springframework.web.multipart.MultipartFile>) throws java.lang.Exception;
+    descriptor: (Ljava/util/List;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 109: 0
+  public void resourceDownload(java.lang.String, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse) throws java.lang.Exception;
+    descriptor: (Ljava/lang/String;Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)V
+    LineNumberTable:
+      line 145: 0
+}
+Compiled from "DemoDialogController.java"
+public class com.ruoyi.web.controller.demo.controller.DemoDialogController {
+  public java.lang.String dialog();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 24: 0
+  public java.lang.String layer();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 33: 0
+  public java.lang.String form();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 42: 0
+  public java.lang.String table();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 51: 0
+  public java.lang.String check();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 60: 0
+  public java.lang.String radio();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 69: 0
+  public java.lang.String parent();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 78: 0
+  public java.lang.String frame1();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 87: 0
+  public java.lang.String frame2();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 96: 0
+}
+Compiled from "DemoFormController.java"
+public class com.ruoyi.web.controller.demo.controller.DemoFormController {
+  public java.lang.String button();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 44: 0
+  public java.lang.String select();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 53: 0
+  public java.lang.String timeline();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 62: 0
+  public java.lang.String progress_bars();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 71: 0
+  public java.lang.String validate();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 80: 0
+  public java.lang.String jasny();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 89: 0
+  public java.lang.String sortable();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 98: 0
+  public java.lang.String invoice();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 107: 0
+  public java.lang.String labels_tips();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 116: 0
+  public java.lang.String tabs_panels();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 125: 0
+  public java.lang.String grid();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 134: 0
+  public java.lang.String wizard();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 143: 0
+  public java.lang.String upload();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 152: 0
+  public java.lang.String datetime();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 161: 0
+  public java.lang.String duallistbox();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 170: 0
+  public java.lang.String basic();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 179: 0
+  public java.lang.String cards();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 188: 0
+  public java.lang.String summernote();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 197: 0
+  public java.lang.String autocomplete();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 206: 0
+  public java.lang.String cxselect(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 215: 0
+  public java.lang.String localRefresh(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 257: 0
+  public java.lang.String localRefreshTask(java.lang.String, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/String;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 278: 0
+  public java.lang.String cityData();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 300: 0
+  public com.ruoyi.common.core.domain.AjaxResult userModel();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 311: 0
+  public com.ruoyi.common.core.domain.AjaxResult collection();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 325: 0
+}
+Compiled from "DemoIconController.java"
+public class com.ruoyi.web.controller.demo.controller.DemoIconController {
+  public java.lang.String fontAwesome();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 24: 0
+  public java.lang.String glyphicons();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 33: 0
+}
+Compiled from "DemoOperateController.java"
+public class com.ruoyi.web.controller.demo.controller.DemoOperateController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String table();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 74: 0
+  public java.lang.String other();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 83: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.web.controller.demo.domain.UserOperateModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/domain/UserOperateModel;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 93: 0
+  public java.lang.String add(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 142: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.web.controller.demo.domain.UserOperateModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/domain/UserOperateModel;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 152: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.web.controller.demo.domain.CustomerModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/domain/CustomerModel;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 164: 0
+  public java.lang.String edit(java.lang.Integer, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Integer;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 174: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.web.controller.demo.domain.UserOperateModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/domain/UserOperateModel;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 185: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.web.controller.demo.domain.UserOperateModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/domain/UserOperateModel;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 195: 0
+  public com.ruoyi.common.core.domain.AjaxResult importTemplate();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 207: 0
+  public com.ruoyi.common.core.domain.AjaxResult importData(org.springframework.web.multipart.MultipartFile, boolean) throws java.lang.Exception;
+    descriptor: (Lorg/springframework/web/multipart/MultipartFile;Z)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 218: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 231: 0
+  public java.lang.String detail(java.lang.Integer, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Integer;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 245: 0
+  public com.ruoyi.common.core.domain.AjaxResult clean();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 253: 0
+}
+Compiled from "DemoReportController.java"
+public class com.ruoyi.web.controller.demo.controller.DemoReportController {
+  public java.lang.String echarts();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 24: 0
+  public java.lang.String peity();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 33: 0
+  public java.lang.String sparkline();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 42: 0
+  public java.lang.String metrics();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 51: 0
+}
+Compiled from "DemoTableController.java"
+public class com.ruoyi.web.controller.demo.controller.DemoTableController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String search();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 152: 0
+  public java.lang.String footer();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 161: 0
+  public java.lang.String groupHeader();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 170: 0
+  public java.lang.String export();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 179: 0
+  public java.lang.String exportSelected();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 188: 0
+  public com.ruoyi.common.core.domain.AjaxResult exportSelected(com.ruoyi.web.controller.demo.controller.UserTableModel, java.lang.String);
+    descriptor: (Lcom/ruoyi/web/controller/demo/controller/UserTableModel;Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 198: 0
+  public java.lang.String remember();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 226: 0
+  public java.lang.String cookie();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 235: 0
+  public java.lang.String pageGo();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 244: 0
+  public java.lang.String params();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 253: 0
+  public java.lang.String multi();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 262: 0
+  public java.lang.String button();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 271: 0
+  public java.lang.String data(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 280: 0
+  public java.lang.String fixedColumns();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 290: 0
+  public java.lang.String event();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 299: 0
+  public java.lang.String detail();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 308: 0
+  public java.lang.String child();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 317: 0
+  public java.lang.String image();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 326: 0
+  public java.lang.String curd();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 335: 0
+  public java.lang.String reorderRows();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 344: 0
+  public java.lang.String reorderColumns();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 353: 0
+  public java.lang.String resizable();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 362: 0
+  public java.lang.String editable();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 371: 0
+  public java.lang.String subdata();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 380: 0
+  public java.lang.String refresh();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 389: 0
+  public java.lang.String print();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 398: 0
+  public java.lang.String headerStyle();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 407: 0
+  public java.lang.String dynamicColumns();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 416: 0
+  public java.lang.String virtualScroll();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 425: 0
+  public java.lang.String customView();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 434: 0
+  public java.lang.String textSearch();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 443: 0
+  public java.lang.String asynTree();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 452: 0
+  public java.lang.String other();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 461: 0
+  public com.ruoyi.common.core.domain.AjaxResult ajaxColumns(com.ruoyi.web.controller.demo.controller.UserTableColumn);
+    descriptor: (Lcom/ruoyi/web/controller/demo/controller/UserTableColumn;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 471: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.web.controller.demo.controller.UserTableModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/controller/UserTableModel;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 487: 0
+  public com.ruoyi.common.core.page.TableDataInfo textList(com.ruoyi.common.core.domain.BaseEntity);
+    descriptor: (Lcom/ruoyi/common/core/domain/BaseEntity;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 527: 0
+  public com.ruoyi.common.core.page.TableDataInfo treeList(com.ruoyi.web.controller.demo.controller.AreaModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/controller/AreaModel;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 578: 0
+  public java.util.List<com.ruoyi.web.controller.demo.controller.AreaModel> listChild(com.ruoyi.web.controller.demo.controller.AreaModel);
+    descriptor: (Lcom/ruoyi/web/controller/demo/controller/AreaModel;)Ljava/util/List;
+    LineNumberTable:
+      line 622: 0
+}
+Compiled from "CacheController.java"
+public class com.ruoyi.web.controller.monitor.CacheController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String cache(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 33: 0
+  public java.lang.String getCacheNames(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 41: 0
+  public java.lang.String getCacheKeys(java.lang.String, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/String;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 49: 0
+  public java.lang.String getCacheValue(java.lang.String, java.lang.String, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 58: 0
+  public com.ruoyi.common.core.domain.AjaxResult clearCacheName(java.lang.String, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/String;Lorg/springframework/ui/ModelMap;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 69: 0
+  public com.ruoyi.common.core.domain.AjaxResult clearCacheKey(java.lang.String, java.lang.String, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;Lorg/springframework/ui/ModelMap;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 78: 0
+  public com.ruoyi.common.core.domain.AjaxResult clearAll(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 87: 0
+}
+Compiled from "DruidController.java"
+public class com.ruoyi.web.controller.monitor.DruidController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String index();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 24: 0
+}
+Compiled from "ServerController.java"
+public class com.ruoyi.web.controller.monitor.ServerController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String server(org.springframework.ui.ModelMap) throws java.lang.Exception;
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 26: 0
+}
+Compiled from "SysLogininforController.java"
+public class com.ruoyi.web.controller.monitor.SysLogininforController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String logininfor();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 42: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.system.domain.SysLogininfor);
+    descriptor: (Lcom/ruoyi/system/domain/SysLogininfor;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 50: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.system.domain.SysLogininfor);
+    descriptor: (Lcom/ruoyi/system/domain/SysLogininfor;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 61: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 72: 0
+  public com.ruoyi.common.core.domain.AjaxResult clean();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 81: 0
+  public com.ruoyi.common.core.domain.AjaxResult unlock(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 91: 0
+}
+Compiled from "SysOperlogController.java"
+public class com.ruoyi.web.controller.monitor.SysOperlogController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String operlog();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 40: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.system.domain.SysOperLog);
+    descriptor: (Lcom/ruoyi/system/domain/SysOperLog;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 48: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.system.domain.SysOperLog);
+    descriptor: (Lcom/ruoyi/system/domain/SysOperLog;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 59: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 70: 0
+  public java.lang.String detail(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 77: 0
+  public com.ruoyi.common.core.domain.AjaxResult clean();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 87: 0
+}
+Compiled from "SysUserOnlineController.java"
+public class com.ruoyi.web.controller.monitor.SysUserOnlineController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String online();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 46: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.system.domain.SysUserOnline);
+    descriptor: (Lcom/ruoyi/system/domain/SysUserOnline;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 54: 0
+  public com.ruoyi.common.core.domain.AjaxResult batchForceLogout(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 65: 0
+}
+Compiled from "SysCaptchaController.java"
+public class com.ruoyi.web.controller.system.SysCaptchaController extends com.ruoyi.common.core.controller.BaseController {
+  public org.springframework.web.servlet.ModelAndView getKaptchaImage(jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse);
+    descriptor: (Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)Lorg/springframework/web/servlet/ModelAndView;
+    LineNumberTable:
+      line 40: 0
+}
+Compiled from "SysConfigController.java"
+public class com.ruoyi.web.controller.system.SysConfigController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String config();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 41: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.system.domain.SysConfig);
+    descriptor: (Lcom/ruoyi/system/domain/SysConfig;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 52: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.system.domain.SysConfig);
+    descriptor: (Lcom/ruoyi/system/domain/SysConfig;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 63: 0
+  public java.lang.String add();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 75: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.system.domain.SysConfig);
+    descriptor: (Lcom/ruoyi/system/domain/SysConfig;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 87: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 102: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.system.domain.SysConfig);
+    descriptor: (Lcom/ruoyi/system/domain/SysConfig;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 115: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 132: 0
+  public com.ruoyi.common.core.domain.AjaxResult refreshCache();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 145: 0
+  public boolean checkConfigKeyUnique(com.ruoyi.system.domain.SysConfig);
+    descriptor: (Lcom/ruoyi/system/domain/SysConfig;)Z
+    LineNumberTable:
+      line 156: 0
+}
+Compiled from "SysDeptController.java"
+public class com.ruoyi.web.controller.system.SysDeptController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String dept();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 43: 0
+  public java.util.List<com.ruoyi.common.core.domain.entity.SysDept> list(com.ruoyi.common.core.domain.entity.SysDept);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDept;)Ljava/util/List;
+    LineNumberTable:
+      line 51: 0
+  public java.lang.String add(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 62: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.common.core.domain.entity.SysDept);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDept;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 79: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 94: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.common.core.domain.entity.SysDept);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDept;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 113: 0
+  public com.ruoyi.common.core.domain.AjaxResult updateSort(java.lang.String[], java.lang.String[]);
+    descriptor: ([Ljava/lang/String;[Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 140: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.Long);
+    descriptor: (Ljava/lang/Long;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 153: 0
+  public boolean checkDeptNameUnique(com.ruoyi.common.core.domain.entity.SysDept);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDept;)Z
+    LineNumberTable:
+      line 172: 0
+  public java.lang.String selectDeptTree(java.lang.Long, java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 185: 0
+  public java.util.List<com.ruoyi.common.core.domain.Ztree> treeDataExcludeChild(java.lang.Long);
+    descriptor: (Ljava/lang/Long;)Ljava/util/List;
+    LineNumberTable:
+      line 198: 0
+}
+Compiled from "SysDictDataController.java"
+public class com.ruoyi.web.controller.system.SysDictDataController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String dictData();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 41: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.common.core.domain.entity.SysDictData);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictData;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 49: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.common.core.domain.entity.SysDictData);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictData;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 60: 0
+  public java.lang.String add(java.lang.String, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/String;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 72: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.common.core.domain.entity.SysDictData);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictData;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 85: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 100: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.common.core.domain.entity.SysDictData);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictData;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 113: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 127: 0
+}
+Compiled from "SysDictTypeController.java"
+public class com.ruoyi.web.controller.system.SysDictTypeController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String dictType();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 42: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.common.core.domain.entity.SysDictType);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictType;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 50: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.common.core.domain.entity.SysDictType);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictType;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 62: 0
+  public java.lang.String add();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 74: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.common.core.domain.entity.SysDictType);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictType;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 86: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 101: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.common.core.domain.entity.SysDictType);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictType;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 114: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 128: 0
+  public com.ruoyi.common.core.domain.AjaxResult refreshCache();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 141: 0
+  public java.lang.String detail(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 152: 0
+  public boolean checkDictTypeUnique(com.ruoyi.common.core.domain.entity.SysDictType);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysDictType;)Z
+    LineNumberTable:
+      line 164: 0
+  public java.lang.String selectDictTree(java.lang.Long, java.lang.String, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Ljava/lang/String;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 173: 0
+  public java.util.List<com.ruoyi.common.core.domain.Ztree> treeData();
+    descriptor: ()Ljava/util/List;
+    LineNumberTable:
+      line 185: 0
+}
+Compiled from "SysIndexController.java"
+public class com.ruoyi.web.controller.system.SysIndexController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String index(org.springframework.ui.ModelMap, jakarta.servlet.http.HttpServletRequest);
+    descriptor: (Lorg/springframework/ui/ModelMap;Ljakarta/servlet/http/HttpServletRequest;)Ljava/lang/String;
+    LineNumberTable:
+      line 52: 0
+  public java.lang.String lockscreen(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 95: 0
+  public com.ruoyi.common.core.domain.AjaxResult unlockscreen(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 105: 0
+  public java.lang.String switchSkin();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 122: 0
+  public void menuStyle(java.lang.String, jakarta.servlet.http.HttpServletResponse);
+    descriptor: (Ljava/lang/String;Ljakarta/servlet/http/HttpServletResponse;)V
+    LineNumberTable:
+      line 129: 0
+  public java.lang.String main(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 136: 0
+}
+Compiled from "SysLoginController.java"
+public class com.ruoyi.web.controller.system.SysLoginController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String login(jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, org.springframework.ui.ModelMap);
+    descriptor: (Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 45: 0
+  public com.ruoyi.common.core.domain.AjaxResult ajaxLogin(com.ruoyi.common.core.domain.model.LoginBody);
+    descriptor: (Lcom/ruoyi/common/core/domain/model/LoginBody;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 60: 0
+  public java.lang.String unauth();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 81: 0
+}
+Compiled from "SysMenuController.java"
+public class com.ruoyi.web.controller.system.SysMenuController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String menu();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 44: 0
+  public java.util.List<com.ruoyi.common.core.domain.entity.SysMenu> list(com.ruoyi.common.core.domain.entity.SysMenu);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysMenu;)Ljava/util/List;
+    LineNumberTable:
+      line 52: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.Long);
+    descriptor: (Ljava/lang/Long;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 66: 0
+  public java.lang.String add(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 85: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.common.core.domain.entity.SysMenu);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysMenu;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 109: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 125: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.common.core.domain.entity.SysMenu);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysMenu;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 138: 0
+  public com.ruoyi.common.core.domain.AjaxResult updateSort(java.lang.String[], java.lang.String[]);
+    descriptor: ([Ljava/lang/String;[Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 160: 0
+  public java.lang.String icon();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 170: 0
+  public boolean checkMenuNameUnique(com.ruoyi.common.core.domain.entity.SysMenu);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysMenu;)Z
+    LineNumberTable:
+      line 180: 0
+  public java.util.List<com.ruoyi.common.core.domain.Ztree> roleMenuTreeData(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Ljava/util/List;
+    LineNumberTable:
+      line 190: 0
+  public java.util.List<com.ruoyi.common.core.domain.Ztree> menuTreeData();
+    descriptor: ()Ljava/util/List;
+    LineNumberTable:
+      line 202: 0
+  public java.lang.String selectMenuTree(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 213: 0
+}
+Compiled from "SysNoticeController.java"
+public class com.ruoyi.web.controller.system.SysNoticeController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String notice();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 46: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.system.domain.SysNotice);
+    descriptor: (Lcom/ruoyi/system/domain/SysNotice;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 57: 0
+  public java.lang.String add();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 69: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.system.domain.SysNotice);
+    descriptor: (Lcom/ruoyi/system/domain/SysNotice;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 81: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 92: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.system.domain.SysNotice);
+    descriptor: (Lcom/ruoyi/system/domain/SysNotice;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 105: 0
+  public java.lang.String view(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 115: 0
+  public com.ruoyi.common.core.domain.AjaxResult listTop();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 126: 0
+  public com.ruoyi.common.core.domain.AjaxResult markRead(java.lang.Long);
+    descriptor: (Ljava/lang/Long;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 141: 0
+  public com.ruoyi.common.core.domain.AjaxResult markReadAll(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 153: 0
+  public java.lang.String readUsers(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 166: 0
+  public com.ruoyi.common.core.page.TableDataInfo readUsersList(java.lang.Long, java.lang.String);
+    descriptor: (Ljava/lang/Long;Ljava/lang/String;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 178: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 192: 0
+}
+Compiled from "SysPostController.java"
+public class com.ruoyi.web.controller.system.SysPostController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String operlog();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 41: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.system.domain.SysPost);
+    descriptor: (Lcom/ruoyi/system/domain/SysPost;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 49: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.system.domain.SysPost);
+    descriptor: (Lcom/ruoyi/system/domain/SysPost;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 60: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 71: 0
+  public java.lang.String add();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 81: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.system.domain.SysPost);
+    descriptor: (Lcom/ruoyi/system/domain/SysPost;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 93: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 112: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.system.domain.SysPost);
+    descriptor: (Lcom/ruoyi/system/domain/SysPost;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 125: 0
+  public boolean checkPostNameUnique(com.ruoyi.system.domain.SysPost);
+    descriptor: (Lcom/ruoyi/system/domain/SysPost;)Z
+    LineNumberTable:
+      line 144: 0
+  public boolean checkPostCodeUnique(com.ruoyi.system.domain.SysPost);
+    descriptor: (Lcom/ruoyi/system/domain/SysPost;)Z
+    LineNumberTable:
+      line 154: 0
+}
+Compiled from "SysProfileController.java"
+public class com.ruoyi.web.controller.system.SysProfileController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String profile(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 53: 0
+  public boolean checkPassword(java.lang.String);
+    descriptor: (Ljava/lang/String;)Z
+    LineNumberTable:
+      line 64: 0
+  public java.lang.String resetPwd(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 71: 0
+  public com.ruoyi.common.core.domain.AjaxResult resetPwd(java.lang.String, java.lang.String);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 81: 0
+  public java.lang.String edit(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 106: 0
+  public java.lang.String avatar(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 117: 0
+  public com.ruoyi.common.core.domain.AjaxResult update(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 130: 0
+  public com.ruoyi.common.core.domain.AjaxResult updateAvatar(org.springframework.web.multipart.MultipartFile);
+    descriptor: (Lorg/springframework/web/multipart/MultipartFile;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 161: 0
+}
+Compiled from "SysRegisterController.java"
+public class com.ruoyi.web.controller.system.SysRegisterController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String register();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 32: 0
+  public com.ruoyi.common.core.domain.AjaxResult ajaxRegister(com.ruoyi.common.core.domain.model.RegisterBody);
+    descriptor: (Lcom/ruoyi/common/core/domain/model/RegisterBody;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 39: 0
+}
+Compiled from "SysRoleController.java"
+public class com.ruoyi.web.controller.system.SysRoleController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String role();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 58: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 66: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 77: 0
+  public java.lang.String add();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 89: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 101: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 122: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 136: 0
+  public java.lang.String authDataScope(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 157: 0
+  public com.ruoyi.common.core.domain.AjaxResult authDataScopeSave(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 171: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 188: 0
+  public boolean checkRoleNameUnique(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Z
+    LineNumberTable:
+      line 198: 0
+  public boolean checkRoleKeyUnique(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Z
+    LineNumberTable:
+      line 208: 0
+  public java.lang.String selectMenuTree();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 217: 0
+  public com.ruoyi.common.core.domain.AjaxResult changeStatus(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 229: 0
+  public java.lang.String authUser(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 241: 0
+  public com.ruoyi.common.core.page.TableDataInfo allocatedList(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 254: 0
+  public com.ruoyi.common.core.domain.AjaxResult cancelAuthUser(com.ruoyi.system.domain.SysUserRole);
+    descriptor: (Lcom/ruoyi/system/domain/SysUserRole;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 268: 0
+  public com.ruoyi.common.core.domain.AjaxResult cancelAuthUserAll(java.lang.Long, java.lang.String);
+    descriptor: (Ljava/lang/Long;Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 280: 0
+  public java.lang.String selectUser(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 290: 0
+  public com.ruoyi.common.core.page.TableDataInfo unallocatedList(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 302: 0
+  public com.ruoyi.common.core.domain.AjaxResult selectAuthUserAll(java.lang.Long, java.lang.String);
+    descriptor: (Ljava/lang/Long;Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 316: 0
+  public java.util.List<com.ruoyi.common.core.domain.Ztree> deptTreeData(com.ruoyi.common.core.domain.entity.SysRole);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysRole;)Ljava/util/List;
+    LineNumberTable:
+      line 328: 0
+  public java.lang.String view(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 339: 0
+}
+Compiled from "SysUserController.java"
+public class com.ruoyi.web.controller.system.SysUserController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String user();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 68: 0
+  public com.ruoyi.common.core.page.TableDataInfo list(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/page/TableDataInfo;
+    LineNumberTable:
+      line 76: 0
+  public com.ruoyi.common.core.domain.AjaxResult export(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 87: 0
+  public com.ruoyi.common.core.domain.AjaxResult importData(org.springframework.web.multipart.MultipartFile, boolean) throws java.lang.Exception;
+    descriptor: (Lorg/springframework/web/multipart/MultipartFile;Z)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 98: 0
+  public com.ruoyi.common.core.domain.AjaxResult importTemplate();
+    descriptor: ()Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 109: 0
+  public java.lang.String add(org.springframework.ui.ModelMap);
+    descriptor: (Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 120: 0
+  public com.ruoyi.common.core.domain.AjaxResult addSave(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 134: 0
+  public java.lang.String edit(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 162: 0
+  public java.lang.String view(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 177: 0
+  public com.ruoyi.common.core.domain.AjaxResult editSave(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 193: 0
+  public java.lang.String resetPwd(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 218: 0
+  public com.ruoyi.common.core.domain.AjaxResult resetPwdSave(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 229: 0
+  public java.lang.String authRole(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 251: 0
+  public com.ruoyi.common.core.domain.AjaxResult insertAuthRole(java.lang.Long, java.lang.Long[]);
+    descriptor: (Ljava/lang/Long;[Ljava/lang/Long;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 269: 0
+  public com.ruoyi.common.core.domain.AjaxResult remove(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 282: 0
+  public boolean checkLoginNameUnique(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Z
+    LineNumberTable:
+      line 296: 0
+  public boolean checkPhoneUnique(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Z
+    LineNumberTable:
+      line 306: 0
+  public boolean checkEmailUnique(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Z
+    LineNumberTable:
+      line 316: 0
+  public com.ruoyi.common.core.domain.AjaxResult changeStatus(com.ruoyi.common.core.domain.entity.SysUser);
+    descriptor: (Lcom/ruoyi/common/core/domain/entity/SysUser;)Lcom/ruoyi/common/core/domain/AjaxResult;
+    LineNumberTable:
+      line 328: 0
+  public java.util.List<com.ruoyi.common.core.domain.Ztree> deptTreeData();
+    descriptor: ()Ljava/util/List;
+    LineNumberTable:
+      line 341: 0
+  public java.lang.String selectDeptTree(java.lang.Long, org.springframework.ui.ModelMap);
+    descriptor: (Ljava/lang/Long;Lorg/springframework/ui/ModelMap;)Ljava/lang/String;
+    LineNumberTable:
+      line 354: 0
+}
+Compiled from "BuildController.java"
+public class com.ruoyi.web.controller.tool.BuildController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String build();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 24: 0
+}
+Compiled from "SwaggerController.java"
+public class com.ruoyi.web.controller.tool.SwaggerController extends com.ruoyi.common.core.controller.BaseController {
+  public java.lang.String index();
+    descriptor: ()Ljava/lang/String;
+    LineNumberTable:
+      line 22: 0
+}
+Compiled from "TestController.java"
+public class com.ruoyi.web.controller.tool.TestController extends com.ruoyi.common.core.controller.BaseController {
+  public com.ruoyi.common.core.domain.R<java.util.List<com.ruoyi.web.controller.tool.UserEntity>> userList();
+    descriptor: ()Lcom/ruoyi/common/core/domain/R;
+    LineNumberTable:
+      line 42: 0
+  public com.ruoyi.common.core.domain.R<com.ruoyi.web.controller.tool.UserEntity> getUser(java.lang.Integer);
+    descriptor: (Ljava/lang/Integer;)Lcom/ruoyi/common/core/domain/R;
+    LineNumberTable:
+      line 51: 0
+  public com.ruoyi.common.core.domain.R<java.lang.String> save(com.ruoyi.web.controller.tool.UserEntity);
+    descriptor: (Lcom/ruoyi/web/controller/tool/UserEntity;)Lcom/ruoyi/common/core/domain/R;
+    LineNumberTable:
+      line 65: 0
+  public com.ruoyi.common.core.domain.R<java.lang.String> update(com.ruoyi.web.controller.tool.UserEntity);
+    descriptor: (Lcom/ruoyi/web/controller/tool/UserEntity;)Lcom/ruoyi/common/core/domain/R;
+    LineNumberTable:
+      line 78: 0
+  public com.ruoyi.common.core.domain.R<java.lang.String> delete(java.lang.Integer);
+    descriptor: (Ljava/lang/Integer;)Lcom/ruoyi/common/core/domain/R;
+    LineNumberTable:
+      line 96: 0
+}

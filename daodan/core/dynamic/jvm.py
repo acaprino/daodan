@@ -76,7 +76,7 @@ import preparation
 from indexers import jvm
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-record-jvm", "1", ("java", "kotlin")
+NAME, VERSION, LANGUAGES = "dynamic-record-jvm", "1", ("java", "kotlin")
 ASM = ("org.ow2.asm:asm:9.11.1", "ae4e6e10d59d0a1500317764b21881ad883f8550e33c66e6142f7032c6fb566c")
 RECORD = Path(__file__).resolve().parent / "jvm_record"
 AGENT = f"{preparation.IN}/dynamic-jvm"  # the agent's sources and ASM, and the jars built from them, in the container

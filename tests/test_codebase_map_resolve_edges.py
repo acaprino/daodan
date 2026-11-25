@@ -92,7 +92,7 @@ class ResolveEdgesTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
         self.manifest = self.root.parent / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.edges = self.root.parent / "engine-edges.sqlite"
 
     def run_engine(self, engine, limit=None, **kwargs):
@@ -268,7 +268,7 @@ class ResolveEdgesTests(unittest.TestCase):
         tool = self.root / "app/tool.py"
         tool.write_text(tool.read_text() + "\nclass Other:\n    def run(self):\n        return 3\n",
                         encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         _identity, before = self.unresolved_run_reference()
         report = self.run_engine(StubEngine({("use.py", before["span"][0]):
                                              Definition(tool, "run", line=10)}))
@@ -280,7 +280,7 @@ class ResolveEdgesTests(unittest.TestCase):
     def test_unicode_before_the_callee_is_counted_in_bytes_at_the_engine_boundary(self):
         source = 'class User:\n    def go(self, helper):\n        marker = "é"; return helper.run()\n'
         (self.root / "app/use.py").write_text(source, encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         _identity, before = self.unresolved_run_reference()
         engine = StubEngine({("use.py", before["span"][0]):
                              Definition(self.root / "app/tool.py", "run")})
@@ -292,7 +292,7 @@ class ResolveEdgesTests(unittest.TestCase):
     def test_a_multiline_callee_is_probed_on_its_final_line(self):
         source = "class User:\n    def go(self, helper):\n        return (helper\n                .run)()\n"
         (self.root / "app/use.py").write_text(source, encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         engine = StubEngine({("use.py", 4): Definition(self.root / "app/tool.py", "run")})
         report = self.run_engine(engine)
         self.assertEqual(report["confirmed_edges"], 1, report)
@@ -317,7 +317,7 @@ class ResolveEdgesTests(unittest.TestCase):
     def test_class_inference_does_not_land_on_a_same_named_method(self):
         tool = self.root / "app/tool.py"
         tool.write_text(tool.read_text() + "\nclass run:\n    pass\n", encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         _identity, before = self.unresolved_run_reference()
         report = self.run_engine(StubEngine({("use.py", before["span"][0]):
                                              Definition(tool, "run", kind="class", line=9, column=6)}))
@@ -331,7 +331,7 @@ class ResolveEdgesTests(unittest.TestCase):
         tool = self.root / "app/tool.py"
         tool.write_text("class Tool:\n    async def run(self):\n        return 1\n",
                         encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         _identity, before = self.unresolved_run_reference()
         report = self.run_engine(StubEngine({("use.py", before["span"][0]):
                                              Definition(tool, "run", line=2, column=14)}))
@@ -405,7 +405,7 @@ class ResolveEdgesTests(unittest.TestCase):
     def test_selected_dynamic_references_are_not_counted_as_engine_invocations(self):
         (self.root / "app/use.py").write_text(
             "def use(helper):\n    helper.run()\n    helper()()\n", encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         engine = StubEngine()
         report = self.run_engine(engine)
         self.assertGreater(report["selected"], report["asked"], report)
@@ -429,7 +429,7 @@ class ResolveEdgesTests(unittest.TestCase):
         # and stays in the population the engine is asked about.
         source = "def K():\n    return 1\n\n\ndef use(helper):\n    helper.K()\n"
         (self.root / "app/use.py").write_text(source, encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         # AST normalizes this identifier to K. A position that cannot be
         # verified against its recorded spelling must remain unprobed.
         engine = StubEngine()
@@ -441,7 +441,7 @@ class ResolveEdgesTests(unittest.TestCase):
     def test_the_population_is_limited_to_the_engines_python_language(self):
         (self.root / "app/use.ts").write_text(
             "function use(helper) { return helper.run(); }\n", encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         engine = StubEngine()
         report = self.run_engine(engine)
         self.assertEqual(report["population"], 1, report)
@@ -451,7 +451,7 @@ class ResolveEdgesTests(unittest.TestCase):
     def test_p95_uses_the_upper_sample_for_two_inferences(self):
         (self.root / "app/use.py").write_text(
             "def use(helper):\n    helper.run()\n    helper.free()\n", encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         # A clock that only the engine advances: 10 ms to start, then 100 and 200 ms per answer.
         clock = [0.0]
         steps = iter([0.01, 0.1, 0.2])
@@ -491,7 +491,7 @@ class ResolveEdgesTests(unittest.TestCase):
         (self.root / "app" / "use.py").write_text(
             "class User:\n    def go(self, helper):\n        return helper.run()\n"
             "# edited after the engine pass\n", encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         edges, binding, reason = self.stored_edges()
         self.assertIsNone(edges)
         self.assertIsNotNone(binding)
@@ -499,7 +499,7 @@ class ResolveEdgesTests(unittest.TestCase):
 
     def test_a_json_manifest_is_refused_because_it_holds_no_reference_table(self):
         manifest = self.root.parent / "manifest.json"
-        snapshot.write_snapshot(self.root, manifest, format="json")
+        snapshot.read_project(self.root, manifest, format="json")
         report = resolve_edges.resolve_edges(manifest, engine=StubEngine(), limit=None,
                                              stride=1, out=self.edges)
         self.assertFalse(report["available"])
@@ -640,7 +640,7 @@ class PassLifecycleTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
         self.manifest = self.root.parent / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
 
     def record(self, **process) -> Path:
         """The pass's record of its process, where the pass keeps it: outside the store."""
@@ -677,7 +677,7 @@ class PassLifecycleTests(unittest.TestCase):
         (self.root / "app/use.py").write_text(
             "from .tool import Tool\ndef use():\n    alias = Tool.run\n    return alias(None)\n",
             encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         with open_snapshot(self.manifest) as store:
             self.assertNotIn("alias", resolve_edges.project_callee_names(store.connection))
         engine = StubEngine({("use.py", 4): Definition(self.root / "app/tool.py", "run")})
@@ -687,7 +687,7 @@ class PassLifecycleTests(unittest.TestCase):
     def test_each_language_says_whether_an_engine_covers_it(self):
         (self.root / "app/use.ts").write_text(
             "function use(helper) { return helper.run(); }\n", encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         report = self.run_pass()
         self.assertEqual(list(report["coverage"]), ["python"])
         state = resolve_edges.edge_state(self.manifest)
@@ -710,7 +710,7 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(state["languages"]["python"]["coverage"], state["coverage"]["python"])
         (self.root / "app/tool.py").write_text("class Tool:\n    def run(self):\n        return 2\n",
                                                 encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "stale")
 
     def test_a_missing_engine_is_unavailable_and_starts_no_process(self):
@@ -895,7 +895,7 @@ class HomonymHolderTests(unittest.TestCase):
             path.write_text(text, encoding="utf-8")
         self.manifest = self.root.parent / "manifest.sqlite"
         self.edges = self.root.parent / "engine-edges.sqlite"
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
 
     def calls(self):
         """The `t()` call of each file, unresolved by the lexical resolver, with its line."""
@@ -1286,7 +1286,7 @@ class MultiLanguageTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
         self.manifest = self.root.parent / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
 
     def declarations(self, rel):
         with open_snapshot(self.manifest) as store:
@@ -1424,7 +1424,7 @@ class DistributionTests(unittest.TestCase):
         for rel, text in self.SOURCES.items():
             (self.root / rel).write_text(text, encoding="utf-8")
         self.manifest = self.root.parent / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
 
     def engine(self, context="ctx-1", fail_after=None):
         owner = self
@@ -1453,7 +1453,7 @@ class DistributionTests(unittest.TestCase):
 
     def edit(self, rel, text):
         (self.root / rel).write_text(text, encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
 
     def test_an_unchanged_snapshot_reuses_every_answer_without_starting_the_engine(self):
         first = self.run_engine(self.engine())
@@ -1568,7 +1568,7 @@ class ContractTests(unittest.TestCase):
         self.root.mkdir()
         (self.root / "types.ts").write_text(self.TYPES, encoding="utf-8")
         self.manifest = self.root.parent / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.lines = self.TYPES.split("\n")
 
     def at(self, line, text, offset=0):
@@ -1764,7 +1764,7 @@ class RustGoContractTests(unittest.TestCase):
             root.mkdir()
             (root / name).write_text(source, encoding="utf-8")
             manifest = Path(temp) / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             with open_snapshot(manifest) as store:
                 return resolve_edges.symbol_table(store.connection, name, source)
 
@@ -1980,7 +1980,7 @@ class CommandLineTests(unittest.TestCase):
                                         encoding="utf-8")
             (root / "package.json").write_text('{"name": "demo"}', encoding="utf-8")
             manifest = Path(temp).resolve() / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             stdout = io.StringIO()
             gap = container.Gap("no container engine answers", "install Docker or Podman, then analyze again")
             with mock.patch.object(container, "find_engine", side_effect=gap), contextlib.redirect_stdout(stdout):
@@ -2074,7 +2074,7 @@ class IndexerStageTests(unittest.TestCase):
             (root / which / rel).parent.mkdir(parents=True, exist_ok=True)
             (root / which / rel).write_text(text, encoding="utf-8")
         manifest = root / "manifest.sqlite"
-        snapshot.write_snapshot(root / which, manifest)
+        snapshot.read_project(root / which, manifest)
         return root / which, manifest
 
     def contract(self, which: str, indexer: dict | None = None, **outcome) -> dict:

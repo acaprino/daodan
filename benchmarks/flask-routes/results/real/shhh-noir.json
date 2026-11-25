@@ -1,0 +1,20 @@
+{
+ "variant": "shhh-noir",
+ "argv": [
+  "noir",
+  "scan",
+  "/work",
+  "-f",
+  "json",
+  "--no-log"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"endpoints\":[{\"handler\":{\"name\":\"Api.get\",\"path\":\"/work/shhh/api/api.py\",\"line\":33},\"callees\":[],\"url\":\"/api/secret\",\"method\":\"GET\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/shhh/api/api.py\",\"line\":33},{\"path\":\"/work/docs/swagger.yaml\",\"line\":13}],\"technology\":\"python_flask\",\"technologies\":[\"oas2\",\"python_flask\"]},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[{\"name\":\"external_id\",\"value\":\"\",\"param_type\":\"query\",\"tags\":[]},{\"name\":\"passphrase\",\"value\":\"\",\"param_type\":\"query\",\"tags\":[]}]},{\"handler\":{\"name\":\"Api.post\",\"path\":\"/work/shhh/api/api.py\",\"line\":37},\"callees\":[],\"url\":\"/api/secret\",\"method\":\"POST\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/shhh/api/api.py\",\"line\":37},{\"path\":\"/work/docs/swagger.yaml\",\"line\":39}],\"technology\":\"python_flask\",\"technologies\":[\"oas2\",\"python_flask\"]},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[{\"name\":\"secret\",\"value\":\"\",\"param_type\":\"json\",\"tags\":[]},{\"name\":\"passphrase\",\"value\":\"\",\"param_type\":\"json\",\"tags\":[]},{\"name\":\"expire\",\"value\":\"\",\"param_type\":\"json\",\"tags\":[]},{\"name\":\"tries\",\"value\":\"\",\"param_type\":\"json\",\"tags\":[]}]},{\"handler\":{\"name\":\"create\",\"path\":\"/work/shhh/web/web.py\",\"line\":17},\"callees\":[],\"url\":\"/\",\"method\":\"GET\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/shhh/web/web.py\",\"line\":16}],\"technology\":\"python_flask\"},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[]},{\"handler\":{\"name\":\"created\",\"path\":\"/work/shhh/web/web.py\",\"line\":27},\"callees\":[],\"url\":\"/secret\",\"method\":\"GET\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/shhh/web/web.py\",\"line\":26}],\"technology\":\"python_flask\"},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[{\"name\":\"link\",\"value\":\"\",\"param_type\":\"query\",\"tags\":[]},{\"name\":\"expires_on\",\"value\":\"\",\"param_type\":\"query\",\"tags\":[]}]},{\"handler\":{\"name\":\"read\",\"path\":\"/work/shhh/web/web.py\",\"line\":35},\"callees\":[],\"url\":\"/secret/<external_id>\",\"method\":\"GET\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/shhh/web/web.py\",\"line\":34}],\"technology\":\"python_flask\"},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[{\"name\":\"external_id\",\"value\":\"\",\"param_type\":\"path\",\"tags\":[]}]},{\"handler\":{\"name\":\"robots_dot_txt\",\"path\":\"/work/shhh/web/web.py\",\"line\":40},\"callees\":[],\"url\":\"/robots.txt\",\"method\":\"GET\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/shhh/web/web.py\",\"line\":39}],\"technology\":\"python_flask\"},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[]}],\"passive_results\":[],\"errors\":[]}\n",
+ "stderr": "",
+ "seconds": 0.92,
+ "max_rss_mb": 147.5,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "files": 66
+}

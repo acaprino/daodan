@@ -26,6 +26,7 @@ from languages import (  # noqa: E402
     get_adapter,
 )
 from snapshot_store import open_snapshot  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 
 def _encode_varint(value: int) -> bytes:
@@ -131,7 +132,7 @@ class KotlinLanguageTests(unittest.TestCase):
                 "package demo.billing\n\nimport demo.core.record\n\nfun run(): Boolean {\n    return record(10)\n}\n",
                 encoding="utf-8",
             )
-            manifest = snapshot.build_manifest(root)
+            manifest = read_manifest(root)
             index = semantic_index.build_semantic_index(manifest)
             self.assertEqual(index["coverage"]["src/Invoice.kt"]["status"], "ast")
             calls = [r for r in index["references"] if r["file"] == "src/Invoice.kt" and r["kind"] == "call"]
@@ -206,7 +207,7 @@ class CSharpLanguageTests(unittest.TestCase):
             root = Path(tmp) / "csproj"
             root.mkdir(parents=True)
             (root / "Service.cs").write_text(code, encoding="utf-8")
-            manifest = snapshot.build_manifest(root)
+            manifest = read_manifest(root)
             index = semantic_index.build_semantic_index(manifest)
             self.assertEqual(index["coverage"]["Service.cs"]["status"], "ast")
             calls = [r for r in index["references"] if r["file"] == "Service.cs" and r["kind"] == "call"]
@@ -259,7 +260,7 @@ class SingleFileComponentTests(unittest.TestCase):
             (root / "Button.vue").write_text(self.VUE_SOURCE, encoding="utf-8")
             (root / "Panel.svelte").write_text(self.SVELTE_SOURCE, encoding="utf-8")
 
-            manifest = snapshot.build_manifest(root)
+            manifest = read_manifest(root)
             self.assertEqual(manifest["files"]["Button.vue"]["status"], "parsed")
             self.assertEqual(manifest["files"]["Panel.svelte"]["status"], "parsed")
             self.assertIn("submit", manifest["files"]["Button.vue"]["symbols"])
@@ -312,7 +313,7 @@ class SingleFileComponentTests(unittest.TestCase):
             (root / "Page.astro").write_text(self.ASTRO_SOURCE, encoding="utf-8")
             lines = self.ASTRO_SOURCE.split("\n")
 
-            manifest = snapshot.build_manifest(root)
+            manifest = read_manifest(root)
             page = manifest["files"]["Page.astro"]
             self.assertEqual(page["language"], "astro")
             self.assertEqual(page["status"], "parsed")
@@ -348,7 +349,7 @@ class SingleFileComponentTests(unittest.TestCase):
             root = Path(tmp) / "site"
             root.mkdir(parents=True)
             (root / "Plain.astro").write_text(source, encoding="utf-8")
-            entry = snapshot.build_manifest(root)["files"]["Plain.astro"]
+            entry = read_manifest(root)["files"]["Plain.astro"]
             self.assertEqual(entry["status"], "parsed")
             self.assertEqual(entry["imports"], [])
             self.assertEqual(entry["symbols"][".x"]["start"], 3)
@@ -377,7 +378,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 '#[tauri::command]\nfn persist() {}\n'
                 'fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![persist]).run(tauri::generate_context!()); }\n')
             manifest = Path(tmp) / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             button = next(c for c in flow_paths.page(manifest, [])["cards"] if c.get("label") == "Salva profilo")
             self.assertEqual((button["event"], button["handler"], button["site"]),
                              ("click", "src/view.tsx::save", "src/view.tsx:3"))
@@ -413,7 +414,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 "#[tauri::command]\nfn retired() {}\n"
                 "fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![persist]).run(tauri::generate_context!()); }\n")
             manifest = Path(tmp) / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             # SCIP identifies the TypeScript SDK function. The exact registration identifies the next hop.
             with open_snapshot(manifest) as store:
                 row = store.connection.execute(
@@ -466,7 +467,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 "mod commands; fn main() { tauri::Builder::default().invoke_handler("
                 "tauri::generate_handler![commands::load_user_profile]).run(tauri::generate_context!()); }\n", encoding="utf-8")
 
-            manifest = snapshot.build_manifest(root)
+            manifest = read_manifest(root)
             index = semantic_index.build_semantic_index(manifest)
             app_calls = [
                 r for r in index["references"]
@@ -480,7 +481,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
             self.assertEqual(app_calls[0]["span"][0], 5)
 
             db_path = root / "manifest.sqlite"
-            snapshot.write_snapshot(root, db_path)
+            snapshot.read_project(root, db_path)
             with open_snapshot(db_path) as store:
                 impact = semantic_store.build_edit_impact(store, ["src-tauri/src/commands.rs::load_user_profile"])
                 callers = impact["targets"][0]["callers"]["listed"]
@@ -502,7 +503,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 write(f"{app}/src-tauri/src/main.rs", rust)
             write("tools/helper.rs", "pub fn save() {}\n")
             old, new = Path(tmp) / "before.sqlite", Path(tmp) / "after.sqlite"
-            snapshot.write_snapshot(root, old)
+            snapshot.read_project(root, old)
             def targets(path):
                 with open_snapshot(path) as store:
                     return {file: target for file, target in store.connection.execute(
@@ -512,7 +513,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
             write("one/src-tauri/src/main.rs", "#[tauri::command]\nfn save() {}\n" + register)
             write("two/src-tauri/src/main.rs", "#[tauri::command]\nfn save() {}\n")
             with open_snapshot(old) as previous:
-                snapshot.write_snapshot(root, new, previous=previous)
+                snapshot.read_project(root, new, previous=previous)
             self.assertEqual(targets(new), {"one/src/ui.ts": "one/src-tauri/src/main.rs::function@2:0",
                                             "two/src/ui.ts": None, "three/src/ui.ts": None})
 
@@ -529,7 +530,7 @@ class SqlAstAndScipEngineTests(unittest.TestCase):
             root = Path(tmp) / "sqlproj"
             root.mkdir(parents=True)
             (root / "schema.sql").write_text(sql_code, encoding="utf-8")
-            manifest = snapshot.build_manifest(root)
+            manifest = read_manifest(root)
             index = semantic_index.build_semantic_index(manifest)
             self.assertEqual(index["coverage"]["schema.sql"]["status"], "ast")
             view_Symbols = [c for c in get_adapter("sql").parse(sql_code, "schema.sql").classes if c.name == "active_orders"]
@@ -594,7 +595,7 @@ class SqlAstAndScipEngineTests(unittest.TestCase):
                 encoding="utf-8",
             )
             manifest = root.parent / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
 
             sym = "scip-typescript npm pkg 1.0.0 worker.ts/Worker#execute()."
             doc_worker = _pb_scip_document(

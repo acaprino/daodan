@@ -1,0 +1,153 @@
+{
+ "name": "template-stub",
+ "application": "template",
+ "repository": "fastapi/full-stack-fastapi-template",
+ "commit": "77e550a73bb49dd2967622c5ed11bf7a49603c93",
+ "licence": "MIT",
+ "folder": ".",
+ "script": {
+  "variant": "template-script-stub",
+  "exit": 0,
+  "seconds": 3.97,
+  "peak_memory_mb": 146.8,
+  "application": "app.main:app",
+  "found": "entrypoint-pyproject",
+  "root_path": "",
+  "routes": 27,
+  "http": 27,
+  "websocket": 0,
+  "documentation": 4,
+  "unread": [],
+  "competing": {
+   "others": [],
+   "shadowed": []
+  }
+ },
+ "noir": {
+  "variant": "template-noir",
+  "exit": 0,
+  "seconds": 1.12,
+  "peak_memory_mb": 191.0
+ },
+ "gaps": [
+  {
+   "source": "noir",
+   "kind": "model_partial",
+   "path": null,
+   "detail": "Noir reported 1 scan errors"
+  }
+ ],
+ "framework": {
+  "rows": 23,
+  "http_rows": 23,
+  "bound_to_a_function": 23,
+  "websocket_rows": 0,
+  "unbound": []
+ },
+ "noir_report": {
+  "endpoints": 34,
+  "protocols": {
+   "http": 31,
+   "cli": 3
+  },
+  "errors": 1,
+  "with_a_handler_name": 23,
+  "rows": 31,
+  "bound_to_a_function": 23,
+  "unbound": [
+   {
+    "path": "/",
+    "method": "ANY",
+    "site": "compose.deploy.yml",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/admin",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/admin.tsx:20",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/items",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/items.tsx:20",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/settings",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/settings.tsx:15",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/login",
+    "method": "GET",
+    "site": "frontend/src/routes/login.tsx:35",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/recover-password",
+    "method": "GET",
+    "site": "frontend/src/routes/recover-password.tsx:33",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ },
+ "comparison": {
+  "both": 23,
+  "agreement": {
+   "same function": 23,
+   "same site": 23
+  },
+  "differences": [],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_framework": 0,
+  "only_framework_examples": [],
+  "only_noir": 8,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/items",
+    "site": "frontend/src/routes/_layout/items.tsx:20",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/recover-password",
+    "site": "frontend/src/routes/recover-password.tsx:33",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/reset-password",
+    "site": "frontend/src/routes/reset-password.tsx:49",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/signup",
+    "site": "frontend/src/routes/signup.tsx:42",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/settings",
+    "site": "frontend/src/routes/_layout/settings.tsx:15",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/admin",
+    "site": "frontend/src/routes/_layout/admin.tsx:20",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ }
+}

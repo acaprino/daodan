@@ -29,7 +29,7 @@ class SnapshotFilesTest(unittest.TestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(data)
             manifest = base / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             dest = base / "FILES.json"
             out = StringIO()
             with redirect_stdout(out):

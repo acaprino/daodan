@@ -182,8 +182,9 @@ def _store_answer(rows, target_kinds: dict) -> dict | None:
 
     A direct callable end is the target; a contract with one project implementation and no
     external end points to the implementation; several callable ends, or an uncertain one, are a
-    candidate; with only external ends the reference is external; with only values it stays
-    unresolved, `project-value`. A dead end, or a target outside the declarations, answers nothing.
+    candidate; with only external ends the reference is external, and `external_symbols` lists the symbol of each
+    (`external` keeps the first end's package); with only values it stays unresolved, `project-value`, and the one
+    kind the ends share is `detail`. A dead end, or a target outside the declarations, answers nothing.
     """
     rows = [row for row in rows if row["verdict"] != "dead-end" and not (
         row["verdict"] == "project-callable" and row["confidence"] != "uncertain"
@@ -213,10 +214,20 @@ def _store_answer(rows, target_kinds: dict) -> dict | None:
         return {"target": None, "row": reached[0], "candidate": "several-targets",
                 "target_ids": sorted(set(direct + implemented))}
     if external:
-        return {"target": None, "row": external[0], "external": external[0].get("external"),
-                "reason": external[0]["payload"].get("reason") or "external"}
-    values = any(row["verdict"] == "project-value" for row in sure)
-    return {"target": None, "row": sure[0], "reason": "project-value" if values else sure[0]["verdict"]}
+        answer = {"target": None, "row": external[0], "external": external[0].get("external"),
+                  "reason": external[0]["payload"].get("reason") or "external"}
+        if len(external) == len(sure):  # no end of another class beside them: the symbols name the whole answer
+            answer["external_symbols"] = sorted({row["symbol"] for row in external if row.get("symbol")})
+        return answer
+    values = [row for row in sure if row["verdict"] == "project-value"]
+    answer = {"target": None, "row": sure[0], "reason": "project-value" if values else sure[0]["verdict"]}
+    named = {(row.get("payload") or {}).get("binding_id") for row in values}  # the value's declaration, when one
+    if len(named) == 1 and None not in named:
+        answer["binding_id"] = named.pop()
+    kinds = {(row.get("payload") or {}).get("detail") for row in values}  # what the value is: a parameter, a variable
+    if len(values) == len(sure) and len(kinds) == 1 and None not in kinds:
+        answer["detail"] = next(iter(kinds))
+    return answer
 
 
 def load_edge_view(
@@ -424,8 +435,14 @@ def load_edge_view(
                 else:
                     record.update(target_id=None, resolution="unresolved", resolver=eng_resolver,
                                   confidence=None, provenance=[], target_kind=None, reason=answer["reason"])
+                    if answer.get("binding_id"):
+                        record["binding_id"] = answer["binding_id"]
                     if answer.get("external"):
                         record["external"] = answer["external"]
+                    if answer.get("external_symbols"):
+                        record["external_symbols"] = answer["external_symbols"]
+                    if kind == "read" and "detail" in answer:
+                        record["detail"] = answer["detail"]
 
             if kind == "read":
                 reads.append(record)

@@ -1,0 +1,64 @@
+# The rules that tell apart, by its text, a file whose extension more than one language shares.
+#
+# One card per rule. A rule here asks one question of the text, on literal words: no pattern, no composition.
+# A question that does not fit is a class in `daodan/core/languages/detect/rules/`, with the same card.
+#
+#   id          unique, `extension.reason`
+#   extensions  the extensions it is asked for, as `file-formats.json` writes them
+#   language    what the file is when the answer is yes, in Linguist's name (`linguist-catalog.json`).
+#               `file-formats.json` joins it to Daodan's language; a name it joins to none is a file not read
+#   test        `starts-with`: the text, after its leading white space, starts with one of `texts`
+#               `contains`: one of `texts` is in the text
+#   texts       the literal words
+#   ignore-case optional, false when absent
+#   why, source the reason, and where the rule comes from, with the day
+#   yes, no     samples written by hand: texts the rule answers yes to, and texts it does not
+#
+# The rules of an extension are asked in the order of this file, then the classes; the first yes decides.
+
+[[rule]]
+id = "ts.xml-document"
+extensions = [".ts"]
+language = "XML"
+test = "starts-with"
+texts = ["<?xml", "<!DOCTYPE"]
+why = "A `.ts` file that is an XML document is a Qt Linguist translation (`<!DOCTYPE TS>`), not TypeScript: the TypeScript parser would stop at a syntax error. The rule it replaces also asked for a word end after the mark (`<?xmlfoo` was TypeScript): no TypeScript starts so either."
+source = "Daodan, `languages.detect_language` as of 2026-11-25; Linguist lists `.ts` under TypeScript and XML."
+yes = [
+  "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!DOCTYPE TS>\n<TS version=\"2.1\" language=\"it_IT\">\n</TS>\n",
+  "\n  <!DOCTYPE TS>\n<TS version=\"2.1\"></TS>\n",
+]
+no = [
+  "const tags: Array<TS> = [];\n",
+  "// <?xml is only named here\nexport const a = 1;\n",
+]
+
+[[rule]]
+id = "sql.oracle-words"
+extensions = [".sql", ".ddl", ".dml"]
+language = "PLSQL"
+test = "contains"
+ignore-case = true
+texts = [
+  "create or replace package",
+  "create or replace type body",
+  "dbms_output",
+  "utl_file",
+  "utl_http",
+  "bfilename",
+  "extproc",
+  "pragma autonomous",
+  "pragma serially_reusable",
+  "pragma exception_init",
+  "pragma restrict_references",
+]
+why = "Words only Oracle's PL/SQL has. `begin`, `exception` and `create or replace function` are left out on purpose: PostgreSQL's plpgsql has them too."
+source = "Daodan, `languages.detect_language` as of 2026-11-25."
+yes = [
+  "CREATE OR REPLACE PACKAGE billing AS\n  PROCEDURE close_month;\nEND billing;\n",
+  "begin\n  DBMS_OUTPUT.put_line('done');\nend;\n",
+]
+no = [
+  "CREATE TABLE invoice (id INT PRIMARY KEY);\n",
+  "CREATE OR REPLACE FUNCTION total() RETURNS int AS $$ BEGIN RETURN 1; END $$ LANGUAGE plpgsql;\n",
+]

@@ -27,7 +27,7 @@ def test_manifest_declarations_survive_reopening_without_a_source_read(tmp_path,
     (source / "binary.rs").write_text("fn main() {}\n")
     (app / "Cargo.toml").write_text('[package]\nname="reader"\nversion="1.0.0"\n')
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(app, manifest)
+    snapshot.read_project(app, manifest)
     # The saved form of cargo metadata: tests and custom build scripts are not product commands.
     unit = {"kind": "cargo-crate", "root": ".", "manifest": "Cargo.toml", "name": "reader",
             "config": {"targets": [{"kind": kind, "name": kind, "path": "src/binary.rs"}
@@ -127,6 +127,22 @@ def test_a_route_handler_with_two_exported_methods_is_two_entries(tmp_path):
         ("POST", "app/api/pay/route.ts::POST", "app/api/pay/route.ts:5")]
 
 
+@pytest.mark.parametrize("get", [
+    # a TypeScript overload: three records of the one export name
+    "export async function GET(a: string): Promise<Response>;\nexport async function GET(a: number): Promise<Response>;\n"
+    "export async function GET(a: any) {\n  return Response.json({});\n}\n",
+    # a value and a type of one name
+    "export const GET = () => Response.json({});\nexport type GET = { x: number };\n"])
+def test_an_exported_method_the_file_makes_twice_is_a_gap_naming_the_cause_beside_the_entries_of_the_others(tmp_path, get):
+    """`export-missing-or-ambiguous` was one reason, and an ambiguous export left without a word: the entry of the others stayed
+    and the lost one was in no gap. Missing and ambiguous are two reasons, and only the missing one is silent."""
+    route = get + "\nexport async function POST() {\n  return Response.json({});\n}\n"
+    links = next_links(tmp_path, shop(**{"app/api/pay/route.ts": route}))
+    assert [e["method"] for e in links["entries"] if e["path"] == "/api/pay"] == ["POST"]
+    [gap] = [g for g in links["gaps"] if g["site"] == "app/api/pay/route.ts"]
+    assert "GET: export-ambiguous" in gap["reason"] and "HEAD" not in gap["reason"] and "POST" not in gap["reason"]
+
+
 @pytest.mark.parametrize("file, text, looked_for", [
     ("app/page.tsx", "export const title = 'Negozio';\n", "default"),
     ("app/api/pay/route.ts", "export const dynamic = 'force-static';\n", "GET, HEAD, OPTIONS, POST, PUT, DELETE, PATCH")])
@@ -182,8 +198,8 @@ def test_a_noir_route_with_no_handler_on_a_file_and_path_a_next_entry_covers_is_
     page = {"protocol": "http", "url": "/checkout", "method": "GET", "kind": "",
             "details": {"code_paths": [{"path": "/work/app/checkout/page.tsx", "line": 3}]}}
     links = next_links(tmp_path, shop(), {"endpoints": [page]})
-    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/checkout"] == [
-        ("next", "app/checkout/page.tsx::Checkout", "GET")]
+    assert [(e["reader"], e["symbol"], e.get("method")) for e in links["entries"] if e["path"] == "/checkout"] == [
+        ("next", "app/checkout/page.tsx::Checkout", None)]  # a page answers any method: Noir's is not copied onto it
     assert not [g for g in links["gaps"] if g["site"].startswith("app/checkout/page.tsx")]
 
 
@@ -208,9 +224,9 @@ def test_a_noir_route_with_a_method_no_next_entry_of_its_file_and_path_carries_i
         ("next", "app/api/pay/route.ts::GET", "GET"), ("noir", "app/api/pay/route.ts::POST", "POST")]
 
 
-def test_a_dropped_noir_route_gives_its_method_to_the_next_entry_that_lacks_one(tmp_path):
+def test_a_dropped_noir_route_does_not_give_its_method_to_the_next_page(tmp_path):
     report = {"endpoints": [noir_route("/checkout", "GET", "app/checkout/page.tsx", "Checkout", 3)]}
     links = next_links(tmp_path, shop(), report)
-    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/checkout"] == [
-        ("next", "app/checkout/page.tsx::Checkout", "GET")]
+    assert [(e["reader"], e["symbol"], e.get("method")) for e in links["entries"] if e["path"] == "/checkout"] == [
+        ("next", "app/checkout/page.tsx::Checkout", None)]
 

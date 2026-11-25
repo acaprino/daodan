@@ -1,0 +1,22 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "nuxt",
+   "prepare"
+  ],
+  "changed_in_the_project": [],
+  "cwd": "nuxt4-hook-file-missing",
+  "left_in_home": [
+   ".npm/_logs/2026-11-23T10_05_44_046Z-debug-0.log"
+  ],
+  "left_in_the_project": [],
+  "max_rss_mb": 280.8,
+  "nuxt_dir": {},
+  "returncode": 1,
+  "seconds": 1.47,
+  "stderr": "\n ERROR  ENOENT: no such file or directory, open '/work/nuxt4-hook-file-missing/app/pages/about.vue'\n\n    at Object.readFileSync (node:fs:483:20)\n    at augmentPages (node_modules/nuxt/dist/index.mjs:525:57)\n    at async augmentAndResolve (node_modules/nuxt/dist/index.mjs:507:3)\n    at async resolvePagesRoutes$1 (node_modules/nuxt/dist/index.mjs:2183:18)\n    at async node_modules/nuxt/dist/index.mjs:2371:18\n    at async generateApp (node_modules/nuxt/dist/index.mjs:4601:2)\n    at async _applyPromised (node_modules/perfect-debounce/dist/index.mjs:85:9) \n\n\n",
+  "stdout": ""
+ }
+]

@@ -1,0 +1,323 @@
+{
+ "name": "ruoyi",
+ "framework": "spring",
+ "repository": "yangzongzhuan/RuoYi",
+ "commit": "d6708994364bfbb472c96380d6129e24303b3228",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 508,
+  "protocols": {
+   "http": 508
+  },
+  "errors": 0,
+  "seconds": 2.0,
+  "peak_memory_mb": 317.5,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "name joined by '.'": 304,
+   "none": 204
+  },
+  "http_handler_forms": {
+   "name joined by '.'": 304,
+   "none": 204
+  },
+  "http_endpoints_in_the_json": 508,
+  "tagged_spec_only": 0,
+  "with_handler_name_in_the_json": 304,
+  "with_name_and_path_and_line": 304
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 67,
+  "dropped_by_reason": {
+   "outside_snapshot (.png)": 27,
+   "outside_snapshot (.gif)": 15,
+   "outside_snapshot (.woff)": 5,
+   "outside_snapshot (.eot)": 4,
+   "outside_snapshot (.ttf)": 4,
+   "outside_snapshot (.woff2)": 4
+  },
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 696,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 623,
+  "functions": 19670,
+  "functions_by_suffix": {
+   ".js": 17114,
+   ".java": 2556
+  },
+  "files_by_suffix": {
+   ".java": 287,
+   ".html": 147,
+   ".js": 90,
+   ".css": 40,
+   ".xml": 31,
+   ".vm": 14,
+   ".bat": 4,
+   ".yml": 3,
+   ".txt": 3,
+   ".sql": 2,
+   ".md": 1,
+   ".sh": 1
+  },
+  "seconds": 130.7
+ },
+ "http": {
+  "endpoints": 441,
+  "with_handler_name": 304,
+  "bound_to_one_function": 304,
+  "unbound": 137,
+  "by_file_suffix": {
+   ".java": {
+    "endpoints": 306,
+    "with_handler_name": 304,
+    "bound": 304
+   },
+   ".js": {
+    "endpoints": 90,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".css": {
+    "endpoints": 40,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".xml": {
+    "endpoints": 2,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".txt": {
+    "endpoints": 2,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".html": {
+    "endpoints": 1,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "no function of the project serves the endpoint": 133,
+  "the snapshot holds no function where Noir cites": 2,
+  "Noir gives no handler": 2
+ },
+ "causes": {
+  "Noir cites a file and no line (a static file it serves)": {
+   "group": "no function of the project serves the endpoint",
+   "endpoints": 133,
+   "by_file_suffix": {
+    ".js": 90,
+    ".css": 40,
+    ".txt": 2,
+    ".html": 1
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/ajax/libs/beautifyhtml/beautifyhtml.js",
+     "site": "ruoyi-admin/src/main/resources/static/ajax/libs/beautifyhtml/beautifyhtml.js",
+     "noir_handler": null,
+     "after": [
+      "(anonymous) 62-617",
+      "(anonymous).style_html 64-610"
+     ],
+     "file_language": "javascript"
+    },
+    {
+     "method": "GET",
+     "url": "/ajax/libs/blockUI/jquery.blockUI.js",
+     "site": "ruoyi-admin/src/main/resources/static/ajax/libs/blockUI/jquery.blockUI.js",
+     "noir_handler": null,
+     "after": [
+      "(anonymous) 15-620",
+      "(anonymous).setup 19-610"
+     ],
+     "file_language": "javascript"
+    },
+    {
+     "method": "GET",
+     "url": "/ajax/libs/bootstrap-fileinput/fileinput.css",
+     "site": "ruoyi-admin/src/main/resources/static/ajax/libs/bootstrap-fileinput/fileinput.css",
+     "noir_handler": null,
+     "file_language": "css"
+    }
+   ]
+  },
+  "the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 2,
+   "by_file_suffix": {
+    ".xml": 2
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/swagger-ui.html",
+     "site": "ruoyi-admin/pom.xml:29",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "GET",
+     "url": "/v3/api-docs",
+     "site": "ruoyi-admin/pom.xml:29",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  },
+  "Noir names no handler, the line is inside a function (the registration)": {
+   "group": "Noir gives no handler",
+   "endpoints": 2,
+   "by_file_suffix": {
+    ".java": 2
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/profile/**",
+     "site": "ruoyi-framework/src/main/java/com/ruoyi/framework/config/ResourcesConfig.java:44",
+     "noir_handler": null,
+     "covering": [
+      "ResourcesConfig.addResourceHandlers 40-48"
+     ],
+     "after": [
+      "ResourcesConfig.addInterceptors 53-57"
+     ],
+     "file_language": "java"
+    },
+    {
+     "method": "GET",
+     "url": "/swagger-ui/**",
+     "site": "ruoyi-framework/src/main/java/com/ruoyi/framework/config/ResourcesConfig.java:47",
+     "noir_handler": null,
+     "covering": [
+      "ResourcesConfig.addResourceHandlers 40-48"
+     ],
+     "after": [
+      "ResourcesConfig.addInterceptors 53-57"
+     ],
+     "file_language": "java"
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "same": 304
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "same": 304
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "none": 304
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "none": 304
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "same": 304
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "none": 303,
+    "different": 1
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "none": 304
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "same": 297,
+    "many": 7
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 137
+   },
+   "bound": {
+    "same": 127,
+    "many": 177
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 135,
+    "one": 2
+   },
+   "bound": {
+    "same": 304
+   },
+   "distinct_functions_of_the_unbound_one": 1
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

@@ -1,0 +1,110 @@
+{
+ "name": "bakerydemo",
+ "script_as_the_runner_restores": {
+  "returncode": 3,
+  "stderr_tail": "ModuleNotFoundError: No module named 'dotenv'\n"
+ },
+ "second_environment": true,
+ "sources": {
+  "django": "not_needed",
+  "noir": "ran"
+ },
+ "gaps": {},
+ "gap_details": [],
+ "source_state": "not_needed: the rows are those of the answer read as if the command were given",
+ "script": {
+  "returncode": 0,
+  "seconds": 7.76,
+  "max_rss_mb": 193.7,
+  "stderr_tail": null
+ },
+ "noir": {
+  "returncode": 0,
+  "seconds": 0.47,
+  "max_rss_mb": 150.5,
+  "stderr_tail": null,
+  "endpoints": 13,
+  "with_handler_name": 1,
+  "bound_to_a_function": 1,
+  "unbound": 12,
+  "protocols": {
+   "http": 13
+  },
+  "methods": {
+   "GET": 13
+  }
+ },
+ "framework": {
+  "routes": 466,
+  "unread_includes": 0,
+  "locale": null,
+  "environment_routes": 459,
+  "project_routes": 7,
+  "with_schema": 417,
+  "rows": 4,
+  "rows_bound_to_a_function": 1,
+  "rows_on_a_class_with_file_and_line": 3,
+  "rows_unbound": 0,
+  "routes_with_a_bound_row": 4
+ },
+ "by_function": {
+  "framework_functions": 1,
+  "framework_classes_with_a_gap": 1,
+  "noir_sites": 13,
+  "functions_both": 1,
+  "functions_only_framework": 0,
+  "classes_noir_cites": 0,
+  "classes_only_framework": 1,
+  "only_noir": 12,
+  "only_noir_in_documentation_files": 0
+ },
+ "comparison": {
+  "framework_routes_with_a_row": 4,
+  "noir_cites_the_same_function": 1,
+  "of_which_same_path": 1,
+  "of_which_path_written_differently": 0,
+  "only_framework": 3,
+  "noir_http_endpoints_distinct_site_and_path": 13,
+  "of_which_on_a_function_the_framework_lists": 1,
+  "of_which_on_a_site_the_framework_does_not_list": 12,
+  "noir_paths_with_an_unresolved_prefix": 0,
+  "function_views_the_framework_gives_no_method_for": 1,
+  "of_which_noir_gives_a_method_at_that_function": 1
+ },
+ "examples": {
+  "path_written_differently": [],
+  "only_framework": [
+   "/api/v2/persons/ ['bakerydemo/base/api.py:6']",
+   "/api/v2/persons/<int:pk>/ ['bakerydemo/base/api.py:6']",
+   "/api/v2/persons/find/ ['bakerydemo/base/api.py:6']"
+  ],
+  "only_noir_site": [
+   "/api/v2/ (bakerydemo/api.py)",
+   "/django-admin/ (bakerydemo/urls.py:17)",
+   "/admin/ (bakerydemo/urls.py:18)",
+   "/documents/ (bakerydemo/urls.py:19)",
+   "/images/([^/]*)/(\\d*)/([^/]*)/[^/]* (bakerydemo/urls.py:20)",
+   "/sitemap.xml (bakerydemo/urls.py:26)",
+   "/api/v3-preview/ (bakerydemo/urls.py:28)",
+   "/__debug__/ (bakerydemo/urls.py:29)",
+   "/favicon.ico (bakerydemo/urls.py:43)",
+   "/test404/ (bakerydemo/urls.py:51)",
+   "/test500/ (bakerydemo/urls.py:52)",
+   "/ (bakerydemo/urls.py:56)"
+  ],
+  "noir_unbound": [
+   "GET /api/v2/ (bakerydemo/api.py): noir reports this entry without a unique snapshot handler at its site",
+   "GET /django-admin/ (bakerydemo/urls.py:17): noir reports this entry without a unique snapshot handler at its site",
+   "GET /admin/ (bakerydemo/urls.py:18): noir reports this entry without a unique snapshot handler at its site",
+   "GET /documents/ (bakerydemo/urls.py:19): noir reports this entry without a unique snapshot handler at its site",
+   "GET /images/([^/]*)/(\\d*)/([^/]*)/[^/]* (bakerydemo/urls.py:20): noir reports this entry without a unique snapshot handler at its site",
+   "GET /sitemap.xml (bakerydemo/urls.py:26): noir reports this entry without a unique snapshot handler at its site",
+   "GET /api/v3-preview/ (bakerydemo/urls.py:28): noir reports this entry without a unique snapshot handler at its site",
+   "GET /__debug__/ (bakerydemo/urls.py:29): noir reports this entry without a unique snapshot handler at its site",
+   "GET /favicon.ico (bakerydemo/urls.py:43): noir reports this entry without a unique snapshot handler at its site",
+   "GET /test404/ (bakerydemo/urls.py:51): noir reports this entry without a unique snapshot handler at its site",
+   "GET /test500/ (bakerydemo/urls.py:52): noir reports this entry without a unique snapshot handler at its site",
+   "GET / (bakerydemo/urls.py:56): noir reports this entry without a unique snapshot handler at its site"
+  ]
+ }
+}

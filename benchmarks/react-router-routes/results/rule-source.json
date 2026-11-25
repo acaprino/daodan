@@ -1,0 +1,15 @@
+[
+ {
+  "argv": [
+   "sh",
+   "-c",
+   "grep -rhn -B8 -A5 'must start with the combined path' node_modules/react-router/dist/development --include=*.js | head -40"
+  ],
+  "cwd": "rule-source",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 0.02,
+  "stderr": "",
+  "stdout": "520-      route\n521-    };\n522-    if (meta.relativePath.startsWith(\"/\")) {\n523-      if (!meta.relativePath.startsWith(parentPath) && hasParentOptionalSegments) {\n524-        return;\n525-      }\n526-      invariant(\n527-        meta.relativePath.startsWith(parentPath),\n528:        `Absolute route path \"${meta.relativePath}\" nested under path \"${parentPath}\" is not valid. An absolute child route path must start with the combined path of all its parent routes.`\n529-      );\n530-      meta.relativePath = meta.relativePath.slice(parentPath.length);\n531-    }\n532-    let path = joinPaths([parentPath, meta.relativePath]);\n533-    let routesMeta = parentsMeta.concat(meta);\n--\n627-      route\n628-    };\n629-    if (meta.relativePath.startsWith(\"/\")) {\n630-      if (!meta.relativePath.startsWith(parentPath) && hasParentOptionalSegments) {\n631-        return;\n632-      }\n633-      invariant(\n634-        meta.relativePath.startsWith(parentPath),\n635:        `Absolute route path \"${meta.relativePath}\" nested under path \"${parentPath}\" is not valid. An absolute child route path must start with the combined path of all its parent routes.`\n636-      );\n637-      meta.relativePath = meta.relativePath.slice(parentPath.length);\n638-    }\n639-    let path = joinPaths([parentPath, meta.relativePath]);\n640-    let routesMeta = parentsMeta.concat(meta);\n"
+ }
+]

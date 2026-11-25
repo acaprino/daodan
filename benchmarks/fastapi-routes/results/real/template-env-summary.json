@@ -1,0 +1,142 @@
+{
+ "name": "template-env",
+ "application": "template",
+ "repository": "fastapi/full-stack-fastapi-template",
+ "commit": "77e550a73bb49dd2967622c5ed11bf7a49603c93",
+ "licence": "MIT",
+ "folder": ".",
+ "script": {
+  "variant": "template-script-env",
+  "exit": 3,
+  "seconds": 4.33,
+  "peak_memory_mb": 145.7,
+  "stopped": ":75: UserWarning: The value of FIRST_SUPERUSER_PASSWORD is \"changethis\", for security, please change it, at least for deployments.\n  warnings.warn(message, stacklevel=1)\nRuntimeError: Frontend directory '/work/backend/app/frontend' does not exist. Resolved absolute path: '/work/backend/app/frontend'"
+ },
+ "noir": {
+  "variant": "template-noir",
+  "exit": 0,
+  "seconds": 1.12,
+  "peak_memory_mb": 191.0
+ },
+ "gaps": [
+  {
+   "source": "noir",
+   "kind": "model_partial",
+   "path": null,
+   "detail": "Noir reported 1 scan errors"
+  },
+  {
+   "source": "fastapi",
+   "kind": "model_failed",
+   "path": "backend",
+   "detail": "fastapi_routes.py exited with 3: /work/backend/app/core/config.py:75: UserWarning: The value of SECRET_KEY is \"changethis\", for security, please change it, at least for deployments.\n  warnings.warn(message, stacklevel=1)\n/work/backend/app/core/config.py:75: UserWarning: The value of DATABASE_URL password is \"changethis\", for securi [...] :75: UserWarning: The value of FIRST_SUPERUSER_PASSWORD is \""
+  }
+ ],
+ "framework": {
+  "rows": 0,
+  "http_rows": 0,
+  "bound_to_a_function": 0,
+  "websocket_rows": 0,
+  "unbound": []
+ },
+ "noir_report": {
+  "endpoints": 34,
+  "protocols": {
+   "http": 31,
+   "cli": 3
+  },
+  "errors": 1,
+  "with_a_handler_name": 23,
+  "rows": 31,
+  "bound_to_a_function": 23,
+  "unbound": [
+   {
+    "path": "/",
+    "method": "ANY",
+    "site": "compose.deploy.yml",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/admin",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/admin.tsx:20",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/items",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/items.tsx:20",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/settings",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/settings.tsx:15",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/login",
+    "method": "GET",
+    "site": "frontend/src/routes/login.tsx:35",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/recover-password",
+    "method": "GET",
+    "site": "frontend/src/routes/recover-password.tsx:33",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ },
+ "comparison": {
+  "both": 0,
+  "agreement": {},
+  "differences": [],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_framework": 0,
+  "only_framework_examples": [],
+  "only_noir": 31,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/api/v1/items/",
+    "site": "backend/app/api/routes/items.py:14",
+    "function": "backend/app/api/routes/items.py::read_items"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/password-recovery-html-content/{email}",
+    "site": "backend/app/api/routes/login.py:105",
+    "function": "backend/app/api/routes/login.py::recover_password_html_content"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/items/{id}",
+    "site": "backend/app/api/routes/items.py:49",
+    "function": "backend/app/api/routes/items.py::read_item"
+   },
+   {
+    "method": "GET",
+    "path": "/items",
+    "site": "frontend/src/routes/_layout/items.tsx:20",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/recover-password",
+    "site": "frontend/src/routes/recover-password.tsx:33",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/reset-password",
+    "site": "frontend/src/routes/reset-password.tsx:49",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ }
+}

@@ -233,3 +233,107 @@ Totale 39,86 USD. Costo medio per prova: B 9,98 USD, C 9,95 USD, entrambe 1,10 v
 - **Condizioni diverse dalla spec, come nella prima esecuzione:** la mappa che ogni run crea non è completa, e cambia da run a run. Chiamate risolte: 48,3% in B1 (motore Kotlin fallito), circa 15% in B2 (archi del motore rifiutati), passata del motore ancora in corso in C1 e in C2 (0,18 alla pubblicazione). In C1 la pubblicazione della mappa è rifiutata per «snapshot parser identity changed». B1 dichiara 194 celle coperte su 240.
 - **Lo scrittore che lascia lo stato «saltato»** (`favoritesSlice.ts:152-155`) è nel rapporto di tutte e quattro: Medium in B1, C1 e C2, Low in B2. Era già in tutte le run della prima esecuzione, quindi non distingue le prove.
 - La cartella della review è salvata intera per tutte e quattro: `.team-review/` in tre, `.daodan/review/.team-review/` in B2.
+
+## La chiave dello store come indice costante, 23 novembre 2026
+
+Misura del task 18 del piano degli ingressi e dei flussi: una regola di store con `key: holder` legge la chiave anche quando il ricevente della chiamata è `store[INDICE]` (`db[COLLECTION].insert_one(x)`).
+
+| Parametro | Valore |
+|---|---|
+| Script | `measure_links.py` (Modal, derivato da `modal_map.py::possible_case`) e `check_store_keys.py` (locale, legge il sorgente dall'albero sintattico) |
+| Input | un run della pipeline intera sul volume `daodan-flow-results`: la cartella dello snapshot (`possible-in/phazly5`) e quella del sorgente (`possible-in/phazly3-src`); il record registrato della pre-mappa è tenuto, come nella misura del 23 novembre |
+| Regole | `rules.json` di questa cartella, 18 regole |
+| Riferimento | il privato del proprietario, letto a runtime con `--expected`, non copiato |
+| Prima | l'albero della misura del 23 novembre, rieseguito: stesso sha di `flows.py`, stesso digest dei collegamenti e gli stessi numeri |
+| Dopo | lo stesso albero con i soli blocchi di `flows.py` di questa modifica (`_store_index`, `_store_key`, `_unread_index`, `_inline_handle`, `_handle`) |
+
+| Misura | Prima | Dopo |
+|---|---|---|
+| Flussi chiusi su 38, con i soli collegamenti certi | 14 | **15** |
+| Flussi chiusi su 38, con i possibili | 15 | 16 |
+| Frecce certe su 240 | 101 | **104** |
+| Frecce mancante / non misurabile / mancante con lacuna | 39 / 26 / 10 | 30 / 25 / 17 |
+| Legami `scrive` / `legge` | 459 / 463 | 507 / 489 |
+| Legami di store nuovi, nessuno perso | | 74 (48 `scrive`, 26 `legge`) |
+| Chiavi di store (mongo) | 121 (38) | 127 (44) |
+| Store con scrittori e lettori | 88 | 95 |
+| Lacune | 261 | 303 |
+| Flussi tracciati da un ingresso, incompleti su 1105 | 119 | 205 |
+
+- Un solo flusso cambia, e passa a chiuso: quello che la diagnosi dei 24 flussi aperti attribuiva a una chiave `db[COLLECTION]` nello stesso file. Nessun flusso peggiora.
+- Le 74 chiavi nuove sono controllate dall'albero sintattico del sorgente (`check_store_keys.py`): 74 giuste, 0 sbagliate; 70 sono una costante dichiarata nello stesso file, 4 un testo. Il campione di 10 (seme 11) è stato riletto a mano sul sorgente: tutte la collezione vera.
+- Le 42 lacune nuove, una causa per caso: 24 `self.NOME` (l'identità che il motore dà non arriva alla vista), 10 indici calcolati, 5 nomi puntati (`modulo.NOME`), 3 nomi importati che lo snapshot non lega a una dichiarazione. Tutti gli 86 flussi che diventano incompleti hanno una di queste lacune sul percorso: prima la chiamata era muta.
+- Una versione precedente leggeva `self.NOME` dalla dichiarazione della classe che racchiude: dava 17 flussi chiusi, ma con il motore vero produceva legami certi sbagliati (tupla, `+=`, `cls.NOME = ...`, `Classe.NOME = ...` a livello di modulo) ed è stata tolta.
+- Non misurato: un altro progetto; la pre-mappa non è rigenerata col codice di oggi.
+
+## Il wrapper di un client HTTP e il membro `store:` senza chiave, 23 novembre 2026
+
+Due cause dei flussi aperti di phazly, misurate sulla stessa analisi fresca (Modal, `measure_links.py`: la pipeline fino ad `analyze` con l'albero di oggi, perché lo store del motore registrato il pomeriggio è rifiutato dopo il cambio degli adattatori; `rules.json`; il riferimento di sistema di phazly; nessun modello).
+
+| Parametro | Valore |
+|---|---|
+| Prova del wrapper | `daodan/core/http_wrappers.py` (`python flows.py wrappers MANIFEST`), tabella dei client in `daodan/data/http-clients.json` |
+| Regole | `rules.json` da solo (`full`), poi con le regole `rotta` che la prova propone (`full+wrappers`) |
+| Membro `store:` senza chiave | `system_map._check_nodes`: il nodo è accettato con `unlinked` (piano degli ingressi, 7b) |
+
+**Il membro `store:` senza chiave** (`possible.py` in locale, stessi collegamenti del pomeriggio, prima e dopo il cambio): frecce certe 104 → 118, «non misurabile» 25 → 4, «mancante con lacuna» 17 → 24, flussi con ogni effetto raggiunto 15 → 16 su 38. Il flusso in più si chiude sul file dello store locale, membro dello stesso nodo, non sulla chiave, che resta in `unlinked`.
+
+**Il wrapper** (analisi fresca, che ha già il cambio sopra):
+
+| Misura | `full` | `full+wrappers` |
+|---|---|---|
+| Chiamate a rotte, e di queste collegate | 50, 50 | 119, 119 |
+| Frecce certe del riferimento | 119 | 129 |
+| Flussi chiusi su 38, collegamenti certi | 16 | 18 |
+| Flussi chiusi su 38, con `ritorno` e `incerto` | 17 | 19 |
+| Lacune dei collegamenti | 296 | 298 |
+
+La prova propone tre regole e una lacuna, senza regole scritte a mano: `adminFetch` (70 chiamate, 69 con l'URL letterale: la stessa regola scritta a mano nella verifica precedente, POST e `arg0`), `apiGet` (nessuna chiamata risolta) e `fetchAsDataUrl` (una chiamata, URL non letterale); rifiutato con la causa `checkVerificationStatus`, che costruisce l'URL con un template. I due flussi in più sono «Revisione delle immagini dei piatti» e «Chiavi API». Le due lacune in più sono chiamate a un wrapper con una rotta non letterale, prima invisibili.
+
+**Limiti.** `fetchAsDataUrl` chiama un URL di altri e riceve il servizio `api`, l'unico che le regole `offre` nominano: è una regola candidata, da confermare, e qui non collega nulla. Un wrapper di un wrapper non è provato. La tabella ha solo `fetch` (tre simboli). La tabella è della misura finale (seconda analisi fresca, con il codice dopo le due revisioni): 115 rotte offerte; le due corse precedenti dello stesso giorno davano gli stessi flussi e le stesse chiamate.
+
+## Il tetto della scheda del percorso, senza modello, 23 novembre 2026
+
+Domanda: prima di pagare un modello, quanti flussi del riferimento una scheda del percorso del prodotto (`daodan/core/flow_paths.py`) può provare, e gli altri perché no. Serve a non scambiare un buco del grafo per un difetto di come la scheda è data al modello.
+
+| Parametro | Valore |
+|---|---|
+| Script | `python benchmarks/system-map/card_ceiling.py MANIFEST LINKS.json EXPECTED-system.json`, in locale, nessun modello; prova `benchmarks/system-map/test_card_ceiling.py` |
+| Collegamenti | quelli della colonna «Dopo» della misura qui sopra: 25.843 legami, 1.105 ingressi, 303 lacune |
+| Riferimento | il privato del proprietario, 38 flussi, letto a runtime |
+| Scheda | una per ingresso classificato; i passi sono quelli di `flow_paths._steps`; l'effetto è quello di `flow_paths._effect`, una scrittura certa su uno store |
+| Scheda all'ingresso | il nodo d'ingresso del flusso tiene il gestore della scheda o il file dove il controllo è legato; per un ingresso che è una persona, un dispositivo o un servizio di altri, i nodi a cui portano le sue frecce |
+
+| Esito del flusso (il primo che vale) | Flussi su 38 |
+|---|---:|
+| `provata`: una scheda all'ingresso arriva a ogni effetto su store del flusso | **7** |
+| `effetto non esprimibile`: nessun effetto del flusso è una scrittura su uno store | 14 |
+| `nessuna scheda all'ingresso` | 3 |
+| `tagliata dalla scheda`: i collegamenti arrivano all'effetto, la scheda no | 0 |
+| `buco del grafo`: dal gestore i collegamenti non arrivano all'effetto | 14 |
+
+| Altra misura | Valore |
+|---|---|
+| Effetti del riferimento: su store, non su store | 25, 25 (17 «valore mostrato», 4 cambi di stato in un sistema di altri o senza store, 3 «evento emesso», 1 comando a un dispositivo) |
+| Schede in tutto, con almeno un effetto | 1.105, 297 |
+| Passi per scheda: mediana, massimo | 2, 1.305 |
+| Nei 7 flussi provati: schede all'ingresso | da 2 a 46 |
+| Nei 7 flussi provati: passi dal gestore all'effetto, caratteri di passi letti fino all'effetto | da 1 a 5, da 274 a 7.167 |
+
+- **La forma della scheda non taglia nulla.** Zero flussi hanno i collegamenti fino all'effetto e la scheda no: dove il grafo arriva, la scheda arriva. Vale anche seguendo chi rilegge uno store del flusso e riscrive altrove.
+- **Il limite maggiore è che cosa conta come effetto.** Quattordici flussi finiscono su un valore mostrato, un evento emesso o un comando: la scheda chiude solo su una scrittura in uno store, e li lascia fuori qualunque cosa il grafo sappia.
+- **Dove la prova c'è è corta, ma va trovata.** Al più 5 passi e 7.167 caratteri, in mezzo a 2–46 schede per ingresso e 1.105 in tutto. Nelle run cieche del 21 novembre (README di `benchmarks/system-map`) il modello debole aveva le schede in coda e non ne ha aperta nessuna.
+- **Non si confronta come totale con i «15 su 38» qui sopra.** Quella misura segue le frecce del riferimento da nodo a nodo, lascia stare in piedi le frecce dichiarate e chiede ogni effetto, schermate comprese; questa segue i collegamenti dal gestore di una scheda e chiede ogni effetto su store. Rifatta in locale sugli stessi collegamenti e manifest ridà 15 flussi chiusi, 16 con i possibili, 104 frecce certe: la corsa locale vale.
+- **Incrocio flusso per flusso** (esito della scheda × flusso chiuso sulle frecce certe):
+
+  | Esito della scheda | Chiuso sulle frecce | Non chiuso |
+  |---|---:|---:|
+  | `provata` | 3 | 4 |
+  | `effetto non esprimibile` | 9 | 5 |
+  | `nessuna scheda all'ingresso` | 1 | 2 |
+  | `buco del grafo` | 2 | 12 |
+
+  Nove flussi il grafo li chiude già e la scheda no, solo perché finiscono su un effetto che non è una scrittura su store: è ciò che costa la definizione di effetto. Dei 14 «buco del grafo» 12 mancano anche sulle frecce, e sono buchi veri; 2 sono chiusi sulle frecce ma nessun gestore di scheda avvia il percorso, ed è un limite dell'inventario delle schede. Quattro flussi `provata` non sono chiusi sulle frecce: la scheda prova l'effetto su store, il riferimento chiede anche una schermata o un servizio di altri.
+- **Conseguenza per la prova con il modello: due denominatori.** Per *certificare* contro il riferimento contano al più 7 flussi. Per *trovare e aprire la scheda giusta* ne contano 31, quelli con almeno una scheda all'ingresso: la consegna (scheda spinta, coda, punti di partenza) si misura su quelli, senza bisogno dell'effetto.
+- Metodo rivisto da un secondo agente prima dei numeri: otto correzioni ai confini degli esiti (il sito del controllo, ogni effetto su store, i lettori di uno store del flusso, le schede incerte), ognuna con il suo test; i totali non sono cambiati.
+- Non misurato: un altro progetto; le schede dei 14 flussi con effetto non esprimibile, se arrivano almeno al file della schermata.

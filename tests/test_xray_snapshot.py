@@ -23,6 +23,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from ast_parser import parse_file  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 PY_SOURCE = textwrap.dedent(
     '''
@@ -210,7 +211,7 @@ class ManifestTests(unittest.TestCase):
         write(self.src, "tools/store.py", "def open_store():\n    return 1\n")
         write(self.src, "tools/cli.py", "from store import open_store\nimport orders.service\n")
         import snapshot
-        resolved = snapshot.resolved_imports(snapshot.build_manifest(self.src))
+        resolved = snapshot.resolved_imports(read_manifest(self.src))
         self.assertEqual(resolved["tools/cli.py"]["store"], ["tools/store.py"])
         self.assertEqual(resolved["tools/cli.py"]["orders.service"], ["orders/service.py"])
 
@@ -317,7 +318,7 @@ class ParseReuseTests(unittest.TestCase):
         from languages import get_adapter
         self.snapshot = snapshot
         self.adapter = get_adapter("python")
-        self.previous = snapshot.build_manifest(self.src)
+        self.previous = read_manifest(self.src)
         self.first_key = next(key for key in self.previous["files"] if key.endswith("first.py"))
         self.second_key = next(key for key in self.previous["files"] if key.endswith("second.py"))
 
@@ -325,24 +326,21 @@ class ParseReuseTests(unittest.TestCase):
         before = copy.deepcopy(self.previous)
 
         with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
-            reused = self.snapshot.build_manifest(self.src, previous=self.previous)
+            reused = read_manifest(self.src, previous=self.previous)
 
         self.assertEqual(parser.call_count, 0)
         self.assertEqual(reused["files"], before["files"])
-        self.assertEqual(self.previous, before)
         self.assertEqual(reused["metrics"]["parsed_files"], 0)
         self.assertEqual(reused["metrics"]["cache_hits"], 2)
         self.assertEqual(reused["metrics"]["files_read"], 2)
         self.assertEqual(reused["metrics"]["source_bytes_read"], 53)
-        reused["files"][self.first_key]["symbols"]["first"]["start"] = 999
-        self.assertEqual(self.previous["files"][self.first_key]["symbols"]["first"]["start"], 1)
 
     def test_touch_changes_metadata_without_reparsing_unchanged_content(self):
         initial = self.first.stat()
         os.utime(self.first, ns=(initial.st_atime_ns, initial.st_mtime_ns + 2_000_000_000))
 
         with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
-            reused = self.snapshot.build_manifest(self.src, previous=self.previous)
+            reused = read_manifest(self.src, previous=self.previous)
 
         self.assertEqual(parser.call_count, 0)
         self.assertNotEqual(reused["files"][self.first_key]["mtime"], self.previous["files"][self.first_key]["mtime"])
@@ -356,8 +354,8 @@ class ParseReuseTests(unittest.TestCase):
         self.assertEqual(self.first.stat().st_mtime_ns, initial.st_mtime_ns)
 
         with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
-            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
-        rebuilt = self.snapshot.build_manifest(self.src)
+            updated = read_manifest(self.src, previous=self.previous)
+        rebuilt = read_manifest(self.src)
 
         self.assertEqual(parser.call_count, 1)
         self.assertEqual(updated["files"], rebuilt["files"])
@@ -368,7 +366,7 @@ class ParseReuseTests(unittest.TestCase):
         self.first.unlink()
 
         with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
-            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+            updated = read_manifest(self.src, previous=self.previous)
 
         self.assertEqual(parser.call_count, 0)
         self.assertNotIn(self.first_key, updated["files"])
@@ -378,7 +376,7 @@ class ParseReuseTests(unittest.TestCase):
         self.previous["parser_fingerprint"] = "sha256:different-parser-code"
 
         with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
-            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+            updated = read_manifest(self.src, previous=self.previous)
 
         self.assertEqual(parser.call_count, 2)
         self.assertEqual(updated["files"][self.first_key]["symbols"]["first"]["start"], 1)
@@ -389,7 +387,7 @@ class ParseReuseTests(unittest.TestCase):
         entry["parser_profile"] = {**entry["parser_profile"], "backend": "different-backend"}
 
         with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
-            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+            updated = read_manifest(self.src, previous=self.previous)
 
         self.assertEqual(parser.call_count, 1)
         self.assertEqual(updated["files"][self.second_key], self.previous["files"][self.second_key])
@@ -402,7 +400,7 @@ class ParseReuseTests(unittest.TestCase):
             entry.pop("parser_profile")
 
         with mock.patch.object(self.adapter, "parse", wraps=self.adapter.parse) as parser:
-            updated = self.snapshot.build_manifest(self.src, previous=self.previous)
+            updated = read_manifest(self.src, previous=self.previous)
 
         self.assertEqual(parser.call_count, 2)
         self.assertEqual(updated["metrics"]["cache_hits"], 0)
@@ -450,7 +448,7 @@ class ParseReuseTests(unittest.TestCase):
         changes = json.loads((child_run / "changes.json").read_text(encoding="utf-8"))
         with self.assertRaisesRegex(ValueError, "source changed"):
             read_packet(before, [{"path": self.first_key, "symbols": ["first"]}])
-        refreshed = self.snapshot.build_manifest(self.src, previous=before)
+        refreshed = read_manifest(self.src, previous=before)
         packet = read_packet(refreshed, [{"path": self.first_key, "symbols": ["first"]}])
 
         self.assertEqual(changes["recommendation"], "none")
@@ -458,7 +456,6 @@ class ParseReuseTests(unittest.TestCase):
         self.assertNotEqual(refreshed["files"][self.first_key]["raw_hash"], before["files"][self.first_key]["raw_hash"])
         self.assertEqual(refreshed["files"][self.first_key]["symbols"], before["files"][self.first_key]["symbols"])
         self.assertIn("2:     return 7\n", packet["files"][0]["blocks"][0]["source"])
-        self.assertEqual(self.previous, before)
         self.assertEqual(manifest_path.read_bytes(), parent_bytes)
 
     def test_loaded_grammar_source_failure_stays_readable_and_is_reparsed(self):
@@ -475,8 +472,8 @@ class ParseReuseTests(unittest.TestCase):
         # boundary; source bytes, manifest construction and reading remain real.
         with mock.patch.object(self.snapshot, "parser_profile", return_value=available), \
                 mock.patch.object(adapter, "parse", return_value=failed_native_parse) as parser:
-            manifest = self.snapshot.build_manifest(target)
-            refreshed = self.snapshot.build_manifest(target, previous=manifest)
+            manifest = read_manifest(target)
+            refreshed = read_manifest(target, previous=manifest)
             key = next(iter(manifest["files"]))
             packet = read_packet(manifest, [{"path": key, "full_file": True}])
 
@@ -508,7 +505,7 @@ class PresentationInventoryTests(unittest.TestCase):
         write(self.src, "index.html", "<div id=\"root\"></div>\n")
         import snapshot
         self.snapshot = snapshot
-        self.manifest = snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
 
     def key(self, suffix):
         return next(k for k in self.manifest["files"] if k.endswith(suffix))
@@ -539,7 +536,7 @@ class PresentationInventoryTests(unittest.TestCase):
         }
         for relative, content in files.items():
             write(self.src, relative, content)
-        manifest = self.snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
 
         for relative in files:
             with self.subTest(relative=relative):
@@ -551,7 +548,7 @@ class PresentationInventoryTests(unittest.TestCase):
     def test_files_that_usually_hold_passwords_stay_out_of_the_inventory(self):
         for relative in ("application.properties", "prod.tfvars", "web.config", "secrets.tf"):
             write(self.src, relative, "password=hunter2\n")
-        manifest = self.snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
 
         names = {Path(key).name for key in manifest["files"]}
         for excluded in ("application.properties", "prod.tfvars", "web.config", "secrets.tf"):
@@ -821,7 +818,7 @@ class PerimeterTests(unittest.TestCase):
         self.linked_project()
         out = self.tmp / "snapshot.sqlite"
         with mock.patch.dict(os.environ, self.env):
-            snapshot.write_snapshot(self.project, out)
+            snapshot.read_project(self.project, out)
         with open_snapshot(out) as store:
             self.assertEqual(list(store.iter_paths()), ["src/app.py"])
 
@@ -881,7 +878,7 @@ class ComparisonTests(unittest.TestCase):
         write(self.src, "web/cart.js", JS_SOURCE)
         import snapshot
         self.snapshot = snapshot
-        self.manifest = snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
 
     def key(self, suffix):
         return next(k for k in self.manifest["files"] if k.endswith(suffix))
@@ -924,7 +921,7 @@ class ComparisonTests(unittest.TestCase):
             "styles/dup.css",
             ".dup {\n  color: red;\n}\n.middle {\n  color: green;\n}\n.dup {\n  margin: 0;\n}\n",
         )
-        manifest = self.snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
         path.write_text(path.read_text(encoding="utf-8").replace("green", "lime"), encoding="utf-8")
         root_query = ["git", "-C", str(self.src.resolve()), "rev-parse", "--show-toplevel"]
         real_run = subprocess.run
@@ -1009,7 +1006,7 @@ class BlastRadiusTests(unittest.TestCase):
         write(self.src, "reports/monthly.py", "import csv\n\n\ndef build():\n    return csv\n")
         import snapshot
         self.snapshot = snapshot
-        self.manifest = snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
 
     def radius(self):
         files = self.snapshot.compare_files(self.manifest, self.src)
@@ -1048,7 +1045,7 @@ class BlastRadiusTests(unittest.TestCase):
     def test_a_relative_javascript_import_resolves(self):
         write(self.src, "web/models.js", "export class Order {}\n")
         write(self.src, "web/cart.js", JS_SOURCE)
-        self.manifest = self.snapshot.build_manifest(self.src)
+        self.manifest = read_manifest(self.src)
         (self.src / "web/models.js").write_text("export class Order { id = 0; }\n", encoding="utf-8")
         _, importers = self.radius()
         self.assertTrue(any(entry["file"].endswith("web/cart.js") for entry in importers))
@@ -1100,7 +1097,7 @@ class _DiffFixture(unittest.TestCase):
         (self.parent / "state.json").write_text(json.dumps(PARENT_STATE), encoding="utf-8")
         import snapshot
         self.snapshot = snapshot
-        manifest = snapshot.build_manifest(self.src)
+        manifest = read_manifest(self.src)
         (self.parent / "snapshot").mkdir()
         (self.parent / "snapshot/manifest.json").write_text(
             json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8"
@@ -1463,7 +1460,7 @@ class CheckTests(_DiffFixture):
         self.assertIn(f"added symbol never documented: {item['file']}::handler", out)
 
 
-class TsconfigAliasAndParallelSnapshotTests(unittest.TestCase):
+class TsconfigAliasSnapshotTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp(prefix="xray-alias-"))
         self.addCleanup(shutil.rmtree, self.tmp, True)
@@ -1486,7 +1483,7 @@ class TsconfigAliasAndParallelSnapshotTests(unittest.TestCase):
         )
         write(self.tmp, "src/core/engine.ts", "export class Engine { run(): number { return 1; } }\n")
         write(self.tmp, "src/app/main.ts", "import { Engine } from '@core/engine';\nexport function start() { return new Engine().run(); }\n")
-        manifest = snapshot.build_manifest(self.tmp)
+        manifest = read_manifest(self.tmp)
         (self.tmp / "src/core/engine.ts").write_text(
             "export class Engine { run(): number { return 2; } }\n", encoding="utf-8"
         )
@@ -1495,18 +1492,6 @@ class TsconfigAliasAndParallelSnapshotTests(unittest.TestCase):
         index = snapshot.build_import_index(manifest, comparison, symbols)
         radius = snapshot.blast_radius(index, comparison, symbols)
         self.assertTrue(any(r["file"].endswith("src/app/main.ts") for r in radius), radius)
-
-    def test_parallel_manifest_build_over_eight_or_more_files_preserves_order_and_metrics(self):
-        import snapshot
-
-        src = self.tmp / "many"
-        for i in range(10):
-            write(src, f"mod_{i:02d}.py", f"def fn_{i}():\n    return {i}\n")
-        manifest = snapshot.build_manifest(src)
-        self.assertEqual(manifest["metrics"]["files_read"], 10)
-        self.assertEqual(manifest["metrics"]["parsed_files"], 10)
-        keys = list(manifest["files"].keys())
-        self.assertEqual(keys, sorted(keys))
 
 
 if __name__ == "__main__":

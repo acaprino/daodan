@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="About">
+  <p>About</p>
+  <a href="/" onclick="goHome()">Home</a>
+</Layout>
+<script is:inline>
+  function goHome() { location.href = '/'; }
+</script>

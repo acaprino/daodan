@@ -1,0 +1,43 @@
+[
+ {
+  "build": {
+   "argv": [
+    "go",
+    "build",
+    "-o",
+    "/work/debug-stdout.bin",
+    "."
+   ],
+   "peak_memory_mb": 323,
+   "ports_listening": [],
+   "processes_left": [],
+   "returncode": 0,
+   "seconds": 1.44,
+   "stderr": "",
+   "stdout": "",
+   "written": null,
+   "written_bytes": 0
+  },
+  "changed_in_the_project": [],
+  "left_in_the_project": [],
+  "run": {
+   "argv": [
+    "timeout",
+    "--kill-after=5",
+    "20",
+    "/work/debug-stdout.bin"
+   ],
+   "peak_memory_mb": 75,
+   "ports_listening": [
+    8080
+   ],
+   "processes_left": [],
+   "returncode": 124,
+   "seconds": 20.01,
+   "stderr": "",
+   "stdout": "[GIN-debug] [WARNING] Running in \"debug\" mode. Switch to \"release\" mode in production.\n - using env:\texport GIN_MODE=release\n - using code:\tgin.SetMode(gin.ReleaseMode)\n\n[GIN-debug] GET    /ping                     --> main.setupRouter.func1 (2 handlers)\n[GIN-debug] GET    /items                    --> main.listItems (2 handlers)\n[GIN-debug] GET    /items/:id                --> main.getItem (2 handlers)\n[GIN-debug] POST   /items                    --> main.createItem (2 handlers)\n[GIN-debug] GET    /srv                      --> main.(*Server).List-fm (2 handlers)\n[GIN-debug] GET    /api/v1/users             --> main.listItems (3 handlers)\n[GIN-debug] DELETE /api/v1/admin/users/:id   --> main.setupRouter.func2 (4 handlers)\n[GIN-debug] GET    /any                      --> main.listItems (2 handlers)\n[GIN-debug] POST   /any                      --> main.listItems (2 handlers)\n[GIN-debug] PUT    /any                      --> main.listItems (2 handlers)\n[GIN-debug] PATCH  /any                      --> main.listItems (2 handlers)\n[GIN-debug] HEAD   /any                      --> main.listItems (2 handlers)\n[GIN-debug] OPTIONS /any                      --> main.listItems (2 handlers)\n[GIN-debug] DELETE /any                      --> main.listItems (2 handlers)\n[GIN-debug] CONNECT /any                      --> main.listItems (2 handlers)\n[GIN-debug] TRACE  /any                      --> main.listItems (2 handlers)\n[GIN-debug] GET    /match                    --> main.listItems (2 handlers)\n[GIN-debug] POST   /match                    --> main.listItems (2 handlers)\n[GIN-debug] GET    /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)\n[GIN-debug] HEAD   /static/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (2 handlers)\n[GIN-debug] GET    /favicon.ico              --> main.setupRouter.(*RouterGroup).StaticFile.func5 (2 handlers)\n[GIN-debug] HEAD   /favicon.ico              --> main.setupRouter.(*RouterGroup).StaticFile.func5 (2 handlers)\n[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.\nPlease check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.\n[GIN-debug] Listening and serving HTTP on :8080\n",
+   "written": null,
+   "written_bytes": 0
+  }
+ }
+]

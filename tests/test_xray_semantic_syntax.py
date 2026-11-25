@@ -251,6 +251,50 @@ class JavaScriptSemanticTests(unittest.TestCase):
         self.assertEqual(sum(r["parts"] == ["Save"] for r in semantic["references"]), 1)
         self.assertFalse(any(r["parts"] == ["ns"] for r in semantic["references"]))
 
+    def function_scope(self, semantic, name="f"):
+        function = next(d for d in semantic["declarations"] if d["name"] == name and d["kind"] == "function")
+        return next(s for s in semantic["scopes"] if s.get("caller") == function["id"])
+
+    def test_a_direct_eval_is_seen_through_what_only_wraps_its_callee(self):
+        """`(eval)(x)` is a direct eval (parentheses keep the reference), and TypeScript erases `as`, `satisfies`, `!` and
+        `<T>`: it can write any local, so the scope it is in stays unresolved. `(0, eval)(x)` is an indirect eval, which
+        runs in the global scope, and `window.eval(x)` the same: they leave the scope as it was."""
+        reason = "direct eval may mutate lexical bindings"
+        for callee in ("eval", "(eval)", "((eval))", "(/* kept */ eval)"):
+            with self.subTest(callee=callee):
+                scope = self.function_scope(self.parse(f"function f(url) {{ {callee}(\"url = 1\"); return url; }}"))
+                self.assertEqual((scope.get("unresolved"), scope.get("reason")), (True, reason))
+        for callee in ("(eval as any)", "(eval!)", "(eval satisfies any)", "(<any>eval)", "((eval as any)!)"):
+            with self.subTest(callee=callee):
+                scope = self.function_scope(self.parse(f"function f(url: string) {{ {callee}(\"url = 1\"); return url; }}",
+                                                       typescript.adapter, "ts"))
+                self.assertEqual((scope.get("unresolved"), scope.get("reason")), (True, reason))
+        for callee in ("(0, eval)", "window.eval", "(eval, eval)", "(await eval)"):
+            with self.subTest(callee=callee):
+                scope = self.function_scope(self.parse(f"async function f(url) {{ {callee}(\"url = 1\"); return url; }}"))
+                self.assertFalse(scope.get("unresolved"))
+
+    def test_a_wrapped_eval_callee_keeps_the_reference_it_had(self):
+        """The call is read as it was: only the scope's state changes, so no span or name of an ordinary call moves."""
+        semantic = self.parse('function f(url) { (eval)("url = 1"); (save)(); }')
+        calls = [r for r in semantic["references"] if r["kind"] == "call"]
+        self.assertEqual([(r["parts"], r.get("reason")) for r in calls], [([], "dynamic-callee"), ([], "dynamic-callee")])
+
+    def test_a_jsx_attribute_value_that_is_an_element_or_a_fragment_is_read(self):
+        """`<A b=<A c={(url = 1)} /> />` writes `url`: an attribute's value is an expression, a string, a `{...}`, an
+        element or a fragment, and only the attribute's name is no read."""
+        for suffix, adapter in (("js", javascript.adapter), ("tsx", typescript.adapter)):
+            for value in ("<A c={(url = 1)} />", "<>{(url = 1)}</>", "{(url = 1)}", "<A c=<A d={(url = 1)} /> />",
+                          "<A>{(url = 1)}</A>"):
+                with self.subTest(suffix=suffix, value=value):
+                    semantic = self.parse(f"function f(url) {{ void <A b={value} />; return url; }}", adapter, suffix)
+                    writes = [d for d in semantic["declarations"] if d["name"] == "url" and d["kind"] == "binding"]
+                    self.assertEqual(len(writes), 1)
+                    self.assertFalse(self.function_scope(semantic).get("unresolved"))
+            with self.subTest(suffix=suffix, value="names and strings"):
+                semantic = self.parse('function f(url) { return <A url="url" ns:url={1} url />; }', adapter, suffix)
+                self.assertEqual([r["kind"] for r in semantic["references"] if r["parts"] == ["url"]], [])
+
     def test_malformed_and_no_grammar_do_not_claim_ast_semantics(self):
         if ts.get_parser("javascript") is not None:  # read around its error, the lines it could not read named
             self.assertTrue(javascript.adapter.parse("function broken( {", "x.js").semantic["unread"])

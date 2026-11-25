@@ -180,7 +180,7 @@ def test_every_markup_suffix_of_the_snapshot_is_read_or_declared_missing_with_it
 def test_a_project_of_components_alone_brings_the_stylesheet_graph_into_the_pass(tmp_path):
     root = _project(tmp_path / "proj", {"App.vue": "<template>\n  <p class=\"x\">x</p>\n</template>\n"
                                                    "<style>\n.x { color: red }\n</style>\n"})
-    snapshot.write_snapshot(root, tmp_path / "manifest.sqlite")
+    snapshot.read_project(root, tmp_path / "manifest.sqlite")
     with open_snapshot(tmp_path / "manifest.sqlite") as store:
         assert "stylesheet" in engine_pass.pass_languages(store.connection)
 
@@ -191,7 +191,7 @@ def test_astro_styles_bring_the_stylesheet_graph_and_its_code_is_a_no_analyzer_g
     root = _project(tmp_path / "proj", {"Page.astro": '---\nimport { f } from "./f";\nf();\n---\n'
                                                       '<p class="x">x</p>\n<style>\n.x { color: red }\n</style>\n',
                                         "page.html": '<p class="x">x</p>\n'})
-    snapshot.write_snapshot(root, tmp_path / "manifest.sqlite")
+    snapshot.read_project(root, tmp_path / "manifest.sqlite")
     assert ".astro" in css.READS
     with open_snapshot(tmp_path / "manifest.sqlite") as store:
         assert "stylesheet" in engine_pass.pass_languages(store.connection)

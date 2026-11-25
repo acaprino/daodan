@@ -1,0 +1,3 @@
+not applicable: the project's compiler is @astrojs/compiler 4.0.0
+
+--- exit 0

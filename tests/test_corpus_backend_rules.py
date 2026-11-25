@@ -12,6 +12,7 @@ if str(CORE) not in sys.path:
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
 from pipeline import Context, Scan, Stack, events  # noqa: E402
+from test_codebase_map_stack_recognition import fact, package_signs, recognized  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -45,9 +46,8 @@ def entries():
     ("nuget", "xunit.v3.mtp-v2", {"xunit": "tool"}),
     ("nuget", "Mono.Cecil", {"mono-cecil": "library"}),  # daodan/core/dynamic/dotnet_record/rewrite/Daodan.Rewrite.csproj
 ])
-def test_declared_backend_package_carries_its_project_category_and_source(entries, ecosystem, package, expected):
-    project = service_registry.Project([(ecosystem, package, "manifest", 17, None)], [], lambda _: [])
-    found = service_registry.check_packages(entries, project)["signs"]
+def test_declared_backend_package_carries_its_project_category_and_source(real_stack, tmp_path, entries, ecosystem, package, expected):
+    found = package_signs(recognized(tmp_path, packages=[fact(ecosystem, package, "manifest#L17", "pre-map@1")]))
     categories = {e["id"]: service_registry.entry_category(e) for e in entries if e["kind"] == "project"}
     for ident, category in expected.items():
         assert (ident, package, "manifest", 17) in found
@@ -70,13 +70,12 @@ def test_declared_backend_package_carries_its_project_category_and_source(entrie
     ("nuget", "FastEndpoints.SwaggerHelper", {"fastendpoints"}),
     ("nuget", "Microsoft.WindowsAppSDK", {"winui"}),
 ])
-def test_similar_names_and_optional_transitives_do_not_declare_a_backend(entries, ecosystem, package, not_declared):
-    project = service_registry.Project([(ecosystem, package, "manifest", 1, None)], [], lambda _: [])
-    matches = service_registry.check_packages(entries, project)["signs"]
+def test_similar_names_and_optional_transitives_do_not_declare_a_backend(real_stack, tmp_path, ecosystem, package, not_declared):
+    matches = package_signs(recognized(tmp_path, packages=[fact(ecosystem, package, "manifest#L1", "pre-map@1")]))
     assert not_declared.isdisjoint(ident for ident, *_ in matches)
 
 
-def test_reader_only_scan_and_stack_identify_spring_boot_in_its_declaring_modules(tmp_path):
+def test_reader_only_scan_and_stack_identify_spring_boot_in_its_declaring_modules(real_stack, tmp_path):
     root = tmp_path / "project"
     for module, group, artifact in (
         ("api", "org.springframework.boot", "spring-boot-starter-web"),
@@ -105,7 +104,7 @@ def test_reader_only_scan_and_stack_identify_spring_boot_in_its_declaring_module
         'plugins {\n    id("org.springframework.boot") version "3.4.0"\n}\n', encoding="utf-8")
 
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
     facts = json.loads(Path(Scan.run(context)["premap"]).read_text(encoding="utf-8"))
     record = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))

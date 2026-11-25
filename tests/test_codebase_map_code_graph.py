@@ -358,7 +358,7 @@ def test_a_document_without_occurrences_of_a_file_that_holds_nothing_to_answer_i
     (project / "app/Lost.java").write_text("package app;\n\nclass Lost {\n    int run() { return Math.abs(-1); }\n}\n",
                                            encoding="utf-8")
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     (tmp_path / "index.scip").write_bytes(document("app/package-info.java", []) + document("app/Lost.java", []))
     with code_graph.Snapshot(manifest) as snap:
         index = code_graph.Index(snap.root)
@@ -388,7 +388,7 @@ def test_a_constructor_end_names_its_class(tmp_path):
                                          "    static Box make() {\n        return new Box(3);\n    }\n}\n",
                                          encoding="utf-8")
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     box, init = "scip-java maven . . fx/Box#", "scip-java maven . . fx/Box#`<init>`()."
     (tmp_path / "index.scip").write_bytes(document("fx/Box.java", [
         occurrence(3, 6, 9, box, True), occurrence(6, 4, 7, init, True), occurrence(9, 19, 22, init)]))
@@ -424,7 +424,7 @@ def test_a_call_with_no_callee_name_is_answered_by_its_literal_or_named_by_its_c
     for rel, text in CALLED.items():
         (project / rel).write_text(text, encoding="utf-8")
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     found = {}
     with code_graph.Snapshot(manifest) as snap:
         for language in ("go", "javascript"):
@@ -739,7 +739,7 @@ def test_clang_a_macros_arguments_take_the_symbols_the_index_writes_at_the_macro
     project.mkdir()
     (project / "run.c").write_text(MACRO_C, encoding="utf-8")
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     macro, pair, first, twice, run = ("cxx . . $ `run.c:1:9`!", "cxx . project 0$ pair#", "cxx . project 0$ pair#first.",
                                       "cxx . project 0$ twice(1a).", "cxx . project 0$ run(2b).")
     (tmp_path / "index.scip").write_bytes(document("run.c", [
@@ -812,7 +812,7 @@ def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tm
     (project / "run.c").write_text(DROPPED_C, encoding="utf-8")
     (project / "cast.cpp").write_text(CAST_CPP, encoding="utf-8")
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     assert_, trace, keep = ("cxx . . $ `run.c:1:9`!", "cxx . . $ `run.c:2:9`!", "cxx . . $ `run.c:3:9`!")
     twice, run, cast = "cxx . project 0$ twice(1a).", "cxx . project 0$ run(2b).", "cxx . project 0$ twice(3c)."
     drop, code, field, use = ("cxx . . $ `run.c:17:9`!", "cxx . project 0$ code#", "cxx . project 0$ code#bits.",
@@ -866,7 +866,7 @@ def test_clang_an_explicit_destructor_call_ends_at_the_destructor(tmp_path):
     (project / "dtor.cpp").write_text("struct Node { ~Node(); };\nNode::~Node() {}\nvoid drop(Node *node) {\n"
                                       "    node->~Node();\n}\n", encoding="utf-8")
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     node, dtor, drop = ("cxx . project 0$ Node#", "cxx . project 0$ Node#`~Node`(1a).",
                         "cxx . project 0$ drop(2b).")
     (tmp_path / "index.scip").write_bytes(document("dtor.cpp", [

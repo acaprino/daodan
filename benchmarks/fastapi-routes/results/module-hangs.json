@@ -1,0 +1,23 @@
+{
+ "variant": "module-hangs",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "fastapi",
+  "5",
+  "/daodan/state/tools/fastapi_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 124,
+ "stdout": "",
+ "stderr": "",
+ "seconds": 5.07,
+ "max_rss_mb": 63.7,
+ "left_in_the_project": [
+  "app/__pycache__/__init__.cpython-312.pyc",
+  "app/__pycache__/main.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

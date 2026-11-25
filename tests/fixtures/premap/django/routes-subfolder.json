@@ -1,0 +1,5 @@
+{
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"routes\": [{\"path\": \"/hello/\", \"parts\": [[false, \"/hello/\"]], \"arguments\": {}, \"view\": null, \"handlers\": [{\"method\": null, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"mysite.urls\", \"qualname\": \"hello\", \"file\": \"mysite/urls.py\", \"line\": 5, \"environment\": false, \"distribution\": null, \"owners\": []}}]}], \"unread\": [], \"locale\": null}",
+ "stderr": ""
+}

@@ -1,0 +1,21 @@
+{
+ "variant": "launch-b-settings-error",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\" \"$3\"",
+  "django",
+  "60",
+  "/daodan/state/in/launch.py",
+  "b"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "ModuleNotFoundError: No module named 'not_installed'\n",
+ "seconds": 0.95,
+ "max_rss_mb": 58.9,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

@@ -48,7 +48,7 @@ from premap import cmake as premap_cmake
 from premap.container_runner import IMAGE  # Ubuntu 24.04: gcc, g++, make, dpkg, python3
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-callgrind-clang", f"{callgrind.VALGRIND_VERSION}+1", ("c", "cpp")
+NAME, VERSION, LANGUAGES = "dynamic-callgrind-clang", f"{callgrind.VALGRIND_VERSION}+1", ("c", "cpp")
 RUNNER, ARGV = "ctest", ["ctest", "--output-on-failure", "--timeout", "1800"]  # a test's own TIMEOUT stays its own
 TESTS = re.compile(r"(?im)^[ \t]*(?:add_test|gtest_discover_tests|gtest_add_tests|catch_discover_tests"
                    r"|doctest_discover_tests)[ \t]*\(")

@@ -1,0 +1,118 @@
+node v24.22.3
+
+##### astro --help
+exit 0 in 1.089s
+--- stdout
+
+   astro  v6.4.8 Build faster websites.
+
+  astro [command] [...flags]
+
+   Commands 
+                  add  Add an integration.
+                build  Build your project and write it to disk.
+                check  Check your project for errors.
+           create-key  Create a cryptography key
+                   db  Manage your Astro database.
+                  dev  Start the development server.
+                 docs  Open documentation in your web browser.
+                 info  List info about your current Astro setup.
+              preview  Preview your build locally.
+                 sync  Generate content collection types.
+          preferences  Configure user preferences.
+            telemetry  Configure telemetry settings.
+
+   Global Flags 
+      --config <path>  Specify your config file.
+        --root <path>  Specify your project root folder.
+         --site <url>  Specify your project site.
+    --base <pathname>  Specify your project base.
+            --verbose  Enable verbose logging.
+             --silent  Disable all logging.
+            --version  Show the version number and exit.
+               --help  Show this help message.
+  --experimental-json  Enables JSON logging.
+
+
+--- stderr
+
+
+##### astro sync (CLI), in a copy: the files it writes, and whether any names a route
+exit 0 in 3.019s
+--- stdout
+11:23:00 [types] Generated 303ms
+
+--- stderr
+
+files added by sync: [".astro/content.d.ts",".astro/types.d.ts"]
+  .astro/content.d.ts (5311 chars) names: no page, no route
+  .astro/types.d.ts (76 chars) names: no page, no route
+
+##### programmatic sync() with an integration given inline, in a copy
+exit 0 in 2.111s
+--- stdout
+sync: ok in 0.571 s through the API; hooks that fired: astro:config:done, astro:routes:resolved
+astro:routes:resolved: 14 routes
+  /_server-islands/[name] | _server-islands.astro | page | prerender false | internal | params ["name"]
+  /_image | ../../fix/astro6/node_modules/astro/dist/assets/endpoint/dev.js | endpoint | prerender false | internal | params []
+  /about | src/pages/about.astro | page | prerender true | project | params []
+  /api/items | src/pages/api/items.ts | endpoint | prerender false | project | params []
+  /blog/[slug] | src/pages/blog/[slug].astro | page | prerender true | project | params ["slug"]
+  /broken | src/pages/broken.astro | page | prerender true | project | params []
+  /calls | src/pages/calls.astro | page | prerender true | project | params []
+  /edge | src/pages/edge.astro | page | prerender true | project | params []
+  /nofront | src/pages/nofront.astro | page | prerender true | project | params []
+  /svg | src/pages/svg.astro | page | prerender true | project | params []
+  /tabs | src/pages/tabs.astro | page | prerender true | project | params []
+  /unicode | src/pages/unicode.astro | page | prerender true | project | params []
+  / | src/pages/index.astro | page | prerender true | project | params []
+  /404 | astro-default-404.astro | page | prerender false | internal | params []
+  fields of a route: isPrerendered,entrypoint,pattern,params,origin,generate,patternRegex,segments,type,pathname,redirect,redirectRoute,fallbackRoutes
+
+--- stderr
+
+files added in the copy: [".astro/content.d.ts",".astro/types.d.ts"]
+
+##### programmatic build() with an integration given inline, in a copy
+exit 0 in 3.892s
+--- stdout
+build: ok in 2.32 s through the API; hooks that fired: astro:routes:resolved, astro:config:done, astro:routes:resolved, astro:build:done
+astro:routes:resolved: 11 routes
+  /about | src/pages/about.astro | page | prerender true | project | params []
+  /api/items | src/pages/api/items.ts | endpoint | prerender true | project | params []
+  /blog/[slug] | src/pages/blog/[slug].astro | page | prerender true | project | params ["slug"]
+  /broken | src/pages/broken.astro | page | prerender true | project | params []
+  /calls | src/pages/calls.astro | page | prerender true | project | params []
+  /edge | src/pages/edge.astro | page | prerender true | project | params []
+  /nofront | src/pages/nofront.astro | page | prerender true | project | params []
+  /svg | src/pages/svg.astro | page | prerender true | project | params []
+  /tabs | src/pages/tabs.astro | page | prerender true | project | params []
+  /unicode | src/pages/unicode.astro | page | prerender true | project | params []
+  / | src/pages/index.astro | page | prerender true | project | params []
+  fields of a route: isPrerendered,entrypoint,pattern,params,origin,generate,patternRegex,segments,type,pathname,redirect,redirectRoute,fallbackRoutes
+astro:routes:resolved: 14 routes
+  /_server-islands/[name] | _server-islands.astro | page | prerender false | internal | params ["name"]
+  /_image | ../../fix/astro6/node_modules/astro/dist/assets/endpoint/dev.js | endpoint | prerender false | internal | params []
+  /about | src/pages/about.astro | page | prerender true | project | params []
+  /api/items | src/pages/api/items.ts | endpoint | prerender true | project | params []
+  /blog/[slug] | src/pages/blog/[slug].astro | page | prerender true | project | params ["slug"]
+  /broken | src/pages/broken.astro | page | prerender true | project | params []
+  /calls | src/pages/calls.astro | page | prerender true | project | params []
+  /edge | src/pages/edge.astro | page | prerender true | project | params []
+  /nofront | src/pages/nofront.astro | page | prerender true | project | params []
+  /svg | src/pages/svg.astro | page | prerender true | project | params []
+  /tabs | src/pages/tabs.astro | page | prerender true | project | params []
+  /unicode | src/pages/unicode.astro | page | prerender true | project | params []
+  / | src/pages/index.astro | page | prerender true | project | params []
+  /404 | astro-default-404.astro | page | prerender false | internal | params []
+  fields of a route: isPrerendered,entrypoint,pattern,params,origin,generate,patternRegex,segments,type,pathname,redirect,redirectRoute,fallbackRoutes
+astro:build:done: 0 routes
+  pages: about/, blog/first/, blog/second/, broken/, calls/, edge/, nofront/, svg/, tabs/, unicode/, 
+
+--- stderr
+You are attempting to render <Counter client:load />, but Counter is an Astro component. Astro components do not render in the client and should not have a hydration directive. Please use a framework component for client rendering.
+You are attempting to render <Counter client:visible />, but Counter is an Astro component. Astro components do not render in the client and should not have a hydration directive. Please use a framework component for client rendering.
+
+files added in the copy: [".astro/content.d.ts",".astro/types.d.ts","dist/about/index.html","dist/api/items","dist/blog/first/index.html","dist/blog/second/index.html","dist/broken/index.html","dist/calls/index.html","dist/edge/index.html","dist/index.html","dist/nofront/index.html","dist/svg/index.html","dist/tabs/index.html","dist/unicode/index.html"]
+
+--- exit 0

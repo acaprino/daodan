@@ -1,0 +1,9 @@
+---
+const ok = true;
+---
+<div>
+  <button onclick="beforeBreak()">Before</button>
+  <section>
+    <button onclick="afterBreak()">After</button>
+    {ok && <span onclick="inBroken()">x</span>
+</div>

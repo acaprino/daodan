@@ -55,7 +55,14 @@ WINDOWS = os.name == 'nt'
 
 
 def shared_cache_dir():
-    """The per-user directory Daodan shares across projects: models and language engines."""
+    """The per-user directory Daodan shares across projects: models, language engines, caches and the container
+    engine's WSL distribution. `DAODAN_SHARED_DIR` names it (the folder itself, an absolute path), to put it on
+    another disk; unset or empty, it is `Daodan` in the per-user cache folder."""
+    named = os.environ.get('DAODAN_SHARED_DIR')
+    if named:
+        if not Path(named).is_absolute():
+            raise ValueError(f'DAODAN_SHARED_DIR must be an absolute path: {named!r}')
+        return Path(named)
     fallback = Path.home() / ('AppData/Local' if WINDOWS else '.cache')
     base = Path(os.environ.get('LOCALAPPDATA' if WINDOWS else 'XDG_CACHE_HOME') or fallback)
     if not base.is_absolute():
