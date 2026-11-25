@@ -2118,9 +2118,9 @@ try {
         const shown = await opened({ width: 1440, scheme, own });
         for (const [name, state, title] of SCREENS) {
           await shown.setViewportSize({ width: 1440, height: 850 });
-          await shown.goto('http://daodan.test/app/?token=test');
+          await shown.goto('http://daodan.test/favicon.svg');  // where nothing writes what is kept
           await shown.evaluate(left => localStorage.setItem('daodan-app-v2', JSON.stringify(left)), state);
-          await shown.reload();
+          await shown.goto('http://daodan.test/app/?token=test');
           await shown.getByRole('region', { name: title, exact: true }).waitFor();
           await shown.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
           await look(shown, name);
