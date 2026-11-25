@@ -133,7 +133,7 @@ and the build.
 
 ## Documentation
 
-- [What is left to do, in waves, and the pipeline as it is decided](docs/specs/2026-11-25-lavoro-residuo-a-ondate.md): the one spec; the specs and plans before it are in git's history, at commit `614c940`
+- [The spec: the pipeline as it is decided, what each step uses, the surfaces and how they run, and what is left to do, in waves](docs/specs/2026-11-25-lavoro-residuo-a-ondate.md); the specs and plans before it are in git's history, at commit `614c940`
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
 - [Roadmap](docs/roadmap.md)

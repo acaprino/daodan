@@ -1,6 +1,6 @@
-# Il lavoro che resta, in ondate
+# Daodan: il disegno della pipeline e il lavoro che resta, in ondate
 
-**Stato:** chiesta dal proprietario il 25 novembre 2026. È l'unica spec di Daodan: condensa ciò che le spec e i piani di prima dichiaravano ancora da fare o fatto in parte, e tiene il disegno della pipeline. Non decide nulla di nuovo.
+**Stato:** chiesta dal proprietario il 25 novembre 2026. È l'unica spec di Daodan e dice tutto ciò che Daodan sarà da qui in avanti: prima il disegno (la pipeline, i suoi step, ciò che ognuno usa, le superfici e come si eseguono, le anagrafiche, i servizi comuni), poi il lavoro per arrivarci, in ondate. Le ondate condensano ciò che le spec e i piani di prima dichiaravano da fare o fatto in parte. Una decisione nuova si scrive qui.
 
 **Le spec e i piani di prima sono stati tolti dal repository il 25 novembre**, su richiesta del proprietario. Ogni voce cita ancora il documento e la sezione da cui viene, con i suoi motivi e le sue misure: si leggono nella storia di git, al commit `614c940` (`git show 614c940:docs/specs/<nome>.md`). L'elenco è in fondo.
 
@@ -21,8 +21,19 @@
 | 8 | `8_assemble_graph`, flussi e mappa del sistema | 3, 5 |
 | 9 | Ricerca e review | 8 |
 | 10 | L'app e l'esploratore | 8 |
+| 11 | Le superfici differite: desktop Linux, Android, Windows | 7 |
 
 Le ondate 1, 2 e 6 non dipendono l'una dall'altra e possono procedere insieme.
+
+## I principi
+
+1. **Una competenza per step.** Chi analizza lo stack non trova i moduli; chi trova i moduli non cerca da sé quale strumento di build c'è; chi tiene il modello di build non tiene rotte ed eventi.
+2. **Un padrone per fatto.** Uno step non riscopre ciò che un altro stabilisce: lo chiede a lui. Dove il padrone non ha potuto stabilirlo, chi ne ha bisogno usa un ripiego e lo scrive accanto al dato.
+3. **Ogni step è un modulo a sé.** Dichiara ciò che legge, ciò che scrive e che cosa succede se fallisce; si può usare da solo per il suo compito, e nella pipeline lavora con gli altri. Non conosce l'interfaccia, il trasporto né il motore LLM.
+4. **Le anagrafiche sono dati globali** (`daodan/data/`), non costanti sparse nel codice: gli step le consultano, e una voce nuova è una riga, non un `if`.
+5. **Lo strumento ufficiale, mai una regola a mano.** Per ogni linguaggio, strumento di build e framework Daodan usa il suo parser, il suo compilatore, il suo comando. Dove nessuno dà il dato resta un lettore nostro, con scritto accanto quale strumento è stato valutato.
+6. **Il codice del progetto gira solo nel container di Daodan**, mai sull'host. Senza container il passo è una lacuna con la sua causa.
+7. **Ciò che non si è potuto fare si scrive**: una lacuna con causa e rimedio, mai un silenzio.
 
 ## La pipeline, com'è decisa
 
@@ -59,6 +70,78 @@ Otto step, ognuno con una competenza sola, decisi dal proprietario il 25 novembr
 **I nomi.** Il numero d'ordine è nel nome dello step (`NAME`, eventi, giornale, documenti, interfaccia). Un modulo Python non può iniziare con una cifra: la cartella è `step_1_list_files/`, la classe `ListFiles`. `plan` non è uno step: resta la funzione che è (`pipeline/plan.py`).
 
 **Che cosa usa ogni step**, per linguaggio, strumento di build e framework: la pagina `docs/pipeline/`, scritta dalle dichiarazioni del codice (`daodan/core/pipeline_tree.py`).
+
+### Gli strumenti nativi, e dove entrano
+
+Lo stack dice *quali* linguaggi, strumenti di build e framework ci sono. I loro strumenti nativi si chiamano dopo, negli step che producono nodi e archi, ognuno per ciò che solo lui sa. Sono quattro famiglie.
+
+| Famiglia | Esempi | Che cosa dà | Step |
+| --- | --- | --- | --- |
+| Strumento di build | cargo, gradle, maven, npm, `tsc`, cmake, meson, bazel, make, `dotnet`, uv, go | Moduli, unità, pacchetti risolti, comandi | `4_find_modules` |
+| Strumento del framework | `next typegen`, `react-router routes`, `nuxt prepare`, `svelte-kit sync`, i compilatori di Angular e Astro | Rotte, pagine, eventi dei template | `5_find_entry_points` |
+| Compilatore del linguaggio, attraverso un indicizzatore SCIP | il compilatore TypeScript, Pyright, il compilatore Java dentro Maven o Gradle, rust-analyzer, Clang | Dove arriva ogni chiamata | `6_link_calls` |
+| Ciò che esegue l'interfaccia | il browser; una webview; un emulatore | Quale controllo fa partire quale funzione, davvero | `7_run_and_observe` |
+
+- **Un framework senza uno strumento suo** si legge dall'albero sintattico (tree-sitter) con una query per grammatica; le query sono dati (`data/entry-queries.json`). È il caso di React: il JSX lo legge il compilatore TypeScript, un `onClick` una query.
+- **Noir** dà le rotte dei backend senza eseguire il progetto, per ogni framework che non ha uno strumento che le elenchi.
+- **Un controllo ha due prove.** Quella statica dice che è legato a una funzione; quella dinamica dice che, azionato, quella funzione è partita. La seconda conferma la prima.
+
+### Le chiamate HTTP hanno due capi
+
+- **Chi offre la rotta:** lo dice lo strumento del framework, oppure Noir (`5_find_entry_points`).
+- **Chi la chiama:** lo dice il compilatore del linguaggio, che risolve la chiamata fino a una funzione dell'anagrafica dei client HTTP (`data/http-clients.json`). Una funzione del progetto che avvolge un client si prova dai dati del compilatore, non dal suo nome (`6_link_calls`).
+- **I due capi si uniscono** dove percorso e metodo coincidono, in `8_assemble_graph`. Lo stesso vale per eventi, code e tabelle: ogni tipo di legame ha il suo adattatore, e il codice dei legami non nomina un framework.
+
+### Le superfici e come si eseguono
+
+Un'interfaccia nasce da un ingresso (una pagina dichiarata, la pagina di un meta-framework, una pagina che il codice incorpora o offre su una rotta), non da un manifesto. La sua superficie è un campo dell'anagrafica delle tecnologie (`surface`), e decide con che cosa `7_run_and_observe` la esegue. Sopra ogni interfaccia sta il dispositivo dedotto dalla superficie: il browser, il PC, il telefono.
+
+| Superficie | Esempi | Con che cosa si esegue | Che cosa serve | Stato |
+| --- | --- | --- | --- | --- |
+| `web` | React, Vue, Angular, Svelte, Next.js, Nuxt, Astro, Streamlit, Gradio | Chromium senza interfaccia con Playwright: legge i controlli dall'albero di accessibilità, li aziona uno per uno e registra quale funzione parte | L'avvio dichiarato del progetto | Nel codice, solo per app avviate con npm |
+| `webview` | Electron, Tauri, Wails | Uno schermo virtuale (`Xvfb`) e lo stesso pilota del browser collegato alla webview: CDP per Electron, WebDriver per Tauri e Wails. Si osservano insieme la pagina e il processo nativo del guscio | Il driver della webview; dove manca si esercita la sola pagina e lo si dichiara | Ondata 7 |
+| `desktop` (Linux) | PyQt, PySide, Tkinter, GTK, Kivy, Flet, Avalonia, Uno Platform, JavaFX | `Xvfb` o un compositor Wayland senza schermo, con i registratori di linguaggio che esistono già; un pilota su AT-SPI o sull'introspezione del toolkit per azionare i controlli | Il pilota, da costruire | Ondata 11 |
+| `android` | Android SDK, React Native, Expo, Flutter, MAUI | L'emulatore ufficiale senza finestra, con una system image scaricata da `sdkmanager` | `/dev/kvm` dal motore; il consenso ai termini dell'SDK e a circa 4 GB | Ondata 11 |
+| `windows` | WinForms, WPF, WinUI 3, UWP | Wine con `Xvfb` per WinForms e WPF compatibili; una VM Windows in un container (QEMU/KVM) per WinUI 3, UWP e il resto | Per la VM `/dev/kvm`, circa 4 GB di RAM e da 25 a 32 GB di disco, con il consenso | Ondata 11 |
+| macOS e iOS | AppKit, SwiftUI, UIKit | — | — | Fuori perimetro: nessun simulatore gira in un container Linux e la licenza Apple lega l'esecuzione a un Mac |
+
+Regole che valgono per tutte:
+
+1. **Nulla dell'host.** Browser, emulatori e runtime si scaricano nel magazzino di Daodan e girano nel container, senza rete verso l'esterno e sui soli dati e credenziali di prova che la CI del progetto già prepara.
+2. **Il consenso prima del peso.** Un download con termini di licenza o di qualche gigabyte parte solo dopo l'approvazione esplicita dell'utente; senza, il passo è la lacuna `approval_required`.
+3. **Una superficie riconosciuta e non eseguita è una lacuna**, `ui_execution_deferred:<superficie>`; senza `/dev/kvm` è `kvm_unavailable`; senza pilota è `ui_driver_not_implemented`.
+4. **Un progetto multipiattaforma** (Flutter, Expo, Compose) si esegue sul suo bersaglio `web` o desktop Linux, quando lo dichiara: senza emulatore.
+5. **Le interfacce desktop Python** si riconoscono dal codice (deciso il 19 novembre); la loro osservazione dinamica ha avuto un «no per ora» (20 novembre) ed entra con l'ondata 11.
+6. **Una voce nuova dell'anagrafica** (NiceGUI, Wails, un toolkit desktop) entra con un caso reale nel corpus.
+
+### Le anagrafiche
+
+Dati globali in `daodan/data/`. Ognuna ha un controllo che dice dove lei e il codice non concordano.
+
+| Anagrafica | Che cosa tiene | Chi la usa | Stato |
+| --- | --- | --- | --- |
+| `file-formats.json` | Quali file si registrano e con che linguaggio; cartelle in cui non si entra; nomi che non si aprono | `1_list_files` | Nel codice |
+| `linguist-catalog.json` | Come Linguist chiama ogni formato accettato | `1_list_files` | Nel codice, scritto dal gem di Linguist |
+| `language-rules.toml` | Le regole che distinguono dal contenuto un'estensione condivisa | `1_list_files` | Nel codice; mancano i `.h` e i nomi di file |
+| `service-registry.json`, `registry-additions.json` | Nome, tipo, categoria, sito e marchio di ogni tecnologia; in futuro la `surface` | `3_recognize_stack`, l'interfaccia | Nel codice, senza `surface` |
+| `build-tools.json` | Ogni strumento di build o toolchain dello stack, con l'adattatore che lo usa | `4_find_modules` | Da fare, ondata 2 |
+| `package-managers.json` | I registri dei pacchetti che la preparazione può raggiungere | La preparazione del container | Nel codice |
+| `entry-queries.json` | Le query sull'albero sintattico con cui si leggono gli ingressi | `5_find_entry_points` | Nel codice |
+| `http-clients.json` | Le funzioni che fanno una richiesta HTTP, come le nomina il compilatore | `6_link_calls`, `8_assemble_graph` | Nel codice |
+| Le versioni degli strumenti esterni | Nome, versione, origine (upstream o fork nostro), sha256 | Ogni step | **[proposta]** Oggi sono una sessantina di costanti nei singoli adattatori |
+
+### I servizi comuni
+
+Non sono step: li usa ogni step che deve eseguire qualcosa.
+
+- **Il motore di container:** il Kiri di Daodan su ogni sistema; oggi fuori da Windows è il Docker o il Podman dell'utente.
+- **La preparazione, una per analisi:** le toolchain che il progetto dichiara (mise), le dipendenze ripristinate, gli strumenti scaricati nel magazzino e verificati per sha256. Raggiunge solo i registri dei pacchetti, attraverso un proxy; tutto il resto gira senza rete.
+- **Il lanciatore dei comandi:** esegue un comando nel container e ne riporta l'uscita. Oggi è della pre-mappa; diventa comune agli step 4 e 5, come lo è già per gli indicizzatori e gli osservatori.
+- **Il giornale:** ogni step e ogni adattatore dice quando inizia, come avanza, che cosa non ha potuto fare e come finisce.
+
+### Dopo la pipeline
+
+Sul grafo completo: i flussi (chi scrive, chi legge, le azioni dell'utente), la mappa del sistema, le schede scritte da un motore LLM a scelta, la ricerca, la review. Ogni testo che lascia la macchina o va a un modello passa prima da Secretlint.
 
 ## Ondata 0: verifiche in sospeso e documenti allineati
 
@@ -191,7 +274,7 @@ Da: spec dell'esecuzione del programma e delle interfacce (entrambe proposte del
 7. La fonte osservata per i flussi: ruolo e nome dei controlli, le chiamate di un clic. Qt non è provato; mancano osservazioni dal vivo (spec degli ingressi, «Stato»).
 8. **[proposta]** La riproduzione di un finding e un'indagine nel container, dopo la correzione di `review-quality-gates` (esecuzione, 5).
 9. **[misura]** La corsa Python su Daodan con `--continue-on-collection-errors`; per C# il limite che il registro può chiudere (passo dinamico, «Stato» e 7).
-10. Desktop Linux, Android e Windows restano la lacuna `ui_execution_deferred`: futuro, su consenso (roadmap, fase 3).
+10. Finché l'ondata 11 non è fatta, un modulo con superficie `desktop`, `windows` o `android` è riconosciuto e non eseguito: lacuna `ui_execution_deferred:<superficie>`.
 
 **Cancello:** le cinque prove della spec dell'esecuzione sono misurate; l'esplorazione gira su un progetto vero con un gestore diverso da npm.
 
@@ -244,6 +327,21 @@ Da: spec dell'app standalone; piano dell'esploratore; spec dei flussi, sezione 4
 
 **Cancello:** un lavoro intero con un motore controllato passa (eventi, errore, timeout, annullamento, riavvio); la mappa è nella pagina dell'app.
 
+## Ondata 11: le superfici differite
+
+Da: «Le superfici e come si eseguono», sopra; `docs/roadmap.md`, fase 3. **[deciso]** il 25 novembre che queste superfici fanno parte del disegno; nulla è costruito. Ogni download pesante o con una licenza chiede il consenso dell'utente.
+
+1. **Desktop Linux.** L'esecuzione sotto `Xvfb` o Wayland senza schermo con i registratori che esistono già (Python, JVM, .NET): basta a tracciare l'avvio e la costruzione delle finestre.
+2. **Desktop Linux, il pilota.** Uno strumento che aziona i controlli attraverso AT-SPI o l'introspezione del toolkit; prima si valuta uno strumento pronto. Fino ad allora `ui_driver_not_implemented`.
+3. **GUI Python** (Tkinter, PyQt, PySide, Kivy, Flet): il riconoscimento dal codice è deciso; l'osservazione dinamica entra qui, con un caso reale nel corpus per ogni toolkit.
+4. **Android.** Prima il bersaglio `web` o desktop del progetto multipiattaforma. Per i moduli solo Android: `emulator` e una system image senza finestra scaricati con `sdkmanager` (già nella preparazione), dentro il container; serve `/dev/kvm`, altrimenti `kvm_unavailable`.
+5. **Windows, gradino leggero.** Wine con `Xvfb` (circa 500 MB, senza KVM) per WinForms e WPF compatibili, con il registratore .NET.
+6. **Windows, gradino completo.** Una VM Windows in un container per WinUI 3, UWP e ciò che Wine non regge; scarica la ISO di valutazione di Microsoft dopo il consenso. Senza `/dev/kvm` o senza consenso, `kvm_unavailable` o `approval_required`.
+7. **[misura]** Su quali motori di container `/dev/kvm` è disponibile: Linux nativo, WSL 2 con la virtualizzazione annidata, le VM Sandbox di Modal.
+8. macOS e iOS restano fuori perimetro.
+
+**Cancello:** per ognuna delle tre superfici un progetto vero del corpus viene avviato e almeno un controllo azionato, con la funzione partita registrata; dove manca un requisito la lacuna dice quale.
+
 ## Fermo o ritirato: non si rifà
 
 | Che cosa | Perché | Dove |
@@ -294,4 +392,4 @@ Tolti dal repository il 25 novembre 2026; si leggono al commit `614c940`. Accant
 | Le spec della review del 3, 4, 7 e 9 novembre, `plans/2026-11-08-whole-source-coverage.md`, `specs/2026-11-19-revisori-per-framework-e-librerie.md` | 9 |
 | `specs/2026-11-16-app-standalone.md`, `plans/2026-11-08-codebase-explorer.md` | 10 |
 
-`docs/roadmap.md` resta: ciò che ne è aperto è nell'ondata 7.
+`docs/roadmap.md` resta: le sue tre fasi sono ora in «Le superfici e come si eseguono» e nelle ondate 7 e 11.
