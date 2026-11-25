@@ -61,6 +61,13 @@ SOURCES = ("stack-analyser", "simple-icons", "cncf-landscape", "additions")
 KINDS = ("service", "project")
 CATEGORIES = ("framework", "library", "tool", "service")
 SIGNS = ("packages", "patterns", "env", "hosts", "files")
+SUPPORT = ("full", "partial", "none")  # an entry's `support`, written by `support`
+# An ecosystem of the registry's package signs and the languages, by the snapshot's names, of the code that declares
+# its packages; an image or a CI action is no code.
+PACKAGE_LANGUAGES = {"npm": ("javascript", "typescript"), "deno": ("javascript", "typescript"), "pypi": ("python",),
+                     "crates": ("rust",), "go": ("go",), "maven": ("java", "kotlin"), "nuget": ("csharp",),
+                     "composer": ("php",), "rubygems": ("ruby",), "hex": ("elixir",), "pub": ("dart",),
+                     "terraform": ("hcl",), "terraform-resource": ("hcl",), "docker": (), "github-actions": ()}
 MIN_ENTRIES = 1000
 MARKS = "marks"  # the folder of the marks, beside the registry: one SVG per entry, named by the entry's id
 MARK_PATH = re.compile(rf"{MARKS}/[a-z0-9][a-z0-9._-]*\.svg")
@@ -86,6 +93,33 @@ _PREFIXES = ("node-", "js-")
 _SUFFIXES = ("-node", "-js", ".js", "js", "-sdk", "-client", "-api")
 
 
+# ---------------------------------------------------------------- support
+
+def analyzer_reads() -> dict[str, list[str]]:
+    """Per snapshot language, the analyzers whose module reads its files (`SNAPSHOT_LANGUAGES`, else `LANGUAGES`)."""
+    import importlib
+
+    import engine_pass
+    reads: dict[str, list[str]] = {}
+    for spec in engine_pass.ENGINES:
+        module = importlib.import_module(f"indexers.{spec.indexer}")
+        for language in getattr(module, "SNAPSHOT_LANGUAGES", spec.languages):
+            reads.setdefault(language, []).append(spec.name)
+    return reads
+
+
+def support(entry: dict, reads: dict) -> str:
+    """How far Daodan supports an entry, from its signs and the analyzers (`reads`, from `analyzer_reads`): `none`
+    without signs, so never recognized; `partial` when a language of its package ecosystems (`PACKAGE_LANGUAGES`)
+    has no analyzer, so recognized there with the code unread; `full` otherwise."""
+    signs = entry.get("signs")
+    if not signs:
+        return "none"
+    ecosystems = {*(signs.get("packages") or {}), *(signs.get("patterns") or {})}
+    read = all(reads.get(language) for ecosystem in ecosystems for language in PACKAGE_LANGUAGES[ecosystem])
+    return "full" if read else "partial"
+
+
 # ---------------------------------------------------------------- check
 
 def check(value: object, data: Path | None = None) -> list[str]:
@@ -94,7 +128,7 @@ def check(value: object, data: Path | None = None) -> list[str]:
     With `data`, the folder that holds the registry, the marks it names must be there, clean, and no other."""
     if not isinstance(value, dict) or value.get("schema") != SCHEMA or not isinstance(value.get("entries"), list):
         return [f"the registry is {SCHEMA} with a list of entries"]
-    problems, seen = [], set()
+    problems, seen, reads = [], set(), analyzer_reads()
     if len(value["entries"]) < MIN_ENTRIES:
         problems.append(f"{len(value['entries'])} entries, at least {MIN_ENTRIES} wanted")
     for entry in value["entries"]:
@@ -108,6 +142,8 @@ def check(value: object, data: Path | None = None) -> list[str]:
             problems.append(f"{ident}: kind is one of {', '.join(KINDS)}")
         if entry.get("category") is not None and entry.get("category") not in CATEGORIES:
             problems.append(f"{ident}: category is one of {', '.join(CATEGORIES)}")
+        if "support" in entry and entry["support"] != support(entry, reads):
+            problems.append(f"{ident}: support is {support(entry, reads)}, what its signs and the analyzers give")
         if entry.get("type") not in flows.NODE_TYPES:
             problems.append(f"{ident}: type is one of {', '.join(flows.NODE_TYPES)}")
         signs = entry.get("signs")
@@ -486,9 +522,11 @@ def build(cache: Path, additions: Path, data: Path) -> dict:
                           {r["id"]: r for r in records if r.get("mark") or r.get("mark_source")})
     if refused:
         print("\n".join(refused), file=sys.stderr)
+    reads = analyzer_reads()
     for entry in entries.values():
         if not any((entry["signs"] or {}).values()):
             entry["signs"] = None
+        entry["support"] = support(entry, reads)
     return {"schema": SCHEMA, "versions": {"stack-analyser": STACK_ANALYSER[1], "simple-icons": SIMPLE_ICONS[1],
                                            "cncf-landscape": CNCF_COMMIT},
             "entries": [entries[i] for i in sorted(entries)]}

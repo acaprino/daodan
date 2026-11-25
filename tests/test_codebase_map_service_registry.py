@@ -31,6 +31,14 @@ class DistributedRegistryTests(unittest.TestCase):
         self.assertEqual(registry_build.check(self.value), [])
         self.assertGreaterEqual(len(self.entries), 1000)
 
+    def test_every_entry_says_its_support_from_its_signs_and_the_analyzers(self):
+        reads = registry_build.analyzer_reads()
+        self.assertEqual([e["id"] for e in self.value["entries"] if e.get("support") != registry_build.support(e, reads)], [])
+        for ident, level in (("stripe", "partial"), ("fastapi", "full"), ("temporal", "none")):
+            self.assertEqual((ident, self.entries[ident]["support"]), (ident, level))
+        self.assertIn("e0: support is full", " ".join(registry_build.check({"schema": registry_build.SCHEMA, "entries": [
+            {**CheckTests.ENTRY, "id": "e0", "support": "none"}]})))
+
     def test_it_knows_the_common_ones(self):
         self.assertEqual(self.entries["stripe"]["signs"]["packages"]["pypi"], ["stripe"])
         for ident in ("mongodb", "fastapi", "react", "docker"):

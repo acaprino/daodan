@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import argparse
 import collections
-import importlib
 import json
 import re
 import sys
@@ -51,12 +50,6 @@ MONTHS = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio"
           "novembre", "dicembre")
 RANKS = {"model": "modello: il comando del build tool, nel container", "reader": "lettore: legge i file",
          "scanner": "scanner: legge ogni file"}
-# An ecosystem of the registry's package signs and the languages, by the snapshot's names, of the code that declares
-# its packages; an image or a CI action is no code.
-PACKAGE_LANGUAGES = {"npm": ("javascript", "typescript"), "deno": ("javascript", "typescript"), "pypi": ("python",),
-                     "crates": ("rust",), "go": ("go",), "maven": ("java", "kotlin"), "nuget": ("csharp",),
-                     "composer": ("php",), "rubygems": ("ruby",), "hex": ("elixir",), "pub": ("dart",),
-                     "terraform": ("hcl",), "terraform-resource": ("hcl",), "docker": (), "github-actions": ()}
 # A registry entry Daodan reads beyond its language, and what its readers key that reading on: a file suffix or the
 # package `indexers/css_tailwind.py` asks for. `own_reading` says the reading from the readers' own constants.
 OWN_READINGS = {"vue": ".vue", "sveltejs": ".svelte", "astro": ".astro", "tailwind": css_tailwind.PACKAGE}
@@ -113,18 +106,8 @@ def _cards() -> dict[str, collections.Counter]:
     return by_language
 
 
-def _analyzer_reads() -> dict[str, list[str]]:
-    """Per snapshot language, the analyzers whose module reads its files (`SNAPSHOT_LANGUAGES`, else `LANGUAGES`)."""
-    reads: dict[str, list[str]] = collections.defaultdict(list)
-    for spec in engine_pass.ENGINES:
-        module = importlib.import_module(f"indexers.{spec.indexer}")
-        for language in getattr(module, "SNAPSHOT_LANGUAGES", spec.languages):
-            reads[language].append(spec.name)
-    return reads
-
-
 def languages_section(cards, run_path: Path) -> list[str]:
-    reads, observers = _analyzer_reads(), dynamic.observers()
+    reads, observers = registry_build.analyzer_reads(), dynamic.observers()
     by_language = collections.defaultdict(list)
     for suffix, language in languages.SUPPORTED_EXTENSIONS.items():
         by_language[language].append(suffix)
@@ -267,7 +250,7 @@ def _analysed(entry: dict, reads: dict) -> str:
     """The languages of the entry's package ecosystems (`PACKAGE_LANGUAGES`) an analyzer reads, then those none reads."""
     signs = entry.get("signs") or {}
     names = dict.fromkeys(language for ecosystem in sorted({*(signs.get("packages") or {}), *(signs.get("patterns") or {})})
-                          for language in PACKAGE_LANGUAGES[ecosystem])
+                          for language in registry_build.PACKAGE_LANGUAGES[ecosystem])
     return ", ".join([suffix_table.NAMES.get(name, name) for name in names if reads.get(name)]
                      + [f"{name}: nessun analizzatore" for name in names if not reads.get(name)]) or "—"
 
@@ -303,7 +286,7 @@ def stack_section(registry: dict, stack: dict) -> list[str]:
     listed = sorted((e for e in known if service_registry.entry_category(e) != "service"),
                     key=lambda e: (service_registry.entry_category(e), e["name"].casefold()))
     file, date, _ = STACK
-    reads, by_id = _analyzer_reads(), {e["id"]: e for e in entries}
+    reads, by_id = registry_build.analyzer_reads(), {e["id"]: e for e in entries}
     readings = {ident: own_reading(key) for ident, key in OWN_READINGS.items()}
     read_names = [by_id[ident]["name"] for ident in OWN_READINGS if ident in by_id]
     default = (f"Delle {_n(len(projects))} voci `project` riconoscibili, {_of(len(defaulted), 'è', 'sono')} "
