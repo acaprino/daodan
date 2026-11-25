@@ -126,7 +126,7 @@ Una voce per scelta; la regola la cita con «motivo n». Nessuna è ancora misur
 - La prima tabella delle frontiere: solo la libreria standard (file, socket, processi, ambiente, SQLite) o anche i driver che il progetto dichiara fra le dipendenze.
 - Lo strumento del conto di sistema e ciò che chiede al motore: un tracciatore delle chiamate di sistema nel container, oppure, per le sole scritture, il confronto della copia usa e getta prima e dopo la corsa, che non chiede nulla.
 - Da dove vengono gli esempi per gli ingressi con parametri o corpo: esempi OpenAPI, file `.http`, richieste dei test del progetto.
-- Dati e credenziali di prova: solo quelli che la CI del progetto già prepara, o anche un seme dichiarato a Daodan.
+- Dati e credenziali di prova. **Deciso dal proprietario il 25 novembre 2026: solo quelli che la CI del progetto già prepara**, nessun seme dichiarato a Daodan. Ciò che sta dietro un accesso che la CI non prepara resta una lacuna con la causa.
 - Un tetto ai nodi dell'albero per corsa, e che cosa si dichiara quando si raggiunge. Va fissato prima della misura 1.
 
 **Per modificare questa spec:** un requisito in più solo per un'esigenza obbligatoria o un esito sbagliato riproducibile.
