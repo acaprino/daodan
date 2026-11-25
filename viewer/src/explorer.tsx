@@ -85,7 +85,7 @@ export function Explorer({ model, title, search, toShow, show, ready, runs, open
     : (state.flow === asked.flow && steps ? [...steps.keys()] : []));
   useEffect(() => {
     if (!toShow || shown.current === toShow || !graph.drawn || !scene) return;
-    return onceDrawn(() => {
+    return onceDrawn(CANVAS, () => {
       shown.current = toShow;
       const ids = drawnFor(toShow, scene).filter(id => scene.refs.has(id));
       if (ids.length && !inSight(CANVAS, ids)) canvas.current?.focus(ids);
