@@ -9,7 +9,7 @@ A. Per reason of exclusion (the `why` of the pre-map's `excluded` facet), the fi
    reading: the product's reading leaves out no file now): files, those a parser read, bytes, symbols, and the resolved
    imports that cross the line. The snapshot is the whole reading (the inventory, then `snapshot.write_reading`).
 B. On the real projects, `repetitions` times, one after the other: the inventory (`file_inventory.write`), the reading
-   (`snapshot.write_reading`), the single pass (`snapshot.build_manifest`) and, inside the reading, the seconds spent in
+   (`snapshot.write_reading`) and, inside the reading, the seconds spent in
    `snapshot._read_source` (stat and bytes of each file, which the inventory has read before) and in `_SnapshotPass.seal`
    (the semantic store and the publication). Medians.
 C. Angular: the TypeScript files whose tree `premap.angular` reads now and before 648efd2b7, and its seconds; and the
@@ -56,7 +56,7 @@ CORPORA = ("miniature", "real")
 PARSED = ("parsed", "parse-error")  # the statuses of a file a parser read
 DECORATOR = ("@angular/core", "Component")  # what the rule before 648efd2b7 looked for in the imports of a TypeScript file
 SUMS = ("files", "parsed", "bytes", "parsed_bytes", "symbols", "to_pairs", "to_importers", "from_pairs")
-READING = ("inventory", "reading", "seal", "pass", "reread", "reread_files", "reread_bytes")
+READING = ("inventory", "reading", "seal", "reread", "reread_files", "reread_bytes")  # the recorded runs also hold "pass"
 
 image = mp.image.add_local_file(HERE / "modal_pipeline.py", "/root/modal_pipeline.py")
 if mp.LOCAL:
@@ -364,9 +364,10 @@ def machine() -> dict:
 
 
 def passes(project: Path, folder: Path) -> dict:
-    """One repetition of measure B on `project`: the inventory, the reading and the single pass, one after the other on
-    the same files, whose cache is warm (the project has just been unpacked, and the inventory has just read it). The
-    reading's store stays in `folder` as `manifest.sqlite`."""
+    """One repetition of measure B on `project`: the inventory and the reading, one after the other on the same files,
+    whose cache is warm (the project has just been unpacked, and the inventory has just read it). The reading's store
+    stays in `folder` as `manifest.sqlite`. The single pass (`snapshot.build_manifest`) is no longer measured: the product
+    has no such pass since 24 November 2026, and the recorded runs keep its `pass` seconds."""
     import file_inventory
     import snapshot
     folder.mkdir(parents=True)
@@ -400,11 +401,8 @@ def passes(project: Path, folder: Path) -> dict:
         snapshot.write_reading(inventory, manifest)
         seconds["reading"] = time.perf_counter() - started
     finally:
-        snapshot._read_source, snapshot._SnapshotPass.seal = original, seal  # `build_manifest` reads through the same name
+        snapshot._read_source, snapshot._SnapshotPass.seal = original, seal
     inventory.unlink()
-    started = time.perf_counter()
-    snapshot.build_manifest(project)
-    seconds["pass"] = time.perf_counter() - started
     gc.collect()
     return {**{key: round(value, 4) for key, value in seconds.items()}, **spent, "reread": round(spent["reread"], 4)}
 

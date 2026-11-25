@@ -52,7 +52,6 @@ from __future__ import annotations
 
 import argparse
 from contextlib import ExitStack
-from concurrent.futures import ThreadPoolExecutor
 import copy
 import hashlib
 import json
@@ -101,7 +100,6 @@ __all__ = [
     "SCHEMA",
     "blast_radius",
     "build_import_index",
-    "build_manifest",
     "compare_files",
     "compare_symbols",
     "file_entry",
@@ -239,9 +237,9 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
     return entry
 
 
-def _rejected(entry: dict | None) -> bool:
+def _rejected(entry: dict) -> bool:
     """A Python file Daodan's interpreter could not parse: read again with the Python its project states."""
-    return bool(entry) and entry.get("language") == "python" and entry.get("status") == "parse-error" and any(
+    return entry.get("language") == "python" and entry.get("status") == "parse-error" and any(
         note.startswith("syntax error:") for note in entry.get("parser_notes", ()))
 
 
@@ -267,150 +265,14 @@ def _newer_python(root: Path, rejected: list[tuple]) -> list[tuple[str, dict, by
 _REUSABLE_STATUSES = {"parsed", "file-level", "parse-skipped"}
 
 
-def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None, language=_DETECT) -> bool:
-    """A previous entry still describes these bytes: same bytes, language (when given), include context and
-    parser, a reusable status."""
+def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None, *, language) -> bool:
+    """A previous entry still describes these bytes: same bytes, language, include context and parser, a reusable
+    status."""
     return (isinstance(old, dict) and old.get("raw_hash") == raw_hash
-            and (language is _DETECT or old.get("language") == language)
+            and old.get("language") == language
             and (macro_key is None or old.get("macro_context") == macro_key)
             and old.get("parser_profile") == parser_profile(path, old.get("language"))
             and old.get("status") in _REUSABLE_STATUSES)
-
-
-def _reused(old: dict, size: int, mtime: float) -> dict:
-    entry = copy.deepcopy(old)
-    entry["size"] = size
-    entry["mtime"] = mtime
-    return entry
-
-
-def _manifest_inventory(target: Path, root: Path, perimeter: Perimeter, supplied: dict, old_files: dict,
-                        metrics: dict, source_observations: dict | None):
-    """Walk the perimeter once: reuse verified entries, queue the rest, defer C and C++ files to their context."""
-    pending: list[tuple[str, Path, bytes, float, object, dict | None]] = []
-    deferred: list[tuple[str, Path, bytes, float, object]] = []
-    ordered_rels: list[str] = []
-    reused_entries: dict[str, dict] = {}
-    for path in iter_files(target, perimeter):
-        try:
-            read = _read_source(path, supplied, metrics)
-            if read is None:
-                continue
-            st, data, parsed = read
-            rel = relative_to_root(path, root)
-            if source_observations is not None:
-                source_observations[rel] = data
-            mtime = round(st.st_mtime, 3)
-            if rel.lower().endswith(_C_FAMILY_SUFFIXES):
-                deferred.append((rel, path, data, mtime, parsed))
-                ordered_rels.append(rel)
-                continue
-            old = old_files.get(rel)
-            if _reusable(old, path, hashlib.sha256(data).hexdigest()):
-                metrics["cache_hits"] += 1
-                reused_entries[rel] = _reused(old, len(data), mtime)
-            else:
-                pending.append((rel, path, data, mtime, parsed, None))
-            ordered_rels.append(rel)
-        except OSError:
-            continue
-    contexts = c_family_contexts({rel: data for rel, _, data, _, _ in deferred})
-    for rel, path, data, mtime, parsed in deferred:
-        old, key = old_files.get(rel), context_key(contexts[rel])
-        if _reusable(old, path, hashlib.sha256(data).hexdigest(), key):
-            metrics["cache_hits"] += 1
-            reused_entries[rel] = _reused(old, len(data), mtime)
-        else:
-            pending.append((rel, path, data, mtime, parsed, contexts[rel]))
-    return pending, ordered_rels, reused_entries
-
-
-def _parse_pending(pending: list, metrics: dict) -> dict[str, dict]:
-    """Parse the queued files, on a small thread pool when there are enough of them."""
-    parsed_entries: dict[str, dict] = {}
-    if len(pending) >= 8:
-        workers = min(8, (os.cpu_count() or 2))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = [
-                (rel, parsed is None, pool.submit(file_entry, path, data, mtime, parse_result=parsed, macros=macros))
-                for rel, path, data, mtime, parsed, macros in pending
-            ]
-            for rel, needs_parse, fut in futures:
-                try:
-                    entry = fut.result()
-                except OSError:
-                    continue
-                if entry["status"] in {"parsed", "parse-error"} and needs_parse:
-                    metrics["parsed_files"] += 1
-                parsed_entries[rel] = entry
-    else:
-        for rel, path, data, mtime, parsed, macros in pending:
-            try:
-                entry = file_entry(path, data, mtime, parse_result=parsed, macros=macros)
-            except OSError:
-                continue
-            if entry["status"] in {"parsed", "parse-error"} and parsed is None:
-                metrics["parsed_files"] += 1
-            parsed_entries[rel] = entry
-    return parsed_entries
-
-
-def build_manifest(target: Path, previous: dict | None = None, *, parse_results: dict | None = None,
-                   source_observations: dict | None = None) -> dict:
-    """Snapshot the current perimeter; reuse structure only for verified bytes.
-
-    A reuse candidate saves parsing, not inventory traversal or hashing. Legacy
-    manifests and a different helper identity/root/target cause a fresh parse.
-    An optional output dictionary receives the already-read bytes by relative
-    path, for consumers that verify semantic evidence without reading again.
-    """
-    if previous is not None:
-        validate_reuse_manifest(previous)
-    if source_observations is not None:
-        source_observations.clear()
-    target = target.resolve()
-    if not (target.is_dir() or target.is_file()):
-        raise ValueError(f"snapshot target does not exist: {target}")
-    root = repo_root(target).resolve()
-    fingerprint = parser_fingerprint()
-    target_key = relative_to_root(target, root) or "."
-    reusable = (
-        isinstance(previous, dict) and previous.get("schema") == SCHEMA
-        and previous.get("root") == root.as_posix() and previous.get("target") == target_key
-        and previous.get("parser_fingerprint") == fingerprint
-    )
-    old_files = previous.get("files", {}) if reusable else {}
-    metrics = {"files_read": 0, "source_bytes_read": 0, "parsed_files": 0, "cache_hits": 0}
-    perimeter = Perimeter(target)
-    supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
-    pending, ordered_rels, reused_entries = _manifest_inventory(target, root, perimeter, supplied, old_files,
-                                                                metrics, source_observations)
-    parsed_entries = _parse_pending(pending, metrics)
-    rejected = [(path, rel, mtime, data, parsed_entries[rel]) for rel, path, data, mtime, _parsed, _macros in pending
-                if _rejected(parsed_entries.get(rel))]
-    for rel, entry, _data in _newer_python(root, rejected) if rejected else ():
-        parsed_entries[rel] = entry
-    files: dict[str, dict] = {}
-    for rel in ordered_rels:
-        if rel in reused_entries:
-            files[rel] = reused_entries[rel]
-        elif rel in parsed_entries:
-            files[rel] = parsed_entries[rel]
-    unavailable = grammar_gaps(entry.get("parser_profile") for entry in files.values())
-    if unavailable:
-        metrics["grammars_unavailable"] = unavailable
-    from datetime import datetime, timezone
-    return {
-        "schema": SCHEMA,
-        "target": target_key,
-        "root": root.as_posix(),
-        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "git": git_info(root),
-        "scope": scope_record(perimeter, root),
-        "parser_fingerprint": fingerprint,
-        "metrics": metrics,
-        "files": files,
-    }
 
 
 _RESERVED_METADATA = {"schema", "target", "root", "created_at", "git", "scope", "parser_fingerprint",
@@ -482,7 +344,7 @@ class _SnapshotPass:
         old = self.previous.get_file(rel) if self.reusable else None
         language = None if rel in self.unplanned else self.rows[rel]["language"]
         key = None if macros is None else context_key(macros)
-        if old is not None and _reusable(old, path, raw_digest or hashlib.sha256(data).hexdigest(), key, language):
+        if old is not None and _reusable(old, path, raw_digest or hashlib.sha256(data).hexdigest(), key, language=language):
             old["size"], old["mtime"] = len(data), mtime
             self.metrics["cache_hits"] += 1
             entry = old

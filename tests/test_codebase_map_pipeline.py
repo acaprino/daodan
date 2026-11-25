@@ -567,3 +567,6 @@ def test_every_input_of_a_step_is_written_by_a_step_before_or_given_to_the_pipel
     # the check sees a step out of place: `analyze` first reads a pre-map no step has written yet
     misplaced = [pipeline.Analyze, *(step for step in pipeline.STEPS if step is not pipeline.Analyze)]
     assert ("analyze", "premap") in _unmet(misplaced, pipeline.INPUTS)
+    # `union` reads the symbols of the snapshot and the module graph `scan` wrote (`modules.ensure_graph`), not only the edges
+    early = [pipeline.Union, *(step for step in pipeline.STEPS if step is not pipeline.Union)]
+    assert ("union", "modules") in _unmet(early, pipeline.INPUTS)

@@ -15,6 +15,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 import mcp_service
 import snapshot
+from read_manifest import read_manifest  # noqa: E402
 
 
 class BinaryRunTests(unittest.TestCase):
@@ -115,7 +116,7 @@ class BinaryRunTests(unittest.TestCase):
     def test_ambiguous_or_misdeclared_snapshot_rejected(self):
         self.api()
         self.service.create_run("src", "ambiguous", depth="lite", engine=False)
-        self.write("ambiguous", "snapshot/manifest.json", json.dumps(snapshot.build_manifest(self.source)))
+        self.write("ambiguous", "snapshot/manifest.json", json.dumps(read_manifest(self.source)))
         with self.assertRaisesRegex(ValueError, "ambiguous"):
             self.service.status("ambiguous")
         (self.run_dir("ambiguous") / "snapshot/manifest.json").unlink()

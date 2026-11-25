@@ -52,8 +52,9 @@ class Context:
     results: dict = field(default_factory=dict)  # each step's result by its name, for the steps after it
 
 
-def _reading_pending(manifest: Path) -> bool:
-    """Whether the store's files are still to be read; a missing, unreadable or refused store stops the run."""
+def _inventory_only(manifest: Path) -> bool:
+    """Whether the store holds only its inventory, its files not read (`reading: "not-started"` in its header); a missing,
+    unreadable or refused store stops the run."""
     import run_store
     from snapshot_store import open_snapshot
     try:
@@ -73,7 +74,7 @@ class Parse:
         from snapshot_store import open_snapshot
         # The reading is `write_snapshot`'s alone (the owner's decision of 24 November 2026): this step finds the store read
         # and says the plan. A store with only the inventory is a caller that skipped it: the run stops, and is not read here.
-        if _reading_pending(context.manifest):
+        if _inventory_only(context.manifest):
             raise StepFailed("the snapshot holds only its inventory: its files are not read", "write the snapshot again")
         from . import plan as planning
         with open_snapshot(context.manifest) as store:
@@ -89,7 +90,7 @@ class Scan:
     def run(context: Context) -> dict:
         import modules
         import premap
-        _reading_pending(context.manifest)  # the first step: a store that cannot be read stops the run here
+        _inventory_only(context.manifest)  # the first step: a store that cannot be read stops the run here
         bus, manifest = context.bus, context.manifest
         graph = modules.ensure_structure(manifest)
         if graph["state"] != "fresh":
@@ -167,7 +168,8 @@ class Dynamic:
 
 
 class Union:
-    NAME, INPUTS, OUTPUTS, WITHOUT = "union", ("edges", "observed"), ("graph",), None
+    # `modules.ensure_graph` derives the module edges from the snapshot's symbols and the graph `scan` wrote
+    NAME, INPUTS, OUTPUTS, WITHOUT = "union", ("snapshot", "modules", "edges", "observed"), ("graph",), None
     # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
     # extension, JNI): each stage loads only its own index, so no edge joins them.
     APART = (("java", "kotlin"), ("go", "c"), ("python", "c"), ("python", "cpp"), ("java", "c"), ("java", "cpp"))

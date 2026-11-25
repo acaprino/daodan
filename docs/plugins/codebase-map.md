@@ -135,7 +135,7 @@ L'ordine è `pipeline.STEPS`: `scan`, `stack`, `parse`, `analyze`, `dynamic`, `u
 | 3 `parse` | `parse` (e `plan`) | Lo snapshot letto | Il piano, come evento | Niente | La corsa si ferma: uno store di solo inventario chiede di scrivere di nuovo lo snapshot |
 | 4 `analyze` | `resolve` | Lo snapshot letto, la pre-mappa | Gli archi provati, in `engine-edges.sqlite` | Gli analyzer che lo dichiarano (`NEEDS_CONTAINER`); scip-python solo su Windows, altrove sull'host | La corsa si ferma. Uno stage che fallisce non ferma gli altri; dopo uno che esaurisce la memoria nessun altro parte (`engine_pass.run_pass`) |
 | 5 `dynamic` | `observe` | Lo snapshot, la pre-mappa, gli archi | Gli archi osservati | Sempre: test e app del progetto | La corsa va avanti: il grafo resta quello statico |
-| 6 `union` | `connect` | Gli archi provati e osservati | Gli archi `imports` e `calls` fra moduli, se nessun lettore li ha già scritti (`modules.ensure_graph`); le lacune; l'evento `graph.ready` | Niente | La corsa si ferma. Con un grafo dei moduli non fresco lo dice e va avanti |
+| 6 `union` | `connect` | Lo snapshot, i moduli, gli archi provati e osservati | Gli archi `imports` e `calls` fra moduli, se nessun lettore li ha già scritti (`modules.ensure_graph`); le lacune; l'evento `graph.ready` | Niente | La corsa si ferma. Con un grafo dei moduli non fresco lo dice e va avanti |
 
 Ingressi, uscite e `WITHOUT` di ogni step: le classi di `pipeline/__init__.py`. Che cosa vuol dire «si ferma» e «va avanti»: `pipeline._run`. Ogni step scrive i suoi eventi nel giornale accanto al manifest.
 
@@ -181,7 +181,7 @@ In pratica: riscrivere lo snapshot sugli stessi file lascia fresche pre-mappa, s
 | Processo staccato (`resolve_edges.py --pass`) | Nessuno: usa lo store che trova | — | Gli step fino a `union` |
 | Operazioni isolate (`store_consumers.temporary_snapshot`) | `write_snapshot` | Nessuna pipeline | — |
 
-`scan` veloce: solo i lettori dei file, senza container, perché gira sotto il blocco del progetto. I comandi di modello li esegue poi il passaggio. Con lo snapshot in formato JSON `ensure_edges` non avvia niente, per ogni chiamante. Il passaggio solo `snapshot.build_manifest`, che percorre e legge insieme, resta per test e benchmark.
+`scan` veloce: solo i lettori dei file, senza container, perché gira sotto il blocco del progetto. I comandi di modello li esegue poi il passaggio. Con lo snapshot in formato JSON `ensure_edges` non avvia niente, per ogni chiamante.
 
 Una strada sola: lo decise il proprietario il 24 novembre 2026, dopo le misure di 8.10 della spec. La lettura dentro `parse` e l'esclusione dei file sono tolte, perché nessun chiamante le usava e l'esclusione toglieva codice vero del progetto.
 
