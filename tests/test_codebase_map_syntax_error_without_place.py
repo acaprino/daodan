@@ -27,7 +27,7 @@ def test_a_file_whose_parser_flags_an_error_with_no_place_keeps_its_declarations
     (project / "src/Account.kt").write_text(CONTROLLER, encoding="utf-8")
     manifest = tmp_path / "out/manifest.sqlite"
     manifest.parent.mkdir()
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         functions = {name for [name] in db.execute("SELECT name FROM sem_declarations WHERE kind IN ('function', 'method')")}
         [[status]] = db.execute("SELECT status FROM sem_coverage WHERE file = 'src/Account.kt'")

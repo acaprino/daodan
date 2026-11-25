@@ -90,7 +90,7 @@ def context_of(tmp_path, files: dict):
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         yield premap.Context(manifest, store)
 
@@ -998,7 +998,7 @@ def test_a_pre_map_command_never_sees_a_value_and_only_daodan_s_helper_gets_them
     project.mkdir()
     (project / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
     manifest = tmp_path / "snap" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     given = []
 
     def recorded(project, commands, **options):
@@ -1816,7 +1816,7 @@ def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped:
         return {"state": state, "sites": [], "gaps": [dict(gap) for gap in found],
                 "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]} \
             if state == "ran" else {"state": state, "cause": "no engine", "remedy": "start one"}
-    return SimpleNamespace(ENTRY="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
+    return SimpleNamespace(NAME="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
                            external=lambda callee: {"manager": "python", "package": "x", "version": None},
                            plan=lambda record, files, read: {"runs": [{"root": ".", "runner": "pytest",
                                                                        "declared_in": "pyproject.toml"}], "gaps": []},

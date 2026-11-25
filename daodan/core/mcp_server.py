@@ -249,12 +249,14 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         if not explorer:
             import secrets
             import threading
+            import service_registry
             import visual
             token = secrets.token_urlsafe(24)
             explorer.append((visual.make_server(None, visual.SCRIPT_DIR.parent / "assets" / "viewer",
                                                 routes=visual.live_routes(service),
                                                 actions=visual.live_actions(service), token=token,
-                                                stream=visual.live_stream(service)), token))
+                                                stream=visual.live_stream(service),
+                                                files=visual.mark_files(service_registry.Marks())), token))
             threading.Thread(target=explorer[0][0].serve_forever, daemon=True).start()
         server_, token = explorer[0]
         return {"url": f"http://127.0.0.1:{server_.server_address[1]}/?token={token}"}

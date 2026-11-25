@@ -128,7 +128,7 @@ def test_the_largest_project_is_the_one_with_most_bytes_of_the_language():
 
 def test_the_reading_totals_add_the_medians_and_give_the_share_of_the_re_read_bytes():
     def item(inventory, reading, reread):
-        median = {"inventory": inventory, "reading": reading, "seal": reading / 2, "pass": 1.0, "reread": reread,
+        median = {"inventory": inventory, "reading": reading, "seal": reading / 2, "reread": reread,
                   "reread_files": 10, "reread_bytes": 1000}
         return {"files": 10, "bytes": 1000, "reading": {"runs": [median], "median": median}}
     fixtures = {"real-a": item(1.0, 3.0, 0.5), "real-b": item(2.0, 6.0, 1.5), "js-c": {"files": 3, "bytes": 9}}

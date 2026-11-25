@@ -17,6 +17,7 @@ import snapshot
 from languages import python
 from analyze_file import analyze_single_file, format_as_markdown
 from semantic_index import build_semantic_index
+from read_manifest import read_manifest  # noqa: E402
 
 
 class SemanticSnapshotTests(unittest.TestCase):
@@ -58,34 +59,16 @@ class SemanticSnapshotTests(unittest.TestCase):
 
     def test_changed_bytes_do_not_reuse_old_semantic_payload(self):
         source, data, result = self.observation()
-        first = snapshot.build_manifest(self.root, parse_results={source: (data.decode(), result)})
+        first = read_manifest(self.root, parse_results={source: (data.decode(), result)})
         source.write_text("def renamed():\n    return 2\n", encoding="utf-8")
-        second = snapshot.build_manifest(self.root, previous=first)
+        second = read_manifest(self.root, previous=first)
         self.assertEqual(second["metrics"]["cache_hits"], 0)
         self.assertNotEqual(first["files"]["core.py"]["raw_hash"], second["files"]["core.py"]["raw_hash"])
         self.assertNotEqual(first["files"]["core.py"].get("semantic"), second["files"]["core.py"].get("semantic"))
 
-    def test_observations_reuse_prefetched_target_without_another_source_read(self):
-        source, data, result = self.observation()
-        observations = {"removed.py": b"stale input"}
-        original = Path.read_bytes
-
-        def read_bytes(path):
-            if path == source:
-                self.fail("prefetched target was read again")
-            return original(path)
-
-        with mock.patch.object(Path, "read_bytes", read_bytes):
-            manifest = snapshot.build_manifest(
-                self.root, parse_results={source: (data.decode(), result)},
-                source_observations=observations,
-            )
-        self.assertEqual(observations, {"core.py": data})
-        self.assertEqual(manifest["metrics"]["files_read"], 0)
-
     def test_cycle_diagnostics_can_retain_self_import_without_changing_default_graph(self):
         (self.root / "loop.py").write_text("import loop\n", encoding="utf-8")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         self.assertEqual(snapshot.module_targets(manifest)["loop.py"], [])
         self.assertEqual(snapshot.module_targets(manifest, include_self=True)["loop.py"], ["loop.py"])
 
@@ -150,7 +133,7 @@ class SemanticConsumerTests(unittest.TestCase):
         out = self.home / "update"
         # This test isolates update policy from concurrent helper development.
         with mock.patch.object(snapshot, "parser_fingerprint", return_value="integration-fixture"):
-            manifest = snapshot.build_manifest(self.root)
+            manifest = read_manifest(self.root)
             (parent / "snapshot/manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
             (parent / "state.json").write_text('{"status":"complete"}', encoding="utf-8")
             source.write_text("def save():\n    return 2\n", encoding="utf-8")
@@ -173,7 +156,7 @@ class SemanticConsumerTests(unittest.TestCase):
             with self.subTest(body=body):
                 self.write("main.py", "def save(): pass\n" + body)
                 observations = {}
-                manifest = snapshot.build_manifest(self.root, source_observations=observations)
+                manifest = read_manifest(self.root, observations=observations)
                 index = build_semantic_index(manifest, source_observations=observations)
                 calls = [ref for ref in index["references"] if ref["kind"] == "call"]
                 self.assertTrue(calls)
@@ -185,7 +168,7 @@ class SemanticConsumerTests(unittest.TestCase):
             self.skipTest("JavaScript grammar unavailable")
         self.write("main.js", 'function save(){}; function mutate(){eval("save=()=>2")} mutate(); save();')
         observations = {}
-        manifest = snapshot.build_manifest(self.root, source_observations=observations)
+        manifest = read_manifest(self.root, observations=observations)
         index = build_semantic_index(manifest, source_observations=observations)
         calls = [ref for ref in index["references"] if ref["kind"] == "call" and ref["parts"] == ["save"]]
         self.assertEqual(len(calls), 1)

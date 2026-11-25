@@ -35,7 +35,7 @@ test('a layout past its deadline ends the worker and the next request gets a new
     const client = createLayoutClient(() => { const worker = new FakeWorker(); workers.push(worker); return worker; }, 5000);
     const slow = client.request(graph, 'DOWN');
     mock.timers.tick(5000);
-    await assert.rejects(slow, (error: unknown) => error instanceof LayoutError && error.reason === 'timeout');
+    await assert.rejects(slow, (error: unknown) => error instanceof LayoutError && error.reason === 'timeout' && error.message === 'la disposizione ha richiesto più di 5000 ms');
     assert.equal(workers[0].terminated, true);
     const again = client.request(graph, 'DOWN');
     assert.equal(workers.length, 2);

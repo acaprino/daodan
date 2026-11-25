@@ -111,7 +111,7 @@ def three_runs(tag: str) -> dict:
     project = mp._project(CASE)
     manifest = Path("/runs") / CASE / "manifest.sqlite"
     shutil.rmtree(manifest.parent, ignore_errors=True)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     journal, out = manifest.with_name("pipeline-events.jsonl"), {}
     for label in RUNS:
         if label == "one-module":  # as the refresh of a working run does: the pass cleared, the snapshot rewritten on the old
@@ -119,7 +119,7 @@ def three_runs(tag: str) -> dict:
             with (project / CHANGED).open("a", encoding="utf-8") as file:
                 file.write("\n// one module changed for the measure\n")
             with open_snapshot(manifest) as base:
-                snapshot.write_snapshot(project, manifest, previous=base)
+                snapshot.read_project(project, manifest, previous=base)
         before = {name: len(lines) for name, lines in _records(manifest.parent).items()}
         offset = journal.stat().st_size if journal.is_file() else 0
         started, events = time.monotonic(), []

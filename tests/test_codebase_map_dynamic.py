@@ -99,7 +99,7 @@ def write_project(folder: Path, files: dict = FILES) -> tuple[Path, Path]:
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = folder / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return project, manifest
 
 
@@ -417,12 +417,12 @@ def test_the_step_runs_the_declared_tests_in_the_container_and_saves_what_they_c
     result, seen, asked = step(manifest, box)
     assert asked.call_count == 1 and len(box.calls) == 1
     [call] = box.calls
-    assert call["out_dir"] == manifest.parent / dynamic.RUNS / observer.ENTRY  # beside the manifest
+    assert call["out_dir"] == manifest.parent / dynamic.RUNS / observer.NAME  # beside the manifest
     assert "run 0 . " in call["command"][2] and call["command"][2].count("-m pytest tests") == 1
     python = result["languages"]["python"]
     assert python["state"] == "observed" and python["edges"] > 0 and python["closed"] >= 6
     kinds = [(event["kind"], event["analyzer"]) for event in seen if event["kind"].startswith("analyzer.")]
-    assert kinds == [("analyzer.started", observer.ENTRY), ("analyzer.finished", observer.ENTRY)]
+    assert kinds == [("analyzer.started", observer.NAME), ("analyzer.finished", observer.NAME)]
     assert {event["step"] for event in seen} == {"dynamic"}
     assert {event["data"].get("phase") for event in seen if event["kind"] == "progress"} >= {"plan", "tests", "join"}
     assert [event["data"]["gap"]["kind"] for event in seen if event["kind"] == "gap"] == ["runner_brought"]
@@ -449,7 +449,7 @@ def test_without_a_container_engine_the_step_states_the_gap_and_the_pipeline_goe
     assert asked.call_count == 1
     [event] = [event for event in seen if event["kind"] == "analyzer.unavailable"]
     assert event["level"] == "warning" and refused.cause in event["data"]["cause"]
-    assert event["data"]["remedy"] == refused.remedy and event["analyzer"] == observer.ENTRY
+    assert event["data"]["remedy"] == refused.remedy and event["analyzer"] == observer.NAME
     assert result["languages"]["python"]["state"] == "unavailable"
     with code_graph.Snapshot(manifest) as snap:
         edges, _binding, _reason = rx.read_edge_store(out, snap.store)
@@ -617,7 +617,7 @@ def test_the_runtime_coverage_of_a_run_is_one_shell_command(tmp_path, capsys):
 def fake(observed: dict, entry: str = "dynamic-fake-python") -> SimpleNamespace:
     """An observer of Python whose run returns `observed`, planned with one run."""
     planned = {"runs": [{"root": ".", "runner": "pytest"}], "gaps": []}
-    return SimpleNamespace(ENTRY=entry, VERSION="1", LANGUAGES=("python",), external=observer.external,
+    return SimpleNamespace(NAME=entry, VERSION="1", LANGUAGES=("python",), external=observer.external,
                            plan=lambda record, files, read: planned,
                            observe=lambda project, given, out_dir, engine: observed)
 
@@ -836,7 +836,7 @@ def test_a_profiler_alone_gives_sampled_edges_and_no_claim_on_what_it_did_not_se
     _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
     static_store(manifest)
     ran = [{"root": ".", "runner": "pytest", "declared_in": "conftest.py", "state": "ran"}]
-    sampler = SimpleNamespace(ENTRY="dynamic-sample-python", VERSION="1", LANGUAGES=("python",),
+    sampler = SimpleNamespace(NAME="dynamic-sample-python", VERSION="1", LANGUAGES=("python",),
                               external=observer.external, plan=lambda record, files, read: {"runs": ran, "gaps": []},
                               observe=lambda project, planned, out_dir, engine: {
                                   "state": "ran", "sites": [], "sampled": PAIRS, "runs": ran, "gaps": []})
@@ -893,5 +893,5 @@ def test_one_rule_says_how_a_stopped_run_ended_for_every_observer(exit_code, sec
     assert dynamic.stopped(exit_code, seconds, 3600) == state
     import inspect
     for module in dynamic.observers():
-        assert "137" not in inspect.getsource(module), module.ENTRY
+        assert "137" not in inspect.getsource(module), module.NAME
 

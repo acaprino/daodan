@@ -77,7 +77,7 @@ def write(folder: Path, files: dict) -> Path:
 def premapped(tmp_path, files: dict) -> dict:
     project = write(tmp_path / "proj", files)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=READERS)
     assert not [gap for gap in record["gaps"] if gap["kind"] == "source_failed"]
     return record
@@ -959,7 +959,7 @@ def test_on_modal_playwright_s_web_server_is_recorded_when_playwright_kills_it(t
 def test_an_observed_site_joins_the_reference_at_the_same_name_position(tmp_path, monkeypatch):
     project = write(tmp_path / "proj", PROJECT)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
 
     def callee(end: str) -> dict:
         if end.startswith("runtime "):

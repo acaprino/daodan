@@ -35,7 +35,7 @@ def build(tmp_path, name):
     own = ANSWERS / name
     shutil.copytree(own if own.is_dir() else CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return premap.write(manifest, sources=(make,), runner=replay(name))
 
 

@@ -59,3 +59,4 @@ Una esecuzione per dimensione.
 - Cause non verificate con un profilo: a ogni selezione il viewer ricalcola la proiezione e ricrea gli oggetti di tutti i nodi e di tutti gli archi, che React Flow ridisegna.
 - Non misurato: un run reale.
 - La [mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md), una proposta, mostra nodi con nome e non simboli: un grafo avrebbe una decina di nodi. Conviene decidere su quella prima di ottimizzare questo viewer per centinaia di nodi.
+- Dal porting a Sigrid (novembre 2026) la tela disegna solo i nodi nella vista: `measure.js` legge la pagina nuova e distingue i nodi della vista (`nodes`) da quelli nel DOM (`drawn`). La misura non è ancora rifatta.

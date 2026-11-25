@@ -209,7 +209,7 @@ def _measure(name: str) -> dict:
     project = _project(name)
     manifest = Path("/work") / f"{name}.out" / "manifest.sqlite"
     shutil.rmtree(manifest.parent, ignore_errors=True)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     recording, missing = _recording(name), []
     if recording is not None:
         premap.write(manifest, runner=premap_replay.replayer(recording, missing))
@@ -345,7 +345,7 @@ def fetch(names: list[str]) -> None:
                      "spawned": sorted(set(stored["spawned"]))}
     data = {"tool": "daodan_stack",
             "version": f"technologies.py (daodan/technologies/v1) of the checkout, stack-analyser {stack_analyser.VERSION} on Node {NODE_VERSION}",
-            "group": "stack", "command": "snapshot.write_snapshot; technologies.ensure(manifest), no runner; premap.write(runner=None); technologies.derive",
+            "group": "stack", "command": "snapshot.read_project; technologies.ensure(manifest), no runner; premap.write(runner=None); technologies.derive",
             "code": {"container": sorted(c for c in codes if c), "local": local}}
     target = HERE / "results" / "daodan_stack.json"
     target.parent.mkdir(exist_ok=True)

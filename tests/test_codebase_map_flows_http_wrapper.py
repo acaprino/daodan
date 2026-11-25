@@ -41,7 +41,7 @@ import snapshot  # noqa: E402
 from indexers import typescript  # noqa: E402
 from languages import semantic  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
-from test_codebase_map_flows import write_snapshot  # noqa: E402
+from test_codebase_map_flows import read_project  # noqa: E402
 
 FIXTURE = TESTS / "fixtures/http-wrapper"
 DOM = "scip-typescript npm typescript 6.0.3 lib/`lib.dom.d.ts`/fetch()."
@@ -97,7 +97,7 @@ class ViewTests(unittest.TestCase):
             (root / rel).write_text(text, encoding="utf-8")
         cls.manifest = root.parent / "manifest.sqlite"
         cls.edges = root.parent / "engine-edges.sqlite"
-        snapshot.write_snapshot(root, cls.manifest)
+        snapshot.read_project(root, cls.manifest)
         cls.refs = {}  # (kind, line, name) -> what a row of the store repeats of the reference
         with open_snapshot(cls.manifest) as store, semantic_store.semantic_reader(store) as db:
             for identity, kind, caller, l0, c0, blob in db.execute(
@@ -251,7 +251,7 @@ class WrapperTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.work = Path(tempfile.mkdtemp(prefix="http-wrapper-")).resolve()
-        cls.manifest = write_snapshot(cls.work, sources())
+        cls.manifest = read_project(cls.work, sources())
         with code_graph.Snapshot(cls.manifest) as snap:
             index = code_graph.Index(snap.root)
             index.load(FIXTURE / "index.scip")
@@ -525,7 +525,7 @@ class WrapperTests(unittest.TestCase):
     def test_without_the_engine_nothing_is_proved_and_the_report_says_why(self):
         work = Path(tempfile.mkdtemp(prefix="http-wrapper-lexical-")).resolve()
         self.addCleanup(shutil.rmtree, work, True)
-        manifest = write_snapshot(work, sources())
+        manifest = read_project(work, sources())
         report = http_wrappers.wrappers(manifest, RULES)
         self.assertEqual((report["candidates"], report["gaps"]), ([], []))
         self.assertEqual(report["coverage"], "missing_store")
@@ -534,7 +534,7 @@ class WrapperTests(unittest.TestCase):
         """A measure that read nothing from the engine looked like a project with no wrapper: the report names the cause."""
         work = Path(tempfile.mkdtemp(prefix="http-wrapper-rejected-")).resolve()
         self.addCleanup(shutil.rmtree, work, True)
-        manifest = write_snapshot(work, sources())
+        manifest = read_project(work, sources())
         resolve_edges.default_edge_store(manifest).write_bytes(b"corrupted")
         report = http_wrappers.wrappers(manifest, RULES)
         self.assertEqual((report["candidates"], report["gaps"], report["coverage"]), ([], [], "rejected_store"))

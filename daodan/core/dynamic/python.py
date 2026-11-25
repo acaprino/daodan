@@ -48,7 +48,7 @@ from dynamic import python_record
 from indexers.python import IMAGE  # the image the Python analyzer runs in
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-record-python", python_record.VERSION, ("python",)
+NAME, VERSION, LANGUAGES = "dynamic-record-python", python_record.VERSION, ("python",)
 RECORDER = Path(python_record.__file__).resolve()
 RUNNERS = ("pytest", "unittest")  # the runners of the pre-map's `tests` it starts, each as `python -m <runner>`
 # pytest's own option: a module that does not import (an optional dependency, a service) stops no other one.

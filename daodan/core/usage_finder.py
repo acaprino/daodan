@@ -455,23 +455,20 @@ def find_all_usages(
     return find_all_usages_batch([symbol], source_file, project_root)[symbol]
 
 
-def _graph_importing_modules(symbols: list[str], source_file: Path,
-                             project_root: Path, manifest: dict | None,
-                             *, import_graph: dict | None = None) -> dict[str, list[str]]:
+def _graph_importing_modules(symbols: list[str], source_file: Path, manifest: dict,
+                             *, import_graph: dict) -> dict[str, list[str]]:
     """Match all requested bindings in one graph and one importer pass."""
-    from snapshot import _python_module_candidates, build_manifest, resolved_imports
+    from snapshot import _python_module_candidates
 
-    manifest = build_manifest(project_root) if manifest is None else manifest
     root = Path(manifest["root"])
     target = (root / (manifest.get("target") or ".")).resolve()
     source = source_file.resolve()
-    graph = resolved_imports(manifest) if import_graph is None else import_graph
     source_key = next((rel for rel in manifest["files"] if (root / rel).resolve() == source), None)
     importing = {symbol: [] for symbol in symbols}
     if source_key is None:
         return importing
     default_export = manifest["files"][source_key].get("default_export")
-    for rel, modules in graph.items():
+    for rel, modules in import_graph.items():
         if rel == source_key:
             continue
         if not any(source_key in targets for targets in modules.values()):
@@ -647,7 +644,7 @@ def find_all_usages_batch(
                         reason=coverage[rel].get("reason")))
 
     if graph_language:
-        importing = _graph_importing_modules(valid_symbols, source_file, project_root, manifest,
+        importing = _graph_importing_modules(valid_symbols, source_file, manifest,
                                              import_graph=semantic_index["_import_graph"])
     else:
         # Import declarations remain a separate legacy fact. Reuse the cached

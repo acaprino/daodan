@@ -219,7 +219,7 @@ def test_a_call_through_a_function_pointer_is_a_site_at_its_field_with_the_funct
 def test_the_sites_join_the_snapshots_references(tmp_path):
     project = write_project(tmp_path / "project")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     sites, _facts = callgrind.read(observation(tmp_path / "observed"), project)
     with code_graph.Snapshot(manifest) as snap:
         rows, facts = dynamic.join(snap, "c", sites, [], observer)

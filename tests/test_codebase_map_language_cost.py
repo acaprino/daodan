@@ -27,3 +27,28 @@ def test_a_file_of_blank_lines_is_decided_at_once(suffix, text):
     ("int a;\n\n\n private :\n", "cpp"), ("int a;\n", "c")])
 def test_an_indented_mark_after_blank_lines_still_counts(text, language):
     assert detect_language(Path("a.h"), text) == language
+
+
+@pytest.mark.parametrize("text", ["/* " * 16_000, "class a " * 12_000, '"' + r'\"' * 20_000, "'" + r"\'" * 20_000],
+                         ids=["open comments", "classes", "escaped quotes", "escaped apostrophes"])
+def test_a_header_whose_marks_never_close_is_decided_at_once(text):
+    started = time.perf_counter()
+    detect_language(Path("a.h"), text)
+    assert time.perf_counter() - started < 2
+
+
+BASES = ", ".join(f"public ns::VeryLongInterfaceName<int{number}>" for number in range(14))
+
+
+@pytest.mark.parametrize("text,language", [
+    ("class Node : " + BASES + " {\n};\n", "cpp"),
+    ("class a;\nclass Node {\n int x;\n};\n", "cpp"),
+    ("class a;\nstruct b;\n", "c"),
+    ("int f(void); /* class Node {", "c"),
+    ('const char *s = "class Node {";\n', "c"),
+    (r'const char *s = "a\"b class Node {";' + "\n", "c"),
+    (r"char c = '\'';" + "\nclass Node {\n};\n", "cpp"),
+    (r'const char *s = "\\";' + "\nclass Node {\n};\n", "cpp")],
+    ids=["bases", "declared before", "only declared", "open comment", "string", "escaped quote", "apostrophe", "backslash"])
+def test_a_class_counts_where_it_is_code(text, language):
+    assert detect_language(Path("a.h"), text) == language

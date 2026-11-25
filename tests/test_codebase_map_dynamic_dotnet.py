@@ -136,7 +136,7 @@ def project(line: int, column: int | None, name: str, kind: str, rel: str = PRIC
 
 def test_the_observer_declares_itself_for_csharp_with_its_recorder_pinned():
     assert dotnet in dynamic.observers()
-    assert (dotnet.ENTRY, dotnet.VERSION, dotnet.LANGUAGES) == ("dynamic-record-dotnet", "1", ("csharp",))
+    assert (dotnet.NAME, dotnet.VERSION, dotnet.LANGUAGES) == ("dynamic-record-dotnet", "1", ("csharp",))
     url, sha256, name = dotnet.CECIL
     assert url.endswith("/mono.cecil/0.11.6/mono.cecil.0.11.6.nupkg") and len(sha256) == 64
     assert sorted(path.relative_to(dotnet.RECORD).as_posix() for path in dotnet.RECORD.rglob("*") if path.is_file()) \

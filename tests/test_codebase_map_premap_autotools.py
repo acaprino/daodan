@@ -37,7 +37,7 @@ def record(tmp_path, sources):
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     failed = lambda commands: [{"returncode": 2, "stdout": "", "stderr": "no"} for _ in commands]  # noqa: E731
     return premap.write(manifest, sources=sources, runner=failed)
 

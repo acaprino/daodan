@@ -128,7 +128,7 @@ def commands() -> dict:
     from pathlib import Path
 
     project, manifest = Path(_copy("/work/project")), Path("/work/out/manifest.sqlite")
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
         return {"commands": premap.angular.commands(context), "gaps": premap.angular._plan(context)["gaps"]}
@@ -151,7 +151,7 @@ def measure(repo: str, commit: str) -> dict:
     project, manifest = Path("/work/repo"), Path("/work/out/manifest.sqlite")
     subprocess.run(["git", "clone", "--quiet", repo, str(project)], check=True)
     subprocess.run(["git", "-C", str(project), "checkout", "--quiet", commit], check=True)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
         plan = premap.angular._plan(context)

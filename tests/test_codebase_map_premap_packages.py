@@ -44,7 +44,7 @@ def test_scan_and_stack_resolve_a_dependency_at_its_declaring_package(tmp_path):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
     graph = modules.load_graph(Path(Scan.run(context)["graph"]))
     record = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))
@@ -66,7 +66,7 @@ def _versions(tmp_path, files, source) -> dict:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         result = source.run(premap.Context(manifest, store)) or {}
     return {(p["ecosystem"], p["name"], p["declared_in"].split("#", 1)[0]): p.get("version")
@@ -93,7 +93,7 @@ def test_local_python_distribution_is_internal_only_for_its_declaring_consumer(r
         path.parent.mkdir(exist_ok=True, parents=True)
         path.write_text(body, encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     report = {"repositories": {"local": {"packageFiles": {"pep621": [
         {"packageFile": local_manifest, "deps": [{"depName": "sentry-sdk", "currentValue": "*"}]}]}}}}
     facts = premap.write(manifest, sources=(module_graph, requirements, renovate),
@@ -330,7 +330,7 @@ def test_readers_collect_declared_packages_across_jvm_dotnet_flutter_pip_and_doc
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest)
     got = {(p["ecosystem"], p["name"], p["declared_in"].split("#", 1)[0]) for p in record.get("packages") or []}
     assert ("maven", "org.springframework.boot:spring-boot-starter-parent", "pom.xml") in got

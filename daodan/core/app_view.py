@@ -16,7 +16,7 @@ from collections import Counter
 from pathlib import PurePosixPath
 
 from premap.suffix_table import NAMES
-from service_registry import package_key
+from service_registry import marked, package_key
 from snapshot_store import open_snapshot, resolve_run_snapshot
 from system_levels import LEVELS
 from technologies import module_declaration
@@ -66,11 +66,12 @@ def _dependencies(module: dict) -> list[dict]:
 
 
 def premap(stack: dict, modules: dict, files: dict) -> dict:
-    """Files, languages, technologies and the units of the stack with their declared and resolved libraries."""
+    """Files, languages, technologies and the units of the stack with their declared and resolved libraries. A technology
+    whose registry entry has a logo carries the entry's id in `mark`, as in the envelope; the others have none."""
     if "modules" not in stack:  # the snapshot's gate answered in place of the stack
         raise ValueError(stack.get("reason") or "the stack of the run is not available")
     described = {module["id"]: module for module in modules.get("modules", [])}
-    known = {item["id"]: item for item in stack["technologies"]}
+    known, logos = {item["id"]: item for item in stack["technologies"]}, marked()
     units, technologies = [], []
     service_roots = {}
     for module in stack["modules"]:
@@ -96,7 +97,7 @@ def premap(stack: dict, modules: dict, files: dict) -> dict:
                 sign = library_sources.get(ident) or next((s for s in signs if any(_inside(s["path"], path) for path in paths)), {})
             technologies.append({"name": found["name"], "category": found.get("category") or "tecnologia",
                                  "source": (sign.get("path") or "") + (f":{sign['line']}" if sign.get("line") else ""),
-                                 "unit": root, "state": "recognized"})
+                                 "unit": root, "state": "recognized", **({"mark": ident} if ident in logos else {})})
         technologies.extend({"name": tool["tool"], "category": "toolchain", "version": tool.get("version") or "",
                              "source": tool["declared_in"], "unit": root, "state": "declared"}
                             for tool in module.get("toolchains", []))

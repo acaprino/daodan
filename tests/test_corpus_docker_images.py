@@ -34,7 +34,7 @@ def test_dockerfile_and_compose_keep_the_original_registry_and_owning_publisher(
         encoding="utf-8",
     )
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
     facts = json.loads(Path(Scan.run(context)["premap"]).read_text(encoding="utf-8"))
     stack = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))

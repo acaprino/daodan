@@ -103,7 +103,7 @@ class EdgeViewTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
         self.manifest = self.root.parent / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.edges = self.root.parent / "engine-edges.sqlite"
 
     def test_load_edge_view_merges_lexical_and_confirmed_engine_edges_and_distinguishes_target_kinds(self):
@@ -261,7 +261,7 @@ class MethodTargetTests(unittest.TestCase):
             (root / rel).parent.mkdir(parents=True, exist_ok=True)
             (root / rel).write_text(text, encoding="utf-8")
         manifest, edges = root.parent / "manifest.sqlite", root.parent / "engine-edges.sqlite"
-        snapshot.write_snapshot(root, manifest)
+        snapshot.read_project(root, manifest)
         engine = StubEngine(answers={
             ("use.ts", 5): Definition(root / "app/contracts.ts", "start", line=2, column=2),
             ("use.ts", 6): Definition(root / "app/shop.ts", "open", line=2, column=2),
@@ -336,7 +336,7 @@ class ImplementationTests(unittest.TestCase):
             (root / rel).parent.mkdir(parents=True, exist_ok=True)
             (root / rel).write_text(text, encoding="utf-8")
         manifest, edges = root.parent / "manifest.sqlite", root.parent / "engine-edges.sqlite"
-        snapshot.write_snapshot(root, manifest)
+        snapshot.read_project(root, manifest)
         contract = Definition(root / "app/contracts.ts", "start", line=2, column=2)
         web = Definition(root / "app/web.ts", "start", line=3, column=2)
         mobile = Definition(root / "app/mobile.ts", "start", line=3, column=2)
@@ -379,7 +379,7 @@ class IndexStoreTests(unittest.TestCase):
         root = Path(cls.temp.name).resolve()
         shutil.copytree(Path(__file__).resolve().parent / "fixtures/code-graph/ts", root / "ts")
         cls.manifest, cls.edges = root / "manifest.sqlite", root / "engine-edges.sqlite"
-        snapshot.write_snapshot(root / "ts", cls.manifest)
+        snapshot.read_project(root / "ts", cls.manifest)
         adapter = importlib.import_module("indexers.typescript")
         site = cls.UNCERTAIN.split(" ")[1]
 

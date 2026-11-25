@@ -38,7 +38,7 @@ class FixtureTest(unittest.TestCase):
             root = Path(tmp) / "app"
             shutil.copytree(APP, root, ignore=shutil.ignore_patterns("__pycache__"))
             manifest = Path(tmp) / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
+            snapshot.read_project(root, manifest)
             files = Path(tmp) / "FILES.json"
             with redirect_stdout(StringIO()):
                 self.assertEqual(snapshot.main(["files", str(manifest), "--out", str(files)]), 0)

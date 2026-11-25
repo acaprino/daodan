@@ -30,7 +30,7 @@ FLOW = "Registrazione del pagamento"
 AREA = "pagamenti e abbonamenti"
 # Count calls, not inferred cache hits. All the target's execution and installation phases go through its container.
 CALLS = {("entries", "_syntax"): "ast_inventories", ("flows", "link_facts"): "link_builds",
-         ("snapshot", "write_snapshot"): "snapshots_built", ("engine_pass", "run_pass"): "engine_passes",
+         ("snapshot", "read_project"): "snapshots_built", ("engine_pass", "run_pass"): "engine_passes",
          ("container", "run_in_container"): "container_runs", ("container", "run_commands"): "container_commands",
          ("engine_tools", "download"): "tool_downloads", ("flow_paths", "_inventory"): "path_inventories",
          ("flow_paths", "_steps"): "path_expansions", ("flow_paths", "_build_graph"): "graph_preparations"}

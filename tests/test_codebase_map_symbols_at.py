@@ -41,7 +41,7 @@ class SymbolsAtTests(unittest.TestCase):
         self.root = Path(self.temporary.name).resolve()
         write_project(self.root)
         self.out = self.root / ".daodan/map" / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, self.out)
+        snapshot.read_project(self.root, self.out)
 
     def at(self, requests, **kwargs):
         with open_snapshot(self.out) as store:
@@ -91,11 +91,11 @@ class SymbolsAtDiffTests(unittest.TestCase):
         self.root = Path(self.temporary.name).resolve()
         write_project(self.root, "def helper(value):\n    return value + 1\n")
         self.base = self.root / "base.sqlite"
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
         (self.root / "pkg/a.py").write_text(
             "# one\n# two\ndef helper(value):\n    return value + 2\n", encoding="utf-8")
         self.candidate = self.root / "candidate.sqlite"
-        snapshot.write_snapshot(self.root, self.candidate)
+        snapshot.read_project(self.root, self.candidate)
 
     def diff_at(self, diff):
         with open_snapshot(self.base) as base, open_snapshot(self.candidate) as candidate:
@@ -126,7 +126,7 @@ class SymbolsAtDiffTests(unittest.TestCase):
     def test_a_rename_keeps_both_paths(self):
         (self.root / "pkg/a.py").rename(self.root / "pkg/renamed.py")
         candidate = self.root / "renamed.sqlite"
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
         diff = (
             "diff --git a/pkg/a.py b/pkg/renamed.py\n"
             "rename from pkg/a.py\nrename to pkg/renamed.py\n"

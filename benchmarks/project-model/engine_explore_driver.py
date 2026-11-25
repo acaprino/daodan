@@ -23,7 +23,7 @@ for command in (["git", "init", "-q"], ["git", "add", "-A"],
     subprocess.run(command, cwd=project, check=True)
 engine = container.find_engine()
 print("ENGINE", engine.name, engine.argv, flush=True)
-snapshot.write_snapshot(project, manifest)
+snapshot.read_project(project, manifest)
 record = premap.write(manifest, sources=[item for item in premap.SOURCES if not hasattr(item, "commands")])
 planned = app.plan(record, explore=True)
 print("PLAN", json.dumps({"apps": [one["declared_in"] for one in planned["apps"]], "gaps": planned["gaps"]}), flush=True)

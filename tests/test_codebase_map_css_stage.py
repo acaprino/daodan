@@ -31,7 +31,7 @@ def project(tmp_path):
     """The fixture `css` with the package files its recording holds, its snapshot and its recorded runs."""
     root, recording = project_copy("css", tmp_path)
     manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     return root, manifest, replayer(recording)
 
 

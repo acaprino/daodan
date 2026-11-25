@@ -1,86 +1,181 @@
-// What the page asks the host session and what the session answered: requests, findings and gaps.
-// The server starts no model: a request waits until the session takes it (`codebase_map_ui_requests`).
-import { ListAction } from '@acaprino/imago/react';
-import React, { useEffect, useState } from 'react';
-import { Note } from './parts.tsx';
+// What the page asks the host session and what the session answered. The server starts no model: a request waits until the
+// session takes it (`codebase_map_ui_requests`).
+import { useEffect, useRef, useState } from 'react';
+import type { ReactNode, SyntheticEvent } from 'react';
+import { Badge, Button, Cluster, Column, Grid, Icon, Input, Section, Select, Split, Text } from '@acaprino/sigrid/primitives';
+import { FormField, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
+import type { BadgeTone } from '@acaprino/sigrid/primitives';
+import {
+  askedState, askedText, askedTitle, askedTone, findingPlace, findingSeverity, findingText, findingTone, gapText, KINDS, needsText, questionProblem,
+  runProblem, SCOPES,
+} from './requests.ts';
+import type { Asked, Finding, Question } from './requests.ts';
+import { causeOf, whenFree } from './http.ts';
+import { LongFold } from './listed.tsx';
+import { get, post } from './server.ts';
+import { Failed, Loading } from './states.tsx';
 
 export const POLL_MS = 2000;
-type Request = { id: number; kind: string; scope: string; text: string; state: string; message?: string };
-type Finding = { file?: string; line?: number; severity?: string; title?: string; premise?: string; example?: string; request: number };
-const KINDS = [['review', 'Review'], ['map', 'Mappa']];
-const SCOPES = [['global', 'Globale'], ['changeset', 'Changeset'], ['feature', 'Funzionalità'], ['prompt', 'Prompt libero']];
-const STATES: Record<string, string> = { pending: 'in attesa della sessione', taken: 'in corso', done: 'conclusa' };
 
-const answer = (response: Response) => response.json().catch(() => ({})).then(json =>
-  (response.ok ? json : Promise.reject(new Error(json.error ?? `HTTP ${response.status}`))));
-// The token comes in the address the MCP server returned; a static export has none and needs none.
-const TOKEN = new URLSearchParams(window.location.search).get('token') ?? '';
-const auth = TOKEN ? { 'X-Daodan-Token': TOKEN } : undefined;
-export const getJson = (url: string) => fetch(url, { headers: auth }).then(answer);
-const postJson = (url: string, body: unknown) =>
-  fetch(url, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer);
+// A form that posts: it is sending until the server answers, and keeps what the server said when it refuses.
+function usePost(url: string) {
+  const [sending, setSending] = useState(false);
+  const [failure, setFailure] = useState('');
+  const send = async (body: unknown, done: () => void) => {
+    setSending(true);
+    setFailure('');
+    try {
+      await post(url, body);
+      done();
+    } catch (reason) {
+      setFailure(causeOf(reason));
+    } finally {
+      setSending(false);
+    }
+  };
+  return { sending, send, refusal: failure && <Failed title="Richiesta non riuscita" cause={failure} /> };
+}
 
-export function Session({ onPick, onRun }: { onPick: (file: string) => void; onRun: (id: string) => void }) {
-  const [requests, setRequests] = useState<Request[]>([]);
-  const [findings, setFindings] = useState<Finding[]>([]);
-  const [gaps, setGaps] = useState<unknown[]>([]);
-  const [form, setForm] = useState({ kind: 'review', scope: 'changeset', text: '' });
-  const [runId, setRunId] = useState('');
-  const [error, setError] = useState('');
-  const refresh = () => Promise.all([getJson('./api/requests'), getJson('./api/findings')]).then(([asked, found]) => {
-    setRequests(asked.requests); setFindings(found.findings); setGaps(found.gaps);
-  }).catch(() => undefined);
-  useEffect(() => { refresh(); const timer = window.setInterval(refresh, POLL_MS); return () => window.clearInterval(timer); }, []);
-  const fail = (reason: unknown) => setError(String((reason as Error)?.message ?? reason));
-  const send = (event: React.FormEvent) => {
+function AskForm({ onSent }: { onSent: () => void }) {
+  const [form, setForm] = useState<Question>({ kind: 'review', scope: 'changeset', text: '' });
+  const [problem, setProblem] = useState('');
+  const field = useRef<HTMLInputElement>(null);
+  const { sending, send, refusal } = usePost('./api/requests');
+  const feature = form.scope === 'feature';
+  const change = (part: Partial<Question>) => { setForm(current => ({ ...current, ...part })); setProblem(''); };
+  const submit = (event: SyntheticEvent) => {
     event.preventDefault();
-    postJson('./api/requests', form).then(() => { setError(''); setForm({ ...form, text: '' }); refresh(); }).catch(fail);
+    const wrong = questionProblem(form);
+    setProblem(wrong);
+    if (wrong) field.current?.focus();
+    else send(form, () => { change({ text: '' }); onSent(); });
   };
-  const analyze = (event: React.FormEvent) => {
+  return <Section title="Chiedi alla sessione" level={3} icon={<Icon name="send" />}>
+    <form noValidate onSubmit={submit}><Column gap="md">
+      <FormField label="Cosa"><Select value={form.kind} onValueChange={kind => change({ kind })} options={KINDS} /></FormField>
+      <FormField label="Perimetro"><Select value={form.scope} onValueChange={scope => change({ scope })} options={SCOPES} /></FormField>
+      <FormField label={feature ? 'Funzionalità' : 'Indicazioni'} required={needsText(form.scope)} error={problem}>
+        <Input ref={field} placeholder={feature ? 'Nome della funzionalità' : 'Indicazioni per la sessione'} value={form.text} maxLength={2000}
+          onChange={event => change({ text: event.target.value })} />
+      </FormField>
+      <Cluster><Button type="submit" variant="outline" loading={sending}>Invia</Button></Cluster>
+    </Column></form>
+    <Text as="p" variant="muted">La richiesta resta in attesa finché la sessione non la prende: chiedile «esegui le richieste della UI».</Text>
+    {refusal}
+  </Section>;
+}
+
+function RunForm({ onRun }: { onRun: (id: string) => void }) {
+  const [name, setName] = useState('');
+  const [problem, setProblem] = useState('');
+  const field = useRef<HTMLInputElement>(null);
+  const { sending, send, refusal } = usePost('./api/runs');
+  const submit = (event: SyntheticEvent) => {
     event.preventDefault();
-    postJson('./api/runs', { target: '.', run_id: runId }).then(() => { setError(''); setRunId(''); onRun(runId); }).catch(fail);
+    const wrong = runProblem(name);
+    setProblem(wrong);
+    if (wrong) field.current?.focus();
+    else send({ target: '.', run_id: name }, () => { setName(''); onRun(name); });
   };
-  const needsText = form.scope === 'feature' || form.scope === 'prompt';
-  return <section className="im-auto-grid im-inset im-scroll im-scroll--bounded" aria-label="Sessione e review">
-    <div className="im-section">
-      <h3>Chiedi alla sessione</h3>
-      <form onSubmit={send} className="im-cluster">
-        <div className="im-field"><label className="im-field-label" htmlFor="request-kind">Cosa</label>
-          <select id="request-kind" className="im-select" value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value })}>{KINDS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-        <div className="im-field"><label className="im-field-label" htmlFor="request-scope">Perimetro</label>
-          <select id="request-scope" className="im-select" value={form.scope} onChange={event => setForm({ ...form, scope: event.target.value })}>{SCOPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-        <div className="im-field"><label className="im-field-label" htmlFor="request-text">{form.scope === 'feature' ? 'Funzionalità' : 'Indicazioni'}</label>
-          <span className="im-input"><input id="request-text" placeholder={form.scope === 'feature' ? 'Nome della funzionalità' : 'Indicazioni per la sessione'}
-            value={form.text} required={needsText} maxLength={2000} onChange={event => setForm({ ...form, text: event.target.value })} /></span></div>
-        <button type="submit" className="im-btn">Invia</button>
-      </form>
-      <p className="im-muted">La richiesta resta in attesa finché la sessione non la prende: chiedile «esegui le richieste della UI».</p>
-      <h3>Analisi statica, senza modello</h3>
-      <form onSubmit={analyze} className="im-cluster">
-        <div className="im-field"><label className="im-field-label" htmlFor="run-name">Nome del run</label>
-          <span className="im-input"><input id="run-name" placeholder="nome-del-run" value={runId} required pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={event => setRunId(event.target.value)} /></span></div>
-        <button type="submit" className="im-btn">Crea il run</button>
-      </form>
-      {error && <Note tone="err" title="Richiesta non riuscita" message={error} />}
-    </div>
-    <div className="im-section">
-      <h3>Richieste · {requests.length}</h3>
-      <ul className="im-detail-list">{requests.slice().reverse().map(item => <li key={item.id} className="im-stack">
-        <span><b>#{item.id}</b> {item.kind} · {item.scope}{item.text ? ` · ${item.text}` : ''}</span>
-        <span className="im-chip" data-im-tone={item.state === 'done' ? 'ok' : 'info'}>{STATES[item.state] ?? item.state}</span>
-        {item.message && <span className="im-muted">{item.message}</span>}
-      </li>)}</ul>
-      {!requests.length && <p className="im-muted">Nessuna richiesta.</p>}
-    </div>
-    <div className="im-section">
-      <h3>Finding · {findings.length}</h3>
-      <ul className="im-detail-list">{findings.map((item, index) => <li key={index}>
-        <ListAction onClick={() => item.file && onPick(item.file)}
-          title={<><b className={['Critical', 'High'].includes(item.severity ?? '') ? 'im-text-err' : 'im-text-warn'}>{item.severity ?? 'unknown'}</b> <code>{item.file ?? 'unknown'}:{item.line ?? '?'}</code></>}
-          detail={<>{item.title ?? item.premise ?? 'unknown'}{item.example && <> · {item.example}</>}</>} />
-      </li>)}</ul>
-      {!findings.length && <p className="im-muted">Nessun finding: compaiono quando la sessione chiude una review.</p>}
-      {gaps.length > 0 && <Note tone="warn" title={`Lacune · ${gaps.length}`} items={gaps.map((gap, index) => ({ label: String(index + 1), message: typeof gap === 'string' ? gap : JSON.stringify(gap) }))} />}
-    </div>
-  </section>;
+  return <Section title="Analisi statica, senza modello" level={3} icon={<Icon name="code" />}>
+    <form noValidate onSubmit={submit}><Column gap="md">
+      <FormField label="Nome del run" required error={problem}>
+        <Input ref={field} placeholder="nome-del-run" value={name} onChange={event => { setName(event.target.value); setProblem(''); }} />
+      </FormField>
+      <Cluster><Button type="submit" variant="outline" loading={sending}>Crea il run</Button></Cluster>
+    </Column></form>
+    {refusal}
+  </Section>;
+}
+
+// What a route answers, asked again as long as it is drawn, one request at a time. Each route is asked by itself, so one that
+// fails hides nothing of the others; what was answered once stays in sight, and the next poll asks again.
+function usePoll<T>(url: string, onBusy: () => void) {
+  const [answered, setAnswered] = useState<T | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const asking = useRef(false), drawn = useRef(false);
+  const ask = async () => {
+    if (asking.current) return;
+    asking.current = true;
+    try {
+      const found = await whenFree(() => get<T>(url), onBusy, () => drawn.current);
+      if (found === undefined) return;
+      setAnswered(found);
+      setFailure(null);
+    } catch (reason) {
+      setFailure(causeOf(reason));
+    } finally {
+      asking.current = false;
+    }
+  };
+  useEffect(() => {
+    drawn.current = true;
+    ask();
+    const timer = window.setInterval(ask, POLL_MS);
+    return () => { drawn.current = false; window.clearInterval(timer); };
+  }, []);
+  return { answered, failure, ask, retry: () => { setFailure(null); ask(); } };
+}
+
+// Until a route has answered once nothing is said of what it holds: it is waited for, or its failure is said while it is asked again.
+function Unanswered({ poll, waiting, failed }: { poll: { failure: string | null; retry: () => void }; waiting: string; failed: string }) {
+  return poll.failure === null ? <Loading label={waiting} /> : <Failed title={failed} cause={poll.failure} retry={poll.retry} />;
+}
+
+// A state or a severity: its word, in the tone Sigrid has for it.
+function Word({ tone, word }: { tone?: BadgeTone; word: string }) {
+  return <Badge variant="secondary" tone={tone}>{word}</Badge>;
+}
+
+// An entry that does nothing: text to read and copy, so not a row to press.
+function Entry({ title, mark, text }: { title: string; mark: ReactNode; text: string }) {
+  return <Column as="li" gap="xs" pad="md" data-selectable="">
+    <Split gap="sm"><Text variant="strong">{title}</Text>{mark}</Split>
+    {text && <Text variant="soft" pre>{text}</Text>}
+  </Column>;
+}
+
+type SessionProps = { onPick: (file: string) => void; onRun: (id: string) => void; onBusy: () => void };
+
+// The forms and the answers. It asks the server as long as it is drawn, and no longer.
+function Exchange({ onPick, onRun, onBusy }: SessionProps) {
+  const asked = usePoll<{ requests: Asked[] }>('./api/requests', onBusy);
+  const found = usePoll<{ findings: Finding[]; gaps: unknown[] }>('./api/findings', onBusy);
+  const requests = asked.answered?.requests, findings = found.answered?.findings, gaps = found.answered?.gaps ?? [];
+  return <Grid gap="xl">
+    <Column gap="xl">
+      <AskForm onSent={asked.ask} />
+      <RunForm onRun={onRun} />
+    </Column>
+    <Section title={requests ? `Richieste · ${requests.length}` : 'Richieste'} level={3} icon={<Icon name="tasks" />}>
+      {!requests ? <Unanswered poll={asked} waiting="Carico le richieste…" failed="Richieste non lette" />
+        : !requests.length ? <Text as="p" variant="muted">Nessuna richiesta.</Text>
+        : <Column as="ul" gap="xs" aria-label="Richieste">{requests.slice().reverse().map(item =>
+          <Entry key={item.id} title={askedTitle(item)} mark={<Word tone={askedTone(item)} word={askedState(item)} />} text={askedText(item)} />)}</Column>}
+    </Section>
+    <Section title={findings ? `Finding · ${findings.length}` : 'Finding'} level={3} icon={<Icon name="alert" />}>
+      {!findings ? <Unanswered poll={found} waiting="Carico i finding…" failed="Finding non letti" />
+        : !findings.length ? <Text as="p" variant="muted">Nessun finding: compaiono quando la sessione chiude una review.</Text>
+        : <ItemList aria-label="Finding">{findings.map((item, index) => {
+          const { file } = item;
+          const mark = <Word tone={findingTone(item)} word={findingSeverity(item)} />;
+          return file  // only one that names a file has somewhere to go
+            ? <ItemRow key={index} title={findingPlace(item)} wrapTitle description={<Text pre>{findingText(item)}</Text>} end={mark} onClick={() => onPick(file)} />
+            : <Entry key={index} title={findingPlace(item)} mark={mark} text={findingText(item)} />;
+        })}</ItemList>}
+      {gaps.length > 0 && <Note tone="warning" announce={false} data-selectable="" title={`Lacune · ${gaps.length}`} items={gaps.map(gapText)} />}
+    </Section>
+  </Grid>;
+}
+
+const LABEL = 'Sessione e review';
+
+// In sight, where there is no map.
+export function Session(props: SessionProps) {
+  return <Column as="section" aria-label={LABEL}><Exchange {...props} /></Column>;
+}
+
+// Over a map, behind its row: what is drawn only while it is open asks nothing of the server while it is closed.
+export function SessionDisclosure(props: SessionProps) {
+  return <LongFold label={LABEL}><Exchange {...props} /></LongFold>;
 }

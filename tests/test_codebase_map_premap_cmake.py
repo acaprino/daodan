@@ -32,7 +32,7 @@ def build(tmp_path, name, sources=(cmake,)):
     own = ANSWERS / name  # a project written for this source, beside its answers
     shutil.copytree(own if own.is_dir() else CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return premap.write(manifest, sources=sources, runner=replay(name))
 
 

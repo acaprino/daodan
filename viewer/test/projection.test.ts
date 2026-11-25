@@ -2,33 +2,66 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseEnvelope } from '../src/envelope.ts';
-import { dataLinks, flowFocus, flowsThrough, project, UNASSIGNED } from '../src/projection.ts';
+import { dataLinks, flowFocus, flowsThrough, keptBy, project, typesIn, UNASSIGNED } from '../src/projection.ts';
 
 const env = parseEnvelope(JSON.parse(readFileSync(new URL('./fixture.json', import.meta.url), 'utf8')));
 const SHARED = 'file:shared/money.ts';
 const FILES_OF_COMPONENTS = 7;  // web: 3, server: 5, shared/money.ts in both
 
-test('shared file yields two occurrences and one unique count', () => {
+test('shared file yields two occurrences', () => {
   const projection = project(env, 'logical', null, {}, ['component:web', 'component:server']);
   const shared = projection.nodes.filter(node => node.ref === SHARED);
   assert.deepEqual(shared.map(node => node.parent).sort(), ['component:server@root', 'component:web@root']);
   assert.equal(projection.nodes.filter(node => node.type === 'file').length, FILES_OF_COMPONENTS + 1);
-  assert.equal(projection.counts.files, FILES_OF_COMPONENTS);
 });
 
-test('collapsed group keeps the underlying relation refs', () => {
+test('a relation between things of two closed groups is a line between the groups', () => {
   const projection = project(env, 'logical', null);
   const edge = projection.edges.find(item => item.source === 'component:web@root' && item.target === 'component:server@root');
-  assert.ok(edge, 'web depends on server through the shared file');
-  assert.ok(edge.relations.includes('imports:file:web/checkout.tsx->file:shared/money.ts'));
+  assert.deepEqual(edge?.kinds, ['imports']);  // web depends on server through the shared file
 });
 
 test('edges inside a collapsed group become a count, not external edges', () => {
   const projection = project(env, 'logical', null);
   assert.ok(projection.edges.every(edge => edge.source !== edge.target));
   assert.ok(projection.counts.aggregated > 0);
-  const internal = 'imports:file:server/routes.ts->file:server/payments.ts';
-  assert.ok(projection.edges.every(edge => !edge.relations.includes(internal)));
+});
+
+test('a group opened in place has what it holds in it, and the rest is as it was', () => {
+  const closed = project(env, 'logical', null), open = project(env, 'logical', null, {}, ['component:web']);
+  const at = (from: typeof open, id: string) => from.nodes.find(node => node.id === id);
+  assert.deepEqual([at(closed, 'component:web@root')?.open, at(open, 'component:web@root')?.open, at(open, 'component:server@root')?.open], [false, true, false]);
+  assert.equal(at(open, 'store:db/orders@root')?.open, undefined);  // it holds nothing: no group
+  const inside = open.nodes.filter(node => node.parent === 'component:web@root');
+  assert.deepEqual(inside.map(node => node.label).sort(), ['api.ts', 'checkout.tsx', 'money.ts']);
+  assert.deepEqual(open.nodes.filter(node => node.parent === null).map(node => node.id), closed.nodes.map(node => node.id));
+  // A line reaches the thing in the group, and what stands for a file is its own node alone.
+  assert.ok(open.edges.some(edge => edge.source === 'file:web/checkout.tsx@component:web@root' && edge.target === 'file:web/api.ts@component:web@root'));
+  assert.deepEqual(open.owners['file:web/api.ts'], ['file:web/api.ts@component:web@root']);
+  assert.deepEqual(open.owners['component:web'], ['component:web@root']);
+  // A group in a group.
+  const deep = project(env, 'logical', null, {}, ['component:web', 'file:web/checkout.tsx']);
+  assert.ok(deep.nodes.some(node => node.label === 'pay' && node.parent === 'file:web/checkout.tsx@component:web@root'));
+  // A group in itself is opened once.
+  const ring = parseEnvelope({ ...env, memberships: [...env.memberships, { member: 'component:web', group: 'component:web', view: 'logical' }] });
+  assert.equal(project(ring, 'logical', null, {}, ['component:web']).nodes.filter(node => node.ref === 'component:web').length, 2);
+  assert.ok(typesIn(ring, 'logical', null, ['component:web']).includes('file'));
+});
+
+test('an open group stays, as the frame of what the filters leave in it, and goes when they leave nothing', () => {
+  const left = (text: string) => project(env, 'logical', null, { text }, ['component:web', 'component:server']);
+  assert.deepEqual(left('checkout').nodes.map(node => [node.label, node.open]), [['web', true], ['checkout.tsx', false]]);
+  assert.deepEqual([left('zzzz').nodes.length, left('zzzz').counts.filtered], [0, 8 + FILES_OF_COMPONENTS + 1]);
+  // What is itself what is looked for stays, open on nothing.
+  const only = project(env, 'logical', null, { types: ['component'] }, ['component:web']);
+  assert.deepEqual(only.nodes.map(node => [node.label, node.open]), [['web', true], ['server', false]]);
+});
+
+test('a choice changes the projection only where the filters would hide it', () => {
+  assert.equal(keptBy(env, {}, 'component:web'), null);
+  assert.equal(keptBy(env, { types: ['component'] }, 'component:web'), null);
+  assert.equal(keptBy(env, { types: ['external'] }, 'component:web'), 'component:web');
+  assert.deepEqual([keptBy(env, { types: ['external'] }, null), keptBy(env, { types: ['external'] }, 'file:nowhere')], [null, null]);
 });
 
 test('filters hide but never delete the selection', () => {
@@ -91,6 +124,19 @@ test('node types and location reach the projected node', () => {
   assert.equal(projection.nodes.find(node => node.ref === 'store:db/orders')?.nodeType, 'database');
 });
 
+test('the logo of a service reaches its node', () => {
+  const marked = parseEnvelope({ ...env, entities: env.entities.map(entity => (entity.ref === 'external:card payment provider' ? { ...entity, mark: 'stripe' } : entity)) });
+  const projection = project(marked, 'logical', null);
+  assert.deepEqual(projection.nodes.filter(node => node.mark).map(node => [node.label, node.mark]), [['card payment provider', 'stripe']]);
+});
+
+test('a group of code has the logo of the one framework it declares', () => {
+  const technology = (id: string, category: string) => ({ id, name: id, type: 'altro', category, paths: [], mark: id });
+  const made = (...technologies: string[]) => project(parseEnvelope({ ...env, technologies: [technology('react', 'framework'), technology('nextjs', 'framework'), technology('zod', 'library')],
+    entities: env.entities.map(entity => (entity.ref === 'component:web' ? { ...entity, technologies } : entity)) }), 'logical', null).nodes.filter(node => node.mark).map(node => [node.label, node.mark]);
+  assert.deepEqual([made('zod', 'react'), made('react', 'nextjs'), made('zod')], [[['web', 'react']], [], []]);
+});
+
 test('old exports with a shared handler still allow selecting either event', () => {
   const first = env.flows[0];
   const repeated = parseEnvelope({ ...env, flows: [first, { ...first, steps: [], complete: false }] });
@@ -107,4 +153,11 @@ test('uncertain and proved steps between the same groups stay distinguishable on
     assert.equal(edges.length, 2);
     assert.equal(edges.filter(edge => edge.uncertain).length, 1);
   }
+});
+
+test('the types to choose from are those of the scope, whatever the filters hide, with the chosen one', () => {
+  assert.deepEqual(typesIn(env, 'logical', null), ['component', 'external', 'store']);
+  assert.deepEqual(typesIn(env, 'logical', null, ['component:web']), ['component', 'external', 'file', 'store']);
+  assert.deepEqual(typesIn(env, 'logical', 'component:server'), ['file']);
+  assert.deepEqual(typesIn(env, 'logical', 'component:server', [], 'component'), ['component', 'file']);
 });

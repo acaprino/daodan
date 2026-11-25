@@ -88,7 +88,7 @@ def _index(language: str, sources: dict[str, bytes]) -> dict:
         import premap
         import snapshot
         manifest = work / "snapshot" / "manifest.sqlite"
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         module = ADAPTERS[language]  # the structure an indexer takes, as the stage hands it
         given = module.structure(premap.ensure(manifest)) if hasattr(module, "structure") else {}
         engine = module.index(project, work / "engine", **given)

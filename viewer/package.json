@@ -5,39 +5,34 @@
   "type": "module",
   "scripts": {
     "test": "node --test \"test/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build && vite build --mode app",
-    "test:ui": "node test/browser.mjs"
+    "build": "vite build && vite build --mode app && npm run build:start",
+    "build:start": "vite build --mode start",
+    "test:ui": "node test/browser.mjs",
+    "test:frame": "node test/shots.mjs"
+  },
+  "imago": {
+    "src": ["src", "app", "start"],
+    "tests": ["test"],
+    "agents": ["../AGENTS.md", "../CLAUDE.md"],
+    "app": "daodan",
+    "icons": { "public/favicon.svg": "favicon.svg", "public/favicon.ico": "favicon.ico" }
   },
   "dependencies": {
-    "@acaprino/imago": "github:acaprino/imago#v0.4.1",
+    "@acaprino/imago": "https://github.com/acaprino/imago/releases/download/v1.0.1/acaprino-imago-1.0.1.tgz",
+    "@acaprino/sigrid": "https://github.com/acaprino/sigrid/releases/download/v6.5.2/acaprino-sigrid-6.5.2.tgz",
+    "@tauri-apps/api": "2.12.4",
     "elkjs": "0.12.1",
-    "lucide-react": "1.70.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "playwright": "1.63.0",
+    "typescript": "5.9.3",
     "vite": "8.3.6"
-  },
-  "imago": {
-    "src": [
-      "src",
-      "app",
-      "index.html"
-    ],
-    "tests": [
-      "test"
-    ],
-    "agents": [
-      "../AGENTS.md",
-      "../CLAUDE.md"
-    ],
-    "entry": "src/main.tsx",
-    "app": "daodan",
-    "icons": {
-      "public/favicon.svg": "favicon.svg",
-      "public/favicon.ico": "favicon.ico"
-    }
   }
 }

@@ -119,7 +119,7 @@ def summarize(name: str, application: str, script: str, noir_variant: str, sourc
         shutil.copytree(HERE / "fixture", project, ignore=shutil.ignore_patterns("__pycache__"))
     else:
         project = apps.fetch(application, sources)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     noir_answer, script_answer = answer(noir_variant), answer(script)
 
     def run(commands):

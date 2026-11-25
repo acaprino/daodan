@@ -1,7 +1,7 @@
 """The dynamic step: the project's tests run in a container under a recorder, and what they call enters the graph.
 
-An observer is one module of this package per technology. It declares `ENTRY`, `VERSION` (its recorder's: the
-observed rows' resolver is `ENTRY@VERSION`) and `LANGUAGES`, and gives:
+An observer is one module of this package per technology. It declares `NAME`, `VERSION` (its recorder's: the
+observed rows' resolver is `NAME@VERSION`) and `LANGUAGES`, and gives:
 
     plan(record, files, read) -> {"runs": [...], "gaps": [...]}   what to run, from the pre-map alone
     observe(project, planned, out_dir, engine) -> {"state", "sites", "sampled", "runs", "gaps"}   in the container
@@ -31,7 +31,7 @@ the run says nothing of the files it did not execute.
 `join_sampled` the pairs, by line and name, and `code_graph.write_observed` saves the rows. An observed end
 holds for the run that produced it: it proves that a call can arrive there, not that it arrives only there, and
 a call no test executed stays as the static steps left it. A sampled one says the same with resolver
-`ENTRY@VERSION:sampled` and confidence `sampled`; it is never set against a proven edge and says nothing of the
+`NAME@VERSION:sampled` and confidence `sampled`; it is never set against a proven edge and says nothing of the
 calls and files no sample named. A language with no observer, a project with no declared test command, a run
 with no container engine are gaps, never silence; so are a result that breaks this contract (`observer-malformed`,
 `failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`).
@@ -117,15 +117,15 @@ def observers() -> list:
     found = []
     for item in pkgutil.iter_modules(__path__):
         module = importlib.import_module(f"{__name__}.{item.name}")
-        if hasattr(module, "ENTRY"):
+        if hasattr(module, "NAME"):
             found.append(module)
-    return sorted(found, key=lambda module: module.ENTRY)
+    return sorted(found, key=lambda module: module.NAME)
 
 
 def resolver(observer, sampled: bool = False) -> str:
     """The resolver of an observer's rows, named as an analyzer's: the recorder and its version; of its sampled
     rows, the same with `:sampled`."""
-    return f"{observer.ENTRY}@{observer.VERSION}" + (":sampled" if sampled else "")
+    return f"{observer.NAME}@{observer.VERSION}" + (":sampled" if sampled else "")
 
 
 def _declared(snapshot, rel: str, line: int, column: int | None, name: str) -> str | None:
@@ -579,11 +579,11 @@ def run(manifest: Path, bus) -> dict:
             if gap["kind"] == "no-observer" and gap["language"] in graphs:
                 say(gap["detail"], {key: gap[key] for key in ("kind", "language", "detail")}, language=gap["language"])
                 left([gap["language"]], "no-observer", "no observer runs this language's tests")
-        by_entry = {module.ENTRY: module for module in observers()}
+        by_entry = {module.NAME: module for module in observers()}
         waiting = [node for node in layout["nodes"] if node["step"] == "observe"]
         for number, node in enumerate(waiting):
             module = by_entry[node["adapter"]]
-            name, entry = resolver(module), module.ENTRY
+            name, entry = resolver(module), module.NAME
             failed: dict = {}  # the resolver node of each language whose graph the store does not hold
             for language in node["on"]["languages"]:
                 if language not in graphs:

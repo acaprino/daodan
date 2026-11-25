@@ -141,7 +141,7 @@ def test_every_file_of_the_inventory_is_in_a_parse_node(tmp_path, fixture):
     planning = _planning()
     root, manifest = tmp_path / "project", tmp_path / "out" / "manifest.sqlite"
     shutil.copytree(fixture, root)
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     with open_snapshot(manifest) as store:
         rows = list(store.iter_inventory())
         entries = {path: entry for path, entry in store.iter_files(semantic=False)}
@@ -159,7 +159,7 @@ def test_no_parser_runs_outside_the_plan(tmp_path):
     real = snapshot.get_adapter
     with mock.patch.object(_planning(), "parse_nodes", _parse_without("parse:go")), \
             mock.patch.object(snapshot, "get_adapter", side_effect=lambda name: parsed.append(name) or real(name)):
-        snapshot.write_snapshot(root, tmp_path / "out" / "manifest.sqlite")
+        snapshot.read_project(root, tmp_path / "out" / "manifest.sqlite")
     assert "python" in parsed and "go" not in parsed  # the spy sees the adapter that is in the plan
 
 
@@ -167,7 +167,7 @@ def test_a_file_in_no_parse_node_keeps_its_row_and_says_why(tmp_path):
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     manifest = tmp_path / "out" / "manifest.sqlite"
     with mock.patch.object(_planning(), "parse_nodes", _parse_without("parse:go")):
-        written = snapshot.write_snapshot(root, manifest)
+        written = snapshot.read_project(root, manifest)
     with open_snapshot(manifest) as store:
         assert [path for path, _row in store.iter_inventory()] == ["billing.go", "pay.py"]
         entry = store.get_file("billing.go")
@@ -180,7 +180,7 @@ def test_a_file_in_no_parse_node_keeps_its_row_and_says_why(tmp_path):
 def test_no_resolver_runs_outside_the_plan(tmp_path):
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     manifest, launched = tmp_path / "out" / "manifest.sqlite", []
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
 
     def launch(spec, wanted, path):
         launched.append(spec.name)
@@ -199,7 +199,7 @@ def test_no_resolver_runs_outside_the_plan(tmp_path):
 def test_no_observer_runs_outside_the_plan(tmp_path, dropped, seen):
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     manifest, asked = tmp_path / "out" / "manifest.sqlite", []
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     graphs = {"manifest_digest": "d", "parser_fingerprint": "p", "resolver_version": 1,
               "languages": {language: {"state": "fresh", "engine": "x", "coverage": {}}
                             for language in ("go", "python")}}
@@ -231,7 +231,7 @@ def _chain(tmp_path):
     fresh, and the store's graphs are the languages it reported, so a stopped resolver leaves its observer no graph."""
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     launched, asked, seen, fresh = [], [], [], {}
 
     def launch(spec, wanted, path):
@@ -281,7 +281,7 @@ def test_the_plan_the_parse_step_says_is_the_plan_the_pass_runs(tmp_path):
         "a.sql": "select 1;\n", "pay.py": PY, "page.html": '<p class="x">x</p>\n',
         "Page.astro": '---\nimport { f } from "./f";\nf();\n---\n<p class="x">x</p>\n<style>\n.x { color: red }\n</style>\n'})
     manifest, seen = tmp_path / "out" / "manifest.sqlite", []
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     pipeline.run(manifest, listeners=[seen.append], start="parse", stop="parse")
     [said] = [event["data"]["plan"] for event in seen if event["message"] == "the plan"]
     with open_snapshot(manifest) as store:

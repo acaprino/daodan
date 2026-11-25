@@ -90,7 +90,7 @@ def replay(name: str, cache: Path) -> dict:
             project = work / name
             shutil.copytree(fixture, project)  # as the container lays it out, expected.json included
         manifest = work / "out" / "manifest.sqlite"
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
         missing: list = []
         record = premap.write(manifest, runner=replayer(recording, missing))

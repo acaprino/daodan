@@ -115,11 +115,12 @@ the skill `/codebase-map:map <request>`; its `codebase-map` MCP server is
 `daodan mcp`. `/reload-plugins` re-reads the plugin files but does not restart
 that server.
 
-Both packaged interfaces use Imago for controls, layouts and styles. Their sources are in `viewer/app/`
-and `viewer/src/`. To rebuild the offline pages packaged with Python, run `npm ci`
-and `npm run build` in `viewer/`. Run `npm test` for the explorer model and
-`npm run test:ui` for the packaged pages after installing Playwright Chromium. `npx imago-check`
-checks the viewer against Imago's design rules; the Viewer workflow runs it with the tests and the build.
+Both packaged interfaces are made of the components of [Sigrid](https://github.com/acaprino/sigrid), with no class and
+no stylesheet of their own. Their sources are in `viewer/app/` and `viewer/src/`. To rebuild the offline pages packaged
+with Python, run `npm ci` and `npm run build` in `viewer/`. Run `npm test` for the pages' models and
+`npm run test:ui` for the packaged pages after installing Playwright Chromium. `npx --no sigrid-check src` and
+`npx --no sigrid-check app` check the viewer against Sigrid's design rules; the Viewer workflow runs them with the tests
+and the build.
 
 ## Requirements
 

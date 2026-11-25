@@ -31,7 +31,7 @@ def build(tmp_path, name, sources=(maven,)):
     project = tmp_path / "proj"
     shutil.copytree(ANSWERS / name, project)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return premap.write(manifest, sources=sources, runner=replay(name))
 
 
@@ -77,7 +77,7 @@ def test_the_source_folders_are_the_ones_the_build_and_its_plugins_declare(tmp_p
         (project / folder / "A.txt").write_text("x\n", encoding="utf-8")
     (project / "pom.xml").write_text("<project/>\n", encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     pom = f'''<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>g</groupId><artifactId>a</artifactId>
 <build><sourceDirectory>/work/src/main/java</sourceDirectory><testSourceDirectory>/work/src/test/java</testSourceDirectory>
 <directory>/work/target</directory><plugins>
@@ -107,7 +107,7 @@ def test_the_files_the_compiler_plugin_leaves_out_are_the_module_s(tmp_path):
         (project / folder / "A.java").write_text("class A {}\n", encoding="utf-8")
     (project / "pom.xml").write_text("<project/>\n", encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     excluded = "<testExcludes><testExclude>io/github/jhipster/sample/config/DatabaseTestcontainer.java</testExclude>" \
                "</testExcludes>"
     pom = f'''<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>g</groupId><artifactId>a</artifactId>
@@ -138,7 +138,7 @@ def test_the_repositories_maven_resolves_from_are_registries(tmp_path):
     project = tmp_path / "jitpack"
     shutil.copytree(ANSWERS / "profile-module", project)
     manifest = tmp_path / "jitpack-out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=(maven,), runner=lambda commands: [{**run["result"], "stdout": stdout}])
     assert all(u["registries"] == ["https://jitpack.io", "https://repo.maven.apache.org"]
                for u in record["units"] if u["kind"] == "maven-module")

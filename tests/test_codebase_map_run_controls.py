@@ -15,6 +15,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import snapshot
+from read_manifest import read_manifest  # noqa: E402
 
 
 class RunControlsTests(unittest.TestCase):
@@ -32,7 +33,7 @@ class RunControlsTests(unittest.TestCase):
                       "docs_only": False, "phase": None},
         }
         self.save_state()
-        self.write("snapshot/manifest.json", json.dumps(snapshot.build_manifest(self.project / "src")))
+        self.write("snapshot/manifest.json", json.dumps(read_manifest(self.project / "src")))
 
     def write(self, name, content="# Evidence\n", run=None):
         path = (run or self.run) / name
@@ -107,7 +108,7 @@ class RunControlsTests(unittest.TestCase):
                 self.run.mkdir()
                 self.state["flags"].update({"phase": None, "docs_only": False, **flags})
                 self.save_state()
-                self.write("snapshot/manifest.json", json.dumps(snapshot.build_manifest(self.project / "src")))
+                self.write("snapshot/manifest.json", json.dumps(read_manifest(self.project / "src")))
                 plan = self.prepare()
                 self.assertEqual(plan["run_phases"], [0, phase])
                 self.deliver(phase)
@@ -319,7 +320,7 @@ class RunControlsTests(unittest.TestCase):
 
     def test_source_byte_change_blocks_resume_and_publication_without_mutating_state(self):
         (self.project / "src/new.py").write_bytes(b"X = 1\n")
-        self.write("snapshot/manifest.json", json.dumps(snapshot.build_manifest(self.project / "src")))
+        self.write("snapshot/manifest.json", json.dumps(read_manifest(self.project / "src")))
         self.prepare()
         self.deliver(1, 2, 3, 4, 5, 6, 7)
         (self.project / "src/new.py").write_bytes(b"X = 1\r\n")
@@ -367,7 +368,7 @@ class RunControlsTests(unittest.TestCase):
                 self.state["flags"].update(skip_synthesis=skip_synthesis,
                                            skip_interconnect=skip_interconnect)
                 self.save_state()
-                self.write("snapshot/manifest.json", json.dumps(snapshot.build_manifest(self.project / "src")))
+                self.write("snapshot/manifest.json", json.dumps(read_manifest(self.project / "src")))
                 self.prepare()
                 self.deliver(*phases)
                 code, result = self.check()
@@ -640,7 +641,7 @@ raise SystemExit(snapshot.main(['register', sys.argv[2]]))
         subprocess.run(["git", "init", "--quiet", str(self.project)], check=True,
                        capture_output=True, text=True)
         (self.project / "src/existing.py").write_text("VALUE = 1\n", encoding="utf-8")
-        self.write("snapshot/manifest.json", json.dumps(snapshot.build_manifest(self.project / "src")))
+        self.write("snapshot/manifest.json", json.dumps(read_manifest(self.project / "src")))
         original = path.read_bytes()
         valid = json.loads(original)
         self.assertEqual(Path(valid["root"]).resolve(), self.project.resolve())

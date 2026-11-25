@@ -417,6 +417,11 @@ class ServiceNodeTests(unittest.TestCase):
         self.assertEqual((adobe["name"], adobe["location"], adobe.get("mark")), ("Adobe Analytics", "external", None))
         self.assertIn("uses:file:package.json->external:adobe.analytics", {item["ref"] for item in self.envelope["relations"]})
 
+    def test_a_technology_names_the_mark_of_its_entry_when_it_has_one(self):
+        technologies = {item["id"]: item for item in self.envelope["technologies"]}
+        self.assertEqual((technologies["stripe"]["mark"], technologies["express"]["mark"]), ("stripe", "express"))
+        self.assertNotIn("mark", technologies["adobe.analytics"])
+
     def test_a_framework_or_a_library_is_no_node(self):
         externals = {ref for ref, item in self.refs.items() if item["type"] == "external"}
         self.assertIn("express", {item["id"] for item in self.envelope["technologies"]})  # the stack has it

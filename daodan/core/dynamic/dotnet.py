@@ -60,7 +60,7 @@ import preparation
 from indexers import csharp, jvm
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-record-dotnet", "1", ("csharp",)
+NAME, VERSION, LANGUAGES = "dynamic-record-dotnet", "1", ("csharp",)
 CECIL = ("https://api.nuget.org/v3-flatcontainer/mono.cecil/0.11.6/mono.cecil.0.11.6.nupkg",
          "d2a23832aaa948ba9a01acc42b5726e34c5f995958f1b30d45c0e7c70b3a72d5", "mono.cecil.0.11.6.nupkg")  # MIT,
 # published 2024-10-02: its sha512 is the one NuGet's catalog states

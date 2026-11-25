@@ -29,7 +29,7 @@ def manifest_of(tmp_path, files):
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return project, manifest
 
 
@@ -294,7 +294,7 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     project = tmp_path / "proj"
     shutil.copytree(CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=sources, runner=container_runner.runner(manifest, engine=engine))
     print(json.dumps({"tool": tool, "sources": record["sources"], "units": len(record["units"]),
                       "gaps": record["gaps"][:5]}, indent=1)[:3000])

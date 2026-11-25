@@ -314,6 +314,9 @@ class LabelTests(unittest.TestCase):
                  *[(grammar, "template_string", "g(`/o/${x}`)", "/o/${x}") for grammar in ("javascript", "typescript", "tsx")],
                  ("java", "string_literal", 'class A { void f() { g("/orders"); } }', "/orders"),
                  ("java", "string_literal", 'class A { void f() { g("a\\nb"); } }', None),
+                 ("kotlin", "string_literal", 'fun f() { g("/orders") }', "/orders"),
+                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/$x") }', None),  # a computed text is no literal
+                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/${x}") }', None),
                  ("go", "interpreted_string_literal", 'package a\nfunc f() { g("/orders") }', "/orders"),
                  ("go", "raw_string_literal", "package a\nfunc f() { g(`/orders`) }", "/orders"),
                  ("csharp", "string_literal", 'class A { void F() { G("/orders"); } }', "/orders"),

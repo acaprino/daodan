@@ -127,7 +127,7 @@ def languages_section(cards, run_path: Path) -> list[str]:
         count = cards.get(language, collections.Counter())
         rows.append([suffix_table.NAMES.get(language, language.capitalize()), _codes(by_language[language]),
                      ", ".join(reads.get(language, [])) or "nessuno",
-                     ", ".join(o.ENTRY for o in observers if language in o.LANGUAGES) or "nessuno",
+                     ", ".join(o.NAME for o in observers if language in o.LANGUAGES) or "nessuno",
                      f"{count['aperto']} / {count['buco dichiarato']} / {count['risolto']}"])
     others = sorted((k, sum(v.values())) for k, v in cards.items()
                     if k not in languages.SUPPORTED_LANGUAGES and k != "tutti")

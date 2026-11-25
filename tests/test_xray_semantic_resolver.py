@@ -15,6 +15,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 import snapshot
 import usage_finder
+from read_manifest import read_manifest  # noqa: E402
 try:
     import semantic_index
 except ModuleNotFoundError:
@@ -296,7 +297,7 @@ class SemanticResolverTests(unittest.TestCase):
         self.add("other.py", "def save():\n    pass\n")
         self.add("main.py", "from core import save as persist\nfrom other import save\n# from core import save\ntext = 'from core import save'\npersist()\n")
         observations = {}
-        manifest = snapshot.build_manifest(self.root, source_observations=observations)
+        manifest = read_manifest(self.root, observations=observations)
         index = semantic_index.build_semantic_index(manifest, source_observations=observations)
         original_read = Path.read_bytes
 
@@ -486,7 +487,7 @@ class SemanticResolverTests(unittest.TestCase):
                  "\n"
                  "def go():\n"
                  "    return attr.Helper().run()\n")
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         index = semantic_index.build_semantic_index(manifest)
         calls = {(r["file"], tuple(r["parts"]), r["span"][0]): r
                  for r in index["references"] if r["kind"] == "call"}
@@ -520,12 +521,12 @@ class SemanticResolverTests(unittest.TestCase):
     def python_calls_with_storage_parity(self):
         """Exercise both graph owners over real source, not scripted lookup answers."""
         from snapshot_store import _unpack, open_snapshot
-        index = semantic_index.build_semantic_index(snapshot.build_manifest(self.root))
+        index = semantic_index.build_semantic_index(read_manifest(self.root))
         memory = {record["id"]: record for record in index["references"] if record["kind"] == "call"}
         directory = self.root / ".test-snapshots"
         directory.mkdir(exist_ok=True)
         path = directory / "manifest.sqlite"
-        snapshot.write_snapshot(self.root, path)
+        snapshot.read_project(self.root, path)
         with open_snapshot(path) as store:
             persisted = {row[0]: _unpack(row[1]) for row in store.connection.execute(
                 "SELECT id,payload FROM sem_references WHERE kind='call'")}
@@ -655,7 +656,7 @@ class SemanticResolverTests(unittest.TestCase):
             "package com.acme;\nimport com.acme.Core;\nimport com.acme.Other;\npublic class Main {\n    public void start() {\n        Core<String> c = new Core<String>();\n        c.run(1);\n        Core.staticHelper(2);\n        new Core<String>().run(3);\n        new Other();\n    }\n}\n",
             language="java",
         )
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         index = semantic_index.build_semantic_index(manifest)
         self.assertEqual(index["coverage"]["src/com/acme/Core.java"]["status"], "ast")
         core_calls = [r for r in index["references"] if r["file"] == "src/com/acme/Core.java" and r["kind"] == "call"]
@@ -707,7 +708,7 @@ class SemanticResolverTests(unittest.TestCase):
             "use crate::core::save as persist;\nuse crate::other::{a, b as b2};\nuse log::info;\npub fn log() {}\npub fn run(opt: Option<i32>) {\n    if let Some(helper) = opt {\n        helper();\n    }\n    persist(1);\n    a();\n    b2();\n    log!(\"macro\");\n    info();\n}\n",
             language="rust",
         )
-        manifest = snapshot.build_manifest(self.root)
+        manifest = read_manifest(self.root)
         index = semantic_index.build_semantic_index(manifest)
         self.assertEqual(index["coverage"]["src/core.rs"]["status"], "ast")
         self.assertIn("macro expansion bindings are not inferred", index["coverage"]["src/main.rs"]["notes"])
@@ -730,7 +731,7 @@ class SemanticResolverTests(unittest.TestCase):
             self.assertEqual(usages["save"].resolved_count, 2)
             self.assertEqual(usages["save"].importing_modules, ["src/main.rs", "src/sub/child.rs"])
         db_path = self.root / ".daodan/map/manifest.sqlite"
-        snapshot.write_snapshot(self.root, db_path)
+        snapshot.read_project(self.root, db_path)
         with open_snapshot(db_path) as store1:
             meta1 = {s["name"]: s for s in semantic_store.query_meta_code(store1)["symbols"] if s["file"] == "src/core.rs"}
         self.assertIn("Store.method", meta1)
@@ -741,7 +742,7 @@ class SemanticResolverTests(unittest.TestCase):
         )
         db_path2 = self.root / ".daodan/map/manifest2.sqlite"
         with open_snapshot(db_path) as store1:
-            snapshot.write_snapshot(self.root, db_path2, previous=store1)
+            snapshot.read_project(self.root, db_path2, previous=store1)
         with open_snapshot(db_path2) as store2:
             meta2 = {s["name"]: s for s in semantic_store.query_meta_code(store2)["symbols"] if s["file"] == "src/core.rs"}
         self.assertEqual(meta1["Store.method"]["interface_hash"], meta2["Store.method"]["interface_hash"])
