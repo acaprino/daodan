@@ -1,0 +1,32 @@
+name: Lockfile (throwaway)
+
+# Writes apps/desktop/src-tauri/Cargo.lock for the next tag of imago-shell and keeps it as an artifact: nothing is resolved on a
+# developer's machine (AGENTS.md). Deleted with the commit of the lockfile.
+on:
+  push:
+    branches: [develop]
+    paths: ['.github/workflows/lockfile.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/desktop/src-tauri
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sed -i '/^imago-shell/s/v1\.0\.0/v1.0.1/' Cargo.toml
+      - run: cargo metadata --format-version 1 > /dev/null
+      - run: git diff -- Cargo.lock
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lockfile
+          path: apps/desktop/src-tauri/Cargo.lock
+          retention-days: 1
