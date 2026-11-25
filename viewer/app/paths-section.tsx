@@ -84,10 +84,10 @@ const LISTINGS = { entries: Entries, steps: Steps, writes: Writes };
 export function Paths() {
   const { pathPage: page } = useModel();
   const listing = listingOf(page), Listing = LISTINGS[listing];
-  return <Section id={SECTION} tabIndex={-1} title="Percorsi per ingresso" level={3} icon={<Icon name="branch" />} gap="md"
-    end={listing === 'entries'
-      ? <Button variant="ghost" size="sm" onClick={turn(() => model.openPaths(ORPHAN_WRITES))}>Scritture senza ingresso</Button>
-      : <Button variant="ghost" size="sm" onClick={turn(model.listPaths)}>Torna agli ingressi</Button>}>
+  return <Section id={SECTION} tabIndex={-1} title="Percorsi per ingresso" level={3} icon={<Icon name="branch" />} gap="md">
+    <Cluster>{listing === 'entries'  // in the body: beside the title it would cut it where the stage is narrow
+      ? <Button variant="outline" size="sm" onClick={turn(() => model.openPaths(ORPHAN_WRITES))}>Scritture senza ingresso</Button>
+      : <Button variant="outline" size="sm" onClick={turn(model.listPaths)}>Torna agli ingressi</Button>}</Cluster>
     {page?.error ? <Failed title="Percorsi non disponibili." cause={page.error} retry={turn(model.retryPaths)} />
       : page?.result ? <Listing page={page} result={page.result} />
       : <Loading label="Lettura dei percorsi…" />}

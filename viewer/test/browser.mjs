@@ -1856,6 +1856,9 @@ try {
   const [popup] = await Promise.all([page.waitForEvent('popup'), page.getByRole('link', { name: 'Apri l’esploratore', exact: true }).click()]);
   await popup.getByRole('main', { name: 'Mappa logica' }).waitFor();
   assert.deepEqual([new URL(page.url()).pathname, popup.url(), await popup.getByRole('button', { name: says }).count()], ['/app/', 'http://daodan.test/?token=test&run=demo', 0]);
+  await popup.keyboard.press('Control+k');
+  await popup.getByRole('option', { name: 'Vista logica' }).waitFor();
+  assert.equal(await popup.getByRole('option', { name: says }).count(), 0);
   await popup.close();
   {
     quiet();

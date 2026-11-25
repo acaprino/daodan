@@ -62,9 +62,12 @@ try {
   for (const own of [false, true]) {
     for (const scheme of ['dark', 'light']) {
       const bars = {};
-      const look = async (where, name) => {
+      // Each width is loaded by itself, as a person opens it: a canvas keeps the view it had at another width.
+      const look = async (where, name, open) => {
         for (const width of own ? [620, 1440] : WIDTHS) {
           await where.setViewportSize({ width, height: 850 });
+          await open();
+          await where.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
           await still(where);
           const label = `${own ? 'finestra-' : ''}${name}-${scheme}-${width}`;
           if (SHOT.includes(width)) await where.screenshot({ path: fileURLToPath(new URL(`${label}.png`, shots)) });
@@ -82,31 +85,27 @@ try {
       };
       const shown = await opened(browser, { width: 1440, scheme, own });
       for (const [name, state, title] of SCREENS) {
-        await shown.setViewportSize({ width: 1440, height: 850 });
-        await shown.goto('http://daodan.test/favicon.svg');  // where nothing writes what is kept
-        await shown.evaluate(left => localStorage.setItem('daodan-app-v2', JSON.stringify(left)), state);
-        await shown.goto('http://daodan.test/app/?token=test');
-        await shown.getByRole('region', { name: title, exact: true }).waitFor();
-        await shown.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
-        await look(shown, name);
+        await look(shown, name, async () => {
+          await shown.goto('http://daodan.test/favicon.svg');  // where nothing writes what is kept
+          await shown.evaluate(left => localStorage.setItem('daodan-app-v2', JSON.stringify(left)), state);
+          await shown.goto('http://daodan.test/app/?token=test');
+          await shown.getByRole('region', { name: title, exact: true }).waitFor();
+        });
       }
-      await shown.setViewportSize({ width: 1440, height: 850 });
-      await shown.goto('http://daodan.test/?token=test');
       const drawing = shown.getByRole('group', { name: 'Naviga il grafo', exact: true });
-      await drawing.waitFor();
       for (const [name, command, then] of MAPS) {
-        await shown.setViewportSize({ width: 1440, height: 850 });
-        for (const each of [command, then].filter(Boolean)) {
-          const commands = shown.getByRole('dialog', { name: 'Cerca un comando' });
-          await shown.keyboard.press('Control+k');
-          await commands.getByRole('option', { name: each }).click();
-          await commands.waitFor({ state: 'detached' });
-        }
-        await drawing.waitFor();
-        await shown.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
-        await look(shown, name);
+        await look(shown, name, async () => {
+          await shown.goto('http://daodan.test/?token=test');
+          await drawing.waitFor();
+          for (const each of [command, then].filter(Boolean)) {
+            const commands = shown.getByRole('dialog', { name: 'Cerca un comando' });
+            await shown.keyboard.press('Control+k');
+            await commands.getByRole('option', { name: each }).click();
+            await commands.waitFor({ state: 'detached' });
+          }
+          await drawing.waitFor();
+        });
       }
-      await shown.setViewportSize({ width: 1440, height: 850 });
       await shown.keyboard.press('Control+k');
       await still(shown);
       if (!own) await shown.screenshot({ path: fileURLToPath(new URL(`palette-${scheme}-1440.png`, shots)) });

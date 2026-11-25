@@ -49,9 +49,14 @@ type LiveEvent = { cursor: number; timestamp: string; event: string; message: st
 type EventsPage = { events: LiveEvent[]; next_cursor: number; has_more: boolean };
 type Run = { run_id: string; readable?: boolean };
 const BUSY = 'server.busy';  // its notice
-// The App's page: it opens on the screen the person left.
-const toAnalysis = () => window.location.assign(`/app/?${new URLSearchParams({ token: TOKEN })}`);
-const BACK = "Torna all'analisi";
+// In a window of its own the map took the App's place, and this is the way back to the screen the person left; in a browser the map is
+// another tab.
+function WayBack() {
+  const label = "Torna all'analisi", run = () => window.location.assign(`/app/?${new URLSearchParams({ token: TOKEN })}`);
+  useCommand({ id: 'daodan.analysis', label, group: 'Viste', icon: <Icon name="back" />, run });
+  return <ToolbarButton label={label} icon={<Icon name="back" />} onClick={run}>{label}</ToolbarButton>;
+}
+
 
 function App() {
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
@@ -79,8 +84,6 @@ function App() {
     run: () => dispatch({ type: 'root' }) });
   useCommand({ id: 'daodan.project.info', label: 'Informazioni sul progetto', group: 'Viste', icon: <Icon name="info" />, when: ready, run: () => dispatch({ type: 'info' }) });
   useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Viste', keys: 'Escape', icon: <Icon name="close" />, when: detailsOpen, run: close });
-  // In a window of its own the map took the App's place; in a browser it is another tab.
-  useCommand({ id: 'daodan.analysis', label: BACK, group: 'Viste', icon: <Icon name="back" />, when: window_.own, run: toAnalysis });
   useEffect(() => window_.setTitle(document.title), [window_]);  // the window's title is the page's
 
   // That the server is busy is said once, whoever found it so: an attempt takes the place of its notice.
@@ -162,7 +165,7 @@ function App() {
   // The foot: what the whole export holds. What is in view the panel says.
   return <AppWindow views={VIEWS} view={state.view} onView={view => dispatch({ type: 'view', view })} contentLabel={title}
     search={ready ? () => search.current?.focus() : null} status={status}
-    tools={window_.own && <ToolbarButton label={BACK} icon={<Icon name="back" />} onClick={toAnalysis}>{BACK}</ToolbarButton>}
+    tools={window_.own && <WayBack />}
     footer={<Text>{ready ? `${plural(state.envelope.entities.length, 'entità', 'entità')} · ${plural(state.envelope.relations.length, 'relazione', 'relazioni')}` : 'Nessuna mappa'}</Text>}
     sidebar={sidebar => <Navigation model={model} phase={phase} show={show} sidebar={sidebar} />}
     inspector={<Details model={model} show={show} open={detailsOpen} close={close} />}>
