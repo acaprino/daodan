@@ -39,13 +39,14 @@ class DistributedRegistryTests(unittest.TestCase):
 
     def test_every_entry_says_its_support_from_its_rule_and_the_readers(self):
         self.assertEqual([e["id"] for e in self.value["entries"] if e.get("support") != registry_build.support(e)], [])
-        for ident, level in (("nextjs", "full"), ("stripe", "partial"), ("temporal", "none")):
+        for ident, level in (("nextjs", "full"), ("stripe", "full"), ("docker", "full"), ("django", "partial"),
+                             ("sqlalchemy", "partial"), ("temporal", "none")):
             self.assertEqual((ident, self.entries[ident]["support"]), (ident, level))
         for ident, module in registry_build.READERS.items():
             self.assertTrue((SCRIPTS / module).is_file(), module)
             self.assertIn("stack-analyser", self.entries[ident]["from"], ident)
-        wrong = {**self.entries["stripe"], "support": "full"}
-        self.assertIn("stripe: support is partial", " ".join(registry_build.check(
+        wrong = {**self.entries["django"], "support": "full"}
+        self.assertIn("django: support is partial", " ".join(registry_build.check(
             {"schema": registry_build.SCHEMA, "entries": [wrong]})))
 
     def test_it_knows_the_common_ones(self):

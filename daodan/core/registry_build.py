@@ -52,7 +52,7 @@ SOURCES = ("stack-analyser", "simple-icons", "cncf-landscape", "additions")
 KINDS = ("service", "project")
 CATEGORIES = ("framework", "library", "tool", "service")
 SUPPORT = ("full", "partial", "none")  # an entry's `support`, written by `support`
-# An entry Daodan reads beyond recognizing it, and the module of the reader, from `core/`: the framework's own tool
+# A framework or library Daodan reads beyond recognizing it, and the module of the reader, from `core/`: the framework's own tool
 # for its routes or the events of its templates (`premap.FRAMEWORK_SOURCES`, `premap.TEMPLATE_SOURCES`), its compiler
 # for the styles of its components, the project's Tailwind for its utilities.
 READERS = {"angular": "premap/angular.py", "astro": "premap/astro.py", "nextjs": "premap/nextjs.py",
@@ -84,12 +84,13 @@ CNCF_SKIPPED = {"CNCF Members", "Special"}  # companies and certified vendors, n
 # ---------------------------------------------------------------- support
 
 def support(entry: dict) -> str:
-    """How far Daodan supports an entry: `none` when the fork has no rule for it (`from`), so no project shows it;
-    `partial` when the fork recognizes it and Daodan reads nothing more of it; `full` when a reader of `READERS`
-    does."""
+    """How far Daodan supports an entry: `none` when the fork has no rule for it (`from`), so no project shows it.
+    A service or a tool asks only to be recognized, and is `full` with a rule: the graph has its node and the arrows
+    to it. A framework or a library is `full` when a reader of `READERS` reads how the project uses it (its routes,
+    its templates, its styles), `partial` when it is recognized and nothing more."""
     if "stack-analyser" not in entry["from"]:
         return "none"
-    return "full" if entry["id"] in READERS else "partial"
+    return "partial" if entry.get("category") in ("framework", "library") and entry["id"] not in READERS else "full"
 
 
 # ---------------------------------------------------------------- check
@@ -120,7 +121,7 @@ def check(value: object, data: Path | None = None, additions: list[dict] | None 
         if "signs" in entry:
             problems.append(f"{ident}: no signs, the rules are the fork's")
         if "support" in entry and entry.get("from") and entry["support"] != support(entry):
-            problems.append(f"{ident}: support is {support(entry)}, what its rule and READERS give")
+            problems.append(f"{ident}: support is {support(entry)}, what its rule, its category and READERS give")
         hosts = entry.get("hosts")
         if "hosts" in entry and not (isinstance(hosts, list) and hosts and all(isinstance(h, str) and h for h in hosts)):
             problems.append(f"{ident}: hosts are a list of at least one host")

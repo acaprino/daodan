@@ -56,7 +56,7 @@ Accorpa le ex ondate 1–4. Fuori: SCIP, Kiri, esecuzione dinamica e nuova UI.
 
 ### `find_entry_points` (ex ondata 3)
 11. **[deciso]** Spostare sorgenti framework e Noir fuori da `premap.SOURCES`; `binder.bind` dentro lo step; `premap/container_runner.py` servizio comune a `find_modules` e `find_entry_points`.
-12. **[deciso]** Integrare le tre sorgenti **Django, FastAPI e Flask** (già scritte, oggi scollegate) in `find_entry_points`, secondo Principio 5 (introspezione nel container come primaria, Noir come integrazione/fallback con provenienza dichiarata).
+12. **[deciso]** Integrare le tre sorgenti **Django, FastAPI e Flask** (già scritte, oggi scollegate) in `find_entry_points`, secondo Principio 5 (introspezione nel container come primaria, Noir come integrazione/fallback con provenienza dichiarata). Con l'integrazione le tre voci entrano in `registry_build.READERS` e il loro `support` nel registro passa da `partial` a `full`.
 13. **[difetto]** Correggere `premap/flask_app.py` (`read()` raccoglie solo dati grezzi, il binder lega alle funzioni) e i difetti del binder (anonime in Go/C#, default anonimi).
 14. Estendere l'unione Noir + framework oltre Next.js (React Router, SvelteKit, Nuxt) e completare i gap aperti dei framework (Next.js, React Router, SvelteKit, Nuxt, Angular da `read_code`, Astro, Go generico, wrapper HTTP).
 

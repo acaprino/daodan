@@ -19,7 +19,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "3scale",
@@ -58,7 +58,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "actixweb",
@@ -86,7 +86,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "adminer",
@@ -100,7 +100,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "adobe",
@@ -113,7 +113,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "adobe.analytics",
@@ -126,7 +126,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "adobe.commercecloud",
@@ -139,7 +139,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "adobe.experiencemanager",
@@ -152,7 +152,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "adonisjs",
@@ -181,7 +181,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aeraki-mesh",
@@ -220,7 +220,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "agent-development-kit",
@@ -355,7 +355,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aibrix",
@@ -397,7 +397,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "airbyte",
@@ -411,7 +411,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aircall",
@@ -425,7 +425,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "airlock",
@@ -463,7 +463,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "akahu",
@@ -477,7 +477,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "akamai",
@@ -491,7 +491,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "akamas",
@@ -590,7 +590,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "alchemy",
@@ -605,7 +605,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "alcide",
@@ -631,7 +631,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "algolia",
@@ -646,7 +646,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "algorand",
@@ -661,7 +661,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "algorithmia",
@@ -795,7 +795,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "alipay",
@@ -810,7 +810,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aliyun-oss",
@@ -824,7 +824,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "alluxio",
@@ -972,7 +972,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "android",
@@ -1032,7 +1032,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "antd",
@@ -1088,7 +1088,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "antrea",
@@ -1276,7 +1276,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache-rocketmq",
@@ -1366,7 +1366,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_cassandra",
@@ -1381,7 +1381,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_couchdb",
@@ -1395,7 +1395,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_flink",
@@ -1410,7 +1410,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_hadoop",
@@ -1425,7 +1425,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_hive",
@@ -1439,7 +1439,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_iceberg",
@@ -1452,7 +1452,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_kafka",
@@ -1468,7 +1468,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_solr",
@@ -1482,7 +1482,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_spark",
@@ -1497,7 +1497,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_storm",
@@ -1512,7 +1512,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apache_thrift",
@@ -1540,7 +1540,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apica",
@@ -1579,7 +1579,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apideck",
@@ -1592,7 +1592,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apify",
@@ -1605,7 +1605,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apioak",
@@ -1696,7 +1696,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "appdynamics",
@@ -1722,7 +1722,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apple.maps",
@@ -1735,7 +1735,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "apple.signin",
@@ -1749,7 +1749,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "application-high-availability-service",
@@ -1836,7 +1836,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "appveyor",
@@ -1851,7 +1851,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "appwrite",
@@ -1866,7 +1866,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aqua",
@@ -1919,7 +1919,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "architect",
@@ -1945,7 +1945,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ardc-nectar-research-cloud-magnum-service",
@@ -2123,7 +2123,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aruba-managed-kubernetes",
@@ -2150,7 +2150,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "asdf",
@@ -2164,7 +2164,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aserto",
@@ -2201,7 +2201,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aspnetcore",
@@ -2258,7 +2258,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "astron-agent",
@@ -2344,7 +2344,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atlassian",
@@ -2358,7 +2358,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atlassian.bitbucket",
@@ -2371,7 +2371,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atlassian.bitbucketpipelines",
@@ -2384,7 +2384,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atlassian.confluence",
@@ -2398,7 +2398,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atlassian.jira",
@@ -2412,7 +2412,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atlassian.opsgenie",
@@ -2425,7 +2425,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atlassian.trello",
@@ -2441,7 +2441,7 @@
    "hosts": [
     "api.trello.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atomist",
@@ -2470,7 +2470,7 @@
    "hosts": [
     "hub.atuin.sh"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "atuin-sync",
@@ -2487,7 +2487,7 @@
    "hosts": [
     "api.atuin.sh"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "auth0",
@@ -2502,7 +2502,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "authelia",
@@ -2577,7 +2577,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "avap",
@@ -2666,7 +2666,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws-app-mesh",
@@ -2716,7 +2716,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.apigateway",
@@ -2730,7 +2730,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.athena",
@@ -2744,7 +2744,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.bedrock",
@@ -2758,7 +2758,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.cloudformation",
@@ -2773,7 +2773,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.cloudfront",
@@ -2787,7 +2787,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.cloudsearch",
@@ -2801,7 +2801,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.cloudwatch",
@@ -2815,7 +2815,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.codebuild",
@@ -2829,7 +2829,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.codepipeline",
@@ -2844,7 +2844,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.cognito",
@@ -2858,7 +2858,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.comprehend",
@@ -2872,7 +2872,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.documentdb",
@@ -2886,7 +2886,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.dynamodb",
@@ -2900,7 +2900,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.ebs",
@@ -2914,7 +2914,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.ec2",
@@ -2928,7 +2928,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.ecr",
@@ -2942,7 +2942,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.ecs",
@@ -2956,7 +2956,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.efs",
@@ -2970,7 +2970,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.eks",
@@ -2984,7 +2984,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.elasticache",
@@ -2998,7 +2998,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.fargate",
@@ -3012,7 +3012,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.glacier",
@@ -3026,7 +3026,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.glue",
@@ -3040,7 +3040,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.kafka",
@@ -3054,7 +3054,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.kinesis",
@@ -3068,7 +3068,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.kms",
@@ -3082,7 +3082,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.lambda",
@@ -3097,7 +3097,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.lightsail",
@@ -3111,7 +3111,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.memorydb",
@@ -3125,7 +3125,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.mq",
@@ -3139,7 +3139,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.neptune",
@@ -3153,7 +3153,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.opensearch",
@@ -3167,7 +3167,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.polly",
@@ -3181,7 +3181,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.rds",
@@ -3195,7 +3195,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.redshift",
@@ -3209,7 +3209,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.rekognition",
@@ -3223,7 +3223,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.s3",
@@ -3237,7 +3237,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.sagemaker",
@@ -3251,7 +3251,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.secretsmanager",
@@ -3265,7 +3265,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.ses",
@@ -3279,7 +3279,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.sfn",
@@ -3293,7 +3293,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.sns",
@@ -3307,7 +3307,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.sqs",
@@ -3321,7 +3321,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.timestream",
@@ -3335,7 +3335,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.transcribe",
@@ -3349,7 +3349,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "aws.translate",
@@ -3363,7 +3363,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "awscdk",
@@ -3377,7 +3377,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "axolotl",
@@ -3417,7 +3417,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure-api-management",
@@ -3539,7 +3539,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.applicationinsights",
@@ -3553,7 +3553,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.appservice",
@@ -3566,7 +3566,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.blobstorage",
@@ -3580,7 +3580,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.ci",
@@ -3594,7 +3594,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.containerapps",
@@ -3608,7 +3608,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.cosmosdb",
@@ -3622,7 +3622,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.documentintelligence",
@@ -3636,7 +3636,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.functions",
@@ -3651,7 +3651,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.keyvault",
@@ -3665,7 +3665,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.maps",
@@ -3679,7 +3679,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.mariadb",
@@ -3693,7 +3693,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.mysql",
@@ -3707,7 +3707,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.openai",
@@ -3721,7 +3721,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.postgres",
@@ -3735,7 +3735,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.redis",
@@ -3749,7 +3749,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.sql",
@@ -3763,7 +3763,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.staticwebapps",
@@ -3777,7 +3777,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "azure.storage",
@@ -3791,7 +3791,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "babel",
@@ -3806,7 +3806,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "backblaze",
@@ -3821,7 +3821,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "backend-ai",
@@ -3848,7 +3848,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "backstage",
@@ -3923,7 +3923,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "basecoat",
@@ -3965,7 +3965,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "beam",
@@ -4003,7 +4003,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bentoml",
@@ -4030,7 +4030,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "betterdb-monitor",
@@ -4056,7 +4056,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bfe",
@@ -4094,7 +4094,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "binance",
@@ -4109,7 +4109,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "binaryen",
@@ -4135,7 +4135,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bitly",
@@ -4150,7 +4150,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bitwarden",
@@ -4165,7 +4165,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "black-duck",
@@ -4190,7 +4190,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "blazor",
@@ -4258,7 +4258,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bmc-helix",
@@ -4400,7 +4400,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bpfman",
@@ -4427,7 +4427,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "braintrust",
@@ -4442,7 +4442,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "breqwatr-bks",
@@ -4468,7 +4468,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "brigade",
@@ -4519,7 +4519,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "browserless",
@@ -4533,7 +4533,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "browserstack",
@@ -4546,7 +4546,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "browseruse",
@@ -4560,7 +4560,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bub",
@@ -4610,7 +4610,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "buildkite",
@@ -4649,7 +4649,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bullmq",
@@ -4677,7 +4677,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bunkerweb",
@@ -4716,7 +4716,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bunsh",
@@ -4731,7 +4731,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "bytebase",
@@ -4746,7 +4746,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "c",
@@ -4761,7 +4761,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "caddy",
@@ -4776,7 +4776,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cadence-workflow",
@@ -4826,7 +4826,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "calendly",
@@ -4840,7 +4840,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "camel",
@@ -4867,7 +4867,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "camunda",
@@ -4882,7 +4882,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cann",
@@ -4971,7 +4971,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cargo",
@@ -4985,7 +4985,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "carina",
@@ -5406,7 +5406,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "chartmogul",
@@ -5421,7 +5421,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "chaterm",
@@ -5473,7 +5473,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "chef",
@@ -5488,7 +5488,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "chef-habitat",
@@ -5635,7 +5635,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "chromatic",
@@ -5650,7 +5650,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "chronosphere",
@@ -5690,7 +5690,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cirrusci",
@@ -5704,7 +5704,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "citrix-adc-formerly-netscaler-adc",
@@ -5731,7 +5731,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "civo-kubernetes",
@@ -5811,7 +5811,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "clever-cloud",
@@ -5853,7 +5853,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "clicksend",
@@ -5866,7 +5866,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "clickup",
@@ -5880,7 +5880,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "clojure",
@@ -5894,7 +5894,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloud-66-skycap",
@@ -5968,7 +5968,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudbees.codeship",
@@ -5982,7 +5982,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudcasa-by-catalogic-software",
@@ -6020,7 +6020,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudflare-workers-wasm",
@@ -6046,7 +6046,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudflare.r2",
@@ -6059,7 +6059,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudflare.turnstile",
@@ -6073,7 +6073,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudflare.workers",
@@ -6088,7 +6088,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudify",
@@ -6115,7 +6115,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cloudlink-cmp",
@@ -6285,7 +6285,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cobra",
@@ -6314,7 +6314,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cockroachdb",
@@ -6328,7 +6328,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cocktail-cloud",
@@ -6354,7 +6354,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "codecov",
@@ -6368,7 +6368,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "codefresh",
@@ -6424,7 +6424,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "codesandboxci",
@@ -6437,7 +6437,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "codezero",
@@ -6463,7 +6463,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cohdi",
@@ -6489,7 +6489,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "coil",
@@ -6518,7 +6518,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "commercetools",
@@ -6531,7 +6531,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "commvault",
@@ -6609,7 +6609,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "concourse",
@@ -6635,7 +6635,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "conekta",
@@ -6650,7 +6650,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "confidential-containers",
@@ -6715,7 +6715,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "container-network-interface-cni",
@@ -6767,7 +6767,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "containerd-wasm",
@@ -6805,7 +6805,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "contentstack",
@@ -6820,7 +6820,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "contour",
@@ -6870,7 +6870,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "copa",
@@ -6921,7 +6921,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "coreweave-kubernetes-service-cks",
@@ -7008,7 +7008,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "couler",
@@ -7034,7 +7034,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "coze",
@@ -7049,7 +7049,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cozystack",
@@ -7075,7 +7075,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "crate-io",
@@ -7101,7 +7101,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "crates-io",
@@ -7126,7 +7126,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "create-react-app",
@@ -7141,7 +7141,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "crew-ai",
@@ -7204,7 +7204,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "crun",
@@ -7242,7 +7242,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "css",
@@ -7256,7 +7256,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cubefs",
@@ -7391,7 +7391,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "cyso-managed-kubernetes",
@@ -7418,7 +7418,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "d3js",
@@ -7487,7 +7487,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dapr-sdk",
@@ -7514,7 +7514,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dart-mappable",
@@ -7609,7 +7609,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "databuddy",
@@ -7622,7 +7622,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "databuff",
@@ -7661,7 +7661,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "datadome",
@@ -7674,7 +7674,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "datafast",
@@ -7687,7 +7687,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dataiku",
@@ -7701,7 +7701,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dataset",
@@ -7727,7 +7727,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "datenlord",
@@ -7777,7 +7777,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "daytona",
@@ -7803,7 +7803,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "deepchecks",
@@ -7854,7 +7854,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "deepl",
@@ -7869,7 +7869,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "deepseek",
@@ -7883,7 +7883,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "deepsource",
@@ -7896,7 +7896,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "deepspeed",
@@ -7947,7 +7947,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "denodeploy",
@@ -7961,7 +7961,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dependabot",
@@ -7975,7 +7975,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "deployhub",
@@ -8012,7 +8012,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "desktop-kubernetes",
@@ -8038,7 +8038,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "devcycle",
@@ -8177,7 +8177,7 @@
    "hosts": [
     "embed.diagrams.net"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "diamanti",
@@ -8242,7 +8242,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "digitalocean-kubernetes",
@@ -8283,7 +8283,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "direktiv",
@@ -8309,7 +8309,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "discord.oauth",
@@ -8323,7 +8323,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "discourse",
@@ -8337,7 +8337,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "distr",
@@ -8419,7 +8419,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "docker-compose",
@@ -8552,7 +8552,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dodo-payments",
@@ -8567,7 +8567,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dokku",
@@ -8581,7 +8581,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dolphinscheduler",
@@ -8734,7 +8734,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dropbox",
@@ -8749,7 +8749,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "druid",
@@ -8775,7 +8775,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "dubbo",
@@ -8801,7 +8801,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "duckduckgo-icons",
@@ -8818,7 +8818,7 @@
    "hosts": [
     "icons.duckduckgo.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "duende-identityserver",
@@ -8859,7 +8859,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "e2b",
@@ -9027,7 +9027,7 @@
    "hosts": [
     "id.eideasy.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ejbca-community",
@@ -9090,7 +9090,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "elasticsearch",
@@ -9105,7 +9105,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "elastiflow",
@@ -9197,7 +9197,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "eleventy",
@@ -9238,7 +9238,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "elkjs",
@@ -9346,7 +9346,7 @@
    "hosts": [
     "api.enablebanking.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "encore",
@@ -9411,7 +9411,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "envoy-ai-gateway",
@@ -9496,7 +9496,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "eraser",
@@ -9536,7 +9536,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "eslint",
@@ -9551,7 +9551,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "etcd",
@@ -9567,7 +9567,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "eunomia-bpf",
@@ -9594,7 +9594,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "eventmesh",
@@ -9621,7 +9621,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "exoscale-scalable-kubernetes-service",
@@ -9661,7 +9661,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "expojs",
@@ -9793,7 +9793,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fabric8-kubernetes-client",
@@ -9819,7 +9819,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fairwinds-insights",
@@ -9898,7 +9898,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fastendpoints",
@@ -9941,7 +9941,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fastly-compute-edge",
@@ -9981,7 +9981,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fd-io",
@@ -10096,7 +10096,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "filecoin",
@@ -10123,7 +10123,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "firebase.analytics",
@@ -10137,7 +10137,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "firebase.firestore",
@@ -10150,7 +10150,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "firebase.functions",
@@ -10164,7 +10164,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "firebase.messaging",
@@ -10178,7 +10178,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "firecracker",
@@ -10204,7 +10204,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "firepit",
@@ -10218,7 +10218,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fission",
@@ -10244,7 +10244,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "flagger",
@@ -10395,7 +10395,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fluentui",
@@ -10503,7 +10503,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "flyway",
@@ -10518,7 +10518,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fonio",
@@ -10584,7 +10584,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fortio",
@@ -10636,7 +10636,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "freshdesk",
@@ -10649,7 +10649,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "friendly-captcha",
@@ -10663,7 +10663,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "frontegg",
@@ -10676,7 +10676,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fscheck",
@@ -10690,7 +10690,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "fugue",
@@ -10730,7 +10730,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gardener",
@@ -10757,7 +10757,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gatsby",
@@ -10798,7 +10798,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.aiplatform",
@@ -10812,7 +10812,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.appengine",
@@ -10826,7 +10826,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.artifactregistry",
@@ -10840,7 +10840,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.bigquery",
@@ -10854,7 +10854,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.bigtable",
@@ -10868,7 +10868,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.cloudbuild",
@@ -10882,7 +10882,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.cloudrun",
@@ -10896,7 +10896,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.containerregistry",
@@ -10909,7 +10909,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.dataflow",
@@ -10923,7 +10923,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.dataproc",
@@ -10937,7 +10937,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.datastore",
@@ -10951,7 +10951,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.dialogflow",
@@ -10965,7 +10965,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.dns",
@@ -10979,7 +10979,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.functions",
@@ -10993,7 +10993,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.gce",
@@ -11007,7 +11007,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.gcs",
@@ -11021,7 +11021,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.gke",
@@ -11035,7 +11035,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.kms",
@@ -11049,7 +11049,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.language",
@@ -11063,7 +11063,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.logging",
@@ -11077,7 +11077,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.maps",
@@ -11091,7 +11091,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.memorystore",
@@ -11105,7 +11105,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.pubsub",
@@ -11119,7 +11119,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.secretmanager",
@@ -11133,7 +11133,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.spanner",
@@ -11147,7 +11147,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.speech",
@@ -11161,7 +11161,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.sql",
@@ -11175,7 +11175,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.tasks",
@@ -11189,7 +11189,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.translate",
@@ -11203,7 +11203,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.vertex",
@@ -11217,7 +11217,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gcp.vision",
@@ -11231,7 +11231,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gear",
@@ -11271,7 +11271,7 @@
    "hosts": [
     "generativelanguage.googleapis.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "genode",
@@ -11297,7 +11297,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "giant-swarm-managed-kubernetes",
@@ -11351,7 +11351,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gitbook",
@@ -11365,7 +11365,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gitea",
@@ -11380,7 +11380,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gitguardian",
@@ -11394,7 +11394,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "github",
@@ -11412,7 +11412,7 @@
    "hosts": [
     "api.github.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "github-catalyst",
@@ -11441,7 +11441,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "github.codeql",
@@ -11454,7 +11454,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "github.oauth",
@@ -11468,7 +11468,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "github.pages",
@@ -11482,7 +11482,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gitlab",
@@ -11498,7 +11498,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gitlab.ci",
@@ -11511,7 +11511,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gitlab.oauth",
@@ -11525,7 +11525,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gitness",
@@ -11611,7 +11611,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gluster",
@@ -11661,7 +11661,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gocardless-bank-account-data",
@@ -11678,7 +11678,7 @@
    "hosts": [
     "bankaccountdata.gocardless.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gocd",
@@ -11743,7 +11743,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gofr",
@@ -11770,7 +11770,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "golangcilint",
@@ -11784,7 +11784,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "goldilocks",
@@ -11834,7 +11834,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google-ads",
@@ -11849,7 +11849,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google-cloud-build",
@@ -11912,7 +11912,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google-kubernetes-engine-gke",
@@ -11966,7 +11966,7 @@
     "analyticsadmin.googleapis.com",
     "analyticsdata.googleapis.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.calendar",
@@ -11980,7 +11980,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.chat",
@@ -11994,7 +11994,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.docs",
@@ -12008,7 +12008,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.drive",
@@ -12022,7 +12022,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.forms",
@@ -12036,7 +12036,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.gmail",
@@ -12050,7 +12050,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.keep",
@@ -12064,7 +12064,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.meet",
@@ -12078,7 +12078,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.oauth",
@@ -12092,7 +12092,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.pay",
@@ -12106,7 +12106,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.recaptcha",
@@ -12120,7 +12120,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.sheets",
@@ -12134,7 +12134,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.slides",
@@ -12148,7 +12148,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "google.tasks",
@@ -12162,7 +12162,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "goose",
@@ -12202,7 +12202,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gradio",
@@ -12231,7 +12231,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gradle-build-tool",
@@ -12258,7 +12258,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "grafana-loki",
@@ -12320,7 +12320,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "grafeas",
@@ -12370,7 +12370,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "graphite",
@@ -12424,7 +12424,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gravitee-io",
@@ -12452,7 +12452,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "greenmail",
@@ -12466,7 +12466,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gremlin",
@@ -12532,7 +12532,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "groundcover",
@@ -12660,7 +12660,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "gvisor",
@@ -12686,7 +12686,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hadoop-hdfs",
@@ -12735,7 +12735,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "haproxy",
@@ -12750,7 +12750,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "harbor",
@@ -12815,7 +12815,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "haskell",
@@ -12830,7 +12830,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hasura-graphql-engine",
@@ -12868,7 +12868,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "haystack",
@@ -12907,7 +12907,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "headlamp",
@@ -12950,7 +12950,7 @@
    "hosts": [
     "hc-ping.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "helios",
@@ -12978,7 +12978,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "helmwave",
@@ -13005,7 +13005,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "heremaps",
@@ -13018,7 +13018,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "heroicons",
@@ -13046,7 +13046,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "heroui",
@@ -13088,7 +13088,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hexa",
@@ -13231,7 +13231,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "honeycomb",
@@ -13246,7 +13246,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "honojs",
@@ -13301,7 +13301,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hotjar",
@@ -13315,7 +13315,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hotwire-turbo",
@@ -13380,7 +13380,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "htmx",
@@ -13408,7 +13408,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "httpx",
@@ -13485,7 +13485,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hubble",
@@ -13512,7 +13512,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hugeicons",
@@ -13541,7 +13541,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hugo",
@@ -13608,7 +13608,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hyperlight",
@@ -13659,7 +13659,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "hyscale",
@@ -13768,7 +13768,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "icinga",
@@ -13807,7 +13807,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "iguazio",
@@ -13848,7 +13848,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "in-toto",
@@ -13874,7 +13874,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "inclavare-containers",
@@ -13961,7 +13961,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "influxdata",
@@ -13988,7 +13988,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "infoscale-for-kubernetes",
@@ -14039,7 +14039,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "inspektor-gadget",
@@ -14077,7 +14077,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "instana",
@@ -14092,7 +14092,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "instructor",
@@ -14117,7 +14117,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "intercom",
@@ -14131,7 +14131,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "interlink",
@@ -14158,7 +14158,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "internet-computer",
@@ -14173,7 +14173,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "intersystems-iris-data-platform",
@@ -14199,7 +14199,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "iomesh",
@@ -14267,7 +14267,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ionos-cloud-managed-kubernetes",
@@ -14294,7 +14294,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ipinfo",
@@ -14311,7 +14311,7 @@
    "hosts": [
     "api.ipinfo.io"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "irondb",
@@ -14426,7 +14426,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "java",
@@ -14440,7 +14440,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "javascript",
@@ -14454,7 +14454,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "javy",
@@ -14496,7 +14496,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jenkins",
@@ -14511,7 +14511,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jenkinsx",
@@ -14538,7 +14538,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jetpack-compose",
@@ -14568,7 +14568,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jfrog-artifactory",
@@ -14596,7 +14596,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jhipster-control-center",
@@ -14610,7 +14610,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jina-reader",
@@ -14652,7 +14652,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jitsi",
@@ -14667,7 +14667,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jmeter",
@@ -14682,7 +14682,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jms-serializer",
@@ -14724,7 +14724,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jooq",
@@ -14791,7 +14791,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "juicefs",
@@ -14843,7 +14843,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "junit-jupiter",
@@ -14857,7 +14857,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "jupyter",
@@ -14872,7 +14872,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "k0rdent",
@@ -14936,7 +14936,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "k6-cncf",
@@ -15012,7 +15012,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kai-scheduler",
@@ -15244,7 +15244,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kentico",
@@ -15258,7 +15258,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kepler",
@@ -15338,7 +15338,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "keylime",
@@ -15414,7 +15414,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kics",
@@ -15463,7 +15463,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kiosk",
@@ -15501,7 +15501,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "klaviyo",
@@ -15514,7 +15514,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kloudfuse-member",
@@ -15617,7 +15617,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "koin",
@@ -15646,7 +15646,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "konveyor",
@@ -15708,7 +15708,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kotlin",
@@ -15724,7 +15724,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kotlin-multiplatform",
@@ -15752,7 +15752,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kotlinx-html",
@@ -15807,7 +15807,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kpt",
@@ -16569,7 +16569,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "kubernetes-the-easier-way",
@@ -16970,7 +16970,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lagoon",
@@ -17025,7 +17025,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "langchain4j",
@@ -17093,7 +17093,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "last9",
@@ -17123,7 +17123,7 @@
    "hosts": [
     "ws.audioscrobbler.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "launchdarkly",
@@ -17137,7 +17137,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "layotto",
@@ -17190,7 +17190,7 @@
    "hosts": [
     "api.lemonsqueezy.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lenovo-xcloud-container-platform",
@@ -17217,7 +17217,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lets-encrypt",
@@ -17235,7 +17235,7 @@
    "hosts": [
     "acme-v02.api.letsencrypt.org"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lexicaleditor",
@@ -17275,7 +17275,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ligato",
@@ -17314,7 +17314,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lightrun",
@@ -17391,7 +17391,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "linear",
@@ -17405,7 +17405,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "linkedin",
@@ -17418,7 +17418,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "linkerd",
@@ -17483,7 +17483,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "listenbrainz",
@@ -17501,7 +17501,7 @@
     "api.listenbrainz.org",
     "labs.api.listenbrainz.org"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "litefs",
@@ -17515,7 +17515,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "litjs",
@@ -17557,7 +17557,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "livekit",
@@ -17572,7 +17572,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "llama-2",
@@ -17711,7 +17711,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lmql",
@@ -17738,7 +17738,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "loggie",
@@ -17811,7 +17811,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "logsnag",
@@ -17824,7 +17824,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "logstash",
@@ -17839,7 +17839,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "logtoio",
@@ -17852,7 +17852,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "logz-io",
@@ -17906,7 +17906,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "loom",
@@ -17921,7 +17921,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "loops",
@@ -17936,7 +17936,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lordicon",
@@ -17963,7 +17963,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "loxilb",
@@ -17989,7 +17989,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "lucideicons",
@@ -18101,7 +18101,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "magento",
@@ -18114,7 +18114,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "magic",
@@ -18129,7 +18129,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mailchannels",
@@ -18143,7 +18143,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mailchimp",
@@ -18158,7 +18158,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "maildev",
@@ -18172,7 +18172,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mailgun",
@@ -18186,7 +18186,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mailhog",
@@ -18200,7 +18200,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mailjet",
@@ -18213,7 +18213,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mailpit",
@@ -18227,7 +18227,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mailtrap",
@@ -18242,7 +18242,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "majorleaguecyber",
@@ -18260,7 +18260,7 @@
     "api.majorleaguecyber.org",
     "auth.majorleaguecyber.org"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "manageiq",
@@ -18287,7 +18287,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mantineui",
@@ -18315,7 +18315,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mapkit",
@@ -18358,7 +18358,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mariadb",
@@ -18373,7 +18373,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "marimo",
@@ -18506,7 +18506,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "matomo",
@@ -18520,7 +18520,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "matplotlib",
@@ -18549,7 +18549,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "matrixhub",
@@ -18575,7 +18575,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "maven",
@@ -18590,7 +18590,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "maxmind",
@@ -18604,7 +18604,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mcp",
@@ -18658,7 +18658,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "meilisearchcloud",
@@ -18671,7 +18671,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mem0",
@@ -18709,7 +18709,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "memphis",
@@ -18748,7 +18748,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mergedev",
@@ -18761,7 +18761,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mergify",
@@ -18849,7 +18849,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "metal-stack-cloud-kubernetes",
@@ -19039,7 +19039,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "microsoft-entra-oauth",
@@ -19053,7 +19053,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "microsoft-sql-server",
@@ -19068,7 +19068,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "microsoft.oauth",
@@ -19082,7 +19082,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "microsoft.onedrive",
@@ -19095,7 +19095,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "microsoft.outlook",
@@ -19109,7 +19109,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "microstrategy",
@@ -19124,7 +19124,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "middleware",
@@ -19174,7 +19174,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "minijinja",
@@ -19216,7 +19216,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mintlify",
@@ -19231,7 +19231,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mirantis-kubernetes-engine",
@@ -19257,7 +19257,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mirrord",
@@ -19296,7 +19296,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mithriljs",
@@ -19325,7 +19325,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mkdocs",
@@ -19354,7 +19354,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mlflow",
@@ -19397,7 +19397,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mock-oauth2-server",
@@ -19411,7 +19411,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mockall",
@@ -19439,7 +19439,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mockk",
@@ -19453,7 +19453,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mockserver",
@@ -19468,7 +19468,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "modal",
@@ -19483,7 +19483,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "modelcontextprotocol",
@@ -19523,7 +19523,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "modsurfer",
@@ -19586,7 +19586,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mondoo",
@@ -19613,7 +19613,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mongodbatlas",
@@ -19626,7 +19626,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mongoexpress",
@@ -19639,7 +19639,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mongoose",
@@ -19789,7 +19789,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mstest",
@@ -19803,7 +19803,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mudblazor",
@@ -19882,7 +19882,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "mybatis",
@@ -19911,7 +19911,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "n8n",
@@ -19925,7 +19925,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nacos",
@@ -19962,7 +19962,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nats",
@@ -19976,7 +19976,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nccl",
@@ -20052,7 +20052,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "neondb",
@@ -20065,7 +20065,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nestjs",
@@ -20123,7 +20123,7 @@
    "hosts": [
     "census.netbox.oss.netboxlabs.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "netbox-copilot",
@@ -20140,7 +20140,7 @@
    "hosts": [
     "static.copilot.netboxlabs.ai"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "netdata",
@@ -20203,7 +20203,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "netlify-functions",
@@ -20278,7 +20278,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nexclipper",
@@ -20304,7 +20304,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nextjs",
@@ -20334,7 +20334,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nginx-wasm",
@@ -20386,7 +20386,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nightingale",
@@ -20521,7 +20521,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nodesource",
@@ -20561,7 +20561,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nops",
@@ -20611,7 +20611,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "novu",
@@ -20625,7 +20625,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "npm",
@@ -20640,7 +20640,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nscale-managed-kubernetes",
@@ -20691,7 +20691,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "numaflow",
@@ -20732,7 +20732,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nuodb",
@@ -20846,7 +20846,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nxcloud",
@@ -20859,7 +20859,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "nxjs",
@@ -20874,7 +20874,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "oapi-codegen",
@@ -20888,7 +20888,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "oauth2-proxy",
@@ -20927,7 +20927,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "observe-sdk",
@@ -20954,7 +20954,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "octopus-deploy",
@@ -21018,7 +21018,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "okta.oauth",
@@ -21032,7 +21032,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "okteto",
@@ -21071,7 +21071,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "omdb",
@@ -21088,7 +21088,7 @@
    "hosts": [
     "www.omdbapi.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "omni",
@@ -21149,7 +21149,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "oodle-ai",
@@ -21223,7 +21223,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "open-mpi",
@@ -21336,7 +21336,7 @@
    "hosts": [
     "api.openai.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "openapi",
@@ -21379,7 +21379,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "openchoreo",
@@ -21590,7 +21590,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "openlit",
@@ -21702,7 +21702,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "openrun",
@@ -21765,7 +21765,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "opensearch",
@@ -21781,7 +21781,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "opensergo",
@@ -21832,7 +21832,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "opentelemetry",
@@ -21924,7 +21924,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "operator-framework",
@@ -21967,7 +21967,7 @@
     "api.eu.opsgenie.com",
     "api.opsgenie.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "opsmx",
@@ -21992,7 +21992,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "optuna",
@@ -22066,7 +22066,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "oracledatabase",
@@ -22080,7 +22080,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "oras",
@@ -22202,7 +22202,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "oscal-compass",
@@ -22228,7 +22228,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "otel-ebpf-profiler",
@@ -22242,7 +22242,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "outlines",
@@ -22281,7 +22281,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ovh-managed-kubernetes-service",
@@ -22306,7 +22306,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ovh.dedicated",
@@ -22319,7 +22319,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ovh.kubernetes",
@@ -22332,7 +22332,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ovh.storage",
@@ -22345,7 +22345,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ovh.vps",
@@ -22358,7 +22358,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ovn-kubernetes",
@@ -22408,7 +22408,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ozone",
@@ -22471,7 +22471,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "paddle",
@@ -22489,7 +22489,7 @@
     "api.paddle.com",
     "sandbox-api.paddle.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pagerduty",
@@ -22507,7 +22507,7 @@
    "hosts": [
     "events.pagerduty.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pagertree",
@@ -22521,7 +22521,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "paladin-cloud",
@@ -22612,7 +22612,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "papertrail",
@@ -22625,7 +22625,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "paralleliq",
@@ -22663,7 +22663,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "parseable",
@@ -22729,7 +22729,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "payloadcms",
@@ -22743,7 +22743,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "paypal",
@@ -22758,7 +22758,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "paystack",
@@ -22771,7 +22771,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pebble",
@@ -22810,7 +22810,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "percona-server-for-mysql",
@@ -22837,7 +22837,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "perfectscale-by-doit",
@@ -22863,7 +22863,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "permify",
@@ -22902,7 +22902,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "perplexityai",
@@ -22915,7 +22915,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "perses",
@@ -22942,7 +22942,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pgvector",
@@ -23026,7 +23026,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "phpcomposer",
@@ -23040,7 +23040,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "phpenv",
@@ -23054,7 +23054,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "phppest",
@@ -23068,7 +23068,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "phpstan",
@@ -23082,7 +23082,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "phpunit",
@@ -23096,7 +23096,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pico-css",
@@ -23152,7 +23152,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pingdom",
@@ -23166,7 +23166,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pinia",
@@ -23219,7 +23219,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pipecd",
@@ -23269,7 +23269,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pipy",
@@ -23306,7 +23306,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pixie",
@@ -23331,7 +23331,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "plain",
@@ -23345,7 +23345,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "planetscale",
@@ -23359,7 +23359,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "platform9-elastic-machine-pool",
@@ -23398,7 +23398,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "plausible",
@@ -23411,7 +23411,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "playcekube",
@@ -23437,7 +23437,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "plotly",
@@ -23466,7 +23466,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "plural",
@@ -23517,7 +23517,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pocketbase",
@@ -23532,7 +23532,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "podman",
@@ -23548,7 +23548,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "podman-container-tools",
@@ -23599,7 +23599,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "poetry",
@@ -23614,7 +23614,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "polardb",
@@ -23666,7 +23666,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "polkadot",
@@ -23681,7 +23681,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pomerium",
@@ -23770,7 +23770,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "postgresql-cncf",
@@ -23796,7 +23796,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "posthog",
@@ -23811,7 +23811,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "postman",
@@ -23825,7 +23825,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "postmark",
@@ -23838,7 +23838,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "powerfulseal",
@@ -23864,7 +23864,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pravega",
@@ -23930,7 +23930,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "presto",
@@ -23958,7 +23958,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "previder-kubernetes-engine",
@@ -24023,7 +24023,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "prismic",
@@ -24038,7 +24038,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "project-calico",
@@ -24089,7 +24089,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "promptfoo",
@@ -24114,7 +24114,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "proptest",
@@ -24194,7 +24194,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "puppet",
@@ -24221,7 +24221,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pure-storage",
@@ -24251,7 +24251,7 @@
    "hosts": [
     "api.pushbullet.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pusher",
@@ -24266,7 +24266,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pushover",
@@ -24283,7 +24283,7 @@
    "hosts": [
     "api.pushover.net"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pydantic",
@@ -24337,7 +24337,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "python",
@@ -24352,7 +24352,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "pytorch",
@@ -24409,7 +24409,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "qdrant",
@@ -24424,7 +24424,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "qingcloud-kubernetes-engine-qke",
@@ -24475,7 +24475,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "qmgo",
@@ -24502,7 +24502,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "qovery.cluster",
@@ -24515,7 +24515,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "qovery.database",
@@ -24528,7 +24528,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "quai-network",
@@ -24621,7 +24621,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "quickwit",
@@ -24647,7 +24647,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "qumulo",
@@ -24714,7 +24714,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rabbitmq",
@@ -24729,7 +24729,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rad-security",
@@ -24872,7 +24872,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "railway.mongodb",
@@ -24885,7 +24885,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "railway.mysql",
@@ -24898,7 +24898,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "railway.postgres",
@@ -24911,7 +24911,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "railway.redis",
@@ -24924,7 +24924,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rancher-kubernetes",
@@ -24963,7 +24963,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ratatui",
@@ -25032,7 +25032,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rbac-lookup",
@@ -25225,7 +25225,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "readthedocs",
@@ -25240,7 +25240,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "red-hat-build-of-microshift",
@@ -25303,7 +25303,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "redis",
@@ -25318,7 +25318,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "redpanda",
@@ -25414,7 +25414,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "remixicons",
@@ -25472,7 +25472,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "remult",
@@ -25500,7 +25500,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "renovate",
@@ -25515,7 +25515,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "replex",
@@ -25542,7 +25542,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "replit",
@@ -25556,7 +25556,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "replit.database",
@@ -25569,7 +25569,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "replit.postgres",
@@ -25582,7 +25582,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "reqnroll",
@@ -25596,7 +25596,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "requests",
@@ -25624,7 +25624,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "resilience4j",
@@ -25652,7 +25652,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rethinkdb",
@@ -25666,7 +25666,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "revenuecat",
@@ -25680,7 +25680,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rich",
@@ -25770,7 +25770,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "robolectric",
@@ -25784,7 +25784,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rocket-chat",
@@ -25799,7 +25799,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rollbar",
@@ -25814,7 +25814,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rolldown",
@@ -25829,7 +25829,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rollup",
@@ -25843,7 +25843,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rook",
@@ -25924,7 +25924,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rspec",
@@ -25938,7 +25938,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rstest",
@@ -25967,7 +25967,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "ruby",
@@ -25982,7 +25982,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rubyenv",
@@ -25996,7 +25996,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "rudder",
@@ -26023,7 +26023,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "runc",
@@ -26088,7 +26088,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "salad",
@@ -26113,7 +26113,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "salt-project",
@@ -26214,7 +26214,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sap",
@@ -26228,7 +26228,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sap-certified-gardener",
@@ -26265,7 +26265,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sass-parser",
@@ -26294,7 +26294,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scala",
@@ -26308,7 +26308,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scalardb",
@@ -26334,7 +26334,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scale",
@@ -26384,7 +26384,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway-kubernetes-kapsule",
@@ -26409,7 +26409,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.database",
@@ -26422,7 +26422,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.documentdb",
@@ -26435,7 +26435,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.elasticmetal",
@@ -26448,7 +26448,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.function",
@@ -26461,7 +26461,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.kubernetes",
@@ -26474,7 +26474,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.mq",
@@ -26487,7 +26487,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.redis",
@@ -26500,7 +26500,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.secretmanager",
@@ -26513,7 +26513,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scaleway.storage",
@@ -26526,7 +26526,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scalingo",
@@ -26579,7 +26579,7 @@
    "hosts": [
     "json.schedulesdirect.org"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "schemahero",
@@ -26646,7 +26646,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scrapy",
@@ -26698,7 +26698,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "scylla",
@@ -26847,7 +26847,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sel4",
@@ -26886,7 +26886,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "selenium-grid",
@@ -26948,7 +26948,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sensu",
@@ -26988,7 +26988,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sequelize",
@@ -27131,7 +27131,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "serviceradar",
@@ -27157,7 +27157,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sglang",
@@ -27209,7 +27209,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "shifu",
@@ -27260,7 +27260,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "shopify.hydrogen",
@@ -27289,7 +27289,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "shturval",
@@ -27413,7 +27413,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "signserver-community",
@@ -27451,7 +27451,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "simplefin",
@@ -27468,7 +27468,7 @@
    "hosts": [
     "bridge.simplefin.org"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "simpleicons",
@@ -27497,7 +27497,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "simplyblock",
@@ -27574,7 +27574,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sitecore.xmlcloud",
@@ -27587,7 +27587,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "skaffold",
@@ -27650,7 +27650,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "slatedocs",
@@ -27767,7 +27767,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "smolagents",
@@ -27806,7 +27806,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "snyk",
@@ -27821,7 +27821,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "socketio",
@@ -27923,7 +27923,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "solid-queue",
@@ -27964,7 +27964,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sonarlint",
@@ -27978,7 +27978,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sonarqube",
@@ -27991,7 +27991,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sonatype",
@@ -28057,7 +28057,7 @@
    "hosts": [
     "ll.thespacedevs.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "spacelift",
@@ -28099,7 +28099,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sparta",
@@ -28261,7 +28261,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "splunk",
@@ -28276,7 +28276,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "spot-io",
@@ -28302,7 +28302,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "spring-ai",
@@ -28565,7 +28565,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sqldelight",
@@ -28579,7 +28579,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sqlglot",
@@ -28608,7 +28608,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sqlmodel",
@@ -28663,7 +28663,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "squarespace",
@@ -28677,7 +28677,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "squareup",
@@ -28691,7 +28691,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "squash",
@@ -28989,7 +28989,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "storybook",
@@ -29004,7 +29004,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "strands",
@@ -29030,7 +29030,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "stratovirt",
@@ -29110,7 +29110,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "stunner",
@@ -29135,7 +29135,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "stylelint",
@@ -29150,7 +29150,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "stylus",
@@ -29165,7 +29165,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "stytch",
@@ -29179,7 +29179,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "submariner",
@@ -29219,7 +29219,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "supabase.auth",
@@ -29233,7 +29233,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "supabase.functions",
@@ -29247,7 +29247,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "supabase.postgres",
@@ -29261,7 +29261,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "supabase.realtime",
@@ -29275,7 +29275,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "supabase.storage",
@@ -29289,7 +29289,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "superedge",
@@ -29352,7 +29352,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "surrealdb",
@@ -29366,7 +29366,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "sveltejs",
@@ -29410,7 +29410,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "swift",
@@ -29425,7 +29425,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "swiftui",
@@ -29452,7 +29452,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "swisscom-kubernetes-service",
@@ -29605,7 +29605,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tailwind",
@@ -29772,7 +29772,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "teamcity",
@@ -29787,7 +29787,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "teamspeak",
@@ -29801,7 +29801,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tekton",
@@ -29827,7 +29827,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "telegram",
@@ -29844,7 +29844,7 @@
    "hosts": [
     "api.telegram.org"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "telemetryhub-by-scout-apm",
@@ -29957,7 +29957,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tencent-kubernetes-engine-tke",
@@ -29982,7 +29982,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tengine",
@@ -30061,7 +30061,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "terraform",
@@ -30077,7 +30077,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "terragrunt",
@@ -30091,7 +30091,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "terramate",
@@ -30153,7 +30153,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "testify",
@@ -30208,7 +30208,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tetragon",
@@ -30296,7 +30296,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "threat-stack",
@@ -30365,7 +30365,7 @@
    "hosts": [
     "app.ticketmaster.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tidb",
@@ -30380,7 +30380,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tigera",
@@ -30409,7 +30409,7 @@
    "hosts": [
     "fly.storage.tigris.dev"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tikv",
@@ -30459,7 +30459,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tingyun",
@@ -30496,7 +30496,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tinygo",
@@ -30537,7 +30537,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "todoist",
@@ -30552,7 +30552,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tokenetes",
@@ -30677,7 +30677,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "traefik-mesh",
@@ -30706,7 +30706,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "trayio",
@@ -30719,7 +30719,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tree-sitter",
@@ -30823,7 +30823,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "triton",
@@ -30888,7 +30888,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "trulens",
@@ -30941,7 +30941,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "tursodb",
@@ -30955,7 +30955,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "twentycrm",
@@ -30969,7 +30969,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "twigphp",
@@ -31000,7 +31000,7 @@
    "hosts": [
     "api.twilio.com"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "twilio-functions",
@@ -31026,7 +31026,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "twitch.oauth",
@@ -31040,7 +31040,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "twitter",
@@ -31054,7 +31054,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "txtai",
@@ -31137,7 +31137,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "typesense",
@@ -31151,7 +31151,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "typesensecloud",
@@ -31164,7 +31164,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "typhoon",
@@ -31205,7 +31205,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "umijs",
@@ -31258,7 +31258,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "unryo",
@@ -31297,7 +31297,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "unstructured",
@@ -31359,7 +31359,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "upstash.kafka",
@@ -31372,7 +31372,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "upstash.qstash",
@@ -31385,7 +31385,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "upstash.redis",
@@ -31398,7 +31398,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "uptimekuma",
@@ -31412,7 +31412,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "uqbar",
@@ -31477,7 +31477,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "useparagon",
@@ -31490,7 +31490,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "userver",
@@ -31517,7 +31517,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "v8",
@@ -31556,7 +31556,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "valibot",
@@ -31584,7 +31584,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vamp-io",
@@ -31671,7 +31671,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vercel.ai",
@@ -31684,7 +31684,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vercel.analytics",
@@ -31697,7 +31697,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vercel.blob",
@@ -31710,7 +31710,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vercel.edge",
@@ -31723,7 +31723,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vercel.functions",
@@ -31736,7 +31736,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vercel.kv",
@@ -31749,7 +31749,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vercel.postgres",
@@ -31762,7 +31762,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "veriff",
@@ -31775,7 +31775,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "verl",
@@ -31812,7 +31812,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "victoriametrics",
@@ -31827,7 +31827,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "viettel-ai-platform",
@@ -31866,7 +31866,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vineyard",
@@ -31931,7 +31931,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "visual-studio-code-kubernetes-tools",
@@ -31956,7 +31956,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vite",
@@ -31971,7 +31971,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vite-plus",
@@ -31986,7 +31986,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vitepress",
@@ -32029,7 +32029,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vllm",
@@ -32213,7 +32213,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vscode-wasm",
@@ -32292,7 +32292,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vuejs",
@@ -32307,7 +32307,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "vuepress",
@@ -32414,7 +32414,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "wamr",
@@ -32441,7 +32441,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "warg",
@@ -32750,7 +32750,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "webassembly-language-runtimes-for-python-and-php-by-vmware-labs",
@@ -32777,7 +32777,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "webflow",
@@ -32791,7 +32791,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "webiny",
@@ -32818,7 +32818,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "webpack-encore",
@@ -32832,7 +32832,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "webview2-com",
@@ -32885,7 +32885,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "whatap",
@@ -32911,7 +32911,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "where-the-iss-at",
@@ -32928,7 +32928,7 @@
    "hosts": [
     "api.wheretheiss.at"
    ],
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "whitesource",
@@ -32966,7 +32966,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "wind-river-studio-cloud-platform",
@@ -33032,7 +33032,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "wiremock-rs",
@@ -33083,7 +33083,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "wiz",
@@ -33096,7 +33096,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "wks-wiit-kubernetes-service",
@@ -33121,7 +33121,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "woocommerce",
@@ -33135,7 +33135,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "woodpecker-ci",
@@ -33161,7 +33161,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "workos",
@@ -33174,7 +33174,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "wso2-api-microgateway",
@@ -33199,7 +33199,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "xendit",
@@ -33214,7 +33214,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "xgboost",
@@ -33264,7 +33264,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "xoap",
@@ -33326,7 +33326,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "yandex-cloud",
@@ -33341,7 +33341,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "yarn",
@@ -33356,7 +33356,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "yarp",
@@ -33496,7 +33496,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "youtube",
@@ -33510,7 +33510,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "yrcloudfile",
@@ -33572,7 +33572,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "zendesk",
@@ -33586,7 +33586,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "zenko",
@@ -33638,7 +33638,7 @@
     "stack-analyser"
    ],
    "category": "tool",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "zipkin",
@@ -33652,7 +33652,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "zitadel",
@@ -33692,7 +33692,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "zoom",
@@ -33706,7 +33706,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "zot",
@@ -33755,7 +33755,7 @@
     "stack-analyser"
    ],
    "category": "service",
-   "support": "partial"
+   "support": "full"
   },
   {
    "id": "zuul",

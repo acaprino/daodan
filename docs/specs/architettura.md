@@ -58,6 +58,8 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 
 L'anagrafica delle tecnologie (`daodan/data/service-registry.json`) dà a ogni framework, libreria, strumento e servizio un tipo di nodo e, dove la voce li ha, una categoria e un logo. Senza `category`, una voce di `kind` `service` vale `service` e le altre `framework`. Il grafo consulta l'anagrafica, senza nominare tecnologie nel codice.
 
+Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scritto a mano. `none`: il fork non ha una regola per la voce, quindi nessun progetto la mostra. Un servizio o uno strumento chiede solo di essere riconosciuto: con una regola è `full`, perché il grafo ha il suo nodo e le frecce che ci arrivano. Un framework o una libreria è `full` quando un lettore di Daodan legge come il progetto lo usa (rotte, eventi dei template, stili: la tabella `READERS`), `partial` quando è riconosciuto e basta. Una sorgente scritta e scollegata non conta: Django, FastAPI e Flask sono `partial` finché non entrano in `find_entry_points`.
+
 | Che cosa | Nel grafo | Tipo di nodo |
 | --- | --- | --- |
 | Voce `service` che un file dichiara | Nodo esterno con il logo della voce; arco `uses` da ogni file che la mostra (`uncertain` dove la menziona soltanto). Una voce solo menzionata nel progetto non è un nodo | `type` della voce |
@@ -116,7 +118,7 @@ Ogni anagrafica ha un controllo automatico di coerenza con il codice:
 | `file-formats.json` | Formati accettati, linguaggi, cartelle/nomi esclusi | `list_files` | Nel codice |
 | `linguist-catalog.json` | Nomi Linguist per ogni formato accettato | `list_files` | Nel codice |
 | `language-rules.toml` | Regole di disambiguazione estensioni condivise | `list_files` | Nel codice (mancano `.h` e nomi file) |
-| `service-registry.json`, `registry-additions.json`, `marks/` | Di ogni tecnologia nome, `kind` (`service`, `project`), tipo di nodo e sito; dove ci sono, `category` (`framework`, `library`, `tool`, `service`) e logo (+ `surface`) | `recognize_stack`, il grafo, UI | Nel codice (senza `surface`) |
+| `service-registry.json`, `registry-additions.json`, `marks/` | Di ogni tecnologia nome, `kind` (`service`, `project`), tipo di nodo e sito; `support` (`full`, `partial`, `none`); dove ci sono, `category` (`framework`, `library`, `tool`, `service`) e logo (+ `surface`) | `recognize_stack`, il grafo, UI | Nel codice (senza `surface`) |
 | `build-tools.json` | Strumenti di build/toolchain -> adattatore | `find_modules` | Da creare (T1) |
 | `package-managers.json` | Registri pacchetti consentiti nella preparazione | Preparazione container | Nel codice |
 | `entry-queries.json` | Query tree-sitter per ingressi | `find_entry_points` | Nel codice |
