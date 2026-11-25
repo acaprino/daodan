@@ -6,6 +6,53 @@ Raccolti il 25 novembre 2026: repository pubblici che non sono già fra le 50 ca
 - **Non verificato:** la colonna «Che cosa prova» viene da ciò che si sa del progetto, non dai file a un commit. Si conferma quando si scrive `source.json`, con il commit.
 - Nessuno è ancora un caso: manca `source.json` e `expected.json`.
 
+## Selezione rivista sul `support`
+
+Rivista il 25 novembre 2026 sul `support` di ogni voce del registro (`docs/specs/architettura.md`, «Nodi del grafo»): che cosa un progetto deve provare dipende dal livello della tecnologia che porta. I repository senza nota stanno nelle sezioni sotto; i 10 marcati «nuovo» sono Apache 2.0 o MIT, verificati su deps.dev lo stesso giorno.
+
+### `full` con un lettore: si prova la lettura
+
+Le 10 voci di `registry_build.READERS`. Sono i casi da scrivere per primi: qui Daodan promette rotte, eventi dei template o stili, e un caso misura se li dà.
+
+| Voce | Candidati |
+| --- | --- |
+| Next.js | vercel/commerce, vercel/nextjs-subscription-payments, t3-oss/create-t3-turbo, boxyhq/saas-starter-kit, payloadcms/payload |
+| Nuxt | nuxt/movies, atinux/atidone (nuovo) |
+| React Router | remix-run/react-router (nuovo): i modelli e i progetti di prova in modalità framework |
+| Remix | remix-run/indie-stack (nuovo), remix-run/blues-stack (nuovo) |
+| SvelteKit | sveltejs/realworld, sveltejs/kit (nuovo) |
+| Svelte | gradio-app/gradio, pocketbase/pocketbase |
+| Angular | akveo/ngx-admin (nuovo), angular/components (nuovo, con Bazel), auth0-samples/auth0-angular-samples, ionic-team/ionic-framework |
+| Astro | withastro/starlight, onwidget/astrowind (nuovo, con Tailwind) |
+| Tailwind | shadcn-ui/ui (nuovo), onwidget/astrowind |
+| Vue | vbenjs/vue-vben-admin, element-plus/element-plus, vuejs/pinia, vuejs/vitepress |
+
+### `partial`: si prova il riconoscimento, la lettura è attesa come buco
+
+Framework e librerie con una regola del fork e nessun lettore. Un caso misura che siano riconosciuti; le rotte restano un buco dichiarato finché il lettore non c'è. Prima i tre che il piano integra in T1.
+
+| Voce | Candidati |
+| --- | --- |
+| Django | zulip/zulip, ArchiveBox/ArchiveBox |
+| FastAPI | fastapi/fastapi (nuovo: gli esempi di `docs_src`), fastapi/sqlmodel, jlowin/fastmcp |
+| Flask | miguelgrinberg/microblog, apache/superset |
+| Express, Koa, Fastify, Hono, Elysia | expressjs/express, koajs/koa, fastify/demo, honojs/hono, elysiajs/elysia |
+| Spring Boot, MVC, WebFlux | spring-guides/gs-rest-service, spring-petclinic/spring-petclinic-rest, appsmithorg/appsmith |
+| Quarkus, Micronaut, Ktor | quarkusio/quarkus-quickstarts, micronaut-projects/micronaut-starter, ktorio/ktor-samples |
+| ASP.NET Core, Blazor, .NET MAUI | kgrzybek/modular-monolith-with-ddd, MudBlazor/MudBlazor, dotnet/maui-samples |
+| Gin, Echo, Fiber, Chi | labstack/echo, gofiber/recipes, go-gitea/gitea |
+| Axum, Actix Web, Dioxus | tokio-rs/axum, actix/examples, DioxusLabs/dioxus |
+| Electron, Tauri, Expo, React Native | electron/fiddle, tauri-apps/tauri, bluesky-social/social-app |
+| ORM e code (librerie) | fastapi/sqlmodel, go-gorm/gorm, SeaQL/sea-orm, JetBrains/Exposed, MassTransit/MassTransit |
+
+### `full` senza lettore: si prova solo che il servizio sia visto
+
+Servizi e strumenti: un caso misura il nodo e le frecce, niente altro. Vanno bene i progetti più semplici delle sezioni «Servizi esterni e pipeline di rilascio» e «Scelti sulle tipologie del registro»: i quickstart di Firebase, gli esempi di Auth0 e di Stripe, `keycloak-quickstarts`, `rabbitmq-tutorials`, `nikoksr/notify`, `rclone/rclone`.
+
+### `none`: misurano un buco, non sono casi di regressione
+
+La tecnologia principale non ha una regola del fork, o nemmeno una voce nel registro: il caso fallisce finché la regola non c'è, e serve a dire quando arriva. temporalio/samples-python e gli altri `samples-*`, langfuse/langfuse, Unleash/unleash, zitadel/zitadel, goauthentik/authentik, plaid/quickstart, svix/svix-webhooks, triggerdotdev/trigger.dev, growthbook/growthbook.
+
 ## Apache 2.0 e MIT (85)
 
 ### Python
