@@ -1,10 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { accessFeedback, preferredBranch, preparation, repositoryContext, repositoryReason, repositorySlug } from '../app/repository.ts';
-import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, passWord, runBar, runCount, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps } from '../app/run.ts';
+import { accessFeedback, preferredBranch, preparation, repositoryContext, repositorySlug, sameChoice } from '../app/repository.ts';
+import { askReason, buildStatus, gapLines, linksNote, logItems, mapNotice, passAlert, passWord, phaseItems, runBar, runCount, runHelp, runPercent, runPhaseLabel, serviceLine, statusLabel, statusOf, steps, stepTime } from '../app/run.ts';
 import type { RunEvent } from '../app/server.ts';
 import type { Snapshot } from '../app/snapshot.ts';
-import { STAGE_WORD, stages } from '../app/stages.ts';
+import { footOf, stages } from '../app/stages.ts';
+import { DEFAULTS } from '../app/storage.ts';
+import type { Kept } from '../app/storage.ts';
 
 const context = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'r1' };
 // What these read of the snapshot: the server's state, the run's events, and what the page is doing.
@@ -12,20 +14,65 @@ const of = (server: object | null, more: object = {}) => ({
   server, serverError: '', events: [], premapError: '', checked: null, checking: false, graph: null, graphLoading: false, ...more,
 }) as unknown as Snapshot;
 const run = (state: string | undefined, events: Partial<RunEvent>[] = [], more: object = {}) => of({ context, job: { state: 'ready' }, run: { pass: { state, reason: null }, ...more } }, { events });
-const rows = (s: Snapshot) => stages(s).map(row => [row.id, STAGE_WORD[row.state], row.reason]);
+const rows = (s: Snapshot) => stages(s).map(row => [row.id, row.state, row.reason]);
 
 test('the stages say how they are, and why one cannot be opened', () => {
   const first = 'Scegli prima una repository e un branch.';
-  assert.deepEqual(rows(of({ job: { state: 'idle' } })), [['repository', 'da fare', ''], ['premap', 'da fare', first], ['analysis', 'da fare', first], ['synthesis', 'da fare', first]]);
-  assert.deepEqual(rows(of(null)).map(row => row[1]), ['da fare', 'da fare', 'da fare', 'da fare']);
-  assert.equal(rows(of({ job: { state: 'preparing' } }))[0][1], 'in corso');
-  assert.equal(rows(of({ job: { state: 'failed' } }))[0][1], 'non riuscita');
-  assert.deepEqual(rows(run('running')), [['repository', 'fatta', ''], ['premap', 'fatta', ''], ['analysis', 'in corso', ''],
-    ['synthesis', 'da fare', 'La sintesi è pronta quando la pipeline è conclusa.']]);
-  assert.deepEqual(rows(run('fresh')).map(row => row.slice(1)), [['fatta', ''], ['fatta', ''], ['fatta', ''], ['fatta', '']]);
-  assert.deepEqual(rows(run('failed')).slice(2).map(row => row.slice(1)), [['non riuscita', ''], ['fatta', '']]);
-  assert.equal(rows(run('fresh', [{ kind: 'step.started', step: 'union' }]))[2][1], 'in corso');  // a step runs after the pass's end
-  assert.equal(rows(of({ context, run: { pass: { state: 'fresh' } } }, { premapError: 'illeggibile' }))[1][1], 'non riuscita');
+  assert.deepEqual(rows(of({ job: { state: 'idle' } })), [['repository', 'todo', ''], ['premap', 'todo', first], ['analysis', 'todo', first], ['synthesis', 'todo', first]]);
+  assert.deepEqual(rows(of(null)).map(row => row[1]), ['todo', 'todo', 'todo', 'todo']);
+  assert.equal(rows(of({ job: { state: 'preparing' } }))[0][1], 'running');
+  assert.equal(rows(of({ job: { state: 'failed' } }))[0][1], 'error');
+  assert.deepEqual(rows(run('running')), [['repository', 'done', ''], ['premap', 'done', ''], ['analysis', 'running', ''],
+    ['synthesis', 'todo', 'La sintesi è pronta quando la pipeline è conclusa.']]);
+  assert.deepEqual(rows(run('fresh')).map(row => row.slice(1)), [['done', ''], ['done', ''], ['done', ''], ['done', '']]);
+  assert.deepEqual(rows(run('failed')).slice(2).map(row => row.slice(1)), [['error', ''], ['done', '']]);
+  assert.equal(rows(run('fresh', [{ kind: 'step.started', step: 'union' }]))[2][1], 'running');  // a step runs after the pass's end
+  assert.equal(rows(of({ context, run: { pass: { state: 'fresh' } } }, { premapError: 'illeggibile' }))[1][1], 'error');
+  const found = stages(of({ context, run: { pass: { state: 'running' }, progress: null } }, { premap: { files: ['a'], units: [] } }));
+  assert.deepEqual(found.map(row => [row.detail, row.meta]),
+    [['demo/shop · main', ''], ['1 file · 0 unità tecniche', ''], ['0 di 6 passi completati', '0%'], ['Risultati e lacune', '']]);
+});
+
+test('the foot has the way back, one action, and why it waits or what comes after it', () => {
+  const at = (analysisStage: Kept['analysisStage'], server: object | null, more: object = {}, repositoryUrl = '') =>
+    of(server, { kept: { ...DEFAULTS, analysisStage, repositoryUrl }, branch: '', ...more });
+  const foot = (...given: Parameters<typeof at>) => {
+    const { back, label, act, off, busy, note } = footOf(at(...given));
+    return [back, label, act, off ? 'off' : busy, note];
+  };
+  const idle = { job: { state: 'idle' } }, done = { context, job: { state: 'ready' }, run: { pass: { state: 'fresh' } } };
+  const url = 'https://github.com/demo/shop', commit = context.commit;
+  const checked = { state: 'accessible', repository: context.repository, branches: [{ name: 'main', commit }, { name: 'dev', commit }] };
+  assert.deepEqual(foot('repository', idle), [null, 'Verifica accesso', 'verify', 'off', 'Scrivi l’URL della repository.']);
+  assert.deepEqual(foot('repository', idle, {}, url), [null, 'Verifica accesso', 'verify', '', 'Poi: il branch']);
+  assert.deepEqual(foot('repository', idle, { checking: true }, url), [null, 'Verifica accesso', 'verify', 'Verifica…', 'Verifica in corso.']);
+  assert.deepEqual(foot('repository', idle, { checked, branch: 'main' }, url), [null, 'Avvia l’analisi', 'select', '', 'Poi: Pre-mappa']);
+  assert.deepEqual(foot('repository', { job: { state: 'preparing' } }, { checked }, url), [null, 'Avvia l’analisi', 'select', 'Preparazione…', 'Preparazione in corso.']);
+  assert.deepEqual(foot('repository', done, { checked, branch: 'main', selecting: true }, url)[3], 'Preparazione…');
+  // A step done is looked at, and goes on with its run; another branch, commit or address is another analysis.
+  const more = [null, 'Continua', 'premap', '', 'Poi: Pre-mappa'];
+  assert.deepEqual([foot('repository', done), foot('repository', done, {}, url), foot('repository', done, { checked, branch: 'main' }, url)], [more, more, more]);
+  assert.equal(foot('repository', done, { checked, branch: 'dev' }, url)[2], 'select');
+  assert.equal(foot('repository', done, { checked: { ...checked, branches: [{ name: 'main', commit: '2'.repeat(40) }] }, branch: 'main' }, url)[2], 'select');
+  assert.equal(foot('repository', done, {}, 'https://github.com/demo/altro')[2], 'verify');
+  assert.equal(sameChoice(at('repository', done, {}, 'https://github.com/Demo/Shop')), true);
+  assert.deepEqual(foot('premap', done), ['repository', 'Continua', 'analysis', '', 'Poi: Analisi']);
+  assert.deepEqual(foot('analysis', { ...done, run: { pass: { state: 'running' } } }), ['premap', 'Continua', 'synthesis', 'off', 'Attendi la fine della pipeline.']);
+  assert.deepEqual(foot('analysis', done), ['premap', 'Continua', 'synthesis', '', 'Poi: Sintesi e grafo']);
+  assert.deepEqual(foot('synthesis', done), ['analysis', 'Apri il grafo', 'graph', '', 'Ultimo passo']);
+});
+
+test('a phase says how long it has taken, as its events do', () => {
+  const at = (second: number) => `2026-11-25T10:00:${String(second).padStart(2, '0')}Z`, now = Date.parse('2026-11-25T10:02:05Z');
+  const events = [
+    { kind: 'step.started', step: 'parse', at: at(0) }, { kind: 'step.finished', step: 'parse', at: at(9) },
+    { kind: 'step.started', step: 'scan', at: at(9) }, { kind: 'step.failed', step: 'scan', at: at(12), message: 'disco pieno' },
+    { kind: 'step.started', step: 'stack', at: at(0) }, { kind: 'step.started', step: 'analyze' },
+  ];
+  const s = run('running', events);
+  assert.deepEqual(steps(s).map(step => stepTime(s, step, now)), ['9 s', '3 s', '2 min 5 s', '', '', '']);
+  assert.deepEqual(phaseItems(s, now).map(item => [item.status, item.description, item.meta]), [['done', undefined, '9 s'], ['error', 'Non riuscita · disco pieno', '3 s'],
+    ['running', 'In corso', '2 min 5 s'], ['running', 'In corso', undefined], ['todo', undefined, undefined], ['todo', undefined, undefined]]);
 });
 
 test('a GitHub address is read with or without its scheme, and nothing else is one', () => {
@@ -36,12 +83,8 @@ test('a GitHub address is read with or without its scheme, and nothing else is o
   assert.deepEqual([['dev', 'main'], ['dev', 'master'], ['dev']].map(names => preferredBranch(names.map(name => ({ name })), 'dev')), ['main', 'master', 'dev']);
 });
 
-test('the repository says why the branch waits, what the check found and how the preparation goes', () => {
+test('the repository says what the check found and how the preparation goes', () => {
   const found = { state: 'accessible' };
-  assert.equal(repositoryReason(of(null)), 'Verifica prima l’accesso alla repository.');
-  assert.equal(repositoryReason(of(null, { checking: true })), 'Verifica in corso.');
-  assert.equal(repositoryReason(of({ job: { state: 'preparing' } }, { checked: found })), 'Preparazione in corso.');
-  assert.equal(repositoryReason(of({ job: { state: 'idle' } }, { checked: found })), '');
   assert.equal(accessFeedback(null), null);
   assert.equal(accessFeedback(found as never), null);
   assert.deepEqual(accessFeedback({ state: 'network', detail: 'timeout' } as never),

@@ -68,7 +68,7 @@ export const respond = async route => {
     checkRequests.push(route.request().postDataJSON());
     await new Promise(resolve => setTimeout(resolve, mode.checkDelay));
     return route.fulfill({ json: { state: 'accessible', repository: { owner: 'demo', name: 'shop' }, default: 'main',
-      branches: [{ name: 'main', commit: '1'.repeat(40) }, { name: 'dev', commit: '2'.repeat(40) }] } });
+      branches: [{ name: 'main', commit: '1'.repeat(40) }, { name: 'dev', commit: '2'.repeat(40) }] } }).catch(() => {});  // who asked may have gone
   }
   if (path === '/api/app/select') {
     selectRequests.push(route.request().postDataJSON());

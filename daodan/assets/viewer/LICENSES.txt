@@ -204,7 +204,7 @@ Apache License
 
 ----------------
 
-@acaprino/sigrid 6.5.2 (MIT)
+@acaprino/sigrid 6.6.0 (MIT)
 
 MIT License
 

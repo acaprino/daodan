@@ -52,6 +52,7 @@ export type Snapshot = Readonly<{
   premap: Premap | null; premapError: string;
   graph: Graph | null; graphError: string; graphLoading: boolean;
   groupWanted: boolean;  // the graph screen is to show the details of the group it is read from: the person came there, or chose it
+  engineFromStep: boolean;  // a step of the analysis led to the engine, which leads back to it
   pathPage: PathPage | null;
   symbols: Symbols | null;
   events: readonly RunEvent[];

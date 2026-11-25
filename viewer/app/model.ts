@@ -29,7 +29,7 @@ export function createModel(host: Host) {
     kept: stored.kept, server: null, serverError: '',
     checked: null, checkedUrl: '', branch: '', checking: false, checkError: '', selecting: false, selectError: '',
     premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, groupWanted: stored.kept.screen === 'graph',
-    pathPage: null, symbols: null, events: [],
+    engineFromStep: false, pathPage: null, symbols: null, events: [],
     engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null,
   };
   const listeners = new Set<() => void>();
@@ -84,7 +84,10 @@ export function createModel(host: Host) {
     if (!c && kept.runId) kept = { ...kept, runId: '' };
     if (now.selecting && !choosing && found.job?.state !== 'preparing') {  // until the choice is answered, a frame is of what was before it
       patch.selecting = false;
-      if (c && found.job?.state === 'ready') { ready = true; kept = { ...kept, analysisStage: 'premap' }; }
+      if (c && found.job?.state === 'ready') {
+        ready = true;
+        if (now.checked) kept = { ...kept, analysisStage: 'premap' };  // not while another address is being written
+      }
     }
     if (linked || mappingChanged || now.pathPage?.run !== c?.run_id) patch.pathPage = null;
     if (kept !== now.kept) patch.kept = kept;
@@ -266,12 +269,16 @@ export function createModel(host: Host) {
     if (patch.graphOpen) loadViews();
   }
   function navigate(screen: Place) {
-    set({ kept: { ...now.kept, screen }, groupWanted: screen === 'graph' });
+    set({ kept: { ...now.kept, screen }, groupWanted: screen === 'graph', engineFromStep: false });
     loadViews();  // the graph screen draws its level, the analysis the first one
     settle();
   }
+  function chooseEngine() {  // from a step that needs it
+    navigate('engine');
+    set({ engineFromStep: true });
+  }
   function selectStage(analysisStage: Stage) {
-    set({ kept: { ...now.kept, screen: 'analysis', analysisStage }, groupWanted: false });
+    set({ kept: { ...now.kept, screen: 'analysis', analysisStage }, groupWanted: false, engineFromStep: false });
     loadViews();
     settle();
   }
@@ -381,7 +388,7 @@ export function createModel(host: Host) {
       if (!storageAvailable) say('Archiviazione del browser non disponibile: le scelte durano questa apertura.');
       observe();
     },
-    keep: choose, navigate, selectStage,
+    keep: choose, navigate, chooseEngine, selectStage,
     explorerUrl: () => `/?${new URLSearchParams({ token: host.token, run: ctx(now)?.run_id ?? '' })}`,
     markUrl: (mark: string | null | undefined) => markAddress('/api/app/mark', mark, host.token),
     setRepositoryUrl, verifyRepositoryUrl, selectRepository, setBranch: (branch: string) => set({ branch }),

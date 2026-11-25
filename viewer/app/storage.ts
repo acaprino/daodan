@@ -12,7 +12,7 @@ export type Kept = {
 };
 
 const PLACES: readonly string[] = ['analysis', 'graph', 'engine'];
-const STAGES: readonly string[] = ['repository', 'premap', 'analysis', 'synthesis'];
+export const STAGES: readonly Stage[] = ['repository', 'premap', 'analysis', 'synthesis'];
 export const DEFAULTS: Kept = {
   screen: 'analysis', analysisStage: 'repository', repositoryUrl: '', runId: '',
   treeMode: 'directories', treeSearch: '', treeSelected: '', treeOpen: {},

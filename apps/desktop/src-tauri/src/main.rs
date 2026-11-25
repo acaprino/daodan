@@ -4,11 +4,10 @@
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 
 mod life;
-mod message;
 mod server;
 
 use imago_shell::{
-    on_run_event, open_main, plugin, show_main,
+    message, on_run_event, open_main, plugin, show_main,
     single_instance::{launch, Launch, Quitting},
     Material, Options, DARK_GROUND, LIGHT_GROUND,
 };
@@ -65,7 +64,7 @@ fn main() {
         ])
         .setup(|app| {
             setup(app).inspect_err(|error| {
-                message::tell(&format!("Daodan non si avvia: {error}."));
+                message::tell("Daodan", &format!("Daodan non si avvia: {error}."));
             })
         })
         .build(tauri::generate_context!())

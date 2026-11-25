@@ -43,6 +43,28 @@ export function steps(s: Run): RunStep[] {
   });
 }
 
+// How long a step has taken, or took, as its events say; empty where they do not.
+export function stepTime(s: Pick<Snapshot, 'events'>, { id, status }: Pick<RunStep, 'id' | 'status'>, now: number): string {
+  const running = status === 'running';
+  let from = NaN, to = running ? now : NaN;
+  for (const e of pipelineEvents(s)) {
+    if (e.step !== id || !e.at) continue;
+    if (e.kind === 'step.started') from = Date.parse(e.at);
+    else if (!running && (e.kind === 'step.finished' || e.kind === 'step.failed')) to = Date.parse(e.at);
+  }
+  const seconds = Math.round((to - from) / 1000);
+  return !(seconds >= 0) ? '' : seconds < 60 ? `${seconds} s` : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+}
+
+// The steps as the path draws them. What the dot says is not said again under the name.
+const SAID: readonly string[] = ['Completata', 'In attesa'];
+export function phaseItems(s: Run, now: number) {
+  return steps(s).map(step => ({
+    label: step.label, status: step.status === 'failed' ? 'error' as const : step.status === 'pending' ? 'todo' as const : step.status,
+    description: SAID.includes(step.note) ? undefined : step.note, meta: stepTime(s, step, now) || undefined,
+  }));
+}
+
 const completed = (list: readonly RunStep[]) => list.filter(t => t.status === 'done').length;
 // How many of its steps are done, beside the screen's title.
 export function runCount(s: Run): string {
