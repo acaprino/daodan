@@ -1,6 +1,6 @@
 # Lo stack prima dei moduli, i punti di ingresso a sé, e i nomi degli step
 
-**Stato:** piano chiesto dal proprietario il 25 novembre 2026. Nessun codice è cambiato. Sostituisce l'ordine e i nomi della spec della pipeline (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8) dove dicono altro.
+**Stato:** piano chiesto dal proprietario il 25 novembre 2026. Nessun codice è cambiato. Il disegno è nella spec della pipeline (`docs/specs/2026-11-15-pipeline-di-analisi.md`, sezione 8, aggiornata il 25 novembre); qui i task, le misure e le scelte aperte.
 
 **Goal:** ogni step ha una competenza sola. stack-analyser analizza lo stack: dice quali strumenti di build, toolchain, framework e tecnologie ci sono, e dove. Non trova i moduli. Lo step dopo prende ciò che è stato trovato e usa quegli strumenti di build per trovare i moduli e le loro dipendenze.
 
