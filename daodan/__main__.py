@@ -1,6 +1,6 @@
 """Daodan's command: `daodan app`, `daodan mcp`, or any tool of the core by its file's name.
 
-    daodan app [--work DIR] [--port N]        the standalone app
+    daodan app [--work DIR] [--port N]        the standalone app (`--desktop`: as Daodan's window starts it)
     daodan mcp --project DIR | --hook         the MCP server a harness starts, and its refresh hook
     daodan snapshot write PROJECT --out DIR   `core/snapshot.py`, as every other tool of `core/`
 
