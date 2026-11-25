@@ -8,14 +8,14 @@ Aggiornata al 19 novembre 2026. Distingue ciò che è in uso nel repository, ci�
 
 | Filone | Stato | Riferimento |
 | --- | --- | --- |
-| Mappa statica, moduli unificati (Step 1 `scan`) e stack per modulo (Step 2 `stack`) | In uso | [pipeline, sezioni 1 e 6](specs/2026-11-15-pipeline-di-analisi.md) |
-| Indicizzatori per linguaggio nel container e passo dinamico sui test (`tests`) | In uso | [passo dinamico](specs/2026-11-12-passo-dinamico.md), [supporto misurato](plugins/codebase-map-supporto.md) |
-| Flussi, mappa del sistema e grafo dei moduli dai flussi | In uso / prova sui benchmark | [flussi e mappa, «Principi»](specs/2026-11-18-flussi-e-mappa-del-sistema.md) |
-| Registro dell'esecuzione: albero delle chiamate, frontiere, conto di sistema e corsa HTTP | Proposto | [esecuzione del programma](specs/2026-11-19-esecuzione-del-programma.md) |
-| Riconoscimento statico delle interfacce, `builds` e `starts` risolti con `toolchains` | Proposto (priorità immediata) | [interfacce del progetto](specs/2026-11-19-interfacce-del-progetto.md) |
-| Esecuzione dinamica delle interfacce `web` e `webview` (Electron, Tauri, Wails) | Proposto (subito dopo il riconoscimento) | [interfacce del progetto, sezione 7](specs/2026-11-19-interfacce-del-progetto.md#7-esecuzione-solo-web-e-webview) |
+| Mappa statica, moduli unificati (Step 1 `scan`) e stack per modulo (Step 2 `stack`) | In uso | [pipeline, sezioni 1 e 6](specs/2026-11-25-lavoro-residuo-a-ondate.md) |
+| Indicizzatori per linguaggio nel container e passo dinamico sui test (`tests`) | In uso | [passo dinamico](specs/2026-11-25-lavoro-residuo-a-ondate.md), [supporto misurato](plugins/codebase-map-supporto.md) |
+| Flussi, mappa del sistema e grafo dei moduli dai flussi | In uso / prova sui benchmark | [flussi e mappa, «Principi»](specs/2026-11-25-lavoro-residuo-a-ondate.md) |
+| Registro dell'esecuzione: albero delle chiamate, frontiere, conto di sistema e corsa HTTP | Proposto | [esecuzione del programma](specs/2026-11-25-lavoro-residuo-a-ondate.md) |
+| Riconoscimento statico delle interfacce, `builds` e `starts` risolti con `toolchains` | Proposto (priorità immediata) | [interfacce del progetto](specs/2026-11-25-lavoro-residuo-a-ondate.md) |
+| Esecuzione dinamica delle interfacce `web` e `webview` (Electron, Tauri, Wails) | Proposto (subito dopo il riconoscimento) | [interfacce del progetto, sezione 7](specs/2026-11-25-lavoro-residuo-a-ondate.md) |
 | Esecuzione dinamica di desktop Linux, Android e Windows nativo (emulatori/VM in container) | Rimandato (oggi lacuna dichiarata) | Sezione seguente |
-| Mappa del sistema a fine di ogni analisi, con il giro del modello sui resti | Da collegare: il ruolo `system-mapper` esiste nel plugin, nessun passo lo avvia | [flussi e mappa, sezione 7](specs/2026-11-18-flussi-e-mappa-del-sistema.md), [flussi e mappa, Principio 4](specs/2026-11-18-flussi-e-mappa-del-sistema.md) |
+| Mappa del sistema a fine di ogni analisi, con il giro del modello sui resti | Da collegare: il ruolo `system-mapper` esiste nel plugin, nessun passo lo avvia | [flussi e mappa, sezione 7](specs/2026-11-25-lavoro-residuo-a-ondate.md), [flussi e mappa, Principio 4](specs/2026-11-25-lavoro-residuo-a-ondate.md) |
 
 ## Sequenza per le interfacce e l'avvio dei programmi
 
@@ -29,7 +29,7 @@ Zero esecuzione di codice del progetto; verificato sui 180 progetti di `benchmar
 
 ### Fase 2 — Esecuzione `web` e `webview` nel container
 
-1. **Albero delle chiamate e frontiere sui test esistenti**, come primo passo della [spec del 19 novembre](specs/2026-11-19-esecuzione-del-programma.md).
+1. **Albero delle chiamate e frontiere sui test esistenti**, come primo passo della [spec del 19 novembre](specs/2026-11-25-lavoro-residuo-a-ondate.md).
 2. **Corsa `web`:** avvio del modulo tramite `builds` + `starts` nel pod senza rete (`--network none`, servizi CI accanto) e navigazione delle pagine d'ingresso con **Playwright + Chromium headless** forniti da Daodan nel container, unendo gli scambi browser-server e le catene registrate.
 3. **Corsa `webview` (Electron, Tauri, Wails):** avvio sotto `Xvfb` nel container Linux e collegamento dello stesso pilota browser alla webview dell'app (CDP per Electron, WebDriver per Tauri/Wails), osservando insieme vista web e processo nativo del guscio.
 

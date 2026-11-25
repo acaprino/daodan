@@ -133,11 +133,9 @@ and the build.
 
 ## Documentation
 
-- [Design: Codebase Map and semantic review](docs/specs/2026-11-03-semantic-review-foundation.md)
+- [What is left to do, in waves, and the pipeline as it is decided](docs/specs/2026-11-25-lavoro-residuo-a-ondate.md): the one spec; the specs and plans before it are in git's history, at commit `614c940`
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)
-- Flows, in three phases: [1, working run and review rules](docs/specs/2026-11-09-working-run-and-review-fixes.md) · [2, flows and units](docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) · [3, do they help review](docs/specs/2026-11-09-flows-in-review.md) · [literature](docs/research/2026-11-09-flow-reconstruction-literature.md)
-- Dynamic step, tests in a container: [spec](docs/specs/2026-11-12-passo-dinamico.md) · [plan](docs/plans/2026-11-12-passo-dinamico.md) · [program execution](docs/specs/2026-11-19-esecuzione-del-programma.md) · [UI recognition and web execution](docs/specs/2026-11-19-interfacce-del-progetto.md)
 - [Roadmap](docs/roadmap.md)
 - [Working rules for agents in this repository](AGENTS.md)
 

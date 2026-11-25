@@ -1,6 +1,8 @@
 # Il lavoro che resta, in ondate
 
-**Stato:** chiesta dal proprietario il 25 novembre 2026. Condensa in un documento solo ciò che le spec e i piani dichiarano ancora da fare o fatto in parte. Non decide nulla di nuovo: ogni voce rimanda alla sezione da cui viene, dove restano i motivi e le misure.
+**Stato:** chiesta dal proprietario il 25 novembre 2026. È l'unica spec di Daodan: condensa ciò che le spec e i piani di prima dichiaravano ancora da fare o fatto in parte, e tiene il disegno della pipeline. Non decide nulla di nuovo.
+
+**Le spec e i piani di prima sono stati tolti dal repository il 25 novembre**, su richiesta del proprietario. Ogni voce cita ancora il documento e la sezione da cui viene, con i suoi motivi e le sue misure: si leggono nella storia di git, al commit `614c940` (`git show 614c940:docs/specs/<nome>.md`). L'elenco è in fondo.
 
 **Come è stata scritta.** Letti il 25 novembre tutte le spec e i piani di `docs/` (19 spec, 13 piani, la roadmap). Lo stato di ogni voce è quello che il suo documento dichiara, non riverificato sul codice, salvo dove è scritto «visto nel codice». Dove due documenti si contraddicono è detto.
 
@@ -22,6 +24,42 @@
 
 Le ondate 1, 2 e 6 non dipendono l'una dall'altra e possono procedere insieme.
 
+## La pipeline, com'è decisa
+
+Otto step, ognuno con una competenza sola, decisi dal proprietario il 25 novembre 2026. Nel codice del riordino non c'è ancora nulla: oggi gli step sono `scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`, con l'elenco dei file e la lettura del codice fatti prima della pipeline.
+
+**La regola.** Ogni step parte da ciò che gli step prima hanno stabilito. Ogni fatto ha un padrone solo: uno step non riscopre ciò che un altro stabilisce, lo chiede a lui; dove il padrone non ha potuto stabilirlo (manca il container), chi ne ha bisogno usa un ripiego e lo scrive accanto al dato. Ogni step ha una competenza sola: chi analizza lo stack non trova i moduli, chi trova i moduli non cerca da sé quale strumento di build c'è, chi tiene il modello di build non tiene rotte ed eventi.
+
+| Step | Competenza | Deve sapere prima, e da chi | Che cosa scrive |
+| --- | --- | --- | --- |
+| `1_list_files` | L'elenco dei file | La cartella e il perimetro: da chi avvia l'analisi | Di ogni file percorso, dimensione, hash e linguaggio |
+| `2_read_code` | Il contenuto di ogni file | Quali file e in che linguaggio: dal 1 | Simboli, import e riferimenti, e come è andata la lettura |
+| `3_recognize_stack` | Lo stack | I file: dal 1 | Strumenti di build, toolchain, framework, librerie e servizi, ognuno con il file che lo prova. Nessun modulo |
+| `4_find_modules` | Il modello di build | Quali strumenti di build ci sono e dove: dal 3 | Moduli, unità, toolchain, pacchetti e grafo dei pacchetti, comandi di test, di avvio e di build, servizi. Poi le tecnologie del 3 assegnate ai moduli |
+| `5_find_entry_points` | Dove entra un utente o una richiesta | Quali framework ci sono e dove: dal 3. I simboli: dal 2. I pacchetti ripristinati: dal 4 | Rotte, pagine ed eventi, ognuno legato alla sua funzione |
+| `6_link_calls` | Dove arriva ogni chiamata | I riferimenti: dal 2. Unità e build: dal 4. L'ambiente preparato | Gli archi provati |
+| `7_run_and_observe` | Ciò che viene chiamato davvero | I comandi di test, di avvio e di build: dal 4. Le pagine da aprire: dal 5. Il grafo statico: dal 6 | Gli archi osservati; i controlli premuti, con le funzioni partite |
+| `8_assemble_graph` | L'unione, e ciò che manca | Tutto | Il grafo completo: gli archi fra moduli, gli ingressi uniti alle loro definizioni, l'osservato contro il provato, le lacune |
+
+| Step | Strumento sotto | Oggi nel codice |
+| --- | --- | --- |
+| `1_list_files` | Git per ciò che è ignorato (`tree_scope.py`); l'anagrafica dei formati (`data/file-formats.json`); le regole del linguaggio (`languages/detect/`) | `file_inventory.write`, prima della pipeline. go-enry gira in `scan` e la lettura non lo usa |
+| `2_read_code` | tree-sitter, `ast` di Python; SQL e PL/SQL con lettori nostri | `snapshot.write_reading`, prima della pipeline. Lo step `parse` dice solo il piano e sparisce |
+| `3_recognize_stack` | stack-analyser, il nostro fork | Step `stack`, secondo in `STEPS`: gira dopo `scan` e ne legge moduli e pacchetti |
+| `4_find_modules` | Lo strumento di build vero nel container (cargo, gradle, maven, npm, `tsc`, cmake, …); senza container i lettori dei manifest | Step `scan`, primo in `STEPS`: ogni sorgente cerca da sé il suo file nell'inventario |
+| `5_find_entry_points` | Lo strumento del framework (`next typegen`, `react-router routes`, `nuxt prepare`, `svelte-kit sync`, i compilatori di Angular e Astro), Noir, e tree-sitter con le query di `data/entry-queries.json` | Diviso in due: le sorgenti dei framework sono in `scan` e scrivono nella pre-mappa (`framework_entries`, `noir_entries`); il legame alle funzioni (`binder.py`, `entries.py`) avviene dopo la pipeline |
+| `6_link_calls` | Un indicizzatore SCIP per tecnologia; per i fogli di stile i loro compilatori | Step `analyze` |
+| `7_run_and_observe` | Un registratore per linguaggio (`*_record.*`); per l'app, Chromium senza interfaccia di Playwright | Step `dynamic`; l'app si avvia solo con npm |
+| `8_assemble_graph` | Nessuno | Step `union`: dice ciò che il grafo ha e non ha, non unisce ancora |
+
+**La pre-mappa è il modello di build**, l'uscita del 4: non tiene più rotte, pagine ed eventi. Il meccanismo che esegue un comando nel container e ne legge l'uscita (`premap/container_runner.py`) è un servizio comune agli step 4 e 5: oggi è della pre-mappa, ed è per questo che gli strumenti dei framework erano finiti lì.
+
+**Chi riconosce è uno solo.** Uno strumento di build o un framework che stack-analyser non conosce si aggiunge al fork (oggi mancano CMake, Bazel, Meson, Make, autotools, sbt, .NET SDK, Mix). In Daodan un'anagrafica, `data/build-tools.json`, lega ogni voce dello stack all'adattatore del 4 che la usa.
+
+**I nomi.** Il numero d'ordine è nel nome dello step (`NAME`, eventi, giornale, documenti, interfaccia). Un modulo Python non può iniziare con una cifra: la cartella è `step_1_list_files/`, la classe `ListFiles`. `plan` non è uno step: resta la funzione che è (`pipeline/plan.py`).
+
+**Che cosa usa ogni step**, per linguaggio, strumento di build e framework: la pagina `docs/pipeline/`, scritta dalle dichiarazioni del codice (`daodan/core/pipeline_tree.py`).
+
 ## Ondata 0: verifiche in sospeso e documenti allineati
 
 Nessun disegno nuovo: si chiude ciò che è già scritto e non è mai girato, e si toglie dai documenti ciò che non è più vero.
@@ -31,16 +69,11 @@ Nessun disegno nuovo: si chiude ciò che è già scritto e non è mai girato, e 
 3. **[difetto]** Gli «aperti noti» dello stack: il test instabile di `test_codebase_map_app.py`, `replace => ../local` di Go e i repository `path` di Composer letti come esterni dal fork, 37 marchi senza cornice, Avro duplicato, `technologies.state` che non scrive più la pre-mappa (spec stack dal fork, «Aperti noti»).
 4. La pagina costruita `docs/pipeline/` nel repository: oggi è solo nell'artifact `built-docs` del workflow Viewer (visto).
 5. `docs/plugins/codebase-map-supporto.md` da rigenerare (`support_table.py build`): cita percorsi che non esistono più (visto; piano ingressi, 14c).
-6. **Documenti da allineare**, perché dichiarano uno stato superato:
-   - i piani 1 e 2 dello stack dal fork e il piano della copertura dell'intero sorgente hanno tutte le caselle vuote, mentre altri documenti li dicono consegnati o in parte applicati;
-   - il task 12 del piano «grafo dall'indice» ha le caselle vuote, mentre la spec della pipeline dichiara pre-mappa e moduli applicati;
-   - la spec della risoluzione delle chiamate descrive i motori per posizione (Jedi, gopls, JDT LS), che la spec della pipeline dice tolti; dice anche C e C++ non analizzati, che il piano «grafo dall'indice» ha aggiunto;
-   - la roadmap è ferma al 19 novembre: dice che nessun passo avvia `system-mapper` (la spec delle interfacce dice che parte da solo) e parla ancora della «navigazione delle pagine d'ingresso», sostituita dall'esplorazione;
-   - la spec degli ingressi dà «non eseguite» tre sonde che il piano dà misurate (`"use server"`, Flask, Spring);
-   - la spec del benchmark di scope resolution usa gli esiti `resolved/incomplete/needs_clarification`, la spec ridotta `resolved/partial/clarify`.
-7. `README.md` («How the graph is built») e `docs/plugins/codebase-map.md` («Il disegno», «Dal codice al disegno») descrivono ancora i sette step: vanno portati agli otto (piano del 25 novembre, task 8).
+6. Lo stato di due lavori è da accertare sul codice, perché i documenti di prima si contraddicevano: il run di lavoro con il suo aggiornamento, e la copertura dell'intero sorgente (ondata 9, voci 4 e 5). Lo stesso per il task 12 del piano «grafo dall'indice» (ondata 2, voce 8): le caselle erano vuote, la spec della pipeline dichiarava pre-mappa e moduli applicati.
+7. `README.md` («How the graph is built») e `docs/plugins/codebase-map.md` («Il disegno», «Dal codice al disegno») descrivono ancora i sette step: vanno portati agli otto. `docs/roadmap.md` è ferma al 19 novembre.
+8. Sessantuno file citano ancora le spec e i piani tolti (README dei benchmark, commenti nel codice, documenti di ricerca): sono citazioni di provenienza, valide nella storia di git. Un collegamento che deve restare vivo va portato a questa spec.
 
-**Cancello:** la suite passa su Modal; la «Verifica» dello stack ha il suo verdetto nel README del benchmark; nessun documento dell'elenco 6 contraddice più un altro.
+**Cancello:** la suite passa su Modal; la «Verifica» dello stack ha il suo verdetto nel README del benchmark; le voci del punto 6 hanno uno stato letto sul codice.
 
 ## Ondata 1: `1_list_files`, il linguaggio di ogni file
 
@@ -60,7 +93,7 @@ Da: spec del linguaggio (24 novembre, ripristinata il 25); spec della pipeline, 
 
 Da: spec della pipeline, 8.1 e 8.2; piano del 25 novembre, task 1–5; piano «grafo dall'indice», task 12; spec della pipeline, «Preparazione».
 
-1. **[misura]** `benchmarks/stack-build-tools/` su Modal: per ogni fixture, gli strumenti di build che il fork nomina (con la cartella) contro quelli che le sorgenti di oggi trovano da sé. La prova esplorativa del 25 novembre non è una verifica (task 1).
+1. **[misura]** `benchmarks/stack-build-tools/` su Modal: per ogni fixture, gli strumenti di build che il fork nomina (con la cartella) contro quelli che le sorgenti di oggi trovano da sé. La prova esplorativa del 25 novembre non è una verifica: rilascio `1.27.6-daodan.5` su 104 fixture, fuori da Modal e non salvata. Lì il fork nominava uno strumento o un runtime sul manifest di 124 moduli su 147: tutti quelli npm, Cargo, Go e Maven, 17 su 18 di Gradle, 21 su 24 di Python (ma nominando il backend di build, non Python), nessuno dei 15 di CMake (task 1).
 2. **[deciso]** Nel fork le regole per ciò che non conosce: CMake, Bazel, Meson, Make, autotools, sbt, .NET SDK, Mix, Nx (`project.json`), e Python nominato su `pyproject.toml` e `requirements.txt`. Solo riconoscimento. Rilascio `.6`, fissato in Daodan (task 2).
 3. **[deciso]** `daodan/data/build-tools.json`: ogni voce dello stack che è uno strumento di build o una toolchain, con l'adattatore che la usa; un test dice quale adattatore non ha una voce e viceversa (task 3).
 4. **[deciso]** `3_recognize_stack` gira per primo, sull'elenco dei file, senza moduli e senza pre-mappa (task 4).
@@ -242,21 +275,23 @@ Da: spec dell'app standalone; piano dell'esploratore; spec dei flussi, sezione 4
 12. L'ordine fra albero delle chiamate e corsa del programma; il primo linguaggio (ondata 7).
 13. Il via per le prove a pagamento: la prova 0 con Qwen e Opus, la misura 8.
 
-## I documenti che questa spec condensa
+## I documenti tolti
 
-Restano dove sono, come dettaglio e storia; in testa a ognuno una riga rimanda qui. Lo stato di una voce si aggiorna qui.
+Tolti dal repository il 25 novembre 2026; si leggono al commit `614c940`. Accanto, le ondate in cui è finito ciò che di ognuno restava.
 
 | Documento | Ondate |
 | --- | --- |
-| `specs/2026-11-15-pipeline-di-analisi.md`, `plans/2026-11-25-stack-prima-degli-strumenti-di-build.md` | 0, 2, 3, 4 |
+| `specs/2026-11-15-pipeline-di-analisi.md`, `plans/2026-11-25-stack-prima-degli-strumenti-di-build.md` | La pipeline, 0, 2, 3, 4 |
 | `specs/2026-11-24-libreria-del-linguaggio.md` | 1 |
 | `specs/2026-11-21-stack-dal-fork.md` e i suoi tre piani | 0, 2 |
 | `plans/2026-11-14-grafo-dall-indice.md`, `specs/2026-11-08-risoluzione-chiamate-motore.md` | 2, 5 |
 | `plans/2026-11-20-analisi-unificata.md`, `plans/2026-11-20-pipeline-intera.md` | 3, 5, 6 |
 | `specs/2026-11-12-passo-dinamico.md` e il suo piano | 6, 7 |
-| `specs/2026-11-19-esecuzione-del-programma.md`, `specs/2026-11-19-interfacce-del-progetto.md`, `roadmap.md` | 7 |
+| `specs/2026-11-19-esecuzione-del-programma.md`, `specs/2026-11-19-interfacce-del-progetto.md` | 7 |
 | `specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md`, `plans/2026-11-20-ingressi-e-flussi.md` | 3, 7, 8 |
 | `specs/2026-11-18-flussi-e-mappa-del-sistema.md`, `plans/2026-11-12-mappa-del-sistema.md` | 8, 10 |
 | `specs/2026-11-20-ricerca-e-pacchetto-di-review.md` e il suo piano | 9 |
 | Le spec della review del 3, 4, 7 e 9 novembre, `plans/2026-11-08-whole-source-coverage.md`, `specs/2026-11-19-revisori-per-framework-e-librerie.md` | 9 |
 | `specs/2026-11-16-app-standalone.md`, `plans/2026-11-08-codebase-explorer.md` | 10 |
+
+`docs/roadmap.md` resta: ciò che ne è aperto è nell'ondata 7.
