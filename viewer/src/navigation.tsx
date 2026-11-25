@@ -1,8 +1,8 @@
 // The sidebar of the map: the flows are its places (the whole map, or what one flow goes through), the elements in view its things.
-import { useState } from 'react';
+import type { SidebarState } from '@acaprino/imago';
 import { Badge, Button, Count, Icon, Text } from '@acaprino/sigrid/primitives';
 import { ItemRow } from '@acaprino/sigrid/components';
-import { NavItem, Sidebar, SidebarGroup, useAppShell } from '@acaprino/sigrid/layout';
+import { NavItem, Sidebar, SidebarGroup, SidebarRow, useAppShell } from '@acaprino/sigrid/layout';
 import type { Model, Phase, Shown } from './model.ts';
 import { Mark } from './mark.tsx';
 import { FLOW_ICON, iconFor } from './icons.ts';
@@ -13,12 +13,12 @@ const NO_MAP: Record<Exclude<Phase, 'ready'>, string> = {
   none: 'Nessuna mappa: non ci sono run.', failed: "Nessuna mappa: l'export non si legge.", loading: "In attesa dell'export.",
 };
 
-type NavigationProps = { model: Model; phase: Phase; show: (asked: Shown) => void; open: boolean; onOpenChange: (open: boolean) => void };
+type NavigationProps = { model: Model; phase: Phase; show: (asked: Shown) => void; sidebar: SidebarState };
 
-export function Navigation({ model, phase, show, open, onOpenChange }: NavigationProps) {
+export function Navigation({ model, phase, show, sidebar }: NavigationProps) {
+  const { collapsed, onOpenChange } = sidebar;
   const { state, dispatch, projection, selectedIds } = model;
   const shell = useAppShell();
-  const [collapsed, setCollapsed] = useState(false);
   // The rail shows its places' icons and no text: what is only text, and the things, leave it.
   const rail = shell.sidebar === 'rail' || (shell.sidebar === 'full' && collapsed);
   const { envelope } = state;
@@ -29,7 +29,9 @@ export function Navigation({ model, phase, show, open, onOpenChange }: Navigatio
   const choose = (ref: string) => { dispatch({ type: 'select', ref }); show({ ref }); onOpenChange(false); };
   // What is in a group opened in place says which: its frame is on the canvas, not here.
   const labels = new Map(projection.nodes.map(node => [node.id, node.label]));
-  return <Sidebar aria-label="Mappa" open={open} onOpenChange={onOpenChange} collapsed={collapsed} onCollapsedChange={setCollapsed}>
+  const count = projection.nodes.length;
+  const head = <SidebarRow>Mappa{phase === 'ready' && <> <Count value={count} label={count === 1 ? 'elemento visibile' : 'elementi visibili'} /></>}</SidebarRow>;
+  return <Sidebar aria-label="Mappa" header={head} {...sidebar}>
     {phase === 'ready' ? <>
       <SidebarGroup label="Flussi" icon={<Icon name={FLOW_ICON} />}>
         <NavItem icon={<Icon name="all" />} current={state.flow === null} onClick={() => dispatch({ type: 'flow', ref: null })}>Tutta la mappa</NavItem>
@@ -40,7 +42,7 @@ export function Navigation({ model, phase, show, open, onOpenChange }: Navigatio
       </SidebarGroup>
       {!envelope.flows.length && !rail && <Text as="p" variant="muted">Nessun flusso: questo run non ha regole di collegamento (codebase_map_flows).</Text>}
       {/* The group draws the list (a `ul`): its rows go in it as they are, and an ItemList would be a list in a list. */}
-      {!rail && projection.nodes.length > 0 && <SidebarGroup label="Elementi visibili" icon={<Icon name="bulletList" />}>{projection.nodes.map(node =>
+      {!rail && count > 0 && <SidebarGroup label="Elementi visibili" icon={<Icon name="bulletList" />}>{projection.nodes.map(node =>
         <ItemRow key={node.id} title={node.label} description={[nodeMeta(node), node.parent !== null && `in ${labels.get(node.parent)}`].filter(Boolean).join(' · ')}
           leading={<Mark image={imageOf(node.mark)} icon={iconFor(node)} />} current={selectedIds.has(node.id)}
           // The second press of a double press enters: a row takes no double press of its own.

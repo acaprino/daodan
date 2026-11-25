@@ -1,9 +1,8 @@
 // What both pages say while something is read, and where it could not be.
 import type { ReactNode } from 'react';
+import { focusContent } from '@acaprino/imago';
 import { Button, Column, Icon, Progress, Text } from '@acaprino/sigrid/primitives';
 import { Note } from '@acaprino/sigrid/components';
-
-export const focusContent = () => document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
 
 export function Loading({ label }: { label: string }) {
   return <Column aria-busy><Progress aria-label={label} value={null} /></Column>;

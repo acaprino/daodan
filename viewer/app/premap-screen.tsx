@@ -72,7 +72,7 @@ const PROVENANCE: Detail = { id: 'premap.provenance', title: 'Provenienza della 
 // The directories or the technical units, filtered by the search.
 function Structure({ premap }: { premap: Premap }) {
   const s = useModel();
-  const { search } = useFrame();
+  const { search, field } = useFrame();
   const { treeMode, treeSearch, treeSelected, treeOpen } = s.kept;
   const physical = treeMode === 'directories';
   const tree = useMemo(() => (physical ? directoryTree(premap.files) : unitTree(premap.units)), [premap, physical]);
@@ -97,7 +97,7 @@ function Structure({ premap }: { premap: Premap }) {
             expanded={expanded} onExpandedChange={open => model.keep({ treeOpen: keptBranches(tree.nodes, treeOpen, open) })} />
         </ScrollArea>
       : <Empty title="Nessun risultato." action={treeSearch.trim() !== '' && <Button variant="outline" size="sm"
-          onClick={() => { model.keep({ treeSearch: '' }); search.current?.focus(); }}>Azzera ricerca</Button>} />}
+          onClick={() => { model.keep({ treeSearch: '' }); field?.focus(); }}>Azzera ricerca</Button>} />}
   </Section>;
 }
 

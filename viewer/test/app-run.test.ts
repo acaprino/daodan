@@ -69,7 +69,7 @@ test('the steps follow their own events, with the progress, the gaps and the cau
   ]);
   assert.equal(runPercent(s), 38);  // two of six and a quarter
   assert.equal(runPhaseLabel(s), 'Dynamic · osservazione dei test');
-  assert.deepEqual(statusOf(s), { state: 'Analisi in corso', text: 'Dynamic · osservazione dei test', percent: 38 });
+  assert.deepEqual(statusOf(s), { state: 'Analisi in corso', tone: 'info', text: 'Dynamic · osservazione dei test', percent: 38 });
   const over = of({ context, run: { pass: { state: 'unavailable', reason: 'nessun container' } } });
   assert.deepEqual([steps(over)[0].status, steps(over)[0].note, runPercent(over)], ['skipped', 'Non eseguita · nessun container', 0]);
   assert.equal(runPercent(of(null)), 0);
@@ -100,12 +100,12 @@ test('the count of the steps done is beside the title', () => {
 });
 
 test('the status row and the foot say the server that is read, lost, idle or at work', () => {
-  assert.deepEqual(statusOf(of(null)), { state: 'Lettura', text: 'Lettura dello stato del server…', percent: null });
-  assert.deepEqual(statusOf(of({ job: { state: 'idle' } }, { serverError: 'caduto' })), { state: 'Errore', text: 'Server non raggiungibile', percent: null });
+  assert.deepEqual(statusOf(of(null)), { state: 'Lettura', tone: 'info', text: 'Lettura dello stato del server…', percent: null });
+  assert.deepEqual(statusOf(of({ job: { state: 'idle' } }, { serverError: 'caduto' })), { state: 'Errore', tone: 'danger', text: 'Server non raggiungibile', percent: null });
   assert.deepEqual(statusOf(of({ job: { state: 'idle' } })), { state: 'Nessuna repository', text: '', percent: null });
-  assert.deepEqual(statusOf(of({ job: { state: 'preparing', step: 'snapshot' } })), { state: 'Preparazione in corso', text: 'Snapshot e pre-mappa', percent: null });
+  assert.deepEqual(statusOf(of({ job: { state: 'preparing', step: 'snapshot' } })), { state: 'Preparazione in corso', tone: 'info', text: 'Snapshot e pre-mappa', percent: null });
   assert.equal(statusOf(of({ job: { state: 'failed', step: 'checkout' } })).text, 'Preparazione non riuscita (Checkout del branch)');
-  assert.deepEqual(statusOf(run('fresh')), { state: 'Contesto pronto', text: 'Pipeline completata', percent: null });
+  assert.deepEqual(statusOf(run('fresh')), { state: 'Contesto pronto', tone: 'success', text: 'Pipeline completata', percent: null });
   assert.equal(serviceLine(of({ engine: { engine: 'claude' } })), 'App locale: il codice resta sul tuo disco · Motore: claude');
   assert.equal(serviceLine(of({}, { serverError: 'caduto' })), 'Server non raggiungibile · Motore non scelto');
 });

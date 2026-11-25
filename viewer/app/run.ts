@@ -1,4 +1,5 @@
 // The run, read from its state and its events: its steps, percent, notices, log and gaps, in words.
+import type { BadgeTone } from '@acaprino/sigrid/primitives';
 import { EVENT_LABEL, number, plural } from '../src/words.ts';
 import { isPreparing, preparation } from './repository.ts';
 import { complete, ctx, pass } from './snapshot.ts';
@@ -187,14 +188,14 @@ export const askReason = (s: Pick<Snapshot, 'server'>) =>
 export const isAsking = (s: Pick<Snapshot, 'server' | 'asked'>) => s.asked?.state === 'running' || s.server?.asked?.state === 'running';
 
 // The status row: the state, what is under way, and how far it is where that is known.
-export function statusOf(s: Run & Pick<Snapshot, 'serverError'>): { state: string; text: string; percent: number | null } {
-  if (s.serverError) return { state: 'Errore', text: 'Server non raggiungibile', percent: null };
-  if (!s.server) return { state: 'Lettura', text: 'Lettura dello stato del server…', percent: null };
+export function statusOf(s: Run & Pick<Snapshot, 'serverError'>): { state: string; tone?: BadgeTone; text: string; percent: number | null } {
+  if (s.serverError) return { state: 'Errore', tone: 'danger', text: 'Server non raggiungibile', percent: null };
+  if (!s.server) return { state: 'Lettura', tone: 'info', text: 'Lettura dello stato del server…', percent: null };
   const work = preparation(s.server.job);
-  if (isPreparing(s)) return { state: 'Preparazione in corso', text: work?.step ?? '', percent: null };
+  if (isPreparing(s)) return { state: 'Preparazione in corso', tone: 'info', text: work?.step ?? '', percent: null };
   if (!ctx(s)) return { state: 'Nessuna repository', text: work ? `Preparazione non riuscita (${work.step})` : '', percent: null };
   const running = !complete(s) || steps(s).some(step => step.status === 'running');
-  return { state: running ? 'Analisi in corso' : 'Contesto pronto', text: runPhaseLabel(s), percent: running ? runPercent(s) : null };
+  return { state: running ? 'Analisi in corso' : 'Contesto pronto', tone: running ? 'info' : 'success', text: runPhaseLabel(s), percent: running ? runPercent(s) : null };
 }
 
 // The foot: where the service is, and the engine.

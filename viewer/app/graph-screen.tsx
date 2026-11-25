@@ -1,6 +1,7 @@
 // The graph of the code: its filters, the canvas with its groups opened in place, and the details of the one chosen in the inspector.
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
+import { useFocusKept } from '@acaprino/imago';
 import { Button, Cluster, Column, Icon, Select, Split, Text } from '@acaprino/sigrid/primitives';
 import { Empty, SearchField } from '@acaprino/sigrid/components';
 import { useMedia } from '@acaprino/sigrid';
@@ -9,7 +10,7 @@ import type { GraphCanvasHandle } from '@acaprino/sigrid/graph';
 import { Loading } from '../src/states.tsx';
 import { plural } from '../src/words.ts';
 import { ExplorerLink } from './explorer-link.tsx';
-import { ScreenPanel, useFocusKept, useFrame } from './frame.tsx';
+import { ScreenPanel, useFrame } from './frame.tsx';
 import { filtersOn, isOpenGroup, levelsName, thingById, toggledGroup, visibleGraph } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { graphDetail, groupOf } from './group-details.tsx';
@@ -38,10 +39,10 @@ function useWantedGroup() {
 
 // The search takes the focus: what was pressed is disabled or gone.
 function useClear() {
-  const { search } = useFrame();
+  const { field } = useFrame();
   return () => {
     model.clearGraphFilters();
-    search.current?.focus();
+    field?.focus();
   };
 }
 
@@ -56,7 +57,7 @@ function Filters({ ready }: { ready: boolean }) {
   const clear = useClear();
   const tight = useMedia('(width < 1200px)');  // as on the map: the search has a row of its own, and the others wrap
   const filters = <>
-    <SearchField ref={search} disabled={!ready} aria-label="Cerca un gruppo o un file" placeholder="Cerca gruppo o file…" value={kept.graphSearch}
+    <SearchField ref={ready ? search : null} disabled={!ready} aria-label="Cerca un gruppo o un file" placeholder="Cerca gruppo o file…" value={kept.graphSearch}
       onValueChange={graphSearch => model.keep({ graphSearch })} />
     <Select size="sm" aria-label="Direzione" disabled={!ready} value={kept.graphDirection} options={DIRECTIONS}
       onValueChange={value => model.keep({ graphDirection: value as Kept['graphDirection'] })} />

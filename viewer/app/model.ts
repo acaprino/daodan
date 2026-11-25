@@ -1,5 +1,6 @@
 // The App's model: its state, what it asks the server and what it keeps in the browser. It draws nothing: the page reads
 // `snapshot()`, which is one object until something changes, and calls the functions below.
+import type { Notify } from '@acaprino/imago';
 import { causeOf, whenFree } from '../src/http.ts';
 import { markAddress } from '../src/marks.ts';
 import { FAILURE } from '../src/words.ts';
@@ -16,7 +17,6 @@ import type { Kept, Place, Stage } from './storage.ts';
 
 const RECONNECT_MS = 4000;  // a stream that said nothing is opened again after this
 const ANSWER_MS = 700;
-const BUSY = 'server.busy';  // the key of its notice
 
 type Answer = { events: { kind: string; name?: string; arguments?: unknown }[]; next: number; state: string; text: string; cause: string | null };
 export type Model = ReturnType<typeof createModel>;
@@ -30,13 +30,13 @@ export function createModel(host: Host) {
     checked: null, checkedUrl: '', branch: '', checking: false, checkError: '', selecting: false, selectError: '',
     premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, groupWanted: stored.kept.screen === 'graph',
     pathPage: null, symbols: null, events: [],
-    engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null, notices: [],
+    engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null,
   };
   const listeners = new Set<() => void>();
   // What no screen draws: which run and groups the last answers are of, the question whose answer is awaited, the check and the
   // choice in course, and where the stream arrived.
   let premapRun = '', graphRun = '', premapAsked = 0, graphAsked = 0;
-  let generation = 0, choosing = false, noticeId = 0;
+  let generation = 0, choosing = false;
   let eventsRun = '', cursors: Cursors = { after: 0, pipeline_after: 0, pulse_after: 0 };
 
   function save() { try { host.storage().setItem(STORAGE, JSON.stringify(now.kept)); } catch { storageAvailable = false; } }
@@ -47,17 +47,10 @@ export function createModel(host: Host) {
   }
   const keep = (patch: Partial<Kept>) => set({ kept: { ...now.kept, ...patch } });
 
-  // A result is a notice, which goes by itself and takes the place of the one of its key; an error stays until it is dismissed.
-  function say(text: string, kind?: 'error', key = text) {
-    noticeId += 1;  // not crypto.randomUUID, which a page served over plain http does not have
-    const id = String(noticeId);
-    set({ notices: kind ? [...now.notices, { id, text, kind }] : [...now.notices.filter(notice => notice.key !== key), { id, text, key }] });
-  }
-  const dismiss = (id: string) => set({ notices: now.notices.filter(notice => notice.id !== id) });
-  // That the server is busy is said once, whoever found it so: while its notice is there, an attempt says nothing more.
-  function sayBusy() {
-    if (!now.notices.some(notice => notice.key === BUSY)) say(FAILURE.retried, undefined, BUSY);
-  }
+  let notify: Notify = () => undefined;  // the shell's, from `start` on
+  // A result takes the place of the same one still there; an error stays until it is closed.
+  const say = (text: string, kind?: 'error') => notify(text, kind ? { kind } : { id: text });
+  const sayBusy = () => say(FAILURE.retried);
 
   // -- the server --------------------------------------------------------------------------------------------------
 
@@ -380,13 +373,15 @@ export function createModel(host: Host) {
   return {
     subscribe(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; },
     snapshot: () => now,
-    // Once, when the page opens: what is kept is written (a storage that refuses it is said), and the server is observed.
-    start() {
+    // Once, when the page opens: what is kept is written (a storage that refuses it is said), and the server is observed. `shell`
+    // says the notices.
+    start(shell: Notify) {
+      notify = shell;
       save();
       if (!storageAvailable) say('Archiviazione del browser non disponibile: le scelte durano questa apertura.');
       observe();
     },
-    say, dismiss, keep: choose, navigate, selectStage,
+    keep: choose, navigate, selectStage,
     explorerUrl: () => `/?${new URLSearchParams({ token: host.token, run: ctx(now)?.run_id ?? '' })}`,
     markUrl: (mark: string | null | undefined) => markAddress('/api/app/mark', mark, host.token),
     setRepositoryUrl, verifyRepositoryUrl, selectRepository, setBranch: (branch: string) => set({ branch }),

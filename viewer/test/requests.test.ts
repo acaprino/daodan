@@ -28,7 +28,7 @@ test('a request says what was asked, its state, and what the session said when i
   assert.equal(askedText({ ...asked, text: 'Pagamenti', message: 'Due finding' }), 'Pagamenti\nDue finding');
   assert.deepEqual(['pending', 'taken', 'done', 'altro'].map(state => askedState({ ...asked, state })),
     ['in attesa della sessione', 'in corso', 'conclusa', 'altro']);
-  assert.deepEqual(['pending', 'taken', 'done', 'altro'].map(state => askedTone({ ...asked, state })), [null, null, 'success', null]);
+  assert.deepEqual(['pending', 'taken', 'done', 'altro'].map(state => askedTone({ ...asked, state })), [undefined, undefined, 'success', undefined]);
 });
 
 test('a finding says its place, its words and its severity, and what it does not say is said to be missing', () => {

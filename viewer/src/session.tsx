@@ -2,13 +2,14 @@
 // session takes it (`codebase_map_ui_requests`).
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode, SyntheticEvent } from 'react';
-import { Badge, Button, Cluster, Column, Dot, Grid, Icon, Input, Section, Select, Split, Text } from '@acaprino/sigrid/primitives';
+import { Badge, Button, Cluster, Column, Grid, Icon, Input, Section, Select, Split, Text } from '@acaprino/sigrid/primitives';
 import { FormField, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
+import type { BadgeTone } from '@acaprino/sigrid/primitives';
 import {
   askedState, askedText, askedTitle, askedTone, findingPlace, findingSeverity, findingText, findingTone, gapText, KINDS, needsText, questionProblem,
   runProblem, SCOPES,
 } from './requests.ts';
-import type { Asked, Finding, Question, Tone } from './requests.ts';
+import type { Asked, Finding, Question } from './requests.ts';
 import { causeOf, whenFree } from './http.ts';
 import { LongFold } from './listed.tsx';
 import { get, post } from './server.ts';
@@ -122,8 +123,8 @@ function Unanswered({ poll, waiting, failed }: { poll: { failure: string | null;
 }
 
 // A state or a severity: its word, in the tone Sigrid has for it.
-function Word({ tone, word }: { tone: Tone; word: string }) {
-  return <Badge variant={tone === 'danger' ? 'destructive' : 'secondary'}>{(tone === 'warning' || tone === 'success') && <Dot tone={tone} />}{word}</Badge>;
+function Word({ tone, word }: { tone?: BadgeTone; word: string }) {
+  return <Badge variant="secondary" tone={tone}>{word}</Badge>;
 }
 
 // An entry that does nothing: text to read and copy, so not a row to press.

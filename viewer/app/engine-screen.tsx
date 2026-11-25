@@ -39,7 +39,7 @@ function Answer() {
   const { asked } = s;
   const running = asked?.state === 'running', failed = askFailed(asked?.state), last = lastQuestion(s.server?.asked);
   return <Section title="Risposta" level={3} icon={<Icon name="reply" />} gap="lg"
-    end={asked && <Badge variant={failed ? 'destructive' : 'secondary'}>{askedWord(asked.state)}</Badge>}>
+    end={asked && <Badge variant="secondary" tone={failed ? 'danger' : undefined}>{askedWord(asked.state)}</Badge>}>
     <Column gap="lg" aria-live="polite" aria-busy={running} data-selectable="">
       {asked && asked.tools.length > 0 && <Section title="Operazioni di Daodan usate" level={4} icon={<Icon name="listOrdered" />}><DescriptionList items={asked.tools.map(toolUse)} /></Section>}
       {asked?.text && <Text as="p" pre>{asked.text}</Text>}

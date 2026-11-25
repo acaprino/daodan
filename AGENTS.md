@@ -42,14 +42,17 @@ bisogno. Di Daodan sono solo il layout, che segue le sue funzioni, l'accento e l
 - La base dell'app è Imago, la shell della suite in stile Xiox (finestra, barra del titolo, cornice, comandi, palette, tema,
   notifiche), costruita con Sigrid; i componenti sono di Sigrid. L'app porta solo le sue schermate, composte con i componenti di
   Sigrid, e non ha una cornice, una finestra o un look propri. Ciò che manca alla shell si aggiunge a Imago, ciò che manca a un
-  componente a Sigrid. Finché la shell di Imago su Sigrid non esiste, l'app tiene la cornice che ha oggi e non ne aggiunge.
+  componente a Sigrid.
 
 ## Interfaccia (viewer/)
 
+- Prima di lavorare sull'interfaccia leggi `viewer/node_modules/@acaprino/imago/docs/design-file.md` (dopo `npm ci`) e i file che richiama.
+- La cornice delle due pagine è la shell di Imago: l'app è definita una volta (`defineApp` in `viewer/src/page.ts`: accento, parole italiane, chiavi delle scelte), ogni pagina la avvia con `startApp` e riempie le regioni di `AppWindow` (viste, stato, barra laterale, inspector, azioni, piede). Barra del titolo, palette, tema, notifiche (`useNotify`), finestra (`useWindow`), fuoco (`useFocusKept`) e pulsante della barra laterale sono della shell: nessuna pagina li disegna (`test/shell.test.ts`).
+- In una finestra propria l'App e la mappa si danno il cambio nella stessa finestra; in un browser la mappa si apre in un'altra scheda.
 - Prima di lavorare sull'interfaccia leggi l'`AGENTS.md` di Sigrid (`viewer/node_modules/@acaprino/sigrid/AGENTS.md`, dopo `npm ci`; nella versione di `viewer/package.json`) e i file che richiama: il catalogo dei componenti, `DESIGN.md`, `docs/patterns.md`.
 - Componi solo i componenti di Sigrid, nelle schermate di `viewer/src` (la mappa) e `viewer/app` (l'App): nessuna classe, nessuno stile, nessun foglio di stile, nessun controllo tuo («Un solo aspetto per tutta la suite»). La logica sta in moduli senza interfaccia, con i loro test.
 - Segnala i conflitti e lascia esplicite le scelte aperte.
-- `sigrid-check`, con la regola `own-class`, è pulito su `src` e su `app` (`npx --no sigrid-check src`, `npx --no sigrid-check app`, una cartella per volta): lo esegue il workflow Viewer.
+- `sigrid-check`, con la regola `own-class`, è pulito su `src` e su `app` (`npx --no sigrid-check src`, `npx --no sigrid-check app`, una cartella per volta). `imago-check` (`npx --no imago-check`, da `viewer/`) è pulito: li esegue il workflow Viewer.
 
 ## Come rispondere
 

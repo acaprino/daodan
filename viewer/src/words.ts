@@ -1,5 +1,6 @@
-// The Italian of the two pages: the words Sigrid's components say by themselves, for every component the pages use; the words of the
+// The Italian of the two pages: the words Sigrid's components and Imago's shell say by themselves, for all the pages use; the words of the
 // model's closed lists, where the server has its own names; how things are counted; and what is said of what failed.
+import type { ShellWords } from '@acaprino/imago';
 import type { WordsOverride } from '@acaprino/sigrid';
 
 export const WORDS: WordsOverride = {
@@ -23,6 +24,7 @@ export const WORDS: WordsOverride = {
   },
   note: { info: 'Informazione', success: 'Riuscito', warning: 'Attenzione' },
   shell: { skip: 'Vai al contenuto' },
+  window: { minimize: 'Riduci a icona', maximize: 'Ingrandisci', restore: 'Ripristina', close: 'Chiudi' },
   graph: {
     view: 'Vista', zoomIn: 'Ingrandisci', zoomOut: 'Riduci', fit: 'Inquadra tutto', roleDescription: 'grafo', external: 'esterno',
     hides: (item, count) => `${item}, contiene ${count === 1 ? 'un elemento' : `${count} elementi`}`,
@@ -35,6 +37,14 @@ export const WORDS: WordsOverride = {
     onPath: (item, steps) => `${item}, ${steps.length === 1 ? `passo ${steps[0]}` : `passi ${steps.slice(0, -1).join(', ')} e ${steps[steps.length - 1]}`}`,
     line: (item, way, label) => `${label ? `${label}, ` : ''}${way === 'to' ? 'verso' : way === 'from' ? 'da' : 'con'} ${item}`,
   },
+};
+
+// What the person asked the window for.
+const ASKED: Record<string, string> = { minimize: 'riduci a icona', toggleMaximize: 'ingrandisci', close: 'chiudi', setZoom: 'zoom' };
+export const SHELL_WORDS: ShellWords = {
+  views: 'Viste', search: 'Cerca in questa vista', noSearch: 'Questa vista non ha una ricerca.', nextRegion: 'Area successiva',
+  screenFailed: 'Questa schermata non si può mostrare', retry: 'Riprova',
+  windowFailed: (call, cause) => `La finestra non ha risposto (${ASKED[call] ?? call}): ${cause}`,
 };
 
 // -- counting ----------------------------------------------------------------------------------------------------------

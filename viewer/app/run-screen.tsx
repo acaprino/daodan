@@ -60,7 +60,7 @@ function Execution() {
   const s = useModel();
   const c = ctx(s), alert = passAlert(s);
   return <Section title="Esecuzione" level={3} icon={<Icon name="tasks" />} gap="lg"
-    end={<Badge variant={pass(s).state === 'failed' ? 'destructive' : 'secondary'}>{statusLabel(s)}</Badge>}>
+    end={<Badge variant="secondary" tone={pass(s).state === 'failed' ? 'danger' : undefined}>{statusLabel(s)}</Badge>}>
     <Column>
       <Text as="p" variant="strong">{runPhaseLabel(s)}</Text>
       <Progress aria-label="Passi completati della pipeline" showValue {...runBar(s)} />
@@ -84,7 +84,7 @@ function LogRow({ item }: { item: LogItem }) {
     <Cluster>
       <Icon name={LOG_ICON[item.type]} />
       <Text variant="strong">{item.title}</Text>
-      {item.type && <Badge variant={item.type === 'error' ? 'destructive' : 'secondary'}>{item.type === 'error' ? 'Errore' : 'Attenzione'}</Badge>}
+      {item.type && <Badge tone={item.type === 'error' ? 'danger' : 'warning'}>{item.type === 'error' ? 'Errore' : 'Attenzione'}</Badge>}
       {item.at && <Text variant="note"><time dateTime={item.at}>{new Date(item.at).toLocaleTimeString('it-IT')}</time></Text>}
     </Cluster>
     {item.detail && <Text variant="note" pre>{item.detail}</Text>}

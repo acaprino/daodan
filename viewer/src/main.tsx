@@ -1,14 +1,13 @@
 // The Codebase Map. Served by the MCP server the page lists the runs and follows the chosen run's events; served from an
 // export it draws that file.
-import { StrictMode, useEffect, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { useEffect, useRef, useState } from 'react';
+import { AppWindow, startApp, useNotify, useWindow } from '@acaprino/imago';
+import type { AppView } from '@acaprino/imago';
 import { Badge, Button, Column, Icon, Select, Spacer, Text } from '@acaprino/sigrid/primitives';
-import { Empty, Toasts } from '@acaprino/sigrid/components';
-import { AppShell, DrawerButton, TitleBar, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs } from '@acaprino/sigrid/layout';
-import { applyKeptScheme, CommandPalette, CommandsProvider, formatKeys, KeyHints, useCommand, useCommandPalette, useSchemeCommands } from '@acaprino/sigrid/assemblies';
-import { useMedia, WordsProvider } from '@acaprino/sigrid';
-import type { IconName } from '@acaprino/sigrid/primitives';
-import type { ToastItem } from '@acaprino/sigrid/components';
+import type { BadgeTone } from '@acaprino/sigrid/primitives';
+import { Empty } from '@acaprino/sigrid/components';
+import { ToolbarButton } from '@acaprino/sigrid/layout';
+import { useCommand } from '@acaprino/sigrid/assemblies';
 import '@acaprino/sigrid/styles.css';
 import '@acaprino/sigrid/graph.css';
 import { Details } from './details.tsx';
@@ -21,21 +20,22 @@ import type { Phase, Shown } from './model.ts';
 import { projectName } from './names.ts';
 import { Navigation } from './navigation.tsx';
 import { OpenExport } from './openExport.tsx';
-import { LOOK } from './page.ts';
+import { DAODAN } from './page.ts';
 import { get } from './server.ts';
 import { POLL_MS, Session, SessionDisclosure } from './session.tsx';
 import { canEnter, shownDetails } from './state.ts';
 import { Failed, Loading } from './states.tsx';
-import { EVENT_LABEL, FAILURE, plural, WORDS } from './words.ts';
+import { TOKEN } from './token.ts';
+import { EVENT_LABEL, FAILURE, plural } from './words.ts';
 
 // The views of the map: their word in the bar, their command, and the name of the content.
-const VIEWS: { value: View; label: string; icon: IconName; command: string; title: string }[] = [
-  { value: 'logical', label: 'Logica', icon: 'structure', command: 'Vista logica', title: 'Mappa logica' },
-  { value: 'physical', label: 'Fisica', icon: 'folder', command: 'Vista fisica', title: 'Mappa fisica' },
+const VIEWS: (AppView<View> & { title: string })[] = [
+  { id: 'logical', label: 'Logica', icon: 'structure', command: 'Vista logica', title: 'Mappa logica' },
+  { id: 'physical', label: 'Fisica', icon: 'folder', command: 'Vista fisica', title: 'Mappa fisica' },
 ];
 // The status row while there is no map.
-const STATUS: Record<Exclude<Phase, 'ready'>, { badge?: string; text: string }> = {
-  none: { text: 'Nessun run' }, failed: { badge: 'Errore', text: 'Export non leggibile' }, loading: { badge: 'Lettura', text: "Carico l'export…" },
+const STATUS: Record<Exclude<Phase, 'ready'>, { badge?: string; tone?: BadgeTone; text: string }> = {
+  none: { text: 'Nessun run' }, failed: { badge: 'Errore', tone: 'danger', text: 'Export non leggibile' }, loading: { badge: 'Lettura', tone: 'info', text: "Carico l'export…" },
 };
 
 // A finding names a project-relative file; the envelope's refs are relative to the run's target.
@@ -49,6 +49,9 @@ type LiveEvent = { cursor: number; timestamp: string; event: string; message: st
 type EventsPage = { events: LiveEvent[]; next_cursor: number; has_more: boolean };
 type Run = { run_id: string; readable?: boolean };
 const BUSY = 'server.busy';  // its notice
+// The App's page: it opens on the screen the person left.
+const toAnalysis = () => window.location.assign(`/app/?${new URLSearchParams({ token: TOKEN })}`);
+const BACK = "Torna all'analisi";
 
 function App() {
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
@@ -58,41 +61,30 @@ function App() {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [opened, setOpened] = useState('');  // the file whose map is shown in place of the run's
   const [toShow, setToShow] = useState<Shown | null>(null);
-  const [menu, setMenu] = useState(false);
   const [opening, setOpening] = useState(false);  // the dialog of another export
-  const [notices, setNotices] = useState<ToastItem[]>([]);
-  const noticeId = useRef(0);  // not crypto.randomUUID, which a page served over plain http does not have
   const search = useRef<HTMLInputElement>(null);
   const model = useExplorer(envelope);
-  const palette = useCommandPalette();
-  // Under this width the frame is laid out as on a phone: the sidebar is a drawer and the views are at the foot.
-  const narrow = useMedia('(width < 620px)');
+  const notify = useNotify(), window_ = useWindow();
   const { state, dispatch } = model;
   const phase: Phase = runs && !runs.length ? 'none' : failure ? 'failed' : model.ready ? 'ready' : 'loading';
   const ready = phase === 'ready';
   const detailsOpen = ready && shownDetails(state) !== null;
-  const say = (text: string) => { noticeId.current += 1; const id = String(noticeId.current); setNotices(list => [...list, { id, text }]); };
   const close = () => dispatch({ type: 'close' });
   // What is asked for outside the canvas is brought into its view; what is chosen on it is in view already.
   const show = (asked: Shown) => setToShow(asked);
 
-  // Ctrl+F: the search of the map in view; a page that shows no map has none.
-  useCommand({ id: 'daodan.search', label: 'Cerca in questa vista', group: 'Vista', keys: 'Ctrl+F', icon: <Icon name="search" />,
-    run: () => { if (ready) search.current?.focus(); else say('Questa vista non ha una ricerca.'); } });
-  for (const view of VIEWS) {  // the list never changes, so neither does the order of the hooks
-    useCommand({ id: `daodan.view.${view.value}`, label: view.command, group: 'Vista', icon: <Icon name={view.icon} />, checked: state.view === view.value,
-      run: () => dispatch({ type: 'view', view: view.value }) });
-  }
-  useCommand({ id: 'daodan.place.enter', label: "Entra nell'elemento scelto", group: 'Vista', icon: <Icon name="folderOpen" />, when: ready && canEnter(state, state.selected),
+  useCommand({ id: 'daodan.place.enter', label: "Entra nell'elemento scelto", group: 'Viste', icon: <Icon name="folderOpen" />, when: ready && canEnter(state, state.selected),
     run: () => { if (state.selected !== null) dispatch({ type: 'open', ref: state.selected }); } });
-  useCommand({ id: 'daodan.place.root', label: 'Torna al sistema', group: 'Vista', icon: <Icon name="back" />, when: ready && state.scope !== null,
+  useCommand({ id: 'daodan.place.root', label: 'Torna al sistema', group: 'Viste', icon: <Icon name="back" />, when: ready && state.scope !== null,
     run: () => dispatch({ type: 'root' }) });
-  useCommand({ id: 'daodan.project.info', label: 'Informazioni sul progetto', group: 'Vista', icon: <Icon name="info" />, when: ready, run: () => dispatch({ type: 'info' }) });
-  useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Vista', keys: 'Escape', icon: <Icon name="close" />, when: detailsOpen, run: close });
-  useSchemeCommands(LOOK);
+  useCommand({ id: 'daodan.project.info', label: 'Informazioni sul progetto', group: 'Viste', icon: <Icon name="info" />, when: ready, run: () => dispatch({ type: 'info' }) });
+  useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Viste', keys: 'Escape', icon: <Icon name="close" />, when: detailsOpen, run: close });
+  // In a window of its own the map took the App's place; in a browser it is another tab.
+  useCommand({ id: 'daodan.analysis', label: BACK, group: 'Viste', icon: <Icon name="back" />, when: window_.own, run: toAnalysis });
+  useEffect(() => window_.setTitle(document.title), [window_]);  // the window's title is the page's
 
-  // That the server is busy is said once, whoever found it so: while its notice is there, an attempt says nothing more.
-  const sayBusy = () => setNotices(list => (list.some(notice => notice.id === BUSY) ? list : [...list, { id: BUSY, text: FAILURE.retried }]));
+  // That the server is busy is said once, whoever found it so: an attempt takes the place of its notice.
+  const sayBusy = () => notify(FAILURE.retried, { id: BUSY });
   const read = <T,>(url: string, wanted?: () => boolean) => whenFree(() => get<T>(url), sayBusy, wanted);
   const addressOf = (id: string) => `./data/visual.json?run=${encodeURIComponent(id)}`;
   const asked = useRef(0);  // what was asked for last is what is shown: an export that comes late takes the place of nothing
@@ -152,61 +144,40 @@ function App() {
     const ref = fileRef(state.envelope, file);
     if (ref) { dispatch({ type: 'select', ref }); show({ ref }); }
   };
-  const toView = (view: string) => dispatch({ type: 'view', view: view as View });
   const session = { onPick: pick, onRun: (id: string) => { listRuns(id).catch(() => undefined); }, onBusy: sayBusy };
-  const title = VIEWS.find(view => view.value === state.view)!.title;
+  const title = VIEWS.find(view => view.id === state.view)!.title;
 
-  const titleBar = <TitleBar><Toolbar aria-label="Daodan">
-    <DrawerButton onOpen={() => setMenu(true)} />
-    <ToolbarBrand name="Daodan" />
-    {!narrow && <ToolbarTabs aria-label="Viste" value={state.view} onValueChange={toView}>{VIEWS.map(view =>
-      <ToolbarTab key={view.value} value={view.value}>{view.label}</ToolbarTab>)}</ToolbarTabs>}
-    <ToolbarSpacer />
-    <ToolbarButton label="Comandi" shortcut={formatKeys('Ctrl+K')} variant="outline" onClick={() => palette.setOpen(true)}>Comandi</ToolbarButton>
-  </Toolbar></TitleBar>;
-  const bottomBar = narrow && <Toolbar aria-label="Viste in basso">
-    <ToolbarTabs aria-label="Viste" value={state.view} onValueChange={toView} edge="top" layout="stacked">{VIEWS.map(view =>
-      <ToolbarTab key={view.value} value={view.value} icon={<Icon name={view.icon} />}>{view.label}</ToolbarTab>)}</ToolbarTabs>
-  </Toolbar>;
   // The live event line is the run's, so it shows while its export is loading or unreadable too, and not beside the map of a file.
   const status = <>
     {phase === 'ready'
       ? <Text variant="soft" data-selectable="">{projectName(state.envelope)}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}{opened && ` · dal file ${opened}`}</Text>
-      : <>{STATUS[phase].badge && <Badge variant="secondary">{STATUS[phase].badge}</Badge>}<Text variant="soft">{STATUS[phase].text}</Text></>}
+      : <>{STATUS[phase].badge && <Badge tone={STATUS[phase].tone}>{STATUS[phase].badge}</Badge>}<Text variant="soft">{STATUS[phase].text}</Text></>}
     {!opened && (ready || !!runs?.length) && <><Spacer />
       <Text data-selectable="">{last ? `${last.timestamp} · ${EVENT_LABEL[last.event] ?? last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</Text></>}
-  </>;
-  // The foot: what the whole export holds (what is in view the panel says), and the keys no control in sight shows.
-  const footer = !narrow && <>
-    <Text>{ready ? `${plural(state.envelope.entities.length, 'entità', 'entità')} · ${plural(state.envelope.relations.length, 'relazione', 'relazioni')}` : 'Nessuna mappa'}</Text>
-    <Spacer />
-    <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
   </>;
   // Which map is shown, where there are runs: the run's or, until one is chosen, that of the file opened (the status says its name).
   const runPicker = !!runs?.length && <Select size="sm" aria-label="Run" value={opened ? '' : run} placeholder="File aperto"
     onValueChange={id => { setOpened(''); setRun(id); }} options={runs.map(id => ({ value: id, label: `Run ${id}` }))} />;
   const openOther = <Button variant="ghost" size="sm" disabled={!ready} onClick={() => setOpening(true)}>Apri altro export</Button>;
-  return <>
-    <AppShell frame="sheet" titleBar={titleBar} status={status} footer={footer} bottomBar={bottomBar} contentLabel={title}
-      sidebar={<Navigation model={model} phase={phase} show={show} open={menu} onOpenChange={setMenu} />}
-      inspector={<Details model={model} show={show} open={detailsOpen} close={close} />}>
-      <Explorer model={model} title={title} search={search} toShow={toShow} show={show} ready={ready} runs={runPicker} openOther={openOther}>
-        {!!runs?.length && <Column pad="lg"><SessionDisclosure {...session} /></Column>}
-        {phase === 'none' && <Column pad="lg" gap="xl">
-          <Empty title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />
-          <Session {...session} />
-        </Column>}
-        {phase === 'failed' && <Column pad="lg"><Failed title="Export non leggibile" cause={failure}
-          retry={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }} /></Column>}
-        {phase === 'loading' && <Column pad="lg"><Loading label="Carico l'export…" /></Column>}
-      </Explorer>
-    </AppShell>
+  // The foot: what the whole export holds. What is in view the panel says.
+  return <AppWindow views={VIEWS} view={state.view} onView={view => dispatch({ type: 'view', view })} contentLabel={title}
+    search={ready ? () => search.current?.focus() : null} status={status}
+    tools={window_.own && <ToolbarButton label={BACK} icon={<Icon name="back" />} onClick={toAnalysis}>{BACK}</ToolbarButton>}
+    footer={<Text>{ready ? `${plural(state.envelope.entities.length, 'entità', 'entità')} · ${plural(state.envelope.relations.length, 'relazione', 'relazioni')}` : 'Nessuna mappa'}</Text>}
+    sidebar={sidebar => <Navigation model={model} phase={phase} show={show} sidebar={sidebar} />}
+    inspector={<Details model={model} show={show} open={detailsOpen} close={close} />}>
+    <Explorer model={model} title={title} search={search} toShow={toShow} show={show} ready={ready} runs={runPicker} openOther={openOther}>
+      {!!runs?.length && <Column pad="lg"><SessionDisclosure {...session} /></Column>}
+      {phase === 'none' && <Column pad="lg" gap="xl">
+        <Empty title="Nessun run" description="Creane uno qui sotto, o avvia una mappa nella sessione." />
+        <Session {...session} />
+      </Column>}
+      {phase === 'failed' && <Column pad="lg"><Failed title="Export non leggibile" cause={failure}
+        retry={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }} /></Column>}
+      {phase === 'loading' && <Column pad="lg"><Loading label="Carico l'export…" /></Column>}
+    </Explorer>
     <OpenExport open={opening} onOpenChange={setOpening} onFile={openFile} />
-    <Toasts items={notices} durationMs={5000} onDismiss={id => setNotices(list => list.filter(notice => notice.id !== id))} />
-  </>;
+  </AppWindow>;
 }
 
-applyKeptScheme(LOOK);
-createRoot(document.getElementById('app')!).render(
-  <StrictMode><WordsProvider words={WORDS}><CommandsProvider><App /><CommandPalette /></CommandsProvider></WordsProvider></StrictMode>,
-);
+startApp(DAODAN, document.getElementById('app')!, <App />);

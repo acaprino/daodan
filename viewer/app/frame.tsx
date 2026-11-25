@@ -1,11 +1,11 @@
 // What the screens share: the field Ctrl+F goes to, the details, where the focus goes, and the panel each screen is drawn in.
-import { createContext, useContext, useLayoutEffect } from 'react';
-import type { ReactNode, RefObject } from 'react';
+import { createContext, useContext } from 'react';
+import type { ReactNode, RefCallback, RefObject } from 'react';
 import { Button, Column, Icon } from '@acaprino/sigrid/primitives';
 import { Panel } from '@acaprino/sigrid/layout';
 import type { IconName } from '@acaprino/sigrid/primitives';
 import type { PanelProps } from '@acaprino/sigrid/layout';
-import { Failed, focusContent } from '../src/states.tsx';
+import { Failed } from '../src/states.tsx';
 import { useModelSlice } from './use-model.ts';
 
 // What the details show. `content` reads the model by itself, so it follows what it shows.
@@ -18,7 +18,8 @@ export type Detail = {
   opener?: HTMLElement | null;     // what takes the focus back when they close with it inside: what has it as they open, unless it is said
 };
 export type Frame = {
-  search: RefObject<HTMLInputElement | null>;  // a screen with a search gives it to its field
+  search: RefCallback<HTMLInputElement>;       // a screen with a search gives it to its field, while it can be used
+  field: HTMLInputElement | null;              // that field
   reveal: RefObject<(() => void) | null>;      // shows the pane the search is in, while it is hidden
   detail: Detail | null; show: (detail: Detail) => void; close: () => void;
   go: (act: () => void) => void;               // to another screen: the details close, and the content takes the focus
@@ -30,17 +31,6 @@ export function useFrame(): Frame {
   const frame = useContext(FrameContext);
   if (!frame) throw new Error('outside the frame');
   return frame;
-}
-
-let held: EventTarget | null = null;  // what had the focus last: once hidden or removed the page no longer says it
-document.addEventListener('focusin', event => { held = event.target; });
-// Where what had the focus has gone with what held it (a pane that hides, a stage that gives way to another, the screens that move to
-// the foot), the content takes it. `where`: what is in sight.
-export function useFocusKept(...where: unknown[]) {
-  useLayoutEffect(() => {
-    const at = document.activeElement === document.body ? held : document.activeElement;
-    if (at instanceof Element && (!at.isConnected || at.closest('[hidden]'))) focusContent();
-  }, where);
 }
 
 // The panel of a screen. A server that cannot be reached is said at its head, on every screen.

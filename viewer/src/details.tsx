@@ -1,4 +1,5 @@
 // The details in the inspector: the element chosen, else the flow with its steps, else what the project is and how its map is read.
+import { ScreenBoundary } from '@acaprino/imago';
 import { Button, Cluster, Column, Heading, Icon, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
 import { Inspector } from '@acaprino/sigrid/layout';
@@ -130,9 +131,11 @@ export function Details({ model, show, open, close }: { model: Model; show: (ask
         <Mark image={imageOf(entity && markOfEntity(envelope, entity))} icon={head.icon} />
         <Column><Heading size="small"><Text pre>{head.name}</Text></Heading></Column>
       </Cluster>
-      {entity ? <EntityDetails key={entity.ref} model={model} show={show} entity={entity} />
-        : flow ? <FlowDetails key={flow.ref} model={model} flow={flow} />
-        : <ProjectDetails model={model} />}
+      <ScreenBoundary key={entity?.ref ?? flow?.ref ?? 'project'}>
+        {entity ? <EntityDetails model={model} show={show} entity={entity} />
+          : flow ? <FlowDetails model={model} flow={flow} />
+          : <ProjectDetails model={model} />}
+      </ScreenBoundary>
     </Column>}
   </Inspector>;
 }

@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import type { Notify } from '@acaprino/imago';
 import { createModel } from '../app/model.ts';
 import { ORPHAN_WRITES } from '../app/snapshot.ts';
 import { DEFAULTS, readKept, STORAGE } from '../app/storage.ts';
@@ -21,10 +22,22 @@ const fails = (status: number, error?: string) => ({ status, ok: false, json: as
 const turn = () => new Promise(resolve => setImmediate(resolve));  // every promise already answered has gone on
 const queryOf = (address: string) => Object.fromEntries(new URL(address, 'http://daodan.test').searchParams);
 
+// The shell's stack of notices: one takes the place of the one with its id.
+function stack() {
+  const notices: { text: string; id?: string; kind?: 'error' }[] = [];
+  const notify: Notify = (text, options) => {
+    const at = notices.findIndex(({ id }) => id !== undefined && id === options?.id);
+    if (at >= 0) notices.splice(at, 1);
+    notices.push({ text, ...options });
+  };
+  return { notices, notify };
+}
+
 function setup(routes: Record<string, (call: Call) => unknown> = {}, kept?: unknown) {
   const store: Record<string, string> = kept === undefined ? {} : { [STORAGE]: JSON.stringify(kept) };
   const calls: Call[] = [], sources: FakeSource[] = [];
-  const model = createModel({
+  const { notices, notify } = stack();
+  const made = createModel({
     token: 'segreto',
     fetch: async (address, init) => {
       const url = new URL(address, 'http://daodan.test');
@@ -36,9 +49,10 @@ function setup(routes: Record<string, (call: Call) => unknown> = {}, kept?: unkn
     stream: address => { const source = new FakeSource(address); sources.push(source); return source as never; },
     storage: () => ({ getItem: key => store[key] ?? null, setItem: (key, value) => { store[key] = value; } }),
   });
+  const model = { ...made, start: () => made.start(notify) };
   return {
-    model, calls, sources, now: () => model.snapshot(), keptNow: () => JSON.parse(store[STORAGE]),
-    asked: (path: string) => calls.filter(call => call.path === path), said: () => model.snapshot().notices.map(notice => notice.text),
+    model, notices, calls, sources, now: () => model.snapshot(), keptNow: () => JSON.parse(store[STORAGE]),
+    asked: (path: string) => calls.filter(call => call.path === path), said: () => notices.map(notice => notice.text),
   };
 }
 
@@ -135,29 +149,22 @@ test('what the person looks at is kept, and a storage that refuses it is said on
   const blocked = createModel({
     token: '', fetch: async () => fails(404) as never, stream: () => new FakeSource('') as never, storage: () => { throw new Error('blocked'); },
   });
-  blocked.start();
+  const { notices, notify } = stack();
+  blocked.start(notify);
   blocked.navigate('graph');
-  const [notice, ...others] = blocked.snapshot().notices;
-  assert.deepEqual([notice.text, others], ['Archiviazione del browser non disponibile: le scelte durano questa apertura.', []]);
+  assert.deepEqual(notices.map(({ text }) => text), ['Archiviazione del browser non disponibile: le scelte durano questa apertura.']);
   assert.equal(blocked.snapshot().kept.screen, 'graph');
-  blocked.dismiss(notice.id);
-  assert.deepEqual(blocked.snapshot().notices, []);
 });
 
-test('a plain notice takes the place of the one of its key, and an error never does', () => {
-  const { model, now, said } = setup();
-  model.say('Nessuna ricerca.');
-  const first = now().notices[0].id;
-  model.say('Filtri azzerati.');
-  model.say('Nessuna ricerca.');
-  assert.deepEqual(said(), ['Filtri azzerati.', 'Nessuna ricerca.']);
-  assert.notEqual(now().notices[1].id, first);  // another one: it is read again
-  model.say('letto a metà', undefined, 'lettura');
-  model.say('letto', undefined, 'lettura');
-  assert.deepEqual(said(), ['Filtri azzerati.', 'Nessuna ricerca.', 'letto']);
-  model.say('letto', 'error');
-  model.say('letto', 'error');
-  assert.deepEqual(said().slice(2), ['letto', 'letto', 'letto']);
+test('a result takes the place of the same one, and an error never does', async () => {
+  const { model, notices } = setup({ '/api/app/retry': () => fails(500, 'caduto') });
+  model.start();
+  model.clearGraphFilters();
+  model.clearGraphFilters();
+  await model.retryPass();
+  await model.retryPass();
+  const cleared = 'Filtri azzerati: tutti i gruppi del grafo sono visibili.';
+  assert.deepEqual(notices, [{ id: cleared, text: cleared }, { kind: 'error', text: 'caduto' }, { kind: 'error', text: 'caduto' }]);
 });
 
 test('a run in view again, after none or chosen anew, is read again', async () => {
@@ -326,7 +333,7 @@ test('a choice is asked once, and a frame that comes before its answer is of wha
 test('a busy server is asked again once by each reader, and said once', async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   let free = false;
-  const { model, sources, now, asked, said } = setup({
+  const { model, notices, sources, now, asked, said } = setup({
     '/api/app/premap': () => (free ? premap : fails(503)), '/api/app/graph': () => (free ? graph() : fails(503)),
   }, { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
   const times = () => [asked('/api/app/premap').length, asked('/api/app/graph').length];
@@ -337,11 +344,10 @@ test('a busy server is asked again once by each reader, and said once', async t 
   sources[0].send('app', { ...ready });
   await turn();
   assert.deepEqual([times(), said(), now().graphLoading], [[1, 1], ['Daodan è occupato, riprovo'], true]);
-  const id = now().notices[0].id;
   t.mock.timers.tick(2000);
   await turn();
-  assert.deepEqual([times(), now().notices.map(notice => notice.id)], [[2, 2], [id]]);  // the one there stays: it is not read again
-  model.dismiss(id);
+  assert.deepEqual([times(), said()], [[2, 2], ['Daodan è occupato, riprovo']]);  // the one there, again
+  notices.length = 0;
   t.mock.timers.tick(2000);
   await turn();
   assert.deepEqual([times(), said()], [[3, 3], ['Daodan è occupato, riprovo']]);
@@ -377,7 +383,7 @@ test('the pre-map is read once a run; a busy server is asked again, and a failur
 });
 
 test('the graph is asked with the groups open on its own screen, and a group the run no longer shows is dropped', async () => {
-  const { model, sources, now, asked } = setup({ '/api/app/graph': call => {
+  const { model, notices, sources, now, asked } = setup({ '/api/app/graph': call => {
     const open = JSON.parse(call.query.get('open') ?? '[]') as string[];
     if (open.includes('gone')) return fails(400, 'the graph shows no group to open: "gone"');
     return open.length ? graph({ open: [{ id: 'a', name: 'a', parent: null }], nodes: [node('a/x', { group: 'a' }), node('b')] }) : graph();
@@ -392,7 +398,7 @@ test('the graph is asked with the groups open on its own screen, and a group the
   assert.deepEqual([openAsked(), now().kept.graphRoot], ['["a"]', 'a/x']);  // the focus stays inside the group
   model.openGroup('gone');
   await turn();
-  assert.deepEqual(now().notices.at(-1), { id: '1', text: 'Il gruppo «gone» non si può più aprire nel grafo di questo run.', kind: 'error' });
+  assert.deepEqual(notices.at(-1), { text: 'Il gruppo «gone» non si può più aprire nel grafo di questo run.', kind: 'error' });
   assert.deepEqual([now().kept.graphOpen, openAsked()], [['a'], '["a"]']);
   model.selectStage('analysis');  // elsewhere the first grouping alone
   await turn();
@@ -639,11 +645,11 @@ test('a question is asked once and its answer read to the end', async t => {
 
 test('what is asked of the run is answered by its new state, or said as an error', async () => {
   let answer: unknown = fails(500, 'collegamento non riuscito');
-  const { model, sources, now } = setup({ '/api/app/link': () => answer });
+  const { model, notices, sources, now } = setup({ '/api/app/link': () => answer });
   model.start();
   sources[0].send('app', ready);
   await model.findLinks();
-  assert.deepEqual(now().notices, [{ id: '1', text: 'collegamento non riuscito', kind: 'error' }]);
+  assert.deepEqual(notices, [{ text: 'collegamento non riuscito', kind: 'error' }]);
   answer = { ...ready, links: { state: 'running' } };
   await model.findLinks();
   assert.equal(now().server!.links!.state, 'running');

@@ -47,9 +47,21 @@ jobs:
       # folder at a time.
       - run: npx --no sigrid-check src && npx --no sigrid-check app
 
+      # The frame, the names that are gone, the icons and the agent files, as Imago says them.
+      - run: npx --no imago-check
+
       - run: npx playwright install --with-deps chromium
 
       - run: npm run test:ui
+
+      # What both pages look like: the owner judges by them.
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: viewer-shots
+          path: viewer/test/shots
+          if-no-files-found: ignore
+          retention-days: 14
 
       # The committed pages are what the source builds. Last, and also after a failed step (the job fails all the same), so one
       # run shows the behaviour and the difference.

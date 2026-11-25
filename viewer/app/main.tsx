@@ -1,24 +1,22 @@
-// The App page: a repository, its analysis, its graph and the questions to the engine, over the local server. Its frame is the
-// map page's: the screens are the views of the title bar, and the app has one context at a time, so there is no sidebar.
-import { Fragment, StrictMode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+// The App page: a repository, its analysis, its graph and the questions to the engine, over the local server. The window is
+// Imago's, with the screens as its views; the app has one context at a time, so there is no sidebar.
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
-import { createRoot } from 'react-dom/client';
-import { Badge, Cluster, Column, Count, Heading, Icon, Progress, Spacer, Text } from '@acaprino/sigrid/primitives';
-import { Toasts } from '@acaprino/sigrid/components';
-import { AppShell, Inspector, TitleBar, Toolbar, ToolbarBrand, ToolbarButton, ToolbarSpacer, ToolbarTab, ToolbarTabs } from '@acaprino/sigrid/layout';
-import { applyKeptScheme, CommandPalette, CommandsProvider, formatKeys, KeyHints, useCommand, useCommandPalette, useSchemeCommands } from '@acaprino/sigrid/assemblies';
-import { useMedia, WordsProvider } from '@acaprino/sigrid';
-import type { IconName } from '@acaprino/sigrid/primitives';
+import { AppWindow, focusContent, ScreenBoundary, startApp, useFocusKept, useNotify, useWindow } from '@acaprino/imago';
+import type { AppView } from '@acaprino/imago';
+import { useMedia } from '@acaprino/sigrid';
+import { Badge, Cluster, Column, Heading, Icon, Progress, Spacer, Text } from '@acaprino/sigrid/primitives';
+import { Inspector } from '@acaprino/sigrid/layout';
+import { useCommand } from '@acaprino/sigrid/assemblies';
 import '@acaprino/sigrid/styles.css';
 import '@acaprino/sigrid/graph.css';
 import { Mark } from '../src/mark.tsx';
-import { LOOK } from '../src/page.ts';
-import { focusContent } from '../src/states.tsx';
-import { plural, WORDS } from '../src/words.ts';
+import { DAODAN } from '../src/page.ts';
+import { plural } from '../src/words.ts';
 import { analysisActions, AnalysisScreen } from './analysis.tsx';
 import { engineActions, EngineScreen } from './engine-screen.tsx';
-import { FrameContext, useFocusKept } from './frame.tsx';
+import { FrameContext } from './frame.tsx';
 import type { Detail, Frame } from './frame.tsx';
 import { graphActions, GraphScreen } from './graph-screen.tsx';
 import { short } from './repository.ts';
@@ -30,20 +28,22 @@ import { model, useModel } from './use-model.ts';
 
 // The screens: their word in the bar, their command, what they draw, and what is in the window's action bar once the server is read
 // (null where there is nothing: an element that draws nothing would leave an empty bar).
-type Screen = { value: Place; label: string; icon: IconName; command: string; Screen: ComponentType; actions: (s: Snapshot) => ReactNode };
+type Screen = AppView<Place> & { Screen: ComponentType; actions: (s: Snapshot) => ReactNode };
 const PLACES: Screen[] = [
-  { value: 'analysis', label: 'Analisi', icon: 'layers', command: 'Vai ad Analisi', Screen: AnalysisScreen, actions: analysisActions },
-  { value: 'graph', label: 'Grafo', icon: 'graph', command: 'Vai al Grafo', Screen: GraphScreen, actions: graphActions },
-  { value: 'engine', label: 'Motore e domande', icon: 'ai', command: 'Vai a Motore e domande', Screen: EngineScreen, actions: engineActions },
+  { id: 'analysis', label: 'Analisi', icon: 'layers', command: 'Vai ad Analisi', Screen: AnalysisScreen, actions: analysisActions },
+  { id: 'graph', label: 'Grafo', icon: 'graph', command: 'Vai al Grafo', Screen: GraphScreen, actions: graphActions },
+  { id: 'engine', label: 'Motore e domande', icon: 'ai', command: 'Vai a Motore e domande', Screen: EngineScreen, actions: engineActions },
 ];
 
 // Whether the focus is in the details, beside the content or over it, or in the palette that closes them.
 const inDetails = () => document.activeElement?.closest('aside, [role="dialog"]') != null;
 
 // What the screens share. It changes with the details alone, so an event of the run draws again only what reads it.
-function useShared(): Frame {
+// `leave`: the details of a screen go with it, and the focus stays where the person is.
+function useShared(): { frame: Frame; leave: () => void } {
   const [detail, setDetail] = useState<Detail | null>(null);
-  const search = useRef<HTMLInputElement>(null), reveal = useRef<(() => void) | null>(null);
+  const [field, search] = useState<HTMLInputElement | null>(null);
+  const reveal = useRef<(() => void) | null>(null);
   const opener = useRef<HTMLElement | null>(null), back = useRef<HTMLElement | null>(null);
   const show = useCallback((next: Detail) => {
     const at = document.activeElement;
@@ -55,8 +55,9 @@ function useShared(): Frame {
     back.current = inDetails() ? opener.current : null;
     setDetail(null);
   }, []);
+  const leave = useCallback(() => setDetail(null), []);
   const go = useCallback((act: () => void) => {
-    setDetail(null);
+    leave();
     act();
     focusContent();
   }, []);
@@ -65,57 +66,37 @@ function useShared(): Frame {
     if (detail === null) back.current?.focus({ preventScroll: true });
     back.current = null;
   }, [detail]);
-  return useMemo(() => ({ search, reveal, detail, show, close, go }), [detail]);
+  return { frame: useMemo(() => ({ search, field, reveal, detail, show, close, go }), [field, detail]), leave };
 }
 
 function App() {
   const s = useModel();
-  const frame = useShared();
-  const { search, reveal, detail, close, go } = frame;
-  const palette = useCommandPalette();
-  // Under this width the frame is laid out as on a phone: the screens are at the foot.
-  const narrow = useMedia('(width < 620px)');
-  const place = PLACES.find(item => item.value === s.kept.screen)!;
-  useFocusKept(s.kept.screen, s.kept.analysisStage, narrow);
-  const toScreen = (value: string) => { close(); model.navigate(value as Place); };  // by its tab, which keeps the focus
+  const { frame, leave } = useShared();
+  const { field, reveal, detail, close } = frame;
+  const notify = useNotify(), window_ = useWindow();
+  const narrow = useMedia('(width < 620px)');  // as on a phone, the status row is short
+  const place = PLACES.find(item => item.id === s.kept.screen)!;
+  useFocusKept(s.kept.analysisStage);
+  useEffect(() => {
+    window_.setTitle(document.title);  // the window's title is the page's
+    model.start(notify);
+  }, [notify, window_]);
 
-  // Ctrl+F: the search of the screen in view, in sight first where its pane is hidden; a screen without one says so.
-  const find = () => {
-    if (!search.current || search.current.disabled) { model.say('Questa schermata non ha una ricerca.'); return; }
+  // Ctrl+F: the search of the screen in view, in sight first where its pane is hidden.
+  const find = (at: HTMLInputElement) => {
     if (reveal.current) {
       focusContent();
       flushSync(reveal.current);
     }
-    search.current.focus();
+    at.focus();
   };
-  useCommand({ id: 'daodan.search', label: 'Cerca in questa vista', group: 'Vista', keys: 'Ctrl+F', icon: <Icon name="search" />, run: find });
-  for (const item of PLACES) {  // the list never changes, so neither does the order of the hooks
-    useCommand({ id: `daodan.screen.${item.value}`, label: item.command, group: 'Schermate', icon: <Icon name={item.icon} />, checked: item === place,
-      run: () => go(() => model.navigate(item.value)) });
-  }
-  useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Vista', keys: 'Escape', icon: <Icon name="close" />, when: detail !== null, run: close });
-  useSchemeCommands(LOOK);
+  useCommand({ id: 'daodan.details.close', label: 'Chiudi dettaglio', group: 'Viste', keys: 'Escape', icon: <Icon name="close" />, when: detail !== null, run: close });
 
-  // How many groups the graph has is at the foot, and not on its tab: a number that changes would move the tab beside it (R14). On a
-  // narrow window the tabs are at the foot and share its width, so there it moves nothing.
-  const groups = s.graph?.nodes.length ?? 0;
-  const word = (item: typeof place) => (item.value === 'graph' && groups > 0
-    ? <>{item.label} <Count value={groups} label={groups === 1 ? 'gruppo' : 'gruppi'} /></> : item.label);
-  const titleBar = <TitleBar><Toolbar aria-label="Daodan">
-    <ToolbarBrand name="Daodan" />
-    {!narrow && <ToolbarTabs aria-label="Schermate" value={place.value} onValueChange={toScreen}>{PLACES.map(item =>
-      <ToolbarTab key={item.value} value={item.value}>{item.label}</ToolbarTab>)}</ToolbarTabs>}
-    <ToolbarSpacer />
-    <ToolbarButton label="Comandi" shortcut={formatKeys('Ctrl+K')} variant="outline" onClick={() => palette.setOpen(true)}>Comandi</ToolbarButton>
-  </Toolbar></TitleBar>;
-  const bottomBar = narrow && <Toolbar aria-label="Schermate in basso">
-    <ToolbarTabs aria-label="Schermate" value={place.value} onValueChange={toScreen} edge="top" layout="stacked">{PLACES.map(item =>
-      <ToolbarTab key={item.value} value={item.value} icon={<Icon name={item.icon} />}>{word(item)}</ToolbarTab>)}</ToolbarTabs>
-  </Toolbar>;
+  const groups = s.graph?.nodes.length ?? 0;  // at the foot, and not on the tab: a number that changes would move the tab beside it (R14)
   const state = statusOf(s), c = ctx(s);
   // The row is announced when it changes: the percent, which changes all the time, is not heard from it but from the bars.
   const status = <>
-    <Badge variant="secondary">{state.state}</Badge>
+    <Badge variant="secondary" tone={state.tone}>{state.state}</Badge>
     {state.text && <Text variant="soft">{state.text}</Text>}
     {state.percent !== null && <>
       {!narrow && <Progress aria-label="Passi completati della pipeline" value={state.percent} size="sm" inline />}
@@ -123,30 +104,22 @@ function App() {
     </>}
     {c && <><Spacer /><Text data-selectable="">{narrow ? slug(c) : `${slug(c)} · ${c.branch} · ${short(c.commit)} · run ${c.run_id}`}</Text></>}
   </>;
-  const footer = !narrow && <>
-    <Text>{[serviceLine(s), groups > 0 && `${plural(groups, 'gruppo', 'gruppi')} nel grafo`].filter(Boolean).join(' · ')}</Text>
-    <Spacer />
-    <KeyHints ids={['daodan.search', { keys: 'F6', label: 'Area successiva' }]} />
-  </>;
   return <FrameContext value={frame}>
-    <AppShell frame="sheet" titleBar={titleBar} status={status} actions={s.server && place.actions(s)} footer={footer} bottomBar={bottomBar} contentLabel={place.label}
+    <AppWindow views={PLACES} view={place.id} onView={screen => { leave(); model.navigate(screen); }} search={field && (() => find(field))}
+      status={status} actions={s.server && place.actions(s)}
+      footer={<Text>{[serviceLine(s), groups > 0 && `${plural(groups, 'gruppo', 'gruppi')} nel grafo`].filter(Boolean).join(' · ')}</Text>}
       inspector={<Inspector title={detail?.title ?? 'Dettaglio'} open={detail !== null} onOpenChange={open => { if (!open) close(); }} footer={detail?.footer}>
         <Column gap="lg" data-selectable="">
           {/* The one live region: it stays while what the details are of changes, and reads the name alone. */}
           <Cluster wrap={false} align="start" aria-live="polite" aria-atomic="true">
             {detail && <><Mark image={detail.image} icon={detail.icon} /><Column><Heading size="small"><Text pre>{detail.name}</Text></Heading></Column></>}
           </Cluster>
-          {detail && <Fragment key={`${detail.id} ${detail.key ?? ''}`}>{detail.content}</Fragment>}
+          {detail && <ScreenBoundary key={`${detail.id} ${detail.key ?? ''}`}>{detail.content}</ScreenBoundary>}
         </Column>
       </Inspector>}>
       <place.Screen />
-    </AppShell>
-    <Toasts items={s.notices} durationMs={5000} onDismiss={model.dismiss} />
+    </AppWindow>
   </FrameContext>;
 }
 
-applyKeptScheme(LOOK);
-model.start();
-createRoot(document.getElementById('app')!).render(
-  <StrictMode><WordsProvider words={WORDS}><CommandsProvider><App /><CommandPalette /></CommandsProvider></WordsProvider></StrictMode>,
-);
+startApp(DAODAN, document.getElementById('app')!, <App />);

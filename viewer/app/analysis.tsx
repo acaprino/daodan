@@ -1,11 +1,12 @@
 // The analysis: its stages in their order, and the one chosen beside them.
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
+import { useFocusKept } from '@acaprino/imago';
 import { Badge, Column, Text } from '@acaprino/sigrid/primitives';
 import { ItemList, ItemRow } from '@acaprino/sigrid/components';
 import { ContentSplit } from '@acaprino/sigrid/layout';
 import { Loading } from '../src/states.tsx';
-import { FrameContext, ScreenPanel, useFocusKept, useFrame } from './frame.tsx';
+import { FrameContext, ScreenPanel, useFrame } from './frame.tsx';
 import { PremapActions, PremapScreen } from './premap-screen.tsx';
 import { RepositoryActions, RepositoryScreen } from './repository-screen.tsx';
 import { RunActions, RunScreen } from './run-screen.tsx';
@@ -45,7 +46,7 @@ export function AnalysisScreen() {
   const list = <Column pad="sm"><ItemList aria-label="Percorso di analisi">{stages(s).map(row => <Fragment key={row.id}>
     <ItemRow title={row.label} current={row.id === s.kept.analysisStage} disabled={row.reason !== ''}
       description={<Text pre>{row.detail}</Text>}  // `pre`: it wraps, it is never cut
-      meta={row.state !== 'failed' && STAGE_WORD[row.state]} end={row.state === 'failed' && <Badge variant="destructive">{STAGE_WORD.failed}</Badge>}
+      meta={row.state !== 'failed' && STAGE_WORD[row.state]} end={row.state === 'failed' && <Badge tone="danger">{STAGE_WORD.failed}</Badge>}
       onClick={() => { model.selectStage(row.id); setShown('main'); }} />
     {/* Under the row, not in it: a row that cannot be pressed is drawn at half its strength, and why it cannot is to be read. */}
     {row.reason && <Column as="li" pad="md"><Text variant="note">{row.reason}</Text></Column>}

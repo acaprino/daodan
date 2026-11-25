@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, rm } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
 const assets = new URL('../../daodan/assets/', import.meta.url);
@@ -35,7 +35,7 @@ try {
   const errors = [];
   page.on('pageerror', error => { errors.push(error.message); console.error(error); });
   // Deliver real packaged assets and the layout worker. Only the repository and run responses are fixtures.
-  await context.route('http://daodan.test/**', async route => {
+  const respond = async route => {
     const url = new URL(route.request().url()), path = url.pathname;
     if (path === '/api/app/paths') {
       if (mode.pathsBroken) return route.fulfill({ status: 500, json: { error: 'percorsi non letti' } });
@@ -119,8 +119,9 @@ try {
     const part = path.slice(app ? 5 : 1) || 'index.html';
     const mime = { html: 'text/html', css: 'text/css', js: 'text/javascript' }[part.split('.').at(-1)];
     await route.fulfill({ body: await readFile(new URL((app ? 'app/' : 'viewer/') + part, assets)), contentType: mime });
-  });
-  await page.addInitScript(state => {
+  };
+  await context.route('http://daodan.test/**', respond);
+  const stream = state => {
     window.EventSource = class extends EventTarget {
       constructor() {
         super();
@@ -134,7 +135,9 @@ try {
       }
       close() {}
     };
-  }, { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } });
+  };
+  const fresh = { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } };
+  await page.addInitScript(stream, fresh);
   await page.goto('http://daodan.test/app/?token=test');
   // What a person meets, by role, name and words, on the two pages. The scheme is what `applyTheme` writes on the root.
   const selectable = locator => locator.evaluate(el => getComputedStyle(el).userSelect !== 'none');
@@ -186,16 +189,15 @@ try {
     await page.evaluate(() => document.fonts.ready);
     const beside = (await tab('Motore').boundingBox()).x;  // before there is a graph to count
     assert.equal(await page.getByRole('navigation').count(), 0);
-    assert.equal(await bar.getByRole('button', { name: 'Comandi', exact: true }).locator('svg').count(), 0);  // the magnifier is the search
     await line('Contesto pronto').waitFor();
     const where = line('Pipeline completata').getByText(`demo/shop · main · ${'1'.repeat(12)} · run demo`, { exact: true });
     await where.waitFor();
     assert.ok(await selectable(where));
     const foot = page.getByRole('contentinfo');
     assert.match(await foot.innerText(), /App locale: il codice resta sul tuo disco · Motore: claude/);
-    const keys = await foot.getByRole('list', { name: 'Tasti' }).innerText();  // Ctrl+K is on its button
-    assert.match(keys, /Ctrl\s*F[\s\S]*Cerca in questa vista[\s\S]*F6[\s\S]*Area successiva/);
-    assert.doesNotMatch(keys, /Ctrl\s*K/);
+    const keys = () => foot.getByRole('list', { name: 'Tasti' }).innerText();  // Ctrl+K is on its button
+    assert.match(await keys(), /F6\s*Area successiva/);
+    assert.doesNotMatch(await keys(), /Ctrl\s*[KF]/);  // this stage has no search
     // The stages say how they are, and one that cannot be opened says why.
     assert.equal(await stage('Repository').getAttribute('aria-current'), 'true');
     for (const name of ['Repository', 'Pre-mappa', 'Analisi', 'Sintesi e grafo']) await stageSays(name, 'fatta');
@@ -291,6 +293,7 @@ try {
     await onContent();
     const tree = main.getByRole('tree'), treeRow = name => tree.getByRole('treeitem', { name, exact: true });
     await tree.waitFor();
+    assert.match(await keys(), /Ctrl\s*F[\s\S]*Cerca in questa vista[\s\S]*F6[\s\S]*Area successiva/);
     mode.premapDelay = 0;
     await stageSays('Pre-mappa', 'fatta');
     await foot.getByText(/ · 2 gruppi nel grafo$/).waitFor();
@@ -453,7 +456,7 @@ try {
     // Ctrl+F on a stage with no search says so; F6 and Shift+F6 go from a region to the next; the skip link goes to the content.
     await stage('Repository').click();
     await page.keyboard.press('Control+f');
-    await page.getByText('Questa schermata non ha una ricerca.').waitFor();
+    await page.getByText('Questa vista non ha una ricerca.').waitFor();
     await tab('Analisi').focus();
     await page.keyboard.press('F6');
     assert.ok(await inMain());
@@ -487,14 +490,14 @@ try {
     assert.equal(await address.inputValue(), 'https://github.com/demo/shop');
     // A narrow window: the screens are at the foot, and the stages or the one chosen, one at a time.
     await page.setViewportSize({ width: 700, height: 820 });
-    assert.deepEqual([await tab('Analisi').isVisible(), await stage('Repository').isVisible(), await fits()], [true, true, true]);
+    const views = page.getByRole('toolbar', { name: 'Viste', exact: true });  // under the bar, then at the foot
+    assert.deepEqual([await views.getByRole('button', { name: /^Analisi/ }).isVisible(), await stage('Repository').isVisible(), await fits()], [true, true, true]);
     await page.setViewportSize({ width: 390, height: 820 });
-    const footScreens = page.getByRole('toolbar', { name: 'Schermate in basso' });
-    await footScreens.getByRole('button', { name: /^Motore/ }).click();
+    await views.getByRole('button', { name: /^Motore/ }).click();
     await screen('Motore e domande');
     assert.equal(await tab('Analisi').count(), 0);
     assert.ok(await fits());
-    await footScreens.getByRole('button', { name: /^Analisi/ }).click();
+    await views.getByRole('button', { name: /^Analisi/ }).click();
     await panel('Repository').waitFor();
     await path.waitFor({ state: 'hidden' });
     assert.ok(await fits());
@@ -518,7 +521,7 @@ try {
     await panel('Repository').waitFor();
     await toPath.click();
     await page.keyboard.press('Control+f');  // a stage with no search says so, its list in sight or not
-    await page.getByText('Questa schermata non ha una ricerca.').waitFor();
+    await page.getByText('Questa vista non ha una ricerca.').waitFor();
     await stage('Pre-mappa').click();
     await page.setViewportSize({ width: 1280, height: 850 });
     await path.waitFor();
@@ -796,7 +799,7 @@ try {
     assert.match(await unread.innerText(), /Errore[\s\S]*grafo non letto[\s\S]*Riprova/);
     for (const control of [search, filter('Direzione'), filter('Profondità'), filter('Relazioni'), clear]) assert.ok(await control.isDisabled());
     await page.keyboard.press('Control+f');
-    await page.getByText('Questa schermata non ha una ricerca.').last().waitFor();
+    await page.getByText('Questa vista non ha una ricerca.').last().waitFor();
     mode.graphStatus = 200;
     await button(unread, 'Riprova').click();
     await button(canvas, 'Client, 1 file · confermato').waitFor();
@@ -989,7 +992,7 @@ try {
     await choose('Vai a Motore e domande');
     await main.getByRole('region', { name: 'Motore e domande', exact: true }).waitFor();
     await page.keyboard.press('Control+f');
-    await page.getByText('Questa schermata non ha una ricerca.').last().waitFor();
+    await page.getByText('Questa vista non ha una ricerca.').last().waitFor();
     // Without a repository, or an engine, nothing can be asked, and why is beside the button.
     await serve({ context: null, job: { state: 'idle' } });
     await page.getByText('Seleziona prima una repository.', { exact: true }).waitFor();
@@ -1179,7 +1182,7 @@ try {
   mode.exportBusy = 1;       // and before that a busy project, which is asked again
   mode.exportDelay = 1000;
   await page.goto('http://daodan.test/');
-  assert.equal(await page.title(), 'Codebase Map');
+  assert.equal(await page.title(), 'Daodan · Mappa');
   await main.getByRole('progressbar', { name: "Carico l'export…" }).waitFor();
   await line("Carico l'export…").waitFor();
   await nav.getByText("In attesa dell'export.").waitFor();
@@ -1601,9 +1604,15 @@ try {
   await page.keyboard.press('Shift+F6');
   assert.ok(await nav.evaluate(el => el.closest('aside').contains(document.activeElement)));
   // The rail is the person's choice, and from 620 to 850 the frame's.
-  await page.getByRole('button', { name: 'Riduci la barra laterale' }).click();
+  // Its button is at the head, with the name of the list and its count, and the choice is kept.
+  const head = nav.getByText(/^Mappa\s*8/);
+  const smaller = page.getByRole('button', { name: 'Riduci la barra laterale' });
+  assert.ok((await smaller.boundingBox()).y < (await whole.boundingBox()).y);
+  await head.waitFor();
+  await smaller.click();
   await page.getByRole('button', { name: 'Espandi la barra laterale' }).waitFor();
-  assert.ok((await nav.boundingBox()).width < 100);
+  await page.waitForFunction(() => document.querySelector('nav[aria-label="Mappa"]').getBoundingClientRect().width < 100);
+  assert.equal(await page.evaluate(() => localStorage.getItem('daodan.sidebar')), 'collapsed');
   assert.deepEqual([await whole.isVisible(), await elements.count()], [true, 0]);  // the places, and no things
   await page.getByRole('button', { name: 'Espandi la barra laterale' }).click();
   await page.waitForFunction(() => document.querySelector('nav[aria-label="Mappa"]').getBoundingClientRect().width > 200);
@@ -1653,7 +1662,7 @@ try {
   await closeIn(sheet);
   await sheet.waitFor({ state: 'detached' });
   assert.ok((await canvas.boundingBox()).height >= 200);
-  const footViews = page.getByRole('toolbar', { name: 'Viste in basso' });
+  const footViews = page.getByRole('toolbar', { name: 'Viste', exact: true });
   assert.equal(await view('Logica').count(), 1);
   await footViews.getByRole('button', { name: 'Fisica' }).click();
   await page.getByRole('main', { name: 'Mappa fisica' }).waitFor();
@@ -1952,6 +1961,177 @@ try {
   await schemeIs(page, 'light');
   await tab.close();
   await app.close();
+  // In a browser the map opens in a tab of its own, with no way back; in a window the two pages take each other's place.
+  const says = "Torna all'analisi";
+  await page.goto('http://daodan.test/app/?token=test');
+  await page.getByRole('toolbar', { name: 'Daodan', exact: true }).getByRole('button', { name: /^Grafo/ }).click();
+  const [popup] = await Promise.all([page.waitForEvent('popup'), page.getByRole('link', { name: 'Apri l’esploratore', exact: true }).click()]);
+  await popup.getByRole('main', { name: 'Mappa logica' }).waitFor();
+  assert.deepEqual([new URL(page.url()).pathname, popup.url(), await popup.getByRole('button', { name: says }).count()], ['/app/', 'http://daodan.test/?token=test&run=demo', 0]);
+  await popup.close();
+  // The window of Tauri as the page finds it: it answers every call, and writes it down.
+  const fakeWindow = () => {
+    window.calls = [];
+    window.__TAURI_INTERNALS__ = {
+      metadata: { currentWindow: { label: 'main' }, currentWebview: { label: 'main', windowLabel: 'main' } },
+      transformCallback: () => 1, unregisterCallback: () => {},
+      invoke: async (command, args) => {
+        window.calls.push([command, args]);
+        return command === 'plugin:window|is_maximized' ? false : command === 'plugin:event|listen' ? 1 : null;
+      },
+    };
+    window.__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener: () => {} };
+  };
+  Object.assign(mode, { graphStatus: 200, premapStatus: 200, premapDelay: 0, exportBroken: false, exportDelay: 0, exportBusy: 0, layoutLost: false, pathsBroken: false, marks: true });
+  // A page of its own, with the choices it starts from.
+  const opened = async ({ width, scheme = 'dark', own = false }) => {
+    const other = await browser.newContext({ viewport: { width, height: 850 }, colorScheme: 'light' });
+    await other.route('http://daodan.test/**', respond);
+    await other.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'demo', readable: true }] } }));
+    await other.route('**/api/events?*', route => route.fulfill({ json: { events: [{ cursor: 1, timestamp: '10:00', event: 'phase_completed', message: '', phase: 2 }], next_cursor: 1, has_more: false } }));
+    const tabPage = await other.newPage();
+    tabPage.setDefaultTimeout(8000);
+    tabPage.on('pageerror', error => { errors.push(error.message); console.error(error); });
+    await tabPage.addInitScript(stream, fresh);
+    await tabPage.addInitScript(choice => { if (!localStorage.getItem('daodan.theme')) localStorage.setItem('daodan.theme', choice); }, scheme);
+    if (own) await tabPage.addInitScript(fakeWindow);
+    return tabPage;
+  };
+  {
+    const win = await opened({ width: 1280, own: true });
+    const told = () => win.evaluate(() => window.calls.filter(([command]) => command === 'plugin:imago-shell|chrome').map(([, args]) => args.title));
+    const until = async (holds, what) => { for (const end = Date.now() + 8000; !await holds(); await win.waitForTimeout(50)) assert.ok(Date.now() < end, what); };
+    const buttons = () => win.locator('[data-slot="window-controls"]').getByRole('button').evaluateAll(all => all.map(el => el.getAttribute('aria-label')));
+    const bar = win.getByRole('toolbar', { name: 'Daodan', exact: true });
+    const toMap = async () => {
+      const link = win.getByRole('link', { name: 'Apri l’esploratore', exact: true });
+      assert.equal(await link.getAttribute('target'), null);
+      await link.click();
+      await win.getByRole('main', { name: 'Mappa logica' }).waitFor();
+      assert.equal(win.url(), 'http://daodan.test/?token=test&run=demo');
+    };
+    const onGraph = async () => {
+      await win.waitForURL('http://daodan.test/app/?token=test');
+      await win.getByRole('main', { name: 'Grafo', exact: true }).waitFor();  // the screen it was left on
+    };
+    await win.goto('http://daodan.test/app/?token=test');
+    await bar.getByRole('button', { name: /^Analisi/ }).waitFor();
+    assert.deepEqual(await buttons(), ['Riduci a icona', 'Ingrandisci', 'Chiudi']);
+    await until(async () => (await told()).at(-1) === 'Daodan · Analisi', 'the title of the App');
+    await bar.getByRole('button', { name: /^Grafo/ }).click();
+    await toMap();
+    assert.deepEqual(await buttons(), ['Riduci a icona', 'Ingrandisci', 'Chiudi']);
+    await until(async () => (await told()).at(-1) === 'Daodan · Mappa', 'the title of the map');
+    await bar.getByRole('button', { name: says, exact: true }).click();
+    await onGraph();
+    await toMap();
+    await win.keyboard.press('Control+k');
+    await win.getByRole('dialog', { name: 'Cerca un comando' }).getByRole('option', { name: says }).click();
+    await onGraph();
+    // The run has the link too.
+    await win.evaluate(() => localStorage.setItem('daodan-app-v2', JSON.stringify({ ...JSON.parse(localStorage.getItem('daodan-app-v2')), screen: 'analysis', analysisStage: 'analysis' })));
+    await win.reload();
+    await win.getByRole('region', { name: 'Analisi', exact: true }).waitFor();
+    await toMap();
+    assert.equal(win.context().pages().length, 1);
+    await win.context().close();
+  }
+
+  // Both pages at the widths where the frame changes and in both schemes: nothing sticks out sideways, the views are where the width
+  // puts them, and the bar is the same from one screen to the next. A photograph of each, for who looks at them.
+  const shots = new URL('./shots/', import.meta.url);
+  await rm(shots, { recursive: true, force: true });
+  await mkdir(shots, { recursive: true });
+  const still = async where => {
+    await where.evaluate(() => Promise.race([
+      Promise.all(document.getAnimations().map(({ finished }) => finished.catch(() => {}))), new Promise(done => setTimeout(done, 1000)),
+    ]).then(() => {}));
+    await where.waitForTimeout(300);  // the frame and the canvas take their width
+  };
+  const sticksOut = where => where.evaluate(() => {
+    const out = [];
+    if (document.documentElement.scrollWidth > innerWidth) out.push(`the page is ${document.documentElement.scrollWidth} wide in ${innerWidth}`);
+    for (const slot of ['title-bar', 'app-shell-tabs', 'app-shell-status', 'sidebar', 'app-shell-content', 'app-shell-actions', 'app-shell-footer', 'app-shell-bottom', 'panel-header', 'panel-tools', 'panel-body', 'inspector-body', 'inspector-footer']) {
+      for (const region of document.querySelectorAll(`[data-slot="${slot}"]`)) {
+        if (region.clientWidth > 1 && region.scrollWidth > region.clientWidth) out.push(`${slot} is ${region.scrollWidth} wide in ${region.clientWidth}`);
+      }
+    }
+    for (const slot of ['app-shell-status', 'app-shell-footer', 'title-bar']) {
+      const tall = document.querySelector(`[data-slot="${slot}"]`)?.clientHeight ?? 0;
+      if (tall > 48) out.push(`${slot} is ${tall} tall: more than a line`);
+    }
+    return out;
+  });
+  const barOf = async where => {
+    const box = async locator => { const found = await locator.boundingBox(); return found && [found.x, found.width].map(Math.round); };
+    return { brand: await box(where.locator('[data-slot="toolbar-brand"]')), commands: await box(where.locator('[data-slot="title-bar"]').getByRole('button', { name: /^Comandi/ })) };
+  };
+  const WIDTHS = [340, 390, 620, 860, 1440], SHOT = [390, 620, 1440];
+  const app = { screen: 'analysis', runId: 'demo', repositoryUrl: 'https://github.com/demo/shop' };
+  const SCREENS = [
+    ['analisi-1-repository', { ...app, analysisStage: 'repository' }, 'Repository'],
+    ['analisi-2-premappa', { ...app, analysisStage: 'premap', treeSelected: 'README.md' }, 'Pre-mappa'],
+    ['analisi-3-run', { ...app, analysisStage: 'analysis' }, 'Analisi'],
+    ['analisi-4-sintesi', { ...app, analysisStage: 'synthesis' }, 'Sintesi'],
+    ['grafo', { ...app, screen: 'graph' }, 'Grafo del codice'],
+    ['motore', { ...app, screen: 'engine' }, 'Motore e domande'],
+  ];
+  const MAPS = [
+    ['mappa-logica', 'Vista logica', null], ['mappa-fisica', 'Vista fisica', null],
+    ['mappa-logica-progetto', 'Vista logica', 'Informazioni sul progetto'],
+  ];
+  const wrong = [];
+  for (const own of [false, true]) {
+    for (const scheme of ['dark', 'light']) {
+      const bars = {};
+      const look = async (where, name) => {
+        for (const width of own ? [620, 1440] : WIDTHS) {
+          await where.setViewportSize({ width, height: 850 });
+          await still(where);
+          const label = `${own ? 'finestra-' : ''}${name}-${scheme}-${width}`;
+          if (SHOT.includes(width)) await where.screenshot({ path: new URL(`${label}.png`, shots).pathname });
+          const out = await sticksOut(where);
+          if (out.length) wrong.push(`${label}: ${out.join('; ')}`);
+          const form = width >= 860 ? 'title-bar' : width < 620 && !own ? 'app-shell-bottom' : 'app-shell-tabs';
+          if (await where.locator(`[data-slot="${form}"] [data-slot="toolbar-tabs"]`).count() !== 1) wrong.push(`${label}: the views are not in ${form}`);
+          if (await where.evaluate(() => document.documentElement.dataset.scheme) !== scheme) wrong.push(`${label}: not ${scheme}`);
+          // Under 620 the map has the button of its drawer before the brand.
+          const now = await barOf(where);
+          if (width < 620) delete now.brand;
+          bars[width] ??= JSON.stringify(now);
+          if (JSON.stringify(now) !== bars[width]) wrong.push(`${label}: the bar is ${JSON.stringify(now)}, and was ${bars[width]}`);
+        }
+      };
+      const shown = await opened({ width: 1440, scheme, own });
+      for (const [name, state, title] of SCREENS) {
+        await shown.setViewportSize({ width: 1440, height: 850 });
+        await shown.goto('http://daodan.test/app/?token=test');
+        await shown.evaluate(left => localStorage.setItem('daodan-app-v2', JSON.stringify(left)), state);
+        await shown.reload();
+        await shown.getByRole('region', { name: title, exact: true }).waitFor();
+        await shown.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
+        await look(shown, name);
+      }
+      await shown.setViewportSize({ width: 1440, height: 850 });
+      await shown.goto('http://daodan.test/?token=test');
+      for (const [name, command, then] of MAPS) {
+        await shown.setViewportSize({ width: 1440, height: 850 });
+        for (const each of [command, then].filter(Boolean)) {
+          await shown.keyboard.press('Control+k');
+          await shown.getByRole('dialog', { name: 'Cerca un comando' }).getByRole('option', { name: each }).click();
+        }
+        await shown.getByRole('group', { name: 'Naviga il grafo', exact: true }).waitFor();
+        await shown.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
+        await look(shown, name);
+      }
+      await shown.setViewportSize({ width: 1440, height: 850 });
+      await shown.keyboard.press('Control+k');
+      await still(shown);
+      if (!own) await shown.screenshot({ path: new URL(`palette-${scheme}-1440.png`, shots).pathname });
+      await shown.context().close();
+    }
+  }
+  assert.deepEqual(wrong, []);
   assert.deepEqual(errors, []);
   console.log('Passed the App (frame, palette, stages, repository, graph, server, theme) and the map (frame, palette, canvas, groups in place, moves, motion, logos, places and things, details, filters, runs, theme).');
 } finally { await browser.close(); }

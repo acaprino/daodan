@@ -1,4 +1,6 @@
 // What the person asks the host session and what the session answers, in the words the page says them: pure, so it is tested.
+import type { BadgeTone } from '@acaprino/sigrid/primitives';
+
 export type Asked = { id: number; kind: string; scope: string; text: string; state: string; message?: string };
 export type Finding = { file?: string; line?: number; severity?: string; title?: string; premise?: string; example?: string; request: number };
 export type Question = Pick<Asked, 'kind' | 'scope' | 'text'>;
@@ -32,14 +34,13 @@ export const askedText = (item: Asked): string => [item.text, item.message].filt
 export const askedState = (item: Asked): string => STATES[item.state] ?? item.state;
 
 // The tone of a word, where Sigrid has one for what it says: the word says the same, so the tone is never alone.
-export type Tone = 'danger' | 'warning' | 'success' | null;
-export const askedTone = (item: Asked): Tone => (item.state === 'done' ? 'success' : null);
+export const askedTone = (item: Asked): BadgeTone | undefined => (item.state === 'done' ? 'success' : undefined);
 
 // A finding is as the review wrote it: what it does not say is said to be missing.
 export const findingPlace = (item: Finding): string => (item.file ? `${item.file}:${item.line ?? '?'}` : 'file non indicato');
 export const findingText = (item: Finding): string => [item.title ?? item.premise ?? 'senza titolo', item.example].filter(Boolean).join(' · ');
 const SEVERITIES: Record<string, string> = { Critical: 'critica', High: 'alta', Medium: 'media', Low: 'bassa' };
 export const findingSeverity = (item: Finding): string => (item.severity ? `gravità ${SEVERITIES[item.severity] ?? item.severity}` : 'gravità non indicata');
-export const findingTone = (item: Finding): Tone => (['Critical', 'High'].includes(item.severity ?? '') ? 'danger' : 'warning');
+export const findingTone = (item: Finding): BadgeTone => (['Critical', 'High'].includes(item.severity ?? '') ? 'danger' : 'warning');
 
 export const gapText = (gap: unknown): string => (typeof gap === 'string' ? gap : JSON.stringify(gap));
