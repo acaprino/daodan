@@ -1,16 +1,18 @@
-# Daodan: il disegno della pipeline e il lavoro che resta, in ondate
+# Daodan: il refactoring completo, il disegno e le sue ondate
 
-**Stato:** chiesta dal proprietario il 25 novembre 2026. È l'unica spec di Daodan e dice tutto ciò che Daodan sarà da qui in avanti: prima il disegno (la pipeline, i suoi step, ciò che ognuno usa, le superfici e come si eseguono, le anagrafiche, i servizi comuni), poi il lavoro per arrivarci, in ondate. Le ondate condensano ciò che le spec e i piani di prima dichiaravano da fare o fatto in parte. Una decisione nuova si scrive qui.
+**Stato:** chiesta dal proprietario il 25 novembre 2026. È l'unica spec di Daodan. Non è l'elenco di ciò che resta: è un refactoring completo. Daodan si riorganizza attorno a una pipeline di otto step, ognuno con una competenza sola, moduli a sé che attingono da anagrafiche globali; tutto il resto (ciò che ogni step usa, le superfici e come si eseguono, i servizi comuni, flussi, review, app) si ordina su quella. Una decisione nuova si scrive qui.
 
-**Le spec e i piani di prima sono stati tolti dal repository il 25 novembre**, su richiesta del proprietario. Ogni voce cita ancora il documento e la sezione da cui viene, con i suoi motivi e le sue misure: si leggono nella storia di git, al commit `614c940` (`git show 614c940:docs/specs/<nome>.md`). L'elenco è in fondo.
+**Due parti.** Prima il disegno: com'è Daodan a refactoring finito. Poi le ondate: il lavoro per arrivarci, nell'ordine in cui si fa, ognuna con il suo cancello. Nelle ondate entra anche ciò che le spec e i piani di prima avevano lasciato da fare o fatto in parte, riordinato sul disegno nuovo: nulla di quel lavoro resta fuori da qui.
 
-**Come è stata scritta.** Letti il 25 novembre tutte le spec e i piani di `docs/` (19 spec, 13 piani, la roadmap). Lo stato di ogni voce è quello che il suo documento dichiara, non riverificato sul codice, salvo dove è scritto «visto nel codice». Dove due documenti si contraddicono è detto.
+**Le spec e i piani di prima sono stati tolti dal repository il 25 novembre**, su richiesta del proprietario. Una voce cita il documento e la sezione da cui viene, con i suoi motivi e le sue misure: si leggono nella storia di git, al commit `614c940` (`git show 614c940:docs/specs/<nome>.md`). L'elenco è in fondo.
+
+**Da dove viene lo stato.** Per ciò che è del 25 novembre, dalle decisioni di quel giorno e dal codice letto. Per ciò che viene dai documenti di prima (19 spec, 13 piani, la roadmap), dallo stato che quei documenti dichiaravano, non riverificato sul codice salvo dove è scritto «visto nel codice».
 
 **Come si legge.** Un'ondata è un insieme di voci che si chiudono insieme e ha un cancello: la prova che la dichiara finita. Un'ondata parte quando quelle da cui dipende hanno passato il cancello. Dentro un'ondata l'ordine è quello scritto. Ogni voce è marcata: **[deciso]** approvata dal proprietario, **[proposta]** mai approvata, **[misura]** una misura da fare, **[difetto]** un errore noto.
 
 | Ondata | Che cosa chiude | Dipende da |
 | --- | --- | --- |
-| 0 | Le verifiche in sospeso e i documenti che dicono il falso | — |
+| 0 | Il punto di partenza: ciò che è scritto e non è mai stato verificato | — |
 | 1 | `1_list_files`: il linguaggio di ogni file | 0 |
 | 2 | `3_recognize_stack` e `4_find_modules`: lo stack prima, i moduli dopo | 0 |
 | 3 | `5_find_entry_points`: rotte, pagine ed eventi fuori dalla pre-mappa | 2 |
@@ -165,9 +167,9 @@ Non sono step: li usa ogni step che deve eseguire qualcosa.
 
 Sul grafo completo: i flussi (chi scrive, chi legge, le azioni dell'utente), la mappa del sistema, le schede scritte da un motore LLM a scelta, la ricerca, la review. Ogni testo che lascia la macchina o va a un modello passa prima da Secretlint.
 
-## Ondata 0: verifiche in sospeso e documenti allineati
+## Ondata 0: il punto di partenza
 
-Nessun disegno nuovo: si chiude ciò che è già scritto e non è mai girato, e si toglie dai documenti ciò che non è più vero.
+Prima di spostare il codice si chiude ciò che è già scritto e non è mai girato, e si toglie dai documenti ciò che non è più vero: il refactoring parte da uno stato verificato.
 
 1. **[misura]** La suite intera su Modal sul codice del 25 novembre: anagrafica dei formati, modulo del linguaggio, generatore dell'albero della pipeline. Non è mai girata (visto: nessun workflow parte da solo sui test Python).
 2. **[misura]** La «Verifica» dello stack dal fork, ferma perché Modal non era raggiungibile: nessuna perdita sul corpus dopo il passaggio, tempo della scansione veloce, prova che nulla del progetto viene eseguito con `cli()` e il Node veri, nuova misura su `develop` (spec stack dal fork, «Verifica»; piano 3, B4 passo 4, B6, B7).
