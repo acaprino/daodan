@@ -31,6 +31,10 @@ const CHANGED: &str = "server-state";
 const LIMIT: usize = 3;
 const PERIOD: Duration = Duration::from_secs(60);
 
+/// How long the window is waited for. `imago-shell` shows it three seconds after it is built; a new
+/// profile of WebView2 may take some more.
+const SCREEN: Duration = Duration::from_secs(30);
+
 /// What the page inside the program says, and the address of the server's page once there is one.
 enum Phase {
     Starting,
@@ -205,6 +209,19 @@ fn show(app: &AppHandle, page: Url) {
     }
 }
 
+/// Waits until the window is on screen: a quick server would take it away from the page inside the
+/// program before that has drawn, and its first frame would wait for the server's.
+fn on_screen(app: &AppHandle) {
+    let until = Instant::now() + SCREEN;
+    let shown = || {
+        app.get_webview_window("main")
+            .is_some_and(|window| window.is_visible().unwrap_or(false))
+    };
+    while !shown() && Instant::now() < until {
+        thread::sleep(Duration::from_millis(20));
+    }
+}
+
 /// Empties the log, for a start of the program.
 pub fn new_log(data: &Path) {
     let _ = fs::write(data.join(LOG_FILE), "");
@@ -218,6 +235,7 @@ pub fn keep(app: &AppHandle) {
     loop {
         let output = match daodan.start() {
             Ok((output, page)) => {
+                on_screen(app);
                 daodan.up(app, &page);
                 output
             }
@@ -240,7 +258,7 @@ pub fn keep(app: &AppHandle) {
 }
 
 /// What the page inside the program says: the state, and its cause. With the server there, the
-/// window goes to it: it may have answered before there was a window.
+/// window goes to it: the window may have been built again on this page.
 #[tauri::command(async)]
 pub fn start_state(app: AppHandle) -> (&'static str, String) {
     let daodan = app.state::<Daodan>();

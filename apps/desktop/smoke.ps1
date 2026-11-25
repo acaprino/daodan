@@ -235,7 +235,7 @@ function Kill-Server {
 $minute = [Diagnostics.Stopwatch]::StartNew()
 $null = Ask "[...document.querySelectorAll('[data-slot=toolbar-tab]')].find((tab) => tab.textContent === 'Motore e domande').click()"
 Kill-Server
-$tab = Ask "document.querySelector('[data-slot=toolbar-tab][aria-current=page]').textContent"
+$tab = Wait-For { Ask "document.querySelector('[data-slot=toolbar-tab][aria-current=page]')?.textContent" } 10
 Say ($tab -eq 'Motore e domande' -and (Ask 'location.origin') -eq $origin) "on the same screen and the same origin: $tab"
 $null = Ask "location.href = '/' + location.search, 1"
 $null = Wait-For { "$(At)" -match ':\d+/\?token=' } 10
