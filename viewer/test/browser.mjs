@@ -1617,7 +1617,7 @@ try {
   assert.ok(await nav.evaluate(el => el.closest('aside').contains(document.activeElement)));
   // The rail is the person's choice, and from 620 to 850 the frame's.
   // Its button is at the head, with the name of the list and its count, and the choice is kept.
-  const head = nav.getByText(/^Mappa\s*8/);
+  const head = page.locator('[data-slot="sidebar-row"]').filter({ hasText: /^Mappa\s*8/ });
   const smaller = page.getByRole('button', { name: 'Riduci la barra laterale' });
   assert.ok((await smaller.boundingBox()).y < (await whole.boundingBox()).y);
   await head.waitFor();
