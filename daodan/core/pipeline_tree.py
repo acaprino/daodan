@@ -9,7 +9,7 @@ What is declared is read from the code (`declared`): the sources of the pre-map 
 (`indexers.analyzers`), the observers (`dynamic.observers`), the languages and their rules (`file_formats`,
 `languages.detect`) and the pins of the tools. What each one is for is a line of Italian written here, by its name.
 `check` says what the two disagree on: a source with no line, a line whose source is gone, a file a line names that is
-not there, and a page's data that is not what `build` writes. The page is `viewer/pipeline/` (Sigrid's `GraphCanvas`),
+not there, and a page's data that is not what `build` writes. The page is `viewer/pipeline/` (Sigrid's `Steps` and `ItemList`),
 built by the Viewer workflow into `docs/pipeline/`.
 
 Today's order is the code's; the plan's is `docs/specs/2026-11-25-refactoring-completo.md` («La pipeline, com'è decisa»). The tie

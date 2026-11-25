@@ -1,20 +1,17 @@
-// The pipeline page: the steps of an analysis in their order and, hanging from each, what it uses, when, with which tool and where, for
+// The pipeline page: the steps of an analysis as a path and, for the step chosen, what it uses, when, with which tool and where, for
 // the language, the build tool or the framework chosen; as the code runs today, or as the plan orders it. It reads no server: its data
-// is written from the code's own declarations (`daodan/core/pipeline_tree.py`), so nothing here can fail to answer.
+// is written from the code's declarations (`daodan/core/pipeline_tree.py`), so nothing here can fail to answer.
 import { useEffect, useMemo, useState } from 'react';
-import { AppWindow, startApp, useWindow } from '@acaprino/imago';
+import { AppWindow, startApp, useFocusKept, useWindow } from '@acaprino/imago';
 import type { AppView } from '@acaprino/imago';
-import { useMedia } from '@acaprino/sigrid';
-import { Badge, Column, Heading, Select, Text } from '@acaprino/sigrid/primitives';
-import { DescriptionList } from '@acaprino/sigrid/components';
-import { Inspector, Panel } from '@acaprino/sigrid/layout';
-import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
+import { Badge, Column, Heading, Icon, Select, Text } from '@acaprino/sigrid/primitives';
+import { DescriptionList, Disclosure, Empty, ItemList, ItemRow, Steps } from '@acaprino/sigrid/components';
+import { ContentSplit, Inspector, Panel } from '@acaprino/sigrid/layout';
 import '@acaprino/sigrid/styles.css';
-import '@acaprino/sigrid/graph.css';
 import { DAODAN } from '../src/page.ts';
 import { DATA } from './data.ts';
-import { ALL, detailOf, groupsOf, legendOf, sceneOf } from './tree.ts';
-import type { Mode } from './tree.ts';
+import { ALL, countOf, detailOf, groupsOf, itemsOf, lineOf, pathOf, rowId, stepId } from './tree.ts';
+import type { Mode, Row } from './tree.ts';
 
 const VIEWS: AppView<Mode>[] = [
   { id: 'today', label: 'Oggi nel codice', icon: 'code', command: 'Vai a Oggi nel codice' },
@@ -27,42 +24,57 @@ function Pipeline() {
   const window_ = useWindow();
   const [mode, setMode] = useState<Mode>('today');
   const [tech, setTech] = useState(ALL);
+  const [kept, setAt] = useState(0);  // the step on the screen, by its place in the path
   const [chosen, choose] = useState<string | null>(null);
-  const [closed, setClosed] = useState<string[] | null>(null);  // the branches as the person left them; null: as the choice opens them
-  const direction = useMedia('(width < 850px)') ? 'down' : 'right';
+  const [panes, setPanes] = useState<1 | 2>(2);
+  useFocusKept(panes);
   useEffect(() => { window_.setTitle(document.title); }, [window_]);
   const choice = DATA.choices.find(item => item.id === tech) ?? null;
-  const scene = useMemo(() => sceneOf(DATA, mode, choice), [mode, choice]);
+  const path = useMemo(() => pathOf(DATA, mode, choice), [mode, choice]);
+  const at = Math.min(kept, path.steps.length - 1), step = path.steps[at];
   const detail = chosen === null ? null : detailOf(DATA, mode, chosen);
-  // With every technology the steps start closed, to be opened one at a time; with one chosen its whole way is in sight.
-  const collapsed = closed ?? (choice ? [] : scene.branches);
+  // The details are of a thing in the list on the screen: another list closes them.
   const change = (act: () => void) => {
     act();
     choose(null);
-    setClosed(null);
   };
+  // In a column at every width: in a row too narrow for the names only the step on the screen keeps its name, which is its button.
+  const steps = <Steps aria-label="Step della pipeline" steps={itemsOf(path)} current={at} onStepSelect={next => change(() => setAt(next))} />;
+  const list = (name: string, rows: Row[]) => <ItemList aria-label={name}>{rows.map(row => {
+    const line = lineOf(row, mode);
+    return <ItemRow key={row.name} title={line.title} wrapTitle description={line.tool} facts={line.facts}
+      leading={<Icon name={line.contained ? 'package' : 'device'} />} current={chosen === rowId(row)} onClick={() => choose(rowId(row))} />;
+  })}</ItemList>;
   return <AppWindow views={VIEWS} view={mode} onView={next => change(() => setMode(next))}
     status={<>
       <Badge variant="secondary">{choice?.name ?? 'Tutte le tecnologie'}</Badge>
-      <Text variant="soft">{scene.shown} voci in {scene.steps.size} step, {scene.boxed} solo nel container</Text>
+      <Text variant="soft">{path.shown} voci in {path.steps.length} step, {path.boxed} solo nel container</Text>
     </>}
     footer={<Text>Scritta dalle dichiarazioni del codice: daodan/core/pipeline_tree.py</Text>}
-    inspector={<Inspector title={detail?.title ?? 'Dettaglio'} open={detail !== null} onOpenChange={open => { if (!open) choose(null); }}>
+    inspector={<Inspector title="Dettaglio" open={detail !== null} onOpenChange={open => { if (!open) choose(null); }}>
       {detail && <Column gap="lg" data-selectable="">
         <Heading size="small"><Text pre>{detail.name}</Text></Heading>
         <DescriptionList aria-label={detail.name} items={detail.facts} />
       </Column>}
     </Inspector>}>
-    <Panel title="Pipeline" subtitle={LINE[mode]}
-      tools={<Select size="sm" aria-label="Tecnologia" value={tech} options={EVERY} groups={GROUPS} onValueChange={next => change(() => setTech(next))} />}>
-      <Column fill pad="lg" gap="md">
-        <Text as="p" variant="soft">Gli step in ordine; da ognuno pende ciò che usa, e sulla linea c’è quando parte. Scegli una voce per vedere con che cosa, a che versione e che cosa dà.</Text>
-        <GraphCanvas aria-label="Pipeline di Daodan" fill search nodes={scene.nodes} edges={scene.edges} direction={direction}
-          layoutKey={`${direction}|${scene.key}`} steps={scene.steps} selected={chosen} onSelect={choose}
-          collapsed={collapsed} onCollapsedChange={setClosed} />
-        <GraphLegend aria-label="Tipi di linea" entries={legendOf(scene)} />
-      </Column>
-    </Panel>
+    <ContentSplit aside={<Column pad="lg">{steps}</Column>} asideLabel="Step" width="md" show="main" step={720} onPanesChange={setPanes}>
+      <Panel title={`${at + 1}. ${step.title}`} subtitle={LINE[mode]}
+        actions={<Select size="sm" aria-label="Tecnologia" value={tech} options={EVERY} groups={GROUPS} onValueChange={next => change(() => setTech(next))} />}>
+        <Column pad="lg" gap="lg">
+          {panes === 1 && steps}
+          <DescriptionList aria-label={step.title} items={detailOf(DATA, mode, stepId(step.key))!.facts} />
+          {step.rows.length ? list(`Che cosa usa: ${step.title}`, step.rows)
+            : <Empty title={`Niente di specifico per ${choice?.name ?? 'questa scelta'} in questo step`} description="Scegli un altro step, o un’altra tecnologia." />}
+          {path.beside.filter(part => part.rows.length > 0).map(part =>
+            <Disclosure key={part.key} label={part.title} summary={countOf(part.rows)}>
+              <Column gap="md">
+                <Text as="p" variant="soft">{part.what}</Text>
+                {list(part.title, part.rows)}
+              </Column>
+            </Disclosure>)}
+        </Column>
+      </Panel>
+    </ContentSplit>
   </AppWindow>;
 }
 

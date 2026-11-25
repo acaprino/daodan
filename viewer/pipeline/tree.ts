@@ -1,6 +1,6 @@
-// The tree of the pipeline as a scene for the canvas: the steps in their order and, hanging from each, what it uses for the choice made.
-// The data is written from the code's declarations (`data.ts`); nothing here draws.
-import type { GraphEdge, GraphLegendEntry, GraphNode } from '@acaprino/sigrid/graph';
+// The pipeline as a path for the page: the steps in their order and, for each, what it uses for the choice made. The data is written
+// from the code's declarations (`data.ts`); nothing here draws.
+import type { StepItem } from '@acaprino/sigrid/components';
 import type { SelectGroup } from '@acaprino/sigrid/primitives';
 
 export type Mode = 'today' | 'plan';
@@ -16,17 +16,19 @@ export type Step = { key: string; title: string; code: string; what: string; wri
 export type Choice = { id: string; name: string; group: string; langs: string[]; fam: string[]; fw: string[] };
 export type Data = { rows: Row[]; steps: Record<Mode, Step[]>; choices: Choice[] };
 export type Fact = { name: string; value: string; code?: boolean };
-export type Scene = {
-  nodes: GraphNode[]; edges: GraphEdge[];
-  steps: Map<string, number[]>;  // the steps of the path, each with its number
-  branches: string[];            // the steps something hangs from
-  key: string; shown: number; boxed: number;
+// A step with what it uses for the choice made.
+export type Stage = Step & { rows: Row[] };
+export type Path = {
+  steps: Stage[];   // the steps of the path, in their order: the first is step 1
+  beside: Stage[];  // what comes after the pipeline, and what every step shares
+  shown: number; boxed: number;
 };
 
 export const ALL = 'all';
 export const stepId = (key: string) => `step:${key}`;
 export const rowId = (row: Row) => `row:${row.name}`;
-const NUMBERED = /^[sp]\d+$/;  // a step of the path: what comes after the pipeline, and what every step shares, are beside it
+// A step of the path: what comes after the pipeline, and what every step shares, are beside it. A key of the data, not source code.
+const NUMBERED = /^[sp]\d+$/;
 const when = (row: Row, mode: Mode) => (mode === 'plan' ? row.when_plan : row.when);
 
 export function uses(row: Row, choice: Choice | null): boolean {
@@ -37,40 +39,35 @@ export function uses(row: Row, choice: Choice | null): boolean {
     || row.fw.some(item => choice.fw.includes(item));
 }
 
-export function sceneOf(data: Data, mode: Mode, choice: Choice | null): Scene {
-  const nodes: GraphNode[] = [], edges: GraphEdge[] = [], steps = new Map<string, number[]>(), branches: string[] = [];
-  let shown = 0, boxed = 0, number = 0, before: Step | null = null;
+export function pathOf(data: Data, mode: Mode, choice: Choice | null): Path {
+  const path: Path = { steps: [], beside: [], shown: 0, boxed: 0 };
   for (const step of data.steps[mode]) {
-    const id = stepId(step.key), onPath = NUMBERED.test(step.key);
-    if (onPath) number += 1;
-    nodes.push({ id, label: onPath ? `${number}. ${step.title}` : step.title, detail: step.code, icon: 'layers' });
-    if (onPath) {
-      steps.set(id, [number]);
-      if (before) edges.push({ id: `then:${step.key}`, from: stepId(before.key), to: id, kind: 'link', label: `scrive ${before.writes}`, tone: 'accent' });
-      before = step;
-    }
     const rows = data.rows.filter(row => row[mode] === step.key && uses(row, choice));
-    if (rows.length) branches.push(id);
-    for (const row of rows) {
-      const contained = row.where === 'container';
-      shown += 1;
-      if (contained) boxed += 1;
-      nodes.push({ id: rowId(row), label: row.ver ? `${row.name} ${row.ver}` : row.name, detail: row.tool, icon: contained ? 'package' : 'device' });
-      edges.push({ id: `uses:${row.name}`, from: id, to: rowId(row), label: when(row, mode), style: contained ? 'dashed' : 'solid' });
-    }
+    path.shown += rows.length;
+    path.boxed += rows.filter(row => row.where === 'container').length;
+    (NUMBERED.test(step.key) ? path.steps : path.beside).push({ ...step, rows });
   }
-  return { nodes, edges, steps, branches, key: `${mode}|${choice?.id ?? ALL}`, shown, boxed };
+  return path;
 }
 
-export function legendOf(scene: Scene): GraphLegendEntry[] {
-  return [
-    { style: 'solid', label: "usa, sull'host", count: scene.shown - scene.boxed },
-    { style: 'dashed', label: 'usa, solo nel container', count: scene.boxed },
-    { style: 'solid', tone: 'accent', label: 'poi, con ciò che ha scritto' },
-  ];
+export const countOf = (rows: Row[]) => (rows.length === 1 ? '1 voce' : `${rows.length} voci`);
+
+// The path for `Steps`, which numbers them. Each has a status of its own, so that each can be gone to: without one, the steps before
+// the one on the screen would read as done and the ones after could not be chosen.
+export function itemsOf(path: Path): StepItem[] {
+  return path.steps.map((step): StepItem => ({ label: step.title, meta: countOf(step.rows), status: 'todo' }));
 }
 
-// What the inspector says of the thing chosen: a step, or something a step uses.
+// The line of a thing in the list of its step: with what, when and where.
+export function lineOf(row: Row, mode: Mode): { title: string; tool: string; facts: { text: string; tone?: 'strong' }[]; contained: boolean } {
+  const contained = row.where === 'container';
+  return {
+    title: row.ver ? `${row.name} ${row.ver}` : row.name, tool: row.tool, contained,
+    facts: [{ text: when(row, mode) }, { text: contained ? 'solo nel container' : "sull'host" }, ...(row.status ? [{ text: row.status, tone: 'strong' as const }] : [])],
+  };
+}
+
+// The facts of a step, said at the head of its list, or of something a step uses, said in the inspector.
 export function detailOf(data: Data, mode: Mode, id: string): { title: string; name: string; facts: Fact[] } | null {
   const step = data.steps[mode].find(item => stepId(item.key) === id);
   if (step) {
