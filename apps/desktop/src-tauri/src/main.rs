@@ -59,7 +59,10 @@ fn main() {
     std::env::remove_var("WEBVIEW2_USER_DATA_FOLDER");
     tauri::Builder::default()
         .plugin(plugin())
-        .invoke_handler(tauri::generate_handler![life::start_state, life::start_again])
+        .invoke_handler(tauri::generate_handler![
+            life::start_state,
+            life::start_again
+        ])
         .setup(|app| {
             setup(app).inspect_err(|error| {
                 message::tell(&format!("Daodan non si avvia: {error}."));
