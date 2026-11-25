@@ -37,11 +37,13 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 | --- | --- | --- | --- |
 | Strumento di build | cargo, gradle, maven, npm, `tsc`, cmake, meson, bazel, make, `dotnet`, uv, go | Moduli, unità, pacchetti risolti, comandi | `find_modules` |
 | Strumento / introspezione del framework | `next typegen`, `react-router routes`, `nuxt prepare`, `svelte-kit sync`, compilatori Angular/Astro, sorgenti **Django, FastAPI, Flask** `[deciso]` | Rotte, pagine, eventi dei template | `find_entry_points` |
-| Compilatore del linguaggio (via SCIP) | TypeScript, Pyright, Java (Maven/Gradle), rust-analyzer, Clang | Dove arriva ogni chiamata | `link_calls` |
-| Esecutore dell'interfaccia | browser (Playwright/Chromium), webview (CDP/WebDriver) | Quale controllo fa partire quale funzione | `run_and_observe` |
+| Compilatore del linguaggio (via SCIP) | TypeScript, Pyright, Java (Maven/Gradle), rust-analyzer, Clang | Risoluzione dei destinatari di chiamata (primo adapter dietro il modello di evidenza interno) | `link_calls` |
+| Esecutore dell'interfaccia e osservazione runtime | browser (Playwright/Chromium), webview (CDP/WebDriver), backend standard per tipo di evidenza (`sys.monitoring`, V8 coverage, OpenTelemetry, `strace`/eBPF) o registratori `*_record.*` | Quale controllo fa partire quale funzione, archi osservati e frontiere | `run_and_observe` |
 
 - **Framework senza strumento proprio:** letti dall'albero sintattico (tree-sitter) con query in `daodan/data/entry-queries.json` (es. `onClick` in React).
 - **Convivenza tra sorgente dedicata e Noir in `find_entry_points`:** quando il container è disponibile e l'introspezione ufficiale del framework riesce, la sorgente dedicata è **primaria**; Noir funge da integrazione/fallback statico con provenienza dichiarata. Unione deduplicata su chiave che includa contesto/mount/router dove serve; eventuali conflitti restano in diagnostica. Senza container o a introspezione fallita, Noir fa da fallback con motivo dichiarato; un'introspezione riuscita con 0 ingressi non è un errore.
+- **Modello di evidenza in `link_calls` `[deciso]`:** un riferimento SCIP non equivale a una chiamata (es. in `f(g)` solo `f` è chiamato). Tree-sitter individua il sito di chiamata; SCIP agisce come primo adapter risolutore dietro un piccolo *evidence model* interno (`sito`, `candidati`, `fonte`, stato `risolto`/`ambiguo`/`ignoto`). Nessuna migrazione a LSIF/LSP; compiler API dedicate solo dove SCIP mostra lacune misurate.
+- **Osservazione runtime in `run_and_observe`:** i backend standard si scelgono per tipo di evidenza (`sys.monitoring` su Python 3.12+ per call events; V8 per copertura, non call graph; OpenTelemetry per frontiere/span; `strace`/eBPF solo processi/rete). Gli hook custom `*_record.*` si ritirano solo dopo prova di equivalenza e overhead.
 - **Un controllo ha due prove:** quella statica (legato a una funzione) e quella dinamica (azionato, quella funzione parte).
 
 ### Chiamate HTTP e punti di connessione
@@ -103,7 +105,7 @@ Ogni anagrafica ha un controllo automatico di coerenza con il codice:
 ### Servizi comuni
 
 - **Motore di container:** isola sempre il codice del progetto.
-- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy sui soli registri ammessi, strumenti verificati per sha256; tutto il resto gira senza rete.
+- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy sui soli registri ammessi, strumenti verificati per sha256; tutto il resto gira senza rete. **Controllo decisivo sulla rete `[deciso]`:** nessuna uscita diretta dal container, solo proxy verso registri autorizzati (inclusi redirect, DNS e IP letterali); il parser dei lockfile resta un controllo preventivo, non il confine di isolamento.
 - **Lanciatore dei comandi:** servizio comune a `find_modules`, `find_entry_points`, `link_calls` e `run_and_observe`.
 - **Giornale:** traccia inizio, avanzamento, lacune e fine di ogni step e adattatore.
 - **Secretlint:** ogni testo che lascia la macchina o va a un LLM passa prima da Secretlint.
