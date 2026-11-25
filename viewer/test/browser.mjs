@@ -491,7 +491,8 @@ try {
     // A narrow window: the screens are at the foot, and the stages or the one chosen, one at a time.
     await page.setViewportSize({ width: 700, height: 820 });
     const views = page.getByRole('toolbar', { name: 'Viste', exact: true });  // under the bar, then at the foot
-    assert.deepEqual([await views.getByRole('button', { name: /^Analisi/ }).isVisible(), await stage('Repository').isVisible(), await fits()], [true, true, true]);
+    await views.getByRole('button', { name: /^Analisi/ }).waitFor();
+    assert.deepEqual([await tab('Analisi').count(), await stage('Repository').isVisible(), await fits()], [0, true, true]);
     await page.setViewportSize({ width: 390, height: 820 });
     await views.getByRole('button', { name: /^Motore/ }).click();
     await screen('Motore e domande');
