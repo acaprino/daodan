@@ -90,6 +90,8 @@ class DistributedRegistryTests(unittest.TestCase):
         self.assertEqual(self.entries["reactemail"]["site"], "https://react.email")
         self.assertEqual(self.entries["hashicorp_vault"]["type"], "servizio o API")
         self.assertIn("cncf-landscape", self.entries["apache_kafka"]["from"])
+        self.assertNotIn("avro-cncf", self.entries)
+        self.assertIn("cncf-landscape", self.entries["avro"]["from"])
 
     def test_the_built_file_is_what_its_additions_make_of_it(self):
         """The checked-in file agrees with `registry-additions.json` by the build's own merge rule."""
@@ -444,6 +446,37 @@ class MarkJoinTests(unittest.TestCase):
             self.assertEqual((entries["packaged"]["mark"], entries["packaged"]["mark_source"]), (None, package))
             self.assertNotIn("mark_source", entries["stripe"])  # a file and a package are two cases, never both
             self.assertEqual(sorted(p.name for p in (data / "marks").iterdir()), ["own.svg", "stripe.svg"])
+
+    def test_apply_marks_preserves_existing_daodan_tiles_and_joins_explicit_simple_icon_slug(self):
+        tile = (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">'
+            '<rect x=".5" y=".5" width="23" height="23" rx="5" fill="#fff" stroke="#e1e1e1"/>'
+            '<path d="M9.5 22h5" fill="none" stroke="#ba2379" stroke-width=".75" stroke-linecap="round"/>'
+            '<g fill="#635BFF"><path d="M0 0h24z"/></g></svg>'
+        )
+        raw = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 1h22z"/></svg>'
+        icons = [*self.ICONS, {"title": "Doctrine", "slug": "doctrine", "hex": "FC6A31"}]
+        entries = {
+            "stripe": {"id": "stripe", "name": "Stripe", "mark": "marks/stripe.svg", "from": ["stack-analyser"]},
+            "doctrinephp": {"id": "doctrinephp", "name": "Doctrine ORM", "mark": "marks/doctrinephp.svg",
+                            "from": ["additions", "stack-analyser"]},
+        }
+        with tempfile.TemporaryDirectory() as folder:
+            data = Path(folder)
+            (data / "marks").mkdir()
+            (data / "marks/stripe.svg").write_text(tile, encoding="utf-8")
+            (data / "marks/doctrinephp.svg").write_text(tile, encoding="utf-8")
+            (data / "marks/orphan.svg").write_text("<svg/>", encoding="utf-8")
+            official = registry_build._mark_records([
+                {"id": "doctrinephp", "name": "Doctrine ORM", "simple_icon": "doctrine", "by": "catalog"},
+            ])
+            refused = registry_build.apply_marks(entries, icons, lambda slug: raw, data, official)
+            self.assertEqual(refused, [])
+            self.assertEqual((data / "marks/stripe.svg").read_text(encoding="utf-8"), tile)
+            self.assertEqual((data / "marks/doctrinephp.svg").read_text(encoding="utf-8"), tile)
+            self.assertEqual(entries["doctrinephp"]["mark"], "marks/doctrinephp.svg")
+            self.assertEqual(entries["doctrinephp"]["from"], ["additions", "simple-icons", "stack-analyser"])
+            self.assertEqual(sorted(p.name for p in (data / "marks").iterdir()), ["doctrinephp.svg", "stripe.svg"])
 
 
 class DistributedMarkTests(unittest.TestCase):

@@ -203,26 +203,65 @@ def simple_icon(entry: dict, index: dict[str, dict]) -> dict | None:
     return index.get("".join(words)) or index.get(_norm(entry["name"])) or index.get(_norm(entry["id"]))
 
 
+_TILE_ACCENT = 'stroke="#ba2379"'
+
+
+def _is_tile(path: Path) -> bool:
+    """Whether `path` already holds a clean Daodan framed tile (`REGISTRY-NOTICES.md`, Daodan's tiles)."""
+    if not path.is_file():
+        return False
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    if _TILE_ACCENT not in text:
+        return False
+    try:
+        return clean_svg(text.encode("utf-8")) == text
+    except ValueError:
+        return False
+
+
+def _mark_records(records: list[dict]) -> dict[str, dict]:
+    """Per-entry mark metadata from `registry-additions.json` (`mark`, `mark_source`, `simple_icon`)."""
+    merged: dict[str, dict] = {}
+    for record in records:
+        fields = {k: record[k] for k in ("mark", "mark_source", "simple_icon") if record.get(k)}
+        if fields:
+            merged.setdefault(record["id"], {}).update(fields)
+    return merged
+
+
 def apply_marks(entries: dict[str, dict], icons: list[dict], read_svg, data: Path, official: dict[str, dict]) -> list[str]:
-    """Give each entry its mark: the Simple Icons one, written clean into `data/marks`, else its official one
-    (`official`: id to a record with `mark`, a file kept as it is, or `mark_source`, a package it is downloaded from).
-    Files nobody names are removed. Returns what it refused, one line each."""
-    index, refused, keep = mark_index(icons), [], set()
+    """Give each entry its mark: the Simple Icons one, written clean into `data/marks` (preserving an existing
+    clean Daodan framed tile), else its official one (`official`: id to a record with `mark`, a file kept as it is,
+    `mark_source`, a package it is downloaded from, or `simple_icon`, an explicit Simple Icons slug when the curated
+    name differs). Files nobody names are removed. Returns what it refused, one line each."""
+    index, by_slug, refused, keep = mark_index(icons), {icon["slug"]: icon for icon in icons}, [], set()
     folder = data / MARKS
     folder.mkdir(parents=True, exist_ok=True)
     for ident, entry in entries.items():
         record = official.get(ident) or {}
         sources, mark, package = set(entry["from"]) - {"simple-icons"}, record.get("mark"), record.get("mark_source")
-        icon = simple_icon(entry, index)
+        slug = record.get("simple_icon")
+        icon = by_slug.get(slug) if slug else simple_icon(entry, index)
+        if slug and icon is None:
+            refused.append(f"{ident}: unknown simple_icon slug {slug}")
         if icon:
-            try:
-                svg = clean_svg(read_svg(icon["slug"]), "#" + icon["hex"])
-            except (ValueError, OSError) as error:
-                refused.append(f"{ident}: {icon['slug']}: {error}")
-            else:
-                mark, package = f"{MARKS}/{ident.lower()}.svg", None
-                (data / mark).write_text(svg, encoding="utf-8", newline="\n")
+            target_rel = f"{MARKS}/{ident.lower()}.svg"
+            target = data / target_rel
+            if _is_tile(target):
+                mark, package = target_rel, None
                 sources.add("simple-icons")
+            else:
+                try:
+                    svg = clean_svg(read_svg(icon["slug"]), "#" + icon["hex"])
+                except (ValueError, OSError) as error:
+                    refused.append(f"{ident}: {icon['slug']}: {error}")
+                else:
+                    mark, package = target_rel, None
+                    target.write_text(svg, encoding="utf-8", newline="\n")
+                    sources.add("simple-icons")
         entry["mark"], entry["from"] = mark, sorted(sources)
         entry.pop("mark_source", None)
         if package and not mark:
@@ -383,7 +422,7 @@ def build(cache: Path, additions: Path, data: Path) -> dict:
     apply_additions(entries, records)
     root = _tarball(*SIMPLE_ICONS, cache)
     refused = apply_marks(entries, simple_icons(cache), lambda slug: (root / "icons" / f"{slug}.svg").read_bytes(), data,
-                          {r["id"]: r for r in records if r.get("mark") or r.get("mark_source")})
+                          _mark_records(records))
     if refused:
         print("\n".join(refused), file=sys.stderr)
     for entry in entries.values():
@@ -472,7 +511,7 @@ def set_marks(registry: Path, additions: Path, cache: Path) -> int:
     records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
     root = _tarball(*SIMPLE_ICONS, cache)
     refused = apply_marks(entries, simple_icons(cache), lambda slug: (root / "icons" / f"{slug}.svg").read_bytes(),
-                          registry.parent, {r["id"]: r for r in records if r.get("mark") or r.get("mark_source")})
+                          registry.parent, _mark_records(records))
     reg_doc["entries"] = [entries[k] for k in sorted(entries)]
     problems = check(reg_doc, registry.parent)
     print("\n".join(refused + problems), file=sys.stderr)

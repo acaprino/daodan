@@ -2636,23 +2636,12 @@
    "mark": "marks/avro.svg",
    "from": [
     "additions",
+    "cncf-landscape",
     "simple-icons",
     "stack-analyser"
    ],
    "category": "library",
    "support": "partial"
-  },
-  {
-   "id": "avro-cncf",
-   "name": "Avro",
-   "kind": "project",
-   "type": "altro",
-   "site": "https://avro.apache.org/",
-   "mark": null,
-   "from": [
-    "cncf-landscape"
-   ],
-   "support": "none"
   },
   {
    "id": "aws",
