@@ -22,18 +22,26 @@ def test_a_file_of_blank_lines_is_decided_at_once(suffix, text):
 
 
 @pytest.mark.parametrize("text,language", [
-    ("\n\n  public:\n int x;\n", "cpp"), ("\n \n\t#include <vector>\n", "cpp"), ("\n\n   namespace {\n", "cpp"),
+    ("\n\n  class A {\n public:\n int x;\n};\n", "cpp"), ("\n \n\ttemplate <class T> T f(T v);\n", "cpp"),
+    ("\n\n   namespace {\n int x;\n}\n", "cpp"), ("int a;\n\n\n  struct B : A {\n};\n", "cpp"),
     ("\n\n  @interface A : B\n@end\n", None), ("\n\n @class X;\n", None), ("\n\n int f(void);\n", "c"),
-    ("int a;\n\n\n private :\n", "cpp"), ("int a;\n", "c")])
+    ("int a;\n", "c")])
 def test_an_indented_mark_after_blank_lines_still_counts(text, language):
     assert detect_language(Path("a.h"), text) == language
 
 
-@pytest.mark.parametrize("text", ["/* " * 16_000, "class a " * 12_000, '"' + r'\"' * 20_000, "'" + r"\'" * 20_000],
-                         ids=["open comments", "classes", "escaped quotes", "escaped apostrophes"])
-def test_a_header_whose_marks_never_close_is_decided_at_once(text):
+# Marks that never close, and braces that never end: the text a grammar is slowest on (quadratic in its length), with
+# the C++ the answer is made of in front or not.
+BAD = {"open comments": "/* " * 16_000, "classes": "class a " * 12_000, "escaped quotes": '"' + r'\"' * 20_000,
+       "escaped apostrophes": "'" + r"\'" * 20_000, "nested braces": "{" * SIZE, "open string": '"' + "x " * SIZE,
+       "open comment lines": "int a;\n/* x\n" * 8_000}
+
+
+@pytest.mark.parametrize("text", BAD.values(), ids=BAD)
+@pytest.mark.parametrize("front", ["", "namespace a { int x; }\n"], ids=["alone", "after C++"])
+def test_a_header_whose_marks_never_close_is_decided_at_once(front, text):
     started = time.perf_counter()
-    detect_language(Path("a.h"), text)
+    detect_language(Path("a.h"), front + text)
     assert time.perf_counter() - started < 2
 
 

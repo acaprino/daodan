@@ -1,0 +1,1990 @@
+{
+ "code": {
+  "commit": "8fb29785946f476dc001fc4d0e8ca469f07fed94",
+  "differs": [
+   "M daodan/core/languages/__init__.py",
+   "?? daodan/core/languages/header.py"
+  ]
+ },
+ "rows": [
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.52,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.847,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 2.041,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 2.934,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 3.925,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "raw",
+   "used": 51200,
+   "ms": 4.589,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.16,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.217,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.377,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.739,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1.132,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.133,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.223,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.457,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.771,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1.261,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 0.171,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 0.227,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 0.411,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 0.814,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 1.162,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 8.038,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 17.454,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 35.997,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 82.397,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 83.437,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 2.507,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 5.067,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 10.36,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 20.947,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 22.404,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 7.903,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 16.002,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 31.678,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 62.452,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 63.187,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 2.159,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 4.329,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 8.007,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 16.435,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 16.675,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 2048,
+   "mode": "raw",
+   "used": 2048,
+   "ms": 2.086,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 4096,
+   "mode": "raw",
+   "used": 4096,
+   "ms": 4.132,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 8192,
+   "mode": "raw",
+   "used": 8192,
+   "ms": 8.68,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 16384,
+   "mode": "raw",
+   "used": 16384,
+   "ms": 16.667,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 32768,
+   "mode": "raw",
+   "used": 32768,
+   "ms": 17.412,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 4.718,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 11.484,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 9.593,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 41.943,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 9.074,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 17.298,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 9.763,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 40.67,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 10.483,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 25.56,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 9.622,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 40.315,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 8.881,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 35.888,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 11.627,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 41.253,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 9.434,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 34.912,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 9.702,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "blank_lines",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 42.997,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 1.552,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 4.263,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 195.473,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 832.249,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 2.124,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 5.042,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 204.803,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 841.595,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 2.255,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 6.339,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 196.211,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 831.584,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 2.146,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 7.799,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 196.327,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 839.133,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 2.053,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 7.625,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 194.962,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 817.956,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 1.625,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 4.841,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:16384",
+   "timeout": 60
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 2.296,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 6.288,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:65536",
+   "timeout": 60
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 2.549,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 7.798,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:131072",
+   "timeout": 60
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 3.109,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 9.769,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:524288",
+   "timeout": 60
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 2.457,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_repeat",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 9.196,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_repeat",
+   "size": 51200,
+   "mode": "bound:0",
+   "timeout": 60
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 1.675,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 4.647,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 3081.92,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 47862.952,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 2.326,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 6.68,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 3096.784,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 48340.073,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 2.221,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 7.428,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 3097.675,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 48378.235,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 2.164,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 8.855,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 3066.246,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 48110.494,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 2.182,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 8.947,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 3084.89,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_comment_lines",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 47931.568,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 84.869,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 93.116,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 345.268,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 4713.317,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 441.723,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 675.835,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 341.43,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 4728.33,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 443.954,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 2196.819,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 340.608,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 4662.781,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 439.004,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 5235.074,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 340.33,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 4797.22,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 443.99,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 5094.645,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 343.865,
+   "language": "cpp"
+  },
+  {
+   "target": "parse",
+   "kind": "class_repeat",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 4707.619,
+   "language": "cpp"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 22.23,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 27.884,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 2573.948,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 40557.437,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 74.437,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 105.139,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 2580.953,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 40430.212,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 73.899,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 208.745,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 2579.622,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 40399.538,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 76.493,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 334.767,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 2639.406,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 40339.559,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 77.931,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 335.85,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 2595.595,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "nested_brace",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 40400.193,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 63.742,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 72.253,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 91.786,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 385.895,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 198.012,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 260.9,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 89.271,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 376.83,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 195.256,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 511.482,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 87.452,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 380.992,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 196.065,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 789.542,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 85.489,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 395.066,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 197.06,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 803.691,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 90.4,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "open_string",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 376.464,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 17.747,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 25.056,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 68.971,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 318.321,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 51.29,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 68.769,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 65.916,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 311.593,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 50.812,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 138.673,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 65.781,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 314.794,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 50.846,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 209.99,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 66.395,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 314.436,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 51.482,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 214.129,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 67.244,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_dq",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 314.404,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 18.31,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 25.068,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:16384",
+   "used": 51200,
+   "ms": 68.717,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:16384",
+   "used": 204800,
+   "ms": 311.108,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 51.199,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 74.598,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:65536",
+   "used": 51200,
+   "ms": 67.846,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:65536",
+   "used": 204800,
+   "ms": 307.527,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 51.069,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 137.983,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:131072",
+   "used": 51200,
+   "ms": 65.763,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:131072",
+   "used": 204800,
+   "ms": 313.882,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 52.654,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 219.159,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:524288",
+   "used": 51200,
+   "ms": 77.608,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:524288",
+   "used": 204800,
+   "ms": 307.841,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 51.844,
+   "language": "c"
+  },
+  {
+   "target": "product",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 212.456,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 51200,
+   "mode": "bound:0",
+   "used": 51200,
+   "ms": 65.758,
+   "language": "c"
+  },
+  {
+   "target": "parse",
+   "kind": "escaped_sq",
+   "size": 204800,
+   "mode": "bound:0",
+   "used": 204800,
+   "ms": 315.263,
+   "language": "c"
+  }
+ ]
+}

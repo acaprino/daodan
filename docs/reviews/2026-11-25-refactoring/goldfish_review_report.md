@@ -46,7 +46,65 @@
 | I3 | Manca lo stato «in attesa di consenso» |
 | I4 | «Zero regressioni» con un test instabile: serve un elenco dei fallimenti noti |
 
+## Dopo la risoluzione
+
+- Un agente ha scritto nel piano, sotto le voci interessate, i fatti accertati e le «Scelte aperte» di ogni rilievo ESCALATE (solo aggiunte, punti `[deciso]` invariati).
+- M2 va letto con una correzione: Syft **è** già misurato in `benchmarks/project-model/REPORT.md`; resta aperto che cosa il confronto del piano debba decidere.
+- La fase 1 non è stata rieseguita: l'utente ha chiesto di passare alla fase 2.
+
 ## Correzioni di fatto fuori dalle categorie
 
 - T1.6: `benchmarks/stack-build-tools/` indicata come da creare (parte di M2, che resta aperto).
 - T0.3: «37 marchi senza cornice» sostituito dalla causa (rilievo del coordinatore, non dei revisori).
+
+---
+
+# Fase 3: critica, giro 1
+
+**Target:** `docs/specs/architettura.md` (intero). Rilievi in [`critic_report.md`](critic_report.md); questa sessione non ha scritto il documento, salvo la sezione «Nodi del grafo».
+**Conteggio (54):** 18 ESCALATE, 20 PROPOSE FIX, 16 DECLINE, 0 CONTEST. Nessuna modifica applicata. Il giro non è pulito.
+
+## ESCALATE: decisioni del proprietario
+
+| Gruppo | Id | Che cosa va deciso |
+| --- | --- | --- |
+| G1 | S2, S3, D1 | Quale problema risolve il refactoring; obiettivi e non obiettivi |
+| G2 | S1, D2 | Quali alternative sono state scartate e perché |
+| G3 | D3, T2 | Django, FastAPI, Flask contro i tre verdetti «no» (domanda A, B, C) |
+| G4 | D4, S4 | Modello di minaccia, rischi, indurimento del container |
+| G6 | D6 | Che cosa succede quando uno step fallisce; chi prepara l'ambiente |
+| G10 | D8, T8 | Tetti di tempo, memoria, disco; soglia del consenso |
+| G11 | D9 | Stati, ripresa e scrittore del piano unico |
+| G12 | D10 | Se i backend scartati restano nel contratto |
+| G13 | D11 | Regole sulle credenziali e sulle azioni distruttive |
+| G14 | D12 | Punto di uscita unico e registri privati |
+| G15 | D14 | Ripiego e manutenzione di fork, Noir, Kiri |
+| G16 | D15 | Regola per i legami HTTP ambigui |
+
+## PROPOSE FIX
+
+| Gruppo | Id | Dove | Modifica proposta |
+| --- | --- | --- | --- |
+| G4b | T6 | «Servizi comuni» | Aggiungere ciò che è nel codice (`--network none`, proxy ai soli registri, `no-new-privileges`; non passati `--cap-drop` e `--user`; la prova su container vero è T3.1). Per Secretlint: oggi `secret_mask` è importato da `app.py`, `mcp_server.py`, `pipeline_tree.py` |
+| G5 | S5, S6, D7, T1, T3, T5 | intestazione, «Superfici», anagrafiche | «contratto stabile di riferimento» diventa «contratto di arrivo»; legenda dalla spec rimossa (`[deciso]` approvata dal proprietario, `[proposta]` mai approvata, `[misura]` da misurare, `[difetto]` errore noto); accanto a `surface`, `ui_execution_deferred`, `approval_required`: «non nel codice; nessun traguardo del piano lo porta» |
+| G7 | D5 | «Convivenza tra sorgente dedicata e Noir» | Sostituire l'ultima frase con: «A introspezione fallita Noir fa da ripiego, con il motivo dichiarato. Senza container non girano né la sorgente dedicata né Noir: restano le query tree-sitter e una lacuna. Un'introspezione riuscita con 0 ingressi non è un errore.» |
+| G8 | S8, T7, D17 | tabella dei nodi | «Voce con `category: service`», «con `category: framework` o `library`», «con `category: tool`»; colonna «Tipo di nodo (`type`)» |
+| G9 | D13 | «Tipi di nodo» | Aggiungere: «La mappa di sistema aggiunge `entità`, `applicazione`, `lavoro a orario` (`daodan/core/system_map.py`)»; e che i tipi `by: model` non sono verificati a campione |
+| G17 | T4, D16 | «Le anagrafiche» | «ha un controllo» diventa «deve avere un controllo» |
+| G18 | S7 | titoli | «Nodi del grafo», «Il piano», «L'interfaccia segue la pipeline», «Le anagrafiche», «Servizi comuni» diventano H2 |
+| G19 | T9, T10, S14, D18 | in coda e nel testo | Glossario breve (Kiri, Noir, fork `stack-analyser`, pre-mappa, SCIP, tessera, store, modulo e unità); un solo termine: «ripiego», «adattatore», «modello di evidenza» |
+| G20 | T11 | «Superfici», «Come si sa che cosa lanciare» | Togliere il rimando al backlog dalla regola della lacuna e la riga «Modello piccolo locale», che è già nel backlog |
+
+## DECLINE: minori registrati
+
+S9, S10, S11, S12, S13, D19, D20, D21, T12, T13, T14, T15, T16, T17, T18, T19.
+
+**Scelta dell'utente:** «Andiamo avanti con la review», intesa come passare alla fase 4; poi, prima del rapporto della fase 4, «applica».
+
+**Status: resolved** per le 20 PROPOSE FIX, applicate al solo `architettura.md`. Le 18 ESCALATE restano aperte. Il ciclo di critica si è fermato dopo il giro 1, senza convergenza.
+
+Differenze dalle proposte scritte sopra:
+- G4b: `pipeline_tree.py` legge solo la versione di `secret_mask`; scritti i soli chiamanti `app.py` e `mcp_server.py`.
+- G18: «Nodi del grafo» è stata spostata dopo «Come si sa che cosa lanciare», perché da H2 non assorbisse le due sezioni seguenti.
+- G19: i termini sono cambiati anche dentro il punto `[deciso]` sul modello di evidenza (solo i nomi); «modulo» e «unità» restano senza definizione, perché non ne ho trovata una citabile.
+- La fase 4 già avviata è stata fermata prima del rapporto, perché leggeva il testo di prima: superata, non «zero rilievi».

@@ -10,7 +10,6 @@ from __future__ import annotations
 import bisect
 import sys
 import time
-from pathlib import Path
 
 import header_patterns as patterns
 import header_routes as routes
@@ -43,10 +42,10 @@ class Probe:
             sys.path.insert(0, core_dir)
         import tree_sitter_language_pack as pack
         from tree_sitter import Query, QueryCursor
-        from languages import _treesitter, detect_language, get_adapter
+        from languages import _treesitter, get_adapter
 
         self._cursor = QueryCursor
-        self._detect, self._adapter = detect_language, get_adapter
+        self._adapter = get_adapter
         self.parsers = {}
         for grammar in ("c", "cpp"):
             pair = _treesitter.get_parser(grammar)
@@ -82,11 +81,10 @@ class Probe:
         return {"size": len(src), **{g: self._part(g, src) for g in routes.GRAMMARS}}
 
     def r0(self, content: str) -> tuple[str, float]:
-        """The product's `languages.detect_language` for a `.h` file, as it is now (since 25 November, `fixqc`; the results recorded in
-        `results/` are of the rule before it): its answer (None, which is Objective-C, as "objc") and ms."""
-        t0 = time.perf_counter_ns()
-        language = self._detect(Path("x.h"), content)
-        return ("objc" if language is None else language), _ms(t0, time.perf_counter_ns())
+        """R0 of the results in `results/`: the rule the product had until route R3dx took its place (`fixqc`, frozen in
+        `header_patterns`), as `r0_variant` runs it: its answer (None, which is Objective-C, as "objc") and ms. The product's own
+        answer is `languages.detect_language`, which `modal_headers.py --step product` runs."""
+        return self.r0_variant(content, "fixqc")
 
     def r0_variant(self, content: str, variant: str) -> tuple[str, float]:
         """A candidate for the rule before (`header_patterns.VARIANTS`: fix, fixq, fixqc), timed as `r0` is. The patterns are

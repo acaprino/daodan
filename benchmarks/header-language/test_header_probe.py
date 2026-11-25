@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 import header_patterns as patterns
-import header_patterns as patterns
 import header_probe
 import header_routes as routes
 
@@ -16,6 +15,11 @@ CORE = Path(__file__).resolve().parents[2] / "daodan" / "core"
 @pytest.fixture(scope="module")
 def probe():
     return header_probe.Probe(str(CORE))
+
+
+def detect_language(path, text):
+    from languages import detect_language as product  # the product's, on the path once the probe is built
+    return product(path, text)
 
 
 def kinds_of(probe, grammar):
@@ -107,10 +111,11 @@ def test_every_part_has_a_parse_time_and_a_query_time(probe):
         assert f[g]["ms"] >= 0 and f[g]["q_ms"] >= 0
 
 
-def test_route_zero_is_the_products_detector_and_names_objc_when_it_answers_nothing(probe):
+def test_route_zero_is_the_rule_before_the_tree_and_names_objc_when_it_answers_nothing(probe):
     assert probe.r0("int a;\n")[0] == "c"
     assert probe.r0("namespace a { int x; }\n")[0] == "cpp"
     assert probe.r0("@interface X\n@end\n")[0] == "objc"
+    assert probe.r0("#include <vector>\n")[0] == "cpp"  # by the name of the header: what the tree does not know
     assert probe.r0("int a;\n")[1] >= 0
 
 
@@ -127,20 +132,43 @@ def test_each_kind_and_each_error_carries_the_line_of_its_first_node(probe):
     assert g["c"]["err_line"] == 2 and probe.features(b"int a;\n")["c"]["err_line"] == 0
 
 
-def test_the_copies_of_the_products_patterns_are_the_products_so_a_change_there_fails_here(probe):
-    import languages as product  # the product's module, on the path since the probe was built: it has `fixqc` since 25 November
-    noise, cpp = patterns.VARIANTS["fixqc"]
-    assert product._C_NOISE_RE.pattern == patterns.NOISE_FIXQ and product._C_NOISE_RE.flags == noise.flags
-    assert product._CPP_HEADER_RE.pattern == patterns.CPP_FIXQC and product._CPP_HEADER_RE.flags == cpp.flags
-    assert product._OBJC_HEADER_RE.pattern == patterns.BEFORE_OBJC and product._OBJC_HEADER_RE.flags == patterns.OBJC.flags
+def test_the_product_keeps_two_of_the_frozen_patterns_so_a_change_there_fails_here(probe):
+    from languages import header  # the product's module, on the path since the probe was built
+    noise, _ = patterns.VARIANTS["fixqc"]
+    assert header._C_NOISE_RE.pattern == patterns.NOISE_FIXQ and header._C_NOISE_RE.flags == noise.flags
+    assert header._OBJC_HEADER_RE.pattern == patterns.BEFORE_OBJC and header._OBJC_HEADER_RE.flags == patterns.OBJC.flags
 
 
-def test_the_product_answers_as_its_copy_here_and_where_it_differs_from_the_rule_before_it_is_the_designed_case(probe):
-    for text in ("int a;\n", "namespace a { int x; }\n", "@interface X\n@end\n", "/* c */ class A { int f; };\n", "// class A {\n", "",
-                 "#include <foo/*>\nnamespace a { }\n"):
-        assert patterns.answer(text, "fixqc") == probe.r0(text)[0], text
-    never_closed = "#include <foo/*>\nnamespace a { }\n"
-    assert patterns.answer(never_closed) == "cpp" and probe.r0(never_closed)[0] == "c"  # the rule before and the product part here
+PARITY = (
+    "int a;\n", "", "namespace a { int x; }\n", "@interface X\n@end\n", "class A { int f; };\n@interface X\n@end\n",
+    "struct S { int a; int (*cb)(int); };\n", "struct S { void f(); };\n", "struct B : A { int x; };\n", "enum class E { a };\n",
+    "template <typename T> T twice(T v);\n", "using namespace std;\n", "using Id = int;\n", "std::size_t bound(std::size_t n);\n",
+    "#include <vector>\nint f(void);\n", "class a;\nstruct b;\n", "struct namespace { int id; };\n", "int f(int a;\nint g(\n",
+    "void f(int *restrict p) { int virtual = 1; }\n", "#ifdef __cplusplus\nnamespace a { int x; }\n#endif\nint y;\n",
+    "#if defined(__cplusplus)\nclass A { int x; };\n#else\nint y;\n#endif\n", "#ifndef X_H\n#define X_H\nnamespace a { }\n#endif\n",
+    "/* class A { int f; }; */\nint a;\n", "// namespace a { }\nint a;\n", 'const char *s = "namespace a { }";\n',
+    '#ifdef __cplusplus\nextern "C" {\n#endif\nint f(void);\n#ifdef __cplusplus\n}\n#endif\n',
+    "struct Guard {\n  Guard() = default;\n  Guard &operator=(const Guard &) = delete;\n  ~Guard() { release(); }\n};\n",
+)
+
+
+def test_the_product_answers_as_route_r3dx_with_the_rule_before_in_front(probe):
+    """Route R3dx is a decision over the features of the parses (`header_routes`): the Objective-C rule of before as the
+    records have it (`r0`), then the nodes of its tier outside a `__cplusplus` block, then the fewer errors, C on a tie.
+    The product reads the same for a header within its bound and with no comment left open."""
+    for text in PARITY:
+        wanted = routes.decide("R3dx", {**probe.features(text.encode()), "r0": probe.r0(text)[0]})
+        got = detect_language(Path("a.h"), text)
+        assert ("objc" if got is None else got) == wanted, text
+
+
+def test_with_the_bound_off_a_longer_header_reads_as_route_r3dx_too(probe, monkeypatch):
+    from languages import header
+    text = "int a;\n" * 200 + "namespace a { int x; }\n"
+    monkeypatch.setattr(header, "MAX_CHARS", 1_000)
+    assert detect_language(Path("a.h"), text) == "c"  # the bound leaves the namespace out: the head is C
+    monkeypatch.setattr(header, "MAX_CHARS", len(text))
+    assert detect_language(Path("a.h"), text) == routes.decide("R3dx", {**probe.features(text.encode()), "r0": probe.r0(text)[0]}) == "cpp"
 
 
 def test_the_probe_times_a_candidate_and_gives_its_answer(probe):

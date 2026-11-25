@@ -2,7 +2,7 @@
 
 Prova della sezione «`.h`: prima la prova» di `docs/specs/2026-11-24-libreria-del-linguaggio.md`. Quattro vie contro la risposta giusta nota, su header di progetti di sola C, di sola C++ e di Objective-C. Gli strumenti veri (le grammatiche, la regola `.h` del prodotto) girano solo su Modal; il resto è libreria standard. Ogni numero delle tabelle viene da `results/*.json` (`header_tables.py --write`): un test fallisce se il README non è quello che i JSON producono.
 
-**Stato al 25 novembre 2026.** Il candidato `fixqc` è entrato nel prodotto (`daodan/core/languages/__init__.py`, commit `cd19c05e8`). «R0», «prima» e, dove è rimasto, «oggi» sono in tutto il README e in `results/` la regola di prima: quella del commit `3960973d8`, congelata in `header_patterns.py` (`BEFORE_*`, un test la confronta con il commit via `git show`). `NOISE_FIXQ` e `CPP_FIXQC` sono la copia della regola del prodotto, e `test_header_probe.py` e `test_header_patterns.py` la confrontano con il prodotto. `Probe.r0` chiama il prodotto: rieseguire `measure` o `r0check` darebbe come R0 `fixqc`, non la regola registrata. Nessuna nuova corsa Modal è stata fatta dopo l'ingresso nel prodotto.
+**Stato al 25 novembre 2026.** Il proprietario ha scelto l'albero (T): il prodotto legge un `.h` con la via `R3dx` (`daodan/core/languages/header.py`, sezione «Il prodotto»). Il candidato `fixqc` era entrato nel prodotto con il commit `cd19c05e8` e ne è uscito allora. «R0», «prima» e, dove è rimasto, «oggi» sono in tutto il README e in `results/` la regola di prima: quella del commit `3960973d8`, congelata in `header_patterns.py` (`BEFORE_*`, un test la confronta con il commit via `git show`). `CPP_FIXQC` è congelato al commit `cd19c05e8`, `NOISE_FIXQ` è ancora il pattern del prodotto, e `test_header_patterns.py` li confronta. `Probe.r0` esegue la copia congelata (`fixqc`), non il prodotto: la risposta del prodotto è `languages.detect_language`, che `--step product` esegue.
 
 ## Le vie
 
@@ -36,9 +36,9 @@ Prova della sezione «`.h`: prima la prova» di `docs/specs/2026-11-24-libreria-
 
 **(\*) La colonna «C giusti» è gonfiata a favore di R0.** Gli header dei progetti C valgono «C» perché lo dice il progetto, non il testo (anche i 30 annotati: la regola di «indifferente» non è stata applicata ai C): una via che risponde C++ a un header C indifferente è contata sbagliata, R0, che tende al C, no. La classifica si decide sui simboli persi, che non passano da nessuna etichetta.
 
-**Raccomandazione: R0 con `fixqc`.** I pattern `fixqc` sono nel prodotto dal 25 novembre come correzione della regola che c'era; tenere R0 o passare a una via ad albero lo decide il proprietario (aperto) (i pattern, scritti per intero, sono sotto). R0 vince per costo e righe ed è alla pari per simboli persi: le vie ad albero migliori sui simboli, con la regola Objective-C davanti (`R1dx`, `R1ex`, `R3dx`), ne perdono meno di R0 per poche decine su tutto il corpus, `R1ex` e `R3dx` sbagliano meno header C++ (nessuno visto, contro quelli di R0), ma costano molte volte di più (totale e marginale), hanno un massimo di secondi su tabelle di numeri che il prodotto parsa comunque, ereditano la crescita quadratica della regex di prima (la regola Objective-C davanti) e vogliono decine di righe in più e un controllo scritto a mano prima del parse. Dove sta il loro vantaggio sul C++: pochi header (sotto «confronto con R0»).
+**Decisione del proprietario (25 novembre): `R3dx`, nel prodotto.** La raccomandazione di questo file era R0 con `fixqc` (il testo che segue è quello della raccomandazione; i pattern, scritti per intero, sono sotto). R0 vince per costo e righe ed è alla pari per simboli persi: le vie ad albero migliori sui simboli, con la regola Objective-C davanti (`R1dx`, `R1ex`, `R3dx`), ne perdono meno di R0 per poche decine su tutto il corpus, `R1ex` e `R3dx` sbagliano meno header C++ (nessuno visto, contro quelli di R0), ma costano molte volte di più (totale e marginale), hanno un massimo di secondi su tabelle di numeri che il prodotto parsa comunque, ereditano la crescita quadratica della regex di prima (la regola Objective-C davanti) e vogliono decine di righe in più e un controllo scritto a mano prima del parse. Dove sta il loro vantaggio sul C++: pochi header (sotto «confronto con R0»).
 
-**Conflitto con AGENTS** («il codice si legge dall'albero, mai con espressioni regolari»): tenere R0 chiede un'eccezione del proprietario, motivata con costo e righe, non con la giustezza; le soluzioni pronte valutate sono R1, R2 e R3 di questo file, e le tabelle sono il perché. Se il proprietario vuole comunque l'albero: `R3dx` (la più giusta sul C++, simboli alla pari) o `R1ex` (la più corta), con tetto e controllo e con la regola Objective-C davanti; il prezzo è nelle tabelle «Righe di codice» e «Il tetto non è gratis».
+**Conflitto con AGENTS** («il codice si legge dall'albero, mai con espressioni regolari»): tenere R0 chiedeva un'eccezione del proprietario, motivata con costo e righe, non con la giustezza; le soluzioni pronte valutate sono R1, R2 e R3 di questo file. Il proprietario ha scelto `R3dx` (la più giusta sul C++, simboli alla pari), con la regola Objective-C davanti e un tetto: il prezzo è nelle tabelle «Righe di codice» e «Il tetto non è gratis» e nella sezione «Il prodotto».
 
 **Vie da non scegliere**: quelle in cui la grammatica Objective-C decide tra C e C++ (`R1…o` con espressioni, `R2o`, `R3`, `R3d`): header C e C++ letti come Objective-C, che il prodotto non legge, perdono tutti i loro simboli (colonna «C o C++ letto ObjC» della tabella delle perdite). Quelle che non hanno né la grammatica né la regola Objective-C (`R1dg`, `R1eg`, R2 da sola) non dicono mai «Objective-C»: gli header Objective-C, oggi lasciati (R0 risponde «nessun linguaggio»), verrebbero letti come C o C++ (la matrice lo mostra). R2 da sola non supera la migliore R1 né sul C né sul C++.
 
@@ -305,6 +305,44 @@ Contate dal codice del benchmark già provato (`header_probe.py`, `header_routes
 La regola `.h` del prodotto sono 15 righe di codice (le stesse prima e dopo `fixqc`), di cui 6 sono la parte Objective-C (che le vie con «regola ObjC» tengono e contano); tutta la parte di rilevamento di `languages/__init__.py` (righe 1-229) ne ha 158.
 <!-- /table -->
 
+## Il prodotto
+
+`daodan/core/languages/header.py`, chiamato da `detect_language` per ogni `.h` con testo: la regola Objective-C di prima (la sola regex rimasta, con il suo motivo accanto), poi una visita dell'albero C++ che si ferma al primo nodo di `CPP_DECL` fuori da un blocco `#if` che nomina `__cplusplus`, poi la grammatica C e il confronto degli `ERROR`/`MISSING`, a parità C. Senza grammatica o senza testo la risposta è `c`. **+50 righe di codice nette** (`header.py` 62, `__init__.py` −12, `results/loc.json`, chiave `product`; con commenti e righe vuote `header.py` ha 103 righe e `__init__.py` +2 −24), contro le +106 stimate sopra: il controllo prima del parse è la regex di rumore già del prodotto, il cui ultimo match trova il `/*` mai chiuso. `test_header_probe.py` confronta il prodotto con `R3dx` di `header_routes` sui testi di `PARITY`.
+
+**La visita, non la query.** Una query tree-sitter su un albero la cui radice ha migliaia di figli di errore è quadratica nel loro numero (`{` ×65.536: parse 36 ms, query 10.9 s; Python 3.13.14, Windows; con la visita il rilevamento intero costa 0.12 s): la visita è lineare e dà le stesse risposte (0 differenze da R3dx sulle 4.795 header, come con la query).
+
+**Il tetto.** Un contatore di chiamate di `Parser.parse(read, progress_callback=...)` sarebbe un tetto senza orologio, ma non si usa: con tree-sitter 0.26.0 su Python 3.14.9 (Windows) la callback è chiamata lo stesso numero di volte in tre corse (652 per 5.000 righe `int a;`, 74.720 per 2.730 `/* `) e fermarla ferma il parse; con Python 3.13.14 (Windows) il processo muore con un'access violation alla prima chiamata, anche con la sola `tree-sitter-cpp` (non provato su Linux). Il tetto è sul testo: i primi `MAX_CHARS` caratteri, senza il commento mai chiuso con cui finiscono (la grammatica è quadratica sui `/*` ripetuti). Un C++ il cui primo costrutto sta oltre è letto C. `MAX_CHARS` è `MAX_PARSE_BYTES` (2.000.000): oltre il snapshot non parsa il file, e fino a lì il rilevamento non costa più del parse che l'adattatore farà comunque (tabella sotto). Rispondere C a ogni header oltre il tetto, senza leggerne la testa, perderebbe molto di più (`c_beyond` di `results/product.json`: 20.770 simboli a 16,384 caratteri, 2.944 a 131,072).
+
+Sulle 4.795 header (Modal, `--step product`, `header_report.product`, `results/product.json`), il prodotto contro `R3dx` registrata:
+
+| Tetto (caratteri) | Risposte diverse da R3dx | Simboli persi | C giusti / C++ giusti | Costo ms: mediana / p95 / massimo | Totale s |
+| --- | --- | --- | --- | --- | --- |
+| nessuno | 0 | 29 | 2132 / 2197 | 0.71 / 7.9 / 14,876 | 34.0 |
+| 16,384 | 39 | 717 | 2124 / 2188 | 0.67 / 5.0 / 601 | 9.1 |
+| 65,536 | 7 | 382 | 2130 / 2196 | 0.66 / 7.6 / 3,458 | 17.6 |
+| 131,072 | 1 | 29 | 2131 / 2197 | 0.65 / 7.7 / 12,433 | 29.6 |
+| 524,288 | 0 | 29 | 2132 / 2197 | 0.65 / 7.8 / 14,847 | 33.2 |
+| **2,000,000 (prodotto)** | 0 | 29 | 2132 / 2197 | 0.65 / 7.7 / 15,179 | 33.6 |
+
+La più grande delle header è di 909 KB: con il tetto di prodotto la risposta è quella senza tetto. Con 16,384 e 65,536 caratteri i simboli persi stanno in pochi header (`wil/.../result_macros.h`, 322 KB, 353; `gtest-port.h`, 93 KB, 245). Il massimo è `musl/src/locale/gb18030.h` (145 KB, una tabella di numeri): il rilevamento sono due parse da circa 7 s (C++ e C), quello dell'adattatore uno. Il costo di R0 (3.8 s in tutto, mediana 0.19 ms) è di un'altra corsa: si confronta con riserva.
+
+Testi cattivi a 50 e 200 KB (Modal, `--step growth --targets product,parse`, `results/product-growth.json`, ms): il rilevamento con il tetto a 65,536 / 131,072 / 2,000,000, contro il parse dell'adattatore del linguaggio trovato, che il prodotto fa subito dopo.
+
+| Testo | Dimensione | Rilevamento | Parse dell'adattatore |
+| --- | --- | --- | --- |
+| `class a ` ripetuto | 50 KB | 442 / 444 / 444 | 344 |
+| `class a ` ripetuto | 200 KB | 676 / 2,197 / 5,095 | 4,708 |
+| stringa mai chiusa | 50 KB | 198 / 195 / 197 | 90 |
+| stringa mai chiusa | 200 KB | 261 / 511 / 804 | 376 |
+| `"\"\"…` | 200 KB | 69 / 139 / 214 | 314 |
+| `{` ripetuto | 50 KB | 74 / 74 / 78 | 2,596 |
+| `{` ripetuto | 200 KB | 105 / 209 / 336 | 40,400 |
+| `/* ` ripetuto | 200 KB | 6.3 / 7.8 / 9.2 | > 60,000 |
+| un `/*` per riga | 200 KB | 6.7 / 7.4 / 8.9 | 47,932 |
+| righe vuote | 200 KB | 17 / 26 / 35 | 43 |
+
+Dove il rilevamento costa più del parse è la stringa mai chiusa (circa 2×: due grammatiche contro una); `class a ` ripetuto costa da 1.1× a 1.3× il parse, e `class a ` ×12.000 (96 KB) in locale, su Windows con Python 3.13.14, supera i 2 s di `test_codebase_map_language_cost.py` (da 2.1 a 4.2 s con il tetto da 131,072 in su; 1.2 s con 65,536).
+
 ## Limiti
 
 - **Le etichette a mano le ha date un solo annotatore** (un agente, non una persona) leggendo un estratto del testo senza commenti; non c'è un secondo annotatore. L'estratto portava davanti i nodi C++ e Objective-C trovati dal parser e i conteggi di `ERROR` (le feature di R1, R2, R3, non l'esito di R0). Rischio: etichette «indifferente» date perché il parser non trovava nodi. Controlli: nessuna via ad albero concorda con le etichette quanto R0 (colonna «Accordo con le etichette a mano»), e l'estratto non contiene l'esito di R0; e le etichette «indifferente» danno tutte gli stessi simboli letti C o C++, un fatto che nessuna etichetta tocca (tabella «Header di progetti», ultima frase). R0 e l'annotatore leggono però gli stessi indizi di testo (`namespace`, `class`, `template`): il loro accordo non è indipendenza.
@@ -327,8 +365,10 @@ uv run --no-project --with modal --with pytest --with "tree-sitter==0.26.0" --wi
 
 # misure, solo su Modal
 PYTHONUTF8=1 PYTHONIOENCODING=utf-8 uv run --no-project --with modal python -m modal run benchmarks/header-language/modal_headers.py --step STEP
-#   STEP: warm | prepare | measure | collect | growth | capcost | r0check | excerpt | all
+#   STEP: warm | prepare | measure | collect | growth | capcost | r0check | product | excerpt | all
 #   --projects a,b   solo questi progetti     --kinds a,b / --targets x,y   solo questi testi cattivi / questi bersagli
+#   --step product --caps 0,16384   il prodotto con questi tetti (0: nessuno) -> results/product.json.gz, poi header_report.py scrive product.json
+#   --step growth --targets product --out benchmarks/header-language/results/product-growth.json   i testi cattivi contro il prodotto
 #   --step excerpt --keys FILE   stampa gli estratti da annotare (progetto/percorso, uno per riga)
 
 # punteggio, righe di codice, tabelle del README
@@ -341,4 +381,4 @@ Parametri: seme `header-language-1` (`header_corpus.SEED`); tetti di byte 4, 8, 
 
 ## File
 
-`header_corpus.py` (progetti, etichette), `header_probe.py` (le tre grammatiche, le feature, R0 e le sue varianti, i simboli), `header_routes.py` (le vie come decisioni sulle feature, statistiche, testi cattivi, `safe_prefix`), `header_report.py` (punteggio), `header_loc.py` (righe), `header_tables.py` (tabelle), `modal_headers.py` e `bad_worker.py` (Modal), `labels.json`, `results/` (`headers.json.gz`, `corpus.json`, `growth*.json`, `capcost.json.gz`, `r0check.json.gz`, `summary.json`, `loc.json`), `test_*.py`.
+`header_corpus.py` (progetti, etichette), `header_probe.py` (le tre grammatiche, le feature, R0 e le sue varianti, i simboli), `header_routes.py` (le vie come decisioni sulle feature, statistiche, testi cattivi, `safe_prefix`), `header_report.py` (punteggio), `header_loc.py` (righe), `header_tables.py` (tabelle), `modal_headers.py` e `bad_worker.py` (Modal), `labels.json`, `results/` (`headers.json.gz`, `corpus.json`, `growth*.json`, `capcost.json.gz`, `r0check.json.gz`, `product.json.gz`, `product.json`, `product-growth.json`, `summary.json`, `loc.json`), `test_*.py`.

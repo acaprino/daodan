@@ -1,0 +1,414 @@
+{
+ "0": {
+  "differences": [],
+  "accuracy": {
+   "c": [
+    2132,
+    2185
+   ],
+   "cpp": [
+    2197,
+    2287
+   ],
+   "either": [
+    28,
+    28
+   ],
+   "objc": [
+    259,
+    295
+   ]
+  },
+  "lost": 29,
+  "c_beyond": 0,
+  "cost_ms": {
+   "median": 0.7079,
+   "p95": 7.8844,
+   "max": 14875.5842,
+   "total_s": 34.01
+  }
+ },
+ "16384": {
+  "differences": [
+   [
+    "abseil/absl/base/dynamic_annotations.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "cpython/Include/dynamic_annotations.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "cpython/Include/internal/mimalloc/mimalloc.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "cpython/Include/internal/pycore_global_strings.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "curl/include/curl/curl.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "googletest/googlemock/include/gmock/gmock-more-actions.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "googletest/googletest/include/gtest/internal/gtest-port.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "libuv/include/uv.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "libuv/include/uv/tree.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "libuv/src/win/winapi.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "linux/include/linux/comedi/comedidev.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "linux/include/linux/cpumask.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "linux/include/linux/mlx4/device.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "llvm/llvm/include/llvm/CodeGen/GlobalISel/GIMatchTableExecutor.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "mbedtls/include/mbedtls/aes.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/asn1.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/bignum.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/ccm.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/ctr_drbg.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/dhm.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/ecdh.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/ecdsa.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/ecp.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/gcm.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/hmac_drbg.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/lms.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/pk.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/platform.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/rsa.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/x509_crt.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/psa/crypto_extra.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/psa/crypto_se_driver.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/psa/crypto_struct.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "openssl/include/openssl/ec.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "rocksdb/include/rocksdb/statistics.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "rocksdb/util/ribbon_alg.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "wil/include/wil/common.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "wil/include/wil/result_macros.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "wil/include/wil/wistd_config.h",
+    "cpp",
+    "c"
+   ]
+  ],
+  "accuracy": {
+   "c": [
+    2124,
+    2185
+   ],
+   "cpp": [
+    2188,
+    2287
+   ],
+   "either": [
+    28,
+    28
+   ],
+   "objc": [
+    259,
+    295
+   ]
+  },
+  "lost": 717,
+  "c_beyond": 20770,
+  "cost_ms": {
+   "median": 0.6694,
+   "p95": 5.0199,
+   "max": 600.7199,
+   "total_s": 9.08
+  }
+ },
+ "65536": {
+  "differences": [
+   [
+    "curl/include/curl/curl.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "libuv/src/win/winapi.h",
+    "cpp",
+    "c"
+   ],
+   [
+    "mbedtls/include/mbedtls/ecp.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/mbedtls/ssl.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/psa/crypto_extra.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "mbedtls/include/psa/crypto_se_driver.h",
+    "c",
+    "cpp"
+   ],
+   [
+    "wil/include/wil/result_macros.h",
+    "cpp",
+    "c"
+   ]
+  ],
+  "accuracy": {
+   "c": [
+    2130,
+    2185
+   ],
+   "cpp": [
+    2196,
+    2287
+   ],
+   "either": [
+    28,
+    28
+   ],
+   "objc": [
+    259,
+    295
+   ]
+  },
+  "lost": 382,
+  "c_beyond": 7674,
+  "cost_ms": {
+   "median": 0.6578,
+   "p95": 7.6408,
+   "max": 3458.262,
+   "total_s": 17.6
+  }
+ },
+ "131072": {
+  "differences": [
+   [
+    "mbedtls/include/mbedtls/ssl.h",
+    "c",
+    "cpp"
+   ]
+  ],
+  "accuracy": {
+   "c": [
+    2131,
+    2185
+   ],
+   "cpp": [
+    2197,
+    2287
+   ],
+   "either": [
+    28,
+    28
+   ],
+   "objc": [
+    259,
+    295
+   ]
+  },
+  "lost": 29,
+  "c_beyond": 2944,
+  "cost_ms": {
+   "median": 0.6501,
+   "p95": 7.6751,
+   "max": 12433.3805,
+   "total_s": 29.63
+  }
+ },
+ "524288": {
+  "differences": [],
+  "accuracy": {
+   "c": [
+    2132,
+    2185
+   ],
+   "cpp": [
+    2197,
+    2287
+   ],
+   "either": [
+    28,
+    28
+   ],
+   "objc": [
+    259,
+    295
+   ]
+  },
+  "lost": 29,
+  "c_beyond": 29,
+  "cost_ms": {
+   "median": 0.6473,
+   "p95": 7.7738,
+   "max": 14847.2418,
+   "total_s": 33.18
+  }
+ },
+ "2000000": {
+  "differences": [],
+  "accuracy": {
+   "c": [
+    2132,
+    2185
+   ],
+   "cpp": [
+    2197,
+    2287
+   ],
+   "either": [
+    28,
+    28
+   ],
+   "objc": [
+    259,
+    295
+   ]
+  },
+  "lost": 29,
+  "c_beyond": 29,
+  "cost_ms": {
+   "median": 0.6459,
+   "p95": 7.7301,
+   "max": 15179.3815,
+   "total_s": 33.56
+  }
+ }
+}

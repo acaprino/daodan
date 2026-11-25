@@ -413,6 +413,29 @@ def _growth(rows: list[dict]) -> dict:
     return out
 
 
+def product(data: dict, ran: dict, annotations: dict) -> dict:
+    """The product's own answers (`modal_headers.py --step product`: `ran`) against route R3dx of the records (`data`). Per bound
+    of the text it reads (`header.MAX_CHARS`; "0" is none): the headers it answers otherwise than R3dx (key, R3dx's, its own), the
+    right answers by label, the symbols lost, the cost of a header, and the symbols a bound would lose if what lies beyond it
+    were read C and the head not read at all (`c_beyond`: R3dx's answer for a header within the bound)."""
+    records = [r for r in data["records"] if "error" not in r]
+    rows = {f"{row['p']}/{row['path']}": row for row in ran["rows"]}
+    wanted = {key(r): answer(r, "R3dx") for r in records}
+
+    def lost(ours: dict) -> int:
+        return sum(row["lost"] for row in _loss(records, ours, lambda r: final_label(r, annotations)).values())
+
+    out = {}
+    for bound in map(str, ran["caps"]):
+        ours = {name: rows[name]["ans"][bound] for name in wanted}
+        within = {key(r): wanted[key(r)] if r["size"] <= int(bound) or wanted[key(r)] == "objc" else "c" for r in records}
+        out[bound] = {"differences": [[name, wanted[name], ours[name]] for name in sorted(wanted) if ours[name] != wanted[name]],
+                      "accuracy": {t: list(v) for t, v in routes.accuracy(routes.matrix((final_label(r, annotations), ours[key(r)]) for r in records)).items()},
+                      "lost": lost(ours), "c_beyond": lost(within) if int(bound) else 0,
+                      "cost_ms": _stats([rows[name]["ms"][bound] for name in wanted])}
+    return out
+
+
 def build(results: Path, labels: Path) -> dict:
     """The summary of everything `results` holds: the records, every `growth*.json`, and the capcost and r0check files if
     they are there, against the hand annotations in `labels`."""
@@ -442,6 +465,10 @@ def main() -> None:
     summary = build(results, Path(args.labels))
     out = Path(args.out) if args.out else results / "summary.json"
     out.write_text(json.dumps(summary, indent=1), encoding="utf-8")
+    if (results / "product.json.gz").exists():  # the product against route R3dx: its own file, the README's tables do not use it
+        notes = json.loads(Path(args.labels).read_text(encoding="utf-8")) if Path(args.labels).exists() else {}
+        (results / "product.json").write_text(json.dumps(product(load(results / "headers.json.gz"), load(results / "product.json.gz"), notes), indent=1),
+                                              encoding="utf-8", newline="\n")
     print(f"wrote {out}: {summary['headers']} headers, {summary['annotated_total']} annotated, {len(summary['label_problems'])} label problems")
 
 
