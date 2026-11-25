@@ -159,7 +159,7 @@ def plan(rows) -> dict:
         mine = sorted(language for language in observer.LANGUAGES if language in resolved)
         watched.update(observer.LANGUAGES)
         if mine:
-            nodes.append(_node("observe", observer.ENTRY, getattr(observer, "VERSION", None),
+            nodes.append(_node("observe", observer.NAME, getattr(observer, "VERSION", None),
                                {"languages": mine, "files": sum(files[language] for language in mine)}, True,
                                sorted({f"resolve:{owner[language].NAME}" for language in mine})))
     gaps = []

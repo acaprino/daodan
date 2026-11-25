@@ -447,9 +447,13 @@ def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarati
     """An analyzer is one adapter module under `indexers/`: it says its name, the languages it indexes, the unit
     kinds it takes its structure from and whether its build runs only in a container, and gives its index. No
     hand-written list names them: a module that declares itself is an analyzer of the pass. Its name is `NAME`, as
-    every adapter's (spec of the pipeline, 8.8 point 1), not `ENTRY`."""
+    every adapter's, the observers' too (spec of the pipeline, 8.8 point 1), not `ENTRY`."""
     import importlib
+    import dynamic
     import indexers
+    assert [module.NAME for module in dynamic.observers() if not hasattr(module, "ENTRY")] == [
+        "dynamic-callgrind-clang", "dynamic-callgrind-rust", "dynamic-record-dotnet", "dynamic-record-go",
+        "dynamic-record-javascript", "dynamic-record-jvm", "dynamic-record-python"]
     declared = indexers.analyzers()
     assert {module.NAME for module in declared} == {
         "scip-go", "scip-rust", "scip-typescript", "scip-python", "scip-java", "scip-kotlin", "scip-clang",

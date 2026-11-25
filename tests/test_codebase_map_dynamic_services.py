@@ -1816,7 +1816,7 @@ def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped:
         return {"state": state, "sites": [], "gaps": [dict(gap) for gap in found],
                 "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]} \
             if state == "ran" else {"state": state, "cause": "no engine", "remedy": "start one"}
-    return SimpleNamespace(ENTRY="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
+    return SimpleNamespace(NAME="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
                            external=lambda callee: {"manager": "python", "package": "x", "version": None},
                            plan=lambda record, files, read: {"runs": [{"root": ".", "runner": "pytest",
                                                                        "declared_in": "pyproject.toml"}], "gaps": []},

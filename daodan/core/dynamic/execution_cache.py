@@ -38,7 +38,7 @@ def recorder_fingerprint(module: str) -> str:
 
 def key(binding: dict, graphs: dict, languages: list[str], observer, plan: dict) -> str:
     inputs = [binding["manifest_digest"], binding["parser_fingerprint"], binding["resolver_version"],
-              observer.ENTRY, observer.VERSION, recorder_fingerprint(getattr(observer, "__name__", "")),
+              observer.NAME, observer.VERSION, recorder_fingerprint(getattr(observer, "__name__", "")),
               [(language, graphs[language]["engine"], graphs[language].get("version"),
                 graphs[language].get("adapter_digest")) for language in languages],
               plan]

@@ -73,7 +73,7 @@ La pipeline finisce con il grafo completo; i flussi lo leggono dopo, fuori da es
 2. `technologies.json` dà per ogni modulo, anche `logical` e `virtual`, `{id, name, kind, nature, provenance, paths, languages, toolchains, frameworks, libraries, services, tools, technologies}`, più la vista `units` delle unità fisiche e virtuali. `libraries` elenca tutte le librerie che il modulo dichiara: arricchite dall'id e dal nome della tecnologia riconosciuta sullo stesso pacchetto e file, mai tolte se nessuna lo è.
 3. Il registro è l'anagrafica, senza segni: la categoria tiene framework ed esecutori dei test separati dai servizi esterni (`registry_build.CATEGORY_OF_TYPE`, le categorie curate delle aggiunte).
 
-Lo step 3 ha un osservatore per tecnologia, con lo stesso pattern degli analyzer: un modulo di `dynamic/` che si dichiara (`ENTRY`, `VERSION`, `LANGUAGES`), elencato da `dynamic.observers()`. Parte per le tecnologie che hanno un grafo statico nello store, prende il comando dei test dalla pre-mappa e usa gli eventi degli analyzer (`analyzer.started`, `progress`, `gap`, `analyzer.finished`, `analyzer.unavailable`). Una tecnologia senza osservatore, un progetto senza un comando dichiarato e una corsa senza motore di container sono lacune: la pipeline arriva comunque all'unione. `DAODAN_DYNAMIC=off` salta lo step.
+Lo step 3 ha un osservatore per tecnologia, con lo stesso pattern degli analyzer: un modulo di `dynamic/` che si dichiara (`NAME`, `VERSION`, `LANGUAGES`), elencato da `dynamic.observers()`. Parte per le tecnologie che hanno un grafo statico nello store, prende il comando dei test dalla pre-mappa e usa gli eventi degli analyzer (`analyzer.started`, `progress`, `gap`, `analyzer.finished`, `analyzer.unavailable`). Una tecnologia senza osservatore, un progetto senza un comando dichiarato e una corsa senza motore di container sono lacune: la pipeline arriva comunque all'unione. `DAODAN_DYNAMIC=off` salta lo step.
 
 ### 2. Analyzer: un'istanza per tecnologia trovata
 
@@ -266,7 +266,7 @@ Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto 
 | `analyzer.started`, `.finished`, `.unavailable` | Li emettono anche gli osservatori | `adapter.started`, `.finished`, `.unavailable`, con il campo `adapter` |
 | source (in `premap/`) | Si confonde con il sorgente del progetto | scanner; il grado `scanner` di `RANKS` (go-enry, noir) diventa `detector` |
 | premap, pre-map | Due grafie; dice quando viene, non che cosa è | project model, già il nome di `benchmarks/project-model` e dei comandi di modello |
-| `ENTRY`, `NAME` | Due parole per il nome di un adattatore | `NAME`; *fatto il 23 novembre per `indexers/`*, `dynamic/` aspetta |
+| `ENTRY`, `NAME` | Due parole per il nome di un adattatore | `NAME`; *fatto il 23 novembre per `indexers/` e il 25 per `dynamic/`* |
 | step, stage, phase, pass | Quattro livelli senza una regola scritta | `step` della pipeline; `stage` un adattatore sulle sue unità, il nodo del piano; `phase` dentro uno stage; `pass` da confrontare con `run`, non letto |
 | I passi del README (Static, Inference, Dynamic, Semantic) | Non sono i nomi degli step | Il README usa i nomi degli step; Semantic resta dopo la pipeline |
 
@@ -274,7 +274,7 @@ Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto 
 
 **8.8 Dichiarazione comune e controlli dell'orchestratore.**
 
-1. **Una dichiarazione per ogni adattatore:** `NAME` e `VERSION`, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Oggi `premap/` dichiara `NAME`, `VERSION`, `RANK` in una lista scritta (`SOURCES`); `indexers/` `NAME` (era `ENTRY` fino al 23 novembre), `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`; `dynamic/` `ENTRY`, `VERSION`, `LANGUAGES`; `languages/` `language`, scelto dall'estensione. Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa un bisogno dichiarato come quelli del piano. Aperto (A1).
+1. **Una dichiarazione per ogni adattatore:** `NAME` e `VERSION`, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Oggi `premap/` dichiara `NAME`, `VERSION`, `RANK` in una lista scritta (`SOURCES`); `indexers/` `NAME` (era `ENTRY` fino al 23 novembre), `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`; `dynamic/` `NAME` (era `ENTRY` fino al 25 novembre), `VERSION`, `LANGUAGES`; `languages/` `language`, scelto dall'estensione. Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa un bisogno dichiarato come quelli del piano. Aperto (A1).
 2. **La freschezza si controlla in un punto solo,** `pipeline._run`, sull'impronta degli ingressi dichiarati (sezione 1). Oggi `_run` non la controlla e non emette mai `step.skipped`: ogni step chiama il suo `ensure`.
 3. **Un test controlla gli ingressi:** ogni ingresso di uno step è l'uscita di uno step prima, o un ingresso della pipeline. *Fatto il 23 novembre:* prova 6.
 

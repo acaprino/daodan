@@ -138,7 +138,7 @@ Lo stesso container può preparare anche dati per il passo 2: le librerie che gl
 - La destinazione si classifica per la sua provenienza, come chiede il requisito 23: una funzione definita fuori dal progetto è esterna ed esce dal denominatore.
 - Il rapporto «risolte su risolvibili» riporta gli archi osservati a parte, così il valore dei passi 1 e 2 resta confrontabile nel tempo.
 - Un arco osservato che contraddice un arco provato è un difetto di uno dei due passi: si riporta, non si sceglie.
-- Una coppia chiamante-chiamato vista in uno stack campionato è un fatto osservato di una seconda fonte (sezione 7): `confidence` `sampled` e resolver `ENTRY@VERSION:sampled`, distinti da quelli esatti. Non dice mai che una chiamata che nessun campione ha visto non avviene.
+- Una coppia chiamante-chiamato vista in uno stack campionato è un fatto osservato di una seconda fonte (sezione 7): `confidence` `sampled` e resolver `NAME@VERSION:sampled`, distinti da quelli esatti. Non dice mai che una chiamata che nessun campione ha visto non avviene.
 
 Applicato così (`dynamic/__init__.py`, `edge_store.py`, `code_graph.write_observed`, `edge_view.py`):
 
@@ -177,7 +177,7 @@ Operazione e fatti osservati sono gli stessi per ogni linguaggio; l'immagine è 
 
 #### Python, applicato
 
-Un osservatore è un modulo di `dynamic/` che si dichiara (`ENTRY`, `VERSION`, `LANGUAGES`), come un analyzer; `dynamic.observers()` li elenca. Quello di Python è `dynamic/python.py`.
+Un osservatore è un modulo di `dynamic/` che si dichiara (`NAME`, `VERSION`, `LANGUAGES`), come un analyzer; `dynamic.observers()` li elenca. Quello di Python è `dynamic/python.py`.
 
 - **Comando.** È quello che il progetto dichiara, letto dalla pre-mappa (faccetta `tests`, lettore `premap/python_tests.py`), mai una convenzione di Daodan. pytest dove il progetto lo dichiara o lo configura: una configurazione di pytest, pytest o un suo plugin fra le dipendenze dichiarate, un `conftest.py`. unittest solo dove un file scrive il comando: una riga `python -m unittest ...` in `tox.ini` o in un makefile. I soli file di test non dichiarano nulla: lacuna `no_test_command`, e nessun container parte. Un pytest dichiarato dentro le cartelle che un altro pytest riceve non parte da sé: lo raccoglie quello (un progetto di fixture, un membro). A pytest Daodan aggiunge solo `--continue-on-collection-errors`, un'opzione di pytest che non tocca il progetto: senza, un modulo di test che non si importa nel container (una dipendenza opzionale, un servizio) ferma tutti gli altri. unittest non ne ha bisogno: carica un modulo alla volta e un import fallito è un test in errore.
 - **Python.** Il registro chiede Python 3.12. Un progetto che dichiara un Python più vecchio (una versione, o un intervallo che finisce sotto 3.12) è una lacuna `python_too_old` e i suoi test non girano. Una versione esatta che l'immagine non ha la installa la preparazione (mise). Un intervallo che esclude il Python dell'immagine senza nominare una versione è `python_unavailable`. Nel container il Python dell'ambiente si misura prima dei test.

@@ -554,7 +554,7 @@ class PlanTest(unittest.TestCase):
     def test_the_observer_declares_itself_for_java_and_kotlin(self):
         self.assertIn(jvm, dynamic.observers())
         self.assertEqual(jvm.LANGUAGES, ("java", "kotlin"))
-        self.assertEqual(dynamic.resolver(jvm), f"{jvm.ENTRY}@{jvm.VERSION}")
+        self.assertEqual(dynamic.resolver(jvm), f"{jvm.NAME}@{jvm.VERSION}")
 
 
 ASM_JAR = b"the asm jar"
