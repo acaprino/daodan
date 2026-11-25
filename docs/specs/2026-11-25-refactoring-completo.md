@@ -22,7 +22,7 @@
 | 7 | `7_run_and_observe`: test, programma, interfacce | 3, 6 |
 | 8 | `8_assemble_graph`, flussi e mappa del sistema | 3, 5 |
 | 9 | Ricerca e review | 8 |
-| 10 | L'app e l'esploratore | 8 |
+| 10 | L'app e l'esploratore, adeguati alla pipeline | 4, 8 |
 | 11 | Le superfici differite: desktop Linux, Android, Windows | 7 |
 
 Le ondate 1, 2 e 6 non dipendono l'una dall'altra e possono procedere insieme.
@@ -151,6 +151,21 @@ Deciso dal proprietario il 25 novembre 2026. Daodan dà sempre a chi lo chiama (
 7. **I tipi di azione sono un elenco chiuso**, con le sue parole: così l'interfaccia, MCP e la riga di comando dicono la stessa cosa allo stesso modo.
 
 Oggi il piano copre solo la lettura, il collegamento delle chiamate e gli osservatori, e li nomina per come sono fatti (`resolve:scip-python`); esce una volta sola, come evento; preparazione, download, container, test e avvio dell'app non ci sono.
+
+### L'interfaccia segue la pipeline
+
+Deciso dal proprietario il 25 novembre 2026: l'interfaccia si adegua alla pipeline nuova in tutto e per tutto. Non ha un'idea sua di come è fatta un'analisi: mostra ciò che Daodan le dà.
+
+1. **Mostra il piano, non lo ricostruisce.** Gli step, le azioni e i loro stati sono quelli del piano che riceve. L'interfaccia non tiene un elenco suo di step né dei loro nomi, e non deduce lo stato dagli eventi.
+2. **Il percorso sullo schermo sono gli otto step**, con le loro parole: elenco dei file, lettura del codice, stack, moduli, punti di ingresso, chiamate, esecuzione, grafo. Prima c'è la scelta della repository, dopo ciò che si fa sul grafo (flussi, mappa, domande).
+3. **Di ogni step si vede che cosa ha trovato**, non solo che è finito: i file per linguaggio; le tecnologie con il file che le prova; i moduli con lo strumento che li ha dati; rotte, pagine ed eventi con la funzione a cui sono legati; le chiamate collegate e quelle rimaste aperte; i test lanciati e i controlli azionati; il grafo e le sue lacune.
+4. **Prima di partire si vede che cosa succederà:** che cosa verrà scaricato e quanto pesa, che cosa verrà eseguito e dove. Un consenso si dà lì, sull'azione che lo chiede.
+5. **Mentre accade si vede l'azione in corso**, detta per ciò che fa. Un'azione fallita o non possibile dice la causa e il rimedio nel punto in cui sta.
+6. **La parola «pre-mappa» esce dall'interfaccia**, con «scan», «stack», «analyze» e gli altri nomi di come è fatto: chi guarda legge ciò che Daodan fa.
+7. **La stessa cosa in ogni posto:** la pagina dell'analisi, la mappa e un harness che chiama via MCP leggono lo stesso piano e lo dicono con le stesse parole.
+8. **Con i componenti della suite e nient'altro:** Sigrid nella shell di Imago, come ogni schermata di Daodan.
+
+Oggi la pagina dell'analisi ha quattro tappe (Repository, Pre-mappa, Analisi, Sintesi e grafo). Dentro «Analisi» mostra sei fasi con i nomi di prima (Parse, Scan, Stack, Analyze, Dynamic, Union), tenute in un elenco suo e ricostruite dagli eventi. La tappa «Pre-mappa» mostra insieme inventario, linguaggi, tecnologie, unità e dipendenze, cioè il risultato di quattro step diversi.
 
 ### Le anagrafiche
 
@@ -355,19 +370,23 @@ Da: spec della ricerca e del pacchetto di review; spec della review (3, 4, 7 e 9
 
 **Cancello:** i punti 4 e 5 hanno uno stato scritto dopo aver letto il codice; ogni proposta adottata ha la sua misura.
 
-## Ondata 10: l'app e l'esploratore
+## Ondata 10: l'app e l'esploratore, adeguati alla pipeline
 
 Da: spec dell'app standalone; piano dell'esploratore; spec dei flussi, sezione 4.
 
-1. Da implementare: il server applicativo, il coordinatore della coda, gli adattatori dei motori con la prova di capacità, l'annullamento e la ripresa (app standalone, «Stato»).
-2. L'ingresso da GitHub con accesso: GitHub App, device flow, token nel portachiavi. Registrare l'App è un prerequisito.
-3. **[proposta]** Il servizio sul PC: la cartella applicativa portabile, l'app che parla solo via HTTP con un token. **[da verificare]** La licenza di Kiri per la ridistribuzione; il portachiavi su Linux senza desktop.
-4. La mappa nella pagina dell'app: oggi non la mostra. Il grafo dell'app non è mai stato misurato su un progetto grande (spec dei flussi, tabella di stato).
-5. **[difetto]** La pagina dell'app non ha un comando per salvare un percorso e, riaperta, non mostra lo stato della scheda (spec degli ingressi, collaudo).
-6. L'esploratore: i pannelli ridimensionabili e i filtri; la verifica da tastiera; la misura su un run reale, i cui obiettivi di prestazione non sono raggiunti sul sintetico. Il parametro `level` usa ancora i nomi vecchi.
-7. **[deciso]** L'albero della pipeline (`docs/pipeline/`) resta scritto dal codice: una sorgente, un analizzatore o una regola nuova senza la sua voce fa fallire `pipeline_tree.py check`.
+1. **[deciso]** L'interfaccia segue la pipeline («L'interfaccia segue la pipeline»): il percorso a otto step al posto delle quattro tappe e delle sei fasi; ogni step con ciò che ha trovato; il piano prima di partire, con i consensi; l'azione in corso detta per ciò che fa. L'elenco delle fasi e la ricostruzione dagli eventi che oggi stanno nella pagina (`viewer/app/run.ts`, `stages.ts`) vanno via: la pagina legge il piano.
+2. **[deciso]** La tappa «Pre-mappa» si divide nei risultati dei suoi step: elenco dei file, stack, moduli. Le parole di come è fatto («pre-mappa», «scan», «analyzer») escono da ogni schermata.
+3. Il server dà alla pagina il piano e ciò che ogni step ha trovato, nella stessa forma che dà a MCP.
+4. La pagina dell'albero della pipeline (`docs/pipeline/`) ha oggi due viste, «Oggi nel codice» e «Piano»: a refactoring finito ne resta una.
+5. Da implementare: il server applicativo, il coordinatore della coda, gli adattatori dei motori con la prova di capacità, l'annullamento e la ripresa (app standalone, «Stato»).
+6. L'ingresso da GitHub con accesso: GitHub App, device flow, token nel portachiavi. Registrare l'App è un prerequisito.
+7. **[proposta]** Il servizio sul PC: la cartella applicativa portabile, l'app che parla solo via HTTP con un token. **[da verificare]** La licenza di Kiri per la ridistribuzione; il portachiavi su Linux senza desktop.
+8. La mappa nella pagina dell'app: oggi non la mostra. Il grafo dell'app non è mai stato misurato su un progetto grande (spec dei flussi, tabella di stato).
+9. **[difetto]** La pagina dell'app non ha un comando per salvare un percorso e, riaperta, non mostra lo stato della scheda (spec degli ingressi, collaudo).
+10. L'esploratore: i pannelli ridimensionabili e i filtri; la verifica da tastiera; la misura su un run reale, i cui obiettivi di prestazione non sono raggiunti sul sintetico. Il parametro `level` usa ancora i nomi vecchi.
+11. **[deciso]** L'albero della pipeline (`docs/pipeline/`) resta scritto dal codice: una sorgente, un analizzatore o una regola nuova senza la sua voce fa fallire `pipeline_tree.py check`.
 
-**Cancello:** un lavoro intero con un motore controllato passa (eventi, errore, timeout, annullamento, riavvio); la mappa è nella pagina dell'app.
+**Cancello:** un lavoro intero con un motore controllato passa (eventi, errore, timeout, annullamento, riavvio); la mappa è nella pagina dell'app; nessuna schermata nomina uno step o una fase che il piano non contiene, e il workflow Viewer passa con le sue prove nel browser.
 
 ## Ondata 11: le superfici differite
 
