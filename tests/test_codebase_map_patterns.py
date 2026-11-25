@@ -22,8 +22,8 @@ ALLOWED = {
     "engine_tools.py": 1, "flows.py": 7, "import_resolution.py": 1, "indexers/clang.py": 12,
     "indexers/clang_run.py": 7, "indexers/csharp.py": 8, "indexers/css.py": 59, "indexers/go.py": 7,
     "indexers/java.py": 6, "indexers/jvm.py": 10, "indexers/kotlin.py": 1, "indexers/python.py": 12,
-    "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6, "languages/__init__.py": 5,
-    "languages/cfamily.py": 18, "languages/csharp.py": 5, "languages/go.py": 5, "languages/java.py": 5,
+    "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6, "languages/__init__.py": 2,
+    "languages/cfamily.py": 18, "languages/csharp.py": 5, "languages/go.py": 5, "languages/header.py": 2, "languages/java.py": 5,
     "languages/javascript.py": 5, "languages/kotlin.py": 8, "languages/markup.py": 2, "languages/plsql.py": 9,
      "languages/rust.py": 8, "languages/sfc.py": 3, "languages/sql.py": 19,
     "languages/stylesheet.py": 34,  "mark_svg.py": 11, "mcp_service.py": 1,
@@ -55,4 +55,4 @@ def test_no_file_of_the_core_has_more_regular_expressions_than_it_had():
 
 
 def test_the_count_only_goes_down():
-    assert sum(ALLOWED.values()) <= 661  # 24 November 2026 (667 on the 22nd, 835 on the 21st, 846 on the 20th); lower it with the files
+    assert sum(ALLOWED.values()) <= 660  # 25 November 2026 (661 on the 24th, 667 on the 22nd, 835 on the 21st, 846 on the 20th); lower it with the files

@@ -16,6 +16,7 @@ routes (`header_routes`) are decisions over those features; `header_report.py` s
     --step growth    the bad texts, one subprocess each with a hard timeout -> results/growth[-KINDS].json (--kinds a,b / --targets r0fix,cpp: only those)
     --step r0check   the detector of the moment and its three candidates (`fix`, `fixq`, `fixqc`) on every selected header -> results/r0check.json.gz
     --step capcost   the cost of every route on the headers longer than each byte cap, cut as the product would -> results/capcost.json.gz
+    --step product   the product's own `detect_language` (route R3dx since 25 November) on every selected header, at each bound of --caps -> results/product.json.gz
     --step excerpt   the text of the headers named in --keys (a file of `project/path` lines), printed, for annotation
     --step all       warm, prepare, measure, growth (capcost apart)
 """
@@ -262,6 +263,30 @@ def r0check(name: str) -> list[dict]:
     return rows
 
 
+@app.function(volumes={VOL: volume}, timeout=3600, cpu=2, memory=8192, block_network=True)
+def product(name: str, caps: list[int]) -> list[dict]:
+    """The product's own `detect_language` on every selected header, once for each bound in `caps` (`header.MAX_CHARS`; 0 is
+    no bound): its answer ("objc" for None) and ms."""
+    sys.path.insert(0, CORE)
+    _reload()
+    from languages import detect_language, header
+    bound = header.MAX_CHARS
+    detect_language(Path("x.h"), "int a;\nnamespace a { }\n")  # the first parse of a grammar pays for its set-up
+    rows = []
+    for path, data in _selected(name):
+        text = data.decode("utf-8", errors="replace")
+        row = {"p": name, "path": path, "size": len(data), "ans": {}, "ms": {}}
+        for cap in caps:
+            header.MAX_CHARS = cap or 1 << 40
+            t0 = time.perf_counter_ns()
+            language = detect_language(Path("x.h"), text)
+            row["ms"][str(cap)] = _round((time.perf_counter_ns() - t0) / 1e6)
+            row["ans"][str(cap)] = language or "objc"
+        rows.append(row)
+    header.MAX_CHARS = bound
+    return rows
+
+
 @app.function(volumes={VOL: volume}, timeout=4 * 3600, cpu=4, block_network=True)
 def growth(groups: list[list], seconds: int = 60) -> list[dict]:
     """Each group is a list of (target, kind, size, mode) in ascending size: run in a process of its own with a hard
@@ -292,8 +317,12 @@ def growth_groups() -> list[list]:
     groups = []
     for kind in routes.BAD_KINDS:
         kind_sizes = sizes + ((51200,) if kind == "blank_lines" else ())
-        for target in ("r0", "r0fix", "r0fixq", "r0fixqc", "c", "cpp", "objc", "scan"):
+        for target in ("r0", "r0fix", "r0fixq", "r0fixqc", "c", "cpp", "objc", "scan", "product"):
             groups.append([(target, kind, n, "raw") for n in kind_sizes])
+    for kind in routes.BAD_KINDS:  # the product's detection against the parse it does next, at the sizes a bound is chosen on
+        for mode in ("bound:16384", "bound:65536", "bound:131072", "bound:524288", "bound:0"):
+            for target in ("product", "parse"):
+                groups.append([(target, kind, n, mode) for n in (51200, 204800)])
     for kind in ("open_comment", "open_comment_repeat", "open_comment_lines", "class_repeat", "nested_brace", "open_string",
                  "escaped_dq", "escaped_sq"):  # the caps, on the texts they must tame
         for target in ("r0", "cpp"):
@@ -359,7 +388,8 @@ def _save(path: str, obj) -> None:
 
 
 @app.local_entrypoint()
-def main(step: str = "all", projects: str = "", out: str = "", keys: str = "", symbols: bool = True, lines: int = 40, kinds: str = "", targets: str = ""):
+def main(step: str = "all", projects: str = "", out: str = "", keys: str = "", symbols: bool = True, lines: int = 40, kinds: str = "", targets: str = "",
+         caps: str = "0,16384,65536,131072,524288"):
     names = [p.name for p in corpus.PROJECTS if not projects or p.name in projects.split(",")]
     steps = ("warm", "prepare", "measure", "growth") if step == "all" else (step,)
     metas = []
@@ -385,6 +415,10 @@ def main(step: str = "all", projects: str = "", out: str = "", keys: str = "", s
     if "r0check" in steps:
         rows = [row for part in r0check.map(names) for row in part]
         _save(out or str(HERE / "results" / "r0check.json.gz"), {"code": _code(), "rows": rows})
+    if "product" in steps:
+        bounds = [int(n) for n in caps.split(",")]
+        rows = [row for part in product.starmap([(n, bounds) for n in names]) for row in part]
+        _save(out or str(HERE / "results" / "product.json.gz"), {"code": _code(), "caps": bounds, "rows": rows})
     if "capcost" in steps:
         rows = [row for part in capcost.map(names) for row in part]
         _save(out or str(HERE / "results" / "capcost.json.gz"), {"code": _code(), "rows": rows})

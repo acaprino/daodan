@@ -1,6 +1,7 @@
 """The lines of code each way of choosing a `.h` language would put in the product, counted from the benchmark code that
-is tested (`header_probe`, `header_routes`) and from the rule of today (`daodan/core/languages/__init__.py`). Standard
-library only.
+is tested (`header_probe`, `header_routes`) and from the rule before route R3dx entered the product
+(`daodan/core/languages/__init__.py` at commit cd19c05e8, by `git show`), and the lines R3dx did put there
+(`daodan/core/languages/header.py`, and what `__init__.py` lost). Standard library only.
 
     python benchmarks/header-language/header_loc.py [--out results/loc.json]
 
@@ -13,12 +14,15 @@ import argparse
 import ast
 import io
 import json
+import subprocess
 import tokenize
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 TODAY = REPO / "daodan" / "core" / "languages" / "__init__.py"
+HEADER = TODAY.with_name("header.py")  # route R3dx, in the product
+RULE_COMMIT = "cd19c05e8"  # the last commit with the rule before in `TODAY`
 SKIP = {tokenize.COMMENT, tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT, tokenize.ENDMARKER, tokenize.ENCODING}
 
 
@@ -52,10 +56,19 @@ def span(source: str, name: str) -> tuple[int, int]:
     raise KeyError(name)
 
 
-def count(path: Path, names: list[str] | None = None, ranges: list[tuple[int, int]] | None = None) -> int:
-    """Lines of code in the named definitions of a file, or in explicit (first, last) line ranges."""
-    source = path.read_text(encoding="utf-8")
-    wanted = ranges if ranges is not None else [span(source, name) for name in names or []]
+def rule_before() -> str:
+    """`languages/__init__.py` as it was with the rule before the tree (R0, `fixqc`): the text of the commit."""
+    shown = subprocess.run(["git", "show", f"{RULE_COMMIT}:daodan/core/languages/__init__.py"], cwd=REPO, capture_output=True, text=True)
+    if shown.returncode:
+        raise FileNotFoundError(f"commit {RULE_COMMIT} is not in this checkout: {shown.stderr.strip()}")
+    return shown.stdout
+
+
+def count(path: Path, names: list[str] | None = None, ranges: list[tuple[int, int]] | None = None, source: str | None = None) -> int:
+    """Lines of code in the named definitions of a file (or of `source`, given in its place), or in explicit (first, last) line
+    ranges, or in the whole text when neither is given."""
+    source = path.read_text(encoding="utf-8") if source is None else source
+    wanted = ranges if ranges is not None else [span(source, name) for name in names] if names is not None else [(1, len(source) + 1)]
     holding = code_lines(source)
     return sum(1 for n in holding if any(first <= n <= last for first, last in wanted))
 
@@ -97,10 +110,14 @@ def today_ranges(source: str) -> tuple[list[tuple[int, int]], tuple[int, int], l
 
 
 def measure() -> dict:
-    source = TODAY.read_text(encoding="utf-8")
+    source = rule_before()
     today_h, detection, today_objc = today_ranges(source)
-    out = {"today": {"h_rule": count(TODAY, ranges=today_h), "h_rule_ranges": today_h, "objc_rule": count(TODAY, ranges=today_objc),
-                     "detection": count(TODAY, ranges=[detection]), "detection_range": detection}}
+    out = {"today": {"h_rule": count(TODAY, ranges=today_h, source=source), "h_rule_ranges": today_h,
+                     "objc_rule": count(TODAY, ranges=today_objc, source=source),
+                     "detection": count(TODAY, ranges=[detection], source=source), "detection_range": detection}}
+    # route R3dx in the product: the module, and the change in `__init__.py` (the rule's three patterns and its block go, an import comes)
+    out["product"] = {"header_py": count(HEADER), "init_before": count(TODAY, source=source), "init_now": count(TODAY)}
+    out["product"]["added"] = out["product"]["header_py"] + out["product"]["init_now"] - out["product"]["init_before"]
     for name, files in PIECES.items():
         out[name] = {path.name: {item: count(path, [item]) for item in items} for path, items in files.items()}
         out[name]["total"] = sum(count(path, items) for path, items in files.items())
@@ -122,7 +139,7 @@ def main() -> None:
     parser.add_argument("--out", default=str(HERE / "results" / "loc.json"))
     args = parser.parse_args()
     result = measure()
-    Path(args.out).write_text(json.dumps(result, indent=1), encoding="utf-8")
+    Path(args.out).write_text(json.dumps(result, indent=1), encoding="utf-8", newline="\n")
     print(f"wrote {args.out}: {result['totals']}")
 
 

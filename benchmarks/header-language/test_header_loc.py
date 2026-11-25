@@ -48,10 +48,30 @@ def test_count_by_name_and_by_range(tmp_path):
     assert loc.count(path, ranges=[(3, 3), (13, 15)]) == 2
 
 
-def test_todays_rule_is_found_by_name_in_the_product_file():
-    ranges, detection, objc = loc.today_ranges(loc.TODAY.read_text(encoding="utf-8"))
+@pytest.fixture(scope="module")
+def before():
+    """The product file with the rule before the tree, by `git show`: the rule left it for `header.py`."""
+    try:
+        return loc.rule_before()
+    except FileNotFoundError as error:
+        pytest.skip(str(error))
+
+
+def test_the_rule_before_is_found_by_name_in_the_product_file_of_its_commit(before):
+    ranges, detection, objc = loc.today_ranges(before)
     assert len(ranges) == 4 and detection[0] == 1 and len(objc) == 5
-    assert 0 < loc.count(loc.TODAY, ranges=objc) < loc.count(loc.TODAY, ranges=ranges) < loc.count(loc.TODAY, ranges=[detection])
+    count = lambda wanted: loc.count(loc.TODAY, ranges=wanted, source=before)  # noqa: E731
+    assert 0 < count(objc) < count(ranges) < count([detection])
+
+
+def test_the_whole_count_of_a_text_is_its_code_lines_and_a_name_count_stays_inside_it():
+    assert loc.count(None, source=SAMPLE) == 13 and loc.count(None, ["f"], source=SAMPLE) == 2
+
+
+def test_route_r3dx_in_the_product_is_fewer_lines_than_the_estimate_of_the_benchmark(before):
+    product = loc.measure()["product"]
+    assert product["added"] == product["header_py"] + product["init_now"] - product["init_before"]
+    assert 0 < product["added"] < 106  # the estimate of the spec: the route, its Objective-C rule and the check before the parse
 
 
 def test_a_rule_that_moves_out_of_detect_language_fails_the_count_instead_of_counting_less():
@@ -65,7 +85,7 @@ def test_a_rule_that_moves_out_of_detect_language_fails_the_count_instead_of_cou
         loc.today_ranges("def detect_language(path):\n    return None\n")
 
 
-def test_every_piece_of_a_route_exists_in_the_benchmark_code():
+def test_every_piece_of_a_route_exists_in_the_benchmark_code(before):
     totals = loc.measure()["totals"]
     assert totals["R0"] < totals["R2"] < totals["R1"] and totals["R3"] > totals["R1"]
     assert totals["R1x"] < totals["R1"] + totals["R0"] and totals["R3x"] > totals["R3"]  # no guard, but today's Objective-C rule

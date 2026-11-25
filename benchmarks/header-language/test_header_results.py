@@ -1,6 +1,7 @@
 """The results the benchmark leaves in `results/` hold together: the hand annotations fit the measured records and are the
 seeded sample the README says, `summary.json` is what the scorer writes from them, and the README's tables are the ones
 `header_tables.py` writes from `summary.json` and `loc.json`. Standard library only."""
+import ast
 import json
 from pathlib import Path
 
@@ -81,3 +82,32 @@ def test_readme_tables_are_the_ones_the_results_write():
 def test_readme_gives_the_two_final_patterns_exactly_as_the_code_has_them():
     text = (HERE / "README.md").read_text(encoding="utf-8")
     assert patterns.NOISE_FIXQ in text and patterns.CPP_FIXQC in text
+
+
+HEADER = HERE.parents[1] / "daodan" / "core" / "languages" / "header.py"
+
+
+def _shipped_bound() -> int:
+    """The `MAX_CHARS` of the product, read from its syntax tree."""
+    tree = ast.parse(HEADER.read_text(encoding="utf-8"))
+    return next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign) and n.targets[0].id == "MAX_CHARS")
+
+
+@needs_results
+def test_the_product_file_is_what_the_scorer_writes_and_with_no_bound_the_product_answers_as_route_r3dx():
+    notes = json.loads((HERE / "labels.json").read_text(encoding="utf-8"))
+    scored = report.product(report.load(RESULTS / "headers.json.gz"), report.load(RESULTS / "product.json.gz"), notes)
+    written = json.loads((RESULTS / "product.json").read_text(encoding="utf-8"))
+    assert json.loads(json.dumps(scored)) == written
+    assert written["0"]["differences"] == [] and written[str(_shipped_bound())]["differences"] == []  # the bound of the product reaches no header
+
+
+@needs_results
+def test_the_readme_gives_the_numbers_of_the_bound_the_product_ships():
+    written = json.loads((RESULTS / "product.json").read_text(encoding="utf-8"))
+    text = (HERE / "README.md").read_text(encoding="utf-8")
+    for bound, label in (("0", "nessuno"), (str(_shipped_bound()), f"**{_shipped_bound():,} (prodotto)**")):
+        found, accuracy, cost = written[bound], written[bound]["accuracy"], written[bound]["cost_ms"]
+        row = (f"| {label} | {len(found['differences'])} | {found['lost']:,} | {accuracy['c'][0]} / {accuracy['cpp'][0]} | "
+               f"{cost['median']:.2f} / {cost['p95']:.1f} / {cost['max']:,.0f} | {cost['total_s']:.1f} |")
+        assert row in text, row

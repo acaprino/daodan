@@ -246,11 +246,14 @@ def test_suffixes_name_the_two_languages():
 def test_a_header_is_cpp_only_when_its_text_has_what_c_lacks():
     cpp = ["namespace geo {\nint f();\n}\n", "class Node {\n public:\n  int x;\n};\n",
            "template <typename T> T twice(T v);\n", "using namespace std;\n",
-           # otel-demo's meter_common.h: a namespace alias, an anonymous namespace, `std::` names; a standard
-           # library header, as Linguist's own rule for `.h` has it.
+           # otel-demo's meter_common.h: a namespace alias, an anonymous namespace, `std::` names; the C grammar
+           # errs on `std::` where the C++ one does not.
            "namespace sdk = opentelemetry::sdk;\nnamespace\n{\nstd::shared_ptr<int> init();\n}\n",
-           "std::size_t bound(std::size_t n);\n", "#include <vector>\nint f(void);\n"]
+           "std::size_t bound(std::size_t n);\n"]
     c = ["#ifdef __cplusplus\nextern \"C\" {\n#endif\nint f(void);\n#ifdef __cplusplus\n}\n#endif\n",
+         # a standard library include names no construct: both grammars read it, so the header is the suffix's
+         # (the regular expression of before answered C++ from the name, as Linguist's rule for `.h` does).
+         "#include <vector>\nint f(void);\n",
          "/* a class of errors */\nstruct node { int x; };\n", "const char *s = \"namespace x {\";\n",
          "// template <typename T>\nint f(void);\n", "#include <string.h>\n[[gnu::unused]] static int x;\n",
          "int namespace_count; /* std::x */\n",

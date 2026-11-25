@@ -109,7 +109,10 @@ def test_the_last_candidate_reads_every_bad_text_of_32_kb_in_well_under_a_second
 # ---- the rule before is frozen here: it is the one of the commit the results were measured at -----------------------
 
 BEFORE_COMMIT = "3960973d8afb1c4e49d97d0da9d9e0fc72857c63"
-PRODUCT = Path(__file__).resolve().parents[2] / "daodan" / "core" / "languages" / "__init__.py"
+FIXQC_COMMIT = "cd19c05e8"  # where `fixqc` entered the product, until route R3dx replaced it
+LANGUAGES = Path(__file__).resolve().parents[2] / "daodan" / "core" / "languages"
+PRODUCT = LANGUAGES / "__init__.py"
+HEADER = LANGUAGES / "header.py"
 
 
 def _patterns_of(source: str) -> dict[str, str]:
@@ -131,7 +134,17 @@ def test_the_frozen_patterns_are_those_of_the_commit_the_results_were_measured_a
     assert before["_OBJC_HEADER_RE"] == patterns.BEFORE_OBJC
 
 
-def test_the_product_has_the_last_candidate_so_its_copy_here_is_the_products():
-    product = _patterns_of(PRODUCT.read_text(encoding="utf-8"))
-    assert product["_C_NOISE_RE"] == patterns.NOISE_FIXQ and product["_CPP_HEADER_RE"] == patterns.CPP_FIXQC
-    assert product["_OBJC_HEADER_RE"] == patterns.BEFORE_OBJC
+def test_the_last_candidate_is_what_the_product_had_until_the_tree_took_the_place_of_its_c_pattern():
+    shown = subprocess.run(["git", "show", f"{FIXQC_COMMIT}:daodan/core/languages/__init__.py"], cwd=PRODUCT.parent,
+                           capture_output=True, text=True)
+    if shown.returncode:
+        pytest.skip(f"commit {FIXQC_COMMIT} is not in this checkout")
+    then = _patterns_of(shown.stdout)
+    assert then["_C_NOISE_RE"] == patterns.NOISE_FIXQ and then["_CPP_HEADER_RE"] == patterns.CPP_FIXQC
+    assert then["_OBJC_HEADER_RE"] == patterns.BEFORE_OBJC
+
+
+def test_the_product_keeps_the_noise_and_the_objective_c_patterns_and_has_no_cpp_pattern():
+    product = _patterns_of(HEADER.read_text(encoding="utf-8"))
+    assert product == {"_C_NOISE_RE": patterns.NOISE_FIXQ, "_OBJC_HEADER_RE": patterns.BEFORE_OBJC}
+    assert "_CPP_HEADER_RE" not in _patterns_of(PRODUCT.read_text(encoding="utf-8"))

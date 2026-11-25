@@ -210,3 +210,20 @@ def test_evidence_line_of_a_c_header_read_as_cpp_is_the_node_that_misled():
     assert report.evidence_line(r, "R1e", truth="c", answer="cpp") == 5
     assert report.evidence_line(r, "R1dg", truth="c", answer="c") is None
     assert report.evidence_line(rec("a.h", decl="c", errs=(3, 1, 3)), "R2", truth="c", answer="cpp") == 7  # where C failed
+
+
+# ---- the product against route R3dx ------------------------------------------------------------------------
+
+def test_product_scores_the_answers_of_the_product_against_r3dx_and_what_c_beyond_the_bound_would_lose():
+    ns = {"namespace_definition": [1, 1, 3]}
+    rows = [rec("a.h", size=100, kinds=ns, sym={"c": 1, "cpp": 5}), rec("b.h", size=50_000, kinds=ns, sym={"c": 0, "cpp": 7}),
+            rec("c.h", size=20_000, kinds=ns, sym={"c": 2, "cpp": 9})]
+    ran = {"caps": [0, 16384], "rows": [
+        {"p": "proj", "path": "a.h", "ans": {"0": "cpp", "16384": "cpp"}, "ms": {"0": 1.0, "16384": 1.0}},
+        {"p": "proj", "path": "b.h", "ans": {"0": "cpp", "16384": "c"}, "ms": {"0": 3.0, "16384": 2.0}},
+        {"p": "proj", "path": "c.h", "ans": {"0": "cpp", "16384": "cpp"}, "ms": {"0": 2.0, "16384": 2.0}}]}
+    out = report.product({"records": rows}, ran, {})
+    assert out["0"]["differences"] == [] and out["0"]["lost"] == 0 and out["0"]["c_beyond"] == 0
+    assert out["16384"]["differences"] == [["proj/b.h", "cpp", "c"]] and out["16384"]["lost"] == 7
+    assert out["16384"]["c_beyond"] == 7 + 7  # b.h and c.h are longer than the bound: C for both, the head unread
+    assert out["16384"]["accuracy"]["cpp"] == [2, 3] and out["16384"]["cost_ms"]["max"] == 2.0
