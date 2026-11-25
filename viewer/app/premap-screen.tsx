@@ -1,29 +1,26 @@
-// The pre-map: the repository before its analysis. The context and what it holds, its tree, what it is made with and what it
-// depends on; what is chosen in the tree, and where all this comes from, are in the inspector.
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Badge, Button, Cluster, Column, Grid, Icon, ScrollArea, Section, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Text, ToggleGroup, ToggleGroupItem } from '@acaprino/sigrid/primitives';
-import { DescriptionList, Empty, SearchField } from '@acaprino/sigrid/components';
+// The pre-map: the repository before its analysis. What it holds, in short; its tree, what it is made with and what it depends on are
+// behind; what is chosen in the tree, and where all this comes from, are in the inspector.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Cluster, Column, Icon, ScrollArea, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Text, ToggleGroup, ToggleGroupItem } from '@acaprino/sigrid/primitives';
+import { DescriptionList, Disclosure, Empty, SearchField } from '@acaprino/sigrid/components';
 import { Tree } from '@acaprino/sigrid/assemblies';
 import type { TreeNode } from '@acaprino/sigrid/assemblies';
-import { List } from '../src/listed.tsx';
+import { Fold, List } from '../src/listed.tsx';
 import { Mark } from '../src/mark.tsx';
 import { Failed, Loading } from '../src/states.tsx';
 import { number, plural } from '../src/words.ts';
-import { ScreenPanel, useFrame } from './frame.tsx';
+import { useFrame } from './frame.tsx';
 import type { Detail } from './frame.tsx';
 import {
   CHOICE_TITLE, choiceDetails, choiceOf, countFound, dependencyFacts, directoryTree, finds, inventory, keptBranches, openBranches, PROVENANCE_NOTES,
   provenanceFacts, rowOf, technologyFacts, unitTree,
 } from './premap.ts';
 import { RunName } from './provenance.tsx';
-import { ContextFacts } from './repository-screen.tsx';
+import { ContextFold } from './repository-screen.tsx';
 import { ctx } from './snapshot.ts';
 import type { Premap } from './snapshot.ts';
+import { Step } from './step.tsx';
 import { model, useModel } from './use-model.ts';
-
-export function PremapActions() {
-  return <Button onClick={() => model.selectStage('analysis')}><Icon name="play" />Segui l’analisi</Button>;
-}
 
 // What is chosen in the tree.
 function ChoiceDetails() {
@@ -69,11 +66,16 @@ function Provenance() {
 
 const PROVENANCE: Detail = { id: 'premap.provenance', title: 'Provenienza della pre-mappa', icon: 'info', name: <RunName />, content: <Provenance /> };
 
-// The directories or the technical units, filtered by the search.
+// The directories or the technical units, filtered by the search. Open at first where something was looked for in them, and by Ctrl+F.
 function Structure({ premap }: { premap: Premap }) {
   const s = useModel();
-  const { search, field } = useFrame();
+  const { search, field, reveal } = useFrame();
   const { treeMode, treeSearch, treeSelected, treeOpen } = s.kept;
+  const [open, setOpen] = useState(treeSearch !== '' || treeSelected !== '');
+  useEffect(() => {
+    reveal.current = open ? null : () => setOpen(true);
+    return () => { reveal.current = null; };
+  }, [open]);
   const physical = treeMode === 'directories';
   const tree = useMemo(() => (physical ? directoryTree(premap.files) : unitTree(premap.units)), [premap, physical]);
   const expanded = useMemo(() => openBranches(tree.nodes, treeOpen), [tree, treeOpen]);
@@ -82,7 +84,7 @@ function Structure({ premap }: { premap: Premap }) {
   const found = useMemo(() => countFound(tree, treeSearch), [tree, treeSearch]);
   const label = physical ? 'Albero delle directory' : 'Albero delle unità tecniche';
   const choose = (row: string) => { const choice = tree.choices.get(row); if (choice) model.keep({ treeSelected: choice }); };
-  return <Section title="Struttura del repository" level={3} icon={<Icon name="structure" />}>
+  return <Disclosure label="Struttura del repository" summary={plural(premap.files.length, 'file', 'file')} open={open} onOpenChange={setOpen}><Column>
     <Text as="p" variant="note">Directory fisiche e unità tecniche restano distinte. Seleziona un file o un’unità per leggerne la provenienza.</Text>
     <ToggleGroup aria-label="Tipo di albero" value={treeMode} onValueChange={mode => model.keep({ treeMode: mode })}>
       <ToggleGroupItem value="directories">Directory</ToggleGroupItem>
@@ -98,7 +100,7 @@ function Structure({ premap }: { premap: Premap }) {
         </ScrollArea>
       : <Empty title="Nessun risultato." action={treeSearch.trim() !== '' && <Button variant="outline" size="sm"
           onClick={() => { model.keep({ treeSearch: '' }); field?.focus(); }}>Azzera ricerca</Button>} />}
-  </Section>;
+  </Column></Disclosure>;
 }
 
 // A version of a dependency, and where it is read.
@@ -106,7 +108,7 @@ const version = (found: { version: string; source: string } | null) => (found
   ? <Column gap="xs"><Text>{found.version}</Text><Text variant="note">{found.source}</Text></Column> : '—');
 
 function Dependencies({ premap }: { premap: Premap }) {
-  return <Section title="Dipendenze per unità" level={3} icon={<Icon name="package" />}>
+  return <Fold label="Dipendenze per unità" summary={number(premap.dependencies.length)}>
     {premap.dependencies.length > 0
       ? <Table aria-label="Dipendenze per unità" data-selectable="">
           <TableHeader><TableRow>
@@ -125,7 +127,7 @@ function Dependencies({ premap }: { premap: Premap }) {
           })}</TableBody>
         </Table>
       : <Empty title="Nessuna dipendenza registrata." />}
-  </Section>;
+  </Fold>;
 }
 
 // A technology, with its logo where its registry entry has one.
@@ -133,26 +135,33 @@ function Technology({ technology: { name, mark } }: { technology: Premap['techno
   return <Cluster wrap={false}><Mark image={model.markUrl(mark)} icon="labels" />{name}</Cluster>;
 }
 
+// The first names of a list, beside its row.
+const names = (list: readonly { name: string }[]) => list.slice(0, 4).map(({ name }) => name).join(', ') + (list.length > 4 ? '…' : '');
+
 function Found({ premap }: { premap: Premap }) {
   return <>
-    <Structure premap={premap} />
-    <Grid gap="xl">
-      <Section title="Linguaggi" level={3} icon={<Icon name="code" />} end={<Badge variant="secondary">Inventario</Badge>} data-selectable="">
-        {premap.languages.length > 0
-          ? <DescriptionList items={premap.languages.map(language => ({ name: language.name, value: plural(language.files, 'file', 'file') }))} />
-          : <Empty title="Nessun file sorgente riconosciuto." />}
-        <Text as="p" variant="note">File sorgente dello snapshot, per linguaggio riconosciuto da Daodan.</Text>
-      </Section>
-      <Section title="Tecnologie e framework" level={3} icon={<Icon name="labels" />} end={<Badge variant="secondary">Riconosciuti</Badge>} data-selectable="">
+    <Column data-selectable="">
+      <DescriptionList aria-label="Inventario" items={inventory(premap).map(count => ({ name: count.name, value: <>{count.value} <Text variant="note">{count.of}</Text></> }))} />
+    </Column>
+    <Column gap="xs">
+      <Structure premap={premap} />
+      <Fold label="Tecnologie e framework" summary={names(premap.technologies)}><Column data-selectable="">
         {premap.technologies.length > 0
-          ? <DescriptionList items={premap.technologies.map(technology => ({ name: <Technology technology={technology} />, value: <Column gap="xs">
+          ? <DescriptionList aria-label="Tecnologie e framework" items={premap.technologies.map(technology => ({ name: <Technology technology={technology} />, value: <Column gap="xs">
               <Text>{technologyFacts(technology)}</Text>
               {technology.source && <Text variant="note" pre>{technology.source}</Text>}
             </Column> }))} />
           : <Empty title="Nessuna tecnologia riconosciuta nei manifest." />}
-      </Section>
-    </Grid>
-    <Dependencies premap={premap} />
+      </Column></Fold>
+      <Fold label="Linguaggi" summary={names(premap.languages)}><Column data-selectable="">
+        {premap.languages.length > 0
+          ? <DescriptionList aria-label="Linguaggi" items={premap.languages.map(language => ({ name: language.name, value: plural(language.files, 'file', 'file') }))} />
+          : <Empty title="Nessun file sorgente riconosciuto." />}
+        <Text as="p" variant="note">File sorgente dello snapshot, per linguaggio riconosciuto da Daodan.</Text>
+      </Column></Fold>
+      <Dependencies premap={premap} />
+      <ContextFold />
+    </Column>
   </>;
 }
 
@@ -161,24 +170,11 @@ export function PremapScreen() {
   const { show } = useFrame();
   const premap = s.premap;
   useChoice();
-  return <ScreenPanel title="Pre-mappa"
-    subtitle={premap && `${plural(premap.files.length, 'file', 'file')} · ${plural(premap.units.length, 'unità tecnica', 'unità tecniche')}`}
-    actions={<Button variant="ghost" size="sm" disabled={!premap} onClick={() => show(PROVENANCE)}><Icon name="info" />Provenienza</Button>}>
-    <Column pad="lg" gap="xl">
-      <Text as="p" variant="soft">Tecnologie dichiarate, file e unità tecniche: una vista del repository prima di interpretarne il comportamento.</Text>
-      <Grid gap="xl">
-        <Section title="Contesto attivo" level={3} icon={<Icon name="branch" />}>
-          <ContextFacts />
-          <Cluster><Button variant="outline" size="sm" onClick={() => model.selectStage('repository')}>Cambia repository o branch</Button></Cluster>
-        </Section>
-        {premap && <Section title="Inventario" level={3} icon={<Icon name="bulletList" />} data-selectable="">
-          <DescriptionList items={inventory(premap).map(count => ({ name: count.name, value: <>{count.value} <Text variant="note">{count.of}</Text></> }))} />
-        </Section>}
-      </Grid>
-      {s.premapError
-        ? <Failed title="Pre-mappa non disponibile." cause={s.premapError} retry={model.retryPremap} />
-        : premap ? <Found premap={premap} />
-        : <Loading label="Lettura della pre-mappa…" />}
-    </Column>
-  </ScreenPanel>;
+  return <Step stage="premap" line="Ecco che cosa c’è nel repository, prima di interpretarne il comportamento."
+    end={<Button variant="ghost" size="sm" disabled={!premap} onClick={() => show(PROVENANCE)}><Icon name="info" />Provenienza</Button>}>
+    {s.premapError
+      ? <Failed title="Pre-mappa non disponibile." cause={s.premapError} retry={model.retryPremap} />
+      : premap ? <Found premap={premap} />
+      : <Loading label="Lettura della pre-mappa…" />}
+  </Step>;
 }

@@ -303,6 +303,34 @@ test('a branch chosen is prepared, and the pre-map opens when its context is rea
   assert.equal(said().at(-1), 'Contesto pronto: demo/shop · main');
 });
 
+test('the process goes on by itself only where nothing is being written', async () => {
+  const { model, sources, now, said } = setup({
+    '/api/app/check': () => ({ state: 'accessible', repository: context.repository, default: 'main', branches: [{ name: 'main', commit: context.commit }] }),
+    '/api/app/select': () => ({ ...none, job: { state: 'preparing' } }), '/api/app/graph': () => graph(), '/api/app/premap': () => premap,
+  });
+  model.start();
+  sources[0].send('app', none);
+  model.setRepositoryUrl('https://github.com/demo/shop');
+  await model.verifyRepositoryUrl();
+  await model.selectRepository();
+  model.setRepositoryUrl('https://github.com/demo/al');
+  sources[0].send('app', ready);
+  assert.deepEqual([now().selecting, now().kept.analysisStage, now().kept.repositoryUrl, said().at(-1)],
+    [false, 'repository', 'https://github.com/demo/al', 'Contesto pronto: demo/shop · main']);
+});
+
+test('the engine leads back to the step that asked for it, and to none from its tab', () => {
+  const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'analysis', runId: 'r1' });
+  model.start();
+  sources[0].send('app', ready);
+  model.chooseEngine();
+  assert.deepEqual([now().kept.screen, now().engineFromStep], ['engine', true]);
+  model.navigate('analysis');
+  assert.deepEqual([now().kept.screen, now().kept.analysisStage, now().engineFromStep], ['analysis', 'analysis', false]);
+  model.navigate('engine');
+  assert.equal(now().engineFromStep, false);
+});
+
 test('a choice is asked once, and a frame that comes before its answer is of what was before it', async () => {
   let answer: (found: unknown) => void = () => {};
   const { model, sources, now, asked, said } = setup({

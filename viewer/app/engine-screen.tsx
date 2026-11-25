@@ -1,10 +1,10 @@
 // The engine and the questions: a question on the run in view, its answer with the tools it took, the engine, and the MCP server.
-import { Badge, Button, Column, Grid, Icon, Progress, Section, Text, Textarea } from '@acaprino/sigrid/primitives';
+import { Badge, Button, Column, Grid, Icon, Progress, Section, Spacer, Text, Textarea } from '@acaprino/sigrid/primitives';
 import { DescriptionList, Empty, FormField } from '@acaprino/sigrid/components';
 import { Failed, Loading } from '../src/states.tsx';
 import { EngineForm } from './engine-form.tsx';
 import { askedWord, askFailed, askNote, lastQuestion, mcpFacts, toolUse } from './engine.ts';
-import { ScreenPanel } from './frame.tsx';
+import { ScreenPanel, useFrame } from './frame.tsx';
 import { askReason, isAsking } from './run.ts';
 import { ctx, slug } from './snapshot.ts';
 import { model, useModel } from './use-model.ts';
@@ -13,8 +13,13 @@ import { model, useModel } from './use-model.ts';
 const WHY = 'ask-why';
 function EngineActions() {
   const s = useModel();
+  const { go } = useFrame();
   const asking = isAsking(s), note = askNote(s);
   return <>
+    {s.engineFromStep && <>
+      <Button variant="outline" onClick={() => go(() => model.navigate('analysis'))}><Icon name="back" />Torna al passo</Button>
+      <Spacer />
+    </>}
     {note && <Text id={WHY} variant="note">{note}</Text>}
     <Button loading={asking} disabled={!asking && askReason(s) !== ''} aria-describedby={note ? WHY : undefined} onClick={() => { model.ask(); }}>Chiedi</Button>
   </>;

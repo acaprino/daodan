@@ -36,11 +36,32 @@ const barOf = async where => {
 };
 const WIDTHS = [340, 390, 620, 860, 1440], SHOT = [390, 620, 1440];
 const from = { screen: 'analysis', runId: 'demo', repositoryUrl: 'https://github.com/demo/shop' };
+const none = { context: null, job: { state: 'idle' } };
+// The events of a run: some phases over, each with its time, one that failed; those of one under way began just now.
+const PHASES = ['parse', 'scan', 'stack', 'analyze', 'dynamic', 'union'];
+const eventsOf = how => {
+  const at = second => new Date(Date.now() - 300_000 + second * 1000).toISOString();
+  const over = how === 'done' ? 6 : 3;
+  const list = PHASES.slice(0, over).flatMap((step, n) => [{ kind: 'step.started', step, message: '', at: at(n * 40) }, { kind: 'step.finished', step, message: '', at: at(n * 40 + 31 + n) }]);
+  if (how === 'done') return list;
+  list[3] = { kind: 'step.failed', step: 'scan', message: 'x', data: { cause: 'modules.json illeggibile' }, at: at(52) };
+  list.push({ kind: 'step.started', step: 'analyze', message: '', at: at(170) });
+  if (how === 'failed') list.push({ kind: 'step.failed', step: 'analyze', message: 'memoria esaurita', at: at(260) });
+  return list;
+};
 const SCREENS = [
-  ['analisi-1-repository', { ...from, analysisStage: 'repository' }, 'Repository'],
-  ['analisi-2-premappa', { ...from, analysisStage: 'premap', treeSelected: 'README.md' }, 'Pre-mappa'],
-  ['analisi-3-run', { ...from, analysisStage: 'analysis' }, 'Analisi'],
-  ['analisi-4-sintesi', { ...from, analysisStage: 'synthesis' }, 'Sintesi'],
+  ['analisi-1-vuoto', { ...from, repositoryUrl: '' }, '1. Repository', { serve: none }],
+  ['analisi-1-verifica', from, '1. Repository', { serve: none, press: 'Verifica accesso', delay: 5000 }],
+  ['analisi-1-branch', from, '1. Repository', { serve: none, press: 'Verifica accesso', see: 'Branch da analizzare' }],
+  ['analisi-1-preparazione', from, '1. Repository', { serve: { context: null, job: { state: 'preparing', step: 'checkout', detail: 'demo/shop, main' } } }],
+  ['analisi-1-errore', from, '1. Repository', { serve: { context: null, job: { state: 'failed', step: 'checkout', detail: 'il branch main non si scarica: rete assente' } } }],
+  ['analisi-1-fatto', from, '1. Repository'],
+  ['analisi-2-premappa', { ...from, analysisStage: 'premap' }, '2. Pre-mappa'],
+  ['analisi-2-errore', { ...from, analysisStage: 'premap' }, '2. Pre-mappa', { premapStatus: 500 }],
+  ['analisi-3-in-corso', { ...from, analysisStage: 'analysis' }, '3. Analisi', { serve: { run: { pass: { state: 'running' }, progress: { step: 'analyze', analyzer: 'pyright', done: 1, total: 4 } } }, events: 'running' }],
+  ['analisi-3-fallita', { ...from, analysisStage: 'analysis' }, '3. Analisi', { serve: { run: { pass: { state: 'failed', reason: 'memoria esaurita durante Analyze' } } }, events: 'failed' }],
+  ['analisi-3-fatta', { ...from, analysisStage: 'analysis' }, '3. Analisi', { events: 'done' }],
+  ['analisi-4-sintesi', { ...from, analysisStage: 'synthesis' }, '4. Sintesi e grafo'],
   ['grafo', { ...from, screen: 'graph' }, 'Grafo del codice'],
   ['motore', { ...from, screen: 'engine' }, 'Motore e domande'],
 ];
@@ -61,13 +82,14 @@ const browser = await chromium.launch({ args: ['--disable-lcd-text'] });  // tex
 try {
   for (const own of [false, true]) {
     for (const scheme of ['dark', 'light']) {
-      const bars = {};
+      const bars = {}, feet = {};
       // Each width is loaded by itself, as a person opens it: a canvas keeps the view it had at another width.
-      const look = async (where, name, open) => {
+      const look = async (where, name, open, then) => {
         for (const width of own ? [620, 1440] : WIDTHS) {
           await where.setViewportSize({ width, height: 850 });
           await open();
           await where.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
+          await then?.();
           await still(where);
           const label = `${own ? 'finestra-' : ''}${name}-${scheme}-${width}`;
           if (SHOT.includes(width)) await where.screenshot({ path: fileURLToPath(new URL(`${label}.png`, shots)) });
@@ -76,6 +98,14 @@ try {
           const form = width >= 860 ? 'title-bar' : width < 620 && !own ? 'app-shell-bottom' : 'app-shell-tabs';
           if (await where.locator(`[data-slot="${form}"] [data-slot="toolbar-tabs"]`).count() !== 1) wrong.push(`${label}: the views are not in ${form}`);
           if (await where.evaluate(() => document.documentElement.dataset.scheme) !== scheme) wrong.push(`${label}: not ${scheme}`);
+          // The foot of the process never moves: the way back at the start, the action at the end.
+          if (name.startsWith('analisi-')) {
+            const foot = where.locator('[data-slot="app-shell-actions"]').getByRole('button');
+            const [from, to] = [await foot.first().boundingBox(), await foot.last().boundingBox()];
+            const at = JSON.stringify([from.x, from.y, to.x + to.width, to.y].map(Math.round));
+            feet[width] ??= at;
+            if (at !== feet[width]) wrong.push(`${label}: the foot is at ${at}, and was at ${feet[width]}`);
+          }
           // Under 620 the map has the button of its drawer before the brand.
           const now = await barOf(where);
           if (width < 620) delete now.brand;
@@ -84,12 +114,18 @@ try {
         }
       };
       const shown = await opened(browser, { width: 1440, scheme, own });
-      for (const [name, state, title] of SCREENS) {
+      for (const [name, state, title, now = {}] of SCREENS) {
+        Object.assign(mode, { premapStatus: now.premapStatus ?? 200, checkDelay: now.delay ?? 0 });
         await look(shown, name, async () => {
           await shown.goto('http://daodan.test/favicon.svg');  // where nothing writes what is kept
           await shown.evaluate(left => localStorage.setItem('daodan-app-v2', JSON.stringify(left)), state);
           await shown.goto('http://daodan.test/app/?token=test');
           await shown.getByRole('region', { name: title, exact: true }).waitFor();
+        }, async () => {
+          if (now.events) await shown.evaluate(list => window.sendEvents(list), eventsOf(now.events));
+          if (now.serve) await shown.evaluate(patch => window.setServerState(patch), now.serve);
+          if (now.press) await shown.getByRole('button', { name: now.press, exact: true }).click();
+          if (now.see) await shown.getByRole('combobox', { name: now.see }).waitFor();
         });
       }
       const drawing = shown.getByRole('group', { name: 'Naviga il grafo', exact: true });

@@ -97,7 +97,7 @@ function App() {
   // The row is announced when it changes: the percent, which changes all the time, is not heard from it but from the bars.
   const status = <>
     <Badge variant="secondary" tone={state.tone}>{state.state}</Badge>
-    {state.text && <Text variant="soft">{state.text}</Text>}
+    {state.text && !(narrow && c) && <Text variant="soft">{state.text}</Text>}
     {state.percent !== null && <>
       {!narrow && <Progress aria-label="Passi completati della pipeline" value={state.percent} size="sm" inline />}
       <Text variant="strong" aria-hidden>{state.percent}%</Text>

@@ -11,9 +11,9 @@ export function List({ label, items, ordered = false }: ListProps) {
     {items.map((item, index) => <Column as="li" key={index} gap="xs">{item}</Column>)}</Column>;
 }
 
-export function Fold({ label, children }: { label: string; children: ReactNode }) {
+export function Fold({ label, summary, children }: { label: string; summary?: ReactNode; children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  return <Disclosure label={label} open={open} onOpenChange={setOpen}>{open && children}</Disclosure>;
+  return <Disclosure label={label} summary={summary} open={open} onOpenChange={setOpen}>{open && children}</Disclosure>;
 }
 
 // Behind its row, a long one scrolls by itself, so that what follows stays near.

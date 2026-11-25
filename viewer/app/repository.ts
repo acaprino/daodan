@@ -22,11 +22,15 @@ export const urlError = (url: string) => (url.trim()
 export const isPreparing = (s: Pick<Snapshot, 'server'>) => s.server?.job?.state === 'preparing';
 export const accessible = (s: Pick<Snapshot, 'checked'>) => (s.checked?.state === 'accessible' ? s.checked : null);
 
-// Why the branch and the button that opens the pre-map cannot be used now; empty when they can.
-export function repositoryReason(s: Pick<Snapshot, 'server' | 'checked' | 'checking'>) {
-  return isPreparing(s) ? 'Preparazione in corso.' : s.checking ? 'Verifica in corso.'
-    : accessible(s) ? '' : 'Verifica prima l’accesso alla repository.';
+// Whether what is written and chosen is the run in view, or nothing is: the path goes on with that run. A branch that has moved since is
+// another one.
+export function sameChoice(s: Pick<Snapshot, 'server' | 'kept' | 'checked' | 'branch'>): boolean {
+  const c = ctx(s), url = s.kept.repositoryUrl, repo = accessible(s);
+  if (!c || (url.trim() && repositorySlug(url)?.toLowerCase() !== slug(c).toLowerCase())) return false;
+  return !repo || (s.branch === c.branch && repo.branches.some(b => b.name === c.branch && b.commit === c.commit));
 }
+// What starts again when another repository or branch is chosen.
+export const RESTART = 'Pre-mappa, Analisi e Sintesi ripartono dal branch scelto; lo stesso commit riusa l’analisi già fatta.';
 
 type Feedback = { tone: 'error' | 'warning'; title: string; message: string };
 const FEEDBACK: Record<string, Feedback> = {

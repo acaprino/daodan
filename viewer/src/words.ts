@@ -13,6 +13,10 @@ export const WORDS: WordsOverride = {
     open: 'Apri il menu',
   },
   search: { clear: 'Svuota la ricerca' },
+  steps: {
+    done: 'completato', current: 'passo attuale', upcoming: 'da fare', error: 'non riuscito', running: 'in corso', skipped: 'non eseguito',
+    summary: (position, total) => `Passo ${position} di ${total}`,
+  },
   list: { unread: 'Non letto', more: count => (count === 1 ? 'un altro' : `altri ${count}`) },
   palette: { placeholder: 'Cerca un comando', empty: 'Nessun comando', command: 'Comandi', keys: 'Tasti' },
   scheme: {
