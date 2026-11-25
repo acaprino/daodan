@@ -1,0 +1,3573 @@
+{
+ "case": "bank-of-anthos",
+ "root": "bank-of-anthos",
+ "scope": "sistema",
+ "made": "2026-11-25",
+ "nodes": [
+  {
+   "name": "Bank of Anthos",
+   "type": "altro",
+   "members": [
+    "."
+   ],
+   "what": "Banca dimostrativa fatta di più servizi: sito, servizi dei conti, servizi del registro, due database e un generatore di carico.",
+   "proof": [
+    {
+     "at": "skaffold.yaml:17",
+     "has": "name: bank-of-anthos"
+    },
+    {
+     "at": "pom.xml:24",
+     "has": "<artifactId>bank-of-anthos</artifactId>"
+    }
+   ]
+  },
+  {
+   "name": "Cliente",
+   "type": "attore",
+   "position": "external",
+   "evidence": [
+    "src/frontend/templates/login.html",
+    "src/frontend/templates/index.html"
+   ],
+   "what": "Chi apre il sito della banca: si registra, accede, deposita e paga.",
+   "proof": [
+    {
+     "at": "src/frontend/templates/login.html:78",
+     "has": "type=\"submit\">Sign in</button>"
+    }
+   ]
+  },
+  {
+   "name": "Browser",
+   "type": "dispositivo",
+   "position": "external",
+   "evidence": [
+    "src/frontend/templates/shared/html_head.html",
+    "src/frontend/static/scripts/index.js"
+   ],
+   "what": "Il browser in cui girano le pagine del sito e che conserva i cookie.",
+   "proof": [
+    {
+     "at": "src/frontend/templates/shared/html_head.html:3",
+     "has": "<meta name=\"viewport\""
+    },
+    {
+     "at": "src/frontend/frontend.py:469",
+     "has": "resp.set_cookie(app.config['TOKEN_NAME']"
+    }
+   ]
+  },
+  {
+   "name": "Chiavi JWT",
+   "type": "filesystem",
+   "position": "external",
+   "evidence": [
+    "src/components/add-public-key-volume/add-public-key-volume.yaml",
+    "src/accounts/userservice/k8s/base/add-private-key-volume.yaml",
+    "kubernetes-manifests/config.yaml"
+   ],
+   "what": "La coppia di chiavi RSA montata in /tmp/.ssh dal secret jwt-key: la privata firma i token, la pubblica li verifica.",
+   "proof": [
+    {
+     "at": "src/components/add-public-key-volume/add-public-key-volume.yaml:28",
+     "has": "mountPath: \"/tmp/.ssh\""
+    },
+    {
+     "at": "src/accounts/userservice/k8s/base/add-private-key-volume.yaml:23",
+     "has": "path: privatekey"
+    },
+    {
+     "at": "kubernetes-manifests/config.yaml:21",
+     "has": "PUB_KEY_PATH: \"/tmp/.ssh/publickey\""
+    }
+   ]
+  },
+  {
+   "name": "Kubernetes",
+   "type": "servizio o API",
+   "position": "external",
+   "registry": "kubernetes",
+   "family": "provider",
+   "role": "esecuzione dei container, nomi dei servizi, sonde di salute",
+   "mode": "manifest applicati con Skaffold e kubectl (su Google Kubernetes Engine nel Makefile e in Terraform)",
+   "evidence": [
+    "kubernetes-manifests",
+    "src/frontend/k8s/base/frontend.yaml",
+    "skaffold.yaml",
+    "Makefile"
+   ],
+   "what": "Il cluster che esegue i container dei servizi, li espone per nome e ne interroga le sonde.",
+   "proof": [
+    {
+     "at": "src/frontend/k8s/base/frontend.yaml:16",
+     "has": "kind: Deployment"
+    },
+    {
+     "at": "Makefile:21",
+     "has": "gcloud container clusters create ${CLUSTER}"
+    },
+    {
+     "at": "skaffold.yaml:38",
+     "has": "tolerateFailuresUntilDeadline: true"
+    }
+   ]
+  },
+  {
+   "name": "Cloud Trace",
+   "type": "servizio o API",
+   "position": "external",
+   "family": "provider",
+   "role": "raccolta delle tracce distribuite",
+   "mode": "esportatore OpenTelemetry nei servizi Python, Spring Cloud GCP Trace nei servizi Java",
+   "evidence": [
+    "src/frontend/frontend.py",
+    "src/accounts/userservice/userservice.py",
+    "src/accounts/contacts/contacts.py",
+    "src/ledger/ledgerwriter/pom.xml"
+   ],
+   "what": "Il servizio di Google Cloud che riceve le tracce delle richieste.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:729",
+     "has": "cloud_trace_exporter = CloudTraceSpanExporter()"
+    },
+    {
+     "at": "src/ledger/ledgerwriter/src/main/resources/application.properties:20",
+     "has": "spring.cloud.gcp.trace.enabled=${ENABLE_TRACING}"
+    }
+   ]
+  },
+  {
+   "name": "Google Stackdriver",
+   "type": "servizio o API",
+   "position": "external",
+   "registry": "google-stackdriver",
+   "family": "provider",
+   "role": "raccolta delle metriche",
+   "mode": "registro Micrometer per Stackdriver, acceso da ENABLE_METRICS",
+   "evidence": [
+    "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterApplication.java",
+    "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderApplication.java",
+    "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryApplication.java"
+   ],
+   "what": "Il servizio di Google Cloud (oggi Cloud Monitoring) che riceve le metriche dei servizi Java.",
+   "proof": [
+    {
+     "at": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterApplication.java:90",
+     "has": "return StackdriverMeterRegistry.builder(new StackdriverConfig() {"
+    },
+    {
+     "at": "src/ledger/ledgerwriter/pom.xml:101",
+     "has": "<artifactId>micrometer-registry-stackdriver</artifactId>"
+    }
+   ]
+  },
+  {
+   "name": "Google Compute",
+   "type": "servizio o API",
+   "position": "external",
+   "registry": "gcp.gce",
+   "family": "provider",
+   "role": "server dei metadati dell'istanza e macchina virtuale del monolite",
+   "mode": "richieste HTTP al server dei metadati; comando gcloud per la macchina virtuale",
+   "evidence": [
+    "src/frontend/frontend.py",
+    "src/ledgermonolith/scripts/deploy-monolith.sh"
+   ],
+   "what": "Compute Engine: il server dei metadati che dice cluster e zona, e la macchina virtuale del ledger monolitico.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:684",
+     "has": "metadata_server = os.getenv('METADATA_SERVER', 'metadata.google.internal')"
+    },
+    {
+     "at": "src/ledgermonolith/scripts/deploy-monolith.sh:60",
+     "has": "gcloud compute instances create ledgermonolith-service"
+    }
+   ]
+  },
+  {
+   "name": "Cloud Build",
+   "type": "servizio o API",
+   "position": "external",
+   "registry": "gcp.cloudbuild",
+   "family": "provider",
+   "role": "integrazione continua",
+   "mode": "file cloudbuild.yaml letti dai trigger sul repository",
+   "evidence": [
+    ".github/cloudbuild/ci-pr.yaml",
+    "src/frontend/cloudbuild.yaml",
+    "src/accounts/cloudbuild.yaml",
+    "src/ledger/cloudbuild.yaml",
+    "iac/tf-multienv-cicd-anthos-autopilot/pipelines.tf"
+   ],
+   "what": "Il servizio di Google Cloud che esegue la CI: costruisce, prova e rilascia a ogni pull request e a ogni modifica di una squadra.",
+   "proof": [
+    {
+     "at": ".github/cloudbuild/ci-pr.yaml:43",
+     "has": "id: build-and-push-images"
+    },
+    {
+     "at": "iac/tf-multienv-cicd-anthos-autopilot/pipelines.tf:159",
+     "has": "resource \"google_cloudbuild_trigger\" \"ci-pr\""
+    }
+   ]
+  },
+  {
+   "name": "Cloud Artifact Registry",
+   "type": "database",
+   "position": "external",
+   "registry": "gcp.artifactregistry",
+   "family": "provider",
+   "role": "registro delle immagini dei container",
+   "mode": "push di Skaffold, pull dei manifest",
+   "evidence": [
+    "Makefile",
+    "docs/releasing/make-release.sh",
+    "kubernetes-manifests/frontend.yaml",
+    "iac/tf-multienv-cicd-anthos-autopilot/artifact-registry.tf"
+   ],
+   "what": "Il registro delle immagini dei container.",
+   "proof": [
+    {
+     "at": "Makefile:30",
+     "has": "skaffold run --default-repo=us-central1-docker.pkg.dev/${PROJECT_ID}/bank-of-anthos"
+    },
+    {
+     "at": "docs/releasing/make-release.sh:19",
+     "has": "REPO_PREFIX=\"${REPO_PREFIX:-us-central1-docker.pkg.dev/bank-of-anthos-ci/bank-of-anthos}\""
+    }
+   ]
+  },
+  {
+   "name": "Cloud Deploy",
+   "type": "servizio o API",
+   "position": "external",
+   "family": "provider",
+   "role": "consegna continua verso staging e produzione",
+   "mode": "comando gcloud deploy releases create lanciato da Cloud Build",
+   "evidence": [
+    "src/frontend/cloudbuild.yaml",
+    "src/accounts/cloudbuild.yaml",
+    "src/ledger/cloudbuild.yaml",
+    "iac/tf-multienv-cicd-anthos-autopilot/modules/ci-cd-pipeline/cloud-deploy.tf"
+   ],
+   "what": "Il servizio di Google Cloud che porta un rilascio in staging e poi in produzione.",
+   "proof": [
+    {
+     "at": "src/frontend/cloudbuild.yaml:44",
+     "has": "- \"--delivery-pipeline=$_TEAM\""
+    },
+    {
+     "at": "iac/tf-multienv-cicd-anthos-autopilot/modules/ci-cd-pipeline/cloud-deploy.tf:16",
+     "has": "resource \"google_clouddeploy_delivery_pipeline\" \"delivery-pipeline\""
+    }
+   ]
+  },
+  {
+   "name": "Cloud Storage",
+   "type": "database",
+   "position": "external",
+   "registry": "gcp.gcs",
+   "family": "provider",
+   "role": "deposito di cache e artefatti di build",
+   "mode": "comando gcloud storage cp",
+   "evidence": [
+    ".github/cloudbuild/ci-pr.yaml",
+    ".github/workflows/ui-tests/run_for_env.sh",
+    "src/ledgermonolith/scripts/build-artifacts.sh"
+   ],
+   "what": "I bucket di Google Cloud: cache di Skaffold, schermate dei test falliti, artefatti del monolite.",
+   "proof": [
+    {
+     "at": ".github/cloudbuild/ci-pr.yaml:39",
+     "has": "id: download-skaffold-cache"
+    },
+    {
+     "at": "src/ledgermonolith/scripts/build-artifacts.sh:44",
+     "has": "gcloud storage cp $CWD/../target/ledgermonolith-1.0.jar gs://${GCS_PATH}/${APP_JAR}"
+    }
+   ]
+  },
+  {
+   "name": "Cloud SQL",
+   "type": "database",
+   "position": "external",
+   "registry": "gcp.sql",
+   "family": "provider",
+   "role": "database gestito di staging e produzione",
+   "mode": "contenitore cloud-sql-proxy accanto a ogni servizio, su 127.0.0.1:5432",
+   "evidence": [
+    "src/components/cloud-sql/kustomization.yaml",
+    "src/components/cloud-sql/cloud-sql-proxy/add-container.yaml",
+    "iac/tf-multienv-cicd-anthos-autopilot/env-production.tf"
+   ],
+   "what": "Il Postgres gestito che ospita i due database in staging e in produzione.",
+   "proof": [
+    {
+     "at": "src/components/cloud-sql/cloud-sql-proxy/add-container.yaml:27",
+     "has": "name: cloud-sql-proxy"
+    },
+    {
+     "at": "src/components/cloud-sql/accounts-db.yaml:22",
+     "has": "ACCOUNTS_DB_URI: postgresql://admin:admin@127.0.0.1:5432/accounts-db"
+    }
+   ]
+  },
+  {
+   "name": "Github Actions",
+   "type": "servizio o API",
+   "position": "external",
+   "registry": "github.actions",
+   "family": "provider",
+   "role": "rilascio delle versioni e validazione di Terraform",
+   "mode": "file di workflow letti dal servizio",
+   "evidence": [
+    ".github/workflows/make-release.yaml",
+    ".github/workflows/terraform-validate-ci.yaml"
+   ],
+   "what": "Esegue il workflow manuale di rilascio e la validazione di Terraform.",
+   "proof": [
+    {
+     "at": ".github/workflows/make-release.yaml:15",
+     "has": "name: Manual Release Builder"
+    },
+    {
+     "at": ".github/workflows/terraform-validate-ci.yaml:15",
+     "has": "name: tf-validate-ci"
+    }
+   ]
+  },
+  {
+   "name": "Applicazione OAuth esterna",
+   "type": "servizio o API",
+   "position": "external",
+   "family": "piattaforma di integrazione",
+   "role": "applicazione che chiede l'accesso al conto del cliente",
+   "mode": "reindirizzamento a /login con response_type=code, poi POST del token al redirect URI",
+   "evidence": [
+    "src/frontend/frontend.py",
+    "src/frontend/k8s/base/frontend.yaml",
+    "extras/apigee/README.md"
+   ],
+   "what": "Un'applicazione di altri, registrata con client id e redirect URI, a cui il cliente concede l'accesso al proprio conto.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:389",
+     "has": "if client_id != os.environ['REGISTERED_OAUTH_CLIENT_ID']:"
+    },
+    {
+     "at": "src/frontend/frontend.py:541",
+     "has": "callback_response = requests.post(url=redirect_uri,"
+    }
+   ]
+  },
+  {
+   "name": "Frontend",
+   "type": "applicazione",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/frontend"
+   ],
+   "on": [
+    "Kubernetes"
+   ],
+   "what": "Il sito della banca: un'app Flask che disegna le pagine e chiama i servizi per conto del cliente.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:59",
+     "has": "app = Flask(__name__)"
+    },
+    {
+     "at": "src/frontend/Dockerfile:49",
+     "has": "\"frontend:create_app()\""
+    }
+   ]
+  },
+  {
+   "name": "Sign in",
+   "type": "schermata",
+   "inside": "Frontend",
+   "members": [
+    "src/frontend/templates/login.html",
+    "src/frontend/static/scripts/login.js"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "what": "La pagina di accesso con nome utente e password, già compilata con l'utente dimostrativo.",
+   "proof": [
+    {
+     "at": "src/frontend/templates/login.html:44",
+     "has": "<h2 class=\"mb-4 header-title\">SIGN IN</h2>"
+    },
+    {
+     "at": "src/frontend/frontend.py:415",
+     "has": "return render_template('login.html',"
+    }
+   ]
+  },
+  {
+   "name": "Register a new account",
+   "type": "schermata",
+   "inside": "Frontend",
+   "members": [
+    "src/frontend/templates/signup.html",
+    "src/frontend/static/scripts/signup.js"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "what": "La pagina di registrazione di un nuovo conto.",
+   "proof": [
+    {
+     "at": "src/frontend/templates/signup.html:30",
+     "has": "id=\"signup-title\">Register a new account</h2>"
+    },
+    {
+     "at": "src/frontend/frontend.py:568",
+     "has": "return render_template('signup.html',"
+    }
+   ]
+  },
+  {
+   "name": "Checking Account",
+   "type": "schermata",
+   "inside": "Frontend",
+   "members": [
+    "src/frontend/templates/index.html",
+    "src/frontend/static/scripts/index.js",
+    "src/frontend/templates/shared"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "what": "La pagina del conto: saldo, storico dei movimenti e i due moduli Deposit Funds e Send Payment.",
+   "proof": [
+    {
+     "at": "src/frontend/templates/index.html:55",
+     "has": "<h2 class=\"header-title\">Checking Account</h2>"
+    },
+    {
+     "at": "src/frontend/frontend.py:158",
+     "has": "return render_template('index.html',"
+    }
+   ]
+  },
+  {
+   "name": "Do you consent?",
+   "type": "schermata",
+   "inside": "Frontend",
+   "members": [
+    "src/frontend/templates/consent.html"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "what": "La pagina in cui il cliente approva o nega l'accesso di un'applicazione esterna.",
+   "proof": [
+    {
+     "at": "src/frontend/templates/consent.html:33",
+     "has": "<h2 class=\"mb-4 header-title\">Do you consent?</h2>"
+    },
+    {
+     "at": "src/frontend/frontend.py:497",
+     "has": "return render_template('consent.html',"
+    }
+   ]
+  },
+  {
+   "name": "Rotte di accesso",
+   "type": "servizio o API",
+   "inside": "Frontend",
+   "members": [
+    "src/frontend/frontend.py::login_page",
+    "src/frontend/frontend.py::login",
+    "src/frontend/frontend.py::_login_helper",
+    "src/frontend/frontend.py::signup_page",
+    "src/frontend/frontend.py::signup",
+    "src/frontend/frontend.py::logout",
+    "src/frontend/frontend.py::consent_page",
+    "src/frontend/frontend.py::consent",
+    "src/frontend/frontend.py::_auth_callback_helper",
+    "src/frontend/frontend.py::verify_token",
+    "src/frontend/frontend.py::decode_token"
+   ],
+   "routes": [
+    "GET /login",
+    "POST /login",
+    "GET /signup",
+    "POST /signup",
+    "POST /logout",
+    "GET /consent",
+    "POST /consent"
+   ],
+   "what": "Le rotte di login, registrazione, uscita e consenso; verificano il token con la chiave pubblica.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:431",
+     "has": "@app.route('/login', methods=['POST'])"
+    },
+    {
+     "at": "src/frontend/frontend.py:577",
+     "has": "@app.route(\"/signup\", methods=['POST'])"
+    },
+    {
+     "at": "src/frontend/frontend.py:603",
+     "has": "@app.route('/logout', methods=['POST'])"
+    },
+    {
+     "at": "src/frontend/frontend.py:517",
+     "has": "@app.route('/consent', methods=['POST'])"
+    }
+   ]
+  },
+  {
+   "name": "Rotte del conto",
+   "type": "servizio o API",
+   "inside": "Frontend",
+   "members": [
+    "src/frontend/frontend.py::root",
+    "src/frontend/frontend.py::home",
+    "src/frontend/frontend.py::payment",
+    "src/frontend/frontend.py::deposit",
+    "src/frontend/frontend.py::_submit_transaction",
+    "src/frontend/frontend.py::_add_contact",
+    "src/frontend/frontend.py::_populate_contact_labels",
+    "src/frontend/api_call.py",
+    "src/frontend/traced_thread_pool_executor.py"
+   ],
+   "routes": [
+    "GET /",
+    "GET /home",
+    "POST /payment",
+    "POST /deposit"
+   ],
+   "what": "Le rotte della pagina del conto, del deposito e del pagamento: chiamano saldo, storico, contatti e registro.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:96",
+     "has": "@app.route(\"/home\")"
+    },
+    {
+     "at": "src/frontend/frontend.py:203",
+     "has": "@app.route('/payment', methods=['POST'])"
+    },
+    {
+     "at": "src/frontend/frontend.py:265",
+     "has": "@app.route('/deposit', methods=['POST'])"
+    }
+   ]
+  },
+  {
+   "name": "Rotte di servizio del frontend",
+   "type": "servizio o API",
+   "inside": "Frontend",
+   "members": [
+    "src/frontend/frontend.py::version",
+    "src/frontend/frontend.py::readiness",
+    "src/frontend/frontend.py::whereami"
+   ],
+   "routes": [
+    "GET /version",
+    "GET /ready",
+    "GET /whereami"
+   ],
+   "what": "Versione, prontezza e posizione del pod.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:78",
+     "has": "@app.route('/whereami', methods=['GET'])"
+    },
+    {
+     "at": "src/frontend/frontend.py:71",
+     "has": "@app.route('/ready', methods=['GET'])"
+    }
+   ]
+  },
+  {
+   "name": "Sessione",
+   "type": "entità",
+   "inside": "Frontend",
+   "members": [
+    "store:frontend cookies/token",
+    "store:frontend cookies/consented"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "what": "Il token JWT del cliente nel cookie token e il consenso già dato nel cookie consented.",
+   "proof": [
+    {
+     "at": "src/frontend/frontend.py:678",
+     "has": "app.config['TOKEN_NAME'] = 'token'"
+    },
+    {
+     "at": "src/frontend/frontend.py:679",
+     "has": "app.config['CONSENT_COOKIE'] = 'consented'"
+    }
+   ]
+  },
+  {
+   "name": "Userservice",
+   "type": "servizio o API",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/accounts/userservice"
+   ],
+   "on": [
+    "Kubernetes"
+   ],
+   "routes": [
+    "POST /users",
+    "GET /login",
+    "GET /ready",
+    "GET /version"
+   ],
+   "what": "Il servizio degli utenti: crea i conti e, al login, firma il token JWT con la chiave privata.",
+   "proof": [
+    {
+     "at": "src/accounts/userservice/userservice.py:66",
+     "has": "@app.route('/users', methods=['POST'])"
+    },
+    {
+     "at": "src/accounts/userservice/userservice.py:162",
+     "has": "@app.route('/login', methods=['GET'])"
+    },
+    {
+     "at": "src/accounts/userservice/Dockerfile:49",
+     "has": "\"userservice:create_app()\""
+    }
+   ]
+  },
+  {
+   "name": "Contacts",
+   "type": "servizio o API",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/accounts/contacts"
+   ],
+   "on": [
+    "Kubernetes"
+   ],
+   "routes": [
+    "GET /contacts/<username>",
+    "POST /contacts/<username>",
+    "GET /ready",
+    "GET /version"
+   ],
+   "what": "Il servizio dei contatti: l'elenco dei conti a cui un cliente paga o da cui deposita.",
+   "proof": [
+    {
+     "at": "src/accounts/contacts/contacts.py:64",
+     "has": "@app.route(\"/contacts/<username>\", methods=[\"GET\"])"
+    },
+    {
+     "at": "src/accounts/contacts/contacts.py:93",
+     "has": "@app.route(\"/contacts/<username>\", methods=[\"POST\"])"
+    },
+    {
+     "at": "src/accounts/contacts/Dockerfile:48",
+     "has": "\"contacts:create_app()\""
+    }
+   ]
+  },
+  {
+   "name": "Database dei conti",
+   "type": "database",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/accounts/accounts-db"
+   ],
+   "on": [
+    "Kubernetes",
+    "Cloud SQL"
+   ],
+   "what": "accounts-db: il Postgres con utenti e contatti, il suo schema e i dati dimostrativi.",
+   "proof": [
+    {
+     "at": "src/accounts/accounts-db/Dockerfile:15",
+     "has": "FROM postgres:16.15-alpine"
+    },
+    {
+     "at": "src/accounts/accounts-db/k8s/base/config.yaml:22",
+     "has": "POSTGRES_DB: accounts-db"
+    },
+    {
+     "at": "src/accounts/accounts-db/initdb/0-accounts-schema.sql:17",
+     "has": "CREATE TABLE IF NOT EXISTS users ("
+    }
+   ]
+  },
+  {
+   "name": "Utente",
+   "type": "entità",
+   "inside": "Database dei conti",
+   "members": [
+    "store:accounts-db/users",
+    "src/accounts/userservice/db.py"
+   ],
+   "on": [
+    "Database dei conti"
+   ],
+   "what": "Un cliente della banca: numero di conto, nome utente, hash della password, dati anagrafici.",
+   "proof": [
+    {
+     "at": "src/accounts/accounts-db/initdb/0-accounts-schema.sql:17",
+     "has": "CREATE TABLE IF NOT EXISTS users ("
+    },
+    {
+     "at": "src/accounts/userservice/db.py:34",
+     "has": "'users',"
+    }
+   ]
+  },
+  {
+   "name": "Contatto",
+   "type": "entità",
+   "inside": "Database dei conti",
+   "members": [
+    "store:accounts-db/contacts",
+    "src/accounts/contacts/db.py"
+   ],
+   "on": [
+    "Database dei conti"
+   ],
+   "what": "Un conto salvato da un cliente, interno o di un'altra banca, con la sua etichetta.",
+   "proof": [
+    {
+     "at": "src/accounts/accounts-db/initdb/0-accounts-schema.sql:36",
+     "has": "CREATE TABLE IF NOT EXISTS contacts ("
+    },
+    {
+     "at": "src/accounts/contacts/db.py:34",
+     "has": "\"contacts\","
+    }
+   ]
+  },
+  {
+   "name": "Ledgerwriter",
+   "type": "servizio o API",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/ledger/ledgerwriter"
+   ],
+   "on": [
+    "Kubernetes"
+   ],
+   "routes": [
+    "POST /transactions",
+    "GET /ready",
+    "GET /version"
+   ],
+   "what": "Il servizio che riceve una transazione, la valida e la scrive nel registro.",
+   "proof": [
+    {
+     "at": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:132",
+     "has": "@PostMapping(value = \"/transactions\", consumes = \"application/json\")"
+    },
+    {
+     "at": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterApplication.java:66",
+     "has": "SpringApplication.run(LedgerWriterApplication.class, args);"
+    }
+   ]
+  },
+  {
+   "name": "Richiesta già vista",
+   "type": "entità",
+   "inside": "Ledgerwriter",
+   "members": [
+    "store:ledgerwriter cache/request uuid",
+    "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java::cache"
+   ],
+   "what": "Gli identificativi (uuid) delle transazioni accettate nell'ultima ora, tenuti in memoria per rifiutare i doppioni.",
+   "proof": [
+    {
+     "at": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:65",
+     "has": "private Cache<String, Long> cache;"
+    },
+    {
+     "at": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:98",
+     "has": ".expireAfterWrite(1, TimeUnit.HOURS)"
+    }
+   ]
+  },
+  {
+   "name": "Balancereader",
+   "type": "servizio o API",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/ledger/balancereader"
+   ],
+   "on": [
+    "Kubernetes"
+   ],
+   "routes": [
+    "GET /balances/{accountId}",
+    "GET /ready",
+    "GET /healthy",
+    "GET /version"
+   ],
+   "what": "Il servizio che risponde con il saldo di un conto, tenuto in una cache.",
+   "proof": [
+    {
+     "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:147",
+     "has": "@GetMapping(\"/balances/{accountId}\")"
+    },
+    {
+     "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderApplication.java:64",
+     "has": "SpringApplication.run(BalanceReaderApplication.class, args);"
+    }
+   ]
+  },
+  {
+   "name": "Saldo",
+   "type": "entità",
+   "inside": "Balancereader",
+   "members": [
+    "store:balancereader cache/balance",
+    "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceCache.java"
+   ],
+   "what": "Il saldo di ogni conto già chiesto, in memoria: calcolato dal registro la prima volta, poi aggiornato a ogni nuova transazione.",
+   "proof": [
+    {
+     "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceCache.java:53",
+     "has": "public LoadingCache<String, Long> initializeCache("
+    },
+    {
+     "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceCache.java:62",
+     "has": "Long balance = dbRepo.findBalance(accountId, localRoutingNum);"
+    }
+   ]
+  },
+  {
+   "name": "Lettura periodica del registro per i saldi",
+   "type": "lavoro a orario",
+   "inside": "Balancereader",
+   "members": [
+    "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/LedgerReader.java"
+   ],
+   "what": "Il thread di balancereader che ogni POLL_MS millisecondi chiede al registro le transazioni nuove.",
+   "proof": [
+    {
+     "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/LedgerReader.java:92",
+     "has": "Thread.sleep(pollMs);"
+    },
+    {
+     "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/LedgerReader.java:52",
+     "has": "@Value(\"${POLL_MS:100}\")"
+    }
+   ]
+  },
+  {
+   "name": "Transactionhistory",
+   "type": "servizio o API",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/ledger/transactionhistory"
+   ],
+   "on": [
+    "Kubernetes"
+   ],
+   "routes": [
+    "GET /transactions/{accountId}",
+    "GET /ready",
+    "GET /healthy",
+    "GET /version"
+   ],
+   "what": "Il servizio che risponde con gli ultimi movimenti di un conto, tenuti in una cache.",
+   "proof": [
+    {
+     "at": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:166",
+     "has": "@GetMapping(\"/transactions/{accountId}\")"
+    },
+    {
+     "at": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryApplication.java:64",
+     "has": "SpringApplication.run(TransactionHistoryApplication.class, args);"
+    }
+   ]
+  },
+  {
+   "name": "Storico dei movimenti",
+   "type": "entità",
+   "inside": "Transactionhistory",
+   "members": [
+    "store:transactionhistory cache/transactions",
+    "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionCache.java"
+   ],
+   "what": "Gli ultimi movimenti di ogni conto già chiesto, in memoria: letti dal registro la prima volta, poi allungati a ogni nuova transazione.",
+   "proof": [
+    {
+     "at": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionCache.java:58",
+     "has": "public LoadingCache<String, Deque<Transaction>> initializeCache("
+    },
+    {
+     "at": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionCache.java:70",
+     "has": "return dbRepo.findForAccount(accountId,"
+    }
+   ]
+  },
+  {
+   "name": "Lettura periodica del registro per lo storico",
+   "type": "lavoro a orario",
+   "inside": "Transactionhistory",
+   "members": [
+    "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/LedgerReader.java"
+   ],
+   "what": "Il thread di transactionhistory che ogni POLL_MS millisecondi chiede al registro le transazioni nuove.",
+   "proof": [
+    {
+     "at": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/LedgerReader.java:92",
+     "has": "Thread.sleep(pollMs);"
+    },
+    {
+     "at": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/LedgerReader.java:51",
+     "has": "@Value(\"${POLL_MS:100}\")"
+    }
+   ]
+  },
+  {
+   "name": "Database del registro",
+   "type": "database",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/ledger/ledger-db"
+   ],
+   "on": [
+    "Kubernetes",
+    "Cloud SQL"
+   ],
+   "what": "ledger-db: il Postgres con il registro di tutte le transazioni, solo in aggiunta.",
+   "proof": [
+    {
+     "at": "src/ledger/ledger-db/Dockerfile:15",
+     "has": "FROM postgres:16.15-alpine"
+    },
+    {
+     "at": "src/ledger/ledger-db/k8s/base/config.yaml:25",
+     "has": "SPRING_DATASOURCE_URL: jdbc:postgresql://ledger-db:5432/postgresdb"
+    },
+    {
+     "at": "src/ledger/ledger-db/initdb/0_init_tables.sql:15",
+     "has": "CREATE TABLE TRANSACTIONS ("
+    }
+   ]
+  },
+  {
+   "name": "Transazione",
+   "type": "entità",
+   "inside": "Database del registro",
+   "members": [
+    "store:ledger-db/transactions",
+    "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/Transaction.java",
+    "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/Transaction.java",
+    "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/Transaction.java"
+   ],
+   "on": [
+    "Database del registro"
+   ],
+   "what": "Un movimento di denaro fra due conti: mittente, destinatario, importo in centesimi, momento.",
+   "proof": [
+    {
+     "at": "src/ledger/ledger-db/initdb/0_init_tables.sql:15",
+     "has": "CREATE TABLE TRANSACTIONS ("
+    },
+    {
+     "at": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/Transaction.java:39",
+     "has": "@Table(name = \"TRANSACTIONS\")"
+    }
+   ]
+  },
+  {
+   "name": "Ledgermonolith",
+   "type": "servizio o API",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/ledgermonolith"
+   ],
+   "on": [
+    "Google Compute"
+   ],
+   "routes": [
+    "POST /transactions",
+    "GET /balances/{accountId}",
+    "GET /transactions/{accountId}",
+    "GET /ready",
+    "GET /healthy",
+    "GET /version"
+   ],
+   "what": "La variante in cui i tre servizi del registro sono un solo programma, su una macchina virtuale con il suo Postgres.",
+   "proof": [
+    {
+     "at": "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java:230",
+     "has": "@PostMapping(value = \"/transactions\", consumes = \"application/json\")"
+    },
+    {
+     "at": "src/ledgermonolith/config.yaml:31",
+     "has": "TRANSACTIONS_API_ADDR: \"ledgermonolith-service.c.[PROJECT_ID].internal:8080\""
+    }
+   ]
+  },
+  {
+   "name": "Loadgenerator",
+   "type": "altro",
+   "inside": "Bank of Anthos",
+   "members": [
+    "src/loadgenerator"
+   ],
+   "on": [
+    "Kubernetes"
+   ],
+   "what": "Il generatore di carico: utenti finti di Locust che si registrano, accedono, depositano e pagano sul sito.",
+   "proof": [
+    {
+     "at": "src/loadgenerator/locustfile.py:210",
+     "has": "class WebsiteUser(HttpUser):"
+    },
+    {
+     "at": "src/loadgenerator/Dockerfile:49",
+     "has": "ENTRYPOINT locust --host=\"http://${FRONTEND_ADDR}\""
+    }
+   ]
+  },
+  {
+   "name": "Test end-to-end",
+   "type": "altro",
+   "inside": "Bank of Anthos",
+   "members": [
+    ".github/workflows/ui-tests",
+    "skaffold-e2e.yaml"
+   ],
+   "what": "I test Cypress che guidano il sito in un browser dopo il rilascio.",
+   "proof": [
+    {
+     "at": ".github/workflows/ui-tests/run_for_env.sh:36",
+     "has": "cypress run --reporter json-stream --browser chrome --headed"
+    },
+    {
+     "at": "skaffold-e2e.yaml:21",
+     "has": "context: .github/workflows/ui-tests"
+    }
+   ]
+  },
+  {
+   "name": "Configurazione di rilascio",
+   "type": "altro",
+   "inside": "Bank of Anthos",
+   "members": [
+    "skaffold.yaml",
+    "Makefile",
+    "kubernetes-manifests",
+    "src/components",
+    ".github/cloudbuild",
+    "docs/releasing",
+    "pom.xml",
+    "mvnw",
+    ".github/workflows/make-release.yaml",
+    ".github/workflows/terraform-validate-ci.yaml"
+   ],
+   "what": "Skaffold, i manifest Kubernetes e i loro componenti Kustomize, il Makefile, i file di Cloud Build e lo script di rilascio.",
+   "proof": [
+    {
+     "at": "skaffold.yaml:27",
+     "has": "path: src/frontend/skaffold.yaml"
+    },
+    {
+     "at": "Makefile:27",
+     "has": "deploy: check-env"
+    },
+    {
+     "at": "kubernetes-manifests/config.yaml:26",
+     "has": "name: service-api-config"
+    }
+   ]
+  },
+  {
+   "name": "Infrastruttura Terraform",
+   "type": "altro",
+   "inside": "Bank of Anthos",
+   "members": [
+    "iac"
+   ],
+   "what": "I moduli Terraform che creano cluster, registro delle immagini, database gestiti e pipeline, più la configurazione comune dei tre ambienti.",
+   "proof": [
+    {
+     "at": "iac/tf-multienv-cicd-anthos-autopilot/artifact-registry.tf:16",
+     "has": "resource \"google_artifact_registry_repository\" \"container_registry\""
+    },
+    {
+     "at": "iac/acm-multienv-cicd-anthos-autopilot/base/config.yaml:26",
+     "has": "name: service-api-config"
+    }
+   ]
+  }
+ ],
+ "flows": [
+  {
+   "name": "Registrazione di un nuovo conto",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Cliente",
+    "Register a new account",
+    "Rotte di accesso",
+    "Userservice",
+    "Utente",
+    "Sessione",
+    "Rotte del conto",
+    "Checking Account"
+   ],
+   "arrows": [
+    {
+     "from": "Cliente",
+     "to": "Register a new account",
+     "data": "clic su Create Account",
+     "kind": "attiva",
+     "cite": "src/frontend/templates/signup.html:300",
+     "has": "type=\"submit\">Create Account</button>"
+    },
+    {
+     "from": "Register a new account",
+     "to": "Rotte di accesso",
+     "data": "POST /signup con i dati del modulo",
+     "kind": "chiama",
+     "cite": "src/frontend/templates/signup.html:39",
+     "has": "method=\"POST\" action=\"/signup\">"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Userservice",
+     "data": "POST /users con i dati del modulo",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:587",
+     "has": "resp = requests.post(url=app.config[\"USERSERVICE_URI\"],"
+    },
+    {
+     "from": "Userservice",
+     "to": "Utente",
+     "data": "ricerca del nome utente già preso",
+     "kind": "legge",
+     "cite": "src/accounts/userservice/userservice.py:92",
+     "has": "if users_db.get_user(req['username']) is not None:"
+    },
+    {
+     "from": "Userservice",
+     "to": "Utente",
+     "data": "numero di conto casuale non ancora usato",
+     "kind": "legge",
+     "cite": "src/accounts/userservice/userservice.py:101",
+     "has": "accountid = users_db.generate_accountid()"
+    },
+    {
+     "from": "Userservice",
+     "to": "Utente",
+     "data": "nuovo utente con hash bcrypt della password",
+     "kind": "scrive",
+     "cite": "src/accounts/userservice/userservice.py:119",
+     "has": "users_db.add_user(user_data)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Userservice",
+     "data": "GET /login con le stesse credenziali, dopo il 201",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:593",
+     "has": "return _login_helper(request.form['username'],"
+    },
+    {
+     "from": "Userservice",
+     "to": "Rotte di accesso",
+     "data": "token JWT del nuovo utente",
+     "kind": "trasferisce",
+     "cite": "src/accounts/userservice/userservice.py:202",
+     "has": "return jsonify({'token': token}), 200"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "cookie token",
+     "kind": "scrive",
+     "cite": "src/frontend/frontend.py:469",
+     "has": "resp.set_cookie(app.config['TOKEN_NAME'], token, max_age=max_age)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Rotte del conto",
+     "data": "reindirizzamento a /home",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:466",
+     "has": "resp = make_response(redirect(url_for('home',"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Checking Account",
+     "data": "pagina del conto appena creato",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:158",
+     "has": "return render_template('index.html',"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Cliente",
+     "kind": "controllo dell'interfaccia",
+     "what": "Create Account nella pagina Register a new account"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Utente",
+     "what": "il nuovo utente nel database dei conti"
+    },
+    {
+     "node": "Sessione",
+     "what": "il cookie token"
+    },
+    {
+     "node": "Checking Account",
+     "what": "la pagina del conto"
+    }
+   ]
+  },
+  {
+   "name": "Accesso con nome utente e password",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Cliente",
+    "Sign in",
+    "Rotte di accesso",
+    "Userservice",
+    "Utente",
+    "Chiavi JWT",
+    "Sessione",
+    "Rotte del conto",
+    "Checking Account"
+   ],
+   "arrows": [
+    {
+     "from": "Cliente",
+     "to": "Sign in",
+     "data": "clic su Sign in",
+     "kind": "attiva",
+     "cite": "src/frontend/templates/login.html:78",
+     "has": "type=\"submit\">Sign in</button>"
+    },
+    {
+     "from": "Sign in",
+     "to": "Rotte di accesso",
+     "data": "POST /login con nome utente e password",
+     "kind": "chiama",
+     "cite": "src/frontend/templates/login.html:56",
+     "has": "method=\"POST\" action=\"/login\">"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Userservice",
+     "data": "GET /login con nome utente e password nella query",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:445",
+     "has": "req = requests.get(url=app.config[\"LOGIN_URI\"],"
+    },
+    {
+     "from": "Userservice",
+     "to": "Utente",
+     "data": "utente per nome",
+     "kind": "legge",
+     "cite": "src/accounts/userservice/userservice.py:181",
+     "has": "user = users_db.get_user(username)"
+    },
+    {
+     "from": "Chiavi JWT",
+     "to": "Userservice",
+     "data": "chiave privata RSA",
+     "kind": "legge",
+     "cite": "src/accounts/userservice/userservice.py:240",
+     "has": "app.config['PRIVATE_KEY'] = open(os.environ.get('PRIV_KEY_PATH'), 'r').read()"
+    },
+    {
+     "from": "Userservice",
+     "to": "Rotte di accesso",
+     "data": "token JWT firmato RS256 con utente, conto, nome e scadenza",
+     "kind": "trasferisce",
+     "cite": "src/accounts/userservice/userservice.py:200",
+     "has": "token = jwt.encode(payload, app.config['PRIVATE_KEY'], algorithm='RS256')"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "cookie token, con durata pari a quella del token",
+     "kind": "scrive",
+     "cite": "src/frontend/frontend.py:469",
+     "has": "resp.set_cookie(app.config['TOKEN_NAME'], token, max_age=max_age)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Rotte del conto",
+     "data": "reindirizzamento a /home",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:466",
+     "has": "resp = make_response(redirect(url_for('home',"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Checking Account",
+     "data": "pagina del conto",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:158",
+     "has": "return render_template('index.html',"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Cliente",
+     "kind": "controllo dell'interfaccia",
+     "what": "Sign in nella pagina Sign in"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "il cookie token"
+    },
+    {
+     "node": "Checking Account",
+     "what": "la pagina del conto"
+    }
+   ]
+  },
+  {
+   "name": "Uscita",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Cliente",
+    "Checking Account",
+    "Rotte di accesso",
+    "Sessione",
+    "Sign in"
+   ],
+   "arrows": [
+    {
+     "from": "Cliente",
+     "to": "Checking Account",
+     "data": "clic su Sign out",
+     "kind": "attiva",
+     "cite": "src/frontend/templates/shared/navigation.html:28",
+     "has": "Sign out<i"
+    },
+    {
+     "from": "Checking Account",
+     "to": "Rotte di accesso",
+     "data": "POST /logout",
+     "kind": "chiama",
+     "cite": "src/frontend/templates/shared/navigation.html:27",
+     "has": "<form id=\"logout-form\" method=\"POST\" action=\"/logout\">"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "cancellazione dei cookie token e consented",
+     "kind": "scrive",
+     "cite": "src/frontend/frontend.py:612",
+     "has": "resp.delete_cookie(app.config['TOKEN_NAME'])"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sign in",
+     "data": "reindirizzamento a /login",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:609",
+     "has": "resp = make_response(redirect(url_for('login_page',"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Cliente",
+     "kind": "controllo dell'interfaccia",
+     "what": "Sign out nel menu del conto"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "i cookie cancellati"
+    },
+    {
+     "node": "Sign in",
+     "what": "la pagina di accesso"
+    }
+   ]
+  },
+  {
+   "name": "Verifica del token JWT nei servizi",
+   "area": "accesso e identità",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Chiavi JWT",
+    "Rotte di accesso",
+    "Sessione",
+    "Rotte del conto",
+    "Balancereader",
+    "Transactionhistory",
+    "Contacts",
+    "Ledgerwriter"
+   ],
+   "arrows": [
+    {
+     "from": "Chiavi JWT",
+     "to": "Rotte di accesso",
+     "data": "chiave pubblica, letta all'avvio del frontend",
+     "kind": "legge",
+     "cite": "src/frontend/frontend.py:674",
+     "has": "app.config['PUBLIC_KEY'] = open(os.environ.get('PUB_KEY_PATH'), 'r').read()"
+    },
+    {
+     "from": "Sessione",
+     "to": "Rotte del conto",
+     "data": "cookie token",
+     "kind": "legge",
+     "cite": "src/frontend/frontend.py:101",
+     "has": "token = request.cookies.get(app.config['TOKEN_NAME'])"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Rotte di accesso",
+     "data": "token da verificare con la chiave pubblica",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:102",
+     "has": "if not verify_token(token):"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Balancereader",
+     "data": "token nell'intestazione Authorization: Bearer",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:113",
+     "has": "hed = {'Authorization': 'Bearer ' + token}"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Transactionhistory",
+     "data": "token nell'intestazione Authorization: Bearer",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:124",
+     "has": "api_request=ApiRequest(url=f'{app.config[\"HISTORY_URI\"]}/{account_id}',"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Contacts",
+     "data": "token nell'intestazione Authorization: Bearer",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:130",
+     "has": "api_request=ApiRequest(url=f'{app.config[\"CONTACTS_URI\"]}/{username}',"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Ledgerwriter",
+     "data": "token nell'intestazione Authorization: Bearer",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:332",
+     "has": "hed = {'Authorization': 'Bearer ' + token,"
+    },
+    {
+     "from": "Chiavi JWT",
+     "to": "Contacts",
+     "data": "chiave pubblica",
+     "kind": "legge",
+     "cite": "src/accounts/contacts/contacts.py:216",
+     "has": "app.config[\"PUBLIC_KEY\"] = open(os.environ.get(\"PUB_KEY_PATH\"), \"r\").read()"
+    },
+    {
+     "from": "Chiavi JWT",
+     "to": "Ledgerwriter",
+     "data": "chiave pubblica",
+     "kind": "legge",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/JWTVerifierGenerator.java:51",
+     "has": "new String(Files.readAllBytes(Paths.get(publicKeyPath)));"
+    },
+    {
+     "from": "Chiavi JWT",
+     "to": "Balancereader",
+     "data": "chiave pubblica",
+     "kind": "legge",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/JWTVerifierGenerator.java:51",
+     "has": "new String(Files.readAllBytes(Paths.get(publicKeyPath)));"
+    },
+    {
+     "from": "Chiavi JWT",
+     "to": "Transactionhistory",
+     "data": "chiave pubblica",
+     "kind": "legge",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/JWTVerifierGenerator.java:50",
+     "has": "new String(Files.readAllBytes(Paths.get(publicKeyPath)));"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Rotte del conto",
+     "kind": "rotta",
+     "what": "ogni richiesta con il cookie token"
+    },
+    {
+     "node": "Chiavi JWT",
+     "kind": "avvio di un processo",
+     "what": "ogni servizio legge la chiave pubblica all'avvio"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Contacts",
+     "what": "401 se il token non è valido o il nome utente non è quello del token"
+    },
+    {
+     "node": "Ledgerwriter",
+     "what": "401 se il token non è valido"
+    },
+    {
+     "node": "Balancereader",
+     "what": "401 se il token non è valido o il conto non è quello del token"
+    },
+    {
+     "node": "Transactionhistory",
+     "what": "401 se il token non è valido o il conto non è quello del token"
+    },
+    {
+     "node": "Rotte di accesso",
+     "what": "pagina di accesso se il cookie non è valido"
+    }
+   ]
+  },
+  {
+   "name": "Consenso all'accesso di un'applicazione esterna",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Applicazione OAuth esterna",
+    "Rotte di accesso",
+    "Sign in",
+    "Do you consent?",
+    "Cliente",
+    "Sessione"
+   ],
+   "arrows": [
+    {
+     "from": "Applicazione OAuth esterna",
+     "to": "Rotte di accesso",
+     "data": "GET /login con response_type=code, client_id, redirect_uri, state e app_name",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:387",
+     "has": "response_type == 'code'):"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sign in",
+     "data": "pagina di accesso che conserva i parametri nella action del modulo",
+     "kind": "trasferisce",
+     "cite": "src/frontend/templates/login.html:54",
+     "has": "action=\"/login?response_type={{ response_type }}"
+    },
+    {
+     "from": "Sign in",
+     "to": "Rotte di accesso",
+     "data": "POST /login con le credenziali e i parametri OAuth",
+     "kind": "chiama",
+     "cite": "src/frontend/templates/login.html:54",
+     "has": "action=\"/login?response_type={{ response_type }}"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Do you consent?",
+     "data": "reindirizzamento a /consent e pagina del consenso",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:497",
+     "has": "return render_template('consent.html',"
+    },
+    {
+     "from": "Cliente",
+     "to": "Do you consent?",
+     "data": "clic su Approve o Deny",
+     "kind": "attiva",
+     "cite": "src/frontend/templates/consent.html:40",
+     "has": ">Approve</button>"
+    },
+    {
+     "from": "Do you consent?",
+     "to": "Rotte di accesso",
+     "data": "POST /consent con consent, state e redirect_uri",
+     "kind": "chiama",
+     "cite": "src/frontend/templates/consent.html:40",
+     "has": "formaction=\"/consent?consent=true&state={{ state }}&redirect_uri={{ redirect_uri }}\""
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Applicazione OAuth esterna",
+     "data": "POST al redirect URI con state e il token del cliente come id_token",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:541",
+     "has": "callback_response = requests.post(url=redirect_uri,"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "cookie consented",
+     "kind": "scrive",
+     "cite": "src/frontend/frontend.py:532",
+     "has": "resp.set_cookie(app.config['CONSENT_COOKIE'], 'true')"
+    },
+    {
+     "from": "Sessione",
+     "to": "Rotte di accesso",
+     "data": "consenso già dato, che salta la pagina",
+     "kind": "legge",
+     "cite": "src/frontend/frontend.py:490",
+     "has": "consented = request.cookies.get(app.config['CONSENT_COOKIE'])"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Applicazione OAuth esterna",
+     "kind": "rotta",
+     "what": "GET /login?response_type=code"
+    },
+    {
+     "node": "Cliente",
+     "kind": "controllo dell'interfaccia",
+     "what": "Approve o Deny nella pagina Do you consent?"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Applicazione OAuth esterna",
+     "what": "il token del cliente, e il browser rimandato all'indirizzo che l'applicazione risponde"
+    },
+    {
+     "node": "Sessione",
+     "what": "il cookie consented"
+    }
+   ]
+  },
+  {
+   "name": "Pagina del conto con saldo e movimenti",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Cliente",
+    "Rotte del conto",
+    "Sessione",
+    "Balancereader",
+    "Saldo",
+    "Transazione",
+    "Transactionhistory",
+    "Storico dei movimenti",
+    "Contacts",
+    "Contatto",
+    "Checking Account"
+   ],
+   "arrows": [
+    {
+     "from": "Cliente",
+     "to": "Rotte del conto",
+     "data": "GET /home (o /)",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:96",
+     "has": "@app.route(\"/home\")"
+    },
+    {
+     "from": "Sessione",
+     "to": "Rotte del conto",
+     "data": "token con utente, conto e nome",
+     "kind": "legge",
+     "cite": "src/frontend/frontend.py:108",
+     "has": "token_data = decode_token(token)"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Balancereader",
+     "data": "GET /balances/{conto}",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:118",
+     "has": "api_request=ApiRequest(url=f'{app.config[\"BALANCES_URI\"]}/{account_id}',"
+    },
+    {
+     "from": "Balancereader",
+     "to": "Saldo",
+     "data": "saldo del conto",
+     "kind": "legge",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:165",
+     "has": "Long balance = cache.get(accountId);"
+    },
+    {
+     "from": "Saldo",
+     "to": "Transazione",
+     "data": "somma delle entrate meno le uscite, al primo accesso",
+     "kind": "legge",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceCache.java:62",
+     "has": "Long balance = dbRepo.findBalance(accountId, localRoutingNum);"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Transactionhistory",
+     "data": "GET /transactions/{conto}",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:124",
+     "has": "api_request=ApiRequest(url=f'{app.config[\"HISTORY_URI\"]}/{account_id}',"
+    },
+    {
+     "from": "Transactionhistory",
+     "to": "Storico dei movimenti",
+     "data": "ultimi movimenti del conto",
+     "kind": "legge",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:185",
+     "has": "Deque<Transaction> historyList = cache.get(accountId);"
+    },
+    {
+     "from": "Storico dei movimenti",
+     "to": "Transazione",
+     "data": "ultimi HISTORY_LIMIT movimenti, al primo accesso",
+     "kind": "legge",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionCache.java:70",
+     "has": "return dbRepo.findForAccount(accountId,"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Contacts",
+     "data": "GET /contacts/{utente}",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:130",
+     "has": "api_request=ApiRequest(url=f'{app.config[\"CONTACTS_URI\"]}/{username}',"
+    },
+    {
+     "from": "Contacts",
+     "to": "Contatto",
+     "data": "contatti dell'utente",
+     "kind": "legge",
+     "cite": "src/accounts/contacts/contacts.py:83",
+     "has": "contacts_list = contacts_db.get_contacts(username)"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Checking Account",
+     "data": "saldo, movimenti con l'etichetta del contatto, contatti per i moduli",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:158",
+     "has": "return render_template('index.html',"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Cliente",
+     "kind": "rotta",
+     "what": "GET /home"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Checking Account",
+     "what": "saldo e storico mostrati"
+    }
+   ]
+  },
+  {
+   "name": "Deposito da un conto esterno",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Cliente",
+    "Checking Account",
+    "Rotte del conto",
+    "Contacts",
+    "Ledgerwriter",
+    "Transazione"
+   ],
+   "arrows": [
+    {
+     "from": "Cliente",
+     "to": "Checking Account",
+     "data": "clic su Deposit nel modulo Deposit Funds",
+     "kind": "attiva",
+     "cite": "src/frontend/templates/index.html:287",
+     "has": "deposit-send-button\">Deposit</button>"
+    },
+    {
+     "from": "Checking Account",
+     "to": "Rotte del conto",
+     "data": "POST /deposit con conto esterno, importo e uuid",
+     "kind": "chiama",
+     "cite": "src/frontend/templates/index.html:213",
+     "has": "method=\"POST\" action=\"/deposit\">"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Contacts",
+     "data": "POST /contacts/{utente} quando il conto esterno è nuovo e ha un'etichetta",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:291",
+     "has": "_add_contact(external_label,"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Ledgerwriter",
+     "data": "POST /transactions dal conto esterno al conto del cliente, importo in centesimi",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:334",
+     "has": "resp = requests.post(url=app.config[\"TRANSACTIONS_URI\"],"
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Transazione",
+     "data": "nuova riga del registro",
+     "kind": "scrive",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:171",
+     "has": "transactionRepository.save(transaction);"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Checking Account",
+     "data": "reindirizzamento a /home con il messaggio Deposit successful",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:310",
+     "has": "msg='Deposit successful',"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Cliente",
+     "kind": "controllo dell'interfaccia",
+     "what": "Deposit nel modulo Deposit Funds"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Transazione",
+     "what": "il deposito nel registro"
+    },
+    {
+     "node": "Checking Account",
+     "what": "il messaggio di esito"
+    },
+    {
+     "node": "Contacts",
+     "what": "il conto esterno fra i contatti, se nuovo"
+    }
+   ]
+  },
+  {
+   "name": "Pagamento a un contatto",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Cliente",
+    "Checking Account",
+    "Rotte del conto",
+    "Contacts",
+    "Ledgerwriter",
+    "Balancereader",
+    "Transazione"
+   ],
+   "arrows": [
+    {
+     "from": "Cliente",
+     "to": "Checking Account",
+     "data": "clic su Send nel modulo Send Payment",
+     "kind": "attiva",
+     "cite": "src/frontend/templates/index.html:363",
+     "has": "deposit-send-button\">Send</button>"
+    },
+    {
+     "from": "Checking Account",
+     "to": "Rotte del conto",
+     "data": "POST /payment con destinatario, importo e uuid",
+     "kind": "chiama",
+     "cite": "src/frontend/templates/index.html:302",
+     "has": "method=\"POST\" action=\"/payment\">"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Contacts",
+     "data": "POST /contacts/{utente} quando il destinatario è nuovo e ha un'etichetta",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:226",
+     "has": "_add_contact(label,"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Ledgerwriter",
+     "data": "POST /transactions dal conto del cliente al destinatario, importo in centesimi",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:334",
+     "has": "resp = requests.post(url=app.config[\"TRANSACTIONS_URI\"],"
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Balancereader",
+     "data": "GET /balances/{mittente} per il saldo disponibile",
+     "kind": "chiama",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:160",
+     "has": "int balance = getAvailableBalance("
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Transazione",
+     "data": "nuova riga del registro",
+     "kind": "scrive",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:171",
+     "has": "transactionRepository.save(transaction);"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Checking Account",
+     "data": "reindirizzamento a /home con il messaggio Payment successful",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:243",
+     "has": "msg='Payment successful',"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Cliente",
+     "kind": "controllo dell'interfaccia",
+     "what": "Send nel modulo Send Payment"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Transazione",
+     "what": "il pagamento nel registro"
+    },
+    {
+     "node": "Checking Account",
+     "what": "il messaggio di esito"
+    },
+    {
+     "node": "Contacts",
+     "what": "il destinatario fra i contatti, se nuovo"
+    },
+    {
+     "node": "Balancereader",
+     "what": "il saldo del mittente letto"
+    }
+   ]
+  },
+  {
+   "name": "Aggiunta di un contatto",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Cliente",
+    "Checking Account",
+    "Rotte del conto",
+    "Contacts",
+    "Contatto"
+   ],
+   "arrows": [
+    {
+     "from": "Cliente",
+     "to": "Checking Account",
+     "data": "etichetta del nuovo conto in un modulo di deposito o pagamento",
+     "kind": "attiva",
+     "cite": "src/frontend/templates/index.html:337",
+     "has": "name=\"contact_label\""
+    },
+    {
+     "from": "Checking Account",
+     "to": "Rotte del conto",
+     "data": "contact_label o external_label nel modulo",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:223",
+     "has": "label = request.form.get('contact_label', None)"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Contacts",
+     "data": "POST /contacts/{utente} con etichetta, conto, codice banca e is_external",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:364",
+     "has": "resp = requests.post(url=url,"
+    },
+    {
+     "from": "Contacts",
+     "to": "Contatto",
+     "data": "contatti già presenti, per rifiutare doppioni ed etichette ripetute",
+     "kind": "legge",
+     "cite": "src/accounts/contacts/contacts.py:181",
+     "has": "for contact in contacts_db.get_contacts(username):"
+    },
+    {
+     "from": "Contacts",
+     "to": "Contatto",
+     "data": "nuovo contatto",
+     "kind": "scrive",
+     "cite": "src/accounts/contacts/contacts.py:134",
+     "has": "contacts_db.add_contact(contact_data)"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Cliente",
+     "kind": "controllo dell'interfaccia",
+     "what": "campo Contact Label o Account Label di un modulo"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Contatto",
+     "what": "il contatto salvato"
+    }
+   ]
+  },
+  {
+   "name": "Controllo del saldo prima di un trasferimento",
+   "area": "funzioni principali",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Rotte del conto",
+    "Ledgerwriter",
+    "Balancereader",
+    "Saldo"
+   ],
+   "arrows": [
+    {
+     "from": "Rotte del conto",
+     "to": "Ledgerwriter",
+     "data": "POST /transactions",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:334",
+     "has": "resp = requests.post(url=app.config[\"TRANSACTIONS_URI\"],"
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Balancereader",
+     "data": "GET /balances/{mittente} con il token ricevuto, solo se il mittente è di questa banca",
+     "kind": "chiama",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:215",
+     "has": "ResponseEntity<Integer> response = restTemplate.exchange("
+    },
+    {
+     "from": "Balancereader",
+     "to": "Saldo",
+     "data": "saldo del mittente",
+     "kind": "legge",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:165",
+     "has": "Long balance = cache.get(accountId);"
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Rotte del conto",
+     "data": "400 insufficient balance se il saldo non copre l'importo",
+     "kind": "trasferisce",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:166",
+     "has": "EXCEPTION_MESSAGE_INSUFFICIENT_BALANCE);"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Ledgerwriter",
+     "kind": "rotta",
+     "what": "POST /transactions"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Rotte del conto",
+     "what": "il rifiuto mostrato come Payment failed"
+    },
+    {
+     "node": "Saldo",
+     "what": "il saldo letto"
+    }
+   ]
+  },
+  {
+   "name": "Rifiuto delle transazioni duplicate",
+   "area": "funzioni principali",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Checking Account",
+    "Rotte del conto",
+    "Ledgerwriter",
+    "Richiesta già vista"
+   ],
+   "arrows": [
+    {
+     "from": "Checking Account",
+     "to": "Rotte del conto",
+     "data": "uuid nuovo a ogni apertura dei moduli, nel campo nascosto",
+     "kind": "chiama",
+     "cite": "src/frontend/static/scripts/index.js:97",
+     "has": "document.querySelector(\"#payment-uuid\").value = uuidv4();"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Ledgerwriter",
+     "data": "uuid dentro la transazione",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:238",
+     "has": "\"uuid\": request.form['uuid']}"
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Richiesta già vista",
+     "data": "uuid già visto nell'ultima ora: 400 duplicate transaction uuid",
+     "kind": "legge",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:150",
+     "has": "if (this.cache.asMap().containsKey(transaction.getRequestUuid())) {"
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Richiesta già vista",
+     "data": "uuid della transazione appena scritta",
+     "kind": "scrive",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:172",
+     "has": "this.cache.put(transaction.getRequestUuid(),"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Checking Account",
+     "kind": "controllo dell'interfaccia",
+     "what": "invio di un modulo di deposito o pagamento"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Richiesta già vista",
+     "what": "l'uuid ricordato per un'ora"
+    }
+   ]
+  },
+  {
+   "name": "Aggiornamento dei saldi in memoria",
+   "area": "esercizio",
+   "types": [
+    "tecnico",
+    "operativo"
+   ],
+   "nodes": [
+    "Lettura periodica del registro per i saldi",
+    "Transazione",
+    "Balancereader",
+    "Saldo"
+   ],
+   "arrows": [
+    {
+     "from": "Lettura periodica del registro per i saldi",
+     "to": "Transazione",
+     "data": "id dell'ultima transazione, poi le transazioni più nuove",
+     "kind": "legge",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/LedgerReader.java:132",
+     "has": "Iterable<Transaction> transactionList = dbRepo.findLatest(startingId);"
+    },
+    {
+     "from": "Lettura periodica del registro per i saldi",
+     "to": "Balancereader",
+     "data": "ogni transazione nuova, alla funzione data all'avvio",
+     "kind": "chiama",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/LedgerReader.java:135",
+     "has": "callback.processTransaction(transaction);"
+    },
+    {
+     "from": "Balancereader",
+     "to": "Saldo",
+     "data": "saldo del mittente diminuito e del destinatario aumentato, per i conti già in memoria",
+     "kind": "scrive",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:91",
+     "has": "this.cache.put(fromId, prevBalance - amount);"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Lettura periodica del registro per i saldi",
+     "kind": "orario",
+     "what": "ogni POLL_MS millisecondi (100)"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Saldo",
+     "what": "i saldi in memoria aggiornati"
+    }
+   ]
+  },
+  {
+   "name": "Aggiornamento dello storico in memoria",
+   "area": "esercizio",
+   "types": [
+    "tecnico",
+    "operativo"
+   ],
+   "nodes": [
+    "Lettura periodica del registro per lo storico",
+    "Transazione",
+    "Transactionhistory",
+    "Storico dei movimenti"
+   ],
+   "arrows": [
+    {
+     "from": "Lettura periodica del registro per lo storico",
+     "to": "Transazione",
+     "data": "id dell'ultima transazione, poi le transazioni più nuove",
+     "kind": "legge",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/LedgerReader.java:132",
+     "has": "Iterable<Transaction> transactionList = dbRepo.findLatest(startingId);"
+    },
+    {
+     "from": "Lettura periodica del registro per lo storico",
+     "to": "Transactionhistory",
+     "data": "ogni transazione nuova, alla funzione data all'avvio",
+     "kind": "chiama",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/LedgerReader.java:135",
+     "has": "callback.processTransaction(transaction);"
+    },
+    {
+     "from": "Transactionhistory",
+     "to": "Storico dei movimenti",
+     "data": "transazione in testa allo storico dei due conti, se già in memoria",
+     "kind": "scrive",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:114",
+     "has": "tList.addFirst(transaction);"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Lettura periodica del registro per lo storico",
+     "kind": "orario",
+     "what": "ogni POLL_MS millisecondi (100)"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Storico dei movimenti",
+     "what": "gli storici in memoria aggiornati"
+    }
+   ]
+  },
+  {
+   "name": "Sonde di salute dei servizi",
+   "area": "esercizio",
+   "types": [
+    "operativo"
+   ],
+   "nodes": [
+    "Kubernetes",
+    "Rotte di servizio del frontend",
+    "Userservice",
+    "Contacts",
+    "Ledgerwriter",
+    "Balancereader",
+    "Lettura periodica del registro per i saldi",
+    "Transactionhistory",
+    "Lettura periodica del registro per lo storico"
+   ],
+   "arrows": [
+    {
+     "from": "Kubernetes",
+     "to": "Rotte di servizio del frontend",
+     "data": "GET /ready",
+     "kind": "chiama",
+     "cite": "src/frontend/k8s/base/frontend.yaml:104",
+     "has": "path: /ready"
+    },
+    {
+     "from": "Kubernetes",
+     "to": "Userservice",
+     "data": "GET /ready",
+     "kind": "chiama",
+     "cite": "src/accounts/userservice/k8s/base/userservice.yaml:69",
+     "has": "path: /ready"
+    },
+    {
+     "from": "Kubernetes",
+     "to": "Contacts",
+     "data": "GET /ready",
+     "kind": "chiama",
+     "cite": "src/accounts/contacts/k8s/base/contacts.yaml:72",
+     "has": "path: /ready"
+    },
+    {
+     "from": "Kubernetes",
+     "to": "Ledgerwriter",
+     "data": "GET /ready",
+     "kind": "chiama",
+     "cite": "src/ledger/ledgerwriter/k8s/base/ledgerwriter.yaml:82",
+     "has": "path: /ready"
+    },
+    {
+     "from": "Kubernetes",
+     "to": "Balancereader",
+     "data": "GET /ready e GET /healthy",
+     "kind": "chiama",
+     "cite": "src/ledger/balancereader/k8s/base/balancereader.yaml:93",
+     "has": "path: /healthy"
+    },
+    {
+     "from": "Balancereader",
+     "to": "Lettura periodica del registro per i saldi",
+     "data": "il thread è ancora vivo?",
+     "kind": "chiama",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:129",
+     "has": "if (!ledgerReader.isAlive()) {"
+    },
+    {
+     "from": "Kubernetes",
+     "to": "Transactionhistory",
+     "data": "GET /ready e GET /healthy",
+     "kind": "chiama",
+     "cite": "src/ledger/transactionhistory/k8s/base/transactionhistory.yaml:98",
+     "has": "path: /healthy"
+    },
+    {
+     "from": "Transactionhistory",
+     "to": "Lettura periodica del registro per lo storico",
+     "data": "il thread è ancora vivo?",
+     "kind": "chiama",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:149",
+     "has": "if (!ledgerReader.isAlive()) {"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Kubernetes",
+     "kind": "orario",
+     "what": "sonde di prontezza e di vita dei manifest"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Rotte di servizio del frontend",
+     "what": "ok"
+    },
+    {
+     "node": "Userservice",
+     "what": "ok"
+    },
+    {
+     "node": "Contacts",
+     "what": "ok"
+    },
+    {
+     "node": "Ledgerwriter",
+     "what": "ok"
+    },
+    {
+     "node": "Lettura periodica del registro per i saldi",
+     "what": "500 se il thread è morto, e il pod viene riavviato"
+    },
+    {
+     "node": "Lettura periodica del registro per lo storico",
+     "what": "500 se il thread è morto, e il pod viene riavviato"
+    }
+   ]
+  },
+  {
+   "name": "Generazione del carico",
+   "area": "esercizio",
+   "types": [
+    "operativo"
+   ],
+   "nodes": [
+    "Kubernetes",
+    "Loadgenerator",
+    "Rotte di accesso",
+    "Rotte del conto"
+   ],
+   "arrows": [
+    {
+     "from": "Kubernetes",
+     "to": "Loadgenerator",
+     "data": "avvio di Locust con l'indirizzo frontend:80 e il numero di utenti",
+     "kind": "attiva",
+     "cite": "src/loadgenerator/k8s/base/loadgenerator.yaml:50",
+     "has": "- name: FRONTEND_ADDR"
+    },
+    {
+     "from": "Loadgenerator",
+     "to": "Rotte di accesso",
+     "data": "POST /signup con un utente casuale",
+     "kind": "chiama",
+     "cite": "src/loadgenerator/locustfile.py:49",
+     "has": "with locust.client.post(\"/signup\", data=userdata, catch_response=True) as response:"
+    },
+    {
+     "from": "Loadgenerator",
+     "to": "Rotte di accesso",
+     "data": "GET /login e GET /signup",
+     "kind": "chiama",
+     "cite": "src/loadgenerator/locustfile.py:81",
+     "has": "with self.client.get(\"/login\", catch_response=True) as response:"
+    },
+    {
+     "from": "Loadgenerator",
+     "to": "Rotte di accesso",
+     "data": "POST /login",
+     "kind": "chiama",
+     "cite": "src/loadgenerator/locustfile.py:185",
+     "has": "with self.client.post(\"/login\", {\"username\":self.user.username,"
+    },
+    {
+     "from": "Loadgenerator",
+     "to": "Rotte di accesso",
+     "data": "POST /logout",
+     "kind": "chiama",
+     "cite": "src/loadgenerator/locustfile.py:201",
+     "has": "with self.client.post(\"/logout\", catch_response=True) as response:"
+    },
+    {
+     "from": "Loadgenerator",
+     "to": "Rotte del conto",
+     "data": "GET / e GET /home",
+     "kind": "chiama",
+     "cite": "src/loadgenerator/locustfile.py:140",
+     "has": "with self.client.get(\"/home\", catch_response=True) as response:"
+    },
+    {
+     "from": "Loadgenerator",
+     "to": "Rotte del conto",
+     "data": "POST /payment verso un conto casuale",
+     "kind": "chiama",
+     "cite": "src/loadgenerator/locustfile.py:155",
+     "has": "with self.client.post(\"/payment\","
+    },
+    {
+     "from": "Loadgenerator",
+     "to": "Rotte del conto",
+     "data": "POST /deposit da un conto esterno casuale",
+     "kind": "chiama",
+     "cite": "src/loadgenerator/locustfile.py:173",
+     "has": "with self.client.post(\"/deposit\","
+    }
+   ],
+   "entries": [
+    {
+     "node": "Kubernetes",
+     "kind": "avvio di un processo",
+     "what": "il contenitore loadgenerator parte con locust --headless"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Rotte di accesso",
+     "what": "utenti creati e sessioni aperte"
+    },
+    {
+     "node": "Rotte del conto",
+     "what": "depositi e pagamenti continui"
+    }
+   ]
+  },
+  {
+   "name": "Creazione dei conti dimostrativi",
+   "area": "esercizio",
+   "types": [
+    "operativo",
+    "dati"
+   ],
+   "nodes": [
+    "Kubernetes",
+    "Database dei conti",
+    "Utente",
+    "Contatto"
+   ],
+   "arrows": [
+    {
+     "from": "Kubernetes",
+     "to": "Database dei conti",
+     "data": "avvio del contenitore accounts-db, che esegue i file di /docker-entrypoint-initdb.d",
+     "kind": "attiva",
+     "cite": "src/accounts/accounts-db/Dockerfile:18",
+     "has": "COPY initdb/0-accounts-schema.sql initdb/1-load-testdata.sh /docker-entrypoint-initdb.d/"
+    },
+    {
+     "from": "Database dei conti",
+     "to": "Utente",
+     "data": "tabella users, poi testuser, alice, bob ed eve se USE_DEMO_DATA è True",
+     "kind": "scrive",
+     "cite": "src/accounts/accounts-db/initdb/1-load-testdata.sh:38",
+     "has": "INSERT INTO users VALUES"
+    },
+    {
+     "from": "Database dei conti",
+     "to": "Contatto",
+     "data": "tabella contacts, poi ognuno contatto degli altri e un conto di una banca esterna",
+     "kind": "scrive",
+     "cite": "src/accounts/accounts-db/initdb/1-load-testdata.sh:56",
+     "has": "INSERT INTO contacts VALUES"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Kubernetes",
+     "kind": "avvio di un processo",
+     "what": "primo avvio del contenitore accounts-db"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Utente",
+     "what": "quattro utenti dimostrativi"
+    },
+    {
+     "node": "Contatto",
+     "what": "i loro contatti"
+    }
+   ]
+  },
+  {
+   "name": "Creazione delle transazioni dimostrative",
+   "area": "esercizio",
+   "types": [
+    "operativo",
+    "dati"
+   ],
+   "nodes": [
+    "Kubernetes",
+    "Database del registro",
+    "Transazione"
+   ],
+   "arrows": [
+    {
+     "from": "Kubernetes",
+     "to": "Database del registro",
+     "data": "avvio del contenitore ledger-db, che esegue i file di /docker-entrypoint-initdb.d",
+     "kind": "attiva",
+     "cite": "src/ledger/ledger-db/Dockerfile:21",
+     "has": "COPY initdb/0_init_tables.sql initdb/1_create_transactions.sh /docker-entrypoint-initdb.d/"
+    },
+    {
+     "from": "Database del registro",
+     "to": "Transazione",
+     "data": "tabella TRANSACTIONS, poi depositi quindicinali e pagamenti casuali fra i conti dimostrativi",
+     "kind": "scrive",
+     "cite": "src/ledger/ledger-db/initdb/1_create_transactions.sh:46",
+     "has": "INSERT INTO TRANSACTIONS (FROM_ACCT, TO_ACCT, FROM_ROUTE, TO_ROUTE, AMOUNT, TIMESTAMP)"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Kubernetes",
+     "kind": "avvio di un processo",
+     "what": "primo avvio del contenitore ledger-db"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Transazione",
+     "what": "lo storico dimostrativo"
+    }
+   ]
+  },
+  {
+   "name": "Popolamento dei database su Cloud SQL",
+   "area": "esercizio",
+   "types": [
+    "devops",
+    "dati"
+   ],
+   "nodes": [
+    "Kubernetes",
+    "Database dei conti",
+    "Cloud SQL",
+    "Database del registro"
+   ],
+   "arrows": [
+    {
+     "from": "Kubernetes",
+     "to": "Database dei conti",
+     "data": "Job populate-accounts-db dei profili init-db-*",
+     "kind": "attiva",
+     "cite": "src/accounts/accounts-db/k8s/components/init-db-job/init-db-job.yaml:237",
+     "has": "name: populate-accounts-db"
+    },
+    {
+     "from": "Database dei conti",
+     "to": "Cloud SQL",
+     "data": "schema e utenti dimostrativi con psql, attraverso il proxy su 127.0.0.1",
+     "kind": "scrive",
+     "cite": "src/accounts/accounts-db/k8s/components/init-db-job/init-db-job.yaml:57",
+     "has": "psql --host=${HOST} --port=${PORT} --dbname=${DB_NAME} -f ${INIT_SQL_SCRIPT}"
+    },
+    {
+     "from": "Kubernetes",
+     "to": "Database del registro",
+     "data": "Job populate-ledger-db dei profili init-db-*",
+     "kind": "attiva",
+     "cite": "src/ledger/ledger-db/k8s/components/init-db-job/init-db-job.yaml:234",
+     "has": "name: populate-ledger-db"
+    },
+    {
+     "from": "Database del registro",
+     "to": "Cloud SQL",
+     "data": "tabella e transazioni dimostrative con psql, attraverso il proxy",
+     "kind": "scrive",
+     "cite": "src/ledger/ledger-db/k8s/components/init-db-job/init-db-job.yaml:159",
+     "has": "INSERT INTO TRANSACTIONS (FROM_ACCT, TO_ACCT, FROM_ROUTE, TO_ROUTE, AMOUNT, TIMESTAMP)"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Kubernetes",
+     "kind": "comando",
+     "what": "skaffold con un profilo init-db-staging o init-db-production"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Cloud SQL",
+     "what": "i due database creati e riempiti"
+    }
+   ]
+  },
+  {
+   "name": "Esportazione delle tracce",
+   "area": "integrazioni esterne",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Rotte del conto",
+    "Cloud Trace",
+    "Userservice",
+    "Contacts",
+    "Ledgerwriter",
+    "Balancereader",
+    "Transactionhistory"
+   ],
+   "arrows": [
+    {
+     "from": "Rotte del conto",
+     "to": "Cloud Trace",
+     "data": "tratti delle richieste Flask, Jinja e requests del frontend",
+     "kind": "trasferisce",
+     "cite": "src/frontend/frontend.py:731",
+     "has": "BatchSpanProcessor(cloud_trace_exporter)"
+    },
+    {
+     "from": "Userservice",
+     "to": "Cloud Trace",
+     "data": "tratti delle richieste Flask e delle query SQLAlchemy",
+     "kind": "trasferisce",
+     "cite": "src/accounts/userservice/userservice.py:231",
+     "has": "BatchSpanProcessor(cloud_trace_exporter)"
+    },
+    {
+     "from": "Contacts",
+     "to": "Cloud Trace",
+     "data": "tratti delle richieste Flask e delle query SQLAlchemy",
+     "kind": "trasferisce",
+     "cite": "src/accounts/contacts/contacts.py:206",
+     "has": "BatchSpanProcessor(cloud_trace_exporter)"
+    },
+    {
+     "from": "Ledgerwriter",
+     "to": "Cloud Trace",
+     "data": "tratti delle richieste Spring",
+     "kind": "trasferisce",
+     "cite": "src/ledger/ledgerwriter/src/main/resources/application.properties:20",
+     "has": "spring.cloud.gcp.trace.enabled=${ENABLE_TRACING}"
+    },
+    {
+     "from": "Balancereader",
+     "to": "Cloud Trace",
+     "data": "tratti delle richieste Spring",
+     "kind": "trasferisce",
+     "cite": "src/ledger/balancereader/src/main/resources/application.properties:20",
+     "has": "spring.cloud.gcp.trace.enabled=${ENABLE_TRACING}"
+    },
+    {
+     "from": "Transactionhistory",
+     "to": "Cloud Trace",
+     "data": "tratti delle richieste Spring",
+     "kind": "trasferisce",
+     "cite": "src/ledger/transactionhistory/src/main/resources/application.properties:20",
+     "has": "spring.cloud.gcp.trace.enabled=${ENABLE_TRACING}"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Rotte del conto",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_TRACING è true"
+    },
+    {
+     "node": "Userservice",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_TRACING è true"
+    },
+    {
+     "node": "Contacts",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_TRACING è true"
+    },
+    {
+     "node": "Ledgerwriter",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_TRACING è true"
+    },
+    {
+     "node": "Balancereader",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_TRACING è true"
+    },
+    {
+     "node": "Transactionhistory",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_TRACING è true"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Cloud Trace",
+     "what": "le tracce delle richieste"
+    }
+   ]
+  },
+  {
+   "name": "Esportazione delle metriche",
+   "area": "integrazioni esterne",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Ledgerwriter",
+    "Google Stackdriver",
+    "Balancereader",
+    "Transactionhistory"
+   ],
+   "arrows": [
+    {
+     "from": "Ledgerwriter",
+     "to": "Google Stackdriver",
+     "data": "metriche di Tomcat, JPA e della cache, con le etichette del pod",
+     "kind": "trasferisce",
+     "cite": "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterApplication.java:90",
+     "has": "return StackdriverMeterRegistry.builder(new StackdriverConfig() {"
+    },
+    {
+     "from": "Balancereader",
+     "to": "Google Stackdriver",
+     "data": "metriche di Tomcat, JPA e della cache, con le etichette del pod",
+     "kind": "trasferisce",
+     "cite": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderApplication.java:83",
+     "has": "return StackdriverMeterRegistry.builder(new StackdriverConfig() {"
+    },
+    {
+     "from": "Transactionhistory",
+     "to": "Google Stackdriver",
+     "data": "metriche di Tomcat, JPA e della cache, con le etichette del pod",
+     "kind": "trasferisce",
+     "cite": "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryApplication.java:83",
+     "has": "return StackdriverMeterRegistry.builder(new StackdriverConfig() {"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Ledgerwriter",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_METRICS non è false"
+    },
+    {
+     "node": "Balancereader",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_METRICS non è false"
+    },
+    {
+     "node": "Transactionhistory",
+     "kind": "avvio di un processo",
+     "what": "ENABLE_METRICS non è false"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Google Stackdriver",
+     "what": "le metriche dei tre servizi"
+    }
+   ]
+  },
+  {
+   "name": "Posizione del pod nel piè di pagina",
+   "area": "integrazioni esterne",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Rotte di servizio del frontend",
+    "Google Compute",
+    "Checking Account"
+   ],
+   "arrows": [
+    {
+     "from": "Rotte di servizio del frontend",
+     "to": "Google Compute",
+     "data": "GET instance/attributes/cluster-name e instance/zone al server dei metadati, all'avvio",
+     "kind": "chiama",
+     "cite": "src/frontend/frontend.py:691",
+     "has": "req = requests.get(metadata_url + 'instance/attributes/cluster-name',"
+    },
+    {
+     "from": "Rotte di servizio del frontend",
+     "to": "Checking Account",
+     "data": "cluster, pod e zona nel piè di ogni pagina e in /whereami",
+     "kind": "trasferisce",
+     "cite": "src/frontend/templates/shared/footer.html:7",
+     "has": "<b>Cluster: </b>{{ cluster_name }}"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Rotte di servizio del frontend",
+     "kind": "avvio di un processo",
+     "what": "avvio del frontend"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Checking Account",
+     "what": "cluster, pod e zona mostrati"
+    },
+    {
+     "node": "Google Compute",
+     "what": "i metadati letti"
+    }
+   ]
+  },
+  {
+   "name": "Costruzione e rilascio con Skaffold",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Configurazione di rilascio",
+    "Frontend",
+    "Userservice",
+    "Contacts",
+    "Ledgerwriter",
+    "Balancereader",
+    "Transactionhistory",
+    "Database dei conti",
+    "Database del registro",
+    "Loadgenerator",
+    "Cloud Artifact Registry",
+    "Kubernetes"
+   ],
+   "arrows": [
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Frontend",
+     "data": "immagine dal Dockerfile e manifest del profilo",
+     "kind": "attiva",
+     "cite": "skaffold.yaml:27",
+     "has": "path: src/frontend/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Userservice",
+     "data": "immagine e manifest, con accounts",
+     "kind": "attiva",
+     "cite": "src/accounts/skaffold.yaml:28",
+     "has": "path: userservice/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Contacts",
+     "data": "immagine e manifest, con accounts",
+     "kind": "attiva",
+     "cite": "src/accounts/skaffold.yaml:25",
+     "has": "path: contacts/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Ledgerwriter",
+     "data": "immagine costruita da Jib con Maven, e manifest",
+     "kind": "attiva",
+     "cite": "src/ledger/skaffold.yaml:28",
+     "has": "path: ledgerwriter/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Balancereader",
+     "data": "immagine costruita da Jib con Maven, e manifest",
+     "kind": "attiva",
+     "cite": "src/ledger/skaffold.yaml:25",
+     "has": "path: balancereader/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Transactionhistory",
+     "data": "immagine costruita da Jib con Maven, e manifest",
+     "kind": "attiva",
+     "cite": "src/ledger/skaffold.yaml:31",
+     "has": "path: transactionhistory/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Database dei conti",
+     "data": "immagine e StatefulSet del profilo development",
+     "kind": "attiva",
+     "cite": "skaffold.yaml:33",
+     "has": "path: src/accounts/accounts-db/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Database del registro",
+     "data": "immagine e StatefulSet del profilo development",
+     "kind": "attiva",
+     "cite": "skaffold.yaml:36",
+     "has": "path: src/ledger/ledger-db/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Loadgenerator",
+     "data": "immagine e manifest del profilo development",
+     "kind": "attiva",
+     "cite": "skaffold.yaml:30",
+     "has": "path: src/loadgenerator/skaffold.yaml"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Cloud Artifact Registry",
+     "data": "push delle immagini",
+     "kind": "scrive",
+     "cite": "Makefile:30",
+     "has": "skaffold run --default-repo=us-central1-docker.pkg.dev/${PROJECT_ID}/bank-of-anthos"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Kubernetes",
+     "data": "credenziali del cluster, poi kubectl apply dei manifest",
+     "kind": "chiama",
+     "cite": "Makefile:29",
+     "has": "gcloud container clusters get-credentials --project ${PROJECT_ID} ${CLUSTER} --zone ${ZONE}"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Configurazione di rilascio",
+     "kind": "comando",
+     "what": "make deploy (skaffold run) o make deploy-continuous (skaffold dev)"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Kubernetes",
+     "what": "tutti i servizi in esecuzione"
+    },
+    {
+     "node": "Cloud Artifact Registry",
+     "what": "le immagini"
+    },
+    {
+     "node": "Frontend",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Userservice",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Contacts",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Ledgerwriter",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Balancereader",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Transactionhistory",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Database dei conti",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Database del registro",
+     "what": "immagine costruita e rilasciata"
+    },
+    {
+     "node": "Loadgenerator",
+     "what": "immagine costruita e rilasciata"
+    }
+   ]
+  },
+  {
+   "name": "Verifica di una pull request",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Infrastruttura Terraform",
+    "Cloud Build",
+    "Configurazione di rilascio",
+    "Cloud Storage",
+    "Cloud Artifact Registry",
+    "Userservice",
+    "Kubernetes",
+    "Test end-to-end",
+    "Sign in"
+   ],
+   "arrows": [
+    {
+     "from": "Infrastruttura Terraform",
+     "to": "Cloud Build",
+     "data": "trigger pull-request-ci su ogni pull request",
+     "kind": "attiva",
+     "cite": "iac/tf-multienv-cicd-anthos-autopilot/pipelines.tf:172",
+     "has": "filename = \".github/cloudbuild/ci-pr.yaml\""
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Configurazione di rilascio",
+     "data": "passi del file ci-pr.yaml: licenze, build, test, rilascio, test end-to-end, pulizia",
+     "kind": "legge",
+     "cite": ".github/cloudbuild/ci-pr.yaml:22",
+     "has": "id: check-licenses"
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Cloud Storage",
+     "data": "cache di Skaffold, scaricata e ricaricata",
+     "kind": "legge",
+     "cite": ".github/cloudbuild/ci-pr.yaml:39",
+     "has": "id: download-skaffold-cache"
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Cloud Artifact Registry",
+     "data": "immagini di tutti i servizi, profilo development",
+     "kind": "scrive",
+     "cite": ".github/cloudbuild/ci-pr.yaml:46",
+     "has": "skaffold build --file-output=/workspace/artifacts.json --default-repo=$CONTAINER_REGISTRY"
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Userservice",
+     "data": "skaffold test: pylint, pytest e copertura (e per i servizi Java checkstyle, mvnw test, jacoco)",
+     "kind": "attiva",
+     "cite": ".github/cloudbuild/ci-pr.yaml:58",
+     "has": "skaffold test --build-artifacts=/workspace/artifacts.json --assume-yes --profile=development"
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Kubernetes",
+     "data": "rilascio nel namespace pr<numero>, poi cancellazione",
+     "kind": "chiama",
+     "cite": ".github/cloudbuild/ci-pr.yaml:69",
+     "has": "skaffold deploy --namespace=$NAMESPACE --build-artifacts=/workspace/artifacts.json"
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Test end-to-end",
+     "data": "skaffold verify con l'indirizzo del frontend in CYPRESS_baseUrl",
+     "kind": "attiva",
+     "cite": ".github/cloudbuild/ci-pr.yaml:80",
+     "has": "skaffold verify --build-artifacts=/workspace/artifacts.json --profile=development -m frontend --env-file=.env"
+    },
+    {
+     "from": "Test end-to-end",
+     "to": "Sign in",
+     "data": "visita di /login e invio del modulo, in Chrome",
+     "kind": "chiama",
+     "cite": ".github/workflows/ui-tests/cypress/support/commands.js:27",
+     "has": "cy.get('#login-form').submit()"
+    },
+    {
+     "from": "Test end-to-end",
+     "to": "Cloud Storage",
+     "data": "schermate dei test falliti",
+     "kind": "scrive",
+     "cite": ".github/workflows/ui-tests/run_for_env.sh:42",
+     "has": "gcloud storage cp -r /e2e/cypress/screenshots $COPY_DESTINATION"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Infrastruttura Terraform",
+     "kind": "evento del repository",
+     "what": "apertura o aggiornamento di una pull request"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sign in",
+     "what": "il sito provato in un browser"
+    },
+    {
+     "node": "Cloud Storage",
+     "what": "cache e schermate"
+    },
+    {
+     "node": "Kubernetes",
+     "what": "ambiente provvisorio creato e cancellato"
+    },
+    {
+     "node": "Cloud Artifact Registry",
+     "what": "le immagini della pull request"
+    },
+    {
+     "node": "Userservice",
+     "what": "test unitari eseguiti"
+    },
+    {
+     "node": "Configurazione di rilascio",
+     "what": "i passi letti"
+    }
+   ]
+  },
+  {
+   "name": "Rilascio continuo di una squadra",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Infrastruttura Terraform",
+    "Cloud Build",
+    "Cloud Artifact Registry",
+    "Cloud Deploy",
+    "Kubernetes"
+   ],
+   "arrows": [
+    {
+     "from": "Infrastruttura Terraform",
+     "to": "Cloud Build",
+     "data": "trigger per squadra sulle modifiche a src/<squadra> nel ramo principale",
+     "kind": "attiva",
+     "cite": "iac/tf-multienv-cicd-anthos-autopilot/modules/ci-cd-pipeline/cloud-build-trigger.tf:30",
+     "has": "filename       = \"src/${local.team_name}/cloudbuild.yaml\""
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Cloud Artifact Registry",
+     "data": "immagini del modulo della squadra",
+     "kind": "scrive",
+     "cite": "src/ledger/cloudbuild.yaml:25",
+     "has": "- \"--default-repo=$_CONTAINER_REGISTRY\""
+    },
+    {
+     "from": "Cloud Build",
+     "to": "Cloud Deploy",
+     "data": "gcloud deploy releases create con gli artefatti e il file skaffold del servizio",
+     "kind": "chiama",
+     "cite": "src/ledger/cloudbuild.yaml:46",
+     "has": "- \"--delivery-pipeline=$_SERVICE\""
+    },
+    {
+     "from": "Cloud Deploy",
+     "to": "Kubernetes",
+     "data": "profili staging e production dei file skaffold, verso i due cluster",
+     "kind": "chiama",
+     "cite": "iac/tf-multienv-cicd-anthos-autopilot/pipelines.tf:43",
+     "has": "resource \"google_clouddeploy_target\" \"staging\""
+    }
+   ],
+   "entries": [
+    {
+     "node": "Infrastruttura Terraform",
+     "kind": "evento del repository",
+     "what": "push sul ramo principale che tocca la cartella di una squadra"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Kubernetes",
+     "what": "il servizio in staging e poi in produzione"
+    },
+    {
+     "node": "Cloud Artifact Registry",
+     "what": "le immagini"
+    }
+   ]
+  },
+  {
+   "name": "Pubblicazione di una versione",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Github Actions",
+    "Configurazione di rilascio",
+    "Cloud Artifact Registry",
+    "Infrastruttura Terraform"
+   ],
+   "arrows": [
+    {
+     "from": "Github Actions",
+     "to": "Configurazione di rilascio",
+     "data": "workflow manuale con la versione vX.Y.Z, che lancia make-release.sh",
+     "kind": "attiva",
+     "cite": ".github/workflows/make-release.yaml:93",
+     "has": "bash ./docs/releasing/make-release.sh"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Cloud Artifact Registry",
+     "data": "immagini di tutti i servizi con il tag della versione",
+     "kind": "scrive",
+     "cite": "docs/releasing/make-release.sh:82",
+     "has": "--default-repo=\"${REPO_PREFIX}\" --tag=\"${NEW_VERSION}\""
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Infrastruttura Terraform",
+     "data": "config.yaml comune copiato fra i manifest, sync_branch aggiornato",
+     "kind": "legge",
+     "cite": "docs/releasing/make-release.sh:98",
+     "has": "cp \"${REPO_ROOT}/iac/acm-multienv-cicd-anthos-autopilot/base/config.yaml\" \"${REPO_ROOT}/${RELEASE_DIR}/config.yaml\""
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Github Actions",
+     "data": "ramo release/<versione> e tag inviati, poi la pull request di rilascio",
+     "kind": "trasferisce",
+     "cite": "docs/releasing/make-release.sh:117",
+     "has": "git push --set-upstream origin \"release/${NEW_VERSION}\""
+    }
+   ],
+   "entries": [
+    {
+     "node": "Github Actions",
+     "kind": "comando",
+     "what": "workflow_dispatch di Manual Release Builder"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Cloud Artifact Registry",
+     "what": "le immagini della versione"
+    },
+    {
+     "node": "Github Actions",
+     "what": "la pull request release/<versione> con kubernetes-manifests rigenerati"
+    },
+    {
+     "node": "Infrastruttura Terraform",
+     "what": "il ramo di sincronizzazione aggiornato"
+    }
+   ]
+  },
+  {
+   "name": "Validazione di Terraform",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Github Actions",
+    "Infrastruttura Terraform"
+   ],
+   "arrows": [
+    {
+     "from": "Github Actions",
+     "to": "Infrastruttura Terraform",
+     "data": "terraform init e validate sui due esempi",
+     "kind": "legge",
+     "cite": ".github/workflows/terraform-validate-ci.yaml:48",
+     "has": "terraform validate"
+    }
+   ],
+   "entries": [
+    {
+     "node": "Github Actions",
+     "kind": "evento del repository",
+     "what": "push su main o pull request che tocca iac/tf-*"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Infrastruttura Terraform",
+     "what": "i file validati"
+    }
+   ]
+  },
+  {
+   "name": "Rilascio del ledger monolitico",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Configurazione di rilascio",
+    "Ledgermonolith",
+    "Cloud Storage",
+    "Database del registro",
+    "Google Compute",
+    "Kubernetes",
+    "Rotte del conto"
+   ],
+   "arrows": [
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Ledgermonolith",
+     "data": "mvn package del monolite",
+     "kind": "attiva",
+     "cite": "Makefile:46",
+     "has": "mvn -f src/ledgermonolith/ package"
+    },
+    {
+     "from": "Ledgermonolith",
+     "to": "Cloud Storage",
+     "data": "jar, script di avvio e file di inizializzazione del registro",
+     "kind": "scrive",
+     "cite": "src/ledgermonolith/scripts/build-artifacts.sh:44",
+     "has": "gcloud storage cp $CWD/../target/ledgermonolith-1.0.jar gs://${GCS_PATH}/${APP_JAR}"
+    },
+    {
+     "from": "Ledgermonolith",
+     "to": "Database del registro",
+     "data": "cartella initdb copiata fra gli artefatti",
+     "kind": "legge",
+     "cite": "src/ledgermonolith/scripts/build-artifacts.sh:49",
+     "has": "gcloud storage cp --recursive $CWD/../../ledger-db/initdb gs://${GCS_PATH}"
+    },
+    {
+     "from": "Ledgermonolith",
+     "to": "Google Compute",
+     "data": "macchina virtuale ledgermonolith-service con lo script di avvio",
+     "kind": "chiama",
+     "cite": "src/ledgermonolith/scripts/deploy-monolith.sh:60",
+     "has": "gcloud compute instances create ledgermonolith-service"
+    },
+    {
+     "from": "Configurazione di rilascio",
+     "to": "Kubernetes",
+     "data": "config.yaml che punta le tre API del registro alla macchina virtuale, poi conti, contatti, frontend e loadgenerator",
+     "kind": "chiama",
+     "cite": "Makefile:51",
+     "has": "kubectl apply -f src/ledgermonolith/config.yaml"
+    },
+    {
+     "from": "Rotte del conto",
+     "to": "Ledgermonolith",
+     "data": "transazioni, saldi e storico allo stesso indirizzo",
+     "kind": "chiama",
+     "cite": "src/ledgermonolith/config.yaml:32",
+     "has": "BALANCES_API_ADDR: \"ledgermonolith-service.c.[PROJECT_ID].internal:8080\""
+    }
+   ],
+   "entries": [
+    {
+     "node": "Configurazione di rilascio",
+     "kind": "comando",
+     "what": "make monolith"
+    },
+    {
+     "node": "Rotte del conto",
+     "kind": "rotta",
+     "what": "ogni richiesta del conto, con questa configurazione"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Google Compute",
+     "what": "la macchina virtuale del monolite"
+    },
+    {
+     "node": "Kubernetes",
+     "what": "gli altri servizi puntati al monolite"
+    },
+    {
+     "node": "Cloud Storage",
+     "what": "gli artefatti"
+    },
+    {
+     "node": "Database del registro",
+     "what": "i file di inizializzazione riusati"
+    }
+   ]
+  }
+ ],
+ "areas": [
+  {
+   "name": "accesso e identità",
+   "present": true
+  },
+  {
+   "name": "funzioni principali",
+   "present": true
+  },
+  {
+   "name": "pagamenti e abbonamenti",
+   "present": false
+  },
+  {
+   "name": "dati dell'utente",
+   "present": false
+  },
+  {
+   "name": "integrazioni esterne",
+   "present": true
+  },
+  {
+   "name": "comunicazioni",
+   "present": false
+  },
+  {
+   "name": "amministrazione",
+   "present": false
+  },
+  {
+   "name": "esercizio",
+   "present": true
+  }
+ ],
+ "packages": [
+  {
+   "path": "src/frontend",
+   "manifest": "src/frontend/pyproject.toml",
+   "kind": "python-package"
+  },
+  {
+   "path": "src/accounts/userservice",
+   "manifest": "src/accounts/userservice/pyproject.toml",
+   "kind": "python-package"
+  },
+  {
+   "path": "src/accounts/contacts",
+   "manifest": "src/accounts/contacts/pyproject.toml",
+   "kind": "python-package"
+  },
+  {
+   "path": "src/loadgenerator",
+   "manifest": "src/loadgenerator/pyproject.toml",
+   "kind": "python-package"
+  },
+  {
+   "path": ".",
+   "manifest": "pom.xml",
+   "kind": "maven-aggregator"
+  },
+  {
+   "path": "src/ledger/ledgerwriter",
+   "manifest": "src/ledger/ledgerwriter/pom.xml",
+   "kind": "maven-module"
+  },
+  {
+   "path": "src/ledger/balancereader",
+   "manifest": "src/ledger/balancereader/pom.xml",
+   "kind": "maven-module"
+  },
+  {
+   "path": "src/ledger/transactionhistory",
+   "manifest": "src/ledger/transactionhistory/pom.xml",
+   "kind": "maven-module"
+  },
+  {
+   "path": "src/ledgermonolith",
+   "manifest": "src/ledgermonolith/pom.xml",
+   "kind": "maven-module"
+  },
+  {
+   "path": "src/accounts/accounts-db",
+   "manifest": "src/accounts/accounts-db/Dockerfile",
+   "kind": "docker-image"
+  },
+  {
+   "path": "src/ledger/ledger-db",
+   "manifest": "src/ledger/ledger-db/Dockerfile",
+   "kind": "docker-image"
+  },
+  {
+   "path": ".github/workflows/ui-tests",
+   "manifest": ".github/workflows/ui-tests/Dockerfile",
+   "kind": "docker-image"
+  },
+  {
+   "path": "iac/tf-anthos-gke",
+   "manifest": "iac/tf-anthos-gke/main.tf",
+   "kind": "terraform-module"
+  },
+  {
+   "path": "iac/tf-multienv-cicd-anthos-autopilot",
+   "manifest": "iac/tf-multienv-cicd-anthos-autopilot/main.tf",
+   "kind": "terraform-module"
+  }
+ ],
+ "gaps": [
+  {
+   "what": "A quale servizio arriva ogni chiamata del frontend",
+   "why": "L'indirizzo è composto da una variabile d'ambiente (TRANSACTIONS_API_ADDR, BALANCES_API_ADDR, HISTORY_API_ADDR, CONTACTS_API_ADDR, USERSERVICE_API_ADDR) il cui valore sta in una ConfigMap: il codice da solo non nomina il destinatario, e con src/ledgermonolith/config.yaml le stesse chiamate vanno al monolite."
+  },
+  {
+   "what": "Quale servizio usa quale database",
+   "why": "ACCOUNTS_DB_URI e SPRING_DATASOURCE_URL arrivano da ConfigMap (accounts-db-config, ledger-db-config); nei servizi Java la connessione è fatta da Spring senza una riga di codice. In staging e produzione gli stessi nomi puntano a Cloud SQL su 127.0.0.1."
+  },
+  {
+   "what": "Il contenuto delle chiavi JWT",
+   "why": "extras/jwt/jwt-secret.yaml e iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml sono file di segreti: non aperti né citati. Che chiave privata e pubblica siano una coppia si legge solo dai nomi delle voci montate."
+  },
+  {
+   "what": "L'applicazione OAuth esterna",
+   "why": "Nessun file del progetto la contiene: REGISTERED_OAUTH_CLIENT_ID e ALLOWED_OAUTH_REDIRECT_URI vengono da una ConfigMap facoltativa oauth-config; extras/apigee la descrive solo a parole. La rotta POST /consent non scambia un codice: consegna il token del cliente al redirect URI."
+  },
+  {
+   "what": "Reindirizzamenti verso url_for('login') e url_for('consent')",
+   "why": "I nomi puntano alle funzioni delle rotte POST, ma il browser segue il reindirizzamento con GET e arriva a login_page e consent_page: lo si stabilisce solo conoscendo il comportamento di Flask e del browser."
+  },
+  {
+   "what": "Pagamenti e abbonamenti dichiarata assente",
+   "why": "Depositi e pagamenti sono la funzione principale di questa banca dimostrativa, non l'incasso di un prodotto: non c'è processore dei pagamenti né abbonamento. Scelta di modello, non un fatto del codice."
+  },
+  {
+   "what": "Cloud Trace e Cloud Deploy senza voce di anagrafica",
+   "why": "service-registry.json non ha un id per Cloud Trace né per Cloud Deploy; le metriche usano la voce google-stackdriver, il nome che il codice dà a Cloud Monitoring."
+  },
+  {
+   "what": "Ordine e bersagli di Cloud Deploy",
+   "why": "La pipeline di consegna è definita in Terraform con moduli esterni e variabili; quale cluster riceve che cosa si conferma solo con un progetto Google Cloud vero."
+  },
+  {
+   "what": "extras/",
+   "why": "Esempi e varianti facoltative non usate dal rilascio principale (Apigee, ASM multicluster, backup, Cloud SQL a mano, Istio, dashboard, Postgres HA con HPA, Prometheus, TLS): elencate, non modellate. extras/jwt è il secret delle chiavi."
+  },
+  {
+   "what": "docs/ e .github (modelli, CODEOWNERS, renovate.json5, bot)",
+   "why": "Documentazione e configurazione del repository: non parti del sistema. Renovate aggiorna le dipendenze secondo .github/renovate.json5."
+  },
+  {
+   "what": "kubernetes-manifests/ rispetto a src/*/k8s",
+   "why": "I manifest alla radice sono generati da make-release.sh con skaffold render: la stessa informazione dei file k8s/base in due posti, con le immagini fissate a una versione."
+  },
+  {
+   "what": "Librerie dell'interfaccia",
+   "why": "Bootstrap Material Design, Popper, jQuery e i font arrivano da unpkg, code.jquery.com e Google Fonts nei template condivisi, senza manifesto; il browser li scarica a ogni pagina."
+  },
+  {
+   "what": "Ritardo fra scrittura e lettura",
+   "why": "Dopo una transazione il frontend aspetta 0,25 secondi perché le cache di saldo e storico si aggiornino con la lettura periodica: la coerenza fra i tre servizi è solo nel tempo, e nessun arco la prova."
+  },
+  {
+   "what": "Sezione devops osservata solo sui file",
+   "why": "Build, test e rilascio non sono stati eseguiti: i comandi sono quelli scritti in skaffold.yaml, Makefile e nei file di Cloud Build."
+  }
+ ]
+}
