@@ -315,8 +315,12 @@ class LabelTests(unittest.TestCase):
                  ("java", "string_literal", 'class A { void f() { g("/orders"); } }', "/orders"),
                  ("java", "string_literal", 'class A { void f() { g("a\\nb"); } }', None),
                  ("kotlin", "string_literal", 'fun f() { g("/orders") }', "/orders"),
-                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/$x") }', None),  # a computed text is no literal
-                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/${x}") }', None),
+                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/$x") }', "/o/${}"),  # a computed part is one hole
+                 ("kotlin", "string_literal", 'fun f(x: String) { g("/o/${x}") }', "/o/${}"),
+                 ("kotlin", "string_literal", 'fun f(x: String, y: Int) { g("/o/$x/${y}/p") }', "/o/${}/${}/p"),
+                 ("kotlin", "string_literal", 'fun f(a: String, b: String) { g("${a}${b}/p") }', "${}${}/p"),
+                 ("kotlin", "string_literal", 'fun f(a: String) { g("/o/${h("/in/$a")}/p") }', "/o/${}/p"),  # a string in a hole is no piece
+                 ("kotlin", "string_literal", 'fun f() { g("") }', None),
                  ("go", "interpreted_string_literal", 'package a\nfunc f() { g("/orders") }', "/orders"),
                  ("go", "raw_string_literal", "package a\nfunc f() { g(`/orders`) }", "/orders"),
                  ("csharp", "string_literal", 'class A { void F() { G("/orders"); } }', "/orders"),

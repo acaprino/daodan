@@ -269,12 +269,15 @@ def _function(facts: flows.Facts, classes: dict, anonymous: set, parsed: tuple, 
 
 def _string(node, source: bytes, grammar: str, exact: bool = False) -> str | None:
     """The text of a string literal node, by the grammar's `strings` query: its `@text`, or, for a template, the text
-    between its backticks (`@template`), with the `${...}` it holds for the caller to accept or refuse. A computed text
-    and a node of a grammar the data has no query for are none; with `exact`, so is a text with an escape, which is
-    not the value it is written as (a flow rule's value: `flows.py`)."""
+    between its backticks (`@template`), with the `${...}` it holds for the caller to accept or refuse. A string a grammar
+    holds as pieces (Kotlin: `@fragment` and `@hole`, which `"/o/$id"` and `"/o/${id}"` both have) is its fragments with
+    each computed part as `${}`, the one spelling of a hole. A computed text and a node of a grammar the data has no query
+    for are none; with `exact`, so is a text with an escape, which is not the value it is written as (a flow rule's value:
+    `flows.py`; Kotlin keeps an escape inside its fragment, so it is read as written)."""
     from tree_sitter import QueryCursor
 
     query = _query(grammar, "strings") if grammar in QUERIES["strings"] else None
+    pieces = {}  # by position: whether the piece is a hole, and its node
     for _, captures in QueryCursor(query).matches(node) if query is not None else ():
         for found in captures.get("text", []):
             if found.parent == node and not (exact and found.named_children):  # an escape in the text (Python) is a child
@@ -282,6 +285,10 @@ def _string(node, source: bytes, grammar: str, exact: bool = False) -> str | Non
         for found in captures.get("template", []):
             if found == node:
                 return _text(source, found)[1:-1]
+        for name in ("fragment", "hole"):
+            pieces.update({found.start_byte: (name == "hole", found) for found in captures.get(name, []) if found.parent == node})
+    if any(hole for hole, _ in pieces.values()):
+        return "".join("${}" if hole else _text(source, found) for _, (hole, found) in sorted(pieces.items()))
     return None
 
 
