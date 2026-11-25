@@ -74,7 +74,7 @@ function App() {
   const { frame, leave } = useShared();
   const { field, reveal, detail, close } = frame;
   const notify = useNotify(), window_ = useWindow();
-  const narrow = useMedia('(width < 620px)');  // as on a phone, the status row is short
+  const narrow = useMedia('(width < 620px)'), tight = useMedia('(width < 1000px)');  // the status row is one line
   const place = PLACES.find(item => item.id === s.kept.screen)!;
   useFocusKept(s.kept.analysisStage);
   const title = useRef('Dettaglio');
@@ -104,7 +104,7 @@ function App() {
       {!narrow && <Progress aria-label="Passi completati della pipeline" value={state.percent} size="sm" inline />}
       <Text variant="strong" aria-hidden>{state.percent}%</Text>
     </>}
-    {c && <><Spacer /><Text data-selectable="">{narrow ? slug(c) : `${slug(c)} · ${c.branch} · ${short(c.commit)} · run ${c.run_id}`}</Text></>}
+    {c && <><Spacer /><Text data-selectable="">{tight ? slug(c) : `${slug(c)} · ${c.branch} · ${short(c.commit)} · run ${c.run_id}`}</Text></>}
   </>;
   return <FrameContext value={frame}>
     <AppWindow views={PLACES} view={place.id} onView={screen => { leave(); model.navigate(screen); }} search={field && (() => find(field))}

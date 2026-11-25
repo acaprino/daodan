@@ -8,7 +8,8 @@
     "typecheck": "tsc --noEmit",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && vite build --mode app",
-    "test:ui": "node test/browser.mjs"
+    "test:ui": "node test/browser.mjs",
+    "test:frame": "node test/shots.mjs"
   },
   "imago": {
     "src": ["src", "app"],
