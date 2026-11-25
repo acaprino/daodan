@@ -1538,7 +1538,17 @@ try {
   await closeIn(details);
   await details.waitFor({ state: 'hidden' });
   // A group is entered by the inspector's action, by its row's own control, or by a double press; «Su» goes back.
-  const still = async () => [(await view('Logica').boundingBox()).x, (await up.boundingBox()).x, (await infoButton.boundingBox()).x];
+  const still = async () => {  // once nothing slides
+    const places = async () => [(await view('Logica').boundingBox()).x, (await up.boundingBox()).x, (await infoButton.boundingBox()).x];
+    let last = [];
+    await until(async () => {
+      const now = await places(), same = now.join() === last.join();
+      last = now;
+      if (!same) await frames(15);
+      return same;
+    }, 'the controls at rest');
+    return last;
+  };
   const before = await still();
   await row(/^web/).click();
   await details.getByRole('button', { name: 'Entra in web', exact: true }).click();
