@@ -3,6 +3,7 @@
  "root": "bank-of-anthos",
  "scope": "sistema",
  "made": "2026-11-25",
+ "commit": "db35fea9fd090150e2398106aadb475576f80d94",
  "nodes": [
   {
    "name": "Bank of Anthos",

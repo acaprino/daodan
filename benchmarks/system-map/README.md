@@ -30,6 +30,16 @@ Nel comando `score.py system`, `flows_by_nodes` misura la sovrapposizione dei no
 - `expected/phazly-payments.json`: gli 11 nodi e i 3 flussi (pagamento, gestione abbonamento, paywall e limiti d'uso) del grafo d'insieme della mappa fatta a mano il 12 novembre 2026, confermati dal proprietario lo stesso giorno; i 35 percorsi sono letti dall'archivio di phazly. Il pagamento dal web e il suo ritorno (`SubscriptionContext.tsx`, `CheckoutVerificationOverlay.tsx`, `checkout-complete/index.html`) stanno nel Paywall, gli avvisi di prova e scadenza nella Scheda abbonamento; Abbonamento e Consumi sono le chiavi `mongo/subscriptions` e `mongo/usageEvents`; la Landing è un nodo non visto. Un nodo con codice si ritrova per file e chiavi di store, un nodo senza codice se un nodo nella stessa posizione cita uno dei suoi file, un nodo non visto per posizione e tipo.
 - `expected/externals-<caso>.json`: per ogni caso l'elenco a mano letto dai manifest, dai Dockerfile, dai file compose e dai modelli di `.env` del perimetro dello snapshot (`read`). In `externals` stanno ogni servizio esterno che quei file nominano e i progetti con un ruolo nell'architettura (framework dell'applicazione, guscio dell'app, accesso ai dati, stato, code, container), come la mappa fatta a mano di phazly ne nomina 6 su 59 pacchetti. In `also` stanno le cose usate che una persona non nomina (linguaggi, strumenti di build, stile, test e lint, librerie di utilità): non contano per il richiamo né come errore. Un identificatore che il registro non ha è scritto come nome semplice (`zustand`, `google-play-billing`).
 
+- `expected/<caso>-system.json` ed `expected/real/<caso>-graph.json`, per cinque progetti pubblici di complessità crescente (`expected/real/sources.json`: repository, commit, licenza, perché): `auth0-go`, `sveltekit-realworld`, `microblog`, `next-subscriptions`, `bank-of-anthos`. Scritti a mano il 25 novembre 2026 leggendo il codice a quel commit, senza eseguirlo: sono ciò che Daodan dovrebbe dare a refactoring finito, non una sua uscita, e nessuna misura è ancora stata fatta contro di loro. La mappa di sistema segue `reference-brief.md` e passa `python reference.py check expected/<caso>-system.json CHECKOUT` senza problemi. Il grafo (`daodan/real-graph-expected/v1`) è ciò che gli otto step danno sotto la mappa: moduli e tecnologie, ingressi (rotte, pagine, azioni), rotte unite ai loro chiamanti per metodo e percorso, chiamate ai servizi esterni, store con chi scrive e chi legge, configurazione e lacune; lo controlla `python real_references.py <caso> CHECKOUT` (percorsi, simboli e righe citati), e `test_real_references.py` ne tiene la forma. Oltre ai campi comuni ogni grafo aggiunge quelli che il suo framework chiede (azioni di form, server action, hook, webhook, lavori): non sono ancora un contratto.
+
+| Caso | Nodi | Flussi | Frecce | Rotte | Chiamanti uniti | Chiamate esterne | Store | Lacune del grafo |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `auth0-go` | 17 | 7 | 45 | 11 | 9 | 9 | 6 | 7 |
+| `sveltekit-realworld` | 20 | 18 | 137 | 21 | 53 | 24 | 3 | 16 |
+| `microblog` | 61 | 33 | 176 | 36 | 60 | 13 | 13 | 22 |
+| `next-subscriptions` | 38 | 24 | 164 | 9 | 71 | 42 | 13 | 25 |
+| `bank-of-anthos` | 44 | 27 | 158 | 40 | 74 | 34 | 12 | 25 |
+
 ## Esecuzione
 
 | Misura | Comando |

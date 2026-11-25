@@ -3088,7 +3088,7 @@
      "to": "Cornice della pagina",
      "data": "elenco con nome, dati e istante di ogni notifica",
      "kind": "trasferisce",
-     "cite": "app/main/routes.py:239",
+     "cite": "app/main/routes.py:238",
      "has": "'name': n.name"
     },
     {
