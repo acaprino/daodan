@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@acaprino/imago": "https://github.com/acaprino/imago/releases/download/v1.4.1/acaprino-imago-1.4.1.tgz",
-    "@acaprino/sigrid": "https://github.com/acaprino/sigrid/releases/download/v6.15.1/acaprino-sigrid-6.15.1.tgz",
+    "@acaprino/sigrid": "https://github.com/acaprino/sigrid/releases/download/v6.16.1/acaprino-sigrid-6.16.1.tgz",
     "@tauri-apps/api": "2.12.4",
     "elkjs": "0.12.1",
     "react": "19.3.1",
