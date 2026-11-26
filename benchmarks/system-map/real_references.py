@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Check the graph references written by hand for real projects (`expected/real/CASE-graph.json`).
+"""Check the graph references written by hand for real projects (`graph.json` of a `real-*` fixture of the corpus).
 
     python real_references.py                 # the shape of every graph reference, no checkout needed
     python real_references.py CASE CHECKOUT   # also every path, symbol and line it cites, in a checkout of the case
-                                              # at the commit `expected/real/sources.json` names
+                                              # at the commit its `source.json` names
 
-A case has two references. The system map (`expected/real/CASE-system.json`) is checked by `reference.py`. The graph
-(`daodan/real-graph-expected/v1`) is what the eight steps should give below the map: modules, technologies, entry
-points, the routes with their callers, the calls to externals, the stores and the gaps. In a checkout a cited `path`
-exists, a `path:line` is a line of that file, the name after `path::` is written in that file, and a route's `at`
-line holds its path (or its `literal`, where the framework takes the path from the file's place). Nothing here runs
-the project's code.
+A real case that measures the whole of Daodan is one folder, `benchmarks/project-model/fixtures/real-CASE/`:
+`source.json` (repository and commit), `expected.json` (the pre-map: `project-model/SCHEMA.md`), `system.json` (the
+system map with its flows, checked by `reference.py`) and `graph.json`. The graph (`daodan/real-graph-expected/v1`)
+is what the eight steps should give below the map: modules, technologies, entry points, the routes with their
+callers, the calls to externals, the stores and the gaps. In a checkout a cited `path` exists, a `path:line` is a
+line of that file, the name after `path::` is written in that file, and a route's `at` line holds its path (or its
+`literal`, where the framework takes the path from the file's place). Nothing here runs the project's code.
 """
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "daodan/core"))
 import system_map  # noqa: E402
 
-REAL = HERE / "expected/real"
+FIXTURES = HERE.parent / "project-model/fixtures"
 GRAPH_SCHEMA = "daodan/real-graph-expected/v1"
 GRAPH_FIELDS = {"schema", "case", "modules", "module_edges", "externals", "entry_points", "routes", "external_calls",
                 "stores", "config", "gaps"}
@@ -35,12 +36,12 @@ PLACES = {"manifest", "root", "declared_in", "at", "caller", "handler", "middlew
 
 
 def cases() -> list[str]:
-    """The cases whose graph reference is written."""
-    return sorted(c for c in json.loads((REAL / "sources.json").read_text(encoding="utf-8")) if (REAL / f"{c}-graph.json").is_file())
+    """The real cases whose graph reference is written."""
+    return sorted(folder.name.removeprefix("real-") for folder in FIXTURES.glob("real-*") if (folder / "graph.json").is_file())
 
 
 def _load(case: str) -> dict:
-    return json.loads((REAL / f"{case}-graph.json").read_text(encoding="utf-8"))
+    return json.loads((FIXTURES / f"real-{case}/graph.json").read_text(encoding="utf-8"))
 
 
 def shape(case: str) -> list[str]:

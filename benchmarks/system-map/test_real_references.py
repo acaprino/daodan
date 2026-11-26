@@ -9,13 +9,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import real_references  # noqa: E402
 
 
-def test_every_case_has_its_two_references_and_the_graph_keeps_its_shape():
-    sources = json.loads((real_references.REAL / "sources.json").read_text(encoding="utf-8"))
-    assert real_references.cases() == sorted(sources)
-    for case, source in sources.items():
+COMPLETE = ("auth0-go", "bank-of-anthos", "microblog", "next-subscriptions", "sveltekit-realworld")
+
+
+def test_a_complete_case_is_one_folder_with_its_four_files_and_the_graph_keeps_its_shape():
+    assert real_references.cases() == sorted(COMPLETE)
+    for case in COMPLETE:
+        folder = real_references.FIXTURES / f"real-{case}"
+        source = json.loads((folder / "source.json").read_text(encoding="utf-8"))
         assert set(source) == {"repo", "commit", "licence", "why"} and len(source["commit"]) == 40, case
-        system = json.loads((real_references.REAL / f"{case}-system.json").read_text(encoding="utf-8"))
+        system = json.loads((folder / "system.json").read_text(encoding="utf-8"))
         assert (system["case"], system["commit"]) == (case, source["commit"])
+        assert (folder / "expected.json").is_file(), case
         assert real_references.shape(case) == []
 
 

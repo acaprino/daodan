@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/sveltejs/realworld",
+ "commit": "df796708040f5200ec572b28ab7f88ecee5794dd",
+ "licence": "MIT",
+ "why": "one SvelteKit app whose pages, form actions and server routes all go to one external REST API; the framework's own tool lists the routes"
+}

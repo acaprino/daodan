@@ -156,6 +156,19 @@ Il frammento di `declared_in` di una toolchain Gradle è il nome che il modello 
 
 I runner eseguono `real` in un secondo passaggio.
 
+### Casi reali completi
+
+Regola del proprietario, 26 novembre 2026: un progetto reale misura Daodan nel complesso, non una sua parte. Un caso completo è una cartella sola con quattro file:
+
+| File | Che cosa dice | Formato e controllo |
+| --- | --- | --- |
+| `source.json` | repository, commit, licenza, perché | — |
+| `expected.json` | la pre-mappa: linguaggi, unità, toolchain, dipendenze, framework, servizi, esclusi | [SCHEMA.md](SCHEMA.md), `score.py --check` |
+| `graph.json` | il grafo: ingressi, rotte unite ai chiamanti, chiamate esterne, store, lacune | `daodan/real-graph-expected/v1`, `../system-map/real_references.py` |
+| `system.json` | la mappa di sistema con i flussi | `../system-map/reference-brief.md`, `../system-map/reference.py check` |
+
+Completi oggi: `real-auth0-go`, `real-sveltekit-realworld`, `real-microblog`, `real-next-subscriptions`, `real-bank-of-anthos`. Le altre 50 cartelle `real-*` hanno solo `source.json` ed `expected.json`, e le 40 `real-stack-*` solo framework e servizi: sono casi parziali, da completare. I candidati per i casi nuovi sono in [CANDIDATI.md](CANDIDATI.md).
+
 | Famiglia | Fixture | Cosa mette alla prova |
 | --- | --- | --- |
 | js | `js-angular` | unità dichiarate da `angular.json`, non da `package.json`; dipendenza via alias di `tsconfig` |

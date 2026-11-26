@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/GoogleCloudPlatform/bank-of-anthos",
+ "commit": "db35fea9fd090150e2398106aadb475576f80d94",
+ "licence": "Apache-2.0",
+ "why": "several services in two languages (Python and Java) that call each other over HTTP with a signed token, two databases, and a load generator"
+}
