@@ -41,9 +41,7 @@ function licenseNotices(viewer: boolean): Plugin {
       const notices = [...directories].map(directory => {
         const pkg = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
         const license = readdirSync(directory).find(name => /^licen[cs]e/i.test(name));
-        const text = license ? readFileSync(join(directory, license), 'utf8').replaceAll('
-', '
-').trim() : pkg.license;
+        const text = license ? readFileSync(join(directory, license), 'utf8').replaceAll('\r\n', '\n').trim() : pkg.license;
         return `${pkg.name} ${pkg.version} (${pkg.license})\n\n${text}`;
       }).sort();
       this.emitFile({ type: 'asset', fileName: 'LICENSES.txt', source: notices.join('\n\n----------------\n\n') + '\n' });
