@@ -16,7 +16,6 @@ module so it works without any external dependency.
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 from file_formats import SOURCES
@@ -32,6 +31,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken
+from . import header
 from .detect import detect as _detect
 
 __all__ = [
@@ -101,43 +101,18 @@ SUPPORTED_LANGUAGES: tuple[str, ...] = (
 SUPPORTED_EXTENSIONS: dict[str, str] = SOURCES
 
 
-# A `.h` header is C++ when its text, comments and string literals left out, has
-# a construct C does not: a namespace body (its name nested too, `a::b`), a class
-# body, a template, an access label, a using-directive. `extern "C"` under
-# `__cplusplus` is a C header's own guard. One with a directive of Objective-C's is
-# Objective-C, which the snapshot does not read. No pattern has a way back (the possessive `*+`, a comment never
-# closed is one to the end): the text is nobody's, and the cost of each grows with its length
-# (`benchmarks/header-language`, where the tree-sitter ways are measured against these).
-_C_NOISE_RE = re.compile(r'//[^\n]*|/\*.*?(?:\*/|\Z)|(?<!\\)"(?:\\.|[^"\\\n])*+"|(?<!\\)\'(?:\\.|[^\'\\\n])*+\'', re.DOTALL)
-# What C lacks: a namespace (an anonymous one or an alias opening a line: C names a struct tag or a variable
-# `namespace`), a class, a template, an access specifier, `using namespace`, a name of `std::`, and a C++ standard
-# library header (the last two are Linguist's own rule for `.h`).
-_CPP_HEADER_RE = re.compile(
-    r"\bnamespace\s+\w+(?:\s*::\s*(?:inline\s+)?\w+)*\s*\{|^[ \t]*namespace\s*\{|^[ \t]*namespace\s+\w+\s*=(?!=)"
-    r"|\bclass\s+\w++(?:(?!\bclass\s+\w)[^;(){}])*+\{|\btemplate\s*<|^[ \t]*(?:public|private|protected)\s*:|\busing\s+namespace\b|\bstd::\w"
-    r"|^[ \t]*#\s*include\s*<(?:cstdint|string|vector|map|list|array|bitset|queue|stack|forward_list|unordered_map"
-    r"|unordered_set|(?:i|o|io)stream)>",
-    re.MULTILINE,
-)
-_OBJC_HEADER_RE = re.compile(r"^[ \t]*@(?:interface|implementation|protocol|class|property|end)\b", re.MULTILINE)
-
-
 def detect_language(file_path: Path, content: str | None = None) -> str | None:
     """
     The language of a file: its extension, then the rules of that extension on its content (`languages.detect`),
     then the extension's own language. Returns the canonical language identifier, or None if unsupported.
 
-    The `.h` rule stays here until the syntax-tree way replaces it (spec of 24 November, «T»):
-    `benchmarks/header-language` measures it where it is, and it then becomes a class of `detect/rules/`.
+    A `.h` header with text is read from its syntax tree by `languages.header.header_language` (Objective-C,
+    C++, or C) until it becomes a class of `detect/rules/`.
     """
     suffix = file_path.suffix.lower()
 
     if suffix == ".h" and content is not None:
-        code = _C_NOISE_RE.sub(" ", content)
-        if _OBJC_HEADER_RE.search(code):
-            return None
-        if _CPP_HEADER_RE.search(code):
-            return Language.CPP
+        return header.header_language(content)
 
     return _detect(file_path, content).language
 

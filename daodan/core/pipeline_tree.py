@@ -23,7 +23,6 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -35,7 +34,12 @@ OUT = SCRIPT_DIR.parents[1] / "viewer" / "pipeline" / "data.ts"
 HEAD = ("// Written by daodan/core/pipeline_tree.py from the code's declarations: not edited by hand. `python pipeline_tree.py build`\n"
         "// writes it again, and `check` (tests/test_codebase_map_pipeline_tree.py) fails when it is behind.\n"
         "import type { Data } from './tree.ts';\n\nexport const DATA: Data = ")
-TOOL_VERSION = re.compile(r"v?\d+(\.\d+)+")  # a source's VERSION that is a tool's release, not `daodan/premap/v3`
+
+
+def _is_release(value: str) -> bool:
+    """A source's VERSION that is a tool's release, not `daodan/premap/v3`."""
+    parts = value.removeprefix("v").split(".")
+    return len(parts) > 1 and all(part.isascii() and part.isdigit() for part in parts)
 
 
 def declared() -> dict:
@@ -54,7 +58,7 @@ def declared() -> dict:
     from dynamic import app as dynamic_app, callgrind
     from indexers import components, jvm, python as scip_python, runtime
     from languages import detect
-    versions = {source.NAME: str(source.VERSION) for source in premap.SOURCES if TOOL_VERSION.fullmatch(str(source.VERSION))}
+    versions = {source.NAME: str(source.VERSION) for source in premap.SOURCES if _is_release(str(source.VERSION))}
     analyzers = []
     for analyzer in indexers.analyzers():
         module = analyzer.__name__.rsplit(".", 1)[-1]
@@ -72,12 +76,12 @@ def declared() -> dict:
                for language, module in READERS.items()}
     read = [{"id": language, "extensions": [e for e, l in file_formats.SOURCES.items() if l == language], "reader_module": readers[language]}
             for language in languages.SUPPORTED_LANGUAGES if language in readers]
-    mise = re.search(r"/(v[\d.]+)/", preparation.MISE[0])
+    mise = next((part for part in preparation.MISE[0].split("/") if part.startswith("v") and _is_release(part)), None)
     versions.update({"stack-analyser": stack_analyser.VERSION, "buchi di Python": "Pyright " + scip_python.PYRIGHT,
                      "componenti": "Volar " + components.PIN.rsplit("@", 1)[1], "esplorazione": "Playwright " + dynamic_app.PLAYWRIGHT,
                      "mascheratura dei segreti": secret_mask.VERSION, "ambienti Python": engine_tools.UV_VERSION,
                      "Node di Daodan": runtime.NODE_VERSION, "motore di container": "Kiri " + container.KIRI_VERSION,
-                     "anagrafica dei formati": "Linguist " + format_catalog.VERSION, **({"toolchain del progetto": mise[1]} if mise else {})})
+                     "anagrafica dei formati": "Linguist " + format_catalog.VERSION, **({"toolchain del progetto": mise} if mise else {})})
     return {"sources": [source.NAME for source in premap.SOURCES], "analyzers": analyzers, "observers": observers, "languages": read,
             "supported": list(languages.SUPPORTED_LANGUAGES), "rules": sorted({rule.id for group in detect.RULES.values() for rule in group}),
             "versions": versions}
@@ -104,7 +108,7 @@ def tree(decl: dict) -> dict:
     row("s1", "p1", "ts.xml-document", "data/language-rules.toml", "regola", "host", "Confronto letterale sul testo", "Un .ts che inizia come XML è una traduzione Qt, non TypeScript: non si legge.", langs=["typescript"])
     row("s1", "p1", "sql.oracle-words", "data/language-rules.toml", "regola", "host", "Confronto letterale sul testo", "Un .sql con parole solo di Oracle è PL/SQL.", langs=["sql", "plsql"])
     row("s1", "p1", "sql.anchored-type", "languages/detect/rules/sql_rowtype.py", "regola", "host", "Classe con un'espressione regolare", "%TYPE e %ROWTYPE dopo un nome: PL/SQL.", langs=["sql", "plsql"])
-    row("s1", "p1", "regola dei .h", "languages/__init__.py", "regola", "host", "Espressioni regolari sul testo senza commenti e stringhe", "Un .h è C, C++ oppure Objective-C (che non si legge). Deciso: passerà all'albero sintattico.", langs=["c", "cpp"], status="da spostare nel modulo")
+    row("s1", "p1", "regola dei .h", "languages/header.py", "regola", "host", "Albero sintattico C/C++ (tree-sitter); regex per Objective-C", "Un .h è C, C++ oppure Objective-C (che non si legge).", langs=["c", "cpp"], status="da spostare nel modulo")
     row("s3", "p1", "go-enry", "premap/enry.py", "comando", "container", "go-enry, il port in Go di Linguist", "Linguaggio di ogni file e file generati, di terze parti o di documentazione. Oggi è solo un'etichetta: la lettura non lo usa.", all=True, status="posto nel piano da decidere", declared="go-enry")
 
     # 2 lettura del codice
@@ -361,7 +365,7 @@ def check(decl: dict | None = None, written: str | None = None) -> list[str]:
         for mode in keys:
             if row[mode] not in keys[mode]:
                 problems.append(f"{row['name']}: `{row[mode]}` is no step of `{mode}`")
-        for part in re.split(r", | \+ ", row["file"]):
+        for part in row["file"].replace(" + ", ", ").split(", "):
             base = SCRIPT_DIR.parent if part.startswith("data/") else SCRIPT_DIR
             if not (any(base.glob(part)) if "*" in part else (base / part).exists()):
                 problems.append(f"{row['name']}: names {part}, which is not there")

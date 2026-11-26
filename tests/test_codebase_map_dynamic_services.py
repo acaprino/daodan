@@ -2221,8 +2221,8 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
              "compose": (composed, "postgres://postgres:changethis@localhost:5432/app")}
     image = (modal.Image.debian_slim(python_version="3.13").apt_install("git")
              .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"])
-             # `container` reads the package managers' hosts at import, from `data` beside its folder's parent
-             .add_local_file(SCRIPTS.parent / "data/package-managers.json", "/daodan/data/package-managers.json"))
+             # `container` and its imports read data registers at import, from `data` beside its folder's parent
+             .add_local_dir(SCRIPTS.parent / "data", "/daodan/data", ignore=["marks/**"]))
     with the_driver() as modal_pipeline:
         bundle = modal_pipeline._bundle()
         box = modal.Sandbox.create(image=image, app=modal.App.lookup("daodan-pipeline-sandboxes",

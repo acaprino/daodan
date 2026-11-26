@@ -10,3 +10,9 @@ effectiveness-metrics.json*
 benchmarks/system-map/expected/*-system.json
 benchmarks/system-map/results/system/
 benchmarks/system-map/results/brief-*.json
+
+# Full `next analyze` exports: the probe rewrites them; results/diff.json keeps the evidence (README).
+benchmarks/next-server-actions/results/intact.json
+benchmarks/next-server-actions/results/no-directive.json
+# Temporary dynamic-step-2 probe (D-143/D-136): the resolved defect is covered by a committed test.
+benchmarks/project-model/tmp_dynstep2_rustdocs.py

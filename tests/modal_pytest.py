@@ -124,7 +124,7 @@ if LOCAL:
     for folder in ("daodan", "plugins", "tests", "benchmarks", "docs"):
         image = image.add_local_dir(REPO / folder, f"{REMOTE}/{folder}", ignore=[*skipped, fixtures])
     image = image.add_local_dir(REPO / "benchmarks" / fixtures, f"{REMOTE}/benchmarks/{fixtures}")
-    for file in ("AGENTS.md", "pyproject.toml", "README.md", "LICENSE"):
+    for file in ("AGENTS.md", "pyproject.toml", "README.md", "LICENSE", "viewer/pipeline/data.ts"):
         image = image.add_local_file(REPO / file, f"{REMOTE}/{file}")
 app = modal.App("daodan-tests", image=image)
 DURATIONS = "tests/.test_durations"  # pytest-split's seconds per test id: in git, loaded by the image, refreshed by --store-durations
