@@ -83,7 +83,7 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 | Fonte | Che cosa dice | Grado | Stato |
 | --- | --- | --- | --- |
 | L'utente | `[deciso]` Comando impostato in Daodan da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto) | `confermato` | Da creare (`T3.B`) |
-| L'assistente | `[deciso]` Anche un assistente (via MCP) può impostare il comando. Resta scritto che l'ha impostato un assistente; è `proposto`, non `confermato` *(il grado è una proposta)*. Gira solo nel container, e gli indirizzi di rete si approvano solo dalla GUI | `proposto` | Da creare (`T3.B`) |
+| L'assistente | `[deciso]` Anche un assistente (via MCP) può impostare il comando. Resta scritto che l'ha impostato un assistente; è `proposto`, non `confermato`. Gira solo nel container, e gli indirizzi di rete si approvano solo dalla GUI | `proposto` | Da creare (`T3.B`) |
 | Lo strumento di build | Comando previsto dallo strumento (`npm test`, `go test`, `cargo test`, Gradle/Maven, `dotnet test`, CTest) | `dichiarato` | Nel codice |
 | I file del progetto | Script `test`/`start`/`dev`, config pytest, makefile (vale per il runner lanciato, non per il nome) | `dichiarato` | Nel codice |
 | La CI del progetto | Passo dei test in CI, con servizi e passi preliminari | `dichiarato` | Parziale (`T3.B`) |
@@ -174,7 +174,7 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 
 - `[deciso]` Un modulo è collegato ai nodi di tutte le tecnologie che lo compongono, strumenti di sviluppo compresi, con una freccia «usa» che cita il file che le dichiara. Il nodo tecnologia è concreto, esterno, con il tipo e il logo della sua voce; uno per tecnologia e per progetto. *Da creare: oggi sono nodi solo le voci `service` (`visual.py`), framework e librerie sono tessere del modulo e uno strumento non compare (`app_view.py`, `TILES`).*
 - Un servizio che un file dichiara è un nodo esterno, con una freccia `uses` da ogni file che lo mostra (`uncertain` dove lo menziona soltanto). Un modulo esterno dichiarato dal progetto è un nodo esterno; se ha l'id di una voce `service` ne prende tipo e logo. Uno store è un nodo di specie store. *Nel codice.*
-- Una tecnologia solo menzionata non è un nodo; un pacchetto fuori dal catalogo resta contato sul modulo. *Nel codice; non deciso.*
+- `[deciso]` Una tecnologia solo menzionata non è un nodo; un pacchetto fuori dal catalogo resta contato sul modulo. *Nel codice.*
 - Un nodo di tecnologia resta nella mappa anche se nessun flusso lo usa.
 - `[deciso]` Per tenere semplice il primo grafo, i servizi restano in vista accanto a chi li usa; framework, librerie e strumenti stanno sotto un nodo astratto «Tecnologie», che si apre. Il logo sul modulo resta la forma chiusa della freccia.
 - **Logo di una tecnologia:** una tessera di Daodan in `daodan/data/marks/`; i servizi di AWS, Azure e Google Cloud hanno pittogrammi di Daodan.

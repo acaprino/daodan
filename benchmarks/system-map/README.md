@@ -6,7 +6,7 @@ Prova la [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-map
 
 | Misura | Cosa si conta | Soglia |
 | --- | --- | --- |
-| 1 Riproduzione | su un'area di un riferimento: nodi del riferimento ritrovati, confrontati per file (indice di Jaccard almeno 0,5); flussi ritrovati (due terzi dei nodi); frecce rifiutate dopo la correzione. L'unico riferimento d'area era di un progetto privato, tolto: nessun caso la misura | i nodi e i flussi da fissare con il caso; frecce rifiutate al massimo il 20% |
+| 1 Riproduzione | sull'area dei pagamenti di `real-bank-of-anthos`: nodi del riferimento ritrovati, confrontati per file (indice di Jaccard almeno 0,5); flussi ritrovati (due terzi dei nodi); frecce rifiutate dopo la correzione | almeno 3 nodi su 4 e tutti i flussi dell'area; frecce rifiutate al massimo il 20% (confermata dal proprietario il 26 novembre 2026) |
 | 2 Secondo progetto | lo stesso prompt su polar o tududi: frecce provate o dichiarate; nomi letti a mano | almeno l'80% delle frecce provate o dichiarate; 8 nomi giusti su 10 |
 | 3 Livelli | per un flusso del riferimento, a ogni livello: tipi dei nodi mostrati, punti citati | nessun nodo fuori dal suo livello; ogni punto citato esiste |
 | 4 Costo | token e costo per mappa e per modello; aperture del sorgente | un'area entro 0,30 USD e 5 aperture; l'intero sistema entro 2 USD |
