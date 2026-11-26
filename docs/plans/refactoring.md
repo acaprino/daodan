@@ -1,6 +1,6 @@
 # Piano di refactoring di Daodan (coda attiva)
 
-Stato: unico piano attivo. Si lavora su una sola tranche aperta alla volta. Contratto di arrivo in [`docs/specs/architettura.md`](../specs/architettura.md); tutto ciò che è differito o ritirato è in [`docs/backlog.md`](../backlog.md).
+Stato: unico piano attivo. Si lavora su una sola tranche aperta alla volta; ognuna aspetta solo ciò che la colonna «Stato» nomina, e se una si ferma si apre un'altra non bloccata (scelta del proprietario, 26 novembre 2026). Contratto di arrivo in [`docs/specs/architettura.md`](../specs/architettura.md); tutto ciò che è differito o ritirato è in [`docs/backlog.md`](../backlog.md).
 
 Traguardo aperto: **T0** — Tranche aperta: **T0.A** (`1/5`, con passo `T0.A.1` scritto e in attesa di verifica su Modal).
 
@@ -15,17 +15,18 @@ Stati ammessi: `APERTA`, `Bloccata da <tranche>`, `VERIFICATA`.
 | **T0.A** | Contraddizioni (`T0.4`), correzione `apply_marks` e `avro` (`T0.3`), due corse `suite`, verifica fork e quarantena (`T0.1`–`T0.3`) | **APERTA** | `1/5` | Nessuna | `78e070129` (`T0.4`) | Nessuna corsa CI (`T0.4`, solo diff); in attesa di `modal.yml` su `T0.A.1` |
 | **T0.B** | Scelte `T0`, documentazione operativa, campione cieco e Cancello T0 (`T0.5`–`T0.7`) | Bloccata da `T0.A` | `0/4` | Nessuna | — | `tests/test_codebase_map_support_table.py` e Cancello `T0` |
 | **T0.C** | Rete: whitelist, blocco di tutto il resto, popup di approvazione e risposte salvate; prova su container reale | Bloccata da `T0.B` | — | Indirizzi degli strumenti di Daodan fuori lista | — | Prova di uscita su container reale su Modal e workflow Viewer |
-| **T1.A** | `list_files`: collegamento `header.py`, nomi file, tetto lineare, lacuna per i file non letti, 180 e 122 progetti, prova tecnica SQL (`T1.1`–`T1.5`) | Bloccata da `T0.C` | — | Nessuna | — | `benchmarks/header-language/modal_headers.py` e `benchmarks/project-model/modal_lang.py` |
+| **T1.A** | `list_files`: collegamento `header.py`, nomi file, tetto lineare, lacuna per i file non letti, 180 e 122 progetti, prova tecnica SQL (`T1.1`–`T1.5`) | Bloccata da `T0.B` | — | Nessuna | — | `benchmarks/header-language/modal_headers.py` e `benchmarks/project-model/modal_lang.py` |
 | **T1.B** | `recognize_stack`, `find_modules`, `build-tools.json`, `container_runner` comune ai 4 step e residui di build (`T1.6`–`T1.10`) | Bloccata da `T1.A` | — | Nessuna | — | `tests/test_codebase_map_premap*.py` e `modal.yml` `corpus` |
 | **T1.C** | `find_entry_points`: estrazione da `premap.SOURCES`, binder, Noir, modulo nostro per le rotte di Express e Hono (`T1.11`–`T1.14`) | Bloccata da `T1.B` | — | Nessuna | — | `modal.yml` `suite` |
-| **T1.D** | Orchestratore a 8 identificatori semantici, piano unico con stato `in attesa di approvazione`, `step.skipped` e Cancello T1 (`T1.15`–`T1.17`) | Bloccata da `T1.C` | — | Nessuna | — | `tests/test_codebase_map_pipeline*.py` e `modal.yml` `suite` |
-| **T2.A** | Evidenza in `link_calls`: misure sulle strutture esistenti (`T2.1`) | Bloccata da `T1.D` | — | Nessuna | — | `tests/test_codebase_map_edge_view.py`, `tests/test_codebase_map_resolve_edges.py` e fixture su Modal |
+| **T1.D** | Orchestratore a 8 identificatori semantici, piano unico con stato `in attesa di approvazione`, `step.skipped` (`T1.15`–`T1.17`) | Bloccata da `T1.C`, `T0.C` | — | Nessuna | — | `tests/test_codebase_map_pipeline*.py` e `modal.yml` `suite` |
+| **T1.E** | L'interfaccia a otto passi legge piano e risultati dal server, e Cancello T1 | Bloccata da `T1.D` | — | Nessuna | — | Workflow Viewer e `modal.yml` `suite` |
+| **T2.A** | Evidenza in `link_calls`: misure sulle strutture esistenti (`T2.1`) | Bloccata da `T0.B` | — | Nessuna | — | `tests/test_codebase_map_edge_view.py`, `tests/test_codebase_map_resolve_edges.py` e fixture su Modal |
 | **T2.B** | SCIP incrementale e mirato, JVM (`KotlinResolver.kt`), C e C++, CSS, pulizia doppioni, timeout e SQL (`T2.2`–`T2.4`) | Bloccata da `T2.A` | — | Esito prova tecnica SQL `T1.5` | — | Benchmark SCIP su Modal (`chi`, `tududi`, JVM, C e C++) |
-| **T2.C** | Unione statica in `assemble_graph` (legami senza framework nel codice, modello dei nodi, nodi delle tecnologie, vista e filtro per natura, logo in `system_levels.view`) (`T2.5`) | Bloccata da `T2.B` | — | Nessuna | — | Test assenza framework e `modal.yml` `suite` |
-| **T2.D** | La mappa a livelli sullo schermo: scendere e risalire, filtro per natura, apertura a blocchi, prova di velocità, e Cancello T2 | Bloccata da `T2.C` | — | Nessuna | — | Workflow Viewer e misura in `benchmarks/codebase-explorer/README.md` |
-| **T3.A** | Isolamento: scelta dello strumento proxy (Smokescreen o `PROXY_SCRIPT`), `--cap-drop` e `--user`, rifiuto dei lockfile con URL (`T3.1`) | Bloccata da `T2.D` | — | Nessuna | — | `tests/test_codebase_map_container.py` su container reale su Modal |
-| **T3.B** | Comandi da CI e utente (`builds` e `starts`), `surface` e `ui_execution_deferred`, `run_and_observe` su `web` e `webview` (`T3.2`–`T3.3`) | Bloccata da `T3.A` | — | Nessuna | — | Progetto reale non-npm tracciato su Modal |
-| **T3.C** | Correzione `on` e `verified`, sottocartella e archivio, confronto cieco e Cancello T3 (`T3.4`) | Bloccata da `T3.B` | — | Nessuna | — | `benchmarks/system-map` su Modal e `modal.yml` `suite` |
+| **T2.C** | Unione statica in `assemble_graph` (legami senza framework nel codice, modello dei nodi, nodi delle tecnologie, vista e filtro per natura, logo in `system_levels.view`) (`T2.5`) | Bloccata da `T1.C`, `T2.B` | — | Nessuna | — | Test assenza framework e `modal.yml` `suite` |
+| **T2.D** | La mappa a livelli sullo schermo: scendere e risalire, filtro per natura, apertura a blocchi, prova di velocità, e Cancello T2 | Bloccata da `T2.C`, `T1.E` | — | Nessuna | — | Workflow Viewer, `modal.yml` `suite` e misura in `benchmarks/codebase-explorer/README.md` |
+| **T3.A** | Isolamento: scelta dello strumento proxy (Smokescreen o `PROXY_SCRIPT`), `--cap-drop` e `--user`, rifiuto dei lockfile con URL (`T3.1`) | Bloccata da `T0.C` | — | Nessuna | — | `tests/test_codebase_map_container.py` su container reale su Modal |
+| **T3.B** | Comandi da CI e utente (`builds` e `starts`), `surface` e `ui_execution_deferred`, `run_and_observe` su `web` e `webview` (`T3.2`–`T3.3`) | Bloccata da `T1.D`, `T3.A` | — | Nessuna | — | Progetto reale non-npm tracciato su Modal |
+| **T3.C** | Correzione `on` e `verified`, sottocartella e archivio, confronto cieco e Cancello T3 (`T3.4`) | Bloccata da `T2.D`, `T3.B` | — | Nessuna | — | `benchmarks/system-map` su Modal e `modal.yml` `suite` |
 
 ## Regole di esecuzione: passi, verifiche e commit
 
@@ -107,9 +108,9 @@ Restano in `T3.A`: scelta dello strumento proxy, `--cap-drop` e `--user`, rifiut
 
 ---
 
-## T1 — Pipeline statica e piano unico *(Bloccato da T0.C)*
+## T1 — Pipeline statica e piano unico *(Bloccato da T0)*
 
-Fuori da T1: SCIP, Kiri, esecuzione dinamica e adeguamento della vista UI agli 8 step. Taglio in tranche `T1.A`–`T1.D` nella mappa di avanzamento.
+Fuori da T1: SCIP, Kiri, esecuzione dinamica. Taglio in tranche `T1.A`–`T1.E` nella mappa di avanzamento.
 
 ### `list_files` (`T1.A`)
 1. **[deciso]** Collegare `daodan/core/languages/header.py` (già scritto in WIP al commit `2d6a2881d` con `tests/test_codebase_map_header_language.py`) al posto della regola in `daodan/core/languages/__init__.py:135-140`, aggiornando `benchmarks/header-language/modal_headers.py`.
@@ -143,8 +144,11 @@ Fuori da T1: SCIP, Kiri, esecuzione dinamica e adeguamento della vista UI agli 8
 15. **[deciso]** Adottare gli identificatori semantici stabili (`list_files` … `assemble_graph`) in codice, eventi, giornale e cartelle (mantenendo la lettura dei giornali vecchi); rimuovere lo step `parse`.
     - **[accertato nel repository]** Oggi gli step sono sei: `STEPS = (Scan, Stack, Parse, Analyze, Dynamic, Union)` (`daodan/core/pipeline/__init__.py`). `README.md` porta sette nomi approvati il 22 novembre 2026; `daodan/core/pipeline_tree.py` tiene sia l'elenco attuale sia quello degli otto step.
 16. **[deciso]** Estendere il piano unico (`daodan/core/pipeline/plan.py`) per UI, MCP e CLI: completo nei vincoli prima dell'avvio, incrementale nelle azioni scoperte in `recognize_stack`, `find_modules` e `find_entry_points`, compreso lo stato `in attesa di approvazione` per le richieste che `T0.C` già mostra (`docs/specs/architettura.md`, «Il piano» e «Servizi comuni»). Dei fatti di ogni azione entrano quelli che hanno già un dato; il peso dei download, che non ha una fonte, è una lacuna.
-    - **[accertato nel repository]** `daodan/core/pipeline/plan.py` espone già nodi `{id, step, adapter, [version], on, container, needs}`, lacune e `blocked`. `approval_required` e `host_denied` non sono ancora in `daodan/`. L'adeguamento completo della vista UI agli otto step è in [`docs/backlog.md`](../backlog.md).
+    - **[accertato nel repository]** `daodan/core/pipeline/plan.py` espone già nodi `{id, step, adapter, [version], on, container, needs}`, lacune e `blocked`. `approval_required` e `host_denied` non sono ancora in `daodan/`. La vista UI agli otto step è in `T1.E`.
 17. Freschezza controllata in un punto solo (`step.skipped`); verifica dell'equivalenza tra modalità e del ripiego dichiarato accanto al dato; divisione delle 3 funzioni oltre 80 righe (`engine_pass.index_stage`, `snapshot.write_reading`, `snapshot._refresh_locked`).
+
+### L'interfaccia a otto passi (`T1.E`)
+18. **[deciso]** Come in `docs/specs/architettura.md`, «L'interfaccia segue la pipeline»: legge il piano e i risultati degli step dal server, nella stessa forma di MCP; mostra otto passi, consensi, azione in corso e lacune; le parole «pre-mappa», «scan» e «analyzer» spariscono; si rimuovono `viewer/app/run.ts` e `stages.ts`. Si appoggia al server locale che l'app usa già (`daodan/core/app.py`, `/api/stream` e `/api/app/*`), a cui si aggiunge il piano: il server applicativo del [`backlog`](../backlog.md) non serve. Il popup degli host di `T0.C` resta nella nuova interfaccia. Solo componenti Sigrid sulla shell Imago, con `sigrid-check` e `imago-check` puliti nel workflow Viewer.
 
 **Scelte aperte da chiudere prima della relativa tranche di T1:**
 - **[deciso, su delega a Fable]** `go-enry` (`T1.B`): si toglie, alle condizioni dei punti 4 e 9. La misura su `excluded` comprende lo stack: decide anche dove il fork non entra (`daodan/core/stack_recognition.py`, `_left_out`).
@@ -158,14 +162,14 @@ Fuori da T1: SCIP, Kiri, esecuzione dinamica e adeguamento della vista UI agli 8
 - **[deciso]** Confronto prima del fork (`M2`, `T1.B`): niente Syft, si confronta con le sorgenti di oggi (punto 6).
 - **[deciso, su delega a Fable]** Famiglie nel fork e `build-tools.json` (`M3`, `T1.B`): confermati. Difetto che correggono: ogni sorgente cerca da sé il proprio file, contro il principio 1. Le regole entrano nel fork prima che un adattatore parta solo se lo stack nomina il suo strumento.
 - **[deciso]** Perimetro del piano unico (`M4`): lo stato di attesa entra in `T1.D`, perché il popup c'è già da `T0.C`.
-- **[deciso, su delega a Fable]** Cancelli (`M7`): uno leggero per tranche (`T1.A`–`T1.D`, `T2.A`–`T2.D`): la sua verifica in tabella più una corsa `suite` senza fallimenti fuori quarantena; `T1.B` e `T1.D` aggiungono `corpus` senza perdite non spiegate. I Cancelli T1 e T2 restano a fine traguardo. Sono circa sette corse Modal in più, ognuna solo su richiesta del proprietario (Regola 3).
+- **[deciso, su delega a Fable]** Cancelli (`M7`): uno leggero per tranche (`T1.A`–`T1.E`, `T2.A`–`T2.D`): la sua verifica in tabella più una corsa `suite` senza fallimenti fuori quarantena; `T1.B` e `T1.D` aggiungono `corpus` senza perdite non spiegate. I Cancelli T1 e T2 restano a fine traguardo. Sono circa sette corse Modal in più, ognuna solo su richiesta del proprietario (Regola 3).
 - **[deciso, su delega a Fable]** Collocazione (`M8`): `approval_required` e `host_denied` nascono in `T0.C`, con il popup, e compaiono nel piano unico in `T1.D`; `surface` e `ui_execution_deferred` in `T3.B`.
 
-**Cancello T1:** sul campione fissato in `T0.B.4`, il chiamante riceve un solo piano; moduli, ingressi e lacune sono verificati; `premap.SOURCES` non contiene più sorgenti autonome né rotte ed eventi; `modal.yml` `run=suite` chiuso con zero fallimenti fuori dalla quarantena di `T0` (Regola 5).
+**Cancello T1:** sul campione fissato in `T0.B.4`, il chiamante riceve un solo piano; moduli, ingressi e lacune sono verificati; `premap.SOURCES` non contiene più sorgenti autonome né rotte ed eventi; l'interfaccia mostra gli otto passi senza un elenco proprio di fasi e il workflow Viewer è pulito; `modal.yml` `run=suite` chiuso con zero fallimenti fuori dalla quarantena di `T0` (Regola 5).
 
 ---
 
-## T2 — Collegamenti statici (`link_calls` SCIP) e vista statica *(Bloccato da T1)*
+## T2 — Collegamenti statici (`link_calls` SCIP) e vista statica *(dipendenze nella mappa)*
 
 Taglio in tranche `T2.A`–`T2.D` nella mappa di avanzamento.
 
@@ -190,7 +194,7 @@ Taglio in tranche `T2.A`–`T2.D` nella mappa di avanzamento.
 
 ---
 
-## T3 — Isolamento del container, esecuzione osservata e mappa *(Bloccato da T2)*
+## T3 — Isolamento del container, esecuzione osservata e mappa *(dipendenze nella mappa)*
 
 Fuori da T3: «Kiri ovunque», modello locale per comandi, superfici desktop, Android e Windows. Taglio in tranche `T3.A`–`T3.C` nella mappa di avanzamento.
 

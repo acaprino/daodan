@@ -82,7 +82,7 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 
 | Fonte | Che cosa dice | Grado | Stato |
 | --- | --- | --- | --- |
-| L'utente | Comando scritto da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto) | `confermato` | Proposta (da confermare prima di `T3.B`) |
+| L'utente | `[deciso]` Comando impostato in Daodan da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto). *Proposta:* si imposta solo dalla GUI, come le approvazioni, perché un client MCP può essere un agente | `confermato` | Da creare (`T3.B`) |
 | Lo strumento di build | Comando previsto dallo strumento (`npm test`, `go test`, `cargo test`, Gradle/Maven, `dotnet test`, CTest) | `dichiarato` | Nel codice |
 | I file del progetto | Script `test`/`start`/`dev`, config pytest, makefile (vale per il runner lanciato, non per il nome) | `dichiarato` | Nel codice |
 | La CI del progetto | Passo dei test in CI, con servizi e passi preliminari | `dichiarato` | Parziale (`T3.B`) |
@@ -171,6 +171,8 @@ Un solo oggetto condiviso tra interfaccia, MCP e riga di comando (il giornale de
 4. **Stato per azione** aggiornato in tempo reale: `da fare`, `in corso`, `fatta`, `fallita`, `saltata` (già fresca), `non possibile` (con causa e rimedio), `in attesa di approvazione` (un suo host attende la risposta di una persona). Tipi di azione da elenco chiuso.
 
 ## L'interfaccia segue la pipeline
+
+*Nel piano in `T1.E`; il popup degli host in `T0.C`.*
 
 La UI (solo componenti Sigrid nella shell Imago) legge il piano e i risultati degli step senza ricostruirli dagli eventi e senza tenere elenchi propri di fasi. Mostra gli otto step con i loro risultati, i consensi prima dell'esecuzione, l'azione in corso e le lacune. Un host da approvare («Servizi comuni») è una notifica e un popup con host, porta, indirizzo risolto e il file che lo dichiara; un tentativo verso un host in blacklist è solo una notifica. Le parole interne («pre-mappa», «scan», «stack», «analyze») escono dall'interfaccia.
 

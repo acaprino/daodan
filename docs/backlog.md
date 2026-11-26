@@ -8,7 +8,7 @@
 
 ### 1. Infrastruttura estesa e modello locale per comandi (parti delle ex ondate 6 e 7)
 - **Kiri di Daodan su ogni sistema operativo** (fuori da Windows) e immagine unica glibc con strumenti scaricati al primo uso; verifica cgroup v1 e passi accanto ai servizi su Kiri; servizi dichiarati altrove (include GitLab, Compose da Makefile).
-- **Modello piccolo locale per scegliere i comandi** (candidati: Gemma 3 / FunctionGemma, solo selezione di comandi già nei file, grado `proposto`): richiede prima il benchmark a 4 bracci sul corpus.
+- **Modello piccolo locale per scegliere i comandi** (candidati: Gemma 3 / FunctionGemma, solo selezione di comandi già nei file, grado `proposto`): richiede prima il benchmark a 4 bracci sul corpus. Fase B, con una spec sua (proprietario, 26 novembre 2026).
 - **Riproduzione finding e indagine nel container** (dopo fix `review-quality-gates`).
 - **Anagrafica globale delle versioni degli strumenti esterni** (nome, versione, origine, sha256 al posto delle ~60 costanti negli adattatori).
 - **Contratti aggiuntivi:** forma della risposta contro ciò che il client legge; contratti fra repository; coda di domande imposta dalla macchina, fusione varianti e flussi di interfaccia (ex ondata 8, voci 6, 9, 12).
@@ -24,7 +24,6 @@
 - **[difetto]** `graph` (`ValueError`) e `edit_impact` (`missing_store`).
 
 ### 3. App standalone, UI completa ed esploratore (ex ondata 10)
-- Adeguamento completo della UI agli 8 step e rimozione di `viewer/app/run.ts` / `stages.ts` (legge il piano dal server nella stessa forma di MCP); eliminazione parole «pre-mappa»/«scan»/«analyzer».
 - Server applicativo, coordinatore della coda, adattatori motori con prova di capacità, annullamento e ripresa.
 - Accesso GitHub: GitHub App, device flow, token nel portachiavi.
 - Servizio locale portabile HTTP con token; verifica licenza Kiri per ridistribuzione e portachiavi Linux headless.
