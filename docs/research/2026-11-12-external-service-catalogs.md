@@ -30,7 +30,7 @@ register({
 
 ## Prova di stack-analyser su un caso reale
 
-Versione 1.27.6 (pubblicata il 18 gennaio 2026, 12 dipendenze), eseguita il 12 novembre 2026 in un container Modal sull'archivio di phazly (1.812 file, tre cartelle): 1,6 secondi, nessun modello. Legge manifest e configurazione, non esegue il progetto.
+Versione 1.27.6 (pubblicata il 18 gennaio 2026, 12 dipendenze), eseguita il 12 novembre 2026 in un container Modal sull'archivio di un progetto privato (1.812 file, tre cartelle): 1,6 secondi, nessun modello. Legge manifest e configurazione, non esegue il progetto.
 
 - **Riconosce 25 tecnologie:** Docker, Firebase, Hugging Face, Resend, React, React Router, Tauri, Tailwind, Vite, Radix UI, shadcn, Zod, Phosphor Icons, Playwright, ESLint, più linguaggi e gestori di pacchetti (Python, TypeScript, JavaScript, Rust, Kotlin, npm, Cargo).
 - **Non riconosce**, pur dichiarati nei manifest: Stripe, MongoDB (Motor e PyMongo), FastAPI, Pydantic, Google Gen AI, Secret Manager di Google Cloud, Prometheus, Zustand, il modulo degli acquisti su Google Play. Dal lato Python riconosce 2 pacchetti su 22.
@@ -45,7 +45,7 @@ Criterio: una fonte entra se è pubblica, ha una licenza adatta e nel benchmark 
 | Fonte | Cosa aggiungerebbe | Esito |
 | --- | --- | --- |
 | Lettori di configurazione scritti da noi: docker-compose, Dockerfile, manifest di Kubernetes, hosting, CI, `catalog-info.yaml` di [Backstage](https://backstage.io/docs/features/software-catalog/descriptor-format) | Il livello infrastruttura e l'architettura che il progetto dichiara già | Da aggiungere: nessuno strumento esterno, nessun modello |
-| tech-stack-analyzer, riscrittura in Go di stack-analyser (MIT secondo [pkg.go.dev](https://pkg.go.dev/github.com/petrarca/tech-stack-analyzer)) | Provato su phazly nella versione 0.7.1: 7,5 secondi, 29 tecnologie; in più rispetto a stack-analyser FastAPI, Pydantic e Android; nemmeno lui riconosce Stripe, MongoDB e Google Gen AI | Non adottabile oggi: il 12 novembre 2026 il repository su GitHub risponde 404, resta solo la copia nella cache del proxy di Go |
+| tech-stack-analyzer, riscrittura in Go di stack-analyser (MIT secondo [pkg.go.dev](https://pkg.go.dev/github.com/petrarca/tech-stack-analyzer)) | Provato su un progetto privato nella versione 0.7.1: 7,5 secondi, 29 tecnologie; in più rispetto a stack-analyser FastAPI, Pydantic e Android; nemmeno lui riconosce Stripe, MongoDB e Google Gen AI | Non adottabile oggi: il 12 novembre 2026 il repository su GitHub risponde 404, resta solo la copia nella cache del proxy di Go |
 | [InfraMap](https://github.com/cycloidio/inframap) (MIT) | Il grafo delle risorse da Terraform | Solo per progetti con Terraform; copertura migliore su AWS, manutenzione non chiara. Dopo |
 | [cdxgen](https://cyclonedx.github.io/cdxgen) (Apache-2.0), comandi `evinse` e `saasbom` | Servizi esterni ed endpoint chiamati dal codice | Richiede Java 21 e tempi lunghi con il flusso dei dati. Non ora |
 | [Syft](https://github.com/anchore/syft) (Apache-2.0) | Inventario dei pacchetti di molti ecosistemi | Daodan legge già i manifest: non aggiunge riconoscimenti. Utile più avanti per la review delle dipendenze |

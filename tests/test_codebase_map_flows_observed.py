@@ -145,7 +145,7 @@ def test_a_handler_the_static_reader_could_not_name_is_an_entry_though_it_has_a_
 
 
 def test_a_static_candidate_of_the_same_name_does_not_hide_a_handler_the_browser_ran_that_the_candidate_does_not_start_from(tmp_path):
-    """On phazly the static reader gave `Dismiss` the member of a context's interface (`clearError`), a declaration with no body; the
+    """On a private case the static reader gave `Dismiss` the member of a context's interface (`clearError`), a declaration with no body; the
     browser ran the arrow that implements it. The two are told apart by the function, not by the name of the control: here the
     static entry is the arrow of `Save` and the browser says `save`, the function it calls."""
     view = 'import {save} from "./lib";\nexport function View() { return <button onClick={() => save(1)}>Save</button>; }\n'

@@ -327,7 +327,7 @@ Convenzioni:
 | D-084 | scip-python: «Cannot find module» | PC di sviluppo | risolto | `faf7a3b22` | python · analizzatore · correttezza · prova sull'host · scip-python, npm |
 | D-085 | 80 file Python su 211 senza documento | il codice di Daodan | risolto | `118689f69` | python · analizzatore · completezza · corsa su un progetto |
 | D-086 | scip-python 0.6.8 non parte su Windows | host Windows | risolto | `626ebb3a2` | python · analizzatore · correttezza · prova sull'host · scip-python |
-| D-087 | phazly: bersagli Python diversi da quelli del passaggio per posizione | phazly | risolto | `09537b2b9` | python · analizzatore · correttezza · corsa su un progetto |
+| D-087 | Bersagli Python diversi da quelli del passaggio per posizione | un progetto privato | risolto | `09537b2b9` | python · analizzatore · correttezza · corsa su un progetto |
 | D-088 | Buchi Python senza causa | corpus Python | risolto | `a6156b7a2`, `3cef87b5c` | python · analizzatore · completezza · finale · scip-python, Pyright |
 | D-089 | Kotlin sotto Maven: 0 file su 2 indicizzati | il pilota su 5 casi del driver Modal | risolto | `ea1e2b7d6` | kotlin · analizzatore · completezza · prova su Modal · scip-java, Gradle, Maven |
 | D-090 | Java sotto Gradle: aggregazione in avanti e javap sulla cartella sbagliata | build JVM | risolto | `7b1a77e8d` | java · analizzatore · correttezza · commit · Gradle, Maven |
@@ -447,7 +447,7 @@ Convenzioni:
 | D-307 | Il codice di un file `.astro` non entrava nel grafo, e nessuna lacuna lo diceva | pets-workshop | risolto | `b39e2e51b` | typescript · parser · completezza · corsa su un progetto |
 | D-308 | Una richiesta non si univa alla sua rotta, e un legame trovato non era una relazione fra moduli | pets-workshop | risolto | `b6f877bad` | tutti · analizzatore · completezza · corsa su un progetto |
 | D-310 | Un passaggio finito senza rapporto non diceva come era finito, e su POSIX restava «in corso» | pets-workshop | risolto | `aeba9de21` | tutti · analizzatore · correttezza · corsa su un progetto |
-| D-313 | Su Windows il passaggio apriva una finestra della console, e chiuderla lo terminava senza una riga | phazly-app | risolto | `fb8e162cf` | tutti · analizzatore · correttezza · corsa su un progetto |
+| D-313 | Su Windows il passaggio apriva una finestra della console, e chiuderla lo terminava senza una riga | un progetto privato | risolto | `fb8e162cf` | tutti · analizzatore · correttezza · corsa su un progetto |
 
 ### Passo dinamico e osservatori
 
@@ -533,8 +533,8 @@ Convenzioni:
 | D-305 | Nell'app un passaggio del grafo non riuscito non si poteva riprovare | pets-workshop | risolto | `eccfb7d8a` | tutti · explorer · correttezza · corsa su un progetto |
 | D-306 | Il grafo dell'app mostrava un nodo solo e nessuna relazione | pets-workshop | risolto | `eccfb7d8a` | tutti · explorer · completezza · corsa su un progetto |
 | D-309 | L'app diceva «Server non raggiungibile» quando il progetto era solo occupato | pets-workshop | risolto | `57ca5e6ef` | tutti · explorer · correttezza · corsa su un progetto |
-| D-311 | Il controllo dei valori del `.env` buttava le risposte della pre-mappa per una coincidenza | phazly-app | risolto | `065ceea64` | tutti · container · completezza, sicurezza · corsa su un progetto · go-enry, Renovate, BuildKit, Cargo |
-| D-312 | Il grafo dell'app rifaceva tutta la busta a ogni richiesta: 245 secondi su 2.408 file | phazly-app | risolto | `9bf4a7936` | tutti · explorer · prestazioni · corsa su un progetto |
+| D-311 | Il controllo dei valori del `.env` buttava le risposte della pre-mappa per una coincidenza | un progetto privato | risolto | `065ceea64` | tutti · container · completezza, sicurezza · corsa su un progetto · go-enry, Renovate, BuildKit, Cargo |
+| D-312 | Il grafo dell'app rifaceva tutta la busta a ogni richiesta: 245 secondi su 2.408 file | un progetto privato | risolto | `9bf4a7936` | tutti · explorer · prestazioni · corsa su un progetto |
 
 ### Benchmark e documenti
 
@@ -1149,7 +1149,7 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 I progetti fuori dal corpus che i commit descrivono:
 
 - il codice di Daodan: la pipeline con il passo dinamico, su Modal, osserva 1.361 punti e chiude 82 buchi (`d94f92470`). Schede D-085, D-169;
-- phazly: il grafo dall'indice contro il passaggio per posizione (`09537b2b9`). Scheda D-087;
+- un progetto privato: il grafo dall'indice contro il passaggio per posizione (`09537b2b9`). Scheda D-087;
 - il postgres di tududi su un Docker vero, in un sandbox a macchina virtuale di Modal (`b85aa1b9f`): raggiunto a localhost e per nome, con 1.1.1.1 irraggiungibile dal pod. Scheda D-182;
 - una migrazione che scrive una tabella accanto a postgres, con test che la leggono, su un Docker vero in un sandbox a macchina virtuale (`f024ba3a3`). Scheda D-213;
 - un postgres di GitLab senza controllo di salute, che risponde in 1,8 secondi, con test che aprono una sessione a db:5432 (`23de469c4`). Scheda D-202;
@@ -2292,11 +2292,11 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-087 phazly: bersagli Python diversi da quelli del passaggio per posizione
+#### D-087 Bersagli Python diversi da quelli del passaggio per posizione
 - **Tag:** lingua python · area analizzatore · tipo correttezza · origine corsa su un progetto · strumento —
-- **Descrizione:** su phazly il grafo dall'indice e il passaggio per posizione davano 13 bersagli Python diversi, e 114 riferimenti li aveva solo il passaggio per posizione.
+- **Descrizione:** su un progetto privato il grafo dall'indice e il passaggio per posizione davano 13 bersagli Python diversi, e 114 riferimenti li aveva solo il passaggio per posizione.
 - **Spiegazione:** «le due cause corrette», che il commit non nomina: da verificare.
-- **Progetto e caso:** phazly — 14 novembre 2026.
+- **Progetto e caso:** un progetto privato — 14 novembre 2026.
 - **Rimedio:** `09537b2b9` (14 novembre).
 - **Verifica:** bersagli diversi da 13 a 1, riferimenti del solo passaggio per posizione da 114 a 94.
 - **Stato:** risolto.
@@ -3741,13 +3741,13 @@ Casi che il giro aggiunge alle schede esistenti (da accodare alla loro «Descriz
 
 #### D-313 Su Windows il passaggio apriva una finestra della console, e chiuderla lo terminava senza una riga
 - **Tag:** lingua tutti · area analizzatore · tipo correttezza · origine corsa su un progetto · strumento —
-- **Descrizione:** app standalone, phazly-app: il 18 e il 19 novembre il passaggio finisce pochi secondi dopo l'avvio con «the engine pass ended without a report (exit code 3221225786); see engine-pass.log», e il log è vuoto. Il 19 novembre il gestore del Ctrl+Break di `6cecfd73c` era attivo e non ha scritto la sua riga.
+- **Descrizione:** app standalone, un progetto privato: il 18 e il 19 novembre il passaggio finisce pochi secondi dopo l'avvio con «the engine pass ended without a report (exit code 3221225786); see engine-pass.log», e il log è vuoto. Il 19 novembre il gestore del Ctrl+Break di `6cecfd73c` era attivo e non ha scritto la sua riga.
 - **Spiegazione:**
   - `engine_pass._spawn_detached` avviava il passaggio con `DETACHED_PROCESS`, cioè senza console;
   - l'interprete di un ambiente virtuale è un lanciatore che avvia l'interprete vero: senza una console da dargli, Windows gliene crea una nuova, con una finestra sullo schermo intitolata al percorso di `python.exe`;
   - chiudere quella finestra manda `CTRL_CLOSE_EVENT`: il passaggio esce subito con `0xC000013A` e non scrive nulla, perché il modulo `signal` di Python non riceve quell'evento;
   - la causa scritta in `6cecfd73c`, un Ctrl+Break, era sbagliata. Che la finestra sia stata chiusa è dedotto dal codice e dal log vuoto: nessuno l'ha visto.
-- **Progetto e caso:** phazly-app (`8968226d8f5c`) — corsa nell'app, 19 novembre 2026.
+- **Progetto e caso:** un progetto privato — corsa nell'app, 19 novembre 2026.
 - **Rimedio:** `fb8e162cf`, `daodan/core/engine_pass.py`, `daodan/core/resolve_edges.py`: il passaggio parte con `CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP`, una console sua senza finestra, che i programmi che avvia ereditano; `deaf_to_console_break` è tolto.
 - **Verifica:** da `fb8e162cf`, `tests/test_codebase_map_resolve_edges.py` (`test_on_windows_the_pass_has_a_console_of_its_own_and_no_window`): rosso prima, su Modal. Prova le opzioni date a Windows, non Windows: la finestra con le opzioni vecchie, nessuna con le nuove e `0xC000013A` alla sua chiusura sono stati visti sull'host con un processo che dorme, e quella prova non sta nel repository, perché la suite gira su Modal, senza Windows.
 - **Stato:** risolto. Un passaggio intero su Windows con le opzioni nuove non è stato visto: quello del 19 novembre è stato fermato a mano dopo 35 secondi, senza finestre.
@@ -4601,26 +4601,26 @@ Casi che il giro aggiunge alle schede esistenti (da accodare alla loro «Descriz
 
 #### D-311 Il controllo dei valori del `.env` buttava le risposte della pre-mappa per una coincidenza
 - **Tag:** lingua tutti · area container · tipo completezza, sicurezza · origine corsa su un progetto · strumento go-enry, Renovate, BuildKit, Cargo
-- **Descrizione:** acaprino/phazly-app, 18 novembre: i comandi della pre-mappa (go-enry, Renovate, BuildKit, Cargo) escono con 0 nel container, ma `container.scrubbed` toglie il loro `stdout` perché i suoi byte contengono valori dei `.env` tracciati: `VERTEX_LOCATION=global` e `MONGODB_FOOD_DATABASE=phazly` di `.env.dev`, `PHAZLY_ENV=prod` di `.env.prod`, parole che stanno nei nomi dei file (`react-app/src/lib/globalButtonHaptic.ts`, `references/phazly.md`, `producthunt.svg`). Quattro fonti falliscono con `JSONDecodeError`. Il proprietario: «è un controllo fatto idiota, cieco e dannoso».
+- **Descrizione:** un progetto privato, 18 novembre: i comandi della pre-mappa (go-enry, Renovate, BuildKit, Cargo) escono con 0 nel container, ma `container.scrubbed` toglie il loro `stdout` perché i suoi byte contengono valori dei `.env` tracciati: `VERTEX_LOCATION=global` e il nome del progetto in `.env.dev`, `prod` in `.env.prod`, parole che stanno nei nomi di file tracciati. Quattro fonti falliscono con `JSONDecodeError`. Il proprietario: «è un controllo fatto idiota, cieco e dannoso».
 - **Spiegazione:**
   - il controllo di D-283 guardava anche ciò che scrive un comando che non ha mai visto un valore: prima dei comandi della pre-mappa `named` mette i segnaposto nei `.env` della copia;
   - era segreto ogni valore di un `.env` vero, anche una parola che il progetto pubblica nei suoi file;
   - si toglieva anche un output JSON in cui il valore restava dopo la maschera (un numero);
   - `named(values=DOTENV_VALUES)` scriveva i valori veri in `/daodan/state/dotenv-values.json` in ogni container della pre-mappa, anche dove Gradle, Maven, sbt, npm, CMake o Bazel eseguono codice del progetto, che poteva leggerli; li legge solo l'aiutante `daodan-dockerfile`.
-- **Progetto e caso:** acaprino/phazly-app — corsa nell'app, 18 novembre 2026.
+- **Progetto e caso:** un progetto privato — corsa nell'app, 18 novembre 2026.
 - **Rimedio:** `scripts/container.py`, `scripts/premap/container_runner.py`, `benchmarks/project-model/modal_pipeline.py`, tre regole:
   - si controlla solo dove una fuga è possibile: `run_commands` scrive i valori veri accanto alla copia solo con `values`, che `container_runner.TOOLS` dà al solo `daodan-dockerfile` (compila il Go di Daodan, legge con il parser di BuildKit e con `docker-compose config`, non esegue codice del progetto), e il suo container tiene il controllo; gli altri comandi girano `blind` (`run_in_container`, `sandbox_run`): nessun lettore dei valori, nessuna maschera, nessun output trattenuto;
   - è segreto solo ciò che il progetto non pubblica già: il lettore dei `.env` (`RESOLVE` con `DAODAN_PUBLIC`, in `dotenv_values`) riceve anche gli altri file che Git traccia (`published` di `copy_perimeter`) e dice quali valori stanno nel loro percorso o nel loro contenuto, i `.env*` a parte; `secret(values, public)` li toglie. Una passata, a pezzi di 1 MiB, entro `PUBLIC_SECONDS` (60 secondi): ciò che non legge in tempo resta segreto. `example()` (D-291) resta, perché un file d'esempio è un `.env*` e la regola nuova non lo guarda;
   - un risultato non si distrugge per una coincidenza: `scrubbed` maschera e tiene il testo (`.log`, `.txt`, `stdout`, `stderr`) e il JSON, stringhe e numeri (`_mask_json`); si trattiene solo un output che non è testo e contiene un valore segreto, con il buco `output_withheld` che nomina la variabile.
-- **Verifica:** da `065ceea64`, su Modal: `tests/test_codebase_map_dynamic_services.py` (`test_a_value_the_project_s_other_files_hold_is_public_and_text_is_masked_never_withheld`, `test_a_pre_map_command_never_sees_a_value_and_only_daodan_s_helper_gets_them`, `PodTest.test_a_value_the_project_publishes_is_no_secret_and_an_answer_listing_the_paths_is_kept`, `PodTest.test_a_value_only_the_env_files_hold_is_masked_in_text_and_withholds_an_output_that_is_not`, `PodTest.test_a_command_that_never_saw_a_value_keeps_what_it_wrote_untouched`); i file dei test del container, dei servizi e della pre-mappa interi: 193 passati, 5 saltati. Non verificati: una pre-mappa vera su phazly-app, il costo della passata sui suoi 5.258 file, `sandbox_run` su Modal.
+- **Verifica:** da `065ceea64`, su Modal: `tests/test_codebase_map_dynamic_services.py` (`test_a_value_the_project_s_other_files_hold_is_public_and_text_is_masked_never_withheld`, `test_a_pre_map_command_never_sees_a_value_and_only_daodan_s_helper_gets_them`, `PodTest.test_a_value_the_project_publishes_is_no_secret_and_an_answer_listing_the_paths_is_kept`, `PodTest.test_a_value_only_the_env_files_hold_is_masked_in_text_and_withholds_an_output_that_is_not`, `PodTest.test_a_command_that_never_saw_a_value_keeps_what_it_wrote_untouched`); i file dei test del container, dei servizi e della pre-mappa interi: 193 passati, 5 saltati. Non verificati: una pre-mappa vera su quel progetto, il costo della passata sui suoi 5.258 file, `sandbox_run` su Modal.
 - **Stato:** risolto.
 - **Note:** D-283, D-291.
 
 #### D-312 Il grafo dell'app rifaceva tutta la busta a ogni richiesta: 245 secondi su 2.408 file
 - **Tag:** lingua tutti · area explorer · tipo prestazioni · origine corsa su un progetto · strumento —
-- **Descrizione:** app standalone, 18 novembre: `GET /api/app/graph` di phazly-app (2.408 file; 20 nodi e 26 relazioni al livello dei moduli) risponde in 245 secondi, e la pagina lo richiede a ogni scrittura dell'analisi. Su un progetto di 78 file risponde in meno di un secondo.
+- **Descrizione:** app standalone, 18 novembre: `GET /api/app/graph` di un progetto privato (2.408 file; 20 nodi e 26 relazioni al livello dei moduli) risponde in 245 secondi, e la pagina lo richiede a ogni scrittura dell'analisi. Su un progetto di 78 file risponde in meno di un secondo.
 - **Spiegazione:** `App.graph` chiamava `visual.build_envelope` per intero a ogni richiesta: l'outline di ogni file per i suoi simboli (una chiamata per file, ognuna con l'elenco di tutti i percorsi), la freschezza delle schede e le chiamate risolte, anche per mostrare i soli moduli.
-- **Progetto e caso:** phazly-app (`0b61be6b7eea`) — corsa nell'app, 18 novembre 2026.
+- **Progetto e caso:** un progetto privato — corsa nell'app, 18 novembre 2026.
 - **Rimedio:** `9bf4a7936`, `scripts/app.py`, `scripts/app_view.py`, `scripts/visual.py`, `assets/app/app.js`:
   - il grafo si chiede per livelli e per gruppi aperti (`levels`, `open`); il primo livello non legge i simboli di nessun file;
   - i simboli di un file si leggono quando si apre o si ispeziona quel file (`visual.file_symbols`);

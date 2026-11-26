@@ -3925,7 +3925,7 @@
     "tests/test_xray_stylesheet.py::CascadeScanTests::test_tailwind_declares_its_layer_order_before_the_file_does": 0.05380541099999192,
     "tests/test_xray_stylesheet.py::CascadeScanTests::test_the_at_rule_context_is_reported": 0.016936061000002667,
     "tests/test_xray_stylesheet.py::CascadeScanTests::test_the_cli_prints_markdown_and_json": 0.4217766869999977,
-    "tests/test_xray_stylesheet.py::CascadeScanTests::test_the_phazly_rule_is_found_with_the_modal_rule_it_overrides": 0.010537429000002874,
+    "tests/test_xray_stylesheet.py::CascadeScanTests::test_the_dark_theme_rule_is_found_with_the_modal_rule_it_overrides": 0.010537429000002874,
     "tests/test_xray_stylesheet.py::CascadeScanTests::test_the_real_incident_shape_with_tailwind_apply": 0.029040305000009425,
     "tests/test_xray_stylesheet.py::CascadeScanTests::test_viewport_heights_inside_calc_are_screen_level": 0.022977009000001658,
     "tests/test_xray_stylesheet.py::NeighbourScriptTests::test_a_class_name_usage_search_cannot_refuse_does_not_abort_the_analysis": 0.16777711099999948,

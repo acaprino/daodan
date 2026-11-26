@@ -927,17 +927,17 @@ def test_an_output_keeps_no_value_masked_as_text_or_as_json_or_is_withheld(tmp_p
 
 
 def test_a_value_the_project_s_other_files_hold_is_public_and_text_is_masked_never_withheld(tmp_path):
-    """phazly-app, 18 November 2026 (D-311): go-enry's answer, which lists the paths, was withheld for
-    `VERTEX_LOCATION=global` beside `globalButtonHaptic.ts`, and the language scan failed. The reader of the tracked
+    """A private project, 18 November 2026 (D-311): go-enry's answer, which lists the paths, was withheld for
+    `VERTEX_LOCATION=global` beside `globalTheme.ts`, and the language scan failed. The reader of the tracked
     `.env` files (`RESOLVE` with `DAODAN_PUBLIC`, its seconds) says which values the other files hold, in a path or
     in their content, the `.env*` files aside, reading each file by pieces: those are public (`secret`). Text is
     masked and kept, a JSON output string by string and number by number; only another output that holds a
     secret value is withheld."""
-    files = {".env.dev": "VERTEX_LOCATION=global\nMONGODB_FOOD_DATABASE=phazly\nAPI_KEY=sk-live-9f31\n"
+    files = {".env.dev": "VERTEX_LOCATION=global\nMONGODB_DATABASE=acme\nAPI_KEY=sk-live-9f31\n"
                          "BUILD_NUMBER=98317713\n",
-             ".env.prod": "PHAZLY_ENV=prod\nREGION=europe-west8\n", ".env.example": "OTHER=sk-live-9f31\n",
-             "react-app/src/lib/globalButtonHaptic.ts": "export {}\n", "assets/producthunt.svg": "<svg/>\n",
-             "package.json": '{"name": "phazly-app"}\n'}
+             ".env.prod": "ACME_ENV=prod\nREGION=europe-west8\n", ".env.example": "OTHER=sk-live-9f31\n",
+             "react-app/src/lib/globalTheme.ts": "export {}\n", "assets/product.svg": "<svg/>\n",
+             "package.json": '{"name": "acme-app"}\n'}
     for rel, text in files.items():
         (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / rel).write_text(text, encoding="utf-8", newline="\n")
@@ -950,15 +950,15 @@ def test_a_value_the_project_s_other_files_hold_is_public_and_text_is_masked_nev
         return container.dotenv_answer(said.stdout, said.returncode), container.published(said.stdout)
 
     values, public = read(str(container.PUBLIC_SECONDS))
-    assert public == {"global", "phazly", "prod", "europe-west8"}  # the key stands only in .env files
+    assert public == {"global", "acme", "prod", "europe-west8"}  # the key stands only in .env files
     assert container.secret(values, public) == {".env.dev": {"API_KEY": "sk-live-9f31", "BUILD_NUMBER": "98317713"}}
     assert read("0")[1] == set() and read(None)[1] == set()  # nothing read in time, or not asked: all stays secret
     assert container.secret(values) == {path: found for path, found in values.items() if path != ".env.example"}
     kept = container.secret(values, public)
     out = tmp_path / "out"
     (out / "results/1").mkdir(parents=True)
-    answer = json.dumps([{"path": "react-app/src/lib/globalButtonHaptic.ts", "language": "TypeScript"},
-                         {"path": "assets/producthunt.svg", "language": "SVG"}]).encode()
+    answer = json.dumps([{"path": "react-app/src/lib/globalTheme.ts", "language": "TypeScript"},
+                         {"path": "assets/product.svg", "language": "SVG"}]).encode()
     written = {"stdout": answer, "stderr": b"warning: sk-live-9f31\n", "count.json": b'{"build": 98317713}',
                "public.scip": b"\x08global\x00prod\x00", "index.scip": b"\x08sk-live-9f31\x00"}
     for name, data in written.items():
@@ -972,10 +972,10 @@ def test_a_value_the_project_s_other_files_hold_is_public_and_text_is_masked_nev
     assert (out / "results/1/stderr").read_text(encoding="utf-8") == "warning: [.env.dev:API_KEY]\n"
     assert json.loads((out / "results/1/count.json").read_text(encoding="utf-8")) == {
         "build": "[.env.dev:BUILD_NUMBER]"}
-    project = git_project(tmp_path / "project", {".env.dev": "A=b\n", "src/phazly.md": "x\n", "notes.txt": "y\n"},
-                          [".env.dev", "src/phazly.md"])
+    project = git_project(tmp_path / "project", {".env.dev": "A=b\n", "src/acme.md": "x\n", "notes.txt": "y\n"},
+                          [".env.dev", "src/acme.md"])
     digest = container.copy_perimeter(project, tmp_path / "copy.tar")
-    assert digest["dotenv"] == [".env.dev"] and digest["published"] == ["src/phazly.md"]  # what Git tracks alone
+    assert digest["dotenv"] == [".env.dev"] and digest["published"] == ["src/acme.md"]  # what Git tracks alone
 
 
 def test_a_pre_map_command_never_sees_a_value_and_only_daodan_s_helper_gets_them(tmp_path):
@@ -1712,30 +1712,30 @@ class PodTest(unittest.TestCase):
         assert [(gap["kind"], gap["variables"]) for gap in result["gaps"] if gap["kind"] == "mask_partial"] == [
             ("mask_partial", [".env:DB", ".env:DEBUG"])]
 
-    def phazly_project(self) -> Path:
-        """acaprino/phazly-app's words (D-311): its `.env.dev` and `.env.prod` hold values its files' names hold;
+    def acme_project(self) -> Path:
+        """A private project's words (D-311): its `.env.dev` and `.env.prod` hold values its files' names hold;
         the API key stands in a note Git does not track, which publishes nothing."""
-        return git_project(self.scratch / "phazly", {
-            ".env.dev": "VERTEX_LOCATION=global\nMONGODB_FOOD_DATABASE=phazly\nAPI_KEY=sk-live-9f31\n",
-            ".env.prod": "PHAZLY_ENV=prod\n", "react-app/src/lib/globalButtonHaptic.ts": "export {}\n",
-            "references/phazly.md": "# notes\n", "producthunt.svg": "<svg/>\n", "notes.txt": "sk-live-9f31\n"},
-            [".env.dev", ".env.prod", "react-app/src/lib/globalButtonHaptic.ts", "references/phazly.md",
-             "producthunt.svg"])
+        return git_project(self.scratch / "acme", {
+            ".env.dev": "VERTEX_LOCATION=global\nMONGODB_DATABASE=acme\nAPI_KEY=sk-live-9f31\n",
+            ".env.prod": "ACME_ENV=prod\n", "react-app/src/lib/globalTheme.ts": "export {}\n",
+            "references/acme.md": "# notes\n", "product.svg": "<svg/>\n", "notes.txt": "sk-live-9f31\n"},
+            [".env.dev", ".env.prod", "react-app/src/lib/globalTheme.ts", "references/acme.md",
+             "product.svg"])
 
     def test_a_value_the_project_publishes_is_no_secret_and_an_answer_listing_the_paths_is_kept(self):
-        """phazly-app, 18 November 2026: go-enry's answer listed `globalButtonHaptic.ts` and was withheld for
+        """A private project, 18 November 2026: go-enry's answer listed `globalTheme.ts` and was withheld for
         `VERTEX_LOCATION=global`. A value the project's tracked files hold, by name or by content, is its public
         text: the answer, an index and the log keep it as written, and no gap names it."""
-        answer = ('[{"path": "react-app/src/lib/globalButtonHaptic.ts"}, {"path": "references/phazly.md"}, '
-                  '{"path": "producthunt.svg"}]')
+        answer = ('[{"path": "react-app/src/lib/globalTheme.ts"}, {"path": "references/acme.md"}, '
+                  '{"path": "product.svg"}]')
         script = (f"mkdir -p ../daodan/out && printf '%s' '{answer}' > ../daodan/out/stdout"
-                  " && printf 'scip\\000global prod phazly\\001' > ../daodan/out/index.scip && echo region global env prod")
-        result = container.run_in_container(self.phazly_project(), ["sh", "-c", script], image="fake/runtime:1",
+                  " && printf 'scip\\000global prod acme\\001' > ../daodan/out/index.scip && echo region global env prod")
+        result = container.run_in_container(self.acme_project(), ["sh", "-c", script], image="fake/runtime:1",
                                             out_dir=self.out, engine=self.engine, outputs=["/daodan/out"])
         assert result["state"] == "done", result
         assert sorted(Path(path).name for path in result["outputs"]) == ["index.scip", "stdout"]
         assert (self.out / "out" / "stdout").read_text(encoding="utf-8") == answer
-        assert (self.out / "out" / "index.scip").read_bytes() == b"scip\x00global prod phazly\x01"
+        assert (self.out / "out" / "index.scip").read_bytes() == b"scip\x00global prod acme\x01"
         assert not [gap for gap in result.get("gaps") or () if gap["kind"] in ("output_withheld", "mask_partial")]
         assert "region global env prod" in (self.out / "execute.log").read_text(encoding="utf-8")
         [reader] = self.created("daodan-dotenv-")
@@ -1747,7 +1747,7 @@ class PodTest(unittest.TestCase):
         script = ("mkdir -p ../daodan/out && key=$(sed -n 's/^API_KEY=//p' .env.dev) && echo \"key $key\""
                   " && printf '{\"key\": \"%s\"}' \"$key\" > ../daodan/out/answer.json"
                   " && printf 'scip\\000%s\\001' \"$key\" > ../daodan/out/index.scip")
-        result = container.run_in_container(self.phazly_project(), ["sh", "-c", script], image="fake/runtime:1",
+        result = container.run_in_container(self.acme_project(), ["sh", "-c", script], image="fake/runtime:1",
                                             out_dir=self.out, engine=self.engine, outputs=["/daodan/out"])
         assert result["state"] == "done", result
         assert [Path(path).name for path in result["outputs"]] == ["answer.json"]

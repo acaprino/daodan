@@ -1,8 +1,8 @@
 """The engine pass's indexer stages on Modal, against the graph the benchmark builds from the same index. No model.
 
-One container per case (`chi`, `semver`, `tududi`, `phazly`), with the base system only, over the snapshot and
-road A that `modal_scip.py` keeps under `scip-inputs/<case>` and the case's checkout at its commit (phazly from its
-archive there); `python-semver` over the checkout, its copy with each link a regular file and the snapshot of that
+One container per case (`chi`, `semver`, `tududi`), with the base system only, over the snapshot and
+road A that `modal_scip.py` keeps under `scip-inputs/<case>` and the case's checkout at its commit (a case that comes
+as an archive from its archive there); `python-semver` over the checkout, its copy with each link a regular file and the snapshot of that
 copy that `lang_python.py` keeps (`snapshot.py write` stops on a linked file), without road A:
 1. the stage of each indexer entry of `resolve_edges.ENGINES` serving a language of the snapshot
    (`resolve_edges.index_stage`): it installs and runs the indexer, builds the graph and writes the store; a copy of
@@ -50,9 +50,9 @@ AUDIT = ("modal_audit.py", "modal_scip.py", "plugin_scripts.py", "lang_python.py
 # The cases `lang_python.py` keeps on the volume: its work folder (checkout, copy, snapshot) and its case there.
 KEPT = {"python-semver": ("graph-python/semver-plugin/work.tar.gz", "semver")}
 # The stored result each case's run is set beside, when it is not `scip-<case>-confirm.json`.
-CONFIRM = {"phazly": "scip-phazly-final.json", "python-semver": "graph-python-semver-plugin-checks.json"}
-# Each case's Python projects, given to scip-python: phazly's as the stored run gave them.
-UNITS = {"phazly": [{"root": "functions-python"}], "python-semver": [{"root": ""}]}
+CONFIRM = {"python-semver": "graph-python-semver-plugin-checks.json"}
+# Each case's Python projects, given to scip-python.
+UNITS = {"python-semver": [{"root": ""}]}
 # What a run's log holds: a private case's result keeps neither.
 LOGS = ("stdout_tail", "stderr_tail")
 

@@ -40,7 +40,7 @@ Perimetro: lo standard si può applicare solo a T0.A–T0.C, le sole tranche esp
 - Indicazione: nominare il test esatto, dire se è lo stesso del flake Playwright, e fissare la configurazione della run di baseline.
 
 **B3. Step T0.C.2 (r.78, con r.51-52): tutto il contenuto è una decisione di progetto non presa.**
-- «1 stack + 1 progetto reale»: nessuno dei due è nominato. `benchmarks/system-map/README.md` ha sei riferimenti (fra cui `poc-data-extraction`) ma il piano non ne sceglie uno.
+- «1 stack + 1 progetto reale»: nessuno dei due è nominato. `benchmarks/system-map/README.md` ha più riferimenti ma il piano non ne sceglie uno.
 - «domande verificate» con callback, overload e dispatch dinamico: nessun numero, nessun formato, nessun oracolo, nessuno che le verifica.
 - «quota nascosta contro overfitting»: compare solo nello step, non nel punto 6; dimensione, custodia e chi la vede non sono scritti.
 - «protocollo del confronto cieco»: non definito (modello, ripetizioni, soglia). Le soglie di `system-map` sono scelte aperte di T3 (r.183), ma il Cancello T1 e T2 misurano «sul campione fissato in T0».

@@ -193,13 +193,13 @@ Nessuno legge la release Java di `pom.xml` né il blocco `toolchain` di Gradle s
 
 Tutte in un container (Modal o il container di Daodan), mai su questo PC. La seconda esecuzione sempre con `--network none`.
 
-1. **Scanner di file come base della pre-mappa: Trivy contro Syft.** Casi: i sette (chi, semver, tududi, python-semver, javapoet, klaxon, phazly). Contare:
+1. **Scanner di file come base della pre-mappa: Trivy contro Syft.** Casi: i sette (chi, semver, tududi, python-semver, javapoet, klaxon e un progetto privato). Contare:
    - unità trovate contro `modules.json`, compresi i `go.mod` di `_examples` in chi;
    - membri del workspace e versioni da `uv.lock`;
    - pacchetti per ecosistema: in comune, solo strumento, solo Daodan;
    - buco Gradle su klaxon;
    - tempo, memoria e tentativi di rete.
-2. **Comandi di modello sicuri sull'host, normalizzati in `BuildTarget`.** Comandi: `go list` per ogni `go.mod`, `cargo metadata --frozen`, `npm`/`pnpm ls` solo lockfile, `uv export --frozen --no-build --all-packages`, `tsc --showConfig` per ogni `tsconfig` seguendo le `references`. Casi: chi, semver, tududi, python-semver, l'app TypeScript di phazly. Contare:
+2. **Comandi di modello sicuri sull'host, normalizzati in `BuildTarget`.** Comandi: `go list` per ogni `go.mod`, `cargo metadata --frozen`, `npm`/`pnpm ls` solo lockfile, `uv export --frozen --no-build --all-packages`, `tsc --showConfig` per ogni `tsconfig` seguendo le `references`. Casi: chi, semver, tududi, python-semver, l'app TypeScript di un progetto privato. Contare:
    - target e file per unità contro `modules.json`;
    - import `@/` risolti contro `snapshot.ts_path_config`;
    - processi figli lanciati, da controllare con un file esca nella configurazione;
@@ -219,7 +219,7 @@ Tutte in un container (Modal o il container di Daodan), mai su questo PC. La sec
    - codice eseguito (deve essere zero; un modulo esca che scrive un file quando viene importato);
    - riuscita offline.
 
-Fuori dai cinque: go-enry al posto della tabella dei linguaggi. È poco costoso: lo stesso `go install` di scip-go. Da misurare quando la pre-mappa sarà decisa, contando su tududi, phazly, javapoet, zlib e tinyxml2 i file esclusi come vendored, generati o documentazione e i disaccordi su `.h` e `.sql`. Una verifica, non un'adozione: confrontare su tududi e phazly ciò che il CLI di stack-analyser trova in più del registro. Se non trova nulla, `stack_analyser.py` si toglie.
+Fuori dai cinque: go-enry al posto della tabella dei linguaggi. È poco costoso: lo stesso `go install` di scip-go. Da misurare quando la pre-mappa sarà decisa, contando su tududi, javapoet, zlib e tinyxml2 i file esclusi come vendored, generati o documentazione e i disaccordi su `.h` e `.sql`. Una verifica, non un'adozione: confrontare su tududi ciò che il CLI di stack-analyser trova in più del registro. Se non trova nulla, `stack_analyser.py` si toglie.
 
 ## Non verificato
 

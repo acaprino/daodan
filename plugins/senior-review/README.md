@@ -18,7 +18,7 @@ Spec: [`docs/backlog.md`](../../docs/backlog.md) (sezione «Ricerca, embedding e
 
 ## Review leggera
 
-La light ha un solo reviewer nel roster (`code-auditor` per il codice) e un solo job: `bind` vi piega gli specialisti richiesti. Dividere i membri in più job è stato provato e ritirato: sul [caso Jupiter](../../benchmarks/jupiter-alias/README.md) costava dal 48% al 62% di token in più senza trovare più difetti. Limite misurato sullo stesso caso: un job composto può mancare un difetto che il ruolo da solo trova (J2: 0 run su 7 contro 2 su 2).
+La light ha un solo reviewer nel roster (`code-auditor` per il codice) e un solo job: `bind` vi piega gli specialisti richiesti. Dividere i membri in più job è stato provato e ritirato: su un caso privato costava dal 48% al 62% di token in più senza trovare più difetti. Limite misurato sullo stesso caso: un job composto può mancare un difetto che il ruolo da solo trova (J2: 0 run su 7 contro 2 su 2).
 
 La verifica segue il livello del roster: di norma `critical-high`, cioè ogni finding Critical o High con Lens 0 e Lens 1; con rigor `quick`, solo i Critical con Lens 1 ([tabella](skills/review-quality-gates/references/verification-panel.md)).
 

@@ -4,7 +4,7 @@ Domande). No model. `CASES`, `_run` and `_source` are the cases and checkout the
 One container per case: snapshot, the product's pass, then the graph use measured in process.
 
     modal deploy benchmarks/inference-audit/modal_audit.py
-    python benchmarks/inference-audit/modal_audit.py spawn --phazly-tar PATH [--cases ...]
+    python benchmarks/inference-audit/modal_audit.py spawn [--tar PATH] [--cases ...]
 
 Each case is a spawned call of the deployed app: it runs to its end and writes its result to the
 volume even when the local client disconnects (`modal run` cancels the pending inputs then).
@@ -26,7 +26,6 @@ RESULTS = HERE / "results"
 TAG = "inference-audit"
 
 CASES = {
-    "phazly": {"tar": True, "target": ".", "rules": "benchmarks/phazly-flow/rules.json"},
     "tududi": {"repo": "https://github.com/chrisvel/tududi.git", "target": ".",
                "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263", "rules": "benchmarks/tududi-flow/rules.json"},
     "javapoet": {"repo": "https://github.com/square/javapoet.git", "target": ".",
@@ -165,12 +164,12 @@ def audit(name: str, case: dict, archive: bytes | None, rules_text: str, label: 
 
 
 @app.local_entrypoint()
-def main(phazly_tar: str = "", cases: str = ",".join(CASES)):
+def main(tar: str = "", cases: str = ",".join(CASES)):
     chosen = [c.strip() for c in cases.split(",") if c.strip()]
     calls = []
     for name in chosen:
         case = CASES[name]
-        archive = Path(phazly_tar).read_bytes() if case.get("tar") else None
+        archive = Path(tar).read_bytes() if case.get("tar") else None
         rules = (ROOT / case["rules"]).read_text(encoding="utf-8") if case.get("rules") else ""
         calls.append((name, case, archive, rules))
     RESULTS.mkdir(parents=True, exist_ok=True)
@@ -183,11 +182,11 @@ def main(phazly_tar: str = "", cases: str = ",".join(CASES)):
         print(result["case"], "seconds", result["seconds"])
 
 
-def _calls(phazly_tar: str, cases: str) -> list[tuple]:
+def _calls(tar: str, cases: str) -> list[tuple]:
     calls = []
     for name in [c.strip() for c in cases.split(",") if c.strip()]:
         case = CASES[name]
-        archive = Path(phazly_tar).read_bytes() if case.get("tar") else None
+        archive = Path(tar).read_bytes() if case.get("tar") else None
         rules = (ROOT / case["rules"]).read_text(encoding="utf-8") if case.get("rules") else ""
         calls.append((name, case, archive, rules))
     return calls
@@ -198,13 +197,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("spawn", "fetch"))
-    parser.add_argument("--phazly-tar", default="")
+    parser.add_argument("--tar", default="", help="the archive of a case that has no repository")
     parser.add_argument("--cases", default=",".join(CASES))
     parser.add_argument("--labels", default="", help="comma-separated; one spawn per case and label")
     args = parser.parse_args()
     if args.command == "spawn":
         function = modal.Function.from_name("daodan-inference-audit", "audit")
-        for call in _calls(args.phazly_tar, args.cases):
+        for call in _calls(args.tar, args.cases):
             for label in [x.strip() for x in args.labels.split(",")] if args.labels else [""]:
                 print(call[0], label, function.spawn(*call, label).object_id)
     else:

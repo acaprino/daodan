@@ -42,28 +42,23 @@ node benchmarks/call-provenance/probe-typescript.cjs /percorso/typescript/lib/ty
 
 Con TypeScript 5.9.3 entrambi gli assert passano: la prima navigazione identifica il contenitore destrutturato, la seconda raggiunge la funzione del provider esterno; il provider generico che restituisce il parametro conserva la destinazione interna della callback. Le sorgenti sono virtuali e non dipendono da React o altre librerie. Questa verifica usa il servizio del compilatore, non il trasporto LSP.
 
-Verifica aggiuntiva in memoria con i pacchetti installati di Phazly: `useTranslation` restituisce una risposta sul contenitore e sulla firma `i18next/typescript/t.d.ts`; `useCallback(local, [])` sul contenitore e sulla funzione locale. Non è una rimisurazione del benchmark Phazly.
-
 Regressioni del risolutore, conteggi, cache, contratti e passaggio multilingua: 77 test eseguiti in 81,114 secondi, 76 passati e 1 saltato perché il sandbox non consente hardlink. Il sottoinsieme mirato di 23 test è compreso in questi 77.
 
 Anche `python -m unittest discover -s tests -p test_codebase_map_storage_queries.py` passa: 14 test in 21,474 secondi. Totale delle verifiche finali Python: 91 eseguite, 90 passate, 1 skip ambientale.
 
 I test ambientali non verdi nella prova estesa sono `RustGoContractTests.test_go_interface_methods_are_contracts`, `RustGoContractTests.test_rust_trait_signatures_and_enum_variants_are_contracts` e `KotlinEngineTests.test_the_kotlin_engine_loads_the_snapshots_kotlin_and_java_files_only`, oltre ai due test delle junction nominati sopra. Non sono stati disabilitati o modificati per ottenere un esito verde.
 
-## Rimisura dei tre casi, 11 novembre 2026
+## Rimisura dei casi, 11 novembre 2026
 
-Modal, 4 CPU e 16 GB per caso, stessi commit della misura 0 di [`flow-model`](../flow-model/README.md). Phazly da `git archive 46c92b28 react-app shared functions-python`, senza file `.env`, `functions-python/app/core/secrets.py` e tre file di firma Android: rispetto al baseline manca `secrets.py`. Identità dell'archivio in `results/phazly-input.json`; i valori per caso in `results/`.
+Modal, 4 CPU e 16 GB per caso, stessi commit della misura 0 di [`flow-model`](../flow-model/README.md); i valori per caso in `results/`.
 
 | Caso | Prima: risolte su risolvibili | Ora | Risolte | Passaggio motore |
 | --- | --- | --- | --- | --- |
 | polar `server/` | 55,9% (34.535 su 61.758) | 41,8% (34.587 su 82.731) | +52 | 41 → 57 min |
 | tududi | 52,8% (17.282 su 32.717) | 41,4% (17.267 su 41.739) | −15 | 11 → 26 min |
-| phazly | 59,7% (13.288 su 22.271) | 47,8% (13.304 su 27.842) | +16 | 16 → 30 min |
 
 - Le chiamate risolte restano quasi invariate; il denominatore cresce perché i nomi assenti dal progetto restano dentro finché il motore non li prova esterni.
-- Il grosso delle nuove risolvibili è `unresolved`, cioè il motore non risponde: polar Python 44.192, tududi JavaScript 15.077, phazly Python 5.674 e TypeScript 2.286. polar gira senza l'ambiente Python del progetto, phazly senza i pacchetti di `react-app`: senza librerie il motore non prova l'origine esterna.
-- Phazly TypeScript: `project-not-a-symbol` passa da 4.304 a 5.621. Attraverso il server LSP 2.072 chiamate `t()` restano `project-not-a-symbol`: la verifica sul compilatore non si riproduce nel passaggio reale. Restano `project-not-a-symbol` anche `useState` (335), `useCallback` (225) e `useTranslation` (198): il motore si ferma sull'import, come quando i pacchetti di `react-app` mancano.
-- Phazly: 269 posizioni non chieste.
+- Il grosso delle nuove risolvibili è `unresolved`, cioè il motore non risponde: polar Python 44.192, tududi JavaScript 15.077. polar gira senza l'ambiente Python del progetto: senza librerie il motore non prova l'origine esterna.
 
 Il comando di Modal richiede le variabili del proxy vuote: con `HTTPS_PROXY` di questa sessione il client non raggiunge `api.modal.com`.
 
@@ -75,15 +70,13 @@ Requisito 24: Daodan installa i pacchetti dichiarati dal progetto (Python da `uv
 | --- | --- | --- | --- | --- |
 | polar `server/` | 41,8% (34.587 su 82.731) | 82,4% (34.301 su 41.642) | Python 82,4% | 57 → 156 min |
 | tududi | 41,4% (17.267 su 41.739) | 41,4% (17.267 su 41.742) | JavaScript 37,9%, TypeScript 49,5% | 26 → 18 min |
-| phazly | 47,8% (13.304 su 27.842) | 67,5% (13.338 su 19.768) | Python 77,1%, TypeScript 51,1% | 30 → 36 min |
 
 - polar: 234 pacchetti installati su 236 dichiarati; le posizioni senza risposta scendono da 44.202 a 2.743 e le definizioni provate esterne salgono da 16.697 a 57.819. Le chiamate risolte scendono di 286: con le librerie il motore prova esterne destinazioni che prima cadevano su un simbolo del progetto. Il passaggio dura quasi tre volte tanto.
-- phazly: con i pacchetti il server TypeScript prova esterne 1.807 chiamate `t()` e gli hook di React; restano `project-not-a-symbol` 246 `t()` e 255 `useAppStore` con destinazione ambigua.
 - tududi aveva già i pacchetti alla radice e non cambia: le posizioni senza risposta sono metodi di libreria chiamati su valori senza tipo in JavaScript (`create`, `findOne`, `send`), con la destinazione decisa a runtime.
 - La prima misura di polar con l'ambiente non lo aveva creato: i manifest si cercavano sotto la cartella del target e non dalla radice dello snapshot. Corretto con `PreparedEnvironmentTests.test_a_target_below_the_snapshot_root_still_finds_its_manifests`.
 - Un'installazione JavaScript di polar è fallita su un conflitto di dipendenze di npm; le altre cartelle hanno i loro pacchetti.
 
-Soglia della misura 0 di [`flow-model`](../flow-model/README.md), 70%: la raggiunge polar; phazly è al 67,5%, tududi no.
+Soglia della misura 0 di [`flow-model`](../flow-model/README.md), 70%: la raggiunge polar, tududi no.
 
 ## Passo dinamico: parametri e prova del container, 12 novembre 2026
 

@@ -1,7 +1,7 @@
 """The declaration the engine names for a read of a project value reaches the view and the links (plan, task 18b).
 
 scip-python resolves `self.CLAIMS` to the class's `CLAIMS` and `consts.TABLE` to the module's `TABLE` (the review
-of 23 November 2026 on phazly): the definition of each symbol is where the snapshot declares a binding. The view's
+of 23 November 2026 on a private case): the definition of each symbol is where the snapshot declares a binding. The view's
 read then names that binding (`binding_id`), which `flows.Facts.constants` reads, so the constant is a store key
 with no reader written by hand; an inherited attribute no subclass defines again keeps it.
 

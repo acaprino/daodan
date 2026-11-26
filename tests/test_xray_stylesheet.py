@@ -3,7 +3,7 @@
 A stylesheet decides whether a screen renders, scrolls and can be completed.
 Until codebase-map 4.1.0 the Codebase Map did not record one at all, and until 4.2.0
 it recorded one only as a hash. The
-motivating case is a Phazly incident of 2026-09-14: the rule
+motivating case is an incident of 2026-09-14 in a private project: the rule
 `.dark #root > div:first-child { position: relative; }` reached the consent
 modal, the first child of the React root, and replaced its `position: fixed`,
 so on mobile in dark theme the modal could not scroll and nobody could enter
@@ -16,7 +16,7 @@ rule that reaches the root's untargeted children and sets a layout property,
 next to the class rules it can silently override.
 
 Most cases after the first set come from two adversarial reviews, one case per
-confirmed defect. The one that mattered most: on the real Phazly tree the
+confirmed defect. The one that mattered most: on that project's real tree the
 scanner found the dark-theme rule and missed the modal, because the modal's
 `position: fixed` was written `@apply fixed`, and in that tree
 90% of the applied rules used `@apply`.
@@ -760,7 +760,7 @@ class CascadeScanTests(unittest.TestCase):
             for candidate in report["candidates"]
         }
 
-    def test_the_phazly_rule_is_found_with_the_modal_rule_it_overrides(self):
+    def test_the_dark_theme_rule_is_found_with_the_modal_rule_it_overrides(self):
         report = self.report({"styles/theme.css": THEME_CSS, "styles/modal.css": MODAL_CSS})
         self.assertEqual(len(report["candidates"]), 1, report["candidates"])
         found = report["candidates"][0]

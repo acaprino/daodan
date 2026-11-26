@@ -1,0 +1,844 @@
+{
+ "frameworks": [
+  {
+   "name": "Next.js",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L75"
+  },
+  {
+   "name": "React",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L80"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L117"
+  },
+  {
+   "name": "StyleX",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L56"
+  },
+  {
+   "name": "Zod",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L95"
+  },
+  {
+   "name": "Vercel AI SDK",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L62"
+  },
+  {
+   "name": "Model Context Protocol SDK",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L36"
+  },
+  {
+   "name": "Vitest",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L120"
+  },
+  {
+   "name": "Playwright",
+   "unit": "web",
+   "evidence": "clients/apps/web/package.json#L115"
+  },
+  {
+   "name": "React Native",
+   "unit": "@polar-sh/app",
+   "evidence": "clients/apps/app/package.json#L74"
+  },
+  {
+   "name": "React",
+   "unit": "@polar-sh/app",
+   "evidence": "clients/apps/app/package.json#L70"
+  },
+  {
+   "name": "Expo",
+   "unit": "@polar-sh/app",
+   "evidence": "clients/apps/app/package.json#L48"
+  },
+  {
+   "name": "Expo Router",
+   "unit": "@polar-sh/app",
+   "evidence": "clients/apps/app/package.json#L62"
+  },
+  {
+   "name": "React Navigation",
+   "unit": "@polar-sh/app",
+   "evidence": "clients/apps/app/package.json#L41"
+  },
+  {
+   "name": "Jest",
+   "unit": "@polar-sh/app",
+   "evidence": "clients/apps/app/package.json#L92"
+  },
+  {
+   "name": "SwiftUI",
+   "unit": "@polar-sh/app",
+   "evidence": "clients/apps/app/targets/widget/widgets.swift#L2"
+  },
+  {
+   "name": "Next.js",
+   "unit": "demo-app",
+   "evidence": "clients/apps/demo-app/package.json#L11"
+  },
+  {
+   "name": "React",
+   "unit": "demo-app",
+   "evidence": "clients/apps/demo-app/package.json#L12"
+  },
+  {
+   "name": "Zod",
+   "unit": "demo-app",
+   "evidence": "clients/apps/demo-app/package.json#L15"
+  },
+  {
+   "name": "Model Context Protocol SDK",
+   "unit": "mcp",
+   "evidence": "clients/apps/mcp/package.json#L18"
+  },
+  {
+   "name": "Effect",
+   "unit": "mcp",
+   "evidence": "clients/apps/mcp/package.json#L19"
+  },
+  {
+   "name": "Vite",
+   "unit": "mcp",
+   "evidence": "clients/apps/mcp/package.json#L27"
+  },
+  {
+   "name": "Vitest",
+   "unit": "mcp",
+   "evidence": "clients/apps/mcp/package.json#L28"
+  },
+  {
+   "name": "Next.js",
+   "unit": "orbit-playground",
+   "evidence": "clients/apps/orbit/package.json#L22"
+  },
+  {
+   "name": "React",
+   "unit": "orbit-playground",
+   "evidence": "clients/apps/orbit/package.json#L24"
+  },
+  {
+   "name": "StyleX",
+   "unit": "orbit-playground",
+   "evidence": "clients/apps/orbit/package.json#L21"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "orbit-playground",
+   "evidence": "clients/apps/orbit/package.json#L39"
+  },
+  {
+   "name": "React",
+   "unit": "@polar-sh/checkout",
+   "evidence": "clients/packages/checkout/package.json#L99"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/checkout",
+   "evidence": "clients/packages/checkout/package.json#L100"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/checkout",
+   "evidence": "clients/packages/checkout/package.json#L102"
+  },
+  {
+   "name": "Effect",
+   "unit": "@polar-sh/cli",
+   "evidence": "clients/packages/cli/package.json#L45"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/cli",
+   "evidence": "clients/packages/cli/package.json#L62"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/cli",
+   "evidence": "clients/packages/cli/package.json#L64"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/client",
+   "evidence": "clients/packages/client/package.json#L30"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/currency",
+   "evidence": "clients/packages/currency/package.json#L37"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/currency",
+   "evidence": "clients/packages/currency/package.json#L39"
+  },
+  {
+   "name": "React",
+   "unit": "@polar-sh/i18n",
+   "evidence": "clients/packages/i18n/package.json#L46"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/i18n",
+   "evidence": "clients/packages/i18n/package.json#L47"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/i18n",
+   "evidence": "clients/packages/i18n/package.json#L50"
+  },
+  {
+   "name": "React",
+   "unit": "@polar-sh/orbit",
+   "evidence": "clients/packages/orbit/package.json#L73"
+  },
+  {
+   "name": "Material UI",
+   "unit": "@polar-sh/orbit",
+   "evidence": "clients/packages/orbit/package.json#L48"
+  },
+  {
+   "name": "StyleX",
+   "unit": "@polar-sh/orbit",
+   "evidence": "clients/packages/orbit/package.json#L55"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/orbit",
+   "evidence": "clients/packages/orbit/package.json#L68"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/orbit",
+   "evidence": "clients/packages/orbit/package.json#L70"
+  },
+  {
+   "name": "Effect",
+   "unit": "@polar-sh/polar",
+   "evidence": "clients/packages/polar/package.json#L45"
+  },
+  {
+   "name": "Zod",
+   "unit": "@polar-sh/polar",
+   "evidence": "clients/packages/polar/package.json#L54"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/polar",
+   "evidence": "clients/packages/polar/package.json#L51"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/polar",
+   "evidence": "clients/packages/polar/package.json#L53"
+  },
+  {
+   "name": "React",
+   "unit": "@polar-sh/ui",
+   "evidence": "clients/packages/ui/package.json#L57"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/ui",
+   "evidence": "clients/packages/ui/package.json#L59"
+  },
+  {
+   "name": "Zod",
+   "unit": "@polar-sh/adapter-utils",
+   "evidence": "clients/adapters/adapter-utils/package.json#L42"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/adapter-utils",
+   "evidence": "clients/adapters/adapter-utils/package.json#L47"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/adapter-utils",
+   "evidence": "clients/adapters/adapter-utils/package.json#L49"
+  },
+  {
+   "name": "Better Auth",
+   "unit": "@polar-sh/better-auth",
+   "evidence": "clients/adapters/better-auth/package.json#L66"
+  },
+  {
+   "name": "Zod",
+   "unit": "@polar-sh/better-auth",
+   "evidence": "clients/adapters/better-auth/package.json#L70"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/better-auth",
+   "evidence": "clients/adapters/better-auth/package.json#L67"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/better-auth",
+   "evidence": "clients/adapters/better-auth/package.json#L69"
+  },
+  {
+   "name": "Next.js",
+   "unit": "@polar-sh/nextjs",
+   "evidence": "clients/adapters/nextjs/package.json#L47"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/nextjs",
+   "evidence": "clients/adapters/nextjs/package.json#L48"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/nextjs",
+   "evidence": "clients/adapters/nextjs/package.json#L50"
+  },
+  {
+   "name": "Nuxt",
+   "unit": "@polar-sh/nuxt",
+   "evidence": "clients/adapters/nuxt/package.json#L59"
+  },
+  {
+   "name": "Zod",
+   "unit": "@polar-sh/nuxt",
+   "evidence": "clients/adapters/nuxt/package.json#L63"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/nuxt",
+   "evidence": "clients/adapters/nuxt/package.json#L61"
+  },
+  {
+   "name": "TanStack Start",
+   "unit": "@polar-sh/tanstack-start",
+   "evidence": "clients/adapters/tanstack-start/package.json#L46"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/tanstack-start",
+   "evidence": "clients/adapters/tanstack-start/package.json#L48"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/tanstack-start",
+   "evidence": "clients/adapters/tanstack-start/package.json#L50"
+  },
+  {
+   "name": "Next.js",
+   "unit": "example",
+   "evidence": "clients/adapters/better-auth/example/package.json#L15"
+  },
+  {
+   "name": "React",
+   "unit": "example",
+   "evidence": "clients/adapters/better-auth/example/package.json#L16"
+  },
+  {
+   "name": "Better Auth",
+   "unit": "example",
+   "evidence": "clients/adapters/better-auth/example/package.json#L13"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "example",
+   "evidence": "clients/adapters/better-auth/example/package.json#L25"
+  },
+  {
+   "name": "Nuxt",
+   "unit": "polar-nuxt-playground",
+   "evidence": "clients/adapters/nuxt/playground/package.json#L11"
+  },
+  {
+   "name": "Nuxt",
+   "unit": "basic",
+   "evidence": "clients/adapters/nuxt/test/fixtures/basic/nuxt.config.ts#L3"
+  },
+  {
+   "name": "Mintlify",
+   "unit": "polar-docs",
+   "evidence": "docs/package.json#L17"
+  },
+  {
+   "name": "React",
+   "unit": "polar-docs",
+   "evidence": "docs/package.json#L18"
+  },
+  {
+   "name": "Mintlify",
+   "unit": "polar-handbook",
+   "evidence": "handbook/package.json#L17"
+  },
+  {
+   "name": "React",
+   "unit": "polar-handbook",
+   "evidence": "handbook/package.json#L18"
+  },
+  {
+   "name": "Effect",
+   "unit": "@polar-sh/cli-commands",
+   "evidence": "sdk/cli-commands/package.json#L17"
+  },
+  {
+   "name": "tsdown",
+   "unit": "@polar-sh/sdk",
+   "evidence": "sdk/typescript/package.json#L233"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@polar-sh/sdk",
+   "evidence": "sdk/typescript/package.json#L235"
+  },
+  {
+   "name": "React Email",
+   "unit": "react-email-pkg",
+   "evidence": "server/emails/package.json#L22"
+  },
+  {
+   "name": "React",
+   "unit": "react-email-pkg",
+   "evidence": "server/emails/package.json#L20"
+  },
+  {
+   "name": "tsdown",
+   "unit": "react-email-pkg",
+   "evidence": "server/emails/package.json#L32"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "backoffice",
+   "evidence": "server/polar/backoffice/package.json#L21"
+  },
+  {
+   "name": "daisyUI",
+   "unit": "backoffice",
+   "evidence": "server/polar/backoffice/package.json#L15"
+  },
+  {
+   "name": "htmx",
+   "unit": "backoffice",
+   "evidence": "server/polar/backoffice/package.json#L18"
+  },
+  {
+   "name": "_hyperscript",
+   "unit": "backoffice",
+   "evidence": "server/polar/backoffice/package.json#L19"
+  },
+  {
+   "name": "esbuild",
+   "unit": "backoffice",
+   "evidence": "server/polar/backoffice/package.json#L16"
+  },
+  {
+   "name": "FastAPI",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L9"
+  },
+  {
+   "name": "SQLAlchemy",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L13"
+  },
+  {
+   "name": "Pydantic",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L21"
+  },
+  {
+   "name": "Typer",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L36"
+  },
+  {
+   "name": "APScheduler",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L48"
+  },
+  {
+   "name": "tagflow",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L50"
+  },
+  {
+   "name": "Dramatiq",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L52"
+  },
+  {
+   "name": "Pydantic AI",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L58"
+  },
+  {
+   "name": "pytest",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L83"
+  },
+  {
+   "name": "Locust",
+   "unit": "server",
+   "evidence": "server/pyproject.toml#L95"
+  },
+  {
+   "name": "pytest",
+   "unit": "polar-sdk",
+   "evidence": "sdk/python/pyproject.toml#L43"
+  },
+  {
+   "name": "Starlette",
+   "unit": "polar-sdk-e2e",
+   "evidence": "sdk/e2e/pyproject.toml#L12"
+  },
+  {
+   "name": "pytest",
+   "unit": "polar-sdk-e2e",
+   "evidence": "sdk/e2e/pyproject.toml#L17"
+  },
+  {
+   "name": "Jinja",
+   "unit": "generator",
+   "evidence": "sdk/generator/pyproject.toml#L8"
+  },
+  {
+   "name": "pytest",
+   "unit": "generator",
+   "evidence": "sdk/generator/pyproject.toml#L16"
+  },
+  {
+   "name": "pytest",
+   "unit": "image-resizer",
+   "evidence": "lambda/image-resizer/pyproject.toml#L15"
+  },
+  {
+   "name": "Typer",
+   "unit": "dev/cli",
+   "evidence": "dev/cli/cli.py#L5"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "server/docker-compose.yml#L13"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "clients/adapters/better-auth/example/package.json#L14"
+  },
+  {
+   "name": "Neon",
+   "kind": "database",
+   "evidence": "terraform/modules/vercel_services/main.tf#L28"
+  },
+  {
+   "name": "Upstash",
+   "kind": "cache",
+   "evidence": "terraform/modules/vercel_services/main.tf#L29"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": "server/docker-compose.yml#L3"
+  },
+  {
+   "name": "MinIO",
+   "kind": "storage",
+   "evidence": "server/docker-compose.yml#L43"
+  },
+  {
+   "name": "Tinybird",
+   "kind": "analytics",
+   "evidence": "server/docker-compose.yml#L111"
+  },
+  {
+   "name": "LocalStack",
+   "kind": "queue",
+   "evidence": "server/docker-compose.yml#L131"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "server/docker-compose.yml#L78"
+  },
+  {
+   "name": "Grafana",
+   "kind": "monitoring",
+   "evidence": "server/docker-compose.yml#L94"
+  },
+  {
+   "name": "Grafana Cloud",
+   "kind": "monitoring",
+   "evidence": "server/polar/config.py#L100"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": "server/polar/config.py#L358"
+  },
+  {
+   "name": "Logfire",
+   "kind": "monitoring",
+   "evidence": "server/polar/config.py#L402"
+  },
+  {
+   "name": "PostHog",
+   "kind": "analytics",
+   "evidence": "server/polar/config.py#L365"
+  },
+  {
+   "name": "Google Analytics",
+   "kind": "analytics",
+   "evidence": "clients/apps/web/src/app/(main)/(website)/layout.tsx#L2"
+  },
+  {
+   "name": "Stripe",
+   "kind": "payments",
+   "evidence": "server/polar/config.py#L342"
+  },
+  {
+   "name": "Numeral",
+   "kind": "payments",
+   "evidence": "server/polar/config.py#L355"
+  },
+  {
+   "name": "Chargeback Stop",
+   "kind": "payments",
+   "evidence": "server/polar/config.py#L482"
+  },
+  {
+   "name": "Resend",
+   "kind": "mail",
+   "evidence": "server/polar/config.py#L267"
+  },
+  {
+   "name": "Slack",
+   "kind": "notification",
+   "evidence": "server/polar/config.py#L109"
+  },
+  {
+   "name": "Expo Push Notifications",
+   "kind": "notification",
+   "evidence": "server/polar/notifications/tasks/push.py#L5"
+  },
+  {
+   "name": "Firebase Cloud Messaging",
+   "kind": "notification",
+   "evidence": "clients/apps/app/app.config.js#L87"
+  },
+  {
+   "name": "Plain",
+   "kind": "api",
+   "evidence": "server/polar/config.py#L415"
+  },
+  {
+   "name": "Linear",
+   "kind": "api",
+   "evidence": "server/polar/config.py#L410"
+  },
+  {
+   "name": "Discord",
+   "kind": "api",
+   "evidence": "server/polar/config.py#L294"
+  },
+  {
+   "name": "GitHub OAuth",
+   "kind": "authentication",
+   "evidence": "server/polar/config.py#L283"
+  },
+  {
+   "name": "GitHub API",
+   "kind": "api",
+   "evidence": "server/polar/config.py#L287"
+  },
+  {
+   "name": "Google OAuth",
+   "kind": "authentication",
+   "evidence": "server/polar/config.py#L303"
+  },
+  {
+   "name": "Sign in with Apple",
+   "kind": "authentication",
+   "evidence": "server/polar/config.py#L317"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": "server/polar/sso/schemas.py#L24"
+  },
+  {
+   "name": "Cloudflare Turnstile",
+   "kind": "authentication",
+   "evidence": "server/polar/auth/turnstile.py#L7"
+  },
+  {
+   "name": "Google Drive API",
+   "kind": "api",
+   "evidence": "server/polar/organization_review/policy.py#L16"
+  },
+  {
+   "name": "Firecrawl",
+   "kind": "api",
+   "evidence": "server/polar/config.py#L330"
+  },
+  {
+   "name": "IPinfo",
+   "kind": "api",
+   "evidence": "server/polar/checkout/ip_geolocation.py#L12"
+  },
+  {
+   "name": "Logo.dev",
+   "kind": "api",
+   "evidence": "server/polar/config.py#L377"
+  },
+  {
+   "name": "Pydantic AI Gateway",
+   "kind": "ai",
+   "evidence": "server/polar/config.py#L323"
+  },
+  {
+   "name": "OpenAI",
+   "kind": "ai",
+   "evidence": "server/polar/config.py#L324"
+  },
+  {
+   "name": "Anthropic",
+   "kind": "ai",
+   "evidence": "clients/packages/i18n/package.json#L41"
+  },
+  {
+   "name": "Google Vertex AI",
+   "kind": "ai",
+   "evidence": "clients/apps/web/src/app/(main)/dashboard/[organization]/(header)/products/new/ai/chat/route.ts#L31"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "server/polar/integrations/aws/s3/client.py#L20"
+  },
+  {
+   "name": "Amazon SQS",
+   "kind": "queue",
+   "evidence": "server/polar/worker/_sqs.py#L83"
+  },
+  {
+   "name": "Amazon EventBridge Scheduler",
+   "kind": "queue",
+   "evidence": "server/polar/worker/_sqs.py#L115"
+  },
+  {
+   "name": "AWS KMS",
+   "kind": "security",
+   "evidence": "server/polar/kit/encryption.py#L110"
+  },
+  {
+   "name": "AWS Secrets Manager",
+   "kind": "security",
+   "evidence": "server/polar/kit/hash_secrets.py#L53"
+  },
+  {
+   "name": "Amazon GuardDuty",
+   "kind": "security",
+   "evidence": "server/polar/file/tasks.py#L38"
+  },
+  {
+   "name": "AWS Lambda",
+   "kind": "hosting",
+   "evidence": "terraform/modules/aws_task_worker/main.tf#L196"
+  },
+  {
+   "name": "Amazon CloudFront",
+   "kind": "cdn",
+   "evidence": "terraform/modules/cloudfront_distribution/main.tf#L121"
+  },
+  {
+   "name": "Amazon ElastiCache",
+   "kind": "cache",
+   "evidence": "terraform/modules/aws_redis/main.tf#L31"
+  },
+  {
+   "name": "PlanetScale",
+   "kind": "database",
+   "evidence": "terraform/modules/planetscale_postgres/terraform.tf#L6"
+  },
+  {
+   "name": "Render",
+   "kind": "hosting",
+   "evidence": "terraform/modules/render_service/terraform.tf#L9"
+  },
+  {
+   "name": "Vercel",
+   "kind": "hosting",
+   "evidence": "clients/apps/web/vercel.json#L2"
+  },
+  {
+   "name": "Cloudflare Workers",
+   "kind": "hosting",
+   "evidence": "clients/apps/mcp/cloudflare.config.ts#L14"
+  },
+  {
+   "name": "Cloudflare Stream",
+   "kind": "video",
+   "evidence": "clients/apps/web/src/components/Shared/StreamVideo.tsx#L4"
+  },
+  {
+   "name": "Expo Application Services",
+   "kind": "hosting",
+   "evidence": "clients/apps/app/eas.json#L6"
+  },
+  {
+   "name": "Mintlify",
+   "kind": "hosting",
+   "evidence": "clients/apps/mcp/cloudflare.config.ts#L21"
+  },
+  {
+   "name": "Polar API",
+   "kind": "api",
+   "evidence": "server/polar/config.py#L490"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "server/pyproject.toml and clients/package.json both name their unit polar (one Python, one npm), so those two units are referred to by root: server and clients; clients, the private root of the pnpm workspace, has no framework",
+  "the root package.json only sets packageManager: clients/pnpm-workspace.yaml globs apps/*, adapters/*, packages/*, examples/* (absent) and scripts/*, while docs, handbook, sdk/typescript, sdk/e2e, server/emails and server/polar/backoffice are separate pnpm projects with their own lockfile, and better-auth/example, nuxt/playground and nuxt/test/fixtures/basic are nested packages outside the workspace",
+  "most versions in clients are catalog: references to clients/pnpm-workspace.yaml (vitest, tailwindcss, zod, effect, tsdown, @stylexjs/*), so the manifest line names the framework without a version",
+  "sdk/generator/typescript/template/package.json is a Jinja template ({{ version }}, {% for %}) and not JSON; it and sdk/generator/python/template and sdk/generator/cli_commands/template are inputs that sdk/generator renders into sdk/typescript, sdk/python and sdk/cli-commands, not units, and they repeat the names @polar-sh/sdk, polar-sdk and @polar-sh/cli-commands",
+  "dev/cli/pyproject.toml has no [project] table, only Ruff settings: the dev CLI declares Typer in the PEP 723 header of dev/cli/cli.py and has no name, so it is referred to by its root",
+  "only mcp uses Vite directly (vite.config.ts with the Cloudflare plugin); web and @polar-sh/checkout declare @vitejs/plugin-react for Vitest, Next.js builds with Turbopack, and turbo only orchestrates; tsdown is the bundler that the build script of fourteen packages runs",
+  "Playwright in web is driven from Vitest (vitest.e2e.config.ts), not by @playwright/test; @polar-sh/app tests with Jest and the jest-expo preset",
+  "the iOS widget in clients/apps/app/targets/widget is SwiftUI with no manifest of its own, built by the @bacons/apple-targets config plugin; clients/adapters/nuxt/test/fixtures/basic declares no dependency and is a Nuxt app only through nuxt.config.ts; Vue is never declared directly",
+  "@polar-sh/ui uses Tailwind classes but declares no Tailwind package, and the tailwind.config.js named by its shadcn components.json is not in the repository; Radix, Emotion, react-hook-form and TanStack Query are libraries, not frameworks",
+  "the backoffice is server-rendered by the Python unit with tagflow; its CSS and JS are built by the separate server/polar/backoffice package (Tailwind CSS, daisyUI, htmx, _hyperscript, esbuild), and the e-mails are rendered by react-email-pkg, compiled to a binary the server calls",
+  "Tinybird is the analytics store: clickhouse-connect talks to Tinybird's ClickHouse endpoint (TINYBIRD_CLICKHOUSE_URL), there is no ClickHouse server",
+  "MinIO and LocalStack stand in locally for Amazon S3 and for SQS and Lambda; production PostgreSQL is PlanetScale, the Lambda worker's Redis is Amazon ElastiCache (aws_redis, polar-production-worker), and the Vercel test services get Neon and Upstash as Vercel integrations: all of them only in terraform/",
+  "OpenAI, Anthropic and Google Vertex AI are reached through the Pydantic AI Gateway proxy (gateway-us.pydantic.dev) with provider SDKs pointed at it; only the i18n translate script calls Anthropic's SDK directly",
+  "Terraform also manages AWS account plumbing (Organizations, IAM Identity Center, Inspector, VPC, ECR, ECS for a metrics exporter, Athena), Cloudflare DNS, Tailscale and Terraform Cloud: no unit calls them and they are not listed; GuardDuty is listed because the worker consumes its S3 malware scan results (file.guardduty_scan_result); CI-only services (CodSpeed, Blacksmith) are left out too",
+  "Segment, Heap, Plausible and Google Maps appear only in Content-Security-Policy allow-lists of clients/apps/web/src/csp.mjs, Gravatar only in schema examples and WorkOS only in a comment: none is a service of the project",
+  "the root app.json is {\"expo\": {}}, not a Heroku manifest, and vercel.toml has deployments disabled; the API runs on Render and the web app on Vercel",
+  "OpenID Connect is the protocol of the organization SSO connections in server/polar/sso, whose identity providers are configured per organization at run time; the better-auth example keeps its sessions in a local SQLite file through better-sqlite3",
+  "the Polar API at api.polar.sh is the product's own hosted API, called by the MCP worker, the mobile app, the SDKs and adapters, and by the server itself to bill its own customers (POLAR_ACCESS_TOKEN)",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-from-files",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

@@ -52,7 +52,7 @@ Un caso è un commit pubblico che ha introdotto un difetto poi corretto. Regola 
 1. repository pubblico, con target e fix fissati per SHA;
 2. la fix nomina il difetto, e il difetto è di una famiglia della voce nella matrice di §5 della spec;
 3. il target è il commit che ha introdotto il difetto, trovato con `git blame` sulle righe che la fix cambia. Se il difetto nasce in più commit, il caso si scarta;
-4. il target tocca fra 5 e 40 file di produzione. Sotto, un revisore legge tutto e l'aggregazione non pesa; sopra, una run costa più di quelle di [`jupiter-alias`](../jupiter-alias/README.md), che ha 28 file;
+4. il target tocca fra 5 e 40 file di produzione. Sotto, un revisore legge tutto e l'aggregazione non pesa; sopra, una run costa più di quelle misurate su un caso privato di 28 file;
 5. l'unità del target dichiara il framework o la libreria.
 
 Controllo sano di ogni caso: il commit della fix, rivisto come changeset. La voce scatta sugli stessi file e il difetto non c'è più.
@@ -167,7 +167,7 @@ I bracci sono indipendenti: l'ordine serve solo a non spendere dove l'esito è g
 
 Dentro una run di `baseline` o di `stack-dichiarato` i job si lanciano a tappe, dai più probabili: la run `trova` al primo job che segnala il difetto e gli altri non si eseguono. Per dire che una run `manca` servono tutti i job del piano. In S1 la prima tappa è `code-auditor` e `python-auditor`. Regola scritta dopo le run della voce e prima di queste.
 
-Stima, da ricalibrare dopo il primo caso: su `jupiter-alias` (28 file, Opus 5.5) un ruolo da solo costa 130–225 mila token e `code-auditor` 300–325 mila. Il passo 1 esegue due run di uno o due job. I passi 2 e 3 eseguono tutto il piano due volte ciascuno e sono la spesa maggiore. Con il piano da 12 job di F1 (13 per S1, N1 e Z1), le run di job dei soli controlli per caso sono:
+Stima, da ricalibrare dopo il primo caso: sul caso privato di 28 file (Opus 5.5) un ruolo da solo costa 130–225 mila token e `code-auditor` 300–325 mila. Il passo 1 esegue due run di uno o due job. I passi 2 e 3 eseguono tutto il piano due volte ciascuno e sono la spesa maggiore. Con il piano da 12 job di F1 (13 per S1, N1 e Z1), le run di job dei soli controlli per caso sono:
 
 - 0 se nessun braccio della voce `trova`;
 - 24 (26) se `baseline` `trova` in entrambe le run: il caso si chiude prima di `stack-dichiarato`;

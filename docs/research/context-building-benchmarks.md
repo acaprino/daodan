@@ -323,7 +323,7 @@ Run `.daodan/runs/20261026-code-context-e2e-gate/` (local only; report in
 Italian at `REPORT.md`, protocol `00-protocol.md`, reproducibility and failure
 logs under `results/`). Measured, single replicate.
 
-- **Design.** 24 unused commits from Jupiter and Phazly (12 each), stratified;
+- **Design.** 24 unused commits from two private projects (12 each), stratified;
   requests written by Opus 5.5 and verified by Fable 5.1, naming no changed
   symbol or file; hidden oracle = the tests the commit changed, validated to fail
   before and pass after the gold patch. Same agent (Sonnet 5.5, Claude Code

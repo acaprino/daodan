@@ -14,8 +14,8 @@ labelled run over kept inputs keeps its graphs in `scip-inputs/<case>/<label>`.
     python benchmarks/inference-audit/modal_scip.py spawn --cases chi,semver,tududi [--label L]
     python benchmarks/inference-audit/modal_scip.py fetch --cases chi,semver,tududi [--label L]
 
-phazly is private: its archive goes once to the volume (`modal volume put daodan-flow-results PATH
-inference-audit/scip-inputs/phazly/source.tar`) and the container reads it there.
+A case that comes as an archive has it once on the volume (`modal volume put daodan-flow-results PATH
+inference-audit/scip-inputs/<case>/source.tar`) and the container reads it there.
 
 `python modal_scip.py join --manifest M --index I[=prefix] [--answers A] --out O` runs the join alone, locally.
 """
@@ -45,10 +45,7 @@ from modal_audit import CASES, _run, _source  # noqa: E402
 REUSE = {"tududi": "r1"}
 # Per case: the commit the archive was made at; `focus`: declarations (`FILE:LINE`) whose incoming edges the
 # result lists in full.
-OPTIONS = {"phazly": {"commit": "46c92b28",
-                      "focus": ["react-app/src/components/subscription/PaywallModal.tsx:68",
-                                "react-app/src/contexts/SubscriptionContext.tsx:296",
-                                "react-app/src/contexts/SubscriptionContext.tsx:151"]}}
+OPTIONS: dict = {}
 ADAPTERS = {"go": "go", "rust": "rust", "javascript": "typescript", "typescript": "typescript", "python": "python"}
 EXAMPLES = 20
 # Fifteen call sites per language picked at random over every call of the checkout (seed 20261113) and read in
@@ -123,95 +120,6 @@ HAND = {
          "external @testing-library"),
         ("frontend/components/Task/TaskDetails/__tests__/TaskDetailsHeader.test.tsx", 6, "mock", "external @types/jest"),
         ("frontend/utils/dailyPlanService.ts", 311, "map", "external typescript"),
-    ],
-    # phazly (private archive, commit 46c92b28): fifteen sites per language chosen across files, hard ones on
-    # purpose, read in the source and the end written before the graph existed. A fifth element `read` checks a
-    # rendered component; the Paywall: the eleven `<PaywallModal` renders and `startCheckout` (contract at
-    # SubscriptionContext.tsx:151, the function at :296). Kotlin is not here: no indexer runs on it (README).
-    "phazly": [
-        ("functions-python/app/handlers/account_deletion.py", 58, "log_handler",
-         "decl functions-python/app/utils/log_decorator.py:17"),  # decorator factory on a route handler
-        ("functions-python/app/handlers/account_deletion.py", 62, "rate_limit",
-         "decl functions-python/app/api/deps.py:326"),  # factory inside a Depends() default
-        ("functions-python/app/handlers/account_deletion.py", 62, "Depends", "external fastapi"),
-        ("functions-python/app/handlers/account_deletion.py", 66, "request_soft_delete",
-         "decl functions-python/app/services/account_deletion.py:63"),  # decorated handler, injected parameters
-        ("functions-python/app/food_query/resolver.py", 183, "search_filter",
-         "decl functions-python/app/food_query/adapter.py:45"),  # Protocol parameter; off.py:39 and usda.py:76 run
-        ("functions-python/app/food_query/resolver.py", 189, "rank_round",
-         "decl functions-python/app/services/food_search.py:1386"),  # nested function, multi-line import
-        ("functions-python/app/food_query/resolver.py", 190, "_judge", "decl functions-python/app/food_query/resolver.py:205"),
-        ("functions-python/app/food_query/resolver.py", 193, "one",
-         "decl functions-python/app/food_query/resolver.py:187"),  # nested function called in a generator
-        ("functions-python/app/api/deps.py", 204, "to_thread", "external python-stdlib"),  # a bound method passed as value
-        ("functions-python/app/services/stripe_client.py", 57, "_get_stripe_secret_key_from_sm",
-         "none"),  # alias imported from app/core/secrets.py, left out of the archive
-        ("functions-python/app/core/config.py", 138, "get_settings",
-         "decl functions-python/app/core/config.py:132"),  # decorated by lru_cache
-        ("functions-python/app/core/exceptions.py", 74, "__init__", "decl functions-python/app/core/exceptions.py:35"),
-        ("functions-python/app/food_query/description.py", 52, "_words",
-         "decl functions-python/app/food_query/description.py:32"),  # inside a field_validator classmethod
-        ("functions-python/tests/unit/test_api_keys.py", 25, "FakeDb",
-         "decl functions-python/tests/unit/forge_fakes.py:488"),  # class built in a pytest fixture
-        ("functions-python/tests/unit/test_api_keys.py", 78, "resolve_principal",
-         "decl functions-python/app/api/deps.py:257"),  # module attribute, test with injected fixtures
-        ("react-app/src/components/subscription/PaywallModal.tsx", 132, "startCheckout",
-         "decl react-app/src/contexts/SubscriptionContext.tsx:296"),  # destructured from the context hook
-        ("react-app/src/components/subscription/PaywallModal.tsx", 72, "useSubscription",
-         "decl react-app/src/contexts/SubscriptionContext.tsx:176"),
-        ("react-app/src/components/subscription/PaywallModal.tsx", 130, "clearError",
-         "decl react-app/src/contexts/SubscriptionContext.tsx:237"),  # context value built with useCallback
-        ("react-app/src/components/subscription/PaywallModal.tsx", 129, "setIsLoading", "none"),  # useState setter
-        ("react-app/src/components/subscription/PaywallModal.tsx", 239, "onOpenChange",
-         "value"),  # prop callback, the callers' setters at run time
-        ("react-app/src/components/subscription/PaywallModal.tsx", 397, "handleCheckout",
-         "decl react-app/src/components/subscription/PaywallModal.tsx:126"),  # arrow const called in a JSX handler
-        ("react-app/src/components/subscription/ExpiredBanner.tsx", 66, "PaywallModal",
-         "decl react-app/src/components/subscription/PaywallModal.tsx:68", "read"),
-        ("react-app/src/components/diario/DiarioOverlays.tsx", 91, "PaywallModal",
-         "decl react-app/src/components/subscription/PaywallModal.tsx:68", "read"),  # through @/components/subscription
-        ("react-app/src/components/features/AIAlternatives.tsx", 770, "PaywallModal",
-         "decl react-app/src/components/subscription/PaywallModal.tsx:68", "read"),  # through ../subscription
-        ("react-app/src/contexts/SubscriptionContext.tsx", 699, "Provider", "external @types/react", "read"),  # two-part
-        ("react-app/src/components/home/SortableHomeCards.tsx", 73, "Item", "external framer-motion", "read"),  # two-part
-        ("react-app/src/components/features/PhotoCapture/PhotoCapture.tsx", 201, "showUsageLimitPaywall",
-         "decl react-app/src/components/features/PhotoCapture/PhotoCapture.tsx:188"),  # useCallback
-        ("react-app/src/hooks/useHomeTabController.ts", 393, "addMealAddition",
-         "decl react-app/src/stores/slices/mealPlanSlice.ts:260"),  # zustand selector result
-        ("react-app/src/hooks/useHomeTabController.ts", 413, "t", "external i18next"),  # useTranslation
-        ("react-app/src/components/onboarding/hooks/useOnboardingFlow.ts", 201, "clampMacroTargets",
-         "decl shared/schemas/macroTargets.ts:76"),  # @shared alias
-        ("react-app/scripts/android-version.mjs", 43, "parts", "decl react-app/scripts/android-version.mjs:41"),
-        ("react-app/scripts/android-version.mjs", 47, "parts", "decl react-app/scripts/android-version.mjs:41"),
-        ("react-app/scripts/android-version.mjs", 59, "cancel",
-         "decl react-app/scripts/android-version.mjs:53"),  # inside a callback
-        ("react-app/scripts/android-version.mjs", 34, "readFileSync", "external @types/node"),
-        ("react-app/scripts/android-version.mjs", 34, "parse", "external typescript"),
-        ("react-app/scripts/android-version.mjs", 51, "createInterface", "external @types/node"),
-        ("react-app/scripts/android-version.mjs", 57, "on", "external @types/node"),
-        ("react-app/scripts/build-android.mjs", 44, "map", "external typescript"),
-        ("react-app/scripts/build-android.mjs", 53, "on", "external @types/node"),
-        ("react-app/.design-sync/prebuild.mjs", 21, "sort", "external typescript"),
-        ("react-app/.design-sync/prebuild.mjs", 24, "writeFileSync", "external @types/node"),
-        ("react-app/public/webview-guard.js", 66, "render", "decl react-app/public/webview-guard.js:52"),  # in an IIFE
-        ("react-app/public/webview-guard.js", 68, "addEventListener", "external typescript"),
-        ("react-app/scripts/store-art/export-feature.mjs", 51, "asset",
-         "decl react-app/scripts/store-art/export-feature.mjs:38"),  # inside a replace callback
-        ("react-app/scripts/store-art/export-feature.mjs", 60, "launch", "none"),  # value of a dynamic import
-        ("react-app/src-tauri/src/main.rs", 5, "run", "decl react-app/src-tauri/src/lib.rs:2"),  # bin to lib crate
-        ("react-app/src-tauri/build.rs", 2, "build", "external tauri-build"),
-        ("react-app/src-tauri/src/lib.rs", 9, "default", "external tauri"),
-        ("react-app/src-tauri/src/lib.rs", 22, "init", "external tauri-plugin-http"),
-        ("react-app/src-tauri/src/lib.rs", 22, "plugin", "external tauri"),
-        ("react-app/src-tauri/src/lib.rs", 26, "default", "external tauri-plugin-log"),
-        ("react-app/src-tauri/src/lib.rs", 27, "level", "external tauri-plugin-log"),
-        ("react-app/src-tauri/src/lib.rs", 28, "build", "external tauri-plugin-log"),
-        ("react-app/src-tauri/src/lib.rs", 30, "setup", "external tauri"),
-        ("react-app/src-tauri/src/lib.rs", 33, "plugin", "external tauri"),  # cfg(mobile) block in a closure
-        ("react-app/src-tauri/src/lib.rs", 37, "init", "external tauri-plugin-native-camera"),  # cfg(android), path dep
-        ("react-app/src-tauri/src/lib.rs", 41, "Ok", "external rust-lang/rust"),
-        ("react-app/src-tauri/src/lib.rs", 43, "run", "external tauri"),
-        ("react-app/src-tauri/src/lib.rs", 44, "expect", "external rust-lang/rust"),
     ],
 }
 

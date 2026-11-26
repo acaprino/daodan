@@ -5,8 +5,8 @@ it finds is compared with the static reader's candidates and links of an analysi
 Nothing of the project runs on this PC. The source and the earlier analysis are folders of the volume
 `daodan-flow-results` (the analysis' `manifest.sqlite`, `engine-edges.sqlite` and the files beside them):
 
-    modal run benchmarks/project-model/modal_explore.py::explore_main --source possible-in/phazly3-src \
-        --out benchmarks/project-model/results/explore/phazly.json
+    modal run benchmarks/project-model/modal_explore.py::explore_main --source possible-in/CASE-src \
+        --out benchmarks/project-model/results/explore/CASE.json
 
 What is measured (README, «Esplorazione dell'app avviata»): whether the app starts, the pages and controls found, the
 controls pressed and the functions each ran, and, against the static candidates, how many controls with an effect the

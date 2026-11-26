@@ -110,7 +110,7 @@ def test_a_class_view_named_by_another_class_or_a_method_named_as_another_is_no_
 
 
 def test_a_row_with_no_handler_name_never_binds_by_position_where_a_function_or_a_closure_starts(tmp_path):
-    """Noir cites the registration (phazly: 76 script entries; measured: 8 rows would have bound wrongly) or a place with no name: the closure
+    """Noir cites the registration (a private case: 76 script entries; measured: 8 rows would have bound wrongly) or a place with no name: the closure
     that starts on that line is not named by the route and stays folded."""
     files = {"server/router.js": source("function registerRoutes(app) {", "  app.get('/health', (req, res) => res.send(ok()));", "}", "function ok() { return 'ok'; }"),
              "server/script.py": source("def run():", "    return 1")}

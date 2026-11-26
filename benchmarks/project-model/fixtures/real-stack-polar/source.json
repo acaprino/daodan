@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/polarsource/polar",
+ "commit": "ee8e1c01492eeeb6bd773d35a51a01ed53e613dc",
+ "licence": "Apache-2.0",
+ "why": "FastAPI back end and a pnpm monorepo of Next.js, Expo, Nuxt and SDK packages, plus separate pnpm and uv projects for the docs, the SDKs, the e-mails, the backoffice assets, a Lambda and the dev CLI; services spread over compose files, settings, Terraform and client SDKs"
+}

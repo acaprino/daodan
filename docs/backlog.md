@@ -58,7 +58,7 @@
 | Sorgenti di Django, FastAPI e Flask (scritte, non collegate) | Sulle applicazioni vere Django non aggiunge funzioni a Noir, FastAPI non le carica, Flask costa più di quanto dà; tornano in discussione con un'applicazione dove Noir non lega e la sorgente sì | `benchmarks/{django,fastapi,flask}-routes/README.md` |
 | Sorgenti di Laravel e Rails | Daodan non legge PHP né Ruby | Piano degli ingressi, 14d e 14e |
 | `framework.cjs`, lettore di framework scritto a mano | Contro la regola d'oro | Decisione 20 novembre |
-| Unità e flussi dentro la review | Su phazly nessun difetto in più, dieci run | Flussi nella review |
+| Unità e flussi dentro la review | Su un caso privato nessun difetto in più, dieci run | Flussi nella review |
 | Quattro revisori per framework e le undici voci del catalogo | Nessun valore in più sulla baseline | Revisori per framework |
 | Il profiler V8 per JavaScript | 47,1%, sotto la soglia: sostituito dal registro esatto | Passo dinamico |
 | `plan` come step | Resta una funzione | Pipeline, 8.4 |

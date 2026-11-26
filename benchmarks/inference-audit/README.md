@@ -12,11 +12,11 @@ Verifica, per ogni linguaggio, il grafo che Daodan costruisce dall'indice SCIP d
 
 | Parametro | Valore |
 | --- | --- |
-| casi | phazly (archivio privato: Python, TypeScript, Rust), tududi `71da9d7b34dfd1600657e9c5ddf40420206fd263` (JavaScript, TypeScript), javapoet `b9017a9503b76e11b4ad4c1a9f050e2d29112cb0` (Java), klaxon `1173bdc568a6d339b45cf24a6a9c5c2f6847f42d` (Kotlin), semver `280ebcb6edac3aa4cdc545dbff8a26c5ac4861fe` (Rust), chi `c64ed7d6635f33a8b2feaff7dcfa55677023ac7d` (Go) |
+| casi | tududi `71da9d7b34dfd1600657e9c5ddf40420206fd263` (JavaScript, TypeScript), javapoet `b9017a9503b76e11b4ad4c1a9f050e2d29112cb0` (Java), klaxon `1173bdc568a6d339b45cf24a6a9c5c2f6847f42d` (Kotlin), semver `280ebcb6edac3aa4cdc545dbff8a26c5ac4861fe` (Rust), chi `c64ed7d6635f33a8b2feaff7dcfa55677023ac7d` (Go) |
 | passo | quello del prodotto: `snapshot.py write --no-engine --no-index`, poi `resolve_edges.py --pass` |
-| regole dei flussi | `benchmarks/phazly-flow/rules.json`, `benchmarks/tududi-flow/rules.json`; gli altri casi senza regole contano solo la vista degli archi |
+| regole dei flussi | `benchmarks/tududi-flow/rules.json`; gli altri casi senza regole contano solo la vista degli archi |
 
-Esecuzione: `modal run --detach benchmarks/inference-audit/modal_audit.py --phazly-tar PATH`; un container per caso, risultati sul volume `daodan-flow-results`.
+Esecuzione: `modal run --detach benchmarks/inference-audit/modal_audit.py`; un container per caso, risultati sul volume `daodan-flow-results`.
 
 ## Risultati
 
@@ -1491,161 +1491,7 @@ Cosa manca a questa misura:
 - le fixture Java e Kotlin in un container vero sul PC, con `system df` prima e dopo;
 - la pre-mappa (`premap/maven.py`, `gradle.py`, `sbt.py`), C, C++, C#, TypeScript, Python e il proxy, che usano ancora le loro immagini.
 
-## 14 novembre 2026, phazly nel grafo dall'indice
-
-phazly (privato) passa per la prima volta dal grafo letto dall'indice. Archivio: `git archive 46c92b28 react-app shared functions-python`, senza `google-services.json`; i file `.env`, i keystore e `functions-python/app/core/secrets.py` non c'erano già. Restano fuori i tre sottomoduli `vendor/` (plugin Tauri). Una sola esecuzione su Modal, app `daodan-scip-audit`, caso `phazly` di `modal_scip.py` con etichetta `graph`, codice uguale al checkout per hash. Nello stesso container:
-- snapshot;
-- passo dei motori rieseguito, perché le risposte per chiamata del 13 novembre non erano state tenute; ora sono in `scip-inputs/phazly/answers.sqlite` e `answers-phazly-graph.sqlite`;
-- scip-python su `functions-python`;
-- scip-typescript su ogni file JS/TS, con `react-app/tsconfig.app.json` come base (alias `@/` e `@shared/`) e i pacchetti di `react-app` e `shared` installati a parte;
-- rust-analyzer su `react-app/src-tauri`.
-
-Risultato: `results/scip-phazly-graph.json`. Il driver ha avuto il caso `phazly` (`OPTIONS`: commit, cartella di Python, tsconfig base, dichiarazioni da elencare per intero), Python fra le lingue, i siti `read` nella prova a mano e i siti statici dell'adapter Python nel join.
-
-### Verdetto
-
-| Lingua | Il grafo è meglio del passo? | Cosa resta fuori |
-| --- | --- | --- |
-| Python | quasi: stesse destinazioni in 10.202 chiamate e 317 in più, ma 114 solo nel passo e 13 diverse | riceventi senza tipo che Jedi deduce dai chiamanti o dagli assegnamenti (56); funzioni tenute in un locale, perché l'adapter Python non ha il salto `initializer` (49); `@overload` al posto dell'implementazione (12) |
-| TypeScript | sì: tutte le 3.257 destinazioni del passo, più 329 | `t` di `useTranslation`; membri di contratto al posto delle funzioni del contesto (`startCheckout`); azioni zustand ferme alla firma |
-| JavaScript | sì: 65 uguali, nessuna persa, più gli esterni con pacchetto | riceventi senza tipo negli script |
-| Rust | non misurato (grafo 2 chiamate su 29, passo 0) | le dipendenze `path` verso `vendor/` mancano, `cargo metadata` fallisce e rust-analyzer indicizza senza dipendenze |
-| Kotlin | non misurato | nessun indice: la build Gradle chiama `cargo metadata` su `vendor/` e vuole l'SDK Android e `google-services.json` |
-
-Rust e Kotlin su phazly non sono misurati. L'archivio non ha i sottomoduli `vendor/`, da cui dipendono sia il crate Tauri sia la build Android; la build Android vuole anche l'SDK Android e `google-services.json`, un file segreto che resta fuori dall'archivio.
-
-### Grafo
-
-| Lingua | File snapshot / indicizzati | Nodi | Archi | Funzione, metodo o classe del progetto | Valore del progetto | Esterno | Vicolo cieco | Incerti |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Python | 336 / 333 | 35.662 | 147.143 | 16.877 | 83.699 | 43.718 | 2.849 | 0 |
-| TypeScript | 437 / 437 | 26.158 | 102.734 | 7.975 | 49.893 | 41.090 | 3.776 | 0 |
-| JavaScript | 11 / 11 | 889 | 2.814 | 68 | 1.020 | 1.549 | 177 | 0 |
-| Rust | 3 / 3 | 12 | 8 | 1 | 6 | 1 | 0 | 0 |
-
-- Python, i 3 file mancanti sono script fuori dalla cartella indicizzata: `react-app/scripts/generate-emoji-font.py`, `react-app/scripts/store-art/finalize.py`, `react-app/scripts/store-art/verify-gallery-png.py`.
-- Rust: i 3 file hanno un documento ma quasi nessuna occorrenza.
-- Nessun adapter di queste lingue marca archi incerti.
-- Salti sulle chiamate che arrivano al progetto: Python `builtin` 2.371, `import-binding` 259, implementazione 194, `classmethod-cls` 19; TypeScript intervallo condiviso 8.238, inizializzatore 1.994, `declared:@types/react.useCallback` 663, chiave di pattern 213.
-
-### Confronto con il passo dei motori, chiamate
-
-| Lingua | Chiamate | Passo | Grafo | Uguali | Diverse | Solo passo | Solo grafo |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Python | 32.116 | 10.329 | 10.532 | 10.202 | 13 | 114 | 317 |
-| TypeScript | 15.160 | 3.257 | 3.586 | 3.257 | 0 | 0 | 329 |
-| JavaScript | 639 | 65 | 65 | 65 | 0 | 0 | 0 |
-| Rust | 29 | 0 | 1 | 0 | 0 | 0 | 1 |
-
-- Il passo non chiede le letture. Il grafo dà una destinazione del progetto a 2.878 letture Python (1.478 senza il lessicale), 1.616 TypeScript (933) e 3 JavaScript.
-- Esterni con pacchetto e versione nelle chiamate: Python 18.260, TypeScript 7.448, JavaScript 504. Il passo ne dà 11.239, 7.359 e 131, sempre senza pacchetto.
-
-Solo passo, Python, tutte e 114 per quello che il grafo ha in quel punto:
-
-| Classe | Chiamate | Perché | Esempi |
-| --- | --- | --- | --- |
-| ricevente senza tipo: parametro senza annotazione, fixture, attributo di un risultato | 56 | scip-python non scrive l'occorrenza; Jedi deduce il tipo dai chiamanti o dagli assegnamenti | `functions-python/app/services/meal_images.py:166` `corpus.match`, `functions-python/tests/unit/test_api_keys.py:165` `fake_db.apiKeys.count_documents`, `functions-python/tests/unit/test_planner_solver.py:1205` `result.week.week_vector` |
-| funzione tenuta in un locale (35), in un parametro (13), in un attributo (1) | 49 | il grafo si ferma al valore: l'adapter Python non ha il salto `initializer` che ha TypeScript | `functions-python/tests/unit/test_planner_compose.py:182` `real`, `functions-python/tests/unit/test_planner_revision_repository.py:2138` `repo_at`, `functions-python/app/planner/mutations.py:1735` `self._food_loader` |
-| file fuori dalla cartella indicizzata | 8 | i tre script di `react-app/scripts` | `react-app/scripts/store-art/finalize.py:134` `mean_rgb`, `:164` `main`, `react-app/scripts/generate-emoji-font.py:152` `download_font` |
-| nome importato, letto come attributo di un altro modulo | 1 | il salto `import-binding` vale solo sulla riga dell'import | `functions-python/tests/unit/test_billing_regressions.py:2539` `play_billing.get_settings` |
-
-Diverse, Python, tutte e 13:
-- 12 `generate` di `functions-python/app/services/llm/gateway.py`: il grafo dà il primo `@overload` (`:123`), il passo l'implementazione (`:156`). Ha ragione il passo. Esempi: `functions-python/app/handlers/decompose_dish.py:84`, `functions-python/app/pipeline/oneshot.py:74`, `functions-python/app/services/recipe_titles.py:168`.
-- `functions-python/app/services/llm/providers/__init__.py:28` `provider.handles`: il passo dà il metodo del `Protocol` (`providers/base.py:37`). Il grafo dà una sola delle due implementazioni, `providers/vertex.py:229`; manca `providers/openai_compat.py:98`.
-
-Solo grafo, letti 20 esempi per lingua:
-- Python, 317. Il passo risponde `project-not-a-symbol` o `ambiguous-target` in 132, un esterno in 112, niente in 73. Fra i 20:
-  - metodi `@classmethod`, dove Jedi risponde con il decoratore (`functions-python/app/planner/proof.py:936` `Residual.between`, `functions-python/tests/unit/test_planner_assembly.py:783` `CorpusIndex.build`);
-  - handler decorati da `@router.post`, dove Jedi dà il valore del decoratore (`functions-python/tests/unit/test_billing_regressions.py:1138` `play_rtdn.play_rtdn`);
-  - metodi su locali tipizzati, dove Jedi tace (`functions-python/app/planner/proof.py:275` `r.as_dict`);
-  - 6 destinazioni ambigue per Jedi, una sola per il grafo (`functions-python/tests/unit/test_planner_revision_repository.py:1383` `repo.commit_active`).
-- TypeScript, 329. Il passo risponde `project-not-a-symbol` in 328. Fra i 20:
-  - 15 funzioni avvolte in `useCallback`, raggiunte con il salto dichiarato (`react-app/src/components/features/PhotoCapture/PhotoCapture.tsx:201` `showUsageLimitPaywall`);
-  - 1 funzione dentro un oggetto (`react-app/src/components/settings/SettingsSheetsHost.tsx:49`);
-  - 4 azioni di uno slice zustand (`react-app/src/components/settings/calm/profile/AppPane.tsx:42` `ui.setTheme`, `react-app/src/components/tabs/MealPlanTab.tsx:162` `setCurrentPlan`), che arrivano al membro dell'interfaccia (`react-app/src/stores/slices/uiSlice.ts:78`, `react-app/src/stores/slices/mealPlanSlice.ts:56`) e non alla funzione eseguita. È lo stesso difetto di tududi: una firma presa per funzione.
-- Rust, 1: `react-app/src-tauri/src/main.rs:5` `phazly_lib.run` → `react-app/src-tauri/src/lib.rs:2`; il passo non la chiede.
-
-### Buchi per classe (chiamate e letture)
-
-| Lingua | Classe | Riferimenti | Esempi |
-| --- | --- | --- | --- |
-| Python | nessuna occorrenza | 4.398 (2.584 chiamate) | `functions-python/app/api/deps.py:83` `doc.get`, `functions-python/app/planner/solver.py:783` `model.NewBoolVar`, `functions-python/app/handlers/admin/analytics.py:141` `(expr).to_list` |
-| Python | file senza documento | 528 | `react-app/scripts/generate-emoji-font.py:103`, `react-app/scripts/store-art/finalize.py:116`, `react-app/scripts/store-art/verify-gallery-png.py:26` |
-| Python | simbolo del progetto senza definizione | 394 | `functions-python/app/api/deps.py:51` `__name__`, `functions-python/tests/unit/test_billing_regressions.py:743` `asyncio.Event`, `functions-python/app/handlers/admin/meal_images.py:143` `httpx.AsyncClient` |
-| Python | locale senza definizione | 308 | `functions-python/app/api/deps.py:227` `task.add_done_callback`, `functions-python/tests/unit/test_billing_regressions.py:910` `entered.wait`, `functions-python/app/handlers/process_meal_images.py:767` `_worker_task.done` |
-| TypeScript | locale senza definizione | 2.293 | `react-app/src/App.tsx:81` `t`, `react-app/src/components/common/AddMealTypeSheet.tsx:76` `toast.success`, `react-app/src/components/features/AIAlternatives.tsx:386` `DialogPrimitive.Portal` |
-| TypeScript | nessuna occorrenza | 517 (7 chiamate) | `react-app/src/components/common/DesktopTabRenderer.tsx:29` `TAB_MAP.home`, `react-app/src/services/mealPlanService.ts:176` `data.proof.policyHash`, `react-app/src/utils/plannerPlanWire.ts:85` `value.inputBasis` |
-| TypeScript | chiamata senza posizione (callee dinamico) | 80 | `react-app/src/contexts/SubscriptionContext.tsx:197`, `react-app/src/components/settings/MealTypesConfig.tsx:326`, `react-app/scripts/screenshots/take-screenshots.ts:82` |
-| JavaScript | nessuna occorrenza | 208 | `react-app/scripts/android-version.mjs:41` `v.match`, `react-app/scripts/store-art/export-feature.mjs:136` `page.screenshot`, `react-app/scripts/store-art/export-gallery.mjs:86` `page.setContent` |
-| Rust | nessuna occorrenza | 29 | `react-app/src-tauri/build.rs:2` `tauri_build.build`, `react-app/src-tauri/src/lib.rs:22` `(expr).plugin`, `react-app/src-tauri/src/lib.rs:33` `app.handle` |
-
-Classi minori: Python senza posizione 6, TypeScript simbolo senza definizione 7, JavaScript senza posizione 3. Fra i locali TypeScript senza definizione, 1.923 riferimenti sono quelli che il lessicale chiama `non-callable-binding`, negli esempi tutti `t`; altri 193 hanno negli esempi `toast.*` di sonner.
-
-### Esterni con pacchetto e versione (archi)
-
-- Python: python-stdlib 3.11 37.363, pydantic 2.12.5 2.173, pytest 9.2.0 1.541, fastapi 0.136.3 781, ortools 9.12.4544 345, motor 3.7.0 272, starlette 1.10.0 232, firebase_admin 7.1.0 231, pymongo 4.18.3 225, httpx 0.28.1 168, stripe 14.3.0 92.
-- TypeScript: typescript 6.0.3 16.483, @types/react 19.3.0 13.099 (e 19.2.14 1.513, dall'installazione di `shared`), pacchetto `. .` 1.713, @phosphor-icons/react 2.1.10 1.602, framer-motion 12.43.0 1.456, motion-dom 12.43.0 1.201, @types/node 24.19.2 1.143, react-i18next 16.6.6 560, sonner 2.0.8 316, playwright-core 1.65.1 302, i18next 25.10.10 267, zustand 5.1.0 183.
-- JavaScript: typescript 6.0.3 872, @types/node 24.19.2 638, pacchetti di eslint 26.
-- Rust: `core` 1.
-
-### Controllo a mano
-
-59 siti, scelti fra file diversi e con casi difficili (decoratori, `Depends`, funzioni annidate, fixture, `useCallback`, valori del contesto, JSX a una e a due parti, callback). L'atteso è stato scritto leggendo il sorgente prima che il grafo esistesse; sta in `HAND["phazly"]` di `modal_scip.py`. Kotlin non ha siti, perché non ha grafo.
-
-| Lingua | Siti | Grafo | Passo |
-| --- | --- | --- | --- |
-| Python | 15 | 15 | 15 |
-| TypeScript | 15 | 9 | 6 |
-| JavaScript | 15 | 13 | 6 |
-| Rust | 14 | 2 | 0 |
-
-Mancati del grafo:
-- TypeScript, 6:
-  - `react-app/src/components/subscription/PaywallModal.tsx:132` `startCheckout` e `:130` `clearError`: il grafo, come il passo, dà il membro del contratto (`react-app/src/contexts/SubscriptionContext.tsx:151`, `:155`). L'atteso era la funzione in `useCallback` (`:296`, `:237`): il valore del contesto è legato al contratto solo dal tipo.
-  - `PaywallModal.tsx:239` `onOpenChange`: l'atteso era un valore, perché a runtime sono i setter dei chiamanti. Il grafo prende per funzione la firma della prop (`PaywallModal.tsx:38`).
-  - `react-app/src/components/home/SortableHomeCards.tsx:73` `Reorder.Item`: un `local` senza definizione; l'atteso era framer-motion.
-  - `react-app/src/hooks/useHomeTabController.ts:393` `addMealAddition`: è il risultato del selettore `useAppStore(...)` e il grafo si ferma alla variabile; l'atteso era `react-app/src/stores/slices/mealPlanSlice.ts:260`.
-  - `react-app/src/hooks/useHomeTabController.ts:413` `t`: un `local` senza definizione. Il passo dà un esterno senza pacchetto.
-- JavaScript, 2: `react-app/.design-sync/prebuild.mjs:21` e `:24` non sono nello snapshot, che esclude le cartelle che iniziano con un punto. L'errore è mio, nella scelta dei siti.
-- Rust, 12: nessuna occorrenza, perché senza le dipendenze non c'è nessun simbolo di tauri.
-
-Mancati del passo:
-- TypeScript: i cinque siti sopra, più due rese di `PaywallModal` e `SubscriptionContext.Provider`, che non chiede, e `showUsageLimitPaywall` (`project-not-a-symbol`).
-- JavaScript: sette esterni non chiesti o senza risposta, più i due siti fuori dallo snapshot.
-- Rust: tutti e 14.
-
-### Paywall e `startCheckout`
-
-- `<PaywallModal` è reso da 11 componenti, contati nel sorgente, tutti con un nome di una sola parte. Nel grafo arrivano tutti e 11 a `react-app/src/components/subscription/PaywallModal.tsx:68`, senza salti: 23 archi, cioè 11 letture JSX, 11 import e il re-export di `react-app/src/components/subscription/index.ts:1`.
-- Il passo non chiede le letture. Dei 3 siti di resa controllati a mano ne ha 1, grazie al lessicale (import diretto, `react-app/src/components/subscription/ExpiredBanner.tsx:66`). Gli altri due passano dal barrel `@/components/subscription` o `../subscription`.
-- In phazly a questo commit non c'è nessun `<X.Paywall />`. Le forme JSX a due parti presenti: `react-app/src/contexts/SubscriptionContext.tsx:699` `SubscriptionContext.Provider` è giusta (esterno `@types/react`), `Reorder.Item` è mancata.
-- `startCheckout` ha 3 archi, tutti verso il contratto `react-app/src/contexts/SubscriptionContext.tsx:151`: la chiamata `PaywallModal.tsx:132`, la destrutturazione `PaywallModal.tsx:71` e la proprietà dell'oggetto valore `SubscriptionContext.tsx:687`. Nessuno arriva alla funzione `:296`. Il grafo conserva il contratto. Per arrivare alla funzione bisognerebbe legare la proprietà dell'oggetto passato al Provider al membro del contratto, e l'indice questo legame non lo scrive.
-- Classe aperta: quando una funzione arriva a chi la chiama attraverso un oggetto passato al Provider di un contesto o a un creatore di store (zustand), l'indice si ferma al membro del contratto. Su phazly: `startCheckout` e `clearError` del contesto, le azioni degli slice (`setTheme`, `setCurrentPlan`, `addMealAddition`). Nessuna fonte provata finora la chiude.
-
-### Tempi, memoria, costo
-
-| Fase | Secondi | RAM di picco |
-| --- | --- | --- |
-| snapshot | 52,8 | non misurata |
-| passo dei motori (Jedi, typescript-language-server, rust-analyzer, Kotlin Analysis API) | 2.347,3 | 1.216 MB |
-| scip-python 0.6.8 (47 requisiti dichiarati, 127 pacchetti nella venv) | 72,4 | 1.850 MB |
-| scip-typescript 0.5.2 (TypeScript 6.0.3) | 40,0 | 1.834 MB |
-| rust-analyzer 2026-11-09 | 2,5 | 891 MB |
-| grafo e confronto | 30,2 | non misurata |
-| container intero | 2.556,1 | |
-
-- Copertura del passo in questa esecuzione, risolte su risolvibili: Python 10.329 su 13.383 (77,2%), TypeScript 3.257 su 5.763 (56,5%), JavaScript 65 su 329 (19,8%), Kotlin 41 su 192 (21,4%), Rust 0 su 17. Il 13 novembre il passo durava 1.594 s.
-- Costo fatturato da Modal: 0,159 USD nell'ora 12 UTC, che è solo di questa esecuzione, immagine compresa. L'ora 13 UTC, non ancora chiusa, vale 0,105 USD, ma contiene anche le esecuzioni chi e semver di un altro agente sulla stessa app: la quota di phazly, 13 minuti su 43, è circa 0,07 USD. In tutto circa 0,23 USD.
-
-Non verificato:
-- dei 56 riceventi senza tipo e delle 49 funzioni in un locale ho letto 20 esempi per classe, e nel sorgente un caso per classe; gli altri sono contati dalla classe che dà l'indice;
-- i 6 siti che Jedi dà ambigui e il grafo dà con un solo bersaglio: non so se quel bersaglio è quello giusto;
-- perché scip-python attribuisce al progetto `asyncio.Event` e `httpx.AsyncClient` (394 riferimenti), e perché la libreria standard è etichettata 3.11 con Python 3.13;
-- il pacchetto `. .` (1.713 archi TypeScript);
-- Kotlin, che non ha indice;
-- l'immagine contiene modifiche non committate di altri agenti al plugin; l'hash del codice era uguale al checkout al momento del deploy.
-
-### Le due cause Python corrette
+## 14 novembre 2026, due regole nuove dell'adapter Python
 
 Due regole nuove nell'adapter Python (`indexers/python.py`, `hops`), provate prima sulla fixture
 (`tests/fixtures/code-graph/python/fx/held.py`, `fx/over.py`, nove casi in `expected.json`, indice rigenerato su
@@ -1659,30 +1505,6 @@ Modal con `fixture_indexes.py`):
   definizione, e l'arco lo dice nella sua catena. Senza questo cambio lo stub, che è già una funzione, ferma
   ogni salto. La parte comune non sa nulla di `overload`: decide l'adapter quando emettere il salto.
   `tests/test_codebase_map_code_graph.py`: 95 test verdi, uno nuovo per `rebinding` nella parte comune.
-
-Stesso indice e stesse risposte del passo, ricongiunti su Modal (etichette `before` e `final`, hash del codice
-uguale al worktree):
-
-| Python, chiamate | prima | dopo |
-|---|---:|---:|
-| stesso bersaglio | 10.202 | 10.234 |
-| bersaglio diverso | 13 | 1 |
-| solo il passo | 114 | 94 |
-| solo il grafo | 317 | 321 |
-
-- I 12 `generate` vanno ora a `functions-python/app/services/llm/gateway.py:156`, come il passo. Resta diverso
-  `functions-python/app/services/llm/providers/__init__.py:28` `provider.handles`: il passo dà il Protocol, il
-  grafo l'implementazione.
-- `initializer` porta 24 chiamate a una funzione del progetto. Ne ho lette 9 nel sorgente, tutte giuste.
-- Restano 94 chiamate trovate solo dal passo:
-  - 56 su un valore senza tipo;
-  - 14 da uno spacchettamento di tupla (`seed`, `build`, `request`);
-  - 13 da fixture pytest iniettate come parametro (`repo_at`, `configured_billing_app`);
-  - 8 negli script di `react-app/scripts`, fuori dalla radice indicizzata;
-  - 1 da un attributo preso da un parametro del costruttore (`self._food_loader`);
-  - 1 da un nome preso da un indice (`find_user`, `functions-python/tests/unit/test_planner_revision_repository.py:2920`);
-  - 1 da una riesportazione via attributo di modulo (`play_billing.get_settings`).
-- Controllo a mano Python: 15 su 15, prima e dopo. Costo: circa 0,02 USD.
 
 ## 14 novembre 2026, gli stage degli indicizzatori nel passaggio
 
@@ -1714,21 +1536,18 @@ Risultati, con il codice del plugin verificato per hash. Costo: 0,10 USD.
 
 | Parametro | Valore |
 | --- | --- |
-| casi | python-semver `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, sulla copia con i link come file normali e sullo snapshot che `lang_python.py` tiene in `graph-python/semver-plugin` (`snapshot.py write` si ferma su un file linkato); phazly `46c92b28`, dall'archivio, con snapshot e passo per posizione in `scip-inputs/phazly` |
-| unità | python-semver la radice; phazly `functions-python`, come il risultato salvato; un'esecuzione di scip-python per unità, con prefisso, nome, ambiente e configurazione di Pyright suoi |
+| casi | python-semver `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, sulla copia con i link come file normali e sullo snapshot che `lang_python.py` tiene in `graph-python/semver-plugin` (`snapshot.py write` si ferma su un file linkato) |
+| unità | python-semver la radice; un'esecuzione di scip-python per unità, con prefisso, nome, ambiente e configurazione di Pyright suoi |
 | macchina | Modal, 4 CPU e 12 GB, solo il sistema di base |
-| soglia | conteggi uguali a `results/graph-python-semver-plugin-checks.json` e `results/scip-phazly-final.json`; celle del confronto con il passo uguali; store dello stage uguale riga per riga a quello del benchmark; ogni «solo passo per posizione» con una riga nello store; verifica a mano pari |
-| risultati | `results/scip-python-semver-stage.json`, `results/scip-phazly-stage.json` (phazly senza i log dell'indicizzatore) |
+| soglia | conteggi uguali a `results/graph-python-semver-plugin-checks.json`; celle del confronto con il passo uguali; store dello stage uguale riga per riga a quello del benchmark; ogni «solo passo per posizione» con una riga nello store; verifica a mano pari |
+| risultati | `results/scip-python-semver-stage.json` |
 
 Risultati, codice del plugin verificato per hash (`indexers/python.py` `3d8472aeb568`, `code_graph.py` `40bd846bcab4`):
 - python-semver: 1.289 nodi e 3.679 archi, 64 buchi, 35 file su 35, come il salvato. Il controllo a mano dei 20 siti è identico. Lo store dello stage è identico a quello del benchmark, riga per riga. Il report differisce solo nei salti `initializer` (28): il risultato salvato viene da un `indexers/python.py` precedente alle due regole del 14 novembre (`f201bd46a865`), e 11 archi passano da un valore a una funzione del progetto.
-- phazly: 35.662 nodi e 147.150 archi, 333 file su 336, come `scip-phazly-final.json`. Le celle del confronto con il passo sono identiche: stesso bersaglio 10.234, bersaglio diverso 1, solo passo 94, solo grafo 321. Verifica a mano 15 su 15. Lo store dello stage è identico a quello del benchmark, riga per riga.
-- Le 94 «solo passo» nello store dello stage: 56 buchi `no-occurrence`, 8 buchi `no-document` (gli script di `react-app/scripts`, fuori da ogni unità), 1 buco `undefined-project-symbol`, 29 archi che finiscono su un valore del progetto (`project-value`: spacchettamento di tupla, fixture pytest, attributo dal costruttore, nome preso da un indice). Nessuna resta senza riga.
-- Ambiente: 47 requisiti dichiarati, 116 pacchetti installati da Daodan (solo wheel) contro i 127 del benchmark, che installava anche da sorgenti. Mancano `aiohttp` e le sue dipendenze, `cbor2`, `grpclib`, `pip`; nessun esterno del grafo cambia.
-- Indicizzatore: python-semver 9,4 s e 347 MB; phazly 91,0 s e 1.815 MB (il 13 novembre 72,4 s e 1.850 MB). `MIN_FREE` di scip-python è 1.920 MB, dal picco di phazly. Lo stage intero: 41 s e 136 s.
+- Indicizzatore: python-semver 9,4 s e 347 MB. `MIN_FREE` di scip-python è 1.920 MB, dal picco di un caso privato. Lo stage intero: 41 s.
 
-Cosa cambia negli id: la versione del progetto è `_` in ogni esecuzione, e il nome è quello dell'unità (`phazly-functions`, `semver`). Gli id del risultato salvato di python-semver contengono il commit (`semver b6e83e3e40d3`), quelli nuovi `semver _`: un confronto fra i due va fatto dopo aver sostituito la versione, come fa `against_confirm`.
+Cosa cambia negli id: la versione del progetto è `_` in ogni esecuzione, e il nome è quello dell'unità (`semver`). Gli id del risultato salvato di python-semver contengono il commit (`semver b6e83e3e40d3`), quelli nuovi `semver _`: un confronto fra i due va fatto dopo aver sostituito la versione, come fa `against_confirm`.
 
-Una prova con una sola esecuzione dalla radice e un `executionEnvironments` di Pyright per ogni progetto non regge. Su phazly il modulo di `functions-python` ha un nome dove è definito e un altro dove è importato: `app.api.deps/__init__:` resta senza definizione, e circa 2.200 archi `unknown` passano da un valore a un vicolo cieco. Le chiamate cambiano in 222 siti, quasi tutti in `run_tests.py` e `test_bootstrap/`. Per questo ogni unità ha la sua esecuzione, come i moduli di Go.
+Una prova con una sola esecuzione dalla radice e un `executionEnvironments` di Pyright per ogni progetto non regge. Su un caso privato il modulo di un progetto Python ha un nome dove è definito e un altro dove è importato: resta senza definizione, e circa 2.200 archi `unknown` passano da un valore a un vicolo cieco. Le chiamate cambiano in 222 siti. Per questo ogni unità ha la sua esecuzione, come i moduli di Go.
 
-Costo fatturato da Modal: 0,192 USD. Nell'ora 19 UTC 0,162 (`daodan-stage-audit` 0,142, test MCP 0,015, confronto degli indici 0,006), con quattro giri di python-semver e phazly e la prova scartata; nell'ora 20 0,030 per il giro finale, con le unità date dal driver.
+Costo fatturato da Modal: 0,192 USD. Nell'ora 19 UTC 0,162 (`daodan-stage-audit` 0,142, test MCP 0,015, confronto degli indici 0,006), con quattro giri di python-semver e di un caso privato e la prova scartata; nell'ora 20 0,030 per il giro finale, con le unità date dal driver.

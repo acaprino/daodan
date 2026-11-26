@@ -1,8 +1,8 @@
 """System map benchmark on Modal: the system brief without a model (measure 6), the links of a case,
 and the runs of the system-mapper agent (measures 1 to 5).
 
-One container per job, Daodan and its plugin from this checkout. The private projects come from
-archives (`git archive`, tracked files only), polar and tududi are cloned at the commit of their
+One container per job, Daodan and its plugin from this checkout. A case without a public repository comes
+from an archive (`git archive`, tracked files only); polar and tududi are cloned at the commit of their
 flow benchmark. A run prepares a Codebase Map run before any session. With `--rules session` the
 engine pass runs, a `claude -p` session given the app's `LINKS` task writes the link rules, and the
 links follow from them; the first repetition keeps rules and links on the volume (`rules.json`,
@@ -15,7 +15,7 @@ event streams, the recorded map, the snapshot's files and the cost go to the vol
 `daodan-flow-results`, under TAG/LABEL; `modal volume get daodan-flow-results TAG/LABEL
 benchmarks/system-map/results/system/TAG` brings a run here. Nothing heavy runs on the local machine.
 
-    modal run benchmarks/system-map/modal_map.py::brief --phazly-tar PATH --phazly-links PATH [--cases ...]
+    modal run benchmarks/system-map/modal_map.py::brief [--tar PATH --links-file PATH] [--cases ...]
     modal run --detach benchmarks/system-map/modal_map.py::links --case tududi --out PATH
     modal run benchmarks/system-map/modal_map.py::entries --tars CASE=PATH[,CASE=PATH] [--tag entries]
     modal run benchmarks/system-map/modal_map.py::possible --snapshot VOLUME-DIR --source VOLUME-DIR --rules PATH
@@ -58,11 +58,6 @@ ENGINE_SECONDS = 2 * 3600  # the pass of the largest case: 51 minutes alone, ove
 RULES = ("session", "none")  # the rules a run writes itself, or leaves to the agent; anything else is a rules file
 
 CASES = {
-    "phazly": {"tar": True, "target": ".", "rules": "benchmarks/phazly-flow/rules.json"},
-    "hostay": {"tar": True, "target": "."},
-    "qamille": {"tar": True, "target": "."},
-    "qamille-enterprise": {"tar": True, "target": "."},  # one archive: qamille/ and qamille-mail/ side by side
-    "poc-data-extraction": {"tar": True, "target": "."},
     "polar": {"repo": "https://github.com/polarsource/polar.git",
               "commit": "ee8e1c01492eeeb6bd773d35a51a01ed53e613dc", "target": "server"},
     "tududi": {"repo": "https://github.com/chrisvel/tududi.git",
@@ -822,14 +817,14 @@ def engine_proof_run(tag: str = "engine-proof", out: str = ""):
 
 
 @app.local_entrypoint()
-def brief(phazly_tar: str = "", phazly_links: str = "", cases: str = "phazly,polar,tududi", tag: str = "system-map"):
+def brief(tar: str = "", links_file: str = "", cases: str = "polar,tududi", tag: str = "system-map"):
     chosen = [c.strip() for c in cases.split(",") if c.strip()]
     root = HERE.parents[1]
     calls = []
     for name in chosen:
         case = CASES[name]
-        archive = Path(phazly_tar).read_bytes() if case.get("tar") else None
-        links = Path(phazly_links).read_bytes() if case.get("tar") and phazly_links else None
+        archive = Path(tar).read_bytes() if case.get("tar") else None
+        links = Path(links_file).read_bytes() if case.get("tar") and links_file else None
         rules = (root / case["rules"]).read_text(encoding="utf-8") if case.get("rules") else ""
         calls.append((name, case, archive, rules, links, tag))
     RESULTS.mkdir(parents=True, exist_ok=True)
@@ -997,7 +992,7 @@ def _arguments(argv: list[str] | None = None):
     commands = parser.add_subparsers(dest="command", required=True)
     one = commands.add_parser("spawn", help="one map_run per case, scope, model and repetition")
     one.add_argument("--tag", required=True, help="the folder of the runs on the volume")
-    one.add_argument("--cases", default="phazly,tududi", help=f"comma-separated, of {', '.join(CASES)}")
+    one.add_argument("--cases", default="tududi", help=f"comma-separated, of {', '.join(CASES)}")
     one.add_argument("--tar", action="append", default=[], metavar="CASE=PATH",
                      help="the archive of a case (`git archive`), repeatable")
     one.add_argument("--rules", default=None, metavar="session|none|PATH",

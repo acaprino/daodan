@@ -1,6 +1,6 @@
 # Punti di connessione: guida ai tipi
 
-**Natura del documento:** guida del 14 novembre 2026, non esaustiva e non una spec. Elenca i modi in cui due parti di un sistema senza un simbolo in comune si collegano, con la chiave da leggere e un esempio per lato. La sezione «Stato» dice cosa il prodotto legge oggi; il catalogo è materiale per le regole di collegamento, non comportamento. Misure: [`connection-points`](../../benchmarks/connection-points/README.md), [`phazly-flow`](../../benchmarks/phazly-flow/README.md).
+**Natura del documento:** guida del 14 novembre 2026, non esaustiva e non una spec. Elenca i modi in cui due parti di un sistema senza un simbolo in comune si collegano, con la chiave da leggere e un esempio per lato. La sezione «Stato» dice cosa il prodotto legge oggi; il catalogo è materiale per le regole di collegamento, non comportamento. Misure: [`connection-points`](../../benchmarks/connection-points/README.md).
 
 ## Regola
 

@@ -718,7 +718,7 @@ def secret(values: dict[str, dict[str, str]], public=()) -> dict[str, dict[str, 
     """The values of the tracked `.env` files (`dotenv_values`) that are secret: what the masks hide and an output
     must not hold. Those of an `example` file are aside (D-291), and so is a value in `public`, which the project's
     other tracked files hold (`RESOLVE`): the project publishes it (`VERTEX_LOCATION=global` beside
-    `globalButtonHaptic.ts`, D-311). A value an example shares with a true file stays, by the true file's
+    a tracked file whose name holds `global`, D-311). A value an example shares with a true file stays, by the true file's
     variable."""
     kept = {path: {name: value for name, value in found.items() if value not in public}
             for path, found in values.items() if not example(posixpath.basename(path))}

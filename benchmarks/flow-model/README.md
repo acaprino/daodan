@@ -1,6 +1,6 @@
 # Benchmark: flussi e unità della fase 2
 
-Prova la [spec della fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). Le soglie sono scritte qui prima di ogni misura; i casi reali sono [`polar-flow`](../polar-flow/README.md), [`tududi-flow`](../tududi-flow/README.md) e [`phazly-flow`](../phazly-flow/README.md), ognuno con i propri valori attesi. Tutto gira su Modal; sulla macchina locale solo caricamento degli input e lettura dei risultati.
+Prova la [spec della fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). Le soglie sono scritte qui prima di ogni misura; i casi reali sono [`polar-flow`](../polar-flow/README.md) e [`tududi-flow`](../tududi-flow/README.md), ognuno con i propri valori attesi. Tutto gira su Modal; sulla macchina locale solo caricamento degli input e lettura dei risultati.
 
 ## Parametri e soglie
 
@@ -9,7 +9,7 @@ Prova la [spec della fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sist
 | 0. Collegamenti `chiama` | risolte su risolvibili, per caso e per linguaggio del perimetro | un caso entra nelle misure 1 e 3 con almeno il 70% |
 | 1. File di un difetto noto | incarichi di `pack()` e unità che contengono i file di ogni difetto atteso, a parità di perimetro e limite di byte | ogni difetto in meno unità che incarichi di `pack()`; stessi file distinti assegnati; due esecuzioni identiche |
 | 2. Fixture a due strati | collegamenti trovati contro attesi, dedotti a parte; collegamenti falsi; lacune dichiarate | tutti i collegamenti attesi; nessun collegamento falso fra campi indipendenti o rotte omonime; ogni identità ambigua è una lacuna |
-| 3. Caso fra strati | dal fatto mostrato allo store, attraverso la rotta del caso | il flusso arriva allo store in tududi e phazly |
+| 3. Caso fra strati | dal fatto mostrato allo store, attraverso la rotta del caso | il flusso arriva allo store in tududi |
 | 4. Etichette | granularità e significato contro una lettura manuale, su 20 collegamenti; costo per collegamento | almeno 16 su 20 concordi |
 | 5. Simboli e funzionalità | flussi attesi ritrovati; file entrati senza appartenere a quelli attesi; flussi incompleti | tutti i flussi attesi, zero file estranei; ogni causa di arresto lascia il flusso incompleto; un nodo senza codice compare con il collegamento dichiarato |
 
@@ -21,7 +21,7 @@ Prova la [spec della fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sist
 
 | Misura | Comando |
 |---|---|
-| 0 | `modal run benchmarks/flow-model/modal_engine_count.py --phazly-tar <archivio>`; l'archivio è `git archive 46c92b28 react-app shared functions-python` di phazly-app, senza file `.env` |
+| 0 | `modal run benchmarks/flow-model/modal_engine_count.py --cases polar,tududi` |
 
 ## Risultati
 
@@ -31,9 +31,8 @@ Prova la [spec della fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sist
 |---|---|---|---|---|
 | polar `server/` | 55,9% (34.535 su 61.758) | Python 55,9% | 179 s | 41 min |
 | tududi | 52,8% (17.282 su 32.717) | JavaScript 46,7%, TypeScript 69,4% | 92 s | 11 min |
-| phazly | 59,7% (13.288 su 22.271) | Python 73,4%, TypeScript 36,8%, JavaScript 26,6% | 51 s | 10 min |
 
-Nessun caso raggiunge la soglia del 70%. Note: polar senza l'ambiente Python del progetto; in phazly il motore Kotlin non si è installato (HTTP 403 sul download) e il TypeScript è sotto il campione del 9 novembre (circa 72% su `react-app` da solo). Valori per caso in `results/`.
+Nessun caso raggiunge la soglia del 70%. Nota: polar senza l'ambiente Python del progetto. Valori per caso in `results/`.
 
 ### Misure 2 e 5 sulla fixture
 
@@ -41,5 +40,5 @@ Nessun caso raggiunge la soglia del 70%. Note: polar senza l'ambiente Python del
 
 ### Dopo il requisito 23 e l'ambiente del progetto, 11-12 novembre 2026
 
-La misura 0 con il criterio di provenienza e con l'ambiente che Daodan prepara sta in [`call-provenance`](../call-provenance/README.md). Le misure 1 e 3 sul caso reale, il confronto con le regole scritte alla cieca e i flussi con il motore stanno in [`phazly-flow`](../phazly-flow/README.md). La fixture copre anche i costrutti che passano da oggetti di libreria (`WrittenRuleTests`), i livelli e `codebase_map_flows`: 17 test.
+La misura 0 con il criterio di provenienza e con l'ambiente che Daodan prepara sta in [`call-provenance`](../call-provenance/README.md). La fixture copre anche i costrutti che passano da oggetti di libreria (`WrittenRuleTests`), i livelli e `codebase_map_flows`: 17 test.
 

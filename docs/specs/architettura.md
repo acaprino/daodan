@@ -82,7 +82,8 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 
 | Fonte | Che cosa dice | Grado | Stato |
 | --- | --- | --- | --- |
-| L'utente | `[deciso]` Comando impostato in Daodan da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto). *Proposta:* si imposta solo dalla GUI, come le approvazioni, perché un client MCP può essere un agente | `confermato` | Da creare (`T3.B`) |
+| L'utente | `[deciso]` Comando impostato in Daodan da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto) | `confermato` | Da creare (`T3.B`) |
+| L'assistente | `[deciso]` Anche un assistente (via MCP) può impostare il comando. Resta scritto che l'ha impostato un assistente; è `proposto`, non `confermato` *(il grado è una proposta)*. Gira solo nel container, e gli indirizzi di rete si approvano solo dalla GUI | `proposto` | Da creare (`T3.B`) |
 | Lo strumento di build | Comando previsto dallo strumento (`npm test`, `go test`, `cargo test`, Gradle/Maven, `dotnet test`, CTest) | `dichiarato` | Nel codice |
 | I file del progetto | Script `test`/`start`/`dev`, config pytest, makefile (vale per il runner lanciato, non per il nome) | `dichiarato` | Nel codice |
 | La CI del progetto | Passo dei test in CI, con servizi e passi preliminari | `dichiarato` | Parziale (`T3.B`) |
@@ -101,7 +102,7 @@ Una cosa del sistema con un nome e un identificativo stabile. Oggi i nodi stanno
 | --- | --- | --- |
 | Specie: che cosa è | Elenco chiuso: attore, applicazione, schermata; funzionalità, servizio o API, gateway, autenticazione, lavoro a orario, altro; entità, store; modulo, cartella, file, simbolo; database, coda, filesystem, dispositivo, container, servizio in esecuzione, rete; tecnologia; gruppo | Parziale: `type` dell'involucro e `type` della mappa di sistema, con le stesse parole; container, servizio in esecuzione e rete da creare |
 | Natura `[deciso]`, anche più d'una `[deciso]` | persone, logico, dati, codice, fisico (elenco approvato dal proprietario il 26 novembre 2026). `[deciso]` **Fisico** è dove le cose girano e ogni apparecchio: server, container, database, terminali, PC, smartphone, dispositivi hardware di ogni tipo; cartelle e file sono codice. Non si scrive: si ricava da specie e posizione | Parziale: `system_levels.levels_of`, con cinque livelli; l'app ne costruisce due |
-| Concreto o astratto `[deciso]` (la definizione è proposta) | Concreto: c'è una cosa da indicare (un file, una riga, una risorsa dichiarata, un servizio di altri). Astratto, o sintetico: un nome che riassume altre cose | Parziale: solo sui moduli (`nature`: `concrete`, `logical`, `virtual`); altrove da creare, dalla specie |
+| Concreto o astratto `[deciso]` | Concreto: c'è una cosa da indicare (un file, una riga, una risorsa dichiarata, un servizio di altri). Astratto, o sintetico: un nome che riassume altre cose senza una cosa sua da indicare, in particolare una funzionalità o un modulo che corrisponde a un insieme di funzionalità o responsabilità affini, o a una sola: per esempio «Gestione ordini», che logicamente è un macro-modulo astratto anche quando è composto da più microservizi, sotto-applicazioni o moduli concreti. Sono astratti anche attore ed entità: un attore come «Cliente» non è per forza una persona, può essere una società o un'organizzazione. La cartella o il pacchetto che realizza un modulo è concreto | Parziale: solo sui moduli (`nature`: `concrete`, `logical`, `virtual`); altrove da creare, dalla specie |
 | Padre | Uno solo, o nessuno; i figli sono l'inverso. Un cerchio di padri è rifiutato | Nel codice: `inside` nella mappa di sistema, `memberships` nell'involucro |
 | Posizione | interno (ha codice nel progetto), esterno (è di altri), non visto (è del sistema ma i suoi file sono altrove: dice dove) | Parziale: `position`; l'involucro ha solo interno ed esterno |
 | Provenienza e stato | Chi lo dice (strumento di build, progetto, modello, Daodan, catalogo) e con quale stato (confermato, dedotto, incompleto), sempre con il file che lo prova. «Osservato, provato, dichiarato» sono gradi delle frecce | Parziale: `provenance`, `status`, `evidence` |
@@ -122,10 +123,19 @@ Legano nodi di nature diverse che sono la stessa cosa: «realizzato da» (una fu
 
 ### Filtro per natura
 
-`[deciso]` Si vede il grafo estrapolando, evidenziando tutti e soli i nodi di una o più nature. I due modi qui sotto sono la lettura proposta di queste parole. Il filtro non apre mai un gruppo da solo.
+`[deciso]` Si vede il grafo estrapolando, evidenziando tutti e soli i nodi di una o più nature. Si supportano tutti e due i modi. La scelta è un'impostazione con un interruttore, presente in ogni interfaccia che mostra la mappa: la GUI dell'app o la pagina HTML dinamica. La scelta resta salvata fra un'apertura e l'altra. Il filtro non apre mai un gruppo da solo.
 
 - **Evidenziare:** gli altri nodi si attenuano; un gruppo chiuso che contiene nodi della natura scelta si accende e dice quanti. *Da creare; non chiede calcoli nuovi.*
-- **Estrarre:** restano solo quei nodi e le frecce passano attraverso gli altri. *Parziale: per un flusso alla volta (`system_levels.view`); sull'intero grafo da creare.*
+- **Nascondere gli altri:** restano solo quei nodi e le frecce passano attraverso gli altri. *Parziale: per un flusso alla volta (`system_levels.view`); sull'intero grafo da creare.*
+
+### Aprire, chiudere e filtrare senza disorientare
+
+- `[deciso]` Aprire, chiudere o filtrare aggiorna il disegno che c'è, senza rifarlo da capo: i nodi che restano non si spostano più del necessario ([Dogrusoz e altri, 2018](https://doi.org/10.1371/journal.pone.0197238)). *Da creare (`T2.D`).*
+- `[deciso]` Apri e chiudi e filtro si calcolano insieme, in un solo punto: applicati uno dopo l'altro da parti diverse danno viste incoerenti ([CMGV](https://doi.org/10.1177/14738716251383173)). *Da creare (`T2.C`).*
+
+### Vista compatta
+
+`[deciso]` Una vista compatta mostra solo nodi piccoli, con logo e nome (dove non c'è un logo, l'icona della specie). *Da creare (`T2.D`).*
 
 ### Frecce riassunte
 
@@ -155,7 +165,7 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 - Un servizio che un file dichiara è un nodo esterno, con una freccia `uses` da ogni file che lo mostra (`uncertain` dove lo menziona soltanto). Un modulo esterno dichiarato dal progetto è un nodo esterno; se ha l'id di una voce `service` ne prende tipo e logo. Uno store è un nodo di specie store. *Nel codice.*
 - Una tecnologia solo menzionata non è un nodo; un pacchetto fuori dal catalogo resta contato sul modulo. *Nel codice; non deciso.*
 - Un nodo di tecnologia resta nella mappa anche se nessun flusso lo usa.
-- `[deciso]` Per tenere semplice il primo grafo, i servizi restano in vista accanto a chi li usa; framework, librerie e strumenti stanno sotto un nodo astratto «Tecnologie», che si apre. Il logo sul modulo resta la forma chiusa della freccia *(proposta)*.
+- `[deciso]` Per tenere semplice il primo grafo, i servizi restano in vista accanto a chi li usa; framework, librerie e strumenti stanno sotto un nodo astratto «Tecnologie», che si apre. Il logo sul modulo resta la forma chiusa della freccia.
 - **Logo di una tecnologia:** una tessera di Daodan in `daodan/data/marks/`; i servizi di AWS, Azure e Google Cloud hanno pittogrammi di Daodan.
 - **Senza logo:** il nodo ha l'icona della sua specie (`viewer/src/icons.ts`). `filesystem` e `altro` prendono quella dell'entità, `funzionalità` nessuna.
 - **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`), ma oggi la vista (`system_levels.view`) non passa il logo (allineamento tracciato nel piano, `T2.C`).
@@ -194,7 +204,7 @@ Ogni anagrafica deve avere un controllo automatico di coerenza con il codice:
 ## Servizi comuni
 
 - **Motore di container:** isola sempre il codice del progetto. Su Windows è il **Kiri** di Daodan, in una distribuzione WSL 2 propria; altrove è quello dell'utente (`docker`, poi `podman`).
-- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy, strumenti verificati per sha256; tutto il resto gira senza rete. Il parser dei lockfile resta un controllo preventivo, non il confine di isolamento.
+- **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy, strumenti verificati per sha256; tutto il resto gira senza rete. I controlli preventivi non sono il confine di isolamento (da creare, `T3.A`): i comandi vengono solo da una tabella chiusa; un lockfile con `file:` o `-e` è rifiutato con una lacuna, mentre un indirizzo `git+` o URL non si rifiuta `[deciso]`: il suo host si approva come ogni altro; gli script di lifecycle dei gestori sono spenti nel ripristino. Il container gira con `--cap-drop ALL` e un utente non root (da creare, `T3.A`).
   - **Nel codice** (`daodan/core/container.py`): esecuzione con `--network none`; preparazione su una rete interna con il proxy (`container.PROXY_SCRIPT`) come sola uscita; `--security-opt no-new-privileges`. Il proxy apre senza chiedere i registri di `package-managers.json`, gli host fissi degli strumenti (`premap/container_runner.py`, `preparation.py`) e gli host che il progetto dichiara, fra cui quelli delle sue dipendenze (`preparation.declared`), dei requisiti Python da Git (`preparation.python_vcs`) e, al secondo tentativo di Gradle, dei repository della build. Non passa `--cap-drop` né `--user`. La prova su un container vero è nel piano (`T0.C`).
 - **Uscita di rete con approvazione `[deciso]`** (non ancora nel codice; nel piano è in `T0.C`, con lo stato di attesa nel piano unico in `T1.D`). Sostituisce «solo proxy verso registri autorizzati» e ritira l'apertura «come una CI» degli host dichiarati.
   - **Confine:** nessuna uscita diretta dal container di analisi; il controllo sta fuori, nel proxy, unica uscita (inclusi redirect, DNS e IP letterali).

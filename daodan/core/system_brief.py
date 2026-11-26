@@ -36,7 +36,7 @@ from store_graph import source_stamp
 from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-brief/v1"
-LIMIT = 31_800      # characters of an answer as JSON: on phazly a brief answer of 31.8 KB passed the host's
+LIMIT = 31_800      # characters of an answer as JSON: on a private case a brief answer of 31.8 KB passed the host's
                     # tool-output limit, on tududi one of 51.9 KB did not; the brief gets what the rest leaves
 HOLDERS = 8         # past this many, a group's entry points are summed up by directory
 HOSTING = {"vercel.json", "netlify.toml", "fly.toml", "render.yaml", "app.yaml", "app.json", "firebase.json",

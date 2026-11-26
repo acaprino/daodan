@@ -2,10 +2,10 @@
 
 One container per case. Each builds the snapshot of the case target at its declared
 commit, runs the engine pass in the foreground and returns the coverage summary.
-Nothing heavy runs on the local machine: it only uploads the plugin scripts and the
-private case archive, then writes the summaries.
+Nothing heavy runs on the local machine: it only uploads the plugin scripts and, for a case
+that comes as an archive, the archive, then writes the summaries.
 
-    modal run benchmarks/flow-model/modal_engine_count.py --phazly-tar PATH [--cases polar,tududi,phazly]
+    modal run benchmarks/flow-model/modal_engine_count.py [--tar PATH] [--cases polar,tududi]
 """
 from __future__ import annotations
 
@@ -24,9 +24,7 @@ CASES = {
               "commit": "ee8e1c01492eeeb6bd773d35a51a01ed53e613dc", "target": "server"},
     "tududi": {"repo": "https://github.com/chrisvel/tududi.git",
                "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263", "target": "."},
-    "phazly": {"tar": "phazly.tar", "target": "."},
-    # Diagnostics: phazly's interface alone, polar with the project's own environment.
-    "phazly-react": {"tar": "phazly.tar", "target": "react-app"},
+    # Diagnostics: polar with the project's own environment.
     "polar-venv": {"repo": "https://github.com/polarsource/polar.git",
                    "commit": "ee8e1c01492eeeb6bd773d35a51a01ed53e613dc", "target": "server",
                    "setup": "cd server && uv sync --frozen --no-install-project --no-dev"},
@@ -178,9 +176,9 @@ def flow_links(name: str, case: dict, archive: bytes, rules: str, tag: str = "",
 
 
 @app.local_entrypoint()
-def flows(phazly_tar: str, rules: str, out: str, case: str = "phazly", tag: str = "", engine: bool = False,
+def flows(tar: str, rules: str, out: str, case: str, tag: str = "", engine: bool = False,
           label: str = ""):
-    result = flow_links.remote(case, CASES[case], Path(phazly_tar).read_bytes(),
+    result = flow_links.remote(case, CASES[case], Path(tar).read_bytes(),
                                Path(rules).read_text(encoding="utf-8"), tag, engine, label)
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     Path(out).write_text(json.dumps(result, sort_keys=True), encoding="utf-8")
@@ -189,9 +187,9 @@ def flows(phazly_tar: str, rules: str, out: str, case: str = "phazly", tag: str 
 
 
 @app.local_entrypoint()
-def main(phazly_tar: str = "", cases: str = "polar,tududi,phazly", results_dir: str = "", tag: str = ""):
+def main(tar: str = "", cases: str = "polar,tududi", results_dir: str = "", tag: str = ""):
     chosen = [name.strip() for name in cases.split(",") if name.strip()]
-    archive = Path(phazly_tar).read_bytes() if any("tar" in CASES[name] for name in chosen) else None
+    archive = Path(tar).read_bytes() if any("tar" in CASES[name] for name in chosen) else None
     calls = [(name, CASES[name], archive if "tar" in CASES[name] else None, tag) for name in chosen]
     destination = Path(results_dir) if results_dir else RESULTS
     destination.mkdir(parents=True, exist_ok=True)
