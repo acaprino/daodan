@@ -1,0 +1,442 @@
+{
+ "languages": [
+  {
+   "path": "app/layout.tsx",
+   "language": "TSX"
+  },
+  {
+   "path": "middleware.ts",
+   "language": "TypeScript"
+  },
+  {
+   "path": "app/api/webhooks/route.ts",
+   "language": "TypeScript"
+  },
+  {
+   "path": "tailwind.config.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "styles/main.css",
+   "language": "CSS"
+  },
+  {
+   "path": "components/ui/Button/Button.module.css",
+   "language": "CSS"
+  },
+  {
+   "path": "schema.sql",
+   "language": "PLpgSQL"
+  },
+  {
+   "path": "supabase/migrations/20230530034630_init.sql",
+   "language": "PLpgSQL"
+  }
+ ],
+ "excluded": [
+  {
+   "path": "types_db.ts",
+   "why": "generated"
+  },
+  {
+   "path": "next-env.d.ts",
+   "why": "generated"
+  },
+  {
+   "path": "README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "LICENSE",
+   "why": "documentation"
+  },
+  {
+   "path": "app/opengraph-image.png",
+   "why": "binary"
+  },
+  {
+   "path": "public/architecture_diagram.png",
+   "why": "binary"
+  },
+  {
+   "path": "public/demo.png",
+   "why": "binary"
+  },
+  {
+   "path": "public/favicon.ico",
+   "why": "binary"
+  },
+  {
+   "path": "public/vercel-deploy.png",
+   "why": "binary"
+  }
+ ],
+ "units": [
+  {
+   "name": null,
+   "kind": "npm-package",
+   "root": ".",
+   "manifest": "package.json",
+   "source_roots": [
+    "app",
+    "components",
+    "utils",
+    "styles"
+   ],
+   "depends_on": [],
+   "config": {
+    "tsconfig": [
+     "tsconfig.json"
+    ],
+    "paths": {
+     "@/*": [
+      "*"
+     ]
+    },
+    "entry_files": [
+     "app/layout.tsx",
+     "app/page.tsx",
+     "app/account/page.tsx",
+     "app/signin/page.tsx",
+     "app/signin/[id]/page.tsx",
+     "app/api/webhooks/route.ts",
+     "app/auth/callback/route.ts",
+     "app/auth/reset_password/route.ts",
+     "middleware.ts"
+    ]
+   }
+  }
+ ],
+ "workspace": null,
+ "toolchains": [],
+ "dependencies": [
+  {
+   "unit": null,
+   "name": "@radix-ui/react-toast",
+   "declared": "^1.1.5",
+   "resolved": "1.1.5",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "@stripe/stripe-js",
+   "declared": "2.4.0",
+   "resolved": "2.4.0",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "@supabase/ssr",
+   "declared": "^0.1.0",
+   "resolved": "0.1.0",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "@supabase/supabase-js",
+   "declared": "^2.43.4",
+   "resolved": "2.43.4",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "class-variance-authority",
+   "declared": "^0.7.0",
+   "resolved": "0.7.0",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "classnames",
+   "declared": "^2.5.1",
+   "resolved": "2.5.1",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "clsx",
+   "declared": "^2.1.1",
+   "resolved": "2.1.1",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "lucide-react",
+   "declared": "0.330.0",
+   "resolved": "0.330.0",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "next",
+   "declared": "14.2.3",
+   "resolved": "14.2.3",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "react",
+   "declared": "^18.3.1",
+   "resolved": "18.3.1",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "react-dom",
+   "declared": "^18.3.1",
+   "resolved": "18.3.1",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "react-merge-refs",
+   "declared": "^2.1.1",
+   "resolved": "2.1.1",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "stripe",
+   "declared": "^14.25.0",
+   "resolved": "14.25.0",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "tailwind-merge",
+   "declared": "^2.3.0",
+   "resolved": "2.3.0",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "tailwindcss",
+   "declared": "^3.4.4",
+   "resolved": "3.4.4",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "tailwindcss-animate",
+   "declared": "^1.0.7",
+   "resolved": "1.0.7",
+   "scope": "runtime",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "@types/node",
+   "declared": "^20.14.2",
+   "resolved": "20.14.2",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "@types/react",
+   "declared": "^18.3.3",
+   "resolved": "18.3.3",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "@types/react-dom",
+   "declared": "^18.3.0",
+   "resolved": "18.3.0",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "autoprefixer",
+   "declared": "^10.4.19",
+   "resolved": "10.4.19",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "eslint",
+   "declared": "^8.57.0",
+   "resolved": "8.57.0",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "eslint-config-next",
+   "declared": "14.1.0",
+   "resolved": "14.1.0",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "eslint-config-prettier",
+   "declared": "^9.1.0",
+   "resolved": "9.1.0",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "eslint-plugin-react",
+   "declared": "^7.34.2",
+   "resolved": "7.34.2",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "eslint-plugin-tailwindcss",
+   "declared": "^3.17.3",
+   "resolved": "3.17.3",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "postcss",
+   "declared": "^8.4.38",
+   "resolved": "8.4.38",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "prettier",
+   "declared": "^3.3.1",
+   "resolved": "3.3.1",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "prettier-plugin-tailwindcss",
+   "declared": "^0.5.14",
+   "resolved": "0.5.14",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "supabase",
+   "declared": "^1.172.2",
+   "resolved": "1.172.2",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": null,
+   "name": "typescript",
+   "declared": "^5.4.5",
+   "resolved": "5.4.5",
+   "scope": "dev",
+   "declared_in": "package.json"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "Next.js",
+   "unit": null,
+   "evidence": "package.json#L33"
+  },
+  {
+   "name": "React",
+   "unit": null,
+   "evidence": "package.json#L34"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": null,
+   "evidence": "package.json#L39"
+  }
+ ],
+ "services": [
+  {
+   "name": "Supabase",
+   "kind": "database",
+   "evidence": "utils/supabase/client.ts#L6"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "supabase/config.toml#L25"
+  },
+  {
+   "name": "Stripe",
+   "kind": "payments",
+   "evidence": "utils/stripe/config.ts#L3"
+  },
+  {
+   "name": "GitHub OAuth",
+   "kind": "authentication",
+   "evidence": "supabase/config.toml#L130"
+  },
+  {
+   "name": "Inbucket",
+   "kind": "mail",
+   "evidence": "supabase/config.toml#L55"
+  },
+  {
+   "name": "Vercel",
+   "kind": "hosting",
+   "evidence": "utils/helpers.ts#L12"
+  }
+ ],
+ "needs": {
+  "container": false,
+  "reason": ""
+ },
+ "traps": [
+  "package.json has no name (only private: true): the unit is named by its root and its dependencies have unit null",
+  "the lockfile is pnpm-lock.yaml (lockfileVersion 6.0) while every script in package.json calls npm run and npx; no packageManager, engines, .nvmrc or CI file declares a version of Node or of pnpm, so toolchains is empty, and the lockfile format is not a pnpm version",
+  "resolved is the version in the importer block of pnpm-lock.yaml without the peer suffix: next is 14.2.3, not 14.2.3(react-dom@18.3.1)(react@18.3.1); the packages: section holds the transitive ones",
+  "eslint-config-next is pinned at 14.1.0 while next is 14.2.3; @stripe/stripe-js, lucide-react, next and eslint-config-next are exact pins, the others are caret ranges",
+  "tailwindcss, tailwind-merge and tailwindcss-animate are in dependencies, not devDependencies; supabase in devDependencies is the Supabase CLI, not the client (@supabase/supabase-js and @supabase/ssr)",
+  "the stripe command of the stripe:* scripts is the Stripe CLI, installed by no manifest; stripe in dependencies is the server SDK and @stripe/stripe-js the browser one",
+  "types_db.ts is generated by supabase gen types (script supabase:generate-types) and is committed in UTF-16 little-endian with a byte order mark and CRLF: a reader that assumes UTF-8 sees binary or another language; .prettierignore skips it",
+  "next-env.d.ts says it should not be edited; tsconfig.json also includes .next/types/**/*.ts, which exist only after next dev or next build",
+  "there is no next.config file and no ESLint configuration although next lint and five ESLint packages are declared",
+  "tsconfig.json sets baseUrl . with @/* to ./*, the repository root (there is no src directory); some imports use the bare baseUrl form instead of the alias: types_db in utils/supabase/admin.ts, styles/main.css in app/layout.tsx",
+  "one unit holds browser and server code: 'use client' components, 'use server' actions (utils/auth-helpers/server.ts, utils/stripe/server.ts), three route handlers found by file convention and middleware.ts at the root, outside app/",
+  "schema.sql and supabase/migrations/20230530034630_init.sql are the same 144 lines, hand-written; both define a plpgsql trigger function, so Linguist calls them PLpgSQL and not SQL; supabase/seed.sql is empty",
+  "Supabase and Stripe are hosted services seen only through their SDKs and environment variables (.env.local.example); supabase/config.toml describes the local Supabase stack: Postgres 15, the Inbucket mail catcher, GitHub as the one enabled OAuth provider, Twilio disabled",
+  "utils/supabase/admin.ts uses the service role key and writes the tables that the Stripe webhook (app/api/webhooks/route.ts) keeps in sync; the row level security policies live in schema.sql",
+  "Vercel shows only as the NEXT_PUBLIC_VERCEL_URL fallback in utils/helpers.ts: there is no vercel.json",
+  "public/favicon.ico is a PNG image under an .ico name; the .svg logos in public/ are text and are not excluded",
+  "tailwind.config.js lists pages/**/*.{ts,tsx} in content but there is no pages directory; components.json is the shadcn/ui configuration and components/ui is project code, not vendored",
+  "fixtures/stripe-fixtures.json is input for the Stripe CLI (products and prices to create), not test data read by the code"
+ ],
+ "cases": [
+  "one-unit-many-parts",
+  "unit-no-name",
+  "path-alias",
+  "version-absent",
+  "locked-versions",
+  "transitive-not-direct",
+  "ambiguous-extension",
+  "generated-file",
+  "documentation-tree",
+  "binary-file",
+  "build-generates-code",
+  "service-from-config",
+  "saas-service"
+ ]
+}
