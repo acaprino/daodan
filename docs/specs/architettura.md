@@ -87,27 +87,77 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 | I file del progetto | Script `test`/`start`/`dev`, config pytest, makefile (vale per il runner lanciato, non per il nome) | `dichiarato` | Nel codice |
 | La CI del progetto | Passo dei test in CI, con servizi e passi preliminari | `dichiarato` | Parziale (`T3.B`) |
 
-## Nodi del grafo: tipo e logo
+## La mappa: nodi, nature e profondità
 
-L'anagrafica delle tecnologie (`daodan/data/service-registry.json`) dà a ogni framework, libreria, strumento e servizio un tipo di nodo e, dove la voce li ha, una categoria e un logo (`recognize_stack` e `find_modules` attribuiscono le tecnologie ai moduli; `assemble_graph` costruisce i nodi del grafo). Senza `category`, una voce di `kind` `service` vale `service` e le altre `framework`. Il tipo di nodo è `type` nell'anagrafica e `node_type` sul nodo. Il grafo consulta l'anagrafica, senza nominare tecnologie nel codice.
+`[deciso]` La mappa non ha limiti di nodi: possono essere 2 o 80.000. Si legge in due versi. In verticale, per **profondità**: si parte da un grafo semplice, che dice come funziona il sistema ad alto livello, e si scende di nodo in nodo aprendo un padre (drill down) o richiudendolo (drill up). In orizzontale, per **natura**: si mettono in vista tutti e soli i nodi di una o più nature.
+
+### Che cos'è un nodo
+
+Una cosa del sistema con un nome e un identificativo stabile. Oggi i nodi stanno in due archivi: l'involucro del codice (`daodan/visual@1`: moduli, cartelle, file, simboli, store, esterni) e la mappa di sistema (`daodan/system-map/v1`: le cose con il nome che dà una persona). Sono una mappa sola: i `members` di un nodo della mappa di sistema sono nodi dell'involucro. I nodi del grafo li costruisce `assemble_graph`; le tecnologie e i file che le dichiarano vengono da `recognize_stack` e `find_modules`. *Parziale: l'unione serve oggi un flusso alla volta (`system_levels.py`).*
+
+### Proprietà
+
+| Proprietà | Valori | Oggi nel codice |
+| --- | --- | --- |
+| Specie: che cosa è | Elenco chiuso: attore, applicazione, schermata; funzionalità, servizio o API, gateway, autenticazione, lavoro a orario, altro; entità, store; modulo, cartella, file, simbolo; database, coda, filesystem, dispositivo, container, servizio in esecuzione, rete; tecnologia; gruppo | Parziale: `type` dell'involucro e `type` della mappa di sistema, con le stesse parole; container, servizio in esecuzione e rete da creare |
+| Natura `[deciso]`, anche più d'una `[deciso]` | persone, logico, dati, codice, fisico (elenco approvato dal proprietario il 26 novembre 2026). `[deciso]` **Fisico** è dove le cose girano e ogni apparecchio: server, container, database, terminali, PC, smartphone, dispositivi hardware di ogni tipo; cartelle e file sono codice. Non si scrive: si ricava da specie e posizione | Parziale: `system_levels.levels_of`, con cinque livelli; l'app ne costruisce due |
+| Concreto o astratto `[deciso]` (la definizione è proposta) | Concreto: c'è una cosa da indicare (un file, una riga, una risorsa dichiarata, un servizio di altri). Astratto, o sintetico: un nome che riassume altre cose | Parziale: solo sui moduli (`nature`: `concrete`, `logical`, `virtual`); altrove da creare, dalla specie |
+| Padre | Uno solo, o nessuno; i figli sono l'inverso. Un cerchio di padri è rifiutato | Nel codice: `inside` nella mappa di sistema, `memberships` nell'involucro |
+| Posizione | interno (ha codice nel progetto), esterno (è di altri), non visto (è del sistema ma i suoi file sono altrove: dice dove) | Parziale: `position`; l'involucro ha solo interno ed esterno |
+| Provenienza e stato | Chi lo dice (strumento di build, progetto, modello, Daodan, catalogo) e con quale stato (confermato, dedotto, incompleto), sempre con il file che lo prova. «Osservato, provato, dichiarato» sono gradi delle frecce | Parziale: `provenance`, `status`, `evidence` |
+| Tipo `[deciso]` | Lo ha solo il nodo legato a una voce del catalogo, ed è il tipo della voce. Non ogni nodo ha un tipo | Parziale: `node_type` e `registry`. Da cambiare: la mappa di sistema lo chiede a ogni nodo, e la funzione di una rotta o di un controllo ne riceve uno |
+
+Natura per specie: **persone** (attore, applicazione, schermata); **logico** (funzionalità, servizio o API, gateway, autenticazione, lavoro a orario, altro); **dati** (entità, store); **codice** (modulo, cartella, file, simbolo; tecnologia di categoria framework, libreria o strumento); **fisico** (database, coda, filesystem, dispositivo, cioè terminale, PC, smartphone e ogni altro hardware, container, servizio in esecuzione, rete). Un servizio esterno è logico e fisico. Un gruppo ha la natura di ciò che contiene. Una natura senza nodi si dichiara assente.
+
+### Profondità: aprire e richiudere
+
+- `[deciso]` Il primo grafo è semplice: sono i nodi senza padre.
+- `[deciso]` Aprire un nodo mostra i suoi figli al suo posto; il resto resta com'è. Richiudere riporta al nodo. *Nel codice per moduli, cartelle, file e simboli (`app_view.view`).*
+- Un nodo senza figli si apre su ciò che lo realizza: una funzionalità sui suoi file. Richiudere riporta alla funzionalità, non alla cartella. *Parziale (`system_levels.inside`).*
+- Si legge solo ciò che si apre: il primo grafo non legge i simboli di nessun file, e un simbolo compare solo dentro il suo file aperto. *Nel codice.*
+
+### Corrispondenze
+
+Legano nodi di nature diverse che sono la stessa cosa: «realizzato da» (una funzionalità e i suoi file: `members`), «gira su» (un modulo e il suo container: `on`), «vive in» (un'entità e il suo database). Ognuna cita il file che la prova. È **un nodo solo** con più nature quando la cosa è una, con un nome solo (Stripe); sono **due nodi** con una corrispondenza quando ogni natura ha nome, padre o figli suoi (la cartella `api/` e il container `api`). Lo stesso nodo può realizzarne più d'uno: si vede in ciascuno, e il suo padre resta uno. *Parziale: `members` e `on` nella mappa di sistema.*
+
+### Filtro per natura
+
+`[deciso]` Si vede il grafo estrapolando, evidenziando tutti e soli i nodi di una o più nature. I due modi qui sotto sono la lettura proposta di queste parole. Il filtro non apre mai un gruppo da solo.
+
+- **Evidenziare:** gli altri nodi si attenuano; un gruppo chiuso che contiene nodi della natura scelta si accende e dice quanti. *Da creare; non chiede calcoli nuovi.*
+- **Estrarre:** restano solo quei nodi e le frecce passano attraverso gli altri. *Parziale: per un flusso alla volta (`system_levels.view`); sull'intero grafo da creare.*
+
+### Frecce riassunte
+
+- Chiuso un gruppo, le frecce di ciò che contiene salgono su di lui: una freccia per coppia di nodi in vista e per grado, con il numero dei collegamenti per tipo e fino a 20 punti citati. Aprirlo le sostituisce con le frecce che le compongono.
+- Il riassunto non promuove mai: una freccia incerta, osservata o solo dichiarata resta distinta, e le lacune restano.
+- Le frecce interne a un gruppo chiuso non si disegnano: si contano sul gruppo. *Nell'esploratore sì; l'app oggi non le conta.*
+- Un nodo in vista in due posti porta le sue frecce in entrambi; i totali contano ogni collegamento una volta.
+
+*Parziale: `app_view._edges`, `viewer/src/projection.ts`, `system_levels._contract`.*
+
+### Nessun limite
+
+- `[deciso]` Nessun tetto al numero di nodi, né minimo né massimo.
+- Nessun taglio in silenzio: un tetto di calcolo è una lacuna, con il numero di ciò che resta fuori. *Nel codice: gli elenchi oltre 1.000 voci si dividono; le frecce che attraversano nodi nascosti si fermano a 2.000 passi, con la lacuna.*
+- Alla pagina: si disegna solo ciò che è aperto e in vista. La vista la calcola il servizio, che manda solo quei nodi e le loro frecce: la pagina non riceve mai l'intero grafo. *Parziale: l'app sì (`app_view.view`); l'esploratore carica tutto l'involucro. La pagina è nel piano in `T2.D`.*
+- Un gruppo con più figli di quanti la vista ne regge si apre a blocchi, con un nodo sintetico «altri N». *Da creare.*
+- Al calcolo: il costo di una vista cresce con ciò che mostra, non con il totale dei simboli. *Parziale: non misurato su un progetto grande.*
+- Misura che manca: tempo e peso di una vista con 80.000 nodi in archivio e 300 in vista. Prima del passaggio a Sigrid, 300 nodi in vista chiedevano 4,6 s e 1.000 non si disponevano (`benchmarks/codebase-explorer/README.md`).
+
+### Le tecnologie come nodi
+
+L'anagrafica delle tecnologie (`daodan/data/service-registry.json`) dà a ogni voce nome, categoria (`framework`, `library`, `tool`, `service`), tipo e, dove c'è, logo. Senza `category`, una voce di `kind` `service` vale `service` e le altre `framework`. Il grafo consulta l'anagrafica, senza nominare tecnologie nel codice. I tipi di framework, librerie e strumenti stanno in `registry-additions.json` con `by: model` e non sono verificati a campione.
 
 Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scritto a mano. `none`: il fork non ha una regola per la voce, quindi nessun progetto la mostra. Un servizio o uno strumento chiede solo di essere riconosciuto: con una regola è `full`, perché il grafo ha il suo nodo e le frecce che ci arrivano. Un framework o una libreria è `full` quando un lettore di Daodan legge come il progetto lo usa (rotte, eventi dei template, stili: la tabella `READERS`), `partial` quando è riconosciuto e basta. Una sorgente scritta e scollegata non conta: Django, FastAPI e Flask sono `partial`.
 
-| Che cosa | Nel grafo | Tipo di nodo |
-| --- | --- | --- |
-| Voce con `category: service` che un file dichiara | Nodo esterno con il logo della voce; arco `uses` da ogni file che la mostra (`uncertain` dove la menziona soltanto). Una voce solo menzionata nel progetto non è un nodo | `type` della voce |
-| Voce con `category: framework` o `library` | `[deciso]` Nodo della tecnologia, collegato a ogni modulo che compone (non ancora nel codice; `T2.C`). Il gruppo porta il logo del framework quando ne dichiara uno solo | `type` della voce |
-| Voce con `category: tool` | Non è un nodo, e nel grafo dell'app non è fra le tessere del gruppo; il modulo la elenca nel campo `tools` dell'involucro (`daodan/core/visual.py`) | — |
-| Modulo esterno dichiarato dal progetto | Nodo esterno; se ha l'id di una voce con `category: service`, prende tipo e logo della voce | `servizio o API` |
-| Funzione di una rotta; funzione che lega un'azione dell'utente | Il simbolo, se non ha già un tipo | `servizio o API`; `schermata` |
-| Store | Nodo `store` | `node_type` della regola di collegamento |
-
-- **Tipi di nodo:** elenco chiuso `NODE_TYPES` (`daodan/core/flows.py`): `attore`, `schermata`, `funzionalità`, `servizio o API`, `gateway`, `database`, `coda`, `autenticazione`, `dispositivo`, `filesystem`, `altro`. La mappa di sistema aggiunge `entità`, `applicazione` e `lavoro a orario` (`daodan/core/system_map.py`). Un nodo di cui non si sa il tipo non ne ha.
-- **Tipo di framework, librerie e strumenti:** l'anagrafica lo dà anche a loro dove la tecnologia lo determina: è ciò che più plausibilmente è la parte di programma costruita con essa; dove non lo dice resta `altro`. Questi tipi stanno in `daodan/data/registry-additions.json` con `by: model` e non sono verificati a campione.
-  - **Oggi nel codice:** il grafo non li usa. Un nodo prende il tipo dall'anagrafica solo se la voce ha `category: service` (`daodan/core/visual.py`); delle altre voci il tipo viaggia nell'elenco `technologies`, e il pannello dei dettagli lo mostra come testo nell'elenco delle tecnologie (`viewer/src/details.tsx`). Il brief del mappatore (`daodan/core/system_brief.py`, sezione Externals) stampa invece il tipo di ogni tecnologia riconosciuta, `altro` dove manca (`technologies.externals`).
-  - `[deciso]` **Il tipo sta sui nodi delle tecnologie.** Un modulo è collegato ai nodi di tutte le tecnologie che lo compongono, e quei nodi hanno il tipo del catalogo. Il modulo non prende il tipo dal suo framework; non ogni nodo ha un tipo.
+- `[deciso]` Un modulo è collegato ai nodi di tutte le tecnologie che lo compongono, strumenti di sviluppo compresi, con una freccia «usa» che cita il file che le dichiara. Il nodo tecnologia è concreto, esterno, con il tipo e il logo della sua voce; uno per tecnologia e per progetto. *Da creare: oggi sono nodi solo le voci `service` (`visual.py`), framework e librerie sono tessere del modulo e uno strumento non compare (`app_view.py`, `TILES`).*
+- Un servizio che un file dichiara è un nodo esterno, con una freccia `uses` da ogni file che lo mostra (`uncertain` dove lo menziona soltanto). Un modulo esterno dichiarato dal progetto è un nodo esterno; se ha l'id di una voce `service` ne prende tipo e logo. Uno store è un nodo di specie store. *Nel codice.*
+- Una tecnologia solo menzionata non è un nodo; un pacchetto fuori dal catalogo resta contato sul modulo. *Nel codice; non deciso.*
+- Un nodo di tecnologia resta nella mappa anche se nessun flusso lo usa.
+- `[deciso]` Per tenere semplice il primo grafo, i servizi restano in vista accanto a chi li usa; framework, librerie e strumenti stanno sotto un nodo astratto «Tecnologie», che si apre. Il logo sul modulo resta la forma chiusa della freccia *(proposta)*.
 - **Logo di una tecnologia:** una tessera di Daodan in `daodan/data/marks/`; i servizi di AWS, Azure e Google Cloud hanno pittogrammi di Daodan.
-- **Senza logo:** il nodo ha l'icona del suo tipo (`viewer/src/icons.ts`). `filesystem` e `altro` prendono quella dell'entità, `funzionalità` nessuna.
+- **Senza logo:** il nodo ha l'icona della sua specie (`viewer/src/icons.ts`). `filesystem` e `altro` prendono quella dell'entità, `funzionalità` nessuna.
 - **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`), ma oggi la vista (`system_levels.view`) non passa il logo (allineamento tracciato nel piano, `T2.C`).
 - `[deciso]` **Due ingressi con lo stesso esito** sono due varianti di un solo flusso, che si apre per vederle (nel piano, `T3.C`).
 

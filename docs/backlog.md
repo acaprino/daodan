@@ -28,7 +28,7 @@
 - Server applicativo, coordinatore della coda, adattatori motori con prova di capacità, annullamento e ripresa.
 - Accesso GitHub: GitHub App, device flow, token nel portachiavi.
 - Servizio locale portabile HTTP con token; verifica licenza Kiri per ridistribuzione e portachiavi Linux headless.
-- Mappa integrata nella pagina dell'app + fix salvataggio percorso e stato scheda; pannelli ridimensionabili, filtri, tastiera e prestazioni dell'esploratore (`level` con nomi nuovi).
+- Salvataggio del percorso e stato della scheda; pannelli ridimensionabili e tastiera dell'esploratore. La mappa a livelli sullo schermo è nel piano (`T2.D`).
 - Riduzione di `docs/pipeline/` da due viste («Oggi nel codice» e «Piano») a una sola.
 
 ### 4. Superfici differite (ex ondata 11)

@@ -21,8 +21,9 @@ Stati ammessi: `APERTA`, `Bloccata da <tranche>`, `VERIFICATA`.
 | **T1.D** | Orchestratore a 8 identificatori semantici, piano unico con stato `in attesa di approvazione`, `step.skipped` e Cancello T1 (`T1.15`–`T1.17`) | Bloccata da `T1.C` | — | Nessuna | — | `tests/test_codebase_map_pipeline*.py` e `modal.yml` `suite` |
 | **T2.A** | Evidenza in `link_calls`: misure sulle strutture esistenti (`T2.1`) | Bloccata da `T1.D` | — | Nessuna | — | `tests/test_codebase_map_edge_view.py`, `tests/test_codebase_map_resolve_edges.py` e fixture su Modal |
 | **T2.B** | SCIP incrementale e mirato, JVM (`KotlinResolver.kt`), C e C++, CSS, pulizia doppioni, timeout e SQL (`T2.2`–`T2.4`) | Bloccata da `T2.A` | — | Esito prova tecnica SQL `T1.5` | — | Benchmark SCIP su Modal (`chi`, `tududi`, JVM, C e C++) |
-| **T2.C** | Unione statica in `assemble_graph` (legami senza framework nel codice, nodi delle tecnologie, logo in `system_levels.view`) e Cancello T2 (`T2.5`) | Bloccata da `T2.B` | — | Nessuna | — | Test assenza framework e `modal.yml` `suite` |
-| **T3.A** | Isolamento: scelta dello strumento proxy (Smokescreen o `PROXY_SCRIPT`), `--cap-drop` e `--user`, rifiuto dei lockfile con URL (`T3.1`) | Bloccata da `T2.C` | — | Nessuna | — | `tests/test_codebase_map_container.py` su container reale su Modal |
+| **T2.C** | Unione statica in `assemble_graph` (legami senza framework nel codice, modello dei nodi, nodi delle tecnologie, vista e filtro per natura, logo in `system_levels.view`) (`T2.5`) | Bloccata da `T2.B` | — | Nessuna | — | Test assenza framework e `modal.yml` `suite` |
+| **T2.D** | La mappa a livelli sullo schermo: scendere e risalire, filtro per natura, apertura a blocchi, prova di velocità, e Cancello T2 | Bloccata da `T2.C` | — | Nessuna | — | Workflow Viewer e misura in `benchmarks/codebase-explorer/README.md` |
+| **T3.A** | Isolamento: scelta dello strumento proxy (Smokescreen o `PROXY_SCRIPT`), `--cap-drop` e `--user`, rifiuto dei lockfile con URL (`T3.1`) | Bloccata da `T2.D` | — | Nessuna | — | `tests/test_codebase_map_container.py` su container reale su Modal |
 | **T3.B** | Comandi da CI e utente (`builds` e `starts`), `surface` e `ui_execution_deferred`, `run_and_observe` su `web` e `webview` (`T3.2`–`T3.3`) | Bloccata da `T3.A` | — | Nessuna | — | Progetto reale non-npm tracciato su Modal |
 | **T3.C** | Correzione `on` e `verified`, sottocartella e archivio, confronto cieco e Cancello T3 (`T3.4`) | Bloccata da `T3.B` | — | Nessuna | — | `benchmarks/system-map` su Modal e `modal.yml` `suite` |
 
@@ -126,7 +127,7 @@ Fuori da T1: SCIP, Kiri, esecuzione dinamica e adeguamento della vista UI agli 8
 7. **[deciso]** Aggiungere al fork `stack-analyser` (rilascio `.6`) solo ciò che resta scoperto: CMake, Bazel, Meson, Make, autotools, sbt, .NET SDK, Mix, Nx (`project.json`), Python su `pyproject.toml` e `requirements.txt`.
    - **[accertato nel repository]** `daodan/core/premap/` ha già `cmake.py`, `bazel.py`, `meson.py`, `make.py`, `autotools.py`, `sbt.py` e `dotnet.py`; `cmake.py` e `bazel.py` trovano da sé il proprio manifesto; `mix-project` è in `premap.EXECUTES` senza file proprio; Nx non ha un adattatore proprio (`premap/module_graph.py` tratta già `nx-project`).
 8. **[deciso]** Creare `daodan/data/build-tools.json` con test di coerenza rispetto agli adattatori di `find_modules`.
-9. **[deciso]** `recognize_stack` gira per primo su `list_files` (senza moduli); `find_modules` gira dopo (usando `daodan/data/build-tools.json` del punto 8) per ogni strumento trovato e assegna le tecnologie ai moduli. Nessuna sorgente in `premap.SOURCES` decide più da sé se applicarsi; `daodan/core/premap/container_runner.py` diventa servizio comune ai quattro step `find_modules`, `find_entry_points`, `link_calls` e `run_and_observe`.
+9. **[deciso]** `recognize_stack` gira per primo su `list_files` (senza moduli); `find_modules` gira dopo (usando `daodan/data/build-tools.json` del punto 8) per ogni strumento trovato e assegna le tecnologie ai moduli, strumenti compresi, tenendo il file che le dichiara (serve alle frecce «usa» di `T2.C`). Nessuna sorgente in `premap.SOURCES` decide più da sé se applicarsi; `daodan/core/premap/container_runner.py` diventa servizio comune ai quattro step `find_modules`, `find_entry_points`, `link_calls` e `run_and_observe`.
    - **[deciso, su delega a Fable]** `go-enry` si toglie, dopo la lacuna di `list_files` (punto 4) e dopo aver misurato che cosa cambia senza i file che oggi esclude (`excluded`). Escono `premap/enry.py`, `enry_facts.go`, `daodan-enry` in `premap/container_runner.py`, le sue righe in `pipeline_tree.py` e `suffix_table.run`; `suffix_table.NAMES` è usata e resta, o passa a `file_formats.LINGUIST_NAMES`.
 10. Chiudere i residui del modello di build: estendere `external_packages` oltre PyPI (Go, Maven, Gradle, Cargo, npm), campo dedicato per BOM, `platform()` e POM genitore **[deciso]**, voce unica per unità e pacchetto **[deciso]**, scope e `declared_in` residui, e ripristino cartelle annidate (Lerna, Cargo, .NET, `requirements.txt`).
 
@@ -149,7 +150,7 @@ Fuori da T1: SCIP, Kiri, esecuzione dinamica e adeguamento della vista UI agli 8
 - **[deciso, su delega a Fable]** `go-enry` (`T1.B`): si toglie, alle condizioni dei punti 4 e 9. La misura su `excluded` comprende lo stack: decide anche dove il fork non entra (`daodan/core/stack_recognition.py`, `_left_out`).
 - **[deciso, su delega a Fable]** `daodan/core/build_units.py` senza container (`T1.B`): resta come ripiego dichiarato (legge solo testo, non lancia processi). I suoi lettori li sceglie lo stack tramite `build-tools.json`, non il nome del file; i lettori scritti a mano, alcuni con espressioni regolari, sono un difetto aperto.
 - **[deciso, su delega a Fable]** Pacchetti noti solo a `find_modules` (`T1.B`): il fork si rilancia e poi `technologies.merge`, che unisce soltanto. Da misurare: quante tecnologie arrivano solo da quei pacchetti e se il fork accetta le dichiarazioni senza rileggere i file.
-- **[deciso]** Tipo di nodo (`T2.C`): il modulo non prende il tipo dal framework; è collegato ai nodi delle tecnologie che lo compongono, che hanno il tipo del catalogo (`architettura.md`, «Nodi del grafo»).
+- **[deciso]** Tipo di nodo (`T2.C`): il modulo non prende il tipo dal framework; è collegato ai nodi delle tecnologie che lo compongono, che hanno il tipo del catalogo (`architettura.md`, «La mappa»).
 - **[deciso]** Lettori di GitNexus (`T1.C`): si riscrivono da capo in un modulo nostro, che segue gli aggiornamenti di GitNexus; Daodan resta MIT (punto 14).
 - **[deciso, su delega a Fable]** Valutatore di stringhe per percorsi calcolati (`T1.C`): non ora. Prima si contano sul corpus le chiamate perse come «not a literal», per causa; poi, se serve, solo la somma di costanti letta dall'albero sintattico.
 - **[deciso, su delega a Fable]** Regola `.ts` su `<?xml` (`T1.A`): resta com'è.
@@ -157,7 +158,7 @@ Fuori da T1: SCIP, Kiri, esecuzione dinamica e adeguamento della vista UI agli 8
 - **[deciso]** Confronto prima del fork (`M2`, `T1.B`): niente Syft, si confronta con le sorgenti di oggi (punto 6).
 - **[deciso, su delega a Fable]** Famiglie nel fork e `build-tools.json` (`M3`, `T1.B`): confermati. Difetto che correggono: ogni sorgente cerca da sé il proprio file, contro il principio 1. Le regole entrano nel fork prima che un adattatore parta solo se lo stack nomina il suo strumento.
 - **[deciso]** Perimetro del piano unico (`M4`): lo stato di attesa entra in `T1.D`, perché il popup c'è già da `T0.C`.
-- **[deciso, su delega a Fable]** Cancelli (`M7`): uno leggero per tranche (`T1.A`–`T1.D`, `T2.A`–`T2.C`): la sua verifica in tabella più una corsa `suite` senza fallimenti fuori quarantena; `T1.B` e `T1.D` aggiungono `corpus` senza perdite non spiegate. I Cancelli T1 e T2 restano a fine traguardo. Sono circa sette corse Modal in più, ognuna solo su richiesta del proprietario (Regola 3).
+- **[deciso, su delega a Fable]** Cancelli (`M7`): uno leggero per tranche (`T1.A`–`T1.D`, `T2.A`–`T2.D`): la sua verifica in tabella più una corsa `suite` senza fallimenti fuori quarantena; `T1.B` e `T1.D` aggiungono `corpus` senza perdite non spiegate. I Cancelli T1 e T2 restano a fine traguardo. Sono circa sette corse Modal in più, ognuna solo su richiesta del proprietario (Regola 3).
 - **[deciso, su delega a Fable]** Collocazione (`M8`): `approval_required` e `host_denied` nascono in `T0.C`, con il popup, e compaiono nel piano unico in `T1.D`; `surface` e `ui_execution_deferred` in `T3.B`.
 
 **Cancello T1:** sul campione fissato in `T0.B.4`, il chiamante riceve un solo piano; moduli, ingressi e lacune sono verificati; `premap.SOURCES` non contiene più sorgenti autonome né rotte ed eventi; `modal.yml` `run=suite` chiuso con zero fallimenti fuori dalla quarantena di `T0` (Regola 5).
@@ -166,7 +167,7 @@ Fuori da T1: SCIP, Kiri, esecuzione dinamica e adeguamento della vista UI agli 8
 
 ## T2 — Collegamenti statici (`link_calls` SCIP) e vista statica *(Bloccato da T1)*
 
-Taglio in tranche `T2.A`–`T2.C` nella mappa di avanzamento.
+Taglio in tranche `T2.A`–`T2.D` nella mappa di avanzamento.
 
 1. **[deciso] [misura]** Il modello di evidenza di `link_calls` non chiede campi nuovi (`docs/specs/architettura.md`, «Modello di evidenza»). `T2.A` misura, su fixture con callback, overload e dispatch dinamico, precisione, falsi archi, irrisolti, tempo e memoria per indicizzatore; se trova falsi archi, lì si aggiunge il campo. Nessuna migrazione a LSIF o LSP, compiler API solo dove colmano lacune misurate.
    - **[accertato nel repository]** Strutture presenti: `daodan/core/edge_grading.py` (`ambiguous-target`, `unresolved`, `project-callable`), `daodan/core/edge_store.py` (`verdict`, `resolver`, `confidence`), `daodan/core/resolve_edges.py` (`<engine>@<version>`).
@@ -174,12 +175,18 @@ Taglio in tranche `T2.A`–`T2.C` nella mappa di avanzamento.
 3. Coperture SCIP per linguaggio (`T2.B`): JVM (`javapoet`, `klaxon`, rimozione `daodan/core/engines/KotlinResolver.kt`), C e C++ (immagine unica e `FETCHCONTENT_SOURCE_DIR_*` **[deciso]**, `zlib`, `tinyxml2`), fogli di stile.
 4. Pulizia e difetti di risoluzione (`T2.B`): rimozione doppioni (secondo Pyright, `daodan/core/indexers/typescript_unbound.js`), indagine **[difetto]** timeout ~6 min su 1 passaggio staccato su 4 e 154 chiamate `self.metodo()`, eventuale migrazione SQL e PL/SQL in base alla prova tecnica `T1.5`.
 5. **[deciso]** Unione statica in `assemble_graph` (`T2.C`): archi fra moduli, ingressi legati alle definizioni, adattatori di legame per tipo (HTTP, eventi, code, tabelle) con test che il codice dei legami non nomini framework, e passaggio del logo dell'anagrafica nei nodi esterni di `system_levels.view`. Il ramo `feat/link-key-shape` non esiste nel repository; oggi `daodan/core/flows.py` accoppia richiesta e rotta per metodo e schema del percorso.
-   - **[deciso]** Un nodo per ogni framework e libreria del catalogo che compone un modulo, collegato al modulo, con il `type` della voce; oggi non sono nodi (`daodan/core/visual.py`).
+   - **[deciso]** Il modello dei nodi di `docs/specs/architettura.md`, «La mappa»: specie, natura ricavata, concreto o astratto, padre, posizione, provenienza, tipo solo con una voce di catalogo. Un nodo per ogni tecnologia di ogni categoria, strumenti compresi, collegato ai moduli che compone; va riscritto il test che oggi afferma il contrario (`tests/test_codebase_map_app.py`).
+   - Dal lato del servizio: vista e filtro per natura sull'intero grafo (evidenziare ed estrarre), apertura a blocchi, misura con 80.000 nodi in archivio e 300 in vista.
+   - Parole da allineare: `nature`, le viste `physical` e `logical` dell'esploratore e il `level` dei flussi, dove «fisico» oggi vuol dire codice.
+6. **[deciso]** La mappa a livelli sullo schermo (`T2.D`), come in `docs/specs/architettura.md`, «La mappa»: aprire e richiudere sul posto, filtro per natura (evidenziare ed estrarre), blocchi «altri N»; la pagina riceve solo ciò che è aperto. Solo componenti Sigrid sulla shell Imago, con `sigrid-check` e `imago-check` puliti nel workflow Viewer.
 
 **Scelte aperte da chiudere prima di T2:**
 - **[deciso]** Modello di evidenza (`M5`): non manca nessun campo; resta la misura (punto 1).
+- **[deciso]** Natura «fisico» (`T2.C`): dove le cose girano e ogni apparecchio (server, container, database, terminali, PC, smartphone, hardware di ogni tipo); cartelle e file sono codice.
+- **[deciso]** Nodo «Tecnologie» (`T2.C`): framework, librerie e strumenti stanno sotto un nodo che si apre; i servizi restano in vista.
+- **[deciso]** Pagina della mappa: entra nel piano come `T2.D`, subito dopo i nodi (punto 6).
 
-**Cancello T2:** soglie SCIP (JVM, C e C++, CSS) registrate nei rispettivi `benchmarks/*/README.md`; passo per posizione e `engine-answers.sqlite` rimossi; modello di evidenza e vista statica verificati sul campione fissato in `T0.B.4`; `modal.yml` `run=suite` chiuso con zero fallimenti fuori dalla quarantena di `T0` (Regola 5).
+**Cancello T2:** soglie SCIP (JVM, C e C++, CSS) registrate nei rispettivi `benchmarks/*/README.md`; passo per posizione e `engine-answers.sqlite` rimossi; modello di evidenza e vista statica verificati sul campione fissato in `T0.B.4`; vista per natura calcolata dal servizio, con tempo e peso a 80.000 nodi registrati in `benchmarks/codebase-explorer/README.md` la pagina apre, richiude e filtra la mappa, e la sua misura con 80.000 nodi in archivio è registrata nello stesso README; `modal.yml` `run=suite` chiuso con zero fallimenti fuori dalla quarantena di `T0` (Regola 5).
 
 ---
 
