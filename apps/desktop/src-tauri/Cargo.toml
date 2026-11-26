@@ -15,7 +15,7 @@ custom-protocol = ["tauri/custom-protocol"]
 tauri-build = { version = "=2.7.4", features = [] }
 
 [dependencies]
-imago-shell = { git = "https://github.com/acaprino/imago", tag = "v1.0.1" }
+imago-shell = { git = "https://github.com/acaprino/imago", tag = "v1.4.1" }
 tauri = { version = "=2.12.5", features = [] }
 # The version imago-shell links. The job of the server's process.
 windows-sys = { version = "=0.61.2", features = [

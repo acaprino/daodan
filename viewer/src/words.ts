@@ -48,6 +48,7 @@ const ASKED: Record<string, string> = { minimize: 'riduci a icona', toggleMaximi
 export const SHELL_WORDS: ShellWords = {
   views: 'Viste', search: 'Cerca in questa vista', noSearch: 'Questa vista non ha una ricerca.', nextRegion: 'Area successiva',
   screenFailed: 'Questa schermata non si può mostrare', retry: 'Riprova',
+  toLight: 'Passa al tema chiaro', toDark: 'Passa al tema scuro', glass: 'Vetro',
   windowFailed: (call, cause) => `La finestra non ha risposto (${ASKED[call] ?? call}): ${cause}`,
 };
 
