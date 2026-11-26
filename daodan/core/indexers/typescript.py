@@ -74,9 +74,9 @@ from indexers import components
 VERSION = "0.6.2"
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = ("scip-typescript", ("typescript", "javascript", "vue", "svelte"),
+NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = ("scip-typescript", ("typescript", "javascript", "vue", "svelte"),
                                                  frozenset({"npm-package"}), True)
-# The container's memory: on the host the run peaked at 2,264 MB on tududi (benchmarks/inference-audit, 13 November
+# The container's memory: on the host the run peaked at 2,264 MB on a real project (benchmarks/inference-audit, 13 November
 # 2026)
 MIN_FREE = 3 * 2**30
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # git, for

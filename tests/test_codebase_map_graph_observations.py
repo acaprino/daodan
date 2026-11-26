@@ -25,7 +25,7 @@ def test_polymorphic_call_keeps_observed_and_sampled_ends_in_both_directions(tmp
     (root / "dispatch.py").write_text("def dispatch(fn): return fn()\n", encoding="utf-8")
     (root / "handlers.py").write_text("def first(): pass\ndef second(): pass\n", encoding="utf-8")
     manifest = tmp_path / "run" / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     resolver = "test-recorder@1"
     with code_graph.Snapshot(manifest) as snap:
         (ident, file, caller, line, col), = snap.connection.execute(
@@ -72,7 +72,7 @@ def test_unread_intervals_and_missing_language_lower_coverage(tmp_path):
     (root / "ui.ts").write_text("export const answer = 42;\n", encoding="utf-8")
     (root / "logic.py").write_text("answer = 42\n", encoding="utf-8")
     manifest = tmp_path / "run" / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     with code_graph.Snapshot(manifest) as snap:
         binding = edge_store.store_binding(snap.store, manifest, snap.store.metadata["parser_fingerprint"],
             {"python": {"engine": "scip-python", "state": "fresh", "coverage": {"state": "complete"}}}, {})
@@ -87,7 +87,7 @@ def test_links_reject_old_cache_and_follow_the_engine_wal_and_module_inputs(tmp_
     root.mkdir()
     (root / "app.py").write_text("answer = 42\n", encoding="utf-8")
     manifest = tmp_path / "run" / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
+    snapshot.read_project(root, manifest)
     with code_graph.Snapshot(manifest) as snap:
         binding = edge_store.store_binding(snap.store, manifest, snap.store.metadata["parser_fingerprint"], {}, {})
         edges = edge_store.default_edge_store(manifest)

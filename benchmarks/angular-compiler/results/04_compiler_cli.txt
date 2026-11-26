@@ -1,0 +1,196 @@
+=== A. ngc command ===
+exit 0 in 1736 ms; stdout ""; stderr ""
+emitted files: [
+  '/tmp/ngc-out/app/app.component.js',
+  '/tmp/ngc-out/app/app.config.js',
+  '/tmp/ngc-out/app/app.routes.js',
+  '/tmp/ngc-out/app/editor.component.js',
+  '/tmp/ngc-out/app/inline.component.js',
+  '/tmp/ngc-out/app/legacy.component.js',
+  '/tmp/ngc-out/app/legacy.module.js',
+  '/tmp/ngc-out/app/order.service.js',
+  '/tmp/ngc-out/app/orders.component.js',
+  '/tmp/ngc-out/main.js'
+]
+app.component.js: 155 lines; lines with ɵɵlistener or ctx. calls:
+    i0.ɵɵlistener("click", function AppComponent_Conditional_28_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r2); const ctx_r2 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r2.inIf()); });
+    i0.ɵɵlistener("click", function AppComponent_li_30_Template_li_click_0_listener() { const o_r5 = i0.ɵɵrestoreView(_r4).$implicit; const ctx_r2 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r2.liClick(o_r5)); });
+    i0.ɵɵlistener("click", function AppComponent_li_30_Template_button_click_1_listener() { const o_r5 = i0.ɵɵrestoreView(_r4).$implicit; const ctx_r2 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r2.remove(o_r5)); });
+    i0.ɵɵlistener("click", function AppComponent_For_32_Template_button_click_0_listener() { const o_r7 = i0.ɵɵrestoreView(_r6).$implicit; const ctx_r2 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r2.removeFor(o_r7)); });
+    i0.ɵɵlistener("click", function AppComponent_ng_template_33_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r8); const ctx_r2 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r2.inTpl()); });
+    i0.ɵɵlistener("click", function AppComponent_Template_button_click_2_listener() { return ctx.save(); });
+    i0.ɵɵlistener("click", function AppComponent_Template_button_click_4_listener() { return ctx.save(); });
+    i0.ɵɵlistener("click", function AppComponent_Template_button_click_6_listener() { return ctx.svc.cancel(); });
+    i0.ɵɵlistener("click", function AppComponent_Template_button_click_8_listener() { return !ctx.busy && ctx.save(); });
+    i0.ɵɵlistener("click", function AppComponent_Template_button_click_10_listener() { return ctx.busy ? ctx.close() : ctx.reopen(); });
+    i0.ɵɵlistener("click", function AppComponent_Template_button_click_12_listener() { i0.ɵɵrestoreView(_r1); ctx.save(); return i0.ɵɵresetView(ctx.close()); });
+    i0.ɵɵlistener("click", function AppComponent_Template_button_click_14_listener() { return ctx.open = !ctx.open; });
+defineComponent line: 63 "    static ɵcmp = /*@__PURE__*/ i0.ɵɵdefineComponent({ type: AppComponent, selectors: [[\"app-root\"]], decls: 39, vars: 4, consts: [[\"tpl\", \"\"], [3, \"click\"], [\"aria-label\", \"Pay for the order\", 3, \"click\"], [1, \"icon\"], [3, \"ngSubmit\"], [\"name\", \"q\", 3, \"ngModelChange\", \"keyup.enter\", \"ngModel\"], [\"type\", \"submit\"], [3, \"click\", 4, \"ngFor\", \"ngForOf\"], [3, \"resize\"], [3, \"saved\"]], template: function AppComponent_Template(rf, ctx) { if (rf & 1) {"
+does ngc have a routes/list option? "Options:\n      --help                Show help                                  [boolean]\n      --version             Show version number                        [boolean]\n      --i18nFile                                                        [string]\n      --i18nFormat                                                      [string]\n      --locale                                                          [string]\n      --missingTranslation      [string] [choices: \"error\", \"warning\", \"ignore\"]\n      --outFile                                                         [string]\n  -w, --watch           "
+
+=== B. programmatic: NgtscProgram ===
+compiler-cli exports: AbsoluteSourceSpan, CompletionKind, ConsoleLogger, DEFAULT_ERROR_CODE, DecoratorType, DocsExtractor, EmitFlags, EntryType, Environment, ErrorCode, ExpressionIdentifier, GLOBAL_DEFS_FOR_TERSER, GLOBAL_DEFS_FOR_TERSER_WITH_AOT, IdentifierKind, ImportManager, IndexingContext, InliningMode, InvalidFileSystem, LogLevel, LogicalFileSystem, LogicalProjectPath, MemberTags, MemberType, MetaKind, NgCompiler, NgTscPlugin, NgtscCompilerHost, NgtscProgram, NodeJSFileSystem, OptimizeFor, PerfPhase, PotentialImportKind, PotentialImportMode, PotentialTopLevelReadsVisitor, Reference, RegistryDomSchemaChecker, SOURCE, SymbolBuilder, SymbolKind, TrackedIncrementalBuildStrategy, UNKNOWN_ERROR_CODE, VERSION, absoluteFrom, absoluteFromSourceFile, angularJitApplicationTransform, basename, calcProjectFileAndBasePath, constructorParametersDownlevelTransform, createCompilerHost, createFileSystemTsReadDirectoryFn, createProgram, defaultGatherDiagnostics, dirname, exitCodeFromResult, extractHmrDependenciesFromOutput, findFirstMatchingNode, formatDiagnostics, freshCompilationTicket, generateAnalysis, getAngularDecorators, getDownlevelDecoratorsTransform, getFileSystem, getInitializerApiJitTransform, getRootDirs, getSourceFileOrError, getTemplateIdentifiers, hasExpressionIdentifier, incrementalFromCompilerTicket, isDocEntryWithSourceInfo, isExternalResource, isFatalDiagnosticError, isLocalCompilationDiagnostics, isLocalRelativePath, isNamedClassDeclaration, isRoot, isRooted, isShim, isTsDiagnostic, join, ngErrorCode, performCompilation, readConfiguration, relative, relativeFrom, resolve, resourceChangeTicket, setFileSystem, toRelativeImport, validateAndRewriteCoreSymbol
+readConfiguration: errors [] rootNames [ '/fixture/src/main.ts' ]
+program class: NgtscProgram ; methods: constructor, getTsProgram, getReuseTsProgram, getTsOptionDiagnostics, getTsSyntacticDiagnostics, getTsSemanticDiagnostics, getNgOptionDiagnostics, getNgStructuralDiagnostics, getNgSemanticDiagnostics, loadNgStructureAsync, listLazyRoutes, emitXi18n, emit, getIndexedComponents, getApiDocumentation, getEmittedSourceFiles
+loadNgStructureAsync done in 67 ms
+NgCompiler methods: constructor, perfRecorder, updateWithChangedResources, getResourceDependencies, getDiagnostics, getDiagnosticsForFile, getDiagnosticsForComponent, addMessageTextDetails, getOptionDiagnostics, getCurrentProgram, getTemplateTypeChecker, getComponentsWithTemplateFile, getComponentsWithStyleFile, getDirectiveResources, getMeta, analyzeAsync, prepareEmit, getIndexedComponents, getApiDocumentation, xi18n, emitHmrUpdateModule, ensureAnalyzed, analyzeSync, resolveCompilation, strictTemplates, getTypeCheckingConfig, getTemplateDiagnostics, getTemplateDiagnosticsForFile, getNonTemplateDiagnostics, runAdditionalChecks, makeCompilation
+TemplateTypeChecker methods: constructor, getTypeOfSymbol, getTsSymbolOfSymbol, getTsSymbolOfReference, getTemplate, getHostElement, getDirectivesOfNode, getForeignComponent, getUsedDirectives, getUsedPipes, getLatestComponentState, isTrackedTypeCheckFile, getFileRecordForTcbLocation, getFileAndShimRecordsForPath, getSourceMappingAtTcbLocation, generateAllTypeCheckBlocks, getGeneratedCodeRanges, filterShimDiagnostics, getDiagnosticsForFile, getSuggestionDiagnosticsForFile, getDiagnosticsForComponent, getSuggestionDiagnosticsForComponent, getTypeCheckBlock, getGlobalCompletions, getExpressionCompletionLocation, getLiteralCompletionLocation, invalidateClass, getExpressionTarget, makeTemplateDiagnostic, getOrCreateCompletionEngine, maybeAdoptPriorResults, ensureAllShimsForAllFiles, ensureAllShimsForOneFile, ensureShimForComponent, newContext, clearAllShimDataUsingInlines, updateFromContext, getFileData, getSymbolOfNode, getOrCreateSymbolBuilder, getGlobalTsContext, getRefKey, getPotentialTemplateDirectives, getPotentialPipes, getDirectiveMetadata, getNgModuleMetadata, getPipeMetadata, getTemplateDirectiveInScope, getDirectiveScopeData, getElementsInFileScope, getElementsInGlobal, getDirectiveDeclsForNgModule, getPotentialElementTags, getPotentialDomBindings, getPotentialDomEvents, getPrimaryAngularDecorator, getOwningNgModule, emit, getPotentialImportsFor, getComponentScope, getScopeData, scopeDataOfDirectiveMeta, scopeDataOfPipeMeta
+compiler.getDiagnostics(): 0 diagnostics []
+decorated classes: EditorComponent (src/app/editor.component.ts:2:0), AppComponent (src/app/app.component.ts:7:0), InlineComponent (src/app/inline.component.ts:2:0), InlineEscapedComponent (src/app/inline.component.ts:21:0), InlineDoubleQuotedComponent (src/app/inline.component.ts:30:0), OrdersComponent (src/app/orders.component.ts:2:0), LegacyComponent (src/app/legacy.component.ts:2:0), LegacyModule (src/app/legacy.module.ts:5:0)
+
+=== C. which class owns a template file: getComponentsWithTemplateFile ===
+/fixture/src/app/app.component.html -> NgCompiler.getComponentsWithTemplateFile: [ 'AppComponent (src/app/app.component.ts:7:0)' ]
+/fixture/src/app/app.component.html threw ttc.getComponentsWithTemplateFile is not a function or its return value is not iterable
+/fixture/src/app/legacy.component.html -> NgCompiler.getComponentsWithTemplateFile: [ 'LegacyComponent (src/app/legacy.component.ts:2:0)' ]
+/fixture/src/app/legacy.component.html threw ttc.getComponentsWithTemplateFile is not a function or its return value is not iterable
+/fixture/src/app/inline.component.ts -> NgCompiler.getComponentsWithTemplateFile: []
+/fixture/src/app/inline.component.ts threw ttc.getComponentsWithTemplateFile is not a function or its return value is not iterable
+EditorComponent: getResourceDependencies -> []
+AppComponent: getResourceDependencies -> []
+InlineComponent: getResourceDependencies -> []
+InlineEscapedComponent: getResourceDependencies -> []
+InlineDoubleQuotedComponent: getResourceDependencies -> []
+OrdersComponent: getResourceDependencies -> []
+LegacyComponent: getResourceDependencies -> []
+LegacyModule: getResourceDependencies -> []
+
+=== D. getTemplate(component): the nodes Angular itself holds ===
+EditorComponent: getTemplate -> 1 top-level nodes, 1 bound events
+   "saved.emit('done')" sourceSpan in src/app/editor.component.ts 4:21@112..4:49@140 covers "(click)=\"saved.emit('done')\""
+AppComponent: getTemplate -> 36 top-level nodes, 21 bound events
+   "save()" sourceSpan in src/app/app.component.html 1:8@24..1:24@40 covers "(click)=\"save()\""
+   "this.save()" sourceSpan in src/app/app.component.html 2:8@69..2:29@90 covers "(click)=\"this.save()\""
+   "svc.cancel()" sourceSpan in src/app/app.component.html 3:8@123..3:30@145 covers "(click)=\"svc.cancel()\""
+   "!busy && save()" sourceSpan in src/app/app.component.html 4:8@176..4:33@201 covers "(click)=\"!busy && save()\""
+   "busy ? close() : reopen()" sourceSpan in src/app/app.component.html 5:8@232..5:43@267 covers "(click)=\"busy ? close() : reopen()\""
+   "save(); close()" sourceSpan in src/app/app.component.html 6:8@292..6:33@317 covers "(click)=\"save(); close()\""
+   "open = !open" sourceSpan in src/app/app.component.html 7:8@350..7:30@372 covers "(click)=\"open = !open\""
+   "router.navigate(['/orders'])" sourceSpan in src/app/app.component.html 8:8@395..8:46@433 covers "(click)=\"router.navigate(['/orders'])\""
+   "pay()" sourceSpan in src/app/app.component.html 9:8@464..9:23@479 covers "(click)=\"pay()\""
+   "withIcon()" sourceSpan in src/app/app.component.html 10:8@540..10:28@560 covers "(click)=\"withIcon()\""
+   "submit()" sourceSpan in src/app/app.component.html 11:6@615..11:27@636 covers "(ngSubmit)=\"submit()\""
+   "q" sourceSpan in src/app/app.component.html 12:18@656..12:33@671 covers "[(ngModel)]=\"q\""
+   "search()" sourceSpan in src/app/app.component.html 12:34@672..12:58@696 covers "(keyup.enter)=\"search()\""
+   "inIf()" sourceSpan in src/app/app.component.html 16:10@770..16:26@786 covers "(click)=\"inIf()\""
+   "liClick(o)" sourceSpan in src/app/app.component.html 19:31@844..19:51@864 covers "(click)=\"liClick(o)\""
+   "liClick(o)" sourceSpan in src/app/app.component.html 19:31@844..19:51@864 covers "(click)=\"liClick(o)\""
+   "remove(o)" sourceSpan in src/app/app.component.html 20:12@878..20:31@897 covers "(click)=\"remove(o)\""
+   "removeFor(o)" sourceSpan in src/app/app.component.html 24:10@975..24:32@997 covers "(click)=\"removeFor(o)\""
+   "inTpl()" sourceSpan in src/app/app.component.html 27:10@1054..27:27@1071 covers "(click)=\"inTpl()\""
+   "onResize()" sourceSpan in src/app/app.component.html 29:5@1113..29:33@1141 covers "(window:resize)=\"onResize()\""
+   "onSaved($event)" sourceSpan in src/app/app.component.html 30:12@1167..30:37@1192 covers "(saved)=\"onSaved($event)\""
+InlineComponent: getTemplate -> 3 top-level nodes, 2 bound events
+   "go()" sourceSpan in src/app/inline.component.ts 8:14@248..8:28@262 covers "(click)=\"go()\""
+   "this.goThis()" sourceSpan in src/app/inline.component.ts 9:14@296..9:37@319 covers "(click)=\"this.goThis()\""
+InlineEscapedComponent: getTemplate -> 4 top-level nodes, 2 bound events
+   "esc()" sourceSpan in src/app/inline.component.ts 23:27@542..23:42@557 covers "(click)=\"esc()\""
+   "esc2()" sourceSpan in src/app/inline.component.ts 23:65@580..23:81@596 covers "(click)=\"esc2()\""
+InlineDoubleQuotedComponent: getTemplate -> 1 top-level nodes, 1 bound events
+   "dq()" sourceSpan in src/app/inline.component.ts 32:21@746..32:37@762 covers "(click)=\\\"dq()\\\""
+OrdersComponent: getTemplate -> 1 top-level nodes, 0 bound events
+LegacyComponent: getTemplate -> 2 top-level nodes, 1 bound events
+   "legacySave()" sourceSpan in src/app/legacy.component.html 0:8@8..0:30@30 covers "(click)=\"legacySave()\""
+LegacyModule: getTemplate -> null
+
+=== E. getSymbolOfNode on handler expressions: does it give the method declaration? ===
+EditorComponent "saved.emit('done')" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+EditorComponent "saved.emit('done')" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+EditorComponent "saved.emit('done')" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "this.save()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "this.save()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "this.save()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "svc.cancel()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "svc.cancel()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "svc.cancel()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "!busy && save()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "!busy && save()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "!busy && save()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "busy ? close() : reopen()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "busy ? close() : reopen()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "busy ? close() : reopen()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "busy ? close() : reopen()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "busy ? close() : reopen()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "busy ? close() : reopen()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save(); close()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save(); close()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save(); close()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save(); close()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save(); close()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "save(); close()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "router.navigate(['/orders'])" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "router.navigate(['/orders'])" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "router.navigate(['/orders'])" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "pay()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "pay()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "pay()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "withIcon()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "withIcon()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "withIcon()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "submit()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "submit()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "submit()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "search()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "search()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "search()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "inIf()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "inIf()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "inIf()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "liClick(o)" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "liClick(o)" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "liClick(o)" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "liClick(o)" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "liClick(o)" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "liClick(o)" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "remove(o)" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "remove(o)" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "remove(o)" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "removeFor(o)" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "removeFor(o)" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "removeFor(o)" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "inTpl()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "inTpl()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "inTpl()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "onResize()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "onResize()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "onResize()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "onSaved($event)" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "onSaved($event)" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+AppComponent "onSaved($event)" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineComponent "go()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineComponent "go()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineComponent "go()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineComponent "this.goThis()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineComponent "this.goThis()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineComponent "this.goThis()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineEscapedComponent "esc()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineEscapedComponent "esc()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineEscapedComponent "esc()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineEscapedComponent "esc2()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineEscapedComponent "esc2()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineEscapedComponent "esc2()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineDoubleQuotedComponent "dq()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineDoubleQuotedComponent "dq()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+InlineDoubleQuotedComponent "dq()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+LegacyComponent "legacySave()" getSymbolOfNode(call) -> kind=8 tsSymbol=undefined decl=[] type=-
+LegacyComponent "legacySave()" getSymbolOfNode(call.receiver) -> kind=8 tsSymbol=undefined decl=[] type=-
+LegacyComponent "legacySave()" getSymbolOfNode(handler(ASTWithSource)) -> kind=8 tsSymbol=undefined decl=[] type=-
+
+=== F. routes ===
+program.listLazyRoutes() -> []
+compiler-cli/private entries: [
+  'hybrid_analysis.d.ts',
+  'hybrid_preprocessor.d.ts',
+  'localize.d.ts',
+  'migrations.d.ts',
+  'testing.d.ts',
+  'tooling.d.ts'
+]
+
+=== G. program.getIndexedComponents(): template identifiers per component ===
+entries: 7
+getIndexedComponents threw TypeError: Cannot read properties of undefined (reading 'fileName') |     at file:///fixture/probe/04_compiler_cli.mjs:130:110
+
+--- exit 0

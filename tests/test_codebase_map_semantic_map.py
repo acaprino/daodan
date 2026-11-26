@@ -11,6 +11,7 @@ from unittest import mock
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
+import file_inventory
 import semantic_map
 import semantic_store
 import snapshot
@@ -37,9 +38,9 @@ class SemanticMapTests(unittest.TestCase):
     def refresh(self):
         if self.manifest.exists():
             with open_snapshot(self.manifest) as previous:
-                snapshot.write_snapshot(self.root, self.manifest, previous=previous)
+                snapshot.read_project(self.root, self.manifest, previous=previous)
         else:
-            snapshot.write_snapshot(self.root, self.manifest)
+            snapshot.read_project(self.root, self.manifest)
 
     def seed(self, *cards):
         with open_snapshot(self.manifest) as store:
@@ -209,7 +210,8 @@ class SemanticMapTests(unittest.TestCase):
 
     def test_snapshot_excluded_oversized_file_does_not_create_false_inventory_drift(self):
         self.write("too_large.py", "#" + "x" * 1024)
-        with mock.patch.object(snapshot, "MAX_FILE_BYTES", 512):
+        with mock.patch.object(snapshot, "MAX_FILE_BYTES", 512), \
+                mock.patch.object(file_inventory, "MAX_FILE_BYTES", 512):
             self.refresh()
             report = self.render()
         self.assertNotIn("too_large.py", report["query"]["selected_files"])

@@ -1,0 +1,179 @@
+@astrojs/compiler-rs 0.5.3
+
+=== what parse says for each file (diagnostics, or a throw)
+LF   src/components/Card.astro: 0 diagnostics
+LF   src/components/Counter.astro: 0 diagnostics
+LF   src/layouts/Layout.astro: 0 diagnostics
+LF   src/pages/about.astro: 0 diagnostics
+LF   src/pages/blog/[slug].astro: 0 diagnostics
+LF   src/pages/broken.astro: 2 diagnostics [{"severity":"error","text":"Unterminated regular expression","line":9,"column":1},{"severity":"error","text":"Unexpected token","line":9,"column":1}]
+LF   src/pages/calls.astro: 0 diagnostics
+LF   src/pages/edge.astro: 0 diagnostics
+LF   src/pages/index.astro: 0 diagnostics
+LF   src/pages/nofront.astro: 0 diagnostics
+LF   src/pages/svg.astro: 0 diagnostics
+LF   src/pages/tabs.astro: 0 diagnostics
+LF   src/pages/unicode.astro: 0 diagnostics
+CRLF src/components/Card.astro: 0 diagnostics
+CRLF src/components/Counter.astro: 0 diagnostics
+CRLF src/layouts/Layout.astro: 0 diagnostics
+CRLF src/pages/about.astro: 0 diagnostics
+CRLF src/pages/blog/[slug].astro: 0 diagnostics
+CRLF src/pages/broken.astro: 2 diagnostics [{"severity":"error","text":"Unterminated regular expression","line":9,"column":1},{"severity":"error","text":"Unexpected token","line":9,"column":1}]
+CRLF src/pages/calls.astro: 0 diagnostics
+CRLF src/pages/edge.astro: 0 diagnostics
+CRLF src/pages/index.astro: 0 diagnostics
+CRLF src/pages/nofront.astro: 0 diagnostics
+CRLF src/pages/svg.astro: 0 diagnostics
+CRLF src/pages/tabs.astro: 0 diagnostics
+CRLF src/pages/unicode.astro: 0 diagnostics
+
+=== per kind of node: is the text between start and end what the node should be
+CRLF AstroFrontmatter: n=13; start..end right as UTF-16 units=11; empty (no frontmatter)=2
+CRLF JSXAttribute: n=83; start..end right as UTF-16 units=83
+CRLF JSXClosingElement: n=73; start..end right as UTF-16 units=73
+CRLF JSXElement: n=83; start..end right as UTF-16 units=82; start..end NOT right as UTF-16 units=1; right in neither=1
+CRLF JSXExpressionContainer: n=20; start..end right as UTF-16 units=20
+CRLF JSXOpeningElement: n=83; start..end right as UTF-16 units=82; start..end NOT right as UTF-16 units=1; right in neither=1
+CRLF JSXSpreadAttribute: n=2; start..end right as UTF-16 units=2
+CRLF JSXText: n=133; start..end right as UTF-16 units=133
+CRLF Literal: n=64; start..end right as UTF-16 units=62; start..end NOT right as UTF-16 units=2; right in neither=2
+LF   AstroFrontmatter: n=13; start..end right as UTF-16 units=11; empty (no frontmatter)=2
+LF   JSXAttribute: n=83; start..end right as UTF-16 units=83
+LF   JSXClosingElement: n=73; start..end right as UTF-16 units=73
+LF   JSXElement: n=83; start..end right as UTF-16 units=82; start..end NOT right as UTF-16 units=1; right in neither=1
+LF   JSXExpressionContainer: n=20; start..end right as UTF-16 units=20
+LF   JSXOpeningElement: n=83; start..end right as UTF-16 units=82; start..end NOT right as UTF-16 units=1; right in neither=1
+LF   JSXSpreadAttribute: n=2; start..end right as UTF-16 units=2
+LF   JSXText: n=133; start..end right as UTF-16 units=133
+LF   Literal: n=64; start..end right as UTF-16 units=62; start..end NOT right as UTF-16 units=2; right in neither=2
+
+=== nodes right in neither unit (8)
+LF   JSXElement this 0..0 in src/pages/broken.astro: ""
+LF   JSXOpeningElement this 0..0 in src/pages/broken.astro: ""
+LF   Literal  353..358 in src/pages/index.astro: "plain"
+LF   Literal  597..601 in src/pages/index.astro: "go()"
+CRLF JSXElement this 0..0 in src/pages/broken.astro: ""
+CRLF JSXOpeningElement this 0..0 in src/pages/broken.astro: ""
+CRLF Literal  365..370 in src/pages/index.astro: "plain"
+CRLF Literal  613..617 in src/pages/index.astro: "go()"
+
+=== the events of the fixture, one by one: where the text writes the attribute and what the compiler says
+exact  LF   src/components/Card.astro onclick="openCard(this)": attribute 128..152, name at 128; text: attribute at 128 (6:29), name at 128
+exact  LF   src/components/Counter.astro onclick="increment()": attribute 69..90, name at 69; text: attribute at 69 (4:25), name at 69
+exact  LF   src/pages/about.astro onclick="goHome()": attribute 106..124, name at 106; text: attribute at 106 (6:15), name at 106
+exact  LF   src/pages/blog/[slug].astro onclick="share()": attribute 265..282, name at 265; text: attribute at 265 (11:13), name at 265
+MISSING LF   src/pages/broken.astro onclick="beforeBreak()"
+MISSING LF   src/pages/broken.astro onclick="afterBreak()"
+MISSING LF   src/pages/broken.astro onclick="inBroken()"
+exact  LF   src/pages/calls.astro onclick="cart.add(1)": attribute 8..29, name at 8; text: attribute at 8 (1:9), name at 8
+exact  LF   src/pages/calls.astro onclick="window.open('/x'); save()": attribute 59..94, name at 59; text: attribute at 59 (2:9), name at 59
+exact  LF   src/pages/calls.astro onclick="items[0]()": attribute 129..149, name at 129; text: attribute at 129 (3:9), name at 129
+exact  LF   src/pages/calls.astro onclick="factory()()": attribute 183..204, name at 183; text: attribute at 183 (4:9), name at 183
+exact  LF   src/pages/calls.astro onclick="(0, run)()": attribute 237..257, name at 237; text: attribute at 237 (5:9), name at 237
+exact  LF   src/pages/calls.astro onclick="new Thing()": attribute 296..317, name at 296; text: attribute at 296 (6:9), name at 296
+exact  LF   src/pages/calls.astro one="two()": attribute 344..355, name at 344; text: attribute at 344 (7:6), name at 344
+exact  LF   src/pages/calls.astro onfoo="bar()": attribute 378..391, name at 378; text: attribute at 378 (8:4), name at 378
+exact  LF   src/pages/edge.astro onclick="afterScripts()": attribute 391..415, name at 391; text: attribute at 391 (17:11), name at 391
+exact  LF   src/pages/edge.astro onclick="afterString()": attribute 486..509, name at 486; text: attribute at 486 (19:11), name at 486
+exact  LF   src/pages/edge.astro onclick="afterMultiline()": attribute 582..608, name at 582; text: attribute at 582 (23:5), name at 582
+exact  LF   src/pages/edge.astro onclick="fromFrontmatter()": attribute 627..654, name at 627; text: attribute at 627 (24:11), name at 627
+exact  LF   src/pages/edge.astro onclick="fromProcessedScript()": attribute 686..717, name at 686; text: attribute at 686 (25:11), name at 686
+exact  LF   src/pages/edge.astro onclick="fromModuleScript()": attribute 747..775, name at 747; text: attribute at 747 (26:11), name at 747
+exact  LF   src/pages/edge.astro onclick="fromLayout()": attribute 802..824, name at 802; text: attribute at 802 (27:11), name at 802
+exact  LF   src/pages/index.astro onclick="save()": attribute 392..408, name at 392; text: attribute at 392 (14:21), name at 392
+exact  LF   src/pages/index.astro onclick="this.disabled = true; confirmOrder(: attribute 433..484, name at 433; text: attribute at 433 (15:11), name at 433
+exact  LF   src/pages/index.astro onclick='cancel("now")': attribute 520..543, name at 520; text: attribute at 520 (16:21), name at 520
+exact  LF   src/pages/index.astro onclick=go(): attribute 589..601, name at 589; text: attribute at 589 (17:11), name at 589
+exact  LF   src/pages/index.astro onclick="multiLine()": attribute 646..667, name at 646; text: attribute at 646 (20:5), name at 646
+exact  LF   src/pages/index.astro onsubmit="return validate(this)": attribute 694..726, name at 694; text: attribute at 694 (22:9), name at 694
+exact  LF   src/pages/index.astro oninput="update(this.value)": attribute 734..762, name at 734; text: attribute at 734 (22:49), name at 734
+exact  LF   src/pages/index.astro onclick={`pick('${item}')`}: attribute 817..844, name at 817; text: attribute at 817 (25:11), name at 817
+exact  LF   src/pages/index.astro onclick="track('x')": attribute 909..929, name at 909; text: attribute at 909 (28:37), name at 909
+exact  LF   src/pages/index.astro onclick="cardClick()": attribute 961..982, name at 961; text: attribute at 961 (29:22), name at 961
+exact  LF   src/pages/index.astro {onclick}: attribute 1082..1091, name at 1083; text: attribute at 1082 (32:11), name at 1083
+exact  LF   src/pages/index.astro onclick="widget()": attribute 1124..1142, name at 1124; text: attribute at 1124 (33:14), name at 1124
+exact  LF   src/pages/index.astro onclick="svgClick()": attribute 1163..1183, name at 1163; text: attribute at 1163 (34:8), name at 1163
+exact  LF   src/pages/nofront.astro onclick="noFrontmatter()": attribute 23..48, name at 23; text: attribute at 23 (2:11), name at 23
+exact  LF   src/pages/svg.astro onclick="foreignClick()": attribute 81..105, name at 81; text: attribute at 81 (5:18), name at 81
+exact  LF   src/pages/svg.astro onend="smilEnd()": attribute 155..172, name at 155; text: attribute at 155 (6:12), name at 155
+exact  LF   src/pages/svg.astro onclick="pathClick()": attribute 206..227, name at 206; text: attribute at 206 (7:13), name at 206
+exact  LF   src/pages/tabs.astro onclick="tabbed()": attribute 37..55, name at 37; text: attribute at 37 (5:10), name at 37
+exact  LF   src/pages/tabs.astro onclick="deep()": attribute 109..125, name at 109; text: attribute at 109 (8:10), name at 109
+exact  LF   src/pages/unicode.astro onclick="afterText()": attribute 55..76, name at 55; text: attribute at 55 (4:28), name at 55
+exact  LF   src/pages/unicode.astro onclick="afterUnicodeAttr()": attribute 115..143, name at 115; text: attribute at 115 (6:18), name at 115
+exact  CRLF src/components/Card.astro onclick="openCard(this)": attribute 133..157, name at 133; text: attribute at 133 (6:29), name at 133
+exact  CRLF src/components/Counter.astro onclick="increment()": attribute 72..93, name at 72; text: attribute at 72 (4:25), name at 72
+exact  CRLF src/pages/about.astro onclick="goHome()": attribute 111..129, name at 111; text: attribute at 111 (6:15), name at 111
+exact  CRLF src/pages/blog/[slug].astro onclick="share()": attribute 275..292, name at 275; text: attribute at 275 (11:13), name at 275
+MISSING CRLF src/pages/broken.astro onclick="beforeBreak()"
+MISSING CRLF src/pages/broken.astro onclick="afterBreak()"
+MISSING CRLF src/pages/broken.astro onclick="inBroken()"
+exact  CRLF src/pages/calls.astro onclick="cart.add(1)": attribute 8..29, name at 8; text: attribute at 8 (1:9), name at 8
+exact  CRLF src/pages/calls.astro onclick="window.open('/x'); save()": attribute 60..95, name at 60; text: attribute at 60 (2:9), name at 60
+exact  CRLF src/pages/calls.astro onclick="items[0]()": attribute 131..151, name at 131; text: attribute at 131 (3:9), name at 131
+exact  CRLF src/pages/calls.astro onclick="factory()()": attribute 186..207, name at 186; text: attribute at 186 (4:9), name at 186
+exact  CRLF src/pages/calls.astro onclick="(0, run)()": attribute 241..261, name at 241; text: attribute at 241 (5:9), name at 241
+exact  CRLF src/pages/calls.astro onclick="new Thing()": attribute 301..322, name at 301; text: attribute at 301 (6:9), name at 301
+exact  CRLF src/pages/calls.astro one="two()": attribute 350..361, name at 350; text: attribute at 350 (7:6), name at 350
+exact  CRLF src/pages/calls.astro onfoo="bar()": attribute 385..398, name at 385; text: attribute at 385 (8:4), name at 385
+exact  CRLF src/pages/edge.astro onclick="afterScripts()": attribute 407..431, name at 407; text: attribute at 407 (17:11), name at 407
+exact  CRLF src/pages/edge.astro onclick="afterString()": attribute 504..527, name at 504; text: attribute at 504 (19:11), name at 504
+exact  CRLF src/pages/edge.astro onclick="afterMultiline()": attribute 604..630, name at 604; text: attribute at 604 (23:5), name at 604
+exact  CRLF src/pages/edge.astro onclick="fromFrontmatter()": attribute 650..677, name at 650; text: attribute at 650 (24:11), name at 650
+exact  CRLF src/pages/edge.astro onclick="fromProcessedScript()": attribute 710..741, name at 710; text: attribute at 710 (25:11), name at 710
+exact  CRLF src/pages/edge.astro onclick="fromModuleScript()": attribute 772..800, name at 772; text: attribute at 772 (26:11), name at 772
+exact  CRLF src/pages/edge.astro onclick="fromLayout()": attribute 828..850, name at 828; text: attribute at 828 (27:11), name at 828
+exact  CRLF src/pages/index.astro onclick="save()": attribute 405..421, name at 405; text: attribute at 405 (14:21), name at 405
+exact  CRLF src/pages/index.astro onclick="this.disabled = true; confirmOrder(: attribute 447..498, name at 447; text: attribute at 447 (15:11), name at 447
+exact  CRLF src/pages/index.astro onclick='cancel("now")': attribute 535..558, name at 535; text: attribute at 535 (16:21), name at 535
+exact  CRLF src/pages/index.astro onclick=go(): attribute 605..617, name at 605; text: attribute at 605 (17:11), name at 605
+exact  CRLF src/pages/index.astro onclick="multiLine()": attribute 665..686, name at 665; text: attribute at 665 (20:5), name at 665
+exact  CRLF src/pages/index.astro onsubmit="return validate(this)": attribute 715..747, name at 715; text: attribute at 715 (22:9), name at 715
+exact  CRLF src/pages/index.astro oninput="update(this.value)": attribute 755..783, name at 755; text: attribute at 755 (22:49), name at 755
+exact  CRLF src/pages/index.astro onclick={`pick('${item}')`}: attribute 841..868, name at 841; text: attribute at 841 (25:11), name at 841
+exact  CRLF src/pages/index.astro onclick="track('x')": attribute 936..956, name at 936; text: attribute at 936 (28:37), name at 936
+exact  CRLF src/pages/index.astro onclick="cardClick()": attribute 989..1010, name at 989; text: attribute at 989 (29:22), name at 989
+exact  CRLF src/pages/index.astro {onclick}: attribute 1113..1122, name at 1114; text: attribute at 1113 (32:11), name at 1114
+exact  CRLF src/pages/index.astro onclick="widget()": attribute 1156..1174, name at 1156; text: attribute at 1156 (33:14), name at 1156
+exact  CRLF src/pages/index.astro onclick="svgClick()": attribute 1196..1216, name at 1196; text: attribute at 1196 (34:8), name at 1196
+exact  CRLF src/pages/nofront.astro onclick="noFrontmatter()": attribute 24..49, name at 24; text: attribute at 24 (2:11), name at 24
+exact  CRLF src/pages/svg.astro onclick="foreignClick()": attribute 85..109, name at 85; text: attribute at 85 (5:18), name at 85
+exact  CRLF src/pages/svg.astro onend="smilEnd()": attribute 160..177, name at 160; text: attribute at 160 (6:12), name at 160
+exact  CRLF src/pages/svg.astro onclick="pathClick()": attribute 212..233, name at 212; text: attribute at 212 (7:13), name at 212
+exact  CRLF src/pages/tabs.astro onclick="tabbed()": attribute 41..59, name at 41; text: attribute at 41 (5:10), name at 41
+exact  CRLF src/pages/tabs.astro onclick="deep()": attribute 116..132, name at 116; text: attribute at 116 (8:10), name at 116
+exact  CRLF src/pages/unicode.astro onclick="afterText()": attribute 58..79, name at 58; text: attribute at 58 (4:28), name at 58
+exact  CRLF src/pages/unicode.astro onclick="afterUnicodeAttr()": attribute 120..148, name at 120; text: attribute at 120 (6:18), name at 120
+
+events: 86 listed (LF and CRLF) in the files that parse, found 80, name start exact 80
+
+=== attributes named on*: in the tree against listed in the fixture
+same  LF   src/components/Card.astro: tree 1, listed 1
+same  LF   src/components/Counter.astro: tree 1, listed 1
+same  LF   src/layouts/Layout.astro: tree 0, listed 0
+same  LF   src/pages/about.astro: tree 1, listed 1
+same  LF   src/pages/blog/[slug].astro: tree 1, listed 1
+DIFF  LF   src/pages/broken.astro: tree 0, listed 3 -> 
+same  LF   src/pages/calls.astro: tree 8, listed 8
+same  LF   src/pages/edge.astro: tree 7, listed 7
+same  LF   src/pages/index.astro: tree 13, listed 13
+same  LF   src/pages/nofront.astro: tree 1, listed 1
+same  LF   src/pages/svg.astro: tree 3, listed 3
+same  LF   src/pages/tabs.astro: tree 2, listed 2
+same  LF   src/pages/unicode.astro: tree 2, listed 2
+same  CRLF src/components/Card.astro: tree 1, listed 1
+same  CRLF src/components/Counter.astro: tree 1, listed 1
+same  CRLF src/layouts/Layout.astro: tree 0, listed 0
+same  CRLF src/pages/about.astro: tree 1, listed 1
+same  CRLF src/pages/blog/[slug].astro: tree 1, listed 1
+DIFF  CRLF src/pages/broken.astro: tree 0, listed 3 -> 
+same  CRLF src/pages/calls.astro: tree 8, listed 8
+same  CRLF src/pages/edge.astro: tree 7, listed 7
+same  CRLF src/pages/index.astro: tree 13, listed 13
+same  CRLF src/pages/nofront.astro: tree 1, listed 1
+same  CRLF src/pages/svg.astro: tree 3, listed 3
+same  CRLF src/pages/tabs.astro: tree 2, listed 2
+same  CRLF src/pages/unicode.astro: tree 2, listed 2
+
+--- exit 0

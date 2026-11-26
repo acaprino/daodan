@@ -86,7 +86,7 @@ class CardStoreTests(unittest.TestCase):
         project = self.root / "p"
         write_project(project)
         manifest = self.root / "manifest.sqlite"
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         garbage = self.root / "garbage.sqlite"
         garbage.write_bytes(b"this is not a database at all" * 20)
         before = (artifact_digest(manifest), artifact_digest(garbage))
@@ -135,11 +135,11 @@ class CardLifecycleTests(unittest.TestCase):
         write_project(self.root)
         self.out = self.root / ".daodan/map" / "manifest.sqlite"
         self.cards = self.root / ".daodan/map" / "cards.sqlite"
-        snapshot.write_snapshot(self.root, self.out)
+        snapshot.read_project(self.root, self.out)
 
     def refresh(self):
         with open_snapshot(self.out) as previous:
-            snapshot.write_snapshot(self.root, self.out, previous=previous)
+            snapshot.read_project(self.root, self.out, previous=previous)
 
     def write(self, cards):
         with open_snapshot(self.out) as store:
@@ -254,7 +254,7 @@ class CardLifecycleTests(unittest.TestCase):
         other = self.root / ".daodan/map" / "runs" / "other" / "snapshot" / "manifest.sqlite"
         other.parent.mkdir(parents=True)
         (other.parent.parent / "state.json").write_text("{}", encoding="utf-8")
-        snapshot.write_snapshot(self.root, other)
+        snapshot.read_project(self.root, other)
 
         with open_snapshot(other) as store:
             states = {s["symbol_id"]: s["freshness"]
@@ -267,7 +267,7 @@ class CardLifecycleTests(unittest.TestCase):
         second = self.root / "second"
         write_project(second)
         manifest = second / "manifest.sqlite"
-        snapshot.write_snapshot(second, manifest)
+        snapshot.read_project(second, manifest)
 
         with open_snapshot(manifest) as store:
             result = semantic_store.query_meta_code(store, cards_path=self.cards)
@@ -328,7 +328,7 @@ class CardEntryPointTests(unittest.TestCase):
 
     def test_the_command_line_writes_then_reads_cards_beside_the_snapshot(self):
         manifest = self.project / "loose" / "manifest.sqlite"
-        snapshot.write_snapshot(self.project / "src", manifest)
+        snapshot.read_project(self.project / "src", manifest)
         payload = self.project / "cards.json"
         payload.write_text(json.dumps({"cards": [
             {"file": "pkg/b.py", "symbol": "helper", "purpose": "adds one", "invariants": ["pure"]}]}),

@@ -2,24 +2,21 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Technologies, frameworks, tools and external services of a snapshot, recognized from Step 1 facts and the registry.
+"""The registry of technologies, frameworks, tools and external services, and what the stack step reads of Step 1's facts.
 
-Consumes the pre-map's `packages`, `services`, `docker_builds` and `excluded` without re-parsing manifests,
-requirements files, Dockerfiles or Compose files; falls back to `premap.module_graph.package_facts` only when a caller
-passes a partial `facts` stub in tests. Every sign respects `excluded`.
-
-A checker reads one kind of the registry's signs and names no technology: `checker(entries, project)` answers
-`{"signs": [(entry id, value, path, line)], "gaps": [...]}`. `run` runs `CHECKERS` in order; each sign found carries
-its checker (`sign`) and the checker's strength: `declared`, a package, image, file or explicit source reference, or
-`mentioned`, a token in a line of text. A checker that fails is a gap with its cause, and the others still run.
-An exact host in a source literal or configuration value is a mention.
+`load` the registry and `mark_file` the SVG of an entry, `entry_category` its category; `step1_packages` the declared
+packages and images of the pre-map's `packages`, `services` and `docker_builds` (or `premap.module_graph.package_facts`
+only when a caller passes a partial `facts` stub in tests), `package_key` the identity a package is compared by. What a
+project shows of the registry's technologies is recognized by `stack_recognition`.
 """
 from __future__ import annotations
 
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import sys
+import threading
 from pathlib import Path, PurePosixPath
 from typing import NamedTuple
 
@@ -27,16 +24,12 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import flows  # noqa: E402
 import premap  # noqa: E402
-from registry_hosts import check_hosts  # noqa: E402
-from stack_source import check_sources  # noqa: E402
 from premap.module_graph import declared_image, package_facts  # noqa: E402
 from mark_svg import MAX_MARK, clean_svg, safe_member  # noqa: E402
-from snapshot_store import open_snapshot  # noqa: E402
+from module_inventory import _Inventory  # noqa: E402
 
 REGISTRY = SCRIPT_DIR.parent / "data" / "service-registry.json"
-OWN = ('"daodan/service-registry/', '"daodan/registry-additions/')
 
 
 def load(path: Path | None = None) -> dict:
@@ -76,6 +69,39 @@ def mark_file(entry: dict, data: Path | None = None) -> Path | None:
         return out
     except Exception:  # noqa: BLE001 - whatever the download, the archive or the file does, the answer is no mark
         return None
+
+
+def marked() -> set[str]:
+    """The ids of the entries with a mark (`mark_file`): what a page may ask the image of."""
+    return {entry["id"] for entry in load()["entries"] if entry.get("mark") or entry.get("mark_source")}
+
+
+class Marks:
+    """The marks of the registry's entries, for the servers of the pages. An id is only looked up among the entries,
+    so none is a path; without a registry no id is known."""
+
+    def __init__(self):
+        self.entries = {entry["id"]: entry for entry in load()["entries"]} if REGISTRY.is_file() else {}
+        self._fetched, self._fetch = {}, ThreadPoolExecutor(max_workers=1)  # the packages' marks, one at a time
+        self._lock = threading.Lock()
+
+    def file(self, ident: str | None) -> Path | None:
+        """The mark of the entry `ident` (`mark_file`), or None: the page draws the icon of the node's type. A mark
+        taken out of its owner's package on first use is fetched off the request: until it is there, and after it
+        failed, the answer is None, so that no page or graph waits on a download."""
+        entry = self.entries.get(ident)
+        if entry is None:
+            return None
+        if entry.get("mark") or not entry.get("mark_source"):
+            return mark_file(entry)
+        with self._lock:
+            if ident not in self._fetched:
+                self._fetched[ident] = self._fetch.submit(mark_file, entry)
+            fetched = self._fetched[ident]
+        return fetched.result() if fetched.done() else None
+
+    def close(self) -> None:
+        self._fetch.shutdown(wait=False, cancel_futures=True)
 
 
 def _is_excluded(rel: str | None, left_out: tuple[str, ...]) -> bool:
@@ -149,131 +175,9 @@ def package_key(ecosystem: str, name: str) -> str:
     return premap.normalize_pypi_name(name) if ecosystem == "pypi" else name.lower()
 
 
-def check_packages(entries: list[dict], project: Project) -> dict:
-    """A declared package or image, by its name in its ecosystem, a Maven artifact without its group, a Go package
-    under a module or an entry's pattern. One no entry knows, named like an entry with no sign in its ecosystem, is a
-    gap: the registry lacks that sign."""
-    by_package, patterns, named = {}, [], {}
-    for entry in entries:
-        signs = entry.get("signs") or {}
-        for ecosystem, values in (signs.get("packages") or {}).items():
-            for value in values:
-                by_package.setdefault((ecosystem, package_key(ecosystem, value)), []).append(entry["id"])
-        for ecosystem, values in (signs.get("patterns") or {}).items():
-            for value in values:
-                try:
-                    # A bare Docker selector names a Hub repository or publisher; explicit prefix rules stay anchored.
-                    if ecosystem == "docker" and not value.startswith("^"):
-                        end = "$" if "/" in value else "(?:/|$)"
-                        value = f"^(?:{value}){end}"
-                    patterns.append((ecosystem, re.compile(value, re.I), entry["id"]))
-                except re.error:
-                    continue
-        for key in (entry["id"], entry.get("name") or ""):
-            named.setdefault(key.casefold(), entry)
-    found, gaps, seen = [], [], set()
-    for ecosystem, name, path, line, *_ in project.packages:  # a version is no sign
-        low = package_key(ecosystem, name)
-        ids = list(by_package.get((ecosystem, low), []))
-        if ecosystem == "maven" and ":" in low:
-            ids += by_package.get((ecosystem, low.split(":", 1)[1]), [])
-        if ecosystem == "go":
-            ids += [i for (e, value), owners in by_package.items() if e == "go" and low.startswith(value + "/")
-                    for i in owners]
-        ids += [i for e, pattern, i in patterns if e == ecosystem and pattern.search(low if e == "docker" else name)]
-        found += [(ident, name, path, line) for ident in dict.fromkeys(ids)]
-        entry = None if ids else named.get(name.casefold()) or named.get(re.split(r"[:/]", name.casefold())[-1])
-        signs = (entry or {}).get("signs") or {}
-        if entry and (entry["id"], ecosystem) not in seen and not any(
-                ecosystem in (signs.get(kind) or {}) for kind in ("packages", "patterns")):
-            seen.add((entry["id"], ecosystem))
-            gaps.append({"kind": "no_ecosystem_sign", "entry": entry["id"], "ecosystem": ecosystem, "value": name,
-                         "path": path, "line": line})
-    return {"signs": found, "gaps": gaps}
-
-
-def check_files(entries: list[dict], project: Project) -> dict:
-    """A file of the project, by its name."""
-    names = {}
-    for entry in entries:
-        for value in (entry.get("signs") or {}).get("files") or []:
-            names.setdefault(value, []).append(entry["id"])
-    found = []
-    for rel in project.files:
-        name = PurePosixPath(rel).name
-        found += [(ident, name, rel, None) for ident in names.get(name, [])]
-    return {"signs": found, "gaps": []}
-
-
-def check_env(entries: list[dict], project: Project) -> dict:
-    """A token starting with an entry's prefix in a line of text, outside the registry's own files and minified
-    lines."""
-    prefixes = {}
-    for entry in entries:
-        for value in (entry.get("signs") or {}).get("env") or []:
-            prefixes.setdefault(value, []).append(entry["id"])
-    if not prefixes:
-        return {"signs": [], "gaps": []}
-    words = re.compile(r"\b(" + "|".join(sorted(map(re.escape, prefixes), key=len, reverse=True)) + r")[A-Z0-9_]*\b")
-    found = []
-    for rel in project.files:
-        lines = project.lines(rel)
-        if any(mark in line for line in lines[:3] for mark in OWN):
-            continue
-        for number, line in enumerate(lines, 1):
-            if len(line) <= flows.snapshot.MAX_STYLESHEET_LINE:
-                found += [(ident, match.group(0), rel, number) for match in words.finditer(line)
-                          for ident in prefixes[match.group(1)]]
-    return {"signs": found, "gaps": []}
-
-
-CHECKERS = (("package", "declared", check_packages), ("file", "declared", check_files),
-            ("env", "mentioned", check_env), ("host", "mentioned", check_hosts), ("source", "declared", check_sources))
-
-
-def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:
-    """`CHECKERS` over the snapshot: the registry entries it shows signs of (`found`), each sign with its path, line
-    and strength, each checker's status (`checkers`) and the `gaps`; `facts` is the pre-map."""
-    manifest = Path(manifest)
-    facts = premap.ensure(manifest) if facts is None else facts
-    entries = (registry or load())["entries"]
-    left_out = tuple(item["path"] for item in facts.get("excluded") or () if item.get("path"))
-    declared = [s for s in step1_packages(manifest, facts) if not _is_excluded(s[2], left_out)]
-    found: dict[str, list[dict]] = {}
-    checkers, gaps = [], []
-    with open_snapshot(manifest) as store:
-        source = flows.Source(store)
-        files = [rel for rel in sorted(dict(store.iter_file_headers_only())) if not _is_excluded(rel, left_out)]
-        project = Project(declared, files, lambda rel: source.lines(rel) or [])
-        for name, strength, checker in CHECKERS:
-            try:
-                answer = checker(entries, project)
-                signs = [(ident, {"sign": name, "value": value, "path": path, "line": line, "strength": strength})
-                         for ident, value, path, line in answer["signs"]]
-                more = [{**gap, "checker": name} for gap in answer.get("gaps") or ()]
-            except Exception as error:  # a checker's failure is its gap, never the end of the others
-                reason = f"{type(error).__name__}: {error}"
-                checkers.append({"checker": name, "state": "failed", "reason": reason})
-                gaps.append({"kind": "checker_failed", "checker": name, "detail": reason})
-                continue
-            checkers.append({"checker": name, "state": "ran"})
-            gaps += more
-            for ident, sign in signs:
-                found.setdefault(ident, []).append(sign)
-    by_id = {e["id"]: e for e in entries}
-    out = []
-    for ident in sorted(found):
-        entry = by_id[ident]
-        category = entry_category(entry)
-        kind = "project" if category != "service" else "service"
-        signs = {(s["sign"], s["value"], s["path"], s["line"]): s for s in found[ident]}
-        out.append({"id": entry.get("id"), "name": entry.get("name"), "kind": kind, "category": category,
-                    "type": entry.get("type"), "site": entry.get("site"), "mark": entry.get("mark"),
-                    "source": "registry",
-                    "signs": sorted(signs.values(), key=lambda s: (s["sign"], s["path"] or "", s["line"] or 0, s["value"]))})
-    return {"found": out, "checkers": checkers, "gaps": gaps}
-
-
-def recognize(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> list[dict]:
-    """Registry entries the snapshot shows signs of, each sign with its path and line (`run`'s `found`)."""
-    return run(manifest, registry, facts)["found"]
+def _lines(inventory: _Inventory, rel: str) -> list[str]:
+    """A file's lines; none from a file changed since the inventory or that cannot be read."""
+    try:
+        return inventory.text(rel).split("\n")
+    except ValueError:
+        return []

@@ -1,0 +1,235 @@
+--- index.d.ts
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.dev/license
+ */
+
+import {factory} from './plugin-factory';
+
+// Tsserver expects `@angular/language-service` to provide a factory function
+// as the default export of the package.
+export = factory;
+
+--- private.d.ts
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.dev/license
+ */
+export * from './src/template_target';
+
+--- plugin-factory.d.ts
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.dev/license
+ */
+import type ts from 'typescript';
+export declare const factory: ts.server.PluginModuleFactory;
+
+--- api.d.ts getComponentLocationsForTemplate: 
+ edited simultaneously. This overrides TypeScript's
+     * built-in method which only works for JSX/TSX.
+     *
+     * @param fileName The file to check
+     * @param position The cursor position in the file
+     * @returns LinkedEditingRanges if on a tag name, undefined otherwise
+     */
+    getLinkedEditingRangeAtPosition(fileName: string, position: number): LinkedEditingRanges | undefined;
+    getComponentLocationsForTemplate(fileName: string): GetComponentLocationsForTemplateResponse;
+    getTemplateLocationForComponent(fileName: string, position: number): GetTemplateLocationForComponentResponse;
+    getTypescriptLanguageService(): ts.LanguageService;
+    /**
+     * Provide Angular-specific inlay hints for templates.
+     *
+     * Returns hints for:
+     * - @for loop variable types: `@for (user: User of users)`
+     * - @if alias types: `@if (data; as result: ApiResult)`
+     * - Ev
+--- api.d.ts getTemplateLocationForComponent: 
+X/TSX.
+     *
+     * @param fileName The file to check
+     * @param position The cursor position in the file
+     * @returns LinkedEditingRanges if on a tag name, undefined otherwise
+     */
+    getLinkedEditingRangeAtPosition(fileName: string, position: number): LinkedEditingRanges | undefined;
+    getComponentLocationsForTemplate(fileName: string): GetComponentLocationsForTemplateResponse;
+    getTemplateLocationForComponent(fileName: string, position: number): GetTemplateLocationForComponentResponse;
+    getTypescriptLanguageService(): ts.LanguageService;
+    /**
+     * Provide Angular-specific inlay hints for templates.
+     *
+     * Returns hints for:
+     * - @for loop variable types: `@for (user: User of users)`
+     * - @if alias types: `@if (data; as result: ApiResult)`
+     * - Event parameter types: `(click)="onClick($event: MouseEvent)"`
+     * - Pipe output types
+     * - @
+--- api.d.ts interface NgLanguageService: 
+lock trigger expressions.
+     * Example: `@defer (when isVisible: boolean) { ... }`
+     *
+     * When enabled, shows the inferred type for 'when' trigger conditions.
+     * @default true
+     */
+    deferTriggerTypes?: boolean;
+}
+/**
+ * `NgLanguageService` describes an instance of an Angular language service,
+ * whose API surface is a strict superset of TypeScript's language service.
+ */
+export interface NgLanguageService extends ts.LanguageService {
+    /**
+     * Triggers the Angular compiler's analysis pipeline without performing
+     * per-file type checking. This is a lighter alternative to calling
+     * `getSemanticDiagnostics()` when the goal is only to ensure that the
+     * Angular project has been analyzed (e.g. during project initialization).
+     */
+    ensureProjectAnalyzed(): void;
+    getTcb(fileName: string, position: number): GetTcbResponse | undefined;
+    /**
+     *
+--- api.d.ts Entry point: 
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.dev/license
+ */
+/**
+ * @module
+ * @description
+ * Entry point for all public APIs of the language service package.
+ */
+import type ts from 'typescript';
+export interface PluginConfig {
+    /**
+     * If true, return only Angular results. Otherwise, return Angular + TypeScript
+     * results.
+     */
+    angularOnly: boolean;
+    /**
+     * If true, enable `strictTemplates` in Angular compiler options regardless
+     * of its value in tsconfig.json.
+     */
+    forceStrictTemplates?: true;
+    /**
+     * If false, disables parsing control flow b
+bundles: [ 'language-service.js' ]
+--- bundles/language-service.js getComponentLocationsForTemplate( @4510060:
+tions(compiler, diags, scope, fixId, formatOptions, preferences);
+            });
+        }
+        getComponentLocationsForTemplate(fileName) {
+            return this.withCompilerAndPerfTracing(PerfPhase.LsComponentLocations, (compiler) => {
+                const components = compiler.getComponentsWithTemplateFile(fileName);
+                const componentDeclarationLocations = Array.from(components.values()).map((c) => {
+                    let contextSpan = undefined;
+                    let textSpan;
+                    if (isNamedClassDeclaration(c)) {
+                        textSpan = ts.createTextSpanFromBounds(c.name.getStart(), c.name.getEnd());
+                        contextSpan = ts.createTextSpanFromBounds(c.getStart(), c.getEnd());
+                    }
+                    
+--- bundles/language-service.js getComponentLocationsForTemplate( @4537757:
+plate, finds the associated components that use it as a `templateUrl`.
+         */
+        function getComponentLocationsForTemplate(fileName) {
+            return ngLS.getComponentLocationsForTemplate(fileName);
+        }
+        /**
+         * Given a location inside a component, finds the location of the inline template or the file for
+         * the `templateUrl`.
+         */
+        function getTemplateLocationForComponent(fileName, position) {
+            return ngLS.getTemplateLocationForComponent(fileName, position);
+        }
+        function getApplicableRefactors(fileName, positionOrRange) {
+            // We never forward to TS for refactors because those are not handled
+            // properly by the LSP server implementation of the extension. The extension
+            // will
+--- bundles/language-service.js getComponentLocationsForTemplate( @4537826:
+.
+         */
+        function getComponentLocationsForTemplate(fileName) {
+            return ngLS.getComponentLocationsForTemplate(fileName);
+        }
+        /**
+         * Given a location inside a component, finds the location of the inline template or the file for
+         * the `templateUrl`.
+         */
+        function getTemplateLocationForComponent(fileName, position) {
+            return ngLS.getTemplateLocationForComponent(fileName, position);
+        }
+        function getApplicableRefactors(fileName, positionOrRange) {
+            // We never forward to TS for refactors because those are not handled
+            // properly by the LSP server implementation of the extension. The extension
+            // will only take care of refactorings from Angular language service.
+      
+--- bundles/language-service.js getTemplateLocationForComponent( @4511172:
+        });
+                return componentDeclarationLocations;
+            });
+        }
+        getTemplateLocationForComponent(fileName, position) {
+            return this.withCompilerAndPerfTracing(PerfPhase.LsComponentLocations, (compiler) => {
+                const nearestNode = findTightestNodeAtPosition(compiler.getCurrentProgram(), fileName, position);
+                if (nearestNode === undefined) {
+                    return undefined;
+                }
+                const classDeclaration = getParentClassDeclaration(nearestNode);
+                if (classDeclaration === undefined) {
+                    return undefined;
+                }
+                const template = compiler.getDirectiveResources(classDeclaration)?.template || null;
+                if (template === nul
+--- bundles/language-service.js getTemplateLocationForComponent( @4538057:
+n of the inline template or the file for
+         * the `templateUrl`.
+         */
+        function getTemplateLocationForComponent(fileName, position) {
+            return ngLS.getTemplateLocationForComponent(fileName, position);
+        }
+        function getApplicableRefactors(fileName, positionOrRange) {
+            // We never forward to TS for refactors because those are not handled
+            // properly by the LSP server implementation of the extension. The extension
+            // will only take care of refactorings from Angular language service.
+            // Code actions are tied to their provider, so this is unproblematic and will
+            // not hide built-in TypeScript refactorings:
+            // https://github.com/microsoft/vscode/blob/ea4d99921cc790d49194e897021faee02
+--- bundles/language-service.js getTemplateLocationForComponent( @4538135:
+  */
+        function getTemplateLocationForComponent(fileName, position) {
+            return ngLS.getTemplateLocationForComponent(fileName, position);
+        }
+        function getApplicableRefactors(fileName, positionOrRange) {
+            // We never forward to TS for refactors because those are not handled
+            // properly by the LSP server implementation of the extension. The extension
+            // will only take care of refactorings from Angular language service.
+            // Code actions are tied to their provider, so this is unproblematic and will
+            // not hide built-in TypeScript refactorings:
+            // https://github.com/microsoft/vscode/blob/ea4d99921cc790d49194e897021faee02a1847f7/src/vs/editor/contrib/codeAction/codeAction.ts#L30-L31
+            ret
+
+ts.server present: object ProjectService: function sys.require: function
+ProjectService created
+openClientFile -> {"configFileName":"/fixture/tsconfig.json","errors":0}
+project: ConfiguredProject2 /fixture/tsconfig.json
+language service has getComponentLocationsForTemplate: function  getTemplateLocationForComponent: function
+getComponentLocationsForTemplate(/fixture/src/app/app.component.html) -> [ 'src/app/app.component.ts start=453 length=12' ] [ '"AppComponent"' ]
+getTemplateLocationForComponent(/fixture/src/app/app.component.ts, 460) -> src/app/app.component.html start=0 length=0
+getDefinitionAndBoundSpan(html, 33 "save()"") -> {"textSpan":{"start":33,"length":4},"defs":["src/app/app.component.ts save method start=642"]}
+getDefinitionAndBoundSpan(html, 137 "svc.cancel()") -> {"textSpan":{"start":136,"length":6},"defs":["src/app/order.service.ts cancel method start=111"]}
+getDefinitionAndBoundSpan(html, 241 "busy ? close()") -> {"textSpan":{"start":241,"length":4},"defs":["src/app/app.component.ts busy property start=527"]}
+tsserver events seen: [ 'projectLoadingStart', 'projectLoadingFinish', 'projectInfo' ]
+
+--- exit 0

@@ -5,6 +5,8 @@
     python score.py externals BRIEF.json EXPECTED.json [registry|stack-analyser|both]
     python score.py stable MAP1.json MAP2.json
     python score.py system MAP.json EXPECTED-system.json FILES.txt
+    python score.py whole TAG
+    python score.py runs FROM-SCRATCH UNCHANGED ONE-MODULE
 
 MAP.json is what `system_map.load` returns, optionally with `refused_arrows` from the
 record reports. A reference node with code is found when a proposed node shares at least
@@ -21,6 +23,26 @@ unseen node by position and type, counted apart. On the services of others found
 counts the same `family`, a closed value, and only whether `role` and `mode` are there. `reach` counts the parts of depth 0 and 1 a
 map points into without carrying them: a node that names one file of a part, a service of
 others by its name.
+
+`whole` reads what the one job of `modal_map.py whole` leaves under TAG (`results/system/TAG`, brought from the
+volume) and gives the table of the plan of the unified analysis, section 4: per case, one row per model, scope
+and rules. Each run is a folder `TAG/LABEL/` with `summary.json`, and, where the run got that far, `map.json`,
+`files.txt` and `engine-report.json`; what is per case lies in `TAG/cases/CASE/`: `archive.json` (the
+counts `code_archive.py` writes beside the archive), `candidates.json` and `files.txt` (the entry candidates and
+the snapshot's files after the engine pass, measured here against `expected/CASE-system.json` with
+`entries.py measure`, so a private reference never goes to Modal), `engine.json`, and `paths.json` and `search.json`
+(the verify of the path cards, `embed_probe.py rank`). A
+column whose file is not there, or whose reference is not, says `non misurato` and why; it is never a zero.
+`runs` puts three runs of one project side by side (spec of the pipeline, 7.4; task 2b of the plan): from scratch,
+unchanged, and after a change to one module. Each folder holds what the run left: `pipeline-events.jsonl`, the
+`container-runs.jsonl` records anywhere under it, and `links.json` (`found` and `of`: the expected links the run
+found, from `possible.py`). Per run: seconds from the first event to the last, restores (the `node-restore` and
+`prepare` phases), analyzer starts, app starts, and the links. CPU, peak memory and temporary space are in no event:
+`non misurato`. A run that costs less than the first and finds fewer links is marked, never counted as a gain.
+
+The layout of those files is provisional until `modal_map.py whole` writes it. The other states: `ingresso omesso` (the archive left files out: what the program needs to start may be
+missing), `passo fallito` (the engine pass timed out or failed, the numbers after it are of what ran) and
+`zero trovati` (measured, and found none).
 """
 from __future__ import annotations
 
@@ -352,7 +374,228 @@ def score_externals(recognized: dict, expected: dict, source: str | None = None)
             "missed": sorted(wanted - found), "wrong": sorted(found - wanted - also)}
 
 
+EXPECTED_FOLDER = Path(__file__).resolve().parent / "expected"
+CASE_FILES = {"paths": ("paths.json", "the verify of the path cards"), "search": ("search.json", "embed_probe.py rank")}
+
+
+def _read(path: Path):
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+
+
+def _measured(value) -> dict:
+    return {"state": "misurato", "value": value}
+
+
+def _unmeasured(cause: str) -> dict:
+    return {"state": "non misurato", "cause": cause}
+
+
+def _lines(path: Path) -> list[str]:
+    return [line.strip().replace("\\", "/") for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _entries_measure(candidates: dict, reference: dict, files: list[str]) -> dict:
+    """`entries.py measure`, loaded by its path: the core has an `entries` module of its own."""
+    import importlib.util
+    import types
+    spec = importlib.util.spec_from_file_location("system_map_entries", Path(__file__).resolve().parent / "entries.py")
+    module = importlib.util.module_from_spec(spec)
+    before = list(sys.path)  # the module puts its folder first on the path: not for the modules after it
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.path[:] = before
+    # its `import score` may have found another `score` module of the process (project-model's has no `_units`)
+    module.score = types.SimpleNamespace(_units=_units, _key=_key)
+    return module.measure(candidates, reference, files)
+
+
+def _engine_cell(engine: dict | None) -> dict:
+    """The engine pass of a run or of a case job (`modal_map.py::_engine_pass`): its languages, or why it failed."""
+    why = (None if engine is None else "the engine pass timed out" if engine.get("timed_out")
+           else f"the engine pass exited with {engine.get('exit')}" if engine.get("exit") not in (0, 1)
+           else "the engine pass wrote no report" if "languages" not in engine else None)  # a crash exits with 1 too
+    return (_unmeasured("no state of the engine pass was kept") if engine is None else
+            {"state": "passo fallito", "cause": why + (f": {engine['stderr'][-400:]}" if engine.get("stderr") else "")}
+            if why else _measured(engine["languages"]))
+
+
+def _case_columns(folder: Path, reference_file: Path) -> dict:
+    """What is of a case and not of a run: what the archive left out and the secrets masked in it (`archive.json`),
+    the entry candidates measured against the reference, the path cards and the search."""
+    columns = {}
+    archive = _read(folder / "archive.json")  # `code_archive.py`'s counts, per repository
+    if archive is None:
+        columns["input"] = _unmeasured("archive.json is not there: the job was given no counts of the archive")
+        columns["secrets"] = _unmeasured("archive.json is not there: Secretlint's counts of the archive are not either")
+    else:
+        left = sum(counts["left"] for counts in archive.values())
+        withheld = sum(len(counts["withheld"]) for counts in archive.values())
+        columns["input"] = ({"state": "ingresso omesso", "left": left, "withheld": withheld} if left or withheld
+                            else _measured("nothing left out"))
+        columns["secrets"] = _measured({
+            "masked_in_the_archive": sum(sum(counts["masked"].values()) for counts in archive.values()),
+            "in_the_texts_sent_out": _unmeasured("the job does not collect them (task 8)")})
+    candidates, listed = _read(folder / "candidates.json"), folder / "files.txt"
+    reference = _read(reference_file)
+    columns["entries"] = (_unmeasured("candidates.json is not there: the engine pass left nothing (engine.json says why)")
+                          if candidates is None else
+                          _unmeasured(f"{reference_file.name} is not there") if reference is None else
+                          _unmeasured("files.txt of the case is not there") if not listed.is_file() else
+                          _measured(_entries_measure(candidates, reference, _lines(listed))))
+    for column, (name, source) in CASE_FILES.items():
+        value = _read(folder / name)
+        columns[column] = (_unmeasured(f"{name} is not there: {source} did not run in this job") if value is None
+                           else _measured(value))
+    columns["handlers"] = _unmeasured("there is no small set of controls and handlers confirmed by the owner")
+    return columns
+
+
+def _masked(run: Path) -> dict | None:
+    """What the answers of the tools gave a run's model, as the streams of its two sessions keep them: how many
+    answers, how many were read as JSON, and the secrets they report masked (`masked_secrets`, which
+    `secret_mask.tool_result` puts in every answer). None when the run kept no stream."""
+    streams = [run / name for name in ("stream.jsonl", "rules-stream.jsonl") if (run / name).is_file()]
+    if not streams:
+        return None
+    counts = {"answers": 0, "read": 0, "masked_secrets": 0}
+    for stream in streams:
+        for line in stream.read_text(encoding="utf-8", errors="replace").splitlines():
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            blocks = ((event.get("message") or {}).get("content") or []) if isinstance(event, dict) else []
+            for block in blocks:
+                if not (isinstance(block, dict) and block.get("type") == "tool_result"):
+                    continue
+                content = block.get("content")
+                text = ("".join(part.get("text", "") for part in content if isinstance(part, dict))
+                        if isinstance(content, list) else str(content or ""))
+                counts["answers"] += 1
+                try:
+                    answer = json.loads(text)
+                except ValueError:
+                    continue  # an error text, or one the host cut: not counted as read
+                if isinstance(answer, dict):
+                    counts["read"] += 1
+                    counts["masked_secrets"] += int(answer.get("masked_secrets") or 0)
+    return counts
+
+
+def _usage(group: list) -> dict:
+    """Tokens, seconds and turns of the sessions of a row's runs, by session (`rules`, `mapper`)."""
+    tokens, seconds, turns = Counter(), Counter(), Counter()
+    for item, _ in group:
+        for name, session in (item.get("sessions") or {}).items():
+            seconds[name] += session.get("seconds") or 0
+            turns[name] += session.get("turns") or 0
+            for key in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens"):
+                tokens[key] += (session.get("usage") or {}).get(key) or 0
+    return {"tokens": dict(tokens), "seconds": dict(seconds), "turns": dict(turns)}
+
+
+def _row(group: list, folder: Path, reference_file: Path) -> dict:
+    """One row of `whole`: the runs of a case, model, scope and rules, by repetition."""
+    group = sorted(group, key=lambda item: item[0].get("rep", 0))
+    summary, run = group[0]
+    row = {"runs": len(group), **_case_columns(folder, reference_file), "engine": _engine_cell(summary.get("engine"))}
+    proposed, files = _read(run / "map.json"), run / "files.txt"
+    reference = _read(reference_file)
+    if proposed is None:
+        row["system"] = _unmeasured(summary.get("stopped") or summary.get("record_error") or "map.json is not there")
+    elif reference is None or not files.is_file():
+        row["system"] = _unmeasured(f"{reference_file.name} is not there" if reference is None else "files.txt is not there")
+    else:
+        found = score_system(proposed, reference, _lines(files))
+        row["system"] = _measured(found) if found["nodes"]["found"] else {"state": "zero trovati", "value": found}
+    # a run given the rules and links of another (`rules_from`) is not an independent one: it measures the mapper only
+    maps = [mapped for mapped in (_read(folder_run / "map.json") for item, folder_run in group
+                                  if not item.get("rules_from")) if mapped is not None]
+    row["stable"] = (_measured(stability(maps[0], maps[1])) if len(maps) > 1
+                     else _unmeasured("a second independent run is not there"
+                                      + (" (the others were given the first one's rules)"
+                                         if any(item.get("rules_from") for item, _ in group) else "")))
+    costs = [item.get("cost_usd") for item, _ in group]
+    row["cost"] = (_unmeasured("no run recorded its cost") if all(cost is None for cost in costs)
+                   else _measured({"cost_usd": round(sum(cost or 0 for cost in costs), 6),
+                                   "budget_stop": any(item.get("budget_stop") for item, _ in group),
+                                   "prepared_seconds": [item.get("prepared_seconds") for item, _ in group],
+                                   "usage": _usage(group)}))
+    if row["secrets"]["state"] == "misurato":  # the archive's count is there: add what the models were given
+        seen = [counts for counts in (_masked(folder_run) for _, folder_run in group) if counts is not None]
+        row["secrets"]["value"]["in_the_texts_sent_out"] = (
+            _unmeasured("no run kept a stream.jsonl: the texts the models were given are not there") if not seen
+            else _measured({key: sum(counts[key] for counts in seen) for key in ("answers", "read", "masked_secrets")}
+                           | {"runs": len(seen)}))
+    return row
+
+
+def whole(tag: Path, expected: Path = EXPECTED_FOLDER) -> dict:
+    """`{case: {row: cells}}` from what a whole job left under `tag` (the module's docstring). A case the job ran
+    with no model has the row `no model`: its archive, its candidates and its engine pass, no run."""
+    runs = defaultdict(list)
+    for file in sorted(Path(tag).glob("*/summary.json")):
+        summary = json.loads(file.read_text(encoding="utf-8"))
+        runs[summary["case"], f"{summary['model']} {summary['scope']} {summary['rules']}"].append((summary, file.parent))
+    table = defaultdict(dict)
+    for (case, name), group in sorted(runs.items()):
+        table[case][name] = _row(group, Path(tag) / "cases" / case, Path(expected) / f"{case}-system.json")
+    for folder in sorted(Path(tag, "cases").glob("*")):
+        if folder.is_dir() and folder.name not in table:
+            table[folder.name]["no model"] = {
+                "runs": 0, **_case_columns(folder, Path(expected) / f"{folder.name}-system.json"),
+                "engine": _engine_cell(_read(folder / "engine.json"))}
+    return dict(table)
+
+
+def _journal(folder: Path) -> list[dict]:
+    file = folder / "pipeline-events.jsonl"
+    return [json.loads(line) for line in file.read_text(encoding="utf-8").splitlines() if line.strip()] if file.is_file() else []
+
+
+def runs(folders: list[Path]) -> dict:
+    """The runs of one project side by side, the first one the base (the module's docstring)."""
+    from datetime import datetime
+    rows = []
+    for folder in map(Path, folders):
+        events = _journal(folder)
+        times = [datetime.strptime(event["at"], "%Y-%m-%dT%H:%M:%S.%fZ") for event in events]
+        phases = [json.loads(line).get("phase") for file in sorted(folder.rglob("container-runs.jsonl"))
+                  for line in file.read_text(encoding="utf-8").splitlines() if line.strip()]
+        started = [event for event in events if event["kind"] == "analyzer.started"]
+        links = _read(folder / "links.json")
+        rows.append({"run": folder.name,
+                     "seconds": _measured(round((max(times) - min(times)).total_seconds(), 1)) if times
+                     else _unmeasured("pipeline-events.jsonl is not there or empty"),
+                     "restores": _measured(sum(phase in ("node-restore", "prepare") for phase in phases)) if phases
+                     else _unmeasured("no container-runs.jsonl under the folder"),
+                     "analyzer_starts": _measured(sum(event["step"] == "analyze" for event in started)) if events
+                     else _unmeasured("pipeline-events.jsonl is not there or empty"),
+                     "app_starts": _measured(sum(event.get("analyzer") == "app" for event in started)) if events
+                     else _unmeasured("pipeline-events.jsonl is not there or empty"),
+                     "cpu": _unmeasured("no event of the pipeline carries it"),
+                     "peak_memory": _unmeasured("no event of the pipeline carries it"),
+                     "temporary_space": _unmeasured("no event of the pipeline carries it"),
+                     "links": _measured(links) if links else _unmeasured("links.json is not there: possible.py did not run")})
+    base = rows[0] if rows else None
+    for row in rows[1:]:
+        cheaper = (base["seconds"]["state"] == row["seconds"]["state"] == "misurato"
+                   and row["seconds"]["value"] < base["seconds"]["value"])
+        fewer = (base["links"]["state"] == row["links"]["state"] == "misurato"
+                 and row["links"]["value"]["found"] < base["links"]["value"]["found"])
+        if cheaper and fewer:
+            row["flag"] = "costs less and finds fewer links: not a gain"
+    return {"runs": rows}
+
+
 def main(argv: list[str]) -> int:
+    if argv[:1] == ["whole"] and len(argv) == 2:
+        print(json.dumps(whole(Path(argv[1])), ensure_ascii=False, indent=1))
+        return 0
+    if argv[:1] == ["runs"] and len(argv) == 4:
+        print(json.dumps(runs([Path(folder) for folder in argv[1:]]), ensure_ascii=False, indent=1))
+        return 0
     if not (argv[:1] in (["map"], ["stable"]) and len(argv) == 3 or argv[:1] == ["externals"] and len(argv) in (3, 4)
             and argv[3:] in ([], *([s] for s in SOURCES)) or argv[:1] == ["system"] and len(argv) == 4):
         print(__doc__)

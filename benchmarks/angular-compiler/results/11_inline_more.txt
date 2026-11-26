@@ -1,0 +1,24 @@
+=== A. double-quoted string with \" inside: InlineDoubleQuotedComponent ===
+source text of the literal: "\"<button (click)=\\\"dq()\\\">Dq \\\"quoted\\\"</button>\"" ; cooked value: "<button (click)=\"dq()\">Dq \"quoted\"</button>"
+attribute as written in the .ts found at 746 "(click)=\\\"dq()\\\""
+escapedString=true: errors=null
+   event click handler.source="dq()"
+      sourceSpan  EXACT 32:21@746 .. 32:37@762 covers "(click)=\\\"dq()\\\""
+      keySpan     EXACT 32:22@747 .. 32:27@752 covers "click"
+      handlerSpan EXACT 32:31@756 .. 32:35@760 covers "dq()"
+   label children of the button: Text("Dq \"quoted\"") 32:38@763..32:51@776
+escapedString=false: errors=["Opening tag \"button\" not terminated.","Unexpected closing tag \"button\". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags"]
+   (no nodes returned; events found: 0)
+
+=== B. CRLF inside an inline .ts template (whole inline.component.ts converted to CRLF) ===
+escapedString=true preserveLineEndings=false: go().sourceSpan=EXACT go().keySpan=EXACT go().handlerSpan=EXACT this.goThis().sourceSpan=EXACT this.goThis().keySpan=EXACT this.goThis().handlerSpan=EXACT
+escapedString=true preserveLineEndings=true: go().sourceSpan=EXACT go().keySpan=EXACT go().handlerSpan=EXACT this.goThis().sourceSpan=EXACT this.goThis().keySpan=EXACT this.goThis().handlerSpan=EXACT
+escapedString=false preserveLineEndings=false: go().sourceSpan=EXACT go().keySpan=EXACT go().handlerSpan=EXACT this.goThis().sourceSpan=EXACT this.goThis().keySpan=EXACT this.goThis().handlerSpan=EXACT
+escapedString=false preserveLineEndings=true: go().sourceSpan=EXACT go().keySpan=EXACT go().handlerSpan=EXACT this.goThis().sourceSpan=EXACT this.goThis().keySpan=EXACT this.goThis().handlerSpan=EXACT
+
+=== C. language service with NO sleep after openClientFile ===
+immediately after openClientFile (1228 ms): getComponentLocationsForTemplate is function
+definition of save with no sleep (1376 ms): ["src/app/app.component.ts save method"]
+getComponentLocationsForTemplate no sleep: [{"fileName":"/fixture/src/app/app.component.ts","textSpan":{"start":453,"length":12},"contextSpan":{"start":297,"length":600}}]
+
+--- exit 0

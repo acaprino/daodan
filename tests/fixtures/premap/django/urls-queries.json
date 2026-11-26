@@ -1,0 +1,5 @@
+{
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "OperationalError: no such table: shop_product\n"
+}

@@ -52,7 +52,6 @@ from __future__ import annotations
 
 import argparse
 from contextlib import ExitStack
-from concurrent.futures import ThreadPoolExecutor
 import copy
 import hashlib
 import json
@@ -70,6 +69,8 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from languages import SUPPORTED_EXTENSIONS, detect_language, get_adapter  # noqa: E402
 from tree_scope import Perimeter  # noqa: E402
+import file_inventory  # noqa: E402
+from file_inventory import write as write_inventory, SCHEMA, _read_source, _temporary_beside, _text  # noqa: E402,F401
 from snapshot_store import (SnapshotStore, artifact_digest, file_headers, open_snapshot, resolve_run_snapshot)  # noqa: E402
 from source_files import (DOC_EXTENSIONS, git_info, hash_text, is_forbidden, iter_files,  # noqa: E402,F401
                           MANIFEST_FILES, MAX_FILE_BYTES, MAX_PARSE_BYTES, PRESENTATION_EXTENSIONS, read_text,
@@ -99,7 +100,6 @@ __all__ = [
     "SCHEMA",
     "blast_radius",
     "build_import_index",
-    "build_manifest",
     "compare_files",
     "compare_symbols",
     "file_entry",
@@ -124,7 +124,7 @@ __all__ = [
     "ts_path_config",
 ]
 
-SCHEMA = 1
+_DETECT = object()  # `file_entry`'s language when none is given: detect it
 
 # A stylesheet with a line longer than this is minified: every rule shares one
 # line, so each rule symbol would hash the whole file and any edit would change
@@ -184,8 +184,10 @@ def _record_parse(entry: dict, result, text: str, lines: list[str], profile: dic
 
 
 def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None,
-               *, parse_result=None, macros: dict | None = None) -> dict:
+               *, parse_result=None, macros: dict | None = None, language=_DETECT) -> dict:
     """One manifest row, parsed from the same bytes whose identity it records.
+
+    A given `language` (the inventory's, `None` included) is taken as is; by default it is detected.
 
     `macros` is a C or C++ file's include context (`c_family_contexts`): the entry records its key, because the
     same bytes read with other macros give other facts.
@@ -196,7 +198,7 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
     data = path.read_bytes() if data is None else data
     text = _text(data)
     lines = text.split("\n")
-    language = detect_language(path, text)
+    language = detect_language(path, text) if language is _DETECT else language
     profile = parser_profile(path, language)
     entry = {
         "size": len(data),
@@ -235,14 +237,9 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
     return entry
 
 
-def _text(data: bytes) -> str:
-    """The text a parser reads: decoded, its line ends `\\n`."""
-    return data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
-
-
-def _rejected(entry: dict | None) -> bool:
+def _rejected(entry: dict) -> bool:
     """A Python file Daodan's interpreter could not parse: read again with the Python its project states."""
-    return bool(entry) and entry.get("language") == "python" and entry.get("status") == "parse-error" and any(
+    return entry.get("language") == "python" and entry.get("status") == "parse-error" and any(
         note.startswith("syntax error:") for note in entry.get("parser_notes", ()))
 
 
@@ -256,7 +253,7 @@ def _newer_python(root: Path, rejected: list[tuple]) -> list[tuple[str, dict, by
     for path, rel, mtime, data, entry in rejected:
         tree, note = read.get(rel, (None, None))
         if tree is not None:
-            entry = file_entry(path, data, mtime, parse_result=get_adapter("python").parse_tree(
+            entry = file_entry(path, data, mtime, language="python", parse_result=get_adapter("python").parse_tree(
                 _text(data), str(path), tree, ["parser=stdlib-ast", note]))
         elif note:
             entry["parser_notes"] = [f"{item} ({note})" if item.startswith("syntax error:") else item
@@ -268,181 +265,32 @@ def _newer_python(root: Path, rejected: list[tuple]) -> list[tuple[str, dict, by
 _REUSABLE_STATUSES = {"parsed", "file-level", "parse-skipped"}
 
 
-def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None) -> bool:
-    """A previous entry still describes these bytes: same bytes, include context and parser, a reusable status."""
+def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None, *, language) -> bool:
+    """A previous entry still describes these bytes: same bytes, language, include context and parser, a reusable
+    status."""
     return (isinstance(old, dict) and old.get("raw_hash") == raw_hash
+            and old.get("language") == language
             and (macro_key is None or old.get("macro_context") == macro_key)
             and old.get("parser_profile") == parser_profile(path, old.get("language"))
             and old.get("status") in _REUSABLE_STATUSES)
 
 
-def _reused(old: dict, size: int, mtime: float) -> dict:
-    entry = copy.deepcopy(old)
-    entry["size"] = size
-    entry["mtime"] = mtime
-    return entry
-
-
-def _read_source(path: Path, supplied: dict, metrics: dict):
-    """The stat, bytes and supplied parse of one walked file; None for a file above the size limit."""
-    st = path.stat()
-    observed = supplied.get(path.resolve())
-    if observed is None and st.st_size > MAX_FILE_BYTES:
-        return None
-    if observed is not None:
-        content, parsed = observed
-        data = content.encode("utf-8")
-    else:
-        data = path.read_bytes()
-        parsed = None
-        metrics["files_read"] += 1
-        metrics["source_bytes_read"] += len(data)
-    if len(data) > MAX_FILE_BYTES:
-        return None
-    return st, data, parsed
-
-
-def _manifest_inventory(target: Path, root: Path, perimeter: Perimeter, supplied: dict, old_files: dict,
-                        metrics: dict, source_observations: dict | None):
-    """Walk the perimeter once: reuse verified entries, queue the rest, defer C and C++ files to their context."""
-    pending: list[tuple[str, Path, bytes, float, object, dict | None]] = []
-    deferred: list[tuple[str, Path, bytes, float, object]] = []
-    ordered_rels: list[str] = []
-    reused_entries: dict[str, dict] = {}
-    for path in iter_files(target, perimeter):
-        try:
-            read = _read_source(path, supplied, metrics)
-            if read is None:
-                continue
-            st, data, parsed = read
-            rel = relative_to_root(path, root)
-            if source_observations is not None:
-                source_observations[rel] = data
-            mtime = round(st.st_mtime, 3)
-            if rel.lower().endswith(_C_FAMILY_SUFFIXES):
-                deferred.append((rel, path, data, mtime, parsed))
-                ordered_rels.append(rel)
-                continue
-            old = old_files.get(rel)
-            if _reusable(old, path, hashlib.sha256(data).hexdigest()):
-                metrics["cache_hits"] += 1
-                reused_entries[rel] = _reused(old, len(data), mtime)
-            else:
-                pending.append((rel, path, data, mtime, parsed, None))
-            ordered_rels.append(rel)
-        except OSError:
-            continue
-    contexts = c_family_contexts({rel: data for rel, _, data, _, _ in deferred})
-    for rel, path, data, mtime, parsed in deferred:
-        old, key = old_files.get(rel), context_key(contexts[rel])
-        if _reusable(old, path, hashlib.sha256(data).hexdigest(), key):
-            metrics["cache_hits"] += 1
-            reused_entries[rel] = _reused(old, len(data), mtime)
-        else:
-            pending.append((rel, path, data, mtime, parsed, contexts[rel]))
-    return pending, ordered_rels, reused_entries
-
-
-def _parse_pending(pending: list, metrics: dict) -> dict[str, dict]:
-    """Parse the queued files, on a small thread pool when there are enough of them."""
-    parsed_entries: dict[str, dict] = {}
-    if len(pending) >= 8:
-        workers = min(8, (os.cpu_count() or 2))
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = [
-                (rel, parsed is None, pool.submit(file_entry, path, data, mtime, parse_result=parsed, macros=macros))
-                for rel, path, data, mtime, parsed, macros in pending
-            ]
-            for rel, needs_parse, fut in futures:
-                try:
-                    entry = fut.result()
-                except OSError:
-                    continue
-                if entry["status"] in {"parsed", "parse-error"} and needs_parse:
-                    metrics["parsed_files"] += 1
-                parsed_entries[rel] = entry
-    else:
-        for rel, path, data, mtime, parsed, macros in pending:
-            try:
-                entry = file_entry(path, data, mtime, parse_result=parsed, macros=macros)
-            except OSError:
-                continue
-            if entry["status"] in {"parsed", "parse-error"} and parsed is None:
-                metrics["parsed_files"] += 1
-            parsed_entries[rel] = entry
-    return parsed_entries
-
-
-def build_manifest(target: Path, previous: dict | None = None, *, parse_results: dict | None = None,
-                   source_observations: dict | None = None) -> dict:
-    """Snapshot the current perimeter; reuse structure only for verified bytes.
-
-    A reuse candidate saves parsing, not inventory traversal or hashing. Legacy
-    manifests and a different helper identity/root/target cause a fresh parse.
-    An optional output dictionary receives the already-read bytes by relative
-    path, for consumers that verify semantic evidence without reading again.
-    """
-    if previous is not None:
-        validate_reuse_manifest(previous)
-    if source_observations is not None:
-        source_observations.clear()
-    target = target.resolve()
-    if not (target.is_dir() or target.is_file()):
-        raise ValueError(f"snapshot target does not exist: {target}")
-    root = repo_root(target).resolve()
-    fingerprint = parser_fingerprint()
-    target_key = relative_to_root(target, root) or "."
-    reusable = (
-        isinstance(previous, dict) and previous.get("schema") == SCHEMA
-        and previous.get("root") == root.as_posix() and previous.get("target") == target_key
-        and previous.get("parser_fingerprint") == fingerprint
-    )
-    old_files = previous.get("files", {}) if reusable else {}
-    metrics = {"files_read": 0, "source_bytes_read": 0, "parsed_files": 0, "cache_hits": 0}
-    perimeter = Perimeter(target)
-    supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
-    pending, ordered_rels, reused_entries = _manifest_inventory(target, root, perimeter, supplied, old_files,
-                                                                metrics, source_observations)
-    parsed_entries = _parse_pending(pending, metrics)
-    rejected = [(path, rel, mtime, data, parsed_entries[rel]) for rel, path, data, mtime, _parsed, _macros in pending
-                if _rejected(parsed_entries.get(rel))]
-    for rel, entry, _data in _newer_python(root, rejected) if rejected else ():
-        parsed_entries[rel] = entry
-    files: dict[str, dict] = {}
-    for rel in ordered_rels:
-        if rel in reused_entries:
-            files[rel] = reused_entries[rel]
-        elif rel in parsed_entries:
-            files[rel] = parsed_entries[rel]
-    unavailable = grammar_gaps(entry.get("parser_profile") for entry in files.values())
-    if unavailable:
-        metrics["grammars_unavailable"] = unavailable
-    from datetime import datetime, timezone
-    return {
-        "schema": SCHEMA,
-        "target": target_key,
-        "root": root.as_posix(),
-        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "git": git_info(root),
-        "scope": scope_record(perimeter, root),
-        "parser_fingerprint": fingerprint,
-        "metrics": metrics,
-        "files": files,
-    }
-
-
 _RESERVED_METADATA = {"schema", "target", "root", "created_at", "git", "scope", "parser_fingerprint",
-                      "metrics", "files", "file_count", "format"}
+                      "metrics", "files", "file_count", "format", "reading"}
+
+
+NO_PARSE_NODE = "no parse node in the plan"  # why a file is read as file-level (`_SnapshotPass.unplanned`)
 
 
 class _SnapshotPass:
-    """One streaming pass of the perimeter into a snapshot writer: reuse what still holds, parse the rest.
+    """One streaming pass of the inventory's files into a snapshot writer: reuse what still holds, parse the rest.
 
     Each source is released once its entry is written; C and C++ files wait for their include context, and a
     Python file Daodan's interpreter rejects for the Python its project states (`newer`).
     """
 
-    def __init__(self, format: str, previous, reusable: bool, fast_reuse: bool, metrics: dict, progress):
+    def __init__(self, format: str, previous, reusable: bool, fast_reuse: bool, metrics: dict, progress, rows: dict,
+                 unplanned: frozenset | set = frozenset()):
         self.format = format
         self.previous = previous
         self.reusable = reusable
@@ -450,6 +298,8 @@ class _SnapshotPass:
         self.verified_headers = previous.verified_reusable_headers() if fast_reuse else {}
         self.metrics = metrics
         self.progress = progress
+        self.rows = rows  # the inventory's rows by path, corrected where a file changed since
+        self.unplanned = unplanned  # the files the plan puts in no parse node: read as file-level, with the cause
         self.writer = None
         self.count = 0
         self.exact_reused_paths: list[str] = []
@@ -471,20 +321,20 @@ class _SnapshotPass:
             self.writer.connection.execute("INSERT INTO observed_coverage VALUES(?,?)",
                                            (rel, _pack(observed_coverage(entry, data))))
 
-    def _fast_reused(self, rel: str, path: Path, data: bytes, raw_digest: str, mtime: float) -> bool:
+    def _fast_reused(self, rel: str, path: Path, row: dict) -> bool:
         """A header the previous SQLite snapshot verified, copied in bulk at the end instead of rewritten."""
-        if not (self.fast_reuse and rel in self.verified_headers):
+        if not (self.fast_reuse and rel in self.verified_headers) or rel in self.unplanned:
             return False
         old_h = self.verified_headers[rel]
-        if not _reusable(old_h, path, raw_digest):
+        if not _reusable(old_h, path, row["raw_hash"], language=row["language"]):
             return False
         self.metrics["cache_hits"] += 1
         self.profiles.append(old_h["parser_profile"])
-        if old_h.get("size") == len(data) and old_h.get("mtime") == mtime:
+        if old_h.get("size") == row["size"] and old_h.get("mtime") == row["mtime"]:
             self.exact_reused_paths.append(rel)
         else:
             updated_h = dict(old_h)
-            updated_h["size"], updated_h["mtime"] = len(data), mtime
+            updated_h["size"], updated_h["mtime"] = row["size"], row["mtime"]
             self.touched_reused_headers[rel] = updated_h
         return True
 
@@ -492,42 +342,59 @@ class _SnapshotPass:
                macros: dict | None = None) -> dict:
         """The previous entry when it still holds, otherwise a fresh parse."""
         old = self.previous.get_file(rel) if self.reusable else None
+        language = None if rel in self.unplanned else self.rows[rel]["language"]
         key = None if macros is None else context_key(macros)
-        if old is not None and _reusable(old, path, raw_digest or hashlib.sha256(data).hexdigest(), key):
+        if old is not None and _reusable(old, path, raw_digest or hashlib.sha256(data).hexdigest(), key, language=language):
             old["size"], old["mtime"] = len(data), mtime
             self.metrics["cache_hits"] += 1
-            return old
-        del old
-        entry = (file_entry(path, data, mtime, parse_result=parsed) if macros is None
-                 else file_entry(path, data, mtime, parse_result=parsed, macros=macros))
-        if entry["status"] in {"parsed", "parse-error"} and parsed is None:
-            self.metrics["parsed_files"] += 1
+            entry = old
+        else:
+            del old
+            entry = (file_entry(path, data, mtime, parse_result=parsed, language=language) if macros is None
+                     else file_entry(path, data, mtime, parse_result=parsed, macros=macros, language=language))
+            if entry["status"] in {"parsed", "parse-error"} and parsed is None:
+                self.metrics["parsed_files"] += 1
+        if rel in self.unplanned:  # read as no language, so not parsed; the language stays the inventory's
+            entry["language"] = self.rows[rel]["language"]
+            if NO_PARSE_NODE not in entry["parser_notes"]:
+                entry["parser_notes"] = [*entry["parser_notes"], NO_PARSE_NODE]
         return entry
 
-    def sources(self, target: Path, root: Path, perimeter: Perimeter, supplied: dict) -> list[tuple]:
-        """Write every walked file but the C and C++ ones, which are returned in reading order."""
+    def sources(self, root: Path, supplied: dict) -> list[tuple]:
+        """Write every inventoried file but the C and C++ ones, which are returned in reading order."""
         deferred: list[tuple[Path, str, float, bytes, object]] = []
-        for path in iter_files(target, perimeter):
+        spent = {"files_read": 0, "source_bytes_read": 0}  # the inventory counted these reads
+        for rel, row in list(self.rows.items()):
+            path = root / rel
+            c_family = rel.lower().endswith(_C_FAMILY_SUFFIXES)
+            if not c_family:
+                try:
+                    st = path.stat()
+                except OSError:
+                    del self.rows[rel]
+                    continue
+                if ((st.st_size, round(st.st_mtime, 3)) == (row["size"], row["mtime"])
+                        and (st.st_size <= file_inventory.MAX_FILE_BYTES or path.resolve() in supplied)
+                        and self._fast_reused(rel, path, row)):
+                    self._advance()
+                    continue
             try:
-                read = _read_source(path, supplied, self.metrics)
+                read = _read_source(path, supplied, spent)
             except OSError:
-                continue
+                read = None
             if read is None:
+                del self.rows[rel]
                 continue
             st, data, parsed = read
             del read
-            if self.progress is not None:
-                self.progress("reading", self.count + 1)
-            rel = relative_to_root(path, root)
             mtime = round(st.st_mtime, 3)
-            if rel.lower().endswith(_C_FAMILY_SUFFIXES):
+            raw_digest = hashlib.sha256(data).hexdigest()
+            fresh = {**row, "size": len(data), "mtime": mtime, "raw_hash": raw_digest}
+            if fresh != row:
+                self.rows[rel] = fresh
+            if c_family:
                 deferred.append((path, rel, mtime, data, parsed))
                 del data
-                continue
-            raw_digest = hashlib.sha256(data).hexdigest()
-            if self._fast_reused(rel, path, data, raw_digest, mtime):
-                del data
-                self._advance()
                 continue
             entry = self._entry(path, rel, data, raw_digest, mtime, parsed)
             if _rejected(entry):
@@ -581,69 +448,108 @@ class _SnapshotPass:
         self.writer.finish(metadata_record)
 
 
-def _temporary_beside(out: Path) -> Path:
-    """A fresh, absent path beside `out` to write into before replacing it."""
-    out.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, name = tempfile.mkstemp(prefix=f".{out.name}.", dir=out.parent)
-    os.close(descriptor)
-    temporary = Path(name)
-    temporary.unlink()
-    return temporary
-
-
-def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=None,
-                   parse_results: dict | None = None, extra_metadata: dict | None = None,
-                   progress=None) -> dict:
-    """Write bounded records; optional progress observes work and may cancel it.
-
-    Host metadata joins the immutable header before semantic binding. Reserved
-    snapshot fields cannot be overridden by an embedding application's header.
-    """
-    from datetime import datetime, timezone
-    from snapshot_store import SnapshotWriter, validate_format, _plain
+def _checked_options(format: str, extra_metadata: dict | None) -> dict:
+    """The host metadata of a write, once its format and reserved names are checked."""
+    from snapshot_store import validate_format
 
     validate_format(format)
     if extra_metadata is not None and (not isinstance(extra_metadata, dict)
             or any(not isinstance(key, str) or key in _RESERVED_METADATA for key in extra_metadata)):
         raise ValueError("invalid additional snapshot metadata")
-    extra_metadata = dict(extra_metadata or {})
-    target = Path(target).resolve()
+    return dict(extra_metadata or {})
+
+
+def read_project(target: Path, out: Path, *, format: str = "sqlite", previous=None,
+                 parse_results: dict | None = None, extra_metadata: dict | None = None,
+                 progress=None) -> dict:
+    """Read the project into a snapshot, in two writes, the file inventory and then its reading; progress may cancel either.
+
+    The inventory is staged beside `out` and removed at the end; only the reading publishes `out`.
+    """
+    from snapshot_store import _plain
+    _checked_options(format, extra_metadata)
     out = Path(out)
     _plain(out)
-    if not (target.is_dir() or target.is_file()):
-        raise ValueError(f"snapshot target does not exist: {target}")
-    root = repo_root(target).resolve()
-    target_key = relative_to_root(target, root) or "."
-    fingerprint = parser_fingerprint()
-    reusable = (previous is not None and previous.metadata.get("schema") == SCHEMA
-                and previous.metadata.get("root") == root.as_posix()
-                and previous.metadata.get("target") == target_key
-                and previous.metadata.get("parser_fingerprint") == fingerprint)
-    metrics = {"files_read": 0, "source_bytes_read": 0, "parsed_files": 0, "cache_hits": 0}
-    perimeter = Perimeter(target)
-    temporary = _temporary_beside(out)
-    supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
-    fast_reuse = (
-        reusable
-        and format == "sqlite"
-        and getattr(previous, "format", None) == "sqlite"
-        and hasattr(previous, "verified_reusable_headers")
-        and previous._has_json_cache()
-    )
-    run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress)
+    resolved = Path(target).resolve()
+    if not (resolved.is_dir() or resolved.is_file()):
+        raise ValueError(f"snapshot target does not exist: {resolved}")
+    inventory = _temporary_beside(out)
+    try:
+        write_inventory(target, inventory, parse_results=parse_results, progress=progress)
+        return write_reading(inventory, out, format=format, previous=previous, parse_results=parse_results,
+                             extra_metadata=extra_metadata, progress=progress)
+    finally:
+        inventory.unlink(missing_ok=True)
+        Path(str(inventory) + "-journal").unlink(missing_ok=True)
+
+
+def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previous=None,
+                  parse_results: dict | None = None, extra_metadata: dict | None = None,
+                  progress=None) -> dict:
+    """Read the files of an inventory (`file_inventory.write`), in its order and language, into a snapshot.
+
+    Host metadata joins the immutable header before semantic binding. Reserved
+    snapshot fields cannot be overridden by an embedding application's header.
+    A file changed since the inventory is read as it now is, and its inventory row corrected.
+    Its plan is the parse part only (`pipeline.plan.parse_nodes`): the inventory has no status yet, and the
+    resolve and observe nodes are the plan of the read snapshot (`plan.stored`).
+    """
+    from datetime import datetime, timezone
+    from snapshot_store import SnapshotWriter, _plain
+
+    extra_metadata = _checked_options(format, extra_metadata)
+    out = Path(out)
+    _plain(out)
+    with open_snapshot(inventory) as listed:
+        if listed.metadata.get("reading") != "not-started":
+            raise ValueError("not an inventory awaiting its reading")
+        root = Path(listed.metadata["root"])
+        target_key = listed.metadata["target"]
+        target = (root / target_key).resolve()
+        if not (target.is_dir() or target.is_file()):
+            raise ValueError(f"snapshot target does not exist: {target}")
+        fingerprint = parser_fingerprint()
+        reusable = (previous is not None and previous.metadata.get("schema") == SCHEMA
+                    and previous.metadata.get("root") == root.as_posix()
+                    and previous.metadata.get("target") == target_key
+                    and previous.metadata.get("parser_fingerprint") == fingerprint)
+        counted = listed.metadata["metrics"]
+        metrics = {"files_read": counted["files_read"], "source_bytes_read": counted["source_bytes_read"],
+                   "parsed_files": 0, "cache_hits": 0}
+        perimeter = Perimeter(target)
+        temporary = _temporary_beside(out)
+        supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
+        fast_reuse = (
+            reusable
+            and format == "sqlite"
+            and getattr(previous, "format", None) == "sqlite"
+            and hasattr(previous, "verified_reusable_headers")
+            and previous._has_json_cache()
+        )
+        # The plan's parse part (spec 8.4; no entries exist yet, so no status): a file in no parse node is not
+        # read by a language adapter. It keeps its inventory row and a file-level entry that says so.
+        from pipeline import plan as planning
+        rows = dict(listed.iter_inventory())
+        parse = {node["id"] for node in planning.parse_nodes(rows.items())}
+        run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress, rows,
+                            {path for path, row in rows.items() if planning.node_of(row) not in parse})
+        scope = listed.metadata["scope"]
     try:
         with SnapshotWriter(temporary, format) as writer:
             run.writer = writer
             if format == "sqlite":
                 writer.connection.execute("CREATE TABLE observed_coverage(file TEXT PRIMARY KEY,payload BLOB)")
-            run.c_family(run.sources(target, root, perimeter, supplied))
+            run.c_family(run.sources(root, supplied))
             run.newer(root)
             run.close_sources()
+            if format == "sqlite":
+                for path, row in run.rows.items():
+                    writer.put_inventory(path, row)
             metadata_record = {
                 **extra_metadata,
                 "schema": SCHEMA, "target": target_key, "root": root.as_posix(),
                 "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "git": git_info(root), "scope": scope_record(perimeter, root),
+                "git": git_info(root), "scope": scope,
                 "parser_fingerprint": fingerprint, "metrics": metrics,
             }
             run.seal(metadata_record, perimeter)
@@ -1537,10 +1443,12 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
                      engine=pstate.get("engine", True))
         for stale in (working / "snapshot").glob("manifest.*"):
             stale.unlink()
-        if (published / "snapshot/proposals.json").is_file():
-            shutil.copy2(published / "snapshot/proposals.json", working / "snapshot/proposals.json")
-        else:
-            (working / "snapshot/proposals.json").unlink(missing_ok=True)
+        # The stack record goes too: the fast scan keeps the signs of the sources only a full scan runs.
+        for carried in ("proposals.json", "technologies.json"):
+            if (published / "snapshot" / carried).is_file():
+                shutil.copy2(published / "snapshot" / carried, working / "snapshot" / carried)
+            else:
+                (working / "snapshot" / carried).unlink(missing_ok=True)
         _write_json_atomic(working / "state.json", state)
     manifest = working / state["snapshot"]["path"]
     target = _project_target(root, state["target"])
@@ -1562,7 +1470,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             if full:
                 # A full rebuild reuses nothing; Windows cannot replace the manifest this reader holds.
                 base.close()
-            written = write_snapshot(target, manifest, format=state["snapshot"]["format"],
+            written = read_project(target, manifest, format=state["snapshot"]["format"],
                                      previous=None if full else base)
         index = retrieval.ensure_index(manifest)
         if index["state"] != "fresh":
@@ -1802,7 +1710,7 @@ def cmd_write(args: argparse.Namespace) -> int:
     try:
         with ExitStack() as stack:
             previous = stack.enter_context(open_snapshot(Path(args.reuse))) if args.reuse else None
-            result = write_snapshot(Path(args.target), Path(args.out),
+            result = read_project(Path(args.target), Path(args.out),
                                     format=getattr(args, "format", "sqlite"), previous=previous)
         print(f"snapshot: {result['file_count']} files -> {args.out}")
     except (OSError, ValueError) as error:

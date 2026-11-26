@@ -333,8 +333,8 @@ class _Resolver:
             cursor = self.db.execute("SELECT payload FROM sem_exports WHERE file=? AND name=? ORDER BY rowid", (rel, exported))
             matches = cursor.fetchmany(2)
             cursor.close()
-            if len(matches) != 1:
-                return None, "export-missing-or-ambiguous"
+            if len(matches) != 1:  # none: the file does not export it; several: it does, in more records than one (an overload, a value and a type)
+                return None, "export-ambiguous" if matches else "export-missing"
             export = _unpack(matches[0][0])
             if export.get("type_only"):
                 return None, "type-only-export"

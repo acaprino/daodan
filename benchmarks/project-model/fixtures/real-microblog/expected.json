@@ -1,0 +1,633 @@
+{
+ "languages": [
+  {
+   "path": "microblog.py",
+   "language": "Python"
+  },
+  {
+   "path": "tests.py",
+   "language": "Python"
+  },
+  {
+   "path": "migrations/env.py",
+   "language": "Python"
+  },
+  {
+   "path": "migrations/script.py.mako",
+   "language": "Mako"
+  },
+  {
+   "path": "app/templates/base.html",
+   "language": "HTML"
+  },
+  {
+   "path": "app/templates/email/reset_password.html",
+   "language": "HTML"
+  },
+  {
+   "path": "boot.sh",
+   "language": "Shell"
+  },
+  {
+   "path": "Dockerfile",
+   "language": "Dockerfile"
+  },
+  {
+   "path": "Vagrantfile",
+   "language": "Ruby"
+  }
+ ],
+ "excluded": [
+  {
+   "path": "README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "LICENSE",
+   "why": "documentation"
+  },
+  {
+   "path": "migrations/README",
+   "why": "documentation"
+  },
+  {
+   "path": "app/static/loading.gif",
+   "why": "binary"
+  }
+ ],
+ "units": [
+  {
+   "name": null,
+   "kind": "python-project",
+   "root": ".",
+   "manifest": "requirements.txt",
+   "source_roots": [
+    "."
+   ],
+   "depends_on": [],
+   "config": {
+    "entry_files": [
+     "microblog.py",
+     "app/tasks.py",
+     "tests.py"
+    ],
+    "packages": [
+     "app"
+    ]
+   }
+  }
+ ],
+ "workspace": null,
+ "toolchains": [],
+ "dependencies": [
+  {
+   "unit": null,
+   "name": "aiosmtpd",
+   "declared": "==1.4.4.post2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "alembic",
+   "declared": "==1.12.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "atpublic",
+   "declared": "==4.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "attrs",
+   "declared": "==23.1.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Babel",
+   "declared": "==2.13.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "blinker",
+   "declared": "==1.7.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "certifi",
+   "declared": "==2023.11.17",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "charset-normalizer",
+   "declared": "==3.3.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "click",
+   "declared": "==8.1.7",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "defusedxml",
+   "declared": "==0.7.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "dnspython",
+   "declared": "==2.4.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "elastic-transport",
+   "declared": "==8.10.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "elasticsearch",
+   "declared": "==8.11.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "email-validator",
+   "declared": "==2.1.0.post1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask",
+   "declared": "==3.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "flask-babel",
+   "declared": "==4.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask-HTTPAuth",
+   "declared": "==4.8.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask-Login",
+   "declared": "==0.6.3",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask-Mail",
+   "declared": "==0.9.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask-Migrate",
+   "declared": "==4.0.5",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask-Moment",
+   "declared": "==1.0.5",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask-SQLAlchemy",
+   "declared": "==3.1.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Flask-WTF",
+   "declared": "==1.2.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "greenlet",
+   "declared": "==3.0.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "gunicorn",
+   "declared": "==21.2.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "httpie",
+   "declared": "==3.2.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "idna",
+   "declared": "==3.4",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "itsdangerous",
+   "declared": "==2.1.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Jinja2",
+   "declared": "==3.1.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "langdetect",
+   "declared": "==1.0.9",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Mako",
+   "declared": "==1.3.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "markdown-it-py",
+   "declared": "==3.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "MarkupSafe",
+   "declared": "==2.1.3",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "mdurl",
+   "declared": "==0.1.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "multidict",
+   "declared": "==6.0.4",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "packaging",
+   "declared": "==23.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "psycopg2-binary",
+   "declared": "==2.9.9",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Pygments",
+   "declared": "==2.17.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "PyJWT",
+   "declared": "==2.8.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "PySocks",
+   "declared": "==1.7.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "python-dotenv",
+   "declared": "==1.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "pytz",
+   "declared": "==2023.3.post1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "redis",
+   "declared": "==5.0.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "requests",
+   "declared": "==2.31.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "requests-toolbelt",
+   "declared": "==1.0.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "rich",
+   "declared": "==13.7.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "rq",
+   "declared": "==1.15.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "setuptools",
+   "declared": "==68.2.2",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "six",
+   "declared": "==1.16.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "SQLAlchemy",
+   "declared": "==2.0.23",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "typing_extensions",
+   "declared": "==4.8.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "urllib3",
+   "declared": "==2.1.0",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "Werkzeug",
+   "declared": "==3.0.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  },
+  {
+   "unit": null,
+   "name": "WTForms",
+   "declared": "==3.1.1",
+   "resolved": null,
+   "scope": "runtime",
+   "declared_in": "requirements.txt"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "Flask",
+   "unit": null,
+   "evidence": "app/__init__.py#L4"
+  },
+  {
+   "name": "SQLAlchemy",
+   "unit": null,
+   "evidence": "app/models.py#L7"
+  },
+  {
+   "name": "Alembic",
+   "unit": null,
+   "evidence": "migrations/env.py#L2"
+  },
+  {
+   "name": "RQ",
+   "unit": null,
+   "evidence": "app/__init__.py#L13"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": null,
+   "evidence": "app/templates/base.html#L12"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "config.py#L13"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "config.py#L12"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "Dockerfile#L5"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": "config.py#L24"
+  },
+  {
+   "name": "Elasticsearch",
+   "kind": "search",
+   "evidence": "config.py#L23"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "config.py#L15"
+  },
+  {
+   "name": "Microsoft Translator",
+   "kind": "api",
+   "evidence": "app/translate.py#L15"
+  },
+  {
+   "name": "Gravatar",
+   "kind": "api",
+   "evidence": "app/models.py#L142"
+  },
+  {
+   "name": "jsDelivr",
+   "kind": "cdn",
+   "evidence": "app/templates/base.html#L12"
+  },
+  {
+   "name": "nginx",
+   "kind": "proxy",
+   "evidence": "deployment/nginx/microblog#L25"
+  }
+ ],
+ "needs": {
+  "container": false,
+  "reason": ""
+ },
+ "traps": [
+  "the only manifest is requirements.txt, a full pip freeze of 54 pinned names with no project name: the unit is named by its root and its dependencies have unit null",
+  "requirements.txt does not separate direct from transitive packages and no other file does: all 54 lines are declared there with ==, so they are all listed; the code imports only 21 of them (alembic, click, elasticsearch, Flask, flask-babel, Flask-HTTPAuth, Flask-Login, Flask-Mail, Flask-Migrate, Flask-Moment, Flask-SQLAlchemy, Flask-WTF, langdetect, PyJWT, python-dotenv, redis, requests, rq, SQLAlchemy, Werkzeug, WTForms), gunicorn is run by Procfile and boot.sh, and names such as certifi, idna, greenlet or httpie are imported nowhere",
+  "there is no lockfile: the == pins are the declared range and resolved stays null",
+  "the distribution name differs from the import name: PyJWT is imported as jwt, python-dotenv as dotenv, Flask-HTTPAuth as flask_httpauth, psycopg2-binary would be psycopg2",
+  "Dockerfile line 5 installs gunicorn, pymysql and cryptography with pip outside requirements.txt and without a version: pymysql and cryptography are declared by no manifest and are not in dependencies; MySQL is a service only because of that line",
+  "no file declares a Python version: Dockerfile says FROM python:slim, a tag without a version, and there is no runtime.txt, .python-version, pyproject.toml or CI workflow; Vagrantfile names the box ubuntu/jammy64, an operating system and not a toolchain",
+  "the database is whatever DATABASE_URL names: config.py falls back to the SQLite file app.db and rewrites postgres:// to postgresql://; psycopg2-binary is in requirements.txt and never imported, pymysql comes only from the Dockerfile",
+  "Redis is the RQ queue microblog-tasks, not a cache; Elasticsearch is optional (app.elasticsearch is None without ELASTICSEARCH_URL) and mail goes to whatever SMTP server MAIL_SERVER names",
+  "one unit, three ways in: the web app microblog.py (FLASK_APP in .flaskenv, gunicorn microblog:app in Procfile, boot.sh and the supervisor file), the RQ worker that imports app/tasks.py by the dotted name app.tasks.export_posts built as a string in app/models.py, and tests.py run directly with unittest",
+  "config.py is a top-level module next to the app package (from config import Config), not part of it",
+  "app/templates/*.html and the two .txt mail templates are Jinja2 under plain extensions; migrations/script.py.mako is a Mako template, not Python; deployment/nginx/microblog is an nginx configuration with no extension",
+  "Bootstrap 5.3.2 is loaded from the jsDelivr CDN in app/templates/base.html and Moment.js is injected by Flask-Moment: neither is a dependency in any manifest",
+  "migrations/versions/*.py were autogenerated by Alembic and then kept and edited in the repository: they are project code, not excluded; migrations/alembic.ini, env.py and script.py.mako come from the Flask-Migrate template",
+  "app/translations/es/LC_MESSAGES/messages.po is the hand-translated Spanish catalog and is kept; the compiled .mo files are ignored by .gitignore and exist only after flask translate compile, which the Dockerfile and the Procfile run",
+  "app/cli.py shells out to pybabel with os.system: the commands are strings, not imports",
+  "deployment/ holds an nginx site and two supervisor programs written for /home/ubuntu/microblog: they describe one deployment and are not needed to run the app",
+  "config.py loads an .env file that is not in the repository",
+  "the Microsoft Translator endpoint and the Gravatar URL are written in the code (app/translate.py, app/models.py); only the translator key comes from the environment"
+ ],
+ "cases": [
+  "one-unit-many-parts",
+  "unit-no-name",
+  "name-mismatch",
+  "version-absent",
+  "no-lockfile",
+  "transitive-not-direct",
+  "ambiguous-extension",
+  "documentation-tree",
+  "binary-file",
+  "service-from-config",
+  "saas-service",
+  "framework-from-files"
+ ]
+}

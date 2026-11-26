@@ -1,0 +1,22 @@
+{
+ "variant": "installed-copy",
+ "argv": [
+  "timeout",
+  "--kill-after=10",
+  "900",
+  "/daodan/state/venvs/./bin/python",
+  "-I",
+  "/daodan/state/tools/flask_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"routes\": [{\"rule\": \"/static/<path:filename>\", \"methods\": [\"GET\"], \"endpoint\": \"static\", \"host\": null, \"subdomain\": null, \"parts\": [[false, \"/\"], [false, \"static\"], [false, \"/\"], [true, \"filename\"]], \"arguments\": {\"filename\": {\"converter\": \"werkzeug.routing.converters.PathConverter\", \"part_isolating\": false}}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"flask.app\", \"qualname\": \"Flask.__init__.<locals>.<lambda>\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/flask/app.py\", \"line\": 278, \"environment\": true}}, {\"rule\": \"/shared\", \"methods\": [\"GET\"], \"endpoint\": \"shared\", \"host\": null, \"subdomain\": null, \"parts\": [[false, \"/\"], [false, \"shared\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"sharedlib.views\", \"qualname\": \"shared_view\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/sharedlib/views.py\", \"line\": 1, \"environment\": true}}, {\"rule\": \"/own\", \"methods\": [\"GET\"], \"endpoint\": \"own\", \"host\": null, \"subdomain\": null, \"parts\": [[false, \"/\"], [false, \"own\"]], \"arguments\": {}, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"wsgi\", \"qualname\": \"own\", \"file\": \"wsgi.py\", \"line\": 10, \"environment\": false}}]}\n",
+ "stderr": "",
+ "seconds": 0.55,
+ "max_rss_mb": 53.0,
+ "left_in_the_project": [
+  "__pycache__/wsgi.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 1261
+}

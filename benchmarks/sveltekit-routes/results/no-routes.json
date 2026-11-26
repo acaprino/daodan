@@ -1,0 +1,41 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "svelte-kit",
+   "sync"
+  ],
+  "cwd": "no-routes",
+  "generated": {
+   ".svelte-kit/generated/client/app.js": "// in dev, this makes Vite inject its client as this module's first dependency,\n// so that global constant replacements are installed before any other module\n// (including user hooks) evaluates. In build it's inert.\nimport.meta.hot;\n\n\n\n\nexport { matchers } from './matchers.js';\n\nexport const nodes = [\n\t() => import('./nodes/0'),\n\t() => import('./nodes/1')\n];\n\nexport const server_loads = [];\n\nexport const dictionary = {\n\t\t\n\t};\n\nexport const hooks = {\n\thandleError: (({ error }) => { console.error(error) }),\n\t\n\treroute: (() => {}),\n\ttransport: {}\n};\n\nexport const decoders = Object.fromEntries(Object.entries(hooks.transport).map(([k, v]) => [k, v.decode]));\nexport const encoders = Object.fromEntries(Object.entries(hooks.transport).map(([k, v]) => [k, v.encode]));\n\nexport const hash = false;\n\nexport const decode = (type, value) => decoders[type](value);\n\nexport { default as root } from '../root.js';\n\nexport const get_error_template = () => import('../shared/error-template.js').then(m => m.default);",
+   ".svelte-kit/generated/client/matchers.js": "import { match as integer } from \"../../../src/params/integer.ts\";\n\nexport const matchers = { integer };",
+   ".svelte-kit/generated/client/nodes/0.js": "export { default as component } from \"../../../../node_modules/@sveltejs/kit/src/runtime/components/svelte-5/layout.svelte\";",
+   ".svelte-kit/generated/client/nodes/1.js": "export { default as component } from \"../../../../node_modules/@sveltejs/kit/src/runtime/components/svelte-5/error.svelte\";",
+   ".svelte-kit/non-ambient.d.ts": "\n// this file is generated — do not edit it\n\n\ndeclare module \"svelte/elements\" {\n\texport interface HTMLAttributes<T> {\n\t\t'data-sveltekit-keepfocus'?: true | '' | 'off' | undefined | null;\n\t\t'data-sveltekit-noscroll'?: true | '' | 'off' | undefined | null;\n\t\t'data-sveltekit-preload-code'?:\n\t\t\t| true\n\t\t\t| ''\n\t\t\t| 'eager'\n\t\t\t| 'viewport'\n\t\t\t| 'hover'\n\t\t\t| 'tap'\n\t\t\t| 'off'\n\t\t\t| undefined\n\t\t\t| null;\n\t\t'data-sveltekit-preload-data'?: true | '' | 'hover' | 'tap' | 'off' | undefined | null;\n\t\t'data-sveltekit-reload'?: true | '' | 'off' | undefined | null;\n\t\t'data-sveltekit-replacestate'?: true | '' | 'off' | undefined | null;\n\t}\n}\n\nexport {};\n\n\ndeclare module \"$app/types\" {\n\ttype MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;\n\n\texport interface AppTypes {\n\t\tRouteId(): \"/\";\n\t\tRouteParams(): {\n\t\t\t\n\t\t};\n\t\tLayoutParams(): {\n\t\t\t\"/\": Record<string, never>\n\t\t};\n\t\tPathname(): \"/\";\n\t\tResolvedPathname(): `${\"\" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;\n\t\tAsset(): string & {};\n\t}\n}",
+   ".svelte-kit/tsconfig.json": "{\n\t\"compilerOptions\": {\n\t\t\"paths\": {\n\t\t\t\"$lib\": [\n\t\t\t\t\"../src/lib\"\n\t\t\t],\n\t\t\t\"$lib/*\": [\n\t\t\t\t\"../src/lib/*\"\n\t\t\t],\n\t\t\t\"$app/types\": [\n\t\t\t\t\"./types/index.d.ts\"\n\t\t\t]\n\t\t},\n\t\t\"rootDirs\": [\n\t\t\t\"..\",\n\t\t\t\"./types\"\n\t\t],\n\t\t\"verbatimModuleSyntax\": true,\n\t\t\"isolatedModules\": true,\n\t\t\"lib\": [\n\t\t\t\"esnext\",\n\t\t\t\"DOM\",\n\t\t\t\"DOM.Iterable\"\n\t\t],\n\t\t\"moduleResolution\": \"bundler\",\n\t\t\"module\": \"esnext\",\n\t\t\"noEmit\": true,\n\t\t\"target\": \"esnext\"\n\t},\n\t\"include\": [\n\t\t\"ambient.d.ts\",\n\t\t\"env.d.ts\",\n\t\t\"non-ambient.d.ts\",\n\t\t\"./types/**/$types.d.ts\",\n\t\t\"../vite.config.js\",\n\t\t\"../vite.config.ts\",\n\t\t\"../src/**/*.js\",\n\t\t\"../src/**/*.ts\",\n\t\t\"../src/**/*.svelte\",\n\t\t\"../test/**/*.js\",\n\t\t\"../test/**/*.ts\",\n\t\t\"../test/**/*.svelte\",\n\t\t\"../tests/**/*.js\",\n\t\t\"../tests/**/*.ts\",\n\t\t\"../tests/**/*.svelte\"\n\t],\n\t\"exclude\": [\n\t\t\"../node_modules/**\",\n\t\t\"../src/service-worker.js\",\n\t\t\"../src/service-worker/**/*.js\",\n\t\t\"../src/service-worker.ts\",\n\t\t\"../src/service-worker/**/*.ts\",\n\t\t\"../src/service-worker.d.ts\",\n\t\t\"../src/service-worker/**/*.d.ts\"\n\t]\n}",
+   ".svelte-kit/types/route_meta_data.json": "{\n\t\"/\": []\n}",
+   ".svelte-kit/types/src/routes/$types.d.ts": "import type * as Kit from '@sveltejs/kit';\n\ntype Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;\ntype MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;\ntype RouteParams = {  };\ntype RouteId = '/';\ntype MaybeWithVoid<T> = {} extends T ? T | void : T;\nexport type RequiredKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? never : K; }[keyof T];\ntype OutputDataShape<T> = MaybeWithVoid<Omit<App.PageData, RequiredKeys<T>> & Partial<Pick<App.PageData, keyof T & keyof App.PageData>> & Record<string, any>>\ntype EnsureDefined<T> = T extends null | undefined ? {} : T;\ntype OptionalUnion<U extends Record<string, any>, A extends keyof U = U extends U ? keyof U : never> = U extends unknown ? { [P in Exclude<A, keyof U>]?: never } & U : never;\nexport type Snapshot<T = any> = Kit.Snapshot<T>;\ntype LayoutRouteId = RouteId | null\ntype LayoutParams = RouteParams & {  }\ntype LayoutParentData = EnsureDefined<{}>;\n\nexport type LayoutServerData = null;\nexport type LayoutData = Expand<LayoutParentData>;\nexport type LayoutProps = { params: LayoutParams; data: LayoutData; children: import(\"svelte\").Snippet }"
+  },
+  "left_in_the_project": [
+   ".svelte-kit/ambient.d.ts",
+   ".svelte-kit/env.d.ts",
+   ".svelte-kit/generated/client/app.js",
+   ".svelte-kit/generated/client/matchers.js",
+   ".svelte-kit/generated/client/nodes/0.js",
+   ".svelte-kit/generated/client/nodes/1.js",
+   ".svelte-kit/generated/root.js",
+   ".svelte-kit/generated/root.svelte",
+   ".svelte-kit/generated/server/internal.js",
+   ".svelte-kit/generated/shared/error-template.js",
+   ".svelte-kit/non-ambient.d.ts",
+   ".svelte-kit/tsconfig.json",
+   ".svelte-kit/types/route_meta_data.json",
+   ".svelte-kit/types/src/routes/$types.d.ts"
+  ],
+  "returncode": 0,
+  "seconds": 1.5,
+  "stderr": "",
+  "stdout": ""
+ }
+]

@@ -473,8 +473,9 @@ def test_the_pre_map_lists_the_units_with_their_declared_libraries_and_the_unit_
         ("root", None, None, None), ("pkg", "root", "pkg/pyproject.toml", "confirmed")]
     assert found["units"][1]["dependencies"] == [{"name": "pytest", "scope": "pypi", "state": "declared",
                                                   "source": "pkg/pyproject.toml:9"}]
-    assert [(item["name"], item["source"], item["state"]) for item in found["technologies"]] == [
-        ("pytest", "pkg/pyproject.toml:9", "recognized"), ("python", "pkg/pyproject.toml", "declared")]
+    # a recognized technology names the mark of its registry entry, as the envelope does; a toolchain has no entry
+    assert [(item["name"], item["source"], item["state"], item.get("mark")) for item in found["technologies"]] == [
+        ("pytest", "pkg/pyproject.toml:9", "recognized", "pytest"), ("python", "pkg/pyproject.toml", "declared", None)]
     with pytest.raises(ValueError, match="stale"):
         app_view.premap({"state": "needs_refresh", "reason": "stale"}, {}, {})
 
@@ -528,9 +529,9 @@ def test_the_graph_groups_files_by_their_smallest_module_or_else_by_their_direct
 
 
 @pytest.fixture(scope="module")
-def levels(tmp_path_factory):
-    """A run with three build units, a service the stack recognises, a framework two of them declare, a framework
-    only mentioned, a library the registry knows, a tool and a library it does not know, a deduced link between two units and a module with a
+def levels(real_stack, tmp_path_factory):
+    """A run with three build units, a service the stack recognises, declared and mentioned by a host in a URL, a
+    framework two of them declare, a service only mentioned by a host, a library the registry knows, a tool and a library it does not know, a deduced link between two units and a module with a
     directory whose files call each other, one holding a class with two methods."""
     import mcp_service
     pets = HERE.parent / "benchmarks/connection-points/fixtures/pets"
@@ -538,9 +539,10 @@ def levels(tmp_path_factory):
     shutil.copytree(pets / "app", project)
     files = {"web/package.json": json.dumps({"name": "web", "version": "1.0.0", "dependencies": {
                  "stripe": "^14.0.0", "express": "^4.19.0", "@acme/widgets": "^1.0.0", "zod": "^3.23.0",
-                 "jest": "^29.7.0"}}, indent=2),  # express: line 6, zod (a library) 8, jest (a tool) 9
-             "web/lib/pay.js": 'const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);\nmodule.exports = stripe;\n',
-             "web/lib/trace.js": "module.exports = process.env.OTEL_SERVICE_NAME;\n",
+                 "jest": "^29.7.0", "lemonsqueezy.ts": "^0.1.0"}}, indent=2),
+             # express: line 6, zod (a library) 8, jest (a tool) 9
+             "web/lib/pay.js": 'module.exports = "https://api.lemonsqueezy.com/v1/checkouts";\n',
+             "web/lib/trace.js": 'module.exports = "https://api.pushbullet.com/v2";\n',
              "admin/package.json": json.dumps({"name": "admin", "version": "1.0.0", "dependencies": {
                  "express": "^4.19.0"}}, indent=2),  # express: line 5
              "admin/index.js": "module.exports = 1;\n",
@@ -633,7 +635,7 @@ def test_a_group_opens_in_place_and_its_summary_arrows_become_the_arrows_of_what
     assert two[("file:web/api.ts", "file:server/app.py", "confirmed")]["counts"] == {"calls": 2}
     assert two[("file:web/api.ts", "file:server/app.py", "uncertain")]["counts"] == {"calls": 1}
     assert two[("file:web/package.json", "external:stripe", "confirmed")]["counts"] == {"uses": 1}
-    assert two[(f"{web}#web/lib", "external:stripe", "uncertain")]["counts"] == {"uses": 1}
+    assert two[(f"{web}#web/lib", "external:lemonsqueezy", "uncertain")]["counts"] == {"uses": 1}
     # An inner directory open inside the open module, whatever the order asked.
     inner = opened(app, store, server)
     assert [(group["id"], group["parent"]) for group in inner["open"]] == [(server, None), (store, server)]
@@ -673,7 +675,7 @@ def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_
     from snapshot_store import resolve_run_snapshot
     run = levels.root / "runs" / "levels"
     stack = technologies.ensure(resolve_run_snapshot(run, json.loads((run / "state.json").read_text(encoding="utf-8"))))
-    assert "opentelemetry" in {item["id"] for item in stack["mentioned"]}  # a framework only mentioned
+    assert "pushbullet" in {item["id"] for item in stack["mentioned"]}  # a service only mentioned
     assert {"jest", "nodejs"} == {item["id"] for item in stack["technologies"] if item["category"] == "tool"}
     assert next(unit for unit in stack["units"] if unit["paths"] == ["web"])["frameworks"] == ["express"]  # zod is no framework
     # The first level: each module carries the frameworks and libraries it declares, each with its category, the
@@ -704,7 +706,7 @@ def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_
         ends = {node["id"] for node in found["nodes"]} | {
             end for edge in found["edges"] for end in (edge["source"], edge["target"])}
         assert not ends & {"external:express", "external:zod", "external:jest", "external:nodejs",
-                           "external:opentelemetry"}
+                           "external:pushbullet"}
     assert opened(app) == top
     # codice alone keeps the stack, the module's own, and drops the services
     code = {node["id"]: node for node in app.graph({"levels": json.dumps(["codice"])})["nodes"]}
@@ -762,7 +764,8 @@ def test_a_file_a_symbol_a_node_the_run_does_not_show_or_a_path_is_refused_as_a_
     code = app.graph({"levels": json.dumps(["codice"])})
     assert code["levels"] == ["codice"] and {node["level"] for node in code["nodes"]} == {"codice"}
     assert not any(end.startswith("external:") for edge in code["edges"] for end in (edge["source"], edge["target"]))
-    assert {node["id"] for node in code["nodes"]} == {node["id"] for node in both["nodes"]} - {"external:stripe"}
+    assert {node["id"] for node in code["nodes"]} == {node["id"] for node in both["nodes"]} - {
+        "external:stripe", "external:lemonsqueezy"}
     for asked, why in ((["funzioni"], "'funzioni' is not built in the app yet"), (["Funzionale"], "no level 'Funzionale'"),
                        (["infrastruttura"], "only beside 'codice'"), ([], "a JSON list of levels"),
                        ("codice", "a JSON list of levels")):
@@ -913,6 +916,7 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
         assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["scan"] == "fresh"
         assert state["mcp"]["args"][-2:] == ["--project", project.parent.as_posix()]
+        assert state["mcp"]["command"] == sys.executable  # its packages are the app's: no `uv` on the PATH
         # what Daodan writes about the checkout is beside it: a container's output may not be inside the project
         assert (project.parent / ".daodan").is_dir() and not (project / ".daodan").exists()
         # The page observes: the run's events from its start and the app's state, then again from the cursors.
@@ -1392,18 +1396,20 @@ def test_the_mark_of_a_registry_entry_is_served_by_its_id_and_nothing_else_is(tm
     monkeypatch.setattr(service_registry, "mark_file", mark_file)
     app = launcher.App(tmp_path / "work", environment={})
     # an entry whose mark is in its owner's package: the test's own, the distributed registry ships every mark it has
-    app.registry["packaged.example"] = {"id": "packaged.example", "mark": None,
-                                        "mark_source": {"url": "https://owner.example/icons.zip"}}
+    app.marks.entries["packaged.example"] = {"id": "packaged.example", "mark": None,
+                                             "mark_source": {"url": "https://owner.example/icons.zip"}}
     server = app.serve(token="t")
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         port = server.server_address[1]
         stripe = (service_registry.REGISTRY.parent / "marks/stripe.svg").read_bytes()
         assert raw(port, "/api/app/mark?id=stripe&token=t") == (200, "image/svg+xml", stripe)
+        assert raw(port, "/api/mark?id=stripe&token=t") == (200, "image/svg+xml", stripe)  # the map's page, on the same server
         assert raw(port, "/api/app/mark?id=stripe")[0] == 403
         for wrong in ("nope", "marks/stripe.svg", "../data/marks/stripe.svg", ""):
             assert raw(port, f"/api/app/mark?id={wrong}&token=t")[0] == 400, wrong
         assert raw(port, "/api/app/mark?token=t")[0] == 400
+        assert raw(port, "/api/mark?id=nope&token=t")[0] == 404 and raw(port, "/api/mark?id=stripe")[0] == 403
         assert raw(port, "/api/app/mark?id=adobe.analytics&token=t")[0] == 404  # an entry without a mark: no image
         started = time.monotonic()
         assert raw(port, "/api/app/mark?id=packaged.example&token=t")[0] == 404

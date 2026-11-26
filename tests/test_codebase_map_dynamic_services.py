@@ -90,7 +90,7 @@ def context_of(tmp_path, files: dict):
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         yield premap.Context(manifest, store)
 
@@ -998,7 +998,7 @@ def test_a_pre_map_command_never_sees_a_value_and_only_daodan_s_helper_gets_them
     project.mkdir()
     (project / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
     manifest = tmp_path / "snap" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     given = []
 
     def recorded(project, commands, **options):
@@ -1816,7 +1816,7 @@ def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped:
         return {"state": state, "sites": [], "gaps": [dict(gap) for gap in found],
                 "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]} \
             if state == "ran" else {"state": state, "cause": "no engine", "remedy": "start one"}
-    return SimpleNamespace(ENTRY="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
+    return SimpleNamespace(NAME="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
                            external=lambda callee: {"manager": "python", "package": "x", "version": None},
                            plan=lambda record, files, read: {"runs": [{"root": ".", "runner": "pytest",
                                                                        "declared_in": "pyproject.toml"}], "gaps": []},
@@ -2009,7 +2009,7 @@ def the_driver():
     import modal_pipeline
     volume, sent = modal_pipeline.volume, set()
     own = f"{modal_pipeline.SCRATCH}/test-{uuid.uuid4().hex[:12]}"
-    bundle = f"project-model/{Path(modal_pipeline.DOCKER[0]).name}"
+    bundle = f"{modal_pipeline.BUNDLES.lstrip('/')}/{Path(modal_pipeline.DOCKER[0]).name}"
 
     def commit():
         root = Path("/results")
@@ -2045,9 +2045,10 @@ def test_on_modal_the_postgres_tududi_s_ci_declares_answers_the_tests_at_localho
                                             out_dir=tmp_path / "out", prepare=["true"], outputs=["/daodan/out"],
                                             env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=600,
                                             prepare_timeout=900)
+    assert result["state"] != "failed", result.get("cause")  # before the record, which a run that failed early has not
     rows = [json.loads(line) for line in (tmp_path / "out" / container.RECORD_NAME).read_text().splitlines()]
     print(json.dumps(rows, indent=1), flush=True)
-    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert result["state"] == "done" and result["exit_code"] == 0, result.get("cause") or result
     [service] = [row for row in rows if row["phase"] == "service"]
     assert service["outcome"] == "ready" and "postgres@sha256:" in service["pinned"], service
     said = json.loads((tmp_path / "out" / "out" / "probe.json").read_text())
@@ -2076,9 +2077,10 @@ def test_on_modal_the_ci_s_steps_run_beside_the_services_and_the_tests_find_what
                                             out_dir=tmp_path / "out", prepare=["true"], outputs=["/daodan/out"],
                                             env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=600,
                                             prepare_timeout=900)
+    assert result["state"] != "failed", result.get("cause")  # before the record, which a run that failed early has not
     rows = [json.loads(line) for line in (tmp_path / "out" / container.RECORD_NAME).read_text().splitlines()]
     print(json.dumps(rows, indent=1), flush=True)
-    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert result["state"] == "done" and result["exit_code"] == 0, result.get("cause") or result
     [step] = result["ci_steps"]
     assert (step["outcome"], step["exit_code"]) == ("exited", 0) and said.ci_steps == result["ci_steps"]
     assert [row["outcome"] for row in rows if row["phase"] == "service"] == ["ready", "ready"]  # beside each phase
@@ -2109,7 +2111,7 @@ def test_on_modal_a_tracked_env_file_s_value_reaches_the_service_and_nothing_the
                                             env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=600)
     kept = {path.name: path.read_text(encoding="utf-8") for path in (tmp_path / "out").rglob("*") if path.is_file()}
     print(json.dumps(kept, indent=1), flush=True)
-    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert result["state"] == "done" and result["exit_code"] == 0, result.get("cause") or result
     assert [item["outcome"] for item in said.services] == ["ready"]
     assert json.loads(kept["sql.txt"])["rows"] == [["[.env:DB_NAME]"]]  # the database the value names, masked
     assert secret not in json.dumps([kept, result, said])
@@ -2139,7 +2141,7 @@ def test_on_modal_a_minus_d_build_keeps_its_database_masked_and_withholds_the_ob
                                             env={"PATH": "/usr/local/bin:/usr/bin:/bin"})
     kept = {path.name: path.read_bytes() for path in (tmp_path / "out").rglob("*") if path.is_file()}
     print(json.dumps({"result": result, "kept": sorted(kept)}, indent=1, default=str), flush=True)
-    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert result["state"] == "done" and result["exit_code"] == 0, result.get("cause") or result
     [database] = json.loads(kept["compile_commands.json"])
     assert database["command"] == 'g++ -DVERSION="\\"[.env:VERSION]\\"" -c main.cpp'
     assert "main.o" not in kept and [Path(path).name for path in result["outputs"]] == ["compile_commands.json"]
@@ -2165,7 +2167,7 @@ def test_on_modal_a_stage_s_arg_from_the_tracked_env_reaches_both_sandboxes_and_
                                             env={"PATH": "/usr/local/bin:/usr/bin:/bin"},
                                             dotenv_env=[("VERSION", ".env")])
     kept = {path.name: path.read_text(encoding="utf-8") for path in (tmp_path / "out").rglob("*") if path.is_file()}
-    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert result["state"] == "done" and result["exit_code"] == 0, result.get("cause") or result
     assert kept["arg.txt"] == "prep=[.env:VERSION] arg=[.env:VERSION]\n"
     assert secret not in json.dumps([kept, result])
 
@@ -2218,7 +2220,9 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
              "gitlab": ([planned], DATABASE_URL.replace("@localhost:", "@db:")),
              "compose": (composed, "postgres://postgres:changethis@localhost:5432/app")}
     image = (modal.Image.debian_slim(python_version="3.13").apt_install("git")
-             .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"]))
+             .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"])
+             # `container` reads the package managers' hosts at import, from `data` beside its folder's parent
+             .add_local_file(SCRIPTS.parent / "data/package-managers.json", "/daodan/data/package-managers.json"))
     with the_driver() as modal_pipeline:
         bundle = modal_pipeline._bundle()
         box = modal.Sandbox.create(image=image, app=modal.App.lookup("daodan-pipeline-sandboxes",
@@ -2240,7 +2244,7 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
     print(json.dumps(said, indent=1), flush=True)
     for label, (specs, url) in cases.items():
         result, probe, rows = said[label]["result"], said[label]["probe"], said[label]["rows"]
-        assert result["state"] == "done" and result["exit_code"] == 0, result
+        assert result["state"] == "done" and result["exit_code"] == 0, result.get("cause") or result
         assert [s["outcome"] for s in result["services"]] == ["ready"] * len(specs), result
         *services, execute = rows
         for service in services:

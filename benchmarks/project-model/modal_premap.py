@@ -62,6 +62,7 @@ if LOCAL:
                            " && go build -o /usr/local/bin/daodan-enry .")
              .add_local_dir(REPO / "daodan/core", REMOTE_SCRIPTS,
                                  ignore=["**/__pycache__/**"])
+             .add_local_dir(REPO / "daodan/data", "/daodan/map/data")  # `container` reads package-managers.json
              .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures")
              .add_local_file(HERE / "score.py", f"{REMOTE_PM}/score.py")
              .add_local_file(HERE / "tools/daodan_modules.py", f"{REMOTE_PM}/tools/daodan_modules.py")
@@ -137,7 +138,7 @@ def store_outputs(names: list) -> dict:
     for name in names:
         project, manifest = _case(name, projects[name])
         os.environ["PREMAP_ROOT"] = str(project)
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         log: list = []
         premap.write(manifest, runner=_runner(log))
         out["store"][name] = log
@@ -165,7 +166,7 @@ def score_fixtures(names: list) -> dict:
             else:
                 project, manifest = _case(name, None)
             os.environ["PREMAP_ROOT"] = str(project)
-            snapshot.write_snapshot(project, manifest)
+            snapshot.read_project(project, manifest)
             graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
             middle = time.monotonic()
             log = []

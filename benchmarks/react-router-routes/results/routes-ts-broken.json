@@ -1,0 +1,17 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes",
+   "--json"
+  ],
+  "cwd": "routes-ts-broken",
+  "left_in_the_project": [],
+  "returncode": 1,
+  "seconds": 1.58,
+  "stderr": "Error: Route config in \"routes.ts\" is invalid.\n\nError: Transform failed with 1 error:\n/work/routes-ts-broken/app/routes.ts:3:0: ERROR: Expected \")\" but found end of file\n    at failureErrorWithLog (/work/routes-ts-broken/node_modules/esbuild/lib/main.js:1467:15)\n    at /work/routes-ts-broken/node_modules/esbuild/lib/main.js:736:50\n    at responseCallbacks.<computed> (/work/routes-ts-broken/node_modules/esbuild/lib/main.js:603:9)\n    at handleIncomingPacket (/work/routes-ts-broken/node_modules/esbuild/lib/main.js:658:12)\n    at Socket.readFromStdout (/work/routes-ts-broken/node_modules/esbuild/lib/main.js:581:7)\n    at Socket.emit (node:events:514:28)\n    at addChunk (node:internal/streams/readable:569:12)\n    at readableAddChunkPushByteMode (node:internal/streams/readable:520:3)\n    at Socket.Readable.push (node:internal/streams/readable:400:5)\n    at Pipe.onStreamRead (node:internal/stream_base_commons:194:23)\n    at createConfigLoader (/work/routes-ts-broken/node_modules/@react-router/dev/dist/cli/index.js:648:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at loadConfig (/work/routes-ts-broken/node_modules/@react-router/dev/dist/cli/index.js:748:22)\n    at routes (/work/routes-ts-broken/node_modules/@react-router/dev/dist/cli/index.js:2370:22)\n    at run2 (/work/routes-ts-broken/node_modules/@react-router/dev/dist/cli/index.js:2716:7)\n",
+  "stdout": ""
+ }
+]

@@ -1,0 +1,60 @@
+{
+ "build_alone": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/tmp/m2-alone-microservices",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 1448,
+  "returncode": 0,
+  "seconds": 59.86,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "kind": "cold",
+ "name": "microservices",
+ "package": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/tmp/m2-cold-microservices",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 1501,
+  "returncode": 0,
+  "seconds": 15.3,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "restore": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline",
+   "-Dmaven.repo.local=/tmp/m2-cold-microservices"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 643,
+  "returncode": 0,
+  "seconds": 103.72,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ }
+}

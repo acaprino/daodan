@@ -26,7 +26,7 @@ def premapped(tmp_path, files: dict) -> dict:
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=READERS)
     assert not [gap for gap in record["gaps"] if gap["kind"] == "source_failed"]
     return record

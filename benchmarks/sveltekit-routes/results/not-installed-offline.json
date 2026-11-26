@@ -1,0 +1,16 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "svelte-kit",
+   "sync"
+  ],
+  "cwd": "not-installed-offline",
+  "left_in_the_project": [],
+  "returncode": 1,
+  "seconds": 0.55,
+  "stderr": "npm error code ENOTCACHED\nnpm error request to https://registry.npmjs.org/svelte-kit failed: cache mode is 'only-if-cached' but no cached response is available.\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-11-23T09_38_12_119Z-debug-0.log\n",
+  "stdout": ""
+ }
+]

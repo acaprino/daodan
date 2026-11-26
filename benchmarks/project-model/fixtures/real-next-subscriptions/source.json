@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/vercel/nextjs-subscription-payments",
+ "commit": "bdd0813206e47e6b218d42f15a7976c8a0d3c3eb",
+ "licence": "MIT",
+ "why": "one Next.js app between two services that call each other through it: Supabase for login and data, Stripe for checkout, with a webhook that writes back"
+}

@@ -1,0 +1,20 @@
+{
+ "variant": "root-and-sub",
+ "argv": [
+  "timeout",
+  "--kill-after=10",
+  "900",
+  "/daodan/state/venvs/api/bin/python",
+  "-I",
+  "/daodan/state/tools/flask_routes.py"
+ ],
+ "cwd": "api",
+ "returncode": 127,
+ "stdout": "",
+ "stderr": "timeout: failed to run command \u2018/daodan/state/venvs/api/bin/python\u2019: No such file or directory\n",
+ "seconds": 0.04,
+ "max_rss_mb": 34.6,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

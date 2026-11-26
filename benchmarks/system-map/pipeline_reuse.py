@@ -18,7 +18,7 @@ CALLS = {("premap", "derive"): "premaps_derived", ("entries", "_syntax"): "entry
          ("engine_pass", "_launch"): "indexer_launch_attempts", ("engine_pass", "index_stage"): "index_stages",
          ("container", "find_engine"): "engine_probes", ("container", "run_in_container"): "container_requests",
          ("container", "copy_perimeter"): "container_copies", ("preparation", "fetched"): "pinned_inputs_requested",
-         ("engine_tools", "download"): "download_calls", ("snapshot", "write_snapshot"): "snapshots_written"}
+         ("engine_tools", "download"): "download_calls", ("snapshot", "read_project"): "snapshots_written"}
 
 
 def started(args) -> str:
@@ -73,7 +73,7 @@ def measure(manifest, output):
     import premap
     events = []
     result = pipeline.run(manifest, listeners=[events.append])
-    assert list(result) == ["scan", "stack", "analyze", "dynamic", "union"]
+    assert list(result) == ["parse", "scan", "stack", "analyze", "dynamic", "union"]
     report = json.loads(premap.path(manifest).read_text())
     summary = {"events": [f"{e['step']}.{e['kind']}" for e in events if e["kind"].startswith("step.")],
                "gaps_by_step": Counter(e["step"] for e in events if e["kind"] == "gap"),
@@ -92,7 +92,7 @@ def main(container: bool = False):
         target = tmp / "target"
         shutil.copytree(FIXTURE, target, ignore=shutil.ignore_patterns("expected.json"))
         manifest = tmp / "out/manifest.sqlite"
-        snapshot.write_snapshot(target, manifest)
+        snapshot.read_project(target, manifest)
         # A trusted benchmark hook outside the project observes child Python processes, too.
         (tmp / "sitecustomize.py").write_text(
             f"import runpy; runpy.run_path({str(Path(__file__).resolve())!r})['observe']()\n")

@@ -1,0 +1,22 @@
+{
+ "variant": "no-rules",
+ "argv": [
+  "timeout",
+  "--kill-after=10",
+  "900",
+  "/daodan/state/venvs/./bin/python",
+  "-I",
+  "/daodan/state/tools/flask_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"routes\": []}\n",
+ "stderr": "",
+ "seconds": 0.28,
+ "max_rss_mb": 48.2,
+ "left_in_the_project": [
+  "__pycache__/wsgi.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 31
+}

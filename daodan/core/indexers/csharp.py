@@ -113,7 +113,7 @@ LEGACY = re.compile(r"^\s*(?:<\?xml[^>]*\?>\s*)?<VisualStudioProject\b")  # Visu
 LISTED = re.compile(r'"([^"]+\.(?:cs|vb)proj)"')  # the projects a solution lists: a .sln's entries, a .slnx's paths
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-dotnet", ("csharp",), frozenset({"dotnet-project"}), True
+NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-dotnet", ("csharp",), frozenset({"dotnet-project"}), True
 
 
 # ---------------------------------------------------------------------------------------------------------

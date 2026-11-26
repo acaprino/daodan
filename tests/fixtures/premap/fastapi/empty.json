@@ -1,0 +1,5 @@
+{
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"application\": \"app.main:app\", \"found\": \"entrypoint-pyproject\", \"root_path\": \"\", \"competing\": {\"others\": [], \"shadowed\": []}, \"routes\": [], \"unread\": []}",
+ "stderr": ""
+}

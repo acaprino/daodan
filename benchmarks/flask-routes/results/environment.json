@@ -1,0 +1,22 @@
+{
+ "variant": "environment",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-c",
+  "import importlib.metadata as m, os, sys, sysconfig\npaths = sysconfig.get_paths()\nprint(repr({'version': sys.version, 'executable': sys.executable, 'prefix': sys.prefix, 'base_prefix': sys.base_prefix,\n            'purelib': paths['purelib'], 'platlib': paths['platlib'], 'stdlib': paths['stdlib'],\n            'flask': m.version('flask'), 'packages': sorted(f\"{d.metadata['Name']} {d.version}\" for d in m.distributions())}))\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{'version': '3.12.1 (main, Jan  8 2024, 04:46:10) [Clang 17.0.6 ]', 'executable': '/daodan/state/venvs/bin/python', 'prefix': '/daodan/state/venvs', 'base_prefix': '/usr/local', 'purelib': '/daodan/state/venvs/lib/python3.12/site-packages', 'platlib': '/daodan/state/venvs/lib/python3.12/site-packages', 'stdlib': '/usr/local/lib/python3.12', 'flask': '3.1.3', 'packages': ['Flask 3.1.3', 'Jinja2 3.1.6', 'MarkupSafe 3.0.4', 'Werkzeug 3.1.9', 'blinker 1.9.0', 'click 8.5.1', 'itsdangerous 2.2.0']}\n",
+ "stderr": "",
+ "seconds": 0.15,
+ "max_rss_mb": 39.1,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "setup": {
+  "exit": "0",
+  "seconds": "1",
+  "stderr": ""
+ },
+ "stdout_chars": 498
+}

@@ -65,7 +65,7 @@ class _Inventory:
         self.store = store
         self.root = Path(store["root"])
         self.target = store.get("target") or "."
-        self.headers = dict(store.iter_file_headers_only())
+        self.headers = dict(store.iter_listed())  # the inventory's rows: `scan` and `stack` run before `parse`
         self.files = sorted(self.headers)
         self.directories: set[str] = {"."}
         for rel in self.files:

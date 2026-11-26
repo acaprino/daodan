@@ -1,10 +1,10 @@
 # Registry notices
 
-`service-registry.json` is built by `scripts/registry_build.py` from the sources below, at the versions recorded in the file's `versions` field.
+`service-registry.json` is built by `daodan/core/registry_build.py` from the sources below, at the versions recorded in the file's `versions` field.
 
-## stack-analyser 1.27.6
+## stack-analyser (the fork Daodan runs)
 
-The detection rules (names, types, packages, configuration prefixes, files) come from [specfy/stack-analyser](https://github.com/specfy/stack-analyser).
+The ids, names, types and hosts of the entries made from a rule come from the catalogue of the release of [stack-analyser-daodan](https://github.com/acaprino/stack-analyser-daodan), a fork of [specfy/stack-analyser](https://github.com/specfy/stack-analyser) (release recorded in the `versions` field). The registry carries no detection rule: the fork recognizes.
 
 ```
 The MIT License
@@ -68,3 +68,32 @@ The marks of the services of AWS, Azure and Google Cloud (an entry of `registry-
 ## Additions
 
 `registry-additions.json` holds the packages and entries the catalogs lack. Those marked `derive` were found on PyPI, crates.io and the Go proxy under the name of an npm package whose repository has the same owner. Records marked `corpus` add package identifiers verified against project manifests. The [project-model benchmark](../../benchmarks/project-model/README.md) documents the corpus and how to reproduce the comparison. Those marked `catalog` are curated: `category` says whether an entry is a framework, library, tool or service, and `wrong_signs` take away a sign a catalog gives wrongly. Those marked `model` were proposed by a model and kept only where the packages exist, have one owner and belong to no other entry, and the site answers. Those marked `official` give an entry its mark from the owner (see above). The `category` of 245 `project` entries that had signs and none (from `actixweb` to `zod`) was proposed by a model on 19 November 2026; the machine checks only that it is one of the four.
+
+## Linguist (the catalogue of file formats)
+
+`linguist-catalog.json` is built by `daodan/core/format_catalog.py` from `lib/linguist/languages.yml` of the [github-linguist](https://github.com/github-linguist/linguist) gem, at the version and sha256 recorded in the file's `source` field. It keeps, for the extensions and file names of `file-formats.json` only, the names of the languages that list them; no rule, sample or grammar of Linguist is copied.
+
+```
+Copyright (c) 2017 GitHub, Inc.
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+```

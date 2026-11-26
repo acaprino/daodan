@@ -271,8 +271,8 @@ def build_semantic_index(manifest: dict, *, import_graph: dict | None = None,
             local = exported
         else:
             matches = exports[rel].get(exported, [])
-            if len(matches) != 1:
-                return None, "export-missing-or-ambiguous"
+            if len(matches) != 1:  # as `semantic_store.exported_target`: none is missing, several are ambiguous
+                return None, "export-ambiguous" if matches else "export-missing"
             export = matches[0]
             if export.get("type_only") and runtime:
                 return None, "type-only-export"

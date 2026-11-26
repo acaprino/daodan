@@ -168,8 +168,8 @@ def grade(definition, inventory: set[str], tables: dict, root: Path,
     if found is None:
         return "project-not-a-symbol", None
     identity, kind = found
-    if kind == "binding":
-        return "binding", None
+    if kind == "binding":  # the declaration the engine names, for a caller that reads a value's identity; no edge
+        return "binding", {"id": identity, "file": relative, "kind": kind}
     verdict = "edge-instantiation" if kind == "class" else "edge-call"
     return verdict, {"id": identity, "file": relative, "kind": kind}
 

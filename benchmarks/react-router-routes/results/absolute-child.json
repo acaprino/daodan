@@ -1,0 +1,31 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes",
+   "--json"
+  ],
+  "cwd": "absolute-child",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 1.65,
+  "stderr": "",
+  "stdout": "[\n  {\n    \"id\": \"root\",\n    \"path\": \"\",\n    \"file\": \"root.tsx\",\n    \"children\": [\n      {\n        \"id\": \"routes/users/user\",\n        \"path\": \"users\",\n        \"file\": \"routes/users/user.tsx\",\n        \"children\": [\n          {\n            \"id\": \"routes/users/edit\",\n            \"path\": \"/users/:id\",\n            \"file\": \"routes/users/edit.tsx\",\n            \"children\": [\n              {\n                \"id\": \"routes/nested/child\",\n                \"path\": \"details\",\n                \"file\": \"routes/nested/child.tsx\"\n              }\n            ]\n          },\n          {\n            \"id\": \"routes/hello\",\n            \"path\": \"/users/new\",\n            \"file\": \"routes/hello.tsx\"\n          }\n        ]\n      },\n      {\n        \"id\": \"routes/about\",\n        \"path\": \"/about\",\n        \"file\": \"routes/about.tsx\"\n      }\n    ]\n  }\n]\n"
+ },
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes"
+  ],
+  "cwd": "absolute-child",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 1.43,
+  "stderr": "",
+  "stdout": "<Routes>\n  <Route file=\"root.tsx\">\n    <Route path=\"users\" file=\"routes/users/user.tsx\">\n      <Route path=\"/users/:id\" file=\"routes/users/edit.tsx\">\n        <Route path=\"details\" file=\"routes/nested/child.tsx\" />\n      </Route>\n      <Route path=\"/users/new\" file=\"routes/hello.tsx\" />\n    </Route>\n    <Route path=\"/about\" file=\"routes/about.tsx\" />\n  </Route>\n</Routes>\n"
+ }
+]

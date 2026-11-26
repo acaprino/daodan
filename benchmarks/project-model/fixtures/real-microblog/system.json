@@ -1,0 +1,3808 @@
+{
+ "case": "microblog",
+ "root": "microblog",
+ "scope": "sistema",
+ "made": "2026-11-25",
+ "commit": "a975ef64864354867c88e0ed3a17ba7d17dca752",
+ "nodes": [
+  {
+   "name": "Microblog",
+   "type": "altro",
+   "what": "Il microblog del Flask Mega-Tutorial: sito, API, worker dei compiti e comandi, in un solo pacchetto Python.",
+   "members": [
+    "."
+   ],
+   "proof": [
+    {
+     "at": "microblog.py:6",
+     "has": "app = create_app()"
+    },
+    {
+     "at": "app/tasks.py:11",
+     "has": "app = create_app()"
+    }
+   ]
+  },
+  {
+   "name": "Utente",
+   "type": "attore",
+   "position": "external",
+   "what": "Chi si registra, entra, scrive post, segue altri utenti e scambia messaggi privati.",
+   "evidence": [
+    "app/templates/auth/login.html",
+    "app/templates/index.html"
+   ],
+   "proof": [
+    {
+     "at": "app/templates/auth/login.html:5",
+     "has": "_('Sign In')"
+    }
+   ]
+  },
+  {
+   "name": "Client dell'API",
+   "type": "attore",
+   "position": "external",
+   "what": "Il programma di altri che usa l'API con un token.",
+   "evidence": [
+    "app/api/tokens.py",
+    "app/api/users.py"
+   ],
+   "proof": [
+    {
+     "at": "app/api/auth.py:8",
+     "has": "HTTPTokenAuth()"
+    }
+   ]
+  },
+  {
+   "name": "Amministratore",
+   "type": "attore",
+   "position": "external",
+   "what": "Chi riceve per email gli errori del sito: gli indirizzi di ADMINS.",
+   "evidence": [
+    "config.py:20",
+    "app/__init__.py:73"
+   ],
+   "proof": [
+    {
+     "at": "config.py:20",
+     "has": "ADMINS = ["
+    }
+   ]
+  },
+  {
+   "name": "Sviluppatore",
+   "type": "attore",
+   "position": "external",
+   "what": "Chi costruisce l'immagine, avvia i processi e tiene i cataloghi delle traduzioni.",
+   "evidence": [
+    "app/cli.py",
+    "Dockerfile"
+   ],
+   "proof": [
+    {
+     "at": "app/cli.py:10",
+     "has": "Translation and localization commands."
+    }
+   ]
+  },
+  {
+   "name": "Browser",
+   "type": "dispositivo",
+   "position": "external",
+   "what": "Il browser che mostra le pagine, tiene il cookie della sessione e interroga le notifiche.",
+   "evidence": [
+    "app/templates/base.html"
+   ],
+   "proof": [
+    {
+     "at": "app/templates/base.html:5",
+     "has": "name=\"viewport\""
+    },
+    {
+     "at": "app/templates/base.html:160",
+     "has": "setInterval("
+    }
+   ]
+  },
+  {
+   "name": "Server di posta SMTP",
+   "type": "servizio o API",
+   "position": "external",
+   "what": "Il server che spedisce le email del sito.",
+   "evidence": [
+    "config.py:15",
+    "app/email.py",
+    "app/__init__.py:70"
+   ],
+   "family": "provider",
+   "role": "invio delle email: reimpostazione della password, archivio dei post, errori agli amministratori",
+   "mode": "protocollo di posta, con Flask-Mail e con il gestore SMTP del registro",
+   "proof": [
+    {
+     "at": "config.py:15",
+     "has": "MAIL_SERVER"
+    },
+    {
+     "at": "app/email.py:9",
+     "has": "mail.send(msg)"
+    }
+   ]
+  },
+  {
+   "name": "Microsoft Translator",
+   "type": "servizio o API",
+   "position": "external",
+   "what": "Il servizio di Microsoft che traduce il testo di un post.",
+   "evidence": [
+    "app/translate.py",
+    "config.py:22"
+   ],
+   "family": "provider",
+   "role": "traduzione del testo dei post",
+   "mode": "chiamata HTTPS POST con la chiave MS_TRANSLATOR_KEY nell'intestazione",
+   "proof": [
+    {
+     "at": "app/translate.py:15",
+     "has": "api.cognitive.microsofttranslator.com"
+    }
+   ]
+  },
+  {
+   "name": "Elasticsearch",
+   "type": "database",
+   "position": "external",
+   "what": "Il motore di ricerca che tiene l'indice dei post; senza ELASTICSEARCH_URL la ricerca è spenta.",
+   "evidence": [
+    "app/__init__.py:41",
+    "app/search.py",
+    "config.py:23",
+    "requirements.txt:13"
+   ],
+   "registry": "elasticsearch",
+   "family": "provider",
+   "role": "ricerca a testo pieno nei post",
+   "mode": "chiamate HTTP con il client elasticsearch all'indirizzo ELASTICSEARCH_URL",
+   "proof": [
+    {
+     "at": "app/__init__.py:41",
+     "has": "Elasticsearch([app.config['ELASTICSEARCH_URL']])"
+    }
+   ]
+  },
+  {
+   "name": "Redis",
+   "type": "database",
+   "position": "external",
+   "what": "Il server che tiene la coda dei compiti e i metadati dei lavori.",
+   "evidence": [
+    "app/__init__.py:43",
+    "config.py:24",
+    "requirements.txt:43"
+   ],
+   "registry": "redis",
+   "family": "provider",
+   "role": "coda dei compiti in background e avanzamento dei lavori",
+   "mode": "connessione Redis all'indirizzo REDIS_URL, attraverso RQ",
+   "proof": [
+    {
+     "at": "app/__init__.py:43",
+     "has": "Redis.from_url(app.config['REDIS_URL'])"
+    }
+   ]
+  },
+  {
+   "name": "Gravatar",
+   "type": "servizio o API",
+   "position": "external",
+   "what": "Il servizio da cui il browser carica gli avatar.",
+   "evidence": [
+    "app/models.py:142",
+    "app/templates/user.html:6"
+   ],
+   "registry": "gravatar",
+   "family": "provider",
+   "role": "immagini degli avatar degli utenti",
+   "mode": "indirizzo con l'MD5 dell'email, caricato dal browser",
+   "proof": [
+    {
+     "at": "app/models.py:142",
+     "has": "https://www.gravatar.com/avatar/"
+    }
+   ]
+  },
+  {
+   "name": "SQLite",
+   "type": "database",
+   "position": "external",
+   "what": "Il motore predefinito della base dati: il file app.db accanto al codice.",
+   "evidence": [
+    "config.py:13",
+    "tests.py:11"
+   ],
+   "registry": "sqlite",
+   "family": "provider",
+   "role": "motore predefinito della base dati",
+   "mode": "file app.db attraverso SQLAlchemy; DATABASE_URL lo sostituisce con un altro motore",
+   "proof": [
+    {
+     "at": "config.py:13",
+     "has": "'sqlite:///' + os.path.join(basedir, 'app.db')"
+    }
+   ]
+  },
+  {
+   "name": "Heroku",
+   "type": "servizio o API",
+   "position": "external",
+   "what": "La piattaforma a cui è destinato il Procfile, con i processi web e worker.",
+   "evidence": [
+    "Procfile",
+    "config.py:11",
+    "config.py:14"
+   ],
+   "registry": "heroku",
+   "family": "provider",
+   "role": "esecuzione dei processi web e worker",
+   "mode": "Procfile letto dalla piattaforma",
+   "proof": [
+    {
+     "at": "Procfile:1",
+     "has": "web: flask db upgrade"
+    }
+   ]
+  },
+  {
+   "name": "Nginx",
+   "type": "servizio o API",
+   "position": "external",
+   "what": "Il proxy davanti al sito su un server proprio: HTTPS, inoltro a gunicorn e file statici.",
+   "evidence": [
+    "deployment/nginx/microblog"
+   ],
+   "registry": "nginx",
+   "family": "provider",
+   "role": "proxy HTTPS davanti al sito e file statici",
+   "mode": "inoltro HTTP a gunicorn su localhost:8000",
+   "proof": [
+    {
+     "at": "deployment/nginx/microblog:25",
+     "has": "proxy_pass http://localhost:8000"
+    }
+   ]
+  },
+  {
+   "name": "Supervisor",
+   "type": "servizio o API",
+   "position": "external",
+   "what": "Il supervisore che su un server proprio tiene accesi il sito e il worker.",
+   "evidence": [
+    "deployment/supervisor/microblog.conf",
+    "deployment/supervisor/microblog-tasks.conf"
+   ],
+   "family": "provider",
+   "role": "avvio e riavvio dei processi del sito e del worker",
+   "mode": "file di configurazione con il comando di ogni processo",
+   "proof": [
+    {
+     "at": "deployment/supervisor/microblog.conf:1",
+     "has": "[program:microblog]"
+    }
+   ]
+  },
+  {
+   "name": "File di log",
+   "type": "filesystem",
+   "position": "external",
+   "what": "Il file logs/microblog.log, a rotazione, scritto fuori da debug e test.",
+   "evidence": [
+    "app/__init__.py:85"
+   ],
+   "proof": [
+    {
+     "at": "app/__init__.py:85",
+     "has": "RotatingFileHandler('logs/microblog.log'"
+    }
+   ]
+  },
+  {
+   "name": "App web",
+   "type": "applicazione",
+   "inside": "Microblog",
+   "what": "Il sito: pagine di accesso, post, profili, ricerca, messaggi e pagine di errore.",
+   "members": [
+    "app/main",
+    "app/auth",
+    "app/errors",
+    "app/templates",
+    "app/static",
+    "app/translate.py",
+    "microblog.py"
+   ],
+   "proof": [
+    {
+     "at": "app/__init__.py:53",
+     "has": "app.register_blueprint(main_bp)"
+    },
+    {
+     "at": "app/__init__.py:50",
+     "has": "url_prefix='/auth'"
+    }
+   ]
+  },
+  {
+   "name": "API",
+   "type": "servizio o API",
+   "inside": "Microblog",
+   "what": "L'API JSON sotto /api per utenti e token.",
+   "members": [
+    "app/api"
+   ],
+   "proof": [
+    {
+     "at": "app/__init__.py:59",
+     "has": "app.register_blueprint(api_bp, url_prefix='/api')"
+    }
+   ]
+  },
+  {
+   "name": "Worker dei compiti",
+   "type": "coda",
+   "inside": "Microblog",
+   "what": "Il processo rq worker che esegue i compiti in background: l'esportazione dei post.",
+   "members": [
+    "app/tasks.py",
+    "app/templates/email/export_posts.html",
+    "app/templates/email/export_posts.txt"
+   ],
+   "proof": [
+    {
+     "at": "app/tasks.py:28",
+     "has": "def export_posts(user_id)"
+    },
+    {
+     "at": "Procfile:2",
+     "has": "rq worker microblog-tasks"
+    }
+   ]
+  },
+  {
+   "name": "Coda dei compiti",
+   "type": "coda",
+   "inside": "Microblog",
+   "what": "La coda RQ microblog-tasks, dove il sito mette i lavori per il worker.",
+   "members": [
+    "store:rq/microblog-tasks"
+   ],
+   "on": [
+    "Redis"
+   ],
+   "proof": [
+    {
+     "at": "app/__init__.py:44",
+     "has": "rq.Queue('microblog-tasks', connection=app.redis)"
+    }
+   ]
+  },
+  {
+   "name": "Comandi di traduzione",
+   "type": "funzionalità",
+   "inside": "Microblog",
+   "what": "I comandi flask translate init, update e compile, che lanciano pybabel.",
+   "members": [
+    "app/cli.py",
+    "babel.cfg"
+   ],
+   "proof": [
+    {
+     "at": "app/cli.py:9",
+     "has": "def translate()"
+    }
+   ]
+  },
+  {
+   "name": "Database",
+   "type": "database",
+   "inside": "Microblog",
+   "what": "La base dati relazionale del sito: modelli SQLAlchemy e migrazioni Alembic.",
+   "members": [
+    "app/models.py",
+    "migrations"
+   ],
+   "on": [
+    "SQLite"
+   ],
+   "proof": [
+    {
+     "at": "app/__init__.py:21",
+     "has": "db = SQLAlchemy()"
+    },
+    {
+     "at": "migrations/env.py:22",
+     "has": "SQLALCHEMY_DATABASE_URI"
+    }
+   ]
+  },
+  {
+   "name": "Fabbrica dell'applicazione",
+   "type": "funzionalità",
+   "inside": "Microblog",
+   "what": "La funzione che costruisce l'app Flask con configurazione, estensioni, blueprint e registro.",
+   "members": [
+    "app/__init__.py::create_app",
+    "config.py"
+   ],
+   "proof": [
+    {
+     "at": "app/__init__.py:31",
+     "has": "def create_app(config_class=Config)"
+    }
+   ]
+  },
+  {
+   "name": "Invio delle email",
+   "type": "funzionalità",
+   "inside": "Microblog",
+   "what": "La funzione che compone un messaggio e lo spedisce, in un thread o in modo sincrono.",
+   "members": [
+    "app/email.py"
+   ],
+   "proof": [
+    {
+     "at": "app/email.py:12",
+     "has": "def send_email("
+    }
+   ]
+  },
+  {
+   "name": "Ricerca a testo pieno",
+   "type": "funzionalità",
+   "inside": "Microblog",
+   "what": "Il legame fra i post e l'indice di ricerca: interrogazione e aggiornamento a ogni commit.",
+   "members": [
+    "app/search.py",
+    "app/models.py::SearchableMixin"
+   ],
+   "proof": [
+    {
+     "at": "app/search.py:19",
+     "has": "def query_index("
+    },
+    {
+     "at": "app/models.py:19",
+     "has": "class SearchableMixin"
+    }
+   ]
+  },
+  {
+   "name": "Immagine del container",
+   "type": "altro",
+   "inside": "Microblog",
+   "what": "L'immagine Docker del sito e lo script che la avvia.",
+   "members": [
+    "Dockerfile",
+    "boot.sh"
+   ],
+   "proof": [
+    {
+     "at": "Dockerfile:16",
+     "has": "ENTRYPOINT [\"./boot.sh\"]"
+    }
+   ]
+  },
+  {
+   "name": "Account utente",
+   "type": "entità",
+   "inside": "Database",
+   "what": "L'utente registrato: nome, email, hash della password, descrizione, ultima visita, token dell'API.",
+   "members": [
+    "store:db/user",
+    "app/models.py::User"
+   ],
+   "on": [
+    "Database"
+   ],
+   "proof": [
+    {
+     "at": "app/models.py:98",
+     "has": "class User("
+    }
+   ]
+  },
+  {
+   "name": "Post",
+   "type": "entità",
+   "inside": "Database",
+   "what": "Un post di al più 140 caratteri, con autore, istante e lingua rilevata.",
+   "members": [
+    "store:db/post",
+    "app/models.py::Post"
+   ],
+   "on": [
+    "Database"
+   ],
+   "proof": [
+    {
+     "at": "app/models.py:287",
+     "has": "class Post("
+    }
+   ]
+  },
+  {
+   "name": "Seguito",
+   "type": "entità",
+   "inside": "Database",
+   "what": "La coppia chi segue / chi è seguito.",
+   "members": [
+    "store:db/followers",
+    "app/models.py::followers"
+   ],
+   "on": [
+    "Database"
+   ],
+   "proof": [
+    {
+     "at": "app/models.py:88",
+     "has": "followers = sa.Table("
+    }
+   ]
+  },
+  {
+   "name": "Messaggio privato",
+   "type": "entità",
+   "inside": "Database",
+   "what": "Un messaggio da un utente a un altro.",
+   "members": [
+    "store:db/message",
+    "app/models.py::Message"
+   ],
+   "on": [
+    "Database"
+   ],
+   "proof": [
+    {
+     "at": "app/models.py:303",
+     "has": "class Message("
+    }
+   ]
+  },
+  {
+   "name": "Notifica",
+   "type": "entità",
+   "inside": "Database",
+   "what": "Un avviso per l'utente, con nome e dati in JSON: messaggi non letti, avanzamento di un compito.",
+   "members": [
+    "store:db/notification",
+    "app/models.py::Notification"
+   ],
+   "on": [
+    "Database"
+   ],
+   "proof": [
+    {
+     "at": "app/models.py:324",
+     "has": "class Notification("
+    }
+   ]
+  },
+  {
+   "name": "Compito",
+   "type": "entità",
+   "inside": "Database",
+   "what": "Un compito in background di un utente; il suo id è quello del lavoro RQ.",
+   "members": [
+    "store:db/task",
+    "app/models.py::Task"
+   ],
+   "on": [
+    "Database"
+   ],
+   "proof": [
+    {
+     "at": "app/models.py:338",
+     "has": "class Task("
+    }
+   ]
+  },
+  {
+   "name": "Indice di ricerca dei post",
+   "type": "entità",
+   "inside": "Ricerca a testo pieno",
+   "what": "Il corpo di ogni post nell'indice post, sotto l'id del post.",
+   "members": [
+    "store:elasticsearch/post"
+   ],
+   "on": [
+    "Elasticsearch"
+   ],
+   "proof": [
+    {
+     "at": "app/search.py:10",
+     "has": "current_app.elasticsearch.index(index=index, id=model.id"
+    },
+    {
+     "at": "app/models.py:288",
+     "has": "__searchable__ = ['body']"
+    }
+   ]
+  },
+  {
+   "name": "Avanzamento del compito",
+   "type": "entità",
+   "inside": "Coda dei compiti",
+   "what": "La percentuale di avanzamento, nei metadati del lavoro RQ.",
+   "members": [
+    "store:rq job/meta.progress"
+   ],
+   "on": [
+    "Redis"
+   ],
+   "proof": [
+    {
+     "at": "app/tasks.py:18",
+     "has": "job.meta['progress'] = progress"
+    }
+   ]
+  },
+  {
+   "name": "Cornice della pagina",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La cornice di ogni pagina: barra di navigazione, casella di ricerca, avvisi e gli script di traduzione, riquadri e notifiche.",
+   "members": [
+    "app/templates/base.html",
+    "app/templates/bootstrap_wtf.html"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "proof": [
+    {
+     "at": "app/templates/base.html:20",
+     "has": "navbar-brand"
+    },
+    {
+     "at": "app/templates/base.html:98",
+     "has": "async function translate("
+    }
+   ]
+  },
+  {
+   "name": "Riga del post",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "Un post nell'elenco: avatar, autore, tempo, testo e link Translate; usata anche per i messaggi.",
+   "members": [
+    "app/templates/_post.html"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "proof": [
+    {
+     "at": "app/templates/_post.html:17",
+     "has": "id=\"post{{ post.id }}\""
+    }
+   ]
+  },
+  {
+   "name": "Sign In",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La pagina di accesso con nome utente, password e Remember Me.",
+   "members": [
+    "app/templates/auth/login.html",
+    "app/auth/routes.py::login",
+    "app/auth/forms.py::LoginForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /auth/login",
+    "POST /auth/login"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/routes.py:30",
+     "has": "auth/login.html"
+    }
+   ]
+  },
+  {
+   "name": "Register",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La pagina di registrazione.",
+   "members": [
+    "app/templates/auth/register.html",
+    "app/auth/routes.py::register",
+    "app/auth/forms.py::RegistrationForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /auth/register",
+    "POST /auth/register"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/routes.py:51",
+     "has": "auth/register.html"
+    }
+   ]
+  },
+  {
+   "name": "Reset Password",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La pagina che chiede l'email a cui mandare il link di reimpostazione.",
+   "members": [
+    "app/templates/auth/reset_password_request.html",
+    "app/auth/routes.py::reset_password_request",
+    "app/auth/forms.py::ResetPasswordRequestForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /auth/reset_password_request",
+    "POST /auth/reset_password_request"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/routes.py:68",
+     "has": "auth/reset_password_request.html"
+    }
+   ]
+  },
+  {
+   "name": "Reset Your Password",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La pagina aperta dal link dell'email, dove si sceglie la nuova password.",
+   "members": [
+    "app/templates/auth/reset_password.html",
+    "app/auth/routes.py::reset_password",
+    "app/auth/forms.py::ResetPasswordForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /auth/reset_password/<token>",
+    "POST /auth/reset_password/<token>"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/routes.py:85",
+     "has": "auth/reset_password.html"
+    }
+   ]
+  },
+  {
+   "name": "Home",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La pagina iniziale: modulo per un nuovo post e post propri e degli utenti seguiti.",
+   "members": [
+    "app/templates/index.html",
+    "app/main/routes.py::index",
+    "app/main/forms.py::PostForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /",
+    "POST /",
+    "GET /index",
+    "POST /index"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:49",
+     "has": "render_template('index.html', title=_('Home')"
+    }
+   ]
+  },
+  {
+   "name": "Explore",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "Tutti i post di tutti gli utenti, dal più recente; usa lo stesso template della Home, senza modulo.",
+   "members": [
+    "app/main/routes.py::explore"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /explore"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:66",
+     "has": "title=_('Explore')"
+    }
+   ]
+  },
+  {
+   "name": "Profile",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "Il profilo di un utente, con i suoi post e i comandi per seguirlo, scrivergli, modificare il proprio profilo o esportare i post; anche il riquadro al passaggio del mouse.",
+   "members": [
+    "app/templates/user.html",
+    "app/templates/user_popup.html",
+    "app/main/routes.py::user",
+    "app/main/routes.py::user_popup"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /user/<username>",
+    "GET /user/<username>/popup"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:85",
+     "has": "render_template('user.html'"
+    },
+    {
+     "at": "app/main/routes.py:94",
+     "has": "user_popup.html"
+    }
+   ]
+  },
+  {
+   "name": "Edit Profile",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La pagina per cambiare nome utente e descrizione.",
+   "members": [
+    "app/templates/edit_profile.html",
+    "app/main/routes.py::edit_profile",
+    "app/main/forms.py::EditProfileForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /edit_profile",
+    "POST /edit_profile"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:110",
+     "has": "edit_profile.html"
+    }
+   ]
+  },
+  {
+   "name": "Search Results",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "I post trovati dalla ricerca.",
+   "members": [
+    "app/templates/search.html",
+    "app/main/routes.py::search",
+    "app/main/forms.py::SearchForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /search"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:177",
+     "has": "render_template('search.html'"
+    }
+   ]
+  },
+  {
+   "name": "Messages",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "I messaggi privati ricevuti.",
+   "members": [
+    "app/templates/messages.html",
+    "app/main/routes.py::messages"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /messages"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:215",
+     "has": "render_template('messages.html'"
+    }
+   ]
+  },
+  {
+   "name": "Send Message",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "La pagina per scrivere un messaggio privato a un utente.",
+   "members": [
+    "app/templates/send_message.html",
+    "app/main/routes.py::send_message",
+    "app/main/forms.py::MessageForm"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /send_message/<recipient>",
+    "POST /send_message/<recipient>"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:195",
+     "has": "send_message.html"
+    }
+   ]
+  },
+  {
+   "name": "Pagine di errore",
+   "type": "schermata",
+   "inside": "App web",
+   "what": "Le pagine Not Found e An unexpected error has occurred, o lo stesso errore in JSON.",
+   "members": [
+    "app/errors",
+    "app/templates/errors"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "proof": [
+    {
+     "at": "app/errors/handlers.py:12",
+     "has": "@bp.app_errorhandler(404)"
+    },
+    {
+     "at": "app/errors/handlers.py:19",
+     "has": "@bp.app_errorhandler(500)"
+    }
+   ]
+  },
+  {
+   "name": "Rotta di uscita",
+   "type": "servizio o API",
+   "inside": "App web",
+   "what": "La rotta che chiude la sessione.",
+   "members": [
+    "app/auth/routes.py::logout"
+   ],
+   "routes": [
+    "GET /auth/logout"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/routes.py:33",
+     "has": "@bp.route('/logout')"
+    }
+   ]
+  },
+  {
+   "name": "Rotte del seguire",
+   "type": "servizio o API",
+   "inside": "App web",
+   "what": "Le due rotte che fanno seguire e smettere di seguire un utente.",
+   "members": [
+    "app/main/routes.py::follow",
+    "app/main/routes.py::unfollow"
+   ],
+   "routes": [
+    "POST /follow/<username>",
+    "POST /unfollow/<username>"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:114",
+     "has": "@bp.route('/follow/<username>', methods=['POST'])"
+    },
+    {
+     "at": "app/main/routes.py:135",
+     "has": "@bp.route('/unfollow/<username>', methods=['POST'])"
+    }
+   ]
+  },
+  {
+   "name": "Rotta di traduzione",
+   "type": "servizio o API",
+   "inside": "App web",
+   "what": "La rotta che traduce un testo chiamando il servizio di traduzione.",
+   "members": [
+    "app/main/routes.py::translate_text",
+    "app/translate.py"
+   ],
+   "routes": [
+    "POST /translate"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:156",
+     "has": "@bp.route('/translate', methods=['POST'])"
+    },
+    {
+     "at": "app/translate.py:6",
+     "has": "def translate("
+    }
+   ]
+  },
+  {
+   "name": "Rotta delle notifiche",
+   "type": "servizio o API",
+   "inside": "App web",
+   "what": "La rotta che dà in JSON le notifiche dell'utente più recenti di un istante.",
+   "members": [
+    "app/main/routes.py::notifications"
+   ],
+   "routes": [
+    "GET /notifications"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:230",
+     "has": "@bp.route('/notifications')"
+    }
+   ]
+  },
+  {
+   "name": "Rotta di esportazione",
+   "type": "servizio o API",
+   "inside": "App web",
+   "what": "La rotta che mette in coda l'esportazione dei post dell'utente.",
+   "members": [
+    "app/main/routes.py::export_posts"
+   ],
+   "routes": [
+    "GET /export_posts"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:219",
+     "has": "@bp.route('/export_posts')"
+    }
+   ]
+  },
+  {
+   "name": "Gancio delle richieste",
+   "type": "funzionalità",
+   "inside": "App web",
+   "what": "La funzione eseguita prima di ogni richiesta: ultima visita, modulo di ricerca e lingua.",
+   "members": [
+    "app/main/routes.py::before_request"
+   ],
+   "proof": [
+    {
+     "at": "app/main/routes.py:16",
+     "has": "@bp.before_app_request"
+    }
+   ]
+  },
+  {
+   "name": "Controllo dell'accesso",
+   "type": "autenticazione",
+   "inside": "App web",
+   "what": "Flask-Login: carica l'utente della sessione e manda a Sign In chi non è entrato.",
+   "members": [
+    "app/models.py::load_user"
+   ],
+   "proof": [
+    {
+     "at": "app/models.py:282",
+     "has": "@login.user_loader"
+    },
+    {
+     "at": "app/__init__.py:24",
+     "has": "login.login_view = 'auth.login'"
+    }
+   ]
+  },
+  {
+   "name": "Sessione di accesso",
+   "type": "entità",
+   "inside": "App web",
+   "what": "L'utente entrato, nel cookie di sessione firmato di Flask (e nel cookie Remember Me).",
+   "members": [
+    "store:session/logged-in user"
+   ],
+   "on": [
+    "Browser"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/routes.py:25",
+     "has": "login_user(user, remember=form.remember_me.data)"
+    }
+   ]
+  },
+  {
+   "name": "Email di reimpostazione della password",
+   "type": "funzionalità",
+   "inside": "App web",
+   "what": "Il testo dell'email con il link firmato per scegliere una nuova password.",
+   "members": [
+    "app/auth/email.py",
+    "app/templates/email/reset_password.html",
+    "app/templates/email/reset_password.txt"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/email.py:6",
+     "has": "def send_password_reset_email(user)"
+    }
+   ]
+  },
+  {
+   "name": "Cataloghi delle traduzioni",
+   "type": "filesystem",
+   "inside": "App web",
+   "what": "I cataloghi dei testi tradotti (spagnolo), compilati in .mo e letti da Flask-Babel.",
+   "members": [
+    "app/translations"
+   ],
+   "proof": [
+    {
+     "at": "app/cli.py:39",
+     "has": "pybabel compile -d app/translations"
+    },
+    {
+     "at": "config.py:21",
+     "has": "LANGUAGES = ['en', 'es']"
+    }
+   ]
+  },
+  {
+   "name": "Rotte dei token",
+   "type": "servizio o API",
+   "inside": "API",
+   "what": "Le rotte che rilasciano e revocano il token dell'API.",
+   "members": [
+    "app/api/tokens.py"
+   ],
+   "routes": [
+    "POST /api/tokens",
+    "DELETE /api/tokens"
+   ],
+   "proof": [
+    {
+     "at": "app/api/tokens.py:6",
+     "has": "@bp.route('/tokens', methods=['POST'])"
+    }
+   ]
+  },
+  {
+   "name": "Rotte degli utenti",
+   "type": "servizio o API",
+   "inside": "API",
+   "what": "Le rotte che leggono, creano e modificano gli utenti e ne elencano seguaci e seguiti.",
+   "members": [
+    "app/api/users.py"
+   ],
+   "routes": [
+    "GET /api/users/<int:id>",
+    "GET /api/users",
+    "GET /api/users/<int:id>/followers",
+    "GET /api/users/<int:id>/following",
+    "POST /api/users",
+    "PUT /api/users/<int:id>"
+   ],
+   "proof": [
+    {
+     "at": "app/api/users.py:16",
+     "has": "@bp.route('/users', methods=['GET'])"
+    }
+   ]
+  },
+  {
+   "name": "Autenticazione dell'API",
+   "type": "autenticazione",
+   "inside": "API",
+   "what": "La verifica di nome utente e password (Basic) e del token (Bearer), e gli errori in JSON.",
+   "members": [
+    "app/api/auth.py",
+    "app/api/errors.py"
+   ],
+   "proof": [
+    {
+     "at": "app/api/auth.py:11",
+     "has": "@basic_auth.verify_password"
+    },
+    {
+     "at": "app/api/auth.py:23",
+     "has": "@token_auth.verify_token"
+    }
+   ]
+  }
+ ],
+ "flows": [
+  {
+   "name": "Registrazione",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Sign In",
+    "Register",
+    "Account utente"
+   ],
+   "entries": [
+    {
+     "node": "Sign In",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Click to Register!»"
+    },
+    {
+     "node": "Register",
+     "kind": "controllo dell'interfaccia",
+     "what": "il modulo con il pulsante Register"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account utente",
+     "what": "l'utente creato con l'hash della password"
+    },
+    {
+     "node": "Sign In",
+     "what": "la pagina di accesso con l'avviso di registrazione riuscita"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign In",
+     "data": "clic su «Click to Register!»",
+     "kind": "attiva",
+     "cite": "app/templates/auth/login.html:7",
+     "has": "_('Click to Register!')"
+    },
+    {
+     "from": "Sign In",
+     "to": "Register",
+     "data": "GET /auth/register",
+     "kind": "chiama",
+     "cite": "app/templates/auth/login.html:7",
+     "has": "url_for('auth.register')"
+    },
+    {
+     "from": "Utente",
+     "to": "Register",
+     "data": "nome utente, email e password due volte",
+     "kind": "attiva",
+     "cite": "app/templates/auth/register.html:6",
+     "has": "wtf.quick_form(form)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Register",
+     "data": "nome utente ed email già presi",
+     "kind": "legge",
+     "cite": "app/auth/forms.py:27",
+     "has": "sa.select(User).where("
+    },
+    {
+     "from": "Register",
+     "to": "Account utente",
+     "data": "nuovo utente con l'hash della password",
+     "kind": "scrive",
+     "cite": "app/auth/routes.py:47",
+     "has": "db.session.add(user)"
+    },
+    {
+     "from": "Register",
+     "to": "Sign In",
+     "data": "redirect a /auth/login",
+     "kind": "chiama",
+     "cite": "app/auth/routes.py:50",
+     "has": "redirect(url_for('auth.login'))"
+    }
+   ]
+  },
+  {
+   "name": "Accesso",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Sign In",
+    "Account utente",
+    "Sessione di accesso",
+    "Home"
+   ],
+   "entries": [
+    {
+     "node": "Sign In",
+     "kind": "controllo dell'interfaccia",
+     "what": "il modulo con il pulsante Sign In"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione di accesso",
+     "what": "l'utente entrato nel cookie di sessione"
+    },
+    {
+     "node": "Home",
+     "what": "la pagina chiesta o la home"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign In",
+     "data": "nome utente, password e «Remember Me»",
+     "kind": "attiva",
+     "cite": "app/templates/auth/login.html:6",
+     "has": "wtf.quick_form(form)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Sign In",
+     "data": "utente per nome e hash della password",
+     "kind": "legge",
+     "cite": "app/auth/routes.py:21",
+     "has": "User.username == form.username.data"
+    },
+    {
+     "from": "Sign In",
+     "to": "Sessione di accesso",
+     "data": "utente entrato, ricordato se richiesto",
+     "kind": "scrive",
+     "cite": "app/auth/routes.py:25",
+     "has": "login_user("
+    },
+    {
+     "from": "Sign In",
+     "to": "Home",
+     "data": "redirect alla pagina chiesta in next o alla home",
+     "kind": "chiama",
+     "cite": "app/auth/routes.py:29",
+     "has": "redirect(next_page)"
+    },
+    {
+     "from": "Sessione di accesso",
+     "to": "Home",
+     "data": "utente entrato",
+     "kind": "legge",
+     "cite": "app/main/routes.py:27",
+     "has": "@login_required"
+    }
+   ]
+  },
+  {
+   "name": "Uscita",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Cornice della pagina",
+    "Rotta di uscita",
+    "Sessione di accesso",
+    "Home",
+    "Sign In"
+   ],
+   "entries": [
+    {
+     "node": "Cornice della pagina",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Logout» della barra"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione di accesso",
+     "what": "la sessione senza utente"
+    },
+    {
+     "node": "Sign In",
+     "what": "la pagina di accesso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Cornice della pagina",
+     "data": "clic su «Logout»",
+     "kind": "attiva",
+     "cite": "app/templates/base.html:60",
+     "has": "_('Logout')"
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Rotta di uscita",
+     "data": "GET /auth/logout",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:60",
+     "has": "url_for('auth.logout')"
+    },
+    {
+     "from": "Rotta di uscita",
+     "to": "Sessione di accesso",
+     "data": "rimozione dell'utente entrato",
+     "kind": "scrive",
+     "cite": "app/auth/routes.py:35",
+     "has": "logout_user()"
+    },
+    {
+     "from": "Rotta di uscita",
+     "to": "Home",
+     "data": "redirect alla home",
+     "kind": "chiama",
+     "cite": "app/auth/routes.py:36",
+     "has": "redirect(url_for('main.index'))"
+    },
+    {
+     "from": "Home",
+     "to": "Sign In",
+     "data": "redirect a /auth/login per chi non è entrato",
+     "kind": "chiama",
+     "cite": "app/__init__.py:24",
+     "has": "login.login_view = 'auth.login'"
+    }
+   ]
+  },
+  {
+   "name": "Reimpostazione della password via email",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Sign In",
+    "Reset Password",
+    "Account utente",
+    "Email di reimpostazione della password",
+    "Invio delle email",
+    "Server di posta SMTP",
+    "Reset Your Password"
+   ],
+   "entries": [
+    {
+     "node": "Sign In",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Click to Reset It»"
+    },
+    {
+     "node": "Reset Your Password",
+     "kind": "rotta",
+     "what": "GET /auth/reset_password/<token>, dal link nell'email"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Server di posta SMTP",
+     "what": "l'email con il link, valido 10 minuti"
+    },
+    {
+     "node": "Account utente",
+     "what": "il nuovo hash della password"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign In",
+     "data": "clic su «Click to Reset It»",
+     "kind": "attiva",
+     "cite": "app/templates/auth/login.html:10",
+     "has": "_('Click to Reset It')"
+    },
+    {
+     "from": "Sign In",
+     "to": "Reset Password",
+     "data": "GET /auth/reset_password_request",
+     "kind": "chiama",
+     "cite": "app/templates/auth/login.html:10",
+     "has": "url_for('auth.reset_password_request')"
+    },
+    {
+     "from": "Utente",
+     "to": "Reset Password",
+     "data": "indirizzo email",
+     "kind": "attiva",
+     "cite": "app/templates/auth/reset_password_request.html:6",
+     "has": "wtf.quick_form(form)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Reset Password",
+     "data": "utente per email",
+     "kind": "legge",
+     "cite": "app/auth/routes.py:62",
+     "has": "User.email == form.email.data"
+    },
+    {
+     "from": "Reset Password",
+     "to": "Email di reimpostazione della password",
+     "data": "l'utente trovato",
+     "kind": "chiama",
+     "cite": "app/auth/routes.py:64",
+     "has": "send_password_reset_email(user)"
+    },
+    {
+     "from": "Email di reimpostazione della password",
+     "to": "Invio delle email",
+     "data": "oggetto, destinatario e testi con il link firmato, valido 10 minuti",
+     "kind": "chiama",
+     "cite": "app/auth/email.py:8",
+     "has": "send_email("
+    },
+    {
+     "from": "Invio delle email",
+     "to": "Server di posta SMTP",
+     "data": "il messaggio, da un thread a parte",
+     "kind": "chiama",
+     "cite": "app/email.py:9",
+     "has": "mail.send(msg)"
+    },
+    {
+     "from": "Server di posta SMTP",
+     "to": "Utente",
+     "data": "email con il link di reimpostazione",
+     "kind": "trasferisce",
+     "cite": "app/templates/email/reset_password.txt:5",
+     "has": "url_for('auth.reset_password', token=token, _external=True)"
+    },
+    {
+     "from": "Utente",
+     "to": "Reset Your Password",
+     "data": "apertura del link e nuova password due volte",
+     "kind": "attiva",
+     "cite": "app/auth/routes.py:72",
+     "has": "@bp.route('/reset_password/<token>'"
+    },
+    {
+     "from": "Account utente",
+     "to": "Reset Your Password",
+     "data": "utente indicato dal token verificato",
+     "kind": "legge",
+     "cite": "app/auth/routes.py:76",
+     "has": "User.verify_reset_password_token(token)"
+    },
+    {
+     "from": "Reset Your Password",
+     "to": "Account utente",
+     "data": "nuovo hash della password",
+     "kind": "scrive",
+     "cite": "app/auth/routes.py:81",
+     "has": "user.set_password(form.password.data)"
+    },
+    {
+     "from": "Reset Your Password",
+     "to": "Sign In",
+     "data": "redirect a /auth/login",
+     "kind": "chiama",
+     "cite": "app/auth/routes.py:84",
+     "has": "redirect(url_for('auth.login'))"
+    }
+   ]
+  },
+  {
+   "name": "Rifiuto delle pagine senza accesso",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale",
+    "tecnico"
+   ],
+   "nodes": [
+    "Utente",
+    "Home",
+    "Sessione di accesso",
+    "Controllo dell'accesso",
+    "Sign In"
+   ],
+   "entries": [
+    {
+     "node": "Home",
+     "kind": "rotta",
+     "what": "una rotta con @login_required, chiesta senza sessione"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sign In",
+     "what": "la pagina di accesso, con la pagina chiesta in next"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Home",
+     "data": "GET / senza sessione",
+     "kind": "chiama",
+     "cite": "app/main/routes.py:25",
+     "has": "@bp.route('/', methods=['GET', 'POST'])"
+    },
+    {
+     "from": "Sessione di accesso",
+     "to": "Controllo dell'accesso",
+     "data": "id dell'utente, presente o no",
+     "kind": "legge",
+     "cite": "app/models.py:283",
+     "has": "def load_user(id)"
+    },
+    {
+     "from": "Controllo dell'accesso",
+     "to": "Home",
+     "data": "nessun utente per la richiesta",
+     "kind": "trasferisce",
+     "cite": "app/models.py:282",
+     "has": "@login.user_loader"
+    },
+    {
+     "from": "Home",
+     "to": "Sign In",
+     "data": "redirect a /auth/login con next",
+     "kind": "chiama",
+     "cite": "app/__init__.py:24",
+     "has": "login.login_view = 'auth.login'"
+    }
+   ]
+  },
+  {
+   "name": "Rilascio del token dell'API",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Client dell'API",
+    "Rotte dei token",
+    "Autenticazione dell'API",
+    "Account utente"
+   ],
+   "entries": [
+    {
+     "node": "Rotte dei token",
+     "kind": "rotta",
+     "what": "POST /api/tokens"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account utente",
+     "what": "token e scadenza a un'ora"
+    },
+    {
+     "node": "Client dell'API",
+     "what": "il token"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Client dell'API",
+     "to": "Rotte dei token",
+     "data": "POST /api/tokens con nome utente e password (HTTP Basic)",
+     "kind": "chiama",
+     "cite": "app/api/tokens.py:6",
+     "has": "@bp.route('/tokens', methods=['POST'])"
+    },
+    {
+     "from": "Rotte dei token",
+     "to": "Autenticazione dell'API",
+     "data": "credenziali da verificare",
+     "kind": "usa",
+     "cite": "app/api/tokens.py:7",
+     "has": "@basic_auth.login_required"
+    },
+    {
+     "from": "Account utente",
+     "to": "Autenticazione dell'API",
+     "data": "utente per nome e hash della password",
+     "kind": "legge",
+     "cite": "app/api/auth.py:13",
+     "has": "User.username == username"
+    },
+    {
+     "from": "Autenticazione dell'API",
+     "to": "Rotte dei token",
+     "data": "l'utente verificato",
+     "kind": "trasferisce",
+     "cite": "app/api/auth.py:15",
+     "has": "return user"
+    },
+    {
+     "from": "Rotte dei token",
+     "to": "Account utente",
+     "data": "token di 32 cifre esadecimali e scadenza a un'ora",
+     "kind": "scrive",
+     "cite": "app/api/tokens.py:9",
+     "has": "get_token()"
+    },
+    {
+     "from": "Rotte dei token",
+     "to": "Client dell'API",
+     "data": "il token in JSON",
+     "kind": "trasferisce",
+     "cite": "app/api/tokens.py:11",
+     "has": "return {'token': token}"
+    }
+   ]
+  },
+  {
+   "name": "Revoca del token dell'API",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Client dell'API",
+    "Rotte dei token",
+    "Autenticazione dell'API",
+    "Account utente"
+   ],
+   "entries": [
+    {
+     "node": "Rotte dei token",
+     "kind": "rotta",
+     "what": "DELETE /api/tokens"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account utente",
+     "what": "la scadenza del token nel passato"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Client dell'API",
+     "to": "Rotte dei token",
+     "data": "DELETE /api/tokens con il token (Bearer)",
+     "kind": "chiama",
+     "cite": "app/api/tokens.py:14",
+     "has": "@bp.route('/tokens', methods=['DELETE'])"
+    },
+    {
+     "from": "Rotte dei token",
+     "to": "Autenticazione dell'API",
+     "data": "token da verificare",
+     "kind": "usa",
+     "cite": "app/api/tokens.py:15",
+     "has": "@token_auth.login_required"
+    },
+    {
+     "from": "Account utente",
+     "to": "Autenticazione dell'API",
+     "data": "utente del token e scadenza",
+     "kind": "legge",
+     "cite": "app/api/auth.py:25",
+     "has": "User.check_token(token)"
+    },
+    {
+     "from": "Autenticazione dell'API",
+     "to": "Rotte dei token",
+     "data": "l'utente del token",
+     "kind": "trasferisce",
+     "cite": "app/api/auth.py:24",
+     "has": "def verify_token(token)"
+    },
+    {
+     "from": "Rotte dei token",
+     "to": "Account utente",
+     "data": "scadenza portata nel passato",
+     "kind": "scrive",
+     "cite": "app/api/tokens.py:17",
+     "has": "revoke_token()"
+    },
+    {
+     "from": "Rotte dei token",
+     "to": "Client dell'API",
+     "data": "risposta 204 vuota",
+     "kind": "trasferisce",
+     "cite": "app/api/tokens.py:19",
+     "has": "return '', 204"
+    }
+   ]
+  },
+  {
+   "name": "Lettura degli utenti dall'API",
+   "area": "integrazioni esterne",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Client dell'API",
+    "Rotte degli utenti",
+    "Autenticazione dell'API",
+    "Account utente",
+    "Seguito",
+    "Post"
+   ],
+   "entries": [
+    {
+     "node": "Rotte degli utenti",
+     "kind": "rotta",
+     "what": "GET /api/users, /api/users/<id>, /api/users/<id>/followers, /api/users/<id>/following"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Client dell'API",
+     "what": "l'utente o una pagina di utenti in JSON"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Client dell'API",
+     "to": "Rotte degli utenti",
+     "data": "richieste GET con il token (Bearer), pagina e utenti per pagina",
+     "kind": "chiama",
+     "cite": "app/api/users.py:10",
+     "has": "@bp.route('/users/<int:id>', methods=['GET'])"
+    },
+    {
+     "from": "Rotte degli utenti",
+     "to": "Autenticazione dell'API",
+     "data": "token da verificare",
+     "kind": "usa",
+     "cite": "app/api/users.py:11",
+     "has": "@token_auth.login_required"
+    },
+    {
+     "from": "Account utente",
+     "to": "Autenticazione dell'API",
+     "data": "utente del token e scadenza",
+     "kind": "legge",
+     "cite": "app/api/auth.py:25",
+     "has": "User.check_token(token)"
+    },
+    {
+     "from": "Autenticazione dell'API",
+     "to": "Rotte degli utenti",
+     "data": "l'utente del token",
+     "kind": "trasferisce",
+     "cite": "app/api/auth.py:24",
+     "has": "def verify_token(token)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Rotte degli utenti",
+     "data": "un utente per id o una pagina di utenti",
+     "kind": "legge",
+     "cite": "app/api/users.py:13",
+     "has": "db.get_or_404(User, id)"
+    },
+    {
+     "from": "Seguito",
+     "to": "Rotte degli utenti",
+     "data": "chi segue l'utente e chi è seguito da lui",
+     "kind": "legge",
+     "cite": "app/api/users.py:31",
+     "has": "user.followers.select()"
+    },
+    {
+     "from": "Post",
+     "to": "Rotte degli utenti",
+     "data": "numero dei post di ogni utente",
+     "kind": "legge",
+     "cite": "app/models.py:238",
+     "has": "'post_count': self.posts_count()"
+    },
+    {
+     "from": "Rotte degli utenti",
+     "to": "Client dell'API",
+     "data": "JSON dell'utente o della pagina, con i link",
+     "kind": "trasferisce",
+     "cite": "app/api/users.py:21",
+     "has": "User.to_collection_dict("
+    }
+   ]
+  },
+  {
+   "name": "Creazione di un utente dall'API",
+   "area": "integrazioni esterne",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Client dell'API",
+    "Rotte degli utenti",
+    "Account utente"
+   ],
+   "entries": [
+    {
+     "node": "Rotte degli utenti",
+     "kind": "rotta",
+     "what": "POST /api/users, senza token"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account utente",
+     "what": "l'utente creato"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Client dell'API",
+     "to": "Rotte degli utenti",
+     "data": "POST /api/users con username, email e password, senza token",
+     "kind": "chiama",
+     "cite": "app/api/users.py:45",
+     "has": "@bp.route('/users', methods=['POST'])"
+    },
+    {
+     "from": "Account utente",
+     "to": "Rotte degli utenti",
+     "data": "nome utente ed email già presi",
+     "kind": "legge",
+     "cite": "app/api/users.py:50",
+     "has": "sa.select(User).where("
+    },
+    {
+     "from": "Rotte degli utenti",
+     "to": "Account utente",
+     "data": "nuovo utente con l'hash della password",
+     "kind": "scrive",
+     "cite": "app/api/users.py:58",
+     "has": "db.session.add(user)"
+    },
+    {
+     "from": "Rotte degli utenti",
+     "to": "Client dell'API",
+     "data": "risposta 201 con l'utente e l'intestazione Location",
+     "kind": "trasferisce",
+     "cite": "app/api/users.py:60",
+     "has": "return user.to_dict(), 201"
+    }
+   ]
+  },
+  {
+   "name": "Modifica di un utente dall'API",
+   "area": "integrazioni esterne",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Client dell'API",
+    "Rotte degli utenti",
+    "Autenticazione dell'API",
+    "Account utente"
+   ],
+   "entries": [
+    {
+     "node": "Rotte degli utenti",
+     "kind": "rotta",
+     "what": "PUT /api/users/<id>"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account utente",
+     "what": "nome utente, email e descrizione cambiati"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Client dell'API",
+     "to": "Rotte degli utenti",
+     "data": "PUT /api/users/<id> con i campi da cambiare e il token",
+     "kind": "chiama",
+     "cite": "app/api/users.py:64",
+     "has": "@bp.route('/users/<int:id>', methods=['PUT'])"
+    },
+    {
+     "from": "Rotte degli utenti",
+     "to": "Autenticazione dell'API",
+     "data": "token da verificare",
+     "kind": "usa",
+     "cite": "app/api/users.py:65",
+     "has": "@token_auth.login_required"
+    },
+    {
+     "from": "Account utente",
+     "to": "Autenticazione dell'API",
+     "data": "utente del token e scadenza",
+     "kind": "legge",
+     "cite": "app/api/auth.py:25",
+     "has": "User.check_token(token)"
+    },
+    {
+     "from": "Autenticazione dell'API",
+     "to": "Rotte degli utenti",
+     "data": "l'utente del token, che deve essere quello da modificare",
+     "kind": "trasferisce",
+     "cite": "app/api/users.py:67",
+     "has": "token_auth.current_user().id != id"
+    },
+    {
+     "from": "Account utente",
+     "to": "Rotte degli utenti",
+     "data": "utente per id; nome utente ed email già presi",
+     "kind": "legge",
+     "cite": "app/api/users.py:69",
+     "has": "db.get_or_404(User, id)"
+    },
+    {
+     "from": "Rotte degli utenti",
+     "to": "Account utente",
+     "data": "nome utente, email e descrizione",
+     "kind": "scrive",
+     "cite": "app/api/users.py:79",
+     "has": "user.from_dict(data, new_user=False)"
+    },
+    {
+     "from": "Rotte degli utenti",
+     "to": "Client dell'API",
+     "data": "l'utente aggiornato in JSON",
+     "kind": "trasferisce",
+     "cite": "app/api/users.py:81",
+     "has": "return user.to_dict()"
+    }
+   ]
+  },
+  {
+   "name": "Pubblicazione di un post",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Home",
+    "Post"
+   ],
+   "entries": [
+    {
+     "node": "Home",
+     "kind": "controllo dell'interfaccia",
+     "what": "il modulo «Say something» con il pulsante Submit"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Post",
+     "what": "il post salvato con la lingua rilevata"
+    },
+    {
+     "node": "Home",
+     "what": "l'elenco con il nuovo post"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Home",
+     "data": "testo fino a 140 caratteri",
+     "kind": "attiva",
+     "cite": "app/templates/index.html:7",
+     "has": "wtf.quick_form(form)"
+    },
+    {
+     "from": "Home",
+     "to": "Post",
+     "data": "testo, autore e lingua rilevata dal testo con langdetect",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:37",
+     "has": "db.session.add(post)"
+    },
+    {
+     "from": "Post",
+     "to": "Home",
+     "data": "elenco aggiornato dopo il redirect",
+     "kind": "legge",
+     "cite": "app/main/routes.py:42",
+     "has": "current_user.following_posts()"
+    }
+   ]
+  },
+  {
+   "name": "Elenco dei post seguiti",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Cornice della pagina",
+    "Home",
+    "Post",
+    "Seguito"
+   ],
+   "entries": [
+    {
+     "node": "Cornice della pagina",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Home» della barra"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Home",
+     "what": "una pagina di 25 post, con i link ai più vecchi e ai più nuovi"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Cornice della pagina",
+     "data": "clic su «Home»",
+     "kind": "attiva",
+     "cite": "app/templates/base.html:27",
+     "has": "_('Home')"
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Home",
+     "data": "richiesta della home",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:27",
+     "has": "url_for('main.index')"
+    },
+    {
+     "from": "Post",
+     "to": "Home",
+     "data": "post propri e degli utenti seguiti, dal più recente",
+     "kind": "legge",
+     "cite": "app/main/routes.py:42",
+     "has": "current_user.following_posts()"
+    },
+    {
+     "from": "Seguito",
+     "to": "Home",
+     "data": "chi è seguito dall'utente",
+     "kind": "legge",
+     "cite": "app/models.py:172",
+     "has": "Author.followers.of_type(Follower)"
+    }
+   ]
+  },
+  {
+   "name": "Esplorazione di tutti i post",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Cornice della pagina",
+    "Explore",
+    "Post"
+   ],
+   "entries": [
+    {
+     "node": "Cornice della pagina",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Explore» della barra"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Explore",
+     "what": "una pagina di 25 post di tutti gli utenti"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Cornice della pagina",
+     "data": "clic su «Explore»",
+     "kind": "attiva",
+     "cite": "app/templates/base.html:30",
+     "has": "_('Explore')"
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Explore",
+     "data": "GET /explore",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:30",
+     "has": "url_for('main.explore')"
+    },
+    {
+     "from": "Post",
+     "to": "Explore",
+     "data": "tutti i post, dal più recente",
+     "kind": "legge",
+     "cite": "app/main/routes.py:58",
+     "has": "sa.select(Post).order_by(Post.timestamp.desc())"
+    }
+   ]
+  },
+  {
+   "name": "Visita di un profilo",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Riga del post",
+    "Profile",
+    "Cornice della pagina",
+    "Account utente",
+    "Post",
+    "Seguito",
+    "Gravatar"
+   ],
+   "entries": [
+    {
+     "node": "Riga del post",
+     "kind": "controllo dell'interfaccia",
+     "what": "il nome o l'avatar dell'autore di un post"
+    },
+    {
+     "node": "Cornice della pagina",
+     "kind": "controllo dell'interfaccia",
+     "what": "il passaggio del mouse sul nome di un autore; il link «Profile» della barra"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Profile",
+     "what": "il profilo con avatar, descrizione, ultima visita, conteggi e post"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Riga del post",
+     "data": "clic sul nome o sull'avatar dell'autore",
+     "kind": "attiva",
+     "cite": "app/templates/_post.html:10",
+     "has": "class=\"user_popup\""
+    },
+    {
+     "from": "Riga del post",
+     "to": "Profile",
+     "data": "GET /user/<username>",
+     "kind": "chiama",
+     "cite": "app/templates/_post.html:10",
+     "has": "url_for('main.user', username=post.author.username)"
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Profile",
+     "data": "GET /user/<username>/popup al passaggio del mouse sul nome",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:131",
+     "has": "'/popup'"
+    },
+    {
+     "from": "Account utente",
+     "to": "Profile",
+     "data": "utente per nome",
+     "kind": "legge",
+     "cite": "app/main/routes.py:74",
+     "has": "User.username == username"
+    },
+    {
+     "from": "Post",
+     "to": "Profile",
+     "data": "post dell'utente, dal più recente",
+     "kind": "legge",
+     "cite": "app/main/routes.py:76",
+     "has": "user.posts.select().order_by(Post.timestamp.desc())"
+    },
+    {
+     "from": "Seguito",
+     "to": "Profile",
+     "data": "numero di seguaci e di seguiti",
+     "kind": "legge",
+     "cite": "app/templates/user.html:13",
+     "has": "user.followers_count()"
+    },
+    {
+     "from": "Profile",
+     "to": "Gravatar",
+     "data": "indirizzo dell'avatar con l'MD5 dell'email, caricato dal browser",
+     "kind": "trasferisce",
+     "cite": "app/templates/user.html:6",
+     "has": "user.avatar(256)"
+    }
+   ]
+  },
+  {
+   "name": "Modifica del profilo",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Profile",
+    "Edit Profile",
+    "Account utente"
+   ],
+   "entries": [
+    {
+     "node": "Profile",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Edit your profile»"
+    },
+    {
+     "node": "Edit Profile",
+     "kind": "controllo dell'interfaccia",
+     "what": "il modulo con il pulsante Submit"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account utente",
+     "what": "nome utente e descrizione cambiati"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profile",
+     "data": "clic su «Edit your profile»",
+     "kind": "attiva",
+     "cite": "app/templates/user.html:15",
+     "has": "_('Edit your profile')"
+    },
+    {
+     "from": "Profile",
+     "to": "Edit Profile",
+     "data": "GET /edit_profile",
+     "kind": "chiama",
+     "cite": "app/templates/user.html:15",
+     "has": "url_for('main.edit_profile')"
+    },
+    {
+     "from": "Account utente",
+     "to": "Edit Profile",
+     "data": "nome utente e descrizione attuali",
+     "kind": "legge",
+     "cite": "app/main/routes.py:108",
+     "has": "form.username.data = current_user.username"
+    },
+    {
+     "from": "Utente",
+     "to": "Edit Profile",
+     "data": "nuovo nome utente e «About me»",
+     "kind": "attiva",
+     "cite": "app/templates/edit_profile.html:6",
+     "has": "wtf.quick_form(form)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Edit Profile",
+     "data": "nome utente già preso",
+     "kind": "legge",
+     "cite": "app/main/forms.py:23",
+     "has": "sa.select(User).where("
+    },
+    {
+     "from": "Edit Profile",
+     "to": "Account utente",
+     "data": "nome utente e descrizione",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:102",
+     "has": "current_user.username = form.username.data"
+    }
+   ]
+  },
+  {
+   "name": "Aggiunta di un utente seguito",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Profile",
+    "Rotte del seguire",
+    "Account utente",
+    "Seguito"
+   ],
+   "entries": [
+    {
+     "node": "Profile",
+     "kind": "controllo dell'interfaccia",
+     "what": "il pulsante «Follow», nel profilo o nel riquadro"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Seguito",
+     "what": "la nuova coppia"
+    },
+    {
+     "node": "Profile",
+     "what": "il profilo con l'avviso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profile",
+     "data": "clic su «Follow»",
+     "kind": "attiva",
+     "cite": "app/templates/user.html:23",
+     "has": "form.submit(value=_('Follow')"
+    },
+    {
+     "from": "Profile",
+     "to": "Rotte del seguire",
+     "data": "POST /follow/<username> con il token CSRF",
+     "kind": "chiama",
+     "cite": "app/templates/user.html:21",
+     "has": "url_for('main.follow', username=user.username)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Rotte del seguire",
+     "data": "utente da seguire, per nome",
+     "kind": "legge",
+     "cite": "app/main/routes.py:120",
+     "has": "sa.select(User).where(User.username == username)"
+    },
+    {
+     "from": "Rotte del seguire",
+     "to": "Seguito",
+     "data": "coppia chi segue / chi è seguito",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:127",
+     "has": "current_user.follow(user)"
+    },
+    {
+     "from": "Rotte del seguire",
+     "to": "Profile",
+     "data": "redirect al profilo dell'utente seguito",
+     "kind": "chiama",
+     "cite": "app/main/routes.py:130",
+     "has": "redirect(url_for('main.user', username=username))"
+    }
+   ]
+  },
+  {
+   "name": "Rimozione di un utente seguito",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Profile",
+    "Rotte del seguire",
+    "Account utente",
+    "Seguito"
+   ],
+   "entries": [
+    {
+     "node": "Profile",
+     "kind": "controllo dell'interfaccia",
+     "what": "il pulsante «Unfollow», nel profilo o nel riquadro"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Seguito",
+     "what": "la coppia tolta"
+    },
+    {
+     "node": "Profile",
+     "what": "il profilo con l'avviso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profile",
+     "data": "clic su «Unfollow»",
+     "kind": "attiva",
+     "cite": "app/templates/user.html:30",
+     "has": "form.submit(value=_('Unfollow')"
+    },
+    {
+     "from": "Profile",
+     "to": "Rotte del seguire",
+     "data": "POST /unfollow/<username> con il token CSRF",
+     "kind": "chiama",
+     "cite": "app/templates/user.html:28",
+     "has": "url_for('main.unfollow', username=user.username)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Rotte del seguire",
+     "data": "utente da non seguire più, per nome",
+     "kind": "legge",
+     "cite": "app/main/routes.py:141",
+     "has": "sa.select(User).where(User.username == username)"
+    },
+    {
+     "from": "Rotte del seguire",
+     "to": "Seguito",
+     "data": "coppia da togliere",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:148",
+     "has": "current_user.unfollow(user)"
+    },
+    {
+     "from": "Rotte del seguire",
+     "to": "Profile",
+     "data": "redirect al profilo dell'utente",
+     "kind": "chiama",
+     "cite": "app/main/routes.py:151",
+     "has": "redirect(url_for('main.user', username=username))"
+    }
+   ]
+  },
+  {
+   "name": "Ricerca nei post",
+   "area": "funzioni principali",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Cornice della pagina",
+    "Search Results",
+    "Ricerca a testo pieno",
+    "Elasticsearch",
+    "Indice di ricerca dei post",
+    "Post"
+   ],
+   "entries": [
+    {
+     "node": "Cornice della pagina",
+     "kind": "controllo dell'interfaccia",
+     "what": "la casella «Search» della barra"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Search Results",
+     "what": "i post trovati, una pagina per volta"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Cornice della pagina",
+     "data": "testo nella casella di ricerca",
+     "kind": "attiva",
+     "cite": "app/templates/base.html:35",
+     "has": "g.search_form.q("
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Search Results",
+     "data": "GET /search?q=<testo>",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:33",
+     "has": "url_for('main.search')"
+    },
+    {
+     "from": "Search Results",
+     "to": "Ricerca a testo pieno",
+     "data": "espressione, pagina e post per pagina",
+     "kind": "chiama",
+     "cite": "app/main/routes.py:171",
+     "has": "Post.search(g.search_form.q.data, page,"
+    },
+    {
+     "from": "Ricerca a testo pieno",
+     "to": "Elasticsearch",
+     "data": "interrogazione multi_match su tutti i campi dell'indice post",
+     "kind": "chiama",
+     "cite": "app/search.py:22",
+     "has": "current_app.elasticsearch.search("
+    },
+    {
+     "from": "Indice di ricerca dei post",
+     "to": "Ricerca a testo pieno",
+     "data": "id dei post trovati e totale",
+     "kind": "legge",
+     "cite": "app/search.py:27",
+     "has": "hit['_id']"
+    },
+    {
+     "from": "Post",
+     "to": "Ricerca a testo pieno",
+     "data": "i post con quegli id, nell'ordine dei risultati",
+     "kind": "legge",
+     "cite": "app/models.py:28",
+     "has": "cls.id.in_(ids)"
+    },
+    {
+     "from": "Ricerca a testo pieno",
+     "to": "Search Results",
+     "data": "post e totale",
+     "kind": "trasferisce",
+     "cite": "app/models.py:30",
+     "has": "return db.session.scalars(query), total"
+    }
+   ]
+  },
+  {
+   "name": "Ora dell'ultima visita",
+   "area": "funzioni principali",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Utente",
+    "Gancio delle richieste",
+    "Account utente"
+   ],
+   "entries": [
+    {
+     "node": "Gancio delle richieste",
+     "kind": "rotta",
+     "what": "ogni richiesta di un utente entrato"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account utente",
+     "what": "l'ora dell'ultima visita"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Gancio delle richieste",
+     "data": "qualunque richiesta di chi è entrato",
+     "kind": "attiva",
+     "cite": "app/main/routes.py:16",
+     "has": "@bp.before_app_request"
+    },
+    {
+     "from": "Gancio delle richieste",
+     "to": "Account utente",
+     "data": "ora dell'ultima visita",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:19",
+     "has": "current_user.last_seen = datetime.now(timezone.utc)"
+    }
+   ]
+  },
+  {
+   "name": "Scelta della lingua dell'interfaccia",
+   "area": "funzioni principali",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Browser",
+    "Gancio delle richieste",
+    "Cornice della pagina",
+    "Cataloghi delle traduzioni"
+   ],
+   "entries": [
+    {
+     "node": "Gancio delle richieste",
+     "kind": "rotta",
+     "what": "ogni richiesta, con la sua intestazione Accept-Language"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Cornice della pagina",
+     "what": "la pagina nella lingua scelta, date comprese"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Browser",
+     "to": "Gancio delle richieste",
+     "data": "intestazione Accept-Language",
+     "kind": "trasferisce",
+     "cite": "app/__init__.py:18",
+     "has": "request.accept_languages.best_match("
+    },
+    {
+     "from": "Gancio delle richieste",
+     "to": "Cornice della pagina",
+     "data": "lingua scelta fra en ed es",
+     "kind": "trasferisce",
+     "cite": "app/main/routes.py:22",
+     "has": "g.locale = str(get_locale())"
+    },
+    {
+     "from": "Cataloghi delle traduzioni",
+     "to": "Cornice della pagina",
+     "data": "testi tradotti nella lingua scelta",
+     "kind": "legge",
+     "cite": "app/__init__.py:40",
+     "has": "babel.init_app(app, locale_selector=get_locale)"
+    }
+   ]
+  },
+  {
+   "name": "Traduzione di un post",
+   "area": "integrazioni esterne",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Riga del post",
+    "Cornice della pagina",
+    "Rotta di traduzione",
+    "Microsoft Translator"
+   ],
+   "entries": [
+    {
+     "node": "Riga del post",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Translate», presente se la lingua del post non è quella dell'utente"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Riga del post",
+     "what": "il testo tradotto al posto del link"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Riga del post",
+     "data": "clic su «Translate»",
+     "kind": "attiva",
+     "cite": "app/templates/_post.html:25",
+     "has": "_('Translate')"
+    },
+    {
+     "from": "Riga del post",
+     "to": "Cornice della pagina",
+     "data": "elementi di origine e destinazione, lingua del post e lingua dell'utente",
+     "kind": "chiama",
+     "cite": "app/templates/_post.html:21",
+     "has": "javascript:translate("
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Rotta di traduzione",
+     "data": "POST /translate con testo, lingua di origine e lingua di destinazione",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:101",
+     "has": "fetch('/translate'"
+    },
+    {
+     "from": "Rotta di traduzione",
+     "to": "Microsoft Translator",
+     "data": "POST /translate?api-version=3.0 con il testo, le due lingue e la chiave nell'intestazione",
+     "kind": "chiama",
+     "cite": "app/translate.py:14",
+     "has": "requests.post("
+    },
+    {
+     "from": "Microsoft Translator",
+     "to": "Rotta di traduzione",
+     "data": "testo tradotto",
+     "kind": "trasferisce",
+     "cite": "app/translate.py:21",
+     "has": "['translations'][0]['text']"
+    },
+    {
+     "from": "Rotta di traduzione",
+     "to": "Cornice della pagina",
+     "data": "JSON con il testo tradotto o con il messaggio di errore",
+     "kind": "trasferisce",
+     "cite": "app/main/routes.py:160",
+     "has": "return {'text': translate(data['text'],"
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Riga del post",
+     "data": "testo tradotto al posto del link",
+     "kind": "scrive",
+     "cite": "app/templates/base.html:111",
+     "has": "document.getElementById(destElem).innerText = data.text"
+    }
+   ]
+  },
+  {
+   "name": "Aggiornamento dell'indice di ricerca",
+   "area": "integrazioni esterne",
+   "types": [
+    "operativo",
+    "tecnico"
+   ],
+   "nodes": [
+    "Post",
+    "Ricerca a testo pieno",
+    "Elasticsearch",
+    "Indice di ricerca dei post"
+   ],
+   "entries": [
+    {
+     "node": "Post",
+     "kind": "cambio di un dato",
+     "what": "la conferma di una transazione che aggiunge, cambia o cancella un post"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Indice di ricerca dei post",
+     "what": "il documento del post aggiunto, aggiornato o tolto"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Post",
+     "to": "Ricerca a testo pieno",
+     "data": "post aggiunti, cambiati o cancellati nella transazione confermata",
+     "kind": "attiva",
+     "cite": "app/models.py:60",
+     "has": "'after_commit', SearchableMixin.after_commit"
+    },
+    {
+     "from": "Ricerca a testo pieno",
+     "to": "Elasticsearch",
+     "data": "documento con il corpo del post sotto il suo id; cancellazione per un post rimosso",
+     "kind": "chiama",
+     "cite": "app/search.py:10",
+     "has": "current_app.elasticsearch.index("
+    },
+    {
+     "from": "Elasticsearch",
+     "to": "Indice di ricerca dei post",
+     "data": "documento salvato nell'indice post",
+     "kind": "scrive",
+     "cite": "app/search.py:10",
+     "has": "index=index, id=model.id, document=payload"
+    }
+   ]
+  },
+  {
+   "name": "Invio di un messaggio privato",
+   "area": "comunicazioni",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Profile",
+    "Send Message",
+    "Account utente",
+    "Messaggio privato",
+    "Notifica"
+   ],
+   "entries": [
+    {
+     "node": "Profile",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Send private message»"
+    },
+    {
+     "node": "Send Message",
+     "kind": "controllo dell'interfaccia",
+     "what": "il modulo con il pulsante Submit"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Messaggio privato",
+     "what": "il messaggio salvato"
+    },
+    {
+     "node": "Notifica",
+     "what": "il numero dei non letti del destinatario"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profile",
+     "data": "clic su «Send private message»",
+     "kind": "attiva",
+     "cite": "app/templates/user.html:35",
+     "has": "_('Send private message')"
+    },
+    {
+     "from": "Profile",
+     "to": "Send Message",
+     "data": "GET /send_message/<recipient>",
+     "kind": "chiama",
+     "cite": "app/templates/user.html:35",
+     "has": "url_for('main.send_message', recipient=user.username)"
+    },
+    {
+     "from": "Utente",
+     "to": "Send Message",
+     "data": "testo fino a 140 caratteri",
+     "kind": "attiva",
+     "cite": "app/templates/send_message.html:6",
+     "has": "wtf.quick_form(form)"
+    },
+    {
+     "from": "Account utente",
+     "to": "Send Message",
+     "data": "destinatario per nome",
+     "kind": "legge",
+     "cite": "app/main/routes.py:184",
+     "has": "User.username == recipient"
+    },
+    {
+     "from": "Send Message",
+     "to": "Messaggio privato",
+     "data": "mittente, destinatario e testo",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:189",
+     "has": "db.session.add(msg)"
+    },
+    {
+     "from": "Send Message",
+     "to": "Notifica",
+     "data": "numero dei messaggi non letti del destinatario",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:190",
+     "has": "user.add_notification('unread_message_count',"
+    },
+    {
+     "from": "Send Message",
+     "to": "Profile",
+     "data": "redirect al profilo del destinatario",
+     "kind": "chiama",
+     "cite": "app/main/routes.py:194",
+     "has": "redirect(url_for('main.user', username=recipient))"
+    }
+   ]
+  },
+  {
+   "name": "Lettura dei messaggi",
+   "area": "comunicazioni",
+   "types": [
+    "funzionale"
+   ],
+   "nodes": [
+    "Utente",
+    "Cornice della pagina",
+    "Messages",
+    "Account utente",
+    "Notifica",
+    "Messaggio privato"
+   ],
+   "entries": [
+    {
+     "node": "Cornice della pagina",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Messages» della barra"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Messages",
+     "what": "i messaggi ricevuti"
+    },
+    {
+     "node": "Account utente",
+     "what": "l'ora dell'ultima lettura"
+    },
+    {
+     "node": "Notifica",
+     "what": "il numero dei non letti a zero"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Cornice della pagina",
+     "data": "clic su «Messages»",
+     "kind": "attiva",
+     "cite": "app/templates/base.html:47",
+     "has": "_('Messages')"
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Messages",
+     "data": "GET /messages",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:47",
+     "has": "url_for('main.messages')"
+    },
+    {
+     "from": "Messages",
+     "to": "Account utente",
+     "data": "ora dell'ultima lettura dei messaggi",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:202",
+     "has": "current_user.last_message_read_time"
+    },
+    {
+     "from": "Messages",
+     "to": "Notifica",
+     "data": "numero dei non letti a zero",
+     "kind": "scrive",
+     "cite": "app/main/routes.py:203",
+     "has": "current_user.add_notification('unread_message_count', 0)"
+    },
+    {
+     "from": "Messaggio privato",
+     "to": "Messages",
+     "data": "messaggi ricevuti, dal più recente",
+     "kind": "legge",
+     "cite": "app/main/routes.py:206",
+     "has": "current_user.messages_received.select()"
+    }
+   ]
+  },
+  {
+   "name": "Aggiornamento periodico delle notifiche",
+   "area": "comunicazioni",
+   "types": [
+    "operativo"
+   ],
+   "nodes": [
+    "Browser",
+    "Cornice della pagina",
+    "Rotta delle notifiche",
+    "Notifica",
+    "Messaggio privato"
+   ],
+   "entries": [
+    {
+     "node": "Cornice della pagina",
+     "kind": "orario",
+     "what": "il timer del browser ogni 10 secondi, per chi è entrato"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Cornice della pagina",
+     "what": "il contatore dei messaggi e l'avanzamento dei compiti aggiornati"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Browser",
+     "to": "Cornice della pagina",
+     "data": "scadenza del timer ogni 10 secondi",
+     "kind": "attiva",
+     "cite": "app/templates/base.html:160",
+     "has": "setInterval(async function()"
+    },
+    {
+     "from": "Cornice della pagina",
+     "to": "Rotta delle notifiche",
+     "data": "GET /notifications?since=<istante dell'ultima notifica vista>",
+     "kind": "chiama",
+     "cite": "app/templates/base.html:161",
+     "has": "url_for('main.notifications')"
+    },
+    {
+     "from": "Notifica",
+     "to": "Rotta delle notifiche",
+     "data": "notifiche dell'utente più recenti di since",
+     "kind": "legge",
+     "cite": "app/main/routes.py:235",
+     "has": "Notification.timestamp > since"
+    },
+    {
+     "from": "Rotta delle notifiche",
+     "to": "Cornice della pagina",
+     "data": "elenco con nome, dati e istante di ogni notifica",
+     "kind": "trasferisce",
+     "cite": "app/main/routes.py:238",
+     "has": "'name': n.name"
+    },
+    {
+     "from": "Messaggio privato",
+     "to": "Cornice della pagina",
+     "data": "numero dei non letti quando la pagina è costruita",
+     "kind": "legge",
+     "cite": "app/templates/base.html:48",
+     "has": "current_user.unread_message_count()"
+    }
+   ]
+  },
+  {
+   "name": "Esportazione dei post",
+   "area": "dati dell'utente",
+   "types": [
+    "funzionale",
+    "operativo"
+   ],
+   "nodes": [
+    "Utente",
+    "Profile",
+    "Rotta di esportazione",
+    "Compito",
+    "Coda dei compiti",
+    "Worker dei compiti",
+    "Account utente",
+    "Post",
+    "Avanzamento del compito",
+    "Notifica",
+    "Invio delle email",
+    "Server di posta SMTP",
+    "Cornice della pagina"
+   ],
+   "entries": [
+    {
+     "node": "Profile",
+     "kind": "controllo dell'interfaccia",
+     "what": "il link «Export your posts»"
+    },
+    {
+     "node": "Worker dei compiti",
+     "kind": "messaggio",
+     "what": "il lavoro app.tasks.export_posts nella coda microblog-tasks"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Server di posta SMTP",
+     "what": "l'email con l'allegato posts.json"
+    },
+    {
+     "node": "Compito",
+     "what": "il compito completato"
+    },
+    {
+     "node": "Cornice della pagina",
+     "what": "la percentuale di avanzamento"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profile",
+     "data": "clic su «Export your posts»",
+     "kind": "attiva",
+     "cite": "app/templates/user.html:17",
+     "has": "_('Export your posts')"
+    },
+    {
+     "from": "Profile",
+     "to": "Rotta di esportazione",
+     "data": "GET /export_posts",
+     "kind": "chiama",
+     "cite": "app/templates/user.html:17",
+     "has": "url_for('main.export_posts')"
+    },
+    {
+     "from": "Compito",
+     "to": "Rotta di esportazione",
+     "data": "esportazione già in corso o no",
+     "kind": "legge",
+     "cite": "app/main/routes.py:222",
+     "has": "current_user.get_task_in_progress('export_posts')"
+    },
+    {
+     "from": "Rotta di esportazione",
+     "to": "Coda dei compiti",
+     "data": "lavoro app.tasks.export_posts con l'id dell'utente",
+     "kind": "scrive",
+     "cite": "app/models.py:210",
+     "has": "current_app.task_queue.enqueue(f'app.tasks.{name}'"
+    },
+    {
+     "from": "Rotta di esportazione",
+     "to": "Compito",
+     "data": "id del lavoro, nome, descrizione e utente",
+     "kind": "scrive",
+     "cite": "app/models.py:212",
+     "has": "Task(id=rq_job.get_id()"
+    },
+    {
+     "from": "Rotta di esportazione",
+     "to": "Profile",
+     "data": "redirect al proprio profilo",
+     "kind": "chiama",
+     "cite": "app/main/routes.py:227",
+     "has": "redirect(url_for('main.user', username=current_user.username))"
+    },
+    {
+     "from": "Coda dei compiti",
+     "to": "Worker dei compiti",
+     "data": "lavoro preso dal processo rq worker",
+     "kind": "attiva",
+     "cite": "Procfile:2",
+     "has": "rq worker microblog-tasks"
+    },
+    {
+     "from": "Account utente",
+     "to": "Worker dei compiti",
+     "data": "utente per id",
+     "kind": "legge",
+     "cite": "app/tasks.py:30",
+     "has": "db.session.get(User, user_id)"
+    },
+    {
+     "from": "Post",
+     "to": "Worker dei compiti",
+     "data": "post dell'utente, dal più vecchio",
+     "kind": "legge",
+     "cite": "app/tasks.py:36",
+     "has": "user.posts.select().order_by("
+    },
+    {
+     "from": "Worker dei compiti",
+     "to": "Avanzamento del compito",
+     "data": "percentuale nei metadati del lavoro",
+     "kind": "scrive",
+     "cite": "app/tasks.py:18",
+     "has": "job.meta['progress'] = progress"
+    },
+    {
+     "from": "Worker dei compiti",
+     "to": "Notifica",
+     "data": "task_progress con id del compito e percentuale",
+     "kind": "scrive",
+     "cite": "app/tasks.py:21",
+     "has": "add_notification('task_progress'"
+    },
+    {
+     "from": "Worker dei compiti",
+     "to": "Compito",
+     "data": "compito completato, a 100",
+     "kind": "scrive",
+     "cite": "app/tasks.py:24",
+     "has": "task.complete = True"
+    },
+    {
+     "from": "Worker dei compiti",
+     "to": "Invio delle email",
+     "data": "oggetto, destinatario, testi e allegato posts.json",
+     "kind": "chiama",
+     "cite": "app/tasks.py:44",
+     "has": "send_email("
+    },
+    {
+     "from": "Invio delle email",
+     "to": "Server di posta SMTP",
+     "data": "il messaggio, in modo sincrono",
+     "kind": "chiama",
+     "cite": "app/email.py:21",
+     "has": "mail.send(msg)"
+    },
+    {
+     "from": "Server di posta SMTP",
+     "to": "Utente",
+     "data": "email con l'archivio dei post",
+     "kind": "trasferisce",
+     "cite": "app/templates/email/export_posts.txt:3",
+     "has": "archive of your posts"
+    },
+    {
+     "from": "Avanzamento del compito",
+     "to": "Cornice della pagina",
+     "data": "percentuale quando la pagina è costruita",
+     "kind": "legge",
+     "cite": "app/templates/base.html:74",
+     "has": "task.get_progress()"
+    },
+    {
+     "from": "Notifica",
+     "to": "Cornice della pagina",
+     "data": "percentuale a ogni interrogazione delle notifiche",
+     "kind": "legge",
+     "cite": "app/templates/base.html:169",
+     "has": "set_task_progress(notifications[i].data.task_id,"
+    }
+   ]
+  },
+  {
+   "name": "Email di errore agli amministratori",
+   "area": "amministrazione",
+   "types": [
+    "operativo",
+    "tecnico"
+   ],
+   "nodes": [
+    "Worker dei compiti",
+    "Fabbrica dell'applicazione",
+    "Server di posta SMTP",
+    "Amministratore"
+   ],
+   "entries": [
+    {
+     "node": "Fabbrica dell'applicazione",
+     "kind": "avvio di un processo",
+     "what": "il gestore SMTP montato sul registro all'avvio, fuori da debug e test e con MAIL_SERVER; scatta a ogni record ERROR"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Amministratore",
+     "what": "l'email «Microblog Failure»"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Worker dei compiti",
+     "to": "Fabbrica dell'applicazione",
+     "data": "eccezione non gestita di un compito, scritta nel registro a livello ERROR",
+     "kind": "usa",
+     "cite": "app/tasks.py:54",
+     "has": "app.logger.error('Unhandled exception'"
+    },
+    {
+     "from": "Fabbrica dell'applicazione",
+     "to": "Server di posta SMTP",
+     "data": "record di livello ERROR come email «Microblog Failure»",
+     "kind": "chiama",
+     "cite": "app/__init__.py:70",
+     "has": "mail_handler = SMTPHandler("
+    },
+    {
+     "from": "Server di posta SMTP",
+     "to": "Amministratore",
+     "data": "email di errore agli indirizzi di ADMINS",
+     "kind": "trasferisce",
+     "cite": "app/__init__.py:73",
+     "has": "toaddrs=app.config['ADMINS']"
+    }
+   ]
+  },
+  {
+   "name": "Registro dell'applicazione",
+   "area": "esercizio",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Fabbrica dell'applicazione",
+    "File di log"
+   ],
+   "entries": [
+    {
+     "node": "Fabbrica dell'applicazione",
+     "kind": "avvio di un processo",
+     "what": "l'avvio dell'app fuori da debug e test"
+    }
+   ],
+   "effects": [
+    {
+     "node": "File di log",
+     "what": "i record da INFO in su; con LOG_TO_STDOUT vanno invece sull'uscita standard"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Fabbrica dell'applicazione",
+     "to": "File di log",
+     "data": "record da INFO in su, in un file a rotazione di 10 KB con 10 copie",
+     "kind": "scrive",
+     "cite": "app/__init__.py:85",
+     "has": "RotatingFileHandler('logs/microblog.log'"
+    }
+   ]
+  },
+  {
+   "name": "Risposta di errore",
+   "area": "esercizio",
+   "types": [
+    "tecnico"
+   ],
+   "nodes": [
+    "Utente",
+    "Pagine di errore",
+    "Database"
+   ],
+   "entries": [
+    {
+     "node": "Pagine di errore",
+     "kind": "rotta",
+     "what": "una richiesta che finisce in 404 o in 500"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Utente",
+     "what": "la pagina di errore, o l'errore in JSON"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Pagine di errore",
+     "data": "richiesta di un indirizzo che non esiste o che fallisce",
+     "kind": "chiama",
+     "cite": "app/errors/handlers.py:12",
+     "has": "@bp.app_errorhandler(404)"
+    },
+    {
+     "from": "Pagine di errore",
+     "to": "Database",
+     "data": "annullamento della transazione aperta, sull'errore 500",
+     "kind": "usa",
+     "cite": "app/errors/handlers.py:21",
+     "has": "db.session.rollback()"
+    },
+    {
+     "from": "Pagine di errore",
+     "to": "Utente",
+     "data": "pagina 404 o 500, o JSON se il client lo preferisce all'HTML",
+     "kind": "trasferisce",
+     "cite": "app/errors/handlers.py:16",
+     "has": "render_template('errors/404.html'), 404"
+    }
+   ]
+  },
+  {
+   "name": "Costruzione e avvio del container",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Sviluppatore",
+    "Immagine del container",
+    "Comandi di traduzione",
+    "Cataloghi delle traduzioni",
+    "Database",
+    "App web"
+   ],
+   "entries": [
+    {
+     "node": "Immagine del container",
+     "kind": "comando",
+     "what": "docker build sul Dockerfile"
+    },
+    {
+     "node": "Immagine del container",
+     "kind": "avvio di un processo",
+     "what": "ENTRYPOINT ./boot.sh"
+    }
+   ],
+   "effects": [
+    {
+     "node": "App web",
+     "what": "il sito servito da gunicorn sulla porta 5000"
+    },
+    {
+     "node": "Database",
+     "what": "lo schema portato all'ultima migrazione"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Sviluppatore",
+     "to": "Immagine del container",
+     "data": "costruzione dell'immagine da python:slim con le dipendenze",
+     "kind": "attiva",
+     "cite": "Dockerfile:4",
+     "has": "pip install -r requirements.txt"
+    },
+    {
+     "from": "Immagine del container",
+     "to": "Comandi di traduzione",
+     "data": "flask translate compile, durante la costruzione",
+     "kind": "chiama",
+     "cite": "Dockerfile:13",
+     "has": "RUN flask translate compile"
+    },
+    {
+     "from": "Comandi di traduzione",
+     "to": "Cataloghi delle traduzioni",
+     "data": "cataloghi .mo compilati da pybabel",
+     "kind": "scrive",
+     "cite": "app/cli.py:39",
+     "has": "pybabel compile -d app/translations"
+    },
+    {
+     "from": "Immagine del container",
+     "to": "Database",
+     "data": "flask db upgrade, ripetuto ogni 5 secondi finché riesce",
+     "kind": "chiama",
+     "cite": "boot.sh:4",
+     "has": "flask db upgrade"
+    },
+    {
+     "from": "Immagine del container",
+     "to": "App web",
+     "data": "avvio di gunicorn sulla porta 5000 con microblog:app",
+     "kind": "attiva",
+     "cite": "boot.sh:11",
+     "has": "exec gunicorn -b :5000"
+    }
+   ]
+  },
+  {
+   "name": "Avvio su Heroku",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Heroku",
+    "Database",
+    "Comandi di traduzione",
+    "Cataloghi delle traduzioni",
+    "App web",
+    "Worker dei compiti"
+   ],
+   "entries": [
+    {
+     "node": "App web",
+     "kind": "avvio di un processo",
+     "what": "il processo web del Procfile"
+    },
+    {
+     "node": "Worker dei compiti",
+     "kind": "avvio di un processo",
+     "what": "il processo worker del Procfile"
+    }
+   ],
+   "effects": [
+    {
+     "node": "App web",
+     "what": "il sito servito da gunicorn"
+    },
+    {
+     "node": "Worker dei compiti",
+     "what": "il worker in ascolto sulla coda microblog-tasks"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Heroku",
+     "to": "Database",
+     "data": "flask db upgrade",
+     "kind": "chiama",
+     "cite": "Procfile:1",
+     "has": "flask db upgrade"
+    },
+    {
+     "from": "Heroku",
+     "to": "Comandi di traduzione",
+     "data": "flask translate compile",
+     "kind": "chiama",
+     "cite": "Procfile:1",
+     "has": "flask translate compile"
+    },
+    {
+     "from": "Comandi di traduzione",
+     "to": "Cataloghi delle traduzioni",
+     "data": "cataloghi .mo compilati da pybabel",
+     "kind": "scrive",
+     "cite": "app/cli.py:39",
+     "has": "pybabel compile -d app/translations"
+    },
+    {
+     "from": "Heroku",
+     "to": "App web",
+     "data": "avvio di gunicorn con microblog:app",
+     "kind": "attiva",
+     "cite": "Procfile:1",
+     "has": "gunicorn microblog:app"
+    },
+    {
+     "from": "Heroku",
+     "to": "Worker dei compiti",
+     "data": "avvio di rq worker sulla coda microblog-tasks",
+     "kind": "attiva",
+     "cite": "Procfile:2",
+     "has": "worker: rq worker microblog-tasks"
+    }
+   ]
+  },
+  {
+   "name": "Avvio su un server con Supervisor e Nginx",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Supervisor",
+    "App web",
+    "Worker dei compiti",
+    "Browser",
+    "Nginx"
+   ],
+   "entries": [
+    {
+     "node": "App web",
+     "kind": "avvio di un processo",
+     "what": "il programma microblog di Supervisor"
+    },
+    {
+     "node": "Worker dei compiti",
+     "kind": "avvio di un processo",
+     "what": "il programma microblog-tasks di Supervisor"
+    }
+   ],
+   "effects": [
+    {
+     "node": "App web",
+     "what": "il sito dietro Nginx, in HTTPS"
+    },
+    {
+     "node": "Worker dei compiti",
+     "what": "il worker in ascolto sulla coda"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Supervisor",
+     "to": "App web",
+     "data": "avvio di gunicorn su localhost:8000 con 4 processi, riavviato se cade",
+     "kind": "attiva",
+     "cite": "deployment/supervisor/microblog.conf:2",
+     "has": "gunicorn -b localhost:8000 -w 4 microblog:app"
+    },
+    {
+     "from": "Supervisor",
+     "to": "Worker dei compiti",
+     "data": "avvio di rq worker sulla coda microblog-tasks",
+     "kind": "attiva",
+     "cite": "deployment/supervisor/microblog-tasks.conf:2",
+     "has": "rq worker microblog-tasks"
+    },
+    {
+     "from": "Browser",
+     "to": "Nginx",
+     "data": "richieste HTTPS sulla porta 443; la 80 rimanda a HTTPS",
+     "kind": "chiama",
+     "cite": "deployment/nginx/microblog:12",
+     "has": "listen 443 ssl;"
+    },
+    {
+     "from": "Nginx",
+     "to": "App web",
+     "data": "richieste inoltrate a localhost:8000 con Host e indirizzo del client; /static servito dal disco",
+     "kind": "chiama",
+     "cite": "deployment/nginx/microblog:25",
+     "has": "proxy_pass http://localhost:8000;"
+    }
+   ]
+  },
+  {
+   "name": "Manutenzione dei cataloghi delle traduzioni",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "nodes": [
+    "Sviluppatore",
+    "Comandi di traduzione",
+    "Cataloghi delle traduzioni"
+   ],
+   "entries": [
+    {
+     "node": "Comandi di traduzione",
+     "kind": "comando",
+     "what": "flask translate init <lingua>, flask translate update, flask translate compile"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Cataloghi delle traduzioni",
+     "what": "il catalogo di una lingua creato, aggiornato o compilato"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Sviluppatore",
+     "to": "Comandi di traduzione",
+     "data": "comando init con la lingua, update o compile",
+     "kind": "attiva",
+     "cite": "app/cli.py:8",
+     "has": "@bp.cli.group()"
+    },
+    {
+     "from": "Comandi di traduzione",
+     "to": "Cataloghi delle traduzioni",
+     "data": "testi estratti da codice e template secondo babel.cfg, poi catalogo creato o aggiornato",
+     "kind": "scrive",
+     "cite": "app/cli.py:31",
+     "has": "pybabel update -i messages.pot -d app/translations"
+    },
+    {
+     "from": "Comandi di traduzione",
+     "to": "Cataloghi delle traduzioni",
+     "data": "cataloghi .mo compilati da pybabel",
+     "kind": "scrive",
+     "cite": "app/cli.py:39",
+     "has": "pybabel compile -d app/translations"
+    }
+   ]
+  }
+ ],
+ "areas": [
+  {
+   "name": "accesso e identità",
+   "present": true
+  },
+  {
+   "name": "funzioni principali",
+   "present": true
+  },
+  {
+   "name": "pagamenti e abbonamenti",
+   "present": false
+  },
+  {
+   "name": "dati dell'utente",
+   "present": true
+  },
+  {
+   "name": "integrazioni esterne",
+   "present": true
+  },
+  {
+   "name": "comunicazioni",
+   "present": true
+  },
+  {
+   "name": "amministrazione",
+   "present": true
+  },
+  {
+   "name": "esercizio",
+   "present": true
+  }
+ ],
+ "packages": [
+  {
+   "path": ".",
+   "manifest": "requirements.txt",
+   "kind": "python-package"
+  }
+ ],
+ "gaps": [
+  {
+   "what": "Quale motore di base dati c'è in produzione (Postgres, MySQL o SQLite)",
+   "why": "config.py prende DATABASE_URL dall'ambiente e ripiega su SQLite; requirements.txt porta psycopg2-binary e il Dockerfile installa pymysql, ma nessun file sceglie."
+  },
+  {
+   "what": "I container o i servizi di Redis, Elasticsearch, base dati e posta accanto al sito",
+   "why": "Non c'è un file compose né altro che li dichiari: gli indirizzi arrivano solo da variabili d'ambiente (REDIS_URL, ELASTICSEARCH_URL, DATABASE_URL, MAIL_SERVER)."
+  },
+  {
+   "what": "Che il Procfile sia per Heroku",
+   "why": "Il formato è quello di Heroku e config.py corregge postgres:// e legge LOG_TO_STDOUT, ma nessun file nomina la piattaforma."
+  },
+  {
+   "what": "Il legame fra la coda e la funzione del worker",
+   "why": "Il nome del lavoro è costruito a stringa (app/models.py:210, f'app.tasks.{name}') e il worker è avviato fuori dal codice (Procfile:2): nessuna chiamata li unisce."
+  },
+  {
+   "what": "La ricostruzione completa dell'indice di ricerca (SearchableMixin.reindex)",
+   "why": "app/models.py:54 la definisce ma nessun file del progetto la chiama: si lancia a mano da flask shell."
+  },
+  {
+   "what": "Quale indirizzo costruisce url_for('main.index') fra / e /index",
+   "why": "La funzione index ha due rotte (app/main/routes.py:25-26): lo decide Flask a tempo di esecuzione."
+  },
+  {
+   "what": "Le librerie caricate dal browser: Bootstrap da cdn.jsdelivr.net e moment.js da Flask-Moment",
+   "why": "Sono dipendenze dell'interfaccia e non servizi con cui il programma scambia dati; l'indirizzo di moment.js lo sceglie la libreria (app/templates/base.html:95)."
+  },
+  {
+   "what": "Le chiavi del cookie di sessione (utente entrato, avvisi flash, token CSRF)",
+   "why": "Le scrivono Flask-Login, Flask e Flask-WTF: il progetto chiama solo login_user, logout_user, flash e hidden_tag."
+  },
+  {
+   "what": "L'invio dell'email di errore per un'eccezione in una richiesta del sito",
+   "why": "Il record ERROR lo scrive Flask stesso, non una riga del progetto: si cita solo il gestore SMTP (app/__init__.py:70) e l'errore scritto dal worker (app/tasks.py:54)."
+  },
+  {
+   "what": "deployment/: i percorsi /home/ubuntu/microblog e i certificati",
+   "why": "Sono fuori dal progetto; i due file di Supervisor e quello di Nginx sono citati come evidenza dei nodi esterni e nessun nodo interno li possiede."
+  },
+  {
+   "what": "Vagrantfile",
+   "why": "Definisce solo una macchina virtuale Ubuntu con un indirizzo privato, senza provisioning: nessun file la lega al resto."
+  },
+  {
+   "what": "tests.py",
+   "why": "Test unitari del solo modello utente (password, avatar, seguiti), con SQLite in memoria: strumento di sviluppo, non una parte del sistema."
+  },
+  {
+   "what": "README.md, LICENSE, .flaskenv, .gitattributes, .gitignore, app/static/loading.gif",
+   "why": "Documentazione, configurazione dello sviluppo e un'immagine: nessun flusso passa da loro oltre al sistema intero."
+  },
+  {
+   "what": "Le paginazioni della pagina Messages",
+   "why": "La rotta calcola next_url e prev_url (app/main/routes.py:211) ma il template ha href=\"#\" (app/templates/messages.html:11): i link non portano a nulla."
+  }
+ ]
+}

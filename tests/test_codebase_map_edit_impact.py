@@ -49,7 +49,7 @@ class EngineImpactTests(unittest.TestCase):
             (self.root / name).write_text(body, encoding="utf-8")
         self.manifest = self.root / ".daodan/map/manifest.sqlite"
         self.edges = self.manifest.with_name("engine-edges.sqlite")
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.before = artifact_digest(self.manifest)
         self.engine = StubEngine({
             ("bridge.py", 2): Definition(self.root / "leaf.py", "run", line=2, column=8),
@@ -111,7 +111,7 @@ class EditImpactTests(unittest.TestCase):
         write_project(self.root)
         self.out = self.root / ".daodan/map" / "manifest.sqlite"
         self.cards = self.root / ".daodan/map" / "cards.sqlite"
-        snapshot.write_snapshot(self.root, self.out)
+        snapshot.read_project(self.root, self.out)
 
     def impact(self, targets, **options):
         with open_snapshot(self.out) as store:
@@ -123,7 +123,7 @@ class EditImpactTests(unittest.TestCase):
 
     def refresh(self):
         with open_snapshot(self.out) as previous:
-            snapshot.write_snapshot(self.root, self.out, previous=previous)
+            snapshot.read_project(self.root, self.out, previous=previous)
 
     def test_target_reports_digests_card_callers_and_verified_source(self):
         self.write_cards([{
@@ -306,7 +306,7 @@ class EditImpactTests(unittest.TestCase):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 self.impact(["pkg/b.py::helper"], **options)
         legacy = self.root / ".daodan/map" / "manifest.json"
-        snapshot.write_snapshot(self.root, legacy, format="json")
+        snapshot.read_project(self.root, legacy, format="json")
         with open_snapshot(legacy) as store, self.assertRaisesRegex(ValueError, "SQLite"):
             semantic_store.build_edit_impact(store, ["pkg/b.py::helper"])
 
@@ -321,7 +321,7 @@ class EditImpactEntryPointTests(unittest.TestCase):
 
     def test_command_line_prints_the_packet_and_fails_on_a_bad_request(self):
         out = self.project / "manifest.sqlite"
-        snapshot.write_snapshot(self.project / "src", out)
+        snapshot.read_project(self.project / "src", out)
 
         done = subprocess.run(
             [sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "edit-impact", str(out),
@@ -348,7 +348,7 @@ class EditImpactEntryPointTests(unittest.TestCase):
         self.assertIn("neighbor_source", packet)
         self.assertEqual(packet["targets"][0]["slice"]["status"], "available")
         out = self.project / "manifest.sqlite"
-        snapshot.write_snapshot(self.project / "src", out)
+        snapshot.read_project(self.project / "src", out)
         done = subprocess.run(
             [sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "edit-impact", str(out),
              "--target", "pkg/b.py::helper", "--hops", "2", "--neighbor-source",

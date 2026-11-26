@@ -29,8 +29,19 @@ def manifest_of(tmp_path, files):
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return project, manifest
+
+
+def bound(manifest, record) -> list[dict]:
+    """The rows of the pre-map as the links bind them (`binder.bind`, as `flows.link_facts` calls it): the pre-map's rows are on
+    the module with their `exports`, and the binder ties each to its function."""
+    import binder
+    import flows
+    import semantic_store
+    from snapshot_store import open_snapshot
+    with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+        return binder.bind(record.get("framework_entries", []), flows.Facts(store, db), semantic_store._Resolver(db))
 
 
 def recorder(answers=None, state="done"):
@@ -246,7 +257,8 @@ def test_every_model_source_of_the_premap_has_a_setup():
              "renovate": premap.renovate, "compose": premap.compose, "daodan-enry": premap.enry,
              "daodan-dockerfile": premap.dockerfile, "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
-             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs}
+             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs,
+             "react-router": premap.react_router, "nuxt": premap.nuxt, "sveltekit": premap.sveltekit, "angular": premap.angular, "astro": premap.astro}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
     assert set(tools) <= set(container_runner.TOOLS)
 
@@ -258,6 +270,8 @@ CORPUS = ROOT / "benchmarks/project-model/fixtures"
 CASES = {  # tool -> (corpus fixture, or the folder of one, the source), one project each
     "noir": ("js-nextjs", premap.noir),
     "next": (ROOT / "benchmarks/system-map/real-paths/next-shop", premap.nextjs),  # js-nextjs is Next.js 14: no typegen
+    "react-router": (ROOT / "benchmarks/react-router-routes/fixture/framework", premap.react_router),
+    "nuxt": (ROOT / "benchmarks/nuxt-routes/fixture/nuxt3", premap.nuxt),
     "go": ("sys-go-buildtags", premap.go), "cargo": ("sys-rust-features", premap.cargo),
     "uv": ("py-uv-workspace", premap.uv), "tsc": ("js-vite-react-ts", premap.tsc),
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
@@ -280,7 +294,7 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     project = tmp_path / "proj"
     shutil.copytree(CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=sources, runner=container_runner.runner(manifest, engine=engine))
     print(json.dumps({"tool": tool, "sources": record["sources"], "units": len(record["units"]),
                       "gaps": record["gaps"][:5]}, indent=1)[:3000])
@@ -291,6 +305,11 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     if tool == "next":
         assert {(r["path"], r["site"]) for r in record["framework_entries"]} >= {
             ("/api/pay", "app/api/pay/route.ts"), ("/checkout", "app/checkout/page.tsx")}
+    if tool == "react-router":
+        assert {(r["path"], r.get("handler")) for r in record["framework_entries"]} >= {("/api/pay", "action"), ("/checkout", "default")}
+    if tool == "nuxt":
+        assert {(r["path"], r.get("method"), r["site"].split(":")[0]) for r in record["framework_entries"]} >= {
+            ("/api/hello", "GET", "server/api/hello.get.ts"), ("/api/users", "POST", "server/api/users/index.post.ts")}
     assert held() == before
 
 

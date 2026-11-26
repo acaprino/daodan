@@ -571,7 +571,8 @@ class Snapshot:
         return "computed-callee", None
 
     def grade(self, rel: str, line: int, column: int | None) -> tuple[str, str | None]:
-        """`callable` with the declaration the snapshot names there, `outside` the snapshot, or `value`."""
+        """`callable` with the declaration the snapshot names there, `binding` with the binding's declaration,
+        `outside` the snapshot, or `value`."""
         if column is None or rel not in self.paths:
             return "outside", None
         if rel not in self.inventory:  # a project file the snapshot reads lexically: no declaration to name
@@ -580,6 +581,8 @@ class Snapshot:
         verdict, target = self._rx.grade(location, self.inventory, self._tables, self.store_root, self._table)
         if verdict.startswith("edge-") and target:
             return "callable", self.constructs.get(target["id"], target["id"])
+        if verdict == "binding":
+            return "binding", target["id"]
         return ("outside", None) if verdict == "external-definition" else ("value", verdict)
 
     def _table(self, rel: str):
@@ -595,6 +598,7 @@ class End(NamedTuple):
     target: str | None  # the snapshot's declaration, for a project-callable end
     detail: str  # a value's kind, an external's package, a dead end's reason
     chain: tuple = ()  # hop kinds, in order
+    binding: str | None = None  # a project value: the snapshot's binding declaration, when the index names it once
 
 
 class Traversal:
@@ -613,6 +617,8 @@ class Traversal:
         self.memo: dict[str, list[End]] = {}
         self.active: set = set()
         self._stated: dict = {}
+        self._occurrences: dict | None = None  # key -> its occurrences, built at the first value end (`_read_sites`)
+        self._readers: dict = {}
 
     def stated(self, key: str):
         """The adapter's classification of a key, None without one."""
@@ -655,7 +661,7 @@ class Traversal:
             defined = {item.key for item in here if item.definition}
             same = sorted({item.key for item in here if self.same_range.get((key, item.key), item.key not in defined)})
             for other in same:
-                found += [end._replace(chain=("same-range",) + end.chain) for end in self.ends(other)]
+                found += [end._replace(chain=("same-range",) + end.chain, binding=None) for end in self.ends(other)]
             aliased = aliased or bool(same)
         if not any(end.cls in CALLABLE and end.chain in ((), ("rebinding",)) for end in found):
             for target, tag in self.hops.get(key, ()):
@@ -663,7 +669,7 @@ class Traversal:
                     continue
                 aliased = True
                 if isinstance(target, str):
-                    found += [end._replace(chain=(tag,) + end.chain) for end in self.ends(target)]
+                    found += [end._replace(chain=(tag,) + end.chain, binding=None) for end in self.ends(target)]
                 else:
                     rel, line, column = target
                     identity = self.snapshot.function_at(self.snapshot.rel.get(rel, rel), line, column)
@@ -672,16 +678,159 @@ class Traversal:
         if not places and not aliased:
             found.append(self._undefined(key, stated))
         elif not aliased:
-            found.append(End("project-value", key, None, node_kind(key, index.info.get(key))))
+            found.append(End("project-value", key, None, node_kind(key, index.info.get(key)),
+                             binding=self._binding(key, places)))
         # A member's implementations are where a call through it can run; a type's subtypes (SCIP's type
         # suffix `#`) are never the target of a reference to the type itself.
         if not key.endswith("#"):
             for other in sorted(index.implementers.get(key, ())):
-                found += [end._replace(chain=("implementation",) + end.chain) for end in self.ends(other)
+                found += [end._replace(chain=("implementation",) + end.chain, binding=None) for end in self.ends(other)
                           if end.cls in CALLABLE]
         self.active.discard(key)
         self.memo[key] = found = list(dict.fromkeys(found))
         return found
+
+    def _binding(self, key: str, places) -> str | None:
+        """The snapshot's binding declaration of a symbol the index defines once, at a binding, that nothing writes
+        again: a value that can be another at run time names no binding (a gap is better than a false key).
+
+        Roles cannot tell a write: scip-python 0.6.8 gives a redefinition the read role (8), see `def convert` at
+        tests/fixtures/code-graph/python/fx/over.py:12/15 in the recorded index. A write is told from the snapshot's
+        own facts instead: an occurrence that is neither the definition nor inside a read, a call or an import the
+        snapshot records. That holds only where the language's reader never records an assignment's target as a
+        read, in every document holding an occurrence, and where every file of the language has a document. A class
+        member also needs, for its owner and every class that implements it, what `resolution.instance_method`
+        needs of a receiver's member, and that the member found first in the MRO is the owner's.
+        A limit: the writes neither the engine nor the snapshot sees (`vars(self)[...]`, `__dict__`,
+        `object.__setattr__`, `setattr` on a class or a module object)."""
+        if len(places) != 1:
+            return None
+        rel, defined = places[0]
+        verdict, target = self.snapshot.grade(
+            self.snapshot.rel.get(rel, rel), defined.line, self.index.to_bytes(rel, defined.line, defined.start))
+        if verdict != "binding" or not self._declares_writes(self.snapshot.languages.get(self.snapshot.rel.get(rel, rel))) \
+                or not self._member_stands(key, target):
+            return None
+        if self._occurrences is None:
+            self._read_sites()
+        if key in self._foreign:
+            return None
+        here = (rel, defined.line, defined.start)
+        for at in self._occurrences[key]:
+            if self.snapshot.languages.get(self.snapshot.rel.get(at[0], at[0])) in self._unindexed:
+                return None
+            if at != here and not self._inside(*at):
+                return None
+        return target
+
+    def _declares_writes(self, language: str | None) -> bool:
+        """Whether the language's reader declares it never records an assignment's target as a read."""
+        if language not in self._readers:
+            try:
+                import languages
+                reader = languages.get_adapter(language)
+            except (ImportError, ValueError, TypeError, AttributeError):
+                reader = None
+            self._readers[language] = getattr(reader, "assignment_targets_are_reads", True) is False
+        return self._readers[language]
+
+    def _read_sites(self) -> None:
+        """Built once, over the files the index has documents for: the occurrences by key (of the documents whose
+        language declares its writes; a key met in another is `_foreign`), the spans of the snapshot's reads and
+        calls by line, the import positions, and the languages with a file lacking a document."""
+        index, snapshot = self.index, self.snapshot
+        self._occurrences, self._foreign = collections.defaultdict(list), set()
+        for document, occurrences in index.documents.items():
+            declares = self._declares_writes(snapshot.languages.get(snapshot.rel.get(document, document)))
+            for occurrence in occurrences:
+                if declares:
+                    self._occurrences[occurrence.key].append((document, occurrence.line, occurrence.start))
+                else:
+                    self._foreign.add(occurrence.key)
+        self._spans, self._imports = collections.defaultdict(lambda: collections.defaultdict(list)), set()
+        for file, l0, c0, l1, c1 in snapshot.connection.execute(
+                "SELECT file, l0, c0, l1, c1 FROM sem_references WHERE kind IN ('call','read')"):
+            checkout = snapshot.checkout.get(file, file)
+            if checkout in index.documents:
+                for line in range(l0, min(l1, l0 + 64) + 1):
+                    self._spans[checkout][line].append((l0, c0, l1, c1))
+        for file, blob in snapshot.connection.execute("SELECT file, payload FROM sem_bindings WHERE kind='import'"):
+            span = (snapshot._unpack(blob) or {}).get("span")  # an import names the symbol where written: no write
+            checkout = snapshot.checkout.get(file, file)
+            if span and checkout in index.documents:
+                self._imports.add((checkout, span[0], span[1]))
+        self._unindexed = {snapshot.languages.get(file) for file in snapshot.inventory
+                           if snapshot.checkout.get(file, file) not in index.documents}
+
+    def _inside(self, rel: str, line: int, start: int) -> bool:
+        """Whether an occurrence is an import's name or lies inside a read or call the snapshot records."""
+        column = self.index.to_bytes(rel, line, start)
+        if column is None:
+            return False
+        return (rel, line, column) in self._imports or any(
+            (l0, c0) <= (line, column) < (l1, c1) for l0, c0, l1, c1 in self._spans[rel].get(line, ()))
+
+    def _member_stands(self, key: str, binding: str) -> bool:
+        """Only a `binding` of a module or a class can be named (never a parameter, a local or a property). A module
+        whose scope is unresolved (`import *`, `exec`) names none. A class member stands when, for its owner and every
+        class the index names below it, the gate `resolution.instance_method` applies passes and the first class of
+        the MRO that binds the name is the owner (a subclass or a mixin that binds it again takes it)."""
+        import resolution
+        import semantic_store
+        lookup = semantic_store._Resolver(self.snapshot.connection)
+        declaration = lookup.declaration(binding) or {}
+        scope = lookup.scope_record(declaration.get("file"), declaration.get("scope")) or {}
+        if declaration.get("kind") != "binding" or scope.get("kind") not in ("module", "class"):
+            return False
+        if scope["kind"] == "module":
+            return not scope.get("unresolved")
+        owner_key = self._owner(key)
+        if owner_key is None:
+            return False
+        owner = f"{declaration['file']}::{scope.get('declaration')}"
+        classes, pending = {owner_key: owner}, list(self.index.implementers.get(owner_key, ()))
+        while pending:
+            subclass = pending.pop()
+            if subclass in classes:
+                continue
+            found = self.index.defs.get(subclass, ())
+            if len(found) != 1:
+                return False
+            place, occurrence = found[0]
+            verdict, identity = self.snapshot.grade(
+                self.snapshot.rel.get(place, place), occurrence.line,
+                self.index.to_bytes(place, occurrence.line, occurrence.start))
+            if verdict != "callable":
+                return False
+            classes[subclass] = identity
+            pending += self.index.implementers.get(subclass, ())
+        for identity in classes.values():
+            mro = resolution._project_mro(lookup, identity)
+            if mro is None or resolution.members_unknown(lookup, mro, declaration["name"]):
+                return False
+            for holder in mro:
+                bound = lookup.bindings_named(holder.split("::", 1)[0], lookup.declaration(holder)["body"],
+                                              declaration["name"])
+                if bound:
+                    if bound != [("declaration", binding)]:
+                        return False
+                    break
+        return True
+
+    @staticmethod
+    def _owner(key: str) -> str | None:
+        """The owner class's symbol of a member's: the cut is proposed at a type's `#` and accepted when the
+        descriptors before it are those of the symbol, less its last."""
+        parts = split_symbol(_global(key))
+        if parts is None:
+            return None
+        named = descriptors(parts[4])
+        for cut in range(len(key) - 1, 0, -1):
+            if key[cut - 1] == "#":
+                head = split_symbol(_global(key[:cut]))
+                if head is not None and head[:4] == parts[:4] and descriptors(head[4]) == named[:-1]:
+                    return key[:cut]
+        return None
 
     def _undefined(self, key: str, stated=None) -> End:
         if stated == "namespace":
@@ -955,7 +1104,8 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str, rows:
                 holes.append({**place, "language": language, "class": hole, "reason": reason, "resolver": resolver})
                 continue
             edges += [row(place, end.cls, end.key, end.target, end.chain, end.detail,
-                          doubts.get((site, end.key, end.chain))) for end in ends]
+                          doubts.get((site, end.key, end.chain)),
+                          **({"binding_id": end.binding} if end.binding else {})) for end in ends]
         for edge in graph["edges"]:
             if edge["kind"] == "unknown":
                 rel, line = edge["site"].rsplit(":", 1)

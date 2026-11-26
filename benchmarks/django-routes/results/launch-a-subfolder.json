@@ -1,0 +1,20 @@
+{
+ "variant": "launch-a-subfolder",
+ "argv": [
+  "sh",
+  "-c",
+  "exec 3>&1 1>&2; exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python manage.py shell -c \"$2\"",
+  "django",
+  "60",
+  "import runpy; runpy.run_path('/daodan/state/in/launch.py', run_name='a')"
+ ],
+ "cwd": "src",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"settings_module\": \"mysite.settings\", \"settings_wrapped\": \"mysite.settings\", \"root_urlconf\": \"mysite.urls\", \"top_level\": 1, \"version\": \"6.1.3\", \"argv\": [\"/daodan/state/in/launch.py\", \"shell\", \"-c\", \"import runpy; runpy.run_path('/daodan/state/in/launch.py', run_name='a')\"], \"path0\": \"/work/src\", \"setup_seconds\": 0.001, \"max_rss_mb\": 59.0}",
+ "stderr": "",
+ "seconds": 1.04,
+ "max_rss_mb": 59.0,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 357
+}

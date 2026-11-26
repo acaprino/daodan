@@ -302,6 +302,60 @@ class VerifyTests(Fixture):
         self.assertEqual(self.node("API pagamenti")["files"], ["server/gateway.py", "server/payments.py"])
         self.assertEqual(self.node("Cliente")["status"], "accepted")
 
+    def test_a_store_member_the_links_lack_leaves_the_node_accepted_and_is_named(self):
+        work = self.check(changed(lambda v: node(v, "API pagamenti")["members"].append("store:db/refunds")))
+        api = self.node("API pagamenti", work)
+        self.assertEqual((api["status"], api["unlinked"]), ("accepted", ["store:db/refunds"]))
+        self.assertNotIn("reason", api)
+        self.assertEqual(api["files"], ["server/gateway.py", "server/payments.py"])
+        for source, target in (("Checkout", "API pagamenti"), ("API pagamenti", "Pagamento")):
+            self.assertEqual(self.arrow(source, target, work)["status"], "proved", (source, target))
+        mixed = self.check(changed(lambda v: node(v, "Pagamento")["members"].append("store:db/refunds")))
+        self.assertEqual(self.node("Pagamento", mixed)["unlinked"], ["store:db/refunds"])  # stores beside stores
+        self.assertEqual(self.arrow("API pagamenti", "Pagamento", mixed)["status"], "proved")
+        self.assertFalse([n for n in self.report["nodes"] if "unlinked" in n])  # a store the links have names nothing
+
+    def test_a_misspelt_store_key_beside_a_real_one_proves_no_arrow_and_is_named_on_the_node(self):
+        work = self.check(changed(lambda v: node(v, "Badge pagamento")["members"].append("store:db/paymnts")))
+        badge = self.node("Badge pagamento", work)
+        self.assertEqual((badge["status"], badge["unlinked"]), ("accepted", ["store:db/paymnts"]))
+        refused = self.arrow("Badge pagamento", "API pagamenti", work)
+        self.assertEqual(refused["status"], "refused")
+        self.assertEqual(refused["reason"], self.arrow("Badge pagamento", "API pagamenti")["reason"])
+
+    def test_a_node_refused_after_its_members_passed_does_not_keep_unlinked(self):
+        work = self.check(changed(lambda v: node(v, "Riprova").update(
+            members=["server/jobs.py", "store:db/refunds"], on=["Refuso"])))
+        riprova = self.node("Riprova", work)
+        self.assertEqual(riprova["status"], "refused")
+        self.assertIn("Refuso", riprova["reason"])
+        self.assertNotIn("unlinked", riprova)
+
+    def test_a_node_whose_only_members_are_stores_the_links_lack_is_refused(self):
+        refuso = self.node("Refuso")
+        self.assertEqual(refuso["status"], "refused")
+        self.assertEqual(refuso["reason"], "member store:db/paymnts: the links have no store key db/paymnts")
+        self.assertNotIn("unlinked", refuso)
+        both = self.check(changed(lambda v: node(v, "Refuso")["members"].append("store:db/refunds")))
+        self.assertEqual(self.node("Refuso", both)["status"], "refused")
+        self.assertIn("db/refunds", self.node("Refuso", both)["reason"])
+        self.assertIn("db/paymnts", self.node("Refuso", both)["reason"])
+
+    def test_an_absent_store_beside_another_problem_still_refuses_the_node_and_names_both(self):
+        for member in ("web/nope.ts", "module:nessuno", "server/payments.py::nope"):
+            work = self.check(changed(lambda v: node(v, "Riprova").update(
+                members=["server/jobs.py", member, "store:db/refunds"])))
+            riprova = self.node("Riprova", work)
+            self.assertEqual(riprova["status"], "refused", member)
+            self.assertIn(member, riprova["reason"])
+            self.assertIn("db/refunds", riprova["reason"])
+            self.assertNotIn("unlinked", riprova)
+
+    def test_a_flow_through_a_node_with_an_unlinked_store_is_not_refused_for_it(self):
+        work = self.check(changed(lambda v: node(v, "Riprova")["members"].append("store:db/refunds")))
+        self.assertEqual(self.arrow("Pagamento", "Riprova", work)["status"], "proved")
+        self.assertEqual(self.flow("Riprova dei pagamenti", work)["status"], "accepted")
+
     def test_a_flow_with_a_refused_arrow_is_incomplete_and_without_a_standing_arrow_is_refused(self):
         self.assertEqual([f["status"] for f in self.report["flows"]], ["incomplete", "accepted"])
         broken = self.check(changed(lambda v: v["flows"][1]["nodes"].append("Fantasma")))
@@ -435,6 +489,17 @@ class RecordTests(unittest.TestCase):
         recorded = (self.manifest.parent / system_map.FILE).read_text(encoding="utf-8")
         self.assertNotIn("Fantasma", recorded)
         self.assertNotIn("Refuso", recorded)
+
+    def test_an_unlinked_store_is_named_in_the_answer_and_in_the_loaded_map(self):
+        report = self.record(changed(lambda v: node(v, "API pagamenti")["members"].append("store:db/refunds")))
+        api = self.node_report(report, "API pagamenti")
+        self.assertEqual((api["status"], api["unlinked"]), ("accepted", ["store:db/refunds"]))
+        loaded = by_id(self.load(), "nodes", api["id"])
+        self.assertEqual((loaded["status"], loaded["unlinked"]), ("accepted", ["store:db/refunds"]))
+        self.assertNotIn("unlinked", by_id(self.load(), "nodes", "pagamento"))  # its stores are in the links
+        shown = {n["name"]: n for n in system_map.about(self.load(), "API pagamenti")["nodes"]}  # what a reader of a flow sees
+        self.assertEqual(shown["API pagamenti"]["unlinked"], ["store:db/refunds"])
+        self.assertFalse([name for name, n in shown.items() if name != "API pagamenti" and "unlinked" in n])
 
     def test_a_refused_arrow_and_its_reason_survive_reload(self):
         written = self.record(TEST_MAP)["flows"][0]

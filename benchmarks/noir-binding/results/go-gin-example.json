@@ -1,0 +1,235 @@
+{
+ "name": "go-gin-example",
+ "framework": "gin",
+ "repository": "eddycjy/go-gin-example",
+ "commit": "4f5174ca325b37f23edadad7c88d49586816a69c",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 29,
+  "protocols": {
+   "http": 29
+  },
+  "errors": 1,
+  "seconds": 1.0,
+  "peak_memory_mb": 162.4,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "none": 29
+  },
+  "http_handler_forms": {
+   "none": 29
+  },
+  "http_endpoints_in_the_json": 29,
+  "tagged_spec_only": 14,
+  "with_handler_name_in_the_json": 0,
+  "with_name_and_path_and_line": 0
+ },
+ "before_the_binder": {
+  "other_protocol": 0,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 1073,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 47,
+  "functions": 129,
+  "functions_by_suffix": {
+   ".go": 129
+  },
+  "files_by_suffix": {
+   ".go": 36,
+   "": 2,
+   ".md": 2,
+   ".json": 2,
+   ".yaml": 2,
+   ".mod": 1,
+   ".ini": 1,
+   ".sql": 1
+  },
+  "seconds": 1.3
+ },
+ "http": {
+  "endpoints": 29,
+  "with_handler_name": 0,
+  "bound_to_one_function": 0,
+  "unbound": 29,
+  "by_file_suffix": {
+   ".go": {
+    "endpoints": 15,
+    "with_handler_name": 0,
+    "bound": 0
+   },
+   ".json": {
+    "endpoints": 14,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir gives no handler": 15,
+  "the snapshot holds no function where Noir cites": 14
+ },
+ "causes": {
+  "Noir names no handler, the line is inside a function (the registration)": {
+   "group": "Noir gives no handler",
+   "endpoints": 15,
+   "by_file_suffix": {
+    ".go": 15
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/v1/articles",
+     "site": "routers/router.go:51",
+     "noir_handler": null,
+     "covering": [
+      "InitRouter 21-65"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "POST",
+     "url": "/api/v1/articles",
+     "site": "routers/router.go:55",
+     "noir_handler": null,
+     "covering": [
+      "InitRouter 21-65"
+     ],
+     "file_language": "go"
+    },
+    {
+     "method": "GET",
+     "url": "/api/v1/articles/:id",
+     "site": "routers/router.go:53",
+     "noir_handler": null,
+     "covering": [
+      "InitRouter 21-65"
+     ],
+     "file_language": "go"
+    }
+   ]
+  },
+  "the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 14,
+   "by_file_suffix": {
+    ".json": 14
+   },
+   "examples": [
+    {
+     "method": "POST",
+     "url": "/api/v1/tags/export",
+     "site": "docs/swagger.json:361",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "POST",
+     "url": "/api/v1/tags/import",
+     "site": "docs/swagger.json:401",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "GET",
+     "url": "/auth",
+     "site": "docs/swagger.json:518",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "combined": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 29
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "one": 15,
+    "none": 14
+   },
+   "bound": {},
+   "distinct_functions_of_the_unbound_one": 1
+  }
+ },
+ "fixes_agree": {},
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

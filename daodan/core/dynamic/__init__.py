@@ -1,7 +1,7 @@
 """The dynamic step: the project's tests run in a container under a recorder, and what they call enters the graph.
 
-An observer is one module of this package per technology. It declares `ENTRY`, `VERSION` (its recorder's: the
-observed rows' resolver is `ENTRY@VERSION`) and `LANGUAGES`, and gives:
+An observer is one module of this package per technology. It declares `NAME`, `VERSION` (its recorder's: the
+observed rows' resolver is `NAME@VERSION`) and `LANGUAGES`, and gives:
 
     plan(record, files, read) -> {"runs": [...], "gaps": [...]}   what to run, from the pre-map alone
     observe(project, planned, out_dir, engine) -> {"state", "sites", "sampled", "runs", "gaps"}   in the container
@@ -31,7 +31,7 @@ the run says nothing of the files it did not execute.
 `join_sampled` the pairs, by line and name, and `code_graph.write_observed` saves the rows. An observed end
 holds for the run that produced it: it proves that a call can arrive there, not that it arrives only there, and
 a call no test executed stays as the static steps left it. A sampled one says the same with resolver
-`ENTRY@VERSION:sampled` and confidence `sampled`; it is never set against a proven edge and says nothing of the
+`NAME@VERSION:sampled` and confidence `sampled`; it is never set against a proven edge and says nothing of the
 calls and files no sample named. A language with no observer, a project with no declared test command, a run
 with no container engine are gaps, never silence; so are a result that breaks this contract (`observer-malformed`,
 `failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`).
@@ -49,6 +49,13 @@ service and its image (`service_unavailable`). The steps a CI job runs before th
 pre-map's `ci_steps`, `ci_steps()`) run at the end of each of its preparations, the services beside them; one that
 fails is a `ci_step_failed` gap, one that cannot run a `ci_step_not_run` one.
 
+After the observers the step starts the app the pre-map declares (`starts`) in the container and explores it in a headless
+browser (`app.explore`, plan task 11): the controls it pressed are kept in `observed-controls.json` beside the manifest, for
+the entry candidates (`observed_entries`) and the links (`flows._observed_entries`). It has its own record in `RUNS/app` and
+is reused on the same snapshot; the step's result says it as `app`: `{state, apps, kept}`. A project that declares no app,
+no container engine, an app that did not start and an exploration that failed are gaps (`no_start_command`,
+`explore_failed`, `build_failed`, `app_not_started`, ...), never silence.
+
 See docs/specs/2026-11-12-passo-dinamico.md, sections 5 and 7.
 """
 from __future__ import annotations
@@ -63,6 +70,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 STEP = "dynamic"
+APP = "app"  # the exploration of the started app, apart from the observers: its record is `RUNS/APP`
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
 EXAMPLES = 20
 TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's tests ended; the first three ran
@@ -109,15 +117,15 @@ def observers() -> list:
     found = []
     for item in pkgutil.iter_modules(__path__):
         module = importlib.import_module(f"{__name__}.{item.name}")
-        if hasattr(module, "ENTRY"):
+        if hasattr(module, "NAME"):
             found.append(module)
-    return sorted(found, key=lambda module: module.ENTRY)
+    return sorted(found, key=lambda module: module.NAME)
 
 
 def resolver(observer, sampled: bool = False) -> str:
     """The resolver of an observer's rows, named as an analyzer's: the recorder and its version; of its sampled
     rows, the same with `:sampled`."""
-    return f"{observer.ENTRY}@{observer.VERSION}" + (":sampled" if sampled else "")
+    return f"{observer.NAME}@{observer.VERSION}" + (":sampled" if sampled else "")
 
 
 def _declared(snapshot, rel: str, line: int, column: int | None, name: str) -> str | None:
@@ -555,8 +563,7 @@ def run(manifest: Path, bus) -> dict:
         detail = "the dynamic step is off (DAODAN_DYNAMIC=off): no test runs, the graph stays static"
         say(detail, {"kind": "dynamic-off", "detail": detail})
         return {"languages": outcomes}
-    found = observers()
-    served = {language for module in found for language in module.LANGUAGES}
+    from pipeline import plan as planning
     asked: dict = {}
     declared, paths = None, {}  # the services of the project's CI (`services`), and where each is declared
     with code_graph.Snapshot(manifest) as snapshot:
@@ -567,21 +574,28 @@ def run(manifest: Path, bus) -> dict:
         obsolete = engine_pass.superseded_languages(entries)
         graphs = {language: entry for language, entry in entries.items()
                   if reason is None and language not in obsolete and entry.get("state") == "fresh"}
-        for language in sorted(set(graphs) - served):
-            detail = f"{language}: no observer runs its tests, so its graph holds no observed edge"
-            say(detail, {"kind": "no-observer", "language": language, "detail": detail}, language=language)
-            left([language], "no-observer", "no observer runs this language's tests")
-        present = set(snapshot.languages.values())
-        waiting = [module for module in found if present & set(module.LANGUAGES)]
-        for number, module in enumerate(waiting):
-            name, entry = resolver(module), module.ENTRY
-            wanted = sorted(present & set(module.LANGUAGES))
-            for language in (language for language in wanted if language not in graphs):
-                detail = (f"{language}: the store holds no static graph of it ({reason or 'its analyzer left none'}): "
-                          "an observed edge answers a reference of a graph that is there")
-                say(detail, {"kind": "no-static-graph", "language": language, "detail": detail}, entry, language)
-                left([language], "no-static-graph", detail)
-            wanted = [language for language in wanted if language in graphs]
+        layout = planning.plan(planning.stored(snapshot.store))
+        for gap in layout["gaps"]:  # the observers the plan holds are the ones that start
+            if gap["kind"] == "no-observer" and gap["language"] in graphs:
+                say(gap["detail"], {key: gap[key] for key in ("kind", "language", "detail")}, language=gap["language"])
+                left([gap["language"]], "no-observer", "no observer runs this language's tests")
+        by_entry = {module.NAME: module for module in observers()}
+        waiting = [node for node in layout["nodes"] if node["step"] == "observe"]
+        for number, node in enumerate(waiting):
+            module = by_entry[node["adapter"]]
+            name, entry = resolver(module), module.NAME
+            failed: dict = {}  # the resolver node of each language whose graph the store does not hold
+            for language in node["on"]["languages"]:
+                if language not in graphs:
+                    detail = (f"{language}: the store holds no static graph of it "
+                              f"({reason or 'its analyzer left none'}): an observed edge answers a reference of a "
+                              "graph that is there")
+                    failed.setdefault(planning.need(node, language), {})[language] = detail
+            for language, (needed, detail) in sorted(planning.blocked(node, failed).items()):
+                say(detail, {"kind": "no-static-graph", "language": language, "need": needed, "detail": detail},
+                    entry, language)
+                outcomes[language] = {"state": "no-static-graph", "need": needed, "reason": detail}
+            wanted = [language for language in node["on"]["languages"] if language in graphs]
             if not wanted:
                 continue
             bus.progress(STEP, number, len(waiting), analyzer=entry, phase="plan", message=f"{entry}: the plan")
@@ -734,8 +748,39 @@ def run(manifest: Path, bus) -> dict:
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
         bus.progress(STEP, len(waiting), len(waiting))
-    return {"languages": outcomes, **({"ui_controls": ui_controls} if ui_controls else {}),
+        explored = _app(manifest, snapshot, bus, say)
+    return {"languages": outcomes, "app": explored, **({"ui_controls": ui_controls} if ui_controls else {}),
             **({"ui_gaps": ui_gaps} if ui_gaps else {})}
+
+
+def _app(manifest: Path, snapshot, bus, say) -> dict:
+    """The app the project declares, started and explored in the container (`app.explore`): the controls it showed
+    are kept beside the manifest for the entries. What did not run is a gap with its cause, never silence; a failure
+    of the exploration stops no other part of the step. `{state, apps, kept}`, with `cause` and `remedy` where it did
+    not run, and `reused` where the run of the same snapshot was kept."""
+    import premap
+    from snapshot_store import logical_digest
+    from . import app
+    record = premap.ensure(manifest)
+    if record.get("starts"):
+        bus.emit("analyzer.started", f"{APP}: the app started and explored", step=STEP, analyzer=APP)
+    try:
+        seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store), manifest.parent / RUNS / APP)
+    except Exception as error:  # noqa: BLE001 - the exploration is one part of the step: the others stay
+        cause = f"{type(error).__name__}: {error}"
+        seen = {"state": "failed", "cause": cause, "remedy": "explore again", "apps": [], "kept": 0,
+                "gaps": [{"kind": "explore_failed", "detail": f"the app could not be explored: {cause}"}]}
+    for gap in seen["gaps"]:
+        say(gap["detail"], gap, APP)
+    if seen["state"] != "ran":
+        bus.emit(*(("analyzer.finished", f"{APP} failed") if seen["state"] == "failed" else
+                   ("analyzer.unavailable", f"{APP} cannot run here")), step=STEP, analyzer=APP,
+                 level="error" if seen["state"] == "failed" else "warning", cause=seen["cause"], remedy=seen["remedy"])
+    elif seen["apps"]:
+        bus.emit("analyzer.finished", f"{APP}: {len(seen['apps'])} apps started, {seen['kept']} explored", step=STEP,
+                 analyzer=APP, fresh=bool(seen.get("reused")))
+    return {key: seen[key] for key in ("state", "cause", "remedy", "reused") if key in seen} | {
+        "apps": len(seen["apps"]), "kept": seen["kept"]}
 
 
 def _unplaced(snapshot, language: str, sites: list[dict], facts: dict) -> str:

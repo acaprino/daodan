@@ -1,0 +1,22 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "svelte-kit",
+   "sync"
+  ],
+  "cwd": "bad-matcher",
+  "generated": {
+   ".svelte-kit/tsconfig.json": "{\n\t\"compilerOptions\": {\n\t\t\"paths\": {\n\t\t\t\"$lib\": [\n\t\t\t\t\"../src/lib\"\n\t\t\t],\n\t\t\t\"$lib/*\": [\n\t\t\t\t\"../src/lib/*\"\n\t\t\t],\n\t\t\t\"$app/types\": [\n\t\t\t\t\"./types/index.d.ts\"\n\t\t\t]\n\t\t},\n\t\t\"rootDirs\": [\n\t\t\t\"..\",\n\t\t\t\"./types\"\n\t\t],\n\t\t\"verbatimModuleSyntax\": true,\n\t\t\"isolatedModules\": true,\n\t\t\"lib\": [\n\t\t\t\"esnext\",\n\t\t\t\"DOM\",\n\t\t\t\"DOM.Iterable\"\n\t\t],\n\t\t\"moduleResolution\": \"bundler\",\n\t\t\"module\": \"esnext\",\n\t\t\"noEmit\": true,\n\t\t\"target\": \"esnext\"\n\t},\n\t\"include\": [\n\t\t\"ambient.d.ts\",\n\t\t\"env.d.ts\",\n\t\t\"non-ambient.d.ts\",\n\t\t\"./types/**/$types.d.ts\",\n\t\t\"../vite.config.js\",\n\t\t\"../vite.config.ts\",\n\t\t\"../src/**/*.js\",\n\t\t\"../src/**/*.ts\",\n\t\t\"../src/**/*.svelte\",\n\t\t\"../test/**/*.js\",\n\t\t\"../test/**/*.ts\",\n\t\t\"../test/**/*.svelte\",\n\t\t\"../tests/**/*.js\",\n\t\t\"../tests/**/*.ts\",\n\t\t\"../tests/**/*.svelte\"\n\t],\n\t\"exclude\": [\n\t\t\"../node_modules/**\",\n\t\t\"../src/service-worker.js\",\n\t\t\"../src/service-worker/**/*.js\",\n\t\t\"../src/service-worker.ts\",\n\t\t\"../src/service-worker/**/*.ts\",\n\t\t\"../src/service-worker.d.ts\",\n\t\t\"../src/service-worker/**/*.d.ts\"\n\t]\n}"
+  },
+  "left_in_the_project": [
+   ".svelte-kit/ambient.d.ts",
+   ".svelte-kit/tsconfig.json"
+  ],
+  "returncode": 1,
+  "seconds": 1.53,
+  "stderr": "Loading Svelte config from Vite config failed: Error: No matcher found for parameter 'nomatcher' in route /nomatch/[id=nomatcher]\n    at create_manifest_data (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:40:11)\n    at create (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/core/sync/sync.js:32:24)\n    at Module.all (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/core/sync/sync.js:77:9)\n    at BasicMinimalPluginContext.handler (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/exports/vite/index.js:449:28)\n    at runConfigHook (file:///work/bad-matcher/node_modules/vite/dist/node/chunks/config.js:36193:42)\n    at async resolveConfig (file:///work/bad-matcher/node_modules/vite/dist/node/chunks/config.js:35695:13)\n    at async load_config_from_vite (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/core/config/index.js:192:14)\n    at async load_config (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/core/config/index.js:131:23)\n    at async file:///work/bad-matcher/node_modules/@sveltejs/kit/src/cli.js:98:18 \n\nFalling back to loading svelte.config.js\n> No matcher found for parameter 'nomatcher' in route /nomatch/[id=nomatcher]\n    at create_manifest_data (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:40:11)\n    at Module.all_types (file:///work/bad-matcher/node_modules/@sveltejs/kit/src/core/sync/sync.js:87:24)\n    at file:///work/bad-matcher/node_modules/@sveltejs/kit/src/cli.js:100:8\n",
+  "stdout": ""
+ }
+]

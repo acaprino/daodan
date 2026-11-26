@@ -1,0 +1,501 @@
+{
+ "framework_entries": [
+  {
+   "column": 28,
+   "event": "click",
+   "gap": "onclick on <button> calls openCard in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/components/Card.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/components/Card.astro:6",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/components/Card.astro::<module>"
+  },
+  {
+   "column": 24,
+   "event": "click",
+   "gap": "onclick on <button> calls increment in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/components/Counter.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/components/Counter.astro:4",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/components/Counter.astro::<module>"
+  },
+  {
+   "column": 14,
+   "event": "click",
+   "gap": "onclick on <a> calls goHome in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/about.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/about.astro:6",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/about.astro::<module>"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "gap": "onclick on <button> calls share in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/blog/[slug].astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/blog/[slug].astro:11",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/blog/[slug].astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "onclick on <button> calls cart.add on an object in a string of JavaScript: what the object is, and so the method it names, is not in the compiler's tree",
+   "owner": "src/pages/calls.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/calls.astro:1",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/calls.astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "onclick on <button> calls window.open on an object in a string of JavaScript: what the object is, and so the method it names, is not in the compiler's tree",
+   "owner": "src/pages/calls.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/calls.astro:2",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/calls.astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "onclick on <button> calls save in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/calls.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/calls.astro:2",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/calls.astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "onclick on <button> calls items[0], a callee that is no name (subscript_expression) in a string of JavaScript: it names no function",
+   "owner": "src/pages/calls.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/calls.astro:3",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/calls.astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "onclick on <button> calls factory(), a callee that is no name (call_expression) in a string of JavaScript: it names no function",
+   "owner": "src/pages/calls.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/calls.astro:4",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/calls.astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "onclick on <button> calls factory in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/calls.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/calls.astro:4",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/calls.astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "onclick on <button> calls (0, run), a callee that is no name (parenthesized_expression) in a string of JavaScript: it names no function",
+   "owner": "src/pages/calls.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/calls.astro:5",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/calls.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls afterScripts in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/edge.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/edge.astro:17",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/edge.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls afterString in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/edge.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/edge.astro:19",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/edge.astro::<module>"
+  },
+  {
+   "column": 4,
+   "event": "click",
+   "gap": "onclick on <div> calls afterMultiline in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/edge.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/edge.astro:23",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/edge.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls fromFrontmatter in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/edge.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/edge.astro:24",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/edge.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls fromProcessedScript in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/edge.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/edge.astro:25",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/edge.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls fromModuleScript in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/edge.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/edge.astro:26",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/edge.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls fromLayout in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/edge.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/edge.astro:27",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/edge.astro::<module>"
+  },
+  {
+   "column": 20,
+   "event": "click",
+   "gap": "onclick on <button> calls save in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:14",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls confirmOrder in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:15",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 20,
+   "event": "click",
+   "gap": "onclick on <button> calls cancel in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:16",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls go in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:17",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 4,
+   "event": "click",
+   "gap": "onclick on <button> calls multiLine in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:20",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 8,
+   "event": "onsubmit",
+   "gap": "onsubmit on <form> calls validate in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onsubmit",
+   "site": "src/pages/index.astro:22",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 48,
+   "event": "oninput",
+   "gap": "oninput on <input> calls update in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "oninput",
+   "site": "src/pages/index.astro:22",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <li> is not a string written in place (expression): its value is computed when the page is rendered, so the function it names is not known",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:25",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 36,
+   "event": "click",
+   "gap": "onclick on <a> calls track in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:28",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 11,
+   "event": "click",
+   "gap": "onclick on <button> is not a string written in place (expression): its value is computed when the page is rendered, so the function it names is not known",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:32",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 13,
+   "event": "click",
+   "gap": "onclick on <my-widget> calls widget in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:33",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 7,
+   "event": "click",
+   "gap": "onclick on <svg> calls svgClick in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/index.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/index.astro:34",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/index.astro::<module>"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "gap": "onclick on <button> calls noFrontmatter in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/nofront.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/nofront.astro:2",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/nofront.astro::<module>"
+  },
+  {
+   "column": 17,
+   "event": "click",
+   "gap": "onclick on <foreignObject> calls foreignClick in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/svg.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/svg.astro:5",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/svg.astro::<module>"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "gap": "onclick on <textPath> calls pathClick in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/svg.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/svg.astro:7",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/svg.astro::<module>"
+  },
+  {
+   "column": 9,
+   "event": "click",
+   "gap": "onclick on <button> calls tabbed in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/tabs.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/tabs.astro:5",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/tabs.astro::<module>"
+  },
+  {
+   "column": 9,
+   "event": "click",
+   "gap": "onclick on <span> calls deep in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/tabs.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/tabs.astro:8",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/tabs.astro::<module>"
+  },
+  {
+   "column": 36,
+   "event": "click",
+   "gap": "onclick on <button> calls afterText in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/unicode.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/unicode.astro:4",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/unicode.astro::<module>"
+  },
+  {
+   "column": 23,
+   "event": "click",
+   "gap": "onclick on <div> calls afterUnicodeAttr in a string of JavaScript: the compiler's tree holds the text, not the function the page's global scope holds under that name",
+   "owner": "src/pages/unicode.astro::<module>",
+   "reader": "attributo",
+   "shape": "onclick",
+   "site": "src/pages/unicode.astro:6",
+   "sources": [
+    "astro@daodan/premap/v2"
+   ],
+   "symbol": "src/pages/unicode.astro::<module>"
+  }
+ ],
+ "gaps": [
+  {
+   "detail": "parse reported 2 errors in src/pages/broken.astro, so events may be missing: Unterminated regular expression (line 9)",
+   "kind": "model_partial",
+   "path": "src/pages/broken.astro",
+   "source": "astro@daodan/premap/v2"
+  }
+ ],
+ "sources": [
+  {
+   "rank": "scanner",
+   "seconds": 20.124,
+   "source": "astro@daodan/premap/v2",
+   "state": "ran"
+  }
+ ]
+}

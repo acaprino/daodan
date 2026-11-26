@@ -15,8 +15,8 @@ SCRIPTS = HERE.parent / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-import snapshot  # noqa: E402
 from languages import _treesitter, get_adapter  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 FIXTURES = HERE.parent / "benchmarks/project-model/fixtures"
 
@@ -53,7 +53,7 @@ SVELTE = """<script lang="ts">
 def _semantic(tmp_path: Path, files: dict[str, str]) -> dict[str, dict]:
     for rel, text in files.items():
         (tmp_path / rel).write_text(text, encoding="utf-8")
-    manifest = snapshot.build_manifest(tmp_path)
+    manifest = read_manifest(tmp_path)
     return {rel: manifest["files"][rel]["semantic"] for rel in files}
 
 

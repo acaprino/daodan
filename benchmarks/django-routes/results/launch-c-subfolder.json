@@ -1,0 +1,21 @@
+{
+ "variant": "launch-c-subfolder",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\" \"$3\"",
+  "django",
+  "60",
+  "/daodan/state/in/launch.py",
+  "c"
+ ],
+ "cwd": "src",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"settings_module\": \"mysite.settings\", \"settings_wrapped\": \"mysite.settings\", \"root_urlconf\": \"mysite.urls\", \"top_level\": 1, \"version\": \"6.1.3\", \"argv\": [\"manage.py\"], \"path0\": \"/work/src\", \"setup_seconds\": 0.433, \"max_rss_mb\": 59.5}",
+ "stderr": "",
+ "seconds": 0.84,
+ "max_rss_mb": 59.5,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 249
+}

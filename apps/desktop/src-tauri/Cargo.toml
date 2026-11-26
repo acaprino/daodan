@@ -1,0 +1,30 @@
+[package]
+name = "daodan-desktop"
+# The version is Daodan's own (pyproject.toml), given at the build of a release.
+version = "0.0.0"
+edition = "2021"
+license = "MIT"
+publish = false
+description = "Daodan's window on Windows: its own server, and the page the server serves in a window of Imago's shell"
+
+[features]
+# The program as it is shipped: Tauri's development server is never asked.
+custom-protocol = ["tauri/custom-protocol"]
+
+[build-dependencies]
+tauri-build = { version = "=2.7.4", features = [] }
+
+[dependencies]
+imago-shell = { git = "https://github.com/acaprino/imago", tag = "v1.4.1" }
+tauri = { version = "=2.12.5", features = [] }
+# The version imago-shell links. The job of the server's process.
+windows-sys = { version = "=0.61.2", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_JobObjects",
+    "Win32_System_Threading",
+] }
+
+[dev-dependencies]
+serde_json = "=1.0.154"
+tempfile = "=3.27.0"

@@ -1,0 +1,407 @@
+@astrojs/compiler 4.0.0
+
+=== src/components/Card.astro (281 chars, 281 bytes) in 112 ms; diagnostics: 0
+root no position
+  frontmatter value="\nconst { heading = 'Card', ...rest } = Astro.props..." 1:1@0..3:4@58
+  element <section> 4:1@59..8:11@188
+    @ spread "rest" value="" raw="" 4:14@72..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 4:20@78..5:3@81
+    element <h2> 5:3@81..5:21@99
+      expression 5:6@84..6:11@110
+        text value="heading" 5:8@86..5:15@93
+    text value="\n  " 5:21@99..6:3@102
+    element <button> 6:3@102..6:67@166
+      @ quoted "class" value="card-open" raw="\"card-open\"" 6:11@110..-  keys=type,kind,name,value,raw,position
+      @ quoted "onclick" value="openCard(this)" raw="\"openCard(this)\"" 6:29@128..-  keys=type,kind,name,value,raw,position
+      text value="Open" 6:54@153..6:58@157
+    text value="\n  " 6:67@166..7:3@169
+    element <slot> 7:3@169..7:10@176
+    text value="\n" 7:11@177..8:1@178
+  text value="\n" 8:11@188..9:1@189
+  element <script> 9:1@189..11:10@280
+    @ empty "is:inline" value="" raw="" 9:9@197..-  keys=type,kind,name,value,raw,position
+    text value="\n  function openCard(button) { button.textContent ..." 9:19@207..11:1@271
+  text value="\n" 11:10@280..12:1@281
+
+=== src/components/Counter.astro (172 chars, 172 bytes) in 3 ms; diagnostics: 0
+root no position
+  frontmatter value="\nconst { initial = 0 } = Astro.props;\n" 1:1@0..3:4@44
+  element <button> 4:1@45..4:71@115
+    @ quoted "class" value="counter" raw="\"counter\"" 4:9@53..-  keys=type,kind,name,value,raw,position
+    @ quoted "onclick" value="increment()" raw="\"increment()\"" 4:25@69..-  keys=type,kind,name,value,raw,position
+    text value="Count " 4:47@91..4:53@97
+    expression 4:52@96..5:7@122
+      text value="initial" 4:54@98..4:61@105
+  text value="\n" 4:71@115..5:1@116
+  element <script> 5:1@116..7:10@171
+    @ empty "is:inline" value="" raw="" 5:9@124..-  keys=type,kind,name,value,raw,position
+    text value="\n  function increment() { }\n" 5:19@134..7:1@162
+  text value="\n" 7:10@171..8:1@172
+
+=== src/layouts/Layout.astro (290 chars, 290 bytes) in 51 ms; diagnostics: 0
+root no position
+  frontmatter value="\ninterface Props { title: string }\nconst { title }..." 1:1@0..4:4@72
+  doctype value="html" no position
+  element <html> 6:1@89..17:8@289
+    @ quoted "lang" value="en" raw="\"en\"" 6:7@95..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 6:17@105..7:3@108
+    element <head> 7:3@108..10:10@180
+      text value="\n    " 7:9@114..8:5@119
+      element <meta> 8:6@120..-
+        @ quoted "charset" value="utf-8" raw="\"utf-8\"" 8:11@125..-  keys=type,kind,name,value,raw,position
+      text value="\n    " 8:29@143..9:5@148
+      element <title> 9:5@148..9:27@170
+        expression 9:11@154..10:8@178
+          text value="title" 9:13@156..9:18@161
+      text value="\n  " 9:27@170..10:3@173
+    text value="\n  " 10:10@180..11:3@183
+    element <body> 11:3@183..16:10@281
+      text value="\n    " 11:9@189..12:5@194
+      element <slot> 12:5@194..12:12@201
+      text value="\n    " 12:13@202..13:5@207
+      element <script> 13:5@207..15:14@271
+        @ empty "is:inline" value="" raw="" 13:13@215..-  keys=type,kind,name,value,raw,position
+        text value="\n      function fromLayout() { }\n    " 13:23@225..15:5@262
+      text value="\n  " 15:14@271..16:3@274
+    text value="\n" 16:10@281..17:1@282
+  text value="\n" 17:8@289..18:1@290
+
+=== src/pages/about.astro (218 chars, 218 bytes) in 3 ms; diagnostics: 0
+root no position
+  frontmatter value="\nimport Layout from '../layouts/Layout.astro';\n" 1:1@0..3:4@53
+  component <Layout> 4:1@54..7:10@143
+    @ quoted "title" value="About" raw="\"About\"" 4:9@62..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 4:23@76..5:3@79
+    element <p> 5:3@79..5:15@91
+      text value="About" 5:6@82..5:11@87
+    text value="\n  " 5:15@91..6:3@94
+    element <a> 6:3@94..6:42@133
+      @ quoted "href" value="/" raw="\"/\"" 6:6@97..-  keys=type,kind,name,value,raw,position
+      @ quoted "onclick" value="goHome()" raw="\"goHome()\"" 6:15@106..-  keys=type,kind,name,value,raw,position
+      text value="Home" 6:34@125..6:38@129
+    text value="\n" 6:42@133..7:1@134
+  text value="\n" 7:10@143..8:1@144
+  element <script> 8:1@144..10:10@217
+    @ empty "is:inline" value="" raw="" 8:9@152..-  keys=type,kind,name,value,raw,position
+    text value="\n  function goHome() { location.href = '/'; }\n" 8:19@162..10:1@208
+  text value="\n" 10:10@217..11:1@218
+
+=== src/pages/blog/[slug].astro (419 chars, 419 bytes) in 2 ms; diagnostics: 0
+root no position
+  frontmatter value="\nimport Layout from '../../layouts/Layout.astro';\n..." 1:1@0..7:4@198
+  component <Layout> 8:1@199..13:10@320
+    @ expression "title" value="slug" raw="" 8:9@207..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 8:22@220..9:3@223
+    element <article> 9:3@223..12:13@310
+      text value="\n    " 9:12@232..10:5@237
+      element <h1> 10:5@237..10:20@252
+        expression 10:8@240..11:11@263
+          text value="slug" 10:10@242..10:14@246
+      text value="\n    " 10:20@252..11:5@257
+      element <button> 11:5@257..11:45@297
+        @ quoted "onclick" value="share()" raw="\"share()\"" 11:13@265..-  keys=type,kind,name,value,raw,position
+        text value="Share" 11:31@283..11:36@288
+      text value="\n  " 11:45@297..12:3@300
+    text value="\n" 12:13@310..13:1@311
+  text value="\n" 13:10@320..14:1@321
+  element <script> 14:1@321..16:10@418
+    @ empty "is:inline" value="" raw="" 14:9@329..-  keys=type,kind,name,value,raw,position
+    text value="\n  function share() { navigator.share?.({ title: d..." 14:19@339..16:1@409
+  text value="\n" 16:10@418..17:1@419
+
+=== src/pages/broken.astro (197 chars, 197 bytes) in 2 ms; diagnostics: 0
+root no position
+  frontmatter value="\nconst ok = true;\n" 1:1@0..3:4@24
+  element <div> 4:2@26..-
+    text value="\n  " 4:6@30..5:3@33
+    element <button> 5:3@33..5:50@80
+      @ quoted "onclick" value="beforeBreak()" raw="\"beforeBreak()\"" 5:11@41..-  keys=type,kind,name,value,raw,position
+      text value="Before" 5:35@65..5:41@71
+    text value="\n  " 5:50@80..6:3@83
+    element <section> 6:4@84..-
+      text value="\n    " 6:12@92..7:5@97
+      element <button> 7:5@97..7:50@142
+        @ quoted "onclick" value="afterBreak()" raw="\"afterBreak()\"" 7:13@105..-  keys=type,kind,name,value,raw,position
+        text value="After" 7:36@128..7:41@133
+      text value="\n    " 7:50@142..8:5@147
+      expression 8:4@146..10:13@209
+        text value="ok && " 8:6@148..8:12@154
+        element <span> 8:12@154..8:47@189
+          @ quoted "onclick" value="inBroken()" raw="\"inBroken()\"" 8:18@160..-  keys=type,kind,name,value,raw,position
+          text value="x" 8:39@181..8:40@182
+        text value="\n" 8:47@189..9:1@190
+      text value="\n" 9:7@196..10:1@197
+
+=== src/pages/calls.astro (416 chars, 416 bytes) in 3 ms; diagnostics: 0
+root no position
+  element <button> 1:1@0..1:51@50
+    @ quoted "onclick" value="cart.add(1)" raw="\"cart.add(1)\"" 1:9@8..-  keys=type,kind,name,value,raw,position
+    text value="Member call" 1:31@30..1:42@41
+  text value="\n" 1:51@50..2:1@51
+  element <button> 2:1@51..2:70@120
+    @ quoted "onclick" value="window.open('/x'); save()" raw="\"window.open('/x'); save()\"" 2:9@59..-  keys=type,kind,name,value,raw,position
+    text value="Member then name" 2:45@95..2:61@111
+  text value="\n" 2:70@120..3:1@121
+  element <button> 3:1@121..3:54@174
+    @ quoted "onclick" value="items[0]()" raw="\"items[0]()\"" 3:9@129..-  keys=type,kind,name,value,raw,position
+    text value="Computed callee" 3:30@150..3:45@165
+  text value="\n" 3:54@174..4:1@175
+  element <button> 4:1@175..4:54@228
+    @ quoted "onclick" value="factory()()" raw="\"factory()()\"" 4:9@183..-  keys=type,kind,name,value,raw,position
+    text value="Call of a call" 4:31@205..4:45@219
+  text value="\n" 4:54@228..5:1@229
+  element <button> 5:1@229..5:59@287
+    @ quoted "onclick" value="(0, run)()" raw="\"(0, run)()\"" 5:9@237..-  keys=type,kind,name,value,raw,position
+    text value="Parenthesized callee" 5:30@258..5:50@278
+  text value="\n" 5:59@287..6:1@288
+  element <button> 6:1@288..6:51@338
+    @ quoted "onclick" value="new Thing()" raw="\"new Thing()\"" 6:9@296..-  keys=type,kind,name,value,raw,position
+    text value="Constructor" 6:31@318..6:42@329
+  text value="\n" 6:51@338..7:1@339
+  element <div> 7:1@339..7:36@374
+    @ quoted "one" value="two()" raw="\"two()\"" 7:6@344..-  keys=type,kind,name,value,raw,position
+    text value="not an event" 7:18@356..7:30@368
+  text value="\n" 7:36@374..8:1@375
+  element <p> 8:1@375..8:41@415
+    @ quoted "onfoo" value="bar()" raw="\"bar()\"" 8:4@378..-  keys=type,kind,name,value,raw,position
+    text value="not an event either" 8:18@392..8:37@411
+  text value="\n" 8:41@415..9:1@416
+
+=== src/pages/edge.astro (851 chars, 851 bytes) in 4 ms; diagnostics: 0
+root no position
+  frontmatter value="\nimport Layout from '../layouts/Layout.astro';\ncon..." 1:1@0..5:4@102
+  component <Layout> 6:1@103..28:10@850
+    @ quoted "title" value="Edge" raw="\"Edge\"" 6:9@111..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 6:22@124..7:3@127
+    element <style> 7:3@127..9:11@183
+      text value="\n    .a::after { content: \"</div>{\"; }\n  " 7:10@134..9:3@175
+    text value="\n  " 9:11@183..10:3@186
+    element <script> 10:3@186..13:12@298
+      text value="\n    const marker = \"</p> { <b onclick='inString()..." 10:11@194..13:3@289
+    text value="\n  " 13:12@298..14:3@301
+    element <script> 14:3@301..16:12@380
+      @ empty "is:inline" value="" raw="" 14:11@309..-  keys=type,kind,name,value,raw,position
+      @ quoted "type" value="module" raw="\"module\"" 14:21@319..-  keys=type,kind,name,value,raw,position
+      text value="\n    function fromModuleScript() {}\n  " 14:35@333..16:3@371
+    text value="\n  " 16:12@380..17:3@383
+    element <button> 17:3@383..17:58@438
+      @ quoted "onclick" value="afterScripts()" raw="\"afterScripts()\"" 17:11@391..-  keys=type,kind,name,value,raw,position
+      text value="After scripts" 17:36@416..17:49@429
+    text value="\n  " 17:58@438..18:3@441
+    element <p> 18:3@441..18:37@475
+      expression 18:5@443..19:12@487
+        text value="label === '}' ? '>' : \"<\"" 18:7@445..18:20@458
+    text value="\n  " 18:37@475..19:3@478
+    element <button> 19:3@478..19:56@531
+      @ quoted "onclick" value="afterString()" raw="\"afterString()\"" 19:11@486..-  keys=type,kind,name,value,raw,position
+      text value="After string" 19:35@510..19:47@522
+    text value="\n  " 19:56@531..20:3@534
+    element <div> 20:3@534..23:39@616
+      @ expression "title" value="\n    `multi\n     line ${label}`\n  " raw="" 20:8@539..-  keys=type,kind,name,value,raw,position
+      @ quoted "onclick" value="afterMultiline()" raw="\"afterMultiline()\"" 23:5@582..-  keys=type,kind,name,value,raw,position
+      text value="m" 23:32@609..23:33@610
+    text value="\n  " 23:39@616..24:3@619
+    element <button> 24:3@619..24:59@675
+      @ quoted "onclick" value="fromFrontmatter()" raw="\"fromFrontmatter()\"" 24:11@627..-  keys=type,kind,name,value,raw,position
+      text value="Frontmatter" 24:39@655..24:50@666
+    text value="\n  " 24:59@675..25:3@678
+    element <button> 25:3@678..25:61@736
+      @ quoted "onclick" value="fromProcessedScript()" raw="\"fromProcessedScript()\"" 25:11@686..-  keys=type,kind,name,value,raw,position
+      text value="Processed" 25:43@718..25:52@727
+    text value="\n  " 25:61@736..26:3@739
+    element <button> 26:3@739..26:55@791
+      @ quoted "onclick" value="fromModuleScript()" raw="\"fromModuleScript()\"" 26:11@747..-  keys=type,kind,name,value,raw,position
+      text value="Module" 26:40@776..26:46@782
+    text value="\n  " 26:55@791..27:3@794
+    element <button> 27:3@794..27:49@840
+      @ quoted "onclick" value="fromLayout()" raw="\"fromLayout()\"" 27:11@802..-  keys=type,kind,name,value,raw,position
+      text value="Layout" 27:34@825..27:40@831
+    text value="\n" 27:49@840..28:1@841
+  text value="\n" 28:10@850..29:1@851
+
+=== src/pages/index.astro (1624 chars, 1624 bytes) in 36 ms; diagnostics: 0
+root no position
+  frontmatter value="\nimport Layout from '../layouts/Layout.astro';\nimp..." 1:1@0..11:4@308
+  component <Layout> 12:1@309..48:10@1623
+    @ expression "title" value="title" raw="" 12:9@317..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 12:23@331..13:3@334
+    element <h1> 13:3@334..13:40@371
+      @ quoted "id" value="top" raw="\"top\"" 13:7@338..-  keys=type,kind,name,value,raw,position
+      @ quoted "title" value="plain" raw="plain" 13:16@347..-  keys=type,kind,name,value,raw,position
+      expression 13:27@358..14:11@382
+        text value="title" 13:29@360..13:34@365
+    text value="\n  " 13:40@371..14:3@374
+    element <button> 14:3@374..14:51@422
+      @ quoted "id" value="save" raw="\"save\"" 14:11@382..-  keys=type,kind,name,value,raw,position
+      @ quoted "onclick" value="save()" raw="\"save()\"" 14:21@392..-  keys=type,kind,name,value,raw,position
+      text value="Save" 14:38@409..14:42@413
+    text value="\n  " 14:51@422..15:3@425
+    element <button> 15:3@425..15:77@499
+      @ quoted "onclick" value="this.disabled = true; confirmOrder(event)" raw="\"this.disabled = true; confirmOrder(event)\"" 15:11@433..-  keys=type,kind,name,value,raw,position
+      text value="Order" 15:63@485..15:68@490
+    text value="\n  " 15:77@499..16:3@502
+    element <button> 16:3@502..16:79@578
+      @ quoted "class" value="x" raw="\"x\"" 16:11@510..-  keys=type,kind,name,value,raw,position
+      @ quoted "onclick" value="cancel(\"now\")" raw="'cancel(\"now\")'" 16:21@520..-  keys=type,kind,name,value,raw,position
+      @ expression "data-id" value="items[0]" raw="" 16:45@544..-  keys=type,kind,name,value,raw,position
+      text value="Cancel" 16:64@563..16:70@569
+    text value="\n  " 16:79@578..17:3@581
+    element <button> 17:3@581..17:35@613
+      @ quoted "onclick" value="go()" raw="go()" 17:11@589..-  keys=type,kind,name,value,raw,position
+      text value="Go" 17:24@602..17:26@604
+    text value="\n  " 17:35@613..18:3@616
+    element <button> 18:3@616..21:18@685
+      @ quoted "class" value="multi" raw="\"multi\"" 19:5@628..-  keys=type,kind,name,value,raw,position
+      @ quoted "onclick" value="multiLine()" raw="\"multiLine()\"" 20:5@646..-  keys=type,kind,name,value,raw,position
+      text value="Multi" 21:4@671..21:9@676
+    text value="\n  " 21:18@685..22:3@688
+    element <form> 22:3@688..22:87@772
+      @ quoted "onsubmit" value="return validate(this)" raw="\"return validate(this)\"" 22:9@694..-  keys=type,kind,name,value,raw,position
+      element <input> 22:42@727..22:50@735
+        @ quoted "oninput" value="update(this.value)" raw="\"update(this.value)\"" 22:49@734..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 22:87@772..23:3@775
+    element <ul> 23:3@775..27:8@872
+      text value="\n    " 23:7@779..24:5@784
+      expression 24:4@783..28:8@880
+        text value="items.map((item) => (\n      " 24:6@785..25:7@813
+        element <li> 25:7@813..25:50@856
+          @ expression "onclick" value="`pick('${item}')`" raw="" 25:11@817..-  keys=type,kind,name,value,raw,position
+          expression 25:38@844..27:3@867
+            text value="item" 25:40@846..25:44@850
+        text value="\n    ))" 25:50@856..26:7@863
+      text value="\n  " 26:8@864..27:3@867
+    text value="\n  " 27:8@872..28:3@875
+    expression 28:2@874..29:16@955
+      text value="title === 'Shop' && " 28:4@876..28:20@892
+      element <a> 28:24@896..28:66@938
+        @ quoted "href" value="/x" raw="\"/x\"" 28:27@899..-  keys=type,kind,name,value,raw,position
+        @ quoted "onclick" value="track('x')" raw="\"track('x')\"" 28:37@909..-  keys=type,kind,name,value,raw,position
+        text value="link" 28:58@930..28:62@934
+    text value="\n  " 28:67@939..29:3@942
+    component <Card> 29:3@942..29:65@1004
+      @ quoted "heading" value="Hi" raw="\"Hi\"" 29:9@948..-  keys=type,kind,name,value,raw,position
+      @ quoted "onclick" value="cardClick()" raw="\"cardClick()\"" 29:22@961..-  keys=type,kind,name,value,raw,position
+      @ spread "rest" value="" raw="" 29:48@987..-  keys=type,kind,name,value,raw,position
+      text value="text" 29:54@993..29:58@997
+    text value="\n  " 29:65@1004..30:3@1007
+    component <Counter> 30:3@1007..30:13@1017
+      @ empty "client:load" value="" raw="" 30:12@1016..-  keys=type,kind,name,value,raw,position
+      @ expression "initial" value="3" raw="" 30:24@1028..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 30:38@1042..31:3@1045
+    component <Counter> 31:3@1045..31:13@1055
+      @ empty "client:visible" value="" raw="" 31:12@1054..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 31:29@1071..32:3@1074
+    element <button> 32:3@1074..32:39@1110
+      @ shorthand "onclick" value="" raw="" 32:12@1083..-  keys=type,kind,name,value,raw,position
+      text value="Shorthand" 32:21@1092..32:30@1101
+    text value="\n  " 32:39@1110..33:3@1113
+    custom-element <my-widget> 33:3@1113..33:45@1155
+      @ quoted "onclick" value="widget()" raw="\"widget()\"" 33:14@1124..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 33:45@1155..34:3@1158
+    element <svg> 34:3@1158..34:70@1225
+      @ quoted "onclick" value="svgClick()" raw="\"svgClick()\"" 34:8@1163..-  keys=type,kind,name,value,raw,position
+      @ quoted "viewBox" value="0 0 1 1" raw="\"0 0 1 1\"" 34:29@1184..-  keys=type,kind,name,value,raw,position
+      element <path> 34:47@1202..34:54@1209
+        @ quoted "d" value="M0 0" raw="\"M0 0\"" 34:53@1208..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 34:70@1225..35:3@1228
+    fragment <Fragment> 35:3@1228..35:14@1239
+      @ expression "set:html" value="'<b onclick=\"inHtml()\">raw</b>'" raw="" 35:13@1238..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 35:58@1283..36:3@1286
+    comment value=" <button onclick=\"commented()\">no</button> " 36:7@1290..36:53@1336
+    text value="\n  " 36:53@1336..37:3@1339
+    element <script> 37:3@1339..41:12@1449
+      @ empty "is:inline" value="" raw="" 37:11@1347..-  keys=type,kind,name,value,raw,position
+      text value="\n    function confirmOrder(e) { }\n    function pic..." 37:21@1357..41:3@1440
+    text value="\n  " 41:12@1449..42:3@1452
+    element <script> 42:3@1452..44:12@1569
+      text value="\n    document.querySelector('#save')?.addEventList..." 42:11@1460..44:3@1560
+    text value="\n  " 44:12@1569..45:3@1572
+    element <style> 45:3@1572..47:11@1613
+      text value="\n    h1 { color: red; }\n  " 45:10@1579..47:3@1605
+    text value="\n" 47:11@1613..48:1@1614
+  text value="\n" 48:10@1623..49:1@1624
+
+=== src/pages/nofront.astro (97 chars, 97 bytes) in 2 ms; diagnostics: 0
+root no position
+  element <div> 1:1@0..4:7@96
+    @ quoted "id" value="a" raw="\"a\"" 1:6@5..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 1:13@12..2:3@15
+    element <button> 2:3@15..2:60@72
+      @ quoted "onclick" value="noFrontmatter()" raw="\"noFrontmatter()\"" 2:11@23..-  keys=type,kind,name,value,raw,position
+      text value="No frontmatter" 2:37@49..2:51@63
+    text value="\n  " 2:60@72..3:3@75
+    element <p> 3:3@75..3:17@89
+      expression 3:5@77..5:5@101
+        text value="1 + 1" 3:7@79..3:12@84
+    text value="\n" 3:17@89..4:1@90
+  text value="\n" 4:7@96..5:1@97
+
+=== src/pages/svg.astro (258 chars, 258 bytes) in 2 ms; diagnostics: 0
+root no position
+  frontmatter value="\nconst size = 10;\n" 1:1@0..3:4@24
+  element <svg> 4:1@25..8:7@257
+    @ quoted "viewBox" value="0 0 10 10" raw="\"0 0 10 10\"" 4:6@30..-  keys=type,kind,name,value,raw,position
+    @ expression "width" value="size" raw="" 4:26@50..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 4:39@63..5:3@66
+    element <foreignObject> 5:3@66..5:80@143
+      @ quoted "onclick" value="foreignClick()" raw="\"foreignClick()\"" 5:18@81..-  keys=type,kind,name,value,raw,position
+      @ quoted "width" value="1" raw="\"1\"" 5:43@106..-  keys=type,kind,name,value,raw,position
+      @ quoted "height" value="1" raw="\"1\"" 5:53@116..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 5:80@143..6:3@146
+    element <animate> 6:3@146..6:13@156
+      @ quoted "onend" value="smilEnd()" raw="\"smilEnd()\"" 6:12@155..-  keys=type,kind,name,value,raw,position
+      @ quoted "attributeName" value="x" raw="\"x\"" 6:30@173..-  keys=type,kind,name,value,raw,position
+    text value="\n  " 6:50@193..7:3@196
+    element <textPath> 7:3@196..7:57@250
+      @ quoted "onclick" value="pathClick()" raw="\"pathClick()\"" 7:13@206..-  keys=type,kind,name,value,raw,position
+      @ quoted "href" value="#p" raw="\"#p\"" 7:35@228..-  keys=type,kind,name,value,raw,position
+      text value="t" 7:45@238..7:46@239
+    text value="\n" 7:57@250..8:1@251
+  text value="\n" 8:7@257..9:1@258
+
+=== src/pages/tabs.astro (159 chars, 159 bytes) in 4 ms; diagnostics: 0
+root no position
+  frontmatter value="\nconst n = 1;\n" 1:1@0..3:4@20
+  element <main> 4:1@21..11:8@158
+    text value="\n\t" 4:7@27..5:2@29
+    element <button> 5:2@29..5:51@78
+      @ quoted "onclick" value="tabbed()" raw="\"tabbed()\"" 5:10@37..-  keys=type,kind,name,value,raw,position
+      @ quoted "class" value="t" raw="\"t\"" 5:29@56..-  keys=type,kind,name,value,raw,position
+      text value="Tab" 5:39@66..5:42@69
+    text value="\n\t" 5:51@78..6:2@80
+    element <div> 6:2@80..10:8@150
+      text value="\n\t\t" 6:7@85..7:3@88
+      expression 7:2@87..11:8@158
+        text value="n > 0 && (\n\t\t\t" 7:4@89..8:4@103
+        element <span> 8:4@103..8:38@137
+          @ quoted "onclick" value="deep()" raw="\"deep()\"" 8:10@109..-  keys=type,kind,name,value,raw,position
+          text value="deep" 8:27@126..8:31@130
+        text value="\n\t\t)" 8:38@137..9:4@141
+      text value="\n\t" 9:5@142..10:2@144
+    text value="\n" 10:8@150..11:1@151
+  text value="\n" 11:8@158..12:1@159
+
+=== src/pages/unicode.astro (255 chars, 286 bytes) in 4 ms; diagnostics: 0
+root no position
+  frontmatter value="\nconst é = 'é日本語😀';\n" 1:1@0..3:4@37
+  element <p> 4:1@38..4:20@66
+    text value="héllo 日本語 😀" 4:4@41..4:16@62
+  element <button> 4:20@66..4:60@107
+    @ quoted "onclick" value="afterText()" raw="\"afterText()\"" 4:28@74..-  keys=type,kind,name,value,raw,position
+    text value="é" 4:50@96..4:51@98
+  text value="\n" 4:60@107..5:1@108
+  element <p> 5:1@108..5:10@119
+    text value="😀" 5:4@111..5:6@115
+  text value="\n" 5:10@119..6:1@120
+  element <div> 6:1@120..6:67@195
+    @ quoted "class" value="日本語" raw="\"日本語\"" 6:6@125..-  keys=type,kind,name,value,raw,position
+    @ quoted "onclick" value="afterUnicodeAttr()" raw="\"afterUnicodeAttr()\"" 6:18@143..-  keys=type,kind,name,value,raw,position
+    @ quoted "title" value="😀 é" raw="\"😀 é\"" 6:47@172..-  keys=type,kind,name,value,raw,position
+    text value="x" 6:60@188..6:61@189
+  text value="\n" 6:67@195..7:1@196
+  element <script> 7:1@196..10:10@285
+    @ empty "is:inline" value="" raw="" 7:9@204..-  keys=type,kind,name,value,raw,position
+    text value="\n  function afterText() { }\n  function afterUnicod..." 7:19@214..10:1@276
+  text value="\n" 10:10@285..11:1@286
+
+--- exit 0

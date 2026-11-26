@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/auth0-samples/auth0-golang-web-app",
+ "commit": "c497850bb91f05f452572aac022945ba9d5ab857",
+ "licence": "MIT",
+ "why": "the smallest case: one external service, Auth0, reached by redirects and by two different client libraries; the same sample written twice, on Gin and on net/http, with nothing joining the two"
+}

@@ -1,0 +1,20 @@
+{
+ "variant": "flaskenv-without-dotenv",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "flask",
+  "900",
+  "/daodan/state/tools/flask_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": " * Tip: There are .env files present. Install python-dotenv to use them.\nNoAppException: Could not locate a Flask application. Use the 'flask --app' option, 'FLASK_APP' environment variable, or a 'wsgi.py' or 'app.py' file in the current directory.\n",
+ "seconds": 0.27,
+ "max_rss_mb": 48.5,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

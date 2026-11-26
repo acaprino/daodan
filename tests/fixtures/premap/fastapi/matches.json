@@ -1,0 +1,5 @@
+{
+ "returncode": 0,
+ "stdout": "/typed/7 -> 200 \n/typed/a -> 404 \n/files/a -> 200 \n/files/a/b -> 200 \n/slug/a-b -> 200 \n/slug/a/b -> 404 \n/pair/a/b -> 200 \n/pair/a -> 404 \n/two/1/2 -> 200 \n/two/1 -> 404 \n/glued/x-y -> 200 \n/strict/ -> 200 \n/strict -> 307 http://testserver/strict/\n/loose -> 200 \n/loose/ -> 307 http://testserver/loose\n/api/users/7 -> 200 \n/api/users/7/8 -> 404 \n/api/users/embedded/leaf -> 404 \n/api/embedded/leaf -> 200 \n/t/acme/info -> 200 \n/t/acme/b/info -> 404 \n/sub/hello -> 200 \n/static/hello.txt -> 200 \n",
+ "stderr": ""
+}

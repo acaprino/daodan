@@ -1,0 +1,8 @@
+{
+ "gin": [
+  "github.com/gin-gonic/gin v1.12.0"
+ ],
+ "go": [
+  "go version go1.25.14 linux/amd64"
+ ]
+}

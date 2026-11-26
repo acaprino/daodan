@@ -1,0 +1,23 @@
+{
+ "variant": "empty",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "fastapi",
+  "900",
+  "/daodan/state/tools/fastapi_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"application\": \"app.main:app\", \"found\": \"entrypoint-pyproject\", \"root_path\": \"\", \"competing\": {\"others\": [], \"shadowed\": []}, \"routes\": [], \"unread\": []}",
+ "stderr": "",
+ "seconds": 0.45,
+ "max_rss_mb": 63.7,
+ "left_in_the_project": [
+  "app/__pycache__/__init__.cpython-312.pyc",
+  "app/__pycache__/main.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 170
+}

@@ -1,0 +1,20 @@
+{
+ "variant": "redash-script",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "flask",
+  "900",
+  "/daodan/state/tools/flask_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "ModuleNotFoundError: No module named 'flask'\n",
+ "seconds": 0.35,
+ "max_rss_mb": 41.4,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "files": 1976
+}

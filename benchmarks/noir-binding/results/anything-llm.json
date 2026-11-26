@@ -1,0 +1,301 @@
+{
+ "name": "anything-llm",
+ "framework": "express",
+ "repository": "Mintplex-Labs/anything-llm",
+ "commit": "593c0943facbe0a5e1cfac2d7616f15707a9317a",
+ "licence": "MIT",
+ "licence_file": "LICENSE",
+ "noir": {
+  "endpoints": 426,
+  "protocols": {
+   "https": 1,
+   "http": 424,
+   "cli": 1
+  },
+  "errors": 0,
+  "seconds": 3.7,
+  "peak_memory_mb": 237.4,
+  "pin": "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70",
+  "handler_forms": {
+   "closure": 350,
+   "none": 72,
+   "name": 4
+  },
+  "http_handler_forms": {
+   "closure": 350,
+   "none": 70,
+   "name": 4
+  },
+  "http_endpoints_in_the_json": 424,
+  "tagged_spec_only": 70,
+  "with_handler_name_in_the_json": 354,
+  "with_name_and_path_and_line": 354
+ },
+ "before_the_binder": {
+  "other_protocol": 2,
+  "no_path": 0,
+  "dropped": 0,
+  "dropped_by_reason": {},
+  "dropped_with_name_and_path": 0
+ },
+ "checkout": {
+  "files": 1624,
+  "left_in_the_project": [],
+  "changed_in_the_project": []
+ },
+ "snapshot": {
+  "files": 1429,
+  "functions": 17401,
+  "functions_by_suffix": {
+   ".js": 13182,
+   ".jsx": 4162,
+   ".mjs": 56,
+   ".cjs": 1
+  },
+  "files_by_suffix": {
+   ".js": 801,
+   ".jsx": 489,
+   ".sql": 40,
+   ".md": 29,
+   ".json": 21,
+   ".yaml": 14,
+   ".mjs": 9,
+   ".css": 7,
+   ".txt": 4,
+   "": 3,
+   ".sh": 3,
+   ".cjs": 2,
+   ".tf": 2,
+   ".html": 2,
+   ".yml": 1
+  },
+  "seconds": 85.5
+ },
+ "http": {
+  "endpoints": 424,
+  "with_handler_name": 354,
+  "bound_to_one_function": 4,
+  "unbound": 420,
+  "by_file_suffix": {
+   ".js": {
+    "endpoints": 354,
+    "with_handler_name": 354,
+    "bound": 4
+   },
+   ".json": {
+    "endpoints": 70,
+    "with_handler_name": 0,
+    "bound": 0
+   }
+  }
+ },
+ "unbound_by_group": {
+  "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch": 350,
+  "the snapshot holds no function where Noir cites": 70
+ },
+ "causes": {
+  "Noir names a closure and a function starts at the cited line": {
+   "group": "Noir cites or names the handler and the snapshot holds it: a naming or position mismatch",
+   "endpoints": 350,
+   "by_file_suffix": {
+    ".js": 350
+   },
+   "examples": [
+    {
+     "method": "POST",
+     "url": "/ext/resync-source-document",
+     "site": "collector/extensions/index.js:18",
+     "noir_handler": {
+      "name": "closure",
+      "path": "collector/extensions/index.js",
+      "line": 18
+     },
+     "covering": [
+      "extensions.(anonymous) 18-33",
+      "extensions 12-242"
+     ],
+     "after": [
+      "extensions.(anonymous) 39-62",
+      "extensions.(anonymous) 69-93"
+     ],
+     "file_language": "javascript"
+    },
+    {
+     "method": "POST",
+     "url": "/ext/:repo_platform-repo",
+     "site": "collector/extensions/index.js:39",
+     "noir_handler": {
+      "name": "closure",
+      "path": "collector/extensions/index.js",
+      "line": 39
+     },
+     "covering": [
+      "extensions.(anonymous) 39-62",
+      "extensions 12-242"
+     ],
+     "after": [
+      "extensions.(anonymous) 69-93",
+      "extensions.(anonymous) 99-120"
+     ],
+     "file_language": "javascript"
+    },
+    {
+     "method": "POST",
+     "url": "/ext/:repo_platform-repo/branches",
+     "site": "collector/extensions/index.js:69",
+     "noir_handler": {
+      "name": "closure",
+      "path": "collector/extensions/index.js",
+      "line": 69
+     },
+     "covering": [
+      "extensions.(anonymous) 69-93",
+      "extensions 12-242"
+     ],
+     "after": [
+      "extensions.(anonymous) 99-120",
+      "extensions.(anonymous) 126-144"
+     ],
+     "file_language": "javascript"
+    }
+   ]
+  },
+  "the cited file is not read by the snapshot (build file, configuration, specification, or a language it does not read)": {
+   "group": "the snapshot holds no function where Noir cites",
+   "endpoints": 70,
+   "by_file_suffix": {
+    ".json": 70
+   },
+   "examples": [
+    {
+     "method": "GET",
+     "url": "/api/v1/auth",
+     "site": "server/swagger/openapi.json:15",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "GET",
+     "url": "/api/v1/admin/is-multi-user-mode",
+     "site": "server/swagger/openapi.json:54",
+     "noir_handler": null,
+     "file_language": null
+    },
+    {
+     "method": "GET",
+     "url": "/api/v1/admin/users",
+     "site": "server/swagger/openapi.json:93",
+     "noir_handler": null,
+     "file_language": null
+    }
+   ]
+  }
+ },
+ "fixes": {
+  "qualified-suffix": {
+   "unbound": {
+    "none": 420
+   },
+   "bound": {
+    "same": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "last-part-covering": {
+   "unbound": {
+    "none": 420
+   },
+   "bound": {
+    "same": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "class-of-covering": {
+   "unbound": {
+    "none": 420
+   },
+   "bound": {
+    "none": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "starts-at-line": {
+   "unbound": {
+    "one": 350,
+    "none": 70
+   },
+   "bound": {
+    "same": 4
+   },
+   "distinct_functions_of_the_unbound_one": 338
+  },
+  "combined": {
+   "unbound": {
+    "one": 350,
+    "none": 70
+   },
+   "bound": {
+    "same": 4
+   },
+   "distinct_functions_of_the_unbound_one": 338
+  },
+  "nested-below": {
+   "unbound": {
+    "none": 70
+   },
+   "bound": {
+    "none": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-above": {
+   "unbound": {
+    "none": 420
+   },
+   "bound": {
+    "none": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-file": {
+   "unbound": {
+    "none": 420
+   },
+   "bound": {
+    "same": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "name-in-project": {
+   "unbound": {
+    "none": 420
+   },
+   "bound": {
+    "same": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  },
+  "innermost-covering": {
+   "unbound": {
+    "none": 70
+   },
+   "bound": {
+    "same": 4
+   },
+   "distinct_functions_of_the_unbound_one": 0
+  }
+ },
+ "fixes_agree": {
+  "only starts-at-line binds": 350
+ },
+ "code": {
+  "binder.py": "f92081d65e0b1ed5",
+  "premap/noir.py": "d6a4a66b85caa6dc",
+  "languages/semantic.py": "926c1b28ff1b41ca",
+  "snapshot.py": "ad51da178e49e16c",
+  "flows.py": "c6d5acdfe0e5d323",
+  "edge_view.py": "32636f764bf7a6b5",
+  "entries.py": "2a12df40158d7b76",
+  "semantic_store.py": "d7122063a8f82e9e"
+ }
+}

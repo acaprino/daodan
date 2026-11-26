@@ -1,0 +1,368 @@
+{
+ "framework_entries": [
+  {
+   "kind": "nessun ingresso",
+   "path": "/",
+   "reader": "react-router",
+   "shape": "layout",
+   "site": "app/root.tsx",
+   "symbol": "app/root.tsx::<module>"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/",
+   "reader": "react-router",
+   "shape": "index",
+   "site": "app/routes/home.tsx:5",
+   "symbol": "app/routes/home.tsx::Home"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/about",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/about.tsx:2",
+   "symbol": "app/routes/about.tsx::About"
+  },
+  {
+   "kind": "nessun ingresso",
+   "path": "/",
+   "reader": "react-router",
+   "shape": "layout",
+   "site": "app/routes/shop/layout.tsx",
+   "symbol": "app/routes/shop/layout.tsx::<module>"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/checkout",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/shop/checkout.tsx:12",
+   "symbol": "app/routes/shop/checkout.tsx::Checkout"
+  },
+  {
+   "handler": "loader",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/checkout",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/shop/checkout.tsx:3",
+   "symbol": "app/routes/shop/checkout.tsx::loader"
+  },
+  {
+   "handler": "action",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/checkout",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/shop/checkout.tsx:7",
+   "symbol": "app/routes/shop/checkout.tsx::action"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/orders/:id",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/shop/order.tsx:6",
+   "symbol": "app/routes/shop/order.tsx::Order"
+  },
+  {
+   "handler": "loader",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/orders/:id",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/shop/order.tsx:2",
+   "symbol": "app/routes/shop/order.tsx::loader"
+  },
+  {
+   "handler": "loader",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/api/pay",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/api/pay.ts:2",
+   "symbol": "app/routes/api/pay.ts::loader"
+  },
+  {
+   "handler": "action",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/api/pay",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/api/pay.ts:6",
+   "symbol": "app/routes/api/pay.ts::action"
+  },
+  {
+   "handler": "loader",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/api/health",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/api/health.ts:1",
+   "symbol": "app/routes/api/health.ts::loader"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /docs/* from: default, loader, action, clientLoader, clientAction",
+   "kind": "rotta",
+   "path": "/docs/*",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/docs.tsx",
+   "symbol": "app/routes/docs.tsx::<module>"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/:lang?/blog",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/blog.tsx:1",
+   "symbol": "app/routes/blog.tsx::Blog"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/users/:id",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/users/user.tsx:1",
+   "symbol": "app/routes/users/user.tsx::User"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/users/:id/edit",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/users/edit.tsx:5",
+   "symbol": "app/routes/users/edit.tsx::EditUser"
+  },
+  {
+   "handler": "action",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/users/:id/edit",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/users/edit.tsx:1",
+   "symbol": "app/routes/users/edit.tsx::action"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/nested",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/nested/layout.tsx:3",
+   "symbol": "app/routes/nested/layout.tsx::NestedLayout"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/nested",
+   "reader": "react-router",
+   "shape": "index",
+   "site": "app/routes/nested/index.tsx:1",
+   "symbol": "app/routes/nested/index.tsx::NestedIndex"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/nested/child",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/nested/child.tsx:1",
+   "symbol": "app/routes/nested/child.tsx::NestedChild"
+  },
+  {
+   "gap": "no function found for the exports the framework starts /legacy from: default: reexport-unsupported",
+   "kind": "rotta",
+   "path": "/legacy",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/legacy.jsx",
+   "symbol": "app/routes/legacy.jsx::<module>"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/en/hello",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/hello.tsx:1",
+   "symbol": "app/routes/hello.tsx::Hello"
+  },
+  {
+   "handler": "default",
+   "handler_source": "react-router",
+   "kind": "rotta",
+   "path": "/it/hello",
+   "reader": "react-router",
+   "shape": "route",
+   "site": "app/routes/hello.tsx:1",
+   "symbol": "app/routes/hello.tsx::Hello"
+  }
+ ],
+ "links": {
+  "entries": {
+   "react-router rotta": 19
+  },
+  "entry_sites": [
+   [
+    "/",
+    "app/routes/home.tsx:5",
+    null
+   ],
+   [
+    "/:lang?/blog",
+    "app/routes/blog.tsx:1",
+    null
+   ],
+   [
+    "/about",
+    "app/routes/about.tsx:2",
+    null
+   ],
+   [
+    "/api/health",
+    "app/routes/api/health.ts:1",
+    null
+   ],
+   [
+    "/api/pay",
+    "app/routes/api/pay.ts:2",
+    null
+   ],
+   [
+    "/api/pay",
+    "app/routes/api/pay.ts:6",
+    null
+   ],
+   [
+    "/checkout",
+    "app/routes/shop/checkout.tsx:12",
+    null
+   ],
+   [
+    "/checkout",
+    "app/routes/shop/checkout.tsx:3",
+    null
+   ],
+   [
+    "/checkout",
+    "app/routes/shop/checkout.tsx:7",
+    null
+   ],
+   [
+    "/en/hello",
+    "app/routes/hello.tsx:1",
+    null
+   ],
+   [
+    "/it/hello",
+    "app/routes/hello.tsx:1",
+    null
+   ],
+   [
+    "/nested",
+    "app/routes/nested/index.tsx:1",
+    null
+   ],
+   [
+    "/nested",
+    "app/routes/nested/layout.tsx:3",
+    null
+   ],
+   [
+    "/nested/child",
+    "app/routes/nested/child.tsx:1",
+    null
+   ],
+   [
+    "/orders/:id",
+    "app/routes/shop/order.tsx:2",
+    null
+   ],
+   [
+    "/orders/:id",
+    "app/routes/shop/order.tsx:6",
+    null
+   ],
+   [
+    "/users/:id",
+    "app/routes/users/user.tsx:1",
+    null
+   ],
+   [
+    "/users/:id/edit",
+    "app/routes/users/edit.tsx:1",
+    null
+   ],
+   [
+    "/users/:id/edit",
+    "app/routes/users/edit.tsx:5",
+    null
+   ]
+  ],
+  "gaps": {
+   "noir: no unique snapshot handler at its site": 25,
+   "react-router: no function found for the exports": 2
+  },
+  "routes": {
+   "called": 0,
+   "linked": 0,
+   "offered": 0
+  }
+ },
+ "noir_endpoints": 25,
+ "scan_seconds": 134.0,
+ "source_gaps": [],
+ "sources": {
+  "angular": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "next": {
+   "seconds": 0.0,
+   "state": "not_needed"
+  },
+  "noir": {
+   "seconds": 19.397,
+   "state": "ran"
+  },
+  "npm": {
+   "seconds": 9.355,
+   "state": "ran"
+  },
+  "react-router": {
+   "seconds": 16.976,
+   "state": "ran"
+  },
+  "tsc": {
+   "seconds": 15.33,
+   "state": "ran"
+  }
+ }
+}

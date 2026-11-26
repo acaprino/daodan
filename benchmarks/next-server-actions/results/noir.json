@@ -1,0 +1,109 @@
+{
+ "commands": [
+  {
+   "argv": [
+    "noir",
+    "--version"
+   ],
+   "max_rss_kb": 95268,
+   "returncode": 0,
+   "seconds": 0.68,
+   "stderr": "",
+   "stdout": "1.5.0\n",
+   "stdout_bytes": 6,
+   "stdout_sha256": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3"
+  },
+  {
+   "argv": [
+    "noir",
+    "scan",
+    "/work/noir-source",
+    "-f",
+    "json",
+    "--no-log"
+   ],
+   "max_rss_kb": 152284,
+   "returncode": 0,
+   "seconds": 0.66,
+   "stderr": "",
+   "stdout": "{\"endpoints\":[{\"handler\":{\"name\":\"POST\",\"path\":\"/work/noir-source/app/api/pay/route.ts\",\"line\":1},\"callees\":[],\"url\":\"/api/pay\",\"method\":\"POST\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/noir-source/app/api/pay/route.ts\",\"line\":1}],\"technology\":\"js_nextjs\"},\"protocol\":\"http\",\"kind\":\"\",\"tags\":[],\"params\":[]},{\"handler\":{\"name\":\"pay\",\"path\":\"/work/noir-source/app/checkout/actions.ts\",\"line\":3},\"callees\":[],\"url\":\"/pay\",\"method\":\"POST\",\"internal\":false,\"details\":{\"code_paths\":[{\"path\":\"/work/noir-source/app/checkout/actions.ts\",\"line\":3}],\"technology\":\"js_nextjs\"},\"protocol\":\"http\",\"kind\":\"server-action\",\"tags\":[],\"params\":[]}],\"passive_results\":[],\"errors\":[]}\n",
+   "stdout_bytes": 681,
+   "stdout_sha256": "6e22c23d7fc63b59b43916c533297a8e82bbe95fd8398556529a5875ce0c119b"
+  }
+ ],
+ "numbered": {
+  "app/checkout/actions.ts": [
+   "1: \"use server\";",
+   "2: ",
+   "3: export async function pay() {",
+   "4:   console.log(\"pagamento\");",
+   "5: }"
+  ],
+  "app/checkout/page.tsx": [
+   "1: import { pay } from \"./actions\";",
+   "2: ",
+   "3: export default function Checkout() {",
+   "4:   return (",
+   "5:     <form action={pay}>",
+   "6:       <button type=\"submit\">Paga</button>",
+   "7:     </form>",
+   "8:   );",
+   "9: }"
+  ]
+ },
+ "report": {
+  "endpoints": [
+   {
+    "callees": [],
+    "details": {
+     "code_paths": [
+      {
+       "line": 1,
+       "path": "/work/noir-source/app/api/pay/route.ts"
+      }
+     ],
+     "technology": "js_nextjs"
+    },
+    "handler": {
+     "line": 1,
+     "name": "POST",
+     "path": "/work/noir-source/app/api/pay/route.ts"
+    },
+    "internal": false,
+    "kind": "",
+    "method": "POST",
+    "params": [],
+    "protocol": "http",
+    "tags": [],
+    "url": "/api/pay"
+   },
+   {
+    "callees": [],
+    "details": {
+     "code_paths": [
+      {
+       "line": 3,
+       "path": "/work/noir-source/app/checkout/actions.ts"
+      }
+     ],
+     "technology": "js_nextjs"
+    },
+    "handler": {
+     "line": 3,
+     "name": "pay",
+     "path": "/work/noir-source/app/checkout/actions.ts"
+    },
+    "internal": false,
+    "kind": "server-action",
+    "method": "POST",
+    "params": [],
+    "protocol": "http",
+    "tags": [],
+    "url": "/pay"
+   }
+  ],
+  "errors": [],
+  "passive_results": []
+ },
+ "source": "/work/noir-source"
+}

@@ -6,6 +6,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+
+import pytest
 from unittest import mock
 from pathlib import Path
 
@@ -18,7 +20,7 @@ import flows  # noqa: E402
 import snapshot  # noqa: E402
 
 
-def write_snapshot(work: Path, sources: dict) -> Path:
+def read_project(work: Path, sources: dict) -> Path:
     """A snapshot, under `work`, of a project of these files (git-tracked, as the fixtures are)."""
     app = work / "app"
     for rel, text in sources.items():
@@ -147,6 +149,7 @@ class FlowFixtureTests(unittest.TestCase):
                       {(edge["from"], edge["to"]) for edge in ux["edges"] if edge["type"] == "attiva"})
         self.assertEqual(flows.at_level(flow, "fisico", {}), flow)
 
+    @pytest.mark.usefixtures("real_stack")
     def test_the_service_asks_for_rules_records_them_and_answers_at_a_level(self):
         import mcp_service
         project = self.work / "service"
@@ -501,7 +504,13 @@ class TreeReadTests(unittest.TestCase):
                           "export function computed() {\n  post(BASE);\n}\nexport function literal() {\n  post(SAVE);\n}\n"
                           "export function viaShorthand() {\n  fetch(\"/orders\", { method });\n}\n"
                           "export function viaParameter(method: string) {\n  fetch(\"/orders\", { method });\n}\n"
-                          "export function viaDefault() {\n  fetch(\"/orders\");\n}\n"),
+                          "export function viaDefault() {\n  fetch(\"/orders\");\n}\n"
+                          "declare const key: string;\n"
+                          "export function viaQuoted() {\n  fetch(\"/orders\", { 'method': 'POST' });\n}\n"
+                          "export function viaNumeric() {\n  fetch(\"/orders\", { 1: 'x', method: 'POST' });\n}\n"
+                          "export function viaComputed() {\n  fetch(\"/orders\", { ['method']: 'POST' });\n}\n"
+                          "export function viaComputedBeside() {\n  fetch(\"/orders\", { [key]: 'x', method: 'POST' });\n}\n"
+                          "export function viaPrototype() {\n  fetch(\"/orders\", { __proto__: { method: 'POST' } } as any);\n}\n"),
         "web/state.ts": ("declare function useStore(): any;\ndeclare function pick(f: any): any;\n"
                          "declare function shallow(f: any): any;\ndeclare function put(v: any): void;\n"
                          "declare function log(m: string): void;\n"
@@ -535,7 +544,7 @@ class TreeReadTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.work = Path(tempfile.mkdtemp(prefix="flow-tree-")).resolve()
-        cls.manifest = write_snapshot(cls.work, cls.SOURCES)
+        cls.manifest = read_project(cls.work, cls.SOURCES)
         cls.links = flows.link_facts(cls.manifest, flows.validate_rules(cls.RULES))
 
     @classmethod
@@ -576,9 +585,21 @@ class TreeReadTests(unittest.TestCase):
         self.assertEqual(linked, {
             ("web/consts.ts::literal", "api/routes.js::save", ("api", "POST", "/api/save")),
             ("web/consts.ts::viaShorthand", "api/routes.js::create", ("api", "POST", "/orders")),  # `{ method }`: a constant
-            ("web/consts.ts::viaDefault", "api/routes.js::list", ("api", "GET", "/orders"))})  # no options: the default
+            ("web/consts.ts::viaDefault", "api/routes.js::list", ("api", "GET", "/orders")),  # no options: the default
+            ("web/consts.ts::viaQuoted", "api/routes.js::create", ("api", "POST", "/orders")),  # a string key is a key
+            ("web/consts.ts::viaNumeric", "api/routes.js::create", ("api", "POST", "/orders"))})  # a number is no `method`
         gaps = {g["symbol"]: g["reason"] for g in self.links["gaps"] if g["site"].startswith("web/consts.ts")}
         self.assertEqual(gaps["web/consts.ts::viaParameter"], "rotta: route not a literal")  # `{ method }`, a parameter
+
+    def test_a_computed_key_or_a_prototype_makes_the_members_of_the_options_unknown_as_a_spread_does(self):
+        """`{ ['method']: 'POST' }` and `{ __proto__: { method: 'POST' } }` hold a `method` the reader cannot see as a key:
+        reading the default `GET` there would be a false route."""
+        linked = {e["from"] for e in self.links["edges"] if e.get("route") and e["from"].startswith("web/consts.ts")}
+        gaps = {g["symbol"]: g["reason"] for g in self.links["gaps"] if g["site"].startswith("web/consts.ts")}
+        for name in ("viaComputed", "viaComputedBeside", "viaPrototype"):
+            with self.subTest(name):
+                self.assertNotIn(f"web/consts.ts::{name}", linked)
+                self.assertEqual(gaps[f"web/consts.ts::{name}"], "rotta: route not a literal")
 
     def test_the_keys_read_on_a_held_value_are_the_snapshots_not_those_of_a_string_or_a_default(self):
         self.assertEqual({k: v["reads"] for k, v in self.links["stores"].items() if k.startswith("s/")},
@@ -613,7 +634,7 @@ class TreeReadTests(unittest.TestCase):
     def test_a_file_edited_since_the_snapshot_is_a_gap_not_a_link_read_from_the_new_text(self):
         work = Path(tempfile.mkdtemp(prefix="flow-edited-")).resolve()
         self.addCleanup(shutil.rmtree, work, True)
-        manifest = write_snapshot(work, {"web/save.ts": "declare function post(url: string): void;\nexport function save() {\n  post('/api/save');\n}\n"})
+        manifest = read_project(work, {"web/save.ts": "declare function post(url: string): void;\nexport function save() {\n  post('/api/save');\n}\n"})
         rules = flows.validate_rules([rule for rule in self.RULES if rule.get("written") == "post"])
         self.assertEqual(flows.link_facts(manifest, rules)["routes"]["called"], 1)
         (work / "app/web/save.ts").write_text("declare function post(url: string): void;\nexport function save() {\n  post('/api/other');\n}\n",
@@ -727,7 +748,7 @@ class StoreReadTests(unittest.TestCase):
             (work / "app" / rel).parent.mkdir(parents=True, exist_ok=True)
             (work / "app" / rel).write_text(text, encoding="utf-8", newline="\n")
         manifest = work / "manifest.sqlite"
-        snapshot.write_snapshot(work / "app", manifest)
+        snapshot.read_project(work / "app", manifest)
         link = ("web/Home.tsx::Home", "web/Paywall.tsx::Paywall", "web/Home.tsx:3")
 
         def calls():
@@ -767,7 +788,7 @@ class RenderOfAnImportedNameTests(unittest.TestCase):
             (project / rel).parent.mkdir(parents=True, exist_ok=True)
             (project / rel).write_text(text, encoding="utf-8")
         manifest = work / "out" / "manifest.sqlite"
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         return {(e["from"], e["to"]) for e in flows.link_facts(manifest, [])["edges"] if e["type"] == "chiama"}
 
     def test_a_component_a_package_exports_is_not_rendered_as_the_project_s_of_that_name(self):
@@ -797,7 +818,7 @@ class ExternalServiceTests(unittest.TestCase):
             (project / rel).parent.mkdir(parents=True, exist_ok=True)
             (project / rel).write_text(text, encoding="utf-8")
         manifest = self.work / "out" / "manifest.sqlite"
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         return manifest
 
     @staticmethod

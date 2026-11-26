@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["src", "test", "vite.config.ts"]
+  "include": ["src", "app", "start", "pipeline", "test", "vite.config.ts"]
 }

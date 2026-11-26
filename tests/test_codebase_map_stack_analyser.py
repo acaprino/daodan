@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import http.client
 import io
 import json
+import shutil
 import sys
 import tarfile
 from pathlib import Path
@@ -50,8 +52,8 @@ def test_the_fork_is_started_outside_the_project_without_the_caller_s_node_varia
     [call] = fake_stack_analyser.calls(program)
     assert Path(call["argv"][0]) == cli and cli.is_absolute() and program.is_absolute()
     assert call["argv"][1] == str(project.resolve())
-    assert "--skip-dirs" in call["argv"] and call["argv"][call["argv"].index("--skip-dirs") + 1] == ""
-    assert call["argv"][call["argv"].index("--ignore") + 1] == "gen"
+    assert not {"--skip-dirs", "--ignore"} & set(call["argv"])
+    assert json.loads((program.parent / "perimeter.json").read_bytes()) == {"skipDirs": [], "ignore": ["gen"]}
     assert not Path(call["cwd"]).resolve().is_relative_to(project.resolve())
     assert "NODE_OPTIONS" not in call["env"] and "NODE_PATH" not in call["env"]
     assert "NODE_COMPILE_CACHE" in call["env"]  # Daodan's own caches are added after the caller's are dropped
@@ -75,7 +77,52 @@ def test_without_declarations_the_option_is_not_passed(started):
     stack_analyser.run(project)
     [call] = fake_stack_analyser.calls(program)
     assert not {"--declarations", "--skip-dirs", "--ignore"} & set(call["argv"])
-    assert call["argv"][2:] == ["--output", call["argv"][3]] and not (program.parent / "declarations.json").exists()
+    assert call["argv"][2:4] == ["--output", call["argv"][3]] and not (program.parent / "declarations.json").exists()
+    assert json.loads((program.parent / "perimeter.json").read_bytes()) == {"skipDirs": [], "ignore": []}
+
+
+def test_the_perimeter_reaches_the_fork_in_a_file(started):
+    project, program, _cli = started
+    ignore = tuple(f"packages/service-{number}/generated/file-{number}.ts" for number in range(10000))
+    stack_analyser.run(project, declarations=[DECLARATION], skip_dirs=("node_modules", "dist"), ignore=ignore)
+    [call] = fake_stack_analyser.calls(program)
+    assert max(len(argument) for argument in call["argv"]) < 300
+    path = Path(call["argv"][call["argv"].index("--perimeter") + 1])
+    assert not path.resolve().is_relative_to(project.resolve())
+    assert json.loads((program.parent / "perimeter.json").read_bytes()) == {"skipDirs": ["node_modules", "dist"],
+                                                                         "ignore": list(ignore)}
+
+
+def test_the_catalogue_is_what_the_fork_writes(started):
+    _project, program, cli = started
+    assert stack_analyser.catalogue() == fake_stack_analyser.CATALOGUE
+    [call] = fake_stack_analyser.calls(program)
+    assert Path(call["argv"][0]) == cli and call["argv"][1] == "--catalogue" and len(call["argv"]) == 3
+    assert not {"--output", "--perimeter"} & set(call["argv"])
+
+
+def test_a_cache_folder_that_cannot_be_used_is_a_gap(started, monkeypatch):
+    project, program, _cli = started
+
+    def unusable():
+        raise OSError(13, "Permission denied")
+
+    monkeypatch.setattr(engine_tools, "node_environment", unusable)
+    for call in (lambda: stack_analyser.run(project), stack_analyser.catalogue):
+        with pytest.raises(container.Gap) as gap:
+            call()
+        assert "Permission denied" in gap.value.cause and gap.value.remedy
+    assert fake_stack_analyser.calls(program) == []
+
+    def unusable_engines(_name):
+        raise ValueError("DAODAN_SHARED_DIR must be an absolute path")
+
+    monkeypatch.undo()  # the fixture's stand-ins go: `cli` is the real one
+    monkeypatch.setattr(engine_tools, "shared_engine_dir", unusable_engines)
+    stack_analyser.cli.cache_clear()
+    with pytest.raises(container.Gap) as gap:
+        stack_analyser.cli()
+    assert "must be an absolute path" in gap.value.cause and gap.value.remedy
 
 
 def test_declarations_that_are_not_valid_unicode_are_a_gap_and_nothing_starts(started):
@@ -164,6 +211,64 @@ def test_a_release_with_another_sha256_is_not_installed(tmp_path, monkeypatch, i
     assert not any(tmp_path.joinpath("stack-analyser").iterdir())  # not even a partial install
 
 
+def test_an_install_that_failed_is_not_tried_again_in_the_same_process(tmp_path, monkeypatch, installed_under):
+    attempts = []
+
+    def refuse(*_args, **_kwargs):
+        attempts.append(1)
+        raise OSError("no route to host")
+
+    monkeypatch.setattr(engine_tools, "publish", refuse)
+    with pytest.raises(container.Gap) as first:
+        stack_analyser.cli()
+    with pytest.raises(container.Gap) as second:
+        stack_analyser.cli()
+    assert second.value is first.value and "no route to host" in first.value.cause and len(attempts) == 1
+    assert "restart Daodan" in first.value.remedy  # one process stays up: analyzing again returns this same gap
+
+    def unavailable(_project):
+        attempts.append(2)
+        raise runtime.Unavailable("no room", "free 1 GB")
+
+    monkeypatch.setattr(runtime, "node", unavailable)
+    for _ in range(2):
+        with pytest.raises(container.Gap) as node_gap:
+            stack_analyser.node(tmp_path)
+    assert node_gap.value.cause == "no room" and attempts == [1, 2]
+
+
+def test_a_remembered_failure_does_not_grow_its_traceback(tmp_path, monkeypatch, installed_under):
+    def refuse(*_args, **_kwargs):
+        raise OSError("no route to host")
+
+    monkeypatch.setattr(engine_tools, "publish", refuse)
+    lengths = []
+    for _ in range(4):
+        with pytest.raises(container.Gap) as gap:
+            stack_analyser.cli()
+        depth, trace = 0, gap.value.__traceback__
+        while trace:
+            depth, trace = depth + 1, trace.tb_next
+        lengths.append(depth)
+    assert len(set(lengths[1:])) == 1 and lengths[-1] <= lengths[1], lengths
+
+
+def test_a_download_cut_off_is_tried_again(tmp_path, monkeypatch, installed_under):
+    url, digest = _release(tmp_path)
+    monkeypatch.setattr(stack_analyser, "URL", url)
+    monkeypatch.setattr(stack_analyser, "SHA256", digest)
+    opened, open_url = [], engine_tools.open_url
+
+    def cut_off_once(*args, **kwargs):
+        opened.append(1)
+        if len(opened) == 1:
+            raise http.client.IncompleteRead(b"")
+        return open_url(*args, **kwargs)
+
+    monkeypatch.setattr(engine_tools, "open_url", cut_off_once)
+    assert stack_analyser.cli().is_file() and len(opened) == 2
+
+
 def test_the_release_is_installed_once_and_found_again(tmp_path, monkeypatch, installed_under):
     url, digest = _release(tmp_path)
     monkeypatch.setattr(stack_analyser, "URL", url)
@@ -208,6 +313,34 @@ def test_node_is_the_executable_of_daodan_s_own_node(tmp_path, monkeypatch):
     assert seen == [tmp_path]
 
 
+def test_a_shared_folder_that_is_not_absolute_is_a_node_gap(tmp_path, monkeypatch):
+    monkeypatch.setenv("DAODAN_SHARED_DIR", "relative/folder")
+    with pytest.raises(container.Gap) as gap:
+        stack_analyser.node(tmp_path)
+    assert "absolute path" in gap.value.cause and gap.value.remedy
+
+
+def test_a_cut_off_node_download_is_unavailable():
+    with pytest.raises(runtime.Unavailable) as error:
+        with runtime.fetching("Node", "nodejs.org"):
+            raise http.client.IncompleteRead(b"")
+    assert "could not be downloaded" in error.value.reason and "nodejs.org" in error.value.install
+
+
+def test_a_temporary_folder_that_cannot_be_made_is_a_gap(started, monkeypatch):
+    project, program, _cli = started
+
+    def full(*_args, **_kwargs):
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(stack_analyser.tempfile, "TemporaryDirectory", full)
+    for call in (lambda: stack_analyser.run(project), stack_analyser.catalogue):
+        with pytest.raises(container.Gap) as gap:
+            call()
+        assert "No space left" in gap.value.cause and gap.value.remedy
+    assert fake_stack_analyser.calls(program) == []
+
+
 def test_a_node_that_cannot_be_installed_is_a_gap(tmp_path, monkeypatch):
     def unavailable(_project):
         raise runtime.Unavailable("no room", "free 1 GB")
@@ -215,4 +348,44 @@ def test_a_node_that_cannot_be_installed_is_a_gap(tmp_path, monkeypatch):
     monkeypatch.setattr(runtime, "node", unavailable)
     with pytest.raises(container.Gap) as gap:
         stack_analyser.node(tmp_path)
-    assert (gap.value.cause, gap.value.remedy) == ("no room", "free 1 GB")
+    assert gap.value.cause == "no room" and gap.value.remedy.startswith("free 1 GB; ")
+    assert "restart Daodan" in gap.value.remedy
+
+
+def test_a_first_install_writes_nothing_on_stdout(tmp_path, monkeypatch, installed_under, capfd):
+    """The stdio MCP server and `snapshot.py hook` reach `run` (`technologies.ensure`): their stdout is a protocol
+    stream, so the release's and Node's lines of a first install go to stderr."""
+    url, digest = _release(tmp_path)
+    monkeypatch.setattr(stack_analyser, "URL", url)
+    monkeypatch.setattr(stack_analyser, "SHA256", digest)
+    program = fake_stack_analyser.install(tmp_path / "tool")
+
+    def first_node(_project):  # what `runtime.Tool._install` prints on a first use
+        print("installing node (first use)", flush=True)
+        return program.parent
+
+    monkeypatch.setattr(runtime, "node", first_node)
+    project = tmp_path / "project"
+    project.mkdir()
+    stack_analyser.run(project)
+    stack_analyser.cli.cache_clear()
+    for item in installed_under.parent.iterdir():  # another machine: the release is installed again
+        shutil.rmtree(item)
+    stack_analyser.catalogue()
+    out, err = capfd.readouterr()
+    assert out == "" and err.count("installing stack-analyser") == 2 and err.count("installing node") == 2
+
+
+def test_node_is_not_installed_when_the_release_cannot_be_had(started, monkeypatch):
+    project, _program, _cli = started
+    asked = []
+    monkeypatch.setattr(stack_analyser, "node", lambda project: asked.append(project))
+
+    def absent():
+        raise container.Gap("no release", "connect")
+
+    monkeypatch.setattr(stack_analyser, "cli", absent)
+    for call in (lambda: stack_analyser.run(project), stack_analyser.catalogue):
+        with pytest.raises(container.Gap):
+            call()
+    assert asked == []

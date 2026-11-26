@@ -1,0 +1,9 @@
+node v24.22.3
+astro 7.4.13 | @astrojs/compiler-rs 0.5.3 | entry node_modules/@astrojs/compiler-rs/dist/index.mjs
+exports of the package: {".":{"types":"./dist/index.d.mts","default":"./dist/index.mjs"},"./async":{"types":"./dist/async.d.mts","default":"./dist/async.mjs"},"./utils":{"types":"./dist/utils.d.mts","default":"./dist/utils.mjs"},"./package.json":"./package.json"}
+dependencies: {"@astrojs/compiler-binding":"0.5.3"} optional: []
+exported by the module: convertToTSX, parse, preprocessStyles, transform
+--- README lines that mention position, span, incomplete, incorrect, parse or AST
+--- type declarations: async.d.ts, dist/async.d.mts, dist/index.d.mts, dist/shared.d.mts, dist/types.d.mts, dist/utils.d.mts, types.d.ts
+
+--- exit 0

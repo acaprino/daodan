@@ -3,7 +3,7 @@
 Scritta da `catalog.py` con [cases.json](cases.json) e i `fixtures/*/expected.json`: non si modifica a mano.
 Si rigenera con `python catalog.py`.
 
-180 progetti, 64 casi in 7 gruppi.
+185 progetti, 64 casi in 7 gruppi.
 
 ## Dominio dei casi
 
@@ -15,66 +15,66 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 | Struttura | `workspace-glob` | I membri del workspace vengono da un glob o dalla scoperta dei file, con esclusioni o ricorsione, non da un elenco. | 10 | letto |  |
 | Struttura | `virtual-root` | La radice del workspace non è un'unità o non ha un file di build proprio. | 5 | letto |  |
 | Struttura | `nested-module` | Un modulo con il suo manifesto sta dentro la cartella di un altro, e il comando del genitore non lo vede. | 10 | letto | chi: moduli Go annidati in _examples/* che ./... salta |
-| Struttura | `independent-units` | Più unità nella stessa cartella, senza un workspace che le unisca. | 10 | letto |  |
+| Struttura | `independent-units` | Più unità nella stessa cartella, senza un workspace che le unisca. | 11 | letto |  |
 | Struttura | `shared-root` | Due sistemi di build o due ecosistemi nella stessa cartella. | 10 | dai dati |  |
-| Struttura | `one-unit-many-parts` | Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point. | 2 | letto | tududi: frontend e backend si installano da un solo package.json radice |
+| Struttura | `one-unit-many-parts` | Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point. | 6 | letto | tududi: frontend e backend si installano da un solo package.json radice |
 | Struttura | `targets-as-units` | Le unità sono target dichiarati in un file di build (CMake, Meson, Make, Bazel, sbt, angular.json, Xcode), non pacchetti con un manifesto ciascuno. | 15 | letto |  |
-| Struttura | `no-build-file` | Codice senza file di build, oppure nessun codice. | 14 | dai dati |  |
-| Struttura | `unit-no-name` | Un'unità senza nome dichiarato, nominata per radice. | 26 | dai dati |  |
+| Struttura | `no-build-file` | Codice senza file di build, oppure nessun codice. | 15 | dai dati |  |
+| Struttura | `unit-no-name` | Un'unità senza nome dichiarato, nominata per radice. | 29 | dai dati |  |
 | Struttura | `shared-name` | Due unità con lo stesso nome. | 6 | dai dati |  |
-| Struttura | `name-mismatch` | Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto. | 15 | letto |  |
+| Struttura | `name-mismatch` | Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto. | 18 | letto |  |
 | Struttura | `custom-source-roots` | Le radici dei sorgenti non sono quelle di default e si leggono dalla configurazione del build. | 11 | letto |  |
 | Struttura | `source-sets` | Più source set o target in un'unità, con dipendenze e task di compilazione propri. | 5 | letto | Kotlin: più task di compilazione, overload referenziati fra loro |
-| Struttura | `path-alias` | Import risolti da alias di percorso (paths di tsconfig, alias del bundler, import map), non da pacchetti. | 10 | letto | app React: alias @/ in tsconfig.app.json sopra un tsconfig base |
+| Struttura | `path-alias` | Import risolti da alias di percorso (paths di tsconfig, alias del bundler, import map), non da pacchetti. | 12 | letto | app React: alias @/ in tsconfig.app.json sopra un tsconfig base |
 | Struttura | `file-in-several-units` | Lo stesso file sorgente è compilato in più unità o target. | 7 | letto | workspace Rust: un modulo di test condiviso fra più crate di test |
-| Struttura | `inherited-settings` | Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore. | 9 | letto |  |
+| Struttura | `inherited-settings` | Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore. | 10 | letto |  |
 | Struttura | `build-variants` | Unità, file o dipendenze cambiano con un'opzione di build: tag, feature, profilo, preset, flavor, piattaforma. | 15 | letto |  |
-| Versioni | `version-disagree` | La stessa toolchain è chiesta in più file con valori diversi. | 18 | letto |  |
-| Versioni | `version-in-wrapper` | La versione del build tool è scritta solo nel wrapper. | 7 | letto |  |
+| Versioni | `version-disagree` | La stessa toolchain è chiesta in più file con valori diversi. | 20 | letto |  |
+| Versioni | `version-in-wrapper` | La versione del build tool è scritta solo nel wrapper. | 8 | letto |  |
 | Versioni | `version-matrix` | Più versioni da una matrice CI o di ambienti di test, una voce per versione. | 7 | letto |  |
-| Versioni | `version-range` | La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file. | 11 | letto |  |
-| Versioni | `version-absent` | Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna. | 36 | letto |  |
-| Versioni | `version-in-image` | La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI. | 12 | letto |  |
+| Versioni | `version-range` | La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file. | 13 | letto |  |
+| Versioni | `version-absent` | Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna. | 39 | letto |  |
+| Versioni | `version-in-image` | La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI. | 14 | letto |  |
 | Versioni | `toolchain-in-dependencies` | L'interprete o l'SDK compare fra le dipendenze (python, php, sdk: flutter), ma è una toolchain. | 6 | letto |  |
 | Versioni | `platform-sdk` | L'unità chiede un SDK di piattaforma (Android, Xcode, MAUI, Flutter) che non è un pacchetto. | 5 | letto | Android Gradle: serve l'SDK di Android e chiama cargo |
-| Dipendenze | `no-lockfile` | Nessun lockfile, quindi le versioni risolte restano vuote. | 72 | letto |  |
-| Dipendenze | `locked-versions` | Le versioni risolte si leggono da un lockfile. | 33 | letto | progetto Python con le versioni in uv.lock |
-| Dipendenze | `transitive-not-direct` | Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette. | 8 | letto |  |
-| Dipendenze | `version-from-bom` | Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto. | 11 | letto |  |
-| Dipendenze | `version-indirect` | La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza. | 13 | letto |  |
-| Dipendenze | `internal-link` | Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on. | 18 | letto |  |
+| Dipendenze | `no-lockfile` | Nessun lockfile, quindi le versioni risolte restano vuote. | 75 | letto |  |
+| Dipendenze | `locked-versions` | Le versioni risolte si leggono da un lockfile. | 37 | letto | progetto Python con le versioni in uv.lock |
+| Dipendenze | `transitive-not-direct` | Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette. | 12 | letto |  |
+| Dipendenze | `version-from-bom` | Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto. | 12 | letto |  |
+| Dipendenze | `version-indirect` | La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza. | 14 | letto |  |
+| Dipendenze | `internal-link` | Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on. | 19 | letto |  |
 | Dipendenze | `git-dependency` | Dipendenza presa da un URL git, un tarball o un sottomodulo, non dal registro. | 6 | letto |  |
 | Dipendenze | `computed-dependencies` | Le dipendenze nascono da codice del progetto (cicli, condizioni, funzioni): leggere le righe non basta a trovarle tutte. | 4 | letto |  |
 | Dipendenze | `declared-in-source` | Dipendenze dichiarate dentro un file sorgente: PEP 723, %pip, import map in HTML, #Requires. | 3 | letto |  |
-| Dipendenze | `undeclared-imports` | Pacchetti importati dal codice e dichiarati da nessun file. | 4 | letto |  |
-| Dipendenze | `scope-from-groups` | Lo scope si legge da gruppi, extra o configurazioni del build tool. | 11 | letto |  |
+| Dipendenze | `undeclared-imports` | Pacchetti importati dal codice e dichiarati da nessun file. | 5 | letto |  |
+| Dipendenze | `scope-from-groups` | Lo scope si legge da gruppi, extra o configurazioni del build tool. | 12 | letto |  |
 | Dipendenze | `build-only-dependency` | Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires. | 43 | dai dati |  |
 | Dipendenze | `two-package-managers` | Due gestori di pacchetti dichiarano le dipendenze della stessa unità. | 2 | letto |  |
 | Dipendenze | `included-requirement-files` | Liste divise su file inclusi (-r) o su vincoli (-c) che non aggiungono dipendenze. | 3 | letto |  |
-| Linguaggi e file | `ambiguous-extension` | L'estensione non dice il linguaggio: lo dice il contenuto. | 17 | letto |  |
+| Linguaggi e file | `ambiguous-extension` | L'estensione non dice il linguaggio: lo dice il contenuto. | 19 | letto |  |
 | Linguaggi e file | `shebang-only` | File senza estensione, riconoscibile solo dalla riga #!. | 5 | letto |  |
-| Linguaggi e file | `generated-file` | File generato da escludere. | 16 | dai dati |  |
+| Linguaggi e file | `generated-file` | File generato da escludere. | 18 | dai dati |  |
 | Linguaggi e file | `false-generated` | File che sembra generato ma è sorgente del progetto. | 5 | letto |  |
-| Linguaggi e file | `vendored-code` | Codice di terzi copiato nel repository. | 16 | dai dati |  |
-| Linguaggi e file | `documentation-tree` | Albero di documentazione da escludere. | 17 | dai dati |  |
-| Linguaggi e file | `binary-file` | File binari da escludere. | 16 | dai dati |  |
+| Linguaggi e file | `vendored-code` | Codice di terzi copiato nel repository. | 18 | dai dati |  |
+| Linguaggi e file | `documentation-tree` | Albero di documentazione da escludere. | 22 | dai dati |  |
+| Linguaggi e file | `binary-file` | File binari da escludere. | 21 | dai dati |  |
 | Linguaggi e file | `committed-ignored` | File committato anche se .gitignore lo esclude. | 2 | letto |  |
 | Linguaggi e file | `symlinks` | Link simbolici nel repository. | 2 | letto |  |
 | Linguaggi e file | `templated-config` | Configurazione che un parser rigido non legge: JSON con commenti, YAML con template, ERB. | 4 | letto |  |
-| Linguaggi e file | `dot-folder-facts` | Fatti che stanno solo in cartelle che iniziano con un punto (.github, .devcontainer, .mvn, .config). | 10 | letto |  |
-| Esecuzione | `needs-build` | Il modello completo esiste solo eseguendo la build, quindi in un container. | 24 | dai dati |  |
+| Linguaggi e file | `dot-folder-facts` | Fatti che stanno solo in cartelle che iniziano con un punto (.github, .devcontainer, .mvn, .config). | 12 | letto |  |
+| Esecuzione | `needs-build` | Il modello completo esiste solo eseguendo la build, quindi in un container. | 25 | dai dati |  |
 | Esecuzione | `install-scripts` | Installare le dipendenze esegue codice del progetto. | 2 | letto |  |
-| Esecuzione | `build-generates-code` | Parte del codice o della configurazione esiste solo dopo un passo di build. | 15 | letto |  |
+| Esecuzione | `build-generates-code` | Parte del codice o della configurazione esiste solo dopo un passo di build. | 17 | letto |  |
 | Esecuzione | `submodule-absent` | Un sottomodulo Git dichiarato ma assente. | 2 | dai dati | sottomoduli Git assenti da un archivio |
-| Esecuzione | `missing-file` | Un file nominato dalla configurazione non è nel repository. | 14 | letto |  |
-| Servizi e framework | `service-in-infra` | Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze. | 35 | letto |  |
-| Servizi e framework | `service-from-config` | Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente. | 40 | letto |  |
-| Servizi e framework | `saas-service` | Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione. | 44 | letto |  |
-| Servizi e framework | `framework-from-files` | Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata. | 18 | letto |  |
-| Servizi e framework | `framework-through-plugin` | Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome. | 10 | letto |  |
-| Servizi e framework | `framework-per-unit` | Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara. | 29 | letto |  |
-| Servizi e framework | `test-only-framework` | Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara. | 34 | letto |  |
-| Collegamenti | `undeclared-connections` | Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections. | 13 | dai dati |  |
+| Esecuzione | `missing-file` | Un file nominato dalla configurazione non è nel repository. | 16 | letto |  |
+| Servizi e framework | `service-in-infra` | Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze. | 36 | letto |  |
+| Servizi e framework | `service-from-config` | Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente. | 44 | letto |  |
+| Servizi e framework | `saas-service` | Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione. | 49 | letto |  |
+| Servizi e framework | `framework-from-files` | Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata. | 22 | letto |  |
+| Servizi e framework | `framework-through-plugin` | Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome. | 11 | letto |  |
+| Servizi e framework | `framework-per-unit` | Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara. | 31 | letto |  |
+| Servizi e framework | `test-only-framework` | Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara. | 36 | letto |  |
+| Collegamenti | `undeclared-connections` | Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections. | 15 | dai dati |  |
 | Collegamenti | `shared-contract` | Un file di contratto (proto, OpenAPI, GraphQL) unisce unità diverse. | 7 | letto |  |
 
 ## Progetti
@@ -2349,7 +2349,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `locked-versions`: Le versioni risolte si leggono da un lockfile.
   - `internal-link`: Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on.
 
-### real (50 progetti)
+### real (55 progetti)
 
 #### real-app-full-stack-fastapi
 
@@ -2519,6 +2519,140 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
   - `undeclared-connections`: Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections.
   - `shared-contract`: Un file di contratto (proto, OpenAPI, GraphQL) unisce unità diverse.
+
+#### real-auth0-go
+
+- Origine: [github.com/auth0-samples/auth0-golang-web-app](https://github.com/auth0-samples/auth0-golang-web-app) al commit `c497850bb91f05f452572aac022945ba9d5ab857`, licenza MIT.
+- Linguaggi: CSS, Dockerfile, Go, HTML, JavaScript, PowerShell, Shell.
+- Unità: go-module (2), npm-package.
+- Workspace: nessuno.
+- File delle dipendenze: 01-Login-Quickstart/go.mod, 01-Login/go.mod, tests/package.json.
+- Versioni dichiarate:
+  - go: 1.19 (`01-Login/go.mod`); 1.19.3 (`01-Login/Dockerfile`); 1.25.0 (`01-Login-Quickstart/go.mod`); 1.25 (`01-Login-Quickstart/Dockerfile`)
+  - node: 20 (`.github/workflows/ci.yml`)
+- Framework: Bootstrap, Font Awesome, Gin, jQuery, Playwright.
+- Servizi: Auth0.
+- Casi:
+  - `independent-units`: Più unità nella stessa cartella, senza un workspace che le unisca.
+  - `name-mismatch`: Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto.
+  - `version-disagree`: La stessa toolchain è chiesta in più file con valori diversi.
+  - `version-range`: La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file.
+  - `version-in-image`: La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+  - `locked-versions`: Le versioni risolte si leggono da un lockfile.
+  - `transitive-not-direct`: Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette.
+  - `vendored-code`: Codice di terzi copiato nel repository.
+  - `documentation-tree`: Albero di documentazione da escludere.
+  - `binary-file`: File binari da escludere.
+  - `dot-folder-facts`: Fatti che stanno solo in cartelle che iniziano con un punto (.github, .devcontainer, .mvn, .config).
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+  - `undeclared-connections`: Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections.
+
+#### real-bank-of-anthos
+
+- Origine: [github.com/GoogleCloudPlatform/bank-of-anthos](https://github.com/GoogleCloudPlatform/bank-of-anthos) al commit `db35fea9fd090150e2398106aadb475576f80d94`, licenza Apache-2.0.
+- Linguaggi: CSS, Dockerfile, HCL, HTML, Java, JavaScript, Makefile, Python, Shell, SQL.
+- Unità: maven-module (5), python-project (4), source-tree (4), terraform-module (3).
+- Workspace: maven.
+- File delle dipendenze: iac/tf-anthos-gke/acm.tf, iac/tf-anthos-gke/asm.tf, iac/tf-anthos-gke/boa.tf, iac/tf-anthos-gke/gke.tf, iac/tf-anthos-gke/main.tf, iac/tf-anthos-gke/providers.tf, src/frontend/pyproject.toml, src/loadgenerator/pyproject.toml.
+- Versioni dichiarate:
+  - cypress: 13.17.0 (`.github/workflows/ui-tests/Dockerfile`); 5.0.0 (`Makefile`)
+  - go: 1.16 (`.github/cloudbuild/ci-pr.yaml`)
+  - java: 17 (`src/ledger/ledgerwriter/pom.xml#properties.java.version`); 17 (`src/ledger/balancereader/pom.xml#properties.java.version`); 17 (`src/ledger/transactionhistory/pom.xml#properties.java.version`); 17 (`src/ledgermonolith/pom.xml#properties.java.version`); 17.0.4.1_1 (`src/ledger/ledgerwriter/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image`); 17.0.4.1_1 (`src/ledger/balancereader/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image`); 17.0.4.1_1 (`src/ledger/transactionhistory/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image`); 17.0.4.1_1 (`src/ledgermonolith/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image`); 17.0.1 (`src/ledgermonolith/init/install-script.sh`); 17 (`.github/workflows/make-release.yaml#jobs.build-and-release.steps.java-version`)
+  - maven: 3.9.16 (`.mvn/wrapper/maven-wrapper.properties`)
+  - python: >=3.14 (`src/frontend/pyproject.toml#project.requires-python`); 3.14 (`src/frontend/.python-version`); 3.14.7 (`src/frontend/Dockerfile`); >=3.14 (`src/accounts/userservice/pyproject.toml#project.requires-python`); 3.14 (`src/accounts/userservice/.python-version`); 3.14.7 (`src/accounts/userservice/Dockerfile`); >=3.14 (`src/accounts/contacts/pyproject.toml#project.requires-python`); 3.14 (`src/accounts/contacts/.python-version`); 3.14.7 (`src/accounts/contacts/Dockerfile`); >=3.14 (`src/loadgenerator/pyproject.toml#project.requires-python`); 3.14 (`src/loadgenerator/.python-version`); 3.14.7 (`src/loadgenerator/Dockerfile`); 3.13 (`extras/postgres-hpa/kubernetes-manifests/pgpool-operator.yaml`)
+  - skaffold: v2.22.0 (`.github/workflows/make-release.yaml`); v2.22.0 (`.github/cloudbuild/ci-pr.yaml`); v2.22.0 (`src/frontend/cloudbuild.yaml`); v2.22.0 (`src/accounts/cloudbuild.yaml`); v2.22.0 (`src/ledger/cloudbuild.yaml`)
+  - terraform: >= 0.14 (`iac/tf-anthos-gke/providers.tf#terraform.required_version`)
+  - uv: latest (`src/frontend/Dockerfile`); latest (`src/accounts/userservice/Dockerfile`); latest (`src/accounts/contacts/Dockerfile`); latest (`src/loadgenerator/Dockerfile`)
+- Framework: Bootstrap, Cypress, Flask, Hibernate, Jinja, jQuery, JUnit Jupiter, Kopf, Locust, Mockito, pytest, Spring Boot, Spring Cloud GCP, Spring Data JPA, Spring MVC, SQLAlchemy.
+- Servizi: Anthos Config Management, Anthos Service Mesh, Apigee, Artifact Registry, Cloud Build, Cloud Deploy, Cloud Monitoring, Cloud SQL, Cloud SQL Auth Proxy, Cloud Storage, Cloud Trace, Compute Engine, Compute Engine metadata server, GKE Hub, Google Kubernetes Engine, Istio, Kubernetes, Pgpool-II, PostgreSQL, Prometheus.
+- Casi:
+  - `one-unit-many-parts`: Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point.
+  - `no-build-file`: Codice senza file di build, oppure nessun codice.
+  - `unit-no-name`: Un'unità senza nome dichiarato, nominata per radice.
+  - `name-mismatch`: Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto.
+  - `inherited-settings`: Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore.
+  - `version-disagree`: La stessa toolchain è chiesta in più file con valori diversi.
+  - `version-in-wrapper`: La versione del build tool è scritta solo nel wrapper.
+  - `version-range`: La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file.
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `version-in-image`: La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+  - `locked-versions`: Le versioni risolte si leggono da un lockfile.
+  - `transitive-not-direct`: Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
+  - `version-indirect`: La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza.
+  - `internal-link`: Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on.
+  - `undeclared-imports`: Pacchetti importati dal codice e dichiarati da nessun file.
+  - `scope-from-groups`: Lo scope si legge da gruppi, extra o configurazioni del build tool.
+  - `generated-file`: File generato da escludere.
+  - `vendored-code`: Codice di terzi copiato nel repository.
+  - `documentation-tree`: Albero di documentazione da escludere.
+  - `binary-file`: File binari da escludere.
+  - `dot-folder-facts`: Fatti che stanno solo in cartelle che iniziano con un punto (.github, .devcontainer, .mvn, .config).
+  - `needs-build`: Il modello completo esiste solo eseguendo la build, quindi in un container.
+  - `missing-file`: Un file nominato dalla configurazione non è nel repository.
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+  - `undeclared-connections`: Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections.
+
+#### real-microblog
+
+- Origine: [github.com/miguelgrinberg/microblog](https://github.com/miguelgrinberg/microblog) al commit `a975ef64864354867c88e0ed3a17ba7d17dca752`, licenza MIT.
+- Linguaggi: Dockerfile, HTML, Mako, Python, Ruby, Shell.
+- Unità: python-project.
+- Workspace: nessuno.
+- File delle dipendenze: requirements.txt.
+- Versioni dichiarate: nessuna.
+- Framework: Alembic, Bootstrap, Flask, RQ, SQLAlchemy.
+- Servizi: Elasticsearch, Gravatar, jsDelivr, Microsoft Translator, MySQL, nginx, PostgreSQL, Redis, SMTP, SQLite.
+- Casi:
+  - `one-unit-many-parts`: Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point.
+  - `unit-no-name`: Un'unità senza nome dichiarato, nominata per radice.
+  - `name-mismatch`: Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto.
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+  - `transitive-not-direct`: Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette.
+  - `ambiguous-extension`: L'estensione non dice il linguaggio: lo dice il contenuto.
+  - `documentation-tree`: Albero di documentazione da escludere.
+  - `binary-file`: File binari da escludere.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+
+#### real-next-subscriptions
+
+- Origine: [github.com/vercel/nextjs-subscription-payments](https://github.com/vercel/nextjs-subscription-payments) al commit `bdd0813206e47e6b218d42f15a7976c8a0d3c3eb`, licenza MIT.
+- Linguaggi: CSS, JavaScript, PLpgSQL, TSX, TypeScript.
+- Unità: npm-package.
+- Workspace: nessuno.
+- File delle dipendenze: package.json.
+- Versioni dichiarate: nessuna.
+- Framework: Next.js, React, Tailwind CSS.
+- Servizi: GitHub OAuth, Inbucket, PostgreSQL, Stripe, Supabase, Vercel.
+- Casi:
+  - `one-unit-many-parts`: Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point.
+  - `unit-no-name`: Un'unità senza nome dichiarato, nominata per radice.
+  - `path-alias`: Import risolti da alias di percorso (paths di tsconfig, alias del bundler, import map), non da pacchetti.
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `locked-versions`: Le versioni risolte si leggono da un lockfile.
+  - `transitive-not-direct`: Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette.
+  - `ambiguous-extension`: L'estensione non dice il linguaggio: lo dice il contenuto.
+  - `generated-file`: File generato da escludere.
+  - `documentation-tree`: Albero di documentazione da escludere.
+  - `binary-file`: File binari da escludere.
+  - `build-generates-code`: Parte del codice o della configurazione esiste solo dopo un passo di build.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
 
 #### real-stack-actual
 
@@ -3352,6 +3486,29 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
   - `undeclared-connections`: Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections.
 
+#### real-sveltekit-realworld
+
+- Origine: [github.com/sveltejs/realworld](https://github.com/sveltejs/realworld) al commit `df796708040f5200ec572b28ab7f88ecee5794dd`, licenza MIT.
+- Linguaggi: CSS, HTML, JavaScript, Svelte.
+- Unità: npm-package.
+- Workspace: nessuno.
+- File delle dipendenze: package.json.
+- Versioni dichiarate:
+  - node: 20 (`.nvmrc`)
+  - pnpm: 10.20.0 (`package.json#packageManager`)
+- Framework: Ionicons, marked, Prettier, sanitize-html, Svelte, SvelteKit, Vite.
+- Servizi: Google Fonts, RealWorld API, Vercel.
+- Casi:
+  - `one-unit-many-parts`: Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point.
+  - `path-alias`: Import risolti da alias di percorso (paths di tsconfig, alias del bundler, import map), non da pacchetti.
+  - `locked-versions`: Le versioni risolte si leggono da un lockfile.
+  - `documentation-tree`: Albero di documentazione da escludere.
+  - `binary-file`: File binari da escludere.
+  - `build-generates-code`: Parte del codice o della configurazione esiste solo dopo un passo di build.
+  - `missing-file`: Un file nominato dalla configurazione non è nel repository.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+
 ## Copertura
 
 ### Progetti per caso
@@ -3359,66 +3516,66 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - `workspace-glob` (10): js-lerna, js-npm-workspaces, js-nx, js-pnpm-workspace, js-turborepo, js-yarn-berry, mix-elixir-umbrella, real-app-full-stack-fastapi, real-app-hoppscotch, sys-rust-workspace
 - `virtual-root` (5): jvm-gradle-kts-catalog-composite, py-uv-workspace, real-app-kotlinconf, sys-go-workspace, sys-rust-workspace
 - `nested-module` (10): jvm-gradle-kts-catalog-composite, mix-poly-firebase, mix-real-chi, mix-real-semver, mix-real-tinyxml2, mix-real-zlib, real-app-hoppscotch, sys-go-nested, sys-rust-tauri, sys-rust-workspace
-- `independent-units` (10): js-local-and-git-deps, mix-dart-flutter, mix-poly-firebase, py-monorepo-path-deps, py-namespace-packages, real-app-hoppscotch, real-app-memos, real-svc-otel-demo, sys-go-nested, sys-rust-path-git
+- `independent-units` (11): js-local-and-git-deps, mix-dart-flutter, mix-poly-firebase, py-monorepo-path-deps, py-namespace-packages, real-app-hoppscotch, real-app-memos, real-auth0-go, real-svc-otel-demo, sys-go-nested, sys-rust-path-git
 - `shared-root` (10): jvm-java-version-conflict, mix-edge-submodules, mix-php-laravel, mix-real-klaxon, mix-real-tinyxml2, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-svc-otel-demo
-- `one-unit-many-parts` (2): mix-infra-compose, mix-real-tududi
+- `one-unit-many-parts` (6): mix-infra-compose, mix-real-tududi, real-bank-of-anthos, real-microblog, real-next-subscriptions, real-sveltekit-realworld
 - `targets-as-units` (15): js-angular, jvm-sbt-two-subprojects, mix-real-tinyxml2, mix-real-zlib, real-app-jhipster-sample, real-app-kotlinconf, sys-bazel, sys-c-macro-annotations, sys-cmake-presets, sys-cmake-targets, sys-cpp-header-only, sys-cpp-vcpkg-conan, sys-git-submodule-absent, sys-make-plain, sys-meson
-- `no-build-file` (14): js-node-scripts, js-static-html, jvm-no-build, mix-edge-empty, mix-edge-extensions, mix-edge-scripts, mix-edge-sql, mix-infra-gha, mix-poly-firebase, py-pep723-scripts, py-undeclared-scripts, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app
-- `unit-no-name` (26): js-deno, js-node-scripts, js-static-html, js-yarn-berry, jvm-no-build, mix-edge-extensions, mix-edge-scripts, mix-edge-sql, mix-elixir-umbrella, mix-infra-gha, mix-php-laravel, mix-poly-firebase, mix-poly-grpc, mix-ruby-rails, mix-terraform-modules, py-django, py-pep723-scripts, py-pip-tools, py-pipenv, py-requirements-includes, py-undeclared-scripts, real-app-full-stack-fastapi, real-app-memos, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app
+- `no-build-file` (15): js-node-scripts, js-static-html, jvm-no-build, mix-edge-empty, mix-edge-extensions, mix-edge-scripts, mix-edge-sql, mix-infra-gha, mix-poly-firebase, py-pep723-scripts, py-undeclared-scripts, real-bank-of-anthos, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app
+- `unit-no-name` (29): js-deno, js-node-scripts, js-static-html, js-yarn-berry, jvm-no-build, mix-edge-extensions, mix-edge-scripts, mix-edge-sql, mix-elixir-umbrella, mix-infra-gha, mix-php-laravel, mix-poly-firebase, mix-poly-grpc, mix-ruby-rails, mix-terraform-modules, py-django, py-pep723-scripts, py-pip-tools, py-pipenv, py-requirements-includes, py-undeclared-scripts, real-app-full-stack-fastapi, real-app-memos, real-bank-of-anthos, real-microblog, real-next-subscriptions, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app
 - `shared-name` (6): mix-real-tinyxml2, mix-real-zlib, real-app-hoppscotch, real-app-jhipster-sample, real-svc-otel-demo, sys-rust-tauri
-- `name-mismatch` (15): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-maven-multi-bom-profile, jvm-sbt-two-subprojects, mix-real-semver, mix-swift-spm, py-namespace-packages, py-undeclared-scripts, real-app-full-stack-fastapi, real-svc-otel-demo, real-svc-petclinic-microservices, sys-go-single, sys-meson, sys-rust-single, sys-rust-workspace
+- `name-mismatch` (18): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-maven-multi-bom-profile, jvm-sbt-two-subprojects, mix-real-semver, mix-swift-spm, py-namespace-packages, py-undeclared-scripts, real-app-full-stack-fastapi, real-auth0-go, real-bank-of-anthos, real-microblog, real-svc-otel-demo, real-svc-petclinic-microservices, sys-go-single, sys-meson, sys-rust-single, sys-rust-workspace
 - `custom-source-roots` (11): jvm-kmp-common-jvm, jvm-mixed-java-kotlin, jvm-protobuf-generated, mix-real-klaxon, mix-real-python-semver, py-namespace-packages, py-setup-py-static, py-uv-src-layout, real-app-full-stack-fastapi, real-app-jhipster-sample, real-svc-otel-demo
 - `source-sets` (5): jvm-android-app-lib, jvm-kmp-common-jvm, jvm-kotlin-source-sets, mix-swift-spm, real-app-kotlinconf
-- `path-alias` (10): js-angular, js-deno, js-nextjs, js-nx, js-sveltekit, js-vite-react-ts, mix-real-tududi, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample
+- `path-alias` (12): js-angular, js-deno, js-nextjs, js-nx, js-sveltekit, js-vite-react-ts, mix-real-tududi, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-next-subscriptions, real-sveltekit-realworld
 - `file-in-several-units` (7): mix-poly-firebase, mix-real-semver, mix-real-tinyxml2, mix-real-zlib, real-svc-eshop, sys-c-macro-annotations, sys-rust-shared-test-module
-- `inherited-settings` (9): jvm-gradle-kts-catalog-composite, jvm-maven-multi-bom-profile, mix-dart-flutter, mix-dotnet-central, mix-edge-deep-manifest, mix-real-javapoet, real-svc-petclinic-microservices, sys-cmake-targets, sys-rust-workspace
+- `inherited-settings` (10): jvm-gradle-kts-catalog-composite, jvm-maven-multi-bom-profile, mix-dart-flutter, mix-dotnet-central, mix-edge-deep-manifest, mix-real-javapoet, real-bank-of-anthos, real-svc-petclinic-microservices, sys-cmake-targets, sys-rust-workspace
 - `build-variants` (15): jvm-android-app-lib, jvm-maven-multi-bom-profile, mix-real-semver, mix-real-tinyxml2, mix-real-zlib, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-voting-app, sys-c-macro-annotations, sys-cmake-presets, sys-cpp-header-only, sys-go-buildtags, sys-go-cgo, sys-meson, sys-rust-features
-- `version-disagree` (18): js-version-conflict, jvm-java-version-conflict, jvm-maven-release-apt, mix-infra-gha, mix-infra-tool-versions, mix-real-python-semver, py-version-disagree, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-svc-eshop, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app, sys-cmake-presets, sys-go-toolchain, sys-rust-toolchain-conflict
-- `version-in-wrapper` (7): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-maven-wrapper, mix-real-klaxon, real-app-jhipster-sample, real-svc-petclinic-microservices
+- `version-disagree` (20): js-version-conflict, jvm-java-version-conflict, jvm-maven-release-apt, mix-infra-gha, mix-infra-tool-versions, mix-real-python-semver, py-version-disagree, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-auth0-go, real-bank-of-anthos, real-svc-eshop, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app, sys-cmake-presets, sys-go-toolchain, sys-rust-toolchain-conflict
+- `version-in-wrapper` (8): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-maven-wrapper, mix-real-klaxon, real-app-jhipster-sample, real-bank-of-anthos, real-svc-petclinic-microservices
 - `version-matrix` (7): mix-infra-gha, mix-real-chi, mix-real-python-semver, mix-real-semver, mix-real-tinyxml2, mix-real-zlib, py-hatch-envs
-- `version-range` (11): js-nextjs, jvm-gradle-locking, mix-dotnet-central, mix-real-zlib, mix-swift-spm, mix-terraform-modules, sys-bazel, sys-cmake-targets, sys-go-single, sys-rust-features, sys-rust-single
-- `version-absent` (36): js-angular, js-lerna, js-node-scripts, js-npm-single, js-npm-workspaces, js-nx, js-vite-react-ts, js-vue-pnpm, js-yarn-berry, jvm-gradle-computed-deps, jvm-gradle-locking, jvm-java-version-conflict, jvm-no-build, jvm-sbt-two-subprojects, jvm-ver-gradle-mixed-tc8, jvm-ver-gradle-src6, jvm-ver-gradle-src8, jvm-ver-gradle-tc11, jvm-ver-gradle-tc21, jvm-ver-gradle-tc25, jvm-ver-gradle-tc8, jvm-ver-mvn-11, jvm-ver-mvn-14, jvm-ver-mvn-21, jvm-ver-mvn-25, jvm-ver-mvn-5, jvm-ver-mvn-6, jvm-ver-mvn-7, jvm-ver-mvn-8, jvm-ver-mvn-9, jvm-ver-mvn-cfg6, jvm-ver-mvn-rel8, py-pdm, py-requirements-includes, sys-cmake-presets, sys-rust-single
-- `version-in-image` (12): mix-infra-compose, mix-infra-devcontainer, mix-infra-gha, mix-real-tududi, py-fastapi-compose, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app
+- `version-range` (13): js-nextjs, jvm-gradle-locking, mix-dotnet-central, mix-real-zlib, mix-swift-spm, mix-terraform-modules, real-auth0-go, real-bank-of-anthos, sys-bazel, sys-cmake-targets, sys-go-single, sys-rust-features, sys-rust-single
+- `version-absent` (39): js-angular, js-lerna, js-node-scripts, js-npm-single, js-npm-workspaces, js-nx, js-vite-react-ts, js-vue-pnpm, js-yarn-berry, jvm-gradle-computed-deps, jvm-gradle-locking, jvm-java-version-conflict, jvm-no-build, jvm-sbt-two-subprojects, jvm-ver-gradle-mixed-tc8, jvm-ver-gradle-src6, jvm-ver-gradle-src8, jvm-ver-gradle-tc11, jvm-ver-gradle-tc21, jvm-ver-gradle-tc25, jvm-ver-gradle-tc8, jvm-ver-mvn-11, jvm-ver-mvn-14, jvm-ver-mvn-21, jvm-ver-mvn-25, jvm-ver-mvn-5, jvm-ver-mvn-6, jvm-ver-mvn-7, jvm-ver-mvn-8, jvm-ver-mvn-9, jvm-ver-mvn-cfg6, jvm-ver-mvn-rel8, py-pdm, py-requirements-includes, real-bank-of-anthos, real-microblog, real-next-subscriptions, sys-cmake-presets, sys-rust-single
+- `version-in-image` (14): mix-infra-compose, mix-infra-devcontainer, mix-infra-gha, mix-real-tududi, py-fastapi-compose, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-auth0-go, real-bank-of-anthos, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app
 - `toolchain-in-dependencies` (6): mix-dart-flutter, mix-php-laravel, py-conda-env, py-poetry-groups, real-svc-otel-demo, real-svc-robot-shop
 - `platform-sdk` (5): jvm-android-app-lib, mix-dart-flutter, mix-poly-firebase, real-app-kotlinconf, real-svc-eshop
-- `no-lockfile` (72): js-angular, js-cjs-esm-exports, js-deno, js-lerna, js-nextjs, js-nx, js-sveltekit, js-turborepo, js-vendored-generated, js-version-conflict, js-vite-react-ts, js-vue-pnpm, jvm-android-app-lib, jvm-gradle-computed-deps, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-release-apt, jvm-maven-wrapper, jvm-mixed-java-kotlin, jvm-protobuf-generated, jvm-sbt-two-subprojects, jvm-ver-gradle-mixed-tc8, jvm-ver-gradle-src6, jvm-ver-gradle-src8, jvm-ver-gradle-tc11, jvm-ver-gradle-tc21, jvm-ver-gradle-tc25, jvm-ver-gradle-tc8, jvm-ver-mvn-11, jvm-ver-mvn-14, jvm-ver-mvn-21, jvm-ver-mvn-25, jvm-ver-mvn-5, jvm-ver-mvn-6, jvm-ver-mvn-7, jvm-ver-mvn-8, jvm-ver-mvn-9, jvm-ver-mvn-cfg6, jvm-ver-mvn-rel8, mix-dotnet-central, mix-edge-submodules, mix-edge-vendored, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-infra-tool-versions, mix-php-laravel, mix-poly-firebase, mix-poly-openapi, mix-real-javapoet, mix-real-klaxon, mix-real-semver, mix-ruby-rails, py-conda-env, py-django, py-fastapi-compose, py-hatch-envs, py-monorepo-path-deps, py-namespace-packages, py-notebooks, py-pep723-scripts, py-requirements-includes, py-setup-cfg-extras, py-setup-py-static, py-vendored-generated, py-version-disagree, real-app-jhipster-sample, real-svc-eshop, real-svc-voting-app, sys-bazel, sys-cmake-targets, sys-rust-tauri
-- `locked-versions` (33): js-bun, js-local-and-git-deps, js-npm-single, js-npm-workspaces, js-pnpm-workspace, js-yarn-berry, jvm-gradle-locking, mix-dart-flutter, mix-elixir-umbrella, mix-real-python-semver, mix-real-tududi, mix-swift-spm, mix-terraform-modules, py-pdm, py-pip-tools, py-pipenv, py-poetry-groups, py-uv-src-layout, py-uv-workspace, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-app-memos, real-svc-otel-demo, sys-cpp-vcpkg-conan, sys-go-single, sys-go-vendor, sys-go-workspace, sys-rust-buildrs, sys-rust-features, sys-rust-path-git, sys-rust-single, sys-rust-workspace
-- `transitive-not-direct` (8): mix-elixir-umbrella, mix-real-chi, py-pip-tools, py-pipenv, py-poetry-groups, py-uv-src-layout, py-uv-workspace, real-svc-otel-demo
-- `version-from-bom` (11): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-multi-bom-profile, jvm-spring-boot-managed, mix-real-klaxon, real-app-jhipster-sample, real-svc-petclinic-microservices, real-svc-robot-shop
-- `version-indirect` (13): js-pnpm-workspace, jvm-gradle-computed-deps, jvm-gradle-kts-catalog-composite, jvm-maven-multi-bom-profile, jvm-maven-release-apt, jvm-mixed-java-kotlin, mix-dotnet-central, mix-real-javapoet, mix-real-klaxon, real-app-kotlinconf, real-svc-eshop, real-svc-petclinic-microservices, sys-rust-workspace
-- `internal-link` (18): js-lerna, js-local-and-git-deps, js-npm-workspaces, js-pnpm-workspace, js-turborepo, js-yarn-berry, jvm-maven-multi-bom-profile, mix-dart-flutter, mix-elixir-umbrella, mix-terraform-modules, py-monorepo-path-deps, py-requirements-includes, py-uv-workspace, real-svc-petclinic-microservices, sys-go-nested, sys-go-workspace, sys-rust-path-git, sys-rust-workspace
+- `no-lockfile` (75): js-angular, js-cjs-esm-exports, js-deno, js-lerna, js-nextjs, js-nx, js-sveltekit, js-turborepo, js-vendored-generated, js-version-conflict, js-vite-react-ts, js-vue-pnpm, jvm-android-app-lib, jvm-gradle-computed-deps, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-release-apt, jvm-maven-wrapper, jvm-mixed-java-kotlin, jvm-protobuf-generated, jvm-sbt-two-subprojects, jvm-ver-gradle-mixed-tc8, jvm-ver-gradle-src6, jvm-ver-gradle-src8, jvm-ver-gradle-tc11, jvm-ver-gradle-tc21, jvm-ver-gradle-tc25, jvm-ver-gradle-tc8, jvm-ver-mvn-11, jvm-ver-mvn-14, jvm-ver-mvn-21, jvm-ver-mvn-25, jvm-ver-mvn-5, jvm-ver-mvn-6, jvm-ver-mvn-7, jvm-ver-mvn-8, jvm-ver-mvn-9, jvm-ver-mvn-cfg6, jvm-ver-mvn-rel8, mix-dotnet-central, mix-edge-submodules, mix-edge-vendored, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-infra-tool-versions, mix-php-laravel, mix-poly-firebase, mix-poly-openapi, mix-real-javapoet, mix-real-klaxon, mix-real-semver, mix-ruby-rails, py-conda-env, py-django, py-fastapi-compose, py-hatch-envs, py-monorepo-path-deps, py-namespace-packages, py-notebooks, py-pep723-scripts, py-requirements-includes, py-setup-cfg-extras, py-setup-py-static, py-vendored-generated, py-version-disagree, real-app-jhipster-sample, real-auth0-go, real-bank-of-anthos, real-microblog, real-svc-eshop, real-svc-voting-app, sys-bazel, sys-cmake-targets, sys-rust-tauri
+- `locked-versions` (37): js-bun, js-local-and-git-deps, js-npm-single, js-npm-workspaces, js-pnpm-workspace, js-yarn-berry, jvm-gradle-locking, mix-dart-flutter, mix-elixir-umbrella, mix-real-python-semver, mix-real-tududi, mix-swift-spm, mix-terraform-modules, py-pdm, py-pip-tools, py-pipenv, py-poetry-groups, py-uv-src-layout, py-uv-workspace, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-app-memos, real-auth0-go, real-bank-of-anthos, real-next-subscriptions, real-svc-otel-demo, real-sveltekit-realworld, sys-cpp-vcpkg-conan, sys-go-single, sys-go-vendor, sys-go-workspace, sys-rust-buildrs, sys-rust-features, sys-rust-path-git, sys-rust-single, sys-rust-workspace
+- `transitive-not-direct` (12): mix-elixir-umbrella, mix-real-chi, py-pip-tools, py-pipenv, py-poetry-groups, py-uv-src-layout, py-uv-workspace, real-auth0-go, real-bank-of-anthos, real-microblog, real-next-subscriptions, real-svc-otel-demo
+- `version-from-bom` (12): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-multi-bom-profile, jvm-spring-boot-managed, mix-real-klaxon, real-app-jhipster-sample, real-bank-of-anthos, real-svc-petclinic-microservices, real-svc-robot-shop
+- `version-indirect` (14): js-pnpm-workspace, jvm-gradle-computed-deps, jvm-gradle-kts-catalog-composite, jvm-maven-multi-bom-profile, jvm-maven-release-apt, jvm-mixed-java-kotlin, mix-dotnet-central, mix-real-javapoet, mix-real-klaxon, real-app-kotlinconf, real-bank-of-anthos, real-svc-eshop, real-svc-petclinic-microservices, sys-rust-workspace
+- `internal-link` (19): js-lerna, js-local-and-git-deps, js-npm-workspaces, js-pnpm-workspace, js-turborepo, js-yarn-berry, jvm-maven-multi-bom-profile, mix-dart-flutter, mix-elixir-umbrella, mix-terraform-modules, py-monorepo-path-deps, py-requirements-includes, py-uv-workspace, real-bank-of-anthos, real-svc-petclinic-microservices, sys-go-nested, sys-go-workspace, sys-rust-path-git, sys-rust-workspace
 - `git-dependency` (6): js-local-and-git-deps, mix-edge-submodules, py-requirements-includes, real-app-hoppscotch, sys-git-submodule-absent, sys-rust-path-git
 - `computed-dependencies` (4): jvm-gradle-computed-deps, mix-real-klaxon, py-setup-py-dynamic, real-svc-otel-demo
 - `declared-in-source` (3): js-static-html, py-notebooks, py-pep723-scripts
-- `undeclared-imports` (4): js-node-scripts, mix-edge-vendored, mix-poly-openapi, py-undeclared-scripts
-- `scope-from-groups` (11): jvm-spring-boot-managed, mix-real-python-semver, mix-ruby-rails, py-hatch-envs, py-pdm, py-pipenv, py-poetry-groups, py-setup-cfg-extras, py-uv-src-layout, real-app-full-stack-fastapi, sys-bazel
+- `undeclared-imports` (5): js-node-scripts, mix-edge-vendored, mix-poly-openapi, py-undeclared-scripts, real-bank-of-anthos
+- `scope-from-groups` (12): jvm-spring-boot-managed, mix-real-python-semver, mix-ruby-rails, py-hatch-envs, py-pdm, py-pipenv, py-poetry-groups, py-setup-cfg-extras, py-uv-src-layout, real-app-full-stack-fastapi, real-bank-of-anthos, sys-bazel
 - `build-only-dependency` (43): jvm-android-app-lib, jvm-gradle-kts-catalog-composite, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-multi-bom-profile, jvm-maven-release-apt, jvm-maven-wrapper, jvm-mixed-java-kotlin, jvm-protobuf-generated, jvm-sbt-two-subprojects, jvm-spring-boot-managed, jvm-ver-gradle-mixed-tc8, jvm-ver-mvn-cfg6, mix-edge-submodules, mix-infra-tool-versions, mix-poly-firebase, mix-poly-grpc, mix-poly-openapi, mix-real-javapoet, mix-real-klaxon, mix-real-python-semver, mix-real-zlib, py-fastapi-compose, py-hatch-envs, py-monorepo-path-deps, py-namespace-packages, py-notebooks, py-pdm, py-poetry-groups, py-requirements-includes, py-setup-cfg-extras, py-uv-src-layout, py-uv-workspace, py-vendored-generated, py-version-disagree, real-app-full-stack-fastapi, real-app-kotlinconf, real-svc-petclinic-microservices, real-svc-robot-shop, sys-bazel, sys-cpp-vcpkg-conan, sys-rust-buildrs, sys-rust-tauri
 - `two-package-managers` (2): py-conda-env, sys-cpp-vcpkg-conan
 - `included-requirement-files` (3): py-conda-env, py-pip-tools, py-requirements-includes
-- `ambiguous-extension` (17): js-cjs-esm-exports, js-node-scripts, js-vue-pnpm, jvm-sbt-two-subprojects, mix-edge-extensions, mix-edge-sql, mix-infra-k8s-helm, mix-php-laravel, mix-poly-openapi, mix-real-tinyxml2, mix-real-zlib, real-app-full-stack-fastapi, real-svc-otel-demo, real-svc-voting-app, sys-c-macro-annotations, sys-cmake-targets, sys-cpp-header-only
+- `ambiguous-extension` (19): js-cjs-esm-exports, js-node-scripts, js-vue-pnpm, jvm-sbt-two-subprojects, mix-edge-extensions, mix-edge-sql, mix-infra-k8s-helm, mix-php-laravel, mix-poly-openapi, mix-real-tinyxml2, mix-real-zlib, real-app-full-stack-fastapi, real-microblog, real-next-subscriptions, real-svc-otel-demo, real-svc-voting-app, sys-c-macro-annotations, sys-cmake-targets, sys-cpp-header-only
 - `shebang-only` (5): js-node-scripts, mix-edge-extensions, mix-edge-scripts, mix-php-laravel, mix-ruby-rails
-- `generated-file` (16): js-nextjs, js-vendored-generated, jvm-protobuf-generated, mix-edge-vendored, mix-poly-grpc, mix-poly-openapi, mix-real-chi, py-vendored-generated, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-app-memos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, sys-go-generated
+- `generated-file` (18): js-nextjs, js-vendored-generated, jvm-protobuf-generated, mix-edge-vendored, mix-poly-grpc, mix-poly-openapi, mix-real-chi, py-vendored-generated, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-app-memos, real-bank-of-anthos, real-next-subscriptions, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, sys-go-generated
 - `false-generated` (5): js-cjs-esm-exports, js-vite-react-ts, py-django, real-app-hoppscotch, sys-go-generated
-- `vendored-code` (16): js-vendored-generated, jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-maven-wrapper, mix-edge-vendored, mix-real-tududi, py-vendored-generated, real-app-jhipster-sample, real-app-kotlinconf, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app, sys-go-vendor
-- `documentation-tree` (17): mix-edge-deep-manifest, mix-edge-empty, mix-edge-vendored, mix-real-python-semver, mix-real-tinyxml2, mix-real-tududi, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, sys-go-nested
-- `binary-file` (16): mix-edge-vendored, mix-poly-firebase, mix-real-klaxon, mix-real-tinyxml2, mix-real-tududi, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
+- `vendored-code` (18): js-vendored-generated, jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-maven-wrapper, mix-edge-vendored, mix-real-tududi, py-vendored-generated, real-app-jhipster-sample, real-app-kotlinconf, real-auth0-go, real-bank-of-anthos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app, sys-go-vendor
+- `documentation-tree` (22): mix-edge-deep-manifest, mix-edge-empty, mix-edge-vendored, mix-real-python-semver, mix-real-tinyxml2, mix-real-tududi, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-auth0-go, real-bank-of-anthos, real-microblog, real-next-subscriptions, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-sveltekit-realworld, sys-go-nested
+- `binary-file` (21): mix-edge-vendored, mix-poly-firebase, mix-real-klaxon, mix-real-tinyxml2, mix-real-tududi, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-auth0-go, real-bank-of-anthos, real-microblog, real-next-subscriptions, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app, real-sveltekit-realworld
 - `committed-ignored` (2): mix-edge-vendored, real-app-memos
 - `symlinks` (2): mix-real-python-semver, real-app-full-stack-fastapi
 - `templated-config` (4): js-bun, mix-infra-devcontainer, mix-infra-k8s-helm, mix-ruby-rails
-- `dot-folder-facts` (10): mix-infra-devcontainer, mix-infra-gha, mix-real-chi, mix-real-javapoet, mix-real-python-semver, mix-real-semver, real-app-full-stack-fastapi, real-app-jhipster-sample, real-app-kotlinconf, real-svc-eshop
-- `needs-build` (24): jvm-android-app-lib, jvm-gradle-computed-deps, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-maven-multi-bom-profile, jvm-spring-boot-managed, mix-dotnet-central, mix-elixir-umbrella, mix-poly-firebase, mix-real-javapoet, mix-real-klaxon, mix-real-semver, mix-real-tinyxml2, mix-real-zlib, mix-swift-spm, py-setup-py-dynamic, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, sys-rust-buildrs, sys-rust-tauri
+- `dot-folder-facts` (12): mix-infra-devcontainer, mix-infra-gha, mix-real-chi, mix-real-javapoet, mix-real-python-semver, mix-real-semver, real-app-full-stack-fastapi, real-app-jhipster-sample, real-app-kotlinconf, real-auth0-go, real-bank-of-anthos, real-svc-eshop
+- `needs-build` (25): jvm-android-app-lib, jvm-gradle-computed-deps, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-maven-multi-bom-profile, jvm-spring-boot-managed, mix-dotnet-central, mix-elixir-umbrella, mix-poly-firebase, mix-real-javapoet, mix-real-klaxon, mix-real-semver, mix-real-tinyxml2, mix-real-zlib, mix-swift-spm, py-setup-py-dynamic, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-bank-of-anthos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, sys-rust-buildrs, sys-rust-tauri
 - `install-scripts` (2): mix-php-laravel, real-app-hoppscotch
-- `build-generates-code` (15): js-angular, js-sveltekit, jvm-maven-release-apt, jvm-protobuf-generated, mix-poly-firebase, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, sys-rust-buildrs, sys-rust-tauri
+- `build-generates-code` (17): js-angular, js-sveltekit, jvm-maven-release-apt, jvm-protobuf-generated, mix-poly-firebase, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-next-subscriptions, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-sveltekit-realworld, sys-rust-buildrs, sys-rust-tauri
 - `submodule-absent` (2): mix-edge-submodules, sys-git-submodule-absent
-- `missing-file` (14): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-mixed-java-kotlin, mix-infra-compose, mix-infra-devcontainer, mix-php-laravel, mix-poly-firebase, mix-real-chi, mix-real-python-semver, mix-real-zlib, real-app-hoppscotch, real-svc-eshop, real-svc-otel-demo, sys-rust-tauri
-- `service-in-infra` (35): jvm-spring-boot-managed, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-real-tududi, py-fastapi-compose, real-app-jhipster-sample, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-kuvasz, real-stack-mall, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-openbudgeteer, real-stack-opengist, real-stack-paperless-ngx, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
-- `service-from-config` (40): js-nextjs, mix-infra-tool-versions, mix-php-laravel, mix-ruby-rails, py-django, real-app-kotlinconf, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-fiber-go-template, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-netbox, real-stack-openbudgeteer, real-stack-opengist, real-stack-paperless-ngx, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-robot-shop
-- `saas-service` (44): jvm-android-app-lib, mix-edge-scripts, mix-poly-firebase, mix-real-tududi, real-app-full-stack-fastapi, real-app-memos, real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-astro-paper, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-netbox, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-eshop, real-svc-otel-demo
-- `framework-from-files` (18): mix-dotnet-central, py-django, py-pip-tools, real-stack-ardalis-cleanarchitecture, real-stack-bakerydemo, real-stack-documenso, real-stack-healthchecks, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin-ios, real-stack-kuvasz, real-stack-lldap, real-stack-mattermost-mobile, real-stack-openbudgeteer, real-stack-owncast, real-stack-symfony-demo, real-stack-wger, real-svc-petclinic-microservices, real-svc-voting-app
-- `framework-through-plugin` (10): real-stack-elk, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-peopleinspace, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo
-- `framework-per-unit` (29): real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-gin-vue-admin, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-netbox, real-stack-openbudgeteer, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-umami, real-stack-wallabag
-- `test-only-framework` (34): real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-fiber-go-template, real-stack-gin-vue-admin, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-openbudgeteer, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo, real-stack-umami, real-stack-wallabag
-- `undeclared-connections` (13): mix-poly-firebase, mix-poly-grpc, mix-poly-openapi, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
+- `missing-file` (16): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-mixed-java-kotlin, mix-infra-compose, mix-infra-devcontainer, mix-php-laravel, mix-poly-firebase, mix-real-chi, mix-real-python-semver, mix-real-zlib, real-app-hoppscotch, real-bank-of-anthos, real-svc-eshop, real-svc-otel-demo, real-sveltekit-realworld, sys-rust-tauri
+- `service-in-infra` (36): jvm-spring-boot-managed, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-real-tududi, py-fastapi-compose, real-app-jhipster-sample, real-bank-of-anthos, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-kuvasz, real-stack-mall, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-openbudgeteer, real-stack-opengist, real-stack-paperless-ngx, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
+- `service-from-config` (44): js-nextjs, mix-infra-tool-versions, mix-php-laravel, mix-ruby-rails, py-django, real-app-kotlinconf, real-auth0-go, real-bank-of-anthos, real-microblog, real-next-subscriptions, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-fiber-go-template, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-netbox, real-stack-openbudgeteer, real-stack-opengist, real-stack-paperless-ngx, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-robot-shop
+- `saas-service` (49): jvm-android-app-lib, mix-edge-scripts, mix-poly-firebase, mix-real-tududi, real-app-full-stack-fastapi, real-app-memos, real-auth0-go, real-bank-of-anthos, real-microblog, real-next-subscriptions, real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-astro-paper, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-netbox, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-eshop, real-svc-otel-demo, real-sveltekit-realworld
+- `framework-from-files` (22): mix-dotnet-central, py-django, py-pip-tools, real-auth0-go, real-bank-of-anthos, real-microblog, real-stack-ardalis-cleanarchitecture, real-stack-bakerydemo, real-stack-documenso, real-stack-healthchecks, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin-ios, real-stack-kuvasz, real-stack-lldap, real-stack-mattermost-mobile, real-stack-openbudgeteer, real-stack-owncast, real-stack-symfony-demo, real-stack-wger, real-svc-petclinic-microservices, real-svc-voting-app, real-sveltekit-realworld
+- `framework-through-plugin` (11): real-bank-of-anthos, real-stack-elk, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-peopleinspace, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo
+- `framework-per-unit` (31): real-auth0-go, real-bank-of-anthos, real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-gin-vue-admin, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-netbox, real-stack-openbudgeteer, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-umami, real-stack-wallabag
+- `test-only-framework` (36): real-auth0-go, real-bank-of-anthos, real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-fiber-go-template, real-stack-gin-vue-admin, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-openbudgeteer, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo, real-stack-umami, real-stack-wallabag
+- `undeclared-connections` (15): mix-poly-firebase, mix-poly-grpc, mix-poly-openapi, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-auth0-go, real-bank-of-anthos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
 - `shared-contract` (7): mix-poly-grpc, mix-poly-openapi, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-memos, real-svc-eshop, real-svc-otel-demo
 
 ### Casi con meno di due progetti

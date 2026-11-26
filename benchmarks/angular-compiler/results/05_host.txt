@@ -1,0 +1,88 @@
+--- interface HostObjectLiteralBinding: 
+interface HostObjectLiteralBinding {
+    /** Node representing the key of the binding. */
+    key: SourceNode;
+    /** Node representing the value of the binding. */
+    value: SourceNode;
+    /** Location information about the entire binding. */
+    sourceSpan: ParseSourceSpan$1;
+}
+/** A single binding declared by a `@HostListener` decorator on a class member. */
+interface HostListenerDecorator {
+    /** Node declaring the name of the event (e.g. first argument of `@HostListener`). */
+    eventName: SourceNode | null;
+    /** Node representing the name of the member that was decorated. */
+    memberName: StaticSourceNode;
+    /** Location information about the member that the decorator is s
+--- interface HostBindingDecorator: 
+interface HostBindingDecorator {
+    /** Node representing the name of the member that was decorated. */
+    memberName: StaticSourceNode;
+    /** Location information about the member that the decorator is set on. */
+    memberSpan: ParseSourceSpan$1;
+    /** Arguments passed into the decorator */
+    arguments: SourceNode[];
+    /** Location information about the decorator. */
+    decoratorSpan: ParseSourceSpan$1;
+}
+/**
+ * Creates an AST node that represents the host element of a directive.
+ * Can return null if there are no valid bindings to be checked.
+ * @param meta Metadata used to construct the host element.
+ */
+declare function createHostElement(type: 'component' | 'directive', selec
+--- interface HostListenerDecorator: 
+interface HostListenerDecorator {
+    /** Node declaring the name of the event (e.g. first argument of `@HostListener`). */
+    eventName: SourceNode | null;
+    /** Node representing the name of the member that was decorated. */
+    memberName: StaticSourceNode;
+    /** Location information about the member that the decorator is set on. */
+    memberSpan: ParseSourceSpan$1;
+    /** Arguments passed to the event. */
+    arguments: SourceNode[];
+    /** Location information about the decorator. */
+    decoratorSpan: ParseSourceSpan$1;
+}
+/** A single binding declared by the `@HostBinding` decorator on a class member. */
+interface HostBindingDecorator {
+    /** Node representing the name of the
+hand-built literal bindings (shape is a guess from the typings printed above): 3
+createHostElement -> null
+
+--- createHostElement source (fesm):
+function createHostElement(type, selector, nameSpan, hostObjectLiteralBindings, hostBindingDecorators, hostListenerDecorators) {
+  const bindings = [];
+  const listeners = [];
+  let parser = null;
+  for (const binding of hostObjectLiteralBindings) {
+    parser ??= makeBindingParser();
+    createNodeFromHostLiteralProperty(binding, parser, bindings, listeners);
+  }
+  for (const decorator of hostBindingDecorators) {
+    createNodeFromBindingDecorator(decorator, bindings);
+  }
+  for (const decorator of hostListenerDecorators) {
+    parser ??= makeBindingParser();
+    createNodeFromListenerDecorator(decorator, parser, listeners);
+  }
+  if (bindings.length === 0 && listeners.length === 0) {
+    return null;
+  }
+  const tagNames = [];
+  if (selector !== null) {
+    const parts = CssSelector.parse(selector);
+    for (const part of parts) {
+      if (part.element !== null) {
+        tagNames.push(part.element);
+      }
+    }
+  }
+  if (tagNames.length === 0) {
+    tagNames.push(`ng-${type}`);
+  }
+  return new HostElement(tagNames, bindings, listeners, nameSpan);
+}
+--- SourceNode typings: NOT FOUND
+
+--- exit 0

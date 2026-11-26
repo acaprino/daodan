@@ -26,7 +26,7 @@ def build(tmp_path, files, *, ledger=()):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         graph = modules.derive(store, ledger=list(ledger))
     return project, manifest, graph

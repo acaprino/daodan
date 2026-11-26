@@ -1,0 +1,9 @@
+{
+  "name": "astro-compiler-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "astro": "7.4.13"
+  }
+}

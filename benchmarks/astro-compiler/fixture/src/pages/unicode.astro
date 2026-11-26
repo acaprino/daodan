@@ -1,0 +1,10 @@
+---
+const é = 'é日本語😀';
+---
+<p>héllo 日本語 😀</p><button onclick="afterText()">é</button>
+<p>😀</p>
+<div class="日本語" onclick="afterUnicodeAttr()" title="😀 é">x</div>
+<script is:inline>
+  function afterText() { }
+  function afterUnicodeAttr() { }
+</script>

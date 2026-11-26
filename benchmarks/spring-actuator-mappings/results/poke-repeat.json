@@ -1,0 +1,212 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "8",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/poke-repeat-0/target/unpacked/BOOT-INF/classes:/work/poke-repeat-0/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/poke-repeat-0.json",
+   "actuator",
+   "returned",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "probe.block=true"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.526,
+    "gone_s": 2.547,
+    "owner": "5526 java -Xmx1g -cp /work/poke-repeat-0/target/unpacked/BOOT-INF/classes:/work/poke-repeat-0/target/unpacked/BOOT-INF/lib/* ",
+    "poke": {
+     "connect": "ok",
+     "reply": "nothing within 3 s (ConnectionResetError)"
+    },
+    "port": 32877
+   }
+  ],
+  "peak_memory_mb": 520,
+  "returncode": 124,
+  "seconds": 8.11,
+  "stderr": "",
+  "stdout": "2026-11-24T00:41:19.960Z  INFO 5526 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 5526 (/launcher/Launcher.java started by root in /work/poke-repeat-0)\n2026-11-24T00:41:19.963Z  INFO 5526 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:41:20.764Z  INFO 5526 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:41:20.775Z  INFO 5526 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:41:20.775Z  INFO 5526 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:41:20.805Z  INFO 5526 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:41:20.806Z  INFO 5526 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 800 ms\n2026-11-24T00:41:21.177Z  INFO 5526 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'\n2026-11-24T00:41:21.236Z  INFO 5526 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:41:21.250Z  INFO 5526 --- [           main] Launcher                                 : Started Launcher in 1.629 seconds (process running for 2.552)\n2026-11-24T00:41:26.696Z  INFO 5526 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:41:26.697Z  INFO 5526 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": null,
+  "written_bytes": 0
+ },
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "8",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/poke-repeat-1/target/unpacked/BOOT-INF/classes:/work/poke-repeat-1/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/poke-repeat-1.json",
+   "actuator",
+   "returned",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "probe.block=true"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.816,
+    "gone_s": 2.839,
+    "owner": "5600 java -Xmx1g -cp /work/poke-repeat-1/target/unpacked/BOOT-INF/classes:/work/poke-repeat-1/target/unpacked/BOOT-INF/lib/* ",
+    "poke": {
+     "connect": "ok",
+     "reply": "nothing within 3 s (ConnectionResetError)"
+    },
+    "port": 51559
+   }
+  ],
+  "peak_memory_mb": 508,
+  "returncode": 124,
+  "seconds": 8.12,
+  "stderr": "",
+  "stdout": "2026-11-24T00:41:28.287Z  INFO 5600 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 5600 (/launcher/Launcher.java started by root in /work/poke-repeat-1)\n2026-11-24T00:41:28.290Z  INFO 5600 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:41:29.175Z  INFO 5600 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:41:29.185Z  INFO 5600 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:41:29.185Z  INFO 5600 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:41:29.216Z  INFO 5600 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:41:29.216Z  INFO 5600 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 885 ms\n2026-11-24T00:41:29.644Z  INFO 5600 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'\n2026-11-24T00:41:29.711Z  INFO 5600 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:41:29.725Z  INFO 5600 --- [           main] Launcher                                 : Started Launcher in 1.843 seconds (process running for 2.843)\n2026-11-24T00:41:34.880Z  INFO 5600 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:41:34.881Z  INFO 5600 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": null,
+  "written_bytes": 0
+ },
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "8",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/poke-repeat-2/target/unpacked/BOOT-INF/classes:/work/poke-repeat-2/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/poke-repeat-2.json",
+   "actuator",
+   "returned",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "probe.block=true"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.561,
+    "gone_s": 2.579,
+    "owner": "5674 java -Xmx1g -cp /work/poke-repeat-2/target/unpacked/BOOT-INF/classes:/work/poke-repeat-2/target/unpacked/BOOT-INF/lib/* ",
+    "poke": {
+     "connect": "ok",
+     "reply": "nothing within 3 s (ConnectionResetError)"
+    },
+    "port": 31117
+   }
+  ],
+  "peak_memory_mb": 509,
+  "returncode": 124,
+  "seconds": 8.13,
+  "stderr": "",
+  "stdout": "2026-11-24T00:41:36.353Z  INFO 5674 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 5674 (/launcher/Launcher.java started by root in /work/poke-repeat-2)\n2026-11-24T00:41:36.356Z  INFO 5674 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:41:37.199Z  INFO 5674 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:41:37.208Z  INFO 5674 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:41:37.208Z  INFO 5674 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:41:37.239Z  INFO 5674 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:41:37.240Z  INFO 5674 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 840 ms\n2026-11-24T00:41:37.591Z  INFO 5674 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'\n2026-11-24T00:41:37.646Z  INFO 5674 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:41:37.660Z  INFO 5674 --- [           main] Launcher                                 : Started Launcher in 1.653 seconds (process running for 2.584)\n2026-11-24T00:41:43.074Z  INFO 5674 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:41:43.075Z  INFO 5674 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": null,
+  "written_bytes": 0
+ },
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "8",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/poke-repeat-3/target/unpacked/BOOT-INF/classes:/work/poke-repeat-3/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/poke-repeat-3.json",
+   "actuator",
+   "returned",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "probe.block=true"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.746,
+    "gone_s": 2.768,
+    "owner": "5747 java -Xmx1g -cp /work/poke-repeat-3/target/unpacked/BOOT-INF/classes:/work/poke-repeat-3/target/unpacked/BOOT-INF/lib/* ",
+    "poke": {
+     "connect": "ok",
+     "reply": "nothing within 3 s (ConnectionResetError)"
+    },
+    "port": 36973
+   }
+  ],
+  "peak_memory_mb": 527,
+  "returncode": 124,
+  "seconds": 8.1,
+  "stderr": "",
+  "stdout": "2026-11-24T00:41:44.662Z  INFO 5747 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 5747 (/launcher/Launcher.java started by root in /work/poke-repeat-3)\n2026-11-24T00:41:44.669Z  INFO 5747 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:41:45.520Z  INFO 5747 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:41:45.531Z  INFO 5747 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:41:45.532Z  INFO 5747 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:41:45.563Z  INFO 5747 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:41:45.564Z  INFO 5747 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 848 ms\n2026-11-24T00:41:45.972Z  INFO 5747 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'\n2026-11-24T00:41:46.035Z  INFO 5747 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:41:46.049Z  INFO 5747 --- [           main] Launcher                                 : Started Launcher in 1.762 seconds (process running for 2.773)\n2026-11-24T00:41:51.272Z  INFO 5747 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:41:51.273Z  INFO 5747 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": null,
+  "written_bytes": 0
+ },
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=10",
+   "8",
+   "java",
+   "-Xmx1g",
+   "-cp",
+   "/work/poke-repeat-4/target/unpacked/BOOT-INF/classes:/work/poke-repeat-4/target/unpacked/BOOT-INF/lib/*",
+   "/launcher/Launcher.java",
+   "demo.DemoApplication",
+   "/work/poke-repeat-4.json",
+   "actuator",
+   "returned",
+   "args",
+   "server.port=-1",
+   "management.endpoints.web.exposure.include=mappings",
+   "spring.main.banner-mode=off",
+   "probe.block=true"
+  ],
+  "java_left": [],
+  "listeners": [
+   {
+    "address": "00000000000000000000000000000000",
+    "at_s": 2.586,
+    "gone_s": 2.604,
+    "owner": "5821 java -Xmx1g -cp /work/poke-repeat-4/target/unpacked/BOOT-INF/classes:/work/poke-repeat-4/target/unpacked/BOOT-INF/lib/* ",
+    "poke": {
+     "connect": "ok",
+     "reply": "nothing within 3 s (ConnectionResetError)"
+    },
+    "port": 18494
+   }
+  ],
+  "peak_memory_mb": 520,
+  "returncode": 124,
+  "seconds": 8.1,
+  "stderr": "",
+  "stdout": "2026-11-24T00:41:52.742Z  INFO 5821 --- [           main] Launcher                                 : Starting Launcher using Java 17.0.20.1 with PID 5821 (/launcher/Launcher.java started by root in /work/poke-repeat-4)\n2026-11-24T00:41:52.748Z  INFO 5821 --- [           main] Launcher                                 : No active profile set, falling back to 1 default profile: \"default\"\n2026-11-24T00:41:53.561Z  INFO 5821 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)\n2026-11-24T00:41:53.570Z  INFO 5821 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]\n2026-11-24T00:41:53.570Z  INFO 5821 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]\n2026-11-24T00:41:53.605Z  INFO 5821 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext\n2026-11-24T00:41:53.606Z  INFO 5821 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 813 ms\n2026-11-24T00:41:53.996Z  INFO 5821 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'\n2026-11-24T00:41:54.056Z  INFO 5821 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port -1 (http) with context path '/'\n2026-11-24T00:41:54.074Z  INFO 5821 --- [           main] Launcher                                 : Started Launcher in 1.68 seconds (process running for 2.611)\n2026-11-24T00:41:59.461Z  INFO 5821 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete\n2026-11-24T00:41:59.462Z  INFO 5821 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete\n",
+  "written": null,
+  "written_bytes": 0
+ }
+]

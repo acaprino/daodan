@@ -1,0 +1,26 @@
+{
+ "variant": "matches",
+ "argv": [
+  "/daodan/state/venvs/./bin/python",
+  "-I",
+  "-c",
+  "from fastapi_cli.config import FastAPIConfig\nfrom fastapi_cli.discover import get_import_data, get_import_data_from_import_string\nfrom uvicorn.importer import import_from_string\nfrom starlette.testclient import TestClient\nconfig = FastAPIConfig.resolve()\ndata = get_import_data_from_import_string(config.entrypoint, config.from_pyproject) if config.entrypoint else get_import_data()\nclient = TestClient(import_from_string(data.import_string), raise_server_exceptions=False, follow_redirects=False)\nfor path in ('/typed/7', '/typed/a', '/files/a', '/files/a/b', '/slug/a-b', '/slug/a/b', '/pair/a/b', '/pair/a', '/two/1/2', '/two/1',\n             '/glued/x-y', '/strict/', '/strict', '/loose', '/loose/', '/api/users/7', '/api/users/7/8', '/api/users/embedded/leaf',\n             '/api/embedded/leaf',\n             '/t/acme/info', '/t/acme/b/info', '/sub/hello', '/static/hello.txt'):\n    response = client.get(path)\n    print(path, '->', response.status_code, response.headers.get('location', ''))\n"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "/typed/7 -> 200 \n/typed/a -> 404 \n/files/a -> 200 \n/files/a/b -> 200 \n/slug/a-b -> 200 \n/slug/a/b -> 404 \n/pair/a/b -> 200 \n/pair/a -> 404 \n/two/1/2 -> 200 \n/two/1 -> 404 \n/glued/x-y -> 200 \n/strict/ -> 200 \n/strict -> 307 http://testserver/strict/\n/loose -> 200 \n/loose/ -> 307 http://testserver/loose\n/api/users/7 -> 200 \n/api/users/7/8 -> 404 \n/api/users/embedded/leaf -> 404 \n/api/embedded/leaf -> 200 \n/t/acme/info -> 200 \n/t/acme/b/info -> 404 \n/sub/hello -> 200 \n/static/hello.txt -> 200 \n",
+ "stderr": "",
+ "seconds": 1.75,
+ "max_rss_mb": 79.0,
+ "left_in_the_project": [
+  "app/__pycache__/__init__.cpython-312.pyc",
+  "app/__pycache__/convertors.cpython-312.pyc",
+  "app/__pycache__/main.cpython-312.pyc",
+  "app/__pycache__/orders.cpython-312.pyc",
+  "app/__pycache__/sub.cpython-312.pyc",
+  "app/routers/__pycache__/__init__.cpython-312.pyc",
+  "app/routers/__pycache__/users.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 496
+}

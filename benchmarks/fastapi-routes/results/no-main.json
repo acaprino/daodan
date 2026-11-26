@@ -1,0 +1,20 @@
+{
+ "variant": "no-main",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "fastapi",
+  "900",
+  "/daodan/state/tools/fastapi_routes.py"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "FastAPICLIException: Could not find a default file to run, please provide an explicit path\n",
+ "seconds": 1.18,
+ "max_rss_mb": 68.4,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

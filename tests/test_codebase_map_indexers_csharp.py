@@ -54,7 +54,7 @@ def test_the_analyzer_declares_itself_and_its_units_index_the_language():
     import indexers
     import premap
     assert csharp in indexers.analyzers()
-    assert (csharp.ENTRY, csharp.LANGUAGES, csharp.UNIT_KINDS, csharp.NEEDS_CONTAINER) == (
+    assert (csharp.NAME, csharp.LANGUAGES, csharp.UNIT_KINDS, csharp.NEEDS_CONTAINER) == (
         "scip-dotnet", ("csharp",), frozenset({"dotnet-project"}), True)
     assert csharp.MIN_FREE > 0
     assert premap.indexed_by()["C#"] == frozenset({"dotnet-project"})

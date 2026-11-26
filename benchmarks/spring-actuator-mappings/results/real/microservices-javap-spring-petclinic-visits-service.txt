@@ -1,0 +1,15 @@
+Compiled from "VisitResource.java"
+class org.springframework.samples.petclinic.visits.web.VisitResource {
+  public org.springframework.samples.petclinic.visits.model.Visit create(org.springframework.samples.petclinic.visits.model.Visit, int);
+    descriptor: (Lorg/springframework/samples/petclinic/visits/model/Visit;I)Lorg/springframework/samples/petclinic/visits/model/Visit;
+    LineNumberTable:
+      line 62: 0
+  public java.util.List<org.springframework.samples.petclinic.visits.model.Visit> read(int);
+    descriptor: (I)Ljava/util/List;
+    LineNumberTable:
+      line 69: 0
+  public org.springframework.samples.petclinic.visits.web.VisitResource$Visits read(java.util.List<java.lang.Integer>);
+    descriptor: (Ljava/util/List;)Lorg/springframework/samples/petclinic/visits/web/VisitResource$Visits;
+    LineNumberTable:
+      line 74: 0
+}

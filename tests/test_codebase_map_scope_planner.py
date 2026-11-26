@@ -45,7 +45,7 @@ class ScopePlannerTests(unittest.TestCase):
         self.out = self.root / '.daodan/map'
         self.out.mkdir(parents=True)
         self.base = self.out / 'base.sqlite'
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
         self.current = self.out / 'candidate.sqlite'
         self.authority = {'root': str(self.root), 'read_boundary': ['.'], 'write_boundary': ['pkg/core.py']}
 
@@ -56,7 +56,7 @@ class ScopePlannerTests(unittest.TestCase):
             (self.root / 'pkg/core.py').write_text('def helper(value, offset=1):\n    return value + offset\n', encoding='utf8')
         elif change == 'removed':
             (self.root / 'pkg/core.py').write_text('def unrelated():\n    return 99\n', encoding='utf8')
-        snapshot.write_snapshot(self.root, self.current)
+        snapshot.read_project(self.root, self.current)
         request = {'schema': 'daodan/context-request/v1', 'task_id': 'task-1', 'intent': 'change',
             'query': '', 'read_boundary': ['.'], 'write_boundary': ['pkg/core.py'],
             'anchors': [{'entity_id': TARGET}], 'base': {'manifest': str(self.base)},
@@ -104,7 +104,7 @@ class ScopePlannerTests(unittest.TestCase):
         (source / 'local.py').write_bytes(b'def local():\n    return 1\n')
         request = self.request(None, base=None, anchors=[{'entity_id': 'local.py::local'}],
                                proposed_edits=[], mandatory_requirements=[], write_boundary=[])
-        snapshot.write_snapshot(source, self.current)
+        snapshot.read_project(source, self.current)
         authority = {'root': str(self.root), 'source_root': str(source),
                      'read_boundary': ['.'], 'write_boundary': []}
         plan = scope.prepare_scope(request, authority=authority)
@@ -125,7 +125,7 @@ class ScopePlannerTests(unittest.TestCase):
         request = self.request(None, base=None, candidate={'manifest': str(manifest)},
             read_boundary=['pkg'], write_boundary=[], anchors=[], proposed_edits=[],
             mandatory_requirements=[], query='helper')
-        snapshot.write_snapshot(project, manifest)
+        snapshot.read_project(project, manifest)
         lexical = out / 'retrieval.sqlite'
         retrieval.refresh_index(manifest, lexical)
         authority = {'root': str(project), 'source_root': str(self.root),
@@ -142,7 +142,7 @@ class ScopePlannerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             scope.prepare_scope(broad, authority=authority)
         foreign = out / 'foreign-target.sqlite'
-        snapshot.write_snapshot(self.root / 'tests', foreign)
+        snapshot.read_project(self.root / 'tests', foreign)
         with self.assertRaises(ValueError):
             scope.prepare_scope(dict(request, candidate={'manifest': str(foreign)}), authority=authority)
 
@@ -337,7 +337,7 @@ class ScopePlannerTests(unittest.TestCase):
         for n in range(6):
             (self.root / f'pkg/c{n}.py').write_text(
                 f'from .core import helper\n\ndef invoke{n}(x):\n    return helper(x)\n', encoding='utf8')
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
         request = self.request()
         with mock.patch.object(semantic_store, 'MAX_STALE_CALLERS', 2):
             plan = self.prepare(request)
@@ -412,7 +412,7 @@ class ScopePlannerTests(unittest.TestCase):
         other.mkdir()
         (other / 'foreign.py').write_text('def external():\n    return 7\n', encoding='utf8')
         manifest = other / '.daodan/map/map.sqlite'
-        snapshot.write_snapshot(other, manifest)
+        snapshot.read_project(other, manifest)
         index = manifest.with_name('retrieval.sqlite')
         retrieval.refresh_index(manifest, index)
         request = self.request(query='helper')

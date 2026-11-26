@@ -693,6 +693,19 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual(len(self.created()), 2)
         self.assertEqual(len([call for call in self.calls() if call[:2] == ["volume", "rm"]]), 2)
 
+    def test_the_registries_are_the_hosts_of_the_package_managers_file(self):
+        data = json.loads((Path(container.__file__).resolve().parents[1] / "data/package-managers.json")
+                          .read_text(encoding="utf-8"))
+        hosts = [host for names in data["managers"].values() for host in names]
+        self.assertIn("oldid=", data["source"])  # the revision of Wikipedia's list the names were read from
+        self.assertEqual(sorted(container.REGISTRIES), sorted(set(hosts)))
+        self.assertEqual(len(hosts), len(set(hosts)))  # a host under one manager only
+        for host in hosts:  # names only (`http://` for an apt archive): a port, a path or a wildcard would widen
+            self.assertRegex(host, r"\A(http://)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\Z")
+        self.assertLessEqual({"registry.npmjs.org", "pypi.org", "http://archive.ubuntu.com"}, set(hosts))
+        for host in hosts:  # hosts that take more than a package publish: a preparation runs project code
+            self.assertFalse(host == "ghcr.io" or "github" in host or "docker" in host, host)
+
     def test_proxy_refuses_every_host_outside_the_registries(self):
         server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
                                   stdout=subprocess.PIPE, text=True)
@@ -1112,6 +1125,37 @@ class FakeEngineTest(unittest.TestCase):
                                       return_value=(None, {container.DISTRO: registered})):
                 self.assertEqual(container.ensure_distro(given), (True, "2026.05.26-r0"))
         self.assertEqual(world.asked, [])
+
+    def test_a_distribution_registered_in_the_old_shared_folder_is_made_again_in_the_new_one(self):
+        """`DAODAN_SHARED_DIR` decides where the distribution's folder is (`engine_home`). Named again, with the
+        distribution still registered in the old place, it is not reused (WSL's `BasePath` is not the new folder):
+        unregistered, which WSL ends with its own disk, and imported again in the new folder, the Alpine base
+        downloaded there. Daodan moves nothing and removes no folder of the old place."""
+        world = self.distro_fakes()
+        old, new = self.scratch / "old", self.scratch / "new"
+        default = {"LOCALAPPDATA": str(self.scratch / "default"), "XDG_CACHE_HOME": str(self.scratch / "default")}
+        with mock.patch.dict(os.environ, {**default, "DAODAN_SHARED_DIR": str(old)}):
+            old_home = container.engine_home()
+            old_home.mkdir(parents=True, exist_ok=True)
+            with mock.patch.object(container, "registered_distros", return_value=(None, {})):
+                container.ensure_distro(old_home)
+            registered = world.asked[0][2]
+            self.assertEqual(Path(registered).parent, old / "engines" / "kiri" / container.KIRI_VERSION)
+            world.asked.clear()
+            with mock.patch.object(container, "registered_distros",
+                                   return_value=(None, {container.DISTRO: registered})):
+                container.ensure_distro(container.engine_home())  # the setting unchanged: used as it is
+            self.assertEqual(world.asked, [])
+        with mock.patch.dict(os.environ, {**default, "DAODAN_SHARED_DIR": str(new)}):
+            new_home = container.engine_home()
+            new_home.mkdir(parents=True, exist_ok=True)
+            with mock.patch.object(container, "registered_distros",
+                                   return_value=(None, {container.DISTRO: registered})):
+                container.ensure_distro(new_home)
+        self.assertEqual([args[0] for args in world.asked], ["--unregister", "--import", "-d"])
+        self.assertEqual(Path(world.asked[1][2]).parent, new / "engines" / "kiri" / container.KIRI_VERSION)
+        self.assertEqual(len(world.fetched), 2)  # the base once in each place
+        self.assertTrue(Path(registered).is_dir())  # nothing of the old place is removed by Daodan
 
     # Section 3: elsewhere, where Daodan brings no engine, the one the user already has is used as it is.
     @unittest.skipIf(os.name == "nt", "on Windows the engine is always Daodan's own")

@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/miguelgrinberg/microblog",
+ "commit": "a975ef64864354867c88e0ed3a17ba7d17dca752",
+ "licence": "MIT",
+ "why": "one Flask app with blueprints, a database through an ORM, a job queue with its worker, mail, a search engine and a translation API"
+}

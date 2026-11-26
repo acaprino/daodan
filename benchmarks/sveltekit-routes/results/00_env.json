@@ -1,0 +1,38 @@
+{
+ "node": "v24.22.3",
+ "npm": "11.19.1",
+ "packages": {
+  "kit-2.0.0": {
+   "@sveltejs/adapter-auto": "3.3.1",
+   "@sveltejs/kit": "2.0.0",
+   "@sveltejs/vite-plugin-svelte": "3.1.2",
+   "svelte": "4.2.20",
+   "typescript": "5.9.3",
+   "vite": "5.4.21"
+  },
+  "kit-2.15.0": {
+   "@sveltejs/adapter-auto": "3.3.1",
+   "@sveltejs/kit": "2.15.0",
+   "@sveltejs/vite-plugin-svelte": "5.1.1",
+   "svelte": "5.59.1",
+   "typescript": "5.9.3",
+   "vite": "6.4.6"
+  },
+  "kit-2.40.0": {
+   "@sveltejs/adapter-auto": "6.1.1",
+   "@sveltejs/kit": "2.40.0",
+   "@sveltejs/vite-plugin-svelte": "6.2.4",
+   "svelte": "5.59.1",
+   "typescript": "5.9.3",
+   "vite": "7.3.8"
+  },
+  "routes": {
+   "@sveltejs/adapter-auto": "6.1.1",
+   "@sveltejs/kit": "2.70.4",
+   "@sveltejs/vite-plugin-svelte": "6.2.4",
+   "svelte": "5.59.1",
+   "typescript": "5.9.3",
+   "vite": "7.3.8"
+  }
+ }
+}

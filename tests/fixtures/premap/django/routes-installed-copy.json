@@ -1,0 +1,5 @@
+{
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"routes\": [{\"path\": \"/own/\", \"parts\": [[false, \"/own/\"]], \"arguments\": {}, \"view\": null, \"handlers\": [{\"method\": null, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"proj.urls\", \"qualname\": \"own\", \"file\": \"proj/urls.py\", \"line\": 5, \"environment\": false, \"distribution\": null, \"owners\": []}}]}, {\"path\": \"/shared/view/\", \"parts\": [[false, \"/shared/view/\"]], \"arguments\": {}, \"view\": null, \"handlers\": [{\"method\": null, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"sharedlib.views\", \"qualname\": \"shared_view\", \"file\": \"../daodan/state/venvs/lib/python3.12/site-packages/sharedlib/views.py\", \"line\": 4, \"environment\": true, \"distribution\": {\"name\": \"sharedlib\", \"url\": \"file:///work/libs/shared\"}, \"owners\": [\"sharedlib\"]}}]}], \"unread\": [], \"locale\": null}",
+ "stderr": ""
+}

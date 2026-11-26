@@ -76,7 +76,7 @@ import preparation
 from indexers import typescript  # the image, the unit kinds and the restores of the analyzer of the same languages
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "2", ("javascript", "typescript")
+NAME, VERSION, LANGUAGES = "dynamic-record-javascript", "2", ("javascript", "typescript")
 RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
 PLAYWRIGHT_CONTROLS = Path(__file__).with_name("playwright_controls.cjs")
 CONTROL_READER = Path(__file__).with_name("control_coverage.js")

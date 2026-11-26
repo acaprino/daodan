@@ -1,0 +1,2218 @@
+{
+ "schema": "daodan/real-graph-expected/v1",
+ "case": "next-subscriptions",
+ "modules": [
+  {
+   "name": "nextjs-subscription-payments",
+   "root": ".",
+   "tool": "pnpm",
+   "manifest": "package.json",
+   "languages": [
+    "typescript",
+    "javascript",
+    "css",
+    "sql"
+   ],
+   "toolchains": [
+    {
+     "tool": "pnpm",
+     "version": "lockfile 6.0",
+     "declared_in": "pnpm-lock.yaml"
+    },
+    {
+     "tool": "typescript",
+     "version": "^5.4.5",
+     "declared_in": "package.json"
+    }
+   ],
+   "technologies": [
+    "nextjs",
+    "react",
+    "react-dom",
+    "tailwind",
+    "shadcn",
+    "radixui",
+    "lucideicons",
+    "stripe",
+    "supabase",
+    "supabase.auth",
+    "supabase.postgres",
+    "typescript",
+    "eslint",
+    "prettier",
+    "pnpm"
+   ],
+   "start": {
+    "command": "next dev --turbo",
+    "declared_in": "package.json",
+    "port": 3000,
+    "needs": "a Supabase project or the local stack (supabase start, which needs Docker) and Stripe keys in .env.local"
+   },
+   "build": {
+    "command": "next build",
+    "declared_in": "package.json"
+   },
+   "test": null
+  }
+ ],
+ "module_edges": [],
+ "externals": [
+  {
+   "registry": "stripe",
+   "type": "gateway",
+   "declared_in": [
+    "package.json",
+    ".env.local.example",
+    "fixtures/stripe-fixtures.json"
+   ],
+   "used_by": [
+    "utils/stripe/config.ts",
+    "utils/stripe/client.ts::getStripe",
+    "utils/stripe/server.ts::checkoutWithStripe",
+    "utils/stripe/server.ts::createStripePortal",
+    "utils/supabase/admin.ts::createCustomerInStripe",
+    "utils/supabase/admin.ts::createOrRetrieveCustomer",
+    "utils/supabase/admin.ts::copyBillingDetailsToCustomer",
+    "utils/supabase/admin.ts::manageSubscriptionStatusChange",
+    "app/api/webhooks/route.ts::POST",
+    "components/ui/Pricing/Pricing.tsx::handleStripeCheckout",
+    "components/ui/AccountForms/CustomerPortalForm.tsx::handleStripePortalRequest"
+   ]
+  },
+  {
+   "registry": "supabase",
+   "type": "servizio o API",
+   "declared_in": [
+    "package.json",
+    "supabase/config.toml",
+    ".env.local.example"
+   ],
+   "used_by": [
+    "utils/supabase/client.ts::createClient",
+    "utils/supabase/server.ts::createClient",
+    "utils/supabase/middleware.ts::createClient",
+    "utils/supabase/admin.ts"
+   ],
+   "note": "the platform: its two SDK packages, its CLI (devDependency, the supabase:* scripts) and the local stack of supabase/config.toml; what the code uses of it are supabase.auth and supabase.postgres"
+  },
+  {
+   "registry": "supabase.auth",
+   "type": "autenticazione",
+   "declared_in": [
+    "package.json",
+    "supabase/config.toml",
+    ".env.local.example"
+   ],
+   "used_by": [
+    "utils/auth-helpers/server.ts::SignOut",
+    "utils/auth-helpers/server.ts::signInWithEmail",
+    "utils/auth-helpers/server.ts::requestPasswordUpdate",
+    "utils/auth-helpers/server.ts::signInWithPassword",
+    "utils/auth-helpers/server.ts::signUp",
+    "utils/auth-helpers/server.ts::updatePassword",
+    "utils/auth-helpers/server.ts::updateEmail",
+    "utils/auth-helpers/server.ts::updateName",
+    "utils/auth-helpers/client.ts::signInWithOAuth",
+    "app/auth/callback/route.ts::GET",
+    "app/auth/reset_password/route.ts::GET",
+    "utils/supabase/middleware.ts::updateSession",
+    "utils/supabase/queries.ts::getUser",
+    "app/signin/[id]/page.tsx::SignIn",
+    "components/ui/Navbar/Navbar.tsx::Navbar",
+    "utils/stripe/server.ts::checkoutWithStripe",
+    "utils/stripe/server.ts::createStripePortal"
+   ]
+  },
+  {
+   "registry": "supabase.postgres",
+   "type": "database",
+   "declared_in": [
+    "package.json",
+    "supabase/config.toml",
+    "supabase/migrations/20230530034630_init.sql",
+    "schema.sql",
+    ".env.local.example"
+   ],
+   "used_by": [
+    "utils/supabase/queries.ts::getSubscription",
+    "utils/supabase/queries.ts::getProducts",
+    "utils/supabase/queries.ts::getUserDetails",
+    "utils/supabase/admin.ts::upsertProductRecord",
+    "utils/supabase/admin.ts::upsertPriceRecord",
+    "utils/supabase/admin.ts::deleteProductRecord",
+    "utils/supabase/admin.ts::deletePriceRecord",
+    "utils/supabase/admin.ts::upsertCustomerToSupabase",
+    "utils/supabase/admin.ts::createOrRetrieveCustomer",
+    "utils/supabase/admin.ts::copyBillingDetailsToCustomer",
+    "utils/supabase/admin.ts::manageSubscriptionStatusChange"
+   ]
+  },
+  {
+   "registry": "github.oauth",
+   "type": "autenticazione",
+   "declared_in": [
+    "supabase/config.toml",
+    ".env.example",
+    "components/ui/AuthForms/OauthSignIn.tsx"
+   ],
+   "used_by": [],
+   "note": "reached by Supabase Auth, never by the project's code: the project holds the provider name and Supabase's local configuration"
+  },
+  {
+   "registry": "vercel",
+   "type": "servizio o API",
+   "declared_in": [
+    "README.md",
+    "utils/helpers.ts"
+   ],
+   "used_by": [
+    "utils/helpers.ts::getURL"
+   ],
+   "note": "hosting: the code reads NEXT_PUBLIC_VERCEL_URL; there is no vercel.json"
+  },
+  {
+   "registry": "inbucket",
+   "type": "servizio o API",
+   "declared_in": [
+    "supabase/config.toml"
+   ],
+   "used_by": [],
+   "note": "the mail catcher of Supabase's local stack; no code calls it"
+  },
+  {
+   "name": "Stripe CLI",
+   "type": "altro",
+   "declared_in": [
+    "package.json",
+    "README.md"
+   ],
+   "used_by": [],
+   "note": "a tool the scripts stripe:login, stripe:listen and stripe:fixtures launch; it is not a dependency in the manifest"
+  }
+ ],
+ "entry_points": {
+  "route": [
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/",
+    "kind": "page",
+    "handler": "app/page.tsx::PricingPage",
+    "at": "app/page.tsx:9",
+    "literal": "PricingPage",
+    "layouts": [
+     "app/layout.tsx"
+    ],
+    "middleware": [
+     "middleware.ts::middleware"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/account",
+    "kind": "page",
+    "handler": "app/account/page.tsx::Account",
+    "at": "app/account/page.tsx:12",
+    "literal": "Account",
+    "layouts": [
+     "app/layout.tsx"
+    ],
+    "middleware": [
+     "middleware.ts::middleware"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/signin",
+    "kind": "page",
+    "handler": "app/signin/page.tsx::SignIn",
+    "at": "app/signin/page.tsx:5",
+    "literal": "SignIn",
+    "layouts": [
+     "app/layout.tsx"
+    ],
+    "middleware": [
+     "middleware.ts::middleware"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/signin/[id]",
+    "kind": "page",
+    "handler": "app/signin/[id]/page.tsx::SignIn",
+    "at": "app/signin/[id]/page.tsx:20",
+    "literal": "SignIn",
+    "layouts": [
+     "app/layout.tsx"
+    ],
+    "middleware": [
+     "middleware.ts::middleware"
+    ],
+    "params": {
+     "id": [
+      "password_signin",
+      "email_signin",
+      "forgot_password",
+      "update_password",
+      "signup"
+     ]
+    },
+    "params_from": "utils/auth-helpers/settings.ts::getViewTypes"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/auth/callback",
+    "kind": "route handler",
+    "handler": "app/auth/callback/route.ts::GET",
+    "at": "app/auth/callback/route.ts:6",
+    "literal": "GET",
+    "middleware": [
+     "middleware.ts::middleware"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/auth/reset_password",
+    "kind": "route handler",
+    "handler": "app/auth/reset_password/route.ts::GET",
+    "at": "app/auth/reset_password/route.ts:6",
+    "literal": "GET",
+    "middleware": [
+     "middleware.ts::middleware"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "POST",
+    "path": "/api/webhooks",
+    "kind": "route handler",
+    "handler": "app/api/webhooks/route.ts::POST",
+    "at": "app/api/webhooks/route.ts:24",
+    "literal": "POST",
+    "middleware": [
+     "middleware.ts::middleware"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/opengraph-image.png",
+    "kind": "metadata file",
+    "handler": null,
+    "static": "app/opengraph-image.png",
+    "at": "app/opengraph-image.png"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "method": "GET",
+    "path": "/*",
+    "kind": "static files",
+    "handler": null,
+    "static": "public",
+    "at": "public"
+   }
+  ],
+  "page": [
+   {
+    "module": "nextjs-subscription-payments",
+    "template": "app/page.tsx",
+    "rendered_by": "app/page.tsx::PricingPage",
+    "route": "/",
+    "title": "Pricing Plans",
+    "components": [
+     "components/ui/Pricing/Pricing.tsx",
+     "components/ui/LogoCloud/LogoCloud.tsx"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "template": "app/account/page.tsx",
+    "rendered_by": "app/account/page.tsx::Account",
+    "route": "/account",
+    "title": "Account",
+    "components": [
+     "components/ui/AccountForms/CustomerPortalForm.tsx",
+     "components/ui/AccountForms/NameForm.tsx",
+     "components/ui/AccountForms/EmailForm.tsx"
+    ]
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "template": "app/signin/page.tsx",
+    "rendered_by": "app/signin/page.tsx::SignIn",
+    "route": "/signin",
+    "title": null,
+    "note": "renders nothing: it redirects to /signin/<view>"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "template": "app/signin/[id]/page.tsx",
+    "rendered_by": "app/signin/[id]/page.tsx::SignIn",
+    "route": "/signin/[id]",
+    "title": "Sign In, Sign Up, Reset Password or Update Password, by the view",
+    "components": [
+     "components/ui/AuthForms/PasswordSignIn.tsx",
+     "components/ui/AuthForms/EmailSignIn.tsx",
+     "components/ui/AuthForms/ForgotPassword.tsx",
+     "components/ui/AuthForms/UpdatePassword.tsx",
+     "components/ui/AuthForms/Signup.tsx",
+     "components/ui/AuthForms/OauthSignIn.tsx",
+     "components/ui/AuthForms/Separator.tsx"
+    ]
+   }
+  ],
+  "layout": [
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "app/layout.tsx::RootLayout",
+    "at": "app/layout.tsx:22",
+    "wraps": "every page",
+    "components": [
+     "components/ui/Navbar/Navbar.tsx",
+     "components/ui/Footer/Footer.tsx",
+     "components/ui/Toasts/toaster.tsx"
+    ]
+   }
+  ],
+  "middleware": [
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "middleware.ts::middleware",
+    "at": "middleware.ts:4",
+    "matcher": "every path except _next/static, _next/image, favicon.ico and image files",
+    "matcher_at": "middleware.ts:18",
+    "calls": "utils/supabase/middleware.ts::updateSession"
+   }
+  ],
+  "server_action": [
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::redirectToPath",
+    "at": "utils/auth-helpers/server.ts:14",
+    "caller": [
+     "utils/auth-helpers/client.ts:25"
+    ],
+    "does": "redirect to the given path, on the server"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::SignOut",
+    "at": "utils/auth-helpers/server.ts:18",
+    "caller": [
+     "components/ui/Navbar/Navlinks.tsx:37"
+    ],
+    "does": "closes the Supabase Auth session; returns /signin"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::signInWithEmail",
+    "at": "utils/auth-helpers/server.ts:35",
+    "caller": [
+     "components/ui/AuthForms/EmailSignIn.tsx:27"
+    ],
+    "does": "asks Supabase Auth for a magic link; returns /signin/email_signin with a toast"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::requestPasswordUpdate",
+    "at": "utils/auth-helpers/server.ts:89",
+    "caller": [
+     "components/ui/AuthForms/ForgotPassword.tsx:27"
+    ],
+    "does": "asks Supabase Auth for a password reset email; returns /signin/forgot_password with a toast"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::signInWithPassword",
+    "at": "utils/auth-helpers/server.ts:134",
+    "caller": [
+     "components/ui/AuthForms/PasswordSignIn.tsx:25"
+    ],
+    "does": "signs in with email and password; returns / with a toast"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::signUp",
+    "at": "utils/auth-helpers/server.ts:166",
+    "caller": [
+     "components/ui/AuthForms/Signup.tsx:23"
+    ],
+    "does": "registers the user; returns / with a toast"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::updatePassword",
+    "at": "utils/auth-helpers/server.ts:225",
+    "caller": [
+     "components/ui/AuthForms/UpdatePassword.tsx:21"
+    ],
+    "does": "sets the new password of the signed-in user; returns / with a toast"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::updateEmail",
+    "at": "utils/auth-helpers/server.ts:267",
+    "caller": [
+     "components/ui/AccountForms/EmailForm.tsx:26"
+    ],
+    "does": "asks Supabase Auth to change the email; returns /account with a toast"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/auth-helpers/server.ts::updateName",
+    "at": "utils/auth-helpers/server.ts:308",
+    "caller": [
+     "components/ui/AccountForms/NameForm.tsx:22"
+    ],
+    "does": "writes full_name in the Auth user's metadata; returns /account with a toast"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/stripe/server.ts::checkoutWithStripe",
+    "at": "utils/stripe/server.ts:21",
+    "caller": [
+     "components/ui/Pricing/Pricing.tsx:57"
+    ],
+    "does": "creates a Stripe Checkout session for the price; returns its id or an error path"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "symbol": "utils/stripe/server.ts::createStripePortal",
+    "at": "utils/stripe/server.ts:122",
+    "caller": [
+     "components/ui/AccountForms/CustomerPortalForm.tsx:42"
+    ],
+    "does": "creates a Stripe customer portal session; returns its URL or an error path"
+   }
+  ],
+  "action": [
+   {
+    "label": "Subscribe / Manage",
+    "in": "components/ui/Pricing/Pricing.tsx",
+    "at": "components/ui/Pricing/Pricing.tsx:189",
+    "does": "server action checkoutWithStripe, then redirect to Stripe Checkout",
+    "handler": "components/ui/Pricing/Pricing.tsx::handleStripeCheckout"
+   },
+   {
+    "label": "Monthly billing",
+    "in": "components/ui/Pricing/Pricing.tsx",
+    "at": "components/ui/Pricing/Pricing.tsx:120",
+    "does": "local state: billing interval",
+    "handler": "components/ui/Pricing/Pricing.tsx:120"
+   },
+   {
+    "label": "Yearly billing",
+    "in": "components/ui/Pricing/Pricing.tsx",
+    "at": "components/ui/Pricing/Pricing.tsx:133",
+    "does": "local state: billing interval",
+    "handler": "components/ui/Pricing/Pricing.tsx:133"
+   },
+   {
+    "label": "Open customer portal",
+    "in": "components/ui/AccountForms/CustomerPortalForm.tsx",
+    "at": "components/ui/AccountForms/CustomerPortalForm.tsx:60",
+    "does": "server action createStripePortal, then navigation to the portal URL",
+    "handler": "components/ui/AccountForms/CustomerPortalForm.tsx::handleStripePortalRequest"
+   },
+   {
+    "label": "Update Name",
+    "in": "components/ui/AccountForms/NameForm.tsx",
+    "at": "components/ui/AccountForms/NameForm.tsx:45",
+    "does": "server action updateName",
+    "handler": "components/ui/AccountForms/NameForm.tsx::handleSubmit"
+   },
+   {
+    "label": "Update Email",
+    "in": "components/ui/AccountForms/EmailForm.tsx",
+    "at": "components/ui/AccountForms/EmailForm.tsx:51",
+    "does": "server action updateEmail",
+    "handler": "components/ui/AccountForms/EmailForm.tsx::handleSubmit"
+   },
+   {
+    "label": "Sign in (email and password)",
+    "in": "components/ui/AuthForms/PasswordSignIn.tsx",
+    "at": "components/ui/AuthForms/PasswordSignIn.tsx:34",
+    "does": "server action signInWithPassword",
+    "handler": "components/ui/AuthForms/PasswordSignIn.tsx::handleSubmit"
+   },
+   {
+    "label": "Sign in (magic link)",
+    "in": "components/ui/AuthForms/EmailSignIn.tsx",
+    "at": "components/ui/AuthForms/EmailSignIn.tsx:36",
+    "does": "server action signInWithEmail",
+    "handler": "components/ui/AuthForms/EmailSignIn.tsx::handleSubmit"
+   },
+   {
+    "label": "Send Email",
+    "in": "components/ui/AuthForms/ForgotPassword.tsx",
+    "at": "components/ui/AuthForms/ForgotPassword.tsx:36",
+    "does": "server action requestPasswordUpdate",
+    "handler": "components/ui/AuthForms/ForgotPassword.tsx::handleSubmit"
+   },
+   {
+    "label": "Update Password",
+    "in": "components/ui/AuthForms/UpdatePassword.tsx",
+    "at": "components/ui/AuthForms/UpdatePassword.tsx:30",
+    "does": "server action updatePassword",
+    "handler": "components/ui/AuthForms/UpdatePassword.tsx::handleSubmit"
+   },
+   {
+    "label": "Sign up",
+    "in": "components/ui/AuthForms/Signup.tsx",
+    "at": "components/ui/AuthForms/Signup.tsx:32",
+    "does": "server action signUp",
+    "handler": "components/ui/AuthForms/Signup.tsx::handleSubmit"
+   },
+   {
+    "label": "GitHub",
+    "in": "components/ui/AuthForms/OauthSignIn.tsx",
+    "at": "components/ui/AuthForms/OauthSignIn.tsx:38",
+    "does": "supabase.auth.signInWithOAuth in the browser",
+    "handler": "components/ui/AuthForms/OauthSignIn.tsx::handleSubmit"
+   },
+   {
+    "label": "Sign out",
+    "in": "components/ui/Navbar/Navlinks.tsx",
+    "at": "components/ui/Navbar/Navlinks.tsx:37",
+    "does": "server action SignOut",
+    "handler": "components/ui/Navbar/Navlinks.tsx:37"
+   },
+   {
+    "label": "Logo",
+    "in": "components/ui/Navbar/Navlinks.tsx",
+    "at": "components/ui/Navbar/Navlinks.tsx:21",
+    "does": "GET /"
+   },
+   {
+    "label": "Pricing",
+    "in": "components/ui/Navbar/Navlinks.tsx",
+    "at": "components/ui/Navbar/Navlinks.tsx:25",
+    "does": "GET /"
+   },
+   {
+    "label": "Account",
+    "in": "components/ui/Navbar/Navlinks.tsx",
+    "at": "components/ui/Navbar/Navlinks.tsx:29",
+    "does": "GET /account"
+   },
+   {
+    "label": "Sign In",
+    "in": "components/ui/Navbar/Navlinks.tsx",
+    "at": "components/ui/Navbar/Navlinks.tsx:44",
+    "does": "GET /signin"
+   },
+   {
+    "label": "Choose your plan",
+    "in": "components/ui/AccountForms/CustomerPortalForm.tsx",
+    "at": "components/ui/AccountForms/CustomerPortalForm.tsx:72",
+    "does": "GET /"
+   },
+   {
+    "label": "Forgot your password?",
+    "in": "components/ui/AuthForms/PasswordSignIn.tsx",
+    "at": "components/ui/AuthForms/PasswordSignIn.tsx:70",
+    "does": "GET /signin/forgot_password"
+   },
+   {
+    "label": "Sign in via magic link",
+    "in": "components/ui/AuthForms/PasswordSignIn.tsx",
+    "at": "components/ui/AuthForms/PasswordSignIn.tsx:76",
+    "does": "GET /signin/email_signin"
+   },
+   {
+    "label": "Don't have an account? Sign up",
+    "in": "components/ui/AuthForms/PasswordSignIn.tsx",
+    "at": "components/ui/AuthForms/PasswordSignIn.tsx:82",
+    "does": "GET /signin/signup"
+   },
+   {
+    "label": "Sign in with email and password",
+    "in": "components/ui/AuthForms/EmailSignIn.tsx",
+    "at": "components/ui/AuthForms/EmailSignIn.tsx:66",
+    "does": "GET /signin/password_signin"
+   },
+   {
+    "label": "Don't have an account? Sign up",
+    "in": "components/ui/AuthForms/EmailSignIn.tsx",
+    "at": "components/ui/AuthForms/EmailSignIn.tsx:71",
+    "does": "GET /signin/signup"
+   },
+   {
+    "label": "Sign in with email and password",
+    "in": "components/ui/AuthForms/ForgotPassword.tsx",
+    "at": "components/ui/AuthForms/ForgotPassword.tsx:64",
+    "does": "GET /signin/password_signin"
+   },
+   {
+    "label": "Sign in via magic link",
+    "in": "components/ui/AuthForms/ForgotPassword.tsx",
+    "at": "components/ui/AuthForms/ForgotPassword.tsx:70",
+    "does": "GET /signin/email_signin"
+   },
+   {
+    "label": "Don't have an account? Sign up",
+    "in": "components/ui/AuthForms/ForgotPassword.tsx",
+    "at": "components/ui/AuthForms/ForgotPassword.tsx:76",
+    "does": "GET /signin/signup"
+   },
+   {
+    "label": "Sign in with email and password",
+    "in": "components/ui/AuthForms/Signup.tsx",
+    "at": "components/ui/AuthForms/Signup.tsx:69",
+    "does": "GET /signin/password_signin"
+   },
+   {
+    "label": "Sign in via magic link",
+    "in": "components/ui/AuthForms/Signup.tsx",
+    "at": "components/ui/AuthForms/Signup.tsx:75",
+    "does": "GET /signin/email_signin"
+   },
+   {
+    "label": "ACME",
+    "in": "components/ui/Footer/Footer.tsx",
+    "at": "components/ui/Footer/Footer.tsx:12",
+    "does": "GET /"
+   },
+   {
+    "label": "Home",
+    "in": "components/ui/Footer/Footer.tsx",
+    "at": "components/ui/Footer/Footer.tsx:25",
+    "does": "GET /"
+   },
+   {
+    "label": "About",
+    "in": "components/ui/Footer/Footer.tsx",
+    "at": "components/ui/Footer/Footer.tsx:33",
+    "does": "GET /"
+   },
+   {
+    "label": "Careers",
+    "in": "components/ui/Footer/Footer.tsx",
+    "at": "components/ui/Footer/Footer.tsx:41",
+    "does": "GET /"
+   },
+   {
+    "label": "Blog",
+    "in": "components/ui/Footer/Footer.tsx",
+    "at": "components/ui/Footer/Footer.tsx:49",
+    "does": "GET /"
+   },
+   {
+    "label": "Privacy Policy",
+    "in": "components/ui/Footer/Footer.tsx",
+    "at": "components/ui/Footer/Footer.tsx:66",
+    "does": "GET /"
+   },
+   {
+    "label": "Terms of Use",
+    "in": "components/ui/Footer/Footer.tsx",
+    "at": "components/ui/Footer/Footer.tsx:74",
+    "does": "GET /"
+   }
+  ],
+  "webhook": [
+   {
+    "module": "nextjs-subscription-payments",
+    "from": "stripe",
+    "method": "POST",
+    "path": "/api/webhooks",
+    "handler": "app/api/webhooks/route.ts::POST",
+    "at": "app/api/webhooks/route.ts:24",
+    "verified_at": "app/api/webhooks/route.ts:33",
+    "events": [
+     {
+      "type": "product.created",
+      "at": "app/api/webhooks/route.ts:43",
+      "calls": "utils/supabase/admin.ts::upsertProductRecord"
+     },
+     {
+      "type": "product.updated",
+      "at": "app/api/webhooks/route.ts:44",
+      "calls": "utils/supabase/admin.ts::upsertProductRecord"
+     },
+     {
+      "type": "price.created",
+      "at": "app/api/webhooks/route.ts:47",
+      "calls": "utils/supabase/admin.ts::upsertPriceRecord"
+     },
+     {
+      "type": "price.updated",
+      "at": "app/api/webhooks/route.ts:48",
+      "calls": "utils/supabase/admin.ts::upsertPriceRecord"
+     },
+     {
+      "type": "price.deleted",
+      "at": "app/api/webhooks/route.ts:51",
+      "calls": "utils/supabase/admin.ts::deletePriceRecord"
+     },
+     {
+      "type": "product.deleted",
+      "at": "app/api/webhooks/route.ts:54",
+      "calls": "utils/supabase/admin.ts::deleteProductRecord"
+     },
+     {
+      "type": "customer.subscription.created",
+      "at": "app/api/webhooks/route.ts:57",
+      "calls": "utils/supabase/admin.ts::manageSubscriptionStatusChange"
+     },
+     {
+      "type": "customer.subscription.updated",
+      "at": "app/api/webhooks/route.ts:58",
+      "calls": "utils/supabase/admin.ts::manageSubscriptionStatusChange"
+     },
+     {
+      "type": "customer.subscription.deleted",
+      "at": "app/api/webhooks/route.ts:59",
+      "calls": "utils/supabase/admin.ts::manageSubscriptionStatusChange"
+     },
+     {
+      "type": "checkout.session.completed",
+      "at": "app/api/webhooks/route.ts:67",
+      "calls": "utils/supabase/admin.ts::manageSubscriptionStatusChange"
+     }
+    ]
+   }
+  ],
+  "database_trigger": [
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "on_auth_user_created: after insert on auth.users",
+    "at": "supabase/migrations/20230530034630_init.sql:30",
+    "symbol": "supabase/migrations/20230530034630_init.sql::handle_new_user",
+    "from": "supabase.auth"
+   }
+  ],
+  "script": [
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "dev",
+    "at": "package.json:4",
+    "runs": "next dev --turbo"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "build",
+    "at": "package.json:5",
+    "runs": "next build"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "start",
+    "at": "package.json:6",
+    "runs": "next start"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "lint",
+    "at": "package.json:7",
+    "runs": "next lint"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "prettier-fix",
+    "at": "package.json:8",
+    "runs": "prettier"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "stripe:login",
+    "at": "package.json:9",
+    "runs": "Stripe CLI"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "stripe:listen",
+    "at": "package.json:10",
+    "runs": "Stripe CLI: forwards events to localhost:3000/api/webhooks"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "stripe:fixtures",
+    "at": "package.json:11",
+    "runs": "Stripe CLI: creates the products and prices of fixtures/stripe-fixtures.json"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:start",
+    "at": "package.json:12",
+    "runs": "Supabase CLI: local stack, applies the migrations"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:stop",
+    "at": "package.json:13",
+    "runs": "Supabase CLI"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:status",
+    "at": "package.json:14",
+    "runs": "Supabase CLI"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:restart",
+    "at": "package.json:15",
+    "runs": "the two scripts above"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:reset",
+    "at": "package.json:16",
+    "runs": "Supabase CLI: recreates the local database from the migrations and seed.sql"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:link",
+    "at": "package.json:17",
+    "runs": "Supabase CLI"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:generate-types",
+    "at": "package.json:18",
+    "runs": "Supabase CLI: writes types_db.ts"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:generate-migration",
+    "at": "package.json:19",
+    "runs": "Supabase CLI: a new file in supabase/migrations"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:generate-seed",
+    "at": "package.json:20",
+    "runs": "Supabase CLI: writes supabase/seed.sql"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:push",
+    "at": "package.json:21",
+    "runs": "Supabase CLI: applies the migrations to the linked project"
+   },
+   {
+    "module": "nextjs-subscription-payments",
+    "what": "supabase:pull",
+    "at": "package.json:22",
+    "runs": "Supabase CLI"
+   }
+  ],
+  "main": [],
+  "scheduled": [],
+  "test": []
+ },
+ "routes": [
+  {
+   "caller": "components/ui/Navbar/Navlinks.tsx:21",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Navbar/Navlinks.tsx:25",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Navbar/Navlinks.tsx:29",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Navbar/Navlinks.tsx:44",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin",
+   "handler": "app/signin/page.tsx::SignIn",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/AccountForms/CustomerPortalForm.tsx:72",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/AuthForms/PasswordSignIn.tsx:70",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/forgot_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/PasswordSignIn.tsx:76",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/email_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/PasswordSignIn.tsx:82",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/EmailSignIn.tsx:66",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/password_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/EmailSignIn.tsx:71",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/ForgotPassword.tsx:64",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/password_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/ForgotPassword.tsx:70",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/email_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/ForgotPassword.tsx:76",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/Signup.tsx:69",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/password_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/AuthForms/Signup.tsx:75",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/email_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "link",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/Footer/Footer.tsx:12",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Footer/Footer.tsx:25",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Footer/Footer.tsx:33",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Footer/Footer.tsx:41",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Footer/Footer.tsx:49",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Footer/Footer.tsx:66",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "components/ui/Footer/Footer.tsx:74",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "link"
+  },
+  {
+   "caller": "app/account/page.tsx:21",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin",
+   "handler": "app/signin/page.tsx::SignIn",
+   "by": "redirect"
+  },
+  {
+   "caller": "app/signin/page.tsx:10",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/[id]",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "redirect",
+   "param": "the preferredSignInView cookie or the default view"
+  },
+  {
+   "caller": "app/signin/[id]/page.tsx:41",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/[id]",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "redirect",
+   "param": "the preferredSignInView cookie or the default view"
+  },
+  {
+   "caller": "app/signin/[id]/page.tsx:52",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "redirect"
+  },
+  {
+   "caller": "app/signin/[id]/page.tsx:54",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin",
+   "handler": "app/signin/page.tsx::SignIn",
+   "by": "redirect"
+  },
+  {
+   "caller": "app/auth/callback/route.ts:20",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin",
+   "handler": "app/signin/page.tsx::SignIn",
+   "by": "redirect"
+  },
+  {
+   "caller": "app/auth/callback/route.ts:31",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "redirect"
+  },
+  {
+   "caller": "app/auth/reset_password/route.ts:20",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/forgot_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "redirect",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "app/auth/reset_password/route.ts:31",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/update_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "redirect",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "components/ui/Pricing/Pricing.tsx:54",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "router.push",
+   "route": "/signin/[id]"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:32",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin",
+   "handler": "app/signin/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:44",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/email_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:66",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/email_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:73",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/email_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:80",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/email_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:98",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/forgot_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:112",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/forgot_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:118",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/forgot_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:125",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/forgot_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:148",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/password_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:154",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:157",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/password_signin",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:175",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:192",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:197",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:204",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:210",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:216",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/signup",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:233",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/update_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:246",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/update_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:252",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:258",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/signin/update_password",
+   "handler": "app/signin/[id]/page.tsx::SignIn",
+   "by": "path returned by a server action",
+   "route": "/signin/[id]",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:274",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:295",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:301",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:319",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:325",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:331",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "path returned by a server action",
+   "navigated_at": "utils/auth-helpers/client.ts:22"
+  },
+  {
+   "caller": "components/ui/Pricing/Pricing.tsx:64",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "router.push",
+   "note": "the error path checkoutWithStripe returns: the path the page is on"
+  },
+  {
+   "caller": "components/ui/AccountForms/CustomerPortalForm.tsx:44",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "router.push",
+   "note": "only when createStripePortal returns an error path; otherwise the URL is Stripe's portal"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:37",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/auth/callback",
+   "handler": "app/auth/callback/route.ts::GET",
+   "by": "redirect URL handed to an external",
+   "through": "supabase.auth"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:167",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/auth/callback",
+   "handler": "app/auth/callback/route.ts::GET",
+   "by": "redirect URL handed to an external",
+   "through": "supabase.auth"
+  },
+  {
+   "caller": "utils/auth-helpers/client.ts:37",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/auth/callback",
+   "handler": "app/auth/callback/route.ts::GET",
+   "by": "redirect URL handed to an external",
+   "through": "supabase.auth"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:90",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/auth/reset_password",
+   "handler": "app/auth/reset_password/route.ts::GET",
+   "by": "redirect URL handed to an external",
+   "through": "supabase.auth"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:283",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "redirect URL handed to an external",
+   "through": "supabase.auth"
+  },
+  {
+   "caller": "utils/stripe/server.ts:63",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "redirect URL handed to an external",
+   "through": "stripe"
+  },
+  {
+   "caller": "utils/stripe/server.ts:64",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/",
+   "handler": "app/page.tsx::PricingPage",
+   "by": "redirect URL handed to an external",
+   "through": "stripe",
+   "note": "redirectPath is the path the checkout started from, / from the pricing page"
+  },
+  {
+   "caller": "utils/stripe/server.ts:155",
+   "module": "nextjs-subscription-payments",
+   "method": "GET",
+   "path": "/account",
+   "handler": "app/account/page.tsx::Account",
+   "by": "redirect URL handed to an external",
+   "through": "stripe"
+  },
+  {
+   "caller": "package.json:10",
+   "module": "nextjs-subscription-payments",
+   "method": "POST",
+   "path": "/api/webhooks",
+   "handler": "app/api/webhooks/route.ts::POST",
+   "by": "events forwarded by the Stripe CLI",
+   "through": "stripe"
+  }
+ ],
+ "external_calls": [
+  {
+   "caller": "utils/auth-helpers/server.ts:22",
+   "to": "supabase.auth",
+   "what": "sign out"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:59",
+   "to": "supabase.auth",
+   "what": "magic link by email, with the return URL /auth/callback"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:106",
+   "to": "supabase.auth",
+   "what": "password reset email, with the return URL /auth/reset_password"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:141",
+   "to": "supabase.auth",
+   "what": "sign in with email and password"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:182",
+   "to": "supabase.auth",
+   "what": "registration with email and password, with the return URL /auth/callback"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:240",
+   "to": "supabase.auth",
+   "what": "new password of the signed-in user"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:286",
+   "to": "supabase.auth",
+   "what": "email change, with the return URL /account"
+  },
+  {
+   "caller": "utils/auth-helpers/server.ts:313",
+   "to": "supabase.auth",
+   "what": "full_name in the user's metadata"
+  },
+  {
+   "caller": "utils/auth-helpers/client.ts:38",
+   "to": "supabase.auth",
+   "what": "OAuth sign-in from the browser: provider github, return URL /auth/callback; the browser is redirected"
+  },
+  {
+   "caller": "app/auth/callback/route.ts:15",
+   "to": "supabase.auth",
+   "what": "code exchanged for a session"
+  },
+  {
+   "caller": "app/auth/reset_password/route.ts:15",
+   "to": "supabase.auth",
+   "what": "code exchanged for a session"
+  },
+  {
+   "caller": "utils/supabase/middleware.ts:71",
+   "to": "supabase.auth",
+   "what": "user of the session, refreshed when expired, on every request"
+  },
+  {
+   "caller": "utils/supabase/queries.ts:7",
+   "to": "supabase.auth",
+   "what": "user of the session"
+  },
+  {
+   "caller": "app/signin/[id]/page.tsx:49",
+   "to": "supabase.auth",
+   "what": "user of the session"
+  },
+  {
+   "caller": "components/ui/Navbar/Navbar.tsx:10",
+   "to": "supabase.auth",
+   "what": "user of the session, for the navigation bar"
+  },
+  {
+   "caller": "utils/stripe/server.ts:31",
+   "to": "supabase.auth",
+   "what": "user of the session"
+  },
+  {
+   "caller": "utils/stripe/server.ts:128",
+   "to": "supabase.auth",
+   "what": "user of the session"
+  },
+  {
+   "caller": "utils/supabase/queries.ts:13",
+   "to": "supabase.postgres",
+   "what": "select the active or trialing subscription with its price and product (anon key, the user's session)"
+  },
+  {
+   "caller": "utils/supabase/queries.ts:23",
+   "to": "supabase.postgres",
+   "what": "select the active products with their active prices"
+  },
+  {
+   "caller": "utils/supabase/queries.ts:35",
+   "to": "supabase.postgres",
+   "what": "select the user's own row"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:31",
+   "to": "supabase.postgres",
+   "what": "upsert a product (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:56",
+   "to": "supabase.postgres",
+   "what": "upsert a price (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:78",
+   "to": "supabase.postgres",
+   "what": "delete a product (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:88",
+   "to": "supabase.postgres",
+   "what": "delete a price (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:97",
+   "to": "supabase.postgres",
+   "what": "upsert the user to Stripe customer mapping (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:124",
+   "to": "supabase.postgres",
+   "what": "select the mapping of a user (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:157",
+   "to": "supabase.postgres",
+   "what": "update the Stripe customer id of a user (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:202",
+   "to": "supabase.postgres",
+   "what": "update billing_address and payment_method (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:218",
+   "to": "supabase.postgres",
+   "what": "select the user of a Stripe customer id (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:267",
+   "to": "supabase.postgres",
+   "what": "upsert a subscription (service role key)"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:108",
+   "to": "stripe",
+   "what": "create a customer with the email and the user's id in metadata"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:136",
+   "to": "stripe",
+   "what": "retrieve the customer by the stored id"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:142",
+   "to": "stripe",
+   "what": "find a customer by email"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:200",
+   "to": "stripe",
+   "what": "copy name, phone and address of the payment method to the customer"
+  },
+  {
+   "caller": "utils/supabase/admin.ts:228",
+   "to": "stripe",
+   "what": "retrieve the subscription with its default payment method"
+  },
+  {
+   "caller": "utils/stripe/server.ts:89",
+   "to": "stripe",
+   "what": "create a Checkout session"
+  },
+  {
+   "caller": "utils/stripe/server.ts:153",
+   "to": "stripe",
+   "what": "create a customer portal session"
+  },
+  {
+   "caller": "utils/stripe/client.ts:7",
+   "to": "stripe",
+   "what": "load Stripe.js in the browser with the publishable key"
+  },
+  {
+   "caller": "components/ui/Pricing/Pricing.tsx:79",
+   "to": "stripe",
+   "what": "browser redirect to the hosted Checkout page"
+  },
+  {
+   "caller": "components/ui/AccountForms/CustomerPortalForm.tsx:44",
+   "to": "stripe",
+   "what": "browser navigation to the customer portal URL"
+  },
+  {
+   "caller": "fixtures/stripe-fixtures.json:8",
+   "to": "stripe",
+   "what": "POST /v1/products, by the Stripe CLI (also line 50)"
+  },
+  {
+   "caller": "fixtures/stripe-fixtures.json:20",
+   "to": "stripe",
+   "what": "POST /v1/prices, by the Stripe CLI (also lines 35, 62, 77)"
+  }
+ ],
+ "stores": {
+  "supabase/users": {
+   "node_type": "entità",
+   "kind": "table of Supabase Postgres",
+   "declared_in": [
+    "supabase/migrations/20230530034630_init.sql:5"
+   ],
+   "writes": [
+    "supabase/migrations/20230530034630_init.sql::handle_new_user",
+    "utils/supabase/admin.ts::copyBillingDetailsToCustomer"
+   ],
+   "reads": [
+    "utils/supabase/queries.ts::getUserDetails"
+   ],
+   "rls": "select and update of the own row"
+  },
+  "supabase/customers": {
+   "node_type": "entità",
+   "kind": "table of Supabase Postgres",
+   "declared_in": [
+    "supabase/migrations/20230530034630_init.sql:38"
+   ],
+   "writes": [
+    "utils/supabase/admin.ts::upsertCustomerToSupabase",
+    "utils/supabase/admin.ts::createOrRetrieveCustomer"
+   ],
+   "reads": [
+    "utils/supabase/admin.ts::createOrRetrieveCustomer",
+    "utils/supabase/admin.ts::manageSubscriptionStatusChange"
+   ],
+   "rls": "no policy: only the service role key reads or writes it"
+  },
+  "supabase/products": {
+   "node_type": "entità",
+   "kind": "table of Supabase Postgres",
+   "declared_in": [
+    "supabase/migrations/20230530034630_init.sql:51"
+   ],
+   "writes": [
+    "utils/supabase/admin.ts::upsertProductRecord",
+    "utils/supabase/admin.ts::deleteProductRecord"
+   ],
+   "reads": [
+    "utils/supabase/queries.ts::getProducts",
+    "utils/supabase/queries.ts::getSubscription"
+   ],
+   "rls": "public read"
+  },
+  "supabase/prices": {
+   "node_type": "entità",
+   "kind": "table of Supabase Postgres",
+   "declared_in": [
+    "supabase/migrations/20230530034630_init.sql:74"
+   ],
+   "writes": [
+    "utils/supabase/admin.ts::upsertPriceRecord",
+    "utils/supabase/admin.ts::deletePriceRecord"
+   ],
+   "reads": [
+    "utils/supabase/queries.ts::getProducts",
+    "utils/supabase/queries.ts::getSubscription"
+   ],
+   "rls": "public read"
+  },
+  "supabase/subscriptions": {
+   "node_type": "entità",
+   "kind": "table of Supabase Postgres",
+   "declared_in": [
+    "supabase/migrations/20230530034630_init.sql:106"
+   ],
+   "writes": [
+    "utils/supabase/admin.ts::manageSubscriptionStatusChange"
+   ],
+   "reads": [
+    "utils/supabase/queries.ts::getSubscription"
+   ],
+   "rls": "select of the own rows"
+  },
+  "supabase.auth/users": {
+   "node_type": "entità",
+   "kind": "users of Supabase Auth (auth.users), reached only through the Auth API",
+   "writes": [
+    "utils/auth-helpers/server.ts::signUp",
+    "utils/auth-helpers/server.ts::updatePassword",
+    "utils/auth-helpers/server.ts::updateEmail",
+    "utils/auth-helpers/server.ts::updateName",
+    "utils/auth-helpers/client.ts::signInWithOAuth"
+   ],
+   "reads": [
+    "utils/supabase/queries.ts::getUser",
+    "utils/supabase/middleware.ts::updateSession",
+    "app/signin/[id]/page.tsx::SignIn",
+    "components/ui/Navbar/Navbar.tsx::Navbar",
+    "utils/stripe/server.ts::checkoutWithStripe",
+    "utils/stripe/server.ts::createStripePortal",
+    "supabase/migrations/20230530034630_init.sql::handle_new_user"
+   ]
+  },
+  "cookie/supabase-session": {
+   "node_type": "entità",
+   "kind": "cookies of the Supabase Auth session; the name is given by @supabase/ssr, not by the code",
+   "writes": [
+    "utils/supabase/server.ts::createClient",
+    "utils/supabase/middleware.ts::createClient"
+   ],
+   "reads": [
+    "utils/supabase/server.ts::createClient",
+    "utils/supabase/middleware.ts::createClient",
+    "utils/supabase/client.ts::createClient"
+   ]
+  },
+  "cookie/preferredSignInView": {
+   "node_type": "entità",
+   "kind": "cookie",
+   "writes": [
+    "utils/auth-helpers/server.ts::signInWithEmail",
+    "utils/auth-helpers/server.ts::signInWithPassword"
+   ],
+   "reads": [
+    "app/signin/page.tsx::SignIn",
+    "app/signin/[id]/page.tsx::SignIn"
+   ]
+  },
+  "url/status": {
+   "node_type": "entità",
+   "kind": "query parameter of the redirect path",
+   "writes": [
+    "utils/helpers.ts::getToastRedirect",
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ],
+   "reads": [
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ]
+  },
+  "url/status_description": {
+   "node_type": "entità",
+   "kind": "query parameter of the redirect path",
+   "writes": [
+    "utils/helpers.ts::getToastRedirect",
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ],
+   "reads": [
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ]
+  },
+  "url/error": {
+   "node_type": "entità",
+   "kind": "query parameter of the redirect path",
+   "writes": [
+    "utils/helpers.ts::getToastRedirect",
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ],
+   "reads": [
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ]
+  },
+  "url/error_description": {
+   "node_type": "entità",
+   "kind": "query parameter of the redirect path",
+   "writes": [
+    "utils/helpers.ts::getToastRedirect",
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ],
+   "reads": [
+    "components/ui/Toasts/toaster.tsx::Toaster"
+   ]
+  },
+  "url/disable_button": {
+   "node_type": "entità",
+   "kind": "query parameter of the redirect path",
+   "writes": [
+    "utils/helpers.ts::getToastRedirect"
+   ],
+   "reads": [
+    "app/signin/[id]/page.tsx::SignIn"
+   ]
+  }
+ },
+ "config": [
+  {
+   "key": "NEXT_PUBLIC_SITE_URL",
+   "declared_in": [
+    ".env.local.example"
+   ],
+   "reads": [
+    "utils/helpers.ts:8",
+    "utils/helpers.ts:10"
+   ]
+  },
+  {
+   "key": "NEXT_PUBLIC_VERCEL_URL",
+   "declared_in": [],
+   "reads": [
+    "utils/helpers.ts:12",
+    "utils/helpers.ts:14"
+   ],
+   "note": "set by Vercel"
+  },
+  {
+   "key": "NEXT_PUBLIC_SUPABASE_URL",
+   "declared_in": [
+    ".env.local.example"
+   ],
+   "reads": [
+    "utils/supabase/client.ts:8",
+    "utils/supabase/server.ts:12",
+    "utils/supabase/middleware.ts:13",
+    "utils/supabase/admin.ts:16"
+   ]
+  },
+  {
+   "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+   "declared_in": [
+    ".env.local.example"
+   ],
+   "reads": [
+    "utils/supabase/client.ts:9",
+    "utils/supabase/server.ts:13",
+    "utils/supabase/middleware.ts:14"
+   ]
+  },
+  {
+   "key": "SUPABASE_SERVICE_ROLE_KEY",
+   "declared_in": [
+    ".env.local.example"
+   ],
+   "reads": [
+    "utils/supabase/admin.ts:17"
+   ],
+   "secret": true
+  },
+  {
+   "key": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+   "declared_in": [
+    ".env.local.example"
+   ],
+   "reads": [
+    "utils/stripe/client.ts:9"
+   ]
+  },
+  {
+   "key": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_LIVE",
+   "declared_in": [],
+   "reads": [
+    "utils/stripe/client.ts:8"
+   ],
+   "note": "read first; no template declares it"
+  },
+  {
+   "key": "STRIPE_SECRET_KEY",
+   "declared_in": [
+    ".env.local.example"
+   ],
+   "reads": [
+    "utils/stripe/config.ts:4"
+   ],
+   "secret": true
+  },
+  {
+   "key": "STRIPE_SECRET_KEY_LIVE",
+   "declared_in": [],
+   "reads": [
+    "utils/stripe/config.ts:4"
+   ],
+   "secret": true,
+   "note": "read first; no template declares it"
+  },
+  {
+   "key": "STRIPE_WEBHOOK_SECRET",
+   "declared_in": [
+    ".env.local.example"
+   ],
+   "reads": [
+    "app/api/webhooks/route.ts:27"
+   ],
+   "secret": true
+  },
+  {
+   "key": "SUPABASE_AUTH_EXTERNAL_GITHUB_CLIENT_ID",
+   "declared_in": [
+    ".env.example"
+   ],
+   "reads": [
+    "supabase/config.toml:132"
+   ],
+   "note": "read by the Supabase CLI"
+  },
+  {
+   "key": "SUPABASE_AUTH_EXTERNAL_GITHUB_SECRET",
+   "declared_in": [
+    ".env.example"
+   ],
+   "reads": [
+    "supabase/config.toml:134"
+   ],
+   "secret": true,
+   "note": "read by the Supabase CLI"
+  },
+  {
+   "key": "SUPABASE_AUTH_EXTERNAL_GITHUB_REDIRECT_URI",
+   "declared_in": [
+    ".env.example"
+   ],
+   "reads": [
+    "supabase/config.toml:136"
+   ],
+   "note": "read by the Supabase CLI"
+  },
+  {
+   "key": "SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN",
+   "declared_in": [],
+   "reads": [
+    "supabase/config.toml:125"
+   ],
+   "secret": true,
+   "note": "read by the Supabase CLI; Twilio is disabled"
+  },
+  {
+   "key": "S3_HOST",
+   "declared_in": [],
+   "reads": [
+    "supabase/config.toml:153"
+   ],
+   "note": "read by the Supabase CLI, experimental section"
+  },
+  {
+   "key": "S3_REGION",
+   "declared_in": [],
+   "reads": [
+    "supabase/config.toml:155"
+   ],
+   "note": "read by the Supabase CLI, experimental section"
+  },
+  {
+   "key": "S3_ACCESS_KEY",
+   "declared_in": [],
+   "reads": [
+    "supabase/config.toml:157"
+   ],
+   "secret": true,
+   "note": "read by the Supabase CLI, experimental section"
+  },
+  {
+   "key": "S3_SECRET_KEY",
+   "declared_in": [],
+   "reads": [
+    "supabase/config.toml:159"
+   ],
+   "secret": true,
+   "note": "read by the Supabase CLI, experimental section"
+  }
+ ],
+ "gaps": [
+  {
+   "what": "Stripe calls POST /api/webhooks from outside: the endpoint is set in Stripe's dashboard (README) or by `stripe listen` (package.json:10); no file of the project holds that call",
+   "class": "inbound_from_external"
+  },
+  {
+   "what": "Supabase Auth sends the browser to /auth/callback and /auth/reset_password: the project only hands it the URL (getURL, from NEXT_PUBLIC_SITE_URL or NEXT_PUBLIC_VERCEL_URL), in emails Supabase sends and in the OAuth return; Stripe does the same with success_url, cancel_url and return_url",
+   "class": "inbound_from_external"
+  },
+  {
+   "what": "GitHub is reached by Supabase Auth, not by the project: the code holds the provider name 'github' (OauthSignIn.tsx:18) and the local Supabase configuration; a call from the app to GitHub is false",
+   "class": "forbidden_link"
+  },
+  {
+   "what": "every form passes its server action as an argument to handleRequest (utils/auth-helpers/client.ts:18 calls requestFunc): the binding of a form to its action comes from the compiler's data flow, not from a name or a direct call",
+   "class": "indirect_call"
+  },
+  {
+   "what": "server actions return a path as a string and the browser navigates to it at utils/auth-helpers/client.ts:22; the path is composed by getToastRedirect with query parameters: the route reached is known only by following returned strings",
+   "class": "computed_path"
+  },
+  {
+   "what": "/signin/[id] is one dynamic route; its five concrete views are strings of utils/auth-helpers/settings.ts (getViewTypes), and the redirects at app/signin/page.tsx:10 and app/signin/[id]/page.tsx:41 build the path from a cookie",
+   "class": "computed_path"
+  },
+  {
+   "what": "file-based routing: no route path is written in a file; the path comes from the folder of page.tsx or route.ts and the method from the name of the exported function, which only Next.js's own listing gives",
+   "class": "file_based_routing"
+  },
+  {
+   "what": "redirectToPath (server action) is called only when the router is null, that is when allowServerRedirect is true; it is the constant false (utils/auth-helpers/settings.ts:8), and the account forms and the navbar always pass a router: the edge is in the code and never runs",
+   "class": "dead_branch"
+  },
+  {
+   "what": "four functions are named createClient: utils/supabase/client.ts, utils/supabase/server.ts, utils/supabase/middleware.ts and supabase-js's own, imported in utils/supabase/admin.ts; a link by name joins the wrong ones",
+   "class": "forbidden_link"
+  },
+  {
+   "what": "updateName writes full_name in the Auth user's metadata; the account page reads users.full_name, which only the trigger handle_new_user writes, at the insert of the user: the two are not the same store and a link from updateName to the users table is false",
+   "class": "forbidden_link"
+  },
+  {
+   "what": "stripe.webhooks.constructEvent (app/api/webhooks/route.ts:33) verifies the signature locally with STRIPE_WEBHOOK_SECRET: it is not a call to Stripe",
+   "class": "forbidden_link"
+  },
+  {
+   "what": "the tables are named by string literals in supabase-js calls (.from('products')) and by joins inside select strings ('*, prices(*, products(*))'): a table link needs a reader of supabase-js calls; what a request really reads depends on the row level security policies of the schema and on the key used",
+   "class": "store_by_string"
+  },
+  {
+   "what": "the session cookies are read and written by @supabase/ssr through the get/set/remove callbacks of the three clients; the cookie name is not in the code",
+   "class": "library_owned_store"
+  },
+  {
+   "what": "the trigger on_auth_user_created runs inside the database when Supabase Auth inserts a user: it is an entry point written in SQL, with no caller in the project",
+   "class": "inbound_from_external"
+  },
+  {
+   "what": "the emails (confirmation, magic link, password reset, email change) are sent by Supabase Auth with its own templates; locally Inbucket catches them (supabase/config.toml); the project has neither their text nor their sending",
+   "class": "outside_the_project"
+  },
+  {
+   "what": "schema.sql is byte for byte the migration supabase/migrations/20230530034630_init.sql: one schema, not two",
+   "class": "duplicate"
+  },
+  {
+   "what": "types_db.ts is generated by `supabase gen types` (package.json:18) and saved as UTF-16: a reader that expects UTF-8 finds no symbol in it; it is ignored by Prettier (.prettierignore)",
+   "class": "generated"
+  },
+  {
+   "what": "utils/helpers.ts::postData posts JSON to a URL it receives and has no caller; components/ui/Input is imported by nobody: an HTTP client with no route to join and a component with no page",
+   "class": "dead_code"
+  },
+  {
+   "what": "the schema publishes products and prices on supabase_realtime (last line of the migration) and no code subscribes; Twilio and S3 are only named in supabase/config.toml, disabled or experimental; supabase/seed.sql is empty: none is a node",
+   "class": "note"
+  },
+  {
+   "what": "the links to dashboard.stripe.com, vercel.com, nextjs.org, stripe.com, supabase.io and github.com in Pricing.tsx, LogoCloud.tsx and Footer.tsx are anchors, not uses of a service",
+   "class": "note"
+  },
+  {
+   "what": "package.json has no name and declares no Node version; the module is named after the repository; the lockfile is pnpm's while the scripts call npm and npx",
+   "class": "note"
+  },
+  {
+   "what": "no test and no CI workflow in the repository; the deployment on Vercel and the Supabase integration that applies the migration are described only in the README (no vercel.json)",
+   "class": "outside_the_project"
+  },
+  {
+   "what": "the middleware matches every path that is not a static file or an image, the webhook included: it is not listed by a route, its matcher is a regular expression (middleware.ts:18)",
+   "class": "note"
+  },
+  {
+   "what": "the Stripe CLI and the Supabase CLI are launched by the scripts; the Stripe CLI is not in the manifest, the Supabase CLI is the devDependency supabase and its local stack needs Docker",
+   "class": "undeclared_dependency"
+  },
+  {
+   "what": "run_and_observe cannot complete sign-in, checkout or the webhook: it needs a Supabase project or the local stack, Stripe test keys with the webhook secret, a GitHub OAuth app and a mailbox for the links",
+   "class": "needs_credentials"
+  }
+ ]
+}

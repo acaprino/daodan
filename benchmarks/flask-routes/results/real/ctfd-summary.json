@@ -1,0 +1,918 @@
+{
+ "name": "ctfd",
+ "application": "ctfd",
+ "repository": "CTFd/CTFd",
+ "commit": "f9fa28b2f17b22ec6c631a5b745f47573966f7f2",
+ "licence": "Apache-2.0",
+ "folder": ".",
+ "script": {
+  "variant": "ctfd-script",
+  "exit": 0,
+  "seconds": 5.97,
+  "peak_memory_mb": 290.9,
+  "left_in_the_project": [
+   ".ctfd_secret_key",
+   ".data/filesystem_cache/14797cb629f98ce97975a358ac36a938",
+   ".data/filesystem_cache/43c028c6c7ae9b5dcf9ecb624181f228",
+   ".data/filesystem_cache/c3cdc9f1e531d8c2cea2affac3e866d1"
+  ]
+ },
+ "noir": {
+  "variant": "ctfd-noir",
+  "exit": 0,
+  "seconds": 1.91,
+  "peak_memory_mb": 171.1
+ },
+ "gaps": [
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "conf/nginx/http.conf",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "noir",
+   "kind": "outside_snapshot",
+   "path": "conf/nginx/http.conf",
+   "detail": "Noir cites a file outside the snapshot"
+  },
+  {
+   "source": "flask",
+   "kind": "model_partial",
+   "path": ".",
+   "detail": "2 rules of the application are views of packages of the restored environment, not of the project: /api/v1/swagger.json (flask_restx), /api/v1/ (flask_restx)"
+  }
+ ],
+ "flask": {
+  "rules": 174,
+  "not_served": 0,
+  "static": 2,
+  "dispatch": null,
+  "by_category": {
+   "project function": 80,
+   "package view": 2,
+   "class-based view": 90
+  },
+  "package_views": {
+   "flask_restx": 2
+  },
+  "routes_by_method": 254
+ },
+ "source": {
+  "rows": 252,
+  "bound_to_a_function": 98,
+  "class_based_gap_rows": 154,
+  "other_unbound": []
+ },
+ "noir_report": {
+  "endpoints": 253,
+  "protocols": {
+   "http": 251,
+   "cli": 2
+  },
+  "errors": 0,
+  "python_files": [
+   [
+    ".py",
+    251
+   ],
+   [
+    ".conf",
+    2
+   ]
+  ],
+  "http_rows": 249,
+  "python_rows": 249,
+  "python_bound_to_a_function": 249,
+  "python_with_a_handler_name": 249,
+  "python_with_a_qualified_name": 155,
+  "python_bound_before_the_qualified_name_match": 94,
+  "python_bound_with_the_method_name_alone": 249,
+  "unbound_after": [],
+  "bound_by_the_name_alone_and_not_by_the_qualified_name": []
+ },
+ "comparison": {
+  "both": 248,
+  "agreement": {
+   "same function": 94,
+   "same site": 94,
+   "framework gives no function": 154,
+   "class view: same class and file": 154,
+   "same file": 154
+  },
+  "class_view_mismatches": [],
+  "differences": [
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeList is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges",
+     "site": "CTFd/api/v1/challenges.py:148",
+     "function": "CTFd/api/v1/challenges.py::ChallengeList.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/v1/challenges",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/v1/challenges",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeList is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/v1/challenges",
+     "site": "CTFd/api/v1/challenges.py:290",
+     "function": "CTFd/api/v1/challenges.py::ChallengeList.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/types",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/types",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeTypes is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/types",
+     "site": "CTFd/api/v1/challenges.py:317",
+     "function": "CTFd/api/v1/challenges.py::ChallengeTypes.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/v1/challenges/<challenge_id>",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "Challenge is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "site": "CTFd/api/v1/challenges.py:649",
+     "function": "CTFd/api/v1/challenges.py::Challenge.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "Challenge is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "site": "CTFd/api/v1/challenges.py:349",
+     "function": "CTFd/api/v1/challenges.py::Challenge.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "PATCH",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "PATCH",
+      "path": "/api/v1/challenges/<challenge_id>",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "Challenge is a class-based view: which of its methods answers PATCH is not read"
+     }
+    },
+    "noir": {
+     "method": "PATCH",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "site": "CTFd/api/v1/challenges.py:620",
+     "function": "CTFd/api/v1/challenges.py::Challenge.patch"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/v1/challenges/attempt",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/v1/challenges/attempt",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeAttempt is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/v1/challenges/attempt",
+     "site": "CTFd/api/v1/challenges.py:665",
+     "function": "CTFd/api/v1/challenges.py::ChallengeAttempt.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/solves",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/solves",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeSolves is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/solves",
+     "site": "CTFd/api/v1/challenges.py:1076",
+     "function": "CTFd/api/v1/challenges.py::ChallengeSolves.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/files",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/files",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeFiles is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/files",
+     "site": "CTFd/api/v1/challenges.py:1105",
+     "function": "CTFd/api/v1/challenges.py::ChallengeFiles.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/tags",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/tags",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeTags is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/tags",
+     "site": "CTFd/api/v1/challenges.py:1127",
+     "function": "CTFd/api/v1/challenges.py::ChallengeTags.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/topics",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/topics",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeTopics is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/topics",
+     "site": "CTFd/api/v1/challenges.py:1142",
+     "function": "CTFd/api/v1/challenges.py::ChallengeTopics.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/hints",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/hints",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeHints is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/hints",
+     "site": "CTFd/api/v1/challenges.py:1162",
+     "function": "CTFd/api/v1/challenges.py::ChallengeHints.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/flags",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/flags",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeFlags is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/flags",
+     "site": "CTFd/api/v1/challenges.py:1176",
+     "function": "CTFd/api/v1/challenges.py::ChallengeFlags.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/requirements",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/requirements",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeRequirements is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/requirements",
+     "site": "CTFd/api/v1/challenges.py:1190",
+     "function": "CTFd/api/v1/challenges.py::ChallengeRequirements.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/ratings",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeRatings is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "site": "CTFd/api/v1/challenges.py:1198",
+     "function": "CTFd/api/v1/challenges.py::ChallengeRatings.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "PUT",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "category": "class-based view",
+     "row": {
+      "method": "PUT",
+      "path": "/api/v1/challenges/<challenge_id>/ratings",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeRatings is a class-based view: which of its methods answers PUT is not read"
+     }
+    },
+    "noir": {
+     "method": "PUT",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "site": "CTFd/api/v1/challenges.py:1246",
+     "function": "CTFd/api/v1/challenges.py::ChallengeRatings.put"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 6,
+  "only_flask_by_category": {
+   "project function": 4,
+   "package view": 2
+  },
+  "only_flask_packages": {
+   "flask_restx": 2
+  },
+  "only_flask_examples": [
+   {
+    "method": "GET",
+    "path": "/themes/<theme>/static/<path:path>",
+    "category": "project function",
+    "view": "themes_beta",
+    "package": null
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/swagger.json",
+    "category": "package view",
+    "view": "SwaggerView",
+    "package": "flask_restx"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/",
+    "category": "package view",
+    "view": "Api.render_root",
+    "package": "flask_restx"
+   },
+   {
+    "method": "GET",
+    "path": "/plugins/challenges/assets/<path:path>",
+    "category": "project function",
+    "view": "register_plugin_assets_directory.<locals>.assets_handler",
+    "package": null
+   },
+   {
+    "method": "GET",
+    "path": "/plugins/dynamic_challenges/assets/<path:path>",
+    "category": "project function",
+    "view": "register_plugin_assets_directory.<locals>.assets_handler",
+    "package": null
+   },
+   {
+    "method": "GET",
+    "path": "/plugins/flags/assets/<path:path>",
+    "category": "project function",
+    "view": "register_plugin_assets_directory.<locals>.assets_handler",
+    "package": null
+   }
+  ],
+  "only_noir": 1,
+  "only_noir_examples": [
+   {
+    "method": "HEAD",
+    "path": "/api/v1/notifications",
+    "site": "CTFd/api/v1/notifications.py:104",
+    "function": "CTFd/api/v1/notifications.py::NotificantionList.head"
+   }
+  ]
+ },
+ "comparison_with_the_method_name_alone": {
+  "both": 248,
+  "agreement": {
+   "same function": 94,
+   "same site": 94,
+   "framework gives no function": 154,
+   "class view: same class and file": 154,
+   "same file": 154
+  },
+  "class_view_mismatches": [],
+  "differences": [
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeList is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges",
+     "site": "CTFd/api/v1/challenges.py:148",
+     "function": "CTFd/api/v1/challenges.py::ChallengeList.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/v1/challenges",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/v1/challenges",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeList is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/v1/challenges",
+     "site": "CTFd/api/v1/challenges.py:290",
+     "function": "CTFd/api/v1/challenges.py::ChallengeList.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/types",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/types",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeTypes is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/types",
+     "site": "CTFd/api/v1/challenges.py:317",
+     "function": "CTFd/api/v1/challenges.py::ChallengeTypes.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "DELETE",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "DELETE",
+      "path": "/api/v1/challenges/<challenge_id>",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "Challenge is a class-based view: which of its methods answers DELETE is not read"
+     }
+    },
+    "noir": {
+     "method": "DELETE",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "site": "CTFd/api/v1/challenges.py:649",
+     "function": "CTFd/api/v1/challenges.py::Challenge.delete"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "Challenge is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "site": "CTFd/api/v1/challenges.py:349",
+     "function": "CTFd/api/v1/challenges.py::Challenge.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "PATCH",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "category": "class-based view",
+     "row": {
+      "method": "PATCH",
+      "path": "/api/v1/challenges/<challenge_id>",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "Challenge is a class-based view: which of its methods answers PATCH is not read"
+     }
+    },
+    "noir": {
+     "method": "PATCH",
+     "path": "/api/v1/challenges/<challenge_id>",
+     "site": "CTFd/api/v1/challenges.py:620",
+     "function": "CTFd/api/v1/challenges.py::Challenge.patch"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "POST",
+     "path": "/api/v1/challenges/attempt",
+     "category": "class-based view",
+     "row": {
+      "method": "POST",
+      "path": "/api/v1/challenges/attempt",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeAttempt is a class-based view: which of its methods answers POST is not read"
+     }
+    },
+    "noir": {
+     "method": "POST",
+     "path": "/api/v1/challenges/attempt",
+     "site": "CTFd/api/v1/challenges.py:665",
+     "function": "CTFd/api/v1/challenges.py::ChallengeAttempt.post"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/solves",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/solves",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeSolves is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/solves",
+     "site": "CTFd/api/v1/challenges.py:1076",
+     "function": "CTFd/api/v1/challenges.py::ChallengeSolves.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/files",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/files",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeFiles is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/files",
+     "site": "CTFd/api/v1/challenges.py:1105",
+     "function": "CTFd/api/v1/challenges.py::ChallengeFiles.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/tags",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/tags",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeTags is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/tags",
+     "site": "CTFd/api/v1/challenges.py:1127",
+     "function": "CTFd/api/v1/challenges.py::ChallengeTags.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/topics",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/topics",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeTopics is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/topics",
+     "site": "CTFd/api/v1/challenges.py:1142",
+     "function": "CTFd/api/v1/challenges.py::ChallengeTopics.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/hints",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/hints",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeHints is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/hints",
+     "site": "CTFd/api/v1/challenges.py:1162",
+     "function": "CTFd/api/v1/challenges.py::ChallengeHints.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/flags",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/flags",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeFlags is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/flags",
+     "site": "CTFd/api/v1/challenges.py:1176",
+     "function": "CTFd/api/v1/challenges.py::ChallengeFlags.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/requirements",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/requirements",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeRequirements is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/requirements",
+     "site": "CTFd/api/v1/challenges.py:1190",
+     "function": "CTFd/api/v1/challenges.py::ChallengeRequirements.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "category": "class-based view",
+     "row": {
+      "method": "GET",
+      "path": "/api/v1/challenges/<challenge_id>/ratings",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeRatings is a class-based view: which of its methods answers GET is not read"
+     }
+    },
+    "noir": {
+     "method": "GET",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "site": "CTFd/api/v1/challenges.py:1198",
+     "function": "CTFd/api/v1/challenges.py::ChallengeRatings.get"
+    }
+   },
+   {
+    "verdict": "framework gives no function",
+    "flask": {
+     "method": "PUT",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "category": "class-based view",
+     "row": {
+      "method": "PUT",
+      "path": "/api/v1/challenges/<challenge_id>/ratings",
+      "site": "CTFd/api/v1/challenges.py",
+      "function": null,
+      "gap": "ChallengeRatings is a class-based view: which of its methods answers PUT is not read"
+     }
+    },
+    "noir": {
+     "method": "PUT",
+     "path": "/api/v1/challenges/<challenge_id>/ratings",
+     "site": "CTFd/api/v1/challenges.py:1246",
+     "function": "CTFd/api/v1/challenges.py::ChallengeRatings.put"
+    }
+   }
+  ],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_flask": 6,
+  "only_flask_by_category": {
+   "project function": 4,
+   "package view": 2
+  },
+  "only_flask_packages": {
+   "flask_restx": 2
+  },
+  "only_flask_examples": [
+   {
+    "method": "GET",
+    "path": "/themes/<theme>/static/<path:path>",
+    "category": "project function",
+    "view": "themes_beta",
+    "package": null
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/swagger.json",
+    "category": "package view",
+    "view": "SwaggerView",
+    "package": "flask_restx"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/",
+    "category": "package view",
+    "view": "Api.render_root",
+    "package": "flask_restx"
+   },
+   {
+    "method": "GET",
+    "path": "/plugins/challenges/assets/<path:path>",
+    "category": "project function",
+    "view": "register_plugin_assets_directory.<locals>.assets_handler",
+    "package": null
+   },
+   {
+    "method": "GET",
+    "path": "/plugins/dynamic_challenges/assets/<path:path>",
+    "category": "project function",
+    "view": "register_plugin_assets_directory.<locals>.assets_handler",
+    "package": null
+   },
+   {
+    "method": "GET",
+    "path": "/plugins/flags/assets/<path:path>",
+    "category": "project function",
+    "view": "register_plugin_assets_directory.<locals>.assets_handler",
+    "package": null
+   }
+  ],
+  "only_noir": 1,
+  "only_noir_examples": [
+   {
+    "method": "HEAD",
+    "path": "/api/v1/notifications",
+    "site": "CTFd/api/v1/notifications.py:104",
+    "function": "CTFd/api/v1/notifications.py::NotificantionList.head"
+   }
+  ]
+ }
+}

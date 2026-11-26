@@ -47,12 +47,12 @@ class StaleCallersTests(unittest.TestCase):
         self.root = Path(self.temporary.name).resolve()
         write_files(self.root, BASE_FILES)
         self.base = self.root / "base.sqlite"
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
 
     def compare(self, changed_text: str):
         (self.root / "pkg/b.py").write_text(changed_text, encoding="utf-8")
         candidate = self.root / "candidate.sqlite"
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
         with open_snapshot(self.base) as base, open_snapshot(candidate) as current:
             return semantic_store.build_stale_callers(base, current)
 
@@ -97,7 +97,7 @@ class StaleCallersTests(unittest.TestCase):
             "from .b import extra as helper, extra\n\ndef run(x):\n    return helper(x) + extra()\n",
             encoding="utf-8")
         candidate = self.root / "candidate.sqlite"
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
         with open_snapshot(self.base) as base, open_snapshot(candidate) as current:
             result = semantic_store.build_stale_callers(base, current)
         drift = result["lexical_callee_drift"]["items"]
@@ -109,13 +109,13 @@ class StaleCallersTests(unittest.TestCase):
         from test_codebase_map_edge_view import Definition, StubEngine
         import resolve_edges
         (self.root / "pkg/a.py").write_text("def run(obj):\n    return obj.helper()\n", encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
         base_edges = self.root / "base-edges.sqlite"
         candidate_edges = self.root / "candidate-edges.sqlite"
         candidate = self.root / "candidate.sqlite"
         engine = StubEngine({("a.py", 2): Definition(self.root / "pkg/b.py", "helper", line=1, column=4)})
         resolve_edges.resolve_edges(self.base, engine=engine, limit=None, stride=1, out=base_edges)
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
         resolve_edges.resolve_edges(candidate, engine=engine, limit=None, stride=1, out=candidate_edges)
         def compare(before, after):
             with open_snapshot(self.base) as base, open_snapshot(candidate) as current:
@@ -159,13 +159,13 @@ class StaleCallersTests(unittest.TestCase):
             "pkg/b.py": "from typing import Protocol\nclass P(Protocol):\n    def run(self): ...\nclass Impl:\n    def run(self): return 1\n",
             "pkg/a.py": "def run(obj):\n    return obj.run()\n",
         })
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
         before_edges = self.root / "before.sqlite"
         after_edges = self.root / "after.sqlite"
         candidate = self.root / "candidate.sqlite"
         engine = StubEngine({("a.py", 2): Definition(self.root / "pkg/b.py", "run", line=3, column=8)})
         resolve_edges.resolve_edges(self.base, engine=engine, limit=None, stride=1, out=before_edges)
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
         engine.answers[("a.py", 2)] = Definition(self.root / "pkg/b.py", "run", line=5, column=8)
         resolve_edges.resolve_edges(candidate, engine=engine, limit=None, stride=1, out=after_edges)
         with open_snapshot(self.base) as base, open_snapshot(candidate) as current:
@@ -181,7 +181,7 @@ class StaleCallersTests(unittest.TestCase):
         with closing(sqlite3.connect(legacy)) as database, database:
             database.execute("UPDATE meta_symbols SET interface_hash='0123456789abcdef' WHERE id='pkg/b.py::helper'")
         candidate = self.root / "candidate.sqlite"
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
 
         with open_snapshot(legacy) as base, open_snapshot(candidate) as current:
             result = semantic_store.build_stale_callers(base, current)
@@ -192,10 +192,10 @@ class StaleCallersTests(unittest.TestCase):
     def test_union_of_acyclic_revisions_terminates(self):
         source = self.root / "acyclic.py"
         source.write_text("def a(x):\n    return b(x)\n\ndef b(x):\n    return x\n")
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
         source.write_text("def a(x, y=0):\n    return x\n\ndef b(x, y=0):\n    return a(x)\n")
         candidate = self.root / "candidate.sqlite"
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
         program = (
             "import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); "
             "from snapshot_store import open_snapshot; import semantic_store; "
@@ -211,13 +211,13 @@ class StaleCallersTests(unittest.TestCase):
         from test_codebase_map_edge_view import Definition, StubEngine
         import resolve_edges
         (self.root / "pkg/a.py").write_text("def run(obj):\n    return obj.helper()\n")
-        snapshot.write_snapshot(self.root, self.base)
+        snapshot.read_project(self.root, self.base)
         edges = self.root / "base-edges.sqlite"
         engine = StubEngine({("a.py", 2): Definition(self.root / "pkg/b.py", "helper", line=1, column=4)})
         resolve_edges.resolve_edges(self.base, engine=engine, limit=None, stride=1, out=edges)
         (self.root / "pkg/b.py").write_text("def extra():\n    return 10\n")
         candidate = self.root / "candidate.sqlite"
-        snapshot.write_snapshot(self.root, candidate)
+        snapshot.read_project(self.root, candidate)
         with open_snapshot(self.base) as base, open_snapshot(candidate) as current:
             result = semantic_store.build_stale_callers(
                 base, current, base_engine_store=edges,
@@ -237,11 +237,11 @@ class StaleCallersTests(unittest.TestCase):
             "pkg/b.py": "from .a import x\n\ndef y():\n    return x()\n",
         })
         base = root / "base.sqlite"
-        snapshot.write_snapshot(root, base)
+        snapshot.read_project(root, base)
         (root / "pkg/b.py").write_text(
             "from .a import x\n\ndef y(scale=1):\n    return x() * scale\n", encoding="utf-8")
         candidate = root / "candidate.sqlite"
-        snapshot.write_snapshot(root, candidate)
+        snapshot.read_project(root, candidate)
 
         with open_snapshot(base) as before, open_snapshot(candidate) as current:
             result = semantic_store.build_stale_callers(before, current)
@@ -268,9 +268,9 @@ class StaleCallersTests(unittest.TestCase):
         self.assertEqual(ids(result, "edit_impact"), {"pkg/a.py::run"})
         candidate = project / "candidate.sqlite"
         base = project / "base.sqlite"
-        snapshot.write_snapshot(project / "src", candidate)
+        snapshot.read_project(project / "src", candidate)
         write_files(project / "src", BASE_FILES)
-        snapshot.write_snapshot(project / "src", base)
+        snapshot.read_project(project / "src", base)
         done = subprocess.run(
             [sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "stale-callers", str(candidate),
              "--base", str(base)],

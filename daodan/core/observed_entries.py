@@ -63,7 +63,10 @@ def _walk(controls: list[dict]):
 
 
 def candidates(apps: list[dict], static: list[dict], files: set[str]) -> list[dict]:
-    known = {((row.get("label") or "").strip().lower(), row.get("event")) for row in static if row.get("label")}
+    # a row the static reader lost (an event on a component, a prop given to a child) is no candidate it has: a control
+    # of the same name is what recovers it
+    known = {((row.get("label") or "").strip().lower(), row.get("event")) for row in static
+             if row.get("label") and not (row.get("component_gap") or row.get("forwarded"))}
     found = []
     for app in apps:
         folder = posixpath.dirname(str(app.get("declared_in") or "").partition("#")[0])
@@ -86,7 +89,9 @@ def candidates(apps: list[dict], static: list[dict], files: set[str]) -> list[di
                     "occurrence": control.get("occurrence", 0), "declared_in": app.get("declared_in"),
                     **({"opened_by": control["opened_by"]} if control.get("opened_by") else {}),
                     "observed_calls": [f"{rel}:{line} {name}" for rel, line, name in ran[:CALLS]], "requests": requests,
-                    **({"handler": f"{place}:{caught['line']} {caught['name']}", "handler_confidence": "observed"} if place else
+                    **({"handler": f"{place}:{caught['line']} {caught['name']}", "handler_confidence": "observed",
+                        "at": {"file": place, "line": caught["line"], "name": caught["name"],
+                               **({"start": caught["start"]} if caught.get("start") else {})}} if place else
                        {"gap": f"the handler is not isolated: the press ran {len(ran)} project functions and sent "
                                f"{len(requests)} requests, and the coverage does not record which function the click "
                                "called"})})

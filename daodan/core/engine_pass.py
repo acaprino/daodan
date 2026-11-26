@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from datetime import datetime, timezone
 from functools import cache
 from importlib import metadata
@@ -60,17 +61,18 @@ def _statuses(connection) -> dict[str, dict[str, int]]:
     return held
 
 
+def snapshot_plan(connection) -> dict:
+    """The plan (`pipeline.plan`) of the snapshot's files, per language and parse status."""
+    from pipeline import plan as planning
+    return planning.plan(planning.coverage(connection))
+
+
 def pass_languages(connection) -> list[str]:
     """The languages the pass serves: every one the snapshot holds a file of, parsed or not (`unparsed`), and those
     of an analyzer whose graph is built from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph)
-    when the snapshot holds one."""
-    import indexers
-    held = _statuses(connection)
-    present = {language for language, files in held.items() if set(files) - {"excluded"}}
-    for analyzer in indexers.analyzers():
-        if set(held) & set(getattr(analyzer, "SNAPSHOT_LANGUAGES", ())):
-            present.update(analyzer.LANGUAGES)
-    return sorted(present)
+    when the snapshot holds one: the languages of the plan's parse and resolve nodes."""
+    return sorted({language for node in snapshot_plan(connection)["nodes"] if node["step"] in ("parse", "resolve")
+                   for language in node["on"]["languages"]})
 
 
 def unparsed(connection) -> dict[str, str]:
@@ -86,16 +88,11 @@ def unparsed(connection) -> dict[str, str]:
 
 
 def no_analyzer(connection) -> dict[str, int]:
-    """The snapshot's languages no analyzer lists, each with its files: in the snapshot, in no graph. A graph built
-    from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph's) serves a language whose files the
-    snapshot reads no code of; the code of one it does read (an Astro file's script) needs an analyzer of its own."""
-    import indexers
-    from semantic_store import READ
-    styles = {language for analyzer in indexers.analyzers() for language in getattr(analyzer, "SNAPSHOT_LANGUAGES", ())}
-    counts = {language: sum(count for status, count in files.items() if status != "excluded")
-              for language, files in _statuses(connection).items()
-              if language not in ENGINE_LANGUAGES and (language not in styles or set(files) & set(READ))}
-    return {language: count for language, count in sorted(counts.items()) if count}
+    """The snapshot's languages no analyzer lists, each with its files: in the snapshot, in no graph (the plan's
+    `no-analyzer` gaps). A graph built from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph's)
+    serves a language whose files the snapshot reads no code of; the code of one it does read (an Astro file's
+    script) needs an analyzer of its own."""
+    return {gap["language"]: gap["files"] for gap in snapshot_plan(connection)["gaps"] if gap["kind"] == "no-analyzer"}
 
 
 def _process_alive(pid: int) -> bool:
@@ -398,11 +395,19 @@ def engine_command(manifest: Path, report_path: Path) -> list[str]:
             "--pass", "--report-out", str(report_path)]
 
 
+def _unparsed_needs(connection) -> dict[str, str]:
+    """`unparsed` as the plan's `failed`: the parse node of each language the snapshot did not parse, with why."""
+    return {f"parse:{language}": reason for language, reason in unparsed(connection).items()}
+
+
 def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict, str]:
-    """The engines whose languages the snapshot holds parsed, with the entries already fresh."""
+    """The engines that serve the languages of the plan's resolve nodes whose parser did run, each with them, and
+    the entries already fresh."""
+    from pipeline import plan as planning
     manifest = Path(manifest)
     with open_snapshot(manifest) as store:
-        present = set(pass_languages(store.connection)) - set(unparsed(store.connection))
+        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == "resolve"]
+        failed = _unparsed_needs(store.connection)
         digest = logical_digest(store)
         fresh = {}
         if default_edge_store(manifest).is_file():
@@ -410,8 +415,9 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
             if reason is None:
                 fresh = {language: entry for language, entry in (binding.get("languages") or {}).items()
                          if entry.get("state") == "fresh" and from_source(language, entry)}
-    plan = [(spec, [language for language in spec.languages
-                    if language in present and ENGINE_LANGUAGES.get(language) is spec]) for spec in ENGINES]
+    specs = {spec.name: spec for spec in ENGINES}
+    plan = [(specs[node["adapter"]], [language for language in node["on"]["languages"]
+                                      if language not in planning.blocked(node, failed)]) for node in nodes]
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
 
 
@@ -434,11 +440,15 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     if pipeline_run:
         report["pipeline_complete"] = False
     outcomes = report["languages"]
+    from pipeline import plan as planning
     with open_snapshot(manifest) as store:
-        skipped = unparsed(store.connection)
-    for language, reason in sorted(skipped.items()):
-        if language in ENGINE_LANGUAGES:
-            _not_fresh(bus, ENGINE_LANGUAGES[language], [language], outcomes, "unavailable", reason, PARSER_INSTALL)
+        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == "resolve"]
+        failed = _unparsed_needs(store.connection)
+    specs = {spec.name: spec for spec in ENGINES}
+    stopped = {language: (specs[node["adapter"]], *why) for node in nodes
+               for language, why in planning.blocked(node, failed).items()}
+    for language, (spec, needed, reason) in sorted(stopped.items()):  # a resolver does not start without its parser
+        _not_fresh(bus, spec, [language], outcomes, "unavailable", reason, PARSER_INSTALL, needed)
     exhausted = None
     for number, (spec, wanted) in enumerate(plan, 1):
         bus.progress("analyze", number - 1, len(plan), analyzer=spec.name, message=f"{spec.name}: {', '.join(wanted)}")
@@ -456,9 +466,12 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
             reason, state, install = (f"{free / 2**30:.1f} GB of memory free; {spec.name} starts with at least "
                                       f"{spec.min_free / 2**30:.1f} GB"), "failed", None
         else:
+            started = time.monotonic()
             state, reason, install, stage = _launch(spec, wanted, manifest)
             if stage is not None:
-                report["engines"][spec.name] = compact_report(stage)
+                # How long the stage took, its process included: the measure a time limit per analyzer needs.
+                report["engines"][spec.name] = {**compact_report(stage),
+                                                "seconds": round(time.monotonic() - started, 1)}
                 for gap in stage.get("gaps") or ():
                     bus.emit("gap", gap.get("detail") or gap["kind"], step="analyze", analyzer=spec.name, gap=gap)
                 if stage.get("memory_exhausted"):
@@ -499,14 +512,17 @@ def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | 
             container.find_engine()  # acquire the run's Kiri daemon before the indexer enters its own process
         except container.Gap:
             pass  # the index stage reports its normal unavailability and remedy
-    completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
-                               env={**os.environ, **node_environment(), **node_preparation.child_environment()})
+    try:
+        completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
+                                   env={**os.environ, **node_environment(), **node_preparation.child_environment()})
+    except OSError as error:  # the stage's program did not start: this stage failed, the others still run
+        return "failed", f"the {spec.name} stage could not start: {type(error).__name__}: {error}", None, None
     try:
         stage = json.loads(stage_report.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         stage = None
     stage_report.unlink(missing_ok=True)
-    if stage is None:
+    if not isinstance(stage, dict):  # no report, or one that is not a report
         return "failed", (f"the {spec.name} stage exited with code {completed.returncode} without a report; "
                           f"see {LOG_NAME}"), None, {"memory_exhausted": bool(MEMORY_EXHAUSTED.search(
                               _log_tail(manifest)))}
@@ -516,17 +532,19 @@ def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | 
     return ("unavailable" if install else "failed"), stage.get("reason"), install, stage
 
 
-def _not_fresh(bus, spec: EngineSpec, wanted: list[str], outcomes: dict, state: str, reason, install) -> None:
-    """A stage that is unavailable here or failed: its event and its languages' outcomes."""
+def _not_fresh(bus, spec: EngineSpec, wanted: list[str], outcomes: dict, state: str, reason, install,
+               need: str | None = None) -> None:
+    """A stage that is unavailable here or failed: its event and its languages' outcomes. `need` is the plan's node
+    whose failure stopped it, when one did."""
     if state == "unavailable":
         bus.emit("analyzer.unavailable", f"{spec.name} cannot run here", step="analyze", analyzer=spec.name,
-                 level="warning", cause=reason, remedy=install, languages=wanted)
+                 level="warning", cause=reason, remedy=install, languages=wanted, **({"need": need} if need else {}))
     else:
         bus.emit("analyzer.finished", f"{spec.name} failed", step="analyze", analyzer=spec.name, level="error",
                  cause=reason, remedy=f"see {LOG_NAME} beside the snapshot", languages=wanted)
     for language in wanted:
-        outcomes[language] = {key: value for key, value in
-                              (("state", state), ("engine", spec.name), ("reason", reason), ("install", install))
+        outcomes[language] = {key: value for key, value in (("state", state), ("engine", spec.name), ("need", need),
+                                                            ("reason", reason), ("install", install))
                               if value is not None}
 
 
@@ -732,6 +750,9 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
     running_path = running_record(manifest)
     for leftover in (report_path, running_path):
         leftover.unlink(missing_ok=True)
+    # No pass runs here (`running` returned above): a step the last one left open ended with its process.
+    _close_steps(manifest, "the analysis that started it ended without finishing it",
+                 f"a new analysis starts now; see {LOG_NAME} beside the snapshot for the one that ended")
     plan, fresh, digest = pass_plan(manifest)
     pending = [(spec, wanted) for spec, wanted in plan if not all(language in fresh for language in wanted)]
     if pending and not fresh and all(stage_command(spec, manifest, report_path) is None for spec, _ in pending):
@@ -783,6 +804,8 @@ def reset_pass(manifest: Path) -> dict | None:
     last = pass_state(manifest)
     if last is not None and last["state"] == "running":
         _terminate_tree(last["pid"])
+        _close_steps(manifest, "a new snapshot replaced the one being analyzed",
+                     "wait for the analysis of the new snapshot")
     for record in (running_record(manifest), manifest.with_name(REPORT_NAME)):
         record.unlink(missing_ok=True)
     for pattern in (f".{default_edge_store(manifest).name}.*.partial", ".engine-stage-*.json"):
@@ -805,7 +828,18 @@ def stop_pass(manifest: Path, reason: str) -> dict:
                   {"pass": True, "available": False, "stopped": True, "reason": f"stopped: {reason}"})
     # The report is the record now; a dying process must not read as running.
     running_record(manifest).unlink(missing_ok=True)
+    _close_steps(manifest, f"the analysis was stopped: {reason}", "write the snapshot again to analyze again")
     return {"stopped": True, "state": "stopped", "pid": last["pid"]}
+
+
+def _close_steps(manifest: Path, cause: str, remedy: str) -> None:
+    """Say the end of the steps and analyzers a pass that is over left open in the journal
+    (`pipeline.events.close_open`). A journal that cannot be read changes nothing of the caller's work."""
+    from pipeline import events
+    try:
+        events.close_open(Path(manifest).with_name(events.JOURNAL), cause, remedy)
+    except OSError:
+        pass
 
 
 def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
@@ -829,7 +863,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
 
 
 # The analyzers (docs/plans/2026-11-14-grafo-dall-indice.md), each from its adapter's own declaration.
-ENGINES = tuple(EngineSpec(analyzer.ENTRY, tuple(analyzer.LANGUAGES), tuple(getattr(analyzer, "REQUIREMENTS", ())),
+ENGINES = tuple(EngineSpec(analyzer.NAME, tuple(analyzer.LANGUAGES), tuple(getattr(analyzer, "REQUIREMENTS", ())),
                            getattr(analyzer, "IMPORT", "tree_sitter"), getattr(analyzer, "INSTALL", INDEXER_INSTALL),
                            analyzer.__name__.rsplit(".", 1)[-1], needs_container=analyzer.NEEDS_CONTAINER)
                 for analyzer in __import__("indexers").analyzers())

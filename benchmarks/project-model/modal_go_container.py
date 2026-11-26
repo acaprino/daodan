@@ -59,7 +59,7 @@ def probe() -> dict:
         (project / rel).write_text(text, encoding="utf-8")
     manifest = Path("/runs/go-probe/manifest.sqlite")
     shutil.rmtree(manifest.parent, ignore_errors=True)
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.ensure(manifest)
     spec = next(item for item in engine_pass.ENGINES if item.name == "scip-go")
     result = engine_pass.index_stage(spec, manifest, project)

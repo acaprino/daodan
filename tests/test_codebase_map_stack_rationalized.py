@@ -19,6 +19,7 @@ import premap  # noqa: E402
 import registry_build  # noqa: E402
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
+import stack_analyser  # noqa: E402
 import technologies  # noqa: E402
 
 HERE = Path(__file__).resolve().parents[1]
@@ -38,21 +39,18 @@ def _git_project(root: Path, files: dict[str, str]) -> Path:
     return root
 
 
-def test_distributed_registry_supports_jvm_dotnet_pub_hex_swift_and_passes_check():
+def test_distributed_registry_names_jvm_dotnet_pub_hex_swift_and_passes_check():
     reg = service_registry.load()
     assert registry_build.check(reg) == []
     by_id = {e["id"]: e for e in reg["entries"]}
     for ident in ("spring-boot", "junit-jupiter", "jackson", "hibernate", "aspnetcore",
-                  "entity-framework-core", "xunit", "flutter", "phoenix", "chi", "sqlmodel"):
+                  "entity-framework-core", "xunit", "flutter", "phoenix", "chi", "sqlmodel", "rails"):
         assert ident in by_id, ident
-    assert "maven" in by_id["spring-boot"]["signs"]["packages"]
-    assert "nuget" in by_id["aspnetcore"]["signs"]["packages"]
-    assert "pub" in by_id["flutter"]["signs"]["packages"]
-    assert "hex" in by_id["phoenix"]["signs"]["packages"]
-    assert "rubygems" in by_id["rails"]["signs"]["packages"]
+        assert "stack-analyser" in by_id[ident]["from"], ident  # the fork has a rule for it
+        assert "signs" not in by_id[ident], ident
 
 
-def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logical_and_virtual_modules(tmp_path):
+def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logical_and_virtual_modules(real_stack, tmp_path):
     project = _git_project(tmp_path / "poly", {
         "api/pom.xml": (
             '<project xmlns="http://maven.apache.org/POM/4.0.0">'
@@ -101,7 +99,7 @@ def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logica
         }),
     })
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     facts = premap.write(manifest)
     facts["excluded"] = [{"path": "docs/examples/", "why": "documentation"}]
     Path(premap.path(manifest)).write_text(json.dumps(facts), encoding="utf-8")
@@ -157,17 +155,17 @@ def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logica
 def _stack(tmp_path, files: dict[str, str]) -> dict:
     project = _git_project(tmp_path / "proj", files)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     premap.write(manifest)
     return technologies.ensure(manifest)
 
 
-def test_stack_uses_recorded_cargo_resolution_only_for_its_own_crates(tmp_path):
+def test_stack_uses_recorded_cargo_resolution_only_for_its_own_crates(real_stack, tmp_path):
     bench = HERE / "benchmarks/project-model"
     fixture = tmp_path / "workspace"
     shutil.copytree(bench / "fixtures/sys-rust-workspace", fixture)
     manifest = tmp_path / "out/manifest.sqlite"
-    snapshot.write_snapshot(fixture, manifest)
+    snapshot.read_project(fixture, manifest)
     with gzip.open(bench / "results/premap-runs/sys-rust-workspace.json.gz", "rt", encoding="utf-8") as stream:
         recorded = {json.dumps(r["command"], sort_keys=True): r["result"] for r in json.load(stream)["runs"]}
 
@@ -207,18 +205,22 @@ def test_local_registry_edit_invalidates_stack_and_matches_clean_rebuild(tmp_pat
         "package.json": '{"name":"web","dependencies":{"widget-client":"^1"}}',
     })
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     facts = premap.write(manifest)
     entry = {"id": "widget", "name": "Widget", "category": "library", "signs": {}}
     registry = {"versions": {"upstream": "1"}, "entries": [entry]}
     monkeypatch.setattr(service_registry, "load", lambda: registry)
+    evidence = {"tech": "widget", "kind": "package", "value": "widget-client", "path": "/package.json", "source": "stack-analyser"}
+    monkeypatch.setattr(stack_analyser, "run", lambda project, **kwargs: {
+        "name": "main", "path": ["/"], "techs": [], "childs": [], "evidence": [evidence]})  # the release's answer, not under test
 
     before = technologies.ensure(manifest, facts=facts)
-    assert before["technologies"] == []
-    entry["signs"] = {"packages": {"npm": ["widget-client"]}}
+    assert [e["name"] for e in before["technologies"]] == ["Widget"]
+    entry["name"] = "Widget SDK"
     assert technologies.state(manifest, facts=facts) == "stale"
     updated = technologies.ensure(manifest, facts=facts)
     assert updated["inputs_digest"] != before["inputs_digest"]
+    assert [e["name"] for e in updated["technologies"]] == ["Widget SDK"]
     assert updated["units"][0]["libraries"][0]["id"] == "widget"
     assert technologies.state(manifest, facts=facts) == "fresh"
 
@@ -228,7 +230,7 @@ def test_local_registry_edit_invalidates_stack_and_matches_clean_rebuild(tmp_pat
     assert technologies.ensure(manifest, facts=facts) == updated
 
 
-def test_a_unit_of_the_stack_is_named_as_the_pre_map_refers_to_it_and_keeps_its_module_name_as_an_alias(tmp_path):
+def test_a_unit_of_the_stack_is_named_as_the_pre_map_refers_to_it_and_keeps_its_module_name_as_an_alias(real_stack, tmp_path):
     """D-303: Maven's `groupId:artifactId`, Gradle's `:` for the root of a build, the root when two units share a
     name; the name of modules.json stays among the aliases."""
     record = _stack(tmp_path, {
@@ -252,7 +254,7 @@ def test_a_unit_of_the_stack_is_named_as_the_pre_map_refers_to_it_and_keeps_its_
     assert any(unit == "ui" and name.startswith("Vue") for name, unit in faces)
 
 
-def test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_not_to_the_catalog_s_build(tmp_path):
+def test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_not_to_the_catalog_s_build(real_stack, tmp_path):
     """D-303: `libs.junit.jupiter` in domain/build.gradle.kts is junit-jupiter declared there; the catalog only
     gives its version, so the root of the build, which holds the catalog, does not use it."""
     record = _stack(tmp_path, {
@@ -274,7 +276,7 @@ def test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_
     assert not units[":"]["libraries"]
 
 
-def test_a_library_has_the_version_its_package_fact_states_and_none_where_the_manifest_writes_none(tmp_path):
+def test_a_library_has_the_version_its_package_fact_states_and_none_where_the_manifest_writes_none(real_stack, tmp_path):
     """The declared requirement, never resolved: a range as package.json writes it, the catalog's version of the
     `libs.*` accessor the build script uses; a Git reference has none, and the key is absent."""
     record = _stack(tmp_path, {
@@ -292,35 +294,30 @@ def test_a_library_has_the_version_its_package_fact_states_and_none_where_the_ma
         "com.fasterxml.jackson.core:jackson-databind": "2.18.1"}
 
 
-def test_an_entry_a_line_only_mentions_is_no_module_s_and_stays_in_mentioned_with_its_signs(tmp_path):
-    """A package or file the project declares is a `declared` sign, an env-prefix token in a line a `mentioned` one;
-    an entry with no declared sign is in no module's lists, for every prefix of the registry alike."""
+def test_an_entry_a_line_only_mentions_is_no_module_s_and_stays_in_mentioned_with_its_signs(real_stack, tmp_path):
+    """A package or file the project declares is a `declared` sign, a host in a line of the source a `mentioned` one;
+    an entry with no declared sign is in no module's lists."""
     record = _stack(tmp_path, {
         "pyproject.toml": '[project]\nname = "app"\ndependencies = ["fastapi"]\n',
-        "app.py": "import os\n\nKEY = os.environ['STRIPE_SECRET_KEY']\nZOOM = os.environ['ZOOM_API_KEY']\n",
+        "app.py": 'import os\n\nSALES = "https://api.lemonsqueezy.com/v1"\nPUSH = "https://api.pushbullet.com/v2"\n',
     })
     found = {e["id"]: e for e in record["technologies"]}
     mentioned = {e["id"]: e for e in record["mentioned"]}
     assert {s["strength"] for s in found["fastapi"]["signs"]} == {"declared"}
-    assert {"stripe", "zoom"} <= set(mentioned) and not {"stripe", "zoom"} & set(found)
-    assert [(s["sign"], s["value"], s["path"], s["line"], s["strength"]) for s in mentioned["stripe"]["signs"]] == [
-        ("env", "STRIPE_SECRET_KEY", "app.py", 3, "mentioned")]
+    assert {"lemonsqueezy", "pushbullet"} <= set(mentioned) and not {"lemonsqueezy", "pushbullet"} & set(found)
+    assert [(s["sign"], s["value"], s["path"], s["line"], s["strength"]) for s in mentioned["lemonsqueezy"]["signs"]] == [
+        ("host", "api.lemonsqueezy.com", "app.py", 3, "mentioned")]
     for module in record["modules"]:
         held = module["frameworks"] + module["services"] + module["tools"] + module["technologies"]
-        assert not {"stripe", "zoom"} & set(held), module["id"]
+        assert not {"lemonsqueezy", "pushbullet"} & set(held), module["id"]
     assert "fastapi" in {i for module in record["modules"] for i in module["frameworks"]}
 
 
-def test_the_record_gives_each_checker_s_status_and_what_the_registry_lacks(tmp_path):
-    """MinIO is an entry with no PyPI sign: the package `minio` is a gap of the registry, not a guess."""
+def test_the_record_gives_each_checker_s_status_and_a_package_the_release_does_not_know_has_no_id(real_stack, tmp_path):
+    """MinIO has no PyPI rule: the package `minio` is a library of the unit, not a guess of the recogniser."""
     record = _stack(tmp_path, {"pyproject.toml": '[project]\nname = "app"\ndependencies = ["fastapi", "minio"]\n',
                                "app.py": "import minio\n"})
-    assert [(c["checker"], c["state"]) for c in record["checkers"]] == [("package", "ran"), ("file", "ran"),
-                                                                         ("env", "ran"), ("host", "ran"),
-                                                                         ("source", "ran")]
-    gaps = [(g["kind"], g["checker"], g["entry"], g["ecosystem"], g["value"], g["path"]) for g in record["gaps"]]
-    assert ("no_ecosystem_sign", "package", "minio", "pypi", "minio", "pyproject.toml") in gaps
-    assert "fastapi" not in {g[2] for g in gaps}
+    assert [(c["checker"], c["state"]) for c in record["checkers"]] == [("stack-analyser", "ran"), ("host", "ran")]
     assert "minio" not in {e["id"] for e in record["technologies"] + record["mentioned"]}
     assert any(lib["name"] == "minio" and "id" not in lib for m in record["modules"] for lib in m["libraries"])
 
@@ -328,9 +325,9 @@ def test_the_record_gives_each_checker_s_status_and_what_the_registry_lacks(tmp_
 @pytest.mark.parametrize(("declaring", "mentioning"), [
     ("backend", None), ("backend", "frontend"), ("frontend", "backend"),
 ])
-def test_stripe_belongs_only_to_the_module_that_declares_it(tmp_path, declaring, mentioning):
-    python_dependencies = '["stripe"]' if declaring == "backend" else "[]"
-    npm_dependencies = {"stripe": "^17"} if declaring == "frontend" else {}
+def test_openai_belongs_only_to_the_module_that_declares_it(real_stack, tmp_path, declaring, mentioning):
+    python_dependencies = '["openai"]' if declaring == "backend" else "[]"
+    npm_dependencies = {"openai": "^4"} if declaring == "frontend" else {}
     files = {
         "backend/pyproject.toml": f'[project]\nname = "backend"\ndependencies = {python_dependencies}\n',
         "backend/app.py": "def start(): pass\n",
@@ -338,8 +335,8 @@ def test_stripe_belongs_only_to_the_module_that_declares_it(tmp_path, declaring,
         "frontend/app.js": "export function start() {}\n",
     }
     comments = {
-        "backend": ("backend/app.py", "# STRIPE_SECRET_KEY is managed elsewhere.\n"),
-        "frontend": ("frontend/app.js", "// STRIPE_SECRET_KEY is managed elsewhere.\n"),
+        "backend": ("backend/app.py", 'URL = "https://api.openai.com/v1"\n'),
+        "frontend": ("frontend/app.js", 'export const URL = "https://api.openai.com/v1";\n'),
     }
     if mentioning:
         path, comment = comments[mentioning]
@@ -348,16 +345,16 @@ def test_stripe_belongs_only_to_the_module_that_declares_it(tmp_path, declaring,
     record = _stack(tmp_path, files)
 
     for field in ("services", "technologies"):
-        assert {u["name"] for u in record["units"] if "stripe" in u[field]} == {declaring}
-    stripe = next(entry for entry in record["technologies"] if entry["id"] == "stripe")
-    mentions = {sign["path"] for sign in stripe["signs"] if sign["strength"] == "mentioned"}
+        assert {u["name"] for u in record["units"] if "openai" in u[field]} == {declaring}
+    openai = next(entry for entry in record["technologies"] if entry["id"] == "openai")
+    mentions = {sign["path"] for sign in openai["signs"] if sign["strength"] == "mentioned"}
     assert mentions == ({comments[mentioning][0]} if mentioning else set())
     owner = next(unit for unit in record["units"] if unit["name"] == declaring)
     manifest = "backend/pyproject.toml" if declaring == "backend" else "frontend/package.json"
-    assert owner["technology_evidence"]["stripe"] == {"path": manifest, "line": 3 if declaring == "backend" else 1}
+    assert owner["technology_evidence"]["openai"] == {"path": manifest, "line": 3 if declaring == "backend" else 1}
 
 
-def test_stack_and_app_cite_the_owning_module_even_when_both_next_configs_have_the_same_name(tmp_path):
+def test_stack_and_app_cite_the_owning_module_even_when_both_next_configs_have_the_same_name(real_stack, tmp_path):
     import app_view
 
     record = _stack(tmp_path, {

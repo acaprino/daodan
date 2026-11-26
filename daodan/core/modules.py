@@ -35,14 +35,14 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from snapshot_store import logical_digest, open_snapshot  # noqa: E402
+from snapshot_store import inventory_digest, logical_digest, open_snapshot  # noqa: E402
 from module_inventory import (EMPTY_DIRECTORY, StaleSource, _Inventory, _digest, _inside, _join,  # noqa: E402,F401
                               _json, _plain, _posix, slug)
 from build_units import ECOSYSTEMS, READERS, SUFFIX_READERS  # noqa: E402,F401
 from module_records import (DECLARED_FILE, DECLARED_SCHEMA, LEDGER_FILE, LEDGER_SCHEMA, LOCATIONS,  # noqa: E402,F401
                             MAX_MEMBERS, MAX_MODULES, MODULE_KINDS, ledger_name, load_ledger, resolve_evidence,
                             resolve_members, validate_module, validate_modules, write_ledger)
-from module_derive import (MAX_EDGE_EVIDENCE, NATURES, PHYSICAL, PROVENANCES, SCHEMA, STATUSES,  # noqa: E402,F401
+from module_derive import (MAX_EDGE_EVIDENCE, NATURES, PHYSICAL, PROVENANCES, SCHEMA, STATUSES, status_counts,  # noqa: E402,F401
                            derive, enrich_with_premap)
 
 GRAPH_FILE = "modules.json"
@@ -68,7 +68,7 @@ def load_graph(path: Path) -> dict:
 
 
 def _inputs_digest(manifest: Path, store) -> str:
-    return _digest(["unit-resolution.3", logical_digest(store), store["root"], _digest(load_ledger(manifest))])
+    return _digest(["unit-resolution.3", inventory_digest(store), store["root"], _digest(load_ledger(manifest))])
 
 
 def graph_state(manifest: Path) -> dict:
@@ -91,7 +91,10 @@ def graph_state(manifest: Path) -> dict:
         except ValueError as error:
             return {**report, "state": "stale", "reason": f"proposals ledger unreadable: {error}", "modules": len(graph["modules"])}
     if graph.get("inputs_digest") == current:
-        return {**report, "state": "fresh", "modules": len(graph["modules"])}
+        # The structure binds to the inventory; `imports` and `calls` read the symbols, so to the reading as well.
+        with open_snapshot(manifest) as store:
+            edges_current = not graph.get("structure_only") and graph["binding"].get("logical_digest") == logical_digest(store)
+        return {**report, "state": "fresh", "modules": len(graph["modules"]), **({} if edges_current else {"structure_only": True})}
     return {**report, "state": "stale", "reason": "snapshot or proposals changed since the graph was derived",
             "modules": len(graph["modules"])}
 
@@ -104,8 +107,18 @@ def _changes(graph: dict, previous: dict | None) -> dict:
             "unchanged": sorted(i for i in now if i in before and before[i].get("members_digest") == now[i]["members_digest"])}
 
 
-def write_graph(manifest: Path) -> dict:
-    """Derive and publish `modules.json` and `modules.md` beside the manifest."""
+def _publish(graph: dict, manifest: Path) -> None:
+    graph_path, view_path = graph_name(manifest), Path(manifest).with_name(VIEW_FILE)
+    for path, data in ((graph_path, _json(graph).encode("utf-8")), (view_path, render(graph).encode("utf-8"))):
+        descriptor, name = tempfile.mkstemp(prefix=".modules-", dir=path.parent)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(data)
+        os.replace(name, path)
+
+
+def write_graph(manifest: Path, *, edges: bool = True) -> dict:
+    """Derive and publish `modules.json` and `modules.md` beside the manifest; with `edges=False` the structure only
+    (no symbol read, no `imports` and `calls`), marked `structure_only`."""
     manifest = Path(manifest).resolve()
     graph_path, view_path = graph_name(manifest), Path(manifest).with_name(VIEW_FILE)
     _plain(graph_path)
@@ -118,36 +131,84 @@ def write_graph(manifest: Path) -> dict:
             previous = None
     with open_snapshot(manifest) as store:
         before = _inputs_digest(manifest, store)
-        graph = derive(store, ledger=load_ledger(manifest))
+        graph = derive(store, ledger=load_ledger(manifest), edges=edges)
         graph["inputs_digest"] = before
+        if not edges:
+            graph["structure_only"] = True
         if _inputs_digest(manifest, store) != before:
             raise ValueError("snapshot or ledger changed during derivation; retry")
     graph["changes"] = _changes(graph, previous)
-    view = render(graph)
-    for path, data in ((graph_path, _json(graph).encode("utf-8")), (view_path, view.encode("utf-8"))):
-        descriptor, name = tempfile.mkstemp(prefix=".modules-", dir=path.parent)
-        with os.fdopen(descriptor, "wb") as stream:
-            stream.write(data)
-        os.replace(name, path)
+    _publish(graph, manifest)
     return graph
 
 
-def ensure_graph(manifest: Path, *, check: bool = False) -> dict:
-    before = graph_state(manifest)
-    if before["state"] == "fresh" or check:
-        return {**before, "action": "none" if before["state"] == "fresh" else "reported"}
+def _ensured(manifest: Path, before: dict, edges: bool) -> dict:
     try:
-        graph = write_graph(manifest)
+        graph = write_graph(manifest, edges=edges)
     except (OSError, ValueError) as error:
         return {**before, "state": "failed", "action": "none", "reason": str(error)}
     return {**graph_state(manifest), "action": "rebuilt" if before["state"] != "stale" else "refreshed",
             "changes": graph["changes"]}
 
 
+def ensure_structure(manifest: Path) -> dict:
+    """What `scan` writes: the graph without `imports` and `calls` (no symbol is read), marked `structure_only`.
+    A fresh graph, whole or not, stays as it is."""
+    before = graph_state(manifest)
+    if before["state"] == "fresh":
+        return {**before, "action": "none"}
+    return _ensured(manifest, before, edges=False)
+
+
+def _complete(manifest: Path, before: dict) -> dict:
+    """The second write of a structure-only graph: `imports` and `calls` as a whole derivation gives them, among the
+    modules the graph has (the pre-map's enrichment kept), with the coverage of the edges and no marker."""
+    graph_path = graph_name(manifest)
+    try:
+        _plain(graph_path)
+        graph = load_graph(graph_path)
+        with open_snapshot(manifest) as store:
+            digest, reading = _inputs_digest(manifest, store), logical_digest(store)
+            whole = derive(store, ledger=load_ledger(manifest))
+            if _inputs_digest(manifest, store) != digest or graph.get("inputs_digest") != digest:
+                raise ValueError("snapshot or ledger changed during derivation; retry")
+        ids = {m["id"] for m in graph["modules"]}
+        whole_modules = {m["id"]: m for m in whole["modules"]}
+        for module in graph["modules"]:  # what the symbols decide: a declared or proposed module's members and their results
+            if module["provenance"] not in PHYSICAL and module["id"] in whole_modules:
+                module.update({k: whole_modules[module["id"]][k]
+                               for k in ("members", "gaps", "status", "conflicts", "coverage", "members_digest")})
+        graph["coverage"]["statuses"] = status_counts(graph["modules"])
+        edge_map = {e["id"]: e for e in graph["edges"]}
+        for edge in whole["edges"]:
+            if edge["kind"] in ("imports", "calls", "uses") and edge["source"] in ids and edge["target"] in ids:
+                edge_map[edge["id"]] = edge
+        graph["edges"] = [edge_map[k] for k in sorted(edge_map)]
+        graph["coverage"]["edges"] = {k: sum(1 for e in graph["edges"] if e["kind"] == k)
+                                      for k in ("declares", "contains", "imports", "calls", "uses")}
+        graph["gaps"] = [*graph["gaps"], *(g for g in whole["gaps"] if g not in graph["gaps"])]
+        graph.pop("structure_only", None)
+        graph["binding"] = {**graph["binding"], "logical_digest": reading}  # the reading `imports` and `calls` come from
+        _publish(graph, manifest)
+    except (OSError, ValueError) as error:
+        return {**before, "state": "failed", "action": "none", "reason": str(error)}
+    return {**graph_state(manifest), "action": "completed"}
+
+
+def ensure_graph(manifest: Path, *, check: bool = False) -> dict:
+    """The whole graph, as every reader and the `union` step need it: a structure-only graph gets its edges here."""
+    before = graph_state(manifest)
+    if before["state"] == "fresh" and before.get("structure_only") and not check:
+        return _complete(manifest, before)
+    if before["state"] == "fresh" or check:
+        return {**before, "action": "none" if before["state"] == "fresh" else "reported"}
+    return _ensured(manifest, before, edges=True)
+
+
 def sync_with_premap(manifest: Path, premap_record: dict) -> dict:
     """Align `modules.json` and `modules.md` with pre-map model units, exclusions and toolchains."""
     manifest = Path(manifest).resolve()
-    ensured = ensure_graph(manifest)
+    ensured = ensure_structure(manifest)
     if ensured["state"] != "fresh":
         raise ValueError(f"module graph is {ensured['state']}: {ensured.get('reason', '')}")
     graph_path, view_path = graph_name(manifest), Path(manifest).with_name(VIEW_FILE)
@@ -158,18 +219,14 @@ def sync_with_premap(manifest: Path, premap_record: dict) -> dict:
         return previous
     with open_snapshot(manifest) as store:
         before = _inputs_digest(manifest, store)
-        base = derive(store, ledger=load_ledger(manifest))
+        base = derive(store, ledger=load_ledger(manifest), edges=False)
         base["inputs_digest"] = before
+        base["structure_only"] = True  # the edges are `ensure_graph`'s second write
         graph = enrich_with_premap(store, base, premap_record)
         if _inputs_digest(manifest, store) != before:
             raise ValueError("snapshot or ledger changed during pre-map sync; retry")
     graph["changes"] = _changes(graph, previous)
-    view = render(graph)
-    for path, data in ((graph_path, _json(graph).encode("utf-8")), (view_path, view.encode("utf-8"))):
-        descriptor, name = tempfile.mkstemp(prefix=".modules-", dir=path.parent)
-        with os.fdopen(descriptor, "wb") as stream:
-            stream.write(data)
-        os.replace(name, path)
+    _publish(graph, manifest)
     return graph
 
 

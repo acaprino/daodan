@@ -1,0 +1,21 @@
+{
+ "variant": "launch-c-db-postgres-driver",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs-psycopg/bin/python -I \"$2\" \"$3\"",
+  "django",
+  "60",
+  "/daodan/state/in/launch.py",
+  "c"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"settings_module\": \"config.settings\", \"settings_wrapped\": \"config.settings\", \"root_urlconf\": \"config.urls\", \"top_level\": 20, \"version\": \"6.1.3\", \"argv\": [\"manage.py\"], \"path0\": \"/work\", \"setup_seconds\": 1.023, \"max_rss_mb\": 81.9}",
+ "stderr": "",
+ "seconds": 1.36,
+ "max_rss_mb": 81.9,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 246
+}

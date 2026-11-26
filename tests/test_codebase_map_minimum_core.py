@@ -51,7 +51,7 @@ class MinimumCoreTests(unittest.TestCase):
         out = self.root / '.daodan/map'
         out.mkdir(parents=True)
         self.manifest = out / 'snapshot.sqlite'
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         self.index = out / 'retrieval.sqlite'
         retrieval.refresh_index(self.manifest, self.index)
         self.indexes = {'retrieval': str(self.index)}
@@ -215,7 +215,7 @@ class MinimumCoreTests(unittest.TestCase):
         (self.root / 'core.py').write_bytes(
             b'OFFSET = 1\n\ndef helper(value):\n    """Quote "this" and a \\\\ backslash."""\n'
             b'    marker = "@@ end S1"\n    return value + OFFSET\n\ndef run(value):\n    return helper(value)\n')
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         retrieval.refresh_index(self.manifest, self.index)
         request = self.request(query='', anchors=['core.py::helper'])
         result = self.packet(self.plan(request), request, 10 ** 6)
@@ -228,10 +228,10 @@ class MinimumCoreTests(unittest.TestCase):
 
     def test_obligations_stay_open_in_the_input_without_their_provenance(self):
         base = self.manifest.with_name('base.sqlite')
-        snapshot.write_snapshot(self.root, base)
+        snapshot.read_project(self.root, base)
         (self.root / 'core.py').write_bytes(
             b'OFFSET = 1\n\ndef helper(value):\n    return value + OFFSET + 1\n\ndef run(value):\n    return helper(value)\n')
-        snapshot.write_snapshot(self.root, self.manifest)
+        snapshot.read_project(self.root, self.manifest)
         retrieval.refresh_index(self.manifest, self.index)
         request = self.request(intent='bug', query='', requirements=[
             {'id': 'R1', 'support': [{'predicate': 'current_source', 'entity_id': 'core.py::helper'}]}])

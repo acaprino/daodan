@@ -46,7 +46,7 @@ def build(tmp_path, name: str, sources, files: dict | None = None, answers: str 
             (project / rel).parent.mkdir(parents=True, exist_ok=True)
             (project / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return premap.write(manifest, sources=sources, runner=replay(answers or name) if answers or files is None else None)
 
 
@@ -229,7 +229,7 @@ def test_a_failed_configure_keeps_the_projects_and_states_no_target(tmp_path):
     (project / "settings.gradle.kts").write_text('rootProject.name = "klaxon"\n', encoding="utf-8")
     (project / "buildSrc/build.gradle.kts").write_text("repositories {\n    jcenter()\n}\n", encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=(gradle,), runner=replay("gradle/mix-real-klaxon"))
     assert "toolchains" not in record
     gaps = [g for g in record["gaps"] if g["kind"].startswith("model_")]

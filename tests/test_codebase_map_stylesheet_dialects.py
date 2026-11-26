@@ -15,6 +15,7 @@ if str(SCRIPTS) not in sys.path:
 
 from languages import SUPPORTED_EXTENSIONS, get_adapter  # noqa: E402
 from languages.stylesheet import dialect_for, iter_styled_blocks, parse_sheet  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 # Indented Sass: the same facts as the SCSS below, line for line.
 SASS = textwrap.dedent(
@@ -147,7 +148,7 @@ class SnapshotDialectTests(unittest.TestCase):
         for rel, text in files.items():
             (self.root / rel).parent.mkdir(parents=True, exist_ok=True)
             (self.root / rel).write_text(text, encoding="utf-8")
-        self.files = snapshot.build_manifest(self.root)["files"]
+        self.files = read_manifest(self.root)["files"]
 
     def entry(self, suffix):
         return next(v for k, v in self.files.items() if k.endswith(suffix))
@@ -274,7 +275,7 @@ class StyleBlockTests(unittest.TestCase):
         self.addCleanup(shutil.rmtree, root, True)
         (root / "index.html").write_text(HTML, encoding="utf-8")
         (root / "page.pug").write_text("style.\n  .a { color: red; }\n", encoding="utf-8")
-        files = snapshot.build_manifest(root)["files"]
+        files = read_manifest(root)["files"]
         html = next(v for k, v in files.items() if k.endswith("index.html"))
         self.assertEqual((html["language"], html["status"]), ("markup", "parsed"))
         self.assertEqual((html["symbols"][".shell"]["start"], html["symbols"][".shell"]["end"]), (5, 5))

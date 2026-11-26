@@ -1,0 +1,20 @@
+{
+ "variant": "flask-routes-command",
+ "argv": [
+  "/daodan/state/venvs/./bin/flask",
+  "routes"
+ ],
+ "cwd": ".",
+ "returncode": 0,
+ "stdout": "Endpoint             Methods    Subdomain  Rule                      \n-------------------  ---------  ---------  --------------------------\nadmin.stats          GET                   /admin/stats              \nadmin.user           GET, POST             /admin/users/<int:user_id>\nbuilt                GET                   /built                    \nby_int               GET                   /int/<int:id>             \nby_pair              GET                   /pair/<pair:p>            \nby_path              GET, PUT              /files/<path:name>        \nby_slug              GET                   /slug/<slug:s>            \nby_string            GET                   /string/<string:name>     \nby_tail              GET                   /tail/<tail:rest>         \nby_tailre            GET                   /tailre/<tailre:rest>     \nby_uuid              GET                   /uuid/<uuid:u>            \ncallable             GET                   /callable                 \ncreate_item          POST                  /items                    \ndocs                 GET                   /docs                     \nget_options          GET                   /get-options              \nglued                GET                   /glued/<a>-<b>            \nhead_only                                  /head-only                \nhello                GET                   /hello                    \nindex                GET                   /                         \nlam                  GET                   /lambda                   \nloose_without_slash  GET                   /loose                    \nnested.inner         GET                   /nested/inner             \nnested_doc           GET                   /nested-doc               \nold                  GET                   /old                      \noptions_only                               /options                  \norders               GET, POST             /orders                   \npartial              GET                   /partial                  \nrelaxed              GET                   /relaxed/                 \nshow                 GET                   /page                     \nstatic               GET                   /static/<path:filename>   \nstdlib               GET                   /stdlib                   \nstrict_with_slash    GET                   /strict/                  \nsub                  GET        api        /sub                      \nthird_party          GET                   /third-party              \ntwo                  GET                   /two/<int:x>/<int:y>      \nwrapped              GET                   /wrapped                  \nwrapper              GET                   /unwrapped                \n",
+ "stderr": "",
+ "seconds": 0.45,
+ "max_rss_mb": 52.8,
+ "left_in_the_project": [
+  "__pycache__/wsgi.cpython-312.pyc",
+  "admin/__pycache__/__init__.cpython-312.pyc",
+  "admin/__pycache__/blueprint.cpython-312.pyc"
+ ],
+ "changed_in_the_project": [],
+ "stdout_chars": 2730
+}

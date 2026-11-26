@@ -461,7 +461,7 @@ class MapService:
             temporary = Path(name)
             temporary.unlink()
         try:
-            metadata = snapshot.write_snapshot(bound, temporary, format=format)
+            metadata = snapshot.read_project(bound, temporary, format=format)
             with self._operation(write=True):
                 if self._target(target) != bound:
                     raise ValueError("target binding changed while building the snapshot")
@@ -497,8 +497,9 @@ class MapService:
                 if format == "sqlite":
                     import pipeline
                     piped = pipeline.run(run / state["snapshot"]["path"], stop="stack", fast_scan=True)
-                    if "failed" in piped.get("scan", {}):
-                        self._event(run, "modules_failed", message=str(piped["scan"]["failed"])[:MAX_MESSAGE])
+                    scanned = piped["scan"]
+                    if "failed" in scanned:
+                        self._event(run, "modules_failed", message=str(scanned["failed"])[:MAX_MESSAGE])
                 else:
                     graph = module_graph.ensure_graph(run / state["snapshot"]["path"])
                     if graph["state"] != "fresh":

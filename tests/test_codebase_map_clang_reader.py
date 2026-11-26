@@ -28,6 +28,7 @@ import resolution  # noqa: E402
 import snapshot  # noqa: E402
 from languages import SUPPORTED_EXTENSIONS, cfamily, detect_language, get_adapter  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
+from read_manifest import read_manifest  # noqa: E402
 
 FIXTURES = HERE / "fixtures/clang-reader"
 
@@ -144,7 +145,7 @@ SYMBOLS = {
 
 
 def _built(source: Path, manifest: Path) -> dict:
-    snapshot.write_snapshot(source, manifest)
+    snapshot.read_project(source, manifest)
     db = sqlite3.connect(manifest)
     try:
         out = {"languages": dict(db.execute("SELECT file, language FROM sem_coverage")),
@@ -245,11 +246,14 @@ def test_suffixes_name_the_two_languages():
 def test_a_header_is_cpp_only_when_its_text_has_what_c_lacks():
     cpp = ["namespace geo {\nint f();\n}\n", "class Node {\n public:\n  int x;\n};\n",
            "template <typename T> T twice(T v);\n", "using namespace std;\n",
-           # otel-demo's meter_common.h: a namespace alias, an anonymous namespace, `std::` names; a standard
-           # library header, as Linguist's own rule for `.h` has it.
+           # otel-demo's meter_common.h: a namespace alias, an anonymous namespace, `std::` names; the C grammar
+           # errs on `std::` where the C++ one does not.
            "namespace sdk = opentelemetry::sdk;\nnamespace\n{\nstd::shared_ptr<int> init();\n}\n",
-           "std::size_t bound(std::size_t n);\n", "#include <vector>\nint f(void);\n"]
+           "std::size_t bound(std::size_t n);\n"]
     c = ["#ifdef __cplusplus\nextern \"C\" {\n#endif\nint f(void);\n#ifdef __cplusplus\n}\n#endif\n",
+         # a standard library include names no construct: both grammars read it, so the header is the suffix's
+         # (the regular expression of before answered C++ from the name, as Linguist's rule for `.h` does).
+         "#include <vector>\nint f(void);\n",
          "/* a class of errors */\nstruct node { int x; };\n", "const char *s = \"namespace x {\";\n",
          "// template <typename T>\nint f(void);\n", "#include <string.h>\n[[gnu::unused]] static int x;\n",
          "int namespace_count; /* std::x */\n",
@@ -697,11 +701,11 @@ def test_a_changed_header_reparses_the_files_whose_context_it_changes(tmp_path):
     reparses the file, the others are reused."""
     source = tmp_path / "macros"
     shutil.copytree(MACROS, source)
-    first = snapshot.write_snapshot(source, tmp_path / "first.sqlite")
+    first = snapshot.read_project(source, tmp_path / "first.sqlite")
     header = source / "zdefs.h"
     header.write_bytes(header.read_bytes().replace(b"#define local static", b"#define local"))
     with open_snapshot(tmp_path / "first.sqlite") as previous:
-        second = snapshot.write_snapshot(source, tmp_path / "second.sqlite", previous=previous)
+        second = snapshot.read_project(source, tmp_path / "second.sqlite", previous=previous)
     # zdefs.h changed; checksum.c, crc.c and tables.h use its `local`; split.c does not parse, so it is never kept.
     assert first["metrics"]["cache_hits"] == 0 and second["metrics"]["cache_hits"] == 3
     db = sqlite3.connect(tmp_path / "second.sqlite")
@@ -719,7 +723,7 @@ def test_the_index_and_the_store_answer_the_rule_alike(tmp_path):
     for root in (LINK, FIXTURES / "namespaces"):
         source = tmp_path / root.name
         shutil.copytree(root, source)
-        index = semantic_index.build_semantic_index(snapshot.build_manifest(source))
+        index = semantic_index.build_semantic_index(read_manifest(source))
         found = {}
         for item in index["references"]:
             if len(item["parts"]) == 1 and (item.get("reason") or "").startswith("included-"):
@@ -748,7 +752,7 @@ def test_on_modal_the_reference_sites_of_zlib_s_files_no_build_compiles(tmp_path
                     ["git", "-c", "core.hooksPath=/dev/null", "checkout", "-q", "FETCH_HEAD"]):
         subprocess.run(command, cwd=source, check=True, timeout=600)
     manifest = tmp_path / "snapshot/manifest.sqlite"
-    snapshot.write_snapshot(source, manifest)
+    snapshot.read_project(source, manifest)
     connection = sqlite3.connect(manifest)
     sites = dict(connection.execute(
         "SELECT r.file, COUNT(*) FROM sem_references r JOIN sem_coverage c ON c.file = r.file "

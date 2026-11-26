@@ -27,10 +27,10 @@ def write_tree(root: Path, files: dict[str, str]) -> None:
 def snap(project: Path, out: Path, previous: Path | None = None) -> Path:
     out.parent.mkdir(parents=True, exist_ok=True)
     if previous is None:
-        snapshot.write_snapshot(project, out)
+        snapshot.read_project(project, out)
     else:
         with open_snapshot(previous) as old:
-            snapshot.write_snapshot(project, out, previous=old)
+            snapshot.read_project(project, out, previous=old)
     return out
 
 

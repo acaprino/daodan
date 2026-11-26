@@ -134,7 +134,7 @@ def read_record(manifest):
 
 def evidence(manifest):
     """Load and validate the pre-map once for all of its flow-entry readers."""
-    from premap import module_graph, nextjs, noir, python_build, renovate
+    from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES, module_graph, noir, python_build, renovate
     manifest = Path(manifest)
     try:
         report = read_record(manifest)
@@ -142,8 +142,12 @@ def evidence(manifest):
         return [], [noir.unavailable(error), {"kind": "declared_entries_unavailable", "source": "manifesto",
                     "detail": str(error), "remedy": "refresh the pre-map for this snapshot"}]
     routes, gaps = noir.from_record(report)
-    framework, framework_gaps = nextjs.from_record(report)
-    routes, gaps = routes + framework, gaps + framework_gaps
+    for source in FRAMEWORK_SOURCES:
+        framework, framework_gaps = source.from_record(report)
+        routes, gaps = routes + framework, gaps + framework_gaps
+    # A template source's rows are not routes: they stand for, or join, the tree reader's at the same events (`entries.compiled`); their gaps are told here
+    for source in TEMPLATE_SOURCES:
+        gaps += source.from_record(report)[1]
     rows = report.get("declared_entries")
     if rows is None:
         # Cargo targets in older reports already identify the path. No need for another Cargo run.

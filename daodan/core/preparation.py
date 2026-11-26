@@ -19,8 +19,9 @@ import json
 from pathlib import Path
 import posixpath
 import re
+import shlex
 
-from tree_scope import workspace_glob
+from tree_scope import Perimeter, workspace_glob
 
 STATE = "/daodan/state"
 IN, T = f"{STATE}/in", f"{STATE}/tools"
@@ -436,6 +437,45 @@ def restores(files) -> dict[str, list[str]]:
             if nested or folder in locked or not any(o != folder and _inside(folder, o) for o in marked):
                 out.setdefault(locked.get(folder, default), []).append(folder)
     return out
+
+
+def perimeter_files(project) -> list[str]:
+    """The files of a project's perimeter, relative and sorted: the ones a container is given a copy of (git-ignored untracked files are left
+    out) and every restore reads. What a command decides from the files of the project, the manager of a folder by its lockfile first, it
+    decides from this set, so that it and the restore pick the same."""
+    return sorted((directory / name).relative_to(project).as_posix() for directory, names in Perimeter(project).walk() for name in names)
+
+
+def python_locks(files, exists) -> list[str]:
+    """The lockfiles of the Python managers that the checkout holds beside a Python manifest of `files` (the snapshot keeps none):
+    `exists(rel)` says whether one is there."""
+    locks = {posixpath.join(posixpath.dirname(rel), lock) for rel in files if posixpath.basename(rel) in PYTHON
+             for manager in RESTORES.values() if manager.get("family") == "python" for lock in manager.get("locks", ())}
+    return sorted(lock for lock in locks - set(files) if exists(lock))
+
+
+def python_environments(files, exists=None) -> dict[str, str]:
+    """`{folder: manager}` of the Python environments the restore makes (`restores`) from `files`, and from the lockfiles `exists` says
+    the checkout holds beside them where the files are the snapshot's, which keeps none: the root, a folder with a lockfile of its own, and
+    a marked folder no other marked folder holds. A uv workspace is one environment, at its root, with its members' dependencies."""
+    files = [*files, *(python_locks(files, exists) if exists else ())]
+    return {folder: manager for manager, folders in restores(files).items()
+            if RESTORES[manager].get("family") == "python" for folder in folders}
+
+
+def python_environment(held, folder) -> str | None:
+    """The folder whose environment a command in `folder` runs in: the nearest one of `held` at or above it, the root when none is
+    nearer; None where none is above."""
+    above = [env for env in held if env == "." or folder == env or folder.startswith(env + "/")]
+    return max(above, key=lambda env: (env != ".", len(env))) if above else None
+
+
+def python_interpreter(env, manager, workdir) -> str:
+    """The shell word of the Python of the environment restored for the folder `env`: `<VENVS>/<env>/bin/python`, and for Poetry, whose
+    environment lives in its own cache, what `poetry env info -e` says in that folder (`workdir` is where the project is)."""
+    if manager == "poetry":
+        return f'"$(cd {shlex.quote(posixpath.join(workdir, env))} && poetry env info -e)"'
+    return shlex.quote(f"{VENVS}/{env}/bin/python")
 
 
 OFF = (" --ignore-scripts", " --mode=skip-build")  # what turns a Node manager's lifecycle scripts off in its line

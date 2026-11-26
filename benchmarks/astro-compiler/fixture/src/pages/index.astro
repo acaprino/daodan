@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Counter from '../components/Counter.astro';
+
+const title = 'Shop';
+const items = ['a', 'b', 'c'];
+const rest = { id: 'main', 'data-x': '1' };
+const onclick = 'shorthand()';
+function save() { return 1; }
+---
+<Layout title={title}>
+  <h1 id="top" title=plain>{title}</h1>
+  <button id="save" onclick="save()">Save</button>
+  <button onclick="this.disabled = true; confirmOrder(event)">Order</button>
+  <button class="x" onclick='cancel("now")' data-id={items[0]}>Cancel</button>
+  <button onclick=go()>Go</button>
+  <button
+    class="multi"
+    onclick="multiLine()"
+  >Multi</button>
+  <form onsubmit="return validate(this)"><input oninput="update(this.value)" /></form>
+  <ul>
+    {items.map((item) => (
+      <li onclick={`pick('${item}')`}>{item}</li>
+    ))}
+  </ul>
+  {title === 'Shop' && <a href="/x" onclick="track('x')">link</a>}
+  <Card heading="Hi" onclick="cardClick()" {...rest}>text</Card>
+  <Counter client:load initial={3} />
+  <Counter client:visible />
+  <button {onclick}>Shorthand</button>
+  <my-widget onclick="widget()"></my-widget>
+  <svg onclick="svgClick()" viewBox="0 0 1 1"><path d="M0 0" /></svg>
+  <Fragment set:html={'<b onclick="inHtml()">raw</b>'} />
+  <!-- <button onclick="commented()">no</button> -->
+  <script is:inline>
+    function confirmOrder(e) { }
+    function pick(i) { }
+    function go() { }
+  </script>
+  <script>
+    document.querySelector('#save')?.addEventListener('click', () => { console.log('saved'); });
+  </script>
+  <style>
+    h1 { color: red; }
+  </style>
+</Layout>

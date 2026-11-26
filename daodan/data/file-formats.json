@@ -1,0 +1,31 @@
+{
+ "schema": "daodan/file-formats/v1",
+ "languages": {
+  "python": {"extensions": [".py", ".pyi"], "linguist": ["Python"]},
+  "java": {"extensions": [".java"], "linguist": ["Java"]},
+  "javascript": {"extensions": [".js", ".mjs", ".cjs", ".jsx"], "linguist": ["JavaScript"]},
+  "typescript": {"extensions": [".ts", ".tsx", ".mts", ".cts"], "linguist": ["TypeScript", "TSX"]},
+  "sql": {"extensions": [".sql", ".ddl", ".dml"], "linguist": ["SQL", "PLpgSQL", "SQLPL", "TSQL"]},
+  "plsql": {"extensions": [".pks", ".pkb", ".plsql", ".pls", ".pck", ".prc", ".fnc", ".trg"], "linguist": ["PLSQL"]},
+  "rust": {"extensions": [".rs"], "linguist": ["Rust"]},
+  "go": {"extensions": [".go"], "linguist": ["Go"]},
+  "kotlin": {"extensions": [".kt", ".kts"], "linguist": ["Kotlin"]},
+  "csharp": {"extensions": [".cs"], "linguist": ["C#"]},
+  "c": {"extensions": [".c", ".h"], "linguist": ["C"]},
+  "cpp": {"extensions": [".cc", ".cpp", ".cxx", ".hpp", ".hh", ".hxx"], "linguist": ["C++"]},
+  "vue": {"extensions": [".vue"], "linguist": ["Vue"]},
+  "svelte": {"extensions": [".svelte"], "linguist": ["Svelte"]},
+  "astro": {"extensions": [".astro"], "linguist": ["Astro"]},
+  "markup": {"extensions": [".cshtml", ".ejs", ".erb", ".ftl", ".handlebars", ".hbs", ".htm", ".html", ".j2", ".jinja", ".jsp", ".jspx", ".liquid", ".mustache", ".njk", ".razor", ".twig", ".vm", ".xhtml"], "linguist": ["HTML", "HTML+Razor", "EJS", "HTML+ERB", "FreeMarker", "Handlebars", "Jinja", "Java Server Pages", "Liquid", "Mustache", "Nunjucks", "Twig"]},
+  "css": {"extensions": [".css", ".scss", ".sass", ".less", ".pcss", ".postcss"], "linguist": ["CSS", "SCSS", "Sass", "Less", "PostCSS"]}
+ },
+ "documents": [".bat", ".cabal", ".cfg", ".cmake", ".cmd", ".csproj", ".fsproj", ".gemspec", ".gql", ".gradle", ".graphql", ".hcl", ".ini", ".json", ".json5", ".jsonc", ".md", ".mk", ".plist", ".prisma", ".props", ".proto", ".ps1", ".rst", ".sh", ".sln", ".slnx", ".targets", ".tf", ".toml", ".txt", ".vbproj", ".vcproj", ".vcxproj", ".wsdl", ".xml", ".xsd", ".xsl", ".xslt", ".yaml", ".yml"],
+ "presentation": [".jade", ".pug", ".styl", ".stylus"],
+ "stack_sources": {"swift": [".swift"], "elixir": [".ex", ".exs"], "php": [".php"]},
+ "manifests": ["BUILD", "BUILD.bazel", "Dockerfile", "Gemfile", "MODULE.bazel", "Package.swift", "WORKSPACE", "WORKSPACE.bazel", "build.sbt", "build.zig.zon", "dune-project", "go.mod", "go.work", "meson.build", "meson.options", "mix.exs"],
+ "makefiles": "(?i)^((gnu)?makefile(\\..+)?|.+\\.(mak|mms)|descrip\\.mms)$",
+ "build_folders": ["profiles"],
+ "dependency_directories": ["__pycache__", "build", "dist", "node_modules", "target", "vendor", "venv"],
+ "forbidden": [".env", ".env.*", "credentials.*", "secrets.*", "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*", ".npmrc", ".pypirc", ".netrc", "*service-account*.json", "*kubeconfig*", "*.tfstate", "*.tfstate.*", "*.keystore", "*.jks"],
+ "secret_names": ["*secret*", "*credential*"]
+}

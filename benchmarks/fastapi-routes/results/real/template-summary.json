@@ -1,0 +1,142 @@
+{
+ "name": "template",
+ "application": "template",
+ "repository": "fastapi/full-stack-fastapi-template",
+ "commit": "77e550a73bb49dd2967622c5ed11bf7a49603c93",
+ "licence": "MIT",
+ "folder": ".",
+ "script": {
+  "variant": "template-script",
+  "exit": 3,
+  "seconds": 3.01,
+  "peak_memory_mb": 132.0,
+  "stopped": "-sign. [type=value_error, input_value='./daodan-dotenv-2e656e76...35f46524f4d5f454d41494c', input_type=str]\nFIRST_SUPERUSER\n  value is not a valid email address: An email address must have an @-sign. [type=value_error, input_value='./daodan-dotenv-2e656e76...3545f535550455255534552', input_type=str]"
+ },
+ "noir": {
+  "variant": "template-noir",
+  "exit": 0,
+  "seconds": 1.12,
+  "peak_memory_mb": 191.0
+ },
+ "gaps": [
+  {
+   "source": "noir",
+   "kind": "model_partial",
+   "path": null,
+   "detail": "Noir reported 1 scan errors"
+  },
+  {
+   "source": "fastapi",
+   "kind": "model_failed",
+   "path": "backend",
+   "detail": "fastapi_routes.py exited with 3: ValidationError: 6 validation errors for Settings\nFASTAPI_ENV\n  Input should be 'development' [type=literal_error, input_value='./daodan-dotenv-2e656e76-464153544150495f454e56', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\nDATABASE_URL\n  Input sh [...] -sign. [type=value_error, input_value='./daodan-dotenv-2e656"
+  }
+ ],
+ "framework": {
+  "rows": 0,
+  "http_rows": 0,
+  "bound_to_a_function": 0,
+  "websocket_rows": 0,
+  "unbound": []
+ },
+ "noir_report": {
+  "endpoints": 34,
+  "protocols": {
+   "http": 31,
+   "cli": 3
+  },
+  "errors": 1,
+  "with_a_handler_name": 23,
+  "rows": 31,
+  "bound_to_a_function": 23,
+  "unbound": [
+   {
+    "path": "/",
+    "method": "ANY",
+    "site": "compose.deploy.yml",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/admin",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/admin.tsx:20",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/items",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/items.tsx:20",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/settings",
+    "method": "GET",
+    "site": "frontend/src/routes/_layout/settings.tsx:15",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/login",
+    "method": "GET",
+    "site": "frontend/src/routes/login.tsx:35",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "path": "/recover-password",
+    "method": "GET",
+    "site": "frontend/src/routes/recover-password.tsx:33",
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ },
+ "comparison": {
+  "both": 0,
+  "agreement": {},
+  "differences": [],
+  "same_function_other_path": 0,
+  "other_path_examples": [],
+  "only_framework": 0,
+  "only_framework_examples": [],
+  "only_noir": 31,
+  "only_noir_examples": [
+   {
+    "method": "GET",
+    "path": "/api/v1/items/",
+    "site": "backend/app/api/routes/items.py:14",
+    "function": "backend/app/api/routes/items.py::read_items"
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/password-recovery-html-content/{email}",
+    "site": "backend/app/api/routes/login.py:105",
+    "function": "backend/app/api/routes/login.py::recover_password_html_content"
+   },
+   {
+    "method": "GET",
+    "path": "/api/v1/items/{id}",
+    "site": "backend/app/api/routes/items.py:49",
+    "function": "backend/app/api/routes/items.py::read_item"
+   },
+   {
+    "method": "GET",
+    "path": "/items",
+    "site": "frontend/src/routes/_layout/items.tsx:20",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/recover-password",
+    "site": "frontend/src/routes/recover-password.tsx:33",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/reset-password",
+    "site": "frontend/src/routes/reset-password.tsx:49",
+    "function": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ]
+ }
+}

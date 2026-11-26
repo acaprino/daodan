@@ -6,11 +6,12 @@ from pathlib import Path
 CORE = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(CORE) not in sys.path:
     sys.path.insert(0, str(CORE))
-import service_registry  # noqa: E402
 import snapshot  # noqa: E402
+import stack_recognition  # noqa: E402
+from test_codebase_map_stack_recognition import fact, package_signs, recognized  # noqa: E402
 
 
-def test_registry_attributes_the_actual_dependency_to_its_manifest(tmp_path):
+def test_registry_attributes_the_actual_dependency_to_its_manifest(real_stack, tmp_path):
     # Names taken from the Daodan/Imago manifests, explorer probes and labelled real-project corpus.
     npm = {
         "angular": "angularjs", "@angular/core": "angular", "turbo": "turborepo",
@@ -36,28 +37,27 @@ def test_registry_attributes_the_actual_dependency_to_its_manifest(tmp_path):
         file.write_text(content, encoding="utf-8")
 
     manifest = tmp_path / "snapshot/manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
-    findings = service_registry.run(manifest, facts={})["found"]
+    snapshot.read_project(project, manifest)
+    findings = stack_recognition.run(manifest, facts={})["found"]
     actual = {(s["path"], s["value"], item["id"]) for item in findings for s in item["signs"] if s["sign"] == "package"}
     assert actual == {(path, name, entry) for path, names in manifests.items() for name, entry in names.items() if entry}
 
 
-def test_web_configuration_variants_require_the_exact_basename():
+def test_web_configuration_variants_require_the_exact_basename(real_stack, tmp_path):
     names = {"jest.config.cts": "jest", "nuxt.config.mjs": "nuxtjs", "vite.config.mts": "vite",
              "vitest.config.mts": "vitest", "playwright.config.cts": "playwright", "tailwind.config.cjs": "tailwind",
              "Tauri.toml": "tauri"}
     paths = [f"app/{name}" for name in names] + ["app/jest.config.mjs.txt", "app/my-vite.config.ts"]
-    project = service_registry.Project([], paths, lambda _: [])
-    found = service_registry.check_files(service_registry.load()["entries"], project)["signs"]
-    assert {(name, entry) for entry, name, _, _ in found} == set(names.items())
+    found = recognized(tmp_path, {path: "// configuration\n" for path in paths})["found"]
+    assert {(sign["value"], item["id"]) for item in found for sign in item["signs"] if sign["sign"] == "file"} \
+        == set(names.items())
 
 
-def test_webjars_keep_the_maven_group_of_the_frontend_distribution():
+def test_webjars_keep_the_maven_group_of_the_frontend_distribution(real_stack, tmp_path):
     names = {"org.webjars:bootstrap": "bootstrap", "org.webjars.npm:bootstrap": "bootstrap",
              "org.webjars.npm:vue": "vue", "org.webjars.npm:vue-router": "vue-router",
              "org.webjars.npm:font-awesome": "fontawesome", "org.webjars.npm:dompurify": "dompurify",
              "org.webjars.npm:marked": "marked"}
-    packages = [("maven", name, "pom.xml", 1) for name in (*names, "com.example:bootstrap", "com.example:vue")]
-    project = service_registry.Project(packages, [], lambda _: [])
-    found = service_registry.check_packages(service_registry.load()["entries"], project)["signs"]
+    packages = [fact("maven", name, "pom.xml#L1", "pre-map@1") for name in (*names, "com.example:bootstrap", "com.example:vue")]
+    found = package_signs(recognized(tmp_path, packages=packages))
     assert {(name, entry) for entry, name, _, _ in found} == set(names.items())

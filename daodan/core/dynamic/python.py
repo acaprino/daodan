@@ -48,7 +48,7 @@ from dynamic import python_record
 from indexers.python import IMAGE  # the image the Python analyzer runs in
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-record-python", python_record.VERSION, ("python",)
+NAME, VERSION, LANGUAGES = "dynamic-record-python", python_record.VERSION, ("python",)
 RECORDER = Path(python_record.__file__).resolve()
 RUNNERS = ("pytest", "unittest")  # the runners of the pre-map's `tests` it starts, each as `python -m <runner>`
 # pytest's own option: a module that does not import (an optional dependency, a service) stops no other one.
@@ -188,12 +188,8 @@ def plan(record: dict, files: list[str], read) -> dict:
                       "conftest.py, pytest among the declared dependencies, a `python -m unittest` line in tox.ini "
                       "or a makefile): nothing is observed"}]}
     # The snapshot keeps no lockfile: the ones the checkout holds beside a manifest name the folder's manager.
-    locks = {posixpath.join(posixpath.dirname(rel), lock) for rel in files
-             if posixpath.basename(rel) in preparation.PYTHON for manager in preparation.RESTORES.values()
-             if manager.get("family") == "python" for lock in manager.get("locks", ())}
-    files = [*files, *sorted(lock for lock in locks - set(files) if read(lock))]
-    held = {folder: manager for manager, folders in preparation.restores(files).items()
-            if preparation.RESTORES[manager].get("family") == "python" for folder in folders}
+    files = [*files, *preparation.python_locks(files, read)]
+    held = preparation.python_environments(files)
     files, runs, gaps, toolchains = set(files), [], [], []
     for test in tests:
         root = test["root"]
@@ -202,12 +198,12 @@ def plan(record: dict, files: list[str], read) -> dict:
                 other is not test and other["runner"] == "pytest" and folder != root and _inside(root, folder)
                 for other in tests for folder in _given(other)):
             continue
-        above = [folder for folder in held if _inside(root, folder)]
         # Outside every Python folder: the project's only one, the manifests inside the test folders apart.
         apart = [folder for folder in held if test["runner"] != "pytest"
                  or not any(_inside(folder, given) for given in _given(test))]
-        env = max(above, key=lambda folder: (folder != ".", len(folder))) if above else (
-            apart[0] if len(apart) == 1 else None)
+        env = preparation.python_environment(held, root)
+        if env is None:
+            env = apart[0] if len(apart) == 1 else None
         stated = [item for item in record.get("toolchains", []) if item.get("tool") == "python"
                   and item.get("version") and item.get("declared_in")
                   and (_above(root, item["declared_in"]) or (env is not None and _above(env, item["declared_in"])))]
@@ -241,9 +237,7 @@ def _interpreter(number: int, run: dict) -> str:
     """The shell word of a run's Python: its environment's, as the shared restore makes it."""
     if run["env"] is None:
         return f"{VENVS}/.daodan-{number}/bin/python"
-    if run["manager"] == "poetry":
-        return f'"$(cd {shlex.quote("/work/" + run["env"])} && poetry env info -e)"'
-    return shlex.quote(f"{VENVS}/{run['env']}/bin/python")
+    return preparation.python_interpreter(run["env"], run["manager"], "/work")
 
 
 def _installs(run: dict, python: str) -> list[tuple[str, str]]:

@@ -51,6 +51,12 @@ def test_a_static_candidate_of_the_same_name_and_event_keeps_the_control_its_own
     assert len(observed_entries.candidates(pages(SAVE), other, FILES)) == 1
 
 
+def test_a_row_the_static_reader_lost_does_not_keep_the_control_it_is_recovered_by():
+    lost = {"reader": "attributo", "shape": "onClick", "site": "src/App.tsx:16", "label": "Save", "event": "click"}
+    for why in ({"component_gap": True, "gap": "an event on a component"}, {"forwarded": True}):
+        assert len(observed_entries.candidates(pages(SAVE), [{**lost, **why}], FILES)) == 1
+
+
 def test_a_control_that_did_nothing_or_was_not_pressed_is_no_entry():
     quiet = control("Details", role="link")
     skipped = [control("Name", role="textbox", state="skipped", reason="needs_value"),
@@ -87,7 +93,7 @@ def test_the_public_candidates_carry_the_observed_rows_beside_the_static_ones(tm
     (project / "src/lib").mkdir(parents=True)
     (project / "src/lib/actions.ts").write_text("export function save(n: number) { return n + 1; }\n", encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     assert [row for row in entries.cached_syntax(manifest) if row["reader"] == "observed"] == []
     observed_entries.write(manifest, pages(SAVE))
     [row] = [row for row in entries.cached_syntax(manifest) if row["reader"] == "observed"]

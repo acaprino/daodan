@@ -1,0 +1,32 @@
+<h1>Orders</h1>
+<button (click)="save()">Save order</button>
+<button (click)="this.save()">Save with this</button>
+<button (click)="svc.cancel()">Cancel order</button>
+<button (click)="!busy && save()">Guarded save</button>
+<button (click)="busy ? close() : reopen()">Toggle</button>
+<button (click)="save(); close()">Save and close</button>
+<button (click)="open = !open">Flip</button>
+<button (click)="router.navigate(['/orders'])">Go to orders</button>
+<button (click)="pay()" aria-label="Pay for the order">{{ label }}</button>
+<button (click)="withIcon()"><span class="icon">disk</span> Keep it</button>
+<form (ngSubmit)="submit()">
+  <input name="q" [(ngModel)]="q" (keyup.enter)="search()" />
+  <button type="submit">Send</button>
+</form>
+@if (ready) {
+  <button (click)="inIf()">Inside if</button>
+}
+<ul>
+  <li *ngFor="let o of orders" (click)="liClick(o)">
+    <button (click)="remove(o)">Remove one</button>
+  </li>
+</ul>
+@for (o of orders; track o.id) {
+  <button (click)="removeFor(o)">Remove with for</button>
+}
+<ng-template #tpl>
+  <button (click)="inTpl()">In template</button>
+</ng-template>
+<div (window:resize)="onResize()">resize</div>
+<app-editor (saved)="onSaved($event)"></app-editor>
+<router-outlet />

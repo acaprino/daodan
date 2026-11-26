@@ -25,7 +25,7 @@ from pathlib import PurePosixPath
 from typing import Protocol
 
 __all__ = ["C_FAMILY", "LEXICAL_RESOLVER", "MRO_LIMIT", "TARGET_KINDS", "ResolutionLookup",
-           "class_named", "included_definition", "instance_method", "module_attribute"]
+           "class_named", "included_definition", "instance_method", "members_unknown", "module_attribute"]
 
 
 # The resolver identity stamped on every reference the lexical rules answer, so an
@@ -195,6 +195,19 @@ def _project_mro(lookup: ResolutionLookup, origin: str) -> list[str] | None:
     return [identity for identity in result if identity != terminal] if result else None
 
 
+def members_unknown(lookup: ResolutionLookup, mro: list[str], name: str) -> bool:
+    """Whether a class of the MRO may give `name` a value the class body does not show: an unknown instance write,
+    `name` written on an instance (`setattr(self, "NAME", x)` lands there) or a `__getattribute__`."""
+    for identity in mro:
+        payload = lookup.declaration(identity)
+        owner = identity.split("::", 1)[0]
+        if (payload.get("instance_writes_unknown")
+                or name in (payload.get("instance_writes") or ())
+                or lookup.bindings_named(owner, payload["body"], "__getattribute__")):
+            return True
+    return False
+
+
 def instance_method(lookup: ResolutionLookup, rel: str, item: dict,
                     parts: list[str]) -> tuple[str, str] | None:
     """Resolve a plain method's receiver using C3 and all member binding sites.
@@ -216,13 +229,8 @@ def instance_method(lookup: ResolutionLookup, rel: str, item: dict,
     mro = _project_mro(lookup, origin)
     if mro is None:
         return None
-    for identity in mro:
-        payload = lookup.declaration(identity)
-        owner = identity.split("::", 1)[0]
-        if (payload.get("instance_writes_unknown")
-                or parts[1] in (payload.get("instance_writes") or ())
-                or lookup.bindings_named(owner, payload["body"], "__getattribute__")):
-            return None
+    if members_unknown(lookup, mro, parts[1]):
+        return None
     for identity in mro:
         payload = lookup.declaration(identity)
         owner = identity.split("::", 1)[0]

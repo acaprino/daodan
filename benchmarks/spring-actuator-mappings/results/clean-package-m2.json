@@ -1,0 +1,22 @@
+[
+ {
+  "argv": [
+   "mvn",
+   "-o",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "clean",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 418,
+  "returncode": 1,
+  "seconds": 1.77,
+  "stderr": "",
+  "stdout": "[ERROR] Plugin org.apache.maven.plugins:maven-clean-plugin:3.4.1 or one of its dependencies could not be resolved:\n[ERROR] \tCannot access central (https://repo.maven.apache.org/maven2) in offline mode and the artifact org.apache.maven.plugins:maven-clean-plugin:jar:3.4.1 has not been downloaded from it before.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/PluginResolutionException\n",
+  "written": null,
+  "written_bytes": 0
+ }
+]

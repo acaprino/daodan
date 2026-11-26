@@ -37,7 +37,7 @@ def _project(tmp_path, extra: dict | None = None, fixture: str | None = "go") ->
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return project, manifest
 
 

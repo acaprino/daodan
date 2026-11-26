@@ -1,0 +1,21 @@
+{
+ "variant": "launch-c-no-manage",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\" \"$3\"",
+  "django",
+  "60",
+  "/daodan/state/in/launch.py",
+  "c"
+ ],
+ "cwd": ".",
+ "returncode": 3,
+ "stdout": "",
+ "stderr": "FileNotFoundError: [Errno 2] No such file or directory: '/work/manage.py'\n",
+ "seconds": 0.41,
+ "max_rss_mb": 51.1,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 0
+}

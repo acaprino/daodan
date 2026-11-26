@@ -1,0 +1,1478 @@
+{
+ "case": "sveltekit-realworld",
+ "root": "realworld",
+ "scope": "sistema",
+ "made": "2026-11-25",
+ "commit": "df796708040f5200ec572b28ab7f88ecee5794dd",
+ "nodes": [
+  {
+   "name": "Conduit",
+   "type": "altro",
+   "what": "Conduit, l'app di esempio RealWorld scritta con SvelteKit: un sito per pubblicare e leggere articoli, che tiene i dati in un'API REST di altri.",
+   "members": ["."],
+   "proof": [{"at": "src/routes/+page.svelte:16", "has": "<title>Conduit</title>"}, {"at": "svelte.config.js:9", "has": "adapter: adapter()"}]
+  },
+  {
+   "name": "Utente",
+   "type": "attore",
+   "what": "Chi visita il sito: legge articoli e profili e, dopo l'accesso, scrive articoli e commenti, mette preferiti, segue autori.",
+   "position": "external",
+   "evidence": ["src/routes/+page.svelte", "src/routes/Nav.svelte"],
+   "proof": [{"at": "src/routes/Nav.svelte:36", "has": "href=\"/login\""}]
+  },
+  {
+   "name": "Browser",
+   "type": "dispositivo",
+   "what": "Il browser che mostra le pagine e tiene il cookie jwt.",
+   "position": "external",
+   "evidence": ["src/app.html", "static/manifest.json"],
+   "proof": [{"at": "src/app.html:24", "has": "data-sveltekit-preload-data"}, {"at": "static/manifest.json:6", "has": "minimal-ui"}]
+  },
+  {
+   "name": "RealWorld API",
+   "type": "servizio o API",
+   "what": "L'API REST di RealWorld su api.realworld.show: tiene utenti, articoli, commenti, preferiti, profili e tag.",
+   "position": "external",
+   "evidence": ["src/lib/api.js"],
+   "family": "provider",
+   "role": "backend dei dati: utenti e token, articoli, commenti, preferiti, profili seguiti, tag",
+   "mode": "chiamate REST in JSON dal server dell'app, con il token dell'utente nell'intestazione Authorization",
+   "proof": [{"at": "src/lib/api.js:3", "has": "https://api.realworld.show/api"}, {"at": "src/lib/api.js:17", "has": "fetch(`${base}/${path}`"}]
+  },
+  {
+   "name": "App web",
+   "type": "applicazione",
+   "what": "L'unica app SvelteKit: pagine rese nel browser, funzioni load e azioni dei form eseguite sul server.",
+   "inside": "Conduit",
+   "members": ["src", "static"],
+   "proof": [{"at": "vite.config.js:5", "has": "sveltekit()"}, {"at": "package.json:16", "has": "@sveltejs/kit"}]
+  },
+  {
+   "name": "Barra di navigazione",
+   "type": "schermata",
+   "what": "La cornice di ogni pagina: logo, Home e, secondo la sessione, New Post, Settings e il nome dell'utente oppure Sign in e Sign up.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/routes/Nav.svelte", "src/routes/+layout.svelte", "src/routes/PreloadingIndicator.svelte"],
+   "proof": [{"at": "src/routes/Nav.svelte:16", "has": "page.data.user"}, {"at": "src/routes/+layout.svelte:18", "has": "<Nav />"}]
+  },
+  {
+   "name": "Home",
+   "type": "schermata",
+   "what": "La pagina iniziale (titolo «Conduit», voce «Home»): Global Feed, Your Feed, il feed di un tag, i tag popolari e le pagine.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/routes/+page.svelte", "src/routes/Pagination.svelte"],
+   "proof": [{"at": "src/routes/+page.svelte:38", "has": "Global Feed"}, {"at": "src/routes/+page.svelte:69", "has": "Popular Tags"}]
+  },
+  {
+   "name": "Elenco degli articoli",
+   "type": "schermata",
+   "what": "L'elenco delle anteprime degli articoli, con autore, data, tag e il cuore dei preferiti; sta nella Home e nel Profilo.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/lib/ArticleList"],
+   "proof": [{"at": "src/lib/ArticleList/index.svelte:13", "has": "<ArticlePreview"}, {"at": "src/lib/ArticleList/ArticlePreview.svelte:21", "has": "?/toggleFavorite"}]
+  },
+  {
+   "name": "Sign in",
+   "type": "schermata",
+   "what": "La pagina di accesso: email e password.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/routes/login/+page.svelte"],
+   "proof": [{"at": "src/routes/login/+page.svelte:9", "has": "Sign in • Conduit"}]
+  },
+  {
+   "name": "Sign up",
+   "type": "schermata",
+   "what": "La pagina di registrazione: nome, email e password.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/routes/register/+page.svelte"],
+   "proof": [{"at": "src/routes/register/+page.svelte:9", "has": "Sign up • Conduit"}]
+  },
+  {
+   "name": "Settings",
+   "type": "schermata",
+   "what": "La pagina «Your Settings»: immagine, nome, bio, email, nuova password e il pulsante di uscita.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/routes/settings/+page.svelte"],
+   "proof": [{"at": "src/routes/settings/+page.svelte:9", "has": "Settings • Conduit"}, {"at": "src/routes/settings/+page.svelte:16", "has": "Your Settings"}]
+  },
+  {
+   "name": "Articolo",
+   "type": "schermata",
+   "what": "La pagina di un articolo (il titolo è quello dell'articolo): testo, tag, autore, comandi dell'autore e commenti.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": [
+    "src/routes/article/[slug]/+page.svelte",
+    "src/routes/article/[slug]/ArticleMeta.svelte",
+    "src/routes/article/[slug]/Comment.svelte",
+    "src/routes/article/[slug]/CommentContainer.svelte",
+    "src/routes/article/[slug]/CommentInput.svelte"
+   ],
+   "proof": [{"at": "src/routes/article/[slug]/+page.svelte:9", "has": "{data.article.title}"}, {"at": "src/routes/article/[slug]/+page.svelte:40", "has": "<CommentContainer"}]
+  },
+  {
+   "name": "Editor dell'articolo",
+   "type": "schermata",
+   "what": "Il form di un articolo, nuovo o da modificare: titolo, descrizione, testo in markdown e tag.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/routes/editor/+page.svelte", "src/routes/editor/Editor.svelte", "src/routes/editor/[slug]/+page.svelte"],
+   "proof": [{"at": "src/routes/editor/Editor.svelte:86", "has": "Publish Article"}, {"at": "src/routes/editor/[slug]/+page.svelte:7", "has": "<Editor article={data.article}"}]
+  },
+  {
+   "name": "Profilo",
+   "type": "schermata",
+   "what": "La pagina di un autore (titolo «nome • Conduit»): immagine, bio, Follow, e le schede Articles e Favorites.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["src/routes/profile/@[user]/+layout.svelte", "src/routes/profile/@[user]/+page.svelte", "src/routes/profile/@[user]/favorites/+page.svelte"],
+   "proof": [
+    {"at": "src/routes/profile/@[user]/+layout.svelte:11", "has": "{data.profile.username} • Conduit"},
+    {"at": "src/routes/profile/@[user]/+layout.svelte:87", "has": "Favorites"}
+   ]
+  },
+  {
+   "name": "Riconoscimento della sessione",
+   "type": "funzionalità",
+   "what": "L'hook del server che a ogni richiesta legge il cookie jwt e mette l'utente in locals, e il load della cornice che lo dà alle pagine senza il token.",
+   "inside": "App web",
+   "members": ["src/hooks.server.js", "src/routes/+layout.server.js"],
+   "proof": [{"at": "src/hooks.server.js:2", "has": "export function handle"}, {"at": "src/routes/+layout.server.js:4", "has": "user: locals.user"}]
+  },
+  {
+   "name": "Rotte dell'account",
+   "type": "servizio o API",
+   "what": "Load e azioni di accesso, registrazione, impostazioni e uscita, e il rinvio di /profile.",
+   "inside": "App web",
+   "members": ["src/routes/login/+page.server.js", "src/routes/register/+page.server.js", "src/routes/settings/+page.server.js", "src/routes/profile/+page.js"],
+   "routes": ["GET /login", "POST /login", "GET /register", "POST /register", "GET /settings", "POST /settings?/save", "POST /settings?/logout", "GET /profile"],
+   "proof": [
+    {"at": "src/routes/login/+page.server.js:14", "has": "api.post('users/login'"},
+    {"at": "src/routes/register/+page.server.js:21", "has": "api.post('users'"},
+    {"at": "src/routes/settings/+page.server.js:10", "has": "logout: async"},
+    {"at": "src/routes/settings/+page.server.js:15", "has": "save: async"},
+    {"at": "src/routes/profile/+page.js:3", "has": "export async function load"}
+   ]
+  },
+  {
+   "name": "Rotte degli articoli",
+   "type": "servizio o API",
+   "what": "Load e azioni degli articoli: il feed, la lettura, la creazione, la modifica, l'eliminazione, i commenti e i preferiti.",
+   "inside": "App web",
+   "members": ["src/routes/+page.server.js", "src/routes/article/[slug]/+page.server.js", "src/routes/editor/+page.server.js", "src/routes/editor/[slug]/+page.server.js"],
+   "routes": [
+    "GET /",
+    "GET /article/[slug]",
+    "POST /article/[slug]?/createComment",
+    "POST /article/[slug]?/deleteComment",
+    "POST /article/[slug]?/deleteArticle",
+    "POST /article/[slug]?/toggleFavorite",
+    "GET /editor",
+    "POST /editor",
+    "GET /editor/[slug]",
+    "POST /editor/[slug]"
+   ],
+   "proof": [
+    {"at": "src/routes/+page.server.js:5", "has": "export async function load"},
+    {"at": "src/routes/article/[slug]/+page.server.js:21", "has": "createComment: async"},
+    {"at": "src/routes/article/[slug]/+page.server.js:53", "has": "toggleFavorite: async"},
+    {"at": "src/routes/editor/+page.server.js:11", "has": "default: async"},
+    {"at": "src/routes/editor/[slug]/+page.server.js:13", "has": "default: async"}
+   ]
+  },
+  {
+   "name": "Rotte dei profili",
+   "type": "servizio o API",
+   "what": "Load del profilo, dei suoi articoli e dei suoi preferiti, e l'azione che segue o smette di seguire l'autore.",
+   "inside": "App web",
+   "members": [
+    "src/routes/profile/@[user]/+layout.server.js",
+    "src/routes/profile/@[user]/+page.server.js",
+    "src/routes/profile/@[user]/get_articles.js",
+    "src/routes/profile/@[user]/favorites/+page.server.js"
+   ],
+   "routes": ["GET /profile/@[user]", "POST /profile/@[user]?/toggleFollow", "GET /profile/@[user]/favorites"],
+   "proof": [
+    {"at": "src/routes/profile/@[user]/+layout.server.js:4", "has": "api.get(`profiles/${params.user}`"},
+    {"at": "src/routes/profile/@[user]/+page.server.js:13", "has": "toggleFollow: async"},
+    {"at": "src/routes/profile/@[user]/get_articles.js:4", "has": "export async function get_articles"}
+   ]
+  },
+  {
+   "name": "Client dell'API",
+   "type": "funzionalità",
+   "what": "Le quattro funzioni get, del, post e put che fanno ogni richiesta all'API con fetch.",
+   "inside": "App web",
+   "members": ["src/lib/api.js"],
+   "proof": [{"at": "src/lib/api.js:5", "has": "async function send"}, {"at": "src/lib/api.js:14", "has": "`Token ${token}`"}]
+  },
+  {
+   "name": "Sessione",
+   "type": "entità",
+   "what": "L'utente entrato, con il token dell'API: l'oggetto utente in JSON e base64 nel cookie jwt.",
+   "inside": "App web",
+   "on": ["Browser"],
+   "members": ["store:cookies/jwt"],
+   "proof": [{"at": "src/routes/login/+page.server.js:26", "has": "cookies.set('jwt'"}, {"at": "src/hooks.server.js:3", "has": "cookies.get('jwt')"}]
+  }
+ ],
+ "flows": [
+  {
+   "name": "Registrazione di un account",
+   "area": "accesso e identità",
+   "types": ["funzionale"],
+   "intent": "un visitatore crea un account con nome, email e password",
+   "outcome": "l'utente esiste nell'API, il cookie jwt lo tiene con il token e il browser va alla Home; con errori il form li elenca",
+   "nodes": ["Utente", "Sign up", "Rotte dell'account", "Client dell'API", "RealWorld API", "Sessione", "Home"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme Sign up nel form di registrazione"}],
+   "effects": [
+    {"node": "RealWorld API", "what": "l'utente è creato"},
+    {"node": "Sessione", "what": "il cookie jwt è scritto"},
+    {"node": "Home", "what": "la pagina è mostrata"},
+    {"node": "Sign up", "what": "gli errori sono elencati"}
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign up",
+     "data": "nome, email, password e clic su Sign up",
+     "kind": "attiva",
+     "cite": "src/routes/register/+page.svelte:51",
+     "has": "Sign up</button>"
+    },
+    {
+     "from": "Sign up",
+     "to": "Rotte dell'account",
+     "data": "richiesta POST /register con il form",
+     "kind": "chiama",
+     "cite": "src/routes/register/+page.svelte:23",
+     "has": "<form use:enhance method=\"POST\">"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Client dell'API",
+     "data": "POST users con nome, email e password",
+     "kind": "chiama",
+     "cite": "src/routes/register/+page.server.js:21",
+     "has": "api.post('users', { user })"
+    },
+    {"from": "Client dell'API", "to": "RealWorld API", "data": "POST /api/users in JSON", "kind": "chiama", "cite": "src/lib/api.js:17", "has": "fetch(`${base}/${path}`"},
+    {
+     "from": "RealWorld API",
+     "to": "Client dell'API",
+     "data": "l'utente con il token, oppure gli errori (422)",
+     "kind": "trasferisce",
+     "cite": "src/lib/api.js:20",
+     "has": "JSON.parse(text)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sign up",
+     "data": "gli errori, con stato 401",
+     "kind": "trasferisce",
+     "cite": "src/routes/register/+page.server.js:24",
+     "has": "fail(401, body)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sessione",
+     "data": "l'utente con il token, in JSON e base64",
+     "kind": "scrive",
+     "cite": "src/routes/register/+page.server.js:28",
+     "has": "cookies.set('jwt', value"
+    },
+    {"from": "Rotte dell'account", "to": "Home", "data": "redirect a /", "kind": "chiama", "cite": "src/routes/register/+page.server.js:30", "has": "redirect(307, '/')"}
+   ]
+  },
+  {
+   "name": "Accesso con email e password",
+   "area": "accesso e identità",
+   "types": ["funzionale"],
+   "intent": "un visitatore entra con email e password",
+   "outcome": "il cookie jwt tiene l'utente con il token e il browser va alla Home; con credenziali sbagliate il form elenca gli errori",
+   "nodes": ["Utente", "Sign in", "Rotte dell'account", "Client dell'API", "RealWorld API", "Sessione", "Home"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme Sign in nel form di accesso"}],
+   "effects": [{"node": "Sessione", "what": "il cookie jwt è scritto"}, {"node": "Home", "what": "la pagina è mostrata"}, {"node": "Sign in", "what": "gli errori sono elencati"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign in",
+     "data": "email, password e clic su Sign in",
+     "kind": "attiva",
+     "cite": "src/routes/login/+page.svelte:42",
+     "has": "Sign in</button>"
+    },
+    {
+     "from": "Sign in",
+     "to": "Rotte dell'account",
+     "data": "richiesta POST /login con il form",
+     "kind": "chiama",
+     "cite": "src/routes/login/+page.svelte:23",
+     "has": "<form use:enhance method=\"POST\">"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Client dell'API",
+     "data": "POST users/login con email e password",
+     "kind": "chiama",
+     "cite": "src/routes/login/+page.server.js:14",
+     "has": "api.post('users/login'"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "POST /api/users/login in JSON",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {
+     "from": "RealWorld API",
+     "to": "Client dell'API",
+     "data": "l'utente con il token, oppure gli errori (422)",
+     "kind": "trasferisce",
+     "cite": "src/lib/api.js:20",
+     "has": "JSON.parse(text)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sign in",
+     "data": "gli errori, con stato 401",
+     "kind": "trasferisce",
+     "cite": "src/routes/login/+page.server.js:22",
+     "has": "fail(401, body)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sessione",
+     "data": "l'utente con il token, in JSON e base64",
+     "kind": "scrive",
+     "cite": "src/routes/login/+page.server.js:26",
+     "has": "cookies.set('jwt', value"
+    },
+    {"from": "Rotte dell'account", "to": "Home", "data": "redirect a /", "kind": "chiama", "cite": "src/routes/login/+page.server.js:28", "has": "redirect(307, '/')"}
+   ]
+  },
+  {
+   "name": "Uscita dall'account",
+   "area": "accesso e identità",
+   "types": ["funzionale"],
+   "intent": "un utente entrato lascia il sito dalla pagina Settings",
+   "outcome": "il cookie jwt è tolto; al load successivo di Settings non c'è più un utente e il browser va a Sign in",
+   "nodes": ["Utente", "Settings", "Rotte dell'account", "Sessione", "Sign in"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme «Or click here to logout.»"}],
+   "effects": [{"node": "Sessione", "what": "il cookie jwt è tolto"}, {"node": "Sign in", "what": "la pagina è mostrata"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Settings",
+     "data": "clic su «Or click here to logout.»",
+     "kind": "attiva",
+     "cite": "src/routes/settings/+page.svelte:87",
+     "has": "Or click here to logout."
+    },
+    {
+     "from": "Settings",
+     "to": "Rotte dell'account",
+     "data": "richiesta POST /settings?/logout",
+     "kind": "chiama",
+     "cite": "src/routes/settings/+page.svelte:86",
+     "has": "action=\"?/logout\""
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sessione",
+     "data": "cancellazione del cookie jwt",
+     "kind": "scrive",
+     "cite": "src/routes/settings/+page.server.js:11",
+     "has": "cookies.delete('jwt'"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sign in",
+     "data": "redirect a /login, quando il load di Settings riparte senza utente",
+     "kind": "chiama",
+     "cite": "src/routes/settings/+page.server.js:5",
+     "has": "redirect(302, '/login')"
+    }
+   ]
+  },
+  {
+   "name": "Riconoscimento dell'utente a ogni richiesta",
+   "area": "accesso e identità",
+   "types": ["tecnico"],
+   "intent": "una richiesta qualsiasi arriva al server",
+   "outcome": "l'utente del cookie è in locals.user per load e azioni, e le pagine ne ricevono nome, email, immagine e bio senza il token",
+   "nodes": ["Sessione", "Riconoscimento della sessione", "Barra di navigazione", "Home"],
+   "entries": [{"node": "Riconoscimento della sessione", "kind": "rotta", "what": "ogni richiesta al server passa da handle"}],
+   "effects": [
+    {"node": "Barra di navigazione", "what": "mostra le voci dell'utente entrato oppure Sign in e Sign up"},
+    {"node": "Home", "what": "mostra Your Feed solo a chi è entrato"}
+   ],
+   "arrows": [
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Barra di navigazione",
+     "data": "nome, email, immagine e bio dell'utente, in page.data.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/Nav.svelte:16",
+     "has": "{#if page.data.user}"
+    },
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Home",
+     "data": "l'utente, presente o no, in data.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/+page.svelte:42",
+     "has": "{#if data.user}"
+    }
+   ]
+  },
+  {
+   "name": "Rifiuto dell'editor e delle impostazioni senza accesso",
+   "area": "accesso e identità",
+   "types": ["funzionale", "tecnico"],
+   "intent": "un visitatore senza sessione apre /editor, /editor/[slug] o /settings",
+   "outcome": "il browser è mandato alla pagina Sign in",
+   "nodes": ["Sessione", "Riconoscimento della sessione", "Rotte degli articoli", "Rotte dell'account", "Sign in"],
+   "entries": [
+    {"node": "Rotte degli articoli", "kind": "rotta", "what": "GET /editor o GET /editor/[slug]"},
+    {"node": "Rotte dell'account", "kind": "rotta", "what": "GET /settings"}
+   ],
+   "effects": [{"node": "Sign in", "what": "la pagina è mostrata"}],
+   "arrows": [
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "nessun utente in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/editor/+page.server.js:6",
+     "has": "if (!locals.user)"
+    },
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte dell'account",
+     "data": "nessun utente in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/settings/+page.server.js:5",
+     "has": "if (!locals.user)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Sign in",
+     "data": "redirect a /login, da /editor",
+     "kind": "chiama",
+     "cite": "src/routes/editor/+page.server.js:6",
+     "has": "redirect(302, `/login`)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Sign in",
+     "data": "redirect a /login, da /editor/[slug]",
+     "kind": "chiama",
+     "cite": "src/routes/editor/[slug]/+page.server.js:5",
+     "has": "redirect(302, `/login`)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sign in",
+     "data": "redirect a /login, da /settings",
+     "kind": "chiama",
+     "cite": "src/routes/settings/+page.server.js:5",
+     "has": "redirect(302, '/login')"
+    }
+   ]
+  },
+  {
+   "name": "Rinvio delle pagine di accesso per chi è già entrato",
+   "area": "accesso e identità",
+   "types": ["funzionale", "tecnico"],
+   "intent": "un utente entrato apre /login o /register",
+   "outcome": "il browser è mandato alla Home",
+   "nodes": ["Sessione", "Riconoscimento della sessione", "Rotte dell'account", "Home"],
+   "entries": [{"node": "Rotte dell'account", "kind": "rotta", "what": "GET /login o GET /register"}],
+   "effects": [{"node": "Home", "what": "la pagina è mostrata"}],
+   "arrows": [
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte dell'account",
+     "data": "l'utente in locals.user (per /login) e nei dati della cornice (per /register)",
+     "kind": "trasferisce",
+     "cite": "src/routes/login/+page.server.js:6",
+     "has": "if (locals.user)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Home",
+     "data": "redirect a /, da /login",
+     "kind": "chiama",
+     "cite": "src/routes/login/+page.server.js:6",
+     "has": "redirect(307, '/')"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Home",
+     "data": "redirect a /, da /register",
+     "kind": "chiama",
+     "cite": "src/routes/register/+page.server.js:7",
+     "has": "redirect(307, '/')"
+    }
+   ]
+  },
+  {
+   "name": "Rinvio di /profile al proprio profilo",
+   "area": "accesso e identità",
+   "types": ["funzionale", "tecnico"],
+   "intent": "qualcuno apre /profile senza un nome",
+   "outcome": "chi è entrato arriva al proprio profilo, gli altri a Sign in",
+   "nodes": ["Sessione", "Riconoscimento della sessione", "Rotte dell'account", "Profilo", "Sign in"],
+   "entries": [{"node": "Rotte dell'account", "kind": "rotta", "what": "GET /profile"}],
+   "effects": [{"node": "Profilo", "what": "il profilo dell'utente è mostrato"}, {"node": "Sign in", "what": "la pagina è mostrata"}],
+   "arrows": [
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte dell'account",
+     "data": "l'utente, presente o no, dai dati della cornice",
+     "kind": "trasferisce",
+     "cite": "src/routes/profile/+page.js:4",
+     "has": "await parent()"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Profilo",
+     "data": "redirect a /profile/@nome, con un utente",
+     "kind": "chiama",
+     "cite": "src/routes/profile/+page.js:5",
+     "has": "`/profile/@${user.username}`"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sign in",
+     "data": "redirect a /login, senza utente",
+     "kind": "chiama",
+     "cite": "src/routes/profile/+page.js:5",
+     "has": "'/login'"
+    }
+   ]
+  },
+  {
+   "name": "Aggiornamento delle impostazioni",
+   "area": "accesso e identità",
+   "types": ["funzionale"],
+   "intent": "un utente entrato cambia immagine, nome, bio, email o password",
+   "outcome": "l'utente è aggiornato nell'API e il cookie jwt è riscritto con l'utente nuovo; con errori il form li elenca",
+   "nodes": ["Sessione", "Riconoscimento della sessione", "Settings", "Utente", "Rotte dell'account", "Client dell'API", "RealWorld API"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme Update Settings"}],
+   "effects": [
+    {"node": "RealWorld API", "what": "l'utente è aggiornato"},
+    {"node": "Sessione", "what": "il cookie jwt è riscritto"},
+    {"node": "Settings", "what": "gli errori sono dati al form"}
+   ],
+   "arrows": [
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Settings",
+     "data": "immagine, nome, bio ed email attuali, in data.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/settings/+page.svelte:37",
+     "has": "value={data.user.image}"
+    },
+    {
+     "from": "Utente",
+     "to": "Settings",
+     "data": "i campi cambiati e clic su Update Settings",
+     "kind": "attiva",
+     "cite": "src/routes/settings/+page.svelte:80",
+     "has": "Update Settings"
+    },
+    {
+     "from": "Settings",
+     "to": "Rotte dell'account",
+     "data": "richiesta POST /settings?/save con il form",
+     "kind": "chiama",
+     "cite": "src/routes/settings/+page.svelte:28",
+     "has": "action=\"?/save\""
+    },
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte dell'account",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/settings/+page.server.js:16",
+     "has": "if (!locals.user) error(401)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Client dell'API",
+     "data": "PUT user con i campi e il token",
+     "kind": "chiama",
+     "cite": "src/routes/settings/+page.server.js:28",
+     "has": "api.put('user', { user }, locals.user.token)"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "PUT /api/user in JSON, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {
+     "from": "RealWorld API",
+     "to": "Client dell'API",
+     "data": "l'utente aggiornato, oppure gli errori (422)",
+     "kind": "trasferisce",
+     "cite": "src/lib/api.js:20",
+     "has": "JSON.parse(text)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Settings",
+     "data": "gli errori, con stato 400",
+     "kind": "trasferisce",
+     "cite": "src/routes/settings/+page.server.js:29",
+     "has": "fail(400, body.errors)"
+    },
+    {
+     "from": "Rotte dell'account",
+     "to": "Sessione",
+     "data": "l'utente aggiornato con il token, in JSON e base64",
+     "kind": "scrive",
+     "cite": "src/routes/settings/+page.server.js:32",
+     "has": "cookies.set('jwt', value"
+    }
+   ]
+  },
+  {
+   "name": "Feed degli articoli",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "qualcuno apre la Home, sceglie Global Feed, Your Feed, un tag o una pagina",
+   "outcome": "la Home mostra dieci articoli per pagina del feed scelto, i tag popolari e i numeri delle pagine",
+   "nodes": ["Utente", "Home", "Rotte degli articoli", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API", "Elenco degli articoli"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "apre / oppure preme Global Feed, Your Feed, un tag o un numero di pagina"}],
+   "effects": [{"node": "Elenco degli articoli", "what": "gli articoli sono mostrati"}, {"node": "Home", "what": "tag e pagine sono mostrati"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Home",
+     "data": "clic su Global Feed, Your Feed, un tag o una pagina",
+     "kind": "attiva",
+     "cite": "src/routes/+page.svelte:44",
+     "has": "href=\"/?tab=feed\""
+    },
+    {
+     "from": "Home",
+     "to": "Rotte degli articoli",
+     "data": "richiesta GET / con tab, tag e page",
+     "kind": "chiama",
+     "cite": "src/routes/+page.svelte:64",
+     "has": "`/?${page_link_base}&page=${p}`"
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "il token dell'utente, se è entrato",
+     "kind": "trasferisce",
+     "cite": "src/routes/+page.server.js:19",
+     "has": "locals.user?.token"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "GET articles oppure articles/feed, con limit, offset e tag",
+     "kind": "chiama",
+     "cite": "src/routes/+page.server.js:19",
+     "has": "api.get(`${endpoint}?${q}`"
+    },
+    {"from": "Rotte degli articoli", "to": "Client dell'API", "data": "GET tags", "kind": "chiama", "cite": "src/routes/+page.server.js:20", "has": "api.get('tags')"},
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "GET /api/articles, /api/articles/feed e /api/tags",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {
+     "from": "RealWorld API",
+     "to": "Client dell'API",
+     "data": "gli articoli con il loro numero, e i tag",
+     "kind": "trasferisce",
+     "cite": "src/lib/api.js:20",
+     "has": "JSON.parse(text)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Home",
+     "data": "articoli, numero di pagine e tag",
+     "kind": "trasferisce",
+     "cite": "src/routes/+page.server.js:25",
+     "has": "pages: Math.ceil(articlesCount / page_size)"
+    },
+    {
+     "from": "Home",
+     "to": "Elenco degli articoli",
+     "data": "gli articoli della pagina",
+     "kind": "usa",
+     "cite": "src/routes/+page.svelte:63",
+     "has": "<ArticleList articles={data.articles} />"
+    }
+   ]
+  },
+  {
+   "name": "Lettura di un articolo",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "qualcuno apre un articolo dall'elenco",
+   "outcome": "la pagina mostra l'articolo, con il testo markdown reso in HTML e ripulito, e i suoi commenti",
+   "nodes": ["Utente", "Elenco degli articoli", "Rotte degli articoli", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API", "Articolo"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme l'anteprima di un articolo"}],
+   "effects": [{"node": "Articolo", "what": "articolo e commenti sono mostrati"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Elenco degli articoli",
+     "data": "clic sull'anteprima dell'articolo",
+     "kind": "attiva",
+     "cite": "src/lib/ArticleList/ArticlePreview.svelte:51",
+     "has": "class=\"preview-link\""
+    },
+    {
+     "from": "Elenco degli articoli",
+     "to": "Rotte degli articoli",
+     "data": "richiesta GET /article/[slug]",
+     "kind": "chiama",
+     "cite": "src/lib/ArticleList/ArticlePreview.svelte:51",
+     "has": "href=\"/article/{article.slug}\""
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "il token dell'utente, se è entrato",
+     "kind": "trasferisce",
+     "cite": "src/routes/article/[slug]/+page.server.js:9",
+     "has": "locals.user?.token"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "GET articles/{slug}",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:9",
+     "has": "api.get(`articles/${params.slug}`"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "GET articles/{slug}/comments",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:10",
+     "has": "api.get(`articles/${params.slug}/comments`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "GET /api/articles/{slug} e /api/articles/{slug}/comments",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {"from": "RealWorld API", "to": "Client dell'API", "data": "l'articolo e i commenti", "kind": "trasferisce", "cite": "src/lib/api.js:20", "has": "JSON.parse(text)"},
+    {
+     "from": "Rotte degli articoli",
+     "to": "Articolo",
+     "data": "l'articolo con il testo reso da markdown e ripulito, e i commenti",
+     "kind": "trasferisce",
+     "cite": "src/routes/article/[slug]/+page.server.js:16",
+     "has": "return { article, comments }"
+    }
+   ]
+  },
+  {
+   "name": "Pubblicazione di un articolo",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "un utente entrato scrive un articolo nuovo",
+   "outcome": "l'articolo è creato nell'API e il browser va alla sua pagina; con errori il form li elenca",
+   "nodes": [
+    "Utente",
+    "Barra di navigazione",
+    "Rotte degli articoli",
+    "Editor dell'articolo",
+    "Sessione",
+    "Riconoscimento della sessione",
+    "Client dell'API",
+    "RealWorld API",
+    "Articolo"
+   ],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme New Post, compila il form e preme Publish Article"}],
+   "effects": [
+    {"node": "RealWorld API", "what": "l'articolo è creato"},
+    {"node": "Articolo", "what": "la pagina del nuovo articolo è mostrata"},
+    {"node": "Editor dell'articolo", "what": "gli errori sono elencati"}
+   ],
+   "arrows": [
+    {"from": "Utente", "to": "Barra di navigazione", "data": "clic su New Post", "kind": "attiva", "cite": "src/routes/Nav.svelte:18", "has": "href=\"/editor\""},
+    {
+     "from": "Barra di navigazione",
+     "to": "Rotte degli articoli",
+     "data": "richiesta GET /editor",
+     "kind": "chiama",
+     "cite": "src/routes/Nav.svelte:18",
+     "has": "href=\"/editor\""
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Editor dell'articolo",
+     "data": "la pagina con il form vuoto, per chi è entrato",
+     "kind": "chiama",
+     "cite": "src/routes/editor/+page.server.js:6",
+     "has": "if (!locals.user)"
+    },
+    {
+     "from": "Utente",
+     "to": "Editor dell'articolo",
+     "data": "titolo, descrizione, testo, tag e clic su Publish Article",
+     "kind": "attiva",
+     "cite": "src/routes/editor/Editor.svelte:86",
+     "has": "Publish Article"
+    },
+    {
+     "from": "Editor dell'articolo",
+     "to": "Rotte degli articoli",
+     "data": "richiesta POST /editor con il form",
+     "kind": "chiama",
+     "cite": "src/routes/editor/Editor.svelte:18",
+     "has": "<form use:enhance method=\"POST\">"
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/editor/+page.server.js:12",
+     "has": "if (!locals.user) error(401)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "POST articles con titolo, descrizione, testo, tag e il token",
+     "kind": "chiama",
+     "cite": "src/routes/editor/+page.server.js:16",
+     "has": "await api.post("
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "POST /api/articles in JSON, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {
+     "from": "RealWorld API",
+     "to": "Client dell'API",
+     "data": "l'articolo creato, oppure gli errori (422)",
+     "kind": "trasferisce",
+     "cite": "src/lib/api.js:20",
+     "has": "JSON.parse(text)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Editor dell'articolo",
+     "data": "gli errori, con stato 400",
+     "kind": "trasferisce",
+     "cite": "src/routes/editor/+page.server.js:29",
+     "has": "fail(400, result)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Articolo",
+     "data": "redirect a /article/{slug}",
+     "kind": "chiama",
+     "cite": "src/routes/editor/+page.server.js:31",
+     "has": "redirect(303, `/article/${result.article.slug}`)"
+    }
+   ]
+  },
+  {
+   "name": "Modifica di un articolo",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "l'autore cambia un suo articolo",
+   "outcome": "l'articolo è aggiornato nell'API e il browser torna alla sua pagina",
+   "nodes": ["Utente", "Articolo", "Rotte degli articoli", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API", "Editor dell'articolo"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme Edit Article, cambia il form e preme Publish Article"}],
+   "effects": [{"node": "RealWorld API", "what": "l'articolo è aggiornato"}, {"node": "Articolo", "what": "la pagina dell'articolo è mostrata"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Articolo",
+     "data": "clic su Edit Article",
+     "kind": "attiva",
+     "cite": "src/routes/article/[slug]/ArticleMeta.svelte:22",
+     "has": "Edit Article"
+    },
+    {
+     "from": "Articolo",
+     "to": "Rotte degli articoli",
+     "data": "richiesta GET /editor/[slug]",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/ArticleMeta.svelte:21",
+     "has": "href=\"/editor/{article.slug}\""
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/editor/[slug]/+page.server.js:7",
+     "has": "locals.user.token"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "GET articles/{slug} con il token",
+     "kind": "chiama",
+     "cite": "src/routes/editor/[slug]/+page.server.js:7",
+     "has": "api.get(`articles/${params.slug}`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "GET e poi PUT /api/articles/{slug}, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {
+     "from": "RealWorld API",
+     "to": "Client dell'API",
+     "data": "l'articolo, prima e dopo la modifica",
+     "kind": "trasferisce",
+     "cite": "src/lib/api.js:20",
+     "has": "JSON.parse(text)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Editor dell'articolo",
+     "data": "l'articolo da modificare",
+     "kind": "trasferisce",
+     "cite": "src/routes/editor/[slug]/+page.server.js:8",
+     "has": "return { article }"
+    },
+    {
+     "from": "Utente",
+     "to": "Editor dell'articolo",
+     "data": "i campi cambiati e clic su Publish Article",
+     "kind": "attiva",
+     "cite": "src/routes/editor/Editor.svelte:86",
+     "has": "Publish Article"
+    },
+    {
+     "from": "Editor dell'articolo",
+     "to": "Rotte degli articoli",
+     "data": "richiesta POST /editor/[slug] con il form",
+     "kind": "chiama",
+     "cite": "src/routes/editor/Editor.svelte:18",
+     "has": "<form use:enhance method=\"POST\">"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "PUT articles/{slug} con titolo, descrizione, testo, tag e il token",
+     "kind": "chiama",
+     "cite": "src/routes/editor/[slug]/+page.server.js:18",
+     "has": "await api.put("
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Articolo",
+     "data": "redirect a /article/{slug}",
+     "kind": "chiama",
+     "cite": "src/routes/editor/[slug]/+page.server.js:33",
+     "has": "redirect(303, `/article/${result.article.slug}`)"
+    }
+   ]
+  },
+  {
+   "name": "Eliminazione di un articolo",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "l'autore cancella un suo articolo",
+   "outcome": "l'articolo è tolto dall'API e il browser va alla Home",
+   "nodes": ["Utente", "Articolo", "Rotte degli articoli", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API", "Home"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme Delete Article"}],
+   "effects": [{"node": "RealWorld API", "what": "l'articolo è cancellato"}, {"node": "Home", "what": "la pagina è mostrata"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Articolo",
+     "data": "clic su Delete Article",
+     "kind": "attiva",
+     "cite": "src/routes/article/[slug]/ArticleMeta.svelte:27",
+     "has": "Delete Article"
+    },
+    {
+     "from": "Articolo",
+     "to": "Rotte degli articoli",
+     "data": "richiesta POST /article/[slug]?/deleteArticle",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/ArticleMeta.svelte:25",
+     "has": "action=\"?/deleteArticle\""
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/article/[slug]/+page.server.js:47",
+     "has": "if (!locals.user) error(401)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "DELETE articles/{slug} con il token",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:49",
+     "has": "api.del(`articles/${params.slug}`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "DELETE /api/articles/{slug}, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Home",
+     "data": "redirect a /",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:50",
+     "has": "redirect(307, '/')"
+    }
+   ]
+  },
+  {
+   "name": "Pubblicazione di un commento",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "un utente entrato commenta un articolo",
+   "outcome": "il commento è creato nell'API",
+   "nodes": ["Utente", "Articolo", "Rotte degli articoli", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "scrive il commento e preme Post Comment"}],
+   "effects": [{"node": "RealWorld API", "what": "il commento è creato"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Articolo",
+     "data": "il testo del commento e clic su Post Comment",
+     "kind": "attiva",
+     "cite": "src/routes/article/[slug]/CommentInput.svelte:16",
+     "has": "Post Comment"
+    },
+    {
+     "from": "Articolo",
+     "to": "Rotte degli articoli",
+     "data": "richiesta POST /article/[slug]?/createComment",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/CommentInput.svelte:8",
+     "has": "action=\"?/createComment\""
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/article/[slug]/+page.server.js:22",
+     "has": "if (!locals.user) error(401)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "POST articles/{slug}/comments con il testo e il token",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:27",
+     "has": "`articles/${params.slug}/comments`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "POST /api/articles/{slug}/comments in JSON, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    }
+   ]
+  },
+  {
+   "name": "Eliminazione di un commento",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "l'autore di un commento lo cancella",
+   "outcome": "il commento è tolto dall'API",
+   "nodes": ["Utente", "Articolo", "Rotte degli articoli", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme il cestino del proprio commento"}],
+   "effects": [{"node": "RealWorld API", "what": "il commento è cancellato"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Articolo",
+     "data": "clic sul cestino del commento",
+     "kind": "attiva",
+     "cite": "src/routes/article/[slug]/Comment.svelte:25",
+     "has": "aria-label=\"Delete comment\""
+    },
+    {
+     "from": "Articolo",
+     "to": "Rotte degli articoli",
+     "data": "richiesta POST /article/[slug]?/deleteComment con l'id del commento",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/Comment.svelte:24",
+     "has": "action=\"?/deleteComment&id={comment.id}\""
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/article/[slug]/+page.server.js:38",
+     "has": "if (!locals.user) error(401)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "DELETE articles/{slug}/comments/{id} con il token",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:41",
+     "has": "api.del(`articles/${params.slug}/comments/${id}`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "DELETE /api/articles/{slug}/comments/{id}, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    }
+   ]
+  },
+  {
+   "name": "Preferito su un articolo",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "un utente entrato mette o toglie il cuore a un articolo dell'elenco",
+   "outcome": "il preferito è messo o tolto nell'API; cuore e conteggio cambiano subito nell'elenco",
+   "nodes": ["Utente", "Elenco degli articoli", "Rotte degli articoli", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme il cuore di un'anteprima"}],
+   "effects": [{"node": "RealWorld API", "what": "il preferito è messo o tolto"}, {"node": "Elenco degli articoli", "what": "cuore e conteggio cambiano subito"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Elenco degli articoli",
+     "data": "clic sul cuore",
+     "kind": "attiva",
+     "cite": "src/lib/ArticleList/ArticlePreview.svelte:44",
+     "has": "ion-heart"
+    },
+    {
+     "from": "Elenco degli articoli",
+     "to": "Rotte degli articoli",
+     "data": "richiesta POST /article/{slug}?/toggleFavorite con lo stato attuale",
+     "kind": "chiama",
+     "cite": "src/lib/ArticleList/ArticlePreview.svelte:21",
+     "has": "action=\"/article/{article.slug}?/toggleFavorite\""
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte degli articoli",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/article/[slug]/+page.server.js:54",
+     "has": "if (!locals.user) error(401)"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "POST articles/{slug}/favorite con il token, per mettere",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:60",
+     "has": "api.post(`articles/${params.slug}/favorite`"
+    },
+    {
+     "from": "Rotte degli articoli",
+     "to": "Client dell'API",
+     "data": "DELETE articles/{slug}/favorite con il token, per togliere",
+     "kind": "chiama",
+     "cite": "src/routes/article/[slug]/+page.server.js:62",
+     "has": "api.del(`articles/${params.slug}/favorite`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "POST o DELETE /api/articles/{slug}/favorite, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    }
+   ]
+  },
+  {
+   "name": "Follow di un autore",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "un utente entrato segue o smette di seguire un autore dal suo profilo",
+   "outcome": "il follow è messo o tolto nell'API; il pulsante cambia subito",
+   "nodes": ["Utente", "Profilo", "Rotte dei profili", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme Follow o Unfollow nel profilo"}],
+   "effects": [{"node": "RealWorld API", "what": "il follow è messo o tolto"}, {"node": "Profilo", "what": "il pulsante cambia subito"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Profilo",
+     "data": "clic su Follow o Unfollow",
+     "kind": "attiva",
+     "cite": "src/routes/profile/@[user]/+layout.svelte:54",
+     "has": "'Unfollow' : 'Follow'"
+    },
+    {
+     "from": "Profilo",
+     "to": "Rotte dei profili",
+     "data": "richiesta POST /profile/@{nome}?/toggleFollow con lo stato attuale",
+     "kind": "chiama",
+     "cite": "src/routes/profile/@[user]/+layout.svelte:33",
+     "has": "?/toggleFollow"
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte dei profili",
+     "data": "l'utente e il suo token, in locals.user",
+     "kind": "trasferisce",
+     "cite": "src/routes/profile/@[user]/+page.server.js:14",
+     "has": "if (!locals.user) error(401)"
+    },
+    {
+     "from": "Rotte dei profili",
+     "to": "Client dell'API",
+     "data": "POST profiles/{nome}/follow con il token, per seguire",
+     "kind": "chiama",
+     "cite": "src/routes/profile/@[user]/+page.server.js:20",
+     "has": "api.post(`profiles/${params.user}/follow`"
+    },
+    {
+     "from": "Rotte dei profili",
+     "to": "Client dell'API",
+     "data": "DELETE profiles/{nome}/follow con il token, per smettere",
+     "kind": "chiama",
+     "cite": "src/routes/profile/@[user]/+page.server.js:21",
+     "has": "api.del(`profiles/${params.user}/follow`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "POST o DELETE /api/profiles/{nome}/follow, con il token",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    }
+   ]
+  },
+  {
+   "name": "Visita del profilo di un autore",
+   "area": "funzioni principali",
+   "types": ["funzionale"],
+   "intent": "qualcuno apre il profilo di un autore e sceglie Articles o Favorites",
+   "outcome": "la pagina mostra l'autore e i suoi articoli, oppure quelli che ha messo fra i preferiti",
+   "nodes": ["Utente", "Elenco degli articoli", "Rotte dei profili", "Profilo", "Sessione", "Riconoscimento della sessione", "Client dell'API", "RealWorld API"],
+   "entries": [{"node": "Utente", "kind": "controllo dell'interfaccia", "what": "preme il nome di un autore, oppure Articles o Favorites nel profilo"}],
+   "effects": [{"node": "Profilo", "what": "l'autore è mostrato"}, {"node": "Elenco degli articoli", "what": "i suoi articoli o i suoi preferiti sono mostrati"}],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Elenco degli articoli",
+     "data": "clic sul nome dell'autore di un'anteprima",
+     "kind": "attiva",
+     "cite": "src/lib/ArticleList/ArticlePreview.svelte:14",
+     "has": "class=\"author\""
+    },
+    {
+     "from": "Elenco degli articoli",
+     "to": "Rotte dei profili",
+     "data": "richiesta GET /profile/@{nome}",
+     "kind": "chiama",
+     "cite": "src/lib/ArticleList/ArticlePreview.svelte:14",
+     "has": "href=\"/profile/@{article.author.username}\""
+    },
+    {
+     "from": "Utente",
+     "to": "Profilo",
+     "data": "clic su Articles o Favorites",
+     "kind": "attiva",
+     "cite": "src/routes/profile/@[user]/+layout.svelte:87",
+     "has": "Favorites"
+    },
+    {
+     "from": "Profilo",
+     "to": "Rotte dei profili",
+     "data": "richiesta GET /profile/@{nome} oppure /profile/@{nome}/favorites",
+     "kind": "chiama",
+     "cite": "src/routes/profile/@[user]/+layout.svelte:83",
+     "has": "href=\"/profile/@{data.profile.username}/favorites\""
+    },
+    {"from": "Sessione", "to": "Riconoscimento della sessione", "data": "il cookie jwt", "kind": "legge", "cite": "src/hooks.server.js:3", "has": "cookies.get('jwt')"},
+    {
+     "from": "Riconoscimento della sessione",
+     "to": "Rotte dei profili",
+     "data": "il token dell'utente, se è entrato",
+     "kind": "trasferisce",
+     "cite": "src/routes/profile/@[user]/+layout.server.js:4",
+     "has": "locals.user?.token"
+    },
+    {
+     "from": "Rotte dei profili",
+     "to": "Client dell'API",
+     "data": "GET profiles/{nome}",
+     "kind": "chiama",
+     "cite": "src/routes/profile/@[user]/+layout.server.js:4",
+     "has": "api.get(`profiles/${params.user}`"
+    },
+    {
+     "from": "Rotte dei profili",
+     "to": "Client dell'API",
+     "data": "GET articles con limit, offset e author oppure favorited",
+     "kind": "chiama",
+     "cite": "src/routes/profile/@[user]/get_articles.js:13",
+     "has": "`articles?${q}`"
+    },
+    {
+     "from": "Client dell'API",
+     "to": "RealWorld API",
+     "data": "GET /api/profiles/{nome} e /api/articles?author= o ?favorited=",
+     "kind": "chiama",
+     "cite": "src/lib/api.js:17",
+     "has": "fetch(`${base}/${path}`"
+    },
+    {
+     "from": "RealWorld API",
+     "to": "Client dell'API",
+     "data": "il profilo e gli articoli con il loro numero",
+     "kind": "trasferisce",
+     "cite": "src/lib/api.js:20",
+     "has": "JSON.parse(text)"
+    },
+    {
+     "from": "Rotte dei profili",
+     "to": "Profilo",
+     "data": "il profilo dell'autore",
+     "kind": "trasferisce",
+     "cite": "src/routes/profile/@[user]/+layout.server.js:7",
+     "has": "profile"
+    },
+    {
+     "from": "Rotte dei profili",
+     "to": "Profilo",
+     "data": "gli articoli dell'autore",
+     "kind": "trasferisce",
+     "cite": "src/routes/profile/@[user]/+page.server.js:8",
+     "has": "return { articles, page }"
+    },
+    {
+     "from": "Rotte dei profili",
+     "to": "Profilo",
+     "data": "gli articoli preferiti dall'autore",
+     "kind": "trasferisce",
+     "cite": "src/routes/profile/@[user]/favorites/+page.server.js:6",
+     "has": "return { articles, page }"
+    },
+    {
+     "from": "Profilo",
+     "to": "Elenco degli articoli",
+     "data": "gli articoli da elencare",
+     "kind": "usa",
+     "cite": "src/routes/profile/@[user]/+page.svelte:7",
+     "has": "<ArticleList articles={data.articles} />"
+    }
+   ]
+  }
+ ],
+ "areas": [
+  {"name": "accesso e identità", "present": true},
+  {"name": "funzioni principali", "present": true},
+  {"name": "pagamenti e abbonamenti", "present": false},
+  {"name": "dati dell'utente", "present": false},
+  {"name": "integrazioni esterne", "present": false},
+  {"name": "comunicazioni", "present": false},
+  {"name": "amministrazione", "present": false},
+  {"name": "esercizio", "present": false}
+ ],
+ "packages": [{"path": ".", "manifest": "package.json", "kind": "npm-package"}],
+ "gaps": [
+  {
+   "what": "dove gira l'app (Vercel)",
+   "why": "svelte.config.js usa @sveltejs/adapter-vercel, ma nessun file di rilascio, workflow o configurazione di Vercel è nel repository: il servizio non è un nodo e l'area esercizio è dichiarata assente"
+  },
+  {
+   "what": "il titolo della Home",
+   "why": "il titolo che l'utente vede è «Conduit», lo stesso nome del sistema: la schermata prende la voce del menu, «Home» (src/routes/Nav.svelte:13)"
+  },
+  {
+   "what": "il passaggio da Settings a Sign in dopo l'uscita",
+   "why": "l'azione logout non fa redirect: è use:enhance di SvelteKit che dopo l'azione fa ripartire i load, e quello di Settings rinvia a /login; si vede solo eseguendo l'app"
+  },
+  {
+   "what": "l'aggiornamento della pagina dopo un commento creato o tolto",
+   "why": "le azioni non restituiscono nulla: i commenti si rileggono perché use:enhance fa ripartire il load dell'articolo, comportamento del framework e non una riga del progetto"
+  },
+  {
+   "what": "la destinazione del redirect dopo un preferito",
+   "why": "toggleFavorite rinvia all'intestazione referer (src/routes/article/[slug]/+page.server.js:65): la pagina di ritorno si conosce solo a tempo di esecuzione"
+  },
+  {
+   "what": "il passaggio dell'utente dal load della cornice alle pagine",
+   "why": "data.user e page.data.user arrivano alle pagine attraverso SvelteKit, senza una chiamata nel progetto: le frecce citano la riga che li legge"
+  },
+  {
+   "what": "dove gira src/routes/profile/+page.js",
+   "why": "è un load universale, che SvelteKit esegue sul server o nel browser secondo la navigazione: sta fra le Rotte dell'account"
+  },
+  {
+   "what": "le rotte dell'API di RealWorld",
+   "why": "il progetto ne tiene solo i percorsi chiamati (src/lib/api.js): che cosa fa l'API con i dati, la validazione e i permessi non sono in questo repository"
+  },
+  {
+   "what": "Ionicons, Google Fonts e l'immagine segnaposto",
+   "why": "fogli di stile e un'immagine che il browser prende da altri siti (src/app.html:10, src/app.html:15, src/lib/constants.js:2): risorse statiche, nessun flusso le attraversa, quindi non sono nodi"
+  },
+  {
+   "what": "i numeri di pagina nel Profilo",
+   "why": "i load del profilo restituiscono `page`, che get_articles non dà (dà `pages`), e le pagine del profilo non montano Pagination: la paginazione del profilo non è un flusso"
+  },
+  {
+   "what": "file fuori dai nodi: package.json, pnpm-lock.yaml, svelte.config.js, vite.config.js, jsconfig.json, .prettierrc, logo.png, README.md",
+   "why": "manifest, configurazione degli strumenti e documentazione; il repository non ha test né workflow"
+  }
+ ]
+}

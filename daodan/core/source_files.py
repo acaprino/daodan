@@ -12,6 +12,7 @@ import subprocess
 from pathlib import Path, PurePath
 from typing import Iterator
 
+import file_formats
 from languages import SUPPORTED_EXTENSIONS
 from tree_scope import GIT_OPTIONS, Perimeter, git_executable, work_tree
 
@@ -29,28 +30,17 @@ MAX_FILE_BYTES = 20_000_000
 # with no symbols invented for them. `.properties`, `.config` and `.tfvars` stay
 # out on purpose: they routinely hold passwords, and the forbidden list below
 # filters by name, never by content.
-DOC_EXTENSIONS = frozenset({
-    ".bat", ".cabal", ".cfg", ".cmake", ".cmd", ".csproj", ".fsproj", ".gemspec", ".gql", ".gradle",
-    ".graphql", ".hcl", ".ini", ".json", ".json5", ".jsonc", ".md", ".mk",
-    ".plist", ".props", ".proto", ".prisma", ".ps1", ".rst", ".sh", ".sln", ".slnx",
-    ".targets", ".tf", ".toml", ".txt", ".vbproj", ".vcproj", ".vcxproj", ".wsdl", ".xml", ".xsd",
-    ".xsl", ".xslt", ".yaml", ".yml",
-})
+DOC_EXTENSIONS = file_formats.DOCUMENTS
 
 # Build manifests without an extension of their own. They declare the modules
 # of a project (modules.py reads them), or how it runs (a Dockerfile), so they
 # enter the manifest as file-level entries like any other configuration file.
-MANIFEST_FILES = frozenset({
-    "go.mod", "go.work", "Gemfile", "Package.swift", "mix.exs", "build.sbt",
-    "build.zig.zon", "dune-project", "Dockerfile",
-    "meson.build", "meson.options", "BUILD", "BUILD.bazel", "MODULE.bazel", "WORKSPACE",
-    "WORKSPACE.bazel",
-})
+MANIFEST_FILES = file_formats.MANIFESTS
 # Makefiles: the ones GNU Make reads, and the other dialects and templates, which the pre-map names as gaps
-MAKEFILES = re.compile(r"(?i)^((gnu)?makefile(\..+)?|.+\.(mak|mms)|descrip\.mms)$")
+MAKEFILES = file_formats.MAKEFILES
 
 
-BUILD_FOLDERS = frozenset({"profiles"})  # folders whose files without a suffix are build files: Conan's profiles
+BUILD_FOLDERS = file_formats.BUILD_FOLDERS  # folders whose files without a suffix are build files: Conan's profiles
 
 
 def is_build_file(name: str) -> bool:
@@ -65,24 +55,18 @@ def is_build_file(name: str) -> bool:
 # consent modal's positioning and locking users out. Stylesheets and the style
 # blocks of markup and components left it for their adapters, which record
 # every rule as a symbol.
-PRESENTATION_EXTENSIONS = frozenset({".jade", ".pug", ".styl", ".stylus"})  # `.jade`: Pug's name before 2016
+PRESENTATION_EXTENSIONS = file_formats.PRESENTATION  # `.jade`: Pug's name before 2016
 
 # File-level sources whose explicit module references are read by the stack checker.
-STACK_SOURCE_LANGUAGES = {".swift": "swift", ".ex": "elixir", ".exs": "elixir", ".php": "php"}
-
+STACK_SOURCE_LANGUAGES = file_formats.STACK_SOURCES
 
 # What the Codebase Map never reads; such a file never enters the manifest, not even as a hash.
 # The obvious credential files, by name alone.
-FORBIDDEN_GLOBS = (
-    ".env", ".env.*", "credentials.*", "secrets.*",
-    "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*",
-    ".npmrc", ".pypirc", ".netrc",
-    "*service-account*.json", "*kubeconfig*", "*.tfstate", "*.tfstate.*", "*.keystore", "*.jks",
-)
+FORBIDDEN_GLOBS = file_formats.FORBIDDEN
 # Any other name that speaks of secrets is read unless its content holds a generated value: a
 # run of at least 20 characters with an entropy of at least 4.5 bits per character, or 3 when
 # hexadecimal. secretCipher.js holds the code that encrypts, not a key.
-SECRET_NAME_GLOBS = ("*secret*", "*credential*")
+SECRET_NAME_GLOBS = file_formats.SECRET_NAMES
 _RUN = re.compile(r"[A-Za-z0-9+/_.!@#$%^&*~?|-]{20,}")
 _HEX = re.compile(r"[0-9a-fA-F]+")
 _SCAN_BYTES = 2 * 1024 * 1024

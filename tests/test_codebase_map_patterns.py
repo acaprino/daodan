@@ -22,8 +22,8 @@ ALLOWED = {
     "engine_tools.py": 1, "flows.py": 7, "import_resolution.py": 1, "indexers/clang.py": 12,
     "indexers/clang_run.py": 7, "indexers/csharp.py": 8, "indexers/css.py": 59, "indexers/go.py": 7,
     "indexers/java.py": 6, "indexers/jvm.py": 10, "indexers/kotlin.py": 1, "indexers/python.py": 12,
-    "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6, "languages/__init__.py": 5,
-    "languages/cfamily.py": 18, "languages/csharp.py": 5, "languages/go.py": 5, "languages/java.py": 5,
+    "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6, "languages/__init__.py": 2,
+    "languages/cfamily.py": 18, "languages/csharp.py": 5, "languages/go.py": 5, "languages/header.py": 2, "languages/java.py": 5,
     "languages/javascript.py": 5, "languages/kotlin.py": 8, "languages/markup.py": 2, "languages/plsql.py": 9,
      "languages/rust.py": 8, "languages/sfc.py": 3, "languages/sql.py": 19,
     "languages/stylesheet.py": 34,  "mark_svg.py": 11, "mcp_service.py": 1,
@@ -33,7 +33,7 @@ ALLOWED = {
     "premap/make.py": 3, "premap/meson.py": 1, "premap/module_graph.py": 3, "premap/npm_lock.py": 2,
     "premap/npm_tests.py": 11, "premap/origins.py": 3, "premap/project_files.py": 1, "premap/python_build.py": 1,
     "premap/python_tests.py": 10, "premap/renovate.py": 13, "premap/requirements.py": 9, "premap/sbt.py": 2,
-    "premap/tsc.py": 1, "premap/uv.py": 1, "preparation.py": 14, "registry_build.py": 11, "repository.py": 3,
+    "premap/tsc.py": 1, "premap/uv.py": 1, "preparation.py": 14, "registry_build.py": 6, "repository.py": 3,
     "retrieval.py": 4, "review_experience.py": 3, "review_roster.py": 31, "run_store.py": 1, "semantic_map.py": 3,
     "semantic_store.py": 1, "service_registry.py": 4, "snapshot.py": 2, "source_files.py": 3, "support_table.py": 4,
     "symbols_at.py": 1, "system_map.py": 2, "tree_scope.py": 2, "usage_finder.py": 6,
@@ -55,4 +55,4 @@ def test_no_file_of_the_core_has_more_regular_expressions_than_it_had():
 
 
 def test_the_count_only_goes_down():
-    assert sum(ALLOWED.values()) <= 667  # 22 November 2026 (835 on the 21st, 846 on the 20th); lower it with the files
+    assert sum(ALLOWED.values()) <= 660  # 25 November 2026 (661 on the 24th, 667 on the 22nd, 835 on the 21st, 846 on the 20th); lower it with the files

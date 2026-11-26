@@ -101,14 +101,18 @@ def write_ledger(manifest: Path, records: list[dict], *, replace: bool = False) 
     return proposals
 
 
-def _member(inventory: _Inventory, store, text: str) -> dict:
-    """One member as the snapshot knows it: a symbol, a file, a directory, or unresolved with the reason."""
+def _member(inventory: _Inventory, store, text: str, symbols: bool = True) -> dict:
+    """One member as the snapshot knows it: a symbol, a file, a directory, or unresolved with the reason. Without
+    `symbols` a symbol is checked on the inventory only: its file is there, the symbol itself is `pending`."""
     if "::" in text:
         path, symbol = text.split("::", 1)
         path = _posix(path)
         record = {"id": f"{path}::{symbol}", "kind": "symbol", "path": path, "symbol": symbol, "resolved": False}
         if path not in inventory.headers:
             record["reason"] = inventory.absence(path)
+            return record
+        if not symbols:
+            record.update(resolved=True, pending=True)
             return record
         spec = ((store.get_file(path, semantic=False) or {}).get("symbols") or {}).get(symbol)
         if spec is None:

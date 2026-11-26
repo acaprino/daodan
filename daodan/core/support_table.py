@@ -51,12 +51,6 @@ MONTHS = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio"
           "novembre", "dicembre")
 RANKS = {"model": "modello: il comando del build tool, nel container", "reader": "lettore: legge i file",
          "scanner": "scanner: legge ogni file"}
-# An ecosystem of the registry's package signs and the languages, by the snapshot's names, of the code that declares
-# its packages; an image or a CI action is no code.
-PACKAGE_LANGUAGES = {"npm": ("javascript", "typescript"), "deno": ("javascript", "typescript"), "pypi": ("python",),
-                     "crates": ("rust",), "go": ("go",), "maven": ("java", "kotlin"), "nuget": ("csharp",),
-                     "composer": ("php",), "rubygems": ("ruby",), "hex": ("elixir",), "pub": ("dart",),
-                     "terraform": ("hcl",), "terraform-resource": ("hcl",), "docker": (), "github-actions": ()}
 # A registry entry Daodan reads beyond its language, and what its readers key that reading on: a file suffix or the
 # package `indexers/css_tailwind.py` asks for. `own_reading` says the reading from the readers' own constants.
 OWN_READINGS = {"vue": ".vue", "sveltejs": ".svelte", "astro": ".astro", "tailwind": css_tailwind.PACKAGE}
@@ -133,7 +127,7 @@ def languages_section(cards, run_path: Path) -> list[str]:
         count = cards.get(language, collections.Counter())
         rows.append([suffix_table.NAMES.get(language, language.capitalize()), _codes(by_language[language]),
                      ", ".join(reads.get(language, [])) or "nessuno",
-                     ", ".join(o.ENTRY for o in observers if language in o.LANGUAGES) or "nessuno",
+                     ", ".join(o.NAME for o in observers if language in o.LANGUAGES) or "nessuno",
                      f"{count['aperto']} / {count['buco dichiarato']} / {count['risolto']}"])
     others = sorted((k, sum(v.values())) for k, v in cards.items()
                     if k not in languages.SUPPORTED_LANGUAGES and k != "tutti")
@@ -236,13 +230,6 @@ def build_section(report: dict, raw: dict, run_path: Path) -> list[str]:
                     [[k, v.get("version") or "—"] for k, v in sorted(preparation.NEEDS.items())]), ""]
 
 
-def _signs(entry: dict) -> str:
-    signs = entry.get("signs") or {}
-    parts = sorted({*(signs.get("packages") or {}), *(signs.get("patterns") or {})})
-    parts += [k for k in ("files", "env", "hosts") if signs.get(k)]
-    return ", ".join(parts)
-
-
 def own_reading(key: str) -> str:
     """What Daodan reads beyond the language of the files or the package `key`, from its readers' constants; empty
     when no reader takes it."""
@@ -252,8 +239,8 @@ def own_reading(key: str) -> str:
     language = languages.SUPPORTED_EXTENSIONS.get(key)
     adapter = languages.get_adapter(language) if language else None
     if isinstance(adapter, type(sfc.vue_adapter)):
-        parts.append(("frontmatter e `<script>` nello snapshot, il template no" if adapter.frontmatter
-                      else "`<script>` e template nello snapshot") + " (`languages/sfc.py`)")
+        parts.append("frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`premap/astro.py`)"
+                     if adapter.frontmatter else "`<script>` e template nello snapshot (`languages/sfc.py`)")
     if key in css.COMPONENTS:
         parts.append("stili con il compilatore del framework "
                      f"(`indexers/{css.COMPONENTS[key].__name__.rsplit('.', 1)[-1]}.py`)")
@@ -263,18 +250,15 @@ def own_reading(key: str) -> str:
     return "; ".join(parts)
 
 
-def _analysed(entry: dict, reads: dict) -> str:
-    """The languages of the entry's package ecosystems (`PACKAGE_LANGUAGES`) an analyzer reads, then those none reads."""
-    signs = entry.get("signs") or {}
-    names = dict.fromkeys(language for ecosystem in sorted({*(signs.get("packages") or {}), *(signs.get("patterns") or {})})
-                          for language in PACKAGE_LANGUAGES[ecosystem])
-    return ", ".join([suffix_table.NAMES.get(name, name) for name in names if reads.get(name)]
-                     + [f"{name}: nessun analizzatore" for name in names if not reads.get(name)]) or "—"
+def _has_rule(entry: dict) -> bool:
+    """Whether the fork has a rule for the entry: the registry's entries are made of the release's catalogue, and
+    `from` says which of them the catalogue gave."""
+    return "stack-analyser" in entry["from"]
 
 
 def stack_section(registry: dict, stack: dict) -> list[str]:
     entries = registry["entries"]
-    known = [e for e in entries if e.get("signs")]
+    known = [e for e in entries if _has_rule(e)]
     classes = collections.Counter(service_registry.entry_category(e) for e in known)
     written = collections.Counter(e["category"] for e in entries if e.get("category"))
     found_in = collections.Counter(i for record in stack["fixtures"].values() for i in record.get("ids") or ())
@@ -300,17 +284,18 @@ def stack_section(registry: dict, stack: dict) -> list[str]:
                           + _of(total['frameworks', 'wrong'], 'sbagliato', 'sbagliati'),
                           f"{_ratio(total['services', 'found'], total['services', 'expected'], 'nessuno atteso')}, "
                           f"{_n(total['services', 'extra'])} in più"])
-    listed = sorted((e for e in known if service_registry.entry_category(e) != "service"),
+    listed = sorted((e for e in entries if service_registry.entry_category(e) != "service"
+                     and (_has_rule(e) or e.get("category"))),
                     key=lambda e: (service_registry.entry_category(e), e["name"].casefold()))
     file, date, _ = STACK
-    reads, by_id = _analyzer_reads(), {e["id"]: e for e in entries}
+    by_id = {e["id"]: e for e in entries}
     readings = {ident: own_reading(key) for ident, key in OWN_READINGS.items()}
     read_names = [by_id[ident]["name"] for ident in OWN_READINGS if ident in by_id]
-    default = (f"Delle {_n(len(projects))} voci `project` riconoscibili, {_of(len(defaulted), 'è', 'sono')} "
+    default = (f"Delle {_n(len(projects))} voci `project` con una regola del fork, {_of(len(defaulted), 'è', 'sono')} "
                "`framework` solo per il default, senza una `category` scritta: per distinguerle serve una `category` "
                "(`framework`, `library` o `tool`) su ognuna." if defaulted else
-               f"Ognuna delle {_n(len(projects))} voci `project` riconoscibili ha la sua `category` scritta: nessuna "
-               "è `framework` solo per il default.")
+               f"Ognuna delle {_n(len(projects))} voci `project` con una regola del fork ha la sua `category` scritta: "
+               "nessuna è `framework` solo per il default.")
     return ["## Framework, librerie e strumenti", "",
             "Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e "
             "`tools`. La classe di una voce del catalogo (`data/service-registry.json`) la decide "
@@ -319,27 +304,34 @@ def stack_section(registry: dict, stack: dict) -> list[str]:
             "`libraries` sono tutti i pacchetti che dichiara, nel catalogo o no, con l'id della voce che il catalogo "
             "ne ha. Sul grafo dell'app un modulo mostra come tessere le voci `framework` e `library` che un suo file "
             "dichiara; uno strumento non è una tessera, un servizio è un nodo esterno.", "",
-            *_table(["Classe", "Voci riconoscibili (con segni)", "Voci con la categoria scritta, fra tutte"],
+            *_table(["Classe", "Voci con una regola del fork", "Voci con la categoria scritta, fra tutte"],
                     [[c, _n(classes.get(c, 0)), _n(written.get(c, 0))] for c in registry_build.CATEGORIES]), "",
             default, "",
             f"Riconoscimento dello stack sul corpus, giro del {date} (`{_rel(RESULTS / file)}`), "
             f"{len(scored)} fixture su {len(stack['fixtures'])} con record; per nome conta un nome una volta per "
             "fixture, per unità ogni unità che lo tiene.", "",
             *_table(["Famiglia", "Fixture", "Framework per nome", "Framework per unità", "Servizi"], face_rows), "",
-            "Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo "
-            "segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il "
-            "codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi "
-            "linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha "
-            "analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo "
+            "Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: il fork di "
+            "stack-analyser ha una regola per la voce (la colonna «Regola del fork»: `sì` se la voce viene dal catalogo "
+            "del suo rilascio, `no` se il registro la nomina e il fork non la riconosce) e la riconosce da ciò che il "
+            "progetto mostra (un pacchetto, un'immagine, un file, un sorgente). Lettura propria: ciò che Daodan legge "
+            "del framework oltre al suo linguaggio, e vale solo "
             f"per {_of(len(read_names), 'voce', 'voci')} ({', '.join(read_names)}). Rotte e collegamenti fra le parti "
             "vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` "
-            "applica a chiamate, decoratori e attributi, per qualunque framework. Nessun framework ha le rotte lette "
-            "dal posto di un file (le pagine di Next.js, Nuxt, SvelteKit, Remix o Astro): è un buco dichiarato.", "",
-            "<details><summary>Framework, librerie e strumenti riconoscibili: "
+            "applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento "
+            "del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix "
+            "(`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle "
+            "rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: "
+            "con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione "
+            "per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` "
+            "dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le "
+            "pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco "
+            "dichiarato.", "",
+            "<details><summary>Framework, librerie e strumenti: "
             f"{len(listed)} voci</summary>", "",
-            *_table(["Voce", "Id", "Classe", "Segni", "Codice analizzato", "Lettura propria",
+            *_table(["Voce", "Id", "Classe", "Regola del fork", "Lettura propria",
                      f"Fixture in cui lo step la trova ({date})"],
-                    [[e["name"], f"`{e['id']}`", service_registry.entry_category(e), _signs(e), _analysed(e, reads),
+                    [[e["name"], f"`{e['id']}`", service_registry.entry_category(e), "sì" if _has_rule(e) else "no",
                       readings.get(e["id"]) or "—", found_in.get(e["id"], 0)]
                      for e in listed]), "", "</details>", ""]
 
@@ -352,30 +344,29 @@ def services_section(registry: dict, stack: dict) -> list[str]:
     for e in services:
         row = by_type[e.get("type") or "—"]
         row[0] += 1
-        row[1] += bool(e.get("signs"))
+        row[1] += _has_rule(e)
         row[2] += bool(e.get("mark") or e.get("mark_source"))
-    signs = collections.Counter(k for e in services if e.get("signs") for k, v in e["signs"].items() if v)
     found_in = collections.Counter(i for record in stack["fixtures"].values() for i in record.get("ids") or ())
-    listed = sorted((e for e in services if e.get("signs") and service_registry.entry_category(e) == "service"),
+    listed = sorted((e for e in services if _has_rule(e) and service_registry.entry_category(e) == "service"),
                     key=lambda e: e["name"].casefold())
-    apart = collections.Counter(service_registry.entry_category(e) for e in services if e.get("signs")
+    apart = collections.Counter(service_registry.entry_category(e) for e in services if _has_rule(e)
                                 and service_registry.entry_category(e) != "service")
     return ["## Servizi esterni", "",
             f"Le voci di servizio del catalogo: {_n(len(services))}, {_n(len(services) - projects)} di `kind` "
             f"`service` e {_n(projects)} di `kind` `project` con la `category` `service` (un software che gira "
             f"accanto al sistema e a cui il codice si connette); {_n(sum(r[1] for r in by_type.values()))} con "
-            f"segni per riconoscerle, {_n(sum(r[2] for r in by_type.values()))} con un marchio: {_n(sum(1 for e in services if e.get("mark")))} con il file nel prodotto (`mark`), "
-            f"{_n(sum(1 for e in services if e.get("mark_source")))} scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per "
-            "specie, sulle voci che ne hanno: " + ", ".join(f"`{k}` {_n(v)}" for k, v in sorted(signs.items())) + ". "
-            + (f"Di quelle con segni, {_n(sum(apart.values()))} hanno un'altra categoria ("
+            f"una regola del fork per riconoscerle, {_n(sum(r[2] for r in by_type.values()))} con un marchio: {_n(sum(1 for e in services if e.get("mark")))} con il file nel prodotto (`mark`), "
+            f"{_n(sum(1 for e in services if e.get("mark_source")))} scaricato al primo uso dalla fonte ufficiale (`mark_source`); "
+            f"{_n(sum(1 for e in services if e.get("hosts")))} hanno gli host con cui le si menziona negli URL (`hosts`). "
+            + (f"Di quelle con una regola, {_n(sum(apart.values()))} hanno un'altra categoria ("
                + ", ".join(f"`{c}` {_n(n)}" for c, n in sorted(apart.items())) + ") e stanno nella lista della "
                "sezione precedente. " if apart else "")
             + "Il riconoscimento misurato è la colonna Servizi della sezione precedente.", "",
-            *_table(["Tipo", "Voci", "Con segni", "Con marchio"],
+            *_table(["Tipo", "Voci", "Con una regola del fork", "Con marchio"],
                     [[k, _n(a), _n(b), _n(c)] for k, (a, b, c) in sorted(by_type.items(), key=lambda x: -x[1][0])]),
-            "", f"<details><summary>Servizi riconoscibili: {len(listed)} voci</summary>", "",
-            *_table(["Servizio", "Id", "Tipo", "Segni", "Marchio", f"Fixture in cui lo step lo trova ({STACK[1]})"],
-                    [[e["name"], f"`{e['id']}`", e.get("type") or "—", _signs(e), "sì" if e.get("mark") else "al primo uso" if e.get("mark_source") else "no",
+            "", f"<details><summary>Servizi con una regola del fork: {len(listed)} voci</summary>", "",
+            *_table(["Servizio", "Id", "Tipo", "Host", "Marchio", f"Fixture in cui lo step lo trova ({STACK[1]})"],
+                    [[e["name"], f"`{e['id']}`", e.get("type") or "—", _codes(e.get("hosts") or ()), "sì" if e.get("mark") else "al primo uso" if e.get("mark_source") else "no",
                       found_in.get(e["id"], 0)] for e in listed]), "", "</details>", ""]
 
 

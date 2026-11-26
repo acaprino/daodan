@@ -31,7 +31,7 @@ def build(tmp_path, name, sources=(dotnet,)):
     project = tmp_path / "proj"
     shutil.copytree(ANSWERS / name, project)
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     return premap.write(manifest, sources=sources, runner=replay(name))
 
 
@@ -83,7 +83,7 @@ def test_the_feeds_a_nuget_config_declares_are_registries_of_the_projects_below_
         '<configuration><packageSources><clear /><add key="lib" value="https://lib.example/nuget" />'
         '</packageSources></configuration>\n', encoding="utf-8")
     manifest = tmp_path / "out" / "manifest.sqlite"
-    snapshot.write_snapshot(project, manifest)
+    snapshot.read_project(project, manifest)
     record = premap.write(manifest, sources=(dotnet,), runner=replay("property-reference"))
     units = {u["name"]: u for u in record["units"] if u["kind"] == "dotnet-project"}
     assert units["App"]["registries"] == ["https://nuget.corp.example"]

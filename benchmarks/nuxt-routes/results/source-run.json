@@ -1,0 +1,419 @@
+{
+ "build-dir": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   ".generated/app.config.mjs",
+   ".generated/components.d.ts",
+   ".generated/imports.d.ts",
+   ".generated/manifest/meta/04f57bb5-a4eb-4033-87e7-b57254915717.json",
+   ".generated/manifest/meta/fe9a8160-e523-4822-ac47-aa7560ef81d1.json",
+   ".generated/nuxt.d.ts",
+   ".generated/schema/nuxt.schema.d.ts",
+   ".generated/schema/nuxt.schema.json",
+   ".generated/tsconfig.json",
+   ".generated/tsconfig.server.json",
+   ".generated/types/app-defaults.d.ts",
+   ".generated/types/app.config.d.ts",
+   ".generated/types/build.d.ts",
+   ".generated/types/builder-env.d.ts",
+   ".generated/types/components.d.ts",
+   ".generated/types/imports.d.ts",
+   ".generated/types/layouts.d.ts",
+   ".generated/types/middleware.d.ts",
+   ".generated/types/nitro-config.d.ts",
+   ".generated/types/nitro-imports.d.ts",
+   ".generated/types/nitro-layouts.d.ts",
+   ".generated/types/nitro-middleware.d.ts",
+   ".generated/types/nitro-nuxt.d.ts",
+   ".generated/types/nitro-routes.d.ts",
+   ".generated/types/nitro.d.ts",
+   ".generated/types/plugins.d.ts",
+   ".generated/types/schema.d.ts",
+   ".generated/types/vue-shim.d.ts",
+   "node_modules/.cache/jiti/source-build-dir-nuxt.config.7ad168c3.mjs"
+  ],
+  "max_rss_mb": [
+   299.7,
+   34.4,
+   274.6
+  ],
+  "seconds": [
+   2.87,
+   0.05,
+   1.43
+  ]
+ },
+ "config-throws": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   "node_modules/.cache/jiti/source-config-throws-nuxt.config.25c6a28e.mjs"
+  ],
+  "max_rss_mb": [
+   246.5,
+   34.4,
+   199.5
+  ],
+  "seconds": [
+   1.73,
+   0.05,
+   0.77
+  ]
+ },
+ "hook-file-missing": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   "node_modules/.cache/jiti/source-hook-file-missing-nuxt.config.967cb4d2.mjs"
+  ],
+  "max_rss_mb": [
+   291.5,
+   34.4,
+   269.1
+  ],
+  "seconds": [
+   2.53,
+   0.05,
+   1.45
+  ]
+ },
+ "layer": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   "node_modules/.cache/jiti/base-nuxt.config.86732e50.mjs",
+   "node_modules/.cache/jiti/source-layer-nuxt.config.ae82c82b.mjs"
+  ],
+  "max_rss_mb": [
+   303.5,
+   34.4,
+   280.0
+  ],
+  "seconds": [
+   2.61,
+   0.05,
+   1.47
+  ]
+ },
+ "layer-nuxt4": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [],
+  "max_rss_mb": [
+   297.2,
+   34.4,
+   296.3
+  ],
+  "seconds": [
+   2.84,
+   0.05,
+   1.5
+  ]
+ },
+ "no-pages": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   "node_modules/.cache/jiti/source-no-pages-nuxt.config.b332fd3e.mjs"
+  ],
+  "max_rss_mb": [
+   300.2,
+   34.4,
+   273.8
+  ],
+  "seconds": [
+   2.98,
+   0.05,
+   1.69
+  ]
+ },
+ "not-installed": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [],
+  "max_rss_mb": [
+   158.6,
+   34.4,
+   121.7
+  ],
+  "seconds": [
+   0.59,
+   0.05,
+   0.1
+  ]
+ },
+ "nuxt3": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   "node_modules/.cache/jiti/source-nuxt3-nuxt.config.ad0aa89d.mjs"
+  ],
+  "max_rss_mb": [
+   300.9,
+   34.4,
+   275.3
+  ],
+  "seconds": [
+   2.91,
+   0.05,
+   1.41
+  ]
+ },
+ "nuxt4": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [],
+  "max_rss_mb": [
+   291.2,
+   34.4,
+   288.2
+  ],
+  "seconds": [
+   2.41,
+   0.05,
+   1.37
+  ]
+ },
+ "nuxt4-root-layout": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [],
+  "max_rss_mb": [
+   291.9,
+   34.4,
+   292.0
+  ],
+  "seconds": [
+   2.44,
+   0.06,
+   1.54
+  ]
+ },
+ "redirect": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "900",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   "node_modules/.cache/jiti/source-redirect-nuxt.config.5c9ad35f.mjs"
+  ],
+  "max_rss_mb": [
+   301.4,
+   34.4,
+   274.8
+  ],
+  "seconds": [
+   2.49,
+   0.04,
+   1.5
+  ]
+ },
+ "timeout": {
+  "argv": [
+   [
+    "npx",
+    "--no-install",
+    "nuxt",
+    "prepare"
+   ],
+   [
+    "cat",
+    ".nuxt/types/nitro-routes.d.ts"
+   ],
+   [
+    "timeout",
+    "--kill-after=10",
+    "0.3",
+    "daodan-nuxt"
+   ]
+  ],
+  "left": [
+   "node_modules/.cache/jiti/source-timeout-nuxt.config.1f9e95f3.mjs"
+  ],
+  "max_rss_mb": [
+   300.8,
+   34.4,
+   160.0
+  ],
+  "seconds": [
+   2.62,
+   0.05,
+   0.37
+  ]
+ }
+}

@@ -401,7 +401,7 @@ class JoinTest(unittest.TestCase):
             (cls.project / rel).parent.mkdir(parents=True, exist_ok=True)
             (cls.project / rel).write_text(text, encoding="utf-8", newline="\n")
         cls.manifest = cls.folder / "out" / "manifest.sqlite"
-        snapshot.write_snapshot(cls.project, cls.manifest)
+        snapshot.read_project(cls.project, cls.manifest)
         project_calls(cls.folder / "calls")
         sources = [rel for rel in PROJECT if rel.endswith((".java", ".kt"))]
         cls.sites, cls.facts = jvm.place(jvm.read(cls.folder / "calls"), "", sources,
@@ -554,7 +554,7 @@ class PlanTest(unittest.TestCase):
     def test_the_observer_declares_itself_for_java_and_kotlin(self):
         self.assertIn(jvm, dynamic.observers())
         self.assertEqual(jvm.LANGUAGES, ("java", "kotlin"))
-        self.assertEqual(dynamic.resolver(jvm), f"{jvm.ENTRY}@{jvm.VERSION}")
+        self.assertEqual(dynamic.resolver(jvm), f"{jvm.NAME}@{jvm.VERSION}")
 
 
 ASM_JAR = b"the asm jar"

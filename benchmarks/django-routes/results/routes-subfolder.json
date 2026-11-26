@@ -1,0 +1,20 @@
+{
+ "variant": "routes-subfolder",
+ "argv": [
+  "sh",
+  "-c",
+  "exec timeout --kill-after=10 \"$1\" /daodan/state/venvs/./bin/python -I \"$2\"",
+  "django",
+  "900",
+  "/daodan/state/tools/django_routes.py"
+ ],
+ "cwd": "src",
+ "returncode": 0,
+ "stdout": "{\"called\": true, \"routes\": [{\"path\": \"/hello/\", \"parts\": [[false, \"/hello/\"]], \"arguments\": {}, \"view\": null, \"handlers\": [{\"method\": null, \"handler\": {\"kind\": \"function\", \"type\": \"builtins.function\", \"module\": \"mysite.urls\", \"qualname\": \"hello\", \"file\": \"mysite/urls.py\", \"line\": 5, \"environment\": false, \"distribution\": null, \"owners\": []}}]}], \"unread\": [], \"locale\": null}",
+ "stderr": "",
+ "seconds": 0.91,
+ "max_rss_mb": 60.9,
+ "left_in_the_project": [],
+ "changed_in_the_project": [],
+ "stdout_chars": 376
+}

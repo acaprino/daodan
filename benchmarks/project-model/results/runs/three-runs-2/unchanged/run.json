@@ -1,0 +1,265 @@
+{
+ "seconds": 82.9,
+ "step_seconds": {
+  "scan": 0.0,
+  "stack": 0.0,
+  "parse": 0.0,
+  "analyze": 72.4,
+  "dynamic": 10.5,
+  "union": 0.0
+ },
+ "steps": {
+  "scan": {
+   "modules": 7,
+   "graph": "/runs/mix-poly-firebase/modules.json",
+   "action": "none",
+   "units": 6,
+   "gaps": 4,
+   "premap": "/runs/mix-poly-firebase/premap.json"
+  },
+  "stack": {
+   "technologies": 14,
+   "units": 7,
+   "modules": 7,
+   "path": "/runs/mix-poly-firebase/technologies.json"
+  },
+  "parse": {
+   "action": "fresh",
+   "plan": {
+    "nodes": 15,
+    "gaps": 1
+   }
+  },
+  "analyze": {
+   "pass": true,
+   "manifest_digest": "428a1b40c25443e212fbb3131d8a1a48f07d7e202518d4caa6b5eb52c819819d",
+   "languages": {
+    "stylesheet": {
+     "state": "fresh",
+     "engine": "stylesheet@a07253a25b16"
+    },
+    "python": {
+     "state": "fresh",
+     "engine": "scip-python@0.6.8"
+    },
+    "typescript": {
+     "state": "fresh",
+     "engine": "scip-typescript@0.6.2"
+    },
+    "kotlin": {
+     "state": "failed",
+     "engine": "scip-kotlin",
+     "reason": "scip-java wrote no index (preparation exited with code 1): e licences have not been accepted.\n     build-tools;34.0.0 Android SDK Build-Tools 34\n     platforms;android-35 Android SDK Platform 35\n  To build this project, accept the SDK license agreements and install the missing components using the Android Studio SDK Manager.\n  All licenses can be accepted using the sdkmanager command line tool:\n  sdkmanager.bat --licenses\n  Or, to transfer the license agreements from one workstation to another, see https://developer.android.com/studio/intro/update.html#download-with-gradle\n  \n  Using Android SDK: /daodan/state/tools/android\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 13s"
+    },
+    "rust": {
+     "state": "fresh",
+     "engine": "scip-rust@2026-11-09"
+    }
+   },
+   "engines": {
+    "scip-kotlin": {
+     "engine": "scip-kotlin@0.14.2",
+     "available": false,
+     "reason": "scip-java wrote no index (preparation exited with code 1): e licences have not been accepted.\n     build-tools;34.0.0 Android SDK Build-Tools 34\n     platforms;android-35 Android SDK Platform 35\n  To build this project, accept the SDK license agreements and install the missing components using the Android Studio SDK Manager.\n  All licenses can be accepted using the sdkmanager command line tool:\n  sdkmanager.bat --licenses\n  Or, to transfer the license agreements from one workstation to another, see https://developer.android.com/studio/intro/update.html#download-with-gradle\n  \n  Using Android SDK: /daodan/state/tools/android\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 13s",
+     "indexer": {
+      "name": "scip-java",
+      "peak_mb": null,
+      "seconds": 14.2,
+      "version": "0.14.2"
+     },
+     "gaps": [
+      {
+       "detail": "cmdline-tools 15859902: the preparation could not install it (its output is in the run's log)",
+       "kind": "toolchain_unavailable",
+       "tool": "cmdline-tools",
+       "version": "15859902"
+      },
+      {
+       "detail": "android-sdk 35: platforms;android-35: bash: line 10: /daodan/state/tools/android/cmdline-tools/latest/bin/sdkmanager: No such file or directory",
+       "kind": "toolchain_unavailable",
+       "tool": "android-sdk",
+       "version": "35"
+      },
+      {
+       "detail": "android-build-tools 34.0.0: build-tools;34.0.0: bash: line 11: /daodan/state/tools/android/cmdline-tools/latest/bin/sdkmanager: No such file or directory",
+       "kind": "toolchain_unavailable",
+       "tool": "android-build-tools",
+       "version": "34.0.0"
+      }
+     ],
+     "seconds": 72.4
+    }
+   },
+   "started_at": "2026-11-24T08:17:25Z",
+   "pipeline_complete": true,
+   "available": true,
+   "finished_at": "2026-11-24T08:18:37Z"
+  },
+  "dynamic": {
+   "languages": {
+    "stylesheet": {
+     "state": "no-observer",
+     "reason": "no observer runs this language's tests"
+    },
+    "rust": {
+     "state": "not-run",
+     "reason": "the crates of react-app/src-tauri hold no test (no #[test] attribute, no file in tests/): no test runs their code"
+    },
+    "typescript": {
+     "state": "not-run",
+     "reason": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+    },
+    "kotlin": {
+     "state": "no-static-graph",
+     "need": "resolve:scip-kotlin",
+     "reason": "kotlin: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+    },
+    "python": {
+     "state": "not-run",
+     "reason": "no test ran: python -m pytest --continue-on-collection-errors in functions-python found no test to run: ============================= test session starts ============================== | platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 | rootdir: /work/functions-python | configfile: pyproject.toml | plugins: anyio-4.16.0 | collected 0 items |  | ============================ no tests ran in 0.03s ============================="
+    }
+   },
+   "app": {
+    "state": "ran",
+    "reused": true,
+    "apps": 1,
+    "kept": 1
+   }
+  },
+  "union": {
+   "languages": {
+    "kotlin": {
+     "engine": "scip-kotlin",
+     "reason": "scip-java wrote no index (preparation exited with code 1): e licences have not been accepted.\n     build-tools;34.0.0 Android SDK Build-Tools 34\n     platforms;android-35 Android SDK Platform 35\n  To build this project, accept the SDK license agreements and install the missing components using the Android Studio SDK Manager.\n  All licenses can be accepted using the sdkmanager command line tool:\n  sdkmanager.bat --licenses\n  Or, to transfer the license agreements from one workstation to another, see https://developer.android.com/studio/intro/update.html#download-with-gradle\n  \n  Using Android SDK: /daodan/state/tools/android\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 13s",
+     "state": "failed"
+    },
+    "python": {
+     "state": "fresh",
+     "engine": "scip-python@0.6.8",
+     "coverage": {
+      "sites": 16,
+      "answered": {
+       "external": 16
+      },
+      "holes": {},
+      "uncertain": 0,
+      "externals": {
+       "python firebase-functions@0.4.3": 5,
+       "python stripe@17.1.0": 4,
+       "python python-stdlib@3.11": 3,
+       "python firebase_admin@7.8.0": 2,
+       "python google-cloud-firestore@2.34.1": 2
+      },
+      "files": {
+       "snapshot": 1,
+       "indexed": 1,
+       "missing": []
+      },
+      "state": "complete"
+     }
+    },
+    "rust": {
+     "state": "fresh",
+     "engine": "scip-rust@2026-11-09",
+     "coverage": {
+      "sites": 7,
+      "answered": {
+       "external": 6,
+       "project-callable": 1
+      },
+      "holes": {},
+      "uncertain": 0,
+      "externals": {
+       "cargo tauri@2.12.7": 3,
+       "cargo core@https://github.com/rust-lang/rust/library/core": 2,
+       "cargo tauri-build@2.7.6": 1
+      },
+      "files": {
+       "snapshot": 3,
+       "indexed": 3,
+       "missing": []
+      },
+      "state": "complete"
+     }
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "engine": "stylesheet@a07253a25b16",
+     "coverage": {
+      "sites": 2,
+      "answered": {
+       "namespace": 1
+      },
+      "holes": {
+       "no-rule": {
+        "count": 1,
+        "examples": [
+         "react-app/index.html:8 #root"
+        ]
+       }
+      },
+      "uncertain": 0,
+      "externals": {},
+      "files": {
+       "snapshot": 9,
+       "indexed": 9,
+       "missing": []
+      },
+      "state": "lower-bound"
+     }
+    },
+    "typescript": {
+     "state": "fresh",
+     "engine": "scip-typescript@0.6.2",
+     "coverage": {
+      "sites": 50,
+      "answered": {
+       "external": 28,
+       "lexical": 1,
+       "project-callable": 4,
+       "project-value": 16
+      },
+      "holes": {
+       "NodeJS.ProcessEnv's index signature: only execution knows the value": {
+        "count": 1,
+        "examples": [
+         "functions/src/index.ts:8 STRIPE_SECRET_KEY"
+        ]
+       }
+      },
+      "uncertain": 0,
+      "externals": {
+       "npm typescript@6.0.3": 5,
+       "npm @firebase/firestore@4.8.0": 5,
+       "npm @types/react@18.3.31": 3,
+       "npm stripe@17.7.0": 2,
+       "npm @firebase/functions@0.12.9": 2,
+       "npm @types/react-dom@18.3.7": 2,
+       "npm @types/node@20.19.43": 2,
+       "npm firebase-admin@12.7.0": 1,
+       "npm firebase-functions@6.6.0": 1,
+       "npm @google-cloud/firestore@7.11.6": 1,
+       "npm @stripe/stripe-js@4.10.0": 1,
+       "npm @firebase/app@0.13.2": 1,
+       "npm vite@5.4.21": 1,
+       "npm @vitejs/plugin-react@4.7.0": 1
+      },
+      "files": {
+       "snapshot": 8,
+       "indexed": 8,
+       "missing": []
+      },
+      "state": "lower-bound"
+     }
+    }
+   }
+  }
+ },
+ "links": {
+  "found": 3,
+  "of": 4,
+  "missing": [
+   "the checkout handler calls the Python backend"
+  ]
+ }
+}

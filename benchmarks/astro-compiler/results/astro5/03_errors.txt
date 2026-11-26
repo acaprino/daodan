@@ -1,0 +1,9 @@
+@astrojs/compiler 2.13.1
+frontmatter not closed: 0 diagnostics []; attributes: 
+tag not closed: 0 diagnostics []; attributes: onclick@14, <button@45, onclick@53
+quote not closed: 0 diagnostics []; attributes: onclick@8, b()"@49
+brace not closed: 0 diagnostics []; attributes: onclick@22, onclick@55
+empty file: 0 diagnostics []; attributes: 
+only text: 0 diagnostics []; attributes: 
+
+--- exit 0

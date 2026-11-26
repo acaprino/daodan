@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from urllib.parse import urlsplit
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -77,12 +78,21 @@ def browser() -> Path:
     return tools / "node_modules/playwright-core"
 
 
-def explore(tmp_path, browser: Path, files: dict, seeds=(), port: int | None = None) -> dict:
+def explore(tmp_path, browser: Path, files: dict, seeds=(), port: int | None = None, spoil: dict | None = None) -> dict:
+    """The driver on `files`; `spoil` replaces text of the driver (a limit) in a copy of it, for a test of that limit."""
     port = port or free_port()
     project = write(tmp_path / "proj", {**files, "server.js": files.get("server.js", SERVER).replace("PORT", str(port))})
     out = tmp_path / "out"
     out.mkdir()
-    done = subprocess.run(["node", str(SCRIPTS / "dynamic/explore.cjs"), str(out), "0", str(project), str(port), "30",
+    driver = SCRIPTS / "dynamic/explore.cjs"
+    if spoil:
+        text = driver.read_text(encoding="utf-8")
+        for old, new in spoil.items():
+            assert old in text, old
+            text = text.replace(old, new)
+        driver = tmp_path / "explore-spoiled.cjs"
+        driver.write_text(text.replace("require('./app.cjs')", f"require({json.dumps(str(SCRIPTS / 'dynamic/app.cjs'))})"), encoding="utf-8")
+    done = subprocess.run(["node", str(driver), str(out), "0", str(project), str(port), "30",
                            "node server.js", json.dumps(list(seeds))], capture_output=True, text=True, timeout=300,
                           env={**os.environ, "DAODAN_PLAYWRIGHT": str(browser)})
     assert done.returncode == 0, done.stderr[-1500:]
@@ -100,6 +110,24 @@ def names(control: dict) -> set[str]:
 
 
 APP_FILES = {"src/app.js": APP, "src/details.js": DETAILS}
+
+
+def digest(found: dict) -> dict:
+    """What each press found, whatever order the presses ran in: its state, handler, functions and requests."""
+    return {(urlsplit(page["url"]).path, c["role"], c["name"]): (c["state"], (c.get("handler") or {}).get("name"), sorted(names(c)),
+                                                   [request["url"].rpartition("/")[2] for request in c.get("requests", [])])
+            for page in found["pages"] for c in page["controls"]}
+
+
+def test_the_presses_of_a_page_run_in_several_tabs_and_find_what_one_tab_finds(tmp_path, browser):
+    """Each press is from a first visit, in a context of its own, so they are independent: the tabs change the time, not the answer."""
+    (tmp_path / "one").mkdir()
+    (tmp_path / "several").mkdir()
+    one = explore(tmp_path / "one", browser, APP_FILES, spoil={"workers: 4,": "workers: 1,"})
+    several = explore(tmp_path / "several", browser, APP_FILES)
+    assert (one["limits"]["workers"], several["limits"]["workers"]) == (1, 4)
+    assert len(digest(one)) >= 6 and digest(several) == digest(one)
+    assert [c["name"] for c in several["pages"][0]["controls"]] == [c["name"] for c in one["pages"][0]["controls"]]  # the worklist's order
 
 
 def test_each_control_is_pressed_once_and_the_functions_that_ran_are_its_own(tmp_path, browser):
@@ -234,8 +262,19 @@ def test_the_handler_of_a_click_is_the_first_project_function_the_event_reaches(
     save, reset = here[("button", "Save")], here[("button", "Reset")]
     assert "handler" in save, json.dumps({k: v for k, v in save.items() if k != "calls"})
     assert (save["handler"]["name"], save["handler"]["url"]) == ("save", "/src/app.js")
+    assert save["handler"]["start"] == {"line": 2, "column": 13}  # `function save() {`: the line of the function and the column of its parameters, where V8 says it begins
     assert reset["handler"]["name"] == "reset"
     assert "handler" not in here[("link", "Out")]  # not pressed: no handler
+
+
+def test_the_start_of_the_handler_is_where_the_function_begins_not_where_the_pause_is(tmp_path, browser):
+    """The pause is at the handler's first statement, a line below its start: the start tells the handler from a callback
+    that statement holds."""
+    nest = SERVER.replace("'/details':", "'/nest': `<!doctype html><title>nest</title><button id=t>Toggle</button>"
+                          "<script src=/src/nest.js></script>`,\n  '/details':")
+    files = {**APP_FILES, "server.js": nest, "src/nest.js": "document.getElementById('t').addEventListener('click', () => {\n  [1].map(o => o);\n});\n"}
+    handler = controls(explore(tmp_path, browser, files, seeds=["/nest"]), "/nest")[("button", "Toggle")]["handler"]
+    assert (handler["line"], handler["start"]) == (2, {"line": 1, "column": 55}), handler
 
 
 def test_a_react_handler_is_the_function_written_in_the_component_not_reacts_own_dispatch(tmp_path, browser):
@@ -255,6 +294,65 @@ def test_a_react_handler_is_the_function_written_in_the_component_not_reacts_own
     for name, line in wanted.items():
         handler = next(c for c in page["controls"] if c["name"] == name)["handler"]
         assert handler["source"].endswith("src/App.tsx") and handler["line"] == line, (name, handler)
+        assert handler["start"] == {"line": line, "column": lines[line - 1].index("() =>")}, (name, handler)
+
+
+# --- a button in a form: its fields are filled with what their type accepts, and the submit is the event pressed ----
+
+LOGIN = ("function login() { fetch('/api/login', { method: 'POST' }); }\n"
+         "document.querySelector('form').addEventListener('submit', event => { event.preventDefault(); login(); });\n")
+
+
+def form_page(fields: str) -> str:
+    return SERVER.replace("'/details':", "'/form': `<!doctype html><title>form</title><form>" + fields +
+                          "<button type=submit>Log in</button></form><script src=/src/form.js></script>`,\n  '/details':")
+
+
+def test_a_button_in_a_form_fills_the_fields_with_what_their_type_accepts_and_reaches_the_submit_handler(tmp_path, browser):
+    """No click listener: the pause is the `submit` event's. The fields are filled by the types of HTML; nothing is invented."""
+    page = form_page("<input type=email aria-label=Email required><input type=password aria-label=Password required minlength=6>"
+                     "<select aria-label=Plan><option value=''>-</option><option value=pro>Pro</option></select>")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": page, "src/form.js": LOGIN}, seeds=["/form"])
+    button = controls(found, "/form")[("button", "Log in")]
+    assert button["state"] == "pressed" and [field["type"] for field in button["filled"]] == ["email", "password", "select-one"]
+    assert button["invalid"] == [] and [request["url"].rpartition("/")[2] for request in button["requests"]] == ["login"]
+    assert button["handler"]["url"] == "/src/form.js" and "login" in names(button)
+
+
+def test_a_field_whose_constraint_the_value_of_its_type_cannot_meet_is_said_and_nothing_is_submitted(tmp_path, browser):
+    page = form_page("<input type=text aria-label=Code required pattern='[0-9]{4}'>")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": page, "src/form.js": LOGIN}, seeds=["/form"])
+    button = controls(found, "/form")[("button", "Log in")]
+    assert button["state"] == "pressed" and [field["name"] for field in button["invalid"]] == ["Code"]
+    assert button["invalid"][0]["message"] and button["requests"] == [] and "handler" not in button  # the browser refused
+
+
+def test_a_control_a_submit_reveals_is_found_again_because_the_replay_fills_the_form_too(tmp_path, browser):
+    """The press that showed it was of a filled form (the browser refuses an empty one), so the replay fills it as well."""
+    page = form_page("<input type=email aria-label=Email required>").replace(
+        "<script src=/src/form.js></script>", "<script src=/src/banner.js></script>")
+    banner = ("document.querySelector('form').addEventListener('submit', event => { event.preventDefault();"
+              " const b = document.createElement('button'); b.textContent = 'Dismiss'; document.body.append(b); });" + chr(10))
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": page, "src/banner.js": banner}, seeds=["/form"])
+    [dismiss] = controls(found, "/form")[("button", "Log in")]["revealed"]
+    assert (dismiss["name"], dismiss["state"]) == ("Dismiss", "pressed"), dismiss
+
+
+def test_the_checkbox_that_is_pressed_is_not_ticked_first_so_the_press_ticks_it(tmp_path, browser):
+    """The fields are filled, never the control about to be pressed: a box ticked by the fill would be unticked by the click."""
+    page = form_page("<input type=checkbox aria-label=Agree><input type=text aria-label=Name>")
+    script = ("document.querySelector('input[type=checkbox]').addEventListener('change', event =>"
+              " fetch('/api/agree?on=' + event.target.checked));" + chr(10))
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": page, "src/form.js": script}, seeds=["/form"])
+    agree = controls(found, "/form")[("checkbox", "Agree")]
+    assert agree["state"] == "pressed" and [request["url"].rpartition("/")[2] for request in agree["requests"]] == ["agree?on=true"]
+    assert [field["type"] for field in agree["filled"]] == ["text"]  # the box is not one of the fields it filled
+
+
+def test_a_button_outside_a_form_fills_nothing(tmp_path, browser):
+    found = explore(tmp_path, browser, APP_FILES)
+    here = controls(found, f"{found['origin'].rpartition(':')[2]}/")
+    assert "filled" not in here[("button", "Save")] and "invalid" not in here[("button", "Save")]
 
 
 # --- the controls a press reveals --------------------------------------------------------------------------------
@@ -322,3 +420,64 @@ def test_the_controls_a_press_reveals_have_a_budget_of_their_own(tmp_path, brows
     revealed = controls(found, "/many")[("button", "Open")]["revealed"]
     assert [c["state"] for c in revealed] == ["pressed", "skipped", "skipped"] and revealed[1]["reason"] == "cap"
     assert any(gap["kind"] == "explore_cap" and "revealed" in gap["caps"] for gap in found["gaps"])
+
+
+def test_a_press_that_reveals_more_than_the_cap_per_press_says_so_in_a_gap(tmp_path, browser):
+    """The controls past the cap are not looked at: they are a gap that names the cap, never a silent cut."""
+    many = SERVER.replace("'/details':", "'/many': `<!doctype html><title>many</title><body><button id=m>Open</button><script>"
+                          "document.getElementById('m').addEventListener('click', () => {"
+                          "for (const name of ['One', 'Two', 'Three']) { const b = document.createElement('button');"
+                          " b.textContent = name; document.body.append(b); } }, { once: true });</script>`,\n  '/details':")
+    spoiled = Path(SCRIPTS / "dynamic/explore.cjs").read_text(encoding="utf-8").replace("revealed: 30,", "revealed: 2,")
+    probe = tmp_path / "explore-per-press.cjs"
+    probe.write_text(spoiled.replace("require('./app.cjs')", f"require({json.dumps(str(SCRIPTS / 'dynamic/app.cjs'))})"),
+                     encoding="utf-8")
+    port = free_port()
+    project = write(tmp_path / "proj", {**APP_FILES, "server.js": many.replace("PORT", str(port))})
+    out = tmp_path / "out"
+    out.mkdir()
+    done = subprocess.run(["node", str(probe), str(out), "0", str(project), str(port), "30", "node server.js", '["/many"]'],
+                          capture_output=True, text=True, timeout=300, env={**os.environ, "DAODAN_PLAYWRIGHT": str(browser)})
+    assert done.returncode == 0, done.stderr[-1500:]
+    found = json.loads((out / "explore-0.json").read_text(encoding="utf-8"))
+    assert [c["name"] for c in controls(found, "/many")[("button", "Open")]["revealed"]] == ["One", "Two"]
+    [gap] = [gap for gap in found["gaps"] if gap["kind"] == "explore_cap"]
+    assert gap["caps"] == ["revealed_per_press"] and "1 more" in gap["detail"] and "Open" in gap["detail"]
+
+
+def test_a_press_that_renames_the_page_reveals_nothing(tmp_path, browser):
+    """A language or theme toggle gives every control another name: that is the page drawn again, not new controls."""
+    swap = SERVER.replace("'/details':", "'/swap': `<!doctype html><title>swap</title><body><button id=l>English</button>"
+                          "<button class=n>Save</button><button class=n>Reset</button><button class=n>Share</button><script>"
+                          "document.getElementById('l').addEventListener('click', () => {"
+                          "document.getElementById('l').textContent = 'Italiano';"
+                          "const names = ['Salva', 'Azzera', 'Condividi'];"
+                          "document.querySelectorAll('.n').forEach((b, i) => { b.textContent = names[i]; }); });"
+                          "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": swap}, seeds=["/swap"])
+    assert not controls(found, "/swap")[("button", "English")].get("revealed")
+
+
+def test_a_press_that_renames_every_control_and_adds_one_reveals_nothing(tmp_path, browser):
+    """The page in another language has a skip link the first did not, and a third of its names are the same in both."""
+    swap = SERVER.replace("'/details':", "'/skip': `<!doctype html><title>skip</title><body><button id=l>English</button>"
+                          + "".join(f"<button class=n>Name {i}</button>" for i in range(12)) + "<script>"
+                          "document.getElementById('l').addEventListener('click', () => {"
+                          "document.getElementById('l').textContent = 'Italiano';"
+                          "document.querySelectorAll('.n').forEach((b, i) => { if (i < 4) b.textContent = 'Nome ' + i; });"
+                          "const skip = document.createElement('a'); skip.href = '#main'; skip.textContent = 'Vai al contenuto';"
+                          "document.body.prepend(skip); });"
+                          "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": swap}, seeds=["/skip"])
+    assert not controls(found, "/skip")[("button", "English")].get("revealed")
+
+
+def test_a_dialog_that_takes_the_page_over_still_reveals_its_controls(tmp_path, browser):
+    """A modal dialog leaves almost nothing of the page in the accessibility tree: what it shows is still revealed."""
+    modal = SERVER.replace("'/details':", "'/modal': `<!doctype html><title>modal</title><body><button id=o>Open</button><script>"
+                           "document.getElementById('o').addEventListener('click', () => {"
+                           "document.body.innerHTML = '<div role=dialog aria-modal=true><button>Confirm</button><button>Cancel</button></div>'; });"
+                           "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": modal}, seeds=["/modal"])
+    opener = controls(found, "/modal")[("button", "Open")]
+    assert [c["name"] for c in opener.get("revealed", [])] == ["Confirm", "Cancel"]

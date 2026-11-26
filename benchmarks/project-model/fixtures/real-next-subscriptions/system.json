@@ -1,0 +1,3263 @@
+{
+ "case": "next-subscriptions",
+ "root": "nextjs-subscription-payments",
+ "scope": "sistema",
+ "made": "2026-11-25",
+ "commit": "bdd0813206e47e6b218d42f15a7976c8a0d3c3eb",
+ "nodes": [
+  {
+   "name": "Next.js Subscription Starter",
+   "type": "altro",
+   "members": [
+    "."
+   ],
+   "what": "Il modello di sito ad abbonamenti: piani e prezzi presi da Stripe, accesso con Supabase, pagamento con Stripe Checkout.",
+   "proof": [
+    {
+     "at": "app/layout.tsx:9",
+     "has": "Next.js Subscription Starter"
+    },
+    {
+     "at": "utils/stripe/config.ts:13",
+     "has": "Next.js Subscription Starter"
+    }
+   ]
+  },
+  {
+   "name": "Utente",
+   "type": "attore",
+   "position": "external",
+   "what": "Chi visita il sito, si registra, entra e sottoscrive un piano.",
+   "evidence": [
+    "components/ui/Pricing/Pricing.tsx",
+    "app/signin/[id]/page.tsx",
+    "app/account/page.tsx"
+   ],
+   "proof": [
+    {
+     "at": "components/ui/Pricing/Pricing.tsx:192",
+     "has": "Subscribe"
+    },
+    {
+     "at": "components/ui/AuthForms/PasswordSignIn.tsx:65",
+     "has": "Sign in"
+    }
+   ]
+  },
+  {
+   "name": "Sviluppatore",
+   "type": "attore",
+   "position": "external",
+   "what": "Chi prepara il progetto: schema del database, prodotti di prova in Stripe, inoltro dei webhook, pubblicazione.",
+   "evidence": [
+    "package.json",
+    "README.md"
+   ],
+   "proof": [
+    {
+     "at": "package.json:11",
+     "has": "stripe:fixtures"
+    },
+    {
+     "at": "package.json:12",
+     "has": "supabase:start"
+    }
+   ]
+  },
+  {
+   "name": "Browser",
+   "type": "dispositivo",
+   "position": "external",
+   "what": "Il browser che mostra le pagine, tiene i cookie della sessione e viene mandato alle pagine di Stripe e del fornitore OAuth.",
+   "evidence": [
+    "app/layout.tsx",
+    "utils/supabase/client.ts"
+   ],
+   "proof": [
+    {
+     "at": "utils/supabase/client.ts:6",
+     "has": "createBrowserClient"
+    },
+    {
+     "at": "app/layout.tsx:24",
+     "has": "<html"
+    }
+   ]
+  },
+  {
+   "name": "Stripe",
+   "type": "gateway",
+   "position": "external",
+   "registry": "stripe",
+   "family": "provider",
+   "what": "Il servizio che tiene prodotti, prezzi, clienti e abbonamenti, incassa nella sua pagina di Checkout e offre il portale del cliente.",
+   "role": "processore dei pagamenti e origine di prodotti, prezzi e abbonamenti",
+   "mode": "chiamate API con l'SDK stripe dal server, redirect del browser a Checkout e al portale con Stripe.js, avvisi di ritorno firmati su POST /api/webhooks",
+   "evidence": [
+    "utils/stripe/config.ts",
+    "utils/stripe/client.ts",
+    "utils/stripe/server.ts",
+    "utils/supabase/admin.ts",
+    "app/api/webhooks/route.ts",
+    "fixtures/stripe-fixtures.json",
+    "package.json",
+    ".env.local.example"
+   ],
+   "proof": [
+    {
+     "at": "utils/stripe/config.ts:3",
+     "has": "new Stripe("
+    },
+    {
+     "at": "utils/stripe/client.ts:7",
+     "has": "loadStripe("
+    },
+    {
+     "at": "app/api/webhooks/route.ts:33",
+     "has": "stripe.webhooks.constructEvent"
+    }
+   ]
+  },
+  {
+   "name": "Supabase Auth",
+   "type": "autenticazione",
+   "position": "external",
+   "registry": "supabase.auth",
+   "family": "provider",
+   "what": "Il servizio che registra e autentica gli utenti, spedisce le email con i link e tiene gli utenti in auth.users.",
+   "role": "registrazione, accesso, sessione e email di conferma degli utenti",
+   "mode": "chiamate API con @supabase/ssr e supabase-js (auth.*), sessione nei cookie, redirect del browser verso /auth/callback e /auth/reset_password",
+   "evidence": [
+    "utils/auth-helpers/server.ts",
+    "utils/auth-helpers/client.ts",
+    "utils/supabase/server.ts",
+    "utils/supabase/client.ts",
+    "utils/supabase/middleware.ts",
+    "utils/supabase/queries.ts",
+    "app/auth/callback/route.ts",
+    "app/auth/reset_password/route.ts",
+    "supabase/config.toml",
+    ".env.local.example"
+   ],
+   "proof": [
+    {
+     "at": "utils/auth-helpers/server.ts:141",
+     "has": "supabase.auth.signInWithPassword"
+    },
+    {
+     "at": "app/auth/callback/route.ts:15",
+     "has": "exchangeCodeForSession"
+    },
+    {
+     "at": "supabase/config.toml:68",
+     "has": "[auth]"
+    }
+   ]
+  },
+  {
+   "name": "GitHub OAuth",
+   "type": "autenticazione",
+   "position": "external",
+   "registry": "github.oauth",
+   "family": "provider",
+   "what": "L'accesso con l'account GitHub, l'unico fornitore OAuth elencato; lo raggiunge Supabase Auth, non il codice del progetto.",
+   "role": "fornitore OAuth per l'accesso con un account di terzi",
+   "mode": "redirect del browser gestito da Supabase Auth, con l'app OAuth configurata nel progetto Supabase",
+   "evidence": [
+    "components/ui/AuthForms/OauthSignIn.tsx",
+    "supabase/config.toml",
+    ".env.example"
+   ],
+   "proof": [
+    {
+     "at": "components/ui/AuthForms/OauthSignIn.tsx:18",
+     "has": "name: 'github'"
+    },
+    {
+     "at": "supabase/config.toml:130",
+     "has": "[auth.external.github]"
+    }
+   ]
+  },
+  {
+   "name": "Supabase Postgres",
+   "type": "database",
+   "position": "external",
+   "registry": "supabase.postgres",
+   "family": "provider",
+   "what": "Il Postgres del progetto Supabase che ospita le tabelle pubbliche, con le regole di sicurezza per riga.",
+   "role": "database ospitato dell'applicazione",
+   "mode": "API REST di Supabase con supabase-js (.from): chiave anonima e sessione dell'utente nelle pagine, chiave di servizio nel webhook e nelle azioni di pagamento; schema applicato con la CLI di Supabase",
+   "evidence": [
+    "utils/supabase/admin.ts",
+    "utils/supabase/queries.ts",
+    "supabase/config.toml",
+    "supabase/migrations/20230530034630_init.sql",
+    ".env.local.example"
+   ],
+   "proof": [
+    {
+     "at": "utils/supabase/admin.ts:15",
+     "has": "createClient<Database>("
+    },
+    {
+     "at": "utils/supabase/admin.ts:17",
+     "has": "SUPABASE_SERVICE_ROLE_KEY"
+    },
+    {
+     "at": "supabase/config.toml:18",
+     "has": "[db]"
+    }
+   ]
+  },
+  {
+   "name": "Vercel",
+   "type": "servizio o API",
+   "position": "external",
+   "registry": "vercel",
+   "family": "provider",
+   "what": "La piattaforma su cui il README fa pubblicare l'applicazione e che le dà l'indirizzo pubblico.",
+   "role": "hosting dell'applicazione Next.js",
+   "mode": "pubblicazione dal repository con il pulsante Deploy; variabile NEXT_PUBLIC_VERCEL_URL letta dal codice",
+   "evidence": [
+    "README.md",
+    "utils/helpers.ts"
+   ],
+   "proof": [
+    {
+     "at": "utils/helpers.ts:12",
+     "has": "NEXT_PUBLIC_VERCEL_URL"
+    },
+    {
+     "at": "README.md:32",
+     "has": "vercel.com/new/clone"
+    }
+   ]
+  },
+  {
+   "name": "Applicazione web",
+   "type": "applicazione",
+   "inside": "Next.js Subscription Starter",
+   "on": [
+    "Vercel"
+   ],
+   "what": "L'applicazione Next.js (App Router): pagine, azioni lato server, rotte e middleware.",
+   "members": [
+    "app",
+    "components",
+    "utils",
+    "middleware.ts",
+    "styles",
+    "public"
+   ],
+   "proof": [
+    {
+     "at": "package.json:33",
+     "has": "\"next\": \"14.2.3\""
+    },
+    {
+     "at": "app/layout.tsx:22",
+     "has": "RootLayout"
+    }
+   ]
+  },
+  {
+   "name": "Pricing Plans",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /"
+   ],
+   "what": "La pagina iniziale: i piani con il prezzo mensile o annuale e il pulsante Subscribe o Manage.",
+   "members": [
+    "app/page.tsx",
+    "components/ui/Pricing",
+    "components/ui/LogoCloud",
+    "utils/stripe/client.ts"
+   ],
+   "proof": [
+    {
+     "at": "app/page.tsx:9",
+     "has": "PricingPage"
+    },
+    {
+     "at": "components/ui/Pricing/Pricing.tsx:111",
+     "has": "Pricing Plans"
+    }
+   ]
+  },
+  {
+   "name": "Account",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /account"
+   ],
+   "what": "La pagina dell'utente entrato: il piano attivo con l'apertura del portale di Stripe, il nome e l'email.",
+   "members": [
+    "app/account",
+    "components/ui/AccountForms"
+   ],
+   "proof": [
+    {
+     "at": "app/account/page.tsx:12",
+     "has": "Account"
+    },
+    {
+     "at": "app/account/page.tsx:29",
+     "has": "Account"
+    }
+   ]
+  },
+  {
+   "name": "Sign In",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /signin",
+    "GET /signin/[id]"
+   ],
+   "what": "La pagina di accesso nelle due viste con email e password e con link magico, e la scelta della vista da mostrare.",
+   "members": [
+    "app/signin",
+    "components/ui/AuthForms/PasswordSignIn.tsx",
+    "components/ui/AuthForms/EmailSignIn.tsx",
+    "components/ui/AuthForms/Separator.tsx",
+    "utils/auth-helpers/settings.ts"
+   ],
+   "proof": [
+    {
+     "at": "app/signin/[id]/page.tsx:71",
+     "has": "'Sign In'"
+    },
+    {
+     "at": "app/signin/[id]/page.tsx:75",
+     "has": "<PasswordSignIn"
+    },
+    {
+     "at": "app/signin/[id]/page.tsx:81",
+     "has": "<EmailSignIn"
+    }
+   ]
+  },
+  {
+   "name": "Sign Up",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /signin/signup"
+   ],
+   "what": "La vista di registrazione con email e password.",
+   "members": [
+    "components/ui/AuthForms/Signup.tsx"
+   ],
+   "proof": [
+    {
+     "at": "app/signin/[id]/page.tsx:70",
+     "has": "'Sign Up'"
+    },
+    {
+     "at": "app/signin/[id]/page.tsx:98",
+     "has": "<SignUp"
+    }
+   ]
+  },
+  {
+   "name": "Reset Password",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /signin/forgot_password"
+   ],
+   "what": "La vista che chiede l'email a cui mandare il link per reimpostare la password.",
+   "members": [
+    "components/ui/AuthForms/ForgotPassword.tsx"
+   ],
+   "proof": [
+    {
+     "at": "app/signin/[id]/page.tsx:66",
+     "has": "'Reset Password'"
+    },
+    {
+     "at": "app/signin/[id]/page.tsx:88",
+     "has": "<ForgotPassword"
+    }
+   ]
+  },
+  {
+   "name": "Update Password",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "routes": [
+    "GET /signin/update_password"
+   ],
+   "what": "La vista che chiede la nuova password, aperta solo a chi ha una sessione.",
+   "members": [
+    "components/ui/AuthForms/UpdatePassword.tsx"
+   ],
+   "proof": [
+    {
+     "at": "app/signin/[id]/page.tsx:68",
+     "has": "'Update Password'"
+    },
+    {
+     "at": "app/signin/[id]/page.tsx:95",
+     "has": "<UpdatePassword"
+    }
+   ]
+  },
+  {
+   "name": "Third-party sign-in",
+   "type": "funzionalità",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "what": "Il pulsante GitHub sotto le viste di accesso, che dal browser avvia l'accesso OAuth con Supabase Auth.",
+   "members": [
+    "components/ui/AuthForms/OauthSignIn.tsx",
+    "utils/auth-helpers/client.ts::signInWithOAuth"
+   ],
+   "proof": [
+    {
+     "at": "app/signin/[id]/page.tsx:104",
+     "has": "Third-party sign-in"
+    },
+    {
+     "at": "utils/auth-helpers/client.ts:29",
+     "has": "signInWithOAuth"
+    }
+   ]
+  },
+  {
+   "name": "Barra di navigazione",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "what": "La barra in cima a ogni pagina: Pricing, Account, Sign In oppure Sign out.",
+   "members": [
+    "components/ui/Navbar"
+   ],
+   "proof": [
+    {
+     "at": "app/layout.tsx:26",
+     "has": "<Navbar />"
+    },
+    {
+     "at": "components/ui/Navbar/Navlinks.tsx:40",
+     "has": "Sign out"
+    }
+   ]
+  },
+  {
+   "name": "Avviso a comparsa",
+   "type": "schermata",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "what": "Il riquadro che mostra l'esito o l'errore dell'ultima azione, letto dai parametri dell'indirizzo.",
+   "members": [
+    "components/ui/Toasts"
+   ],
+   "proof": [
+    {
+     "at": "app/layout.tsx:35",
+     "has": "<Toaster />"
+    },
+    {
+     "at": "components/ui/Toasts/toaster.tsx:15",
+     "has": "Toaster"
+    }
+   ]
+  },
+  {
+   "name": "Azioni di accesso",
+   "type": "servizio o API",
+   "inside": "Applicazione web",
+   "what": "Le azioni lato server di registrazione, accesso, uscita, password, nome ed email: chiamano Supabase Auth e rendono il percorso a cui andare.",
+   "members": [
+    "utils/auth-helpers/server.ts"
+   ],
+   "proof": [
+    {
+     "at": "utils/auth-helpers/server.ts:1",
+     "has": "'use server'"
+    },
+    {
+     "at": "utils/auth-helpers/server.ts:134",
+     "has": "signInWithPassword"
+    }
+   ]
+  },
+  {
+   "name": "Rotte di accesso",
+   "type": "servizio o API",
+   "inside": "Applicazione web",
+   "routes": [
+    "GET /auth/callback",
+    "GET /auth/reset_password"
+   ],
+   "what": "Le due rotte a cui Supabase Auth rimanda il browser con un codice da scambiare per la sessione.",
+   "members": [
+    "app/auth"
+   ],
+   "proof": [
+    {
+     "at": "app/auth/callback/route.ts:6",
+     "has": "export async function GET"
+    },
+    {
+     "at": "app/auth/reset_password/route.ts:6",
+     "has": "export async function GET"
+    }
+   ]
+  },
+  {
+   "name": "Aggiornamento della sessione",
+   "type": "funzionalità",
+   "inside": "Applicazione web",
+   "what": "Il middleware che a ogni richiesta rinnova la sessione scaduta e riscrive i cookie.",
+   "members": [
+    "middleware.ts",
+    "utils/supabase/middleware.ts"
+   ],
+   "proof": [
+    {
+     "at": "middleware.ts:4",
+     "has": "export async function middleware"
+    },
+    {
+     "at": "utils/supabase/middleware.ts:63",
+     "has": "updateSession"
+    }
+   ]
+  },
+  {
+   "name": "Letture dal database",
+   "type": "funzionalità",
+   "inside": "Applicazione web",
+   "what": "Le quattro letture delle pagine: utente, profilo, abbonamento attivo, prodotti con i prezzi.",
+   "members": [
+    "utils/supabase/queries.ts"
+   ],
+   "proof": [
+    {
+     "at": "utils/supabase/queries.ts:21",
+     "has": "getProducts"
+    },
+    {
+     "at": "utils/supabase/queries.ts:11",
+     "has": "getSubscription"
+    }
+   ]
+  },
+  {
+   "name": "Azioni di pagamento",
+   "type": "servizio o API",
+   "inside": "Applicazione web",
+   "what": "Le due azioni lato server che creano in Stripe la sessione di Checkout e la sessione del portale del cliente.",
+   "members": [
+    "utils/stripe/server.ts",
+    "utils/stripe/config.ts"
+   ],
+   "proof": [
+    {
+     "at": "utils/stripe/server.ts:21",
+     "has": "checkoutWithStripe"
+    },
+    {
+     "at": "utils/stripe/server.ts:122",
+     "has": "createStripePortal"
+    }
+   ]
+  },
+  {
+   "name": "Rotta dei webhook",
+   "type": "servizio o API",
+   "inside": "Applicazione web",
+   "routes": [
+    "POST /api/webhooks"
+   ],
+   "what": "La rotta che riceve gli eventi firmati di Stripe e li smista per tipo.",
+   "members": [
+    "app/api/webhooks"
+   ],
+   "proof": [
+    {
+     "at": "app/api/webhooks/route.ts:24",
+     "has": "export async function POST"
+    },
+    {
+     "at": "app/api/webhooks/route.ts:26",
+     "has": "stripe-signature"
+    }
+   ]
+  },
+  {
+   "name": "Sincronizzazione con Stripe",
+   "type": "funzionalità",
+   "inside": "Applicazione web",
+   "what": "Le scritture con la chiave di servizio: copia di prodotti, prezzi e abbonamenti da Stripe e legame fra utente e cliente Stripe.",
+   "members": [
+    "utils/supabase/admin.ts"
+   ],
+   "proof": [
+    {
+     "at": "utils/supabase/admin.ts:211",
+     "has": "manageSubscriptionStatusChange"
+    },
+    {
+     "at": "utils/supabase/admin.ts:114",
+     "has": "createOrRetrieveCustomer"
+    }
+   ]
+  },
+  {
+   "name": "Sessione",
+   "type": "entità",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "what": "La sessione di Supabase Auth dell'utente, tenuta nei cookie che il client Supabase legge e scrive.",
+   "members": [
+    "store:cookie/supabase-session",
+    "utils/supabase/server.ts",
+    "utils/supabase/client.ts"
+   ],
+   "proof": [
+    {
+     "at": "utils/supabase/server.ts:25",
+     "has": "cookieStore.set({ name, value, ...options })"
+    },
+    {
+     "at": "utils/supabase/server.ts:20",
+     "has": "cookieStore.get(name)"
+    }
+   ]
+  },
+  {
+   "name": "Vista di accesso preferita",
+   "type": "entità",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "what": "Il cookie preferredSignInView: l'ultimo modo di accesso riuscito, che decide la vista aperta su /signin.",
+   "members": [
+    "store:cookie/preferredSignInView"
+   ],
+   "proof": [
+    {
+     "at": "utils/auth-helpers/server.ts:153",
+     "has": "cookieStore.set('preferredSignInView', 'password_signin'"
+    },
+    {
+     "at": "app/signin/page.tsx:7",
+     "has": "cookies().get('preferredSignInView')"
+    }
+   ]
+  },
+  {
+   "name": "Esito nell'indirizzo",
+   "type": "entità",
+   "inside": "Applicazione web",
+   "on": [
+    "Browser"
+   ],
+   "what": "L'esito di un'azione scritto nei parametri status, error, le loro descrizioni e disable_button del percorso a cui si viene mandati.",
+   "members": [
+    "store:url/status",
+    "store:url/status_description",
+    "store:url/error",
+    "store:url/error_description",
+    "store:url/disable_button",
+    "utils/helpers.ts::getToastRedirect"
+   ],
+   "proof": [
+    {
+     "at": "utils/helpers.ts:72",
+     "has": "status: ['status', 'status_description']"
+    },
+    {
+     "at": "utils/helpers.ts:93",
+     "has": "disable_button=true"
+    }
+   ]
+  },
+  {
+   "name": "Database",
+   "type": "database",
+   "inside": "Next.js Subscription Starter",
+   "on": [
+    "Supabase Postgres"
+   ],
+   "what": "Lo schema pubblico: cinque tabelle con le regole per riga, il trigger che crea il profilo e la pubblicazione realtime.",
+   "members": [
+    "supabase",
+    "schema.sql"
+   ],
+   "proof": [
+    {
+     "at": "supabase/migrations/20230530034630_init.sql:5",
+     "has": "create table users"
+    },
+    {
+     "at": "supabase/migrations/20230530034630_init.sql:30",
+     "has": "create trigger on_auth_user_created"
+    }
+   ]
+  },
+  {
+   "name": "Profilo utente",
+   "type": "entità",
+   "inside": "Database",
+   "on": [
+    "Database"
+   ],
+   "what": "La riga dell'utente: nome, avatar, indirizzo di fatturazione e metodo di pagamento.",
+   "members": [
+    "store:supabase/users"
+   ],
+   "proof": [
+    {
+     "at": "supabase/migrations/20230530034630_init.sql:5",
+     "has": "create table users"
+    },
+    {
+     "at": "utils/supabase/admin.ts:202",
+     "has": ".from('users')"
+    }
+   ]
+  },
+  {
+   "name": "Cliente",
+   "type": "entità",
+   "inside": "Database",
+   "on": [
+    "Database"
+   ],
+   "what": "Il legame privato fra l'utente e il suo cliente in Stripe.",
+   "members": [
+    "store:supabase/customers"
+   ],
+   "proof": [
+    {
+     "at": "supabase/migrations/20230530034630_init.sql:38",
+     "has": "create table customers"
+    },
+    {
+     "at": "utils/supabase/admin.ts:97",
+     "has": ".from('customers')"
+    }
+   ]
+  },
+  {
+   "name": "Prodotto",
+   "type": "entità",
+   "inside": "Database",
+   "on": [
+    "Database"
+   ],
+   "what": "Il piano in vendita, copiato da Stripe.",
+   "members": [
+    "store:supabase/products"
+   ],
+   "proof": [
+    {
+     "at": "supabase/migrations/20230530034630_init.sql:51",
+     "has": "create table products"
+    },
+    {
+     "at": "utils/supabase/admin.ts:31",
+     "has": ".from('products')"
+    }
+   ]
+  },
+  {
+   "name": "Prezzo",
+   "type": "entità",
+   "inside": "Database",
+   "on": [
+    "Database"
+   ],
+   "what": "Il prezzo di un piano con importo, valuta e intervallo, copiato da Stripe.",
+   "members": [
+    "store:supabase/prices"
+   ],
+   "proof": [
+    {
+     "at": "supabase/migrations/20230530034630_init.sql:74",
+     "has": "create table prices"
+    },
+    {
+     "at": "utils/supabase/admin.ts:56",
+     "has": ".from('prices')"
+    }
+   ]
+  },
+  {
+   "name": "Abbonamento",
+   "type": "entità",
+   "inside": "Database",
+   "on": [
+    "Database"
+   ],
+   "what": "L'abbonamento dell'utente con il suo stato e i suoi periodi, copiato da Stripe.",
+   "members": [
+    "store:supabase/subscriptions"
+   ],
+   "proof": [
+    {
+     "at": "supabase/migrations/20230530034630_init.sql:106",
+     "has": "create table subscriptions"
+    },
+    {
+     "at": "utils/supabase/admin.ts:267",
+     "has": ".from('subscriptions')"
+    }
+   ]
+  },
+  {
+   "name": "Script di sviluppo",
+   "type": "altro",
+   "inside": "Next.js Subscription Starter",
+   "what": "I comandi di package.json che lanciano la CLI di Supabase e la CLI di Stripe.",
+   "members": [
+    "package.json"
+   ],
+   "proof": [
+    {
+     "at": "package.json:10",
+     "has": "stripe listen --forward-to=localhost:3000/api/webhooks"
+    },
+    {
+     "at": "package.json:21",
+     "has": "supabase db push"
+    }
+   ]
+  },
+  {
+   "name": "Fixture di Stripe",
+   "type": "altro",
+   "inside": "Next.js Subscription Starter",
+   "what": "Le richieste che creano in Stripe i prodotti di prova Hobby e Freelancer con i prezzi mensili e annuali.",
+   "members": [
+    "fixtures"
+   ],
+   "proof": [
+    {
+     "at": "fixtures/stripe-fixtures.json:8",
+     "has": "\"path\": \"/v1/products\""
+    },
+    {
+     "at": "fixtures/stripe-fixtures.json:11",
+     "has": "\"name\": \"Hobby\""
+    }
+   ]
+  },
+  {
+   "name": "Tipi del database",
+   "type": "altro",
+   "inside": "Next.js Subscription Starter",
+   "what": "I tipi TypeScript delle tabelle, generati dalla CLI di Supabase.",
+   "members": [
+    "types_db.ts"
+   ],
+   "proof": [
+    {
+     "at": "package.json:18",
+     "has": "> types_db.ts"
+    },
+    {
+     "at": "utils/supabase/admin.ts:5",
+     "has": "from 'types_db'"
+    }
+   ]
+  }
+ ],
+ "flows": [
+  {
+   "name": "Registrazione con email e password",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un visitatore crea un account con email e password",
+   "outcome": "l'utente esiste in Supabase Auth e ha la riga del profilo; con la sessione resa subito torna alla pagina dei piani, altrimenti entra dal link di conferma",
+   "nodes": [
+    "Utente",
+    "Sign Up",
+    "Azioni di accesso",
+    "Supabase Auth",
+    "Database",
+    "Profilo utente",
+    "Sessione",
+    "Pricing Plans",
+    "Rotte di accesso",
+    "Account"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "invia il modulo Sign up"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "i cookie della sessione sono scritti"
+    },
+    {
+     "node": "Profilo utente",
+     "what": "la riga del profilo è creata dal trigger"
+    },
+    {
+     "node": "Pricing Plans",
+     "what": "la pagina è mostrata con l'esito"
+    },
+    {
+     "node": "Account",
+     "what": "la pagina è mostrata dopo il link di conferma"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign Up",
+     "data": "invio del modulo con email e password",
+     "kind": "attiva",
+     "cite": "components/ui/AuthForms/Signup.tsx:32",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Sign Up",
+     "to": "Azioni di accesso",
+     "data": "i dati del modulo all'azione signUp",
+     "kind": "chiama",
+     "cite": "components/ui/AuthForms/Signup.tsx:23",
+     "has": "handleRequest(e, signUp, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "email, password e indirizzo di ritorno /auth/callback",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:182",
+     "has": "supabase.auth.signUp({"
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "Database",
+     "data": "inserimento del nuovo utente in auth.users",
+     "kind": "attiva",
+     "cite": "supabase/migrations/20230530034630_init.sql:31",
+     "has": "after insert on auth.users"
+    },
+    {
+     "from": "Database",
+     "to": "Profilo utente",
+     "data": "id, nome e avatar dai metadati dell'utente",
+     "kind": "scrive",
+     "cite": "supabase/migrations/20230530034630_init.sql:25",
+     "has": "insert into public.users (id, full_name, avatar_url)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Sessione",
+     "data": "i cookie della sessione, quando Supabase Auth la rende subito",
+     "kind": "scrive",
+     "cite": "utils/supabase/server.ts:25",
+     "has": "cookieStore.set({ name, value, ...options })"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Pricing Plans",
+     "data": "percorso / con l'esito «You are now signed in.» o l'invito a controllare l'email",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:197",
+     "has": "getStatusRedirect('/', 'Success!', 'You are now signed in.')"
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "Rotte di accesso",
+     "data": "richiesta GET /auth/callback con il codice, dal link dell'email o dal ritorno OAuth",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:10",
+     "has": "searchParams.get('code')"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Supabase Auth",
+     "data": "il codice in cambio della sessione",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:15",
+     "has": "supabase.auth.exchangeCodeForSession(code)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "i cookie della sessione",
+     "kind": "scrive",
+     "cite": "utils/supabase/server.ts:25",
+     "has": "cookieStore.set({ name, value, ...options })"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Account",
+     "data": "redirect a /account con l'esito «You are now signed in.»",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:31",
+     "has": "/account"
+    }
+   ]
+  },
+  {
+   "name": "Accesso con email e password",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente registrato entra con email e password",
+   "outcome": "la sessione è nei cookie, la vista preferita è password_signin e la pagina dei piani mostra l'esito",
+   "nodes": [
+    "Utente",
+    "Sign In",
+    "Azioni di accesso",
+    "Supabase Auth",
+    "Sessione",
+    "Vista di accesso preferita",
+    "Pricing Plans"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "invia il modulo Sign in"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "i cookie della sessione sono scritti"
+    },
+    {
+     "node": "Vista di accesso preferita",
+     "what": "il cookie vale password_signin"
+    },
+    {
+     "node": "Pricing Plans",
+     "what": "la pagina è mostrata con l'esito"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "la sessione dell'utente è aperta"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign In",
+     "data": "invio del modulo con email e password",
+     "kind": "attiva",
+     "cite": "components/ui/AuthForms/PasswordSignIn.tsx:34",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Sign In",
+     "to": "Azioni di accesso",
+     "data": "i dati del modulo all'azione signInWithPassword",
+     "kind": "chiama",
+     "cite": "components/ui/AuthForms/PasswordSignIn.tsx:25",
+     "has": "handleRequest(e, signInWithPassword, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "email e password",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:141",
+     "has": "supabase.auth.signInWithPassword({"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Sessione",
+     "data": "i cookie della sessione",
+     "kind": "scrive",
+     "cite": "utils/supabase/server.ts:25",
+     "has": "cookieStore.set({ name, value, ...options })"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Vista di accesso preferita",
+     "data": "il valore password_signin",
+     "kind": "scrive",
+     "cite": "utils/auth-helpers/server.ts:153",
+     "has": "cookieStore.set('preferredSignInView', 'password_signin'"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Pricing Plans",
+     "data": "percorso / con l'esito «You are now signed in.»",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:154",
+     "has": "getStatusRedirect('/', 'Success!', 'You are now signed in.')"
+    }
+   ]
+  },
+  {
+   "name": "Accesso con link magico",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente chiede di entrare con un link mandato per email",
+   "outcome": "Supabase Auth spedisce il link; chi lo apre arriva su /auth/callback, ha la sessione nei cookie e vede la pagina Account",
+   "nodes": [
+    "Utente",
+    "Sign In",
+    "Azioni di accesso",
+    "Supabase Auth",
+    "Vista di accesso preferita",
+    "Rotte di accesso",
+    "Sessione",
+    "Account"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "invia il modulo Sign in della vista con link magico"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Vista di accesso preferita",
+     "what": "il cookie vale email_signin"
+    },
+    {
+     "node": "Sign In",
+     "what": "la vista è mostrata con l'esito e il pulsante spento"
+    },
+    {
+     "node": "Sessione",
+     "what": "i cookie della sessione sono scritti"
+    },
+    {
+     "node": "Account",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign In",
+     "data": "invio del modulo con l'email",
+     "kind": "attiva",
+     "cite": "components/ui/AuthForms/EmailSignIn.tsx:36",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Sign In",
+     "to": "Azioni di accesso",
+     "data": "i dati del modulo all'azione signInWithEmail",
+     "kind": "chiama",
+     "cite": "components/ui/AuthForms/EmailSignIn.tsx:27",
+     "has": "handleRequest(e, signInWithEmail, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "email e indirizzo di ritorno /auth/callback, per l'invio del link",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:59",
+     "has": "supabase.auth.signInWithOtp({"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Vista di accesso preferita",
+     "data": "il valore email_signin",
+     "kind": "scrive",
+     "cite": "utils/auth-helpers/server.ts:71",
+     "has": "cookieStore.set('preferredSignInView', 'email_signin'"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Sign In",
+     "data": "percorso /signin/email_signin con l'esito e il pulsante spento",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:73",
+     "has": "'/signin/email_signin'"
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "Rotte di accesso",
+     "data": "richiesta GET /auth/callback con il codice, dal link dell'email o dal ritorno OAuth",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:10",
+     "has": "searchParams.get('code')"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Supabase Auth",
+     "data": "il codice in cambio della sessione",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:15",
+     "has": "supabase.auth.exchangeCodeForSession(code)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "i cookie della sessione",
+     "kind": "scrive",
+     "cite": "utils/supabase/server.ts:25",
+     "has": "cookieStore.set({ name, value, ...options })"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Account",
+     "data": "redirect a /account con l'esito «You are now signed in.»",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:31",
+     "has": "/account"
+    }
+   ]
+  },
+  {
+   "name": "Accesso con GitHub",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un visitatore entra con il proprio account GitHub",
+   "outcome": "dopo il consenso su GitHub Supabase Auth rimanda a /auth/callback: la sessione è nei cookie, al primo accesso nasce il profilo e si apre la pagina Account",
+   "nodes": [
+    "Utente",
+    "Third-party sign-in",
+    "Supabase Auth",
+    "GitHub OAuth",
+    "Database",
+    "Profilo utente",
+    "Rotte di accesso",
+    "Sessione",
+    "Account"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme il pulsante GitHub"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "i cookie della sessione sono scritti"
+    },
+    {
+     "node": "Profilo utente",
+     "what": "al primo accesso la riga del profilo è creata dal trigger"
+    },
+    {
+     "node": "Account",
+     "what": "la pagina è mostrata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Third-party sign-in",
+     "data": "clic sul pulsante GitHub",
+     "kind": "attiva",
+     "cite": "components/ui/AuthForms/OauthSignIn.tsx:38",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Third-party sign-in",
+     "to": "Supabase Auth",
+     "data": "il fornitore github e l'indirizzo di ritorno /auth/callback; il browser è mandato a Supabase Auth",
+     "kind": "trasferisce",
+     "cite": "utils/auth-helpers/client.ts:38",
+     "has": "supabase.auth.signInWithOAuth({"
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "GitHub OAuth",
+     "data": "redirect alla pagina di consenso con l'id dell'app OAuth",
+     "kind": "trasferisce",
+     "cite": "supabase/config.toml:132",
+     "has": "SUPABASE_AUTH_EXTERNAL_GITHUB_CLIENT_ID"
+    },
+    {
+     "from": "GitHub OAuth",
+     "to": "Supabase Auth",
+     "data": "ritorno all'indirizzo di callback di Supabase Auth con il codice",
+     "kind": "chiama",
+     "cite": "supabase/config.toml:136",
+     "has": "SUPABASE_AUTH_EXTERNAL_GITHUB_REDIRECT_URI"
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "Database",
+     "data": "inserimento del nuovo utente in auth.users, al primo accesso",
+     "kind": "attiva",
+     "cite": "supabase/migrations/20230530034630_init.sql:31",
+     "has": "after insert on auth.users"
+    },
+    {
+     "from": "Database",
+     "to": "Profilo utente",
+     "data": "id, nome e avatar dai metadati dell'utente",
+     "kind": "scrive",
+     "cite": "supabase/migrations/20230530034630_init.sql:26",
+     "has": "new.raw_user_meta_data->>'full_name'"
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "Rotte di accesso",
+     "data": "richiesta GET /auth/callback con il codice, dal link dell'email o dal ritorno OAuth",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:10",
+     "has": "searchParams.get('code')"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Supabase Auth",
+     "data": "il codice in cambio della sessione",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:15",
+     "has": "supabase.auth.exchangeCodeForSession(code)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "i cookie della sessione",
+     "kind": "scrive",
+     "cite": "utils/supabase/server.ts:25",
+     "has": "cookieStore.set({ name, value, ...options })"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Account",
+     "data": "redirect a /account con l'esito «You are now signed in.»",
+     "kind": "chiama",
+     "cite": "app/auth/callback/route.ts:31",
+     "has": "/account"
+    }
+   ]
+  },
+  {
+   "name": "Reimpostazione della password via email",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente ha dimenticato la password e ne vuole una nuova",
+   "outcome": "il link dell'email apre /auth/reset_password, che dà la sessione e manda alla vista Update Password; la nuova password è salvata in Supabase Auth",
+   "nodes": [
+    "Utente",
+    "Reset Password",
+    "Azioni di accesso",
+    "Supabase Auth",
+    "Rotte di accesso",
+    "Sessione",
+    "Update Password",
+    "Pricing Plans"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "invia il modulo Send Email, poi il modulo Update Password"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "i cookie della sessione sono scritti"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "la nuova password è salvata"
+    },
+    {
+     "node": "Pricing Plans",
+     "what": "la pagina è mostrata con l'esito"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Reset Password",
+     "data": "invio del modulo con l'email",
+     "kind": "attiva",
+     "cite": "components/ui/AuthForms/ForgotPassword.tsx:36",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Reset Password",
+     "to": "Azioni di accesso",
+     "data": "i dati del modulo all'azione requestPasswordUpdate",
+     "kind": "chiama",
+     "cite": "components/ui/AuthForms/ForgotPassword.tsx:27",
+     "has": "handleRequest(e, requestPasswordUpdate, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "email e indirizzo di ritorno /auth/reset_password, per l'invio del link",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:106",
+     "has": "supabase.auth.resetPasswordForEmail(email, {"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Reset Password",
+     "data": "percorso /signin/forgot_password con l'esito e il pulsante spento",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:118",
+     "has": "'/signin/forgot_password'"
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "Rotte di accesso",
+     "data": "richiesta GET /auth/reset_password con il codice, dal link dell'email",
+     "kind": "chiama",
+     "cite": "app/auth/reset_password/route.ts:10",
+     "has": "searchParams.get('code')"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Supabase Auth",
+     "data": "il codice in cambio della sessione",
+     "kind": "chiama",
+     "cite": "app/auth/reset_password/route.ts:15",
+     "has": "supabase.auth.exchangeCodeForSession(code)"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Sessione",
+     "data": "i cookie della sessione",
+     "kind": "scrive",
+     "cite": "utils/supabase/server.ts:25",
+     "has": "cookieStore.set({ name, value, ...options })"
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Update Password",
+     "data": "redirect a /signin/update_password con l'invito a scegliere la nuova password",
+     "kind": "chiama",
+     "cite": "app/auth/reset_password/route.ts:31",
+     "has": "/signin/update_password"
+    },
+    {
+     "from": "Utente",
+     "to": "Update Password",
+     "data": "invio del modulo con la nuova password e la conferma",
+     "kind": "attiva",
+     "cite": "components/ui/AuthForms/UpdatePassword.tsx:30",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Update Password",
+     "to": "Azioni di accesso",
+     "data": "i dati del modulo all'azione updatePassword",
+     "kind": "chiama",
+     "cite": "components/ui/AuthForms/UpdatePassword.tsx:21",
+     "has": "handleRequest(e, updatePassword, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "la nuova password dell'utente in sessione",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:240",
+     "has": "supabase.auth.updateUser({"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Pricing Plans",
+     "data": "percorso / con l'esito «Your password has been updated.»",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:254",
+     "has": "Your password has been updated."
+    }
+   ]
+  },
+  {
+   "name": "Uscita",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente entrato esce",
+   "outcome": "la sessione è chiusa in Supabase Auth, i cookie sono svuotati e si apre la pagina di accesso",
+   "nodes": [
+    "Utente",
+    "Barra di navigazione",
+    "Azioni di accesso",
+    "Supabase Auth",
+    "Sessione",
+    "Sign In"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme Sign out"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "i cookie della sessione sono svuotati"
+    },
+    {
+     "node": "Sign In",
+     "what": "la pagina è mostrata"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "la sessione dell'utente è chiusa"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Barra di navigazione",
+     "data": "clic su Sign out",
+     "kind": "attiva",
+     "cite": "components/ui/Navbar/Navlinks.tsx:39",
+     "has": "<button type=\"submit\""
+    },
+    {
+     "from": "Barra di navigazione",
+     "to": "Azioni di accesso",
+     "data": "il percorso corrente all'azione SignOut",
+     "kind": "chiama",
+     "cite": "components/ui/Navbar/Navlinks.tsx:37",
+     "has": "handleRequest(e, SignOut, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "chiusura della sessione",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:22",
+     "has": "supabase.auth.signOut()"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Sessione",
+     "data": "i cookie della sessione svuotati",
+     "kind": "scrive",
+     "cite": "utils/supabase/server.ts:34",
+     "has": "cookieStore.set({ name, value: '', ...options })"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Sign In",
+     "data": "percorso /signin",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:32",
+     "has": "return '/signin'"
+    }
+   ]
+  },
+  {
+   "name": "Rinnovo della sessione a ogni richiesta",
+   "area": "accesso e identità",
+   "types": [
+    "tecnico"
+   ],
+   "intent": "il browser chiede una pagina o una rotta qualsiasi",
+   "outcome": "la sessione scaduta è rinnovata presso Supabase Auth e i cookie nuovi partono con la risposta",
+   "nodes": [
+    "Browser",
+    "Aggiornamento della sessione",
+    "Sessione",
+    "Supabase Auth"
+   ],
+   "entries": [
+    {
+     "node": "Browser",
+     "kind": "rotta",
+     "what": "ogni richiesta che il matcher del middleware accetta"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sessione",
+     "what": "i cookie della sessione sono riscritti quando cambiano"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "la sessione scaduta è rinnovata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Browser",
+     "to": "Aggiornamento della sessione",
+     "data": "ogni richiesta, tranne file statici e immagini",
+     "kind": "chiama",
+     "cite": "middleware.ts:5",
+     "has": "updateSession(request)"
+    },
+    {
+     "from": "Sessione",
+     "to": "Aggiornamento della sessione",
+     "data": "i cookie della sessione arrivati con la richiesta",
+     "kind": "legge",
+     "cite": "utils/supabase/middleware.ts:18",
+     "has": "request.cookies.get(name)"
+    },
+    {
+     "from": "Aggiornamento della sessione",
+     "to": "Supabase Auth",
+     "data": "verifica dell'utente e rinnovo della sessione scaduta",
+     "kind": "chiama",
+     "cite": "utils/supabase/middleware.ts:71",
+     "has": "supabase.auth.getUser()"
+    },
+    {
+     "from": "Aggiornamento della sessione",
+     "to": "Sessione",
+     "data": "i cookie rinnovati sulla risposta",
+     "kind": "scrive",
+     "cite": "utils/supabase/middleware.ts:32",
+     "has": "response.cookies.set({"
+    }
+   ]
+  },
+  {
+   "name": "Scelta della vista di accesso",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale",
+    "tecnico"
+   ],
+   "intent": "qualcuno apre /signin o una vista che non esiste",
+   "outcome": "si apre la vista scritta nel cookie o quella con password; chi è già entrato è mandato alla pagina dei piani",
+   "nodes": [
+    "Utente",
+    "Sign In",
+    "Vista di accesso preferita",
+    "Supabase Auth",
+    "Pricing Plans"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "rotta",
+     "what": "GET /signin"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sign In",
+     "what": "la vista scelta è mostrata"
+    },
+    {
+     "node": "Pricing Plans",
+     "what": "la pagina è mostrata a chi è già entrato"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "l'utente della sessione è verificato e reso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Sign In",
+     "data": "richiesta GET /signin",
+     "kind": "chiama",
+     "cite": "app/signin/page.tsx:5",
+     "has": "export default function SignIn()"
+    },
+    {
+     "from": "Vista di accesso preferita",
+     "to": "Sign In",
+     "data": "l'ultima vista usata, se c'è",
+     "kind": "legge",
+     "cite": "app/signin/page.tsx:7",
+     "has": "cookies().get('preferredSignInView')"
+    },
+    {
+     "from": "Sign In",
+     "to": "Supabase Auth",
+     "data": "richiesta dell'utente della sessione",
+     "kind": "chiama",
+     "cite": "app/signin/[id]/page.tsx:49",
+     "has": "supabase.auth.getUser()"
+    },
+    {
+     "from": "Sign In",
+     "to": "Pricing Plans",
+     "data": "redirect a / per chi ha già una sessione",
+     "kind": "chiama",
+     "cite": "app/signin/[id]/page.tsx:52",
+     "has": "redirect('/')"
+    }
+   ]
+  },
+  {
+   "name": "Rifiuto della pagina Account senza sessione",
+   "area": "accesso e identità",
+   "types": [
+    "funzionale",
+    "tecnico"
+   ],
+   "intent": "un visitatore apre /account senza essere entrato",
+   "outcome": "il visitatore è mandato alla pagina di accesso",
+   "nodes": [
+    "Utente",
+    "Account",
+    "Letture dal database",
+    "Supabase Auth",
+    "Sign In"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "rotta",
+     "what": "GET /account"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Sign In",
+     "what": "la pagina di accesso è mostrata"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "l'utente della sessione è verificato e reso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Account",
+     "data": "richiesta GET /account",
+     "kind": "chiama",
+     "cite": "app/account/page.tsx:12",
+     "has": "export default async function Account()"
+    },
+    {
+     "from": "Account",
+     "to": "Letture dal database",
+     "data": "richiesta dell'utente della sessione",
+     "kind": "chiama",
+     "cite": "app/account/page.tsx:15",
+     "has": "getUser(supabase)"
+    },
+    {
+     "from": "Letture dal database",
+     "to": "Supabase Auth",
+     "data": "richiesta dell'utente della sessione",
+     "kind": "chiama",
+     "cite": "utils/supabase/queries.ts:7",
+     "has": "supabase.auth.getUser()"
+    },
+    {
+     "from": "Letture dal database",
+     "to": "Account",
+     "data": "nessun utente",
+     "kind": "trasferisce",
+     "cite": "app/account/page.tsx:20",
+     "has": "if (!user)"
+    },
+    {
+     "from": "Account",
+     "to": "Sign In",
+     "data": "redirect a /signin",
+     "kind": "chiama",
+     "cite": "app/account/page.tsx:21",
+     "has": "redirect('/signin')"
+    }
+   ]
+  },
+  {
+   "name": "Riepilogo dell'account",
+   "area": "dati dell'utente",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente entrato apre la pagina Account",
+   "outcome": "la pagina mostra il piano attivo con prezzo e intervallo, il nome del profilo e l'email",
+   "nodes": [
+    "Utente",
+    "Account",
+    "Letture dal database",
+    "Supabase Auth",
+    "Profilo utente",
+    "Abbonamento",
+    "Prezzo",
+    "Prodotto"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "rotta",
+     "what": "GET /account"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Account",
+     "what": "la pagina è mostrata con piano, nome ed email"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "l'utente della sessione è verificato e reso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Account",
+     "data": "richiesta GET /account",
+     "kind": "chiama",
+     "cite": "app/account/page.tsx:12",
+     "has": "export default async function Account()"
+    },
+    {
+     "from": "Account",
+     "to": "Letture dal database",
+     "data": "richiesta di utente, profilo e abbonamento",
+     "kind": "chiama",
+     "cite": "app/account/page.tsx:14",
+     "has": "await Promise.all(["
+    },
+    {
+     "from": "Letture dal database",
+     "to": "Supabase Auth",
+     "data": "richiesta dell'utente della sessione, con la sua email",
+     "kind": "chiama",
+     "cite": "utils/supabase/queries.ts:7",
+     "has": "supabase.auth.getUser()"
+    },
+    {
+     "from": "Profilo utente",
+     "to": "Letture dal database",
+     "data": "la riga del profilo dell'utente",
+     "kind": "legge",
+     "cite": "utils/supabase/queries.ts:35",
+     "has": ".from('users')"
+    },
+    {
+     "from": "Abbonamento",
+     "to": "Letture dal database",
+     "data": "l'abbonamento attivo o in prova",
+     "kind": "legge",
+     "cite": "utils/supabase/queries.ts:13",
+     "has": ".from('subscriptions')"
+    },
+    {
+     "from": "Prezzo",
+     "to": "Letture dal database",
+     "data": "il prezzo dell'abbonamento",
+     "kind": "legge",
+     "cite": "utils/supabase/queries.ts:14",
+     "has": "prices(*, products(*))"
+    },
+    {
+     "from": "Prodotto",
+     "to": "Letture dal database",
+     "data": "il prodotto del prezzo",
+     "kind": "legge",
+     "cite": "utils/supabase/queries.ts:14",
+     "has": "prices(*, products(*))"
+    },
+    {
+     "from": "Letture dal database",
+     "to": "Account",
+     "data": "utente, profilo e abbonamento con prezzo e prodotto",
+     "kind": "trasferisce",
+     "cite": "app/account/page.tsx:37",
+     "has": "<CustomerPortalForm subscription={subscription} />"
+    }
+   ]
+  },
+  {
+   "name": "Cambio del nome",
+   "area": "dati dell'utente",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente cambia il proprio nome",
+   "outcome": "il nome è scritto nei metadati dell'utente in Supabase Auth e la pagina Account mostra l'esito",
+   "nodes": [
+    "Utente",
+    "Account",
+    "Azioni di accesso",
+    "Supabase Auth"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "invia il modulo Update Name"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Supabase Auth",
+     "what": "il nome è nei metadati dell'utente"
+    },
+    {
+     "node": "Account",
+     "what": "la pagina è mostrata con l'esito"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Account",
+     "data": "invio del modulo con il nuovo nome",
+     "kind": "attiva",
+     "cite": "components/ui/AccountForms/NameForm.tsx:45",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Account",
+     "to": "Azioni di accesso",
+     "data": "i dati del modulo all'azione updateName",
+     "kind": "chiama",
+     "cite": "components/ui/AccountForms/NameForm.tsx:22",
+     "has": "handleRequest(e, updateName, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "il nome completo nei metadati dell'utente",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:314",
+     "has": "data: { full_name: fullName }"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Account",
+     "data": "percorso /account con l'esito «Your name has been updated.»",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:327",
+     "has": "Your name has been updated."
+    }
+   ]
+  },
+  {
+   "name": "Cambio dell'email",
+   "area": "dati dell'utente",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente cambia l'email con cui entra",
+   "outcome": "Supabase Auth manda i link di conferma al vecchio e al nuovo indirizzo; il link riporta alla pagina Account con l'esito",
+   "nodes": [
+    "Utente",
+    "Account",
+    "Azioni di accesso",
+    "Supabase Auth"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "invia il modulo Update Email"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Supabase Auth",
+     "what": "il cambio di email è in attesa di conferma"
+    },
+    {
+     "node": "Account",
+     "what": "la pagina è mostrata con l'esito"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Account",
+     "data": "invio del modulo con la nuova email",
+     "kind": "attiva",
+     "cite": "components/ui/AccountForms/EmailForm.tsx:51",
+     "has": "onSubmit={(e) => handleSubmit(e)}"
+    },
+    {
+     "from": "Account",
+     "to": "Azioni di accesso",
+     "data": "i dati del modulo all'azione updateEmail",
+     "kind": "chiama",
+     "cite": "components/ui/AccountForms/EmailForm.tsx:26",
+     "has": "handleRequest(e, updateEmail, router)"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Supabase Auth",
+     "data": "la nuova email e l'indirizzo di ritorno su /account",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:287",
+     "has": "{ email: newEmail }"
+    },
+    {
+     "from": "Azioni di accesso",
+     "to": "Account",
+     "data": "percorso /account con l'esito «Confirmation emails sent.»",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:302",
+     "has": "Confirmation emails sent."
+    },
+    {
+     "from": "Supabase Auth",
+     "to": "Account",
+     "data": "ritorno dal link di conferma su /account con l'esito «Your email has been updated.»",
+     "kind": "chiama",
+     "cite": "utils/auth-helpers/server.ts:283",
+     "has": "getStatusRedirect('/account', 'Success!', `Your email has been updated.`)"
+    }
+   ]
+  },
+  {
+   "name": "Presentazione dei piani e dei prezzi",
+   "area": "pagamenti e abbonamenti",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "qualcuno apre la pagina iniziale",
+   "outcome": "la pagina mostra i prodotti attivi con il prezzo dell'intervallo scelto e, a chi è abbonato, il piano in corso",
+   "nodes": [
+    "Utente",
+    "Pricing Plans",
+    "Letture dal database",
+    "Supabase Auth",
+    "Prodotto",
+    "Prezzo",
+    "Abbonamento"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "rotta",
+     "what": "GET /"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Pricing Plans",
+     "what": "la pagina è mostrata con i piani"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "l'utente della sessione è verificato e reso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Pricing Plans",
+     "data": "richiesta GET /",
+     "kind": "chiama",
+     "cite": "app/page.tsx:9",
+     "has": "export default async function PricingPage()"
+    },
+    {
+     "from": "Pricing Plans",
+     "to": "Letture dal database",
+     "data": "richiesta di utente, prodotti e abbonamento",
+     "kind": "chiama",
+     "cite": "app/page.tsx:11",
+     "has": "await Promise.all(["
+    },
+    {
+     "from": "Letture dal database",
+     "to": "Supabase Auth",
+     "data": "richiesta dell'utente della sessione",
+     "kind": "chiama",
+     "cite": "utils/supabase/queries.ts:7",
+     "has": "supabase.auth.getUser()"
+    },
+    {
+     "from": "Prodotto",
+     "to": "Letture dal database",
+     "data": "i prodotti attivi, nell'ordine dei metadati",
+     "kind": "legge",
+     "cite": "utils/supabase/queries.ts:23",
+     "has": ".from('products')"
+    },
+    {
+     "from": "Prezzo",
+     "to": "Letture dal database",
+     "data": "i prezzi attivi di ogni prodotto",
+     "kind": "legge",
+     "cite": "utils/supabase/queries.ts:24",
+     "has": ".select('*, prices(*)')"
+    },
+    {
+     "from": "Abbonamento",
+     "to": "Letture dal database",
+     "data": "l'abbonamento attivo o in prova dell'utente",
+     "kind": "legge",
+     "cite": "utils/supabase/queries.ts:13",
+     "has": ".from('subscriptions')"
+    },
+    {
+     "from": "Letture dal database",
+     "to": "Pricing Plans",
+     "data": "utente, prodotti con i prezzi e abbonamento",
+     "kind": "trasferisce",
+     "cite": "app/page.tsx:20",
+     "has": "products={products ?? []}"
+    }
+   ]
+  },
+  {
+   "name": "Sottoscrizione di un piano con Stripe Checkout",
+   "area": "pagamenti e abbonamenti",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente entrato sceglie un piano",
+   "outcome": "l'utente ha un cliente in Stripe, paga nella pagina di Checkout e torna alla pagina da cui è partito; l'abbonamento arriva poi dal webhook. Chi non è entrato è mandato alla registrazione",
+   "nodes": [
+    "Utente",
+    "Pricing Plans",
+    "Sign Up",
+    "Azioni di pagamento",
+    "Supabase Auth",
+    "Sincronizzazione con Stripe",
+    "Cliente",
+    "Stripe"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme Subscribe o Manage su un piano"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Cliente",
+     "what": "il legame fra utente e cliente Stripe è scritto"
+    },
+    {
+     "node": "Stripe",
+     "what": "la sessione di Checkout è creata e il pagamento avviene sulla pagina di Stripe"
+    },
+    {
+     "node": "Pricing Plans",
+     "what": "la pagina è mostrata al ritorno da Checkout"
+    },
+    {
+     "node": "Sign Up",
+     "what": "la registrazione è mostrata a chi non è entrato"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "l'utente della sessione è verificato e reso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Pricing Plans",
+     "data": "clic su Subscribe del piano scelto",
+     "kind": "attiva",
+     "cite": "components/ui/Pricing/Pricing.tsx:189",
+     "has": "onClick={() => handleStripeCheckout(price)}"
+    },
+    {
+     "from": "Pricing Plans",
+     "to": "Sign Up",
+     "data": "passaggio a /signin/signup per chi non è entrato",
+     "kind": "chiama",
+     "cite": "components/ui/Pricing/Pricing.tsx:54",
+     "has": "router.push('/signin/signup')"
+    },
+    {
+     "from": "Pricing Plans",
+     "to": "Azioni di pagamento",
+     "data": "il prezzo scelto e il percorso corrente all'azione checkoutWithStripe",
+     "kind": "chiama",
+     "cite": "components/ui/Pricing/Pricing.tsx:57",
+     "has": "await checkoutWithStripe("
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Supabase Auth",
+     "data": "richiesta dell'utente della sessione",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:31",
+     "has": "supabase.auth.getUser()"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Sincronizzazione con Stripe",
+     "data": "id ed email dell'utente, per avere il suo cliente Stripe",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:41",
+     "has": "createOrRetrieveCustomer({"
+    },
+    {
+     "from": "Cliente",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il cliente Stripe già legato all'utente",
+     "kind": "legge",
+     "cite": "utils/supabase/admin.ts:124",
+     "has": ".from('customers')"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Stripe",
+     "data": "ricerca del cliente per id o per email, creazione se manca",
+     "kind": "chiama",
+     "cite": "utils/supabase/admin.ts:136",
+     "has": "stripe.customers.retrieve("
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Cliente",
+     "data": "id dell'utente e id del cliente Stripe",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:98",
+     "has": ".upsert([{ id: uuid, stripe_customer_id: customerId }])"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Stripe",
+     "data": "creazione della sessione di Checkout: cliente, prezzo, modalità, prova, indirizzi di ritorno",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:89",
+     "has": "stripe.checkout.sessions.create(params)"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Pricing Plans",
+     "data": "l'id della sessione di Checkout",
+     "kind": "trasferisce",
+     "cite": "utils/stripe/server.ts:97",
+     "has": "return { sessionId: session.id }"
+    },
+    {
+     "from": "Pricing Plans",
+     "to": "Stripe",
+     "data": "redirect del browser alla pagina di Checkout con l'id della sessione",
+     "kind": "trasferisce",
+     "cite": "components/ui/Pricing/Pricing.tsx:79",
+     "has": "stripe?.redirectToCheckout({ sessionId })"
+    },
+    {
+     "from": "Stripe",
+     "to": "Pricing Plans",
+     "data": "ritorno del browser all'indirizzo di successo, il percorso di partenza",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:64",
+     "has": "success_url: getURL(redirectPath)"
+    }
+   ]
+  },
+  {
+   "name": "Apertura del portale del cliente di Stripe",
+   "area": "pagamenti e abbonamenti",
+   "types": [
+    "funzionale"
+   ],
+   "intent": "un utente vuole cambiare o disdire l'abbonamento",
+   "outcome": "il browser è sul portale del cliente di Stripe e da lì torna alla pagina Account",
+   "nodes": [
+    "Utente",
+    "Account",
+    "Azioni di pagamento",
+    "Supabase Auth",
+    "Sincronizzazione con Stripe",
+    "Cliente",
+    "Stripe"
+   ],
+   "entries": [
+    {
+     "node": "Utente",
+     "kind": "controllo dell'interfaccia",
+     "what": "preme Open customer portal"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Stripe",
+     "what": "la sessione del portale è creata e il portale è aperto"
+    },
+    {
+     "node": "Cliente",
+     "what": "il legame fra utente e cliente Stripe è scritto se mancava"
+    },
+    {
+     "node": "Account",
+     "what": "la pagina è mostrata al ritorno dal portale"
+    },
+    {
+     "node": "Supabase Auth",
+     "what": "l'utente della sessione è verificato e reso"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Utente",
+     "to": "Account",
+     "data": "clic su Open customer portal",
+     "kind": "attiva",
+     "cite": "components/ui/AccountForms/CustomerPortalForm.tsx:60",
+     "has": "onClick={handleStripePortalRequest}"
+    },
+    {
+     "from": "Account",
+     "to": "Azioni di pagamento",
+     "data": "il percorso corrente all'azione createStripePortal",
+     "kind": "chiama",
+     "cite": "components/ui/AccountForms/CustomerPortalForm.tsx:42",
+     "has": "await createStripePortal(currentPath)"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Supabase Auth",
+     "data": "richiesta dell'utente della sessione",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:128",
+     "has": "supabase.auth.getUser()"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Sincronizzazione con Stripe",
+     "data": "id ed email dell'utente, per avere il suo cliente Stripe",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:139",
+     "has": "createOrRetrieveCustomer({"
+    },
+    {
+     "from": "Cliente",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il cliente Stripe già legato all'utente",
+     "kind": "legge",
+     "cite": "utils/supabase/admin.ts:124",
+     "has": ".from('customers')"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Stripe",
+     "data": "ricerca del cliente per id o per email, creazione se manca",
+     "kind": "chiama",
+     "cite": "utils/supabase/admin.ts:136",
+     "has": "stripe.customers.retrieve("
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Cliente",
+     "data": "id dell'utente e id del cliente Stripe",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:98",
+     "has": ".upsert([{ id: uuid, stripe_customer_id: customerId }])"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Stripe",
+     "data": "creazione della sessione del portale per il cliente, con ritorno su /account",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:153",
+     "has": "stripe.billingPortal.sessions.create({"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Account",
+     "data": "l'indirizzo del portale",
+     "kind": "trasferisce",
+     "cite": "utils/stripe/server.ts:160",
+     "has": "return url"
+    },
+    {
+     "from": "Account",
+     "to": "Stripe",
+     "data": "passaggio del browser all'indirizzo del portale",
+     "kind": "trasferisce",
+     "cite": "components/ui/AccountForms/CustomerPortalForm.tsx:44",
+     "has": "router.push(redirectUrl)"
+    },
+    {
+     "from": "Stripe",
+     "to": "Account",
+     "data": "ritorno del browser su /account",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:155",
+     "has": "return_url: getURL('/account')"
+    }
+   ]
+  },
+  {
+   "name": "Cliente Stripe di un utente",
+   "area": "pagamenti e abbonamenti",
+   "types": [
+    "tecnico",
+    "dati"
+   ],
+   "intent": "un'azione di pagamento ha bisogno del cliente Stripe dell'utente",
+   "outcome": "l'utente ha un solo cliente in Stripe, trovato per id o per email oppure creato, e la tabella dei clienti lo riporta",
+   "nodes": [
+    "Azioni di pagamento",
+    "Sincronizzazione con Stripe",
+    "Cliente",
+    "Stripe"
+   ],
+   "entries": [
+    {
+     "node": "Azioni di pagamento",
+     "kind": "rotta",
+     "what": "le azioni lato server checkoutWithStripe e createStripePortal"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Stripe",
+     "what": "il cliente è creato se mancava"
+    },
+    {
+     "node": "Cliente",
+     "what": "la riga è scritta o corretta"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Azioni di pagamento",
+     "to": "Sincronizzazione con Stripe",
+     "data": "id ed email dell'utente",
+     "kind": "chiama",
+     "cite": "utils/stripe/server.ts:41",
+     "has": "createOrRetrieveCustomer({"
+    },
+    {
+     "from": "Cliente",
+     "to": "Sincronizzazione con Stripe",
+     "data": "la riga dell'utente con l'id del cliente Stripe",
+     "kind": "legge",
+     "cite": "utils/supabase/admin.ts:124",
+     "has": ".from('customers')"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Stripe",
+     "data": "lettura del cliente con l'id salvato",
+     "kind": "chiama",
+     "cite": "utils/supabase/admin.ts:136",
+     "has": "stripe.customers.retrieve("
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Stripe",
+     "data": "ricerca del cliente per email, quando l'id manca",
+     "kind": "chiama",
+     "cite": "utils/supabase/admin.ts:142",
+     "has": "stripe.customers.list({ email: email })"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Stripe",
+     "data": "creazione del cliente con email e id dell'utente nei metadati",
+     "kind": "chiama",
+     "cite": "utils/supabase/admin.ts:108",
+     "has": "stripe.customers.create(customerData)"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Cliente",
+     "data": "l'id del cliente Stripe corretto, quando non coincide",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:158",
+     "has": ".update({ stripe_customer_id: stripeCustomerId })"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Cliente",
+     "data": "la nuova riga con id dell'utente e id del cliente Stripe",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:98",
+     "has": ".upsert([{ id: uuid, stripe_customer_id: customerId }])"
+    }
+   ]
+  },
+  {
+   "name": "Copia di prodotti e prezzi da Stripe",
+   "area": "pagamenti e abbonamenti",
+   "types": [
+    "operativo",
+    "dati"
+   ],
+   "intent": "in Stripe un prodotto o un prezzo è creato, cambiato o cancellato",
+   "outcome": "le tabelle dei prodotti e dei prezzi riportano lo stato di Stripe",
+   "nodes": [
+    "Stripe",
+    "Rotta dei webhook",
+    "Sincronizzazione con Stripe",
+    "Prodotto",
+    "Prezzo"
+   ],
+   "entries": [
+    {
+     "node": "Stripe",
+     "kind": "rotta",
+     "what": "POST /api/webhooks con un evento product.* o price.*"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Prodotto",
+     "what": "la riga è scritta o cancellata"
+    },
+    {
+     "node": "Prezzo",
+     "what": "la riga è scritta o cancellata"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Stripe",
+     "to": "Rotta dei webhook",
+     "data": "richiesta POST /api/webhooks con l'evento e la firma",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:24",
+     "has": "export async function POST(req: Request)"
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il prodotto creato o cambiato",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:45",
+     "has": "upsertProductRecord(event.data.object as Stripe.Product)"
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il prezzo creato o cambiato",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:49",
+     "has": "upsertPriceRecord(event.data.object as Stripe.Price)"
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il prezzo cancellato",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:52",
+     "has": "deletePriceRecord(event.data.object as Stripe.Price)"
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il prodotto cancellato",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:55",
+     "has": "deleteProductRecord(event.data.object as Stripe.Product)"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Prodotto",
+     "data": "id, stato, nome, descrizione, immagine e metadati del prodotto",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:32",
+     "has": ".upsert([productData])"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Prodotto",
+     "data": "cancellazione della riga del prodotto",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:78",
+     "has": ".from('products')"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Prezzo",
+     "data": "id, prodotto, stato, valuta, tipo, importo, intervallo e giorni di prova del prezzo",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:57",
+     "has": ".upsert([priceData])"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Prezzo",
+     "data": "cancellazione della riga del prezzo",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:88",
+     "has": ".from('prices')"
+    }
+   ]
+  },
+  {
+   "name": "Copia dello stato dell'abbonamento da Stripe",
+   "area": "pagamenti e abbonamenti",
+   "types": [
+    "operativo",
+    "dati"
+   ],
+   "intent": "in Stripe un Checkout in abbonamento è completato o un abbonamento è creato, cambiato o cancellato",
+   "outcome": "la tabella degli abbonamenti riporta lo stato di Stripe; alla creazione i dati di fatturazione vanno al cliente Stripe e al profilo",
+   "nodes": [
+    "Stripe",
+    "Rotta dei webhook",
+    "Sincronizzazione con Stripe",
+    "Cliente",
+    "Abbonamento",
+    "Profilo utente"
+   ],
+   "entries": [
+    {
+     "node": "Stripe",
+     "kind": "rotta",
+     "what": "POST /api/webhooks con un evento customer.subscription.* o checkout.session.completed"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Abbonamento",
+     "what": "la riga è scritta con lo stato corrente"
+    },
+    {
+     "node": "Profilo utente",
+     "what": "indirizzo di fatturazione e metodo di pagamento sono scritti"
+    },
+    {
+     "node": "Stripe",
+     "what": "nome, telefono e indirizzo sono copiati sul cliente"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Stripe",
+     "to": "Rotta dei webhook",
+     "data": "richiesta POST /api/webhooks con l'evento e la firma",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:24",
+     "has": "export async function POST(req: Request)"
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "id dell'abbonamento e del cliente, da un evento dell'abbonamento",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:61",
+     "has": "await manageSubscriptionStatusChange("
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "id dell'abbonamento e del cliente, da un Checkout completato",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:71",
+     "has": "await manageSubscriptionStatusChange("
+    },
+    {
+     "from": "Cliente",
+     "to": "Sincronizzazione con Stripe",
+     "data": "l'id dell'utente del cliente Stripe",
+     "kind": "legge",
+     "cite": "utils/supabase/admin.ts:220",
+     "has": ".eq('stripe_customer_id', customerId)"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Stripe",
+     "data": "lettura dell'abbonamento con il metodo di pagamento",
+     "kind": "chiama",
+     "cite": "utils/supabase/admin.ts:228",
+     "has": "stripe.subscriptions.retrieve(subscriptionId, {"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Abbonamento",
+     "data": "stato, prezzo, quantità, periodi e date dell'abbonamento",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:268",
+     "has": ".upsert([subscriptionData])"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Stripe",
+     "data": "nome, telefono e indirizzo del metodo di pagamento sul cliente",
+     "kind": "chiama",
+     "cite": "utils/supabase/admin.ts:200",
+     "has": "stripe.customers.update(customer, { name, phone, address })"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Profilo utente",
+     "data": "indirizzo di fatturazione e metodo di pagamento",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:202",
+     "has": ".from('users')"
+    }
+   ]
+  },
+  {
+   "name": "Avviso dell'esito di un'azione",
+   "area": "comunicazioni",
+   "types": [
+    "tecnico"
+   ],
+   "intent": "un'azione o una rotta manda il browser a un percorso che porta l'esito nei parametri",
+   "outcome": "l'avviso mostra titolo e descrizione dell'esito o dell'errore e i parametri sono tolti dall'indirizzo",
+   "nodes": [
+    "Azioni di accesso",
+    "Esito nell'indirizzo",
+    "Azioni di pagamento",
+    "Rotte di accesso",
+    "Avviso a comparsa"
+   ],
+   "entries": [
+    {
+     "node": "Azioni di accesso",
+     "kind": "rotta",
+     "what": "un'azione lato server rende un percorso con l'esito"
+    },
+    {
+     "node": "Azioni di pagamento",
+     "kind": "rotta",
+     "what": "un'azione di pagamento rende un percorso con l'errore"
+    },
+    {
+     "node": "Rotte di accesso",
+     "kind": "rotta",
+     "what": "una rotta di accesso rimanda con l'esito"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Avviso a comparsa",
+     "what": "l'avviso è mostrato"
+    },
+    {
+     "node": "Esito nell'indirizzo",
+     "what": "i parametri sono tolti dall'indirizzo"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Azioni di accesso",
+     "to": "Esito nell'indirizzo",
+     "data": "status o error e la descrizione, nei parametri del percorso",
+     "kind": "scrive",
+     "cite": "utils/helpers.ts:86",
+     "has": "${nameKey}=${encodeURIComponent(toastName)}"
+    },
+    {
+     "from": "Azioni di pagamento",
+     "to": "Esito nell'indirizzo",
+     "data": "error e la descrizione, nei parametri del percorso",
+     "kind": "scrive",
+     "cite": "utils/stripe/server.ts:104",
+     "has": "errorRedirect: getErrorRedirect("
+    },
+    {
+     "from": "Rotte di accesso",
+     "to": "Esito nell'indirizzo",
+     "data": "status o error e la descrizione, nei parametri del redirect",
+     "kind": "scrive",
+     "cite": "app/auth/callback/route.ts:30",
+     "has": "getStatusRedirect("
+    },
+    {
+     "from": "Esito nell'indirizzo",
+     "to": "Avviso a comparsa",
+     "data": "status, error e le loro descrizioni",
+     "kind": "legge",
+     "cite": "components/ui/Toasts/toaster.tsx:22",
+     "has": "searchParams.get('status')"
+    },
+    {
+     "from": "Avviso a comparsa",
+     "to": "Esito nell'indirizzo",
+     "data": "l'indirizzo senza i parametri dell'esito",
+     "kind": "scrive",
+     "cite": "components/ui/Toasts/toaster.tsx:46",
+     "has": "router.replace(redirectPath, { scroll: false })"
+    }
+   ]
+  },
+  {
+   "name": "Preparazione dello schema del database",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "intent": "lo sviluppatore prepara il database locale o quello del progetto Supabase",
+   "outcome": "tabelle, regole per riga, trigger del profilo e pubblicazione realtime sono nel Postgres di Supabase",
+   "nodes": [
+    "Sviluppatore",
+    "Script di sviluppo",
+    "Database",
+    "Supabase Postgres"
+   ],
+   "entries": [
+    {
+     "node": "Sviluppatore",
+     "kind": "comando",
+     "what": "pnpm supabase:start, supabase:reset o supabase:push"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Supabase Postgres",
+     "what": "lo schema è applicato"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Sviluppatore",
+     "to": "Script di sviluppo",
+     "data": "comando pnpm supabase:start, per il database locale",
+     "kind": "attiva",
+     "cite": "package.json:12",
+     "has": "\"supabase:start\": \"npx supabase start\""
+    },
+    {
+     "from": "Sviluppatore",
+     "to": "Script di sviluppo",
+     "data": "comando pnpm supabase:push, per il progetto collegato",
+     "kind": "attiva",
+     "cite": "package.json:21",
+     "has": "\"supabase:push\": \"npx supabase db push\""
+    },
+    {
+     "from": "Script di sviluppo",
+     "to": "Database",
+     "data": "le migrazioni della cartella supabase, lette dalla CLI di Supabase",
+     "kind": "usa",
+     "cite": "package.json:21",
+     "has": "supabase db push"
+    },
+    {
+     "from": "Database",
+     "to": "Supabase Postgres",
+     "data": "tabelle, regole per riga, trigger e pubblicazione",
+     "kind": "scrive",
+     "cite": "supabase/migrations/20230530034630_init.sql:5",
+     "has": "create table users"
+    }
+   ]
+  },
+  {
+   "name": "Generazione dei tipi del database",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "intent": "lo sviluppatore ha cambiato lo schema locale",
+   "outcome": "types_db.ts riporta i tipi delle tabelle dello schema pubblico",
+   "nodes": [
+    "Sviluppatore",
+    "Script di sviluppo",
+    "Supabase Postgres",
+    "Tipi del database"
+   ],
+   "entries": [
+    {
+     "node": "Sviluppatore",
+     "kind": "comando",
+     "what": "pnpm supabase:generate-types"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Tipi del database",
+     "what": "il file dei tipi è riscritto"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Sviluppatore",
+     "to": "Script di sviluppo",
+     "data": "comando pnpm supabase:generate-types",
+     "kind": "attiva",
+     "cite": "package.json:18",
+     "has": "\"supabase:generate-types\""
+    },
+    {
+     "from": "Supabase Postgres",
+     "to": "Script di sviluppo",
+     "data": "lo schema pubblico del database locale",
+     "kind": "legge",
+     "cite": "package.json:18",
+     "has": "supabase gen types typescript --local --schema public"
+    },
+    {
+     "from": "Script di sviluppo",
+     "to": "Tipi del database",
+     "data": "i tipi TypeScript delle tabelle",
+     "kind": "scrive",
+     "cite": "package.json:18",
+     "has": "> types_db.ts"
+    }
+   ]
+  },
+  {
+   "name": "Prodotti e prezzi di prova con le fixture di Stripe",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "intent": "lo sviluppatore vuole dei piani di prova senza crearli a mano",
+   "outcome": "Stripe ha i prodotti Hobby e Freelancer con prezzo mensile e annuale, e il webhook li copia nel database",
+   "nodes": [
+    "Sviluppatore",
+    "Script di sviluppo",
+    "Fixture di Stripe",
+    "Stripe",
+    "Rotta dei webhook",
+    "Sincronizzazione con Stripe",
+    "Prodotto",
+    "Prezzo"
+   ],
+   "entries": [
+    {
+     "node": "Sviluppatore",
+     "kind": "comando",
+     "what": "pnpm stripe:fixtures"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Stripe",
+     "what": "prodotti e prezzi di prova sono creati"
+    },
+    {
+     "node": "Prodotto",
+     "what": "le righe dei prodotti sono scritte"
+    },
+    {
+     "node": "Prezzo",
+     "what": "le righe dei prezzi sono scritte"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Sviluppatore",
+     "to": "Script di sviluppo",
+     "data": "comando pnpm stripe:fixtures",
+     "kind": "attiva",
+     "cite": "package.json:11",
+     "has": "\"stripe:fixtures\""
+    },
+    {
+     "from": "Script di sviluppo",
+     "to": "Fixture di Stripe",
+     "data": "il file delle fixture, letto dalla CLI di Stripe",
+     "kind": "usa",
+     "cite": "package.json:11",
+     "has": "stripe fixtures fixtures/stripe-fixtures.json"
+    },
+    {
+     "from": "Fixture di Stripe",
+     "to": "Stripe",
+     "data": "creazione dei prodotti Hobby e Freelancer",
+     "kind": "chiama",
+     "cite": "fixtures/stripe-fixtures.json:8",
+     "has": "\"path\": \"/v1/products\""
+    },
+    {
+     "from": "Fixture di Stripe",
+     "to": "Stripe",
+     "data": "creazione dei prezzi mensili e annuali",
+     "kind": "chiama",
+     "cite": "fixtures/stripe-fixtures.json:20",
+     "has": "\"path\": \"/v1/prices\""
+    },
+    {
+     "from": "Stripe",
+     "to": "Rotta dei webhook",
+     "data": "eventi product.created e price.created",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:12",
+     "has": "'product.created'"
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il prodotto creato",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:45",
+     "has": "upsertProductRecord("
+    },
+    {
+     "from": "Rotta dei webhook",
+     "to": "Sincronizzazione con Stripe",
+     "data": "il prezzo creato",
+     "kind": "chiama",
+     "cite": "app/api/webhooks/route.ts:49",
+     "has": "upsertPriceRecord("
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Prodotto",
+     "data": "la riga del prodotto",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:32",
+     "has": ".upsert([productData])"
+    },
+    {
+     "from": "Sincronizzazione con Stripe",
+     "to": "Prezzo",
+     "data": "la riga del prezzo",
+     "kind": "scrive",
+     "cite": "utils/supabase/admin.ts:57",
+     "has": ".upsert([priceData])"
+    }
+   ]
+  },
+  {
+   "name": "Inoltro locale dei webhook di Stripe",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "intent": "lo sviluppatore prova i webhook sulla propria macchina",
+   "outcome": "gli eventi dell'account Stripe arrivano alla rotta dei webhook dell'applicazione locale",
+   "nodes": [
+    "Sviluppatore",
+    "Script di sviluppo",
+    "Stripe",
+    "Rotta dei webhook"
+   ],
+   "entries": [
+    {
+     "node": "Sviluppatore",
+     "kind": "comando",
+     "what": "pnpm stripe:listen"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Rotta dei webhook",
+     "what": "riceve gli eventi inoltrati"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Sviluppatore",
+     "to": "Script di sviluppo",
+     "data": "comando pnpm stripe:listen",
+     "kind": "attiva",
+     "cite": "package.json:10",
+     "has": "\"stripe:listen\""
+    },
+    {
+     "from": "Script di sviluppo",
+     "to": "Stripe",
+     "data": "apertura dell'inoltro degli eventi con la CLI di Stripe",
+     "kind": "chiama",
+     "cite": "package.json:10",
+     "has": "stripe listen"
+    },
+    {
+     "from": "Stripe",
+     "to": "Rotta dei webhook",
+     "data": "gli eventi inoltrati a localhost:3000/api/webhooks",
+     "kind": "chiama",
+     "cite": "package.json:10",
+     "has": "--forward-to=localhost:3000/api/webhooks"
+    }
+   ]
+  },
+  {
+   "name": "Pubblicazione su Vercel",
+   "area": "esercizio",
+   "types": [
+    "devops"
+   ],
+   "intent": "lo sviluppatore pubblica il sito",
+   "outcome": "Vercel costruisce l'applicazione dal repository e le dà l'indirizzo che il codice usa quando NEXT_PUBLIC_SITE_URL manca",
+   "nodes": [
+    "Sviluppatore",
+    "Vercel",
+    "Applicazione web"
+   ],
+   "entries": [
+    {
+     "node": "Sviluppatore",
+     "kind": "comando",
+     "what": "pulsante Deploy with Vercel del README"
+    }
+   ],
+   "effects": [
+    {
+     "node": "Applicazione web",
+     "what": "l'applicazione è costruita e in linea"
+    }
+   ],
+   "arrows": [
+    {
+     "from": "Sviluppatore",
+     "to": "Vercel",
+     "data": "clone del repository e chiavi di Stripe, dal pulsante Deploy",
+     "kind": "attiva",
+     "cite": "README.md:32",
+     "has": "vercel.com/new/clone"
+    },
+    {
+     "from": "Vercel",
+     "to": "Applicazione web",
+     "data": "costruzione con next build",
+     "kind": "attiva",
+     "cite": "package.json:5",
+     "has": "\"build\": \"next build\""
+    },
+    {
+     "from": "Vercel",
+     "to": "Applicazione web",
+     "data": "l'indirizzo pubblico in NEXT_PUBLIC_VERCEL_URL",
+     "kind": "trasferisce",
+     "cite": "utils/helpers.ts:12",
+     "has": "NEXT_PUBLIC_VERCEL_URL"
+    }
+   ]
+  }
+ ],
+ "areas": [
+  {
+   "name": "accesso e identità",
+   "present": true
+  },
+  {
+   "name": "funzioni principali",
+   "present": false
+  },
+  {
+   "name": "pagamenti e abbonamenti",
+   "present": true
+  },
+  {
+   "name": "dati dell'utente",
+   "present": true
+  },
+  {
+   "name": "integrazioni esterne",
+   "present": false
+  },
+  {
+   "name": "comunicazioni",
+   "present": true
+  },
+  {
+   "name": "amministrazione",
+   "present": false
+  },
+  {
+   "name": "esercizio",
+   "present": true
+  }
+ ],
+ "packages": [
+  {
+   "path": ".",
+   "manifest": "package.json",
+   "kind": "npm-package"
+  }
+ ],
+ "gaps": [
+  {
+   "what": "chi chiama POST /api/webhooks",
+   "why": "è Stripe, da fuori: l'indirizzo si scrive nella dashboard di Stripe (README) o lo dà `stripe listen`; nessun file del progetto tiene quella chiamata, la freccia cita la rotta"
+  },
+  {
+   "what": "chi chiama /auth/callback e /auth/reset_password",
+   "why": "è il browser rimandato da Supabase Auth, all'indirizzo che il codice gli passa con getURL e che dipende da NEXT_PUBLIC_SITE_URL: le frecce citano la rotta che legge il codice"
+  },
+  {
+   "what": "lo scambio fra Supabase Auth e GitHub",
+   "why": "avviene fra due servizi esterni: il progetto tiene solo il nome del fornitore (OauthSignIn.tsx) e la sua configurazione (supabase/config.toml, .env.example); le due frecce citano la configurazione, nessuna riga chiama GitHub"
+  },
+  {
+   "what": "le email di conferma, del link magico e di reimpostazione",
+   "why": "le spedisce Supabase Auth con i suoi modelli: nel progetto non c'è né il testo né l'invio; in locale le raccoglie Inbucket (supabase/config.toml, [inbucket]), che nessun codice chiama"
+  },
+  {
+   "what": "il nome mostrato nella pagina Account dopo un cambio del nome",
+   "why": "updateName scrive i metadati dell'utente in Supabase Auth, la pagina legge users.full_name, che solo il trigger handle_new_user scrive alla creazione: nessuna riga del progetto porta il nuovo nome nella tabella, quindi nessuna freccia da Azioni di accesso a Profilo utente"
+  },
+  {
+   "what": "il legame fra un modulo e la sua azione lato server",
+   "why": "ogni modulo passa l'azione come argomento a handleRequest (utils/auth-helpers/client.ts:18), che la chiama e poi naviga al percorso reso (riga 22): la freccia cita la riga del modulo che nomina l'azione, e la pagina di arrivo si sa solo seguendo le stringhe rese"
+  },
+  {
+   "what": "redirectToPath, il redirect lato server",
+   "why": "si usa solo quando allowServerRedirect è vero, ed è una costante falsa (utils/auth-helpers/settings.ts:8): il ramo esiste nel codice e non gira"
+  },
+  {
+   "what": "il nome dei cookie della sessione",
+   "why": "lo decide @supabase/ssr dal progetto Supabase: il codice passa solo get, set e remove; la chiave store:cookie/supabase-session è un nome dato qui"
+  },
+  {
+   "what": "ciò che un utente legge davvero dalle tabelle",
+   "why": "lo decidono le regole per riga dello schema (prodotti e prezzi a tutti, profilo e abbonamento solo i propri, clienti a nessuno) e la chiave usata: si vede solo con un database vero"
+  },
+  {
+   "what": "la pubblicazione realtime di prodotti e prezzi",
+   "why": "lo schema la crea (ultima riga della migrazione) ma nessun codice si iscrive: nessun flusso"
+  },
+  {
+   "what": "utils/helpers.ts::postData e components/ui/Input",
+   "why": "codice senza chiamanti: postData fa una POST a un indirizzo variabile e nessuno lo usa, Input non è importato"
+  },
+  {
+   "what": "schema.sql",
+   "why": "è una copia identica della migrazione supabase/migrations/20230530034630_init.sql, da incollare a mano nell'editor SQL (README): è membro del Database, non un secondo schema"
+  },
+  {
+   "what": "types_db.ts",
+   "why": "file generato da `supabase gen types`, salvato in UTF-16: non si cita nessuna sua riga"
+  },
+  {
+   "what": "la pubblicazione su Vercel e l'integrazione con Supabase",
+   "why": "sono descritte solo nel README: il repository non ha vercel.json né workflow; le frecce del flusso citano il README, lo script di build e la variabile letta dal codice"
+  },
+  {
+   "what": "file di configurazione alla radice (tailwind.config.js, postcss.config.js, tsconfig.json, components.json, .prettierrc.json, next-env.d.ts, pnpm-lock.yaml, .env.example, .env.local.example)",
+   "why": "strumenti e modelli di configurazione: non sono di nessun nodo oltre a quello dell'intero sistema"
+  },
+  {
+   "what": "README.md, LICENSE",
+   "why": "documentazione"
+  },
+  {
+   "what": "supabase/seed.sql",
+   "why": "vuoto"
+  },
+  {
+   "what": "Twilio e S3 in supabase/config.toml",
+   "why": "solo nominati nella configurazione locale, spenti o sperimentali: non sono nodi"
+  },
+  {
+   "what": "l'esecuzione completa di accesso, Checkout e webhook",
+   "why": "servono un progetto Supabase (o lo stack locale), le chiavi di Stripe, il segreto del webhook e un'app OAuth di GitHub, che il repository non ha"
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+[
+ {
+  "argv": [
+   "timeout",
+   "--kill-after=2",
+   "5",
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes",
+   "--json"
+  ],
+  "cwd": "hang",
+  "left_in_the_project": [],
+  "returncode": 124,
+  "seconds": 5.03,
+  "stderr": "",
+  "stdout": ""
+ },
+ {
+  "argv": [
+   "ps",
+   "-eo",
+   "pid,ppid,args"
+  ],
+  "cwd": "hang",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 0.02,
+  "stderr": "",
+  "stdout": "  PID  PPID COMMAND\n    1     0 /bin/dumb-init -- docker-entrypoint.sh python -u -R --check-hash-based-pycs never -m modal._container_entrypoint\n    2     1 python -u -R --check-hash-based-pycs never -m modal._container_entrypoint\n   49     2 ps -eo pid,ppid,args\n"
+ }
+]

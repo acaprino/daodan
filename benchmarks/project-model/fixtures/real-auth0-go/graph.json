@@ -1,0 +1,113 @@
+{
+ "schema": "daodan/real-graph-expected/v1",
+ "case": "auth0-go",
+ "modules": [
+  {"name": "01-Login", "root": "01-Login", "tool": "go", "manifest": "01-Login/go.mod", "languages": ["go", "markup", "css", "javascript"],
+   "toolchains": [{"tool": "go", "version": "1.19", "declared_in": "01-Login/go.mod"}, {"tool": "go", "version": "1.19.3", "declared_in": "01-Login/Dockerfile"}],
+   "technologies": ["gin", "auth0", "bootstrap", "fontawesome", "docker"],
+   "start": {"command": "go run .", "declared_in": "01-Login/Dockerfile", "port": 3000}, "test": null},
+  {"name": "myapp", "root": "01-Login-Quickstart", "tool": "go", "manifest": "01-Login-Quickstart/go.mod", "languages": ["go", "markup"],
+   "toolchains": [{"tool": "go", "version": "1.25.0", "declared_in": "01-Login-Quickstart/go.mod"}, {"tool": "go", "version": "1.25", "declared_in": "01-Login-Quickstart/Dockerfile"}],
+   "technologies": ["auth0", "docker"],
+   "start": {"command": "go run .", "declared_in": "01-Login-Quickstart/Dockerfile", "port": 3000}, "test": null},
+  {"name": "auth0-golang-web-app-tests", "root": "tests", "tool": "npm", "manifest": "tests/package.json", "languages": ["javascript"],
+   "toolchains": [{"tool": "node", "version": "20", "declared_in": ".github/workflows/ci.yml"}],
+   "technologies": ["playwright"],
+   "start": null, "test": {"command": "npm test", "declared_in": "tests/package.json", "needs": "an app listening on port 3000 and Auth0 test credentials"}}
+ ],
+ "module_edges": [
+  {"from": "auth0-golang-web-app-tests", "to": "01-Login", "kind": "http", "at": "tests/login.spec.js:4"},
+  {"from": "auth0-golang-web-app-tests", "to": "myapp", "kind": "http", "at": "tests/login.spec.js:4"}
+ ],
+ "externals": [
+  {"registry": "auth0", "type": "autenticazione", "declared_in": ["01-Login-Quickstart/go.mod", "01-Login/.env.example", "01-Login-Quickstart/.env.example"],
+   "used_by": ["01-Login/platform/authenticator/auth.go::New", "01-Login/platform/authenticator/auth.go::Authenticator.VerifyIDToken", "01-Login/web/app/login/login.go::Handler", "01-Login/web/app/callback/callback.go::Handler", "01-Login/web/app/logout/logout.go::Handler",
+               "01-Login-Quickstart/auth.go::NewAuthenticator", "01-Login-Quickstart/auth.go::Authenticator.AuthorizationURL", "01-Login-Quickstart/handlers.go::CallbackHandler", "01-Login-Quickstart/handlers.go::LogoutHandler"]},
+  {"registry": "github.actions", "type": "servizio o API", "declared_in": [".github/workflows/ci.yml", ".github/workflows/semgrep.yml"], "used_by": []},
+  {"registry": "dependabot", "type": "servizio o API", "declared_in": [".github/dependabot.yml"], "used_by": []},
+  {"name": "Semgrep", "type": "servizio o API", "declared_in": [".github/workflows/semgrep.yml"], "used_by": []}
+ ],
+ "entry_points": {
+  "route": [
+   {"module": "01-Login", "method": "GET", "path": "/", "handler": "01-Login/web/app/home/home.go::Handler", "at": "01-Login/platform/router/router.go:33"},
+   {"module": "01-Login", "method": "GET", "path": "/login", "handler": "01-Login/web/app/login/login.go::Handler", "at": "01-Login/platform/router/router.go:34"},
+   {"module": "01-Login", "method": "GET", "path": "/callback", "handler": "01-Login/web/app/callback/callback.go::Handler", "at": "01-Login/platform/router/router.go:35"},
+   {"module": "01-Login", "method": "GET", "path": "/user", "handler": "01-Login/web/app/user/user.go::Handler", "middleware": ["01-Login/platform/middleware/isAuthenticated.go::IsAuthenticated"], "at": "01-Login/platform/router/router.go:36"},
+   {"module": "01-Login", "method": "GET", "path": "/logout", "handler": "01-Login/web/app/logout/logout.go::Handler", "at": "01-Login/platform/router/router.go:37"},
+   {"module": "01-Login", "method": "GET", "path": "/public/*filepath", "handler": null, "static": "01-Login/web/static", "at": "01-Login/platform/router/router.go:30"},
+   {"module": "myapp", "method": "*", "path": "/", "handler": "01-Login-Quickstart/handlers.go::HomeHandler", "at": "01-Login-Quickstart/main.go:27"},
+   {"module": "myapp", "method": "*", "path": "/login", "handler": "01-Login-Quickstart/handlers.go::LoginHandler", "at": "01-Login-Quickstart/main.go:28"},
+   {"module": "myapp", "method": "*", "path": "/callback", "handler": "01-Login-Quickstart/handlers.go::CallbackHandler", "at": "01-Login-Quickstart/main.go:29"},
+   {"module": "myapp", "method": "*", "path": "/user", "handler": "01-Login-Quickstart/handlers.go::UserHandler", "at": "01-Login-Quickstart/main.go:30"},
+   {"module": "myapp", "method": "*", "path": "/logout", "handler": "01-Login-Quickstart/handlers.go::LogoutHandler", "at": "01-Login-Quickstart/main.go:31"}
+  ],
+  "page": [
+   {"module": "01-Login", "template": "01-Login/web/template/home.html", "rendered_by": "01-Login/web/app/home/home.go::Handler", "route": "/"},
+   {"module": "01-Login", "template": "01-Login/web/template/user.html", "rendered_by": "01-Login/web/app/user/user.go::Handler", "route": "/user"},
+   {"module": "myapp", "template": "01-Login-Quickstart/templates/home.html", "rendered_by": "01-Login-Quickstart/handlers.go::HomeHandler", "route": "/"},
+   {"module": "myapp", "template": "01-Login-Quickstart/templates/user.html", "rendered_by": "01-Login-Quickstart/handlers.go::UserHandler", "route": "/user"}
+  ],
+  "action": [
+   {"label": "SignIn", "in": "01-Login/web/template/home.html", "at": "01-Login/web/template/home.html:20", "does": "GET /login"},
+   {"label": "Logout", "in": "01-Login/web/template/user.html", "at": "01-Login/web/template/user.html:21", "does": "GET /logout", "handler": "01-Login/web/static/js/user.js:2"},
+   {"label": "Sign In", "in": "01-Login-Quickstart/templates/home.html", "at": "01-Login-Quickstart/templates/home.html:75", "does": "GET /login"},
+   {"label": "Sign Out", "in": "01-Login-Quickstart/templates/user.html", "at": "01-Login-Quickstart/templates/user.html:130", "does": "GET /logout"}
+  ],
+  "main": [
+   {"module": "01-Login", "symbol": "01-Login/main.go::main"},
+   {"module": "myapp", "symbol": "01-Login-Quickstart/main.go::main"}
+  ],
+  "scheduled": [
+   {"what": "Semgrep scan", "at": ".github/workflows/semgrep.yml:10", "runs_in": "Github Actions"}
+  ],
+  "test": [
+   {"module": "auth0-golang-web-app-tests", "at": "tests/login.spec.js:3"}
+  ]
+ },
+ "routes": [
+  {"caller": "01-Login/web/template/home.html:20", "module": "01-Login", "method": "GET", "path": "/login", "handler": "01-Login/web/app/login/login.go::Handler"},
+  {"caller": "01-Login/web/template/user.html:21", "module": "01-Login", "method": "GET", "path": "/logout", "handler": "01-Login/web/app/logout/logout.go::Handler"},
+  {"caller": "01-Login/web/app/callback/callback.go:48", "module": "01-Login", "method": "GET", "path": "/user", "handler": "01-Login/web/app/user/user.go::Handler", "by": "redirect"},
+  {"caller": "01-Login/platform/middleware/isAuthenticated.go:14", "module": "01-Login", "method": "GET", "path": "/", "handler": "01-Login/web/app/home/home.go::Handler", "by": "redirect"},
+  {"caller": "01-Login-Quickstart/templates/home.html:75", "module": "myapp", "method": "GET", "path": "/login", "handler": "01-Login-Quickstart/handlers.go::LoginHandler"},
+  {"caller": "01-Login-Quickstart/templates/user.html:130", "module": "myapp", "method": "GET", "path": "/logout", "handler": "01-Login-Quickstart/handlers.go::LogoutHandler"},
+  {"caller": "01-Login-Quickstart/handlers.go:36", "module": "myapp", "method": "GET", "path": "/user", "handler": "01-Login-Quickstart/handlers.go::UserHandler", "by": "redirect"},
+  {"caller": "01-Login-Quickstart/handlers.go:104", "module": "myapp", "method": "GET", "path": "/user", "handler": "01-Login-Quickstart/handlers.go::UserHandler", "by": "redirect"},
+  {"caller": "01-Login-Quickstart/handlers.go:113", "module": "myapp", "method": "GET", "path": "/", "handler": "01-Login-Quickstart/handlers.go::HomeHandler", "by": "redirect"}
+ ],
+ "external_calls": [
+  {"caller": "01-Login/platform/authenticator/auth.go:20", "to": "auth0", "what": "OIDC discovery of the tenant, at start"},
+  {"caller": "01-Login/web/app/login/login.go:31", "to": "auth0", "what": "browser redirect to the authorize URL"},
+  {"caller": "01-Login/web/app/callback/callback.go:22", "to": "auth0", "what": "authorization code exchanged for tokens"},
+  {"caller": "01-Login/platform/authenticator/auth.go:53", "to": "auth0", "what": "ID token verified with the tenant's keys"},
+  {"caller": "01-Login/web/app/logout/logout.go:35", "to": "auth0", "what": "browser redirect to /v2/logout"},
+  {"caller": "01-Login-Quickstart/handlers.go:60", "to": "auth0", "what": "browser redirect to /authorize"},
+  {"caller": "01-Login-Quickstart/handlers.go:76", "to": "auth0", "what": "authorization code exchanged for tokens"},
+  {"caller": "01-Login-Quickstart/handlers.go:86", "to": "auth0", "what": "userinfo with the access token"},
+  {"caller": "01-Login-Quickstart/handlers.go:141", "to": "auth0", "what": "browser redirect to /v2/logout"}
+ ],
+ "stores": {
+  "01-Login auth-session/state": {"node_type": "entità", "kind": "cookie session", "writes": ["01-Login/web/app/login/login.go::Handler"], "reads": ["01-Login/web/app/callback/callback.go::Handler"]},
+  "01-Login auth-session/profile": {"node_type": "entità", "kind": "cookie session", "writes": ["01-Login/web/app/callback/callback.go::Handler"], "reads": ["01-Login/platform/middleware/isAuthenticated.go::IsAuthenticated", "01-Login/web/app/user/user.go::Handler"]},
+  "01-Login auth-session/access_token": {"node_type": "entità", "kind": "cookie session", "writes": ["01-Login/web/app/callback/callback.go::Handler"], "reads": []},
+  "01-Login-Quickstart auth-session/state": {"node_type": "entità", "kind": "cookie session", "writes": ["01-Login-Quickstart/handlers.go::LoginHandler"], "reads": ["01-Login-Quickstart/handlers.go::CallbackHandler"]},
+  "01-Login-Quickstart auth-session/profile": {"node_type": "entità", "kind": "cookie session", "writes": ["01-Login-Quickstart/handlers.go::CallbackHandler"], "reads": ["01-Login-Quickstart/handlers.go::HomeHandler", "01-Login-Quickstart/handlers.go::UserHandler"]},
+  "01-Login-Quickstart auth-session/access_token": {"node_type": "entità", "kind": "cookie session", "writes": ["01-Login-Quickstart/handlers.go::CallbackHandler"], "reads": []}
+ },
+ "config": [
+  {"key": "AUTH0_DOMAIN", "declared_in": ["01-Login/.env.example", "01-Login-Quickstart/.env.example"], "reads": ["01-Login/platform/authenticator/auth.go:22", "01-Login/web/app/logout/logout.go:13", "01-Login-Quickstart/auth.go:22"]},
+  {"key": "AUTH0_CLIENT_ID", "declared_in": ["01-Login/.env.example", "01-Login-Quickstart/.env.example"], "reads": ["01-Login/platform/authenticator/auth.go:29", "01-Login/web/app/logout/logout.go:32", "01-Login-Quickstart/auth.go:23"]},
+  {"key": "AUTH0_CLIENT_SECRET", "declared_in": ["01-Login/.env.example", "01-Login-Quickstart/.env.example"], "reads": ["01-Login/platform/authenticator/auth.go:30", "01-Login-Quickstart/auth.go:24"]},
+  {"key": "AUTH0_CALLBACK_URL", "declared_in": ["01-Login/.env.example", "01-Login-Quickstart/.env.example"], "reads": ["01-Login/platform/authenticator/auth.go:31", "01-Login-Quickstart/auth.go:25"]},
+  {"key": "SESSION_SECRET", "declared_in": ["01-Login-Quickstart/.env.example"], "reads": ["01-Login-Quickstart/handlers.go:22"]}
+ ],
+ "gaps": [
+  {"what": "the two apps are the same sample written twice: same routes, same cookie name, same port; nothing joins them and a link between them is false", "class": "forbidden_link"},
+  {"what": "the handlers of /login, /callback and (Quickstart) /logout are closures returned by a function: the route binds to the function that returns them", "class": "anonymous_handler"},
+  {"what": "the Quickstart registers its routes on net/http's ServeMux, with no framework: no method is declared, and the pattern / also answers every unknown path", "class": "no_framework"},
+  {"what": "Auth0 calls /callback from outside: the caller is the tenant, configured by AUTH0_CALLBACK_URL, and no file of the project holds that call", "class": "inbound_from_external"},
+  {"what": "in 01-Login the session cookie is signed with the literal key \"secret\" (router.go:27), in the Quickstart with SESSION_SECRET", "class": "note"},
+  {"what": "jQuery, Bootstrap, Font Awesome and js.cookie come from CDN URLs or a vendored file in the templates, not from a manifest", "class": "undeclared_dependency"},
+  {"what": "run_and_observe cannot complete the login: it needs a real Auth0 tenant and a test user, which only the project's CI secrets hold", "class": "needs_credentials"}
+ ]
+}

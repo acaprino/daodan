@@ -1,0 +1,300 @@
+{
+ "languages": [
+  {
+   "path": "src/routes/+page.svelte",
+   "language": "Svelte"
+  },
+  {
+   "path": "src/routes/Nav.svelte",
+   "language": "Svelte"
+  },
+  {
+   "path": "src/routes/+page.server.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "src/hooks.server.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "src/lib/api.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "svelte.config.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "vite.config.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "src/app.html",
+   "language": "HTML"
+  },
+  {
+   "path": "static/conduit-theme.css",
+   "language": "CSS"
+  }
+ ],
+ "excluded": [
+  {
+   "path": "README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "CHANGELOG.md",
+   "why": "documentation"
+  },
+  {
+   "path": "LICENSE",
+   "why": "documentation"
+  },
+  {
+   "path": "logo.png",
+   "why": "binary"
+  },
+  {
+   "path": "static/logo-256.png",
+   "why": "binary"
+  },
+  {
+   "path": "src/lib/assets/favicon.ico",
+   "why": "binary"
+  }
+ ],
+ "units": [
+  {
+   "name": "realworld.svelte.dev",
+   "kind": "npm-package",
+   "root": ".",
+   "manifest": "package.json",
+   "source_roots": [
+    "src"
+   ],
+   "depends_on": [],
+   "config": {
+    "tsconfig": [
+     "jsconfig.json",
+     ".svelte-kit/tsconfig.json"
+    ],
+    "paths": {
+     "$lib": [
+      "src/lib"
+     ]
+    },
+    "entry_files": [
+     "src/app.html",
+     "src/hooks.server.js",
+     "src/routes/+error.svelte",
+     "src/routes/+layout.server.js",
+     "src/routes/+layout.svelte",
+     "src/routes/+page.server.js",
+     "src/routes/+page.svelte",
+     "src/routes/article/[slug]/+page.server.js",
+     "src/routes/article/[slug]/+page.svelte",
+     "src/routes/editor/+page.server.js",
+     "src/routes/editor/+page.svelte",
+     "src/routes/editor/[slug]/+page.server.js",
+     "src/routes/editor/[slug]/+page.svelte",
+     "src/routes/login/+page.server.js",
+     "src/routes/login/+page.svelte",
+     "src/routes/profile/+page.js",
+     "src/routes/profile/+page.svelte",
+     "src/routes/profile/@[user]/+layout.server.js",
+     "src/routes/profile/@[user]/+layout.svelte",
+     "src/routes/profile/@[user]/+page.server.js",
+     "src/routes/profile/@[user]/+page.svelte",
+     "src/routes/profile/@[user]/favorites/+page.server.js",
+     "src/routes/profile/@[user]/favorites/+page.svelte",
+     "src/routes/register/+page.server.js",
+     "src/routes/register/+page.svelte",
+     "src/routes/settings/+page.server.js",
+     "src/routes/settings/+page.svelte"
+    ],
+    "svelte_config": "svelte.config.js"
+   }
+  }
+ ],
+ "workspace": null,
+ "toolchains": [
+  {
+   "tool": "node",
+   "version": "20",
+   "declared_in": ".nvmrc"
+  },
+  {
+   "tool": "pnpm",
+   "version": "10.20.0",
+   "declared_in": "package.json#packageManager"
+  }
+ ],
+ "dependencies": [
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "@sveltejs/adapter-vercel",
+   "declared": "^6.3.2",
+   "resolved": "6.3.2",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "@sveltejs/kit",
+   "declared": "^2.52.2",
+   "resolved": "2.52.2",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "@sveltejs/vite-plugin-svelte",
+   "declared": "^6.2.1",
+   "resolved": "6.2.1",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "marked",
+   "declared": "^16.4.1",
+   "resolved": "16.4.1",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "prettier",
+   "declared": "^3.6.2",
+   "resolved": "3.6.2",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "prettier-plugin-svelte",
+   "declared": "^3.4.0",
+   "resolved": "3.4.0",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "sanitize-html",
+   "declared": "^2.17.0",
+   "resolved": "2.17.0",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "svelte",
+   "declared": "^5.55.7",
+   "resolved": "5.55.7",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "typescript",
+   "declared": "^5.9.3",
+   "resolved": "5.9.3",
+   "scope": "dev",
+   "declared_in": "package.json"
+  },
+  {
+   "unit": "realworld.svelte.dev",
+   "name": "vite",
+   "declared": "^7.3.2",
+   "resolved": "7.3.2",
+   "scope": "dev",
+   "declared_in": "package.json"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "SvelteKit",
+   "unit": "realworld.svelte.dev",
+   "evidence": "vite.config.js#L5"
+  },
+  {
+   "name": "Svelte",
+   "unit": "realworld.svelte.dev",
+   "evidence": "package.json#L22"
+  },
+  {
+   "name": "Vite",
+   "unit": "realworld.svelte.dev",
+   "evidence": "vite.config.js#L2"
+  },
+  {
+   "name": "marked",
+   "unit": "realworld.svelte.dev",
+   "evidence": "src/routes/article/[slug]/+page.server.js#L3"
+  },
+  {
+   "name": "sanitize-html",
+   "unit": "realworld.svelte.dev",
+   "evidence": "src/routes/article/[slug]/+page.server.js#L4"
+  },
+  {
+   "name": "Prettier",
+   "unit": "realworld.svelte.dev",
+   "evidence": ".prettierrc#L6"
+  },
+  {
+   "name": "Ionicons",
+   "unit": "realworld.svelte.dev",
+   "evidence": "src/app.html#L10"
+  }
+ ],
+ "services": [
+  {
+   "name": "RealWorld API",
+   "kind": "api",
+   "evidence": "src/lib/api.js#L3"
+  },
+  {
+   "name": "Vercel",
+   "kind": "hosting",
+   "evidence": "svelte.config.js#L1"
+  },
+  {
+   "name": "Google Fonts",
+   "kind": "fonts",
+   "evidence": "src/app.html#L15"
+  }
+ ],
+ "needs": {
+  "container": false,
+  "reason": ""
+ },
+ "traps": [
+  "the app has no backend and no database of its own: every load function and form action calls the external REST API https://api.realworld.show/api, a literal in src/lib/api.js; no environment variable, no SDK and no manifest names it",
+  "pnpm-workspace.yaml holds only onlyBuiltDependencies (esbuild) and no packages: this is a single pnpm project, not a workspace",
+  "all ten dependencies are devDependencies, including svelte, @sveltejs/kit, marked and sanitize-html, which run on the server at request time: the app is bundled at build time",
+  "jsconfig.json only extends ./.svelte-kit/tsconfig.json, which svelte-kit sync generates and .gitignore excludes: the $lib alias and the compiler options are in no file of the repository; $lib is a SvelteKit default, and ./$types in the JSDoc comments is generated too",
+  "typescript is a devDependency but the repository has no .ts file and no check script: the sources are JavaScript with JSDoc types and Svelte files with plain <script>",
+  "$app/state, $app/stores and $app/forms are virtual modules of SvelteKit, not packages or files",
+  "route files (+page.svelte, +page.server.js, +layout.server.js, +page.js, +error.svelte) are routes by naming convention; Nav.svelte, Editor.svelte, get_articles.js and the like sit in src/routes without being routes; one unit holds browser code and server code",
+  "Node 20 comes from .nvmrc alone: package.json has no engines field although .npmrc sets engine-strict=true; pnpm 10.20.0 comes from packageManager; there is no CI workflow and no Dockerfile",
+  "pnpm-lock.yaml (lockfileVersion 9.0) resolves 178 packages; only the ten under importers . are direct",
+  "Vercel shows only through @sveltejs/adapter-vercel in svelte.config.js: there is no vercel.json",
+  "Ionicons 2.0.1 and Google Fonts are stylesheets loaded from CDNs in src/app.html and are in no manifest; the comment there says the Bootstrap theme comes from a hosted CDN, but static/conduit-theme.css is a hand-trimmed local file (Conduit Minimal CSS v4), project source and not vendored Bootstrap",
+  "src/lib/assets/favicon.ico is PNG data with an .ico name; src/lib/assets/conduit-logo.svg is an image imported as an asset",
+  "the placeholder avatar is a literal URL on static.productionready.io in src/lib/constants.js; user avatars are URLs returned by the API",
+  "the session is a cookie named jwt holding the base64 of the user object returned by the API, decoded in src/hooks.server.js: no auth library and no auth service besides the API itself",
+  "languages lists programming and markup languages only; JSON, YAML, Markdown and SVG files are present and not listed"
+ ],
+ "cases": [
+  "one-unit-many-parts",
+  "path-alias",
+  "locked-versions",
+  "documentation-tree",
+  "binary-file",
+  "build-generates-code",
+  "missing-file",
+  "saas-service",
+  "framework-from-files"
+ ]
+}

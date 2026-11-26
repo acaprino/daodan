@@ -1,0 +1,194 @@
+{
+ "routes": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/routes/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/about\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/api/health\": [\n\t\t\"src/routes/api/health/+server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/routes/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/routes/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/routes/blog/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/routes/blog/[slug]/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/routes/(shop)/cart/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/routes/(shop)/checkout/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/routes/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/routes/docs/[...rest]/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/routes/legacy/+page.js\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/routes/login/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/routes/reexport/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/routes/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "stale": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/routes/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/routes/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/routes/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/routes/blog/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/routes/blog/[slug]/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/routes/(shop)/cart/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/routes/(shop)/checkout/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/routes/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/routes/docs/[...rest]/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/routes/legacy/+page.js\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/routes/login/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/routes/reexport/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/routes/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "routes-in-pages": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/pages/(shop)/+layout.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/pages/+page.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/about\": [\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/api/health\": [\n\t\t\"src/pages/api/health/+server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/pages/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/pages/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/pages/blog/+page.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/pages/blog/[slug]/+page.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/pages/(shop)/cart/+page.server.ts\",\n\t\t\"src/pages/(shop)/+layout.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/pages/(shop)/checkout/+page.server.ts\",\n\t\t\"src/pages/(shop)/+layout.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/pages/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/pages/docs/[...rest]/+page.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\",\n\t\t\"src/pages/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/pages/legacy/+page.js\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/pages/login/+page.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/pages/reexport/+page.server.ts\",\n\t\t\"src/pages/+layout.ts\",\n\t\t\"src/pages/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/pages/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "out-dir": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": "Your tsconfig.json should extend the configuration generated by SvelteKit:\n{\n  \"extends\": \"./.kit-out/tsconfig.json\"\n}\nYour tsconfig.json should extend the configuration generated by SvelteKit:\n{\n  \"extends\": \"./.kit-out/tsconfig.json\"\n}\n"
+  },
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "cat: .svelte-kit/types/route_meta_data.json: No such file or directory\n"
+  }
+ ],
+ "no-routes": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/\": []\n}",
+   "stderr": ""
+  }
+ ],
+ "config-throws": [
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "Loading Svelte config from Vite config failed: Error: svelte.config.js needs a secret\n    at file:///work/source-config-throws/svelte.config.js?ts=1795431715565:1:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async load_svelte_config (file:///work/source-config-throws/node_modules/@sveltejs/kit/src/core/config/index.js:171:17)\n    at async sveltekit (file:///work/source-config-throws/node_modules/@sveltejs/kit/src/exports/vite/index.js:176:19) \n\nFalling back to loading svelte.config.js\n> svelte.config.js needs a secret\n    at file:///work/source-config-throws/svelte.config.js?ts=1795431715567:1:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async load_svelte_config (file:///work/source-config-throws/node_modules/@sveltejs/kit/src/core/config/index.js:171:17)\n    at async file:///work/source-config-throws/node_modules/@sveltejs/kit/src/cli.js:98:18\n"
+  },
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "cat: .svelte-kit/types/route_meta_data.json: No such file or directory\n"
+  }
+ ],
+ "config-broken": [
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "Loading Svelte config from Vite config failed: SyntaxError: Unexpected end of input\n    at compileSourceTextModule (node:internal/modules/esm/utils:319:16)\n    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:89:18)\n    at #translate (node:internal/modules/esm/loader:438:20)\n    at afterLoad (node:internal/modules/esm/loader:506:29)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)\n    at afterResolve (node:internal/modules/esm/loader:611:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12)\n    at node:internal/modules/esm/loader:636:32\n    at TracingChannel.tracePromise (node:diagnostics_channel:370:14) \n\nFalling back to loading svelte.config.js\nfile:///work/source-config-broken/svelte.config.js?ts=1795431718304:2\n\n\n\nSyntaxError: Unexpected end of input\n    at compileSourceTextModule (node:internal/modules/esm/utils:319:16)\n    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:89:18)\n    at #translate (node:internal/modules/esm/loader:438:20)\n    at afterLoad (node:internal/modules/esm/loader:506:29)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)\n    at afterResolve (node:internal/modules/esm/loader:611:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12)\n    at node:internal/modules/esm/loader:636:32\n    at TracingChannel.tracePromise (node:diagnostics_channel:370:14)\n\nNode.js v24.22.3\n"
+  },
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "cat: .svelte-kit/types/route_meta_data.json: No such file or directory\n"
+  }
+ ],
+ "route-conflict": [
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "Loading Svelte config from Vite config failed: Error: The \"/(a)/x\" and \"/(b)/x\" routes conflict with each other\n    at prevent_conflicts (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/conflict.js:45:11)\n    at create_routes_and_nodes (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:394:2)\n    at create_manifest_data (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:34:28)\n    at create (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/sync.js:32:24)\n    at Module.all (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/sync.js:77:9)\n    at BasicMinimalPluginContext.handler (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/exports/vite/index.js:449:28)\n    at runConfigHook (file:///work/source-route-conflict/node_modules/vite/dist/node/chunks/config.js:36193:42)\n    at async resolveConfig (file:///work/source-route-conflict/node_modules/vite/dist/node/chunks/config.js:35695:13)\n    at async load_config_from_vite (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/config/index.js:192:14)\n    at async load_config (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/config/index.js:131:23) \n\nFalling back to loading svelte.config.js\n> The \"/(a)/x\" and \"/(b)/x\" routes conflict with each other\n    at prevent_conflicts (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/conflict.js:45:11)\n    at create_routes_and_nodes (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:394:2)\n    at create_manifest_data (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:34:28)\n    at Module.all_types (file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/core/sync/sync.js:87:24)\n    at file:///work/source-route-conflict/node_modules/@sveltejs/kit/src/cli.js:100:8\n"
+  },
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "cat: .svelte-kit/types/route_meta_data.json: No such file or directory\n"
+  }
+ ],
+ "bad-matcher": [
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "Loading Svelte config from Vite config failed: Error: No matcher found for parameter 'nomatcher' in route /nomatch/[id=nomatcher]\n    at create_manifest_data (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:40:11)\n    at create (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/core/sync/sync.js:32:24)\n    at Module.all (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/core/sync/sync.js:77:9)\n    at BasicMinimalPluginContext.handler (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/exports/vite/index.js:449:28)\n    at runConfigHook (file:///work/source-bad-matcher/node_modules/vite/dist/node/chunks/config.js:36193:42)\n    at async resolveConfig (file:///work/source-bad-matcher/node_modules/vite/dist/node/chunks/config.js:35695:13)\n    at async load_config_from_vite (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/core/config/index.js:192:14)\n    at async load_config (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/core/config/index.js:131:23)\n    at async file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/cli.js:98:18 \n\nFalling back to loading svelte.config.js\n> No matcher found for parameter 'nomatcher' in route /nomatch/[id=nomatcher]\n    at create_manifest_data (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/core/sync/create_manifest_data/index.js:40:11)\n    at Module.all_types (file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/core/sync/sync.js:87:24)\n    at file:///work/source-bad-matcher/node_modules/@sveltejs/kit/src/cli.js:100:8\n"
+  },
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "cat: .svelte-kit/types/route_meta_data.json: No such file or directory\n"
+  }
+ ],
+ "server-syntax-error": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/routes/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/about\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/api/health\": [\n\t\t\"src/routes/api/health/+server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/routes/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/routes/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/routes/blog/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/routes/blog/[slug]/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/routes/(shop)/cart/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/routes/(shop)/checkout/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/routes/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/routes/docs/[...rest]/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/routes/legacy/+page.js\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/routes/login/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/routes/reexport/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/routes/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "failed-after-a-good-sync": [
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "Loading Svelte config from Vite config failed: Error: svelte.config.js needs a secret\n    at file:///work/source-failed-after-a-good-sync/svelte.config.js?ts=1795431731823:1:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async load_svelte_config (file:///work/source-failed-after-a-good-sync/node_modules/@sveltejs/kit/src/core/config/index.js:171:17)\n    at async sveltekit (file:///work/source-failed-after-a-good-sync/node_modules/@sveltejs/kit/src/exports/vite/index.js:176:19) \n\nFalling back to loading svelte.config.js\n> svelte.config.js needs a secret\n    at file:///work/source-failed-after-a-good-sync/svelte.config.js?ts=1795431731825:1:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async load_svelte_config (file:///work/source-failed-after-a-good-sync/node_modules/@sveltejs/kit/src/core/config/index.js:171:17)\n    at async file:///work/source-failed-after-a-good-sync/node_modules/@sveltejs/kit/src/cli.js:98:18\n"
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/routes/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/about\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/api/health\": [\n\t\t\"src/routes/api/health/+server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/routes/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/routes/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/routes/blog/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/routes/blog/[slug]/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/routes/(shop)/cart/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/routes/(shop)/checkout/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/routes/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/routes/docs/[...rest]/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/routes/legacy/+page.js\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/routes/login/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/routes/reexport/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/routes/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "not-installed": [
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "npm error code ENOTCACHED\nnpm error request to https://registry.npmjs.org/svelte-kit failed: cache mode is 'only-if-cached' but no cached response is available.\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-11-23T11_02_12_081Z-debug-0.log\n"
+  },
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "cat: .svelte-kit/types/route_meta_data.json: No such file or directory\n"
+  }
+ ],
+ "old-kit-2.0.0": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/routes/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/about\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/api/health\": [\n\t\t\"src/routes/api/health/+server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/routes/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/routes/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/routes/blog/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/routes/blog/[slug]/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/routes/(shop)/cart/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/routes/(shop)/checkout/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/routes/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/routes/docs/[...rest]/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/routes/legacy/+page.js\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/routes/login/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/routes/reexport/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/routes/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "old-kit-2.15.0": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/routes/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/about\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/api/health\": [\n\t\t\"src/routes/api/health/+server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/routes/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/routes/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/routes/blog/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/routes/blog/[slug]/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/routes/(shop)/cart/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/routes/(shop)/checkout/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/routes/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/routes/docs/[...rest]/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/routes/legacy/+page.js\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/routes/login/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/routes/reexport/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/routes/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "old-kit-2.40.0": [
+  {
+   "returncode": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 0,
+   "stdout": "{\n\t\"/(shop)\": [\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/\": [\n\t\t\"src/routes/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/about\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/api/health\": [\n\t\t\"src/routes/api/health/+server.ts\"\n\t],\n\t\"/api/items/[id]\": [\n\t\t\"src/routes/api/items/[id]/+server.ts\"\n\t],\n\t\"/api/pay\": [\n\t\t\"src/routes/api/pay/+server.ts\"\n\t],\n\t\"/blog\": [\n\t\t\"src/routes/blog/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/blog/[slug]\": [\n\t\t\"src/routes/blog/[slug]/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/cart\": [\n\t\t\"src/routes/(shop)/cart/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/checkout\": [\n\t\t\"src/routes/(shop)/checkout/+page.server.ts\",\n\t\t\"src/routes/(shop)/+layout.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/computed\": [\n\t\t\"src/routes/computed/+server.ts\"\n\t],\n\t\"/docs/[...rest]\": [\n\t\t\"src/routes/docs/[...rest]/+page.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/hybrid\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\",\n\t\t\"src/routes/hybrid/+server.ts\"\n\t],\n\t\"/items/[id=integer]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/lang/[[opt]]\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/legacy\": [\n\t\t\"src/routes/legacy/+page.js\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/login\": [\n\t\t\"src/routes/login/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/(shop)/receipt\": [\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/reexport\": [\n\t\t\"src/routes/reexport/+page.server.ts\",\n\t\t\"src/routes/+layout.ts\",\n\t\t\"src/routes/+layout.server.ts\"\n\t],\n\t\"/sitemap.xml\": [\n\t\t\"src/routes/sitemap.xml/+server.ts\"\n\t]\n}",
+   "stderr": ""
+  }
+ ],
+ "timed-out": [
+  {
+   "returncode": 124,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "returncode": 1,
+   "stdout": "",
+   "stderr": "cat: .svelte-kit/types/route_meta_data.json: No such file or directory\n"
+  }
+ ]
+}

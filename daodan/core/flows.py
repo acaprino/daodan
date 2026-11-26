@@ -24,8 +24,11 @@ What (`link`):
   argument), `member` (the property read on the call's result) or `holder` (the
   call is made on a handle assigned in the same file as `handle = store.key` or
   `handle = store[KEY]`: a variable the snapshot's scopes bind to that assignment, or an
-  attribute of `self` or `this` that the class assigns so; a receiver with no such
-  assignment is not this store, one the snapshot does not resolve is a gap). With `actions_in`
+  attribute of `self` or `this` that the class assigns so, or on `store[KEY]` itself
+  (`db[COLLECTION].find()`, `get_db()[COLLECTION].find()`); KEY is a text or a constant bound
+  to one; a receiver with no such assignment is not this store, one the snapshot does not
+  resolve is a gap, and so is an index that is no such text, with its own cause: computed,
+  imported and linked to no declaration, `module.NAME`, `self.NAME`). With `actions_in`
   a key naming a function declared as a property under those prefixes is a call to
   it, also through the variable that holds it.
 - `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
@@ -51,7 +54,9 @@ a grammar that does not load) the rule yields a gap for that call, with the caus
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service and method and a path schema that meets: the most literal
-route wins, a tie is an uncertain link, a gap with its candidates. The services of others the brief lists (the
+route wins, a tie is an uncertain link, a gap with its candidates. A route Noir or Next.js declares (a route
+handler, not a page, on a function the snapshot resolves) is offered too, with the service `*`: it meets a call of
+any service, and a route of the call's own service, from a rule, comes before it; a catch-all path is a gap. The services of others the brief lists (the
 stack step's technologies and the external modules of the module graph, by id) are nodes too: a symbol in a file
 a service cites as evidence uses it (`dichiarato`), except in a file where an engine resolved a call into a package
 the stack step ties to that service: there the function that makes such a call uses it, once per service and at its
@@ -63,6 +68,7 @@ A component written as an element (`<Paywall />`) is called by the function that
 
     python flows.py links MANIFEST --rules RULES
     python flows.py trace MANIFEST --rules RULES (--from NODE | --to NODE | --through NODE)
+    python flows.py wrappers MANIFEST [--rules RULES]    (the `rotta` rules `http_wrappers.py` proposes, and its gaps)
 """
 from __future__ import annotations
 
@@ -72,7 +78,7 @@ import hashlib
 import json
 import re
 import sys
-from collections import defaultdict, deque
+from collections import Counter, defaultdict, deque
 from functools import cache, cached_property
 from pathlib import Path, PurePosixPath
 from typing import Callable, NamedTuple
@@ -82,6 +88,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import binder  # noqa: E402
 import edge_view  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
@@ -150,11 +157,12 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
             raise ValueError(f"{where}: link must be one of {', '.join(LINKS)}")
         if "shape" in rule or "reader" in rule:
             import entries
+            import premap
             if rule.get("source") != "modello":
                 raise ValueError(f"{where}: supplied classifications must have source modello; registry decisions come from Daodan")
             if set(rule) != {"link", "reader", "shape", "entry", "source"} or rule["link"] != "ingresso" or (
                     rule["reader"] not in (entries.ATTRIBUTE, entries.ARGUMENT, entries.DECORATOR, entries.NOIR, entries.MANIFEST,
-                                             entries.NEXT)
+                                             *(source.NAME for source in (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)))
                     or not isinstance(rule["shape"], str) or not rule["shape"]
                     or rule["entry"] not in (*entries.ENTRY_KINDS, entries.NO_ENTRY)):
                 raise ValueError(f"{where}: invalid shape classification or entry kind")
@@ -182,6 +190,9 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
                 raise ValueError(f"{where}: unknown entry kind {rule['entry']!r}")
         if rule["link"] in ("rotta", "offre") and set(rule["route"]) != {"service", "method", "path"}:
             raise ValueError(f"{where}: route has exactly service, method and path")
+        if rule["link"] in ("rotta", "offre") and rule["route"]["service"] == ANY_SERVICE:
+            raise ValueError(f"{where}: the service {ANY_SERVICE} is reserved for the routes Noir and Next.js declare: "
+                             "a rule names the service of its route")
         if "handler" in rule:
             # `handler` is a field of the rule (`arg1`, `last`), not source text.
             if rule["link"] not in ("offre", "attiva") or not re.fullmatch(r"arg\d+|last", str(rule["handler"])):
@@ -302,6 +313,7 @@ class Facts:
                 self.outside[file, name] = module or "another module"
         self._nodes: dict[str, str | None] = {}
         self.route_named: dict[str, str] = {}  # a function written in place as a route handler: its route
+        self._held: dict[str, Counter] = {}  # per file: how many functions hold each node as their own (`own_node`)
 
     def targets(self, name: str, file: str, line: int, column: int, kinds: tuple) -> list[str]:
         """Declarations an identifier names: its resolved read, else the one module-level
@@ -407,13 +419,11 @@ class Facts:
         property it is the value of, inside its owner, or as its owner."""
         if declaration_id not in self._nodes:
             declaration, labels = self.declarations.get(declaration_id or ""), []
-            while declaration is not None and declaration["name"] == "(anonymous)" \
-                    and declaration["id"] not in self.route_named:
+            while declaration is not None and self.folds(declaration):
                 label = self.property_label(declaration)
                 if label:
                     labels.insert(0, label)
-                scope = str(declaration.get("scope") or "")
-                declaration = self.declarations.get(f"{declaration['file']}::{scope.removeprefix('scope-')}")
+                declaration = self.owner(declaration)
             name, file = None, declaration_id.split("::", 1)[0] if declaration_id else None
             if declaration is not None:
                 base = self.route_named.get(declaration["id"]) or \
@@ -424,6 +434,38 @@ class Facts:
                 name = f"{file}::{'.'.join(labels)}"
             self._nodes[declaration_id] = name
         return self._nodes[declaration_id]
+
+    def owner(self, declaration: dict) -> dict | None:
+        """The declaration whose scope holds this one: the class of a method, the function a closure is written in."""
+        scope = str(declaration.get("scope") or "")
+        return self.declarations.get(f"{declaration['file']}::{scope.removeprefix('scope-')}")
+
+    def folds(self, declaration: dict) -> bool:
+        """Whether a declaration is no node of its own: an anonymous function counts as the function that holds it, unless a
+        route names it."""
+        return declaration["name"] == "(anonymous)" and declaration["id"] not in self.route_named
+
+    def name_routes(self, names: dict[str, str]) -> None:
+        """Name functions written in place as route handlers by their route (`route_named`); the nodes read so far are read again."""
+        self.route_named.update(names)
+        self._nodes.clear()
+        self._held.clear()
+
+    def own_node(self, declaration_id: str | None) -> str | None:
+        """The node of a function that is its own: a function with a name, an anonymous one a route names or that is the value of a
+        property (its node is the property's), and the only one of its file to hold that node (the `(lambda)` of one method are one
+        name). None otherwise: a route bound to it would carry the steps of the others, or of the function that holds it."""
+        declaration = self.declarations.get(declaration_id or "")
+        if declaration is None or not self._holds(declaration):
+            return None
+        node = self.node(declaration_id)
+        file = declaration["file"]
+        if file not in self._held:
+            self._held[file] = Counter(self.node(d["id"]) for d in self.functions.get(file, ()) if self._holds(d))
+        return node if self._held[file][node] == 1 else None
+
+    def _holds(self, declaration: dict) -> bool:
+        return not self.folds(declaration) or self.property_label(declaration) is not None
 
     def named(self, declaration_id: str | None) -> str | None:
         declaration = self.declarations.get(declaration_id or "")
@@ -466,7 +508,7 @@ class Facts:
         if node is None:
             return None
         found = entries._string(node, tree.source, tree.grammar, exact=True)
-        if found is not None or node.type not in NAMES:
+        if found is not None or not (node.type in NAMES or node.type in MEMBERS and _dotted(node)):
             return found
         for declaration in self.constants(entries._text(tree.source, node), tree.file, *entries._at(node)):
             home = self.tree(declaration["file"])
@@ -554,23 +596,27 @@ def _key_name(node, tree: Tree) -> str | None:
 
 
 def _members(node, tree: Tree) -> tuple[dict[str, object], bool] | None:
-    """The named entries of an object literal, `{name: value node}` (None for a method), and whether a spread may add
-    others; None when the node is no object literal. A computed key adds nothing."""
+    """The named entries of an object literal, `{name: value node}` (None for a method), and whether other members may
+    exist that these do not name: a spread, a computed key (`['method']`) and a prototype (`__proto__: {...}`) may each set
+    any member; None when the node is no object literal. A key that is no name (a number) names no member we read."""
     import entries
     node = _unwrapped(node)
     if node is None or node.type not in OBJECTS:
         return None
     found, spread = {}, False
     for child in node.named_children:
-        if child.type in SPREADS:
+        key = child.child_by_field_name("key") if child.type == "pair" else \
+            child.child_by_field_name("name") if child.type == "method_definition" else None
+        if child.type in SPREADS or key is not None and (
+                key.type == "computed_property_name" or child.type == "pair" and _key_name(key, tree) == "__proto__"):
             spread = True
         elif child.type == "pair":
-            if (name := _key_name(child.child_by_field_name("key"), tree)) is not None:
+            if (name := _key_name(key, tree)) is not None:
                 found[name] = child.child_by_field_name("value")
         elif child.type == "shorthand_property_identifier":
             found[entries._text(tree.source, child)] = child
         elif child.type == "method_definition":
-            if (name := _key_name(child.child_by_field_name("name"), tree)) is not None:
+            if (name := _key_name(key, tree)) is not None:
                 found[name] = None
     return found, spread
 
@@ -732,19 +778,42 @@ def _segment_grade(asked: str, offered: str) -> int | None:
     return None
 
 
+ANY_SERVICE = "*"  # the service of an offered route no rule names (Noir and Next.js do not know it): it meets any
+
+
 def _rest_meet(asked: tuple, offered: tuple) -> tuple | None:
-    """Same service, method and number of segments, every segment meeting; (True, total) when no hole has to
-    equal a literal, the most literal route first; (False, 0) otherwise, so loose candidates always tie."""
-    if asked[:2] != offered[:2]:
+    """Same method and number of segments, every segment meeting, and the same service or an offered `ANY_SERVICE`
+    (the asking side names its service: it is never `*`). The service comes first: a route of the asked service
+    before one of `*`, so a declared route only fills where no route of a rule meets. Then (True, total) when no
+    hole has to equal a literal, the most literal route first; (False, 0) otherwise, so loose candidates tie; a route
+    of `*` meets only the first kind: a hole that would have to equal one of its literals is no link to a route no
+    rule vouches for."""
+    if asked[1] != offered[1] or offered[0] not in (asked[0], ANY_SERVICE):
         return None
     calls, routes = asked[2].strip("/").split("/"), offered[2].strip("/").split("/")
     grades = [_segment_grade(c, r) for c, r in zip(calls, routes)] if len(calls) == len(routes) else [None]
     if None in grades:
         return None
-    return (True, sum(grades)) if min(grades) >= 1 else (False, 0)
+    exact, strict = offered[0] == asked[0], min(grades) >= 1
+    if not (exact or strict):
+        return None
+    # shortcut: the service ranks before the literal, so a rule's `/x/{}` beats a declared `/x/search`, when a measured project shows the declared route was the right one
+    return (exact, strict, sum(grades) if strict else 0)
 
 
 REST = LinkType("rest", ("rotta", "offre"), _rest_key, _rest_meet)  # the guide's "metodo e schema del percorso"
+
+
+def _store_index(node):
+    """The index of `store[INDEX]`: `store` is a name, a dotted name all the way down, or the result of a call
+    (`get_db()[NAME]`); None for any other node."""
+    # shortcut: the object indexed is a name or a call, not a longer expression (`a.b()[NAME]`, `x[0][NAME]`), when a measured project holds its store that way
+    if node is None or node.type not in SUBSCRIPTS:
+        return None
+    base = _unwrapped(node.child_by_field_name("object") or node.child_by_field_name("value"))
+    if base is not None and (_dotted(base) or base.child_by_field_name("arguments") is not None):
+        return node.child_by_field_name("index") or node.child_by_field_name("subscript")
+    return None
 
 
 def _store_key(value, tree: Tree, facts) -> str | None:
@@ -757,21 +826,58 @@ def _store_key(value, tree: Tree, facts) -> str | None:
     if node.type in MEMBERS and _dotted(node):
         name = node.child_by_field_name("property") or node.child_by_field_name("attribute")
         return entries._text(tree.source, name) if name is not None else None
-    if node.type in SUBSCRIPTS and _dotted(node.child_by_field_name("object") or node.child_by_field_name("value")):
-        text = facts.literal(node.child_by_field_name("index") or node.child_by_field_name("subscript"), tree)
+    if (index := _store_index(node)) is not None:
+        text = facts.literal(index, tree)
         return text if text is not None and "${" not in text else None
     return None
 
 
+def _unread_index(index, call: dict, facts) -> str:
+    """Why the index of a receiver is no text: one cause for each case, so a gap says what is missing. An attribute of
+    `self`/`this`, or a dotted name, is read through the engine's declaration of it (`Facts.literal`); it is a gap when
+    the engine names none as written once."""
+    import entries
+    tree, node = call["tree"], _unwrapped(index)
+    if node is not None and node.type in MEMBERS and _dotted(node):
+        if any(ref.get("binding_id") for ref in facts.reads.get((tree.file, *entries._at(node)), ())):
+            return f"receiver index {entries._text(tree.source, node)} names a declaration whose value is no text"
+        owner = entries._text(tree.source, node.child_by_field_name("object"))
+        if owner in entries.RECEIVERS:
+            return (f"receiver index is an attribute of {owner} with no declaration the engine names as written once "
+                    "(no engine index, an inherited or outside attribute, or a value written again)")
+        return ("receiver index is a dotted name (`module.NAME`, `Class.NAME`) with no declaration the engine names as "
+                "written once (no engine index, an outside name, or a value written again)")
+    if node is not None and node.type in NAMES and any(
+            ref.get("imported_name") for ref in facts.reads.get((tree.file, *entries._at(node)), ())):
+        return f"receiver index {entries._text(tree.source, node)} is imported and the snapshot links it to no declaration"
+    return f"receiver index {_not_literal(call)}"
+
+
+def _inline_handle(call: dict, facts) -> tuple[str | None, str | None]:
+    """`(key, why)` of a call made on `store[INDEX]` itself, `db[COLLECTION].find()`, a receiver that is no name: the key
+    is read as for `handle = store[INDEX]` (`_store_key`); the rule's `callee` or `written` says which calls are the store's.
+    An index that is no constant is `why` (`_unread_index`), never a key. No key and no `why`: the receiver is no
+    `store[...]` (the result of a call that is not indexed, a text)."""
+    callee = call["node"].child_by_field_name("function")
+    node = _unwrapped(callee.child_by_field_name("object")) if callee is not None else None
+    if (index := _store_index(node)) is None:
+        return None, None
+    key = _store_key(node, call["tree"], facts)
+    return (key, None) if key else (None, _unread_index(index, call, facts))
+
+
 def _handle(call: dict, facts) -> tuple[str | None, str | None]:
     """`(key, why)` of the store handle a call is made on: `handle = store.key` or `handle = store[KEY]`, assigned where
-    the snapshot's scopes bind the receiver (a variable), or in the class that holds it (`self.handle`, `this.handle`).
+    the snapshot's scopes bind the receiver (a variable), or in the class that holds it (`self.handle`, `this.handle`);
+    or the receiver itself, `store[KEY]` (`_inline_handle`).
     No key and no `why`: the receiver is no handle of the store (a parameter, an import, a value of another shape);
-    `why`: the snapshot does not tell what the receiver is, or it is assigned from several keys."""
+    `why`: the snapshot does not tell what the receiver is, it is assigned from several keys, or its index is no constant."""
     import entries
     tree, receiver = call["tree"], call["parts"][:-1]
     name = ".".join(receiver)
-    if not receiver or receiver[0] == DYNAMIC or (len(receiver) == 1 and receiver[0] in entries.RECEIVERS):
+    if receiver[:1] == [DYNAMIC]:
+        return _inline_handle(call, facts)
+    if not receiver or (len(receiver) == 1 and receiver[0] in entries.RECEIVERS):
         return None, None
     if len(receiver) == 1:
         found, why = facts.bindings(tree.file, call["scope"], name)
@@ -938,6 +1044,7 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     import entries
     if not rules:
         return
+    names = {}
     for ref in view["references"]:
         parts = [str(part) for part in ref.get("parts") or []]
         for rule in (r for r in rules if _written(r, parts, ref["file"])):
@@ -949,36 +1056,70 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
             method, path = (_value(rule["route"][k], call, facts, rule.get("strip", "") if k == "path" else "")
                             for k in ("method", "path"))
             if written and written["name"] == "(anonymous)" and method and path is not None:
-                facts.route_named[written["id"]] = f"{method.upper()} {path}"
-    facts._nodes.clear()
+                names[written["id"]] = f"{method.upper()} {path}"
+    facts.name_routes(names)
 
 
-def _next_handlers(facts: Facts, resolver, item: dict) -> list[dict]:
-    """The functions a Next.js candidate starts from. The framework's rule is data (`QUERIES["next"]`): the exports of
-    the file that start its config type, the default export of a page or each method a route handler exports. The
-    snapshot's own export records name the function (`exported_target`), so a page is one entry on that function and
-    a route handler one per exported method. A type with no export in the table (a layout) stays as it is; what is not
-    found, or not resolved (a re-export), keeps the file-level symbol with a gap that says which export was looked
-    for, beside the entries of the others."""
-    import entries
-    spec = entries.QUERIES["next"].get(item["shape"], {})
-    methods = "methods" in spec
-    names = spec.get("methods") or spec.get("exports")
-    if not names:
-        return [item]
-    file, found, unread = item["site"], [], []
-    for name in names:
-        identity, reason = resolver.exported_target(file, name)
-        symbol = facts.node(identity) if identity else None
-        if symbol:
-            found.append({**item, "symbol": symbol, "site": f"{file}:{facts.declarations[identity]['line']}",
-                          "handler_source": entries.NEXT, **({"method": name} if methods else {})})
-        elif reason != "export-missing-or-ambiguous":
-            unread.append(f"{name}: {reason}")
-    if found and not unread:
-        return found
-    looked = "; ".join(unread) or ", ".join(names)
-    return [*found, {**item, "gap": f"no function found for the export Next.js starts {item['path']} from: {looked}"}]
+def bind_declared(declared: list[dict], facts: Facts, view: dict, rules: list[dict]) -> list[dict]:
+    """The declared rows as the links bind them (`binder.bind`), for the links and the candidates alike: a function written in place as a
+    handler a rule offers is named by that route first, and then the binder names the closures Noir cites, so that both end on the same nodes."""
+    _name_written_handlers(facts, view, [r for r in rules if "written" in r and "shape" not in r and r["link"] == "offre" and r.get("handler")])
+    return binder.bind(declared, facts, facts.resolver)
+
+
+def path_schema(path: str) -> str | None:
+    """The path of a route as `REST` reads one (`/orders/{}`: `:id` and `[id]` alike), or None when it has none (nothing after
+    the base URL, or a computed first segment). The adapter that knows its tool's spelling gives it as the row's `schema`."""
+    key = REST.key(ANY_SERVICE, "", path)  # the key wants a method, the schema is the same under any
+    return key[2] if key else None
+
+
+def _declared_routes(found: list[dict], offered: list[dict]) -> tuple[list[dict], list[dict]]:
+    """`(points, gaps)`: the routes the adapters declare as offered points of `REST`, and those that cannot be one. `found` are
+    the entries already classified (an entry of kind `rotta` on a function, no gap: the same classification as the entries
+    themselves), `offered` the points the rules gave. A row offers a route when it has a `schema` (the path as `REST` reads it,
+    written by the adapter that knows its tool's spelling) and a `method` of its own (a page has none and answers any); a `schema`
+    that is None is a path that stands for no single schema, and a gap. A point is dropped when one of the same function, method
+    and path schema exists, whatever its service: the rule's comes first, then the first declared."""
+    points, gaps = [], []
+    taken = {(o["symbol"], *o["key"][1:]) for o in offered}
+    for item in found:
+        method = item.get("method")
+        if item.get("kind") != "rotta" or "schema" not in item or item.get("page") or not item.get("symbol"):
+            continue  # a page answers any method: it is no route and no gap
+        cause = "it has no method" if not method else None if item["schema"] is not None else (
+            "the tool's path is no single path schema (a catch-all, or nothing after the base URL)")
+        if cause:
+            gaps.append({"site": item["site"], "symbol": item["symbol"], "reason": f"declared route {method} {item.get('path')}: {cause}"})
+            continue
+        key = REST.key(ANY_SERVICE, method, item["schema"])
+        # shortcut: the declared route goes whatever the calling service, so a call of another service than the rule's finds no declared route of that function, when one function is offered under two services
+        if key and (item["symbol"], *key[1:]) not in taken:
+            taken.add((item["symbol"], *key[1:]))
+            points.append({"symbol": item["symbol"], "key": key, "site": item["site"]})
+    return points, gaps
+
+
+def _spec_routes(rows: list[dict], offered: list[dict]) -> tuple[list[dict], list[dict]]:
+    """`(points, gaps)`: the routes a specification file declares and no function holds, offered at the file's own symbol. `rows` are
+    Noir's rows tagged `spec-only` that the binder could not place on a function (the tool says it is a contract, so nothing is
+    guessed from the file's name). A route a point of `offered` already has, by method and path schema and whatever its service, is
+    the contract agreeing with the code and adds none; a row with no single method and schema is a gap. A call that meets such a
+    point meets the contract: its edge says `spec`.
+    shortcut: the symbol is the file's module symbol, which the snapshot may not read (a `.yaml` has no declarations); the
+    edge is there for the route, the node is the file; upgrade when a specification's operations are nodes of their own."""
+    points, gaps = [], []
+    taken = {o["key"][1:] for o in offered}
+    for row in rows:
+        method = row.get("method")
+        key = REST.key(ANY_SERVICE, method, row["schema"]) if method and row.get("schema") else None
+        if not key:
+            gaps.append({"site": row["site"], "symbol": row["symbol"],
+                         "reason": f"declared route {method} {row.get('path')}: the specification gives no single method and path schema"})
+        elif key[1:] not in taken:
+            taken.add(key[1:])
+            points.append({"symbol": row["symbol"], "key": key, "site": row["site"], "spec": True})
+    return points, gaps
 
 
 def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
@@ -1004,53 +1145,45 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         from premap.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
-        declared = [row for item in declared
-                    for row in (_next_handlers(facts, resolver, item) if item["reader"] == entry_reader.NEXT else [item])]
-        for item in declared:
-            if item["reader"] != entry_reader.NOIR:
-                continue
-            file, _, line = item["site"].rpartition(":")
-            name = item.get("handler")
-            at = int(line) if line.isdecimal() else 0
-            matches = [d for d in facts.functions.get(file, ()) if name and name == d["name"] and
-                       d["line"] <= at <= (d["end"] or d["line"])]
-            if len(matches) == 1:
-                item.update(symbol=facts.node(matches[0]["id"]), handler_source="noir")
-            else:
-                item["gap"] = "Noir reports this endpoint without a unique snapshot handler at its site"
-        # One route, one entry: Noir's route on the path of a Next entry, in the file or on the function that entry
-        # starts, is that entry, provided it is of Noir's method (a page carries none and answers any, a route
-        # handler's entry has its method); the method goes to an entry that lacks one. Another path, or a method no
-        # entry of that file and path carries, is a route of its own.
+        declared = bind_declared(declared, facts, view, rules)
+        # One route, one entry: the route of a source outside `premap.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
+        # of them (the text of the path where a row has no schema), in the file or on the function that row starts, is that row,
+        # provided its method is the row's or the row has none (a page answers any; Noir's method is not copied onto it). Another
+        # path, or a method no row of that file and path carries, is a route of its own.
+        from premap import FRAMEWORK_SOURCES
+        tuple_names = {source.NAME for source in FRAMEWORK_SOURCES}
         def file_of(site: str) -> str:
             file, _, line = site.rpartition(":")
             return file if line.isdecimal() else site
 
+        def route_of(item: dict):
+            return item.get("schema") or item.get("path")
+
         by_path = defaultdict(list)
         for item in declared:
-            if item["reader"] == entry_reader.NEXT and not item.get("gap"):
-                by_path[item["path"]].append(item)
+            if item["reader"] in tuple_names and not item.get("gap"):
+                by_path[route_of(item)].append(item)
         kept = []
         for item in declared:
             method = item.get("method")
-            same = next((n for n in by_path.get(item.get("path"), ())
+            same = next((n for n in by_path.get(route_of(item), ())
                          if (file_of(n["site"]) == file_of(item["site"]) or n["symbol"] == item["symbol"])
                          and (not method or n.get("method") in (None, method))), None) \
-                if item["reader"] == entry_reader.NOIR else None
+                if item["reader"] not in tuple_names and "schema" in item else None
             if same is None:
                 kept.append(item)
-            elif method:
-                same.setdefault("method", method)
         declared = kept
-        candidates = candidates + declared
-        _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
+        # A route only a specification declares has no function to hold it: it is no entry and no gap, a point offered below.
+        spec_rows = [item for item in declared if item.get("spec_only") and item.get("gap")]
+        declared = [item for item in declared if not (item.get("spec_only") and item.get("gap"))]
+        candidates = candidates + declared + _observed_entries(manifest, store, facts, gaps)
         callbacks = {item["symbol"]: item["owner"] for item in candidates
                      if item.get("handler_source") == "inline" and item["symbol"] in facts.declarations
                      and item["symbol"] not in facts.route_named}
         # An event has its own callable scope, including when it has no outgoing call.
         facts._nodes.update((symbol, symbol) for symbol in callbacks)
         members = {id(rule): facts.property_functions(rule["actions_in"]) for rule in rules if rule.get("actions_in")}
-        plain = []
+        plain, sent, heard = [], [], []
         for ref in view["references"]:
             target = facts.named(ref.get("target_id")) if ref["resolution"] == "resolved" else None
             named = facts.node(ref.get("caller"))
@@ -1062,6 +1195,18 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             if package and package.get("manager") in ECOSYSTEMS:
                 called.setdefault((caller, ECOSYSTEMS[package["manager"]], package["package"]),
                                   (site, ref.get("resolver"), ref["file"]))
+            if "tauri_event" in ref:  # a call Tauri owns (`semantic.TAURI_PAGE_EVENTS`, `TAURI_RUST_EVENTS`): the name is the key
+                happened = ref["tauri_event"]
+                if happened["name"] is None:
+                    gaps.append({"site": site, "symbol": caller, "reason": "Tauri event: the name is not a string literal"})
+                else:
+                    callback = happened.get("handler") or {}
+                    named_callback = facts.targets(callback["name"], ref["file"], callback["line"], callback["column"],
+                                                   ("function", "method")) if callback.get("name") else []
+                    # a listener ends at the function its callback is; a closure is no declaration: it ends where it is held
+                    (heard if happened["kind"] == "listen" else sent).append({
+                        "name": happened["name"], "file": ref["file"], "site": site,
+                        "node": (facts.node(named_callback[0]) if len(named_callback) == 1 else None) or caller})
             # SCIP may identify invoke itself in the SDK. Its registered Rust command is a separate,
             # static dispatch destination, already resolved in the snapshot of the same application.
             native = None
@@ -1184,6 +1329,13 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             if component:
                 calls.append({"from": facts.node(holder) or f"{file}::{MODULE}", "to": component,
                               "site": f"{file}:{line}"})
+        # An emit and a listen of the same name on the two sides of the bridge, Rust and the page, are linked, each pair: the name is
+        # the key and an event has no declaration, so the link has both positions. Several listeners are normal, none a gap.
+        for out in sent:
+            for into in heard:
+                if out["name"] == into["name"] and out["file"].endswith(".rs") != into["file"].endswith(".rs"):
+                    calls.append({"from": out["node"], "to": into["node"], "site": out["site"], "target_site": into["site"],
+                                  "origin": "dedotto", "resolver": "tauri-event", "event": out["name"]})
         # A store function held in a variable is called where that variable is called.
         for file, name, caller, site, scope in plain:
             owner = callbacks.get(caller, caller)
@@ -1197,6 +1349,14 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                     continue
             calls.append({"from": caller, "to": target, "site": site, "origin": "dedotto"})
         _classify_entries(candidates, attributes, decisions, held, actions, entries, gaps)
+        starts = {entry["symbol"] for entry in entries if entry.get("reader") != "observed"}
+        entries[:] = [entry for entry in entries if entry.get("reader") != "observed" or entry["symbol"] not in starts]
+        actions[:] = [action for action in actions if action.get("reader") != "observed" or action["handler"] not in starts]
+        # The routes Noir and Next.js declare are offered too, for a call to meet: they are entries already, and add none.
+        declared_points, declared_gaps = _declared_routes(entries, routes_offered)
+        spec_points, spec_gaps = _spec_routes(spec_rows, [*routes_offered, *declared_points])
+        routes_offered += declared_points + spec_points
+        gaps += declared_gaps + spec_gaps
         external = _external_nodes(manifest, module_graph)
         ties = _package_services(manifest)
         symbols_by_file = defaultdict(set)
@@ -1221,7 +1381,8 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                          "offered": sorted(o["site"] for o in found)} if found else gap)
             continue
         edges.append({"from": call["symbol"], "to": found[0]["symbol"], "type": "chiama", "origin": "dedotto",
-                      "site": call["site"], "route": list(found[0]["key"]), "offered": found[0]["site"]})
+                      "site": call["site"], "route": list(found[0]["key"]), "offered": found[0]["site"],
+                      **({"spec": True} if found[0].get("spec") else {})})
     for action in actions:
         edges.append({"from": action["symbol"], "to": action["handler"], "type": "attiva", "origin": "dedotto",
                       "site": action["site"], "label": action["label"],
@@ -1293,10 +1454,12 @@ def _symbol_coverage(symbols_by_file, entries, edges):
 @cache
 def _links_reader_digest() -> str:
     """Installed link readers and rules; one bounded read of Daodan's own code per process."""
+    from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
     digest = hashlib.sha256()
-    for path in (Path(__file__), SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
+    for path in (Path(__file__), SCRIPT_DIR / "binder.py", SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
                  SCRIPT_DIR / "premap" / "flow_entries.py", SCRIPT_DIR / "premap" / "noir.py",
-                 SCRIPT_DIR / "premap" / "nextjs.py", SCRIPT_DIR / "technologies.py",
+                 *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
+                 SCRIPT_DIR / "premap" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
                  SCRIPT_DIR / "premap" / "python_build.py", SCRIPT_DIR / "languages" / "rust.py",
                  SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json"):
         digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
@@ -1310,9 +1473,10 @@ def _links_stamp(manifest: Path, *, premap=True) -> list:
     files = (manifest, manifest.with_name(manifest.name + "-wal"), edges, edges.with_name(edges.name + "-wal"),
              modules.graph_name(manifest), manifest.with_name(modules.LEDGER_FILE))
     if premap:  # the pre-map's record, and the stack step's: its services are the links' external nodes
+        import observed_entries
         import technologies
         from premap import path
-        files += (path(manifest), technologies.path(manifest))
+        files += (path(manifest), technologies.path(manifest), manifest.with_name(observed_entries.FILE))
     stamp = []
     for path in files:
         try:
@@ -1373,6 +1537,54 @@ def cached_links(manifest: Path, rules: list[dict], *, with_key: bool = False):
     raise ValueError("the mapping inputs changed while computing flow links; retry")
 
 
+def _handler_at(facts, at: dict) -> dict | None:
+    """The function of the snapshot the browser's handler is. The browser says where the function starts (`start`, from
+    `callFrame.functionLocation`): the one function that starts on that line, the nearest by column when several do. Without
+    it, the innermost function whose lines hold the place it paused at, when one stands out (a callback on that line
+    would be taken for the handler, so two of the same lines and name are none)."""
+    functions = facts.functions.get(at["file"], ())
+    start = at.get("start")
+    if start:
+        same = sorted((d for d in functions if d["line"] == start["line"]), key=lambda d: abs(d["column"] - start["column"]))
+        return same[0] if same and (len(same) == 1 or abs(same[0]["column"] - start["column"])
+                                    < abs(same[1]["column"] - start["column"])) else None
+    inside = [d for d in functions if d["line"] <= at["line"] <= (d["end"] or d["line"])]
+    deepest = max(inside, key=lambda d: (d["line"], -(d["end"] or d["line"])), default=None)
+    same = [d for d in inside if deepest and (d["line"], d["end"]) == (deepest["line"], deepest["end"])]
+    same = same if len(same) == 1 else [d for d in same if d["name"] == at["name"]]
+    return same[0] if len(same) == 1 else None
+
+
+def _observed_entries(manifest: Path, store, facts, gaps: list[dict]) -> list[dict]:
+    """The controls the browser pressed (`observed_entries`) as candidates at their handler (`_handler_at`). An inline arrow
+    is its own node, owned by the function that holds it (as the static reader's `inline` handlers are). A handler the
+    browser isolated that no function of the snapshot stands for is a gap at the place it paused; one handler is one entry,
+    at the first control that reached it, and `link_facts` leaves it out where a static reader starts there. A static
+    candidate of the same name does not leave it out: it may start from another function (a member of a type that the
+    handler implements), and the two are told apart by the function."""
+    import observed_entries
+    found: dict[str, dict] = {}
+    for row in observed_entries.rows(manifest, [], set(store.iter_paths())):  # no static row: the function is the identity, not the name
+        at = row.get("at")
+        if not at:
+            continue
+        handler = _handler_at(facts, at)
+        if handler is None:
+            gap = {"site": f"{at['file']}:{at['line']}", "reason": f"observed: the handler {at['name']} the browser isolated "
+                   "is no one function of the snapshot"}
+            if gap not in gaps:
+                gaps.append(gap)
+            continue
+        anonymous = handler["name"] == "(anonymous)"
+        symbol = handler["id"] if anonymous else facts.node(handler["id"])
+        if symbol:
+            found.setdefault(symbol, {
+                **{key: value for key, value in row.items() if key != "declared_in"}, "symbol": symbol,
+                "site": f"{at['file']}:{handler['line']}", "handler_source": "inline" if anonymous else "osservato",
+                **({"owner": facts.node(handler["id"])} if anonymous else {})})
+    return list(found.values())
+
+
 def _classify_entries(candidates, attributes, decisions, held, actions, found, gaps):
     """Apply classifications to snapshot evidence, including the original attribute glob rules."""
     import entries
@@ -1404,6 +1616,10 @@ def _classify_entries(candidates, attributes, decisions, held, actions, found, g
             continue
         evidence = {key: item[key] for key in ("reader", "shape", "column", "event", "label", "label_gap", "handler_source",
                                                "path", "method", "declared_in", "handler_confidence") if item.get(key) is not None}
+        if "schema" in item:  # None is a path that stands for no single schema: a gap of the declared routes
+            evidence["schema"] = item["schema"]
+            if item.get("page"):
+                evidence["page"] = True
         found.append({"symbol": handler, "site": site, "kind": "azione" if legacy else rule["entry"],
                       "source": "regola" if legacy else rule["source"], **evidence})
         if owner:
@@ -1797,7 +2013,7 @@ def file_sizes(manifest: Path) -> dict[str, int]:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("links", "trace", "units", "candidates", "shapes", "paths"):
+    for name in ("links", "trace", "units", "candidates", "shapes", "paths", "wrappers"):
         command = sub.add_parser(name)
         command.add_argument("manifest", type=Path)
         command.add_argument("--rules", type=Path, help="default: the rules recorded beside this snapshot")
@@ -1843,6 +2059,10 @@ def _cli_query(args, manifest, parser):
         parser.error("offset must be nonnegative and limit between 1 and 1000")
     recorded = manifest.with_name("flow-rules.json")
     rules = load_rules(args.rules) if args.rules else load_rules(recorded) if recorded.is_file() else []
+    if args.command == "wrappers":
+        import http_wrappers
+        print(json.dumps(http_wrappers.wrappers(manifest, rules), indent=2, ensure_ascii=False))
+        return 0
     if args.command in ("candidates", "shapes", "paths"):
         import entries
         import flow_questions

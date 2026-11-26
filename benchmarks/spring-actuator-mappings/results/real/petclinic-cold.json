@@ -1,0 +1,60 @@
+{
+ "build_alone": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/tmp/m2-alone-petclinic",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 853,
+  "returncode": 0,
+  "seconds": 32.35,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "kind": "cold",
+ "name": "petclinic",
+ "package": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "-DskipTests",
+   "-Dmaven.repo.local=/tmp/m2-cold-petclinic",
+   "package"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 1015,
+  "returncode": 0,
+  "seconds": 14.22,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ },
+ "restore": {
+  "argv": [
+   "mvn",
+   "-B",
+   "-q",
+   "org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline",
+   "-Dmaven.repo.local=/tmp/m2-cold-petclinic"
+  ],
+  "java_left": [],
+  "listeners": [],
+  "peak_memory_mb": 598,
+  "returncode": 0,
+  "seconds": 30.45,
+  "stderr": "",
+  "stdout": "",
+  "written": null,
+  "written_bytes": 0
+ }
+}

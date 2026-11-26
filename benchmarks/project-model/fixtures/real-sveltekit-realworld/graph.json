@@ -1,0 +1,1168 @@
+{
+ "schema": "daodan/real-graph-expected/v1",
+ "case": "sveltekit-realworld",
+ "modules": [
+  {
+   "name": "realworld.svelte.dev",
+   "root": ".",
+   "tool": "pnpm",
+   "manifest": "package.json",
+   "languages": ["javascript", "svelte", "markup", "css"],
+   "toolchains": [{"tool": "node", "version": "20", "declared_in": ".nvmrc"}, {"tool": "pnpm", "version": "10.20.0", "declared_in": "package.json"}],
+   "technologies": ["sveltekit", "sveltejs", "vite", "vercel", "marked", "ionicons", "prettier", "typescript"],
+   "start": {"command": "vite dev", "declared_in": "package.json", "port": null},
+   "test": null
+  }
+ ],
+ "module_edges": [],
+ "externals": [
+  {
+   "name": "RealWorld API",
+   "type": "servizio o API",
+   "url": "https://api.realworld.show/api",
+   "declared_in": ["src/lib/api.js"],
+   "used_by": [
+    "src/routes/+page.server.js::load",
+    "src/routes/article/[slug]/+page.server.js::load",
+    "src/routes/article/[slug]/+page.server.js::actions.createComment",
+    "src/routes/article/[slug]/+page.server.js::actions.deleteComment",
+    "src/routes/article/[slug]/+page.server.js::actions.deleteArticle",
+    "src/routes/article/[slug]/+page.server.js::actions.toggleFavorite",
+    "src/routes/editor/+page.server.js::actions.default",
+    "src/routes/editor/[slug]/+page.server.js::load",
+    "src/routes/editor/[slug]/+page.server.js::actions.default",
+    "src/routes/login/+page.server.js::actions.default",
+    "src/routes/register/+page.server.js::actions.default",
+    "src/routes/settings/+page.server.js::actions.save",
+    "src/routes/profile/@[user]/+layout.server.js::load",
+    "src/routes/profile/@[user]/+page.server.js::actions.toggleFollow",
+    "src/routes/profile/@[user]/get_articles.js::get_articles",
+    "src/lib/api.js::send"
+   ]
+  },
+  {"registry": "ionicons", "type": "altro", "declared_in": ["src/app.html"], "used_by": ["src/app.html:10"]},
+  {"registry": "vercel", "type": "servizio o API", "declared_in": ["package.json", "svelte.config.js"], "used_by": []},
+  {"name": "Google Fonts", "type": "servizio o API", "declared_in": ["src/app.html"], "used_by": ["src/app.html:15"]},
+  {
+   "name": "static.productionready.io",
+   "type": "servizio o API",
+   "declared_in": ["src/lib/constants.js"],
+   "used_by": ["src/routes/article/[slug]/CommentInput.svelte:15"]
+  }
+ ],
+ "entry_points": {
+  "route": [
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/",
+    "kind": "page load",
+    "handler": "src/routes/+page.server.js::load",
+    "at": "src/routes/+page.server.js:5",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/article/[slug]",
+    "kind": "page load",
+    "handler": "src/routes/article/[slug]/+page.server.js::load",
+    "at": "src/routes/article/[slug]/+page.server.js:7",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/article/[slug]?/createComment",
+    "kind": "form action",
+    "handler": "src/routes/article/[slug]/+page.server.js::actions.createComment",
+    "at": "src/routes/article/[slug]/+page.server.js:21",
+    "literal": "createComment"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/article/[slug]?/deleteComment",
+    "kind": "form action",
+    "handler": "src/routes/article/[slug]/+page.server.js::actions.deleteComment",
+    "at": "src/routes/article/[slug]/+page.server.js:37",
+    "literal": "deleteComment"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/article/[slug]?/deleteArticle",
+    "kind": "form action",
+    "handler": "src/routes/article/[slug]/+page.server.js::actions.deleteArticle",
+    "at": "src/routes/article/[slug]/+page.server.js:46",
+    "literal": "deleteArticle"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/article/[slug]?/toggleFavorite",
+    "kind": "form action",
+    "handler": "src/routes/article/[slug]/+page.server.js::actions.toggleFavorite",
+    "at": "src/routes/article/[slug]/+page.server.js:53",
+    "literal": "toggleFavorite"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/editor",
+    "kind": "page load",
+    "handler": "src/routes/editor/+page.server.js::load",
+    "at": "src/routes/editor/+page.server.js:5",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/editor",
+    "kind": "form action",
+    "handler": "src/routes/editor/+page.server.js::actions.default",
+    "at": "src/routes/editor/+page.server.js:11",
+    "literal": "default"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/editor/[slug]",
+    "kind": "page load",
+    "handler": "src/routes/editor/[slug]/+page.server.js::load",
+    "at": "src/routes/editor/[slug]/+page.server.js:4",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/editor/[slug]",
+    "kind": "form action",
+    "handler": "src/routes/editor/[slug]/+page.server.js::actions.default",
+    "at": "src/routes/editor/[slug]/+page.server.js:13",
+    "literal": "default"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/login",
+    "kind": "page load",
+    "handler": "src/routes/login/+page.server.js::load",
+    "at": "src/routes/login/+page.server.js:5",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/login",
+    "kind": "form action",
+    "handler": "src/routes/login/+page.server.js::actions.default",
+    "at": "src/routes/login/+page.server.js:11",
+    "literal": "default"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/register",
+    "kind": "page load",
+    "handler": "src/routes/register/+page.server.js::load",
+    "at": "src/routes/register/+page.server.js:5",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/register",
+    "kind": "form action",
+    "handler": "src/routes/register/+page.server.js::actions.default",
+    "at": "src/routes/register/+page.server.js:12",
+    "literal": "default"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/settings",
+    "kind": "page load",
+    "handler": "src/routes/settings/+page.server.js::load",
+    "at": "src/routes/settings/+page.server.js:4",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/settings?/logout",
+    "kind": "form action",
+    "handler": "src/routes/settings/+page.server.js::actions.logout",
+    "at": "src/routes/settings/+page.server.js:10",
+    "literal": "logout"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/settings?/save",
+    "kind": "form action",
+    "handler": "src/routes/settings/+page.server.js::actions.save",
+    "at": "src/routes/settings/+page.server.js:15",
+    "literal": "save"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/profile",
+    "kind": "universal page load",
+    "handler": "src/routes/profile/+page.js::load",
+    "at": "src/routes/profile/+page.js:3",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/profile/@[user]",
+    "kind": "page load",
+    "handler": "src/routes/profile/@[user]/+page.server.js::load",
+    "at": "src/routes/profile/@[user]/+page.server.js:6",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load", "src/routes/profile/@[user]/+layout.server.js::load"]
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "POST",
+    "path": "/profile/@[user]?/toggleFollow",
+    "kind": "form action",
+    "handler": "src/routes/profile/@[user]/+page.server.js::actions.toggleFollow",
+    "at": "src/routes/profile/@[user]/+page.server.js:13",
+    "literal": "toggleFollow"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "method": "GET",
+    "path": "/profile/@[user]/favorites",
+    "kind": "page load",
+    "handler": "src/routes/profile/@[user]/favorites/+page.server.js::load",
+    "at": "src/routes/profile/@[user]/favorites/+page.server.js:4",
+    "literal": "load",
+    "layout_loads": ["src/routes/+layout.server.js::load", "src/routes/profile/@[user]/+layout.server.js::load"]
+   }
+  ],
+  "page": [
+   {"module": "realworld.svelte.dev", "template": "src/routes/+page.svelte", "rendered_by": "src/routes/+page.server.js::load", "route": "/", "title": "Conduit"},
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/article/[slug]/+page.svelte",
+    "rendered_by": "src/routes/article/[slug]/+page.server.js::load",
+    "route": "/article/[slug]",
+    "title": "{data.article.title}"
+   },
+   {"module": "realworld.svelte.dev", "template": "src/routes/editor/+page.svelte", "rendered_by": "src/routes/editor/+page.server.js::load", "route": "/editor"},
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/editor/[slug]/+page.svelte",
+    "rendered_by": "src/routes/editor/[slug]/+page.server.js::load",
+    "route": "/editor/[slug]"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/login/+page.svelte",
+    "rendered_by": "src/routes/login/+page.server.js::load",
+    "route": "/login",
+    "title": "Sign in • Conduit"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/register/+page.svelte",
+    "rendered_by": "src/routes/register/+page.server.js::load",
+    "route": "/register",
+    "title": "Sign up • Conduit"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/settings/+page.svelte",
+    "rendered_by": "src/routes/settings/+page.server.js::load",
+    "route": "/settings",
+    "title": "Settings • Conduit"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/profile/+page.svelte",
+    "rendered_by": "src/routes/profile/+page.js::load",
+    "route": "/profile",
+    "note": "an empty file: the load always redirects"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/profile/@[user]/+page.svelte",
+    "rendered_by": "src/routes/profile/@[user]/+page.server.js::load",
+    "route": "/profile/@[user]",
+    "title": "{data.profile.username} • Conduit"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/profile/@[user]/favorites/+page.svelte",
+    "rendered_by": "src/routes/profile/@[user]/favorites/+page.server.js::load",
+    "route": "/profile/@[user]/favorites",
+    "title": "{data.profile.username} • Conduit"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/+layout.svelte",
+    "rendered_by": "src/routes/+layout.server.js::load",
+    "route": "/ and every route below it (layout)"
+   },
+   {
+    "module": "realworld.svelte.dev",
+    "template": "src/routes/profile/@[user]/+layout.svelte",
+    "rendered_by": "src/routes/profile/@[user]/+layout.server.js::load",
+    "route": "/profile/@[user] and /favorites (layout)"
+   },
+   {"module": "realworld.svelte.dev", "template": "src/routes/+error.svelte", "rendered_by": null, "route": "every route (error page)", "title": "{page.status}"}
+  ],
+  "action": [
+   {"label": "Conduit logo", "in": "src/routes/Nav.svelte", "at": "src/routes/Nav.svelte:8", "does": "GET /"},
+   {"label": "Home", "in": "src/routes/Nav.svelte", "at": "src/routes/Nav.svelte:13", "does": "GET /"},
+   {"label": "New Post", "in": "src/routes/Nav.svelte", "at": "src/routes/Nav.svelte:18", "does": "GET /editor"},
+   {"label": "Settings", "in": "src/routes/Nav.svelte", "at": "src/routes/Nav.svelte:24", "does": "GET /settings"},
+   {"label": "{username} (own profile)", "in": "src/routes/Nav.svelte", "at": "src/routes/Nav.svelte:30", "does": "GET /profile/@{username}"},
+   {"label": "Sign in", "in": "src/routes/Nav.svelte", "at": "src/routes/Nav.svelte:36", "does": "GET /login"},
+   {"label": "Sign up", "in": "src/routes/Nav.svelte", "at": "src/routes/Nav.svelte:42", "does": "GET /register"},
+   {"label": "Global Feed", "in": "src/routes/+page.svelte", "at": "src/routes/+page.svelte:37", "does": "GET /?tab=all"},
+   {"label": "Your Feed", "in": "src/routes/+page.svelte", "at": "src/routes/+page.svelte:44", "does": "GET /?tab=feed"},
+   {"label": "Sign in to see your Feed", "in": "src/routes/+page.svelte", "at": "src/routes/+page.svelte:48", "does": "GET /login"},
+   {"label": "#{tag} (active tag tab)", "in": "src/routes/+page.svelte", "at": "src/routes/+page.svelte:54", "does": "GET /?tag={tag}"},
+   {"label": "{tag} (Popular Tags)", "in": "src/routes/+page.svelte", "at": "src/routes/+page.svelte:72", "does": "GET /?tag={tag}"},
+   {
+    "label": "{n} (page number)",
+    "in": "src/routes/Pagination.svelte",
+    "at": "src/routes/Pagination.svelte:17",
+    "does": "GET /?tab={tab}&page={n} or /?tag={tag}&page={n}, built by the href function of src/routes/+page.svelte:64"
+   },
+   {
+    "label": "author image (preview)",
+    "in": "src/lib/ArticleList/ArticlePreview.svelte",
+    "at": "src/lib/ArticleList/ArticlePreview.svelte:9",
+    "does": "GET /profile/@{username}"
+   },
+   {
+    "label": "author name (preview)",
+    "in": "src/lib/ArticleList/ArticlePreview.svelte",
+    "at": "src/lib/ArticleList/ArticlePreview.svelte:14",
+    "does": "GET /profile/@{username}"
+   },
+   {
+    "label": "heart with the favorites count",
+    "in": "src/lib/ArticleList/ArticlePreview.svelte",
+    "at": "src/lib/ArticleList/ArticlePreview.svelte:21",
+    "does": "POST /article/{slug}?/toggleFavorite with the checkbox favorited; flips the heart and the count at once (optimistic UI)"
+   },
+   {
+    "label": "article preview (Read more...)",
+    "in": "src/lib/ArticleList/ArticlePreview.svelte",
+    "at": "src/lib/ArticleList/ArticlePreview.svelte:51",
+    "does": "GET /article/{slug}"
+   },
+   {
+    "label": "author image (article)",
+    "in": "src/routes/article/[slug]/ArticleMeta.svelte",
+    "at": "src/routes/article/[slug]/ArticleMeta.svelte:8",
+    "does": "GET /profile/@{username}"
+   },
+   {
+    "label": "author name (article)",
+    "in": "src/routes/article/[slug]/ArticleMeta.svelte",
+    "at": "src/routes/article/[slug]/ArticleMeta.svelte:13",
+    "does": "GET /profile/@{username}"
+   },
+   {
+    "label": "Edit Article",
+    "in": "src/routes/article/[slug]/ArticleMeta.svelte",
+    "at": "src/routes/article/[slug]/ArticleMeta.svelte:21",
+    "does": "GET /editor/{slug}; shown to the author only"
+   },
+   {
+    "label": "Delete Article",
+    "in": "src/routes/article/[slug]/ArticleMeta.svelte",
+    "at": "src/routes/article/[slug]/ArticleMeta.svelte:25",
+    "does": "POST /article/{slug}?/deleteArticle; shown to the author only"
+   },
+   {
+    "label": "comment author image",
+    "in": "src/routes/article/[slug]/Comment.svelte",
+    "at": "src/routes/article/[slug]/Comment.svelte:13",
+    "does": "GET /profile/@{username}"
+   },
+   {
+    "label": "comment author name",
+    "in": "src/routes/article/[slug]/Comment.svelte",
+    "at": "src/routes/article/[slug]/Comment.svelte:17",
+    "does": "GET /profile/@{username}"
+   },
+   {
+    "label": "Delete comment",
+    "in": "src/routes/article/[slug]/Comment.svelte",
+    "at": "src/routes/article/[slug]/Comment.svelte:24",
+    "does": "POST /article/{slug}?/deleteComment&id={id}; shown to the comment's author only"
+   },
+   {
+    "label": "Sign in (to add comments)",
+    "in": "src/routes/article/[slug]/CommentContainer.svelte",
+    "at": "src/routes/article/[slug]/CommentContainer.svelte:15",
+    "does": "GET /login"
+   },
+   {
+    "label": "sign up (to add comments)",
+    "in": "src/routes/article/[slug]/CommentContainer.svelte",
+    "at": "src/routes/article/[slug]/CommentContainer.svelte:17",
+    "does": "GET /register"
+   },
+   {
+    "label": "Post Comment",
+    "in": "src/routes/article/[slug]/CommentInput.svelte",
+    "at": "src/routes/article/[slug]/CommentInput.svelte:8",
+    "does": "POST /article/{slug}?/createComment with the textarea comment"
+   },
+   {
+    "label": "Enter in the tags field",
+    "in": "src/routes/editor/Editor.svelte",
+    "at": "src/routes/editor/Editor.svelte:51",
+    "does": "adds the typed tag to the list, in the browser only"
+   },
+   {
+    "label": "{tag} (remove a tag)",
+    "in": "src/routes/editor/Editor.svelte",
+    "at": "src/routes/editor/Editor.svelte:71",
+    "does": "removes the tag from the list, in the browser only"
+   },
+   {
+    "label": "Publish Article (new)",
+    "in": "src/routes/editor/Editor.svelte",
+    "at": "src/routes/editor/Editor.svelte:18",
+    "does": "POST /editor with title, description, body and tag, when src/routes/editor/+page.svelte renders the form"
+   },
+   {
+    "label": "Publish Article (edit)",
+    "in": "src/routes/editor/Editor.svelte",
+    "at": "src/routes/editor/Editor.svelte:18",
+    "does": "POST /editor/{slug} with title, description, body and tag, when src/routes/editor/[slug]/+page.svelte renders the form"
+   },
+   {"label": "Need an account?", "in": "src/routes/login/+page.svelte", "at": "src/routes/login/+page.svelte:18", "does": "GET /register"},
+   {"label": "Sign in (form)", "in": "src/routes/login/+page.svelte", "at": "src/routes/login/+page.svelte:23", "does": "POST /login with email and password"},
+   {"label": "Have an account?", "in": "src/routes/register/+page.svelte", "at": "src/routes/register/+page.svelte:18", "does": "GET /login"},
+   {
+    "label": "Sign up (form)",
+    "in": "src/routes/register/+page.svelte",
+    "at": "src/routes/register/+page.svelte:23",
+    "does": "POST /register with username, email and password"
+   },
+   {
+    "label": "Update Settings",
+    "in": "src/routes/settings/+page.svelte",
+    "at": "src/routes/settings/+page.svelte:28",
+    "does": "POST /settings?/save with image, username, bio, email and password; the form is not cleared"
+   },
+   {"label": "Or click here to logout.", "in": "src/routes/settings/+page.svelte", "at": "src/routes/settings/+page.svelte:86", "does": "POST /settings?/logout"},
+   {
+    "label": "Edit Profile Settings",
+    "in": "src/routes/profile/@[user]/+layout.svelte",
+    "at": "src/routes/profile/@[user]/+layout.svelte:26",
+    "does": "GET /settings; shown on the own profile only"
+   },
+   {
+    "label": "Follow / Unfollow {username}",
+    "in": "src/routes/profile/@[user]/+layout.svelte",
+    "at": "src/routes/profile/@[user]/+layout.svelte:33",
+    "does": "POST /profile/@{username}?/toggleFollow with the checkbox following; flips the button at once (optimistic UI)"
+   },
+   {"label": "Sign in to follow", "in": "src/routes/profile/@[user]/+layout.svelte", "at": "src/routes/profile/@[user]/+layout.svelte:59", "does": "GET /login"},
+   {"label": "Articles", "in": "src/routes/profile/@[user]/+layout.svelte", "at": "src/routes/profile/@[user]/+layout.svelte:73", "does": "GET /profile/@{username}"},
+   {
+    "label": "Favorites",
+    "in": "src/routes/profile/@[user]/+layout.svelte",
+    "at": "src/routes/profile/@[user]/+layout.svelte:83",
+    "does": "GET /profile/@{username}/favorites"
+   }
+  ],
+  "hook": [
+   {
+    "module": "realworld.svelte.dev",
+    "symbol": "src/hooks.server.js::handle",
+    "at": "src/hooks.server.js:2",
+    "runs": "on every request to the server, before any load or action"
+   },
+   {"module": "realworld.svelte.dev", "symbol": "src/routes/+layout.server.js::load", "at": "src/routes/+layout.server.js:2", "runs": "root layout load, for every page"},
+   {
+    "module": "realworld.svelte.dev",
+    "symbol": "src/routes/profile/@[user]/+layout.server.js::load",
+    "at": "src/routes/profile/@[user]/+layout.server.js:3",
+    "runs": "layout load of /profile/@[user] and /profile/@[user]/favorites"
+   }
+  ],
+  "main": [],
+  "scheduled": [],
+  "test": []
+ },
+ "routes": [
+  {"caller": "src/routes/Nav.svelte:8", "module": "realworld.svelte.dev", "method": "GET", "path": "/", "handler": "src/routes/+page.server.js::load"},
+  {"caller": "src/routes/Nav.svelte:13", "module": "realworld.svelte.dev", "method": "GET", "path": "/", "handler": "src/routes/+page.server.js::load"},
+  {"caller": "src/routes/Nav.svelte:18", "module": "realworld.svelte.dev", "method": "GET", "path": "/editor", "handler": "src/routes/editor/+page.server.js::load"},
+  {"caller": "src/routes/Nav.svelte:24", "module": "realworld.svelte.dev", "method": "GET", "path": "/settings", "handler": "src/routes/settings/+page.server.js::load"},
+  {
+   "caller": "src/routes/Nav.svelte:30",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {"caller": "src/routes/Nav.svelte:36", "module": "realworld.svelte.dev", "method": "GET", "path": "/login", "handler": "src/routes/login/+page.server.js::load"},
+  {"caller": "src/routes/Nav.svelte:42", "module": "realworld.svelte.dev", "method": "GET", "path": "/register", "handler": "src/routes/register/+page.server.js::load"},
+  {"caller": "src/routes/+page.svelte:37", "module": "realworld.svelte.dev", "method": "GET", "path": "/", "handler": "src/routes/+page.server.js::load"},
+  {"caller": "src/routes/+page.svelte:44", "module": "realworld.svelte.dev", "method": "GET", "path": "/", "handler": "src/routes/+page.server.js::load"},
+  {"caller": "src/routes/+page.svelte:48", "module": "realworld.svelte.dev", "method": "GET", "path": "/login", "handler": "src/routes/login/+page.server.js::load"},
+  {"caller": "src/routes/+page.svelte:54", "module": "realworld.svelte.dev", "method": "GET", "path": "/", "handler": "src/routes/+page.server.js::load"},
+  {"caller": "src/routes/+page.svelte:72", "module": "realworld.svelte.dev", "method": "GET", "path": "/", "handler": "src/routes/+page.server.js::load"},
+  {"caller": "src/routes/Pagination.svelte:17", "module": "realworld.svelte.dev", "method": "GET", "path": "/", "handler": "src/routes/+page.server.js::load"},
+  {
+   "caller": "src/lib/ArticleList/ArticlePreview.svelte:9",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {
+   "caller": "src/lib/ArticleList/ArticlePreview.svelte:14",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {
+   "caller": "src/lib/ArticleList/ArticlePreview.svelte:21",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/article/[slug]?/toggleFavorite",
+   "handler": "src/routes/article/[slug]/+page.server.js::actions.toggleFavorite"
+  },
+  {
+   "caller": "src/lib/ArticleList/ArticlePreview.svelte:51",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/article/[slug]",
+   "handler": "src/routes/article/[slug]/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/ArticleMeta.svelte:8",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/ArticleMeta.svelte:13",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/ArticleMeta.svelte:21",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/editor/[slug]",
+   "handler": "src/routes/editor/[slug]/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/ArticleMeta.svelte:25",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/article/[slug]?/deleteArticle",
+   "handler": "src/routes/article/[slug]/+page.server.js::actions.deleteArticle"
+  },
+  {
+   "caller": "src/routes/article/[slug]/Comment.svelte:13",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/Comment.svelte:17",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/Comment.svelte:24",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/article/[slug]?/deleteComment",
+   "handler": "src/routes/article/[slug]/+page.server.js::actions.deleteComment"
+  },
+  {
+   "caller": "src/routes/article/[slug]/CommentContainer.svelte:15",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/CommentContainer.svelte:17",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/register",
+   "handler": "src/routes/register/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/CommentInput.svelte:8",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/article/[slug]?/createComment",
+   "handler": "src/routes/article/[slug]/+page.server.js::actions.createComment"
+  },
+  {
+   "caller": "src/routes/editor/Editor.svelte:18",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/editor",
+   "handler": "src/routes/editor/+page.server.js::actions.default"
+  },
+  {
+   "caller": "src/routes/editor/Editor.svelte:18",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/editor/[slug]",
+   "handler": "src/routes/editor/[slug]/+page.server.js::actions.default"
+  },
+  {
+   "caller": "src/routes/login/+page.svelte:18",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/register",
+   "handler": "src/routes/register/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/login/+page.svelte:23",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::actions.default"
+  },
+  {
+   "caller": "src/routes/register/+page.svelte:18",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/register/+page.svelte:23",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/register",
+   "handler": "src/routes/register/+page.server.js::actions.default"
+  },
+  {
+   "caller": "src/routes/settings/+page.svelte:28",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/settings?/save",
+   "handler": "src/routes/settings/+page.server.js::actions.save"
+  },
+  {
+   "caller": "src/routes/settings/+page.svelte:86",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/settings?/logout",
+   "handler": "src/routes/settings/+page.server.js::actions.logout"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+layout.svelte:26",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/settings",
+   "handler": "src/routes/settings/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+layout.svelte:33",
+   "module": "realworld.svelte.dev",
+   "method": "POST",
+   "path": "/profile/@[user]?/toggleFollow",
+   "handler": "src/routes/profile/@[user]/+page.server.js::actions.toggleFollow"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+layout.svelte:59",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+layout.svelte:73",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+layout.svelte:83",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]/favorites",
+   "handler": "src/routes/profile/@[user]/favorites/+page.server.js::load"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:50",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/",
+   "handler": "src/routes/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  },
+  {
+   "caller": "src/routes/editor/+page.server.js:6",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::load",
+   "by": "redirect",
+   "status": 302
+  },
+  {
+   "caller": "src/routes/editor/+page.server.js:31",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/article/[slug]",
+   "handler": "src/routes/article/[slug]/+page.server.js::load",
+   "by": "redirect",
+   "status": 303
+  },
+  {
+   "caller": "src/routes/editor/[slug]/+page.server.js:5",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::load",
+   "by": "redirect",
+   "status": 302
+  },
+  {
+   "caller": "src/routes/editor/[slug]/+page.server.js:33",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/article/[slug]",
+   "handler": "src/routes/article/[slug]/+page.server.js::load",
+   "by": "redirect",
+   "status": 303
+  },
+  {
+   "caller": "src/routes/login/+page.server.js:6",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/",
+   "handler": "src/routes/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  },
+  {
+   "caller": "src/routes/login/+page.server.js:28",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/",
+   "handler": "src/routes/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  },
+  {
+   "caller": "src/routes/register/+page.server.js:7",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/",
+   "handler": "src/routes/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  },
+  {
+   "caller": "src/routes/register/+page.server.js:30",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/",
+   "handler": "src/routes/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  },
+  {
+   "caller": "src/routes/settings/+page.server.js:5",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::load",
+   "by": "redirect",
+   "status": 302
+  },
+  {
+   "caller": "src/routes/profile/+page.js:5",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/profile/@[user]",
+   "handler": "src/routes/profile/@[user]/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  },
+  {
+   "caller": "src/routes/profile/+page.js:5",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/login",
+   "handler": "src/routes/login/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:65",
+   "module": "realworld.svelte.dev",
+   "method": "GET",
+   "path": "/article/[slug]",
+   "handler": "src/routes/article/[slug]/+page.server.js::load",
+   "by": "redirect",
+   "status": 307
+  }
+ ],
+ "external_calls": [
+  {
+   "caller": "src/routes/+page.server.js:19",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/articles",
+   "what": "articles of the global feed or of a tag, with limit, offset and tag; token when signed in",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/+page.server.js:19",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/articles/feed",
+   "what": "articles of the followed authors (tab=feed), with limit and offset; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/+page.server.js:20",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/tags",
+   "what": "the popular tags; no token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:9",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/articles/{slug}",
+   "what": "one article; token when signed in",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:10",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/articles/{slug}/comments",
+   "what": "the comments of an article; token when signed in",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:26",
+   "to": "RealWorld API",
+   "method": "POST",
+   "path": "/api/articles/{slug}/comments",
+   "what": "a new comment {comment: {body}}; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:41",
+   "to": "RealWorld API",
+   "method": "DELETE",
+   "path": "/api/articles/{slug}/comments/{id}",
+   "what": "removal of a comment; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:49",
+   "to": "RealWorld API",
+   "method": "DELETE",
+   "path": "/api/articles/{slug}",
+   "what": "removal of an article; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:60",
+   "to": "RealWorld API",
+   "method": "POST",
+   "path": "/api/articles/{slug}/favorite",
+   "what": "favorite an article; token; not awaited",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/article/[slug]/+page.server.js:62",
+   "to": "RealWorld API",
+   "method": "DELETE",
+   "path": "/api/articles/{slug}/favorite",
+   "what": "unfavorite an article; token; not awaited",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/editor/+page.server.js:16",
+   "to": "RealWorld API",
+   "method": "POST",
+   "path": "/api/articles",
+   "what": "a new article {article: {title, description, body, tagList}}; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/editor/[slug]/+page.server.js:7",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/articles/{slug}",
+   "what": "the article to edit; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/editor/[slug]/+page.server.js:18",
+   "to": "RealWorld API",
+   "method": "PUT",
+   "path": "/api/articles/{slug}",
+   "what": "the edited article {article: {title, description, body, tagList}}; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/login/+page.server.js:14",
+   "to": "RealWorld API",
+   "method": "POST",
+   "path": "/api/users/login",
+   "what": "login {user: {email, password}}; answers the user with its token; no token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/register/+page.server.js:21",
+   "to": "RealWorld API",
+   "method": "POST",
+   "path": "/api/users",
+   "what": "registration {user: {username, email, password}}; answers the user with its token; no token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/settings/+page.server.js:28",
+   "to": "RealWorld API",
+   "method": "PUT",
+   "path": "/api/user",
+   "what": "update of the current user {user: {username, email, password, image, bio}}; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+layout.server.js:4",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/profiles/{username}",
+   "what": "a profile; token when signed in",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+page.server.js:20",
+   "to": "RealWorld API",
+   "method": "POST",
+   "path": "/api/profiles/{username}/follow",
+   "what": "follow an author; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/+page.server.js:21",
+   "to": "RealWorld API",
+   "method": "DELETE",
+   "path": "/api/profiles/{username}/follow",
+   "what": "unfollow an author; token",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/routes/profile/@[user]/get_articles.js:13",
+   "to": "RealWorld API",
+   "method": "GET",
+   "path": "/api/articles",
+   "what": "articles written (author=) or favorited (favorited=) by a user, with limit and offset; token when signed in",
+   "through": "src/lib/api.js:17"
+  },
+  {
+   "caller": "src/lib/api.js:17",
+   "to": "RealWorld API",
+   "method": "*",
+   "path": "/api/{path}",
+   "what": "the one fetch every call above goes through: method, path, body and token are parameters of send"
+  },
+  {
+   "caller": "src/app.html:10",
+   "to": "ionicons",
+   "method": "GET",
+   "path": "/ionicons/2.0.1/css/ionicons.min.css",
+   "what": "the icon stylesheet, loaded by the browser from code.ionicframework.com"
+  },
+  {"caller": "src/app.html:15", "to": "Google Fonts", "method": "GET", "path": "/css", "what": "the font stylesheet, loaded by the browser from fonts.googleapis.com"},
+  {
+   "caller": "src/routes/article/[slug]/CommentInput.svelte:15",
+   "to": "static.productionready.io",
+   "method": "GET",
+   "path": "/images/smiley-cyrus.jpg",
+   "what": "the placeholder avatar, loaded by the browser when the user has no image"
+  }
+ ],
+ "stores": {
+  "cookies/jwt": {
+   "node_type": "entità",
+   "kind": "cookie",
+   "holds": "the user object the API answered (with its token), JSON in base64; not a signed token",
+   "writes": [
+    "src/routes/login/+page.server.js::actions.default",
+    "src/routes/register/+page.server.js::actions.default",
+    "src/routes/settings/+page.server.js::actions.save",
+    "src/routes/settings/+page.server.js::actions.logout"
+   ],
+   "reads": ["src/hooks.server.js::handle"]
+  },
+  "locals/user": {
+   "node_type": "entità",
+   "kind": "request locals (event.locals)",
+   "holds": "the user parsed from the cookie, or null, for the length of one request",
+   "writes": ["src/hooks.server.js::handle", "src/routes/settings/+page.server.js::actions.logout", "src/routes/settings/+page.server.js::actions.save"],
+   "reads": [
+    "src/routes/+layout.server.js::load",
+    "src/routes/+page.server.js::load",
+    "src/routes/article/[slug]/+page.server.js::load",
+    "src/routes/article/[slug]/+page.server.js::actions.createComment",
+    "src/routes/article/[slug]/+page.server.js::actions.deleteComment",
+    "src/routes/article/[slug]/+page.server.js::actions.deleteArticle",
+    "src/routes/article/[slug]/+page.server.js::actions.toggleFavorite",
+    "src/routes/editor/+page.server.js::load",
+    "src/routes/editor/+page.server.js::actions.default",
+    "src/routes/editor/[slug]/+page.server.js::load",
+    "src/routes/editor/[slug]/+page.server.js::actions.default",
+    "src/routes/login/+page.server.js::load",
+    "src/routes/settings/+page.server.js::load",
+    "src/routes/settings/+page.server.js::actions.save",
+    "src/routes/profile/@[user]/+layout.server.js::load",
+    "src/routes/profile/@[user]/+page.server.js::actions.toggleFollow",
+    "src/routes/profile/@[user]/get_articles.js::get_articles"
+   ]
+  },
+  "page data/user": {
+   "node_type": "entità",
+   "kind": "SvelteKit page data",
+   "holds": "username, email, image and bio of the user, without the token",
+   "writes": ["src/routes/+layout.server.js::load"],
+   "reads": [
+    "src/routes/Nav.svelte:16",
+    "src/lib/ArticleList/index.svelte:13",
+    "src/routes/+page.svelte:20",
+    "src/routes/+page.svelte:42",
+    "src/routes/article/[slug]/+page.svelte:16",
+    "src/routes/article/[slug]/+page.svelte:40",
+    "src/routes/settings/+page.svelte:37",
+    "src/routes/profile/@[user]/+layout.svelte:25",
+    "src/routes/profile/@[user]/+layout.svelte:30",
+    "src/routes/register/+page.server.js:6",
+    "src/routes/profile/+page.js:4"
+   ]
+  }
+ },
+ "config": [
+  {
+   "key": "base",
+   "kind": "literal constant, not an environment key",
+   "value": "https://api.realworld.show/api",
+   "declared_in": ["src/lib/api.js:3"],
+   "reads": ["src/lib/api.js:17"]
+  },
+  {
+   "key": "page_size",
+   "kind": "literal constant",
+   "value": 10,
+   "declared_in": ["src/lib/constants.js:1"],
+   "reads": [
+    "src/routes/+page.server.js:14",
+    "src/routes/+page.server.js:15",
+    "src/routes/+page.server.js:25",
+    "src/routes/profile/@[user]/get_articles.js:8",
+    "src/routes/profile/@[user]/get_articles.js:9",
+    "src/routes/profile/@[user]/get_articles.js:19"
+   ]
+  },
+  {
+   "key": "placeholder",
+   "kind": "literal constant",
+   "value": "https://static.productionready.io/images/smiley-cyrus.jpg",
+   "declared_in": ["src/lib/constants.js:2"],
+   "reads": ["src/routes/article/[slug]/CommentInput.svelte:15"]
+  },
+  {"key": "kit.adapter", "kind": "framework configuration", "value": "@sveltejs/adapter-vercel", "declared_in": ["svelte.config.js:9"], "reads": []},
+  {"key": "compilerOptions.runes", "kind": "framework configuration", "value": true, "declared_in": ["svelte.config.js:6"], "reads": []}
+ ],
+ "gaps": [
+  {
+   "what": "the routes are files: no line of the project writes a path; the list of routes comes from SvelteKit's own manifest (svelte-kit sync), which runs the project's configuration and so only in the container",
+   "class": "file_based_routing"
+  },
+  {
+   "what": "every form action is an anonymous arrow function, a property of the exported object `actions`: the route binds to the property, not to a named function",
+   "class": "anonymous_handler"
+  },
+  {
+   "what": "every call to the API goes through the project's wrapper (get, del, post, put, then send in src/lib/api.js): the one fetch has a template URL and takes method, path, body and token as parameters, so method and path are known only by following the values from each caller",
+   "class": "wrapper_call"
+  },
+  {
+   "what": "the API paths are template literals with params.slug, params.user, an id from the query string and a URLSearchParams; in src/routes/+page.server.js the endpoint (articles or articles/feed) is a variable chosen from the tab parameter",
+   "class": "dynamic_path"
+  },
+  {
+   "what": "the API's paths (/api/articles/{slug}, /api/profiles/{username}) resemble the app's own (/article/[slug], /profile/@[user]) but are another system's: a call to the API joined to a route of the app is false",
+   "class": "forbidden_link"
+  },
+  {
+   "what": "relative form actions (?/createComment, ?/deleteArticle, ?/save, a form with no action) take their path from the page that renders the component: the one form of Editor.svelte posts to /editor or to /editor/[slug]",
+   "class": "relative_action"
+  },
+  {
+   "what": "toggleFavorite redirects to the request's referer header (src/routes/article/[slug]/+page.server.js:65): the target route is known only at run time",
+   "class": "dynamic_target"
+  },
+  {
+   "what": "the user passes from the root layout load to pages and components as data.user, page.data.user and parent() through SvelteKit; the hook passes it to loads and actions through event.locals: no call of the project joins writer and reader",
+   "class": "framework_data"
+  },
+  {
+   "what": "after an action without a redirect (logout, save, createComment, deleteComment, toggleFollow) the page changes because use:enhance re-runs the loads: the leave from /settings to /login after logout exists only as the redirect of the load of /settings",
+   "class": "framework_behaviour"
+  },
+  {"what": "src/routes/profile/+page.js is a universal load: it runs on the server or in the browser according to the navigation", "class": "note"},
+  {
+   "what": "the loads of /profile/@[user] and /favorites return `page`, which get_articles does not give (it gives `pages`); the profile pages do not mount Pagination",
+   "class": "note"
+  },
+  {"what": "the jwt cookie holds the whole user object in base64 and the hook parses it without verifying it; the token inside is what the API checks", "class": "note"},
+  {
+   "what": "Ionicons and Google Fonts come from protocol-relative URLs in src/app.html, the placeholder avatar from a URL in src/lib/constants.js, the Bootstrap-like theme is the vendored static/conduit-theme.css: none is in a manifest",
+   "class": "undeclared_dependency"
+  },
+  {
+   "what": "Vercel is only the adapter of svelte.config.js: no deployment file, workflow or project id is in the repository, so nothing proves where the app runs",
+   "class": "note"
+  },
+  {"what": "the repository has no test and no CI workflow: the only command to observe is the start (vite dev), with no port declared", "class": "nothing_to_run"},
+  {
+   "what": "run_and_observe needs api.realworld.show reachable from the container and an account there: sign up, publish, comment, favorite and follow write real data on a public service of others",
+   "class": "needs_credentials"
+  }
+ ]
+}

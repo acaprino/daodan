@@ -1,0 +1,130 @@
+{
+ "counts": {
+  "different": 0,
+  "extra": 0,
+  "missing": 4,
+  "same": 5
+ },
+ "daodan": "import_resolution.ts_path_config",
+ "fixtures": {
+  "js-angular": {
+   "units": {
+    ".": {
+     "ui-kit": {
+      "class": "same",
+      "daodan": [
+       "dist/ui-kit"
+      ],
+      "tsc": [
+       "dist/ui-kit"
+      ]
+     }
+    },
+    "projects/ui-kit": {
+     "ui-kit": {
+      "class": "same",
+      "daodan": [
+       "dist/ui-kit"
+      ],
+      "tsc": [
+       "dist/ui-kit"
+      ]
+     }
+    }
+   }
+  },
+  "js-nextjs": {
+   "units": {
+    ".": {
+     "@/*": {
+      "class": "same",
+      "daodan": [
+       "*"
+      ],
+      "tsc": [
+       "*"
+      ]
+     }
+    }
+   }
+  },
+  "js-nx": {
+   "units": {
+    ".": {
+     "@acme/util": {
+      "class": "missing",
+      "daodan": null,
+      "tsc": [
+       "libs/util/src/index.ts"
+      ]
+     }
+    },
+    "apps/api": {
+     "@acme/util": {
+      "class": "missing",
+      "daodan": null,
+      "tsc": [
+       "libs/util/src/index.ts"
+      ]
+     }
+    },
+    "libs/util": {
+     "@acme/util": {
+      "class": "missing",
+      "daodan": null,
+      "tsc": [
+       "libs/util/src/index.ts"
+      ]
+     }
+    }
+   }
+  },
+  "js-vite-react-ts": {
+   "units": {
+    ".": {
+     "@/*": {
+      "class": "missing",
+      "daodan": null,
+      "tsc": [
+       "src/*"
+      ]
+     }
+    }
+   }
+  },
+  "js-vue-pnpm": {
+   "units": {
+    ".": {
+     "@/*": {
+      "class": "same",
+      "daodan": [
+       "src/*"
+      ],
+      "tsc": [
+       "src/*"
+      ]
+     }
+    }
+   }
+  },
+  "mix-poly-firebase": {
+   "units": {
+    "react-app": {
+     "@shared/*": {
+      "class": "same",
+      "daodan": [
+       "shared/*"
+      ],
+      "tsc": [
+       "shared/*"
+      ]
+     }
+    }
+   }
+  }
+ },
+ "fixtures_without_local_tree": 6,
+ "fixtures_without_paths": 5,
+ "tsc": "TypeScript 6.0.3 on Node v22.23.4",
+ "tsc_errors": 1
+}

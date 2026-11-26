@@ -63,7 +63,8 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = ()) -> di
                         for gap in record.get("gaps", [])
                         if gap.get("kind") == "build_command_missing" and gap.get("path") == _manifest(entry))
         else:
-            apps.append({**entry, **({"build": builds[root]} if entry["needs_build"] else {})})
+            apps.append({**entry, **({"build": builds[root]} if entry["needs_build"] else {}),
+                         "seeds": _pages(record, root)})
     if not record.get("starts"):
         gaps.append({"kind": "no_start_command", "detail": "no package.json of the project declares a start or dev "
                                                            "script that starts an app: nothing is explored"})
@@ -73,6 +74,14 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = ()) -> di
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in ("node", "bun")],
             "explore": explore, "seeds": list(seeds)}
+
+
+def _pages(record: dict, root: str) -> list[str]:
+    """The pages the sources declare (the rows marked `page`) in the app's folder, as the paths the exploration opens besides `/`;
+    a pattern (a `schema` with a `{}`) or a route with no single schema is not a page to open, and an endpoint is not a page."""
+    return sorted({row["path"] for row in record.get("framework_entries", ()) if row.get("page")
+                   and isinstance(row.get("schema"), str) and "{}" not in row["schema"]
+                   and (root == "." or row["site"].startswith(f"{root}/"))})
 
 
 def _manifest(entry: dict) -> str:
@@ -113,7 +122,8 @@ def scripts(planned: dict, restores: list[str]) -> tuple[str, str]:
             execute += [f"( cd {folder} && timeout -k 30 {BUILD} {_command(one['build'])} ) > {OUT}/build-{number}.log "
                         "2>&1; c=$?", f'echo "DAODAN-APP {number} build $c $(( $(date +%s) - s ))"']
         port = one["port"] or "-"
-        driver, more = (EXPLORER, f" {shlex.quote(json.dumps(planned.get('seeds') or []))}") if explore else (DRIVER, "")
+        seeds = sorted({*(planned.get("seeds") or ()), *one.get("seeds", ())})
+        driver, more = (EXPLORER, f" {shlex.quote(json.dumps(seeds))}") if explore else (DRIVER, "")
         execute += ['if [ "$c" = 0 ]; then',
                     f"  timeout -k 30 {(EXPLORE if explore else 0) + READY + 60} node {IN}/{driver.name} {OUT} {number} "
                     f"{folder} {port} {READY} {shlex.quote(_command(one))}{more} > {OUT}/driver-{number}.log 2>&1",
@@ -258,7 +268,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
 
 def record(manifest: Path, planned: dict, out_dir: Path) -> int:
     """Keep the pages the exploration saw beside `manifest` (`observed_entries.write`), for the entries that read them:
-    the number of apps kept; none, and no file, where no app was explored."""
+    the number of apps kept; none, and no file (a former run's is taken away: it saw another snapshot), where no app
+    was explored."""
     import observed_entries
     apps = []
     for number, one in enumerate(planned["apps"]):
@@ -269,4 +280,33 @@ def record(manifest: Path, planned: dict, out_dir: Path) -> int:
         apps.append({"declared_in": one["declared_in"], "pages": explored["pages"]})
     if apps:
         observed_entries.write(manifest, apps)
+    else:
+        Path(manifest).with_name(observed_entries.FILE).unlink(missing_ok=True)
     return len(apps)
+
+
+def explore(manifest: Path, project: Path, record_: dict, digest: str, folder: Path, engine=None) -> dict:
+    """The exploration as the step runs it: plan from the pre-map `record_`, explore in the container, keep the pages
+    beside `manifest`. `{state, apps, gaps, kept}` as `observe` has them (`cause` and `remedy` where it did not run), and
+    `reused` where the run of the same snapshot (`digest`, the store's), plan and driver is in `folder`: its gaps come
+    back, nothing runs. Only a run that ended `ran` is kept for reuse."""
+    import hashlib
+    planned = plan(record_, explore=True)
+    cache = Path(folder) / "explore.json"
+    drivers = hashlib.sha256()
+    for path in (Path(__file__), DRIVER, EXPLORER):
+        drivers.update(hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).digest())
+    key = hashlib.sha256(json.dumps([digest, planned, drivers.hexdigest()], sort_keys=True).encode()).hexdigest()
+    try:
+        kept = json.loads(cache.read_text(encoding="utf-8"))
+        if kept["key"] == key and planned["apps"]:
+            return {**kept["result"], "reused": True}
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    cache.unlink(missing_ok=True)
+    seen = observe(project, planned, folder, engine)
+    seen["kept"] = record(manifest, planned, folder)
+    if seen["state"] == "ran" and planned["apps"]:
+        Path(folder).mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps({"key": key, "result": seen}), encoding="utf-8")
+    return seen

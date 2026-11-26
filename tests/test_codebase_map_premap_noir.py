@@ -18,7 +18,7 @@ def test_noir_candidates_reopen_without_running_a_command_or_installing_packages
     runner = container_runner.runner(manifest)
     with patch.object(container, "run_commands", run):
         original = premap.ensure(manifest, (noir,), runner)
-        with patch.object(premap, "logical_digest", side_effect=AssertionError("unchanged snapshot reread")):
+        with patch.object(premap, "inventory_digest", side_effect=AssertionError("unchanged snapshot reread")):
             assert premap.ensure(manifest, (noir,), runner) == original
             assert len(noir.recorded(manifest)) == 1
     [call] = calls
@@ -112,7 +112,7 @@ def test_a_premap_made_with_the_old_noir_marker_is_stale(tmp_path):
         {"root": "/work", "returncode": 0, "stdout": '{"endpoints": []}', "stderr": ""}])
     assert premap.state(manifest, sources=(noir,))["state"] == "fresh"
     binding = record["binding"]  # the digest the pre-map had before the server action was no entry
-    old = [binding["logical_digest"], binding["root"], [f"{noir.NAME}@{noir.VERSION}"], premap.SCHEMA,
+    old = [binding["inventory_digest"], binding["root"], [f"{noir.NAME}@{noir.VERSION}"], premap.SCHEMA,
            "noir-entry-paths-v2"]
     record["inputs_digest"] = hashlib.sha256(json.dumps(old, sort_keys=True).encode("utf-8")).hexdigest()
     premap.path(manifest).write_text(json.dumps(record), encoding="utf-8")
