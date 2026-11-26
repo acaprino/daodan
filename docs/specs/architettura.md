@@ -96,6 +96,8 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 
 Una cosa del sistema con un nome e un identificativo stabile. Oggi i nodi stanno in due archivi: l'involucro del codice (`daodan/visual@1`: moduli, cartelle, file, simboli, store, esterni) e la mappa di sistema (`daodan/system-map/v1`: le cose con il nome che dà una persona). Sono una mappa sola: i `members` di un nodo della mappa di sistema sono nodi dell'involucro. I nodi del grafo li costruisce `assemble_graph`; le tecnologie e i file che le dichiarano vengono da `recognize_stack` e `find_modules`. *Parziale: l'unione serve oggi un flusso alla volta (`system_levels.py`).*
 
+`[deciso]` Il file di progetto `.daodan` conserva in SQLite il grafo, i flussi e la loro storia. L’albero di contenimento e gli archi diretti hanno ruoli distinti. Nodi e archi hanno ID stabili. Per ogni revisione si distinguono la versione e la configurazione di Daodan, la versione dei sorgenti (commit e data, oppure impronta dei file analizzati se manca Git o ci sono modifiche locali; in quest’ultimo caso si conserva anche il commit di base, se disponibile) e la revisione interna di grafo e flussi. Un edit manuale registra autore, modifica e revisione di partenza. Alla rianalisi si mantengono gli edit compatibili; se cambia lo stesso campo in modo incompatibile si mostrano entrambe le versioni con la provenienza. *Contratto del formato; da implementare nell’app.*
+
 ### Proprietà
 
 | Proprietà | Valori | Oggi nel codice |
@@ -133,6 +135,8 @@ Legano nodi di nature diverse che sono la stessa cosa: «realizzato da» (una fu
 - `[deciso]` Aprire, chiudere o filtrare aggiorna il disegno che c'è, senza rifarlo da capo: i nodi che restano non si spostano più del necessario ([Dogrusoz e altri, 2018](https://doi.org/10.1371/journal.pone.0197238)). *Da creare (`T2.D`).*
 - `[deciso]` Apri e chiudi e filtro si calcolano insieme, in un solo punto: applicati uno dopo l'altro da parti diverse danno viste incoerenti ([CMGV](https://doi.org/10.1177/14738716251383173)). *Da creare (`T2.C`).*
 
+**Criteri di accettazione.** A parità di revisione, profilo, gruppi aperti, nature e modalità del filtro, invertire l’ordine dei comandi produce gli stessi nodi, archi, gradi, conteggi e riferimenti alle prove. Riaprire un gruppo col filtro attivo mostra solo i figli ammessi in modalità «nascondere». In modalità «evidenziare» gli altri restano visibili attenuati. In modalità «nascondere», se due nodi ammessi erano collegati attraverso un nodo nascosto, il dettaglio della freccia conserva i passaggi intermedi e le loro prove. Con spazio libero, aprire e richiudere un gruppo conserva l’ordine e la posizione dei nodi di un ramo disgiunto. Se occorre fare spazio si misura lo spostamento dei nodi esterni a parità di zoom e si mantiene il riferimento visivo al gruppo aperto.
+
 ### Vista compatta
 
 `[deciso]` Una vista compatta mostra solo nodi piccoli, con logo e nome (dove non c'è un logo, l'icona della specie). *Da creare (`T2.D`).*
@@ -146,6 +150,12 @@ Legano nodi di nature diverse che sono la stessa cosa: «realizzato da» (una fu
 
 *Parziale: `app_view._edges`, `viewer/src/projection.ts`, `system_levels._contract`.*
 
+### Seguire un flusso attraverso i gruppi
+
+- `[deciso]` Ogni freccia riassunta permette di risalire agli archi originali. Per presentare più frecce come un flusso occorrono passi collegati, con verso, condizioni, profilo e prove compatibili. Se il frontend chiama A e B scrive nel registro, raggruppare A e B in «Pagamenti» mostra due dipendenze. Se manca il collegamento interno fra A e B, il percorso dal frontend al registro resta da dimostrare.
+- `[deciso]` La GUI affianca alla mappa i passi della variante selezionata. Un clic su un passo evidenzia l’arco esatto, anche fra archi paralleli, e permette di aprirne la prova. La mappa e la lista dei passi si selezionano a vicenda. Una diramazione mostra la condizione e un ciclo può visitare di nuovo lo stesso arco. Al confine di un gruppo il flusso selezionato indica il punto di ingresso o uscita. Daodan fornisce passi, condizioni e prove; Sigrid disegna la scena e ne gestisce la selezione. *Da completare nell’app e nell’esploratore.*
+- **Caso di accettazione:** per «Pagamento a un contatto» in Bank of Anthos allo stesso commit, il profilo Kubernetes standard mostra Ledgerwriter che verifica il saldo tramite Balancereader; il profilo monolitico mostra Ledgermonolith che legge la cache locale. Selezionando la divergenza si arriva alla configurazione e al codice corrispondenti. Entrambi i percorsi conservano il grado dichiarato fino a una prova ulteriore. [Configurazione standard](https://github.com/GoogleCloudPlatform/bank-of-anthos/blob/db35fea9fd090150e2398106aadb475576f80d94/kubernetes-manifests/config.yaml#L28) · [Configurazione monolitica](https://github.com/GoogleCloudPlatform/bank-of-anthos/blob/db35fea9fd090150e2398106aadb475576f80d94/src/ledgermonolith/config.yaml#L31)
+
 ### Nessun limite
 
 - `[deciso]` Nessun tetto al numero di nodi, né minimo né massimo.
@@ -154,6 +164,7 @@ Legano nodi di nature diverse che sono la stessa cosa: «realizzato da» (una fu
 - Un gruppo con più figli di quanti la vista ne regge si apre a blocchi, con un nodo sintetico «altri N». *Da creare.*
 - Al calcolo: il costo di una vista cresce con ciò che mostra, non con il totale dei simboli. *Parziale: non misurato su un progetto grande.*
 - Misura che manca: tempo e peso di una vista con 80.000 nodi in archivio e 300 in vista. Prima del passaggio a Sigrid, 300 nodi in vista chiedevano 4,6 s e 1.000 non si disponevano (`benchmarks/codebase-explorer/README.md`).
+- Per valutare il renderer si misurano separatamente preparazione della vista, disposizione e tracciamento degli archi, primo disegno utilizzabile e risposta alla selezione. Il confronto usa stessa vista, etichette e scala. Il primo confronto riguarda l’apertura sul posto con il renderer attuale di Sigrid.
 
 ### Le tecnologie come nodi
 
