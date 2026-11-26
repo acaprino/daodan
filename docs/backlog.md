@@ -55,7 +55,8 @@
 | I file che la pre-mappa esclude non si leggono (E1) | Toglierebbe 1.496 file veri, verso cui vanno 96 import | Pipeline, 8.3 |
 | Radici e alias degli import da `tsc` | Su 25 progetti veri 0 import guadagnati e 110 persi | Pipeline, 8.3 |
 | Un lettore dei soli dati di Linguist | 95 header C++ letti come C, da 8 a 48 s su file costruiti male | Linguaggio |
-| Sorgente di Spring *(nota: Django, FastAPI e Flask **non** sono ritirati e sono `[deciso]` in T1)* | Sulle applicazioni vere Noir dà lo stesso | Piano degli ingressi, 14a–14f |
+| Sorgente di Spring | Sulle applicazioni vere Noir dà lo stesso | Piano degli ingressi, 14a–14f |
+| Sorgenti di Django, FastAPI e Flask (scritte, non collegate) | Sulle applicazioni vere Django non aggiunge funzioni a Noir, FastAPI non le carica, Flask costa più di quanto dà; tornano in discussione con un'applicazione dove Noir non lega e la sorgente sì | `benchmarks/{django,fastapi,flask}-routes/README.md` |
 | Sorgenti di Laravel e Rails | Daodan non legge PHP né Ruby | Piano degli ingressi, 14d e 14e |
 | `framework.cjs`, lettore di framework scritto a mano | Contro la regola d'oro | Decisione 20 novembre |
 | Unità e flussi dentro la review | Su phazly nessun difetto in più, dieci run | Flussi nella review |
