@@ -1,0 +1,378 @@
+{
+ "languages": [
+  {
+   "path": "01-Login/main.go",
+   "language": "Go"
+  },
+  {
+   "path": "01-Login-Quickstart/main.go",
+   "language": "Go"
+  },
+  {
+   "path": "tests/login.spec.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "tests/playwright.config.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "01-Login/web/static/js/user.js",
+   "language": "JavaScript"
+  },
+  {
+   "path": "01-Login/web/template/user.html",
+   "language": "HTML"
+  },
+  {
+   "path": "01-Login-Quickstart/templates/user.html",
+   "language": "HTML"
+  },
+  {
+   "path": "01-Login/web/static/css/app.css",
+   "language": "CSS"
+  },
+  {
+   "path": "01-Login/Dockerfile",
+   "language": "Dockerfile"
+  },
+  {
+   "path": "01-Login/exec.sh",
+   "language": "Shell"
+  },
+  {
+   "path": "01-Login/exec.ps1",
+   "language": "PowerShell"
+  }
+ ],
+ "excluded": [
+  {
+   "path": "01-Login/web/static/js/js.cookie.js",
+   "why": "vendored"
+  },
+  {
+   "path": "01-Login/web/static/image/auth0_logo_final_blue_RGB.png",
+   "why": "binary"
+  },
+  {
+   "path": "README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "01-Login/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "01-Login-Quickstart/README.md",
+   "why": "documentation"
+  },
+  {
+   "path": "LICENSE",
+   "why": "documentation"
+  }
+ ],
+ "units": [
+  {
+   "name": "01-Login",
+   "kind": "go-module",
+   "root": "01-Login",
+   "manifest": "01-Login/go.mod",
+   "source_roots": [
+    "01-Login"
+   ],
+   "depends_on": [],
+   "config": {
+    "entry_files": [
+     "01-Login/main.go"
+    ],
+    "packages": [
+     "01-Login",
+     "01-Login/platform/authenticator",
+     "01-Login/platform/middleware",
+     "01-Login/platform/router",
+     "01-Login/web/app/callback",
+     "01-Login/web/app/home",
+     "01-Login/web/app/login",
+     "01-Login/web/app/logout",
+     "01-Login/web/app/user"
+    ]
+   }
+  },
+  {
+   "name": "myapp",
+   "kind": "go-module",
+   "root": "01-Login-Quickstart",
+   "manifest": "01-Login-Quickstart/go.mod",
+   "source_roots": [
+    "01-Login-Quickstart"
+   ],
+   "depends_on": [],
+   "config": {
+    "entry_files": [
+     "01-Login-Quickstart/main.go"
+    ],
+    "packages": [
+     "myapp"
+    ]
+   }
+  },
+  {
+   "name": "auth0-golang-web-app-tests",
+   "kind": "npm-package",
+   "root": "tests",
+   "manifest": "tests/package.json",
+   "source_roots": [
+    "tests"
+   ],
+   "depends_on": [],
+   "config": {}
+  }
+ ],
+ "workspace": null,
+ "toolchains": [
+  {
+   "tool": "go",
+   "version": "1.19",
+   "declared_in": "01-Login/go.mod"
+  },
+  {
+   "tool": "go",
+   "version": "1.19.3",
+   "declared_in": "01-Login/Dockerfile"
+  },
+  {
+   "tool": "go",
+   "version": "1.25.0",
+   "declared_in": "01-Login-Quickstart/go.mod"
+  },
+  {
+   "tool": "go",
+   "version": "1.25",
+   "declared_in": "01-Login-Quickstart/Dockerfile"
+  },
+  {
+   "tool": "node",
+   "version": "20",
+   "declared_in": ".github/workflows/ci.yml"
+  }
+ ],
+ "dependencies": [
+  {
+   "unit": "01-Login",
+   "name": "github.com/coreos/go-oidc/v3",
+   "declared": "v3.9.0",
+   "resolved": "v3.9.0",
+   "scope": "runtime",
+   "declared_in": "01-Login/go.mod"
+  },
+  {
+   "unit": "01-Login",
+   "name": "github.com/gin-contrib/sessions",
+   "declared": "v0.0.5",
+   "resolved": "v0.0.5",
+   "scope": "runtime",
+   "declared_in": "01-Login/go.mod"
+  },
+  {
+   "unit": "01-Login",
+   "name": "github.com/gin-gonic/gin",
+   "declared": "v1.9.1",
+   "resolved": "v1.9.1",
+   "scope": "runtime",
+   "declared_in": "01-Login/go.mod"
+  },
+  {
+   "unit": "01-Login",
+   "name": "github.com/joho/godotenv",
+   "declared": "v1.5.1",
+   "resolved": "v1.5.1",
+   "scope": "runtime",
+   "declared_in": "01-Login/go.mod"
+  },
+  {
+   "unit": "01-Login",
+   "name": "golang.org/x/oauth2",
+   "declared": "v0.15.0",
+   "resolved": "v0.15.0",
+   "scope": "runtime",
+   "declared_in": "01-Login/go.mod"
+  },
+  {
+   "unit": "myapp",
+   "name": "github.com/auth0/go-auth0/v2",
+   "declared": "v2.10.0",
+   "resolved": "v2.10.0",
+   "scope": "runtime",
+   "declared_in": "01-Login-Quickstart/go.mod"
+  },
+  {
+   "unit": "myapp",
+   "name": "github.com/gorilla/sessions",
+   "declared": "v1.4.0",
+   "resolved": "v1.4.0",
+   "scope": "runtime",
+   "declared_in": "01-Login-Quickstart/go.mod"
+  },
+  {
+   "unit": "myapp",
+   "name": "github.com/joho/godotenv",
+   "declared": "v1.5.1",
+   "resolved": "v1.5.1",
+   "scope": "runtime",
+   "declared_in": "01-Login-Quickstart/go.mod"
+  },
+  {
+   "unit": "auth0-golang-web-app-tests",
+   "name": "@playwright/test",
+   "declared": "^1.52.0",
+   "resolved": null,
+   "scope": "dev",
+   "declared_in": "tests/package.json"
+  }
+ ],
+ "frameworks": [
+  {
+   "name": "Gin",
+   "unit": "01-Login",
+   "evidence": "01-Login/platform/router/router.go#L21"
+  },
+  {
+   "name": "jQuery",
+   "unit": "01-Login",
+   "evidence": "01-Login/web/template/home.html#L3"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "01-Login",
+   "evidence": "01-Login/web/template/home.html#L8"
+  },
+  {
+   "name": "Font Awesome",
+   "unit": "01-Login",
+   "evidence": "01-Login/web/template/home.html#L9"
+  },
+  {
+   "name": "Playwright",
+   "unit": "auth0-golang-web-app-tests",
+   "evidence": "tests/playwright.config.js#L1"
+  }
+ ],
+ "services": [
+  {
+   "name": "Auth0",
+   "kind": "authentication",
+   "evidence": "01-Login/platform/authenticator/auth.go#L22"
+  }
+ ],
+ "needs": {
+  "container": false,
+  "reason": ""
+ },
+ "traps": [
+  "the same login sample is written twice, as two Go modules that share nothing: 01-Login on Gin with go-oidc and x/oauth2, 01-Login-Quickstart on net/http with the go-auth0 SDK; no go.work, no replace, no import joins them",
+  "the module in 01-Login-Quickstart is named myapp, and the module in 01-Login is named 01-Login (not a domain path): its packages import each other as 01-Login/platform/router; both Dockerfiles build a binary called auth0-go-web-app and both exec scripts tag the image auth0-golang-web-app",
+  "four Go versions in four files: go 1.19 in 01-Login/go.mod with golang:1.19.3-alpine3.17 in its Dockerfile, go 1.25.0 in 01-Login-Quickstart/go.mod with golang:1.25-alpine in its Dockerfile; no toolchain line, and CI sets up no Go because it builds the two Docker images",
+  "Node 20 is written only in .github/workflows/ci.yml (actions/setup-node), for the Playwright tests; tests/package.json has no engines and there is no .nvmrc",
+  "tests/ is an npm package with one devDependency and no lockfile (CI runs npm install): resolved is null; it tests whichever of the two apps listens on localhost:3000 and names neither",
+  "go.mod lists the indirect requirements in a second require block marked // indirect: 30 in 01-Login, 16 in 01-Login-Quickstart; they are not direct dependencies",
+  "the same module is direct in one unit and indirect in the other: golang.org/x/oauth2 is direct in 01-Login (v0.15.0) and indirect in myapp (v0.36.0), github.com/gorilla/sessions is direct in myapp (v1.4.0) and indirect in 01-Login (v1.2.1, through gin-contrib/sessions)",
+  "resolved equals declared for the Go modules: go.sum only carries hashes, two lines per module version",
+  "Auth0 is in no manifest of 01-Login: it shows only in the AUTH0_* variables of .env.example and in the URLs built from AUTH0_DOMAIN (the OIDC issuer, /v2/logout); only myapp declares an Auth0 SDK",
+  "jQuery 3.1.0, Bootstrap 3.3.7 and Font Awesome 4.7.0 come from CDNs in the 01-Login templates and are in no manifest; js.cookie.js (JavaScript Cookie v2.1.3) is a checked-in copy; the Quickstart templates carry only inline CSS",
+  "the .html files are Go html/template files ({{ .nickname }}), loaded with LoadHTMLGlob and template.ParseGlob; Linguist still calls them HTML",
+  "myapp has no web framework: it routes with http.NewServeMux from the standard library, so frameworks has no entry for it",
+  "01-Login signs its session cookie with the literal key \"secret\" (router.go) and fails to start without a .env file; myapp reads SESSION_SECRET and treats .env as optional; 01-Login/.dockerignore does not exclude .env, the Quickstart one does",
+  "the 01-Login .gitignore and .dockerignore name src/ and pkg/, which do not exist; the Quickstart ones name a myapp binary",
+  "dependabot.yml watches only the two gomod directories and ignores major and patch updates; the npm package in tests/ is not watched",
+  "languages lists programming and markup languages only; YAML, JSON, Markdown and go.mod/go.sum files are present and not listed",
+  "the semgrep workflow runs in the returntocorp/semgrep image with no tag: no version to record"
+ ],
+ "connections": [
+  {
+   "kind": "address",
+   "key": "http://localhost:3000",
+   "provided_by": [
+    "01-Login",
+    "myapp"
+   ],
+   "used_by": [
+    "auth0-golang-web-app-tests"
+   ],
+   "evidence": [
+    "01-Login/main.go",
+    "01-Login-Quickstart/main.go",
+    "tests/playwright.config.js",
+    ".github/workflows/ci.yml"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /",
+   "provided_by": [
+    "01-Login",
+    "myapp"
+   ],
+   "used_by": [
+    "auth0-golang-web-app-tests"
+   ],
+   "evidence": [
+    "01-Login/platform/router/router.go",
+    "01-Login-Quickstart/main.go",
+    "tests/login.spec.js"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /login",
+   "provided_by": [
+    "01-Login",
+    "myapp"
+   ],
+   "used_by": [
+    "auth0-golang-web-app-tests"
+   ],
+   "evidence": [
+    "01-Login/platform/router/router.go",
+    "01-Login/web/template/home.html",
+    "01-Login-Quickstart/main.go",
+    "01-Login-Quickstart/templates/home.html",
+    "tests/login.spec.js"
+   ]
+  },
+  {
+   "kind": "http-route",
+   "key": "GET /callback",
+   "provided_by": [
+    "01-Login",
+    "myapp"
+   ],
+   "used_by": [],
+   "evidence": [
+    "01-Login/platform/router/router.go",
+    "01-Login/.env.example",
+    "01-Login-Quickstart/main.go",
+    "01-Login-Quickstart/.env.example"
+   ]
+  }
+ ],
+ "cases": [
+  "independent-units",
+  "name-mismatch",
+  "version-disagree",
+  "version-range",
+  "version-in-image",
+  "no-lockfile",
+  "locked-versions",
+  "transitive-not-direct",
+  "vendored-code",
+  "documentation-tree",
+  "binary-file",
+  "dot-folder-facts",
+  "service-from-config",
+  "saas-service",
+  "framework-from-files",
+  "framework-per-unit",
+  "test-only-framework",
+  "undeclared-connections"
+ ]
+}
