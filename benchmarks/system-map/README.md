@@ -101,6 +101,8 @@ Due lettori attenti arrivano alla stessa mappa su nodi, tipi e gerarchia. Sui fl
 
 ### Soglie proposte, da confermare dal proprietario
 
+Confermate dal proprietario il 26 novembre 2026.
+
 Ogni misura almeno 0,85 volte l'accordo: nodi ritrovati 66%, profondità 0 e 1 79%, precisione 64%, tipo uguale 81%, `inside` tenuto 78% con almeno 15 nodi per caso, flussi alla profondità 1 63%. Flussi, ingressi ed effetti alla loro grana (28%, 31%, 23%) si riportano senza soglia finché i flussi non sono confermati. Frecce rifiutate al massimo 20%; stabilità fra due ripetizioni almeno 80%; una run fermata dal budget conta come fallita. Il tetto di costo per l'intero sistema, 2 USD, era scritto per Sonnet: con Opus 5.5, scelto dal proprietario, si riscrive dopo la prima run misurata.
 
 Parametri da provare: modello (Opus 5.5 per partenza e gate; Sonnet 5.5 e Haiku 5.5 alla fine, per il costo; e sempre, come metro accanto a Claude, deciso dal proprietario il 20 novembre 2026, Qwen dal suo gateway LiteLLM: `--models qwen`, indirizzo e chiave nel secret Modal `daodan-gateway`, mai in un file), giri sui resti (0, 1, 3), `system_brief.LIMIT` (24.000, 48.000).

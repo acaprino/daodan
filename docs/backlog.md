@@ -8,7 +8,7 @@
 
 ### 1. Infrastruttura estesa e modello locale per comandi (parti delle ex ondate 6 e 7)
 - **Kiri di Daodan su ogni sistema operativo** (fuori da Windows) e immagine unica glibc con strumenti scaricati al primo uso; verifica cgroup v1 e passi accanto ai servizi su Kiri; servizi dichiarati altrove (include GitLab, Compose da Makefile).
-- **Modello piccolo locale per scegliere i comandi** (candidati: Gemma 3 / FunctionGemma, solo selezione di comandi già nei file, grado `proposto`): richiede prima il benchmark a 4 bracci sul corpus.
+- **Modello piccolo locale per scegliere i comandi** (candidati: Gemma 3 / FunctionGemma, solo selezione di comandi già nei file, grado `proposto`): richiede prima il benchmark a 4 bracci sul corpus. Fase B, con una spec sua (proprietario, 26 novembre 2026).
 - **Riproduzione finding e indagine nel container** (dopo fix `review-quality-gates`).
 - **Anagrafica globale delle versioni degli strumenti esterni** (nome, versione, origine, sha256 al posto delle ~60 costanti negli adattatori).
 - **Contratti aggiuntivi:** forma della risposta contro ciò che il client legge; contratti fra repository; coda di domande imposta dalla macchina, fusione varianti e flussi di interfaccia (ex ondata 8, voci 6, 9, 12).
@@ -24,11 +24,10 @@
 - **[difetto]** `graph` (`ValueError`) e `edit_impact` (`missing_store`).
 
 ### 3. App standalone, UI completa ed esploratore (ex ondata 10)
-- Adeguamento completo della UI agli 8 step e rimozione di `viewer/app/run.ts` / `stages.ts` (legge il piano dal server nella stessa forma di MCP); eliminazione parole «pre-mappa»/«scan»/«analyzer».
 - Server applicativo, coordinatore della coda, adattatori motori con prova di capacità, annullamento e ripresa.
 - Accesso GitHub: GitHub App, device flow, token nel portachiavi.
 - Servizio locale portabile HTTP con token; verifica licenza Kiri per ridistribuzione e portachiavi Linux headless.
-- Mappa integrata nella pagina dell'app + fix salvataggio percorso e stato scheda; pannelli ridimensionabili, filtri, tastiera e prestazioni dell'esploratore (`level` con nomi nuovi).
+- Salvataggio del percorso e stato della scheda; pannelli ridimensionabili e tastiera dell'esploratore. La mappa a livelli sullo schermo è nel piano (`T2.D`).
 - Riduzione di `docs/pipeline/` da due viste («Oggi nel codice» e «Piano») a una sola.
 
 ### 4. Superfici differite (ex ondata 11)
@@ -55,7 +54,8 @@
 | I file che la pre-mappa esclude non si leggono (E1) | Toglierebbe 1.496 file veri, verso cui vanno 96 import | Pipeline, 8.3 |
 | Radici e alias degli import da `tsc` | Su 25 progetti veri 0 import guadagnati e 110 persi | Pipeline, 8.3 |
 | Un lettore dei soli dati di Linguist | 95 header C++ letti come C, da 8 a 48 s su file costruiti male | Linguaggio |
-| Sorgente di Spring *(nota: Django, FastAPI e Flask **non** sono ritirati e sono `[deciso]` in T1)* | Sulle applicazioni vere Noir dà lo stesso | Piano degli ingressi, 14a–14f |
+| Sorgente di Spring | Sulle applicazioni vere Noir dà lo stesso | Piano degli ingressi, 14a–14f |
+| Sorgenti di Django, FastAPI e Flask (scritte, non collegate) | Sulle applicazioni vere Django non aggiunge funzioni a Noir, FastAPI non le carica, Flask costa più di quanto dà; tornano in discussione con un'applicazione dove Noir non lega e la sorgente sì | `benchmarks/{django,fastapi,flask}-routes/README.md` |
 | Sorgenti di Laravel e Rails | Daodan non legge PHP né Ruby | Piano degli ingressi, 14d e 14e |
 | `framework.cjs`, lettore di framework scritto a mano | Contro la regola d'oro | Decisione 20 novembre |
 | Unità e flussi dentro la review | Su phazly nessun difetto in più, dieci run | Flussi nella review |
