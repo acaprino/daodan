@@ -1,8 +1,8 @@
--- Daodan project file, schema 1. Initialize an empty database only.
+-- Daodan project file, schema 2. Initialize an empty database only.
 PRAGMA foreign_keys = ON;
 BEGIN;
 PRAGMA application_id = 0x44414F44; -- "DAOD"
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;
 
 CREATE TABLE source_snapshots (
     source_id INTEGER PRIMARY KEY,
@@ -65,7 +65,13 @@ CREATE TABLE nodes (
     version_id INTEGER PRIMARY KEY REFERENCES versions,
     parent_id TEXT REFERENCES objects,
     name TEXT NOT NULL,
-    species TEXT NOT NULL,
+    species TEXT NOT NULL CHECK (species IN (
+        'attore', 'applicazione', 'schermata', 'funzionalità', 'servizio o API',
+        'gateway', 'autenticazione', 'lavoro a orario', 'altro', 'entità',
+        'store', 'modulo', 'cartella', 'file', 'simbolo', 'database',
+        'coda', 'filesystem', 'dispositivo', 'container', 'servizio in esecuzione', 'rete',
+        'tecnologia', 'gruppo'
+    )),
     position TEXT NOT NULL CHECK (position IN ('interno','esterno','non visto')),
     status TEXT NOT NULL CHECK (status IN ('confermato','dedotto','incompleto')),
     abstraction TEXT NOT NULL CHECK (abstraction IN ('concreto','astratto')),

@@ -96,7 +96,7 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 
 Una cosa del sistema con un nome e un identificativo stabile. Oggi i nodi stanno in due archivi: l'involucro del codice (`daodan/visual@1`: moduli, cartelle, file, simboli, store, esterni) e la mappa di sistema (`daodan/system-map/v1`: le cose con il nome che dà una persona). Sono una mappa sola: i `members` di un nodo della mappa di sistema sono nodi dell'involucro. I nodi del grafo li costruisce `assemble_graph`; le tecnologie e i file che le dichiarano vengono da `recognize_stack` e `find_modules`. *Parziale: l'unione serve oggi un flusso alla volta (`system_levels.py`).*
 
-`[deciso]` Il file di progetto, con estensione `.daodan` (per esempio `negozio.daodan`), conserva in SQLite il grafo, i flussi e la loro storia. L’albero di contenimento e gli archi diretti hanno ruoli distinti. Nodi e archi hanno ID stabili. Per ogni revisione si distinguono la versione e la configurazione di Daodan, la versione dei sorgenti (commit e data, oppure impronta dei file analizzati se manca Git o ci sono modifiche locali; in quest’ultimo caso si conserva anche il commit di base, se disponibile) e la revisione interna di grafo e flussi. Un edit manuale registra autore, modifica e revisione di partenza. Alla rianalisi si mantengono gli edit compatibili; se cambia lo stesso campo in modo incompatibile si mostrano entrambe le versioni con la provenienza. Le modifiche di un file ricevuto da altri valgono come le altre: chi le ha fatte si vede nella cronologia del file ricevuto, che l’app mostra. Due copie dello stesso file, modificate ognuna per conto proprio, divergono. Il [formato SQLite v1](formato-progetto.md) specifica le tabelle, le chiavi, la lettura storica e i vincoli di salvataggio. *Contratto del formato; da implementare nell’app.*
+`[deciso]` Il file di progetto, con estensione `.daodan` (per esempio `negozio.daodan`), conserva in SQLite il grafo, i flussi e la loro storia. L’albero di contenimento e gli archi diretti hanno ruoli distinti. Nodi e archi hanno ID stabili. Per ogni revisione si distinguono la versione e la configurazione di Daodan, la versione dei sorgenti (commit e data, oppure impronta dei file analizzati se manca Git o ci sono modifiche locali; in quest’ultimo caso si conserva anche il commit di base, se disponibile) e la revisione interna di grafo e flussi. Un edit manuale registra autore, modifica e revisione di partenza. Alla rianalisi si mantengono gli edit compatibili; se cambia lo stesso campo in modo incompatibile si mostrano entrambe le versioni con la provenienza. Le modifiche di un file ricevuto da altri valgono come le altre: chi le ha fatte si vede nella cronologia del file ricevuto, che l’app mostra. Due copie dello stesso file, modificate ognuna per conto proprio, divergono. La sezione [File di progetto](#file-di-progetto) specifica le tabelle, le chiavi, la lettura storica e i vincoli di salvataggio. *Contratto del formato; da implementare nell’app.*
 
 ### Proprietà
 
@@ -181,6 +181,89 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 - **Senza logo:** il nodo ha l'icona della sua specie (`viewer/src/icons.ts`). `filesystem` e `altro` prendono quella dell'entità, `funzionalità` nessuna.
 - **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`), ma oggi la vista (`system_levels.view`) non passa il logo (allineamento tracciato nel piano, `T2.C`).
 - `[deciso]` **Due ingressi con lo stesso esito** sono due varianti di un solo flusso, che si apre per vederle (nel piano, `T3.C`).
+
+## File di progetto
+
+`[deciso]` Un file `.daodan` è un database SQLite. Il [DDL normativo, schema 2](progetto.sql) definisce le tabelle, i vincoli e gli indici. Le regole di identità e integrità qui sotto completano il DDL. Apertura, salvataggio e rianalisi nell’app sono assegnati a T2.E.
+
+### Come riconoscere il file
+
+Il formato richiede SQLite 3.38 o successivo con funzioni JSON disponibili. Le tabelle usano tipi STRICT. L'intestazione è quella di SQLite. Il lettore verifica `application_id = 0x44414F44` (DAOD), `user_version = 2` e lo schema atteso prima di usare il file. Il DDL inizializza soltanto un database vuoto. Un lettore che incontra una versione sconosciuta spiega quale versione serve. Per migrare, si crea prima una copia consistente, si applicano le modifiche e si aggiorna `user_version` nella stessa transazione. Una copia da condividere a database aperto si ottiene con l'API di backup di SQLite, così include anche i commit già visibili in WAL. [Intestazione e pragma](https://sqlite.org/pragma.html) · [Backup SQLite](https://sqlite.org/backup.html)
+
+La v1 al commit [c7bc75b](https://github.com/acaprino/daodan/blob/c7bc75be468626fe18d9b8ed834fbd17cc16fe76/docs/specs/progetto-v1.sql) ha le stesse 21 tabelle e accetta specie libere in SQL. Per portare un file v1 alla v2, leggere uno snapshot coerente e validare **tutte le versioni** dei nodi, comprese quelle chiuse. Se una specie è sconosciuta si indica ID, revisione e valore, lasciando intatto il file di partenza. Se i dati sono validi, si copiano tutte le righe in un nuovo database inizializzato col DDL v2, mantenendo chiavi, UUID e storia. Inserimento in un'unica transazione con vincoli esterni differiti; prima di sostituire il file si verificano chiavi esterne, integrità e uguaglianza dei dati delle 21 tabelle. Il nuovo vincolo rifiuta specie estranee anche con un inserimento SQL diretto.
+
+### Tabelle
+
+| Tabelle | Contenuto e collegamenti |
+|---|---|
+| `project`, `revisions` | Un progetto, UUID persistente e revisione corrente. Ogni revisione ha UUID proprio, genitore, autore, istante UTC, motivo, descrizione e analisi di riferimento. |
+| `source_snapshots`, `analyses` | Sorgenti effettivamente analizzati, versione e configurazione di Daodan. Ogni esecuzione punta a uno snapshot. Più esecuzioni possono usare lo stesso snapshot. |
+| `objects`, `versions` | Identità stabili e versioni dei soli oggetti cambiati. Una versione include provenienza e intervallo di validità. |
+| `nodes`, `edges` | Il padre di un nodo e gli estremi di un arco puntano a ID stabili. Ogni arco ha ID proprio anche a parità di estremi, più tipo, grado, eventuale profilo e attributi come metodo e rotta. |
+| `flows`, `variants`, `variant_endpoints` | Il flusso ha un nome, la variante ha profilo e condizione. Gli ingressi e gli esiti sono elenchi di nodi distinti per ruolo. |
+| `steps`, `step_edges`, `step_transitions` | Occorrenze dei passi di una variante, archi originali attraversati da ciascun passo e passaggi condizionati verso i successivi. Si possono interrogare diramazioni, ricongiungimenti e cicli. |
+| `evidence`, `version_evidence` | Ogni prova è ancorata all’analisi che l’ha prodotta. Può indicare un percorso del progetto, righe, simbolo e oggetto Git, oppure una posizione dentro una precisa versione di un risultato tecnico. Più oggetti possono citare la stessa prova. |
+| `technical_records`, `gaps` | Risultati dei singoli strumenti con il loro payload JSON, e lacune con oggetto interessato, causa e possibile rimedio. Entrambi hanno una storia. |
+| `manual_edits`, `conflicts`, `conflict_evidence` | Campo modificato, valore di partenza, scelta dell’utente e revisione di partenza. Il conflitto conserva il valore proposto dalla rianalisi, la sua provenienza e le sue prove fino alla risoluzione e dopo. |
+
+### Identità e storia
+
+- `user_version` identifica il formato su disco. `analyses.daodan_version` identifica l'analizzatore. La versione dei sorgenti viene da `source_snapshots`; `revisions.revision_uuid` identifica la revisione della mappa. Un edit manuale eredita l'analisi di riferimento. Una rianalisi ne registra una nuova, anche sullo stesso commit. Le date sono UTC in formato RFC 3339.
+- Per un checkout Git pulito si conserva il commit completo con la sua data. Per cartelle senza Git o alberi modificati è obbligatoria l'impronta del perimetro effettivamente analizzato. L'eventuale commit di base resta disponibile. La politica d'inventario versionata in `inventory_policy` dichiara selezione e algoritmo. Un file cambiato mentre si calcola l'impronta richiede di rileggere l'input, affinché il digest descriva i byte analizzati. In ordine binario dei percorsi relativi UTF-8 con separatore `/`, si concatena per ogni file la lunghezza del percorso in byte (intero senza segno a 64 bit big endian), il percorso e il digest SHA-256 binario dei byte analizzati. `tree_sha256` è il digest SHA-256 esadecimale minuscolo della concatenazione. Il perimetro rispetta le esclusioni di Daodan anche per gli hash.
+- Ogni copia porta la storia lineare e gli UUID già assegnati. Una nuova revisione usa un UUID nuovo. Dopo una copia, due revisioni con numero locale 8 e genitore comune possono così rappresentare storie diverse. Per confrontare copie si usano UUID di progetto e revisione; gli ID numerici delle righe valgono dentro una copia.
+- Lo stato alla revisione R comprende le versioni con `from_rev <= R` e `until_rev IS NULL OR R < until_rev`. Creare apre un intervallo, modificare chiude il vecchio e apre il nuovo, eliminare chiude quello attivo. Anche prove, ingressi, archi di un passo e transizioni appartengono alla versione del loro proprietario: cambiarli apre una nuova versione. Un diff confronta le versioni ai due estremi per ID oggetto e dettaglia i campi e le relazioni cambiati. Il changelog usa le revisioni, i loro autori e le versioni aperte o chiuse in ciascuna.
+- Le nature si ricavano da specie, posizione e contenuto dei gruppi secondo l'architettura. «Realizzato da» e «gira su» sono archi. Frecce riassunte, conteggi e geometria della GUI sono dati derivati. Per un profilo, una riga con `profile IS NULL` è comune a tutti. I gradi di Daodan (per esempio dichiarato, provato, osservato e incerto) si conservano senza promozione; eventuali qualificatori del produttore, come il campionamento, restano negli attributi. La provenienza dell'edit appartiene alla versione.
+
+### Riconoscere lo stesso nodo alla rianalisi
+
+L'identità persistente è `objects.object_id`. Ogni analisi riconcilia le osservazioni con i nodi della revisione di partenza **prima** di calcolare il diff o riapplicare gli edit. Il confronto usa i dati estratti dai sorgenti, indipendentemente dal nome e dal padre scelti a mano nella mappa. In `nodes.attributes_json.identity` si conservano le chiavi di confronto disponibili per quella versione (produttore, spazio dei nomi e chiave nativa; per un file, percorso relativo e SHA-256 dei byte dell'inventario). Una rinomina crea una versione con i nuovi riferimenti e conserva quelli precedenti nella storia.
+
+| Caso | Regola |
+|---|---|
+| File ancora allo stesso percorso nel medesimo progetto | Riusa l'ID anche se il contenuto è cambiato, salvo evidenza di cancellazione e successiva creazione di un altro file. Il percorso rioccupato dopo una cancellazione confermata riceve un nuovo ID. |
+| File spostato o rinominato, con o senza Git | Confronta i due inventari effettivi nello stesso perimetro. Un solo vecchio percorso scomparso e un solo nuovo percorso comparso, con digest uguale e unico in ciascun inventario, conservano l'ID. Una rinomina accompagnata da modifiche conserva l'ID se una chiave nativa persistente indipendente dal percorso o una conferma dell'utente identifica univocamente la coppia. La similarità suggerita da Git propone un candidato. |
+| Copia, sostituzione o candidati multipli | Se l'originale rimane e viene aggiunta una copia, l'originale conserva il suo ID e la copia ne riceve uno nuovo. Evidenze incompatibili, un nuovo percorso con più sorgenti possibili o il solo nome simile richiedono conferma. |
+| Simboli e altri nodi | Un simbolo conserva l'ID con una chiave stabile del resolver nel suo spazio dei nomi, oppure con un descrittore univoco (contenitore e firma) nel file già riconciliato. Righe e numeri locali dell'indice possono cambiare. Per un servizio, una tecnologia o un'altra entità vale la chiave qualificata stabile del produttore (per esempio l'ID del catalogo). Per un nodo sintetico servono un'identità dichiarata o una corrispondenza confermata. |
+| Analisi parziale o chiavi storiche mancanti | L'assenza da una scansione incompleta lascia l'identità precedente in sospeso e apre una lacuna. Per un file v1 privo di chiavi si usano solo prove ancora verificabili alla revisione di origine. |
+
+Una nuova osservazione senza alcun candidato riceve un nuovo `object_id`. Una corrispondenza automatica è uno a uno, nello stesso progetto e tra tipi di nodo compatibili. In presenza di evidenze contrastanti prevale l'ambiguità. Per un candidato ambiguo si conserva l'edit sull'ID originario, si mostra la proposta con i riferimenti vecchi e nuovi e si lascia il nuovo nodo senza quell'edit. La proposta si registra come `technical_records` di tipo `identity_match`, con ID precedenti, nuovi, snapshot e prove; una lacuna ne richiama l’ID in `gaps.subject_id`. Alla conferma si registra una nuova revisione con autore e scelta: si riusa l'ID originario, si chiude l'eventuale identità provvisoria e si aggiornano insieme i riferimenti della revisione corrente. Se nel frattempo è stato modificato anche il candidato provvisorio, gli edit compatibili si conservano e i valori incompatibili richiedono risoluzione per campo. Le revisioni precedenti conservano gli ID che contenevano. Se si conferma «sono distinti», si mantiene l'ID nuovo. Una cancellazione accertata chiude la versione secondo le regole sugli edit manuali.
+
+Per gli archi si riconciliano prima i nodi. Gli estremi stabili, il tipo, il profilo e il sito di origine devono identificare un solo arco per riusarne l'ID. Due chiamate parallele fra gli stessi servizi rimangono distinguibili. Gli edit di un passo o di una variante seguono l'ID persistente della rispettiva occorrenza; un cambiamento dell'ordine di presentazione da solo non trasferisce un edit a un altro passo.
+
+### Integrità al salvataggio
+
+Le chiavi esterne vanno abilitate a ogni apertura. In una sola transazione di scrittura il writer confronta la revisione attesa con `project.head_rev`, inserisce la revisione e i cambiamenti, verifica lo stato risultante e aggiorna la testa. Un errore annulla tutto. A testa cambiata si rilegge il progetto e si ricalcola la modifica. Creare il progetto inserisce snapshot, analisi, revisione 1 e unica riga di `project` insieme. [Chiavi esterne SQLite](https://sqlite.org/foreignkeys.html)
+
+Oltre ai vincoli SQL, chi scrive verifica queste condizioni prima del commit; chi importa un file le verifica sulla storia importata.
+
+1. La testa coincide con l'ultima revisione. Per un oggetto gli intervalli sono disgiunti. Ogni versione ha una sola riga nella tabella del suo tipo. Gli ID oggetto restano unici e conservano il tipo. Gli oggetti creati manualmente ricevono un UUID, così le aggiunte indipendenti in due copie restano distinguibili. Nella storia già salvata sono modificabili soltanto la fine di un intervallo aperto e il riferimento alla risoluzione di un conflitto. La riga di progetto avanza alla nuova testa. Ogni altro cambiamento aggiunge una revisione.
+2. La specie di ogni nodo appartiene all'elenco chiuso in [Proprietà](#proprietà). Scrittura, importazione e migrazione rifiutano valori sconosciuti, anche nelle revisioni storiche. Un padre è un nodo attivo e la gerarchia è aciclica. Gli estremi degli archi, gli ingressi, gli esiti e l'eventuale funzionalità di un flusso sono nodi attivi nella medesima revisione. Una variante appartiene a un flusso attivo e un passo a una variante attiva. Spostamenti e cancellazioni sistemano nello stesso commit tutti i riferimenti coinvolti. Le prove storiche continuano a puntare alla fonte originaria.
+3. Gli archi di un passo sono attivi per quel profilo e ne rispettano verso e condizioni. Le transizioni collegano solo passi della stessa variante. L'ordine di presentazione è distinto dalla causalità. Due transizioni possono ricongiungersi sullo stesso passo; due passi distinti possono citare lo stesso arco. Un passaggio non dimostrato resta una lacuna. Una prova `artifact` cita una versione immutabile di un record tecnico e il punto del risultato che la sostiene.
+4. Un edit identifica il campo con JSON Pointer relativo all'oggetto, anche per i dettagli del flusso; la stringa vuota riguarda l'oggetto intero. I passi si modificano tramite ID di occorrenza. Per un elenco ordinato, come gli archi di un passo, un edit confronta l'intero campo: l'indice numerico di una riga non identifica un elemento dopo un riordino. Il valore ha la forma `{"present":true,"value":...}` oppure `{"present":false}`, così un campo assente si distingue da JSON null. Per ogni campo si applica l'ultimo edit attivo. `release` chiude la scelta manuale. Anche un intervento sul medesimo campo o una rimozione del suo oggetto da parte dell'analizzatore usa il confronto a tre vie. Un conflitto aperto conserva visibile la scelta manuale e permette di consultare il valore in arrivo. La risoluzione registra un nuovo edit nella revisione indicata da `resolved_rev`, scegliendo quale valore tenere o tornando a seguire l'analisi.
+
+### Esempio di lettura e revisione
+
+Per leggere i figli di un gruppo in una revisione storica:
+
+```sql
+SELECT v.object_id, n.name
+FROM nodes AS n
+JOIN versions AS v ON v.version_id = n.version_id
+WHERE n.parent_id = :group_id
+  AND v.from_rev <= :rev AND (v.until_rev IS NULL OR :rev < v.until_rev)
+ORDER BY n.name, v.object_id;
+```
+
+In Bank of Anthos, «Pagamento a un contatto» ha un solo ID di flusso. Sullo stesso commit il profilo `kubernetes-standard` porta da Ledgerwriter a Balancereader e `ledger-monolith` legge il saldo dalla cache di Ledgermonolith. Le varianti collegano i rispettivi passi e ciascun passo cita i propri archi. Cambiare profilo nella GUI seleziona una variante della stessa revisione.
+
+| Revisione esemplificativa | Righe interessate |
+|---|---|
+| R1, analisi | Inserisce snapshot S1, analisi A1 e flusso F con nome originale. |
+| R2, una persona rinomina F | Stessa A1. Chiude la versione precedente di F, ne apre una con il nuovo nome e registra un edit su `/name` con base R1. Nodi e archi conservano le righe esistenti. |
+| R3, rianalisi | Registra A2. Se cambia solo un arco, F conserva il nome manuale. Se l'analisi propone un terzo nome, `conflicts` collega tale valore all'edit R2. |
+| R4, risoluzione | La scelta viene registrata con autore. Riaprendo R3 il conflitto risulta ancora aperto; in R4 si vede l’esito. |
+
+Il vecchio esempio Bank of Anthos si riconosce come ZIP con `project.json` e `v2/graph.sqlite`. Quest'ultimo contiene cinque tabelle e ha un identificativo SQLite diverso. L’eventuale importazione conserva l’originale e recupera dal manifest revisioni e provenienza. Per una versione dell’analizzatore o un'opzione storica irrecuperabile registra rispettivamente il valore riservato «unknown» o un elenco dei campi ignoti nella configurazione di importazione, e una lacuna con la causa. Cambiare estensione o cambiare solo `user_version` non converte il contenuto.
 
 ## Il piano: completo nei vincoli, incrementale nelle azioni
 
