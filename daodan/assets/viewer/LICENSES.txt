@@ -1,4 +1,4 @@
-@acaprino/imago 1.0.1 (Apache-2.0)
+@acaprino/imago 1.4.1 (Apache-2.0)
 
 Apache License
                            Version 2.0, January 2004
@@ -204,7 +204,7 @@ Apache License
 
 ----------------
 
-@acaprino/sigrid 6.6.0 (MIT)
+@acaprino/sigrid 6.16.1 (MIT)
 
 MIT License
 
