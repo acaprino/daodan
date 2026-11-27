@@ -292,39 +292,49 @@ A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo n
 
 ### Diagnosi della scoperta cieca (`T0.B.2`, 27 novembre 2026)
 
-Daodan a `936fb06`, Bank of Anthos a `db35fea9fd090150e2398106aadb475576f80d94` (`code_archive.py`: 411 file tenuti, 38 lasciati, 3 segreti mascherati). Tag `t0b2-anthos`, `--rules session --scopes system --models haiku,qwen --reps 2`, in `results/system/t0b2-anthos/` (fuori da git). Le due `map.json` di Qwen (ripetizioni 1 e 2) hanno lo stesso sha256, `33205a43e74978107052de4f212e8f39b893afaeed48e9e2b0650ef92cee5951`: sono vuote, 0 nodi e 0 flussi.
+Bank of Anthos a `db35fea9fd090150e2398106aadb475576f80d94`, archivio di `code_archive.py` (411 file tenuti, 38 lasciati, 3 segreti mascherati; sha256 `2650240fbc58b14c0b183d8bee35d48e698c0404ad321e8ca206f10616ccbcdc`). Riferimento `../project-model/fixtures/real-bank-of-anthos/system.json`. Per decisione del proprietario (27 novembre 2026) il metro è Sonnet 5.5 e il modello debole Haiku 5.5, perché Qwen non è disponibile.
 
-- **Haiku 5.5: non misurato.** La sessione delle regole finisce al primo turno con «You've hit your weekly limit · resets Dec 2, 1am (UTC)» dell'account del secret `claude-code-alt`. Senza regole la run si ferma e la ripetizione 2 non parte.
-- **Qwen, ripetizione 1:** la sessione delle regole registra 26 regole, poi si chiude con un errore del gateway (`BadRequestError` su `input_tokens`, finestra di contesto). Il mapper smista 14 schede su 97 (10 escluse, 4 irrisolte). Al 45° turno manda una proposta di 22 nodi e 9 flussi, ma il budget della sessione (3 USD, stimato da Claude Code sul nome del modello) la ferma prima della risposta. Non si registra nulla.
-- **Qwen, ripetizione 2:** il mapper rifà la classificazione delle forme e prova a tentoni il formato delle regole. Dopo 44 turni si chiude con «response exceeded the 32000 output token maximum», senza aver proposto nulla.
-- **Collegamenti** (`links.json` della ripetizione 1): 39 ingressi, tutti rotte; 164 archi `chiama`; rotte `offered` 21, `called` 0, `linked` 0. Java `failed` nel passaggio del motore; JavaScript, Python e fogli di stile `fresh`.
+**Prima corsa, non valida** (Daodan a `936fb06`, tag `t0b2-anthos`, `--models haiku,qwen`). Haiku si ferma al primo turno per il limite settimanale dell'account del secret `claude-code-alt` (fino al 2 dicembre). Le due mappe di Qwen sono vuote (sha256 `33205a43e74978107052de4f212e8f39b893afaeed48e9e2b0650ef92cee5951`, la stessa per le due ripetizioni). La ripetizione 1 è fermata dal budget di 3 USD mentre propone 22 nodi e 9 flussi. La ripetizione 2 supera il tetto di 32.000 token in uscita senza aver proposto niente.
 
-Flussi trovati: 0 su 27 per entrambi i modelli. Dei 9 nascosti, 9 mancati. Per ogni flusso si guarda dove cade l'ingresso: i file del nodo d'ingresso oppure, per un nodo senza codice, la riga citata della prima freccia e i file del nodo che raggiunge. La causa è il primo passo che perde il flusso. Il mapper non ha registrato niente, quindi un ingresso presente e collegato si perde nel `mapper`.
+**Corsa valida.** Daodan a `7e090b3`, che passa al secret `claude-code`. Tag `t0b2-anthos-s`, `spawn --rules session --scopes system --reps 2`, con `--models haiku --budget 0.2` e `--models sonnet --budget 1.05`. Chiamate `fc-01M8F1M3CPYPVRS8WKYMASDJB9` (Haiku 1), `fc-01M8F21G2K1C41G1W62515B2M2` (Haiku 2), `fc-01M8F1M4PM9QJK54EK296JJMC8` (Sonnet 1) e `fc-01M8F220F156DDKZHYH26AHT18` (Sonnet 2). Le corse sono in `results/system/t0b2-anthos-s/`, fuori da git. Nessuna sessione è stata fermata dal budget.
 
-| Flusso | Tipo dell'ingresso | Fra quelli di `links.json` | Un percorso parte da lì | Il mapper l'ha aperto o proposto | Causa |
+| Corsa | `map.json` (sha256) | Nodi | Flussi proposti | Flussi del riferimento ritrovati |
+| --- | --- | ---: | ---: | ---: |
+| Haiku 1 | `3d2143e86c49a656956f06452c7aff84bd982906cc21c370e5cb2c5961ea7b24` | 8 | 0 | 0 su 27 |
+| Haiku 2 | `588a6dc42f4feaf11b4532499265ac391eeb7b66b195a5a95bb25576203a135c` | 7 | 4 | 0 su 27 |
+| Sonnet 1 | `5310e0d3b3b4d992c97810914d753551514fb04e988b49fb593c0db5c807e614` | 9 | 2 | 0 su 27 |
+| Sonnet 2 | `48e149c953d934f0e4ea4a57c60d4f744527d9680e7d642d62bb926f94e421ac` | 8 | 0 | 0 su 27 |
+
+- **Passaggio del motore, difetto della corsa.** Java, JavaScript e Python sono `failed`, solo i fogli di stile `fresh`. `scip-java` non scrive l'indice: la preparazione esce con codice 1. Python e JavaScript cadono alla lettura dell'indice, perché `scip_pb2.py` è generato con protobuf 7.35.1 ma il processo figlio carica il runtime 6.31.1 dal client di Modal (`/__modal/deps`). Questo succede perché `modal_pipeline.engine_environment` mette le cartelle del client prima di `site-packages`. Gli archi `chiama` (97 per Haiku, 96 per Sonnet) non hanno quindi l'indice ufficiale sotto. La causa `link_calls` qui sotto va riletta dopo la correzione.
+- **Regole.** Haiku registra 21 rotte e una regola per le azioni dell'interfaccia: 95 ingressi, con 2 rotte `called` e 1 `linked`. Sonnet si vede rifiutare le tre regole Flask («route not a literal»): restano 39 ingressi, tutti rotte, con 0 `called` e 0 `linked`. Tutti e due lasciano senza regola le chiamate del frontend agli altri servizi, i cui URL vengono dalla configurazione.
+- **Mapper.** Haiku 1 si vede rifiutare tutti e quattro i flussi per frecce senza un collegamento provato. Haiku 2 li registra solo con frecce dichiarate: 4 dichiarate e 4 rifiutate. Sonnet 1 si ferma da solo «per tenere il budget» dopo 2 flussi, ciascuno con una sola freccia dichiarata. Sonnet 2 trova una coda vuota e non dichiara flussi.
+
+Per ogni flusso si guarda dove cade l'ingresso: i file del nodo d'ingresso oppure, per un nodo senza codice, la riga citata della prima freccia e i file del nodo che raggiunge. Le tre risposte sono, in quest'ordine: l'ingresso è fra quelli di `links.json` della ripetizione 1 del modello; un percorso parte da lì; il mapper l'ha aperto o proposto in una delle due ripetizioni. La causa è il primo passo che perde il flusso.
+
+| Flusso | Tipo dell'ingresso | Haiku | Causa per Haiku | Sonnet | Causa per Sonnet |
 | --- | --- | --- | --- | --- | --- |
-| Accesso con nome utente e password | controllo dell'interfaccia | no | no | no | `find_entry_points` |
-| Uscita | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
-| Verifica del token JWT nei servizi | rotta | sì | sì | sì | `mapper` |
-| Consenso all'accesso di un'applicazione esterna | rotta | sì | sì | sì | `mapper` |
-| Deposito da un conto esterno | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
-| Pagamento a un contatto | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
-| Controllo del saldo prima di un trasferimento | rotta | sì | sì | no | `mapper` |
-| Rifiuto delle transazioni duplicate | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
-| Aggiornamento dei saldi in memoria | orario | no | no | no | `find_entry_points` |
-| Aggiornamento dello storico in memoria | orario | no | no | no | `find_entry_points` |
-| Sonde di salute dei servizi | orario | sì | sì | sì | `mapper` |
-| Generazione del carico | avvio di un processo | no | no | no | `find_entry_points` |
-| Creazione delle transazioni dimostrative | avvio di un processo | no | no | sì | `find_entry_points` |
-| Popolamento dei database su Cloud SQL | comando | no | no | sì | `find_entry_points` |
-| Esportazione delle tracce | avvio di un processo | sì | sì | sì | `mapper` |
-| Posizione del pod nel piè di pagina | avvio di un processo | sì | sì | sì | `mapper` |
-| Costruzione e rilascio con Skaffold | comando | no | no | sì | `find_entry_points` |
-| Rilascio continuo di una squadra | evento del repository | no | no | no | `find_entry_points` |
+| Accesso con nome utente e password | controllo dell'interfaccia | sì / no / sì | `link_calls` | no / no / sì | `find_entry_points` |
+| Uscita | controllo dell'interfaccia | sì / sì / sì | `mapper` | no / no / sì | `find_entry_points` |
+| Verifica del token JWT nei servizi | rotta | sì / sì / sì | `mapper` | sì / sì / sì | `mapper` |
+| Consenso all'accesso di un'applicazione esterna | rotta | sì / sì / sì | `mapper` | sì / sì / sì | `mapper` |
+| Deposito da un conto esterno | controllo dell'interfaccia | sì / sì / sì | `mapper` | no / no / sì | `find_entry_points` |
+| Pagamento a un contatto | controllo dell'interfaccia | sì / sì / sì | `mapper` | no / no / sì | `find_entry_points` |
+| Controllo del saldo prima di un trasferimento | rotta | sì / sì / sì | `mapper` | sì / sì / sì | `mapper` |
+| Rifiuto delle transazioni duplicate | controllo dell'interfaccia | sì / sì / sì | `mapper` | no / no / sì | `find_entry_points` |
+| Aggiornamento dei saldi in memoria | orario | no / no / sì | `find_entry_points` | no / no / sì | `find_entry_points` |
+| Aggiornamento dello storico in memoria | orario | no / no / sì | `find_entry_points` | no / no / sì | `find_entry_points` |
+| Sonde di salute dei servizi | orario | sì / sì / sì | `mapper` | sì / sì / sì | `mapper` |
+| Generazione del carico | avvio di un processo | no / no / no | `find_entry_points` | no / no / sì | `find_entry_points` |
+| Creazione delle transazioni dimostrative | avvio di un processo | no / no / sì | `find_entry_points` | no / no / no | `find_entry_points` |
+| Popolamento dei database su Cloud SQL | comando | no / no / sì | `find_entry_points` | no / no / no | `find_entry_points` |
+| Esportazione delle tracce | avvio di un processo | sì / sì / sì | `mapper` | sì / sì / sì | `mapper` |
+| Posizione del pod nel piè di pagina | avvio di un processo | sì / sì / sì | `mapper` | sì / sì / sì | `mapper` |
+| Costruzione e rilascio con Skaffold | comando | no / no / no | `find_entry_points` | no / no / no | `find_entry_points` |
+| Rilascio continuo di una squadra | evento del repository | no / no / no | `find_entry_points` | no / no / no | `find_entry_points` |
 
-Totali per causa, sui 18 flussi visibili mancati: `find_entry_points` 12, `mapper` 6, `list_files` 0, `link_calls` 0, `assemble_graph` 0, `confronto` 0. Nascosti mancati: 9.
+Totali per causa, sui 18 flussi visibili mancati da ciascun modello. Haiku: `mapper` 10, `find_entry_points` 7, `link_calls` 1. Sonnet: `find_entry_points` 12, `mapper` 6. `list_files`, `assemble_graph` e `confronto` sono a 0 per entrambi. Nascosti: 9 su 9 mancati da entrambi.
 
-Costo: su Modal circa 0,7 USD (app `daodan-system-map` 0,37 USD, più le sandbox della pipeline di quelle ore, condivise con altri giri). Su Anthropic 0 USD, perché Haiku non ha girato. Per Qwen Claude Code stima 7,13 USD con i suoi prezzi, ma il modello passa dal gateway del proprietario.
+Costo stimato prima del lancio: circa 3,2 USD, con un tetto di 4,7 USD dato dai budget per sessione. Costo reale su Anthropic, secondo Claude Code: Haiku 0,055 USD, Sonnet 0,569 USD, più 0,026 USD per la prova del secret. Su Modal circa 0,51 USD nell'ora della corsa: `daodan-system-map` 0,27 USD e `daodan-pipeline-sandboxes` 0,24 USD, quest'ultima condivisa con altri giri.
 
 ### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
 
