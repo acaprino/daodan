@@ -5,21 +5,84 @@
  "indexer": {
   "name": "scip-java",
   "version": "0.14.2",
-  "seconds": 107.2,
-  "peak_mb": 2205
+  "seconds": 114.9,
+  "peak_mb": 1261
+ },
+ "code": {
+  "code_graph.py": "3c309bcb7e12",
+  "indexers/__init__.py": "67a8a5b52d41",
+  "indexers/clang.py": "3bf34406906b",
+  "indexers/clang_run.py": "c1ea74dc335f",
+  "indexers/components.py": "d46475644269",
+  "indexers/csharp.py": "3f8b3d346506",
+  "indexers/css.py": "337e43dbff76",
+  "indexers/css_astro.py": "c8157d430209",
+  "indexers/css_csstree.py": "d9ed24317d3d",
+  "indexers/css_less.py": "d74d9e3004ae",
+  "indexers/css_sass.py": "c2a5e278bdfc",
+  "indexers/css_stylus.py": "a8d16d83fc4d",
+  "indexers/css_svelte.py": "10e35514b1c3",
+  "indexers/css_tailwind.py": "d7536cfbb251",
+  "indexers/css_typescript.py": "3560d77e2f0d",
+  "indexers/css_vue.py": "371de29e0479",
+  "indexers/go.py": "3a6eefc666e2",
+  "indexers/java.py": "357ea231aeaa",
+  "indexers/jvm.py": "650a3aa9af8f",
+  "indexers/kotlin.py": "0644ddd3e210",
+  "indexers/python.py": "27ea410254f8",
+  "indexers/python_unbound.py": "49e96c46d1f4",
+  "indexers/runtime.py": "fd355346a48c",
+  "indexers/rust.py": "091429a8d22e",
+  "indexers/typescript.py": "0aa3f2e30ef7",
+  "indexers/typescript_types.py": "8d7033172e18",
+  "indexers/KotlinAsk.kt": "77b5faec27f5",
+  "adapters/clang.py": "9b9536b26f29",
+  "adapters/go_callgraph.py": "04f53f7ee62a",
+  "adapters/java.py": "0861828a7eec",
+  "adapters/js_jelly.py": "e3ef3f9aa8cd",
+  "adapters/jvm_callgraph.py": "27d24421e478",
+  "adapters/jvm_here.py": "03948f8e704d",
+  "adapters/kotlin.py": "17254bcde28c",
+  "adapters/kotlin_analysis.py": "5eef9336bea9",
+  "adapters/ts_compiler.py": "089c8aa85ec8"
  },
  "reverse_relationships_dropped": 30,
+ "analysis": {
+  "runs": [
+   {
+    "step": "ask-compile",
+    "phase": "execute",
+    "returncode": 0,
+    "seconds": 7.2,
+    "peak_mb": 736,
+    "stderr_tail": "Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/root\n/daodan/state/kotlin-ask/KotlinAsk.kt:217:79: warning: 'val partiallyAppliedSymbol: KaPartiallyAppliedSymbol<CapturedType(*), KaFunctionSignature<CapturedType(*)>>' is deprecated. Use the content of the `partiallyAppliedSymbol` directly instead.\n        listOfNotNull(target.resolveToCall()?.successfulFunctionCallOrNull()?.partiallyAppliedSymbol?.signature?.symbol)\n                                                                              ^^^^^^^^^^^^^^^^^^^^^^\n/daodan/state/kotlin-ask/KotlinAsk.kt:369:28: warning: cast is redundant.\n        val name = (module as? KaSourceModule)?.name ?: return@forEach\n                           ^^^^^^^^^^^^^^^^^^",
+    "stderr_errors": 0,
+    "stderr_error_examples": []
+   },
+   {
+    "step": "ask",
+    "phase": "execute",
+    "returncode": 0,
+    "seconds": 9.4,
+    "peak_mb": 736,
+    "stderr_tail": "Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/root\nkotlin-ask: 97 files, 17 overloaded names, 405 references and 67 overrides asked, 337 answers in 7.342 s",
+    "stderr_errors": 0,
+    "stderr_error_examples": []
+   }
+  ],
+  "gaps": []
+ },
  "report": {
   "language": "kotlin",
   "indexer": {
    "name": "scip-java",
    "version": "0.14.2",
-   "seconds": 107.2,
-   "peak_mb": 2205
+   "seconds": 114.9,
+   "peak_mb": 1261
   },
   "files": {
-   "snapshot": 103,
-   "indexed": 96,
+   "snapshot": 104,
+   "indexed": 97,
    "missing": [
     {
      "path": "build.gradle.kts",
@@ -43,7 +106,7 @@
     },
     {
      "path": "kobalt/src/Build.kt",
-     "reason": "in no Gradle source set: no KotlinCompile task lists it"
+     "reason": "no Kotlin compile task of the build lists it"
     },
     {
      "path": "settings.gradle.kts",
@@ -53,7 +116,7 @@
    "missing_count": 7
   },
   "nodes": 5223,
-  "edges": 16191,
+  "edges": 16309,
   "symbols_by_kind": {
    "external class": 99,
    "external function": 40,
@@ -71,36 +134,33 @@
   },
   "edges_by_end": {
    "dead-end call": 2,
-   "external call": 1119,
+   "external call": 1121,
    "external read": 393,
-   "external unknown": 2186,
+   "external unknown": 2184,
    "namespace unknown": 1079,
-   "project-callable call": 2129,
+   "project-callable call": 2142,
    "project-callable read": 24,
-   "project-callable unknown": 5497,
-   "project-value call": 24,
-   "project-value read": 1798,
-   "project-value unknown": 1940
+   "project-callable unknown": 5598,
+   "project-value call": 33,
+   "project-value read": 1808,
+   "project-value unknown": 1925
   },
   "callable_chain_hops": {
-   "0": 1967,
-   "1": 5683
+   "0": 1963,
+   "1": 5801
   },
   "hop_tags": {
-   "implementation": 5683,
+   "implementation": 5801,
    "same-range": 6
   },
-  "edges_uncertain": {
-   "overload-across-tasks": 238,
-   "override-across-tasks": 13
-  },
+  "edges_uncertain": {},
   "edges_removed": {},
   "holes_by_class": {
+   "computed-callee call": 1,
    "implicit-operator call": 93,
    "no-document call": 150,
    "no-document read": 76,
    "no-occurrence read": 8,
-   "no-position call": 1,
    "undefined-project-symbol call": 2
   },
   "holes": [
@@ -272,7 +332,7 @@
     ]
    },
    {
-    "class": "no-position",
+    "class": "computed-callee",
     "kind": "call",
     "reason": "dynamic-callee",
     "count": 1,
@@ -300,96 +360,26 @@
    "maven maven/org.jetbrains/annotations@13.0": 2
   }
  },
- "edges_certain": 15940,
- "uncertain_examples": [
-  {
-   "site": "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:86",
-   "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+2).",
-   "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+2).",
-   "uncertain": {
-    "reason": "overload-across-tasks",
-    "candidates": [
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj().",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+1).",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+2)."
-    ]
-   }
-  },
-  {
-   "site": "klaxon/src/test/kotlin/com/beust/klaxon/BindingTest.kt:288",
-   "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString(+1).",
-   "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString(+1).",
-   "uncertain": {
-    "reason": "overload-across-tasks",
-    "candidates": [
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString().",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString(+1)."
-    ]
-   }
-  },
-  {
-   "site": "klaxon/src/test/kotlin/com/beust/klaxon/Issue221Test.kt:23",
-   "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString(+1).",
-   "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString(+1).",
-   "uncertain": {
-    "reason": "overload-across-tasks",
-    "candidates": [
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString().",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#toJsonString(+1)."
-    ]
-   }
-  },
-  {
-   "site": "klaxon/src/test/kotlin/com/beust/klaxon/JazzerTest.kt:21",
-   "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Parser#parse(+3).",
-   "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonParser#parse(+2).",
-   "uncertain": {
-    "reason": "overload-across-tasks",
-    "candidates": [
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonParser#parse().",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonParser#parse(+1).",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonParser#parse(+2)."
-    ]
-   }
-  },
-  {
-   "site": "klaxon/src/test/kotlin/com/beust/klaxon/PathMatcherTest.kt:139",
-   "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#parse(+3).",
-   "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#parse(+3).",
-   "uncertain": {
-    "reason": "overload-across-tasks",
-    "candidates": [
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#parse().",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#parse(+1).",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#parse(+2).",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#parse(+3).",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Klaxon#parse(+4)."
-    ]
-   }
-  },
-  {
-   "site": "src/test/kotlin/com/beust/klaxon/KlaxonTest.kt:179",
-   "symbol": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj().",
-   "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj().",
-   "uncertain": {
-    "reason": "overload-across-tasks",
-    "candidates": [
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj().",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+1).",
-     "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+2)."
-    ]
-   }
+ "edges_certain": 16309,
+ "uncertain_by_reason": {},
+ "settled": {
+  "edges": 251,
+  "another_candidate": 237,
+  "answers": {
+   "refs": 270,
+   "overridden": 67
   }
- ],
+ },
+ "uncertain_examples": [],
  "holes": {
   "no-document": 226,
   "no-occurrence": 8,
-  "no-position": 1,
+  "computed-callee": 1,
   "undefined-project-symbol": 2,
   "implicit-operator": 93
  },
  "hand_check": {
-  "right": 16,
+  "right": 18,
   "of": 20,
   "sites": [
    {
@@ -443,20 +433,18 @@
      "project": "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:19"
     },
     "occurrence_found": true,
-    "right": false,
-    "target_right": false,
+    "right": true,
+    "target_right": true,
     "implementations_right": true,
     "graph": [
      {
-      "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj(+2).",
+      "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/KlaxonJson#obj().",
       "end": "project-callable",
       "defined_at": [
-       "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:25"
+       "klaxon/src/main/kotlin/com/beust/klaxon/KlaxonJson.kt:19"
       ],
       "chain": [],
-      "uncertain": [
-       "overload-across-tasks"
-      ]
+      "uncertain": []
      }
     ]
    },
@@ -752,9 +740,9 @@
      ]
     },
     "occurrence_found": true,
-    "right": false,
+    "right": true,
     "target_right": true,
-    "implementations_right": false,
+    "implementations_right": true,
     "graph": [
      {
       "to": "scip-java maven maven/com.beust/klaxon 5.7-SNAPSHOT com/beust/klaxon/Parser#parse(+3).",
@@ -777,17 +765,15 @@
       "uncertain": []
      },
      {
-      "to": "scip-java maven maven/org.gradle.kotlin.dsl.samples.multiproject/klaxon-jackson 1.0 com/beust/klaxon/jackson/JacksonParser#parse().",
+      "to": "scip-java maven maven/org.gradle.kotlin.dsl.samples.multiproject/klaxon-jackson 1.0 com/beust/klaxon/jackson/JacksonParser#parse(+2).",
       "end": "project-callable",
       "defined_at": [
-       "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:29"
+       "klaxon-jackson/src/main/kotlin/com/beust/klaxon/jackson/JacksonParser.kt:38"
       ],
       "chain": [
        "implementation"
       ],
-      "uncertain": [
-       "override-across-tasks"
-      ]
+      "uncertain": []
      }
     ]
    },
@@ -1264,5 +1250,5 @@
   ]
  },
  "graph_seconds": 1.9,
- "seconds": 125.6
+ "seconds": 155.1
 }
