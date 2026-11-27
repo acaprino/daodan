@@ -624,7 +624,7 @@ def test_a_forbidden_file_of_a_live_folder_is_not_opened_by_the_real_release(rel
     passed = []
     run = released.run
     monkeypatch.setattr(released, "run", lambda root, **kwargs: passed.append(kwargs) or run(root, **kwargs))
-    answer = stack_recognition.run(manifest, service_registry.load(), {"packages": [], "excluded": []})
+    answer = stack_recognition.run(manifest, service_registry.load())
     [kwargs] = passed
     assert "web/.env.example" in kwargs["ignore"]
     assert [item["state"] for item in answer["checkers"] if item["checker"] == "stack-analyser"] == ["ran"]

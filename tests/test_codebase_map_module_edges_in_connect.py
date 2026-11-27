@@ -20,7 +20,7 @@ import snapshot  # noqa: E402
 # Imported before any patch: they take `semantic_reader` by name when first imported, and would keep the patch's raiser.
 import store_consumers  # noqa: E402,F401
 import store_graph  # noqa: E402,F401
-from test_codebase_map_premap_container_runner import manifest_of  # noqa: E402
+from test_codebase_map_container_runner import manifest_of  # noqa: E402
 
 FILES = {
     "libs/a/package.json": '{"name":"@acme/a","dependencies":{"@acme/b":"1"}}', "libs/a/project.json": '{"name":"a"}',

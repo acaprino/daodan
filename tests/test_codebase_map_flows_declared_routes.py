@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import flows
 import premap
 from test_codebase_map_manifest_entries import noir_route
-from test_codebase_map_premap_container_runner import manifest_of
+from test_codebase_map_container_runner import manifest_of
 from test_codebase_map_premap_nextjs import SHOP, VALIDATOR
 
 RULES = [

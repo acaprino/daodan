@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_premap_container_runner import bound, container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/sveltekit-routes"
 FIXTURE = BENCHMARK / "fixture"

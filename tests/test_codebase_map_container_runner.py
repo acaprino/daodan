@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / "daodan/core"))
 import container  # noqa: E402
 import egress  # noqa: E402
 import premap  # noqa: E402
-from premap import container_runner  # noqa: E402
+import container_runner  # noqa: E402
 import snapshot  # noqa: E402
 
 

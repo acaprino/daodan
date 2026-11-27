@@ -4,9 +4,10 @@
 # ///
 """Step 2 (`stack`): per-module frameworks, libraries, services and tools from Step 1's map and facts.
 
-Reads Step 1's module graph and pre-map facts (`packages`, `configured_services`, `services`, `docker_builds`, `excluded`, `toolchains`)
-without parsing a manifest again; what the project's files show is recognized only by the pinned stack-analyser release
-(`stack_recognition`, which reads files and executes nothing of the project); the registry gives each entry's name,
+Reads the stack step's record (`stack_recognition.ensure`: what the project's files show, recognized only by the pinned
+stack-analyser release, which reads files and executes nothing of the project, before `find_modules`), then Step 1's module
+graph and pre-map facts (`packages`, `configured_services`, `services`, `docker_builds`, `excluded`, `toolchains`) without
+parsing a manifest again, and gives each module the technologies its files declare; the registry gives each entry's name,
 category, type, site and mark. Every concrete, logical and virtual module receives its
 languages, toolchains, frameworks, declared libraries (cataloged or not), external services and tools.
 `configured_services` preserves Compose and CI declarations, including names and images outside the registry.
@@ -14,9 +15,9 @@ For build modules with a native package graph, `resolved_libraries` records the 
 and their exact versions. A resolved package can be conditional on a target or feature.
 An entry with no `declared` sign, only lines of text that mention it, is no module's: it stays in `mentioned` with its
 signs. Every sign carries its `source` and the `scan` (the pre-map's `inputs_digest`) that produced it: a scan replaces the
-signs of the sources it ran and keeps the others while their file exists and the pre-map does not leave it
-out (`merge`), and says what it kept (`signs_kept`). A record made while the tool could not run is derived again once
-this process remembers no failed install and did not derive it itself (`_read`). `checkers` gives each checker's status (`stack-analyser`, `host`)
+signs of the sources it ran and keeps those of the stack step's other sources while their file exists and the pre-map does
+not leave it out (`merge`), and says what it kept (`signs_kept`). The record follows the stack step's: one derived again
+there is derived again here. `checkers` gives each checker's status (`stack-analyser`, `host`)
 and `gaps` what they could not establish. The process: docs/plugins/codebase-map.md, «Lo step `stack`».
 """
 from __future__ import annotations
@@ -39,14 +40,11 @@ from module_derive import PREMAP_KIND_ECOSYSTEM  # noqa: E402
 import modules  # noqa: E402
 import premap  # noqa: E402
 import service_registry  # noqa: E402
-import stack_analyser  # noqa: E402
 import stack_recognition  # noqa: E402
-from languages._treesitter import get_parser  # noqa: E402
 from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
 SCHEMA, FILE = "daodan/technologies/v1", "technologies.json"
-MATCHER_VERSION = 4  # Cache identity for recognition and attribution changes within the v1 output format.
-_derived: set[tuple[str, str]] = set()  # (record, inputs digest) derived by this process: not derived again here
+MATCHER_VERSION = 5  # Cache identity for recognition and attribution changes within the v1 output format.
 
 
 def _versions_only(rel: str | None) -> bool:
@@ -80,16 +78,15 @@ def path(manifest: Path) -> Path:
     return Path(manifest).with_name(FILE)
 
 
-def _inputs(manifest: Path, registry: dict, facts: dict) -> tuple[str, str, str]:
-    """The digest of what the record is derived from, and the snapshot's root and target."""
+def _inputs(manifest: Path, registry: dict, facts: dict, stack: dict) -> tuple[str, str, str]:
+    """The digest of what the record is derived from (the stack step's record `stack` among it), and the snapshot's root
+    and target."""
     graph_digest = modules.load_graph(Path(modules.ensure_structure(manifest)["graph"])).get("inputs_digest")
-    # Which sources ran decides which signs `merge` keeps, and the pre-map's own digest does not change with it.
-    sources = sorted((str(s.get("source")), str(s.get("state"))) for s in facts.get("sources") or () if isinstance(s, dict))
     with open_snapshot(manifest) as store:
         root, target = store["root"], store.get("target") or "."
-        value = [inventory_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION, stack_analyser.VERSION, stack_analyser.SHA256,
+        value = [inventory_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION, stack,
                  facts.get("packages"), facts.get("package_graphs"), facts.get("services"), facts.get("configured_services"),
-                 facts.get("docker_builds"), facts.get("excluded"), facts.get("toolchains"), facts.get("units"), sources]
+                 facts.get("docker_builds"), facts.get("excluded"), facts.get("toolchains"), facts.get("units")]
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest(), root, target
 
 
@@ -164,8 +161,9 @@ def _sign_key(ident: str, sign: dict) -> tuple:
 
 def merge(found: list[dict], ran: set[str], previous: dict | None, scan: str, exists, registry: dict) -> tuple[list[dict], list[dict]]:
     """The entries of this scan's `found`, each sign with its `scan`, and those of the `previous` record whose source is
-    not in `ran` (the label up to `@`) and whose file `exists`. A sign with no path is kept; one with no source (a
-    record of another shape) is not, nor one this scan made too. A kept entry has the registry's data of now. A gap says
+    one of the stack step's (`stack_recognition.SOURCES`) not in `ran` (the label up to `@`) and whose file `exists`. A
+    sign with no path is kept; one with no source (a record of another shape) or of another source is not, nor one this
+    scan made too. A kept entry has the registry's data of now. A gap says
     what was kept."""
     now = {e["id"]: {**e, "signs": [{**s, "scan": scan} for s in e["signs"]]} for e in found}
     made = {_sign_key(e["id"], s) for e in found for s in e["signs"]}
@@ -173,7 +171,7 @@ def merge(found: list[dict], ran: set[str], previous: dict | None, scan: str, ex
     for old in [*(previous or {}).get("technologies", ()), *(previous or {}).get("mentioned", ())]:
         for sign in old.get("signs") or ():
             name = (sign.get("source") or "").partition("@")[0]
-            if (name and name not in ran and _sign_key(old["id"], sign) not in made
+            if (name in stack_recognition.SOURCES and name not in ran and _sign_key(old["id"], sign) not in made
                     and (not sign.get("path") or exists(sign["path"]))):
                 kept.setdefault(old["id"], []).append(sign)
                 sources.add(name)
@@ -189,13 +187,33 @@ def merge(found: list[dict], ran: set[str], previous: dict | None, scan: str, ex
         [{"kind": "signs_kept", "sources": sorted(sources), "scans": sorted(scans, key=str)}] if kept else [])
 
 
+def _placed(sign: dict, declared: dict) -> dict:
+    """`sign` with the line where the pre-map declares its package in its file (`declared_in`), when the tool read the
+    file without one: the site of the module's technology."""
+    if sign.get("line") or sign.get("sign") != "package":
+        return sign
+    line = next((line for eco, key, line in declared.get(sign.get("path"), ())
+                 if service_registry.package_key(eco, sign["value"]) == key), None)
+    return {**sign, "line": line} if line else sign
+
+
 def derive(manifest: Path, registry: dict, facts: dict) -> dict:
-    """The stack record of `manifest` from the registry and Step 1's `facts`; the signs of the sources the recogniser did
-    not run come from the record beside `manifest`, as it is before this one replaces it (`merge`)."""
-    recognized = stack_recognition.run(manifest, registry, facts)
-    digest, root, target = _inputs(manifest, registry, facts)
+
+    """The stack record of `manifest` from the registry, the stack step's record and Step 1's `facts`; the signs of the
+    sources the recogniser did not run come from the record beside `manifest`, as it is before this one replaces it
+    (`merge`)."""
+    recognized = stack_recognition.ensure(manifest, registry)
+    digest, root, target = _inputs(manifest, registry, facts, recognized)
     left_out = stack_recognition._left_out(facts)
-    merged, kept = merge(recognized["found"], set(recognized.get("ran") or ()), recorded(manifest),
+    packages = service_registry.step1_packages(manifest, facts)
+    declared: dict[str, list[tuple[str, str, int]]] = {}  # a file -> (ecosystem, package key, line) the pre-map declares
+    for eco, pkg_name, pkg_path, pkg_line, _ in packages:
+        if pkg_path and pkg_line:
+            declared.setdefault(pkg_path, []).append((eco, service_registry.package_key(eco, pkg_name), pkg_line))
+    # The stack's perimeter is the snapshot's; what the pre-map leaves out besides (a submodule) is no sign of the project.
+    found = [{**entry, "signs": [_placed(s, declared) for s in signs]} for entry in recognized["found"]
+             if (signs := [s for s in entry["signs"] if not service_registry._is_excluded(s.get("path"), left_out)])]
+    merged, kept = merge(found, set(recognized.get("ran") or ()), recorded(manifest),
                          facts.get("inputs_digest"), registry=registry,
                          exists=lambda rel: Path(root, rel).is_file() and not service_registry._is_excluded(rel, left_out))
     entries, mentioned = [], []
@@ -209,7 +227,7 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     configured = _configured_services(facts, left_out)
     resolved_members = {node["manifest"]: (model, i) for model in facts.get("package_graphs", ())
                         for i, node in enumerate(model["nodes"]) if "manifest" in node}
-    raw_packages = [s for s in service_registry.step1_packages(manifest, facts)
+    raw_packages = [s for s in packages
                     if s[0] != "docker" and not service_registry._is_excluded(s[2], left_out)]
     known_pkg: dict[tuple[str, str | None], dict] = {}
     declarations_by_path: dict[str, list[tuple[str, dict]]] = {}
@@ -293,16 +311,6 @@ def _read(manifest: Path, digest: str) -> dict | None:
         return None
     if (isinstance(record, dict) and record.get("schema") == SCHEMA and record.get("inputs_digest") == digest
             and "checkers" in record and "configured_services" in record):
-        # A grammar may have been placed since a previous run recorded its absence.
-        missing = {g["language"] for g in record.get("gaps", ()) if g.get("kind") == "source_grammar_unavailable"}
-        if any(get_parser(language) is not None for language in missing):
-            return None
-        # Node or the network may have come since the tool failed, unless this process remembers the failure or
-        # derived this record itself: a timeout or an exit with an error is not remembered as an install is.
-        if (not stack_analyser._failed and (str(path(manifest)), digest) not in _derived
-                and any(g.get("kind") == "checker_failed" and g.get("checker") == "stack-analyser"
-                        for g in record.get("gaps", ()))):
-            return None
         return record
     return None
 
@@ -339,25 +347,30 @@ def externals(graph: dict, record: dict) -> list[dict]:
 
 
 def state(manifest: Path, *, facts: dict | None = None) -> str:
-    """fresh, stale or missing; a read, which writes no pre-map: without `facts`, a pre-map that is not fresh (a pass may
-    be writing it) makes the record stale."""
+    """fresh, stale or missing; a read, which writes no pre-map and runs no tool: a stack step's record that is not fresh
+    makes the record stale, and so, without `facts`, does a pre-map that is not fresh (a pass may be writing it)."""
     manifest = Path(manifest).resolve()
     if not path(manifest).is_file():
         return "missing"
+    registry = service_registry.load()
+    if stack_recognition.state(manifest, registry) != "fresh":
+        return "stale"
     if facts is None:
         if premap.state(manifest)["state"] != "fresh":
             return "stale"
         facts = premap.ensure(manifest)
-    digest = _inputs(manifest, service_registry.load(), facts)[0]
+    digest = _inputs(manifest, registry, facts, stack_recognition.recorded(manifest))[0]
     return "fresh" if _read(manifest, digest) else "stale"
 
 
 def ensure(manifest: Path, *, facts: dict | None = None) -> dict:
-    """The record of `manifest`, derived and written again when it is not fresh."""
+    """The record of `manifest`, derived and written again when it is not fresh: the stack step's record first, whose build
+    tools choose the pre-map's sources, then the pre-map."""
     manifest = Path(manifest).resolve()
     registry = service_registry.load()
+    stack = stack_recognition.ensure(manifest, registry)
     facts = premap.ensure(manifest) if facts is None else facts
-    record = _read(manifest, _inputs(manifest, registry, facts)[0])
+    record = _read(manifest, _inputs(manifest, registry, facts, stack)[0])
     if record is None:
         target = path(manifest)
         confinement.reject_link_chain(target)
@@ -366,5 +379,4 @@ def ensure(manifest: Path, *, facts: dict | None = None) -> dict:
         with os.fdopen(descriptor, "wb") as stream:
             stream.write(json.dumps(record, indent=1, ensure_ascii=False, sort_keys=True).encode("utf-8"))
         os.replace(name, target)
-        _derived.add((str(target), record["inputs_digest"]))
     return record

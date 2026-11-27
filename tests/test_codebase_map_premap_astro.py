@@ -16,7 +16,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from test_codebase_map_premap_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import container, container_runner, manifest_of, premap, recorder
 
 import preparation  # noqa: E402
 
@@ -133,7 +133,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     spec = container_runner.TOOLS["astro"]
     assert (spec["restores"], spec["runs_on"]) == ("node", ("node",))  # the project's compiler is in its packages
     assert any(item[2] == "astro_templates.mjs" and item[0] is None for item in spec["files"])  # Daodan's own file, beside the source
-    assert (container_runner.Path(container_runner.__file__).parent / "astro_templates.mjs").is_file()
+    assert (container_runner.SCRIPTS / "astro_templates.mjs").is_file()
     calls, fake = recorder()
     carried = {}
 
@@ -141,7 +141,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
         carried.update({destination: (path.read_bytes() if path.is_file() else path) for destination, path in options["inputs"]().items()})
         return fake(project, commands, **options)
     with patch.object(container, "run_commands", spy), patch.object(container_runner, "fetched", lambda url, sha, name: Path("/host") / name
-                                                                    if url or name != "astro_templates.mjs" else Path(container_runner.__file__).with_name(name)):
+                                                                    if url or name != "astro_templates.mjs" else (container_runner.SCRIPTS / name)):
         container_runner.runner(manifest)(asked)
     first, *rest = calls[0]["commands"]
     plan = preparation.node_prepare(["package.json"], lambda rel: (project / rel).read_text(encoding="utf-8"))
@@ -151,7 +151,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     assert len(rest) == 1 and rest[0]["network"] == "none" and "inputs" not in rest[0]
     assert rest[0]["argv"][:4] == ["timeout", "--kill-after=10", str(premap.astro.seconds(1)), "daodan-astro"]  # a project's own code may not end
     assert premap.astro.MEMORY_GB == spec["memory"]  # what the gap of a killed run says the run has
-    assert carried[f"{preparation.IN}/astro_templates.mjs"] == Path(container_runner.__file__).with_name("astro_templates.mjs").read_bytes()
+    assert carried[f"{preparation.IN}/astro_templates.mjs"] == (container_runner.SCRIPTS / "astro_templates.mjs").read_bytes()
     assert carried[f"{preparation.IN}/astro-files-0.json"].decode("utf-8") == next(iter(asked[0]["inputs"].values()))
 
 
@@ -159,7 +159,7 @@ def test_the_recorded_answers_carry_the_print_of_the_script_that_made_them_and_t
     """A pre-map is fresh while its source's `NAME@VERSION` is the one it was made by (`premap.state`): a script that changes with no
     new `VERSION` leaves stale rows in a project's pre-map. The recording holds both, so changing the script fails here until it is
     recorded again, and the record is made with the `VERSION` the source has then: raise it with the script."""
-    script = Path(container_runner.__file__).with_name("astro_templates.mjs")
+    script = container_runner.SCRIPTS / "astro_templates.mjs"
     printed = hashlib.sha256(script.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
     assert json.loads((RECORDED / "script.json").read_text(encoding="utf-8")) == {"astro_templates.mjs": printed, "version": premap.astro.VERSION}, (
         "the script or the version changed: record the answers again (`benchmarks/astro-compiler/modal_probe.py --mode source`)")

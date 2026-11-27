@@ -38,7 +38,7 @@ def test_registry_attributes_the_actual_dependency_to_its_manifest(real_stack, t
 
     manifest = tmp_path / "snapshot/manifest.sqlite"
     snapshot.read_project(project, manifest)
-    findings = stack_recognition.run(manifest, facts={})["found"]
+    findings = stack_recognition.run(manifest)["found"]
     actual = {(s["path"], s["value"], item["id"]) for item in findings for s in item["signs"] if s["sign"] == "package"}
     assert actual == {(path, name, entry) for path, names in manifests.items() for name, entry in names.items() if entry}
 

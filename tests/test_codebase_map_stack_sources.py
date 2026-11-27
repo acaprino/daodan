@@ -1,7 +1,8 @@
-"""The rule of the sources in `technologies.derive`: a scan replaces the signs of the sources it ran and keeps the others,
-each with the scan it comes from, while its file exists (`technologies.merge`).
+"""The rule of the sources in `technologies.derive`: a scan replaces the signs of the stack step's sources it ran and keeps
+the others, each with the scan it comes from, while its file exists (`technologies.merge`).
 
-The recogniser is replaced by a function that answers `found`, `checkers`, `gaps` and `ran` written by hand.
+The recogniser is replaced by a function that answers `found`, `checkers`, `gaps` and `ran` written by hand; each scan
+runs it again (its record beside the snapshot is removed first).
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_stack_sources.py
 """
@@ -48,6 +49,7 @@ def scan(manifest, monkeypatch):
     """`scan(number, answer)`: the stack step of the pre-map `scan-<number>`, the recogniser answering `answer`."""
     def run(number, recognized):
         monkeypatch.setattr(stack_recognition, "run", lambda *args, **kwargs: recognized)
+        stack_recognition.path(manifest).unlink(missing_ok=True)
         facts = {"packages": [], "excluded": [{"path": f"skipped-{number}/", "why": "test"}],
                  "inputs_digest": f"scan-{number}"}
         return technologies.ensure(manifest, facts=facts)
@@ -59,14 +61,20 @@ def signs_of(record, ident):
             for s in e["signs"]]
 
 
-def test_a_fast_scan_keeps_the_signs_of_the_sources_it_did_not_run(scan):
-    scan(1, answer([entry("fastapi", sign("web/package.json", "fastapi", "renovate@41"),
-                          sign("api/requirements.txt", "fastapi", line=1))], ran=["renovate", "stack-analyser"]))
-    record = scan(2, answer([entry("fastapi", sign("api/requirements.txt", "fastapi", line=2))],
-                            ran=["requirements", "stack-analyser"]))
-    assert sorted(signs_of(record, "fastapi")) == [("renovate@41", "web/package.json", 1, "scan-1"),
+def test_a_scan_keeps_the_signs_of_the_sources_it_did_not_run(scan):
+    scan(1, answer([entry("fastapi", sign("web/package.json", "fastapi", "registry_hosts"),
+                          sign("api/requirements.txt", "fastapi", line=1))], ran=["registry_hosts", "stack-analyser"]))
+    record = scan(2, answer([entry("fastapi", sign("api/requirements.txt", "fastapi", line=2))], ran=["stack-analyser"]))
+    assert sorted(signs_of(record, "fastapi")) == [("registry_hosts", "web/package.json", 1, "scan-1"),
                                                    ("stack-analyser", "api/requirements.txt", 2, "scan-2")]
-    assert {"kind": "signs_kept", "sources": ["renovate"], "scans": ["scan-1"]} in record["gaps"]
+    assert {"kind": "signs_kept", "sources": ["registry_hosts"], "scans": ["scan-1"]} in record["gaps"]
+
+
+def test_a_sign_of_a_source_the_step_no_longer_has_is_not_kept(scan):
+    """The pre-map's sources gave the tool their declarations before `find_modules` came after it: their signs go."""
+    scan(1, answer([entry("fastapi", sign("web/package.json", "fastapi", "renovate@41"))], ran=["renovate"]))
+    record = scan(2, answer(ran=["stack-analyser"]))
+    assert record["technologies"] == [] and not any(g["kind"] == "signs_kept" for g in record["gaps"])
 
 
 def test_a_source_that_ran_replaces_its_signs(scan):
@@ -79,32 +87,29 @@ def test_a_source_that_ran_replaces_its_signs(scan):
 
 
 def test_a_technology_stays_while_it_has_a_sign(scan):
-    scan(1, answer([entry("redis", sign("web/package.json", "redis", "renovate@41"),
-                          sign("api/requirements.txt", "redis"))], ran=["renovate", "stack-analyser"]))
+    scan(1, answer([entry("redis", sign("web/package.json", "redis", "registry_hosts"),
+                          sign("api/requirements.txt", "redis"))], ran=["registry_hosts", "stack-analyser"]))
     record = scan(2, answer(ran=["stack-analyser"]))
-    assert signs_of(record, "redis") == [("renovate@41", "web/package.json", 1, "scan-1")]
+    assert signs_of(record, "redis") == [("registry_hosts", "web/package.json", 1, "scan-1")]
     assert [e["name"] for e in record["technologies"]] == ["Redis"]  # the registry of now gives the name, not the record
 
 
 def test_a_kept_sign_leaves_with_its_file(scan, manifest):
-    scan(1, answer([entry("redis", sign("web/package.json", "redis", "renovate@41"))], ran=["renovate"]))
-    assert signs_of(scan(2, answer(ran=["stack-analyser"])), "redis") == [("renovate@41", "web/package.json", 1, "scan-1")]
+    scan(1, answer([entry("redis", sign("web/package.json", "redis", "registry_hosts"))], ran=["registry_hosts"]))
+    assert signs_of(scan(2, answer(ran=["stack-analyser"])), "redis") == [("registry_hosts", "web/package.json", 1, "scan-1")]
     (manifest.parents[1] / "app/web/package.json").unlink()
     record = scan(3, answer(ran=["stack-analyser"]))
     assert record["technologies"] == [] and not any(g["kind"] == "signs_kept" for g in record["gaps"])
 
 
 def test_without_the_tool_the_previous_signs_stay_and_a_gap_says_why(scan):
-    scan(1, answer([entry("fastapi", sign("api/requirements.txt", "fastapi"),
-                          sign("api/requirements.txt", "fastapi", "requirements@1"))],
-                   ran=["requirements", "stack-analyser"]))
+    scan(1, answer([entry("fastapi", sign("api/requirements.txt", "fastapi"))], ran=["registry_hosts", "stack-analyser"]))
     failed = {"checker": "stack-analyser", "state": "failed", "reason": "no Node"}
     cause = {"kind": "checker_failed", "checker": "stack-analyser", "detail": "no Node"}
     record = scan(2, answer(ran=["registry_hosts"], gaps=[cause], checkers=[failed]))
-    assert sorted(signs_of(record, "fastapi")) == [("requirements@1", "api/requirements.txt", 1, "scan-1"),
-                                                   ("stack-analyser", "api/requirements.txt", 1, "scan-1")]
+    assert signs_of(record, "fastapi") == [("stack-analyser", "api/requirements.txt", 1, "scan-1")]
     assert cause in record["gaps"] and failed in record["checkers"]
-    assert {"kind": "signs_kept", "sources": ["requirements", "stack-analyser"], "scans": ["scan-1"]} in record["gaps"]
+    assert {"kind": "signs_kept", "sources": ["stack-analyser"], "scans": ["scan-1"]} in record["gaps"]
 
 
 def test_a_record_of_the_old_shape_keeps_nothing(scan, manifest):
@@ -128,14 +133,13 @@ def test_a_new_release_makes_the_record_stale(scan, manifest, monkeypatch):
     assert technologies.state(manifest, facts=facts) == "stale"
 
 
-def test_a_source_that_ran_since_makes_the_record_stale(scan, manifest):
-    """A full scan whose source states differ from the last scan's derives again, even with the same facts: the
-    signs that source kept from before are replaced by what it says now."""
-    scan(1, answer([entry("fastapi", sign("web/package.json", "fastapi", "renovate@41"))], ran=["renovate"]))
+def test_a_stack_record_derived_again_makes_the_record_stale(scan, manifest):
+    """The record follows the stack step's: what the tool says now replaces what it said, even with the same facts."""
+    scan(1, answer([entry("fastapi", sign("web/package.json", "fastapi"))], ran=["stack-analyser"]))
     facts = {"packages": [], "excluded": [{"path": "skipped-1/", "why": "test"}], "inputs_digest": "scan-1"}
     assert technologies.state(manifest, facts=facts) == "fresh"
-    assert technologies.state(manifest, facts={**facts, "sources": [
-        {"source": "renovate@41", "state": "ran"}]}) == "stale"
+    stack_recognition.path(manifest).unlink()
+    assert technologies.state(manifest, facts=facts) == "stale"
 
 
 def test_a_record_the_tool_failed_for_is_stale_once_this_process_remembers_no_failure(scan, manifest, monkeypatch):
@@ -145,7 +149,7 @@ def test_a_record_the_tool_failed_for_is_stale_once_this_process_remembers_no_fa
     cause = {"kind": "checker_failed", "checker": "stack-analyser", "detail": "no Node"}
     scan(1, answer(ran=["registry_hosts"], gaps=[cause], checkers=[failed]))
     facts = {"packages": [], "excluded": [{"path": "skipped-1/", "why": "test"}], "inputs_digest": "scan-1"}
-    monkeypatch.setattr(technologies, "_derived", set())  # a later process
+    monkeypatch.setattr(stack_recognition, "_derived", set())  # a later process
     monkeypatch.setattr(stack_analyser, "_failed", {})
     assert technologies.state(manifest, facts=facts) == "stale"
     monkeypatch.setattr(stack_analyser, "_failed", {"cli": RuntimeError("no network")})
@@ -165,13 +169,14 @@ def test_a_failure_that_is_not_an_install_is_derived_once_per_process(scan, mani
     monkeypatch.setattr(stack_recognition, "run", lambda *args, **kwargs: runs.append(1) or answer())
     technologies.ensure(manifest, facts=facts)
     assert runs == []
-    monkeypatch.setattr(technologies, "_derived", set())  # a later process
+    monkeypatch.setattr(stack_recognition, "_derived", set())  # a later process
     assert technologies.state(manifest, facts=facts) == "stale"
 
 
 def test_a_kept_sign_leaves_when_the_premap_leaves_its_file_out(scan, manifest, monkeypatch):
-    scan(1, answer([entry("redis", sign("api/requirements.txt", "redis", "renovate@41"))], ran=["renovate"]))
+    scan(1, answer([entry("redis", sign("api/requirements.txt", "redis", "registry_hosts"))], ran=["registry_hosts"]))
     monkeypatch.setattr(stack_recognition, "run", lambda *args, **kwargs: answer(ran=["stack-analyser"]))
+    stack_recognition.path(manifest).unlink()
     record = technologies.ensure(manifest, facts={"packages": [], "inputs_digest": "scan-2",
                                                   "excluded": [{"path": "api/", "why": "generated"}]})
     assert record["technologies"] == [] and not any(g["kind"] == "signs_kept" for g in record["gaps"])
@@ -179,11 +184,11 @@ def test_a_kept_sign_leaves_when_the_premap_leaves_its_file_out(scan, manifest, 
 
 def test_a_kept_sign_this_scan_made_again_is_there_once(scan):
     """A sign of a source outside `ran` that this scan made too is the sign of now, once."""
-    redis = entry("redis", sign("web/package.json", "redis", "renovate@41"))
-    scan(1, answer([redis], ran=["renovate"]))
+    redis = entry("redis", sign("web/package.json", "redis", "registry_hosts"))
+    scan(1, answer([redis], ran=["registry_hosts"]))
     scan(2, answer([redis], ran=["stack-analyser"]))
     record = scan(3, answer([redis], ran=["stack-analyser"]))
-    assert signs_of(record, "redis") == [("renovate@41", "web/package.json", 1, "scan-3")]
+    assert signs_of(record, "redis") == [("registry_hosts", "web/package.json", 1, "scan-3")]
 
 
 def test_reading_the_state_writes_no_premap(scan, manifest):
@@ -223,7 +228,8 @@ def test_a_grammar_placed_later_makes_the_record_stale(tmp_path, monkeypatch):
     manifest = snapshot_of(tmp_path, {"api/client.py": 'URL = "https://api.telegram.org/bot"\n'})
     facts = {"packages": [], "inputs_digest": "scan-1"}
     monkeypatch.setattr(registry_hosts.ts, "get_parser", lambda _grammar: None)
-    monkeypatch.setattr(technologies, "get_parser", lambda _grammar: None)
+    monkeypatch.setattr(stack_recognition, "get_parser", lambda _grammar: None)
+
     record = technologies.ensure(manifest, facts=facts)
     assert {"python"} == {g["language"] for g in record["gaps"] if g["kind"] == "source_grammar_unavailable"}
     assert technologies.state(manifest, facts=facts) == "fresh"

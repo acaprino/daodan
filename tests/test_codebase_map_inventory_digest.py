@@ -20,12 +20,12 @@ import snapshot  # noqa: E402
 import technologies  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 from test_codebase_map_module_edges_in_connect import FILES  # noqa: E402
-from test_codebase_map_premap_container_runner import manifest_of  # noqa: E402
+from test_codebase_map_container_runner import manifest_of  # noqa: E402
 
 
 def _scanned(tmp_path):
     root, manifest = manifest_of(tmp_path, FILES)
-    pipeline.run(manifest, start="scan", stop="stack", fast_scan=True)
+    pipeline.run(manifest, stop="scan", fast_scan=True)
     modules.ensure_graph(manifest)
     return root, manifest
 

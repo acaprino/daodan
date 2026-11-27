@@ -70,7 +70,7 @@ def test_sdk_dependencies_and_windows_bindings_are_matched_at_their_manifests(re
         file.write_text(content, encoding="utf-8")
     manifest = tmp_path / "out/manifest.sqlite"
     snapshot.read_project(root, manifest)
-    entries = stack_recognition.run(manifest, facts={})["found"]
+    entries = stack_recognition.run(manifest)["found"]
     actual = {(item["id"], sign["value"], sign["path"]) for item in entries for sign in item["signs"]
               if sign["sign"] == "package"}
     assert actual == {("webview2-com", "webview2-com", "shell/Cargo.toml"), ("windows-rs", "windows-core", "shell/Cargo.toml"),

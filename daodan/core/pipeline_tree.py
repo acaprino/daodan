@@ -240,9 +240,9 @@ def tree(decl: dict) -> dict:
          ("JDK", "preparation.py", "Temurin 17, più quello che la build chiede", "Per Gradle, Maven, sbt e scip-java."),
          ("SDK Android", "preparation.py", "sdkmanager di Google", "I pacchetti dell'SDK che una build Android dichiara."),
          ("dipendenze native", "preparation.py", "vcpkg e Conan", "Ripristina le librerie C e C++ che una radice CMake dichiara."),
-         ("lanciatore dei comandi", "premap/container_runner.py", "Codice nostro sopra il motore di container", "Esegue i comandi delle sorgenti in un container e ne riporta l'uscita. Oggi è della pre-mappa: nel piano diventa comune.")]
+         ("lanciatore dei comandi", "container_runner.py", "Codice nostro sopra il motore di container", "Esegue i comandi delle sorgenti in un container e ne riporta l'uscita, fuori dalla pre-mappa; analizzatori e osservatori passano da container.run_in_container.")]
     for name, file, tool, does in C:
-        row("common", "common", name, file, "strumento", "container" if name not in ("Node di Daodan", "motore di container") else "host", tool, does, all=True, status="da rendere comune" if name == "lanciatore dei comandi" else None)
+        row("common", "common", name, file, "strumento", "container" if name not in ("Node di Daodan", "motore di container") else "host", tool, does, all=True)
 
     # 7 unione (piano: 8)
     row("s7", "p8", "archi fra moduli", "modules.py", "regola", "host", "Codice nostro", "Import e chiamate fra un modulo e l'altro, dagli archi provati.", all=True)

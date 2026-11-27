@@ -1,15 +1,18 @@
 """The pipeline's `stack` step on Modal: snapshot, pre-map and `technologies.ensure`, scored on the corpus. The step is
 the product's: the recogniser is stack-analyser (`stack_recognition.run`), and nothing else recognizes.
 
-Nothing runs on this PC, and the project's code runs nowhere: the container writes the snapshot, writes the
-pre-map with the answers `modal_premap.py --runs` recorded for its model commands (`results/premap-runs`, replayed
-as `tools/premap_replay.py` replays them: no tool runs), then `technologies.ensure(manifest)` derives the record
-`technologies.json`: the full scan, whose seconds are `seconds.stack`. A fixture without a recording has its model
+Nothing runs on this PC, and the project's code runs nowhere: the container writes the snapshot, then, as the pipeline
+does, the stack step's record (`stack_recognition.ensure`, whose build tools choose the pre-map's sources), the pre-map
+with the answers `modal_premap.py --runs` recorded for its model commands (`results/premap-runs`, replayed as
+`tools/premap_replay.py` replays them: no tool runs), and `technologies.ensure(manifest)` derives the record
+`technologies.json`: the full scan, whose seconds are `seconds.stack` (the pre-map's replay among them). A fixture without a recording has its model
 commands `not_run` (`model: none`), and the pre-map's facts that come from them (services of a CI job, `excluded`) are
 missing; a command the recording lacks is counted (`model: partial`). Then the fast scan: the pre-map again without its
-model commands, and `technologies.derive` on it, timed (`fast_seconds`; the pre-map is not in it). A fixture whose run of
-the tool failed is an `error`, not a result that found nothing. The result also has `declarations`, the number the step
-sent to the tool in the full scan, and `perimeter`, the entries of `skipDirs` and `ignore` it sent (`tools/fork_stack.py`).
+model commands, and `technologies.derive` on it, timed (`fast_seconds`; the pre-map and the stack step's record, already
+there, are not in it). A fixture whose run of the tool failed is an `error`, not a result that found nothing. The result
+also has `declarations`, the number the step sent to the tool in the full scan (0: the step sends none), and `perimeter`,
+the entries of `skipDirs` and `ignore` it sent (`tools/fork_stack.py`).
+
 
 The tool is the image's Node (`indexers.runtime.NODE_VERSION`, the one the product starts) on the image's release (the
 pin of `daodan/core/stack_analyser.py`, fetched as `tests/modal_pytest.py` fetches it; `test_fork_stack.py` compares them):
@@ -202,18 +205,17 @@ def _measure(name: str) -> dict:
     import service_registry
     import snapshot
     import stack_analyser
+    import stack_recognition
     import technologies
     from fork_stack import figures
     _image_tool()
+
     started = time.monotonic()
     project = _project(name)
     manifest = Path("/work") / f"{name}.out" / "manifest.sqlite"
     shutil.rmtree(manifest.parent, ignore_errors=True)
     snapshot.read_project(project, manifest)
     recording, missing = _recording(name), []
-    if recording is not None:
-        premap.write(manifest, runner=premap_replay.replayer(recording, missing))
-    model = "none" if recording is None else "partial" if missing else "recorded"
     middle = time.monotonic()
     spawned, original = [], subprocess.Popen.__init__
     passed, run = [], stack_analyser.run
@@ -225,6 +227,9 @@ def _measure(name: str) -> dict:
     subprocess.Popen.__init__ = watch
     stack_analyser.run = lambda root, **keywords: passed.append(keywords) or run(root, **keywords)
     try:
+        stack_recognition.ensure(manifest)  # the stack step first: its build tools choose the pre-map's sources
+        if recording is not None:
+            premap.write(manifest, runner=premap_replay.replayer(recording, missing))
         record = technologies.ensure(manifest)  # the full scan
         states: dict[str, int] = {}
         for source in json.loads(premap.path(manifest).read_text(encoding="utf-8"))["sources"]:
@@ -237,6 +242,7 @@ def _measure(name: str) -> dict:
     finally:
         subprocess.Popen.__init__ = original
         stack_analyser.run = run
+    model = "none" if recording is None else "partial" if missing else "recorded"
     _ran(record, "full")
     _ran(fast, "fast")
     return {**_trim(record), "premap_sources": states, "spawned": spawned, "model": model, "model_missing": len(missing),

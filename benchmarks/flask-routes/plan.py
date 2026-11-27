@@ -21,7 +21,8 @@ import entries  # noqa: E402
 import preparation  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
-from premap import container_runner, flask_app  # noqa: E402
+import container_runner  # noqa: E402
+from premap import flask_app  # noqa: E402
 
 
 def plan(folder: Path) -> dict:

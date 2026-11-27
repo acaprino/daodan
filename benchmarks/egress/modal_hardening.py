@@ -38,7 +38,7 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
     import preparation
     from indexers.clang import IMAGE as BUILDPACK
     from indexers.python import IMAGE as PYTHON_IMAGE
-    from premap.container_runner import TOOLS
+    from container_runner import TOOLS
 
     engine = container.Engine("docker", ("/opt/docker/docker",))
     original = container.cli

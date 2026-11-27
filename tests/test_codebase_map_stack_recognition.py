@@ -1,5 +1,5 @@
-"""The translation between the pre-map's facts and stack-analyser (declarations in, evidence out) that the `stack` step
-runs, `daodan/core/stack_recognition.py`.
+"""The `stack` step, `daodan/core/stack_recognition.py`: stack-analyser on the files the snapshot keeps (the perimeter in,
+evidence out), before `find_modules` and without the pre-map's declarations.
 
 No test starts Node, reaches the network or runs Modal: `stack_analyser.run` is replaced in every one.
 
@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import container  # noqa: E402
+import registry_build  # noqa: E402
 import service_registry  # noqa: E402
 import file_inventory  # noqa: E402
 import snapshot  # noqa: E402
@@ -69,10 +70,28 @@ def snapshot_of(work: Path, files: dict[str, str]) -> Path:
     return manifest
 
 
-def recognized(work: Path, files: dict[str, str] | None = None, **facts) -> dict:
-    """`stack_recognition.run` with the registry shipped, over a project of `files` and the pre-map's `facts` (a test that
-    uses it takes `real_stack`: what the project shows is what the release recognizes)."""
-    return stack_recognition.run(snapshot_of(work, files or {"README.md": "# app\n"}), service_registry.load(), facts)
+TYPE_OF = {ecosystem: kind for kind, ecosystem in registry_build.ECOSYSTEMS.items()}  # the pre-map's name -> the tool's
+
+
+def recognized(work: Path, files: dict[str, str] | None = None, packages=()) -> dict:
+    """`stack_recognition.run` with the registry shipped, over a project of `files` (a test that uses it takes `real_stack`:
+    what the project shows is what the release recognizes). `packages`, facts of the pre-map's shape (`fact`), test the
+    catalogue's rule for a name instead: the release is given each as its declaration, at the path the fact names, and
+    `found` reads its evidence there. The step itself sends none: it runs before `find_modules`."""
+    manifest = snapshot_of(work, files or {"README.md": "# app\n"})
+    if not packages:
+        return stack_recognition.run(manifest, service_registry.load())
+    sent = []
+    for item in packages:
+        path, line = service_registry._split_declared_in(item["declared_in"])
+        sent += [{"type": TYPE_OF.get(item["ecosystem"], item["ecosystem"]), "name": item["name"], "path": path,
+                  **({"line": line} if line else {}), "source": source} for source in item["sources"]]
+    with open_snapshot(manifest) as store:
+        root = Path(store["root"])
+    payload = stack_analyser.run(root, declarations=sent, skip_dirs=(".git",))
+    found, gaps = stack_recognition.found(payload, service_registry.load(), {d["path"] for d in sent}, ())
+    return {"found": found, "gaps": gaps}
+
 
 
 def package_signs(answer: dict) -> set[tuple]:
@@ -80,134 +99,6 @@ def package_signs(answer: dict) -> set[tuple]:
     return {(item["id"], sign["value"], sign["path"], sign["line"]) for item in answer["found"]
             for sign in item["signs"] if sign["sign"] == "package"}
 
-
-
-# ---------------------------------------------------------------------------------------------- declarations
-
-def test_each_source_of_a_package_fact_is_one_declaration():
-    facts = {"packages": [{"ecosystem": "pypi", "name": "fastapi", "version": "0.115", "declared_in": "api/requirements.txt#L3",
-                           "sources": ["requirements@2", "renovate@41"]}]}
-    sent, gaps = stack_recognition.declarations(facts)
-    assert sent == [{"type": "python", "name": "fastapi", "version": "0.115", "path": "api/requirements.txt", "line": 3, "source": s}
-                    for s in ("requirements@2", "renovate@41")] and gaps == []
-
-
-def test_a_fact_without_version_or_line_sends_neither():
-    sent, gaps = stack_recognition.declarations({"packages": [fact("npm", "react", "web/package.json", "npm@1")]})
-    assert sent == [{"type": "npm", "name": "react", "path": "web/package.json", "source": "npm@1"}] and gaps == []
-
-
-def test_the_ecosystems_of_the_premap_are_the_registry_s_inverse_and_the_others_pass_as_they_are():
-    ecosystems = ("pypi", "crates", "go", "rubygems", "composer", "github-actions", "terraform", "terraform-resource",
-                  "npm", "deno", "maven", "nuget", "hex", "pub", "swiftpm")
-    sent, gaps = stack_recognition.declarations({"packages": [fact(e, "x", "m.file", "s@1") for e in ecosystems]})
-    assert [d["type"] for d in sent] == ["python", "rust", "golang", "ruby", "php", "githubAction", "terraform",
-                                         "terraform.resource", "npm", "deno", "maven", "nuget", "hex", "pub", "swiftpm"]
-    assert gaps == [] and {d["type"] for d in sent} <= set(stack_recognition.TYPES)
-
-
-def test_the_types_are_the_ones_the_release_accepts():
-    assert stack_recognition.TYPES == ("deno", "docker", "githubAction", "golang", "hex", "maven", "npm", "nuget", "php", "pub",
-                                "python", "ruby", "rust", "swiftpm", "terraform", "terraform.resource")
-
-
-def test_images_of_services_and_docker_stages_are_docker_declarations():
-    facts = {"services": [
-        {"name": "db", "image": "postgres:16", "declared_in": "docker-compose.yml.services.db", "sources": ["compose@3"]},
-        {"name": "db2", "image": "postgres:15", "declared_in": "docker-compose.yml.services.db2", "sources": ["compose@3"]},
-        {"name": "api", "build": ".", "declared_in": "docker-compose.yml.services.api", "sources": ["compose@3"]},
-        {"name": "cache", "image": "redis:7-alpine", "declared_in": ".github/workflows/ci.yml#jobs.test.services.cache",
-         "sources": ["renovate@41"]}],
-        "docker_builds": [{"dockerfile": "api/Dockerfile", "context": "api", "sources": ["buildkit@v0.34", "dockerfile@1"],
-                           "stages": [{"base": "python:3.12-slim", "line": 1}, {"base": "scratch", "line": 8},
-                                      {"base": "python:3.12-slim", "line": 12}]}]}
-    sent, gaps = stack_recognition.declarations(facts)
-    assert sent == [
-        {"type": "docker", "name": "postgres", "path": "docker-compose.yml", "source": "compose@3"},
-        {"type": "docker", "name": "redis", "path": ".github/workflows/ci.yml", "source": "renovate@41"},
-        {"type": "docker", "name": "python", "path": "api/Dockerfile", "line": 1, "source": "buildkit@v0.34"},
-        {"type": "docker", "name": "python", "path": "api/Dockerfile", "line": 1, "source": "dockerfile@1"}]
-    assert gaps == []  # one image per file as in `step1_packages`; no `scratch`, no service without an image
-
-
-def test_the_rows_are_those_of_step1_packages(manifest):
-    """`_rows` repeats `step1_packages` to keep each fact's `sources`: the two must agree on what a fact is."""
-    facts = {"packages": [fact("pypi", "flask", "api/requirements.txt#L3", "requirements@2"),
-                          fact("npm", "left-pad", None, "npm@1"),
-                          fact("docker", "postgres", "docker-compose.yml", "compose@3")],
-             "services": [
-                 {"name": "db", "image": "postgres:16", "declared_in": "docker-compose.yml.services.db", "sources": ["c@3"]},
-                 {"name": "cache", "image": "redis:7", "declared_in": "docker-compose.yml.services.cache", "sources": ["c@3"]},
-                 {"name": "ci", "image": "redis:7", "declared_in": ".github/workflows/ci.yml#jobs.t.services.ci", "sources": ["r@41"]},
-                 {"name": "api", "build": ".", "declared_in": "docker-compose.yml.services.api", "sources": ["c@3"]}],
-             "docker_builds": [{"dockerfile": "api/Dockerfile", "sources": ["buildkit@v0.34"], "stages": [
-                 {"base": "node:20", "line": 1}, {"base": "scratch", "line": 5}, {"base": "node:20", "line": 9},
-                 {"base": "nginx:1", "line": 12}]}]}
-    ours = [(eco, name, path, line) for eco, name, _, path, line, _ in stack_recognition._rows(facts)]
-    assert ours == [(eco, name, path, line) for eco, name, path, line, _ in service_registry.step1_packages(manifest, facts)]
-    assert len(ours) == 7  # the sample is not empty of what it tests
-
-
-def test_an_image_the_packages_already_state_is_not_sent_twice():
-    facts = {"packages": [fact("docker", "postgres", "docker-compose.yml", "compose@3")],
-             "services": [{"name": "db", "image": "postgres:16", "declared_in": "docker-compose.yml.services.db",
-                           "sources": ["renovate@41"]}]}
-    sent, _ = stack_recognition.declarations(facts)
-    assert [(d["name"], d["source"]) for d in sent] == [("postgres", "compose@3")]
-
-
-def not_sent(value, path, ecosystem, detail):
-    return {"kind": "declaration_not_sent", "value": value, "path": path, "ecosystem": ecosystem, "detail": detail}
-
-
-def test_a_declaration_the_fork_cannot_take_is_a_gap_not_a_failure():
-    """The tool exits with an error for one such declaration, and so loses the whole answer for the project."""
-    outside = "its path is outside the project"
-    facts = {"packages": [fact("conan", "zlib", "conanfile.txt#L2", "conan@1"),
-                          fact("pypi", "flask", None, "requirements@2"),
-                          fact("npm", "left-pad", "vendor/web/package.json#L5", "npm@1"),
-                          fact("npm", "up", "sub/../../x/package.json#L1", "npm@1"),
-                          fact("npm", "drive", "C:/abs/package.json", "npm@1"),
-                          fact("npm", "relative", "C:x/package.json", "npm@1"),  # on a drive, not in the project
-                          fact("npm", "back", "..\\x\\package.json", "npm@1")],
-             "docker_builds": [  # Compose's `build.dockerfile` normalised by the pre-map can leave the project
-                 {"dockerfile": "../x/Dockerfile", "sources": ["buildkit@v0.34"], "stages": [{"base": "python:3.12", "line": 1}]},
-                 {"dockerfile": "/abs/Dockerfile", "sources": ["buildkit@v0.34"], "stages": [{"base": "node:20", "line": 1}]}],
-             "excluded": [{"path": "vendor/", "why": "submodule"}]}
-    sent, gaps = stack_recognition.declarations(facts)
-    assert sent == []
-    assert gaps == [
-        not_sent("zlib", "conanfile.txt", "conan", "the release takes no declaration of type conan"),
-        not_sent("flask", None, "pypi", "the pre-map names no file for it"),
-        not_sent("left-pad", "vendor/web/package.json", "npm", "the pre-map leaves out its path"),
-        not_sent("up", "sub/../../x/package.json", "npm", outside),
-        not_sent("drive", "C:/abs/package.json", "npm", outside),
-        not_sent("relative", "C:x/package.json", "npm", outside),
-        not_sent("back", "..\\x\\package.json", "npm", outside),
-        not_sent("python", "../x/Dockerfile", "docker", outside),
-        not_sent("node", "/abs/Dockerfile", "docker", outside)]
-
-
-def test_a_path_the_tool_reads_as_inside_the_project_is_sent():
-    """`a/../b` stays in the project, and `a..b` is a name; a backslash is a separator."""
-    paths = ["a/../b/package.json", "a..b/package.json", "..b/package.json", "./c/package.json", "d\\e\\package.json"]
-    sent, gaps = stack_recognition.declarations({"packages": [fact("npm", f"p{i}", path, "npm@1") for i, path in enumerate(paths)]})
-    assert [d["path"] for d in sent] == paths and gaps == []
-
-
-def test_a_fact_no_source_states_is_a_gap():
-    facts = {"packages": [{"ecosystem": "npm", "name": "x", "declared_in": "package.json"},
-                          {"ecosystem": "npm", "name": "y", "declared_in": "package.json#L2", "sources": []},
-                          fact("npm", "z", "package.json#L3", "npm@1")]}
-    sent, gaps = stack_recognition.declarations(facts)
-    assert [d["name"] for d in sent] == ["z"]
-    assert gaps == [not_sent("x", "package.json", "npm", "no source states it"),
-                    not_sent("y", "package.json", "npm", "no source states it")]
-
-
-def test_a_fact_without_a_name_is_a_gap():
-    sent, gaps = stack_recognition.declarations({"packages": [fact("npm", "", "package.json#L2", "npm@1")]})
-    assert sent == [] and gaps == [not_sent("", "package.json", "npm", "the pre-map names no package for it")]
 
 
 # ---------------------------------------------------------------------------------------------- perimeter
@@ -291,19 +182,17 @@ def test_the_same_evidence_from_two_sources_stays_two_signs():
     assert [s["source"] for s in out[0]["signs"]] == ["stack-analyser", "other"]
 
 
-def test_a_declaration_s_evidence_is_kept_whatever_its_file_and_the_tool_s_own_only_for_a_file_of_the_snapshot():
-    """The registry takes a declared package at the path the pre-map names, in the snapshot or not; the tool's own reading
-    is a file it was given only when the snapshot holds it. Either kind is dropped under a path the pre-map leaves out."""
+def test_evidence_is_kept_only_for_a_file_of_the_snapshot_and_never_under_a_path_it_leaves_out():
+    """Whatever its source: the step sends no declaration, and evidence of a file the snapshot lacks is dropped and said."""
     payload = component(
-        evidence("redis", "package", "redis", "/pyproject.toml"),  # the tool's, in the snapshot: kept
-        evidence("redis", "package", "redis", "/missing.toml"),  # the tool's, outside the snapshot: dropped, and said
-        evidence("redis", "package", "aioredis", "/.github/workflows/x.yml", "renovate@41"),  # a declaration's: kept
-        evidence("redis", "package", "redis", "/vendor/web/package.json"),  # the tool's, excluded: dropped
-        evidence("redis", "package", "redis", "/vendor/web/Dockerfile", "buildkit@v0.34"))  # a declaration's, excluded
+        evidence("redis", "package", "redis", "/pyproject.toml"),  # in the snapshot: kept
+        evidence("redis", "package", "redis", "/missing.toml"),  # outside the snapshot: dropped, and said
+        evidence("redis", "package", "aioredis", "/.github/workflows/x.yml", "renovate@41"),  # outside, of another source
+        evidence("redis", "package", "redis", "/vendor/web/package.json"))  # excluded: dropped
     out, gaps = stack_recognition.found(payload, registry(REDIS), {"pyproject.toml", "vendor/web/package.json"}, ("vendor",))
-    assert [(s["path"], s["source"]) for s in out[0]["signs"]] == [
-        (".github/workflows/x.yml", "renovate@41"), ("pyproject.toml", "stack-analyser")]
-    assert gaps == [{"kind": "evidence_outside_snapshot", "count": 1, "paths": ["missing.toml"]}]  # not the excluded ones
+    assert [(s["path"], s["source"]) for s in out[0]["signs"]] == [("pyproject.toml", "stack-analyser")]
+    assert gaps == [{"kind": "evidence_outside_snapshot", "count": 2,
+                     "paths": [".github/workflows/x.yml", "missing.toml"]}]  # not the excluded one
 
 
 def test_the_evidence_the_snapshot_lacks_is_counted_with_its_first_five_distinct_paths_sorted():
@@ -397,9 +286,7 @@ def test_the_recorded_payload_gives_the_expected_technologies():
 
 FILES = {"api/pay.py": 'import requests\nURL = "https://api.stripe.com/v1/charges"\n',
          "api/requirements.txt": "redis==5.0\n", "api/gen/out.py": "X = 1\n", "Dockerfile": "FROM python:3.12-slim\n",
-         ".gitignore": "node_modules/\n"}
-FACTS = {"packages": [fact("pypi", "redis", "api/requirements.txt#L1", "requirements@2", version="==5.0")],
-         "excluded": [{"path": "api/gen/", "why": "generated"}]}
+         ".gitignore": "node_modules/\n", ".gitattributes": "api/gen/** linguist-generated\n"}
 REGISTRY = registry(REDIS, PYTHON, STRIPE)
 FORK = component(evidence("redis", "package", "redis", "/api/requirements.txt", line=1),
                  evidence("python", "image", "python", "/Dockerfile"), evidence("python", "extension", ".py", "/api"),
@@ -429,13 +316,13 @@ def started(monkeypatch):
     return calls
 
 
-def test_run_sends_declarations_and_perimeter_and_answers_in_the_shape_of_service_registry_run(manifest, started):
-    answer = stack_recognition.run(manifest, REGISTRY, FACTS)
+def test_run_sends_the_perimeter_and_no_declaration_and_answers_in_the_shape_of_service_registry_run(manifest, started):
+    """The perimeter leaves out what the snapshot's header excludes (by `.gitattributes` and by Linguist's data here), and
+    nothing is declared."""
+    answer = stack_recognition.run(manifest, REGISTRY)
     [(project, kwargs)] = started
     assert project.resolve() == (manifest.parents[1] / "app").resolve()
-    assert kwargs == {"declarations": [{"type": "python", "name": "redis", "version": "==5.0", "path": "api/requirements.txt",
-                                        "line": 1, "source": "requirements@2"}],
-                      "skip_dirs": (".git", "gen", "node_modules"), "ignore": ("api/gen",)}
+    assert kwargs == {"skip_dirs": (".git", "gen", "node_modules"), "ignore": (".gitattributes", ".gitignore", "api/gen")}
     assert list(answer) == ["found", "checkers", "gaps", "ran"] and answer["gaps"] == [OUTSIDE]
     assert answer["ran"] == ["registry_hosts", "stack-analyser"]
     assert answer["checkers"] == [{"checker": "stack-analyser", "state": "ran"}, {"checker": "host", "state": "ran"}]
@@ -453,7 +340,7 @@ def test_a_fork_that_fails_leaves_the_host_mentions_and_a_gap(manifest, monkeypa
         raise container.Gap("stack-analyser failed (exit 1): boom", "analyze again")
 
     monkeypatch.setattr(stack_analyser, "run", broken)
-    answer = stack_recognition.run(manifest, REGISTRY, FACTS)
+    answer = stack_recognition.run(manifest, REGISTRY)
     reason = "stack-analyser failed (exit 1): boom (analyze again)"
     assert answer["checkers"] == [{"checker": "stack-analyser", "state": "failed", "reason": reason},
                                   {"checker": "host", "state": "ran"}]
@@ -466,7 +353,7 @@ def test_an_error_the_tool_does_not_name_is_a_gap_too(manifest, monkeypatch):
         raise RuntimeError("the tool broke")
 
     monkeypatch.setattr(stack_analyser, "run", broken)
-    answer = stack_recognition.run(manifest, REGISTRY, FACTS)
+    answer = stack_recognition.run(manifest, REGISTRY)
     assert answer["checkers"][0] == {"checker": "stack-analyser", "state": "failed", "reason": "RuntimeError: the tool broke"}
     assert "stack-analyser" not in answer["ran"] and [e["id"] for e in answer["found"]] == ["stripe"]
 
@@ -476,68 +363,11 @@ def test_a_host_checker_that_fails_is_a_gap_and_the_fork_s_evidence_stays(manife
         raise ValueError("no lines")
 
     monkeypatch.setattr(stack_recognition, "check_hosts", broken)
-    answer = stack_recognition.run(manifest, REGISTRY, FACTS)
+    answer = stack_recognition.run(manifest, REGISTRY)
     assert answer["checkers"] == [{"checker": "stack-analyser", "state": "ran"},
                                   {"checker": "host", "state": "failed", "reason": "ValueError: no lines"}]
     assert answer["gaps"] == [{"kind": "checker_failed", "checker": "host", "detail": "ValueError: no lines"}, OUTSIDE]
     assert [e["id"] for e in answer["found"]] == ["python", "redis"]
-
-
-def test_run_reports_the_declarations_it_could_not_send(manifest, started):
-    facts = {**FACTS, "packages": [fact("conan", "zlib", "conanfile.txt#L2", "conan@1")]}
-    answer = stack_recognition.run(manifest, REGISTRY, facts)
-    assert started[0][1]["declarations"] == []
-    assert [g["kind"] for g in answer["gaps"]] == ["declaration_not_sent", "evidence_outside_snapshot"]
-
-
-PAGES, GOTENBERG = "actions/deploy-pages", "gotenberg/gotenberg"
-
-
-def test_a_declared_package_or_image_of_a_file_the_snapshot_lacks_is_recognized_as_the_registry_does(manifest, monkeypatch):
-    """The corpus round's `github.pages` (real-app-kotlinconf) and `gotenberg` (real-stack-documenso): the pre-map names a
-    workflow in a dot folder and a Dockerfile with a suffix, the registry takes them, the snapshot holds neither."""
-    facts = {"packages": [fact("github-actions", PAGES, ".github/workflows/x.yml#L5", "githubactions@1"),
-                          fact("github-actions", "actions/upload-pages-artifact", ".github/workflows/x.yml#L9", "githubactions@1")],
-             "docker_builds": [{"dockerfile": "docker/Dockerfile.gotenberg", "sources": ["dockerfile@1"],
-                                "stages": [{"base": f"{GOTENBERG}:8", "line": 1}]}], "excluded": []}
-    technology = {PAGES: "github.pages", "actions/upload-pages-artifact": "github.pages", GOTENBERG: "gotenberg"}
-
-    def tool(project, declarations=(), **kwargs):  # it recognizes what it is sent, with the declaration's source and path
-        return component(*[evidence(technology[d["name"]], "package" if d["type"] == "githubAction" else "image", d["name"],
-                                    "/" + d["path"], d["source"], line=d.get("line")) for d in declarations])
-
-    monkeypatch.setattr(stack_analyser, "run", tool)
-    with open_snapshot(manifest) as store:
-        assert not {".github/workflows/x.yml", "docker/Dockerfile.gotenberg"} & set(dict(store.iter_file_headers_only()))
-    answer = stack_recognition.run(manifest, service_registry.load(), facts)
-    by_id = {entry["id"]: entry for entry in answer["found"]}
-    assert [(s["sign"], s["path"], s["line"], s["strength"], s["source"]) for s in by_id["github.pages"]["signs"]] == [
-        ("package", ".github/workflows/x.yml", 5, "declared", "githubactions@1"),
-        ("package", ".github/workflows/x.yml", 9, "declared", "githubactions@1")]
-    assert [(s["sign"], s["path"], s["strength"]) for s in by_id["gotenberg"]["signs"]] == [
-        ("package", "docker/Dockerfile.gotenberg", "declared")]
-    assert [g for g in answer["gaps"] if g["kind"] in ("evidence_outside_snapshot", "not_in_registry")] == []
-
-
-def test_the_first_round_s_two_paths_are_not_in_the_snapshot_and_what_a_declaration_proves_there_is_kept(tmp_path):
-    """The first round lost `github.pages` and `gotenberg`: the pre-map names a workflow in a dot folder and a Dockerfile
-    with a suffix, the registry takes a package at those paths, and the snapshot holds neither. A declaration's evidence
-    there stays; the tool's own reading of a file the snapshot lacks is dropped and counted."""
-    paths = (".github/workflows/web-deploy.yml", "docker/development/Dockerfile.gotenberg")
-    manifest = snapshot_of(tmp_path, {paths[0]: "name: web\n", paths[1]: "FROM gotenberg/gotenberg:8\n",
-                                      "docker/Dockerfile": "FROM alpine\n"})
-    with open_snapshot(manifest) as store:
-        files = set(dict(store.iter_file_headers_only()))
-    assert "docker/Dockerfile" in files and not files & set(paths)
-    pages = {"id": "github.pages", "name": "Github Pages", "kind": "service"}
-    gotenberg = {"id": "gotenberg", "name": "Gotenberg", "kind": "service"}
-    payload = component(evidence("github.pages", "action", PAGES, "/" + paths[0], "githubactions@1"),
-                        evidence("gotenberg", "image", GOTENBERG, "/" + paths[1], "dockerfile@1"),
-                        evidence("gotenberg", "image", GOTENBERG, "/" + paths[1]))  # the tool's own, same file
-    out, gaps = stack_recognition.found(payload, registry(pages, gotenberg), files, ())
-    assert [(entry["id"], [s["source"] for s in entry["signs"]]) for entry in out] == [
-        ("github.pages", ["githubactions@1"]), ("gotenberg", ["dockerfile@1"])]
-    assert gaps == [{"kind": "evidence_outside_snapshot", "count": 1, "paths": [paths[1]]}]
 
 
 # ---------------------------------------------------------------------------------------------- the five changes
@@ -548,7 +378,7 @@ def test_a_forbidden_file_is_in_the_perimeter(tmp_path, started):
     manifest = snapshot_of(tmp_path, {"web/src/a.ts": "export {}\n", "web/package.json": "{}\n"})
     for rel in ("web/.env.example", "web/src/.env.sample", ".env.template", "web/server.pem", "web/src/notes.txt"):
         (tmp_path / "app" / rel).write_text("KEY=1\n", encoding="utf-8")
-    stack_recognition.run(manifest, REGISTRY, {"packages": [], "excluded": []})
+    stack_recognition.run(manifest, REGISTRY)
     [(_, kwargs)] = started
     assert kwargs["ignore"] == (".env.template", "web/.env.example", "web/server.pem", "web/src/.env.sample")
 
@@ -577,30 +407,16 @@ def test_a_malformed_evidence_item_is_counted_not_raised():
     assert gaps == [{"kind": "evidence_malformed", "count": len(broken) + 3}]
 
 
-def test_a_malformed_fact_is_a_gap_not_a_failure():
-    facts = {"packages": [{"name": "x", "declared_in": "package.json", "sources": ["npm@1"]},  # no ecosystem
-                          "text", {"ecosystem": ["npm"], "name": "y", "declared_in": "p.json", "sources": ["n@1"]},
-                          {"ecosystem": "npm", "name": "v", "declared_in": "p.json", "sources": "npm@1"},
-                          {"ecosystem": "npm", "name": "w", "declared_in": "p.json", "sources": ["npm@1"], "version": 3},
-                          fact("npm", "z", "package.json#L3", "npm@1")],
-             "services": [{"name": "db", "image": "postgres:16", "sources": ["compose@3"]}, {"name": "db2", "image": 7,
-                                                                                          "declared_in": 5}],
-             "docker_builds": [{"dockerfile": "Dockerfile", "sources": ["d@1"], "stages": [5]}, 3]}
-    sent, gaps = stack_recognition.declarations(facts)
-    assert [d["name"] for d in sent] == ["z"]
-    assert {g["kind"] for g in gaps} == {"declaration_not_sent"} and len(gaps) == 9
-
-
-def test_a_perimeter_entry_the_fork_would_refuse_is_left_out_with_a_gap(tmp_path, started):
+def test_a_perimeter_entry_the_fork_would_refuse_is_left_out_with_a_gap(tmp_path, started, monkeypatch):
     """The tool exits with an error for a folder name with a separator and for a path with a drive letter or `..`: such an
     entry is left out and said, and a name with a comma is no longer a case of its own."""
     manifest = snapshot_of(tmp_path, {"a/x.py": "x\n", "a/gen/k.py": "x\n"})
     for rel in ("back\\slash/y.py", "c,d/z.py", "gen2,x/w.py", "node_modules/z.js"):  # on the disk, not in the snapshot
         (tmp_path / "app" / rel).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / "app" / rel).write_text("x", encoding="utf-8")
-    facts = {"packages": [], "excluded": [{"path": "C:/x/"}, {"path": "a/../b"}, {"path": "up\\..\\y"}, {"path": "gen/p,q"},
-                                          {"path": "third_party"}]}
-    answer = stack_recognition.run(manifest, REGISTRY, facts)
+    left_out = ("C:/x/", "a/../b", "up\\..\\y", "gen/p,q", "third_party")  # as an excluded of the header could name
+    monkeypatch.setattr(stack_recognition, "_left_out", lambda header: left_out)
+    answer = stack_recognition.run(manifest, REGISTRY)
     [(_, kwargs)] = started
     # `back\slash` is no name for `skipDirs` but is a path for `ignore`: the tool does not enter it
     assert kwargs["skip_dirs"] == (".git", "c,d", "gen2,x", "node_modules")
@@ -631,30 +447,23 @@ def test_the_store_is_closed_while_the_fork_runs(manifest, monkeypatch):
 
     monkeypatch.setattr(stack_recognition, "open_snapshot", tracked)
     monkeypatch.setattr(stack_analyser, "run", tool)
-    answer = stack_recognition.run(manifest, REGISTRY, FACTS)
+    answer = stack_recognition.run(manifest, REGISTRY)
     assert state["during"] == [0] and state["open"] == 0
     assert state["opened"] == 2  # the perimeter, then the host mentions
     assert any(e["id"] == "stripe" for e in answer["found"])  # the host check read the snapshot after the fork
 
 
-def test_ran_names_the_sources_of_this_run(manifest, started, monkeypatch):
-    """The pre-map's sources that ran (`facts["sources"]`: `{"source": "name@version", "state": ...}`) by name, a source
-    that looked and had nothing to state (`not_needed`) among them, the tool and the host check when each ran."""
-    sources = [{"source": "renovate@41", "state": "ran"}, {"source": "requirements@2", "state": "ran"},
-               {"source": "cargo@1", "state": "not_run"}, {"source": "go@1", "state": "not_needed"},
-               {"source": "compose@3", "state": "failed"}, {"state": "ran"}, "npm@1", None]
-    answer = stack_recognition.run(manifest, REGISTRY, {**FACTS, "sources": sources})
-    assert answer["ran"] == ["go", "registry_hosts", "renovate", "requirements", "stack-analyser"]
+def test_ran_names_the_tool_and_the_host_check_when_each_ran(manifest, started, monkeypatch):
+    assert stack_recognition.run(manifest, REGISTRY)["ran"] == ["registry_hosts", "stack-analyser"]
 
     def broken(project, **kwargs):
         raise container.Gap("stack-analyser failed (exit 1): boom", "analyze again")
 
     monkeypatch.setattr(stack_analyser, "run", broken)
-    # no sign of a pre-map source is made without the tool: only the host check ran
-    assert stack_recognition.run(manifest, REGISTRY, {**FACTS, "sources": sources})["ran"] == ["registry_hosts"]
+    assert stack_recognition.run(manifest, REGISTRY)["ran"] == ["registry_hosts"]
     monkeypatch.setattr(stack_analyser, "run", lambda project, **kwargs: FORK)
     monkeypatch.setattr(stack_recognition, "check_hosts", lambda entries, project: 1 / 0)
-    assert stack_recognition.run(manifest, REGISTRY, FACTS)["ran"] == ["stack-analyser"]
+    assert stack_recognition.run(manifest, REGISTRY)["ran"] == ["stack-analyser"]
 
 
 # ---------------------------------------------------------------------------------------------- the review of B2
@@ -680,29 +489,21 @@ def test_the_files_come_from_the_inventory_not_from_the_parse_table(tmp_path, st
         assert dict(store.iter_file_headers_only()) == {}  # the `parse` step has not run
     (tmp_path / "app/api/node_modules").mkdir()
     (tmp_path / "app/api/node_modules/x.js").write_text("var a = 1;\n", encoding="utf-8")
-    answer = stack_recognition.run(manifest, REGISTRY, FACTS)
+    answer = stack_recognition.run(manifest, REGISTRY)
     [(_, kwargs)] = started
-    assert kwargs["skip_dirs"] == (".git", "gen", "node_modules") and kwargs["ignore"] == ("api/gen",)  # `api` is live
+    assert kwargs["skip_dirs"] == (".git", "gen", "node_modules")  # `api` is live
+    assert kwargs["ignore"] == (".gitattributes", ".gitignore", "api/gen")
     assert answer["gaps"] == [OUTSIDE]  # the evidence in an inventoried file is kept, the other is dropped
     by_id = {e["id"]: e for e in answer["found"]}
     assert [s["path"] for s in by_id["redis"]["signs"]] == ["api/requirements.txt"]
     assert [s["value"] for s in by_id["stripe"]["signs"]] == ["api.stripe.com"]  # the host mention is read
 
 
-def test_a_failed_tool_makes_no_sign_of_the_pre_map_sources(manifest, monkeypatch):
-    def broken(project, **kwargs):
-        raise RuntimeError("down")
-
-    monkeypatch.setattr(stack_analyser, "run", broken)
-    sources = [{"source": "renovate@41", "state": "ran"}]
-    assert stack_recognition.run(manifest, REGISTRY, {**FACTS, "sources": sources})["ran"] == ["registry_hosts"]
-
-
 def test_every_link_is_in_the_perimeter_by_its_path_even_to_a_file(tmp_path, started):
     manifest = snapshot_of(tmp_path, {"web/a.ts": "export {}\n", "private/.env": "KEY=1\n"})
     os.symlink("private/.env", tmp_path / "app/package.json")  # a link to a file, its name is no live folder's
     os.symlink("private", tmp_path / "app/web/shortcut")
-    stack_recognition.run(manifest, REGISTRY, {"packages": [], "excluded": []})
+    stack_recognition.run(manifest, REGISTRY)
     [(_, kwargs)] = started
     assert "package.json" in kwargs["ignore"] and "web/shortcut" in kwargs["ignore"]
     assert "package.json" not in kwargs["skip_dirs"] and "shortcut" not in kwargs["skip_dirs"]
@@ -728,19 +529,35 @@ def test_a_secret_named_file_is_ignored_by_its_name_and_never_opened(tmp_path, m
 open_real = open
 
 
-def test_a_line_that_is_not_a_positive_integer_is_a_gap_not_a_failure():
-    for line in (True, 0, -3, "2", 1.5):
-        with pytest.raises(TypeError):
-            stack_recognition._row("npm", "x", None, "package.json", line, ["npm@1"])
-    assert [stack_recognition._row("npm", "x", None, "package.json", line, ["npm@1"])[4] for line in (None, 4)] == [None, 4]
-    builds = [{"dockerfile": "Dockerfile", "sources": ["d@1"], "stages": [{"base": base, "line": line}]}
-              for base, line in (("node:20", True), ("python:3", 0), ("nginx:1", 2))]
-    sent, gaps = stack_recognition.declarations({"docker_builds": builds})
-    assert [d["name"] for d in sent] == ["nginx"] and [g["detail"] for g in gaps] == ["the pre-map's fact is malformed"] * 2
+def test_an_excluded_item_whose_path_is_not_text_is_ignored():
+    header = {"excluded": [{"path": 5}, {"path": ["a"]}, {"path": None}, "x", {"path": "gen/"}]}
+    assert stack_recognition._left_out(header) == ("gen/",)
 
 
-def test_an_excluded_item_whose_path_is_not_text_is_ignored(tmp_path):
-    facts = {"packages": [fact("npm", "z", "package.json#L3", "npm@1")],
-             "excluded": [{"path": 5}, {"path": ["a"]}, {"path": None}, "x", {"path": "gen/"}]}
-    assert stack_recognition._left_out(facts) == ("gen/",)
-    assert [d["name"] for d in stack_recognition.declarations(facts)[0]] == ["z"]
+# ---------------------------------------------------------------------------------------------- the record
+
+def test_the_record_is_kept_beside_the_snapshot_and_names_the_build_tools_the_tool_found(tmp_path, monkeypatch):
+    manifest = snapshot_of(tmp_path, {"api/requirements.txt": "redis\n", "Cargo.toml": "[package]\nname = 'a'\n"})
+    cargo = {"id": "cargo", "name": "Cargo", "kind": "project", "category": "tool"}
+    calls = []
+    payload = component(evidence("cargo", "file", "Cargo.toml", "/Cargo.toml"), evidence("python", "file", "x", "/nowhere"),
+                        evidence("redis", "package", "redis", "/api/requirements.txt"))
+    monkeypatch.setattr(stack_analyser, "run", lambda root, **kwargs: calls.append(kwargs) or payload)
+    record = stack_recognition.ensure(manifest, registry(cargo, PYTHON, REDIS))
+    assert record["tools"] == ["cargo"]  # python's evidence is of no file of the snapshot
+    assert stack_recognition.recorded(manifest) == record and stack_recognition.state(manifest, registry(cargo, PYTHON, REDIS)) == "fresh"
+    stack_recognition.ensure(manifest, registry(cargo, PYTHON, REDIS))
+    assert len(calls) == 1  # fresh: not run again
+    assert stack_recognition.named(manifest, record["inventory_digest"]) == ["cargo"]
+    assert stack_recognition.named(manifest, "another inventory") is None
+
+
+def test_without_the_tool_no_build_tool_is_named_and_every_source_runs(tmp_path, monkeypatch):
+    manifest = snapshot_of(tmp_path, {"Cargo.toml": "[package]\nname = 'a'\n"})
+
+    def broken(project, **kwargs):
+        raise container.Gap("no Node", "install it")
+
+    monkeypatch.setattr(stack_analyser, "run", broken)
+    record = stack_recognition.ensure(manifest, registry(PYTHON))
+    assert record["tools"] is None and record["ran"] == ["registry_hosts"]

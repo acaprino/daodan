@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from test_codebase_map_premap_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import container, container_runner, manifest_of, premap, recorder
 
 import preparation  # noqa: E402
 
@@ -117,7 +117,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     spec = container_runner.TOOLS["angular"]
     assert (spec["restores"], spec["runs_on"]) == ("node", ("node",))  # the project's `@angular/compiler` is in its packages
     assert any(item[2] == "angular_templates.mjs" and item[0] is None for item in spec["files"])  # Daodan's own file, beside the source
-    assert (container_runner.Path(container_runner.__file__).parent / "angular_templates.mjs").is_file()
+    assert (container_runner.SCRIPTS / "angular_templates.mjs").is_file()
     calls, fake = recorder()
     carried = {}
 
@@ -125,7 +125,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
         carried.update({destination: (path.read_bytes() if path.is_file() else path) for destination, path in options["inputs"]().items()})
         return fake(project, commands, **options)
     with patch.object(container, "run_commands", spy), patch.object(container_runner, "fetched", lambda url, sha, name: Path("/host") / name
-                                                                    if url or name != "angular_templates.mjs" else Path(container_runner.__file__).with_name(name)):
+                                                                    if url or name != "angular_templates.mjs" else (container_runner.SCRIPTS / name)):
         container_runner.runner(manifest)(asked)
     first, *rest = calls[0]["commands"]
     plan = preparation.node_prepare(["package.json"], lambda rel: (project / rel).read_text(encoding="utf-8"))
@@ -134,7 +134,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     assert f"( {plan['lines'][0]} )" in setup and "install -g" not in setup  # the restore of the project's packages, nothing else
     assert f"{container_runner.T}/bin/daodan-angular" in setup and "angular_templates.mjs" in setup
     assert [c["network"] for c in rest] == ["none", "none"] and rest[0]["argv"][0] == "daodan-angular"
-    assert carried[f"{preparation.IN}/angular_templates.mjs"] == Path(container_runner.__file__).with_name("angular_templates.mjs").read_bytes()
+    assert carried[f"{preparation.IN}/angular_templates.mjs"] == (container_runner.SCRIPTS / "angular_templates.mjs").read_bytes()
     assert carried[f"{preparation.IN}/angular-jobs-0.json"].decode("utf-8") == next(iter(asked[0]["inputs"].values()))
     assert "inputs" not in rest[0]  # what the engine is asked to run is the command alone
 
@@ -622,7 +622,7 @@ def test_the_activation_edge_of_an_event_starts_from_the_class_of_the_component_
 
 def test_the_recorded_answers_carry_the_print_of_the_script_that_made_them():
     """If the script changes the answers are recorded again (`modal_probe.py --mode source` writes the print)."""
-    script = Path(container_runner.__file__).with_name("angular_templates.mjs").read_bytes().replace(b"\r\n", b"\n")
+    script = (container_runner.SCRIPTS / "angular_templates.mjs").read_bytes().replace(b"\r\n", b"\n")
     recorded_print = json.loads((RECORDED / "script.json").read_text(encoding="utf-8"))
     assert recorded_print == {"angular_templates.mjs": hashlib.sha256(script).hexdigest()}
 

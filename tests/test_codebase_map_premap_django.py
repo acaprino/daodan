@@ -22,7 +22,7 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_premap_container_runner import bound, container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder
 from test_codebase_map_premap_sveltekit import nothing_started, spied
 
 import entries  # noqa: E402
@@ -605,7 +605,7 @@ def test_the_recorded_answers_carry_the_print_of_the_script_that_made_them_and_t
     """A pre-map is fresh while its source's `NAME@VERSION` is the one it was made by (`premap.state`): a script that changes with no new
     `VERSION` leaves stale rows in a project's pre-map. The recording holds both: changing the script fails here until it is recorded again,
     and the record is made with the `VERSION` the source has then: raise it with the script."""
-    script = Path(container_runner.__file__).with_name("django_routes.py")
+    script = container_runner.SCRIPTS / "django_routes.py"
     printed_digest = hashlib.sha256(script.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
     assert json.loads((RECORDED / "script.json").read_text(encoding="utf-8")) == {"django_routes.py": printed_digest, "version": django_app.VERSION}, (
         "the script or the version changed: record the answers again (`benchmarks/django-routes/modal_probe.py --mode record`)")

@@ -36,7 +36,7 @@ from pathlib import Path, PurePosixPath
 
 import code_graph
 import preparation
-from premap.container_runner import IMAGE  # gcc for cgo, git, timeout
+from container_runner import IMAGE  # gcc for cgo, git, timeout
 
 VERSION = "v0.2.9"  # github.com/scip-code/scip-go
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes

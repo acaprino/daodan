@@ -1,127 +1,47 @@
-"""The `stack` step by stack-analyser: Daodan's pre-map facts go in as declarations, the tool's evidence comes out as the
-registry entries (each with its signs), with the host mentions it adds and the sources whose signs the run made.
+"""The `stack` step by stack-analyser on the files `list_files` keeps: the tool's evidence comes out as the registry entries
+(each with its signs), with the host mentions it adds; it runs before `find_modules` and takes no fact of the pre-map
+(spec `architettura.md`, «I file: da `list_files`»).
 
-`declarations` turns the pre-map's packages, service images and Dockerfile bases into what the tool takes, `perimeter`
-names the folders and files it must not enter (only folders are listed on the disk, never entered when the snapshot
-holds nothing in them), `found` reads its evidence, `run` runs it and adds the host mentions. A failure of the tool or a
-malformed fact or evidence item is a gap with its cause, never an error: the others still come out.
+`perimeter` names the folders and files the tool must not enter (only folders are listed on the disk, never entered when
+the snapshot holds nothing in them), `found` reads its evidence, `run` runs it and adds the host mentions, `ensure` keeps
+its record beside the snapshot (`stack.json`) and `tools` names the build tools it found, which choose the sources of
+`find_modules` (`premap.BUILD_TOOLS`). A failure of the tool or a malformed evidence item is a gap with its cause, never an
+error: the others still come out.
 """
 from __future__ import annotations
 
 import fnmatch
+import hashlib
+import json
 import os
-import posixpath
 import sys
-from pathlib import Path, PurePosixPath, PureWindowsPath
+import tempfile
+from pathlib import Path, PurePosixPath
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import confinement  # noqa: E402
 import container  # noqa: E402
-import premap  # noqa: E402
-import registry_build  # noqa: E402
 import service_registry  # noqa: E402
 import stack_analyser  # noqa: E402
-from premap.module_graph import declared_image  # noqa: E402
+from languages._treesitter import get_parser  # noqa: E402
 from registry_hosts import check_hosts  # noqa: E402
-from snapshot_store import open_snapshot  # noqa: E402
+from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 from module_inventory import _Inventory  # noqa: E402
 from source_files import SECRET_NAME_GLOBS, is_forbidden  # noqa: E402
 
-TYPES = ("deno", "docker", "githubAction", "golang", "hex", "maven", "npm", "nuget", "php", "pub", "python", "ruby",
-         "rust", "swiftpm", "terraform", "terraform.resource")  # the declaration types of the release's README
-TYPE_OF = {ecosystem: kind for kind, ecosystem in registry_build.ECOSYSTEMS.items()}  # the pre-map's name -> the tool's
-
-
+SCHEMA, FILE = "daodan/stack/v1", "stack.json"
+SOURCES = ("stack-analyser", "registry_hosts")  # the sources of the signs this step makes
 SIGN_OF = {"image": "package", "action": "package", "terraform": "package"}  # the evidence kinds that are a package sign
-_MALFORMED = (None, None, None, None, None, ())
+_derived: set[tuple[str, str]] = set()  # (record, inputs digest) derived by this process: not derived again here
 
 
-def _left_out(facts: dict) -> tuple[str, ...]:
+def _left_out(facts) -> tuple[str, ...]:
+    """The paths `excluded` names, of the snapshot's header (`file_inventory.excluded`) or of the pre-map."""
     return tuple(item["path"] for item in facts.get("excluded") or ()
                  if isinstance(item, dict) and isinstance(item.get("path"), str) and item["path"])
-
-
-def _row(ecosystem, name, version, path, line, sources) -> tuple:
-    """The row of one fact, or `TypeError` when a field is not of the kind the tool takes (a `line` is a positive integer)."""
-    if not (isinstance(ecosystem, str) and isinstance(version, (str, type(None)))
-            and (line is None or isinstance(line, int) and not isinstance(line, bool) and line > 0)
-            and isinstance(sources, (list, tuple))):
-        raise TypeError("fact of a malformed kind")
-    return ecosystem, name, version, path, line, sources
-
-
-def _rows(facts: dict):
-    """(ecosystem, name, version, path, line, sources) of each package, service image and Dockerfile base of the
-    pre-map, the images as `service_registry.step1_packages` takes them; a fact that is malformed is `_MALFORMED`."""
-    seen = set()
-    for item in facts.get("packages") or ():
-        try:
-            path, line = service_registry._split_declared_in(item.get("declared_in"))
-            row = _row(item["ecosystem"], item.get("name"), item.get("version"), path, line, item.get("sources") or ())
-            if row[0] == "docker":
-                seen.add((declared_image(item.get("name") or ""), path))
-        except (KeyError, AttributeError, TypeError):
-            row = _MALFORMED
-        yield row
-    for service in facts.get("services") or ():
-        try:
-            if service.get("image"):
-                path, _ = service_registry.service_site(service)
-                image = declared_image(service["image"])
-                if image and (image, path) not in seen:
-                    seen.add((image, path))
-                    yield _row("docker", image, None, path, None, service.get("sources") or ())
-        except (KeyError, AttributeError, TypeError):
-            yield _MALFORMED
-    for build in facts.get("docker_builds") or ():
-        try:
-            dockerfile = build.get("dockerfile")
-            for stage in build.get("stages") or ():
-                base = stage.get("base")
-                if dockerfile and base and base != "scratch":
-                    image = declared_image(base)
-                    if image and (image, dockerfile) not in seen:
-                        seen.add((image, dockerfile))
-                        yield _row("docker", image, None, dockerfile, stage.get("line"), build.get("sources") or ())
-        except (KeyError, AttributeError, TypeError):
-            yield _MALFORMED
-
-
-def _inside(path: str) -> bool:
-    """Whether the tool reads `path` as a file of the analysed root: a backslash is a separator, the path is not
-    absolute in either sense and has no drive letter, and once normalised it does not leave the root."""
-    posix, windows = path.replace("\\", "/"), PureWindowsPath(path)
-    letter = windows.drive[:1]
-    if PurePosixPath(posix).is_absolute() or windows.is_absolute() or (
-            windows.drive[1:2] == ":" and letter.isascii() and letter.isalpha()):
-        return False
-    normal = posixpath.normpath(posix)
-    return normal not in (".", "..") and not normal.startswith("../")
-
-
-def declarations(facts: dict) -> tuple[list[dict], list[dict]]:
-    """What the tool takes, one declaration per source that states each fact, and the facts it cannot be given: it
-    exits with an error for one that names no file inside the project, no package or no source, and a fact of a kind
-    it cannot read."""
-    left_out, sent, gaps = _left_out(facts), [], []
-    for ecosystem, name, version, path, line, sources in _rows(facts):
-        kind, sources = TYPE_OF.get(ecosystem, ecosystem), [s for s in sources if isinstance(s, str) and s]
-        why = ("the pre-map's fact is malformed" if ecosystem is None
-               else "the pre-map names no file for it" if not path
-               else "the pre-map leaves out its path" if service_registry._is_excluded(path, left_out)
-               else "its path is outside the project" if not _inside(path)
-               else f"the release takes no declaration of type {kind}" if kind not in TYPES
-               else "the pre-map names no package for it" if not isinstance(name, str) or not name
-               else "no source states it" if not sources else None)
-        if why:
-            gaps.append({"kind": "declaration_not_sent", "value": name, "path": path, "ecosystem": ecosystem,
-                         "detail": why})
-            continue
-        sent += [{"type": kind, "name": name, **({"version": version} if version else {}), "path": path,
-                  **({"line": line} if line else {}), "source": source} for source in sources]
-    return sent, gaps
 
 
 def _refused(option: str, entry: str) -> bool:
@@ -137,7 +57,7 @@ def perimeter(root: Path, files: list[str], excluded: tuple[str, ...]) -> tuple[
     """`(skip_dirs, ignore, gaps)`: a folder is live when a snapshot file is inside it, at any depth. Only what lies in a
     live folder is listed. A folder that is not live goes by its name to `skip_dirs` (the tool skips it at every depth),
     or, when a live folder has that name or the tool refuses it as a name (`_refused`), by its path to `ignore`, as does
-    every link (never followed; `skipDirs` does not stop the tool opening a link to a file), each path the pre-map leaves
+    every link (never followed; `skipDirs` does not stop the tool opening a link to a file), each path the snapshot leaves
     out and each file of a live folder whose name `source_files.is_forbidden` forbids or speaks of secrets
     (`SECRET_NAME_GLOBS`), decided by the name alone, which the tool would open. An `ignore` entry the tool refuses
     (`_refused`) is left out and is a gap `perimeter_entry_left_out`: the tool enters that folder, and the evidence
@@ -185,11 +105,10 @@ def _item(item) -> tuple | None:
 
 def _signs(payload: dict, files: set[str], excluded: tuple[str, ...]) -> tuple[dict[str, list[dict]], list[dict]]:
     """The signs of each technology from the evidence of every component, once each; none from an evidence of kind
-    `extension` or under a path the pre-map leaves out. The sign is the kind of the evidence, a package for an image, an
-    action or a Terraform resource (`SIGN_OF`). The evidence of a declaration (its `source` is not the tool's) stays
-    whatever its file, as the registry keeps a declared package; what the tool read by itself stays only for a file of the
-    snapshot, the rest is a gap with its count and its first paths. Evidence that names no technology cannot name an
-    entry: a gap with its count, and so is a component or an evidence item that is malformed."""
+    `extension` or under a path the snapshot leaves out. The sign is the kind of the evidence, a package for an image, an
+    action or a Terraform resource (`SIGN_OF`). Evidence stays only for a file of the snapshot, the rest is a gap with its
+    count and its first paths. Evidence that names no technology cannot name an entry: a gap with its count, and so is a
+    component or an evidence item that is malformed."""
     seen, signs, nameless, outside, malformed, pending = set(), {}, 0, [], 0, [payload]
     while pending:
         component = pending.pop()
@@ -213,7 +132,7 @@ def _signs(payload: dict, files: set[str], excluded: tuple[str, ...]) -> tuple[d
                     nameless += 1
                 elif kind == "extension" or service_registry._is_excluded(path, excluded):
                     continue
-                elif path in files or source != "stack-analyser":
+                elif path in files:
                     signs.setdefault(tech, []).append({"sign": SIGN_OF.get(kind, kind), "value": value, "path": path,
                                                        "line": line, "strength": "mentioned" if kind == "env" else "declared",
                                                        "source": source})
@@ -249,35 +168,24 @@ def _failed(checker: str, reason: str, checkers: list[dict], gaps: list[dict]) -
     gaps.append({"kind": "checker_failed", "checker": checker, "detail": reason})
 
 
-def _premap_sources(facts: dict) -> set[str]:
-    """The names (the label up to `@`) of the pre-map sources whose state is `ran` or `not_needed` (it looked at the
-    project, in a fast scan as in a full one, and had nothing to state): `facts["sources"]` is each source's status,
-    `{"source": "name@version", "state": ...}`."""
-    statuses = facts.get("sources") or ()
-    return {status["source"].partition("@")[0] for status in statuses if isinstance(status, dict)
-            and status.get("state") in ("ran", "not_needed") and isinstance(status.get("source"), str)} - {""}
-
-
-def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:
-    """`{"found", "checkers", "gaps", "ran"}` for `manifest`, from the tool's evidence and the host mentions; `ran` is the
+def run(manifest: Path, registry: dict | None = None) -> dict:
+    """`{"found", "checkers", "gaps", "ran"}` for `manifest`, from the tool's evidence on the snapshot's files and the host
+    mentions; the perimeter leaves out what the snapshot's header excludes (`file_inventory.excluded`). `ran` is the
     sources whose signs this run made, sorted: `stack-analyser` when the tool ran, `registry_hosts` when the host check
-    did, and, only when the tool ran, the pre-map's sources (`_premap_sources`). A failure of the tool is a gap with its cause and remedy; the host mentions
-    stay. The snapshot's store is closed while the tool runs."""
+    did. A failure of the tool is a gap with its cause and remedy; the host mentions stay. The snapshot's store is closed
+    while the tool runs."""
     manifest = Path(manifest)
-    facts = premap.ensure(manifest) if facts is None else facts
     registry = registry or service_registry.load()
-    left_out = _left_out(facts)
-    sent, gaps = declarations(facts)
-    checkers, payload, mentions, ran = [], {}, [], set()
-    with open_snapshot(manifest) as store:  # the files the inventory lists: `stack` runs before `parse`
-        root = Path(store["root"])
+    checkers, gaps, payload, mentions, ran = [], [], {}, [], set()
+    with open_snapshot(manifest) as store:  # the files the inventory lists: `stack` runs before `scan` and `parse`
+        root, left_out = Path(store["root"]), _left_out(store)
         files = [rel for rel in _Inventory(store).files if not service_registry._is_excluded(rel, left_out)]
     skip_dirs, ignore, more = perimeter(root, files, left_out)
     gaps += more
     try:
-        payload = stack_analyser.run(root, declarations=sent, skip_dirs=skip_dirs, ignore=ignore)
+        payload = stack_analyser.run(root, skip_dirs=skip_dirs, ignore=ignore)
         checkers.append({"checker": "stack-analyser", "state": "ran"})
-        ran |= {"stack-analyser", *_premap_sources(facts)}  # their signs exist only through the tool
+        ran.add("stack-analyser")
     except container.Gap as gap:
         _failed("stack-analyser", f"{gap.cause} ({gap.remedy})", checkers, gaps)
     except Exception as error:  # nothing the tool meets ends the step
@@ -296,3 +204,89 @@ def run(manifest: Path, registry: dict | None = None, facts: dict | None = None)
         _failed("host", f"{type(error).__name__}: {error}", checkers, gaps)
     entries, more = found(payload, registry, set(files), left_out, mentions)
     return {"found": entries, "checkers": checkers, "gaps": gaps + more, "ran": sorted(ran)}
+
+
+def tools(record: dict) -> list[str] | None:
+    """The registry ids of the build tools (`category` `tool`) the tool found by itself, sorted; None when it did not run,
+    and every source of `find_modules` runs as without the stack."""
+    if not any(c.get("checker") == "stack-analyser" and c.get("state") == "ran" for c in record.get("checkers") or ()):
+        return None
+    return sorted({entry["id"] for entry in record.get("found") or () if entry.get("category") == "tool"
+                   and any(sign.get("source") == "stack-analyser" for sign in entry.get("signs") or ())})
+
+
+# --------------------------------------------------------------------------------------------- the record
+
+def path(manifest: Path) -> Path:
+    return Path(manifest).with_name(FILE)
+
+
+def _inputs(manifest: Path, registry: dict) -> tuple[str, str]:
+    """The digest of what the record is derived from, and the snapshot's inventory digest."""
+    with open_snapshot(manifest) as store:
+        digest = inventory_digest(store)
+        value = [digest, store["root"], store.get("excluded") or [], registry, SCHEMA, stack_analyser.VERSION,
+                 stack_analyser.SHA256]
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest(), digest
+
+
+def recorded(manifest: Path) -> dict:
+    """The record beside `manifest`, as written (`ensure` derives it, this only reads): empty when there is none, or not of
+    this schema."""
+    try:
+        record = json.loads(path(manifest).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return record if isinstance(record, dict) and record.get("schema") == SCHEMA else {}
+
+
+def named(manifest: Path, digest: str) -> list[str] | None:
+    """The build tools of the record beside `manifest` (`tools`) when it was derived from the inventory of `digest`;
+    None without one: every source of `find_modules` runs."""
+    record = recorded(manifest)
+    return record.get("tools") if record.get("inventory_digest") == digest else None
+
+
+def _read(manifest: Path, digest: str) -> dict | None:
+    record = recorded(manifest)
+    if record.get("inputs_digest") != digest or "found" not in record:
+        return None
+    # A grammar may have been placed since a previous run recorded its absence.
+    missing = {g["language"] for g in record.get("gaps", ()) if g.get("kind") == "source_grammar_unavailable"}
+    if any(get_parser(language) is not None for language in missing):
+        return None
+    # Node or the network may have come since the tool failed, unless this process remembers the failure or derived this
+    # record itself: a timeout or an exit with an error is not remembered as an install is.
+    if (not stack_analyser._failed and (str(path(manifest)), digest) not in _derived
+            and any(g.get("kind") == "checker_failed" and g.get("checker") == "stack-analyser"
+                    for g in record.get("gaps", ()))):
+        return None
+    return record
+
+
+def state(manifest: Path, registry: dict | None = None) -> str:
+    """fresh, stale or missing; a read."""
+    manifest = Path(manifest).resolve()
+    if not path(manifest).is_file():
+        return "missing"
+    return "fresh" if _read(manifest, _inputs(manifest, registry or service_registry.load())[0]) else "stale"
+
+
+def ensure(manifest: Path, registry: dict | None = None) -> dict:
+    """The record of `manifest` (`run`, with `tools`), derived and written again when it is not fresh."""
+    manifest = Path(manifest).resolve()
+    registry = registry or service_registry.load()
+    digest, inventory = _inputs(manifest, registry)
+    record = _read(manifest, digest)
+    if record is None:
+        target = path(manifest)
+        confinement.reject_link_chain(target)
+        answer = run(manifest, registry)
+        record = {"schema": SCHEMA, "inputs_digest": digest, "inventory_digest": inventory, **answer,
+                  "tools": tools(answer)}
+        descriptor, name = tempfile.mkstemp(prefix=".stack-", dir=target.parent)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(json.dumps(record, indent=1, ensure_ascii=False, sort_keys=True).encode("utf-8"))
+        os.replace(name, target)
+        _derived.add((str(target), digest))
+    return record

@@ -25,7 +25,8 @@ sys.path.insert(0, str(REPO / "daodan/core"))
 import preparation  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
-from premap import container_runner, noir  # noqa: E402
+import container_runner  # noqa: E402
+from premap import noir  # noqa: E402
 
 try:
     from premap import django_app  # noqa: E402

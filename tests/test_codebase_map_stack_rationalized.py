@@ -20,6 +20,7 @@ import registry_build  # noqa: E402
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
 import stack_analyser  # noqa: E402
+import stack_recognition  # noqa: E402
 import technologies  # noqa: E402
 
 HERE = Path(__file__).resolve().parents[1]
@@ -100,6 +101,7 @@ def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logica
     })
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(project, manifest)
+    stack_recognition.ensure(manifest)  # the stack first: its build tools choose the pre-map's sources
     facts = premap.write(manifest)
     facts["excluded"] = [{"path": "docs/examples/", "why": "documentation"}]
     Path(premap.path(manifest)).write_text(json.dumps(facts), encoding="utf-8")

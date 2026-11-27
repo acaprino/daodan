@@ -3,7 +3,7 @@ import hashlib
 import json
 from unittest.mock import patch
 
-from test_codebase_map_premap_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import container, container_runner, manifest_of, premap, recorder
 
 
 def test_noir_candidates_reopen_without_running_a_command_or_installing_packages(tmp_path):

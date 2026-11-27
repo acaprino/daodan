@@ -16,7 +16,7 @@ import premap
 import semantic_store
 from premap import noir
 from snapshot_store import open_snapshot
-from test_codebase_map_premap_container_runner import manifest_of
+from test_codebase_map_container_runner import manifest_of
 
 RULES = [{"written": "app.get|post|delete", "in": ["routes"], "link": "offre", "handler": "last",
           "route": {"service": "api", "method": "part1", "path": "arg0"}}]

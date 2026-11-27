@@ -26,7 +26,7 @@ from tree_scope import Perimeter, workspace_glob
 STATE = "/daodan/state"
 IN, T = f"{STATE}/in", f"{STATE}/tools"
 # The base every container run starts from: what a language needs beside it, its toolchain and its tools, comes
-# into the run as an input. The image the other languages already run on (`premap.container_runner.IMAGE`, Ubuntu
+# into the run as an input. The image the other languages already run on (`container_runner.IMAGE`, Ubuntu
 # 24.04, glibc 2.39), pinned by digest: it has what the recipes and restores need, the CA certificates https clients
 # read (`go mod download`, cargo, git, mise) and `xz` (`tar -xJf`). Debian's slim image, the base before, has
 # neither (`benchmarks/egress/README.md`, `modal_image.py`); installing them in each run would ask the archive anew.
