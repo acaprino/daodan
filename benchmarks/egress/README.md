@@ -106,3 +106,7 @@ Provenienza di Smokescreen, verificata il 27 novembre 2026 da una funzione Modal
 - Servizi: dell'atteso servono `DAC_OVERRIDE`, `SETGID`, `SETUID`; `CHOWN` e `FOWNER` no (le cartelle dei dati sono già dell'utente del servizio nell'immagine).
 - Ripristino come `65532`: riesce sui volumi intestati a `65532`, tranne dove serve il JDK: il collegamento `/opt/java/openjdk` (`UNPACK_JDK`, `PATH`) va fatto altrove (`T3.A.6b`).
 - Fuori dalla misura: sulla Debian di `preparation.IMAGE` (senza `ca-certificates` né `xz`) `apt-get` in https, `go mod download` e le ricette `.tar.xz` falliscono già oggi (prima corsa `ap-uU9Zxqb4t5kr545THVknlz`); qui girano sulle immagini che le usano.
+
+### Container di Daodan (`T3.A.6a`)
+
+27 novembre 2026, codice del commit di `T3.A.6a`, Modal `ap-G60kFoE4zQ5VCcpX2NNEKM`: le righe `daodan:` di `modal_hardening.py` girano come le crea il codice, con `container.UNPRIVILEGED` (`--cap-drop ALL --user 65532:65532 --security-opt no-new-privileges`). Riescono tutte: il proxy apre `registry.npmjs.org:443` (`200`), il lettore dei `.env` legge un `.env` `0600` (`bound` lo dà leggibile a tutti), la sonda di `leaves` lascia la rete, il pod tiene la rete e `reached` trova la porta. Sonda del proxy 44/44 (`ap-kJ2vwrxePl1Gm6WZk9ZTc1`). In questa corsa la ricetta `git` cade in ogni variante per la misura, non per il codice: dopo `9100773` la riga usa `$HTTP_PROXY` con `set -u`, che sulla rete bridge non c'è (corretta in `T3.A.6b`).

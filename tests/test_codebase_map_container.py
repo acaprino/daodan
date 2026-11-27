@@ -42,7 +42,7 @@ args = sys.argv[2:]
 with (state / "calls.jsonl").open("a", encoding="utf-8") as log:
     log.write(json.dumps(args) + "\n")
 VALUED = {"--name", "--network", "--memory", "--memory-swap", "--pids-limit", "--cpus", "--security-opt", "-w", "-e",
-          "-v"}
+          "-v", "--cap-drop", "--cap-add", "--user"}
 box = lambda name: state / "containers" / name
 volume = lambda name: state / "volumes" / name
 verb = args[0] if args else ""
@@ -555,8 +555,10 @@ class FakeEngineTest(unittest.TestCase):
                 self.assertEqual((gap["engine"], gap["api"]), ("old", said or "unknown"))
                 self.assertIn("listen on every address are reachable", gap["detail"])
                 self.assertIn("Docker Engine 28.0", gap["remedy"])
-                _proxy, prepare, _execute = self.created()[-3:]
+                proxy, prepare, _execute = self.created()[-3:]
                 self.assertEqual(prepare[prepare.index("--network") + 1], network)
+                # Kiri's API (1.47) and Podman's take the flags too: Daodan's proxy has no capability and is not root
+                self.assertEqual(proxy[3:9], list(container.UNPRIVILEGED))
 
     # Guarantee 3: network closed during execution, open only to registries during preparation.
     def test_execution_has_no_network_and_preparation_reaches_only_the_proxy(self):
@@ -572,6 +574,8 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn(["version", "--format", "{{.Server.APIVersion}}"], calls)
         proxy, prepare, execute = self.created()
         self.assertNotIn("--network", proxy)
+        self.assertEqual(proxy[3:9], ["--cap-drop", "ALL", "--user", "65532:65532", "--security-opt",
+                                      "no-new-privileges"])  # Daodan's own code: no capability, not root
         self.assertIn("registry.npmjs.org", proxy)
         self.assertIn(["network", "connect", "--alias", "proxy", network, proxy[proxy.index("--name") + 1]], calls)
         self.assertEqual(prepare[prepare.index("--network") + 1], network)

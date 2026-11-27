@@ -19,31 +19,31 @@
  "rows": [
   {
    "row": "copy:/work+STATE",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "script": "set -u; mkdir -p \"$HOME\" && echo x > \"$HOME/written\" && echo x > /work/written && cat /work/src/a.txt",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.439,
+     "seconds": 1.233,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.474,
+     "seconds": 0.403,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 1,
-     "seconds": 0.738,
+     "seconds": 0.61,
      "error": "mkdir: cannot create directory '/daodan/state/home': Permission denied"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 1,
-     "seconds": 0.637,
+     "seconds": 0.408,
      "error": "mkdir: cannot create directory '/daodan/state/home': Permission denied"
     }
    },
@@ -51,37 +51,73 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 0.387,
+    "seconds": 0.464,
+    "error": null
+   }
+  },
+  {
+   "row": "daodan:proxy",
+   "variants": {},
+   "target": {
+    "as": "--cap-drop ALL --user 65532:65532 --security-opt no-new-privileges",
+    "ok": true,
+    "error": null
+   }
+  },
+  {
+   "row": "daodan:dotenv",
+   "variants": {},
+   "target": {
+    "as": "--cap-drop ALL --user 65532:65532 --security-opt no-new-privileges",
+    "ok": true,
+    "error": null
+   }
+  },
+  {
+   "row": "daodan:leaves",
+   "variants": {},
+   "target": {
+    "as": "--cap-drop ALL --user 65532:65532 --security-opt no-new-privileges",
+    "ok": true,
+    "error": null
+   }
+  },
+  {
+   "row": "daodan:pod+reached",
+   "variants": {},
+   "target": {
+    "as": "--cap-drop ALL --user 65532:65532 --security-opt no-new-privileges",
+    "ok": true,
     "error": null
    }
   },
   {
    "row": "recipe:node",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ; } >&2 || echo 'DAODAN-MISSING node@24.22.3' >&2\n",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.483,
+     "seconds": 2.049,
      "error": null
     },
     "cap-drop": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.946,
+     "seconds": 1.816,
      "error": "DAODAN-MISSING node@24.22.3 | tar: node-v24.22.3-linux-x64/bin/npx: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64/bin/npm: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64/bin: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3"
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.807,
+     "seconds": 0.408,
      "error": "DAODAN-MISSING node@24.22.3 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING node@24.22.3"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.463,
+     "seconds": 0.543,
      "error": "DAODAN-MISSING node@24.22.3 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING node@24.22.3"
     }
    },
@@ -96,7 +132,7 @@
       "caps": [],
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.885,
+      "seconds": 1.813,
       "error": "DAODAN-MISSING node@24.22.3 | tar: node-v24.22.3-linux-x64/bin/npx: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64/bin/npm: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64/bin: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3"
      },
      {
@@ -118,105 +154,105 @@
       ],
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.931,
+      "seconds": 2.617,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.707,
+      "seconds": 1.695,
       "error": "DAODAN-MISSING node@24.22.3 | tar: node-v24.22.3-linux-x64/bin/npx: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64/bin/npm: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64/bin: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3"
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.662,
+      "seconds": 1.818,
       "error": null
      },
      {
       "without": "FSETID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.779,
+      "seconds": 1.801,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.775,
+      "seconds": 1.864,
       "error": "DAODAN-MISSING node@24.22.3 | tar: node-v24.22.3-linux-x64/include: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: node-v24.22.3-linux-x64/README.md: Cannot change mode to rw-r--r--: Operation not permitted | tar: node-v24.22.3-linux-x64/bin: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3"
      },
      {
       "without": "MKNOD",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.73,
+      "seconds": 1.879,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.76,
+      "seconds": 1.749,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.642,
+      "seconds": 1.822,
       "error": null
      },
      {
       "without": "SETUID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.7,
+      "seconds": 1.926,
       "error": null
      },
      {
       "without": "SETFCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.826,
+      "seconds": 1.69,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.672,
+      "seconds": 1.687,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.853,
+      "seconds": 1.695,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.246,
+      "seconds": 1.681,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.249,
+      "seconds": 1.746,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.423,
+      "seconds": 1.666,
       "error": null
      }
     ]
@@ -224,31 +260,31 @@
   },
   {
    "row": "recipe:uv",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ mkdir -p /daodan/state/tools/uvc /daodan/state/tools/bin && tar -xzf /daodan/state/in/uv.tar.gz -C /daodan/state/tools/uvc && ln -sf /daodan/state/tools/uvc/*/uv /daodan/state/tools/bin/uv ; } >&2 || echo 'DAODAN-MISSING uv@0.11.28' >&2\n",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.119,
+     "seconds": 1.057,
      "error": null
     },
     "cap-drop": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.948,
+     "seconds": 1.139,
      "error": "DAODAN-MISSING uv@0.11.28 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING uv@0.11.28"
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.997,
+     "seconds": 0.766,
      "error": "DAODAN-MISSING uv@0.11.28 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING uv@0.11.28"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.4,
+     "seconds": 0.441,
      "error": "DAODAN-MISSING uv@0.11.28 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING uv@0.11.28"
     }
    },
@@ -263,7 +299,7 @@
       "caps": [],
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.205,
+      "seconds": 0.893,
       "error": "DAODAN-MISSING uv@0.11.28 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING uv@0.11.28"
      },
      {
@@ -285,105 +321,105 @@
       ],
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.794,
+      "seconds": 0.958,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": false,
       "exit_code": 0,
-      "seconds": 0.754,
+      "seconds": 0.961,
       "error": "DAODAN-MISSING uv@0.11.28 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING uv@0.11.28"
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.188,
+      "seconds": 1.024,
       "error": null
      },
      {
       "without": "FSETID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.363,
+      "seconds": 1.944,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": false,
       "exit_code": 0,
-      "seconds": 0.891,
+      "seconds": 0.922,
       "error": "DAODAN-MISSING uv@0.11.28 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING uv@0.11.28"
      },
      {
       "without": "MKNOD",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.9,
+      "seconds": 1.03,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.931,
+      "seconds": 1.037,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.833,
+      "seconds": 0.919,
       "error": null
      },
      {
       "without": "SETUID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.868,
+      "seconds": 1.098,
       "error": null
      },
      {
       "without": "SETFCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.842,
+      "seconds": 1.141,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.007,
+      "seconds": 1.087,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.835,
+      "seconds": 0.865,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.821,
+      "seconds": 0.896,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.896,
+      "seconds": 0.883,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 0.968,
+      "seconds": 0.906,
       "error": null
      }
     ]
@@ -397,25 +433,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.071,
+     "seconds": 2.167,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.92,
+     "seconds": 1.991,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.544,
+     "seconds": 0.522,
      "error": "DAODAN-MISSING go@1.27.3 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING go@1.27.3"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.446,
+     "seconds": 0.621,
      "error": "DAODAN-MISSING go@1.27.3 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING go@1.27.3"
     }
    },
@@ -427,7 +463,7 @@
       "caps": [],
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.093,
+      "seconds": 2.382,
       "error": null
      }
     ]
@@ -441,25 +477,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 6.136,
+     "seconds": 7.249,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 5.833,
+     "seconds": 7.291,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.771,
+     "seconds": 0.46,
      "error": "DAODAN-MISSING rust@1.99.1 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING rust@1.99.1"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.592,
+     "seconds": 0.517,
      "error": "DAODAN-MISSING rust@1.99.1 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING rust@1.99.1"
     }
    },
@@ -471,7 +507,7 @@
       "caps": [],
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.929,
+      "seconds": 7.266,
       "error": null
      }
     ]
@@ -485,25 +521,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 10.34,
+     "seconds": 12.496,
      "error": null
     },
     "cap-drop": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 9.469,
+     "seconds": 11.308,
      "error": "DAODAN-MISSING arm-none-eabi@15.2.rel1 | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/libexec: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/15.2.rel1-x86_64-arm-none-eabi-manifest.txt: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/license.txt: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING arm-none-eabi@15.2.rel1"
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.622,
+     "seconds": 0.826,
      "error": "DAODAN-MISSING arm-none-eabi@15.2.rel1 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING arm-none-eabi@15.2.rel1"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.585,
+     "seconds": 0.9,
      "error": "DAODAN-MISSING arm-none-eabi@15.2.rel1 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING arm-none-eabi@15.2.rel1"
     }
    },
@@ -518,7 +554,7 @@
       "caps": [],
       "ok": false,
       "exit_code": 0,
-      "seconds": 9.481,
+      "seconds": 12.924,
       "error": "DAODAN-MISSING arm-none-eabi@15.2.rel1 | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/libexec: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/15.2.rel1-x86_64-arm-none-eabi-manifest.txt: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/license.txt: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING arm-none-eabi@15.2.rel1"
      },
      {
@@ -540,105 +576,105 @@
       ],
       "ok": true,
       "exit_code": 0,
-      "seconds": 10.611,
+      "seconds": 13.794,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": false,
       "exit_code": 0,
-      "seconds": 9.834,
+      "seconds": 11.266,
       "error": "DAODAN-MISSING arm-none-eabi@15.2.rel1 | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/libexec: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/15.2.rel1-x86_64-arm-none-eabi-manifest.txt: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/license.txt: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi: Cannot change ownership to uid 1297, gid 1297: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING arm-none-eabi@15.2.rel1"
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 11.185,
+      "seconds": 12.38,
       "error": null
      },
      {
       "without": "FSETID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 10.494,
+      "seconds": 12.014,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": false,
       "exit_code": 0,
-      "seconds": 11.025,
+      "seconds": 11.873,
       "error": "DAODAN-MISSING arm-none-eabi@15.2.rel1 | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/libexec: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/15.2.rel1-x86_64-arm-none-eabi-manifest.txt: Cannot change mode to rw-r--r--: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/license.txt: Cannot change mode to rw-r--r--: Operation not permitted | tar: arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING arm-none-eabi@15.2.rel1"
      },
      {
       "without": "MKNOD",
       "ok": true,
       "exit_code": 0,
-      "seconds": 10.821,
+      "seconds": 12.455,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
       "exit_code": 0,
-      "seconds": 10.769,
+      "seconds": 11.463,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 9.915,
+      "seconds": 11.835,
       "error": null
      },
      {
       "without": "SETUID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 10.998,
+      "seconds": 11.644,
       "error": null
      },
      {
       "without": "SETFCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 10.015,
+      "seconds": 10.923,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 10.67,
+      "seconds": 11.229,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 9.865,
+      "seconds": 10.939,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
       "exit_code": 0,
-      "seconds": 9.372,
+      "seconds": 11.055,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
       "exit_code": 0,
-      "seconds": 9.334,
+      "seconds": 10.888,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 9.047,
+      "seconds": 11.007,
       "error": null
      }
     ]
@@ -647,47 +683,43 @@
   {
    "row": "recipe:git",
    "image": "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90",
-   "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ sed -i 's|http://|https://|' /etc/apt/sources.list.d/debian.sources && export DEBIAN_FRONTEND=noninteractive && apt-get -qq -o Acquire::https::Proxy=\"$HTTPS_PROXY\" -o Acquire::Languages=none update && apt-get -qq -o Acquire::https::Proxy=\"$HTTPS_PROXY\" install -y --no-install-recommends git ; } >&2 || echo 'DAODAN-MISSING git@debian' >&2\n",
+   "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ export DEBIAN_FRONTEND=noninteractive && apt-get -qq -o Acquire::http::Proxy=\"$HTTP_PROXY\" -o Acquire::Languages=none update && apt-get -qq -o Acquire::http::Proxy=\"$HTTP_PROXY\" install -y --no-install-recommends git ; } >&2 || echo 'DAODAN-MISSING git@debian' >&2\n",
    "variants": {
     "oggi": {
-     "ok": true,
-     "exit_code": 0,
-     "seconds": 5.259,
-     "error": null
+     "ok": false,
+     "exit_code": 2,
+     "seconds": 0.844,
+     "error": "sh: 2: HTTP_PROXY: parameter not set"
     },
     "cap-drop": {
      "ok": false,
-     "exit_code": 0,
-     "seconds": 0.937,
-     "error": "DAODAN-MISSING git@debian | E: The repository 'https://deb.debian.org/debian trixie Release' no longer has a Release file. | W: Problem unlinking the file /var/lib/apt/lists/partial/deb.debian.org_debian_dists_trixie-updates_Release - PrepareFiles (13: Permission denied) | E: The repository 'https://deb.debian.org/debian trixie-updates Release' no longer has a Release file. | W: Problem unlinking the file /var/lib/apt/lists/partial/deb.debian.org_debian-security_dists_trixie-security_Release - PrepareFiles (13: Permission denied) | E: The repository 'https://deb.debian.org/debian-security trixie-security Release' no longer has a Release file. | DAODAN-MISSING git@debian"
+     "exit_code": 2,
+     "seconds": 0.346,
+     "error": "sh: 2: HTTP_PROXY: parameter not set"
     },
     "user": {
      "ok": false,
-     "exit_code": 0,
-     "seconds": 0.413,
-     "error": "DAODAN-MISSING git@debian | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/home\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/venvs\u2019: Permission denied | sed: couldn't open temporary file /etc/apt/sources.list.d/sedB9MmJl: Permission denied | DAODAN-MISSING git@debian"
+     "exit_code": 2,
+     "seconds": 0.509,
+     "error": "mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/home\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/venvs\u2019: Permission denied | sh: 2: HTTP_PROXY: parameter not set"
     },
     "entrambi": {
      "ok": false,
-     "exit_code": 0,
-     "seconds": 0.515,
-     "error": "DAODAN-MISSING git@debian | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/home\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/venvs\u2019: Permission denied | sed: couldn't open temporary file /etc/apt/sources.list.d/sedBg2reZ: Permission denied | DAODAN-MISSING git@debian"
+     "exit_code": 2,
+     "seconds": 0.54,
+     "error": "mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/home\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/venvs\u2019: Permission denied | sh: 2: HTTP_PROXY: parameter not set"
     }
    },
    "target": {
     "as": "root, no /work, --cap-drop ALL + least",
-    "minimal": [
-     "DAC_OVERRIDE",
-     "SETGID",
-     "SETUID"
-    ],
+    "minimal": null,
     "steps": [
      {
       "caps": [],
       "ok": false,
-      "exit_code": 0,
-      "seconds": 0.542,
-      "error": "DAODAN-MISSING git@debian | E: The repository 'https://deb.debian.org/debian trixie Release' no longer has a Release file. | W: Problem unlinking the file /var/lib/apt/lists/partial/deb.debian.org_debian_dists_trixie-updates_Release - PrepareFiles (13: Permission denied) | E: The repository 'https://deb.debian.org/debian trixie-updates Release' no longer has a Release file. | W: Problem unlinking the file /var/lib/apt/lists/partial/deb.debian.org_debian-security_dists_trixie-security_Release - PrepareFiles (13: Permission denied) | E: The repository 'https://deb.debian.org/debian-security trixie-security Release' no longer has a Release file. | DAODAN-MISSING git@debian"
+      "exit_code": 2,
+      "seconds": 0.645,
+      "error": "sh: 2: HTTP_PROXY: parameter not set"
      },
      {
       "caps": [
@@ -706,108 +738,10 @@
        "KILL",
        "AUDIT_WRITE"
       ],
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.025,
-      "error": null
-     },
-     {
-      "without": "CHOWN",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.268,
-      "error": null
-     },
-     {
-      "without": "DAC_OVERRIDE",
       "ok": false,
-      "exit_code": 0,
-      "seconds": 0.607,
-      "error": "DAODAN-MISSING git@debian | E: can not open /var/lib/apt/lists/partial/deb.debian.org_debian_dists_trixie-updates_InRelease - fopen (13: Permission denied) | E: The repository 'https://deb.debian.org/debian trixie-updates InRelease' provides only weak security information. | W: Problem unlinking the file /var/lib/apt/lists/partial/deb.debian.org_debian-security_dists_trixie-security_InRelease - PrepareFiles (13: Permission denied) | E: can not open /var/lib/apt/lists/partial/deb.debian.org_debian-security_dists_trixie-security_InRelease - fopen (13: Permission denied) | E: The repository 'https://deb.debian.org/debian-security trixie-security InRelease' provides only weak security information. | DAODAN-MISSING git@debian"
-     },
-     {
-      "without": "FSETID",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 4.878,
-      "error": null
-     },
-     {
-      "without": "FOWNER",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.045,
-      "error": null
-     },
-     {
-      "without": "MKNOD",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.786,
-      "error": null
-     },
-     {
-      "without": "NET_RAW",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.67,
-      "error": null
-     },
-     {
-      "without": "SETGID",
-      "ok": false,
-      "exit_code": 0,
-      "seconds": 0.569,
-      "error": "DAODAN-MISSING git@debian | E: setegid 65534 failed - setegid (1: Operation not permitted) | E: setgroups 0 failed - setgroups (1: Operation not permitted) | E: Method gave invalid 400 URI Failure message: Failed to setgroups - setgroups (1: Operation not permitted) | E: Method https has died unexpectedly! | E: Sub-process https returned an error code (112) | DAODAN-MISSING git@debian"
-     },
-     {
-      "without": "SETUID",
-      "ok": false,
-      "exit_code": 0,
-      "seconds": 0.517,
-      "error": "DAODAN-MISSING git@debian | W: chmod 0755 of directory /var/lib/apt/lists/auxfiles failed - SetupAPTPartialDirectory (1: Operation not permitted) | E: seteuid 42 failed - seteuid (1: Operation not permitted) | E: Method gave invalid 400 URI Failure message: Failed to set new user ids - setresuid (1: Operation not permitted) | E: Method https has died unexpectedly! | E: Sub-process https returned an error code (112) | DAODAN-MISSING git@debian"
-     },
-     {
-      "without": "SETFCAP",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.468,
-      "error": null
-     },
-     {
-      "without": "SETPCAP",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.598,
-      "error": null
-     },
-     {
-      "without": "NET_BIND_SERVICE",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.634,
-      "error": null
-     },
-     {
-      "without": "SYS_CHROOT",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.361,
-      "error": null
-     },
-     {
-      "without": "KILL",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.558,
-      "error": null
-     },
-     {
-      "without": "AUDIT_WRITE",
-      "ok": true,
-      "exit_code": 0,
-      "seconds": 5.352,
-      "error": null
+      "exit_code": 2,
+      "seconds": 0.416,
+      "error": "sh: 2: HTTP_PROXY: parameter not set"
      }
     ]
    }
@@ -820,25 +754,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 5.517,
+     "seconds": 5.47,
      "error": null
     },
     "cap-drop": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 5.78,
+     "seconds": 4.908,
      "error": "DAODAN-MISSING dotnet@10.0.404 | tar: ./host: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: ./dotnet: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: ./ThirdPartyNotices.txt: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: .: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING dotnet@10.0.404"
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.76,
+     "seconds": 0.844,
      "error": "DAODAN-MISSING dotnet@10.0.404 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING dotnet@10.0.404"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.695,
+     "seconds": 0.673,
      "error": "DAODAN-MISSING dotnet@10.0.404 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING dotnet@10.0.404"
     }
    },
@@ -853,7 +787,7 @@
       "caps": [],
       "ok": false,
       "exit_code": 0,
-      "seconds": 4.205,
+      "seconds": 4.872,
       "error": "DAODAN-MISSING dotnet@10.0.404 | tar: ./host: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: ./dotnet: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: ./ThirdPartyNotices.txt: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: .: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING dotnet@10.0.404"
      },
      {
@@ -875,105 +809,105 @@
       ],
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.378,
+      "seconds": 5.364,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": false,
       "exit_code": 0,
-      "seconds": 5.182,
+      "seconds": 5.029,
       "error": "DAODAN-MISSING dotnet@10.0.404 | tar: ./host: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: ./dotnet: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: ./ThirdPartyNotices.txt: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: .: Cannot change ownership to uid 2001, gid 2001: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING dotnet@10.0.404"
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.246,
+      "seconds": 6.244,
       "error": null
      },
      {
       "without": "FSETID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 6.043,
+      "seconds": 6.238,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": false,
       "exit_code": 0,
-      "seconds": 5.897,
+      "seconds": 6.279,
       "error": "DAODAN-MISSING dotnet@10.0.404 | tar: ./host/fxr: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: ./host: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: ./dotnet: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: ./ThirdPartyNotices.txt: Cannot change mode to rw-r--r--: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING dotnet@10.0.404"
      },
      {
       "without": "MKNOD",
       "ok": true,
       "exit_code": 0,
-      "seconds": 6.488,
+      "seconds": 5.783,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
       "exit_code": 0,
-      "seconds": 7.262,
+      "seconds": 5.439,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 7.42,
+      "seconds": 5.747,
       "error": null
      },
      {
       "without": "SETUID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.646,
+      "seconds": 5.596,
       "error": null
      },
      {
       "without": "SETFCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.375,
+      "seconds": 5.549,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.645,
+      "seconds": 5.439,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.71,
+      "seconds": 5.339,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.488,
+      "seconds": 5.267,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.244,
+      "seconds": 5.542,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 5.123,
+      "seconds": 6.323,
       "error": null
      }
     ]
@@ -987,25 +921,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 7.455,
+     "seconds": 8.23,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 7.87,
+     "seconds": 7.609,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.509,
+     "seconds": 0.581,
      "error": "DAODAN-MISSING vcpkg@2026-10-29 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | fatal: could not create leading directories of '/daodan/state/tools/vcpkg': Permission denied | DAODAN-MISSING vcpkg@2026-10-29"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.435,
+     "seconds": 0.612,
      "error": "DAODAN-MISSING vcpkg@2026-10-29 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | fatal: could not create leading directories of '/daodan/state/tools/vcpkg': Permission denied | DAODAN-MISSING vcpkg@2026-10-29"
     }
    },
@@ -1017,7 +951,7 @@
       "caps": [],
       "ok": true,
       "exit_code": 0,
-      "seconds": 7.76,
+      "seconds": 7.478,
       "error": null
      }
     ]
@@ -1031,25 +965,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.683,
+     "seconds": 2.065,
      "error": null
     },
     "cap-drop": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.141,
+     "seconds": 1.082,
      "error": "DAODAN-MISSING conan@2.34.0 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING conan@2.34.0"
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.537,
+     "seconds": 0.485,
      "error": "DAODAN-MISSING conan@2.34.0 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING conan@2.34.0"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.596,
+     "seconds": 0.454,
      "error": "DAODAN-MISSING conan@2.34.0 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING conan@2.34.0"
     }
    },
@@ -1064,7 +998,7 @@
       "caps": [],
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.058,
+      "seconds": 0.915,
       "error": "DAODAN-MISSING conan@2.34.0 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING conan@2.34.0"
      },
      {
@@ -1086,105 +1020,105 @@
       ],
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.33,
+      "seconds": 1.849,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.598,
+      "seconds": 1.677,
       "error": "DAODAN-MISSING conan@2.34.0 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING conan@2.34.0"
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.449,
+      "seconds": 1.557,
       "error": null
      },
      {
       "without": "FSETID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.616,
+      "seconds": 1.859,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": false,
       "exit_code": 0,
-      "seconds": 0.876,
+      "seconds": 1.108,
       "error": "DAODAN-MISSING conan@2.34.0 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING conan@2.34.0"
      },
      {
       "without": "MKNOD",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.197,
+      "seconds": 1.902,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.269,
+      "seconds": 2.011,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.627,
+      "seconds": 2.056,
       "error": null
      },
      {
       "without": "SETUID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.45,
+      "seconds": 1.499,
       "error": null
      },
      {
       "without": "SETFCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.373,
+      "seconds": 1.909,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.152,
+      "seconds": 1.679,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.216,
+      "seconds": 1.887,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.483,
+      "seconds": 1.566,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.675,
+      "seconds": 1.565,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.297,
+      "seconds": 1.954,
       "error": null
      }
     ]
@@ -1198,25 +1132,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.535,
+     "seconds": 2.602,
      "error": null
     },
     "cap-drop": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.881,
+     "seconds": 0.905,
      "error": "DAODAN-MISSING poetry@2.1.3 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING poetry@2.1.3"
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.668,
+     "seconds": 0.389,
      "error": "DAODAN-MISSING poetry@2.1.3 | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/home\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/venvs\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | DAODAN-MISSING poetry@2.1.3"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.606,
+     "seconds": 0.452,
      "error": "DAODAN-MISSING poetry@2.1.3 | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/home\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/venvs\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | mkdir: cannot create directory \u2018/daodan/state/tools\u2019: Permission denied | DAODAN-MISSING poetry@2.1.3"
     }
    },
@@ -1231,7 +1165,7 @@
       "caps": [],
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.345,
+      "seconds": 0.916,
       "error": "DAODAN-MISSING poetry@2.1.3 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING poetry@2.1.3"
      },
      {
@@ -1253,105 +1187,105 @@
       ],
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.973,
+      "seconds": 2.489,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.087,
+      "seconds": 1.043,
       "error": "DAODAN-MISSING poetry@2.1.3 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change ownership to uid 1001, gid 117: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING poetry@2.1.3"
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.219,
+      "seconds": 2.284,
       "error": null
      },
      {
       "without": "FSETID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.77,
+      "seconds": 2.145,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.033,
+      "seconds": 1.184,
       "error": "DAODAN-MISSING poetry@2.1.3 | tar: uv-x86_64-unknown-linux-gnu/uvx: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu/uv: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: uv-x86_64-unknown-linux-gnu: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING poetry@2.1.3"
      },
      {
       "without": "MKNOD",
       "ok": true,
       "exit_code": 0,
-      "seconds": 1.913,
+      "seconds": 2.963,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.148,
+      "seconds": 2.557,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.748,
+      "seconds": 2.273,
       "error": null
      },
      {
       "without": "SETUID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.207,
+      "seconds": 2.623,
       "error": null
      },
      {
       "without": "SETFCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.033,
+      "seconds": 2.753,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.207,
+      "seconds": 2.407,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.462,
+      "seconds": 2.898,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.513,
+      "seconds": 2.676,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.338,
+      "seconds": 3.149,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.081,
+      "seconds": 2.838,
       "error": null
      }
     ]
@@ -1359,31 +1293,31 @@
   },
   {
    "row": "recipe:jdk",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\nif [ ! -x /daodan/state/jdk/bin/java ] && [ -f /daodan/state/in/temurin-17.tar.gz ]; then\n  mkdir -p /daodan/state/jdk && tar -xzf /daodan/state/in/temurin-17.tar.gz -C /daodan/state/jdk --strip-components=1 && rm -f /daodan/state/in/temurin-17.tar.gz\nfi\nmkdir -p /opt/java && ln -sfn /daodan/state/jdk /opt/java/openjdk\n\n[ -x /opt/java/openjdk/bin/java ] || echo 'DAODAN-MISSING jdk' >&2",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.903,
+     "seconds": 3.313,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 3.244,
+     "seconds": 3.215,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.809,
+     "seconds": 0.593,
      "error": "DAODAN-MISSING jdk | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/jdk': Permission denied | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-MISSING jdk"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.738,
+     "seconds": 0.638,
      "error": "DAODAN-MISSING jdk | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/jdk': Permission denied | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-MISSING jdk"
     }
    },
@@ -1395,7 +1329,7 @@
       "caps": [],
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.084,
+      "seconds": 2.87,
       "error": null
      }
     ]
@@ -1403,31 +1337,31 @@
   },
   {
    "row": "recipe:cmdline-tools",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\nif [ ! -x /daodan/state/jdk/bin/java ] && [ -f /daodan/state/in/temurin-17.tar.gz ]; then\n  mkdir -p /daodan/state/jdk && tar -xzf /daodan/state/in/temurin-17.tar.gz -C /daodan/state/jdk --strip-components=1 && rm -f /daodan/state/in/temurin-17.tar.gz\nfi\nmkdir -p /opt/java && ln -sfn /daodan/state/jdk /opt/java/openjdk\n\n{ mkdir -p /daodan/state/tools/android/cmdline-tools && (cd /daodan/state/tools/android/cmdline-tools && jar xf /daodan/state/in/cmdline-tools.zip && mv cmdline-tools latest && chmod 755 latest/bin/*) && yes | /daodan/state/tools/android/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null ; } >&2 || echo 'DAODAN-MISSING cmdline-tools@15859902' >&2\n",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 6.035,
+     "seconds": 7.12,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 5.782,
+     "seconds": 7.064,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.831,
+     "seconds": 0.858,
      "error": "DAODAN-MISSING cmdline-tools@15859902 | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/jdk': Permission denied | mkdir: cannot create directory '/opt/java': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING cmdline-tools@15859902"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.244,
+     "seconds": 0.77,
      "error": "DAODAN-MISSING cmdline-tools@15859902 | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | mkdir: cannot create directory '/daodan/state/jdk': Permission denied | mkdir: cannot create directory '/opt/java': Permission denied | mkdir: cannot create directory '/daodan/state/tools': Permission denied | DAODAN-MISSING cmdline-tools@15859902"
     }
    },
@@ -1439,7 +1373,7 @@
       "caps": [],
       "ok": true,
       "exit_code": 0,
-      "seconds": 6.751,
+      "seconds": 5.66,
       "error": null
      }
     ]
@@ -1447,31 +1381,31 @@
   },
   {
    "row": "recipe:corepack",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ; } >&2 || echo 'DAODAN-MISSING node@24.22.3' >&2\nexport PATH=/daodan/state/tools/corepack/bin:$PATH; [ -x /daodan/state/tools/corepack/bin/corepack ] || { npm install -g --prefix /daodan/state/tools/corepack --engine-strict --no-audit --no-fund --loglevel=error \"corepack@>=0.31.0 <=0.36.0\" >&2 || echo 'DAODAN-MISSING corepack@>=0.31.0' >&2; }\n",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.625,
+     "seconds": 2.488,
      "error": null
     },
     "cap-drop": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 2.231,
+     "seconds": 2.269,
      "error": "DAODAN-MISSING node@24.22.3 | DAODAN-MISSING corepack@>=0.31.0 | tar: node-v24.22.3-linux-x64/bin: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3 | sh: 3: npm: not found | DAODAN-MISSING corepack@>=0.31.0"
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.622,
+     "seconds": 0.834,
      "error": "DAODAN-MISSING node@24.22.3 | DAODAN-MISSING corepack@>=0.31.0 | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING node@24.22.3 | sh: 3: npm: not found | DAODAN-MISSING corepack@>=0.31.0"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.619,
+     "seconds": 0.553,
      "error": "DAODAN-MISSING node@24.22.3 | DAODAN-MISSING corepack@>=0.31.0 | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | tar: /daodan/state/tools: Cannot open: No such file or directory | tar: Error is not recoverable: exiting now | DAODAN-MISSING node@24.22.3 | sh: 3: npm: not found | DAODAN-MISSING corepack@>=0.31.0"
     }
    },
@@ -1486,7 +1420,7 @@
       "caps": [],
       "ok": false,
       "exit_code": 0,
-      "seconds": 1.977,
+      "seconds": 2.482,
       "error": "DAODAN-MISSING node@24.22.3 | DAODAN-MISSING corepack@>=0.31.0 | tar: node-v24.22.3-linux-x64/bin: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3 | sh: 3: npm: not found | DAODAN-MISSING corepack@>=0.31.0"
      },
      {
@@ -1508,105 +1442,105 @@
       ],
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.455,
+      "seconds": 2.664,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": false,
       "exit_code": 0,
-      "seconds": 2.086,
+      "seconds": 3.069,
       "error": "DAODAN-MISSING node@24.22.3 | DAODAN-MISSING corepack@>=0.31.0 | tar: node-v24.22.3-linux-x64/bin: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change ownership to uid 1000, gid 1000: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3 | sh: 3: npm: not found | DAODAN-MISSING corepack@>=0.31.0"
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.736,
+      "seconds": 2.831,
       "error": null
      },
      {
       "without": "FSETID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.751,
+      "seconds": 2.859,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": false,
       "exit_code": 0,
-      "seconds": 4.222,
+      "seconds": 2.955,
       "error": "DAODAN-MISSING node@24.22.3 | DAODAN-MISSING corepack@>=0.31.0 | tar: node-v24.22.3-linux-x64/bin: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: node-v24.22.3-linux-x64: Cannot change mode to rwxr-xr-x: Operation not permitted | tar: Exiting with failure status due to previous errors | DAODAN-MISSING node@24.22.3 | sh: 3: npm: not found | DAODAN-MISSING corepack@>=0.31.0"
      },
      {
       "without": "MKNOD",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.486,
+      "seconds": 2.798,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.152,
+      "seconds": 2.519,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.556,
+      "seconds": 2.221,
       "error": null
      },
      {
       "without": "SETUID",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.963,
+      "seconds": 2.677,
       "error": null
      },
      {
       "without": "SETFCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.924,
+      "seconds": 2.594,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.5,
+      "seconds": 3.012,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.078,
+      "seconds": 2.449,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.489,
+      "seconds": 2.895,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.713,
+      "seconds": 2.735,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
       "exit_code": 0,
-      "seconds": 2.555,
+      "seconds": 2.649,
       "error": null
      }
     ]
@@ -1614,31 +1548,31 @@
   },
   {
    "row": "recipe:mise",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "script": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\nchmod 755 /daodan/state/in/mise\n{ MISE_DATA_DIR=/daodan/state/tools/mise MISE_YES=1 /daodan/state/in/mise install node@22.12.0 >&2 && for d in $(MISE_DATA_DIR=/daodan/state/tools/mise MISE_YES=1 /daodan/state/in/mise bin-paths node@22.12.0); do for b in \"$d\"/*; do n=${b##*/}; printf '#!/bin/sh\\nexec env MISE_DATA_DIR=/daodan/state/tools/mise MISE_YES=1 /daodan/state/in/mise x node@22.12.0 -- %s \"$@\"\\n' \"$n\" > /daodan/state/tools/bin/$n && chmod 755 /daodan/state/tools/bin/$n; done; done; } || echo 'DAODAN-MISSING node@22.12.0' >&2\n",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 3.635,
+     "seconds": 3.448,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.992,
+     "seconds": 3.022,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.48,
+     "seconds": 0.808,
      "error": "DAODAN-MISSING node@22.12.0 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | chmod: changing permissions of '/daodan/state/in/mise': Operation not permitted | sh: 3: /daodan/state/in/mise: Permission denied | DAODAN-MISSING node@22.12.0"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.043,
+     "seconds": 0.963,
      "error": "DAODAN-MISSING node@22.12.0 | mkdir: cannot create directory '/daodan/state/tools': Permission denied | mkdir: cannot create directory '/daodan/state/home': Permission denied | mkdir: cannot create directory '/daodan/state/venvs': Permission denied | chmod: changing permissions of '/daodan/state/in/mise': Operation not permitted | sh: 3: /daodan/state/in/mise: Permission denied | DAODAN-MISSING node@22.12.0"
     }
    },
@@ -1650,7 +1584,7 @@
       "caps": [],
       "ok": true,
       "exit_code": 0,
-      "seconds": 3.731,
+      "seconds": 2.33,
       "error": null
      }
     ]
@@ -1662,22 +1596,22 @@
    "variants": {
     "oggi": {
      "ok": true,
-     "seconds": 2.396,
+     "seconds": 2.866,
      "error": null
     },
     "cap-drop": {
      "ok": false,
-     "seconds": 0.239,
+     "seconds": 0.26,
      "error": "it exited: chmod: changing permissions of '/var/lib/postgresql/data': Operation not permitted | chmod: changing permissions of '/run/postgresql': Operation not permitted | error: failed switching to 'postgres': operation not permitted"
     },
     "user": {
      "ok": false,
-     "seconds": 1.823,
+     "seconds": 1.916,
      "error": "it exited: Data page checksums are disabled. | fixing permissions on existing directory /var/lib/postgresql/data ... initdb: error: could not change permissions of directory \"/var/lib/postgresql/data\": Operation not permitted"
     },
     "entrambi": {
      "ok": false,
-     "seconds": 1.888,
+     "seconds": 1.62,
      "error": "it exited: Data page checksums are disabled. | fixing permissions on existing directory /var/lib/postgresql/data ... initdb: error: could not change permissions of directory \"/var/lib/postgresql/data\": Operation not permitted"
     }
    },
@@ -1692,7 +1626,7 @@
      {
       "caps": [],
       "ok": false,
-      "seconds": 2.258,
+      "seconds": 0.381,
       "error": "it exited: chmod: changing permissions of '/var/lib/postgresql/data': Operation not permitted | chmod: changing permissions of '/run/postgresql': Operation not permitted | error: failed switching to 'postgres': operation not permitted"
      },
      {
@@ -1713,91 +1647,91 @@
        "AUDIT_WRITE"
       ],
       "ok": true,
-      "seconds": 2.731,
+      "seconds": 2.247,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": true,
-      "seconds": 2.6,
+      "seconds": 2.075,
       "error": null
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": false,
-      "seconds": 0.461,
+      "seconds": 0.315,
       "error": "it exited: find: \u2018/var/lib/postgresql/data\u2019: Permission denied"
      },
      {
       "without": "FSETID",
       "ok": true,
-      "seconds": 2.253,
+      "seconds": 2.161,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": true,
-      "seconds": 2.331,
+      "seconds": 2.447,
       "error": null
      },
      {
       "without": "MKNOD",
       "ok": true,
-      "seconds": 2.288,
+      "seconds": 2.256,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
-      "seconds": 2.069,
+      "seconds": 2.278,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": false,
-      "seconds": 0.21,
+      "seconds": 0.444,
       "error": "it exited: chmod: changing permissions of '/var/lib/postgresql/data': Operation not permitted | chmod: changing permissions of '/run/postgresql': Operation not permitted | error: failed switching to 'postgres': operation not permitted"
      },
      {
       "without": "SETUID",
       "ok": false,
-      "seconds": 0.4,
+      "seconds": 0.198,
       "error": "it exited: chmod: changing permissions of '/var/lib/postgresql/data': Operation not permitted | chmod: changing permissions of '/run/postgresql': Operation not permitted | error: failed switching to 'postgres': operation not permitted"
      },
      {
       "without": "SETFCAP",
       "ok": true,
-      "seconds": 2.181,
+      "seconds": 2.275,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
-      "seconds": 2.499,
+      "seconds": 2.506,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
-      "seconds": 3.082,
+      "seconds": 2.051,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
-      "seconds": 2.075,
+      "seconds": 2.013,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
-      "seconds": 2.51,
+      "seconds": 2.218,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
-      "seconds": 1.917,
+      "seconds": 2.18,
       "error": null
      }
     ]
@@ -1809,22 +1743,22 @@
    "variants": {
     "oggi": {
      "ok": true,
-     "seconds": 7.162,
+     "seconds": 6.926,
      "error": null
     },
     "cap-drop": {
      "ok": false,
-     "seconds": 1.778,
-     "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 18:52:13+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.DTbcMh2OAJ | 2026-11-27T18:52:13.725019Z 0 [ERROR] [MY-010126] [Server] setgid: Operation not permitted | 2026-11-27T18:52:13.725805Z 0 [ERROR] [MY-010119] [Server] Aborting"
+     "seconds": 1.623,
+     "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 23:16:06+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.LBAEju1KnO | 2026-11-27T23:16:06.396751Z 0 [ERROR] [MY-010126] [Server] setgid: Operation not permitted | 2026-11-27T23:16:06.397605Z 0 [ERROR] [MY-010119] [Server] Aborting"
     },
     "user": {
      "ok": true,
-     "seconds": 6.744,
+     "seconds": 8.36,
      "error": null
     },
     "entrambi": {
      "ok": true,
-     "seconds": 5.514,
+     "seconds": 7.17,
      "error": null
     }
    },
@@ -1839,8 +1773,8 @@
      {
       "caps": [],
       "ok": false,
-      "seconds": 2.209,
-      "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 18:52:30+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.PxW8D9QucX | 2026-11-27T18:52:30.251548Z 0 [ERROR] [MY-010126] [Server] setgid: Operation not permitted | 2026-11-27T18:52:30.252322Z 0 [ERROR] [MY-010119] [Server] Aborting"
+      "seconds": 2.301,
+      "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 23:16:25+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.oqSQyB8RX2 | 2026-11-27T23:16:25.407059Z 0 [ERROR] [MY-010126] [Server] setgid: Operation not permitted | 2026-11-27T23:16:25.407881Z 0 [ERROR] [MY-010119] [Server] Aborting"
      },
      {
       "caps": [
@@ -1860,91 +1794,91 @@
        "AUDIT_WRITE"
       ],
       "ok": true,
-      "seconds": 6.89,
+      "seconds": 8.217,
       "error": null
      },
      {
       "without": "CHOWN",
       "ok": true,
-      "seconds": 7.155,
+      "seconds": 8.253,
       "error": null
      },
      {
       "without": "DAC_OVERRIDE",
       "ok": false,
-      "seconds": 1.67,
-      "error": "it exited: 2026-11-27 18:52:47+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | find: '/var/lib/mysql-files': Permission denied"
+      "seconds": 2.218,
+      "error": "it exited: 2026-11-27 23:16:45+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | find: '/var/lib/mysql-files': Permission denied"
      },
      {
       "without": "FSETID",
       "ok": true,
-      "seconds": 6.936,
+      "seconds": 8.29,
       "error": null
      },
      {
       "without": "FOWNER",
       "ok": true,
-      "seconds": 6.946,
+      "seconds": 8.5,
       "error": null
      },
      {
       "without": "MKNOD",
       "ok": true,
-      "seconds": 8.373,
+      "seconds": 6.648,
       "error": null
      },
      {
       "without": "NET_RAW",
       "ok": true,
-      "seconds": 7.151,
+      "seconds": 7.595,
       "error": null
      },
      {
       "without": "SETGID",
       "ok": false,
-      "seconds": 1.765,
-      "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 18:53:21+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.naO6EwhW0U | 2026-11-27T18:53:21.585185Z 0 [ERROR] [MY-010126] [Server] setgid: Operation not permitted | 2026-11-27T18:53:21.585964Z 0 [ERROR] [MY-010119] [Server] Aborting"
+      "seconds": 1.57,
+      "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 23:17:21+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.p2MFUfTWJa | 2026-11-27T23:17:21.561743Z 0 [ERROR] [MY-010126] [Server] setgid: Operation not permitted | 2026-11-27T23:17:21.562539Z 0 [ERROR] [MY-010119] [Server] Aborting"
      },
      {
       "without": "SETUID",
       "ok": false,
-      "seconds": 1.686,
-      "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 18:53:23+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.8mSFzKMree | 2026-11-27T18:53:23.817168Z 0 [ERROR] [MY-010127] [Server] setuid: Operation not permitted | 2026-11-27T18:53:23.817974Z 0 [ERROR] [MY-010119] [Server] Aborting"
+      "seconds": 1.703,
+      "error": "it exited: oint]: Entrypoint script for MySQL Server 8.4.13.1-1.el9 started. | 2026-11-27 23:17:23+00:00 [ERROR] [Entrypoint]: mysqld failed while attempting to check config | command was: mysqld --verbose --help --log-bin-index=/tmp/tmp.Zptv5LPVh4 | 2026-11-27T23:17:23.749502Z 0 [ERROR] [MY-010127] [Server] setuid: Operation not permitted | 2026-11-27T23:17:23.750306Z 0 [ERROR] [MY-010119] [Server] Aborting"
      },
      {
       "without": "SETFCAP",
       "ok": true,
-      "seconds": 6.458,
+      "seconds": 6.854,
       "error": null
      },
      {
       "without": "SETPCAP",
       "ok": true,
-      "seconds": 6.442,
+      "seconds": 7.72,
       "error": null
      },
      {
       "without": "NET_BIND_SERVICE",
       "ok": true,
-      "seconds": 6.534,
+      "seconds": 7.714,
       "error": null
      },
      {
       "without": "SYS_CHROOT",
       "ok": true,
-      "seconds": 6.318,
+      "seconds": 6.807,
       "error": null
      },
      {
       "without": "KILL",
       "ok": true,
-      "seconds": 6.271,
+      "seconds": 7.583,
       "error": null
      },
      {
       "without": "AUDIT_WRITE",
       "ok": true,
-      "seconds": 6.434,
+      "seconds": 7.653,
       "error": null
      }
     ]
@@ -1952,32 +1886,32 @@
   },
   {
    "row": "restore:npm",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "prepare": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ; } >&2 || echo 'DAODAN-MISSING node@24.22.3' >&2",
    "script": "set -u\nfor f in '.'; do ( cd \"$f\" && timeout 600 sh -c 'if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi' ) > /tmp/daodan-restore.log 2>&1 || { { printf 'DAODAN-GENERATE-FAILED npm %s\\n' \"$f\"; { grep -E '^npm (error|ERR!)' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-GENERATE-END; } >&2; ( cd \"$f\" && if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci --ignore-scripts --no-audit --no-fund; else npm install --ignore-scripts --no-audit --no-fund; fi ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED npm %s\\n' \"$f\"; { grep -E '^npm (error|ERR!)' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; done; true",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.185,
+     "seconds": 1.557,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.122,
+     "seconds": 0.818,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.108,
+     "seconds": 1.136,
      "error": "DAODAN-GENERATE-FAILED npm . | DAODAN-RESTORE-FAILED npm . | npm error | npm error To permanently fix this problem, please run: | npm error   sudo chown -R 65532:65532 \"/daodan/state/npm-cache\" | npm error Log files were not written due to an error writing to the directory: /daodan/state/npm-cache/_logs | npm error You can rerun the command with `--loglevel=verbose` to see the logs in your terminal | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.077,
+     "seconds": 1.196,
      "error": "DAODAN-GENERATE-FAILED npm . | DAODAN-RESTORE-FAILED npm . | npm error | npm error To permanently fix this problem, please run: | npm error   sudo chown -R 65532:65532 \"/daodan/state/npm-cache\" | npm error Log files were not written due to an error writing to the directory: /daodan/state/npm-cache/_logs | npm error You can rerun the command with `--loglevel=verbose` to see the logs in your terminal | DAODAN-RESTORE-END"
     }
    },
@@ -1985,38 +1919,38 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 0.848,
+    "seconds": 0.973,
     "error": null
    }
   },
   {
    "row": "restore:pnpm",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "prepare": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ; } >&2 || echo 'DAODAN-MISSING node@24.22.3' >&2",
    "script": "set -u\nexport PATH=/daodan/state/tools/corepack/bin:$PATH; [ -x /daodan/state/tools/corepack/bin/corepack ] || { npm install -g --prefix /daodan/state/tools/corepack --engine-strict --no-audit --no-fund --loglevel=error \"corepack@>=0.31.0 <=0.36.0\" >&2 || echo 'DAODAN-MISSING corepack@>=0.31.0' >&2; }; export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1; for f in '.'; do ( cd \"$f\" && timeout 600 sh -c 'corepack pnpm install --no-frozen-lockfile' ) > /tmp/daodan-restore.log 2>&1 || { { printf 'DAODAN-GENERATE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-GENERATE-END; } >&2; ( cd \"$f\" && corepack pnpm install --no-frozen-lockfile --ignore-scripts ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; done; true",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.115,
+     "seconds": 2.007,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.808,
+     "seconds": 2.143,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.901,
+     "seconds": 0.898,
      "error": "DAODAN-MISSING corepack@>=0.31.0 | DAODAN-GENERATE-FAILED pnpm . | DAODAN-RESTORE-FAILED pnpm . |   code: 'EACCES', |   syscall: 'mkdir', |   path: '/daodan/state/home/.cache/node/corepack/v1' | } | Node.js v24.22.3 | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.887,
+     "seconds": 0.877,
      "error": "DAODAN-MISSING corepack@>=0.31.0 | DAODAN-GENERATE-FAILED pnpm . | DAODAN-RESTORE-FAILED pnpm . |   code: 'EACCES', |   syscall: 'mkdir', |   path: '/daodan/state/home/.cache/node/corepack/v1' | } | Node.js v24.22.3 | DAODAN-RESTORE-END"
     }
    },
@@ -2024,38 +1958,38 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 1.894,
+    "seconds": 1.936,
     "error": null
    }
   },
   {
    "row": "restore:yarn",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "prepare": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\n{ tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ; } >&2 || echo 'DAODAN-MISSING node@24.22.3' >&2",
    "script": "set -u\nexport PATH=/daodan/state/tools/corepack/bin:$PATH; [ -x /daodan/state/tools/corepack/bin/corepack ] || { npm install -g --prefix /daodan/state/tools/corepack --engine-strict --no-audit --no-fund --loglevel=error \"corepack@>=0.31.0 <=0.36.0\" >&2 || echo 'DAODAN-MISSING corepack@>=0.31.0' >&2; }; if [ -n \"${HTTPS_PROXY:-}\" ]; then export YARN_HTTPS_PROXY=\"$HTTPS_PROXY\" YARN_HTTP_PROXY=\"$HTTPS_PROXY\"; fi; export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1; for f in '.'; do ( cd \"$f\" && timeout 600 sh -c 'if [ -f .yarnrc.yml ]; then corepack yarn install; else corepack yarn install; fi' ) > /tmp/daodan-restore.log 2>&1 || { { printf 'DAODAN-GENERATE-FAILED yarn %s\\n' \"$f\"; { grep -E '^error|YN0[0-9]+: .*Error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-GENERATE-END; } >&2; ( cd \"$f\" && if [ -f .yarnrc.yml ]; then corepack yarn install --mode=skip-build; else corepack yarn install --ignore-scripts; fi ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED yarn %s\\n' \"$f\"; { grep -E '^error|YN0[0-9]+: .*Error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; done; true",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.381,
+     "seconds": 1.456,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.368,
+     "seconds": 1.325,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.848,
+     "seconds": 0.834,
      "error": "DAODAN-MISSING corepack@>=0.31.0 | DAODAN-GENERATE-FAILED yarn . | DAODAN-RESTORE-FAILED yarn . |   code: 'EACCES', |   syscall: 'mkdir', |   path: '/daodan/state/home/.cache/node/corepack/v1' | } | Node.js v24.22.3 | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.802,
+     "seconds": 0.801,
      "error": "DAODAN-MISSING corepack@>=0.31.0 | DAODAN-GENERATE-FAILED yarn . | DAODAN-RESTORE-FAILED yarn . |   code: 'EACCES', |   syscall: 'mkdir', |   path: '/daodan/state/home/.cache/node/corepack/v1' | } | Node.js v24.22.3 | DAODAN-RESTORE-END"
     }
    },
@@ -2063,7 +1997,7 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 1.336,
+    "seconds": 1.474,
     "error": null
    }
   },
@@ -2076,25 +2010,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.644,
+     "seconds": 0.521,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.574,
+     "seconds": 0.792,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.439,
+     "seconds": 0.428,
      "error": "DAODAN-RESTORE-FAILED uv . | DAODAN-RESTORE-FAILED uv . | error: Failed to initialize cache at `/daodan/state/uv` |   Caused by: failed to open file `/daodan/state/uv/sdists-v9/.git`: Permission denied (os error 13) | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.381,
+     "seconds": 0.428,
      "error": "DAODAN-RESTORE-FAILED uv . | DAODAN-RESTORE-FAILED uv . | error: Failed to initialize cache at `/daodan/state/uv` |   Caused by: failed to open file `/daodan/state/uv/sdists-v9/.git`: Permission denied (os error 13) | DAODAN-RESTORE-END"
     }
    },
@@ -2102,7 +2036,7 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 0.436,
+    "seconds": 0.611,
     "error": null
    }
   },
@@ -2115,25 +2049,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.796,
+     "seconds": 0.961,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.836,
+     "seconds": 0.908,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.52,
+     "seconds": 0.43,
      "error": "DAODAN-RESTORE-FAILED pip . | DAODAN-RESTORE-FAILED pip . | error: Failed to initialize cache at `/daodan/state/uv` |   Caused by: failed to create directory `/daodan/state/uv`: Permission denied (os error 13) | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.382,
+     "seconds": 0.45,
      "error": "DAODAN-RESTORE-FAILED pip . | DAODAN-RESTORE-FAILED pip . | error: Failed to initialize cache at `/daodan/state/uv` |   Caused by: failed to create directory `/daodan/state/uv`: Permission denied (os error 13) | DAODAN-RESTORE-END"
     }
    },
@@ -2141,7 +2075,7 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 0.82,
+    "seconds": 0.987,
     "error": null
    }
   },
@@ -2154,25 +2088,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.502,
+     "seconds": 1.802,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.212,
+     "seconds": 2.161,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 9.358,
+     "seconds": 9.688,
      "error": "DAODAN-RESTORE-FAILED poetry . |     |     - the server is not responding to requests at the moment |     |     - the hostname cannot be resolved by your DNS |     |     - your network is not connected to the internet |     |  |     | You can also run your poetry command with -v to see more information. | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 9.527,
+     "seconds": 9.552,
      "error": "DAODAN-RESTORE-FAILED poetry . |     |     - the server is not responding to requests at the moment |     |     - the hostname cannot be resolved by your DNS |     |     - your network is not connected to the internet |     |  |     | You can also run your poetry command with -v to see more information. | DAODAN-RESTORE-END"
     }
    },
@@ -2180,7 +2114,7 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 1.728,
+    "seconds": 1.938,
     "error": null
    }
   },
@@ -2193,25 +2127,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.877,
+     "seconds": 0.984,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.936,
+     "seconds": 1.049,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.493,
+     "seconds": 0.573,
      "error": "DAODAN-RESTORE-FAILED go . | DAODAN-RESTORE-FAILED go . | go: golang.org/x/text@v0.14.0: verifying go.mod: golang.org/x/text@v0.14.0/go.mod: open /daodan/state/go/pkg/sumdb/sum.golang.org/latest: no such file or directory | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 1.109,
+     "seconds": 0.414,
      "error": "DAODAN-RESTORE-FAILED go . | DAODAN-RESTORE-FAILED go . | go: golang.org/x/text@v0.14.0: verifying go.mod: golang.org/x/text@v0.14.0/go.mod: open /daodan/state/go/pkg/sumdb/sum.golang.org/latest: no such file or directory | DAODAN-RESTORE-END"
     }
    },
@@ -2219,7 +2153,7 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 0.95,
+    "seconds": 1.01,
     "error": null
    }
   },
@@ -2232,25 +2166,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 0.511,
+     "seconds": 0.467,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.134,
+     "seconds": 1.171,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.489,
+     "seconds": 0.424,
      "error": "DAODAN-RESTORE-FAILED cargo . | error: failed to write /work/Cargo.lock | Caused by: |   failed to open: /work/Cargo.lock | Caused by: |   Permission denied (os error 13) | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.562,
+     "seconds": 0.38,
      "error": "DAODAN-RESTORE-FAILED cargo . | error: failed to write /work/Cargo.lock | Caused by: |   failed to open: /work/Cargo.lock | Caused by: |   Permission denied (os error 13) | DAODAN-RESTORE-END"
     }
    },
@@ -2258,7 +2192,7 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 0.492,
+    "seconds": 0.468,
     "error": null
    }
   },
@@ -2271,25 +2205,25 @@
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 2.381,
+     "seconds": 2.297,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 1.949,
+     "seconds": 2.067,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.551,
+     "seconds": 0.518,
      "error": "DAODAN-RESTORE-FAILED dotnet . |    at Microsoft.DotNet.Cli.Utils.FileAccessRetrier.RetryOnIOException(Action action) |    at Microsoft.DotNet.Configurer.DotnetFirstTimeUseConfigurer.Configure() |    at Microsoft.DotNet.Cli.Program.ConfigureDotNetForFirstTimeUse(IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel, IAspNetCertificateSentinel aspNetCertificateSentinel, IFileSentinel toolPathSentinel, Boolean isDotnetBeingInvokedFromNativeInstaller, DotnetFirstRunConfiguration dotnetFirstRunConfiguration, IEnvironmentProvider environmentProvider, Dictionary`2 performanceMeasurements, Boolean skipFirstTimeUseCheck) |    at Microsoft.DotNet.Cli.Program.ProcessArgs(String[] args, TimeSpan startupTime) |    at Microsoft.DotNet.Cli.Program.Main(String[] args) | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.457,
+     "seconds": 0.427,
      "error": "DAODAN-RESTORE-FAILED dotnet . |    at Microsoft.DotNet.Cli.Utils.FileAccessRetrier.RetryOnIOException(Action action) |    at Microsoft.DotNet.Configurer.DotnetFirstTimeUseConfigurer.Configure() |    at Microsoft.DotNet.Cli.Program.ConfigureDotNetForFirstTimeUse(IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel, IAspNetCertificateSentinel aspNetCertificateSentinel, IFileSentinel toolPathSentinel, Boolean isDotnetBeingInvokedFromNativeInstaller, DotnetFirstRunConfiguration dotnetFirstRunConfiguration, IEnvironmentProvider environmentProvider, Dictionary`2 performanceMeasurements, Boolean skipFirstTimeUseCheck) |    at Microsoft.DotNet.Cli.Program.ProcessArgs(String[] args, TimeSpan startupTime) |    at Microsoft.DotNet.Cli.Program.Main(String[] args) | DAODAN-RESTORE-END"
     }
    },
@@ -2297,38 +2231,38 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": true,
     "exit_code": 0,
-    "seconds": 2.485,
+    "seconds": 2.127,
     "error": null
    }
   },
   {
    "row": "restore:maven",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "prepare": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\nif [ ! -x /daodan/state/jdk/bin/java ] && [ -f /daodan/state/in/temurin-17.tar.gz ]; then\n  mkdir -p /daodan/state/jdk && tar -xzf /daodan/state/in/temurin-17.tar.gz -C /daodan/state/jdk --strip-components=1 && rm -f /daodan/state/in/temurin-17.tar.gz\nfi\nmkdir -p /opt/java && ln -sfn /daodan/state/jdk /opt/java/openjdk\n\ncd /daodan/state/tools && jar xf /daodan/state/in/maven.zip && chmod 755 /daodan/state/tools/apache-maven-3.10.0/bin/mvn && ln -sf /daodan/state/tools/apache-maven-3.10.0/bin/mvn /daodan/state/tools/bin/mvn",
    "script": "set -u\nif [ ! -x /daodan/state/jdk/bin/java ] && [ -f /daodan/state/in/temurin-17.tar.gz ]; then\n  mkdir -p /daodan/state/jdk && tar -xzf /daodan/state/in/temurin-17.tar.gz -C /daodan/state/jdk --strip-components=1 && rm -f /daodan/state/in/temurin-17.tar.gz\nfi\nmkdir -p /opt/java && ln -sfn /daodan/state/jdk /opt/java/openjdk\n\nif [ -n \"${HTTPS_PROXY:-}\" ]; then a=${HTTPS_PROXY#*://}; a=${a%%/*}; h=${a%:*}; p=${a##*:}; export JAVA_TOOL_OPTIONS=\"${JAVA_TOOL_OPTIONS:-} -Duser.home=$HOME -Dhttps.proxyHost=$h -Dhttps.proxyPort=$p -Dhttp.proxyHost=$h -Dhttp.proxyPort=$p\"; mkdir -p \"$HOME/.m2\"; printf \"%s\\n\" \"<settings><proxies>\" \"<proxy><id>https</id><protocol>https</protocol><host>$h</host><port>$p</port></proxy>\" \"<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>\" \"</proxies></settings>\" > \"$HOME/.m2/settings.xml\"; fi; for f in '.'; do ( cd \"$f\" && mvn -B -q org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED maven %s\\n' \"$f\"; { grep -E '^\\[ERROR\\]' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 7.476,
+     "seconds": 7.111,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 8.06,
+     "seconds": 7.594,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.423,
+     "seconds": 0.595,
      "error": "DAODAN-RESTORE-FAILED maven . | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-RESTORE-FAILED maven . | The JAVA_HOME environment variable is not defined correctly, | this environment variable is needed to run this program. | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.38,
+     "seconds": 0.322,
      "error": "DAODAN-RESTORE-FAILED maven . | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-RESTORE-FAILED maven . | The JAVA_HOME environment variable is not defined correctly, | this environment variable is needed to run this program. | DAODAN-RESTORE-END"
     }
    },
@@ -2336,38 +2270,38 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": false,
     "exit_code": 0,
-    "seconds": 0.326,
+    "seconds": 0.366,
     "error": "DAODAN-RESTORE-FAILED maven . | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-RESTORE-FAILED maven . | The JAVA_HOME environment variable is not defined correctly, | this environment variable is needed to run this program. | DAODAN-RESTORE-END"
    }
   },
   {
    "row": "restore:gradle",
-   "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+   "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
    "prepare": "set -u; mkdir -p /daodan/state/tools/bin \"$HOME\" /daodan/state/venvs\nif [ ! -x /daodan/state/jdk/bin/java ] && [ -f /daodan/state/in/temurin-17.tar.gz ]; then\n  mkdir -p /daodan/state/jdk && tar -xzf /daodan/state/in/temurin-17.tar.gz -C /daodan/state/jdk --strip-components=1 && rm -f /daodan/state/in/temurin-17.tar.gz\nfi\nmkdir -p /opt/java && ln -sfn /daodan/state/jdk /opt/java/openjdk\n\ncd /daodan/state/tools && jar xf /daodan/state/in/gradle.zip && chmod 755 /daodan/state/tools/gradle-9.9.1/bin/gradle && ln -sf /daodan/state/tools/gradle-9.9.1/bin/gradle /daodan/state/tools/bin/gradle",
    "script": "set -u\nif [ ! -x /daodan/state/jdk/bin/java ] && [ -f /daodan/state/in/temurin-17.tar.gz ]; then\n  mkdir -p /daodan/state/jdk && tar -xzf /daodan/state/in/temurin-17.tar.gz -C /daodan/state/jdk --strip-components=1 && rm -f /daodan/state/in/temurin-17.tar.gz\nfi\nmkdir -p /opt/java && ln -sfn /daodan/state/jdk /opt/java/openjdk\n\nif [ -n \"${HTTPS_PROXY:-}\" ]; then a=${HTTPS_PROXY#*://}; a=${a%%/*}; h=${a%:*}; p=${a##*:}; export JAVA_TOOL_OPTIONS=\"${JAVA_TOOL_OPTIONS:-} -Duser.home=$HOME -Dhttps.proxyHost=$h -Dhttps.proxyPort=$p -Dhttp.proxyHost=$h -Dhttp.proxyPort=$p\"; mkdir -p \"$HOME/.m2\"; printf \"%s\\n\" \"<settings><proxies>\" \"<proxy><id>https</id><protocol>https</protocol><host>$h</host><port>$p</port></proxy>\" \"<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>\" \"</proxies></settings>\" > \"$HOME/.m2/settings.xml\"; fi; for f in '.'; do ( cd \"$f\" && gradle --no-daemon --console=plain -q dependencies ) > /tmp/daodan-restore.log 2>&1 && ! grep -Eq ' FAILED$' /tmp/daodan-restore.log || { printf 'DAODAN-RESTORE-FAILED gradle %s\\n' \"$f\"; { grep -E ' FAILED$|What went wrong|Could not ' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
    "variants": {
     "oggi": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 5.038,
+     "seconds": 5.686,
      "error": null
     },
     "cap-drop": {
      "ok": true,
      "exit_code": 0,
-     "seconds": 5.094,
+     "seconds": 5.781,
      "error": null
     },
     "user": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.323,
+     "seconds": 0.317,
      "error": "DAODAN-RESTORE-FAILED gradle . | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-RESTORE-FAILED gradle . | ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH. | Please set the JAVA_HOME variable in your environment to match the | location of your Java installation. | DAODAN-RESTORE-END"
     },
     "entrambi": {
      "ok": false,
      "exit_code": 0,
-     "seconds": 0.428,
+     "seconds": 0.372,
      "error": "DAODAN-RESTORE-FAILED gradle . | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-RESTORE-FAILED gradle . | ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH. | Please set the JAVA_HOME variable in your environment to match the | location of your Java installation. | DAODAN-RESTORE-END"
     }
    },
@@ -2375,7 +2309,7 @@
     "as": "65532, --cap-drop ALL, volumes owned by 65532",
     "ok": false,
     "exit_code": 0,
-    "seconds": 0.324,
+    "seconds": 0.319,
     "error": "DAODAN-RESTORE-FAILED gradle . | mkdir: cannot create directory '/opt/java': Permission denied | DAODAN-RESTORE-FAILED gradle . | ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH. | Please set the JAVA_HOME variable in your environment to match the | location of your Java installation. | DAODAN-RESTORE-END"
    }
   }

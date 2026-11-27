@@ -117,6 +117,8 @@ PROXY_VARIABLES = ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "FTP_PROXY", "ALL_PR
                    "http_proxy", "https_proxy", "no_proxy", "ftp_proxy", "all_proxy")
 PROXY_IMAGE = "python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e"
 PROXY_PORT = 3128
+NOBODY = "65532:65532"  # the user and group a container of Daodan's own code runs as: no account of any image
+UNPRIVILEGED = ("--cap-drop", "ALL", "--user", NOBODY, "--security-opt", "no-new-privileges")  # Daodan's containers
 # The preparation's network: no way out (`--internal`), no IPv6, and, where the engine has the option (Docker Engine
 # 28.0, API 1.48), no address of the host on its bridge, so the network's gateway is no way to the host's listeners
 # (`benchmarks/egress`). An older engine gets the network without it, and the run says so (`GATEWAY_OPEN`).
@@ -897,10 +899,10 @@ def dotenv_values(run: Callable, copy: Path, files: list[str], token: str,
     answer."""
     box = f"daodan-dotenv-{token}"
     try:
-        checked(run("create", "--name", box, "--network", "none", "--memory", str(64 * 2**20), "--pids-limit", "16",
-                    "--security-opt", "no-new-privileges", "-e", f"DAODAN_PUBLIC={PUBLIC_SECONDS}", "-w", WORKDIR,
+        checked(run("create", "--name", box, *UNPRIVILEGED, "--network", "none", "--memory", str(64 * 2**20),
+                    "--pids-limit", "16", "-e", f"DAODAN_PUBLIC={PUBLIC_SECONDS}", "-w", WORKDIR,
                     PROXY_IMAGE, "python3", "-c", RESOLVE, *files), "create of the reader of the .env files")
-        with bound(copy, [[rel, f"{WORKDIR}/{rel}"] for rel in (*files, *tracked)]) as handle:
+        with bound(copy, [[rel, f"{WORKDIR}/{rel}"] for rel in (*files, *tracked)], readable=True) as handle:
             checked(run("cp", "-", f"{box}:/", stdin=handle), "cp of the .env files")
         said = run("start", "-a", box, timeout=PUBLIC_SECONDS + 120)
     finally:
@@ -1317,7 +1319,7 @@ def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, .
                                                        *answers["allow"]])
                        if egress.decide(host, project, state, answers) == "allow")
     source = base64.b64encode(PROXY_SCRIPT.encode("utf-8")).decode("ascii")
-    checked(cli(engine, "create", "--name", box, "--memory", str(128 * 2**20), "--pids-limit", "64",
+    checked(cli(engine, "create", "--name", box, *UNPRIVILEGED, "--memory", str(128 * 2**20), "--pids-limit", "64",
                 PROXY_IMAGE, "python", "-c", f"import base64;exec(base64.b64decode('{source}'))",
                 str(PROXY_PORT), *registries), "create of the proxy")
     checked(cli(engine, "network", "connect", "--alias", "proxy", network, box), "network connect of the proxy")
@@ -1421,7 +1423,8 @@ def leaves(run: Callable, network: str, token: str) -> str | None:
     the tests; otherwise the engine's answer (Kiri 0.2.0 refuses: crates/kiri/src/daemon/engine.rs:2357)."""
     box = f"daodan-probe-{token}"
     try:
-        checked(run("create", "--name", box, "--network", network, PROXY_IMAGE, "true"), "create of the probe")
+        checked(run("create", "--name", box, *UNPRIVILEGED, "--network", network, PROXY_IMAGE, "true"),
+                "create of the probe")
         answer = run("network", "disconnect", network, box)
         said = (answer.stderr or answer.stdout or b"").decode("utf-8", "replace").strip()
         return None if answer.returncode == 0 else said[-300:] or f"code {answer.returncode}"
@@ -1473,17 +1476,18 @@ def reached(run: Callable, network: str, ports: list[str]) -> bool:
     """Whether each of `ports` accepts a connection at the localhost of `network`, asked from a container of the
     pod's own image in it, as GitLab's runner asks from a container beside the service."""
     try:
-        return run("run", "--rm", "--network", network, "--memory", str(64 * 2**20), "--pids-limit", "16",
-                   "--security-opt", "no-new-privileges", PROXY_IMAGE, "python3", "-c", REACH, *ports,
+        return run("run", "--rm", *UNPRIVILEGED, "--network", network, "--memory", str(64 * 2**20), "--pids-limit",
+                   "16", PROXY_IMAGE, "python3", "-c", REACH, *ports,
                    timeout=60).returncode == 0
     except subprocess.TimeoutExpired:
         return False
 
 
-def bound(copy: Path, files: list[list[str]]):
+def bound(copy: Path, files: list[list[str]], readable: bool = False):
     """A tar of the project's files a service's bind mounts name (`files`, each `[source in the project, target]`),
     from the copy's `work/` (`copy_perimeter`), each at its target: an empty folder for a source the copy does not
-    hold, as the engine makes one for a bind mount's missing source."""
+    hold, as the engine makes one for a bind mount's missing source. `readable`: each readable by any user, for a
+    container of Daodan's (`NOBODY`), where the engine's `cp` makes them root's."""
     out = tempfile.TemporaryFile()
     with tarfile.open(copy) as source, tarfile.open(fileobj=out, mode="w") as target:
         members = source.getmembers()
@@ -1494,7 +1498,8 @@ def bound(copy: Path, files: list[list[str]]):
             held = [one] if one is not None and not one.isdir() else [
                 member for member in members if member.name == prefix or member.name.startswith(prefix + "/")]
             for member in held:
-                target.addfile(member.replace(name=root + member.name[len(prefix):], deep=False),
+                mode = member.mode | (0o555 if member.isdir() else 0o444) if readable else member.mode
+                target.addfile(member.replace(name=root + member.name[len(prefix):], mode=mode, deep=False),
                                source.extractfile(member) if member.isfile() else None)
             if not held:
                 folder = tarfile.TarInfo(root)
@@ -1643,8 +1648,8 @@ def start_pod(engine: Engine, services: list[dict], network: str, token: str, se
     hosts = sorted({f"--add-host={name}:127.0.0.1" for s in services
                     for name in (s.get("host"), *s.get("aliases", ())) if name not in (None, "localhost")})
     try:
-        checked(cli(engine, "create", "--name", pod, "--network", network, *hosts, "--memory", str(64 * 2**20),
-                    "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(seconds) + 600)), "create of the pod")
+        checked(cli(engine, "create", "--name", pod, *UNPRIVILEGED, "--network", network, *hosts, "--memory",
+                    str(64 * 2**20), "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(seconds) + 600)), "create of the pod")
         checked(cli(engine, "start", pod), "start of the pod")
         return pod, None
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:

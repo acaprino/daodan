@@ -10,13 +10,16 @@ and `container.start_services`, with the flags of a variant put after `create`: 
 `--user 65532:65532`, both. Then the decided target: a recipe as root without `/work` and with `--cap-drop ALL` plus
 the least capabilities it needs (from Docker's default set, dropped one at a time while it still succeeds); a restore
 as `65532` with `--cap-drop ALL` on volumes owned by `65532`; a service as root with the least capabilities. The
-network is the engine's bridge: the proxy is `modal_probe.py`'s subject. Writes `results/hardening.json`.
+network is the engine's bridge: the proxy is `modal_probe.py`'s subject. The `daodan:` rows run Daodan's own
+containers as its code makes them (`container.UNPRIVILEGED`, `T3.A.6a`): the proxy opening a registry, the reader of
+the `.env` files, the probe of `leaves`, the pod and `reached`. Writes `results/hardening.json`.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import subprocess
+import time
 import sys
 import threading
 import urllib.request
@@ -220,11 +223,82 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
         row["target"] = {"as": "root, --cap-drop ALL + least", **least(lambda caps: trial_flags(adds(caps)))}
         return row
 
+    def erun(*args, timeout=300, stdin=None):
+        return original(engine, *args, timeout=timeout, stdin=stdin)
+
+    def said(answer) -> str:
+        return (answer.stdout + answer.stderr).decode("utf-8", "replace").strip()[-600:]
+
+    def own(name: str, body) -> dict:
+        """A container of Daodan's own code, as `container` makes it: ok, or the error."""
+        try:
+            error = body()
+        except Exception as failure:  # noqa: BLE001 - the row says why
+            error = f"{type(failure).__name__}: {failure}"
+        return {"row": f"daodan:{name}", "variants": {},
+                "target": {"as": " ".join(container.UNPRIVILEGED), "ok": error is None, "error": error}}
+
+    def proxy() -> str | None:
+        token = uuid.uuid4().hex[:12]
+        network, box = f"daodan-net-{token}", f"daodan-proxy-{token}"
+        container.internal_network(engine, network)
+        try:
+            container.start_proxy(engine, box, network, ("registry.npmjs.org",), "hardening")
+            user = said(erun("inspect", "--format", "{{.Config.User}} {{.HostConfig.CapDrop}}", box))
+            ask = ("import socket; s = socket.create_connection(('proxy', 3128), 10); "
+                   "s.sendall(b'CONNECT registry.npmjs.org:443 HTTP/1.1\\r\\n\\r\\n'); print(s.recv(64))")
+            answer = erun("run", "--rm", "--network", network, container.PROXY_IMAGE, "python3", "-c", ask)
+            return None if b" 200 " in answer.stdout and user.startswith("65532:65532") else f"{user} | {said(answer)}"
+        finally:
+            erun("rm", "-f", box)
+            erun("network", "rm", network)
+
+    def dotenv() -> str | None:
+        project = runs / "projects" / "dotenv"
+        project.mkdir(parents=True)
+        (project / ".env").write_text("KEY=value\n", encoding="utf-8")
+        (project / ".env").chmod(0o600)  # the user's own: read by 65532 all the same (`bound`, readable)
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "p"]):
+            subprocess.run(command, cwd=project, check=True)
+        tar = runs / "copies" / "dotenv.tar"
+        tar.parent.mkdir(parents=True, exist_ok=True)
+        container.copy_perimeter(project, tar)
+        values, _public = container.dotenv_values(erun, tar, [".env"], uuid.uuid4().hex[:12])
+        return None if values == {".env": {"KEY": "value"}} else f"values {values}"
+
+    def probe() -> str | None:
+        network = f"daodan-net-{uuid.uuid4().hex[:12]}"
+        container.internal_network(engine, network)
+        try:
+            return container.leaves(erun, network, uuid.uuid4().hex[:12])
+        finally:
+            erun("network", "rm", network)
+
+    def pod() -> str | None:
+        token, cleanup = uuid.uuid4().hex[:12], []
+        try:
+            made, failure = container.start_pod(engine, [], "bridge", token, 120, cleanup)
+            if not made:
+                return f"pod: {failure}"
+            cleanup.insert(0, ("rm", "-f", f"daodan-listen-{token}"))
+            erun("run", "-d", "--name", f"daodan-listen-{token}", "--network", f"container:{made}",
+                 container.PROXY_IMAGE, "python3", "-m", "http.server", "8080")
+            for _ in range(30):
+                if container.reached(erun, f"container:{made}", ["8080"]):
+                    return None
+                time.sleep(1)
+            return "reached: port 8080 accepted no connection in 30 s"
+        finally:
+            for args in cleanup:
+                erun(*args)
+
     setup = preparation.setup
     jdk = (*preparation.TEMURIN, preparation.JDK_IN.rsplit("/", 1)[1])
     java = "[ -x /opt/java/openjdk/bin/java ] || echo 'DAODAN-MISSING jdk' >&2"
     mise = preparation.toolchains([{"tool": "node", "version": "22.12.0"}])
-    jobs = [lambda: copy_row()]
+    jobs = [lambda: copy_row(), lambda: own("proxy", proxy), lambda: own("dotenv", dotenv),
+            lambda: own("leaves", probe), lambda: own("pod+reached", pod)]
     for name, base in (("node", preparation.IMAGE), ("uv", preparation.IMAGE), ("go", BUILDPACK), ("rust", BUILDPACK),
                        ("arm-none-eabi", BUILDPACK)):
         jobs.append(lambda name=name, base=base: recipe(name, base, setup([name])["files"], setup([name])["lines"]))
