@@ -564,6 +564,11 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`). The hosts its runs ask for are
     the indexer's (`egress.asking`), asked under the project's name, its store's root, whatever folder the snapshot
     targets (`egress.within`).
+
+    Before an indexer that builds in a container starts, every host the project declares (`preparation.declared`)
+    passes `egress.preflight`, whichever of them the indexer would reach: one nobody decided stops the stage with
+    `approval_required`, so a declared host blocks every container indexer until the user answers. Wanted (plan
+    `T0.C.6`): which hosts a build reaches is known only once it runs.
     """
     import egress
     with egress.asking(spec.name), egress.within(egress.project_of(manifest)):
