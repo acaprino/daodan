@@ -14,21 +14,11 @@ MEASURES = ("frameworks_by_name", "services")
 MOTIVO_A = "Lo stack senza le dichiarazioni della pre-mappa (T1.B.7), accettato dal proprietario il 27 novembre 2026 fino al rilascio .6 del fork (benchmarks/stack-build-tools/README.md)"
 MOTIVO_B = "Fuori dalle 88 di T1.B.1: viene da .github/ o da una dichiarazione che lo stack non vede più; accettato dal proprietario il 27 novembre 2026 finché il perimetro non legge .github/"
 ACCEPTED: dict[tuple[str, str, str], str] = {
-    ("jvm-gradle-computed-deps", "frameworks_by_name", "jackson"): MOTIVO_A,
-    ("jvm-sbt-two-subprojects", "frameworks_by_name", "cats"): MOTIVO_A,
-    ("jvm-sbt-two-subprojects", "frameworks_by_name", "scalatest"): MOTIVO_A,
     ("mix-real-klaxon", "frameworks_by_name", "testng"): MOTIVO_A,
-    ("real-app-jhipster-sample", "services", "postgresql"): MOTIVO_A,
-    ("real-app-jhipster-sample", "services", "h2"): MOTIVO_A,
     ("real-app-kotlinconf", "services", "githubpages"): MOTIVO_B,
-    ("real-stack-bakerydemo", "frameworks_by_name", "django"): MOTIVO_A,
-    ("real-stack-bakerydemo", "frameworks_by_name", "wagtail"): MOTIVO_A,
-    ("real-stack-bakerydemo", "services", "elasticsearch"): MOTIVO_A,
     ("real-stack-documenso", "services", "gotenberg"): MOTIVO_A,
     ("real-stack-docuseal", "services", "redis"): MOTIVO_A,
     ("real-stack-peopleinspace", "frameworks_by_name", "kotlintest"): MOTIVO_B,
-    ("real-svc-eshop", "frameworks_by_name", "mstest"): MOTIVO_A,
-    ("real-svc-otel-demo", "services", "prometheus"): MOTIVO_A,
 }
 # Aggiunte il 26 novembre 2026: non hanno un «prima».
 WITHOUT_BEFORE = frozenset({"real-auth0-go", "real-bank-of-anthos", "real-microblog", "real-next-subscriptions",
