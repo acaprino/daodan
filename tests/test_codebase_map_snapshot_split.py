@@ -99,10 +99,12 @@ class SnapshotSplitTests(unittest.TestCase):
         import file_inventory
         root = self.base / "tree"
         root.mkdir()
-        for name in ("app.rb", "lib.rb", "index.php", "main.py", "data.xyzzy", "Dockerfile"):
+        for name in ("app.rb", "lib.rb", "index.php", "main.py", "data.xyzzy", "Dockerfile", "docs/guide.txt"):
+            (root / name).parent.mkdir(exist_ok=True)
             (root / name).write_text("x = 1\n", encoding="utf-8")
         inventory = self.base / "inventory.sqlite"
         header = file_inventory.write(root, inventory)
+        self.assertEqual(header["excluded"], [{"path": "docs/", "why": "documentation"}])  # Linguist's `^[Dd]ocs?/`
         with snapshot_store.open_snapshot(inventory) as store:
             rows = dict(store.iter_inventory())
         self.assertNotIn("app.rb", rows)
@@ -115,6 +117,7 @@ class SnapshotSplitTests(unittest.TestCase):
         snapshot.write_reading(inventory, split)
         with snapshot_store.open_snapshot(split) as store:
             self.assertEqual(store.get("unread"), header["unread"], "the snapshot keeps what the inventory counted")
+            self.assertEqual(store.get("excluded"), header["excluded"], "and what it left out")
 
     def test_a_file_changed_between_the_two_writes_is_recorded_as_read(self):
         import file_inventory

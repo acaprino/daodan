@@ -276,7 +276,7 @@ def _reusable(old, path: Path, raw_hash: str, macro_key: str | None = None, *, l
 
 
 _RESERVED_METADATA = {"schema", "target", "root", "created_at", "git", "scope", "parser_fingerprint",
-                      "metrics", "files", "file_count", "format", "reading", "unread"}
+                      "metrics", "files", "file_count", "format", "reading", "unread", "excluded", "excluded_unknown"}
 
 
 NO_PARSE_NODE = "no parse node in the plan"  # why a file is read as file-level (`_SnapshotPass.unplanned`)
@@ -535,6 +535,7 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
                             {path for path, row in rows.items() if planning.node_of(row) not in parse})
         scope = listed.metadata["scope"]
         unread = listed.metadata.get("unread") or {}
+        left_out = {key: listed.metadata[key] for key in ("excluded", "excluded_unknown") if key in listed.metadata}
     try:
         with SnapshotWriter(temporary, format) as writer:
             run.writer = writer
@@ -550,7 +551,7 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
                 **extra_metadata,
                 "schema": SCHEMA, "target": target_key, "root": root.as_posix(),
                 "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "git": git_info(root), "scope": scope, "unread": unread,
+                "git": git_info(root), "scope": scope, "unread": unread, **left_out,
                 "parser_fingerprint": fingerprint, "metrics": metrics,
             }
             run.seal(metadata_record, perimeter)

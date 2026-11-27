@@ -11,7 +11,8 @@ that list it; an empty list is a format Linguist does not know. It names no lang
 the two (`languages[*].linguist`), and `check` says where they disagree. An extension is compared in lower case, as
 the snapshot reads a suffix. For the files Daodan does not read it holds the rest of Linguist's extensions and file
 names (`unread_extensions`, `unread_filenames`) and the `type` of every language (`types`), so a file nothing reads
-still has a name and a type.
+still has a name and a type. From the same gem, `vendor.yml` and `documentation.yml`: the expressions Linguist
+matches a path against to call a file vendored or documentation (`vendor`, `documentation`), which `list_files` reads.
 
     python format_catalog.py build [--gem FILE]     # FILE: the gem already fetched; else it is downloaded
     python format_catalog.py check
@@ -22,6 +23,7 @@ import argparse
 import hashlib
 import io
 import json
+import re
 import sys
 import tarfile
 import tempfile
@@ -39,19 +41,22 @@ PACKAGE, VERSION = "github-linguist", "9.7.0"
 URL = f"https://rubygems.org/downloads/{PACKAGE}-{VERSION}.gem"
 SHA256 = "39a5e077e946029ef0ddbdc1344a53802455f4920f8c758d2a6b114d963d7734"
 MEMBER = "lib/linguist/languages.yml"
+PATHS = {"vendor": "lib/linguist/vendor.yml", "documentation": "lib/linguist/documentation.yml"}  # lists of expressions
 TABLES = ("extensions", "filenames", "unread_extensions", "unread_filenames", "types")
 KINDS = ("SOURCES", "DOCUMENTS", "PRESENTATION", "STACK_SOURCES")  # the register's lists of extensions
 
 
-def linguist_languages(gem: Path) -> dict:
-    """`languages.yml` of a Linguist gem, read from the archive without unpacking it."""
+def linguist_data(gem: Path) -> tuple[dict, dict]:
+    """`languages.yml` of a Linguist gem and its path expressions (`PATHS`), read from the archive without unpacking
+    it."""
     import yaml
     if hashlib.sha256(gem.read_bytes()).hexdigest() != SHA256:
         raise ValueError(f"{gem.name} is not {PACKAGE} {VERSION}: its sha256 differs")
     with tarfile.open(gem) as outer:
         data = outer.extractfile("data.tar.gz").read()
     with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as inner:
-        return yaml.safe_load(inner.extractfile(MEMBER).read())
+        return (yaml.safe_load(inner.extractfile(MEMBER).read()),
+                {name: yaml.safe_load(inner.extractfile(member).read()) for name, member in PATHS.items()})
 
 
 def accepted() -> tuple[set[str], set[str]]:
@@ -59,9 +64,9 @@ def accepted() -> tuple[set[str], set[str]]:
     return {extension for kind in KINDS for extension in getattr(file_formats, kind)}, set(file_formats.MANIFESTS)
 
 
-def catalog(languages: dict) -> dict:
-    """The catalogue of Daodan's accepted formats, from Linguist's languages, then the rest of Linguist's formats and
-    the type of every language."""
+def catalog(languages: dict, paths: dict) -> dict:
+    """The catalogue of Daodan's accepted formats, from Linguist's languages, then the rest of Linguist's formats, the
+    type of every language and Linguist's path expressions (`paths`, by `PATHS`)."""
     extensions, filenames = ({name: set() for name in names} for names in accepted())
     unread_extensions, unread_filenames = {}, {}
     for language, entry in languages.items():
@@ -77,7 +82,8 @@ def catalog(languages: dict) -> dict:
             "filenames": {name: sorted(found) for name, found in sorted(filenames.items())},
             "unread_extensions": {name: sorted(found) for name, found in sorted(unread_extensions.items())},
             "unread_filenames": {name: sorted(found) for name, found in sorted(unread_filenames.items())},
-            "types": {name: entry.get("type") for name, entry in sorted(languages.items())}}
+            "types": {name: entry.get("type") for name, entry in sorted(languages.items())},
+            **{name: list(paths.get(name) or ()) for name in PATHS}}
 
 
 def text(value: dict) -> str:
@@ -85,8 +91,11 @@ def text(value: dict) -> str:
     def table(rows: dict) -> str:
         return "{\n" + ",\n".join(f"  {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}"
                                   for k, v in rows.items()) + "\n }"
+    def rows(items: list) -> str:
+        return "[\n" + ",\n".join(f"  {json.dumps(item, ensure_ascii=False)}" for item in items) + "\n ]"
     return ("{\n" + f' "schema": {json.dumps(value["schema"])},\n "source": {json.dumps(value["source"])},\n'
-            + ",\n".join(f' "{name}": {table(value[name])}' for name in TABLES) + "\n}\n")
+            + ",\n".join([*(f' "{name}": {table(value[name])}' for name in TABLES),
+                           *(f' "{name}": {rows(value[name])}' for name in PATHS)]) + "\n}\n")
 
 
 def check(value: object | None = None) -> list[str]:
@@ -119,6 +128,16 @@ def check(value: object | None = None) -> list[str]:
             for language in names:
                 if language not in types:
                     problems.append(f"{name}: {key} names {language}, which has no type in `types`")
+    for name in PATHS:  # Linguist's expressions are Onigmo's; each is read with `re`, so each must compile there
+        expressions = value.get(name)
+        if not isinstance(expressions, list) or not expressions:
+            problems.append(f"{name}: no expressions; run `format_catalog.py build`")
+            continue
+        for expression in expressions:
+            try:
+                re.compile(expression)
+            except (re.error, TypeError) as error:
+                problems.append(f"{name}: {expression!r} does not compile with `re` ({error})")
     for name in ("extensions", "filenames"):
         for key in sorted(set(value.get(name) or ()) & set(value.get("unread_" + name) or ())):
             problems.append(f"unread_{name}: {key} is also in {name}")
@@ -146,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
             if gem is None:
                 import engine_tools
                 gem = engine_tools.download(URL, Path(folder) / "linguist.gem", sha256=SHA256)
-            PATH.write_text(text(catalog(linguist_languages(gem))), encoding="utf-8", newline="\n")
+            PATH.write_text(text(catalog(*linguist_data(gem))), encoding="utf-8", newline="\n")
     problems = check()
     print("\n".join(problems) or f"{PATH.name}: holds", file=sys.stderr if problems else sys.stdout)
     return 1 if problems else 0

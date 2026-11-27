@@ -109,7 +109,6 @@ def tree(decl: dict) -> dict:
     row("s1", "p1", "sql.oracle-words", "data/language-rules.toml", "regola", "host", "Confronto letterale sul testo", "Un .sql con parole solo di Oracle è PL/SQL.", langs=["sql", "plsql"])
     row("s1", "p1", "sql.anchored-type", "languages/detect/rules/sql_rowtype.py", "regola", "host", "Classe con un'espressione regolare", "%TYPE e %ROWTYPE dopo un nome: PL/SQL.", langs=["sql", "plsql"])
     row("s1", "p1", "h.syntax-tree", "languages/detect/rules/header.py", "regola", "host", "Albero sintattico C/C++ (tree-sitter); regex per Objective-C", "Un .h è C, C++ oppure Objective-C (che non si legge).", langs=["c", "cpp"])
-    row("s3", "p1", "go-enry", "premap/enry.py", "comando", "container", "go-enry, il port in Go di Linguist", "Linguaggio di ogni file e file generati, di terze parti o di documentazione. Oggi è solo un'etichetta: la lettura non lo usa.", all=True, status="posto nel piano da decidere", declared="go-enry")
 
     # 2 lettura del codice
     READ = {"python": ("ast della libreria standard di Python", "Classi, funzioni, import e chiamate."),
@@ -253,7 +252,7 @@ def tree(decl: dict) -> dict:
     ALWAYS = "sempre"
     WHEN = {"perimetro": ALWAYS, "anagrafica dei formati": ALWAYS, "segreti": "per ogni file", "ts.xml-document": "per ogni file .ts",
             "sql.oracle-words": "per ogni file .sql, .ddl, .dml", "sql.anchored-type": "per ogni file .sql, .ddl, .dml", "h.syntax-tree": "per ogni file .h",
-            "go-enry": "sempre, se c'è il container", "Python più nuovo": "se un .py non si legge con il Python di Daodan", "collegamenti lessicali": ALWAYS,
+            "Python più nuovo": "se un .py non si legge con il Python di Daodan", "collegamenti lessicali": ALWAYS,
             "lettori dei manifest": "per ogni manifest nell'elenco dei file", "python-build": "se c'è una configurazione di build Python",
             "requirements": "se c'è un file requirements", "python-tests": "se c'è pyproject.toml, tox.ini, setup.cfg o un Makefile", "uv": "se c'è uv.lock",
             "npm-files": "se c'è package.json", "npm-tests": "se c'è package.json", "npm-start": "se c'è package.json", "npm": "se c'è package.json",

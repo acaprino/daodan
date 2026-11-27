@@ -92,7 +92,7 @@ Un'analisi avviene in tre tempi. I percorsi sono sotto `daodan/core/`.
 Parole usate qui:
 
 - **Store:** il file dello snapshot, `manifest.sqlite`. **Store di solo inventario:** ha l'elenco dei file, non ancora i simboli.
-- **Comandi di modello:** i programmi a cui `scan` chiede com'è fatto il progetto: gli strumenti di build, go-enry, Renovate, Noir, le sorgenti dei framework. Girano nel container.
+- **Comandi di modello:** i programmi a cui `scan` chiede com'è fatto il progetto: gli strumenti di build, Renovate, Noir, le sorgenti dei framework. Girano nel container.
 - **Passaggio:** il processo staccato che esegue gli step dopo quelli in primo piano. **Stage:** un analyzer sulle sue unità, dentro `analyze`.
 - **Lacuna:** ciò che non si è potuto fare, scritto nel risultato con la causa.
 
@@ -159,7 +159,7 @@ Note sugli step:
 
 - La lettura non percorre l'albero e non sceglie il linguaggio: prende file e linguaggio dall'inventario.
 - `read_project` mette l'inventario in un file di appoggio accanto allo store e lo cancella alla fine. Pubblica solo la lettura. Una scrittura fallita lascia lo store di prima.
-- Il linguaggio lo decide l'inventario con `languages.detect_language`: l'estensione, più espressioni regolari sul contenuto per `.h`, `.ts` e `.sql`. Non lo chiede ancora a go-enry.
+- Il linguaggio lo decide l'inventario con `languages.detect_language`: l'estensione, più espressioni regolari sul contenuto per `.h`, `.ts` e `.sql`.
 - La lettura non esclude nulla: i file che la pre-mappa mette in `excluded` (generati, di terze parti, documentazione) si leggono come gli altri. `excluded` è solo un'etichetta, usata da chi la legge dalla pre-mappa.
 
 #### Le due impronte
@@ -215,7 +215,7 @@ Dove sta oggi ognuno degli otto id (corrispondenza del punto 15 di `T1`):
 | Archi fra moduli e legame degli ingressi dentro `connect` | Da fare: oggi li fa il primo lettore | Passo 5; 8.2 |
 | I file che la pre-mappa esclude non si leggono (il pezzo E1 della spec) | Tolto: deciso il 24 novembre | Passo 5, pezzo E1 |
 | I chiamanti passano da `read_project` a inventario e poi pipeline | Fermo: non cambia nulla per il prodotto | 8.3 |
-| Il linguaggio da una libreria nostra, con il catalogo di Linguist | In parte: anagrafica, catalogo di Linguist e modulo (`languages/detect/`) con le regole di `.ts` e `.sql`. Da fare: i `.h` nel modulo con l'albero sintattico, il riconoscimento per nome di file. go-enry non si usa per questo | 8.3 |
+| Il linguaggio da una libreria nostra, con il catalogo di Linguist | In parte: anagrafica, catalogo di Linguist e modulo (`languages/detect/`) con le regole di `.ts` e `.sql`. Da fare: i `.h` nel modulo con l'albero sintattico, il riconoscimento per nome di file. | 8.3 |
 | Radici e alias degli import da `tsc` | Fermo: sui 25 progetti veri 0 import guadagnati e 110 persi. Oggi la lettura a mano (`import_resolution.py`) | Passo 5, pezzo F |
 | I nomi nuovi di step, eventi e cartelle (`parsers/`, `scanners/`, `resolvers/`, `observers/`) | Da fare. Fatto solo `NAME`, in `indexers/` e `dynamic/` | Passo 6 |
 | Le prove 2 e 5: le due modalità danno lo stesso grafo; un ripiego è dichiarato | Da fare | 8.10 |
@@ -415,7 +415,7 @@ Niente di ciò che il fork incontra ferma lo step: diventa un controllore `faile
 | | Scansione veloce | Scansione completa |
 | --- | --- | --- |
 | Chi la avvia | Ogni modifica (hook `PostToolUse`) e `MapService.create_run`, sotto `project_lock` (`Context.fast_scan`) | Il passaggio staccato (`resolve_edges.py --pass`) e `snapshot.py write` |
-| Fonti della pre-mappa | Solo i lettori; le fonti con comandi sono `not_run` | I lettori e i comandi di modello nel container (Renovate, Compose, i build tool, go-enry) |
+| Fonti della pre-mappa | Solo i lettori; le fonti con comandi sono `not_run` | I lettori e i comandi di modello nel container (Renovate, Compose, i build tool) |
 | Fonti che sostituiscono i loro segni | `stack-analyser`, `registry_hosts`, i lettori | In più le fonti con comandi che hanno girato |
 | Che cosa conserva | I segni delle fonti con comandi | I segni delle fonti che questa volta non hanno girato |
 | Da quale record parte | Quello della completa, copiato nel run di lavoro quando questo nasce (`snapshot._refresh_locked`) | Quello accanto al manifest (`technologies.recorded`) |

@@ -162,6 +162,42 @@ def repo_root(target: Path) -> Path:
     return work_tree(base) or base
 
 
+def _git(git: str, at: Path, *args: str, given: bytes | None = None) -> bytes | None:
+    """The output of Daodan's own `git` (no fsmonitor, no hooks: `GIT_OPTIONS`) in `at`; None when it does not answer."""
+    try:
+        proc = subprocess.run([git, *GIT_OPTIONS, "-C", str(at), *args], input=given, capture_output=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return proc.stdout if proc.returncode == 0 else None
+
+
+NO_ATTRIBUTES = "no Git work tree holds the project: its .gitattributes are not read"
+
+
+def git_attributes(root: Path, paths: list[str], names) -> tuple[dict[str, dict[str, str]], str | None]:
+    """
+    The value of each attribute of `names` that `.gitattributes` gives each of
+    `paths` (relative to `root`), as `git check-attr` reads them: it reads the
+    attributes and runs nothing (`GIT_OPTIONS` keeps fsmonitor and hooks off).
+    `unspecified` is left out. With why Git did not say, when a `.gitattributes`
+    is among the paths and no work tree holds the root or Git did not answer.
+    """
+    git = git_executable()
+    top = work_tree(root) if git is not None else None
+    declared = any(PurePath(rel).name == ".gitattributes" for rel in paths)
+    if top is None:
+        return {}, NO_ATTRIBUTES if declared else None
+    said = _git(git, root, "check-attr", "--stdin", "-z", *names, given=b"".join(p.encode() + b"\0" for p in paths))
+    if said is None:
+        return {}, "git check-attr did not answer" if declared else None
+    found: dict[str, dict[str, str]] = {}
+    fields = said.split(b"\0")
+    for path, name, value in zip(fields[0::3], fields[1::3], fields[2::3]):
+        if value != b"unspecified":
+            found.setdefault(path.decode(), {})[name.decode()] = value.decode()
+    return found, None
+
+
 FILTERED = "the checkout declares a Git filter, which Daodan does not run on the host"
 UNASKED = "Git did not say which filters the checkout declares"
 
@@ -184,13 +220,7 @@ def git_info(root: Path) -> dict | None:
         return None
 
     def run(*args: str, at: Path = root, given: bytes | None = None) -> bytes | None:
-        try:
-            proc = subprocess.run(
-                [git, *GIT_OPTIONS, "-C", str(at), *args], input=given, capture_output=True, timeout=10
-            )
-        except (OSError, subprocess.SubprocessError):
-            return None
-        return proc.stdout if proc.returncode == 0 else None
+        return _git(git, at, *args, given=given)
 
     commit = (run("rev-parse", "HEAD") or b"").decode().strip()
     if not commit:

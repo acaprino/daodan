@@ -8,24 +8,6 @@
  "runs": [
   {
    "command": {
-    "tool": "daodan-enry",
-    "argv": [
-     "daodan-enry",
-     "."
-    ],
-    "cwd": ".",
-    "env": {},
-    "network": "none"
-   },
-   "result": {
-    "returncode": 0,
-    "stdout": "[{\"path\":\"_examples/use/go.mod\",\"language\":\"Go Module\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"_examples/use/use.go\",\"language\":\"Go\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"app.go\",\"language\":\"Go\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"go.mod\",\"language\":\"Go Module\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false}]\n",
-    "stderr": "",
-    "root": "/work/go_published"
-   }
-  },
-  {
-   "command": {
     "tool": "renovate",
     "argv": [
      "renovate",

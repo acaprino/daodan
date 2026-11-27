@@ -275,7 +275,7 @@ def test_a_failed_setup_fails_the_source(tmp_path, no_download):
 
 def test_every_model_source_of_the_premap_has_a_setup():
     tools = {"go": premap.go, "cargo": premap.cargo, "uv": premap.uv, "tsc": premap.tsc, "npm": premap.npm,
-             "renovate": premap.renovate, "compose": premap.compose, "daodan-enry": premap.enry,
+             "renovate": premap.renovate, "compose": premap.compose,
              "daodan-dockerfile": premap.dockerfile, "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
              "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs,
@@ -296,7 +296,7 @@ CASES = {  # tool -> (corpus fixture, or the folder of one, the source), one pro
     "go": ("sys-go-buildtags", premap.go), "cargo": ("sys-rust-features", premap.cargo),
     "uv": ("py-uv-workspace", premap.uv), "tsc": ("js-vite-react-ts", premap.tsc),
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
-    "daodan-enry": ("js-vendored-generated", premap.enry), "cmake": ("sys-cmake-targets", premap.cmake),
+    "cmake": ("sys-cmake-targets", premap.cmake),
     "meson": ("sys-meson", premap.meson), "bazel": ("sys-bazel", premap.bazel),
     "make": ("sys-make-plain", premap.make), "gradle": ("jvm-gradle-groovy-wrapper", premap.gradle),
     "maven": ("jvm-maven-multi-bom-profile", premap.maven), "sbt": ("jvm-sbt-two-subprojects", premap.sbt),

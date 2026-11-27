@@ -6,7 +6,7 @@ analyzers use): those whose `network` is `registries` in the preparation, behind
 package registries (`container.REGISTRIES`) and the hosts a tool names in `TOOLS` (Bazel's) that the user approved
 (`egress`), the others with no network. Before them, one setup command unpacks into `STATE/tools` the files the tool needs (`TOOLS`): each is
 downloaded once on the host into Daodan's shared directory and checked by sha256, then carried into the container;
-a setup that installs a package from a registry (TypeScript, Renovate, go-enry) runs in the preparation. A tool
+a setup that installs a package from a registry (TypeScript, Renovate) runs in the preparation. A tool
 that reads what the project's packages hold (`restores`: tsc, whose tsconfigs extend installed and generated
 files; next, whose command is one of them) has them restored by the setup, the project's own way
 (`preparation.node_prepare`); a restore or a generation that fails, and a package folder no restore installs, is a
@@ -58,9 +58,6 @@ def _jar(name: str, folder: str, program: str) -> str:
             f" && ln -sf {T}/{folder}/bin/{program} {T}/bin/{program}")
 
 
-ENRY = (f"mkdir -p {STATE}/enry && cp {IN}/enry_facts.go {STATE}/enry/main.go && cd {STATE}/enry"
-        " && go mod init daodan-enry && GOFLAGS=-mod=mod go get github.com/go-enry/go-enry/v2@v2.9.6"
-        f" && CGO_ENABLED=0 GOFLAGS=-mod=mod go build -o {T}/bin/daodan-enry .")
 DOCKERFILE = (f"mkdir -p {STATE}/dockerfile && cp {IN}/dockerfile_stages.go {STATE}/dockerfile/main.go"
               f" && cd {STATE}/dockerfile && go mod init daodan-dockerfile"
               f" && GOFLAGS=-mod=mod go get github.com/moby/buildkit@{dockerfile.VERSION}"
@@ -68,7 +65,6 @@ DOCKERFILE = (f"mkdir -p {STATE}/dockerfile && cp {IN}/dockerfile_stages.go {STA
 TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the registries, extra hosts, memory GB
     "noir": {"files": [noir.DOWNLOAD], "setup": [f"install -m 755 {IN}/noir {T}/bin/noir"]},
     "go": {"files": [GO], "setup": [UNPACK["go"]], "runs_on": ("go",)},
-    "daodan-enry": {"files": [GO, (None, None, "enry_facts.go")], "setup": [UNPACK["go"], ENRY], "registries": True},
     # `values`: the true values of the tracked .env files beside the copy (`container.run_commands`), which Daodan's
     # helper alone reads, for Compose: it builds Daodan's own Go and runs BuildKit's parser and Compose's `config`,
     # no code of the project (D-311)
@@ -164,7 +160,7 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
 
 
 def fetched(url: str | None, sha256: str | None, name: str) -> Path:
-    """`preparation.fetched`; `enry_facts.go` and `dockerfile_stages.go` (no URL) are Daodan's own, beside this
+    """`preparation.fetched`; `dockerfile_stages.go` (no URL) is Daodan's own, beside this
     module."""
     return Path(__file__).with_name(name) if url is None else preparation.fetched(url, sha256, name)
 

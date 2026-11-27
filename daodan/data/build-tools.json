@@ -3,10 +3,12 @@
   "golang": ["go"],
   "gradle": ["gradle"],
   "maven": ["maven"],
+  "nodejs": ["npm", "npm-files", "npm-tests", "npm-start"],
   "npm": ["npm"],
   "pip": ["requirements"],
   "pnpm": ["npm"],
   "poetry": ["python-build"],
+  "python": ["uv", "requirements", "python-build", "python-tests"],
   "typescript": ["tsc"],
   "uv": ["uv"],
   "yarn": ["npm"]

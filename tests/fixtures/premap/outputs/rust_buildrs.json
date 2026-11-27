@@ -8,24 +8,6 @@
  "runs": [
   {
    "command": {
-    "tool": "daodan-enry",
-    "argv": [
-     "daodan-enry",
-     "."
-    ],
-    "cwd": ".",
-    "env": {},
-    "network": "none"
-   },
-   "result": {
-    "returncode": 0,
-    "stdout": "[{\"path\":\"Cargo.lock\",\"language\":\"TOML\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":true,\"binary\":false},{\"path\":\"Cargo.toml\",\"language\":\"TOML\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"flags/Cargo.toml\",\"language\":\"TOML\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"flags/build.rs\",\"language\":\"Rust\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"flags/src/lib.rs\",\"language\":\"Rust\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"gen/Cargo.toml\",\"language\":\"TOML\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"gen/build.rs\",\"language\":\"Rust\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"gen/src/lib.rs\",\"language\":\"Rust\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false}]\n",
-    "stderr": "",
-    "root": "/work/rust_buildrs"
-   }
-  },
-  {
-   "command": {
     "tool": "renovate",
     "argv": [
      "renovate",

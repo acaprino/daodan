@@ -8,24 +8,6 @@
  "runs": [
   {
    "command": {
-    "tool": "daodan-enry",
-    "argv": [
-     "daodan-enry",
-     "."
-    ],
-    "cwd": ".",
-    "env": {},
-    "network": "none"
-   },
-   "result": {
-    "returncode": 0,
-    "stdout": "[{\"path\":\"package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"src/lib.ts\",\"language\":\"TypeScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"src/main.ts\",\"language\":\"TypeScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"tools/tsconfig.json\",\"language\":\"JSON with Comments\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"tsconfig.app.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"tsconfig.json\",\"language\":\"JSON with Comments\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"tsconfig.node.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"vite.config.ts\",\"language\":\"TypeScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false}]\n",
-    "stderr": "",
-    "root": "/work/tsc_alias"
-   }
-  },
-  {
-   "command": {
     "tool": "renovate",
     "argv": [
      "renovate",

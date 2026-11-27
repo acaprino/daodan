@@ -60,7 +60,7 @@ Nel giro senza analizzatore: plsql (1 caso, 1 file), sql (7 casi, 51 file).
 
 ## Build tool e toolchain
 
-La pre-mappa ha 35 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
+La pre-mappa ha 34 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
 
 ### Fonti della pre-mappa
 
@@ -79,7 +79,6 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `project-files` | daodan/premap/v2 | lettore: legge i file | `premap/project_files.py` | not_needed 115, ran 7 |
 | `gitmodules` | daodan/premap/v1 | lettore: legge i file | `premap/gitmodules.py` | not_needed 120, ran 2 |
 | `autotools` | daodan/premap/v1 | lettore: legge i file | `premap/autotools.py` | non misurato: non era nel giro |
-| `go-enry` | v2.9.6 | scanner: legge ogni file | `premap/enry.py` | ran 122 |
 | `renovate` | 44.239.1 | lettore: legge i file | `premap/renovate.py` | ran 122 |
 | `compose` | 5.6.1 | modello: il comando del build tool, nel container | `premap/compose.py` | non misurato: non era nel giro |
 | `buildkit` | v0.34.2 | modello: il comando del build tool, nel container | `premap/dockerfile.py` | non misurato: non era nel giro |

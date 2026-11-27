@@ -38,7 +38,7 @@ import module_derive  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
-from premap import (angular, astro, autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
+from premap import (angular, astro, autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, gitmodules, go, gradle,  # noqa: E402
                     jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_start, npm_tests, nuxt, project_files,
                     python_build, python_tests, react_router, renovate, requirements, sbt, suffix_table, sveltekit, tsc, uv)
 
@@ -46,8 +46,9 @@ SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
+LISTED = "list_files"  # the source of the files the snapshot's header leaves out (`file_inventory.excluded`)
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, npm_start, jvm_files, project_files,
-           gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
+           gitmodules, autotools, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
            gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, angular, astro)
 # Each build tool the stack names (a registry id of `category` `tool`) -> the `NAME`s of the sources that model it
 # (`daodan/data/build-tools.json`); its coherence with the registry and `SOURCES` is a test of the pre-map.
@@ -64,7 +65,6 @@ TEMPLATE_SOURCES = (angular, astro)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "noir_entries": (),  # individual observations from a single scanner
     "framework_entries": (),  # individual observations of a framework's own tool (`next`, `react-router`, `angular`)
-    "languages": (("language",),),
     "excluded": (("path",),),
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),
     "workspace": (("root", "tool"),),  # two build systems in one folder are two workspaces
@@ -258,22 +258,16 @@ def indexed_by() -> dict[str, frozenset]:
             for analyzer in _analyzers() if analyzer.UNIT_KINDS for language in analyzer.LANGUAGES}
 
 
-def _unlisted(record: dict, unread: dict) -> list[dict]:
-    """Each programming language go-enry counts that no analyzer lists: its code is in no graph. A language whose
-    type the answer does not give is no gap: the type is go-enry's, never guessed. Nor is one whose every file is a
-    build definition (`build`, `enry.build_definition`): what it declares is the pre-map's own facts. The snapshot
-    counts the files it does not read by Linguist's name and type (`unread`, from the names alone), and a
-    programming language among them is the same gap, where go-enry did not count it already; a suffix several
-    languages list (`candidates`) is a gap when all are programming and none is listed, as the files may be any of
-    them."""
+def _unlisted(unread: dict) -> list[dict]:
+    """Each programming language among the files the snapshot does not read, counted by Linguist's name and type
+    (`unread`, from the names alone), that no analyzer lists: its code is in no graph. A suffix several languages list
+    (`candidates`) is a gap when all are programming and none is listed, as the files may be any of them."""
     listed = {name for analyzer in _analyzers() for language in analyzer.LANGUAGES
               for name in (suffix_table.NAMES.get(language, language), *ALSO.get(language, ()))}
-    counted = [item for item in record.get("languages", [])
-               if item.get("type") == "programming" and not item.get("build") and item["language"] not in listed]
-    seen = {item["language"] for item in record.get("languages", [])}
+    counted = []
     for name, item in sorted(unread.items()):
         names = item.get("candidates") or [name]
-        if item["type"] == "programming" and not seen & set(names) and not listed & set(names):
+        if item["type"] == "programming" and not listed & set(names):
             counted.append({"language": " / ".join(names), "files": item["files"]})
     return [{"kind": "no_analyzer", "language": item["language"], "files": item["files"], "source": RULE,
              "detail": f"{item['files']} {item['language']} files and no analyzer lists the language: their code is "
@@ -378,7 +372,8 @@ def binding_matches(manifest: Path, binding: dict) -> bool:
         return True
     with open_snapshot(manifest) as store:
         return inventory_digest(store) == binding.get("inventory_digest") and store["root"] == binding["root"] \
-            and (store.get("unread") or {}) == binding.get("unread")
+            and (store.get("unread") or {}) == binding.get("unread") \
+            and (store.get("excluded") or []) == binding.get("excluded")
 
 
 def _inputs(digest, root, sources) -> str:
@@ -480,10 +475,15 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
         if part:
             parts.append(part)
         gaps.extend(found)
+    listed = store.get("excluded") or []
+    if listed:  # the files the snapshot leaves out are the pre-map's, joined with the submodules (`gitmodules`)
+        parts.append({"source": LISTED, "rank": "reader", "facts": {"excluded": listed}})
+    if store.get("excluded_unknown"):
+        gaps.append({"kind": "attributes_unread", "path": ".", "detail": store["excluded_unknown"], "source": LISTED})
     digest = inventory_digest(store)
     record = {"schema": SCHEMA,
               "binding": {"manifest": str(Path(manifest).resolve()), "inventory_digest": digest,
-                          "root": store["root"], "unread": store.get("unread") or {}},
+                          "root": store["root"], "unread": store.get("unread") or {}, "excluded": listed},
               "inputs_digest": _inputs(digest, store["root"], sources), "sources": statuses, **join(parts)}
     if any(p["ecosystem"] == "pypi" for p in record.get("packages", ())):
         record["packages"] = module_graph.external_packages(context.graph, record["packages"])
@@ -493,7 +493,7 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
         unit.setdefault("depends_on", [])
     record["units"].sort(key=lambda u: (u["root"], u["kind"], u.get("name") or ""))
     record["gaps"] = (gaps + _run_facts(record, context) + _coverage(record, context)
-                      + _unlisted(record, store.get("unread") or {}))
+                      + _unlisted(store.get("unread") or {}))
     return record
 
 
