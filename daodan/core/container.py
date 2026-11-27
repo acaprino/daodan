@@ -1273,11 +1273,12 @@ def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, .
     """The proxy of a preparation, open to the `registries` that `egress.decide` allows the project (`str(project)`):
     any other host is refused, and what it was asked is in the proxy's log (`PROXY_SCRIPT`), where the host reads it
     as a request or a `host_denied` gap. The hosts the user approved for the project, always or for this analysis,
-    are open too: the run that asked for one, run again after the answer, reaches it."""
+    are open too: the run that asked for one, run again after the answer, reaches it. Every host the proxy gets is one
+    `egress.decide` allows: a blocked host is never open, whatever list holds it."""
     state, answers = egress.load(), egress.session(project)
-    registries = tuple(dict.fromkeys([*(host for host in registries
-                                        if egress.decide(host, project, state, answers) == "allow"),
-                                      *state["whitelist"].get(project, ()), *answers["allow"]]))
+    registries = tuple(host for host in dict.fromkeys([*registries, *state["whitelist"].get(project, ()),
+                                                       *answers["allow"]])
+                       if egress.decide(host, project, state, answers) == "allow")
     source = base64.b64encode(PROXY_SCRIPT.encode("utf-8")).decode("ascii")
     checked(cli(engine, "create", "--name", box, "--memory", str(128 * 2**20), "--pids-limit", "64",
                 PROXY_IMAGE, "python", "-c", f"import base64;exec(base64.b64decode('{source}'))",

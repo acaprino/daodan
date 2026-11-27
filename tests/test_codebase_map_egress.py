@@ -73,6 +73,14 @@ def test_block_refuses_everywhere_even_a_canonical_or_an_approved_host():
         assert egress.decide(host, "/work/other", state, egress.new_session()) == "deny"
 
 
+def test_block_takes_the_host_out_of_the_whitelists_and_the_analysis_allowed_hosts():
+    state, session = egress.answer(egress.load(), egress.new_session(), "x.example.com", PROJECT, "always")
+    state, session = egress.answer(state, session, "x.example.com", "/work/other", "always")
+    state, session = egress.answer(state, session, "x.example.com", PROJECT, "once")
+    state, session = egress.answer(state, session, "x.example.com", PROJECT, "block")
+    assert state["whitelist"] == {PROJECT: [], "/work/other": []} and session["allow"] == []
+
+
 def test_answer_changes_nothing_it_was_given_and_refuses_an_unknown_reply():
     state, session = egress.load(), egress.new_session()
     egress.answer(state, session, "x.example.com", PROJECT, "always")

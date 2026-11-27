@@ -218,8 +218,10 @@ def answer(state: dict, session: dict, host: str, project: str, reply: str) -> t
         allow = sorted({*allow, host})
     elif reply == "no":
         allow, deny = [name for name in allow if name != host], sorted({*deny, host})
-    else:
+    else:  # blocked: out of every list that would open it
         blacklist = sorted({*blacklist, host})
+        whitelist = {name: [h for h in hosts if h != host] for name, hosts in whitelist.items()}
+        allow = [name for name in allow if name != host]
     return {"whitelist": whitelist, "blacklist": blacklist}, {"allow": allow, "deny": deny}
 
 
