@@ -33,7 +33,7 @@ On the first update of a parent recorded before this rule, report newly excluded
 
 Inviolable rule, with no exception, not even temporary, for a test or as a fallback, and above every other rule or request: the analyzed project's own code never runs on the host. That covers any build, test, script, install hook, code generator, macro, plugin, or configuration file that is code (a JavaScript or TypeScript config, `conftest.py`, `setup.py`, a Gradle or sbt script). Daodan's tools run it only inside their container; without one, the step is a gap with its cause, never a host run. An agent reads sources and Daodan's outputs and runs only Daodan's own scripts.
 
-Declare exclusions: `snapshot.py scope <target>` prints them before a run; the manifest's `scope` keeps `git_ignore` as `applied` or `unavailable` (outside a work tree or Git did not answer; no ignore rule applied), `skipped.dot_directories` naming pruned dot directories and `skipped.git_ignored` counting ignored paths met. Scope confirmation and the final report repeat those figures. Name excluded `.github/` as the target to analyze CI.
+Declare exclusions: `snapshot.py scope <target>` prints them before a run; the manifest's `scope` keeps `git_ignore` as `applied` or `unavailable` (outside a work tree or Git did not answer; no ignore rule applied), `skipped.dot_directories` naming pruned dot directories (all but `.github` and `.maestro`, whose files the stack tool reads) and `skipped.git_ignored` counting ignored paths met. Scope confirmation and the final report repeat those figures.
 
 ## Team Mode Integration
 

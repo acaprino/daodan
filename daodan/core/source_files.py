@@ -133,7 +133,7 @@ def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Pat
 
     Which directories are descended into is the perimeter's rule, in
     tree_scope.py, and not this function's: nothing Git ignores, no directory
-    whose name starts with a dot, no dependency or build output. Pass a
+    whose name starts with a dot but those the stack tool reads, no dependency or build output. Pass a
     perimeter to read back afterwards what the walk left out.
     """
     for path in iter_walked(target, perimeter):

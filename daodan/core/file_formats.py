@@ -37,5 +37,9 @@ MAKEFILES = re.compile(_register["makefiles"])  # a file name has no grammar: a 
 BUILD_FOLDERS = frozenset(_register["build_folders"])
 # Never descended into, never opened.
 DEPENDENCY_DIRECTORIES = frozenset(_register["dependency_directories"])
+# The dot directories the walk enters: the ones whose files stack-analyser reads (its `IGNORED_DIVE_PATHS` keeps
+# `.github` "to detect github actions"; its `githubActions` and `maestro` readers open `.github/workflows/*.yml` and
+# `.maestro/**/*.yml`). Every other dot directory (`.git`, caches, environments, tools' output) stays out.
+READ_DOT_DIRECTORIES = frozenset(_register["read_dot_directories"])
 FORBIDDEN = tuple(_register["forbidden"])
 SECRET_NAMES = tuple(_register["secret_names"])

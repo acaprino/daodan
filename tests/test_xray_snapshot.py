@@ -558,7 +558,8 @@ class PresentationInventoryTests(unittest.TestCase):
 class PerimeterTests(unittest.TestCase):
     """
     What the Codebase Map never analyzes: what Git ignores, and every directory whose
-    name starts with a dot, below the target. The motivating case: a lifecycle
+    name starts with a dot, below the target, but the ones whose files the stack tool
+    reads (`.github`, `.maestro`). The motivating case: a lifecycle
     campaign wrote its run records under `.daodan/` and its review under
     `.team-review/`, the next snapshot counted them as project files, and an
     incremental update of an untouched project asked for a full analysis.
@@ -587,9 +588,18 @@ class PerimeterTests(unittest.TestCase):
     def test_a_dot_directory_below_the_target_never_enters_the_manifest(self):
         write(self.project, ".daodan/runs/r1/work.json", "{}\n")
         write(self.project, ".team-review/00-scope.md", "# Scope\n")
-        write(self.project, ".github/workflows/ci.yml", "on: push\n")
+        write(self.project, ".vscode/settings.json", "{}\n")
         write(self.project, "src/.cache/stale.py", "def stale():\n    return 0\n")
         self.assertEqual(sorted(self.manifest()["files"]), ["src/app.py"])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_the_dot_directories_the_stack_tool_reads_enter_the_manifest_and_git_s_store_does_not(self):
+        git(self.project, "init", "-q")
+        write(self.project, ".github/workflows/ci.yml", "on: push\n")
+        write(self.project, ".maestro/smoke.yaml", "appId: app\n")
+        manifest = self.manifest()
+        self.assertEqual(sorted(manifest["files"]), [".github/workflows/ci.yml", ".maestro/smoke.yaml", "src/app.py"])
+        self.assertEqual(manifest["scope"]["skipped"]["dot_directories"], [])  # `.git` is not named back
 
     def test_a_dot_file_beside_analyzed_source_is_still_recorded(self):
         write(self.project, ".eslintrc.json", "{}\n")
@@ -775,10 +785,10 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(manifest["scope"]["git_ignore"], "applied")
 
     def test_the_manifest_names_the_dot_directories_it_skipped(self):
-        write(self.project, ".github/workflows/ci.yml", "on: push\n")
+        write(self.project, ".vscode/settings.json", "{}\n")
         write(self.project, "src/.cache/stale.py", "def stale():\n    return 0\n")
         skipped = self.manifest()["scope"]["skipped"]
-        self.assertEqual(skipped["dot_directories"], [".github", "src/.cache"])
+        self.assertEqual(skipped["dot_directories"], [".vscode", "src/.cache"])
 
     def link(self, rel: str, to, directory: bool = False) -> None:
         path = self.project / rel
@@ -855,7 +865,7 @@ class PerimeterTests(unittest.TestCase):
     def test_the_scope_command_counts_the_perimeter_without_writing_a_manifest(self):
         write(self.project, "README.md", "# Project\n")
         write(self.project, "web/index.html", "<div></div>\n")
-        write(self.project, ".github/workflows/ci.yml", "on: push\n")
+        write(self.project, ".vscode/settings.json", "{}\n")
         code, out, err = run_script("scope", self.project, env=self.env)
         self.assertEqual(code, 0, err)
         report = json.loads(out)
@@ -865,7 +875,7 @@ class PerimeterTests(unittest.TestCase):
             {"parsed_source": 1, "configuration_and_documentation": 1, "presentation": 1},
         )
         self.assertEqual(report["languages"], {"python": 1})
-        self.assertEqual(report["scope"]["skipped"]["dot_directories"], [".github"])
+        self.assertEqual(report["scope"]["skipped"]["dot_directories"], [".vscode"])
         self.assertEqual(report["scope"], self.manifest()["scope"])
 
 

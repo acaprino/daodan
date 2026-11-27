@@ -26,7 +26,7 @@ from snapshot_store import SnapshotWriter, _plain
 import format_catalog
 from source_files import (git_attributes, git_info, is_inventory_path, iter_walked, MAX_FILE_BYTES, relative_to_root,
                           repo_root, scope_record)
-from tree_scope import Perimeter
+from tree_scope import READ_DOT_DIRECTORIES, Perimeter
 
 SCHEMA = 1  # the only header schema `SnapshotWriter.finish` accepts
 WHY = ("vendored", "generated", "documentation")  # the first that holds is the file's reason
@@ -38,9 +38,14 @@ EXPRESSIONS = {"vendored": "vendor", "documentation": "documentation"}  # the ca
 @functools.cache
 def _expressions() -> dict[str, re.Pattern]:
     """Linguist's expressions of each reason, joined as Linguist joins them (`Regexp.union`). A path is text with no
-    grammar, so an expression is allowed on it (`AGENTS.md`); `format_catalog.check` proves each compiles with `re`."""
+    grammar, so an expression is allowed on it (`AGENTS.md`); `format_catalog.check` proves each compiles with `re`.
+    An expression that holds for a dot directory the perimeter enters (`READ_DOT_DIRECTORIES`) is left out: Linguist's
+    `(^|/)\.github/` keeps CI configuration out of its language statistics, and that configuration is the project's own,
+    the stack tool's evidence (`.gitattributes` still decides)."""
     catalogue = json.loads(format_catalog.PATH.read_text(encoding="utf-8"))
-    return {why: re.compile("|".join(catalogue[table])) for why, table in EXPRESSIONS.items()}
+    return {why: re.compile("|".join(expression for expression in catalogue[table]
+                                     if not any(re.search(expression, name + "/") for name in READ_DOT_DIRECTORIES)))
+            for why, table in EXPRESSIONS.items()}
 
 
 def _holds(why: str, rel: str, value: str | None) -> bool:

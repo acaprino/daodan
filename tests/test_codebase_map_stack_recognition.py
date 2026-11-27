@@ -499,6 +499,38 @@ def test_the_files_come_from_the_inventory_not_from_the_parse_table(tmp_path, st
     assert [s["value"] for s in by_id["stripe"]["signs"]] == ["api.stripe.com"]  # the host mention is read
 
 
+WORKFLOW = ".github/workflows/x.yml"
+PAGES = ("on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n"
+         "      - uses: actions/deploy-pages@v4\n")
+
+
+def test_a_ci_workflow_reaches_the_stack_and_git_s_store_stays_out(tmp_path, monkeypatch):
+    """`.github` is in the perimeter (`file_formats.READ_DOT_DIRECTORIES`) and not left out by Linguist's vendor expression
+    for it; `.git` is skipped by name and its files are no evidence."""
+    manifest = inventory_of(tmp_path, {"README.md": "# app\n", WORKFLOW: PAGES})
+    with open_snapshot(manifest) as store:
+        assert WORKFLOW in dict(store.iter_inventory())
+        assert store["excluded"] == [{"path": "README.md", "why": "documentation"}]  # the workflow is not vendored
+    started = []
+    monkeypatch.setattr(stack_analyser, "run", lambda project, **kwargs: started.append(kwargs) or component(
+        evidence("github.pages", "action", "actions/deploy-pages", "/" + WORKFLOW),
+        evidence("github", "file", "config", "/.git/config")))
+    answer = stack_recognition.run(manifest, registry({"id": "github.pages", "name": "GitHub Pages"}))
+    [kwargs] = started
+    assert ".git" in kwargs["skip_dirs"] and ".github" not in kwargs["skip_dirs"] + kwargs["ignore"]
+    assert [(e["id"], [s["path"] for s in e["signs"]]) for e in answer["found"]] == [("github.pages", [WORKFLOW])]
+    assert {"kind": "evidence_outside_snapshot", "count": 1, "paths": [".git/config"]} in answer["gaps"]
+
+
+def test_the_real_tool_finds_the_technology_a_ci_workflow_declares(real_stack, tmp_path):
+    """The loss of `real-app-kotlinconf` (`benchmarks/stack-build-tools`): GitHub Pages, declared only by a workflow."""
+    answer = recognized(tmp_path, {"README.md": "# app\n", WORKFLOW: PAGES})
+    by_id = {e["id"]: e for e in answer["found"]}
+    assert WORKFLOW in {s["path"] for s in by_id["github.pages"]["signs"]}
+    assert WORKFLOW in {s["path"] for s in by_id["github.actions"]["signs"]}
+    assert not any(s["path"].startswith(".git/") for e in answer["found"] for s in e["signs"])
+
+
 def test_every_link_is_in_the_perimeter_by_its_path_even_to_a_file(tmp_path, started):
     manifest = snapshot_of(tmp_path, {"web/a.ts": "export {}\n", "private/.env": "KEY=1\n"})
     os.symlink("private/.env", tmp_path / "app/package.json")  # a link to a file, its name is no live folder's
