@@ -1,12 +1,16 @@
 """The ways out of a preparation, tried on a real container behind Daodan's own proxy (`T0.C.8`).
 
-    modal run benchmarks/egress/modal_probe.py
+    modal run benchmarks/egress/modal_probe.py                      # PROXY_SCRIPT: results/<date>.json
+    modal run benchmarks/egress/modal_probe.py --proxy script       # T3.A.2: results/proxy-script.json
+    modal run benchmarks/egress/modal_probe.py --proxy smokescreen  # T3.A.2: results/proxy-smokescreen.json
 
 Two canaries on Modal, reachable from the Internet over HTTPS through Modal's tunnels, log every request they get:
 `allowed` (the host the user approves) answers 301/302 to `/r301` and `/r302` toward the `to` it is given, `outside`
 is never approved. In a VM Sandbox with Docker's daemon (as `benchmarks/project-model/modal_engine.py`), `driver.py`
 runs `rows.py` as the preparation of a project through `container.run_in_container`: Daodan's `--internal` network,
-its `start_proxy` with `PROXY_SCRIPT`, its `egress` state. A row is as expected when its way out is `blocked` and has
+its `start_proxy` with `PROXY_SCRIPT` (or Smokescreen in its place, `--proxy smokescreen`), its `egress` state; the
+`control-` rows (a registry, the approved canary, git from the Debian archive) are as expected when `reached`, the
+`measure-` row (the proxy's start, memory, image) when measured. Any other row is as expected when its way out is `blocked` and has
 left no mark: no request on a canary for its path, no connection to the VM's listeners, no query with the run's token
 on the wire outside the host's own lookup of refused names (`egress.resolve`, on the VM's `eth0`). The approval rows
 check the result's `gaps` and the pending requests. Writes `results/<date>.json` and exits 1 on any unexpected row.
@@ -68,7 +72,8 @@ def judge(result: dict, hits: list[str]) -> list[dict]:
     """One line a row: expected and measured outcome, the marks it left, and whether it is as expected."""
     lines, wire = [], result["dns_wire"]
     for row in result["ways"]["rows"]:
-        expected = "reached" if row["row"].startswith("control-") else "blocked"
+        expected = ("reached" if row["row"].startswith("control-") else "measured" if row["row"].startswith("measure-")
+                    else "blocked")
         lines.append({**row, "expected": expected, "ok": row["outcome"] == expected})
     # Marks: any query with the run's token but the host's own lookup of the refused name (`egress.resolve`)
     host_lookup = [line for line in wire if "refused-" in line and not line.startswith(BRIDGES)]
@@ -103,7 +108,9 @@ def judge(result: dict, hits: list[str]) -> list[dict]:
 
 
 @app.local_entrypoint()
-def main():
+def main(proxy: str = ""):
+    if proxy not in ("", "script", "smokescreen"):
+        raise SystemExit("--proxy is script or smokescreen")
     boxes = modal.App.lookup("daodan-egress-probe-boxes", create_if_missing=True)
     canary = modal.Sandbox.create("python3", "-u", "-c", CANARY, image=canary_image, app=boxes, timeout=3600,
                                   encrypted_ports=[8001, 8002])
@@ -119,8 +126,8 @@ def main():
             if box.exec("/opt/docker/docker", "info", timeout=30).wait() == 0:
                 break
             time.sleep(1)
-        process = box.exec("python", "/daodan/egress/driver.py", json.dumps({"allowed": allowed, "outside": outside}),
-                           timeout=3300)
+        given = {"allowed": allowed, "outside": outside, "proxy": proxy or "script"}
+        process = box.exec("python", "/daodan/egress/driver.py", json.dumps(given), timeout=3300)
         for line in process.stdout:
             print(line.rstrip()[:400], flush=True)
         print("driver exit", process.wait(), process.stderr.read()[-3000:], flush=True)
@@ -138,7 +145,7 @@ def main():
     lines = judge(result, hits)
     for line in lines:
         print(json.dumps(line, default=str)[:600])
-    out = HERE / "results" / f"{date.today().isoformat()}.json"
+    out = HERE / "results" / (f"proxy-{proxy}.json" if proxy else f"{date.today().isoformat()}.json")
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps({"rows": lines, "canary_hits": hits, "driver": result}, indent=1, default=str) + "\n",
                    encoding="utf-8")

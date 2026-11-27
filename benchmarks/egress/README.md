@@ -7,6 +7,7 @@ Prova le vie d'uscita di un container della preparazione su un Docker vero, con 
 | Prova | Cosa varia | Comando |
 |---|---|---|
 | `modal_probe.py` | il tipo di uscita, una riga ciascuno in `rows.py`: diretta (nome, IP, IPv4/IPv6 letterali), redirect 301/302 da un host approvato verso uno fuori lista, DNS (risolutore del motore, UDP e TCP 53 pubblici), CONNECT di un nome rifiutato (che il proxy non deve risolvere), IP letterali nel proxy, indirizzi interni (`169.254.169.254`, `10.0.0.1`, loopback e indirizzi della VM, gateway della rete), CONNECT su porte 80, 8443, 22, HTTP in chiaro fuori dagli archivi apt; e le righe di approvazione: host fuori lista, dopo il sì («once» con `egress.reply`), in blacklist | `modal run benchmarks/egress/modal_probe.py` |
+| `modal_probe.py --proxy script\|smokescreen` (`T3.A.2`) | il proxy, sulle stesse righe più: (a) due host ammessi che il container del proxy risolve a `10.0.0.1` e `169.254.169.254` (`--add-host`), (d) `apt-get update` e `install git` nell'immagine di base come `preparation.NEEDS["git"]`, (g) avvio, memoria e dimensione dell'immagine del proxy. Smokescreen sta al posto di `start_proxy` (`driver.py`): immagine per digest, ACL `action: enforce` degli stessi host data con `cp`, `allow_missing_role`, log JSON letto come `egress.refused` | `modal run benchmarks/egress/modal_probe.py --proxy script`, poi `--proxy smokescreen` |
 
 Due canarini su Modal, raggiungibili da Internet in HTTPS (tunnel di Modal), registrano ogni richiesta: `allowed` (l'host che l'utente approva) e `outside` (mai approvato). `driver.py` gira in una VM Sandbox con il demone Docker (come `benchmarks/project-model/modal_engine.py`) ed esegue `rows.py` come preparazione di un progetto. Segni cercati: richieste sui canarini fuori dai percorsi attesi, connessioni a due ascoltatori della VM (8099 su tutti gli indirizzi, 8098 sul loopback), query DNS col gettone della corsa sul filo (`tcpdump -i any`), fuori dalla risoluzione dell'host dei nomi rifiutati (`egress.resolve`). Esito in `results/<data>.json`.
 
@@ -43,3 +44,20 @@ Provenienza di Smokescreen, verificata il 27 novembre 2026 da una funzione Modal
 | Riga | Docker ≥ 28 | Motori < 28 (Kiri 0.2.0, Docker 27, Podman) |
 |---|---|---|
 | `direct-network-gateway` (TCP al gateway della rete della preparazione) | bloccata (misurata, sopra) | raggiunta: atteso, miglioramento futuro (non misurato qui; prima corsa rossa `ap-c9r58rXxewDbWV64u5wPwf` con la sola `--internal`) |
+
+### Proxy: la prova di `T3.A.2`
+
+27 novembre 2026, con il codice di questa cartella com'è nel commit che porta questi risultati, su Modal: `--proxy script` `ap-cIYuqIvnkHJTzBHhxMgWo5` (`results/proxy-script.json`, 41 righe su 44), `--proxy smokescreen` `ap-ClV8zBfHV1ftVBtNpNcawB` (`results/proxy-smokescreen.json`, 40 su 44). Righe rosse:
+
+| Riga | `PROXY_SCRIPT` | Smokescreen |
+|---|---|---|
+| (a) `proxy-allowed-to-10x`, `proxy-allowed-to-metadata` | rossa: `502`, il proxy prova a connettersi a `10.0.0.1:443` e `169.254.169.254:443` | bloccata: `407 Request rejected by proxy` |
+| `proxy-connect-port-80`, `proxy-connect-port-8443` | bloccata: `403` | rossa: `502`, tenta la porta dell'host ammesso |
+| `proxy-connect-port-22` | bloccata: `403` | verde solo per il tempo del client (5 s): Smokescreen tenta `registry.npmjs.org:22` e non risponde |
+| `proxy-plain-http` | bloccata: `403` | rossa: `502`, inoltra l'HTTP in chiaro dell'host ammesso a ogni percorso |
+| (d) `control-apt-git` | rossa | rossa |
+| (g) `measure-proxy` | avvio 0,42 s, 9,4 MiB, immagine 69,9 MB | avvio 0,25 s, 5,5 MiB, immagine 26,8 MB |
+
+- La riga d è rossa per entrambi per la stessa causa, che non è del proxy: il tunnel verso `deb.debian.org:443` si apre, poi apt dà `certificate verify failed` perché `debian:trixie-slim` (`preparation.IMAGE`) non ha `ca-certificates`, e la riga di `NEEDS["git"]` passa le fonti a `https://`. È un difetto di `preparation.NEEDS["git"]`.
+- Approvazione (fuori lista, dopo il sì, blacklist) e segni: verdi per entrambi; per Smokescreen i rifiuti sono le decisioni con `allow: false` del suo log JSON, che scrive su stderr.
+- Le richieste `GET` della sonda portano l'intestazione `Host`: senza, il server HTTP di Smokescreen risponde `400` prima della politica (prima corsa `ap-ws5xOLBrk5nOuiWMsDccg0`).
