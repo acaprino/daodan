@@ -1,0 +1,201 @@
+{
+ "application": {
+  "repository": null,
+  "commit": null,
+  "licence": "MIT (this repository)",
+  "chosen": [
+   "src/index.js"
+  ],
+  "note": "new Hono(), route('/api', sub), basePath, named and inline handlers, middleware"
+ },
+ "run": {
+  "name": "fixture",
+  "restore": {
+   "restores": {
+    "npm": [
+     "."
+    ]
+   },
+   "gaps": [],
+   "hosts": [],
+   "argv": [
+    "sh",
+    "-c",
+    "( mkdir -p /daodan/state/tools/bin /daodan/state/home ) && ( tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ) && ( for f in '.'; do ( cd \"$f\" && timeout 600 sh -c 'if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi' ) > /tmp/daodan-restore.log 2>&1 || { { printf 'DAODAN-GENERATE-FAILED npm %s\\n' \"$f\"; { grep -E '^npm (error|ERR!)' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-GENERATE-END; } >&2; ( cd \"$f\" && if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci --ignore-scripts --no-audit --no-fund; else npm install --ignore-scripts --no-audit --no-fund; fi ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED npm %s\\n' \"$f\"; { grep -E '^npm (error|ERR!)' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; done; true )"
+   ],
+   "returncode": 0,
+   "seconds": 2.8,
+   "stdout": "",
+   "stderr": ""
+  },
+  "node": "v24.22.3",
+  "hono_folders": [
+   "."
+  ],
+  "declared": [
+   {
+    "argv": [
+     "node",
+     "/tmp/declared.mjs",
+     "."
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 0.08,
+    "max_rss_mb": 122.4,
+    "stdout_tail": "\nDAODAN-ANSWER {\"folder\":\".\",\"name\":\"hono-routes-fixture\",\"main\":\"src/index.js\",\"exports\":null,\"declared\":{\"main\":\"/work/src/index.js\"},\"wrangler_files\":[]}\n",
+    "stderr_tail": "",
+    "answer": {
+     "folder": ".",
+     "name": "hono-routes-fixture",
+     "main": "src/index.js",
+     "exports": null,
+     "declared": {
+      "main": "/work/src/index.js"
+     },
+     "wrangler_files": []
+    }
+   }
+  ],
+  "inspect": [
+   {
+    "module": "src/index.js",
+    "found_by": [
+     "main of .",
+     "chosen by hand"
+    ],
+    "loader": "node",
+    "argv": [
+     "node",
+     "/tmp/inspect.mjs",
+     "/work/src/index.js"
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 0.12,
+    "max_rss_mb": 127.4,
+    "stdout_tail": "\nDAODAN-ANSWER {\"module\":\"/work/src/index.js\",\"exports\":[\"default\"],\"apps\":{\"default\":[{\"path\":\"/*\",\"method\":\"ALL\",\"name\":\"timing\",\"isMiddleware\":true},{\"path\":\"/health\",\"method\":\"GET\",\"name\":\"health\",\"isMiddleware\":false},{\"path\":\"/inline\",\"method\":\"GET\",\"name\":\"[handler]\",\"isMiddleware\":false},{\"path\":\"/api/v1/users\",\"method\":\"GET\",\"name\":\"listUsers\",\"isMiddleware\":false},{\"path\":\"/api/v1/users/:id\",\"method\":\"POST\",\"name\":\"[handler]\",\"isMiddleware\":false}]}}\n",
+    "stderr_tail": "",
+    "answer": {
+     "module": "/work/src/index.js",
+     "exports": [
+      "default"
+     ],
+     "apps": {
+      "default": [
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "timing",
+        "isMiddleware": true
+       },
+       {
+        "path": "/health",
+        "method": "GET",
+        "name": "health",
+        "isMiddleware": false
+       },
+       {
+        "path": "/inline",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/api/v1/users",
+        "method": "GET",
+        "name": "listUsers",
+        "isMiddleware": false
+       },
+       {
+        "path": "/api/v1/users/:id",
+        "method": "POST",
+        "name": "[handler]",
+        "isMiddleware": false
+       }
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "read": {
+  "name": "fixture",
+  "snapshot_seconds": 0.2,
+  "noir": {
+   "argv": [
+    "noir",
+    "scan",
+    "/work",
+    "-f",
+    "json",
+    "--no-log"
+   ],
+   "returncode": 0,
+   "seconds": 0.6,
+   "stderr_tail": "",
+   "endpoints": 4
+  },
+  "noir_rows": [
+   {
+    "method": "GET",
+    "path": "/api/v1/users",
+    "site": "src/api.js:5",
+    "handler": "listUsers",
+    "symbol": "src/api.js::listUsers",
+    "gap": null
+   },
+   {
+    "method": "POST",
+    "path": "/api/v1/users/:id",
+    "site": "src/api.js:10",
+    "handler": "closure",
+    "symbol": "src/api.js::POST /api/v1/users/:id",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/health",
+    "site": "src/index.js:12",
+    "handler": "health",
+    "symbol": "src/index.js::health",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/inline",
+    "site": "src/index.js:18",
+    "handler": "closure",
+    "symbol": "src/index.js::GET /inline",
+    "gap": null
+   }
+  ],
+  "noir_gaps": {},
+  "functions": 5
+ },
+ "loads": [
+  {
+   "module": "src/index.js",
+   "found_by": [
+    "main of .",
+    "chosen by hand"
+   ],
+   "loader": "node",
+   "export": "default",
+   "raw_entries": 5,
+   "middleware": 1,
+   "inspect_routes": 4,
+   "noir_routes": 4,
+   "common": 4,
+   "only_inspect": [],
+   "only_noir": [],
+   "inspect_handlers": {
+    "nameless": 2,
+    "unique": 2
+   },
+   "noir_bound": 4,
+   "common_bound_by_both": 2,
+   "common_same_function": 2
+  }
+ ]
+}
