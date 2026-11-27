@@ -293,6 +293,8 @@ def adapter_fingerprint(indexer: str) -> str:
     # The adapters also ship helpers outside their own filename prefix.
     if indexer in ("java", "kotlin", "csharp"):
         files.add(adapters / "jvm.py")
+    if indexer == "kotlin":
+        files.add(adapters / "KotlinAsk.kt")
     if indexer == "csharp":
         files.update((adapters / "clang.py", adapters / "scip-dotnet.patch"))
     if indexer in ("typescript", "css"):
@@ -630,8 +632,10 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
                     static = module.static(index) if hasattr(module, "static") else None
                     # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
                     extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
-                    refine = (lambda read, graph: module.refine(read, graph, *extra)) if hasattr(module, "refine") \
-                        else None
+                    # and its `refine` the Kotlin Analysis API's answers of the same run.
+                    asked = (module.answers(result.get("answers")),) if hasattr(module, "answers") else ()
+                    refine = (lambda read, graph: module.refine(read, graph, *extra, *asked)) \
+                        if hasattr(module, "refine") else None
                     for language in spec.languages:
                         rels = sorted(snap.checkout[rel] for rel in snap.inventory
                                       if snap.languages.get(rel) == language and rel in snap.checkout)

@@ -941,7 +941,9 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
     when there are any, the `unread` ones (`unread`): what the snapshot could not measure.
     `refine(index, graph)` runs last: an edge it gives `uncertain` (`{reason, candidates}`) stays, one it gives
     `removed` (a reason) moves to `graph["removed"]`, a hole or edge it adds carries `"by": "refine"`; it
-    drops nothing otherwise.
+    drops nothing otherwise. An uncertain edge it gives `settled` (one of its candidates, which a second source
+    decided) ends there, certain, with `settled_from` the key the index named, and so do the snapshot references
+    at its site (`_settled`).
     """
     traversal = traversal or Traversal(index, snapshot, hops)
     static = {(rel, line, index.from_bytes(rel, line, column)) for rel, line, column in static or ()}
@@ -1037,7 +1039,34 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
              "nodes": list(nodes.values()), "edges": edges, "holes": holes, "removed": []}
     if refine is not None:
         _refined(index, graph, refine)
+        _settled(index, graph, references, snapshot, traversal)
     return graph, references
+
+
+def _settled(index: Index, graph: dict, references: dict, snapshot: Snapshot, traversal: Traversal) -> None:
+    """Each edge `refine` settled on a candidate (see `build`): its end becomes the candidate's direct end, at the
+    edge and at the snapshot references of its site, and its doubt goes."""
+    moved = {}
+    for edge in graph["edges"]:
+        key = edge.pop("settled", None)
+        end = next((found for found in traversal.ends(key) if not found.chain), None) if key else None
+        if end is None:
+            continue
+        chain = tuple(edge["chain"])
+        moved[(edge["site"], edge["to"], chain)] = end._replace(chain=chain)
+        edge.update(settled_from=edge["to"], to=key, end=end.cls, target=end.target)
+        edge.pop("uncertain", None)
+    if not moved:
+        return
+    known = {node["id"] for node in graph["nodes"]}
+    for key in {end.key for end in moved.values()} - known:
+        rel, occurrence = index.defs[key][0]
+        graph["nodes"].append({"id": key, "kind": node_kind(key, index.info.get(key)), "file": rel,
+                               "line": occurrence.line, "external": None})
+    for reference in references.values():
+        rel, line = reference["site"].rsplit(":", 1)
+        site = f"{snapshot.checkout.get(rel, rel)}:{line}"
+        reference["ends"] = list(dict.fromkeys(moved.get((site, end.key, end.chain), end) for end in reference["ends"]))
 
 
 def _refined(index: Index, graph: dict, refine) -> None:

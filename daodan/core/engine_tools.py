@@ -115,24 +115,38 @@ def go_jobs() -> str:
 RUST_VERSION = "1.99.1"
 
 
-# The Kotlin Analysis API in standalone mode with the platform it runs on, as KSP publishes it on
-# Maven Central, and the compiler that builds the resolver against it once.
-KOTLIN_ANALYSIS = "com.google.devtools.ksp:symbol-processing-aa:2.3.13"
+# The Kotlin Analysis API in standalone mode with the platform it runs on, as KSP publishes it on Maven Central,
+# and the compiler that builds `indexers/KotlinAsk.kt` against it, in the container (`indexers.kotlin`): each jar
+# pinned by sha256 (read from Maven Central on 27 November 2026, its sha1 checked), beside the sha1 Maven Central
+# publishes (`maven_artifact`).
+KOTLIN_ANALYSIS = ("com.google.devtools.ksp:symbol-processing-aa:2.3.13",
+                   "bd5c5c2971ec5965b547a276d75af7bc4e71adb780e2c8a350a787384887c029")
 
 
-KOTLIN_RUNTIME = ("com.google.devtools.ksp:symbol-processing-common-deps:2.3.13",
-                  "org.jetbrains.kotlin:kotlin-stdlib:2.4.21",
-                  "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2")
+KOTLIN_RUNTIME = (
+    ("com.google.devtools.ksp:symbol-processing-common-deps:2.3.13",
+     "0f12165cc06d2cf7bce4012224933785875940712db2d7576efd3ff5eec2ff28"),
+    ("org.jetbrains.kotlin:kotlin-stdlib:2.4.21", "bd8250210584cb659847dce9cda660f8e9906e5def7fbebcea93dc6dcb6a88a3"),
+    ("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2",
+     "5ca175b38df331fd64155b35cd8cae1251fa9ee369709b36d42e0a288ccce3fd"),
+)
 
 
-KOTLIN_COMPILER = ("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.4.21",
-                   "org.jetbrains.kotlin:kotlin-build-tools-api:2.4.21",
-                   "org.jetbrains.kotlin:kotlin-stdlib:2.4.21",
-                   "org.jetbrains.kotlin:kotlin-script-runtime:2.4.21",
-                   "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
-                   "org.jetbrains.kotlin:kotlin-daemon-embeddable:2.4.21",
-                   "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0",
-                   "org.jetbrains:annotations:13.0")
+KOTLIN_COMPILER = (
+    ("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.4.21",
+     "ef19419c765e7ac8404465fa026ca8fc4dbb8a822de0fc79aa53c8dce29f1d02"),
+    ("org.jetbrains.kotlin:kotlin-build-tools-api:2.4.21",
+     "c5cd6a49bd072b529ae10809111c16a7aa0f92147e95d288354017fd65799461"),
+    ("org.jetbrains.kotlin:kotlin-stdlib:2.4.21", "bd8250210584cb659847dce9cda660f8e9906e5def7fbebcea93dc6dcb6a88a3"),
+    ("org.jetbrains.kotlin:kotlin-script-runtime:2.4.21",
+     "a658cf5902a1525a06c264a5e42b437e97a6679ddeef8ca641246f270cf6a013"),
+    ("org.jetbrains.kotlin:kotlin-reflect:1.6.10", "3277ac102ae17aad10a55abec75ff5696c8d109790396434b496e75087854203"),
+    ("org.jetbrains.kotlin:kotlin-daemon-embeddable:2.4.21",
+     "7b3ef24674e5bcffcadfc4e43202ea314194939ecbcdd90a4770b2f1b04e0d07"),
+    ("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0",
+     "9860906a1937490bf5f3b06d2f0e10ef451e65b95b269f22daf68a3d1f5065c5"),
+    ("org.jetbrains:annotations:13.0", "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478"),
+)
 
 
 KOTLIN_OPT_INS = ("KaExperimentalApi", "KaPlatformInterface", "KaImplementationDetail", "KaIdeApi")
@@ -185,17 +199,27 @@ def download(url: str, target: Path, *, sha256: str | None = None, sha1_url: str
     raise last
 
 
-def maven_artifact(coordinate: str) -> Path:
-    """A Maven artifact's jar: the local Maven repository first, then the shared store, else Maven Central."""
+def _sha256(path: Path) -> str:
+    with path.open("rb") as handle:
+        return hashlib.file_digest(handle, "sha256").hexdigest()
+
+
+def maven_artifact(coordinate: str, sha256: str | None = None) -> Path:
+    """A Maven artifact's jar: the local Maven repository first, then the shared store, else Maven Central, checked
+    with the sha1 Maven Central publishes and, when given, with the pinned `sha256` (a jar on disk too)."""
     group, artifact, version = coordinate.split(":")
     relative = Path(*group.split("."), artifact, version, f"{artifact}-{version}.jar")
     for repository in (Path.home() / ".m2" / "repository", maven_central_dir()):
-        if (repository / relative).is_file():
+        if (repository / relative).is_file() and (sha256 is None or _sha256(repository / relative) == sha256):
             return repository / relative
     target = maven_central_dir() / relative
     print(f"downloading {coordinate} into {target.parent}", flush=True)
     url = f"{MAVEN_CENTRAL}/{relative.as_posix()}"
-    return download(url, target, sha1_url=url + ".sha1")
+    path = download(url, target, sha1_url=url + ".sha1")
+    if sha256 is not None and _sha256(path) != sha256:
+        path.unlink(missing_ok=True)
+        raise ValueError(f"checksum mismatch for {url}: not the pinned sha256")
+    return path
 
 
 ENVIRONMENT_MIN_FREE = 3 * 2**30

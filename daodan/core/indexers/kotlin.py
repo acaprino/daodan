@@ -10,7 +10,11 @@ the reverse one on the overridden member (`is_implementation` and `is_reference`
 - the overload number `(+N)` follows source order for a declaration with source and compiled member order
   for one on another task's classpath, so a reference across compile tasks to an overloaded project function,
   and an override relation across tasks, can name the wrong overload: `refine` marks those edges uncertain
-  with every overload of the name in the target class as candidates;
+  with every overload of the name in the target class as candidates. After scip-java, in the same container,
+  one standalone session of the Kotlin Analysis API (`KotlinAsk.kt`, one module per compile task) answers in
+  one batch the references and overrides of those names across modules (`ASK`); `refine` settles each marked
+  edge the answer at its site names one candidate of (`code_graph.build`, `settled`); another answer, or
+  none, leaves it uncertain;
 - calls the index never writes (`x[k]`, `x[k] = v`, the `for` iterator, `by` delegates, `componentN`) are
   found with tree-sitter and become holes of class `implicit-operator`;
 - the package placeholder `. .` names both project symbols (the test tasks) and every Kotlin builtin or stdlib
@@ -21,10 +25,12 @@ the reverse one on the overridden member (`is_implementation` and `is_reference`
 from __future__ import annotations
 
 import collections
+import json
 import re
 from pathlib import Path
 
 import code_graph
+from engine_tools import KOTLIN_ANALYSIS, KOTLIN_COMPILER, KOTLIN_OPT_INS, KOTLIN_RUNTIME
 
 OVERLOAD = re.compile(r"^(.*[#/])([^#/().]+|`[^`]+`)\((?:\+\d+)?\)\.$")  # owner, name of a method symbol
 OPERATORS = {"indexed read": "get", "indexed assignment": "set", "for loop": "iterator",
@@ -145,8 +151,53 @@ def _implicit(index) -> list[dict]:
     return holes
 
 
-def refine(index, graph: dict, compiled: dict[str, str]) -> None:
-    """Mark the edges an overload number can make wrong, and add the implicit-call holes."""
+def answers(found) -> dict:
+    """The Analysis API's answers each build's run brought back (`[[file, build]]`, `ASK`), checkout-relative:
+    `refs` `(file, line) -> {column: {(file, line)}}`, the declarations a reference reaches; `overridden`
+    `(file, line) -> {(file, line)}`, the declarations an override overrides."""
+    refs, overridden = collections.defaultdict(lambda: collections.defaultdict(set)), collections.defaultdict(set)
+    for path, build in found or ():
+        prefix = f"{build}/" if build else ""
+        for row in Path(path).read_text(encoding="utf-8").splitlines():
+            item = json.loads(row)
+            places = {(prefix + target["file"], target["line"]) for target in item["targets"]}
+            if item["kind"] == "ref":
+                refs[(prefix + item["file"], item["line"])][item["column"]] |= places
+            elif item["kind"] == "overridden":
+                overridden[(prefix + item["file"], item["line"])] |= places
+    return {"refs": refs, "overridden": overridden}
+
+
+def _place(index, key: str):
+    places = index.defs.get(key)
+    return (places[0][0], places[0][1].line) if places else None
+
+
+def _settle(index, graph: dict, asked: dict) -> None:
+    """Each edge `refine` marked that the answer at its site settles on one candidate: `settled` names it. The
+    answer at the occurrence's column, else the line's only one; through an implementation, the candidate that
+    overrides the declaration the reference reaches."""
+    for edge in graph["edges"]:
+        doubt = edge.get("uncertain")
+        if not doubt or doubt["reason"] not in ("overload-across-tasks", "override-across-tasks"):
+            continue
+        rel, line = edge["site"].rsplit(":", 1)
+        at = asked["refs"].get((rel, int(line)), {})
+        columns = {item.start for item in index.documents.get(rel, ())
+                   if item.line == int(line) and item.key == edge["symbol"] and not item.definition}
+        chosen = set().union(*(at[column] for column in columns if column in at)) or (
+            next(iter(at.values())) if len(at) == 1 else set())
+        if "implementation" in edge["chain"]:
+            right = [key for key in doubt["candidates"] if chosen & asked["overridden"].get(_place(index, key), set())]
+        else:
+            right = [key for key in doubt["candidates"] if _place(index, key) in chosen]
+        if len(right) == 1:
+            edge["settled"] = right[0]
+
+
+def refine(index, graph: dict, compiled: dict[str, str], asked: dict | None = None) -> None:
+    """Mark the edges an overload number can make wrong, settle those the Analysis API's answers (`answers`)
+    decide, and add the implicit-call holes."""
     overloads = _overloads(index)
 
     def candidates(key: str) -> list[str] | None:
@@ -162,6 +213,8 @@ def refine(index, graph: dict, compiled: dict[str, str]) -> None:
               and None not in (_task(index, compiled, target), _task(index, compiled, symbol))
               and _task(index, compiled, target) != _task(index, compiled, symbol)):
             edge["uncertain"] = {"reason": "override-across-tasks", "candidates": candidates(target) or [target]}
+    if asked:
+        _settle(index, graph, asked)
     graph["holes"] += _implicit(index)
 
 
@@ -191,11 +244,37 @@ else
 fi
 [ -f "$OUT/index.scip" ]
 '''
+# The Analysis API's session (see the module docstring), in the execution, with no network: `KotlinAsk.kt` and the
+# jars of the Analysis API and of the compiler come as inputs (`ask_inputs`), each pinned by sha256; the source is
+# compiled there, never on the host, and run on the image's JDK 17 over the compile tasks the build dumped and the
+# dependency caches the preparation filled. Its answers come back as `kotlin-answers.jsonl` (`answers`).
+ASK = "/daodan/state/kotlin-ask"
+SOURCE = Path(__file__).with_name("KotlinAsk.kt")
+ASK_HEAP_MB = 3072  # 1,043 MB resident on klaxon with a 3 GB heap (benchmarks/inference-audit, 14 November 2026)
+ASK_RUN = rf'''ask={ASK}
+if [ -d "$OUT/kotlin-configs" ] && [ -f "$ask/KotlinAsk.kt" ]; then
+  jar="${{TMPDIR:-/tmp}}/daodan-kotlin-ask.jar"
+  step ask-compile /opt/java/openjdk/bin/java -Xmx1g -cp "$ask/compiler/*" \
+    org.jetbrains.kotlin.cli.jvm.K2JVMCompiler "$ask/KotlinAsk.kt" \
+    -classpath "$(ls -d "$ask"/runtime/*.jar | paste -sd: -)" -d "$jar" -jvm-target 17 -no-stdlib -no-reflect \
+    -Xskip-prerelease-check {" ".join(f"-opt-in=org.jetbrains.kotlin.analysis.api.{name}" for name in KOTLIN_OPT_INS)} \
+    < /dev/null \
+  && step ask /opt/java/openjdk/bin/java -Xmx{ASK_HEAP_MB}m -Djava.awt.headless=true -cp "$jar:$ask/runtime/*" \
+    daodan.KotlinAskKt "$OUT/kotlin-configs" --across "$OUT/kotlin-answers.jsonl" < /dev/null
+fi
+'''
 EXECUTE = r'''if [ -d build/scip-targetroot/kotlin-configs ]; then
   step configs cp -r build/scip-targetroot/kotlin-configs "$OUT/kotlin-configs"
 fi
-exit 0
-'''
+''' + ASK_RUN + "exit 0\n"
+
+
+def ask_inputs() -> dict[str, Path]:
+    """What the session needs in the container: its source, the compiler's jars and the Analysis API's, each
+    downloaded once on the host and checked with its pinned sha256 (`jvm.maven_jars`)."""
+    from indexers import jvm
+    return {f"{ASK}/KotlinAsk.kt": SOURCE, **jvm.maven_jars(f"{ASK}/compiler", KOTLIN_COMPILER),
+            **jvm.maven_jars(f"{ASK}/runtime", (KOTLIN_ANALYSIS, *KOTLIN_RUNTIME))}
 
 
 def structure(record: dict) -> dict:
@@ -236,7 +315,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
                    + jvm.raise_line(toolchains, root, jvm.JDK, "all") + PREPARE)
         result, runs, out = jvm.run(folder, work, prepare, EXECUTE, memory=memory, engine=engine,
                                     toolchains=jvm.for_tool(toolchains, tool), hosts=(declared or {}).get("hosts", ()),
-                                    checkout=project_dir)
+                                    checkout=project_dir, inputs=ask_inputs)
         part = finish(work, result, runs, out)
         said = jvm.edited(runs, root) if part.get("indexes") else []
         return jvm.with_gaps(jvm.with_gaps(part, result), {"gaps": said})
@@ -245,12 +324,14 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     done = [(root, part) for root, part in parts if part.get("indexes")]
     return jvm.combined(parts, other_builds,
                         configs=[[part["configs"], root] for root, part in done if part.get("configs")],
-                        written=[[part["written"], root] for root, part in done])
+                        written=[[part["written"], root] for root, part in done],
+                        answers=[[part["answers"], root] for root, part in done if part.get("answers")])
 
 
 def finish(work_dir: Path, result: dict, runs: list[dict], out: Path) -> dict:
     """The contract from what came back into `out`: the index as scip-java wrote it (`scip-java-0.scip`), its
-    forward-only copy (`index-forward.scip`) and `kotlin-configs/`, placed in `work_dir`."""
+    forward-only copy (`index-forward.scip`), `kotlin-configs/` and the Analysis API's `kotlin-answers.jsonl`,
+    placed in `work_dir`. A session that failed is a gap: the edges it would settle stay uncertain."""
     from indexers import jvm
     if result["state"] == "gap":
         return jvm.unavailable(result["cause"], result["remedy"])
@@ -267,10 +348,15 @@ def finish(work_dir: Path, result: dict, runs: list[dict], out: Path) -> dict:
              + " ".join((item.get("stderr_tail") or "").split())[-400:]}
             for item in runs if item["step"] in ("index", "kotlin", "aggregate") and item.get("returncode")
             and (item["step"] != "index" or item is run)]  # the build as declared: `jvm.edited` says it
+    gaps += [{"kind": "analysis_failed", "detail": f"the Kotlin Analysis API's {item['step']} exited with code "
+              f"{item['returncode']}, the edges across compile tasks stay uncertain: "
+              + " ".join((item.get("stderr_tail") or "").split())[-400:]}
+             for item in runs if item["step"] in ("ask-compile", "ask") and item.get("returncode")]
+    asked = jvm.place(out / "kotlin-answers.jsonl", Path(work_dir) / "kotlin-answers.jsonl")
     return {"indexes": [[str(forward), ""]], "runs": runs,
             "indexer": code_graph.indexer("scip-java", jvm.VERSION, runs),
             "configs": str(configs) if configs else None, "written": str(written),
-            **({"gaps": gaps} if gaps else {})}
+            "answers": str(asked) if asked else None, **({"gaps": gaps} if gaps else {})}
 
 
 # The aggregator's reverse relationships, dropped from a copy of the index.

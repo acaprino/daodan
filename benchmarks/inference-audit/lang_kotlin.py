@@ -4,13 +4,15 @@ The plugin's `indexers/kotlin.py` runs scip-java (its two phases run by `adapter
 function's container, on the plugin's image) and holds what this engine's index states its own way;
 `code_graph.py` reads the index and assembles the graph. The volume keeps `inference-audit/graph-kotlin/klaxon/`:
 index.scip (as scip-java writes it), index-forward.scip (without the aggregator's reverse relationships),
-manifest.sqlite, indexer.json, kotlin-configs/ and graph.json (nodes, edges with chain and uncertainty, holes).
+manifest.sqlite, indexer.json, kotlin-configs/, kotlin-answers.jsonl (the Analysis API's answers of the same run)
+and graph.json (nodes, edges with chain and uncertainty, holes).
 `--stage graph` rebuilds the graph from them without the indexer; `graph` does the same locally.
 
     modal deploy benchmarks/inference-audit/lang_kotlin.py
     python benchmarks/inference-audit/lang_kotlin.py spawn [--stage index|graph]
     python benchmarks/inference-audit/lang_kotlin.py fetch [--artifacts DIR]
-    python benchmarks/inference-audit/lang_kotlin.py graph --index I --manifest M --source S --configs C --out O
+    python benchmarks/inference-audit/lang_kotlin.py graph --index I --manifest M --source S --configs C \
+        [--answers A] --out O
 """
 from __future__ import annotations
 
@@ -135,9 +137,12 @@ volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 def hand_check(index, traversal, graph: dict) -> dict:
     """The ends the graph gives at each hand-read site, against the target written before it was built."""
     uncertain = collections.defaultdict(set)
+    settled = {}  # an end the Analysis API settled on another candidate (`code_graph._settled`), at its site
     for edge in graph["edges"]:
         if edge.get("uncertain"):
             uncertain[(edge["site"], edge["to"])].add(edge["uncertain"]["reason"])
+        if edge.get("settled_from"):
+            settled[(edge["site"], edge["settled_from"], tuple(edge["chain"]))] = edge["to"]
     sites = []
     for rel, line, token, nth, expected, why in HAND_CHECK:
         text = index.line(rel, line) or ""
@@ -146,7 +151,8 @@ def hand_check(index, traversal, graph: dict) -> dict:
         native = (index.from_bytes(rel, line, len(text[:columns[nth - 1]].encode("utf-8")))
                   if len(columns) >= nth else None)
         keys = [item.key for item in index.at.get((rel, line, native), ()) if not item.definition]
-        ends = list(dict.fromkeys(end for key in dict.fromkeys(keys) for end in traversal.ends(key)))
+        ends = list(dict.fromkeys(end._replace(key=settled.get((f"{rel}:{line}", end.key, end.chain), end.key))
+                                  for key in dict.fromkeys(keys) for end in traversal.ends(key)))
 
         def where(key):
             return [f"{place}:{occurrence.line}" for place, occurrence in index.defs.get(key, ())]
@@ -168,11 +174,14 @@ def hand_check(index, traversal, graph: dict) -> dict:
     return {"right": sum(1 for site in sites if site["right"]), "of": len(sites), "sites": sites}
 
 
-def graph(index_path: Path, manifest: Path, source: Path, configs: Path | None, indexer: dict) -> tuple[dict, dict]:
-    """The graph, and what the result file reports of it."""
+def graph(index_path: Path, manifest: Path, source: Path, configs: Path | None, indexer: dict,
+          answers: Path | None = None) -> tuple[dict, dict]:
+    """The graph, with the Analysis API's `answers` of the run when there are any, and what the result file
+    reports of it."""
     index = scip_graph.Index(source)
     index.load(index_path, "")
     compiled = indexers.kotlin.tasks([[configs, ""]] if configs else [])
+    asked = indexers.kotlin.answers([[answers, ""]] if answers and answers.is_file() else [])
     hops = indexers.kotlin.hops(index)
     with scip_graph.Snapshot(manifest) as snapshot:
         traversal = scip_graph.Traversal(index, snapshot, hops, classify=indexers.kotlin.classify(index))
@@ -180,13 +189,20 @@ def graph(index_path: Path, manifest: Path, source: Path, configs: Path | None, 
                   and rel in snapshot.checkout and snapshot.checkout[rel] not in index.documents]
         built, _references = scip_graph.build(index, snapshot, "kotlin", hops, indexer,
                                               indexers.kotlin.missing(index, absent, compiled), traversal,
-                                              refine=lambda read, graph: indexers.kotlin.refine(read, graph, compiled))
+                                              refine=lambda read, graph: indexers.kotlin.refine(read, graph, compiled,
+                                                                                                asked))
         checks = hand_check(index, traversal, built)
     edges = built["edges"]
     uncertain = [edge for edge in edges if edge.get("uncertain")]
+    settled = [edge for edge in edges if edge.get("settled_from")]
     summary = {
         "report": scip_graph.report(built),
         "edges_certain": len(edges) - len(uncertain),
+        "uncertain_by_reason": dict(collections.Counter(edge["uncertain"]["reason"] for edge in uncertain)),
+        "settled": {"edges": len(settled),
+                    "another_candidate": sum(1 for edge in settled if edge["settled_from"] != edge["to"]),
+                    "answers": {"refs": sum(len(columns) for columns in asked["refs"].values()),
+                                "overridden": len(asked["overridden"])}},
         "uncertain_examples": [{key: edge[key] for key in ("site", "symbol", "to", "uncertain")}
                                for edge in uncertain[:: max(1, len(uncertain) // 6)]][:6],
         "holes": dict(collections.Counter(hole["class"] for hole in built["holes"])),
@@ -231,9 +247,13 @@ def kotlin_case(stage: str = "graph") -> dict:
         shutil.rmtree(store / "kotlin-configs", ignore_errors=True)
         if (engine / "kotlin-configs").is_dir():
             shutil.copytree(engine / "kotlin-configs", store / "kotlin-configs")
+        (store / "kotlin-answers.jsonl").unlink(missing_ok=True)
+        if ran.get("answers"):
+            shutil.copyfile(ran["answers"], store / "kotlin-answers.jsonl")
         (store / "indexer.json").write_text(json.dumps({**ran["indexer"], "runs": ran["runs"],
                                                         "refused": ran.get("refused"), "state": ran.get("state"),
-                                                        "reason": ran.get("reason")}, indent=1),
+                                                        "reason": ran.get("reason"), "gaps": ran.get("gaps")},
+                                                       indent=1),
                                             encoding="utf-8")
     else:
         shutil.copyfile(store / "manifest.sqlite", manifest)
@@ -244,7 +264,12 @@ def kotlin_case(stage: str = "graph") -> dict:
     forward = engine / "index-forward.scip"
     result["reverse_relationships_dropped"] = indexers.kotlin.forward_only(store / "index.scip", forward)
     shutil.copyfile(forward, store / "index-forward.scip")
-    built, summary = graph(forward, manifest, target, store / "kotlin-configs", indexer)
+    built, summary = graph(forward, manifest, target, store / "kotlin-configs", indexer,
+                           store / "kotlin-answers.jsonl")
+    record = json.loads((store / "indexer.json").read_text(encoding="utf-8"))
+    result["analysis"] = {"runs": [run for run in record.get("runs") or ()
+                                   if run.get("step") in ("ask-compile", "ask")],
+                          "gaps": [gap for gap in record.get("gaps") or () if gap.get("kind") == "analysis_failed"]}
     (store / "graph.json").write_text(json.dumps(built, ensure_ascii=False), encoding="utf-8")
     result.update(summary, graph_seconds=round(time.time() - begun, 1), seconds=round(time.time() - started, 1))
     (Path("/results") / TAG / f"graph-kotlin-{CASE}.json").write_text(
@@ -264,6 +289,7 @@ if __name__ == "__main__":
     parser.add_argument("--manifest")
     parser.add_argument("--source")
     parser.add_argument("--configs")
+    parser.add_argument("--answers", help="kotlin-answers.jsonl from the volume")
     parser.add_argument("--indexer", help="indexer.json from the volume")
     parser.add_argument("--out")
     args = parser.parse_args()
@@ -290,7 +316,8 @@ if __name__ == "__main__":
             forward = Path(folder) / "index-forward.scip"
             indexers.kotlin.forward_only(Path(args.index), forward)
             built, summary = graph(forward, Path(args.manifest), Path(args.source),
-                                   Path(args.configs) if args.configs else None, indexer)
+                                   Path(args.configs) if args.configs else None, indexer,
+                                   Path(args.answers) if args.answers else None)
         out = Path(args.out)
         out.write_text(json.dumps({"indexer": indexer, **summary}, indent=1, ensure_ascii=False) + "\n",
                        encoding="utf-8")

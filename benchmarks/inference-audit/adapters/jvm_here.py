@@ -27,8 +27,9 @@ PROBE = ("import resource,subprocess,sys;r=subprocess.run(sys.argv[1:]);"
 
 
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, prepare_timeout: float = 1800,
-        timeout: float = 600) -> tuple[dict, list[dict], Path]:
-    """`(result, runs, out)` as `indexers.jvm.run` returns them, `result["refused"]` the hosts the proxy refused."""
+        timeout: float = 600, inputs=None) -> tuple[dict, list[dict], Path]:
+    """`(result, runs, out)` as `indexers.jvm.run` returns them, `result["refused"]` the hosts the proxy refused;
+    `inputs` the analyzer's own, as `indexers.jvm.run` takes them."""
     import container
     from indexers import jvm
     work_dir = Path(work_dir)
@@ -43,10 +44,10 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, prepar
         archive.extractall(work_dir, filter="tar")  # `work/...`, modes kept: a wrapper stays executable
     bundle.unlink()
     try:
-        inputs = jvm.tools(Path(project_dir))
+        given = {**jvm.tools(Path(project_dir)), **((inputs() if callable(inputs) else inputs) or {})}
     except container.Gap as gap:
         return {"state": "gap", "cause": gap.cause, "remedy": gap.remedy, "refused": []}, [], out
-    for destination, source in inputs.items():
+    for destination, source in given.items():
         Path(destination).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, destination)
     env = {key: value for key, value in os.environ.items() if key not in container.PROXY_VARIABLES}

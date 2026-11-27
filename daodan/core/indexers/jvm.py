@@ -40,6 +40,7 @@ import hashlib
 import re
 import shutil
 from pathlib import Path
+from typing import Callable
 
 import code_graph
 import preparation
@@ -575,19 +576,28 @@ def fetched(url: str, target: Path, digest: str | None, *, published: str | None
             from error
 
 
+def maven_jars(folder: str, pinned) -> dict[str, Path]:
+    """The container path under `folder` and the host file of each `(coordinate, sha256)` of Maven Central,
+    downloaded once into the shared directory and verified (`fetched`)."""
+    from resolve_edges import MAVEN_CENTRAL, maven_central_dir
+    jars = {}
+    for coordinate, digest in pinned:
+        group, artifact, version = coordinate.split(":")
+        relative = f"{group.replace('.', '/')}/{artifact}/{version}/{artifact}-{version}.jar"
+        jars[f"{folder}/{artifact}-{version}.jar"] = fetched(f"{MAVEN_CENTRAL}/{relative}",
+                                                             maven_central_dir() / relative, digest)
+    return jars
+
+
 def tools(project_dir: Path) -> dict[str, Path]:
     """The container paths and host files of the JDK, scip-java's classpath and the build tools the project asks for,
     downloaded once into the shared directory; a Gap when a wrapper names another site or a file cannot be
     verified."""
     import container
-    from resolve_edges import MAVEN_CENTRAL, maven_central_dir, shared_engine_dir
+    from resolve_edges import shared_engine_dir
     jdk = preparation.JDK_IN
     inputs = {jdk: preparation.fetched(*preparation.TEMURIN, jdk.rsplit("/", 1)[1])}  # where the pre-map's is
-    for coordinate, digest in CLASSPATH:
-        group, artifact, version = coordinate.split(":")
-        relative = f"{group.replace('.', '/')}/{artifact}/{version}/{artifact}-{version}.jar"
-        inputs[f"{LIB}/{artifact}-{version}.jar"] = fetched(f"{MAVEN_CENTRAL}/{relative}",
-                                                            maven_central_dir() / relative, digest)
+    inputs.update(maven_jars(LIB, CLASSPATH))
     for tool, url, digest, where in wanted(project_dir):
         if not DISTRIBUTION[tool].fullmatch(url):
             site = GRADLE_SITE if tool == "gradle" else "Maven Central"
@@ -718,7 +728,7 @@ def failed(result: dict, runs: list[dict]) -> dict:
 
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory: int, engine=None,
         toolchains=(), prepare_timeout: float = 1800, timeout: float = 600,
-        inputs: dict[str, Path] | None = None, jdk: dict | None = None, hosts=(),
+        inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None, jdk: dict | None = None, hosts=(),
         checkout: Path | None = None, tried: dict | None = None) -> tuple[dict, list[dict], Path]:
     """Both phases in one container run over a copy of `checkout` (`project_dir`'s when not given: a build reads
     what lies outside its folder as it does in a checkout) and the `tools` it needs, the steps in the build's
@@ -763,7 +773,7 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
         given = tools(project_dir)
         given.update({f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                       for url, digest, name in chains["files"] + sdk["files"]})
-        given.update(extra or {})
+        given.update((extra() if callable(extra) else extra) or {})  # a function: downloaded once an engine answers
         return given
 
     result = container.run_in_container(
