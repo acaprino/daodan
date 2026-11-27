@@ -461,7 +461,7 @@ class IndexStoreTests(unittest.TestCase):
                     self.assertEqual(placed, ["engine_candidate"])
                 elif isinstance(end, list):
                     self.assertEqual(placed, ["target_id"])
-                elif end in ("dangling-local", self.MEMBER):
+                elif end in ("dangling-local", "element", self.MEMBER):
                     self.assertEqual((placed, ref["hole"]), (["hole"], end))
                 else:
                     self.assertEqual(placed, [])
