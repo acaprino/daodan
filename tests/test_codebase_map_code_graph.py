@@ -5,16 +5,15 @@ indexer module, and the invariant that every call and read of their snapshots en
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_code_graph.py
 
 Rebuild a fixture's index after changing its sources (the snapshot is written by the test):
-- `ts`: `scip-typescript index --cwd . --output index.scip --no-progress-bar` (0.5.2, with `node_modules` beside
-  `ts`, removed afterwards) in `fixtures/code-graph/ts`;
 - `rust`: `rust-analyzer scip . --output index.scip` in `fixtures/code-graph/rust`;
-- `go`, `python`, `java`, `kotlin`, `c`, `cpp`: on Modal with the pinned indexers, since Java, Kotlin, C and C++
+- `go`, `python`, `java`, `kotlin`, `c`, `cpp`, `ts` (scip-typescript 0.5.2 after npm's install of the fixture's
+  packages): on Modal with the pinned indexers, since Java, Kotlin, C and C++
   need their build, from the checkout's root, with the proxy variables empty:
 
       export HTTPS_PROXY= https_proxy= HTTP_PROXY= http_proxy= PYTHONIOENCODING=utf-8
       modal deploy benchmarks/inference-audit/fixture_indexes.py
-      python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp
-      python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp
+      python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp,ts
+      python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp,ts
 
   `fetch`, once the calls end, writes `index.scip` (and Kotlin's `kotlin-configs/`) into each fixture.
 """

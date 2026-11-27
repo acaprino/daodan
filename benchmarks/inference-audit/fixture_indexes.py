@@ -2,12 +2,13 @@
 Modal with each language's pinned indexer, through its `index()`: the plugin's for Go and Python, which install
 what they need themselves, the adapters' for Java and Kotlin, which run the plugin's two phases in the function's
 container, on the plugin's image (`adapters/jvm_here.py`), and the adapter's for C and C++ (`adapters/clang.py`:
-CMake's configure and build of the fixture, then scip-clang). No model or graph; a snapshot only for the
+CMake's configure and build of the fixture, then scip-clang), and TypeScript's (`ts`: npm's install of the fixture's
+packages, then the pinned scip-typescript, as `tests/test_codebase_map_code_graph.py` documents). No model or graph; a snapshot only for the
 pre-map the indexers take their structure from.
 
     modal deploy benchmarks/inference-audit/fixture_indexes.py
-    python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp
-    python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp
+    python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp,ts
+    python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp,ts
 
 `spawn` uploads a fixture's sources, never its `index.scip`, `expected.json` or `kotlin-configs/`. The container
 runs the adapter's `index()` and keeps on the volume (`inference-audit/fixture-indexes/<language>/`) the index the
@@ -55,6 +56,14 @@ def _base_image():  # Go and Python: the plugin's index() installs its indexer
 def _jvm_image():  # Java and Kotlin, as lang_java.py's and lang_kotlin.py's: the base image, jvm.tools brings the rest
     from indexers import jvm
     return _mounted(modal.Image.from_registry(jvm.IMAGE, add_python="3.13").apt_install("git").pip_install(*PIP))
+
+
+TS_INDEXER = "0.5.2"  # the resolver `IndexStoreTests.RESOLVER` names
+TS_NODE_TYPES = "26.6.6"  # the version of Node's types the fixture's ends name (`ts-ends.json`)
+
+
+def _ts_image():  # TypeScript: Node and npm; the install and the indexer run in `_index_ts`
+    return _mounted(modal.Image.from_registry("node:22-bookworm-slim", add_python="3.13").pip_install(*PIP))
 
 
 def _clang_image():  # C and C++: Ubuntu 24.04 (scip-clang v0.4.1 needs glibc 2.38; Debian 12 has 2.36), CMake and gcc
@@ -110,6 +119,53 @@ def _index(language: str, sources: dict[str, bytes]) -> dict:
     return {key: result[key] for key in ("language", "indexer", "indexes", "error")}
 
 
+def _index_ts(sources: dict[str, bytes]) -> dict:
+    """The pinned scip-typescript over the uploaded fixture, its packages installed by npm without their scripts
+    (the fixture's code runs only here, in the function's container); the versions it ran with are on `run.json`."""
+    import shutil
+    import subprocess
+    import traceback
+    print("code", plugin_scripts.code_sha256(), flush=True)
+    project = Path("/work/ts")
+    shutil.rmtree(project.parent, ignore_errors=True)
+    for rel, data in sources.items():
+        path = project / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    store = Path("/results") / STORE / "ts"
+    shutil.rmtree(store, ignore_errors=True)
+    store.mkdir(parents=True)
+    npm = ("--ignore-scripts", "--no-audit", "--no-fund")
+    prefix = Path("/opt/scip")
+    steps = (("install", ["npm", "install", *npm]),
+             ("types", ["npm", "install", "--no-save", *npm, f"@types/node@{TS_NODE_TYPES}"]),
+             ("indexer", ["npm", "install", "-g", "--prefix", str(prefix), *npm,
+                          f"@sourcegraph/scip-typescript@{TS_INDEXER}"]),
+             ("index", [str(prefix / "bin/scip-typescript"), "index", "--cwd", ".", "--output", "index.scip",
+                        "--no-progress-bar"]))
+    result = {"language": "ts", "code": plugin_scripts.code_sha256(), "indexer": f"scip-typescript@{TS_INDEXER}",
+              "error": None, "indexes": [], "runs": []}
+    try:
+        for name, command in steps:
+            done = subprocess.run(command, cwd=project, capture_output=True, text=True, timeout=1200)
+            result["runs"].append({"step": name, "returncode": done.returncode, "stderr_tail": done.stderr[-600:]})
+            if done.returncode:
+                raise RuntimeError(f"{name} failed: {done.stderr[-1500:]}")
+        versions = {}  # the packages the symbols of the ends name: TypeScript's (its libs) and Node's types
+        for root in (project / "node_modules", prefix):
+            for manifest in root.rglob("package.json"):
+                if manifest.parent.name in ("typescript", "node") and manifest.parent.parent.name in ("node_modules", "@types"):
+                    versions[str(manifest.parent)] = json.loads(manifest.read_text(encoding="utf-8"))["version"]
+        result["versions"] = versions
+        shutil.copyfile(project / "index.scip", store / "index.scip")
+        result["indexes"] = [["index.scip", ""]]
+    except Exception:
+        result["error"] = traceback.format_exc()[-3000:]
+    (store / "run.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    volume.commit()
+    return {key: result[key] for key in ("language", "indexer", "indexes", "error")}
+
+
 FUNCTION = dict(timeout=1800, volumes={"/results": volume})
 
 
@@ -131,6 +187,11 @@ def index_java(sources: dict) -> dict:
 @app.function(image=_jvm_image(), cpu=4, memory=8192, **FUNCTION)
 def index_kotlin(sources: dict) -> dict:
     return _index("kotlin", sources)
+
+
+@app.function(image=_ts_image(), cpu=2, memory=4096, **FUNCTION)
+def index_ts(sources: dict) -> dict:
+    return _index_ts(sources)
 
 
 @app.function(image=_clang_image(), cpu=2, memory=4096, **FUNCTION)
@@ -158,7 +219,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("spawn", "fetch"))
-    parser.add_argument("--languages", default="go,python,java,kotlin,c,cpp")
+    parser.add_argument("--languages", default="go,python,java,kotlin,c,cpp,ts")
     args = parser.parse_args()
     chosen = [item.strip() for item in args.languages.split(",") if item.strip()]
     local = plugin_scripts.code_sha256()
