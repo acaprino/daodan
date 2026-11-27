@@ -194,12 +194,12 @@ Riconoscimento dello stack sul corpus, giro del 27 novembre 2026 (`benchmarks/pr
 | --- | --- | --- | --- | --- |
 | js | 20 | 10 / 10 (100,0 %) | 11 / 11 (100,0 %), 0 sbagliati | 1 / 1 (100,0 %), 0 in più |
 | py | 21 | 4 / 4 (100,0 %) | 4 / 4 (100,0 %), 0 sbagliati | 2 / 3 (66,7 %), 0 in più |
-| jvm | 34 | 35 / 42 (83,3 %) | 36 / 43 (83,7 %), 0 sbagliati | 2 / 2 (100,0 %), 1 in più |
+| jvm | 34 | 38 / 42 (90,5 %) | 39 / 43 (90,7 %), 0 sbagliati | 2 / 2 (100,0 %), 1 in più |
 | sys | 25 | 2 / 2 (100,0 %) | 1 / 2 (50,0 %), 1 sbagliato | nessuno atteso, 0 in più |
 | mix | 30 | 28 / 31 (90,3 %) | 30 / 37 (81,1 %), 0 sbagliati | 12 / 33 (36,4 %), 1 in più |
-| real | 15 | 143 / 163 (87,7 %) | 257 / 312 (82,4 %), 13 sbagliati | 55 / 124 (44,4 %), 15 in più |
-| stack | 39 | 357 / 393 (90,8 %) | 604 / 757 (79,8 %), 53 sbagliati | 177 / 451 (39,2 %), 73 in più |
-| tutte | 184 | 579 / 645 (89,8 %) | 943 / 1.166 (80,9 %), 67 sbagliati | 249 / 614 (40,6 %), 90 in più |
+| real | 15 | 144 / 163 (88,3 %) | 262 / 312 (84,0 %), 13 sbagliati | 58 / 124 (46,8 %), 15 in più |
+| stack | 39 | 359 / 393 (91,3 %) | 604 / 757 (79,8 %), 55 sbagliati | 178 / 451 (39,5 %), 76 in più |
+| tutte | 184 | 585 / 645 (90,7 %) | 951 / 1.166 (81,6 %), 69 sbagliati | 253 / 614 (41,2 %), 93 in più |
 
 Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: il fork di stack-analyser ha una regola per la voce (la colonna «Regola del fork»: `sì` se la voce viene dal catalogo del suo rilascio, `no` se il registro la nomina e il fork non la riconosce) e la riconosce da ciò che il progetto mostra (un pacchetto, un'immagine, un file, un sorgente). Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
@@ -232,7 +232,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Connect | `connectrpc` | framework | sì | — | 1 |
 | Cordova | `apacheCordova` | framework | sì | — | 0 |
 | Dioxus | `dioxus` | framework | sì | — | 0 |
-| Django | `django` | framework | sì | — | 6 |
+| Django | `django` | framework | sì | — | 7 |
 | Django Channels | `django-channels` | framework | sì | — | 1 |
 | Django REST framework | `django-rest-framework` | framework | sì | — | 3 |
 | Docsify | `docsify` | framework | sì | — | 0 |
@@ -309,7 +309,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Slate | `slatedocs` | framework | sì | — | 0 |
 | Slim | `slim` | framework | sì | — | 1 |
 | Solid js | `solidjs` | framework | sì | — | 0 |
-| Sphinx | `sphinx` | framework | sì | — | 1 |
+| Sphinx | `sphinx` | framework | sì | — | 2 |
 | Spring AI | `spring-ai` | framework | sì | — | 1 |
 | Spring AMQP | `spring-amqp` | framework | sì | — | 1 |
 | Spring Boot | `spring-boot` | framework | sì | — | 8 |
@@ -341,7 +341,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Vue.js | `vue` | framework | sì | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_vue.py`) | 9 |
 | VuePress | `vuepress` | framework | sì | — | 0 |
 | Vuetify | `vuetify` | framework | sì | — | 1 |
-| Wagtail | `wagtail` | framework | sì | — | 0 |
+| Wagtail | `wagtail` | framework | sì | — | 1 |
 | Wasp | `wasp` | framework | sì | — | 0 |
 | WinUI | `winui` | framework | sì | — | 1 |
 | Yew | `yew` | framework | sì | — | 1 |
@@ -363,12 +363,12 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | BullMQ | `bullmq` | library | sì | — | 1 |
 | Casbin | `casbin` | library | sì | — | 1 |
 | Catalyst | `github-catalyst` | library | sì | — | 1 |
-| Cats | `cats` | library | sì | — | 0 |
+| Cats | `cats` | library | sì | — | 1 |
 | Chakra UI | `chakraui` | library | sì | — | 0 |
 | clap | `clap` | library | sì | — | 4 |
 | class-transformer | `class-transformer` | library | sì | — | 2 |
 | class-validator | `class-validator` | library | sì | — | 2 |
-| Click | `click` | library | sì | — | 6 |
+| Click | `click` | library | sì | — | 8 |
 | Cobra | `cobra` | library | sì | — | 1 |
 | CodeMirror | `codemirror` | library | sì | — | 8 |
 | Coil | `coil` | library | sì | — | 2 |
@@ -408,7 +408,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Hyper | `hyper-rust` | library | sì | — | 1 |
 | Imago | `imago` | library | sì | — | 0 |
 | Ionicons | `ionicons` | library | sì | — | 0 |
-| Jackson | `jackson` | library | sì | — | 4 |
+| Jackson | `jackson` | library | sì | — | 6 |
 | Jinja | `jinja` | library | sì | — | 9 |
 | JMS Serializer | `jms-serializer` | library | sì | — | 1 |
 | Joi | `joijs` | library | sì | — | 0 |
@@ -446,7 +446,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Mongoose | `mongoose` | library | sì | — | 1 |
 | Mono.Cecil | `mono-cecil` | library | sì | — | 0 |
 | MUI Icons | `muiicons` | library | sì | — | 1 |
-| NumPy | `numpy` | library | sì | — | 1 |
+| NumPy | `numpy` | library | sì | — | 2 |
 | Oban | `oban` | library | sì | — | 2 |
 | OpenAPI | `openapi` | library | sì | — | 9 |
 | OpenCV | `opencv` | library | sì | — | 0 |
@@ -465,7 +465,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Protocol Buffers | `protobuf` | library | sì | — | 7 |
 | Pydantic | `pydantic` | library | sì | — | 7 |
 | Pytorch | `pytorch` | library | sì | — | 0 |
-| PyYAML | `pyyaml` | library | sì | — | 4 |
+| PyYAML | `pyyaml` | library | sì | — | 5 |
 | Qmgo | `qmgo` | library | sì | — | 1 |
 | Qute | `qute` | library | sì | — | 1 |
 | Radix Icons | `radixicons` | library | sì | — | 0 |
@@ -484,7 +484,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Remix Icons | `remixicons` | library | sì | — | 0 |
 | Remix Router | `remixrouter` | library | sì | — | 0 |
 | Remult | `remult` | library | sì | — | 0 |
-| Requests | `requests` | library | sì | — | 9 |
+| Requests | `requests` | library | sì | — | 11 |
 | Resilience4j | `resilience4j` | library | sì | — | 1 |
 | Rich | `rich` | library | sì | — | 5 |
 | Routerino | `routerino` | library | sì | — | 1 |
@@ -542,7 +542,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | wiremock | `wiremock-rs` | library | sì | — | 1 |
 | YARP | `yarp` | library | sì | — | 1 |
 | Zod | `zod` | library | sì | — | 7 |
-| .NET SDK | `dotnet` | tool | sì | — | 0 |
+| .NET SDK | `dotnet` | tool | sì | — | 9 |
 | Ada | `ada` | tool | sì | — | 0 |
 | Alembic | `alembic` | tool | sì | — | 5 |
 | Ansible | `ansible` | tool | sì | — | 0 |
@@ -569,7 +569,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Cargo | `cargo` | tool | sì | — | 17 |
 | Chef | `chef` | tool | sì | — | 0 |
 | Clojure | `clojure` | tool | sì | — | 0 |
-| CMake | `cmake` | tool | sì | — | 0 |
+| CMake | `cmake` | tool | sì | — | 10 |
 | COBOL | `cobol` | tool | sì | — | 0 |
 | CoffeeScript | `coffeescript` | tool | sì | — | 0 |
 | Composer | `phpcomposer` | tool | sì | — | 7 |
@@ -624,12 +624,12 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | MATLAB | `matlab` | tool | sì | — | 0 |
 | Maven | `maven` | tool | sì | — | 24 |
 | Mintlify | `mintlify` | tool | sì | — | 1 |
-| Mix | `mix` | tool | sì | — | 0 |
+| Mix | `mix` | tool | sì | — | 4 |
 | Mocha | `mochajs` | tool | sì | — | 1 |
 | Mockito | `mockito` | tool | sì | — | 4 |
 | MockK | `mockk` | tool | sì | — | 1 |
 | MockServer | `mockserver` | tool | sì | — | 0 |
-| MSTest | `mstest` | tool | sì | — | 0 |
+| MSTest | `mstest` | tool | sì | — | 1 |
 | NodeJS | `nodejs` | tool | sì | — | 65 |
 | npm | `npm` | tool | sì | — | 21 |
 | NuGet | `nuget` | tool | sì | — | 9 |
@@ -655,7 +655,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Poetry | `poetry` | tool | sì | — | 0 |
 | Prettier | `prettier` | tool | sì | — | 16 |
 | Pulumi | `pulumi` | tool | sì | — | 0 |
-| pytest | `pytest` | tool | sì | — | 9 |
+| pytest | `pytest` | tool | sì | — | 11 |
 | Python | `python` | tool | sì | — | 16 |
 | Quinoa | `quinoa` | tool | sì | — | 1 |
 | R | `r` | tool | sì | — | 0 |
@@ -671,11 +671,11 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Rubocop | `rubocop` | tool | sì | — | 1 |
 | Ruby | `ruby` | tool | sì | — | 6 |
 | rubyenv | `rubyenv` | tool | sì | — | 0 |
-| Ruff | `ruff` | tool | sì | — | 10 |
+| Ruff | `ruff` | tool | sì | — | 14 |
 | Rust | `rust` | tool | sì | — | 17 |
-| sbt | `sbt` | tool | sì | — | 0 |
+| sbt | `sbt` | tool | sì | — | 1 |
 | Scala | `scala` | tool | sì | — | 0 |
-| ScalaTest | `scalatest` | tool | sì | — | 0 |
+| ScalaTest | `scalatest` | tool | sì | — | 1 |
 | SCSS | `scss` | tool | sì | — | 0 |
 | setuptools | `setuptools` | tool | sì | — | 10 |
 | SharpFuzz | `sharpfuzz` | tool | sì | — | 0 |
@@ -866,7 +866,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Bitwarden | `bitwarden` | servizio o API | — | sì | 0 |
 | Blackfire | `blackfire` | servizio o API | — | no | 0 |
 | Bluesky | `bluesky` | servizio o API | — | sì | 0 |
-| Boto3 | `boto3` | servizio o API | — | no | 4 |
+| Boto3 | `boto3` | servizio o API | — | no | 5 |
 | Box | `box` | servizio o API | — | sì | 0 |
 | Braintree | `braintree` | servizio o API | — | sì | 0 |
 | Braintrust | `braintrust` | servizio o API | — | sì | 0 |
@@ -915,7 +915,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Cloud Spanner | `gcp.spanner` | database | — | sì | 0 |
 | Cloud Speech | `gcp.speech` | servizio o API | — | sì | 0 |
 | Cloud SQL | `gcp.sql` | database | — | sì | 0 |
-| Cloud Storage | `gcp.gcs` | database | — | sì | 2 |
+| Cloud Storage | `gcp.gcs` | database | — | sì | 3 |
 | Cloud Tasks | `gcp.tasks` | servizio o API | — | sì | 0 |
 | Cloud Vision | `gcp.vision` | servizio o API | — | sì | 0 |
 | CloudBees | `cloudbees` | servizio o API | — | sì | 0 |
@@ -983,7 +983,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Dynatrace | `dynatrace` | servizio o API | — | sì | 0 |
 | eID Easy | `eideasy` | servizio o API | `id.eideasy.com` | no | 1 |
 | Elastic Cloud | `elasticcloud` | servizio o API | — | sì | 0 |
-| Elasticsearch | `elasticsearch` | database | — | sì | 2 |
+| Elasticsearch | `elasticsearch` | database | — | sì | 3 |
 | Elevenlabs | `elevenlabs` | servizio o API | — | sì | 0 |
 | Enable Banking | `enable-banking` | servizio o API | `api.enablebanking.com` | no | 0 |
 | Envoy | `envoy` | gateway | — | no | 1 |
@@ -1013,7 +1013,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Friendly Captcha | `friendly-captcha` | servizio o API | — | no | 1 |
 | Frontegg | `frontegg` | autenticazione | — | no | 0 |
 | Fusionauth | `fusionauth` | autenticazione | — | sì | 0 |
-| GCP | `gcp` | servizio o API | — | sì | 3 |
+| GCP | `gcp` | servizio o API | — | sì | 4 |
 | Gemini AI | `geminiai` | servizio o API | `generativelanguage.googleapis.com` | no | 0 |
 | Ghost | `ghost` | servizio o API | — | sì | 0 |
 | GIPHY | `giphy` | servizio o API | — | sì | 0 |
@@ -1060,7 +1060,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Graylog | `graylog` | servizio o API | — | sì | 0 |
 | GreenMail | `greenmail` | servizio o API | — | no | 1 |
 | Groq | `groq` | servizio o API | — | no | 0 |
-| H2 | `h2` | database | — | no | 2 |
+| H2 | `h2` | database | — | no | 3 |
 | Hanko | `hanko` | autenticazione | — | no | 0 |
 | HAProxy | `haproxy` | servizio o API | — | sì | 0 |
 | hCaptcha | `hcaptcha` | servizio o API | — | no | 0 |
@@ -1262,7 +1262,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Poe | `poe` | servizio o API | — | sì | 0 |
 | Polar | `polarsh` | gateway | — | no | 1 |
 | Polkadot | `polkadot` | servizio o API | — | sì | 0 |
-| Postgres | `postgresql` | database | — | sì | 36 |
+| Postgres | `postgresql` | database | — | sì | 37 |
 | Postgrest | `postgrest` | servizio o API | — | no | 0 |
 | PostHog | `posthog` | servizio o API | — | sì | 3 |
 | Postman | `postman` | servizio o API | — | sì | 0 |
@@ -1271,7 +1271,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Prestashop | `prestashop` | servizio o API | — | sì | 0 |
 | Prisma Cloud | `prismacloud` | servizio o API | — | no | 0 |
 | Prismic | `prismic` | servizio o API | — | sì | 0 |
-| Prometheus | `prometheus` | servizio o API | — | sì | 6 |
+| Prometheus | `prometheus` | servizio o API | — | sì | 7 |
 | PropelAuth | `propelauth` | autenticazione | — | no | 0 |
 | PubSub | `gcp.pubsub` | coda | — | sì | 0 |
 | Puppeteer | `puppeteer` | servizio o API | — | sì | 1 |
