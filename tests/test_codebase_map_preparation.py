@@ -523,3 +523,11 @@ def test_android_installs_exactly_the_packages_the_build_states_and_one_it_canno
         "detail": "android-sdk 99: platforms;android-99: Warning: Failed to find package 'platforms;android-99'"}]
     assert not (tmp_path / "x").exists()
     assert preparation.android(stated[-1:]) == {"files": [], "lines": [], "hosts": (), "gaps": []}
+
+
+def test_a_nested_cargo_crate_with_its_own_lockfile_restores_on_its_own():
+    """Cargo writes `Cargo.lock` at a workspace's root: a crate below the root with one is a workspace of its own, one
+    without is a member."""
+    files = ["Cargo.toml", "Cargo.lock", "crates/a/Cargo.toml", "tools/gen/Cargo.toml", "tools/gen/Cargo.lock"]
+    assert preparation.restores(files) == {"cargo": [".", "tools/gen"]}
+    assert preparation.restores(["shell/Cargo.toml", "shell/Cargo.lock"]) == {"cargo": ["shell"]}
