@@ -584,8 +584,15 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     with the commonest cause, and the store gets no entry for it: a gap too, beside a language that is fresh.
 
     An analyzer that `READS` files by suffix is handed the snapshot's (`files`); one whose outcome is a `graph` of
-    its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`).
+    its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`). The hosts its runs ask for are
+    the indexer's (`egress.asking`).
     """
+    import egress
+    with egress.asking(spec.name):
+        return _index_stage(spec, manifest, project_root, out)
+
+
+def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path | None) -> dict:
     import code_graph
     import premap
     module = importlib.import_module(f"indexers.{spec.indexer}")

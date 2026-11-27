@@ -332,6 +332,10 @@ class MapService:
             result["engine"] = eng
             result["progress"] = self._progress(manifest.path)
             result["pipeline"] = self._pipeline_state(manifest.path, eng)
+            import egress
+            import engine_pass
+            # the hosts the analysis waits for the person to approve, by tool: read here, answered only in the app
+            result["egress"] = egress.groups(engine_pass._projects(Path(manifest.path)))
         return result
 
     def _pipeline_journal(self, manifest):

@@ -166,6 +166,26 @@ def test_one_analysis_looks_up_lookups_names_in_all_and_a_pending_request_not_ag
     assert asked[-1] == "e.example.com" and len(asked) == 4
 
 
+def test_the_requests_are_grouped_by_the_tool_that_asked_and_the_command_line_only_lists_them(tmp_path, capsys):
+    project = tmp_path / "app"
+    key = str(project.resolve())
+    with egress.asking("dotnet"):
+        egress.collect(key, [{"host": "10.0.0.1", "port": "443"}])
+        egress.preflight(key, ("10.0.0.2",))
+    egress.collect(key, [{"host": "10.0.0.1", "port": "443"}, {"host": "10.0.0.3", "port": "443"}])
+    assert [(g["tool"], [r["host"] for r in g["requests"]]) for g in egress.groups([key])] == [
+        ("dotnet", ["10.0.0.1", "10.0.0.2"]), ("", ["10.0.0.3"])]  # a request keeps the tool that first asked
+    assert egress.main([str(project)]) == 0
+    assert json.loads(capsys.readouterr().out) == egress.groups([key])
+    with pytest.raises(ValueError, match="no request waits"):
+        egress.reply(key, ["10.0.0.9"], "once")
+    with pytest.raises(ValueError, match="must be one of"):
+        egress.reply(key, ["10.0.0.1"], "yes")
+    egress.reply(key, ["10.0.0.1", "10.0.0.2"], "no")
+    assert [g["tool"] for g in egress.groups([key])] == [""] and egress.session(key)["deny"] == ["10.0.0.1",
+                                                                                               "10.0.0.2"]
+
+
 def test_requests_split_the_refusals_into_requests_and_host_denied_gaps(monkeypatch):
     monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
     state, session = egress.answer(egress.load(), egress.new_session(), "blocked.example.com", PROJECT, "block")

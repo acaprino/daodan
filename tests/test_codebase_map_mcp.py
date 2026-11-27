@@ -1131,3 +1131,41 @@ class SystemMapServiceTests(unittest.TestCase):
         self.assertEqual(retained["flows"][0]["status"], "accepted")
         self.assertEqual(retained["refused_proposals"][0]["arrows"], failed_update["arrows"])
         self.assertEqual(self.service.flows("system", about=area)["refused_proposals"], retained["refused_proposals"])
+
+
+def test_no_mcp_tool_answers_a_host_request_and_the_status_lists_them_by_tool(tmp_path, monkeypatch):
+    """Only the app approves a host (`docs/specs/architettura.md`, «Uscita di rete con approvazione»): a client of MCP
+    may be an agent that reads the analysed project. The status lists the requests; no tool takes an answer."""
+    import asyncio
+    import importlib.util
+    import inspect
+    import egress
+    import engine_pass
+    from test_codebase_map_reactive_server import _load_mcp_server  # the server, over a stub of `mcp` without it
+
+    server = _load_mcp_server().create_server(tmp_path)
+    if importlib.util.find_spec("mcp") is not None:
+        from mcp import Client
+
+        async def catalog():
+            async with Client(server) as client:
+                return [(tool.name, list(tool.inputSchema.get("properties", {})))
+                        for tool in (await client.list_tools()).tools]
+        tools = asyncio.run(catalog())
+    else:
+        tools = [(name, list(inspect.signature(tool).parameters)) for name, tool in server._tools.items()]
+    assert "codebase_map_status" in dict(tools)
+    for name, parameters in tools:
+        words = " ".join([name, *parameters]).lower()
+        assert not any(word in words for word in ("egress", "approv", "respond", "reply", "host")), name
+    project = tmp_path / "project"
+    (project / "src").mkdir(parents=True)
+    (project / "src" / "a.py").write_text("A = 1\n", encoding="utf-8")
+    service = mcp_service.MapService(project)
+    service.create_run("src", "r1", engine=False)
+    key = str(project.resolve())
+    monkeypatch.setattr(engine_pass, "_projects", lambda manifest: [key])
+    with egress.asking("gradle"):
+        egress.collect(key, [{"host": "10.0.0.4", "port": "443"}], {"10.0.0.4": ["build.gradle"]})
+    assert service.status("r1")["egress"] == [{"tool": "gradle", "project": key, "requests": [
+        {"host": "10.0.0.4", "port": "443", "address": "10.0.0.4", "network": True, "declared_in": ["build.gradle"]}]}]

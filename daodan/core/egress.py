@@ -16,8 +16,10 @@ are this process's copy of them.
 """
 from __future__ import annotations
 
+import argparse
 import concurrent.futures
 import contextlib
+import contextvars
 import ipaddress
 import json
 import os
@@ -43,6 +45,17 @@ MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each 
 LOOKUPS = 16  # the names one analysis looks up at most, counted in its row of `SESSION_FILE` ("looked")
 LOOKUP_SECONDS = 5  # how long the names of one run's refusals are looked up, all together
 REPLIES = ("always", "once", "no", "block")
+ASKER = contextvars.ContextVar("egress_asker", default="")  # the tool whose runs ask now (`asking`); "" none named
+
+
+@contextlib.contextmanager
+def asking(tool: str):
+    """Within it the requests a run makes are the `tool`'s: the app asks about them together, one group a tool."""
+    token = ASKER.set(tool)
+    try:
+        yield
+    finally:
+        ASKER.reset(token)
 
 
 def new_session() -> dict:
@@ -300,7 +313,8 @@ def collect(project: str, refused: list[dict], where: dict | None = None) -> tup
     state, answers, budget = load(), session(project), max(LOOKUPS - _looked(project), 0)
     asks, gaps = requests(refused, project, state, answers, WHERE.get(project) if where is None else where, budget,
                           known)
-    looked = min(len({_name(row["host"]) for row in asks if (row["host"], row["port"]) not in known} - {None}),
+    asks = [{**row, "tool": (known.get((row["host"], row["port"])) or {}).get("tool", ASKER.get())} for row in asks]
+    looked =min(len({_name(row["host"]) for row in asks if (row["host"], row["port"]) not in known} - {None}),
                  budget)
     held = PENDING.setdefault(project, {})
     for row in asks:
@@ -356,3 +370,46 @@ def pending(project: str) -> list[dict]:
     if isinstance(shared, list):  # the file is the truth: a request answered in another process is gone from it
         return [row for row in shared if isinstance(row, dict) and "host" in row and "port" in row]
     return list(PENDING.get(project, {}).values())
+
+
+def groups(projects: list[str]) -> list[dict]:
+    """The requests waiting for an answer of `projects` (the names of one analysis), one group a tool that asked, in
+    the order asked: `[{"tool", "project", "requests": [{"host", "port", "address", "network", "declared_in"}]}]`;
+    `tool` is "" for runs no tool named (`asking`)."""
+    found = {}
+    for project in dict.fromkeys(projects):
+        for row in pending(project):
+            tool = row.get("tool") if isinstance(row.get("tool"), str) else ""
+            found.setdefault((project, tool), {"tool": tool, "project": project, "requests": []})["requests"].append(
+                {"host": row["host"], "port": row["port"], "address": row.get("address"),
+                 "network": bool(row.get("network")), "declared_in": list(row.get("declared_in") or ())})
+    return list(found.values())
+
+
+def reply(project: str, hosts: list[str], said: str) -> None:
+    """The user's answer `said` (one of `REPLIES`) to the requests of `project` for `hosts`, a group of them: the
+    app's action, the only one that answers (MCP and the command line only read `groups`). A host that does not wait
+    for an answer is refused, so that a page answers what was asked and nothing else."""
+    if said not in REPLIES:
+        raise ValueError(f"the answer must be one of {', '.join(REPLIES)}")
+    if not isinstance(hosts, list) or not hosts or not all(isinstance(host, str) for host in hosts):
+        raise ValueError("hosts must be a nonempty list of the hosts asked")
+    waiting = {row["host"] for row in pending(project)}
+    if unknown := sorted({host.lower() for host in hosts} - waiting):
+        raise ValueError(f"no request waits for an answer for {', '.join(unknown)}")
+    for host in dict.fromkeys(host.lower() for host in hosts):
+        respond(host, project, said)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """`daodan egress PROJECT...`: the requests waiting for an answer, by tool, as JSON. It never answers one: only the
+    app does, where the user sees them."""
+    parser = argparse.ArgumentParser(description="The hosts an analysis waits for the user to approve in the app.")
+    parser.add_argument("projects", nargs="+", type=Path, help="the analysed project's folder")
+    args = parser.parse_args(argv)
+    print(json.dumps(groups([str(path.resolve()) for path in args.projects]), indent=1))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

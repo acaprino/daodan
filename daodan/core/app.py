@@ -46,6 +46,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import app_view  # noqa: E402
 import confinement  # noqa: E402
+import egress  # noqa: E402
 import engines  # noqa: E402
 import repository  # noqa: E402
 import service_registry  # noqa: E402
@@ -254,7 +255,20 @@ class App:
         """The part of the state this process holds, cheap to read: the run's states are read from its store."""
         return {"job": self.job, "context": self.context, "engine": engines.described(self.engine), "mcp": self.mcp(),
                 "mcp_ready": self.mcp_ready, "asked": {key: self.asked[key] for key in ("state", "question", "cause")},
-                "links": self.linked, "mapped": self.mapped}
+                "links": self.linked, "mapped": self.mapped,
+                "egress": egress.groups([self._project()]) if self.context is not None else []}
+
+    def _project(self) -> str:
+        """The name `egress` knows the selected checkout by: its folder, the snapshot's root."""
+        if self.context is None:
+            raise ValueError("no repository is selected")
+        return str(Path(self.context["path"]).resolve())
+
+    def hosts(self, body: dict) -> dict:
+        """The person's answer to a group of the host requests the state shows: `{"hosts": [...], "reply": "always"
+        | "once" | "no" | "block"}` (`egress.reply`). Only this action answers: MCP and the command line only read."""
+        egress.reply(self._project(), body.get("hosts"), body.get("reply"))
+        return self.state({})
 
     def state(self, query: dict) -> dict:
         service, context = self.service, self.context
@@ -712,7 +726,7 @@ class App:
         routes = {**visual.live_routes(active), "/api/app/state": self.state, "/api/app/answer": self.answer,
                   "/api/app/paths": self.paths, "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols}
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
-                   "/api/app/retry": self.retry,
+                   "/api/app/retry": self.retry, "/api/app/egress": self.hosts,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask,
                    "/api/app/link": self.link, "/api/app/map": self.map}
         stream = {"/api/stream": self.stream(visual.live_stream(active)["/api/stream"])}

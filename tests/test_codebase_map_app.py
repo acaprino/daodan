@@ -883,6 +883,46 @@ def test_the_first_level_and_an_opening_ask_the_readers_as_often_however_many_sy
     assert (asked[0]["outline_manifest"], asked[0]["query_meta_code"], asked[0]["graph_packet"]) == (0, 0, 1)
 
 
+def test_the_state_shows_the_host_requests_by_tool_and_only_its_guarded_action_answers_them(tmp_path):
+    """The requests of the selected checkout's analysis, one group a tool, with what the popup shows; the action
+    answers a group, under the server's guard, and only for hosts that wait for an answer."""
+    import egress
+    project = tmp_path / "checkout"
+    project.mkdir()
+    key = str(project.resolve())
+    with egress.asking("mise"):
+        egress.collect(key, [{"host": "10.0.0.1", "port": "443"}, {"host": "10.0.0.2", "port": "443"}])
+    egress.collect(key, [{"host": "10.0.0.3", "port": "8443"}], {"10.0.0.3": ["pom.xml"]})
+    app = launcher.App(tmp_path / "work", environment={})
+    server = app.serve(token="t")
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        port = server.server_address[1]
+        assert request(port, "/api/app/state")[1]["egress"] == []  # no checkout selected
+        app.context = {"path": str(project), "run_id": "app-aaaaaaaaaaaa"}
+        assert request(port, "/api/app/state")[1]["egress"] == [
+            {"tool": "mise", "project": key, "requests": [
+                {"host": "10.0.0.1", "port": "443", "address": "10.0.0.1", "network": True, "declared_in": []},
+                {"host": "10.0.0.2", "port": "443", "address": "10.0.0.2", "network": True, "declared_in": []}]},
+            {"tool": "", "project": key, "requests": [
+                {"host": "10.0.0.3", "port": "8443", "address": "10.0.0.3", "network": True,
+                 "declared_in": ["pom.xml"]}]}]
+        group = {"hosts": ["10.0.0.1", "10.0.0.2"], "reply": "once"}
+        assert request(port, "/api/app/egress", group, token=None)[0] == 403  # the guard: no token, no answer
+        assert request(port, "/api/app/egress", {"hosts": ["10.0.0.9"], "reply": "once"})[0] == 400  # not asked
+        assert request(port, "/api/app/egress", {"hosts": ["10.0.0.3"], "reply": "maybe"})[0] == 400
+        assert egress.pending(key) and egress.session(key) == egress.new_session()
+        status, told = request(port, "/api/app/egress", group)
+        assert status == 200 and [g["tool"] for g in told["egress"]] == [""]
+        assert egress.session(key)["allow"] == ["10.0.0.1", "10.0.0.2"]
+        status, told = request(port, "/api/app/egress", {"hosts": ["10.0.0.3"], "reply": "block"})
+        assert status == 200 and told["egress"] == [] and egress.load()["blacklist"] == ["10.0.0.3"]
+    finally:
+        app.close()
+        server.shutdown()
+        server.server_close()
+
+
 def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monkeypatch):
     project = tmp_path / "checkout"
     project.mkdir()

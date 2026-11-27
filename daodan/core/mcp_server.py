@@ -87,7 +87,7 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
     @server.tool(annotations=read_only)
     async def codebase_map_status(ctx: Context, run_id: str) -> dict:
-        """Read canonical state and actual delivery gaps, including direct worker changes, and the call-resolution engine state and, per language, its coverage (sites with an answer by class, holes by class, uncertain arcs, complete or lower-bound), and the analysis's last progress (step, analyzer, done of total)."""
+        """Read canonical state and actual delivery gaps, including direct worker changes, and the call-resolution engine state and, per language, its coverage (sites with an answer by class, holes by class, uncertain arcs, complete or lower-bound), and the analysis's last progress (step, analyzer, done of total), and the hosts it waits for the person to approve, by tool (`egress`: read only, they are answered only in Daodan's app)."""
         return await _invoke(ctx, service.status, run_id)
 
     @server.tool(annotations=read_only)

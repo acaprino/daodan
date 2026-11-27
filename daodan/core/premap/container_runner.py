@@ -305,5 +305,10 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         return [{**answer, "root": roots[n + 1], **({"gaps": gaps} if n == 0 and gaps else {})}
                 for n, answer in enumerate(answers[1:])]
 
-    run.uses_default_container = engine is None
-    return run
+    def by_tool(commands: list[dict], toolchains: list[dict] = ()) -> list[dict]:
+        import egress
+        with egress.asking(commands[0]["tool"] if commands else ""):  # the tool's hosts are asked about together
+            return run(commands, toolchains)
+
+    by_tool.uses_default_container = engine is None
+    return by_tool

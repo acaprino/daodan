@@ -654,7 +654,8 @@ def run(manifest: Path, bus) -> dict:
             result = {"state": "gap", "cause": asked["gap"].cause, "remedy": asked["gap"].remedy} \
                 if "gap" in asked else None
             if result is None:  # a host the project declares that nobody decided: the runs do not start
-                waiting, said_hosts = egress.preflight(str(snapshot.root.resolve()), planned["declared"]["hosts"])
+                with egress.asking(entry):  # the observer's hosts are asked about together
+                    waiting, said_hosts = egress.preflight(str(snapshot.root.resolve()), planned["declared"]["hosts"])
                 if waiting:
                     result = {"state": "failed", "cause": said_hosts[0]["detail"],
                               "remedy": "answer in the app, then analyze again", "gaps": said_hosts}
@@ -662,7 +663,7 @@ def run(manifest: Path, bus) -> dict:
                 bus.progress(STEP, number, len(waiting), analyzer=entry, phase="tests",
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")
                 with container.beside(declared["services"], {**declared["env"], **stepped["env"]},
-                                      stepped["steps"]) as said:
+                                      stepped["steps"]) as said, egress.asking(entry):
                     # Preserve the first attempt's raw per-process files and logs for audit.
                     output = folder / f"retry-{cached['attempt'] + 1}" if cached else folder
                     result = module.observe(snapshot.root, planned, output,
