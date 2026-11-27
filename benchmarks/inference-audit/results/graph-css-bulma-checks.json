@@ -2,36 +2,40 @@
  "case": "bulma",
  "commit": "e133d45b7a829b278d2613cd0591b793f2f69f13",
  "code": {
-  "css.py": "49854bf56415",
-  "css_astro.js": "60aedc755928",
-  "css_astro.py": "83ae4f9723f2",
-  "css_engines.json": "2cf04c7179fb",
-  "css_expressions.js": "f576bae77c67",
-  "css_less.js": "7ea43d4fc4c2",
-  "css_less.py": "1f082b76eb1f",
-  "css_sass.js": "040e6256e5ac",
-  "css_sass.py": "45180a7e614c",
-  "css_stylus.js": "22c5cf93eff5",
-  "css_stylus.py": "bbe7cdfae4fe",
-  "css_svelte.js": "3814c915a7a8",
-  "css_svelte.py": "6c91a62cd587",
-  "css_tailwind.js": "4dca22ec9809",
-  "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "a8e11983317d",
-  "css_typescript.py": "6ff05448a8d6",
-  "css_vue.js": "4fbf1fcf22e4",
-  "css_vue.py": "93c02e4a9797"
+  "css.py": "68ff0d7e347c",
+  "css_astro.js": "8540fd418bcd",
+  "css_astro.py": "c8157d430209",
+  "css_csstree.js": "95745fb2320c",
+  "css_csstree.py": "d9ed24317d3d",
+  "css_engines/package-lock.json": "65b5d0432220",
+  "css_engines/package.json": "0c44f73dae98",
+  "css_expressions.js": "33f6bee6a535",
+  "css_less.js": "339b386c0042",
+  "css_less.py": "d74d9e3004ae",
+  "css_packages.js": "dc4a31328ff5",
+  "css_sass.js": "0237ed14d335",
+  "css_sass.py": "c2a5e278bdfc",
+  "css_stylus.js": "753915f10641",
+  "css_stylus.py": "a8d16d83fc4d",
+  "css_svelte.js": "8fc8b2a1f906",
+  "css_svelte.py": "10e35514b1c3",
+  "css_tailwind.js": "ca0e48f2964b",
+  "css_tailwind.py": "d7536cfbb251",
+  "css_typescript.js": "a7d6310ce90c",
+  "css_typescript.py": "a82b9c69c6d0",
+  "css_vue.js": "a6ef281e17e8",
+  "css_vue.py": "371de29e0479"
  },
  "files_given": 602,
- "npm_install_seconds": 7.0,
- "node_modules": "/root/.cache/daodan/npm/204769d29f34d59d/node_modules",
+ "npm_install_seconds": 3.8,
+ "node_modules": "/work/bulma/src/node_modules",
  "report": {
-  "language": "css",
+  "language": "stylesheet",
   "indexer": {
-   "name": "codebase-map stylesheet.py + sass-parser + typescript + tailwindcss",
-   "version": "e62b3f368913 + 0.5.6 + 5.9.3 + None",
-   "seconds": 13.1,
-   "peak_mb": 310
+   "name": "codebase-map stylesheet.py + @eslint/css-tree + sass-parser + typescript + tailwindcss",
+   "version": "cdb9de69a3ed + 4.1.3 + 0.5.6 + 6.0.3 + None",
+   "seconds": 7.5,
+   "peak_mb": 397
   },
   "files": {
    "snapshot": 602,
@@ -40,7 +44,7 @@
    "missing_count": 0
   },
   "nodes": 109307,
-  "edges": 8852216,
+  "edges": 8862180,
   "symbols_by_kind": {
    "external module": 12,
    "project container": 15,
@@ -56,13 +60,13 @@
   "edges_by_end": {
    "external function": 188,
    "external import": 36,
-   "project class": 5052873,
+   "project class": 5061553,
    "project container": 807,
-   "project custom-property": 3791991,
+   "project custom-property": 3793281,
    "project function": 1520,
    "project id": 35,
    "project import": 359,
-   "project keyframes": 962,
+   "project keyframes": 956,
    "project mixin": 374,
    "project module-member": 62,
    "project placeholder": 103,
@@ -71,6 +75,8 @@
   },
   "callable_chain_hops": {},
   "hop_tags": {
+   "initializer": 8680,
+   "classnames": 8680,
    "classList": 7662,
    "className=": 1689,
    "literal-type": 506,
@@ -82,55 +88,60 @@
    "configuration": 2
   },
   "edges_uncertain": {
-   "sheet-not-proven-loaded": 5042301,
-   "cascade and inheritance pick one per element; sheet-not-proven-loaded": 3356101,
-   "cascade and inheritance pick one per element": 435850,
+   "sheet-not-proven-loaded": 5050981,
+   "cascade and inheritance pick one per element; sheet-not-proven-loaded": 3357359,
+   "cascade and inheritance pick one per element": 435882,
    "selector built at compile time from literal values; sheet-not-proven-loaded": 10479,
-   "the last in cascade order wins; sheet-not-proven-loaded": 872,
+   "the last in cascade order wins; sheet-not-proven-loaded": 868,
    "the nearest ancestor container wins; sheet-not-proven-loaded": 736,
-   "the last in cascade order wins": 88,
+   "the last in cascade order wins": 86,
    "the nearest ancestor container wins": 71,
    "a URL path several checkout files end with": 2
   },
   "edges_removed": {},
   "holes_by_class": {
-   "call class": 11,
+   "call class": 1,
+   "computed-key class": 11,
    "dynamic-member module-member": 2,
    "interpolated-selector class": 165,
    "interpolated-selector id": 12,
    "interpolated-selector rule": 1157,
    "no-font-face font-face": 233,
-   "no-rule class": 1072,
-   "no-rule id": 268,
-   "not-read import": 6,
+   "no-rule class": 1060,
+   "no-rule id": 260,
    "parameter class": 2,
    "parameter id": 33,
    "property id": 1,
+   "remote-sheet class": 12,
+   "remote-sheet id": 8,
    "template class": 3,
    "template id": 3,
    "template-tag class": 22,
    "template-tag id": 2,
    "template-tag-glued class": 219,
    "template-tag-glued id": 39,
-   "undeclared custom-property": 4001,
+   "undeclared custom-property": 3999,
    "undeclared function": 246,
    "undeclared mixin": 81,
    "undeclared sass-variable": 23,
    "unknown-member module-member": 1,
+   "unparsed declaration": 24,
+   "unparsed statement": 1,
    "unresolved-import import": 127,
    "unresolved-import module-member": 34,
-   "unresolved-import script": 15
+   "unresolved-import script": 15,
+   "value-not-matched keyframes": 4
   },
   "holes": [
    {
     "class": "undeclared",
     "kind": "custom-property",
     "reason": "-",
-    "count": 3977,
+    "count": 3975,
     "examples": [
      "css/bulma.css:3336 --bulma-link-focus-border",
      "css/versions/bulma-no-dark-mode.css:12855 --bulma-dark-10-invert-l",
-     "css/versions/bulma-prefixed.min.css:3 --bulma-black-75-l"
+     "css/versions/bulma-prefixed.min.css:3 --bulma-black-70-invert-l"
     ]
    },
    {
@@ -148,22 +159,22 @@
     "class": "no-rule",
     "kind": "class",
     "reason": "-",
-    "count": 1072,
+    "count": 1060,
     "examples": [
      "docs/_includes/about/author.html:5 bd-footer-iframe",
-     "docs/_includes/library/layout/level.html:62 link",
-     "docs/documentation/elements/icon.html:521 fa-home"
+     "docs/_includes/library/layout/level.html:39 heading",
+     "docs/documentation/elements/icon.html:429 fa-home"
     ]
    },
    {
     "class": "no-rule",
     "kind": "id",
     "reason": "-",
-    "count": 268,
+    "count": 260,
     "examples": [
      "docs/_includes/book/book-banner.html:1 bulma-book",
-     "docs/cyp/components/pagination.html:64 pagination-medium",
-     "docs/cyp/form/tools.html:57 field-is-grouped-centered"
+     "docs/cyp/components/pagination.html:52 pagination-right",
+     "docs/cyp/form/tools.html:37 field-has-addons"
     ]
    },
    {
@@ -266,9 +277,20 @@
     ]
    },
    {
+    "class": "unparsed",
+    "kind": "declaration",
+    "reason": "-",
+    "count": 24,
+    "examples": [
+     "docs/_includes/docs/components/logos-item.html:4 background-image: url(/assets/images/unsplash/{{ include.unsplash }}.jpg)",
+     "docs/_includes/docs/elements/drawing.html:1 --height: {{ include.height }}",
+     "docs/_includes/global/native.html:58 color: #native_cta_color#"
+    ]
+   },
+   {
     "class": "undeclared",
     "kind": "custom-property",
-    "reason": "fallback var(--bulma-grid-gap",
+    "reason": "fallback var(--bulma-grid-gap)",
     "count": 24,
     "examples": [
      "css/bulma.css:10380 --bulma-grid-column-gap",
@@ -354,14 +376,14 @@
     ]
    },
    {
-    "class": "call",
+    "class": "computed-key",
     "kind": "class",
     "reason": "-",
     "count": 11,
     "examples": [
-     "docs/_react/bulma-customizer/src/components/Slider.jsx:150 classNames({ [cn.main]: true, [cn.moving]: isMoving, })",
-     "docs/_react/bulma-customizer/src/components/VarItem.jsx:78 classNames({ \"button is-small\": true, \"is-float-right\": true, \"ml-2\": true, \"is-danger is-outlined\": !isDisabled, })",
-     "docs/_react/bulma-customizer/src/App.jsx:575 classNames({ [cn.button]: true, \"is-hidden\": !context.isOpen, button: !context.showExport, \"button is-primary\": conte..."
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:150 [cn.main]: true",
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:155 [cn[kind]]: true",
+     "docs/_react/bulma-customizer/src/App.jsx:575 [cn.button]: true"
     ]
    },
    {
@@ -409,6 +431,17 @@
     ]
    },
    {
+    "class": "remote-sheet",
+    "kind": "id",
+    "reason": "a sheet not read may declare it: https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.css",
+    "count": 8,
+    "examples": [
+     "docs/shop.html:509 open-cart",
+     "docs/shop.html:526 shop",
+     "docs/shop.html:544 cart-checkout"
+    ]
+   },
+   {
     "class": "unresolved-import",
     "kind": "import",
     "reason": "sass/utilities/extends",
@@ -420,14 +453,25 @@
     ]
    },
    {
-    "class": "not-read",
-    "kind": "import",
-    "reason": "the sheet could not be downloaded",
+    "class": "remote-sheet",
+    "kind": "class",
+    "reason": "a sheet not read may declare it: https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma-rtl.min.css, https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
     "count": 6,
     "examples": [
-     "docs/_includes/docs/snippets/getting-started.html:7 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
-     "docs/documentation/start/installation.html:23 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
-     "docs/_sass/examples/custom.scss:41 https://fonts.googleapis.com/css?family=Nunito:400,700"
+     "docs/documentation/start/installation.html:47 fab",
+     "docs/documentation/start/installation.html:47 fa-2x",
+     "docs/documentation/start/installation.html:108 fa-sass"
+    ]
+   },
+   {
+    "class": "remote-sheet",
+    "kind": "class",
+    "reason": "a sheet not read may declare it: https://unpkg.com/photoswipe@5.4.4/dist/photoswipe.css",
+    "count": 6,
+    "examples": [
+     "docs/shop.html:476 shop-price",
+     "docs/shop.html:505 algolia-lvl1",
+     "docs/shop.html:511 fa-bag-shopping"
     ]
    },
    {
@@ -439,6 +483,17 @@
      "docs/_includes/global/header.html:29 js-menu",
      "docs/_includes/global/header.html:60 js-menu",
      "docs/documentation/components/nav.html:88 nav-menu"
+    ]
+   },
+   {
+    "class": "value-not-matched",
+    "kind": "keyframes",
+    "reason": "-",
+    "count": 4,
+    "examples": [
+     "docs/assets/css/website.css:37188 animation: Matching for a tree with var() is not supported",
+     "docs/assets/css/website.css:37193 animation: Matching for a tree with var() is not supported",
+     "docs/assets/css/website.min.css:2 animation: Matching for a tree with var() is not supported"
     ]
    },
    {
@@ -514,46 +569,6 @@
      "docs/assets/javascript/shop.js:846 className",
      "docs/assets/javascript/shop.js:854 icon"
     ]
-   },
-   {
-    "class": "interpolated-selector",
-    "kind": "class",
-    "reason": "a selector built at compile time at sass/grid/columns.scss:25 may name it",
-    "count": 2,
-    "examples": [
-     "docs/_includes/book/book-banner.html:5 bd-book-columns",
-     "docs/_includes/book/book-modal.html:4 bd-book-modal-columns"
-    ]
-   },
-   {
-    "class": "interpolated-selector",
-    "kind": "class",
-    "reason": "a selector built at compile time at sass/components/menu.scss:79 may name it",
-    "count": 2,
-    "examples": [
-     "docs/_includes/docs/menu-list.html:3 js-menu-list",
-     "docs/_includes/docs/menu.html:34 js-menu-list"
-    ]
-   },
-   {
-    "class": "unresolved-import",
-    "kind": "import",
-    "reason": "{{ site.url }}/vendor/fontawesome-free-6.5.2-web/css/all.min.css",
-    "count": 2,
-    "examples": [
-     "docs/_includes/global/head.html:18 {{ site.url }}/vendor/fontawesome-free-6.5.2-web/css/all.min.css",
-     "docs/_layouts/cypress.html:10 {{ site.url }}/vendor/fontawesome-free-6.5.2-web/css/all.min.css"
-    ]
-   },
-   {
-    "class": "interpolated-selector",
-    "kind": "class",
-    "reason": "a selector built at compile time at sass/components/navbar.scss:112 may name it",
-    "count": 2,
-    "examples": [
-     "docs/_includes/global/navbar.html:1 bd-navbar",
-     "docs/_includes/global/navbar.html:95 bd-navbar"
-    ]
    }
   ],
   "external_packages": {
@@ -584,15 +599,15 @@
    "module external": 12
   },
   "edges_by_kind_end": {
-   "class project": 5052873,
+   "class project": 5061553,
    "container project": 807,
-   "custom-property project": 3791991,
+   "custom-property project": 3793281,
    "function external": 188,
    "function project": 1520,
    "id project": 35,
    "import external": 36,
    "import project": 359,
-   "keyframes project": 962,
+   "keyframes project": 956,
    "mixin project": 374,
    "module-member project": 62,
    "placeholder project": 103,
@@ -600,7 +615,8 @@
    "script project": 1
   },
   "edges_by_chain": {
-   "-": 8841855,
+   "-": 8843139,
+   "initializer > classnames": 8680,
    "classList": 7156,
    "className=": 1689,
    "classList > literal-type": 506,
@@ -613,11 +629,11 @@
   },
   "holes_by_class": {
    "undeclared custom-property": {
-    "count": 4001,
+    "count": 3999,
     "examples": [
      "css/bulma.css:3336 --bulma-link-focus-border",
      "css/versions/bulma-no-dark-mode.css:12863 --bulma-dark-15-l",
-     "css/versions/bulma-prefixed.min.css:3 --bulma-black-70-l"
+     "css/versions/bulma-prefixed.min.css:3 --bulma-black-65-invert-l"
     ]
    },
    "interpolated-selector rule": {
@@ -629,19 +645,19 @@
     ]
    },
    "no-rule class": {
-    "count": 1072,
+    "count": 1060,
     "examples": [
      "docs/_includes/about/author.html:5 bd-footer-iframe",
-     "docs/_includes/library/layout/level.html:62 link",
-     "docs/documentation/elements/icon.html:521 fa-home"
+     "docs/_includes/library/layout/level.html:39 heading",
+     "docs/documentation/elements/icon.html:429 fa-home"
     ]
    },
    "no-rule id": {
-    "count": 268,
+    "count": 260,
     "examples": [
      "docs/_includes/book/book-banner.html:1 bulma-book",
-     "docs/cyp/components/pagination.html:64 pagination-medium",
-     "docs/cyp/form/tools.html:57 field-is-grouped-centered"
+     "docs/cyp/components/pagination.html:52 pagination-right",
+     "docs/cyp/form/tools.html:37 field-has-addons"
     ]
    },
    "undeclared function": {
@@ -716,6 +732,14 @@
      "docs/_react/bulma-customizer/src/pages/elements/Tag.jsx:12 id"
     ]
    },
+   "unparsed declaration": {
+    "count": 24,
+    "examples": [
+     "docs/_includes/docs/components/logos-item.html:4 background-image: url(/assets/images/unsplash/{{ include.unsplash }}.jpg)",
+     "docs/_includes/docs/elements/drawing.html:1 --height: {{ include.height }}",
+     "docs/_includes/global/native.html:58 color: #native_cta_color#"
+    ]
+   },
    "undeclared sass-variable": {
     "count": 23,
     "examples": [
@@ -748,20 +772,36 @@
      "docs/cyp/grid/columns.html:107 columns-mobile"
     ]
    },
-   "call class": {
-    "count": 11,
+   "remote-sheet class": {
+    "count": 12,
     "examples": [
-     "docs/_react/bulma-customizer/src/components/Slider.jsx:150 classNames({ [cn.main]: true, [cn.moving]: isMoving, })",
-     "docs/_react/bulma-customizer/src/components/VarItem.jsx:78 classNames({ \"button is-small\": true, \"is-float-right\": true, \"ml-2\": true, \"is-danger is-outlined\": !isDisabled, })",
-     "docs/_react/bulma-customizer/src/App.jsx:575 classNames({ [cn.button]: true, \"is-hidden\": !context.isOpen, button: !context.showExport, \"button is-primary\": conte..."
+     "docs/documentation/start/installation.html:47 fab",
+     "docs/documentation/start/installation.html:108 fa-sass",
+     "docs/shop.html:505 algolia-lvl1"
     ]
    },
-   "not-read import": {
-    "count": 6,
+   "computed-key class": {
+    "count": 11,
     "examples": [
-     "docs/_includes/docs/snippets/getting-started.html:7 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
-     "docs/documentation/start/installation.html:23 https://cdn.jsdelivr.net/npm/bulma@{{ site.data.meta.version }}/css/bulma.min.css",
-     "docs/_sass/examples/custom.scss:41 https://fonts.googleapis.com/css?family=Nunito:400,700"
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:150 [cn.main]: true",
+     "docs/_react/bulma-customizer/src/components/Slider.jsx:155 [cn[kind]]: true",
+     "docs/_react/bulma-customizer/src/App.jsx:575 [cn.button]: true"
+    ]
+   },
+   "remote-sheet id": {
+    "count": 8,
+    "examples": [
+     "docs/shop.html:509 open-cart",
+     "docs/shop.html:526 shop",
+     "docs/shop.html:544 cart-checkout"
+    ]
+   },
+   "value-not-matched keyframes": {
+    "count": 4,
+    "examples": [
+     "docs/assets/css/website.css:37188 animation: Matching for a tree with var() is not supported",
+     "docs/assets/css/website.css:37193 animation: Matching for a tree with var() is not supported",
+     "docs/assets/css/website.min.css:2 animation: Matching for a tree with var() is not supported"
     ]
    },
    "template id": {
@@ -801,10 +841,22 @@
      "docs/assets/javascript/shop.js:854 icon"
     ]
    },
+   "unparsed statement": {
+    "count": 1,
+    "examples": [
+     "docs/_includes/docs/menu.html:37 {% if page.doc-tab =="
+    ]
+   },
    "property id": {
     "count": 1,
     "examples": [
      "docs/_react/bulma-customizer/src/components/VarItem.jsx:47 cssvar.id"
+    ]
+   },
+   "call class": {
+    "count": 1,
+    "examples": [
+     "docs/assets/javascript/docs.js:79 [outputBaseClass, ...outputClasses].join(\" \").trim()"
     ]
    },
    "unknown-member module-member": {
@@ -815,172 +867,309 @@
    }
   },
   "uncertain": {
-   "edges": 8846500,
-   "references": 98895,
+   "edges": 8856464,
+   "references": 98929,
    "examples": [
     {
-     "site": "css/bulma.css:10157",
-     "symbol": "bulma-fixed-grid",
-     "to": "css/bulma.css:10113 container bulma-fixed-grid",
-     "uncertain": {
-      "reason": "the nearest ancestor container wins",
-      "candidates": [
-       "css/bulma.css:10113 container bulma-fixed-grid",
-       "css/bulma.min.css:3 container bulma-fixed-grid",
-       "css/versions/bulma-no-dark-mode.css:7310 container bulma-fixed-grid",
-       "css/versions/bulma-no-dark-mode.min.css:3 container bulma-fixed-grid",
-       "css/versions/bulma-no-helpers-prefixed.css:10113 container bulma-fixed-grid",
-       "css/versions/bulma-no-helpers-prefixed.min.css:3 container bulma-fixed-grid",
-       "css/versions/bulma-no-helpers.css:10113 container bulma-fixed-grid",
-       "css/versions/bulma-no-helpers.min.css:3 container bulma-fixed-grid",
-       "css/versions/bulma-prefixed.css:10113 container bulma-fixed-grid",
-       "css/versions/bulma-prefixed.min.css:3 container bulma-fixed-grid",
-       "docs/assets/css/website.css:14603 container bulma-fixed-grid",
-       "docs/assets/css/website.min.css:2 container bulma-fixed-grid"
-      ]
-     }
-    },
-    {
-     "site": "css/versions/bulma-no-helpers.css:13192",
-     "symbol": "--bulma-hero-s",
-     "to": "css/versions/bulma-no-helpers-prefixed.css:13551 --bulma-hero-s",
-     "uncertain": {
-      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
-      "candidates": [
-       "css/bulma.css:13181 --bulma-hero-s",
-       "css/bulma.css:13218 --bulma-hero-s",
-       "css/bulma.css:13255 --bulma-hero-s",
-       "css/bulma.css:13292 --bulma-hero-s",
-       "css/bulma.css:13329 --bulma-hero-s",
-       "css/bulma.css:13366 --bulma-hero-s",
-       "css/bulma.css:13403 --bulma-hero-s",
-       "css/bulma.css:13440 --bulma-hero-s",
-       "css/bulma.css:13477 --bulma-hero-s",
-       "css/bulma.css:13514 --bulma-hero-s",
-       "css/bulma.css:13551 --bulma-hero-s",
-       "css/bulma.min.css:3 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10378 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10415 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10452 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10489 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10526 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10563 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10600 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10637 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10674 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10711 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.css:10748 --bulma-hero-s",
-       "css/versions/bulma-no-dark-mode.min.css:3 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13181 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13218 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13255 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13292 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13329 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13366 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13403 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13440 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13477 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13514 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.css:13551 --bulma-hero-s",
-       "css/versions/bulma-no-helpers-prefixed.min.css:3 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13181 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13218 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13255 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13292 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13329 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13366 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13403 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13440 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13477 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13514 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.css:13551 --bulma-hero-s",
-       "css/versions/bulma-no-helpers.min.css:3 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13181 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13218 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13255 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13292 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13329 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13366 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13403 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13440 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13477 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13514 --bulma-hero-s",
-       "css/versions/bulma-prefixed.css:13551 --bulma-hero-s",
-       "css/versions/bulma-prefixed.min.css:3 --bulma-hero-s",
-       "docs/assets/css/website.css:17671 --bulma-hero-s",
-       "docs/assets/css/website.css:17708 --bulma-hero-s",
-       "docs/assets/css/website.css:17745 --bulma-hero-s",
-       "docs/assets/css/website.css:17782 --bulma-hero-s",
-       "docs/assets/css/website.css:17819 --bulma-hero-s",
-       "docs/assets/css/website.css:17856 --bulma-hero-s",
-       "docs/assets/css/website.css:17893 --bulma-hero-s",
-       "docs/assets/css/website.css:17930 --bulma-hero-s",
-       "docs/assets/css/website.css:17967 --bulma-hero-s",
-       "docs/assets/css/website.css:18004 --bulma-hero-s",
-       "docs/assets/css/website.css:18041 --bulma-hero-s",
-       "docs/assets/css/website.css:18078 --bulma-hero-s",
-       "docs/assets/css/website.css:18115 --bulma-hero-s",
-       "docs/assets/css/website.css:18152 --bulma-hero-s",
-       "docs/assets/css/website.css:18189 --bulma-hero-s",
-       "docs/assets/css/website.css:18226 --bulma-hero-s",
-       "docs/assets/css/website.css:18263 --bulma-hero-s",
-       "docs/assets/css/website.css:18300 --bulma-hero-s",
-       "docs/assets/css/website.css:18337 --bulma-hero-s",
-       "docs/assets/css/website.css:18374 --bulma-hero-s",
-       "docs/assets/css/website.css:18411 --bulma-hero-s",
-       "docs/assets/css/website.min.css:2 --bulma-hero-s"
-      ]
-     }
-    },
-    {
-     "site": "docs/assets/css/website.css:110",
-     "symbol": "--bulma-dark-s",
-     "to": "css/versions/bulma-prefixed.min.css:2 --bulma-dark-s",
-     "uncertain": {
-      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
-      "candidates": [
-       "css/bulma.css:1016 --bulma-dark-s",
-       "css/bulma.css:115 --bulma-dark-s",
-       "css/bulma.css:1934 --bulma-dark-s",
-       "css/bulma.min.css:2 --bulma-dark-s",
-       "css/versions/bulma-no-dark-mode.css:18854 --bulma-dark-s",
-       "css/versions/bulma-no-dark-mode.min.css:3 --bulma-dark-s",
-       "css/versions/bulma-no-helpers-prefixed.css:1016 --bulma-dark-s",
-       "css/versions/bulma-no-helpers-prefixed.css:115 --bulma-dark-s",
-       "css/versions/bulma-no-helpers-prefixed.css:1934 --bulma-dark-s",
-       "css/versions/bulma-no-helpers-prefixed.min.css:2 --bulma-dark-s",
-       "css/versions/bulma-no-helpers.css:1016 --bulma-dark-s",
-       "css/versions/bulma-no-helpers.css:115 --bulma-dark-s",
-       "css/versions/bulma-no-helpers.css:1934 --bulma-dark-s",
-       "css/versions/bulma-no-helpers.min.css:2 --bulma-dark-s",
-       "css/versions/bulma-prefixed.css:1016 --bulma-dark-s",
-       "css/versions/bulma-prefixed.css:115 --bulma-dark-s",
-       "css/versions/bulma-prefixed.css:1934 --bulma-dark-s",
-       "css/versions/bulma-prefixed.min.css:2 --bulma-dark-s",
-       "docs/assets/css/custom.css:3915 --bulma-dark-s",
-       "docs/assets/css/custom.css:4815 --bulma-dark-s",
-       "docs/assets/css/custom.css:5732 --bulma-dark-s",
-       "docs/assets/css/website.css:114 --bulma-dark-s",
-       "docs/assets/css/website.css:2035 --bulma-dark-s",
-       "docs/assets/css/website.css:3993 --bulma-dark-s",
-       "docs/assets/css/website.min.css:1 --bulma-dark-s"
-      ]
-     }
-    },
-    {
-     "site": "docs/documentation/columns/sizes.html:193",
-     "symbol": ".column",
-     "to": "docs/assets/css/website.css:14063 @media screen and (min-width: 1408px) { .column.is-5-fullhd }",
+     "site": "docs/_includes/about/author.html:1",
+     "symbol": ".bd-footer-title",
+     "to": "docs/assets/css/website.css:32335 .bd-footer-title, .bd-footer-donation-title",
      "uncertain": {
       "reason": "sheet-not-proven-loaded"
      }
     },
     {
-     "site": "docs/documentation/form/input.html:394",
+     "site": "docs/documentation/columns/sizes.html:522",
      "symbol": ".column",
-     "to": "docs/assets/css/website.min.css:2 @media screen and (min-width:1216px) { .column.is-2-widescreen }",
+     "to": "css/bulma.css:8896 @media screen and (min-width: 769px), print { .column.is-2, .column.is-2-tablet }",
      "uncertain": {
       "reason": "sheet-not-proven-loaded"
+     }
+    },
+    {
+     "site": "docs/documentation/grid/grid-cells.html:70",
+     "symbol": ".cell",
+     "to": "css/versions/bulma-no-helpers.css:12649 @media screen and (min-width: 1216px) and (max-width: 1407px) { .cell.is-col-end-6-widescreen-only }",
+     "uncertain": {
+      "reason": "sheet-not-proven-loaded"
+     }
+    },
+    {
+     "site": "css/bulma.css:15502",
+     "symbol": "--s",
+     "to": "docs/assets/css/website.css:22334 --s",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "css/bulma.css:14480 --s",
+       "css/bulma.css:14979 --s",
+       "css/bulma.css:15478 --s",
+       "css/bulma.css:15977 --s",
+       "css/bulma.css:16476 --s",
+       "css/bulma.css:16975 --s",
+       "css/bulma.css:17474 --s",
+       "css/bulma.css:17973 --s",
+       "css/bulma.css:18472 --s",
+       "css/bulma.css:18971 --s",
+       "css/bulma.css:19470 --s",
+       "css/bulma.min.css:3 --s",
+       "css/versions/bulma-no-dark-mode.css:11677 --s",
+       "css/versions/bulma-no-dark-mode.css:12176 --s",
+       "css/versions/bulma-no-dark-mode.css:12675 --s",
+       "css/versions/bulma-no-dark-mode.css:13174 --s",
+       "css/versions/bulma-no-dark-mode.css:13673 --s",
+       "css/versions/bulma-no-dark-mode.css:14172 --s",
+       "css/versions/bulma-no-dark-mode.css:14671 --s",
+       "css/versions/bulma-no-dark-mode.css:15170 --s",
+       "css/versions/bulma-no-dark-mode.css:15669 --s",
+       "css/versions/bulma-no-dark-mode.css:16168 --s",
+       "css/versions/bulma-no-dark-mode.css:16667 --s",
+       "css/versions/bulma-no-dark-mode.min.css:3 --s",
+       "css/versions/bulma-prefixed.css:14480 --s",
+       "css/versions/bulma-prefixed.css:14979 --s",
+       "css/versions/bulma-prefixed.css:15478 --s",
+       "css/versions/bulma-prefixed.css:15977 --s",
+       "css/versions/bulma-prefixed.css:16476 --s",
+       "css/versions/bulma-prefixed.css:16975 --s",
+       "css/versions/bulma-prefixed.css:17474 --s",
+       "css/versions/bulma-prefixed.css:17973 --s",
+       "css/versions/bulma-prefixed.css:18472 --s",
+       "css/versions/bulma-prefixed.css:18971 --s",
+       "css/versions/bulma-prefixed.css:19470 --s",
+       "css/versions/bulma-prefixed.min.css:3 --s",
+       "docs/_react/bulma-customizer/src/components/Color.jsx:115 --s",
+       "docs/_react/bulma-customizer/src/components/Slider.jsx:139 --s",
+       "docs/_sass/docs/link.scss:12 --s",
+       "docs/_sass/docs/link.scss:19 --s",
+       "docs/_sass/docs/link.scss:25 --s",
+       "docs/_sass/docs/link.scss:30 --s",
+       "docs/_sass/docs/link.scss:35 --s",
+       "docs/_sass/docs/link.scss:40 --s",
+       "docs/_sass/docs/menu.scss:18 --s",
+       "docs/_sass/docs/menu.scss:25 --s",
+       "docs/_sass/docs/menu.scss:31 --s",
+       "docs/_sass/docs/menu.scss:32 --s",
+       "docs/_sass/docs/menu.scss:40 --s",
+       "docs/_sass/docs/menu.scss:46 --s",
+       "docs/_sass/docs/menu.scss:47 --s",
+       "docs/_sass/docs/menu.scss:54 --s",
+       "docs/_sass/global/feature.scss:101 --s",
+       "docs/_sass/global/feature.scss:62 --s",
+       "docs/_sass/global/header.scss:29 --s",
+       "docs/_sass/global/header.scss:48 --s",
+       "docs/_sass/global/nav.scss:103 --s",
+       "docs/_sass/global/nav.scss:109 --s",
+       "docs/_sass/global/nav.scss:116 --s",
+       "docs/_sass/global/nav.scss:20 --s",
+       "docs/_sass/global/nav.scss:46 --s",
+       "docs/_sass/global/nav.scss:52 --s",
+       "docs/_sass/global/nav.scss:59 --s",
+       "docs/_sass/global/nav.scss:65 --s",
+       "docs/_sass/global/nav.scss:71 --s",
+       "docs/_sass/global/nav.scss:77 --s",
+       "docs/_sass/global/nav.scss:84 --s",
+       "docs/_sass/global/nav.scss:90 --s",
+       "docs/_sass/global/nav.scss:97 --s",
+       "docs/_sass/home/bubble.scss:107 --s",
+       "docs/_sass/home/bubble.scss:115 --s",
+       "docs/_sass/home/bubble.scss:123 --s",
+       "docs/_sass/home/bubble.scss:29 --s",
+       "docs/_sass/home/intro.scss:155 --s",
+       "docs/_sass/thing.scss:13 --s",
+       "docs/_sass/thing.scss:65 --s",
+       "docs/_sass/thing.scss:71 --s",
+       "docs/assets/css/website.css:19340 --s",
+       "docs/assets/css/website.css:19839 --s",
+       "docs/assets/css/website.css:20338 --s",
+       "docs/assets/css/website.css:20837 --s",
+       "docs/assets/css/website.css:21336 --s",
+       "docs/assets/css/website.css:21835 --s",
+       "docs/assets/css/website.css:22334 --s",
+       "docs/assets/css/website.css:22833 --s",
+       "docs/assets/css/website.css:23332 --s",
+       "docs/assets/css/website.css:23831 --s",
+       "docs/assets/css/website.css:24330 --s",
+       "docs/assets/css/website.css:24829 --s",
+       "docs/assets/css/website.css:25328 --s",
+       "docs/assets/css/website.css:25827 --s",
+       "docs/assets/css/website.css:26326 --s",
+       "docs/assets/css/website.css:26825 --s",
+       "docs/assets/css/website.css:27324 --s",
+       "docs/assets/css/website.css:27823 --s",
+       "docs/assets/css/website.css:28322 --s",
+       "docs/assets/css/website.css:28821 --s",
+       "docs/assets/css/website.css:29320 --s",
+       "docs/assets/css/website.css:31423 --s",
+       "docs/assets/css/website.css:31457 --s",
+       "docs/assets/css/website.css:31462 --s",
+       "docs/assets/css/website.css:31467 --s",
+       "docs/assets/css/website.css:31472 --s",
+       "docs/assets/css/website.css:31477 --s",
+       "docs/assets/css/website.css:31482 --s",
+       "docs/assets/css/website.css:31487 --s",
+       "docs/assets/css/website.css:31492 --s",
+       "docs/assets/css/website.css:31497 --s",
+       "docs/assets/css/website.css:31502 --s",
+       "docs/assets/css/website.css:31507 --s",
+       "docs/assets/css/website.css:31512 --s",
+       "docs/assets/css/website.css:31720 --s",
+       "docs/assets/css/website.css:31752 --s",
+       "docs/assets/css/website.css:31819 --s",
+       "docs/assets/css/website.css:31836 --s",
+       "docs/assets/css/website.css:32073 --s",
+       "docs/assets/css/website.css:32093 --s",
+       "docs/assets/css/website.css:32098 --s",
+       "docs/assets/css/website.css:32103 --s",
+       "docs/assets/css/website.css:32108 --s",
+       "docs/assets/css/website.css:32113 --s",
+       "docs/assets/css/website.css:32118 --s",
+       "docs/assets/css/website.css:32123 --s",
+       "docs/assets/css/website.css:32128 --s",
+       "docs/assets/css/website.css:32133 --s",
+       "docs/assets/css/website.css:32138 --s",
+       "docs/assets/css/website.css:32143 --s",
+       "docs/assets/css/website.css:32148 --s",
+       "docs/assets/css/website.css:32510 --s",
+       "docs/assets/css/website.css:32580 --s",
+       "docs/assets/css/website.css:32587 --s",
+       "docs/assets/css/website.css:32594 --s",
+       "docs/assets/css/website.css:32886 --s",
+       "docs/assets/css/website.css:34583 --s",
+       "docs/assets/css/website.css:34591 --s",
+       "docs/assets/css/website.css:34597 --s",
+       "docs/assets/css/website.css:34602 --s",
+       "docs/assets/css/website.css:34607 --s",
+       "docs/assets/css/website.css:34612 --s",
+       "docs/assets/css/website.css:34692 --s",
+       "docs/assets/css/website.css:34697 --s",
+       "docs/assets/css/website.css:34702 --s",
+       "docs/assets/css/website.css:34703 --s",
+       "docs/assets/css/website.css:34709 --s",
+       "docs/assets/css/website.css:34714 --s",
+       "docs/assets/css/website.css:34715 --s",
+       "docs/assets/css/website.css:34721 --s",
+       "docs/assets/css/website.min.css:2 --s",
+       "docs/assets/javascript/bulma-customizer/index.js:44 --s",
+       "sass/helpers/color.scss:309 --s"
+      ]
+     }
+    },
+    {
+     "site": "css/versions/bulma-prefixed.css:3380",
+     "symbol": "--bulma-button-s",
+     "to": "css/versions/bulma-no-helpers.css:3711 --bulma-button-s",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "css/bulma.css:3362 --bulma-button-s",
+       "css/bulma.css:3437 --bulma-button-s",
+       "css/bulma.css:3463 --bulma-button-s",
+       "css/bulma.css:3489 --bulma-button-s",
+       "css/bulma.css:3515 --bulma-button-s",
+       "css/bulma.css:3541 --bulma-button-s",
+       "css/bulma.css:3575 --bulma-button-s",
+       "css/bulma.css:3609 --bulma-button-s",
+       "css/bulma.css:3643 --bulma-button-s",
+       "css/bulma.css:3677 --bulma-button-s",
+       "css/bulma.css:3711 --bulma-button-s",
+       "css/bulma.css:3745 --bulma-button-s",
+       "css/bulma.min.css:3 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:559 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:634 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:660 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:686 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:712 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:738 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:772 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:806 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:840 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:874 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:908 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.css:942 --bulma-button-s",
+       "css/versions/bulma-no-dark-mode.min.css:3 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3362 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3437 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3463 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3489 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3515 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3541 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3575 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3609 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3643 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3677 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3711 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.css:3745 --bulma-button-s",
+       "css/versions/bulma-no-helpers-prefixed.min.css:3 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3362 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3437 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3463 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3489 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3515 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3541 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3575 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3609 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3643 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3677 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3711 --bulma-button-s",
+       "css/versions/bulma-no-helpers.css:3745 --bulma-button-s",
+       "css/versions/bulma-no-helpers.min.css:3 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3362 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3437 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3463 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3489 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3515 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3541 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3575 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3609 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3643 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3677 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3711 --bulma-button-s",
+       "css/versions/bulma-prefixed.css:3745 --bulma-button-s",
+       "css/versions/bulma-prefixed.min.css:3 --bulma-button-s",
+       "docs/assets/css/custom.css:2457 --bulma-button-s",
+       "docs/assets/css/custom.css:2532 --bulma-button-s",
+       "docs/assets/css/custom.css:2558 --bulma-button-s",
+       "docs/assets/css/custom.css:2584 --bulma-button-s",
+       "docs/assets/css/custom.css:2610 --bulma-button-s",
+       "docs/assets/css/custom.css:2636 --bulma-button-s",
+       "docs/assets/css/custom.css:2670 --bulma-button-s",
+       "docs/assets/css/custom.css:2704 --bulma-button-s",
+       "docs/assets/css/custom.css:2738 --bulma-button-s",
+       "docs/assets/css/custom.css:2772 --bulma-button-s",
+       "docs/assets/css/custom.css:2806 --bulma-button-s",
+       "docs/assets/css/custom.css:2840 --bulma-button-s",
+       "docs/assets/css/debug.css:352 --bulma-button-s",
+       "docs/assets/css/debug.css:420 --bulma-button-s",
+       "docs/assets/css/debug.css:441 --bulma-button-s",
+       "docs/assets/css/debug.css:462 --bulma-button-s",
+       "docs/assets/css/debug.css:483 --bulma-button-s",
+       "docs/assets/css/debug.css:504 --bulma-button-s",
+       "docs/assets/css/debug.css:525 --bulma-button-s",
+       "docs/assets/css/debug.css:546 --bulma-button-s",
+       "docs/assets/css/website.css:6461 --bulma-button-s",
+       "docs/assets/css/website.css:6536 --bulma-button-s",
+       "docs/assets/css/website.css:6562 --bulma-button-s",
+       "docs/assets/css/website.css:6588 --bulma-button-s",
+       "docs/assets/css/website.css:6614 --bulma-button-s",
+       "docs/assets/css/website.css:6640 --bulma-button-s",
+       "docs/assets/css/website.css:6674 --bulma-button-s",
+       "docs/assets/css/website.css:6708 --bulma-button-s",
+       "docs/assets/css/website.css:6742 --bulma-button-s",
+       "docs/assets/css/website.css:6776 --bulma-button-s",
+       "docs/assets/css/website.css:6810 --bulma-button-s",
+       "docs/assets/css/website.css:6844 --bulma-button-s",
+       "docs/assets/css/website.css:6878 --bulma-button-s",
+       "docs/assets/css/website.css:6912 --bulma-button-s",
+       "docs/assets/css/website.css:6946 --bulma-button-s",
+       "docs/assets/css/website.css:6980 --bulma-button-s",
+       "docs/assets/css/website.css:7014 --bulma-button-s",
+       "docs/assets/css/website.css:7048 --bulma-button-s",
+       "docs/assets/css/website.css:7082 --bulma-button-s",
+       "docs/assets/css/website.css:7116 --bulma-button-s",
+       "docs/assets/css/website.css:7150 --bulma-button-s",
+       "docs/assets/css/website.css:7184 --bulma-button-s",
+       "docs/assets/css/website.min.css:2 --bulma-button-s"
+      ]
      }
     }
    ]
@@ -1123,5 +1312,5 @@
   }
  ],
  "components": {},
- "seconds": 117.8
+ "seconds": 134.1
 }

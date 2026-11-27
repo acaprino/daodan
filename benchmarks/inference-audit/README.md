@@ -1578,3 +1578,23 @@ I sei grafi dei fogli di stile (pipeline `stylesheet.py`, non un indicizzatore) 
 Falsi archi: zero in tutti i quattro indicizzatori con seconda fonte (go, rust-analyzer, scip-typescript JS e TS). Limiti: la seconda fonte (il passo dei motori) non è una verità, e i casi in cui A dà una destinazione del progetto e B finisce su un valore (`mixed: A project-other, B parameter`, `call-result`: chi 29, tududi JavaScript 1.082, tududi TypeScript 3.952) non sono contati come falsi archi per definizione; sono la classe da guardare se si vuole una misura più severa. Le 153 chiamate «diverse» di chi del primo join erano interfaccia contro implementazione e sono scomparse con la lettura completa.
 
 Modello di evidenza: nessun campo nuovo. Ciò che l'indice non decide si dice con `uncertain.reason` nel `refine` dell'adattatore, come già fa `adapters/clang.py` («one symbol defined at several places»); i buchi restano `holes`. Un campo nuovo si apre solo se una misura futura mostra un falso arco che `reason` non esprime.
+
+## 27 novembre 2026, soglia dei fogli di stile (T2.B.17)
+
+`lang_css.py` sui sette casi, due corse sullo stesso codice salvo il TypeScript del programma degli script: `39dfca8` (TypeScript 5.9.3 di `css_engines/`) e `d52925a` (`T2.B.16`, il TypeScript 6.0.3 di scip-typescript 0.6.2). `modal deploy benchmarks/inference-audit/lang_css.py`, `python benchmarks/inference-audit/lang_css.py spawn --cases v3-admin-vite,tududi,bulma,bootstrap3,hn-svelte,saas-starter,sc-website`, `fetch` con gli stessi casi; risultati in `results/graph-css-<caso>-checks.json` (quelli di `d52925a`).
+
+| Caso | Nodi | Archi | Buchi | A mano | Secondi 5.9.3 → 6.0.3 |
+| --- | --- | --- | --- | --- | --- |
+| v3-admin-vite | 624 | 952 | 36 | 15/15 | 97,0 → 94,7 |
+| tududi | 2.669 | 39.626 | 351 | 20/20 | 53,6 → 73,4 |
+| bulma | 109.307 | 8.862.180 | 7.800 | 7/11 | 110,4 → 134,1 |
+| bootstrap3 | 4.218 | 147.232 | 1.643 | 15/15 | 24,8 → 19,3 |
+| hn-svelte | 81 | 73 | 15 | 16/16 | 6,6 → 8,4 |
+| saas-starter | 560 | 1.311 | 42 | 15/15 | 37,7 → 37,6 |
+| sc-website | 580 | 115 | 250 | 12/15 | 28,3 → 31,1 |
+
+- **5.9.3 → 6.0.3:** i `checks` sono uguali campo per campo (report, riepilogo, controllo a mano, componenti) salvo la versione del motore e i secondi: nessuna perdita, nessun guadagno.
+- **File:** nessuno perso senza motivo; mancano solo i due `.pug` di bootstrap3 («template language: no reader»).
+- **Soglia ≥15/15 a mano:** non raggiunta su bulma (le attese sono 11: sbagliate `.button`, che non raggiunge `App.module.css:53`; `.fas`, arco verso le regole di `docs.scss` invece del buco; `.algolia-content` con un `interpolated-selector` in più; `#js-menu-toggle` con un `no-rule` in più) e su styled-components-website, prima misura (12/15: `.error-page` dello `<style>` dentro JSX, che il grafo non legge; `--sc-color-text` e `--sc-color-surface`, attesi buchi `undeclared`, raggiungono `components/GlobalStyles.tsx:24` e `:34`). Uguale con le due versioni di TypeScript.
+- **Conteggi contro i `checks` precedenti** (codice `css.py` `49854bf56415`): le differenze vengono dal codice cambiato da allora (il fork di CSSTree, buchi `unparsed` e `remote-sheet` nuovi, bulma +9.964 archi), non da TypeScript; i nuovi `checks` sono il riferimento.
+- Gli archi senza unità di caricamento restano `sheet-not-proven-loaded` (le unità dal bundler sono di `T3.B`).
