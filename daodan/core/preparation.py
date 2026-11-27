@@ -597,7 +597,7 @@ def _names(patterns: list[str], rel: str) -> bool:
         match(p[1:]) for p in patterns if p.startswith("!"))
 
 
-def node_prepare(files, read) -> dict:
+def node_prepare(files, read, stated=()) -> dict:
     """`{restores, lines, hosts, gaps}` for the Node packages among `files`, `read(rel)` a file's text: per
     manager the folders its restore runs in (`node_restores`; a manifest's `packageManager`, the field corepack
     reads, names the manager), the shell lines that restore them with their lifecycle scripts (`restore`), each
@@ -605,7 +605,9 @@ def node_prepare(files, read) -> dict:
     beside npm's registry, and a `restore_failed` gap for each package
     folder that declares dependencies no restore installs: one inside a restore's folder whose workspaces do not
     name it, unless the `lerna.json` of such a folder names it: then Lerna's `bootstrap` installs it there, after the
-    root's restore (`RESTORES["lerna"]`). Project code: for a container's preparation only."""
+    root's restore (`RESTORES["lerna"]`). A folder holding a local dependency outside the copy
+    (`local_dependencies`, and the pre-map's `stated` gaps, `refusals`: the `yarn.lock` entries Yarn's parser reads
+    in the container) does not restore. Project code: for a container's preparation only."""
     files, named, manifests = list(files), {}, {}
     for rel in files:
         if posixpath.basename(rel) == "package.json":
@@ -640,7 +642,7 @@ def node_prepare(files, read) -> dict:
     found = [row for row in found if row[1]]
     # A restore that would install a local dependency outside the copy, or at an absolute path, does not run.
     local = local_dependencies(files, read, "node")
-    blocked = refused({folder for _manager, folders, _unlocked in found for folder in folders}, local)
+    blocked = refused({folder for _manager, folders, _unlocked in found for folder in folders}, [*local, *stated])
     found = [(manager, kept, unlocked) for manager, folders, unlocked in found
              for kept in [[f for f in folders if f not in blocked]] if kept]
     plan: dict[str, list[str]] = {}
@@ -816,13 +818,25 @@ def local_dependencies(files, read, family: str) -> list[dict]:
             text = read(rel)
         except OSError:
             continue
-        for entry, folder, path in reader(rel, text or ""):
-            why = _escapes(folder, path)
-            if why:
-                gaps.append({"kind": "local_dependency_refused", "path": _folder(rel), "file": rel, "entry": entry,
-                             "detail": f"{rel}: {entry} is a local dependency at {why}: the restore of "
-                                       f"{_folder(rel)} does not run (only paths inside the copy are restored)"})
+        gaps += [gap for entry, folder, path in reader(rel, text or "") for gap in [refusal(rel, entry, folder, path)]
+                 if gap]
     return gaps
+
+
+def refusal(rel: str, entry: str, folder: str, path: str) -> dict | None:
+    """The `local_dependency_refused` gap of the local dependency `entry` the file `rel` states at `path`, written
+    from `folder`, when the path is absolute or outside the copy (`_escapes`); None for one inside the copy."""
+    why = _escapes(folder, path)
+    return {"kind": "local_dependency_refused", "path": _folder(rel), "file": rel, "entry": entry,
+            "detail": f"{rel}: {entry} is a local dependency at {why}: the restore of "
+                      f"{_folder(rel)} does not run (only paths inside the copy are restored)"} if why else None
+
+
+def refusals(record: dict) -> list[dict]:
+    """The `local_dependency_refused` gaps of the pre-map `record` that `node_prepare` takes as `stated`: those of a
+    `yarn.lock` (`premap/renovate.py`, read with Yarn's parser); the Python ones are `python_restores`' own."""
+    return [gap for gap in record.get("gaps") or () if gap.get("kind") == "local_dependency_refused"
+            and posixpath.basename(gap.get("file") or "") == "yarn.lock"]
 
 
 def refused(folders, gaps: list[dict]) -> set[str]:

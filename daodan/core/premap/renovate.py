@@ -36,6 +36,13 @@ once as the runner expands it, `computed` naming those that reference a variable
 `entrypoint` and `command` as written; `wait` `ports`, the runner's wait for the ports its image exposes. A file
 the pipeline includes is not read: an `include_not_read` gap names it; a job that runs Docker Compose, on the Docker
 the job starts, is a `compose_not_read` one.
+
+Where the copy holds a `yarn.lock` beside a manifest, one more command reads each one with Yarn's own parser
+(`@yarnpkg/parsers`' `parseSyml`, v1 and Berry, the version Renovate pins, beside the Renovate on the path) and prints
+the descriptors whose range names a folder (`file:`, `link:`, `portal:`): a local dependency a package of the registry
+brings is written there only, in no manifest of the copy. One at an absolute path or outside the copy is a
+`local_dependency_refused` gap (`preparation.refusal`), which keeps the restore of its folder from running
+(`preparation.refusals`).
 """
 from __future__ import annotations
 
@@ -104,6 +111,23 @@ EACH = (f"cat > {VISITOR} <<'EOF'\n{REFERENCE}\nEOF\n"
         f'case "$f" in {WORKFLOWS}/*) [ ! -L .github ] && [ ! -L {WORKFLOWS} ] || continue;; esac; echo "$f"; '
         f'node {YAML} --json --single --strict --merge --visit {VISITOR} < "$f" 2> /tmp/daodan-yaml.err'
         ' || { echo null; sed "s|^|$f: |" /tmp/daodan-yaml.err >&2; }; done')
+# Yarn's lockfile parser beside the Renovate on the path, the version Renovate 44.239.1 pins: each `yarn.lock` given, as
+# JSON `{lock: [descriptor]}`, the descriptors (an entry's key lists them, joined by ", ") whose range, after the
+# name's `@`, names a folder protocol. A descriptor is an identifier, no grammar: Yarn's structUtils is not in the image.
+YARN_PARSERS = "3.1.0"
+YARN_SCRIPT = "/tmp/daodan-yarn-locks.cjs"
+YARN_READ = ("const [dir, ...locks] = process.argv.slice(2); const fs = require('fs');\n"
+             "const version = require(dir + '/package.json').version;\n"
+             f"if (version !== '{YARN_PARSERS}') {{ console.error(`@yarnpkg/parsers ${{version}}, not {YARN_PARSERS}`);"
+             " process.exit(2); }\n"
+             "const { parseSyml } = require(dir); const out = {};\n"
+             "for (const lock of locks) out[lock] = Object.keys(parseSyml(fs.readFileSync(lock, 'utf8')))"
+             ".flatMap(key => key.split(', ')).filter(d => /^(file|link|portal):/.test(d.slice(d.indexOf('@', 1) + 1)));\n"
+             "process.stdout.write(JSON.stringify(out));")
+YARN_LOCKS = (f"cat > {YARN_SCRIPT} <<'EOF'\n{YARN_READ}\nEOF\n"
+              f'node {YARN_SCRIPT} "$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/@yarnpkg/parsers"'
+              ' "$@"')
+YARN_NAME = "daodan-yarn-locks"  # the `$0` of the command: what `read` tells its answer by
 NESTING = 10  # the references GitLab resolves within one another
 CHECKOUT = "actions/checkout"  # the checkout of a job: Daodan's copy of the project
 SETUP = re.compile(r"(?:^|[-_])setup(?:$|[-_])")  # a toolchain's setup action (`setup-node`, `action-setup`)
@@ -176,9 +200,48 @@ def commands(context):
             SERVICES, INCLUDE, SCRIPT))
     workflows = [{"tool": "renovate", "argv": ["sh", "-c", EACH], "cwd": ".", "env": {}, "network": "none"}] \
         if named else []
+    locks = _yarn_locks(context)
+    yarn = [{"tool": "renovate", "argv": ["sh", "-c", YARN_LOCKS, YARN_NAME, *locks], "cwd": ".", "env": {},
+             "network": "none"}] if locks else []
     return [{"tool": "renovate", "argv": ["renovate", "--platform=local", "--dry-run=extract", "--report-type=file",
                                           "--report-path=/dev/stdout"], "cwd": ".", "env": ENV, "network": "none"},
-            *workflows]
+            *workflows, *yarn]
+
+
+def _yarn_locks(context) -> list[str]:
+    """The `yarn.lock` beside each manifest of the snapshot, a file the snapshot does not hold: in the copy, no link."""
+    locks = []
+    for rel in sorted(context.inventory.files):
+        if PurePosixPath(rel).name != "package.json":
+            continue
+        folder = posixpath.dirname(rel) or "."
+        lock = posixpath.join(folder, "yarn.lock") if folder != "." else "yarn.lock"
+        path = context.root / lock
+        if folder in context.inventory.directories and path.is_file() and not path.is_symlink():
+            locks.append(lock)
+    return locks
+
+
+def _yarn_refused(result: dict) -> list[dict]:
+    """The `local_dependency_refused` gaps of the descriptors the Yarn command prints (`YARN_LOCKS`): the path of
+    `name@protocol:path`, less Berry's `::` parameters, from the lock's folder or from the workspace its `locator`
+    parameter names (a query string, Yarn's `structUtils.makeRange`); a failed read is a `model_failed` gap."""
+    from urllib.parse import parse_qs
+    import preparation
+    if result["returncode"] != 0:
+        return [{"kind": "model_failed", "path": ".",
+                 "detail": f"yarn.lock: {(result['stderr'] or result['stdout']).strip()[-400:]}"}]
+    gaps = []
+    for lock, descriptors in json.loads(result["stdout"]).items():
+        folder = posixpath.dirname(lock) or "."
+        for descriptor in descriptors:
+            path, _, params = descriptor[descriptor.index("@", 1) + 1:].partition(":")[2].partition("::")
+            locator = (parse_qs(params).get("locator") or [""])[0]
+            base = posixpath.normpath(posixpath.join(folder, locator.partition("@workspace:")[2] or "."))
+            gap = preparation.refusal(lock, descriptor, base, path)
+            if gap:
+                gaps.append(gap)
+    return gaps
 
 
 def _services(rel: str, doc) -> list[dict]:
@@ -687,12 +750,14 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
 
 
 def read(context, commands, results):
-    result, *rest = results
+    result = results[0]
+    workflows = next((r for c, r in zip(commands, results) if c["argv"] == ["sh", "-c", EACH]), None)
+    yarn = next((r for c, r in zip(commands, results) if c["argv"][2:4] == [YARN_LOCKS, YARN_NAME]), None)
     tests = (getattr(context, "stated", None) or {}).get("tests") or []
-    declared, gaps = _workflows(rest[0], compose.reader(context), tests) if rest else ({}, [])
+    declared, gaps = _workflows(workflows, compose.reader(context), tests) if workflows else ({}, [])
     started, unread = compose.scripts(context)  # and the test scripts that start Docker Compose
     declared = {**declared, "compose": [*declared.get("compose", ()), *started]} if started else declared
-    gaps += unread
+    gaps += [*unread, *(_yarn_refused(yarn) if yarn else ())]
     if result["returncode"] != 0:
         return {"facts": declared, "gaps": [*gaps, {
             "kind": "model_failed", "path": ".",

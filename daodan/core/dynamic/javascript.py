@@ -198,6 +198,7 @@ def plan(record: dict, files: list[str], read) -> dict:
     return {"runs": runs,
             "gaps": gaps, "unrun": unrun,
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
+            "refused": preparation.refusals(record),
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in ("node", "bun")]}
 
 
@@ -456,7 +457,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
                                          "free memory", "sites": [], "runs": [], "gaps": unrun}
     cpus, memory = fits
     import node_preparation
-    restored = typescript._prepared(project, planned.get("roots") or ())
+    restored = typescript._prepared(project, planned.get("roots") or (), planned.get("refused") or ())
     restore_lines, shared = node_preparation.options(restored, planned.get("toolchains") or (),
                                                   (planned.get("declared") or {}).get("hosts", ()))
     prepare, execute, chains = scripts(planned, restore_lines, cpus)

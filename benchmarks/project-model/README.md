@@ -866,7 +866,7 @@ preparazione rifiuti solo quelle assolute o fuori dalla copia (decisione del pro
 | `package.json` (npm, pnpm, Yarn) | Renovate, `skipReason` | sì, in `currentValue`: `file:` → `file`, `link:`/`portal:` → `unspecified-version` (lo stesso di ogni versione illeggibile) | sì, ma il motivo non distingue: si legge il JSON con i protocolli di npm-package-arg e Yarn |
 | `package-lock.json` | `npm query :link --package-lock-only` (Arborist) | sì, `location` | sì; nella preparazione basta il formato documentato (`link`, `resolved`) con `json` |
 | `pnpm-lock.yaml` | `@pnpm/lockfile.fs` | — | non nel container (né in Renovate): YAML con PyYAML (`importers.*.version` `link:`/`file:`, `resolution.directory`) |
-| `yarn.lock` v1 e Berry | `@yarnpkg/parsers` 3.1.0 | non provato | è nel container dentro Renovate, non collegato: le dipendenze locali dirette sono quelle dei `package.json` della copia |
+| `yarn.lock` v1 e Berry | `@yarnpkg/parsers` 3.1.0 (`parseSyml`, quello che Renovate fissa, nel suo container) | sì, il descrittore `nome@file:`/`link:`/`portal:` con il `locator` di Berry (`ap-DdbWPhbF3kv1i5Gm5NDUg6`) | sì: `premap/renovate.py` dà `local_dependency_refused`, e `node_prepare` non lancia quel ripristino (`stated`) |
 | `requirements.txt` | Renovate | no: `-e` e i percorsi non compaiono | no |
 | `requirements.txt` | parser di pip (`pip-requirements-parser` 32.0.1) | sì, `-e`, percorso nudo, `file:` | sì |
 | `pyproject.toml` (uv, Poetry) | Renovate | no: `path-dependency` senza percorso | no: si legge con `tomllib` (`[tool.uv.sources]`, tabelle di Poetry) |
@@ -875,6 +875,5 @@ preparazione rifiuti solo quelle assolute o fuori dalla copia (decisione del pro
 
 ### Non misurato
 
-- `@pnpm/lockfile.fs`: non è nel container della pre-mappa. `@yarnpkg/parsers` vi è (dipendenza di Renovate) ma
-  nessun comando lo usa: una dipendenza `file:` di un pacchetto del registro, scritta solo nel `yarn.lock`, non è vista.
+- `@pnpm/lockfile.fs`: non è nel container della pre-mappa.
 - `setup.py` e `setup.cfg` con un percorso locale: rari, non letti per il rifiuto.

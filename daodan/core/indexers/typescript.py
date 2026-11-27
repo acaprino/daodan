@@ -504,9 +504,10 @@ def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: the folders it runs in (`roots`); the tsconfig a root without one
     extends (`tsconfig`: the root unit's first, else the only unit's that states one, since a program extends
     one); each unit's aliases (`paths`, with its folder, the root's first); the folder of each package
-    another reaches by name (`members`): a workspace's member, or one a unit depends on; and the Node it states
-    (`toolchains`)."""
+    another reaches by name (`members`): a workspace's member, or one a unit depends on; the Node it states
+    (`toolchains`); its local dependencies outside the copy (`refused`, `preparation.refusals`)."""
     import premap
+    import preparation
     units = sorted(record.get("units", []), key=lambda unit: (unit["root"] != ".", unit["root"]))
     stated = [unit for unit in units if (unit.get("config") or {}).get("tsconfig")]
     packages = [unit for unit in units if unit["kind"] in UNIT_KINDS and unit.get("name")]
@@ -520,19 +521,20 @@ def structure(record: dict) -> dict:
                        if (unit.get("config") or {}).get("paths")],
              "members": {unit["name"]: unit["root"] for unit in packages
                          if unit["root"] in reached or unit["name"] in named},
-             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "node"]}
+             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "node"],
+             "refused": preparation.refusals(record)}
     return {key: value for key, value in found.items() if value or key == "roots"}
 
 
-def _prepared(project_dir: Path, roots) -> dict:
+def _prepared(project_dir: Path, roots, refused=()) -> dict:
     """The restores of the package folders the pre-map names (`preparation.node_prepare`), from the manifest, the
-    lockfile and the pnpm workspace beside each."""
+    lockfile and the pnpm workspace beside each, less the folders the pre-map `refused` (`preparation.refusals`)."""
     names = ("package.json", "package-lock.json", "npm-shrinkwrap.json", "pnpm-workspace.yaml",
              *(lock for manager in MANAGERS for lock in preparation.RESTORES[manager].get("locks", ())))
     files = [posixpath.join(root, name) for root in sorted(roots) for name in names
              if (project_dir / root / name).is_file()]
     restored = preparation.node_prepare(files, lambda rel: (project_dir / rel).read_text(encoding="utf-8",
-                                                                                       errors="replace"))
+                                                                                       errors="replace"), refused)
     return node_modules(project_dir, restored, "TypeScript's resolver reads no .pnp.cjs")
 
 
@@ -578,7 +580,7 @@ def _runs(out_dir: Path, cause: str | None) -> list[dict]:
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsconfig: str | None = None, *,
-          roots: set[str], paths=(), members: dict | None = None, toolchains=(), engine=None,
+          roots: set[str], paths=(), members: dict | None = None, toolchains=(), refused=(), engine=None,
           memory: int = MIN_FREE, declared: dict | None = None, subset: list[str] | None = None) -> dict:
     """The scip-typescript index of `project_dir` for `files` (default: every JS/TS file outside
     `node_modules`), `tsconfig` the configuration a root without one extends, `roots` the folders of its packages,
@@ -593,7 +595,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
     work_dir.mkdir(parents=True, exist_ok=True)
     runtime.clear(work_dir, "scip-typescript")
     aliases, gaps = _aliases(paths, members)
-    restored = _prepared(project_dir, roots)
+    restored = _prepared(project_dir, roots, refused)
     plan = restored["restores"]
     # A package another reaches by name (a member, a `file:` dependency) is installed by the restore that reaches it.
     reached = set((members or {}).values())

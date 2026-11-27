@@ -36,6 +36,7 @@ import confinement  # noqa: E402
 from build_units import normalize_pypi_name  # noqa: E402
 import module_derive  # noqa: E402
 import modules  # noqa: E402
+import preparation  # noqa: E402
 from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
 from premap import (angular, astro, autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, gitmodules, go, gradle,  # noqa: E402
@@ -461,14 +462,14 @@ def _failed(status: dict, error: Exception) -> dict:
     return {"kind": "source_failed", "source": status["source"], "detail": status["reason"]}
 
 
-def _takes_toolchains(runner) -> bool:
+def _takes(runner, name: str) -> bool:
     try:
-        return "toolchains" in inspect.signature(runner).parameters
+        return name in inspect.signature(runner).parameters
     except (TypeError, ValueError):
         return False
 
 
-def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | None, list[dict]]:
+def _run(source, context: Context, runner, toolchains=(), refused=()) -> tuple[dict, dict | None, list[dict]]:
     started = time.monotonic()
     status = {"source": label(source), "rank": source.RANK}
     try:
@@ -483,7 +484,9 @@ def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | 
                                                  "Daodan's container, and their facts are missing until then"}]
             else:
                 try:
-                    results = runner(commands, toolchains=toolchains) if _takes_toolchains(runner) else runner(commands)
+                    given = {name: value for name, value in (("toolchains", toolchains), ("refused", refused))
+                             if _takes(runner, name)}
+                    results = runner(commands, **given)
                 except Exception as error:  # no container here (`container.Gap`): not run, retried when one answers
                     if not (hasattr(error, "cause") and hasattr(error, "remedy")):
                         raise
@@ -548,7 +551,9 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None, tools=
     for i in readers + [i for i in range(len(sources)) if i not in readers]:
         context.stated = {} if i in readers else join([part for _, part, _ in ran.values() if part])
         toolchains = context.stated.get("toolchains", ())
-        ran[i] = _run(sources[i], context, runner, toolchains)
+        # the `yarn.lock` entries outside the copy the sources before it refused: a restore its runner makes skips them
+        refused = preparation.refusals({"gaps": [gap for _, _, found in ran.values() for gap in found]})
+        ran[i] = _run(sources[i], context, runner, toolchains, refused)
         if report is not None:  # `report(status, done, total)`: each source as it ends
             report(ran[i][0], len(ran), len(sources))
     statuses, parts, gaps = [], [], []
