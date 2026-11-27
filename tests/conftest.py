@@ -40,7 +40,6 @@ def _forgotten_answers(tmp_path, monkeypatch):
     def forget():
         module = sys.modules.get("egress")
         if module is not None:
-            module.SESSIONS.clear()
             module.PENDING.clear()
             module.WHERE.clear()
             for name in (module.PENDING_FILE, module.SESSION_FILE):  # the files the processes of an analysis share

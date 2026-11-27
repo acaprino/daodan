@@ -241,7 +241,7 @@ class RunTest(unittest.TestCase):
         return self.state / "containers" / call[call.index("--name") + 1] / "fs"
 
     def test_the_preparation_reaches_the_feeds_the_project_declares(self):
-        egress.session(str(self.project))["allow"] += ["nuget.corp.example"]  # approved for this analysis: it opens only then
+        egress.respond("nuget.corp.example", str(self.project), "once")  # approved for this analysis: it opens only then
         self.play_success()
         self.index(declared={"hosts": ("nuget.corp.example",), "where": {}})
         self.assertIn("nuget.corp.example", self.created()[0])

@@ -187,7 +187,6 @@ class FakeEngineTest(unittest.TestCase):
         env.start()
         self.addCleanup(env.stop)
         egress.PENDING.clear()
-        egress.SESSIONS.clear()
         lookup = mock.patch.object(egress, "resolve", side_effect=lambda rows, *_: [  # no lookup in a test
             {**row, "address": None, "network": False} for row in rows])
         lookup.start()

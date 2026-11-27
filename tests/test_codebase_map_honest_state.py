@@ -210,7 +210,7 @@ def test_an_indexer_reaches_the_hosts_the_project_declares_and_one_it_could_not_
             given.update(options)
             return _contract(gaps=[failed])
         import egress
-        egress.session(str(Path(_project_dir).resolve()))["allow"].append("proxy.corp.example")  # approved for the pass
+        egress.respond("proxy.corp.example", str(Path(_project_dir).resolve()), "once")  # approved for the pass
         with mock.patch("preparation.declared", return_value=declared), \
                 mock.patch("container.find_engine", return_value="the engine"):
             _result, seen = _run(manifest, index, fields={"needs_container": builds})

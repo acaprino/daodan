@@ -21,7 +21,6 @@ PROJECT = "/work/app"
 def shared(tmp_path, monkeypatch):
     monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
     egress.PENDING.clear()
-    egress.SESSIONS.clear()
     return tmp_path / "shared"
 
 
@@ -220,7 +219,7 @@ def test_collect_registers_the_requests_once_and_returns_them_with_the_gaps(monk
     egress.collect(PROJECT, refused)  # the second run: no duplicate
     assert [r["host"] for r in egress.pending(PROJECT)] == ["ask.example.com"]
     assert egress.pending("/work/other") == []
-    egress.SESSIONS[PROJECT] = egress.answer(egress.load(), egress.session(PROJECT), "ask.example.com", PROJECT, "no")[1]
+    egress.respond("ask.example.com", PROJECT, "no")
     assert egress.collect(PROJECT, refused)[0] == []
     assert [g["host"] for g in egress.collect(PROJECT, refused)[1]] == ["ask.example.com", "blocked.example.com"]
 
@@ -330,6 +329,16 @@ def test_a_pass_empties_its_requests_when_it_starts_and_its_answers_when_it_ends
     assert egress.session(PROJECT) == egress.new_session()
     assert json.loads(_process(f"import json; print(json.dumps(egress.session({PROJECT!r})))", shared)) == \
         egress.new_session()
+
+
+def test_an_analysis_ended_in_another_process_leaves_no_answer_here_and_the_next_reply_does_not_bring_it_back(shared):
+    egress.respond("10.0.0.1", PROJECT, "once")  # the app's process answers for one analysis
+    assert egress.session(PROJECT)["allow"] == ["10.0.0.1"]
+    _process(f"egress.end({PROJECT!r})", shared)  # the analysis ends in its own process
+    assert egress.session(PROJECT) == egress.new_session()
+    egress.respond("10.0.0.2", PROJECT, "no")  # the app answers for the next analysis
+    assert json.loads((shared / egress.SESSION_FILE).read_text(encoding="utf-8"))[PROJECT] == {
+        "allow": [], "deny": ["10.0.0.2"]}
 
 
 def test_run_pass_begins_and_ends_the_egress_of_its_project(shared, monkeypatch):

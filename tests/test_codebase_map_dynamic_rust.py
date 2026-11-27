@@ -600,7 +600,7 @@ class ObserveTest(unittest.TestCase):
             self.assertIn(left, self.observe()["gaps"])
 
     def test_the_preparation_reaches_the_hosts_the_project_declares(self):
-        egress.session(str(self.project))["allow"] += ["crates.corp.example"]  # approved for this analysis: it opens only then
+        egress.respond("crates.corp.example", str(self.project), "once")  # approved for this analysis: it opens only then
         self.play_run()
         self.observe(declared=("crates.corp.example",))
         self.assertIn("crates.corp.example", self.created()[0])

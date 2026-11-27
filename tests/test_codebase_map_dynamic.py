@@ -874,7 +874,7 @@ def test_every_observer_reaches_the_hosts_the_project_declares_and_one_that_did_
     module = fake(observed)
     module.observe = lambda project, given, out_dir, engine: planned.append(given) or observed
     import egress
-    egress.session(str(Path(_project).resolve()))["allow"].append("pypi.corp.example")  # approved for this analysis
+    egress.respond("pypi.corp.example", str(Path(_project).resolve()), "once")  # approved for this analysis
     with mock.patch.object(dynamic, "observers", return_value=[module]), \
             mock.patch("preparation.declared", return_value=declared):
         _result, seen, _asked = step(manifest)

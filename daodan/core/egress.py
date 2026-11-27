@@ -11,8 +11,9 @@ The requests still to answer and the answers that last for an analysis are share
 the child that is refused, the app that answers, the pass that reads the answer. They are two files beside
 `egress.json` (`PENDING_FILE`, `SESSION_FILE`), written whole with a temporary file and `os.replace`, under an OS lock
 (`locked`); a missing or corrupt file is an empty one. `begin` empties a project's requests when its pass starts and
-`end` its answers when the pass ends, so "once" lasts for the pass the answer is used by. `PENDING` and `SESSIONS`
-are this process's copy of them.
+`end` its answers when the pass ends, so "once" lasts for the pass the answer is used by. `PENDING` is this
+process's copy of the requests; the answers are read from their file each time, so one that an analysis ended
+elsewhere has forgotten is never kept here.
 """
 from __future__ import annotations
 
@@ -40,7 +41,6 @@ PENDING_FILE, SESSION_FILE, LOCK = "egress-pending.json", "egress-session.json",
 LOCK_SECONDS = 5  # past it the file is read and written without the lock: a stuck holder must not stop an analysis
 PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (host, port): the analysis's register
 WHERE: dict[str, dict] = {}  # project -> {host: [files that declare it]}, from `declare`
-SESSIONS: dict[str, dict] = {}  # project -> the answers that last for its analysis
 MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
 LOOKUPS = 16  # the names one analysis looks up at most, counted in its row of `SESSION_FILE` ("looked")
 LOOKUP_SECONDS = 5  # how long the names of one run's refusals are looked up, all together
@@ -126,12 +126,9 @@ def _held(project: str) -> dict | None:
 
 
 def session(project: str) -> dict:
-    """The answers of the project's analysis: this process's copy, made on first use and brought up to the shared
-    file's when it has an entry for the project (the same dict each time, so a caller may change it)."""
-    mine = SESSIONS.setdefault(project, new_session())
-    if (held := _held(project)) is not None:
-        mine["allow"][:], mine["deny"][:] = held["allow"], held["deny"]
-    return mine
+    """The answers of the project's analysis, as the shared file holds them now: none when it has no entry for the
+    project (an analysis that ended, in any process, forgot them). A new value each time: `respond` changes them."""
+    return _held(project) or new_session()
 
 
 def respond(host: str, project: str, reply: str) -> None:
@@ -143,7 +140,6 @@ def respond(host: str, project: str, reply: str) -> None:
         shared = _read(SESSION_FILE)
         shared[project] = {**_row(shared, project), **answers}
         _write(SESSION_FILE, shared)
-        SESSIONS[project] = answers
         rows = _read(PENDING_FILE)
         rows[project] = [row for row in rows.get(project, []) if row.get("host") != host.lower()]
         _write(PENDING_FILE, rows)
@@ -165,7 +161,6 @@ def end(project: str) -> None:
         shared = _read(SESSION_FILE)
         shared.pop(project, None)
         _write(SESSION_FILE, shared)
-    SESSIONS.pop(project, None)
 
 
 def load() -> dict:
