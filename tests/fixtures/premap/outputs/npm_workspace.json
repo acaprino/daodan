@@ -8,24 +8,6 @@
  "runs": [
   {
    "command": {
-    "tool": "daodan-enry",
-    "argv": [
-     "daodan-enry",
-     "."
-    ],
-    "cwd": ".",
-    "env": {},
-    "network": "none"
-   },
-   "result": {
-    "returncode": 0,
-    "stdout": "[{\"path\":\"package-lock.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":true,\"binary\":false},{\"path\":\"package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/a/package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/a/src/index.js\",\"language\":\"JavaScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/b/index.js\",\"language\":\"JavaScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/b/package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false}]\n",
-    "stderr": "",
-    "root": "/work/npm_workspace"
-   }
-  },
-  {
-   "command": {
     "tool": "renovate",
     "argv": [
      "renovate",

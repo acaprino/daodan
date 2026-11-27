@@ -12,7 +12,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 
 import premap  # noqa: E402
-from premap import cargo, enry, go, module_graph, npm, renovate, tsc, uv  # noqa: E402
+from premap import cargo, go, module_graph, npm, renovate, tsc, uv  # noqa: E402
 import snapshot  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
@@ -74,11 +74,10 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
     assert {(u["root"], u["kind"], u["name"]) for u in record["units"]} == {
         (".", "python-project", "acme"), ("web", "npm-package", "@acme/web")}
     assert all(item["sources"] and all("@" in s for s in item["sources"]) for item in record["units"])
-    assert "languages" not in record  # go-enry runs in the container only
     assert {s["source"].split("@")[0]: s["state"] for s in record["sources"]} == {
         "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
         "gitmodules": "not_needed", "python-tests": "not_needed", "npm-tests": "not_needed", "npm-start": "not_needed", "autotools": "not_needed",
-        "go-enry": "not_run", "noir": "not_run", "renovate": "not_run", "compose": "not_needed", "buildkit": "not_needed",
+        "noir": "not_run", "renovate": "not_run", "compose": "not_needed", "buildkit": "not_needed",
         "go": "not_needed", "cargo": "not_needed",
         "uv": "not_needed",
         "tsc": "not_needed", "npm": "not_run", "cmake": "not_needed", "meson": "not_needed", "bazel": "not_needed",
@@ -249,7 +248,7 @@ def test_ensure_with_a_runner_runs_the_model_commands_a_fresh_premap_left_not_ru
 
 
 def test_every_command_is_data_with_its_network():
-    for source in (go, cargo, uv, renovate, tsc, enry, npm):
+    for source in (go, cargo, uv, renovate, tsc, npm):
         assert hasattr(source, "commands") and hasattr(source, "read")
     assert all(source.RANK == "model" for source in (go, cargo, uv, tsc, npm)) and renovate.RANK == "reader"
     import resolve_edges as rx
@@ -546,14 +545,16 @@ def test_tsc_reader_gives_the_tsconfigs_in_reference_order_and_their_aliases(tmp
     assert failed["path"] == "tools/tsconfig.json"
 
 
-def test_enry_reader_gives_languages_and_the_files_to_leave_out_with_why(tmp_path):
-    _, _, record = build(tmp_path, "enry_files", runner=replay("enry_files"))
-    label = premap.label(enry)
-    assert {(e["path"], e["why"]) for e in record["excluded"] if label in e["sources"]} == {
-        ("vendor/", "vendored"), ("docs/", "documentation"), ("README.md", "documentation"), ("gen/", "generated")}
-    languages = {item["language"]: item["files"] for item in record["languages"]}
-    assert languages["TypeScript"] == 1 and languages["JavaScript"] == 1 and "Go" not in languages
-    assert not any(e["path"].startswith(".github") for e in record["excluded"])
+def test_the_files_to_leave_out_come_from_list_files_with_why(tmp_path):
+    """The snapshot's header leaves out what Linguist's expressions say (`file_inventory.excluded`), and the pre-map
+    holds it with no command: `vendor/` is a dependency folder the walk never enters, `gen/` is generated only where
+    `.gitattributes` says so, and a dot folder is outside the perimeter."""
+    _, _, record = build(tmp_path, "enry_files")
+    assert {(e["path"], e["why"]) for e in record["excluded"]} == {("docs/", "documentation"),
+                                                                   ("README.md", "documentation")}
+    assert all(e["sources"] == [premap.LISTED] for e in record["excluded"])
+    assert record["binding"]["excluded"] == [{"path": "README.md", "why": "documentation"},
+                                             {"path": "docs/", "why": "documentation"}]
 
 
 def _stated_empty(facts) -> set:
@@ -578,7 +579,7 @@ def test_a_command_that_did_not_answer_never_states_a_fact_empty(tmp_path):
         runner = replay(case)
         with open_snapshot(manifest) as store:
             context = premap.Context(manifest, store)
-            for source in (go, cargo, uv, tsc, npm, renovate, enry):
+            for source in (go, cargo, uv, tsc, npm, renovate):
                 commands = source.commands(context)
                 if not commands:
                     continue
@@ -1011,26 +1012,9 @@ def test_the_gaps_the_runner_hands_back_are_the_sources_gaps(tmp_path):
 
 # ------------------------------------------------------------------ analyzers
 
-def test_a_programming_language_no_analyzer_lists_is_a_gap_with_its_files(tmp_path):
-    """go-enry counts Scala and PHP files, programming languages no analyzer lists: each is a gap with its files.
-    One an analyzer lists (TSX is TypeScript's), one that is data, markup or prose, and one whose type the answer
-    does not give (a recording older than `type`) are none."""
-    counted = fake("counted", "scanner", lambda context: {"facts": {"languages": [
-        {"language": name, "files": files, **({"type": kind} if kind else {})}
-        for name, files, kind in (("Scala", 3, "programming"), ("PHP", 2, "programming"), ("Python", 4, "programming"),
-                                  ("TSX", 1, "programming"), ("C++", 1, "programming"), ("JSON", 5, "data"),
-                                  ("SCSS", 1, "markup"), ("Markdown", 2, "prose"), ("Ruby", 6, None))]}})
-    _, _, record = build(tmp_path, "mixed", sources=(counted,))
-    found = {gap["language"]: gap for gap in gaps(record, "no_analyzer")}
-    assert set(found) == {"Scala", "PHP"}
-    assert found["Scala"]["files"] == 3 and found["Scala"]["source"] == premap.RULE
-    assert "3 Scala files" in found["Scala"]["detail"]
-
-
-def test_files_no_reader_reads_are_a_no_analyzer_gap_from_linguists_catalogue_without_go_enry(tmp_path):
-    """A Ruby file and a PHP file are counted by name and type from the catalogue alone, with no go-enry in the
-    answer; Markdown and JSON are not programming languages. go-enry's own count of a language wins over the
-    snapshot's, which never repeats it."""
+def test_files_no_reader_reads_are_a_no_analyzer_gap_from_linguists_catalogue(tmp_path):
+    """A Ruby file and a PHP file are counted by name and type from the catalogue alone; Markdown and JSON are not
+    programming languages."""
     extra = {"lib/a.rb": "puts 1\n", "lib/b.rb": "puts 2\n", "web/index.php": "<?php\n", "NOTES.md": "# n\n",
              "data.json": "{}\n"}
     _, _, record = build(tmp_path, "mixed", extra=extra)
@@ -1039,23 +1023,6 @@ def test_files_no_reader_reads_are_a_no_analyzer_gap_from_linguists_catalogue_wi
     assert found["Ruby"]["files"] == 2 and found["Ruby"]["source"] == premap.RULE
     assert found["Hack / PHP"]["files"] == 1  # `.php` is listed by two languages: Linguist's order, no guess
     assert set(found) == {"Ruby", "Hack / PHP"}  # `.md` is Markdown or GCC Machine Description: two types, no gap
-    counted = fake("counted", "scanner", lambda context: {"facts": {"languages": [
-        {"language": "Ruby", "files": 2, "type": "programming"}]}})
-    _, _, record = build(tmp_path / "again", "mixed", sources=(counted,), extra=extra)
-    assert [gap["files"] for gap in gaps(record, "no_analyzer") if gap["language"] == "Ruby"] == [2]
-
-
-def test_enry_gives_each_language_its_type_when_the_answer_has_it(tmp_path):
-    """`daodan-enry` prints go-enry's type of each file's language: the facet carries it. An answer without it
-    (the stored one) states no type, and the pre-map raises no `no_analyzer` gap from it."""
-    rows = [{"path": "a.scala", "language": "Scala", "type": "programming"},
-            {"path": "b.scala", "language": "Scala", "type": "programming"},
-            {"path": "c.json", "language": "JSON", "type": "data"}, {"path": "d.rb", "language": "Ruby"}]
-    facts = enry.read(None, [{}], [{"returncode": 0, "stdout": json.dumps(rows), "stderr": ""}])["facts"]
-    assert facts["languages"] == [{"language": "JSON", "files": 1, "type": "data"}, {"language": "Ruby", "files": 1},
-                                  {"language": "Scala", "files": 2, "type": "programming"}]
-    _, _, record = build(tmp_path, "enry_files", runner=replay("enry_files"))
-    assert not any("type" in item for item in record["languages"]) and not gaps(record, "no_analyzer")
 
 
 def test_the_unit_kinds_able_to_index_a_language_are_the_ones_its_analyzer_declares(tmp_path):
@@ -1089,29 +1056,8 @@ def test_python_code_outside_every_project_makes_the_checkout_one_run():
     assert [run["root"] for run in premap.python_runs(record)] == ["pkg"]
 
 
-def test_a_language_whose_files_are_all_build_definitions_is_no_gap(tmp_path):
-    """CMake, Starlark, Meson and makefiles declare the build the pre-map runs: what they declare is the pre-map's
-    (units, targets, links), and their own code has no call graph to give. A language with any other file stays a
-    gap."""
-    rows = [{"path": "CMakeLists.txt", "language": "CMake", "type": "programming"},
-            {"path": "cmake/FindZ.cmake", "language": "CMake", "type": "programming"},
-            {"path": "tools/defs.bzl", "language": "Starlark", "type": "programming"},
-            {"path": "BUILD.bazel", "language": "Starlark", "type": "programming"},
-            {"path": "Makefile", "language": "Makefile", "type": "programming"},
-            {"path": "scripts/gen.mk", "language": "Makefile", "type": "programming"},
-            {"path": "deploy.sh", "language": "Shell", "type": "programming"}]
-    facts = enry.read(None, [{}], [{"returncode": 0, "stdout": json.dumps(rows), "stderr": ""}])["facts"]
-    by_name = {item["language"]: item for item in facts["languages"]}
-    assert by_name["CMake"]["build"] and by_name["Starlark"]["build"] and "build" not in by_name["Shell"]
-    assert "build" not in by_name["Makefile"]  # gen.mk is a fragment no build tool of the pre-map names
-    counted = fake("counted", "scanner", lambda context: {"facts": {"languages": facts["languages"]}})
-    _, _, record = build(tmp_path, "mixed", sources=(counted,))
-    assert {gap["language"] for gap in gaps(record, "no_analyzer")} == {"Makefile", "Shell"}
-
-
 # The sources with model commands that no build tool of the registry names, each with why.
 NOT_A_BUILD_TOOL = {
-    "go-enry": "the languages and the excluded files: it leaves with T1.B.6",
     "renovate": "the declared files of every manager, not one build tool's model",
     "compose": "the services Compose declares, not a build",
     "buildkit": "the stages of a Dockerfile, the images: the stack's services",

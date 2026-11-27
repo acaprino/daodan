@@ -8,24 +8,6 @@
  "runs": [
   {
    "command": {
-    "tool": "daodan-enry",
-    "argv": [
-     "daodan-enry",
-     "."
-    ],
-    "cwd": ".",
-    "env": {},
-    "network": "none"
-   },
-   "result": {
-    "returncode": 0,
-    "stdout": "[{\"path\":\".github/workflows/ci.yml\",\"language\":\"YAML\",\"vendored\":true,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"README.md\",\"language\":\"Markdown\",\"vendored\":false,\"documentation\":true,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"docs/guide.md\",\"language\":\"Markdown\",\"vendored\":false,\"documentation\":true,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"gen/api.pb.go\",\"language\":\"Go\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":true,\"binary\":false},{\"path\":\"package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"src/app.ts\",\"language\":\"TypeScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"src/util.js\",\"language\":\"JavaScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"vendor/lib/x.js\",\"language\":\"JavaScript\",\"vendored\":true,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"vendor/lib/y.js\",\"language\":\"JavaScript\",\"vendored\":true,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false}]\n",
-    "stderr": "",
-    "root": "/work/enry_files"
-   }
-  },
-  {
-   "command": {
     "tool": "renovate",
     "argv": [
      "renovate",
