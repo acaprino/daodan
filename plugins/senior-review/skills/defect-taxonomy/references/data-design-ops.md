@@ -153,6 +153,14 @@ Reference for defect taxonomy categories 12, 14, 15, and 16.
 - **Fix**: Vault systems (HashiCorp Vault, AWS Secrets Manager), env var injection at runtime, multi-stage Docker builds
 - **Difficulty**: Easy
 
+### 15.6 Name-Bound Target Pruned by the Release Build
+- **CWE**: N/A
+- **Pattern**: A class, resource, asset or export reached only by a run-time name (`Resources.getIdentifier`, `Class.forName`, reflection, computed `import()`) is removed or renamed by code shrinking, resource shrinking, obfuscation or tree shaking; the debug build works
+- **Detection**: List the target in the built release artifact (`aapt2 dump resources`, the mapping file, the bundle analyzer); exercise the lookup on the release variant
+- **Fix**: Pass the value explicitly, or a keep rule that names the target (`-keep`, `tools:keep`, `sideEffects`)
+- **Difficulty**: Hard
+- **Signature**: Works in debug, fails in release before any external call, behind a generic error message
+
 ---
 
 ## Category 16: Testing and Observability Gaps
