@@ -23,6 +23,8 @@ if str(SCRIPT_DIR) not in sys.path:
 from embedding_worker import shared_cache_dir  # noqa: E402
 
 FILE = "egress.json"
+PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (host, port): the analysis's register
+SESSIONS: dict[str, dict] = {}  # project -> the answers that last for its analysis
 MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
 LOOKUPS = 16  # the hosts one analysis resolves at most
 REPLIES = ("always", "once", "no", "block")
@@ -31,6 +33,11 @@ REPLIES = ("always", "once", "no", "block")
 def new_session() -> dict:
     """The answers that last for one analysis: hosts allowed ("once") and hosts refused ("no")."""
     return {"allow": [], "deny": []}
+
+
+def session(project: str) -> dict:
+    """The answers of the project's analysis, made on first use."""
+    return SESSIONS.setdefault(project, new_session())
 
 
 def load() -> dict:
@@ -138,3 +145,36 @@ def resolve(requests: list[dict], lookups: int = LOOKUPS) -> list[dict]:
                         pass
         out.append({**request, "address": found[host], "network": found[host] is not None and private(found[host])})
     return out
+
+
+def requests(refused: list[dict], project: str, state: dict, session: dict, where: dict | None = None,
+             lookups: int = LOOKUPS) -> tuple[list[dict], list[dict]]:
+    """What the refusals of a run (`refused`) are: the requests to answer, each `{host, port, address, network,
+    declared_in}` (`resolve`; `where`, `preparation.declared`'s, gives the files that declare a host), and the
+    `host_denied` gaps, for a host the user blocked or refused in this analysis. A refused host that `decide` allows
+    (a canonical one asked on another port) is neither."""
+    where = where or {}
+    decided = [(row, decide(row["host"], project, state, session)) for row in refused]
+    asked = resolve([row for row, decision in decided if decision == "ask"], lookups)
+    return ([{**row, "declared_in": where.get(row["host"], [])} for row in asked],
+            [{"kind": "host_denied", "host": row["host"], "port": row["port"],
+              "declared_in": where.get(row["host"], []),
+              "detail": f"{row['host']}:{row['port']} was refused: the user blocked it or said no to it"}
+             for row, decision in decided if decision == "deny"])
+
+
+def collect(project: str, result: dict, where: dict | None = None) -> list[dict]:
+    """The refusals a run's `result` carries (`container.run_in_container`): the requests join the project's
+    `PENDING`, and the `host_denied` gaps come back."""
+    if not result.get("refused"):
+        return []
+    asks, gaps = requests(result["refused"], project, load(), session(project), where)
+    held = PENDING.setdefault(project, {})
+    for row in asks:
+        held.setdefault((row["host"], row["port"]), row)
+    return gaps
+
+
+def pending(project: str) -> list[dict]:
+    """The requests of the project's analysis that wait for an answer."""
+    return list(PENDING.get(project, {}).values())

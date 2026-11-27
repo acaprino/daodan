@@ -20,6 +20,8 @@ PROJECT = "/work/app"
 @pytest.fixture(autouse=True)
 def shared(tmp_path, monkeypatch):
     monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    egress.PENDING.clear()
+    egress.SESSIONS.clear()
     return tmp_path / "shared"
 
 
@@ -128,6 +130,33 @@ def test_resolve_reads_literals_and_looks_each_name_up_once_up_to_the_cap(monkey
     assert [(r["host"], r["address"], r["network"]) for r in out] == [
         ("10.0.0.1", "10.0.0.1", True), ("[::1]", "::1", True), ("nas.example.com", "192.168.1.5", True),
         ("nas.example.com", "192.168.1.5", True), ("gone.example.com", None, False), ("late.example.com", None, False)]
+
+
+def test_requests_split_the_refusals_into_requests_and_host_denied_gaps(monkeypatch):
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    state, session = egress.answer(egress.load(), egress.new_session(), "blocked.example.com", PROJECT, "block")
+    state, session = egress.answer(state, session, "no.example.com", PROJECT, "no")
+    refused = [{"host": host, "port": "443"} for host in
+               ("blocked.example.com", "no.example.com", "ask.example.com", "pypi.org")]
+    refused.append({"host": "10.0.0.5", "port": "8080"})
+    asked, gaps = egress.requests(refused, PROJECT, state, session, {"ask.example.com": ["pom.xml"]})
+    assert [(g["kind"], g["host"], g["port"]) for g in gaps] == [("host_denied", "blocked.example.com", "443"),
+                                                                 ("host_denied", "no.example.com", "443")]
+    assert [(r["host"], r["port"], r["address"], r["network"], r["declared_in"]) for r in asked] == [
+        ("ask.example.com", "443", "93.184.216.34", False, ["pom.xml"]), ("10.0.0.5", "8080", "10.0.0.5", True, [])]
+    # a canonical host refused (another port) is neither a request nor a gap
+
+
+def test_collect_registers_the_requests_once_and_returns_the_gaps(monkeypatch):
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    egress.save({"whitelist": {}, "blacklist": ["blocked.example.com"]})
+    result = {"refused": [{"host": "ask.example.com", "port": "443"}, {"host": "blocked.example.com", "port": "443"}]}
+    assert [g["host"] for g in egress.collect(PROJECT, result)] == ["blocked.example.com"]
+    assert [g["host"] for g in egress.collect(PROJECT, result)] == ["blocked.example.com"]  # the second run: no duplicate
+    assert [r["host"] for r in egress.pending(PROJECT)] == ["ask.example.com"]
+    assert egress.pending("/work/other") == [] and egress.collect(PROJECT, {}) == []
+    egress.SESSIONS[PROJECT] = egress.answer(egress.load(), egress.session(PROJECT), "ask.example.com", PROJECT, "no")[1]
+    assert [g["host"] for g in egress.collect(PROJECT, result)] == ["ask.example.com", "blocked.example.com"]
 
 
 def test_resolve_reaches_no_network_for_literals_and_localhost():

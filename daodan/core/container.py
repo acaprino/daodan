@@ -80,6 +80,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import egress  # noqa: E402
 from embedding_worker import shared_cache_dir  # noqa: E402
 from resolve_edges import _platform, _process_alive, download, free_memory, shared_engine_dir  # noqa: E402
 from snapshot import is_forbidden  # noqa: E402
@@ -1629,7 +1630,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     Engine, "daodan" for Daodan's own, or None to find one. Within `beside`, its services start in the pod the
     execution joins and its variables reach both phases under `env`. The result's `state` is
     `done` (the command exited, `exit_code` says how), `timeout`, `failed` (with `cause`) or `gap`
-    (with `cause` and `remedy`); `outputs` lists the files brought back into `out_dir`; `services`, with
+    (with `cause` and `remedy`); `refused`, when the preparation's proxy refused a host, lists each `{host, port}`
+    asked of it; `outputs` lists the files brought back into `out_dir`; `services`, with
     services, each `{name, image, pinned, outcome}`, `outcome` `ready` or `failed` with `cause`: the execution
     runs without a service that failed. Within `beside` with steps, they run at the end of the preparation
     (`steps_script`), with the services beside them where the engine takes the pod off the preparation's network
@@ -1775,6 +1777,9 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                             else prepare, env={**env, **exported_values, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
                             limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=prepare_copy, outputs=[],
                             out_dir=out_dir, volumes=mounts, commit=kept_image)
+                # what the proxy refused, read before it goes: `egress.collect` turns it into requests and gaps
+                if said := egress.refused(cli(found, "logs", proxy).stdout.decode("utf-8", "replace")):
+                    result["refused"] = said
                 append_record(record, {**hidden(row), "copy": digest})
                 if steps:
                     log = Path(row["log"]).read_bytes().decode("utf-8", "replace") if row.get("log") else ""

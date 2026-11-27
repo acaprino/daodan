@@ -26,6 +26,7 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import egress  # noqa: E402
 import preparation  # noqa: E402
 import node_preparation  # noqa: E402
 from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, noir, sbt  # noqa: E402
@@ -250,12 +251,15 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                 for name, text in carried.items():
                     (Path(scratch) / name).write_bytes(text.encode("utf-8"))
                     written[f"{IN}/{name}"] = Path(scratch) / name
-                return container.run_commands(
+                made = container.run_commands(
                     project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
                     values=spec.get("values", False), engine=engine,
                     inputs=lambda: {**{f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files}, **written},
                     registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
                     memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
+                # the hosts the proxy refused: a request to answer, or a `host_denied` gap (`egress.collect`); the
+                # files that declare them are known where the pre-map's units are (`engine_pass`), not here
+                return {**made, "gaps": [*(made.get("gaps") or ()), *egress.collect(str(project), made)]}
 
         result = contained(ran, hosts, tool)
         if result["state"] == "gap":

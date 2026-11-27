@@ -132,6 +132,8 @@ elif verb == "image" and args[1] == "rm":
     shutil.rmtree(state / "images" / args[-1].replace(":", "_"), ignore_errors=True)
 elif verb == "logs":
     print("ready 3128")
+    if (state / "refused.log").is_file():  # what the proxy said of the hosts it refused
+        sys.stdout.write((state / "refused.log").read_text())
 '''
 
 
@@ -685,6 +687,20 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn(["image", "rm", "-f", "daodan-prepared-aaaaaaaaaaaa"], calls)
         self.assertFalse(any("project/app:1" in call for call in calls))
         self.assertEqual(list(self.registry.glob("*")), [])
+
+    def test_the_hosts_the_proxy_refused_come_back_in_the_result_even_when_the_preparation_fails(self):
+        (self.state / "refused.log").write_text(
+            '@@daodan-refused {"host": "git.example.com", "port": "443"}\nnoise\n'
+            '@@daodan-refused {"host": "git.example.com", "port": "443"}\n'
+            '@@daodan-refused {"host": "10.0.0.5", "port": "8080"}\n', encoding="utf-8")
+        wanted = [{"host": "git.example.com", "port": "443"}, {"host": "10.0.0.5", "port": "8080"}]
+        done = self.run_operation(["exit", "0"], prepare=["exit", "0"])
+        self.assertEqual((done["state"], done["refused"]), ("done", wanted))
+        failed = self.run_operation(["exit", "0"], prepare=["exit", "3"])
+        self.assertEqual((failed["state"], failed["refused"]), ("failed", wanted))
+        (self.state / "refused.log").unlink()
+        self.assertNotIn("refused", self.run_operation(["exit", "0"], prepare=["exit", "0"]))
+        self.assertNotIn("refused", self.run_operation(["exit", "0"]))  # no preparation, no proxy
 
     def test_failed_preparation_stops_before_execution(self):
         result = self.run_operation(["exit", "0"], prepare=["exit", "3"])

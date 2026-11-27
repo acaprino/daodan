@@ -94,6 +94,26 @@ def test_what_the_copy_of_the_project_left_out_rides_on_the_first_answer(tmp_pat
     assert answers[0]["gaps"] == [left]
 
 
+def test_the_hosts_the_proxy_refused_become_a_request_or_a_host_denied_gap(tmp_path, no_download, monkeypatch):
+    """A refused host the user blocked is a `host_denied` gap on the first answer; any other waits for an answer in
+    `egress.pending` with its address, and says it is on the user's network when it is."""
+    import egress
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    egress.save({"whitelist": {}, "blacklist": ["bad.example.com"]})
+    _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
+    egress.PENDING.clear()
+    _calls, fake = recorder()
+    refused = [{"host": "bad.example.com", "port": "443"}, {"host": "10.0.0.5", "port": "8080"}]
+    with mock.patch.object(container, "run_commands", lambda *given, **options: {**fake(*given, **options),
+                                                                                  "refused": refused}):
+        answers = container_runner.runner(manifest)([command("go", "registries")])
+    [gap] = answers[0]["gaps"]
+    assert (gap["kind"], gap["host"], gap["port"]) == ("host_denied", "bad.example.com", "443")
+    [(project, held)] = egress.PENDING.items()  # the project, as the runner names it
+    assert [(r["host"], r["port"], r["address"], r["network"]) for r in egress.pending(project)] == [
+        ("10.0.0.5", "8080", "10.0.0.5", True)] and list(held) == [("10.0.0.5", "8080")]
+
+
 def test_a_setup_that_installs_from_a_registry_runs_in_the_preparation(tmp_path, no_download):
     _, manifest = manifest_of(tmp_path, {"tsconfig.json": "{}\n"})
     calls, fake = recorder()
