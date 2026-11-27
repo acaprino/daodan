@@ -29,6 +29,12 @@ Stati ammessi: `APERTA` (una sola), `FERMA: <causa>`, `LIBERA`, `Bloccata da <tr
 | **T3.B** | Comandi da CI e utente (`builds` e `starts`), `surface` e `ui_execution_deferred`, `run_and_observe` su `web` e `webview` (`T3.2`–`T3.3`) | Bloccata da `T1.D`, `T3.A`; l'arco osservato in `assemble_graph` aspetta `T2.C` | — | Nessuna | — | Progetto reale non-npm tracciato su Modal |
 | **T3.C** | Correzione `on` e `verified`, sottocartella e archivio, confronto cieco e Cancello T3 (`T3.4`) | Bloccata da `T2.C`, `T3.B` | — | Nessuna | — | `benchmarks/system-map` su Modal e `modal.yml` `suite` |
 
+## Domande rimandate al proprietario
+
+Dal 27 novembre 2026, sera: il proprietario ha chiesto di lavorare senza fermarsi; le scelte tecniche si decidono su delega e si scrivono nei passi, le domande del proprietario si raccolgono qui e non bloccano il resto.
+
+- **`T2.B.14`, `FETCHCONTENT_SOURCE_DIR_*`:** è un `[deciso]` del piano, ma con `T0.C` un configure fallito per un host rifiutato si rilancia dopo il sì attraverso il proxy, quindi il secondo tentativo con le sorgenti scaricate a mano sembra superfluo. Proposta: toglierlo insieme al passo `T2.B.14`. Il passo resta fermo fino alla risposta.
+
 ## Regole di esecuzione: passi, verifiche e commit
 
 1. **Dettaglio progressivo con revisione di prontezza:** solo la tranche aperta espande i passi operativi `- [ ]` con file, comando di verifica e commit. Prima del primo commit di una nuova tranche i suoi passi vengono dettagliati e sottoposti a una revisione di prontezza sulle scelte chiuse.
