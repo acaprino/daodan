@@ -89,12 +89,15 @@ def test_a_rule_costs_in_line_with_the_text_it_reads(rule_id, unit):
     rule = rule_of(rule_id)
     rule.decide("int a;\n")  # the first parse of a grammar pays for its set-up
     size = 1_000
-    while size * 4 * len(unit) <= detection.MAX_CHARS and best(rule, unit * size) < 0.05:
+    while 4 * size * len(unit) * 2 <= detection.MAX_CHARS and best(rule, unit * size) < 0.05:
         size *= 2
     small, large = best(rule, unit * size), best(rule, unit * size * 4)
     assert large < 2
-    if small >= 0.05:
-        assert large / small < 8
+    if small < 0.05:
+        if rule_id != "h.syntax-tree":
+            pytest.skip(f"{rule_id} stays under 50 ms on {unit!r} up to the bound: no ratio to check")
+        pytest.fail("h.syntax-tree must pass 50 ms on every unit before the bound")
+    assert large / small < 8
 
 
 @pytest.mark.parametrize("rule_id", RULE_IDS)

@@ -2,7 +2,7 @@
 
 In order: Objective-C by its directives; C++ when its grammar finds a declaration C lacks outside a `__cplusplus` block;
 else the grammar that errs less, C on a tie. The text read is bounded by a count, never a clock: `detect.MAX_CHARS`
-bytes of it, cut before a comment that never closes (the grammars are quadratic on `/* /* /*`). A header whose first C++
+characters of it (not bytes: the cut is `text[:MAX_CHARS]`), cut before a comment that never closes (the grammars are quadratic on `/* /* /*`). A header whose first C++
 declaration lies further reads as C, the suffix's answer, as it does with no grammar. (`benchmarks/header-language`
 measures the bound: `results/product.json`.)
 

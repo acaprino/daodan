@@ -27,7 +27,7 @@ TESTS = ("starts-with", "contains")
 FIELDS = {"id": str, "extensions": list, "language": str, "test": str, "texts": list, "why": str, "source": str,
           "yes": list, "no": list}
 OPTIONAL = {"ignore-case": bool}
-# The bytes of a text a rule reads: `source_files.MAX_PARSE_BYTES` (a test holds them equal; that module imports this
+# The characters of a text a rule reads (`text[:MAX_CHARS]` cuts characters, not bytes; `source_files.MAX_PARSE_BYTES` counts bytes: a test holds the two numbers equal; that module imports this
 # package). Above it the snapshot parses no file, so no rule reads its text, and a rule costs in line with this bound.
 MAX_CHARS = 2_000_000
 EXTENSION = "extension"  # `decided_by` when no rule answered
