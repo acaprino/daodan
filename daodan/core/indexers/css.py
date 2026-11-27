@@ -34,7 +34,9 @@ the snapshot's files the stage hands it (`READS`) with the engines through `node
 (`resolve_edges.index_stage`). The engines are Daodan's pinned ones and read the project's files as data: none loads
 the project's code, but Tailwind, whose package, config and plugins are the project's: its runner is the container's
 (`tailwind_runner`), which also brings back the sheets of the packages only the restore installs
-(`restored_sheets`). Its entry is in the pass when the snapshot holds a file of `SNAPSHOT_LANGUAGES`.
+(`restored_sheets`) and runs the scripts' program on scip-typescript's TypeScript, the one the TypeScript analyzer
+installs there (no second TypeScript is pinned). Its entry is in the pass when the snapshot holds a file of
+`SNAPSHOT_LANGUAGES`.
 
 What the code loads together is an input, never discovered here: `units`, the units of code the pre-map states
 (the files and sheets each one loads together), beside the pages and bundles the graph's own imports state; and
@@ -213,19 +215,24 @@ def tailwind_runner(project_dir: Path, work_dir: Path):
     as the TypeScript analyzer does, a Yarn project on Plug'n'Play laid out in node_modules, `typescript.node_modules`,
     its `build_edited` gap in `runner.gaps`); the execution, with no network, runs `node <script> IN OUT` in the
     copy, for each script `runner.ask` is given after that one restore (`css_packages.js`, the sheets of the
-    packages the checkout lacks). A run that cannot happen there (no engine, a failed restore) gives no data and
-    says why: Tailwind's tokens are unknown, and the rest of the graph goes on."""
+    packages the checkout lacks). The scripts' program (`css_typescript.js`) runs here too, on the TypeScript of
+    scip-typescript, which the preparation installs as the TypeScript analyzer does (`typescript.INSTALL`). A run
+    that cannot happen there (no engine, a failed restore) gives no data and says why: Tailwind's tokens are
+    unknown, the scripts are missing with that reason, and the rest of the graph goes on."""
     import shutil
     import container
     import preparation
-    from .typescript import IMAGE, node_modules
+    from .typescript import IMAGE, INDEXER, INSTALL, node_modules
     project_dir, work_dir = Path(project_dir), Path(work_dir)
 
     def ask(calls):
         """`[(script, payload)]` -> `[(data, measured)]`: the scripts in one container run, after one restore."""
         calls = [(Path(script), payload) for script, payload in calls]
+        program = any(script.name == css_typescript.SCRIPT.name for script, _ in calls)
         work_dir.mkdir(parents=True, exist_ok=True)
-        for script, payload in calls:
+        for script, payload in calls:  # the scripts' program runs on scip-typescript's TypeScript
+            if script.name == css_typescript.SCRIPT.name:
+                payload = {**payload, "indexer": INDEXER}
             (work_dir / f"{script.stem}-in.json").write_text(json.dumps(payload), encoding="utf-8")
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
                        if path.name in LOCKS and not any(part in DEPENDENCY_DIRS or part.startswith(".")
@@ -236,7 +243,7 @@ def tailwind_runner(project_dir: Path, work_dir: Path):
         runner.gaps[:] = [gap for gap in restored["gaps"] if gap["kind"] == "build_edited"]
         node = preparation.setup(["node"])
         prepare = "\n".join(["set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *node["lines"],
-                             *restored["lines"], "exit 0"])
+                             *([INSTALL] if program else []), *restored["lines"], "exit 0"])
         # Each script runs whatever the one before it did: a failed one gives no output, and says why.
         execute = f"mkdir -p {OUT} && " + "; ".join(
             f"node {preparation.IN}/{script.name} {preparation.IN}/{script.stem}-in.json {OUT}/{script.stem}-out.json"
@@ -294,8 +301,8 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
         remote: dict | None = None, tailwind=None, program: dict | None = None) -> dict:
     """The adapters over a project, then the graph. `runner` runs an engine script in the project's root
     (`css_sass`), and raises `runtime.Unavailable` when an engine cannot run; `tailwind`, the runner of the project's
-    Tailwind (`tailwind_runner`), else `runner`; `program`, the scripts' `tsconfig` and `paths` (`structure`);
-    `units` and `remote` as `graph` takes them."""
+    Tailwind (`tailwind_runner`), which also runs the scripts' program, else `runner`; `program`, the scripts'
+    `tsconfig` and `paths` (`structure`); `units` and `remote` as `graph` takes them."""
     project_dir = Path(project_dir).resolve()
     files = walk(project_dir) if files is None else files
     own = parse(project_dir, files)
@@ -305,8 +312,8 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
     stylus = engine_sheets(runner, css_stylus, "stylus", project_dir, files)
     components = component_files(runner, project_dir, files)
     script_files = [rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)]
-    scripts = css_typescript.index(project_dir, runner, script_files, **(program or {})) if script_files else \
-        {"indexer": None, "records": [], "missing": {}}
+    scripts = css_typescript.index(project_dir, tailwind or runner, script_files, **(program or {})) \
+        if script_files else {"indexer": None, "records": [], "missing": {}}
     records = (own["records"] + plain["records"] + sass["records"] + less["records"] + stylus["records"] +
                components["records"] + scripts["records"])
     entries = sorted({r["file"] for r in records if r["t"] == "ref" and r["kind"] == "import"

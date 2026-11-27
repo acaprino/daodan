@@ -1451,7 +1451,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 
 ## Letture proprie di framework e dialetti
 
-Oltre al riconoscimento: i componenti Vue e Svelte entrano nell'indice di scip-typescript (`indexers/components.py`) e il loro `<script>` nello snapshot (`languages/sfc.py`); il grafo dei fogli di stile (`indexers/css.py`) legge questi file con i parser fissati in `daodan/core/indexers/css_engines/package.json`: @astrojs/compiler 4.0.0, @eslint/css-tree 4.1.3, @vue/compiler-sfc 3.5.45, less 4.9.1, sass-parser 0.5.6, stylus 0.64.0, svelte 5.57.3, typescript 5.9.3. La sua misura è la riga `stylesheet` della sezione Analizzatori.
+Oltre al riconoscimento: i componenti Vue e Svelte entrano nell'indice di scip-typescript (`indexers/components.py`) e il loro `<script>` nello snapshot (`languages/sfc.py`); il grafo dei fogli di stile (`indexers/css.py`) legge questi file con i parser fissati in `daodan/core/indexers/css_engines/package.json`: @astrojs/compiler 4.0.0, @eslint/css-tree 4.1.3, @vue/compiler-sfc 3.5.45, less 4.9.1, sass-parser 0.5.6, stylus 0.64.0, svelte 5.57.3. La sua misura è la riga `stylesheet` della sezione Analizzatori.
 
 | Estensioni | Lettura |
 | --- | --- |

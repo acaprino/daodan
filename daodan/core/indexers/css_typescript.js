@@ -1,7 +1,8 @@
 // The TypeScript compiler over a project's scripts, in one process: every place a class, an id, a CSS Module
 // member, a custom property or a stylesheet import is written. usage: node css_typescript.js CONFIG.json OUT.json
-// CONFIG: {"engines": the folder of the engines' package.json, "tsconfig": the tsconfig to use, its paths relative
-// to the project, "files": [project-relative paths to read]}; run in the project's root.
+// CONFIG: {"indexer": the folder of scip-typescript's package, whose TypeScript builds the program (as
+// `typescript_unbound.js`), "tsconfig": the tsconfig to use, its paths relative to the project, "files":
+// [project-relative paths to read]}; run in the project's root, in the container (`css.tailwind_runner`).
 // A class expression is evaluated to its alternatives, each a list of parts: {s, c} text with the rules that
 // stated it (`literal-type`: the checker's string literal type; `initializer`: a const's or a const object's
 // initializer; `clsx`...), {h, x, ctx} a value not known statically (h its kind, x its text, ctx `template` or
@@ -18,7 +19,7 @@ const path = require("path");
 const [configPath, outPath] = process.argv.slice(2);
 const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
-const ts = require("module").createRequire(path.join(cfg.engines, "package.json"))("typescript");  // pinned
+const ts = require("module").createRequire(path.join(cfg.indexer, "package.json"))("typescript");  // scip-typescript's
 const root = process.cwd();
 // The aliases' targets are from the root: absolute here, since a `baseUrl` the tsconfig inherits would move them.
 const aliases = (cfg.tsconfig.compilerOptions || {}).paths || {};

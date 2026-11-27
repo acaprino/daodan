@@ -35,10 +35,13 @@ RESULTS = HERE / "results"
 NODE = ("v22.23.4", "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce")  # as lang_css.py
 OLD_SHA = "f9440f8e9"  # the commit whose `indexers/css.py` is the A/B's old side (the hand reader `_sheet`)
 CORPUS = "/corpus/node_modules"
+# scip-typescript at the product's version, whose TypeScript the scripts' program runs on (`css.tailwind_runner`).
+INDEXER = "/opt/scip-typescript/lib/node_modules/@sourcegraph/scip-typescript"
 sys.path.insert(0, str(PLUGIN / "core"))  # `indexers`, `languages`: the checkout's code, read as the container has it
 
 
 def _image():
+    from indexers import typescript
     node = f"node-{NODE[0]}-linux-x64.tar.xz"
     image = (
         modal.Image.debian_slim(python_version="3.13")
@@ -50,6 +53,8 @@ def _image():
             f"mkdir -p /opt/node && tar -xJf /tmp/{node} -C /opt/node --strip-components=1 && rm /tmp/{node}",
         )
         .env({"PATH": "/opt/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"})
+        .run_commands("npm install -g --prefix /opt/scip-typescript --ignore-scripts --no-audit --no-fund "
+                      f"--loglevel=error @sourcegraph/scip-typescript@{typescript.VERSION}")
         .add_local_dir(ENGINES, "/engines", copy=True)
         .run_commands("cd /engines && npm ci --ignore-scripts --no-audit --no-fund --loglevel=error")
         # The corpus: the npm packages of candidates/corpus-packages.txt at exact versions, one at a time, as the
@@ -75,7 +80,8 @@ else:
 
 def node_runner(engines: Path, project: Path, work: Path):
     """The runner of the stylesheet graph's engines (`indexers/css_sass.py`): `node <script> IN OUT` in the project's
-    root, IN the payload with `engines` added; a run without data says why (`state`, `reason`)."""
+    root, IN the payload with `engines` and `indexer` (scip-typescript's, for the scripts' program) added; a run
+    without data says why (`state`, `reason`)."""
     import os
     sys.path.insert(0, str(PLUGIN / "core"))
     import code_graph
@@ -83,7 +89,7 @@ def node_runner(engines: Path, project: Path, work: Path):
     def runner(script, payload):
         work.mkdir(parents=True, exist_ok=True)
         settings, output = work / f"{Path(script).stem}-in.json", work / f"{Path(script).stem}-out.json"
-        settings.write_text(json.dumps({**payload, "engines": str(engines)}), encoding="utf-8")
+        settings.write_text(json.dumps({**payload, "engines": str(engines), "indexer": INDEXER}), encoding="utf-8")
         output.unlink(missing_ok=True)
         measured = code_graph.measured(["node", str(script), str(settings), str(output)], str(project),
                                        {**os.environ, "NODE_OPTIONS": "--max-old-space-size=6144"}, 3600)

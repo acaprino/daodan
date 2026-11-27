@@ -2,8 +2,9 @@
 an id, a CSS Module member, a custom property or a stylesheet import is written (`css_typescript.js`).
 
 `index` gives the script a tsconfig holding the given files (`allowJs`, the project's own tsconfig extended when
-there is one) and runs it through the stage's runner (`css_sass`) with the TypeScript pinned in `css_engines/`; the
-types come from the project's packages.
+there is one) and runs it through the stage's runner, the container's (`css.tailwind_runner`), on the TypeScript
+of scip-typescript (`typescript.INDEXER`, as `typescript_unbound.js`); the types come from the project's packages,
+which the container's restore installs.
 A class expression is evaluated, not guessed: a string, a template, a condition, `&&`, `||`, `+`, a call to
 `clsx`, `classnames` or `tailwind-merge` (recognised by the package that declares the callee), `[...].join(' ')`,
 and a name only through what the checker states: a string literal type, or the initializer of a const or of a
