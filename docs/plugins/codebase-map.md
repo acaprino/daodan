@@ -80,8 +80,8 @@ Daodan legge un progetto e ne scrive un grafo: file, simboli, chiamate, moduli e
 
 Questa sezione è l'unico posto che spiega il processo; gli altri documenti rimandano qui. Ha due parti, da non confondere:
 
-- **Oggi nel codice:** sei step, con i nomi di prima. Ogni riga è letta sul codice il 24 novembre 2026 (commit `03161c8a6`).
-- **Il disegno:** sette step, con i nomi nuovi. Approvato il 22 e il 23 novembre 2026 (spec della pipeline del 15 novembre, sezione 8, oggi nella storia di git), applicato in parte. **Dal 25 novembre il disegno è a otto step:** `docs/specs/architettura.md`, «La pipeline a otto step».
+- **Oggi nel codice:** sei step, con i nomi di prima (`pipeline.STEPS`). Ogni riga è letta sul codice il 24 novembre 2026 (commit `03161c8a6`).
+- **Il disegno:** otto step, con gli id semantici di `docs/specs/architettura.md`, «La pipeline a otto step». Finché `T1.D` (`docs/plans/refactoring.md`) non li rinomina, il codice ne ha sei.
 
 Che cosa separa le due parti: la tabella «Dal codice al disegno».
 
@@ -189,7 +189,20 @@ Una strada sola: lo decise il proprietario il 24 novembre 2026, dopo le misure d
 
 #### Dal codice al disegno
 
-I passi sono quelli della spec, 8.11: qui c'è solo lo stato, là i dettagli.
+Dove sta oggi ognuno degli otto id (corrispondenza del punto 15 di `T1`):
+
+| Id del disegno | Oggi nel codice |
+| --- | --- |
+| `list_files` | `file_inventory.write`, prima della pipeline |
+| `read_code` | `snapshot.read_project` con `snapshot.write_reading`, prima della pipeline |
+| `recognize_stack` | Lo step `stack`, che oggi gira dopo `scan` |
+| `find_modules` | Lo step `scan`, senza rotte ed eventi |
+| `find_entry_points` | Le sorgenti dei framework e Noir, oggi in `scan` (`premap.SOURCES`), più `entries.py` e `binder.py`, che girano dopo la pipeline |
+| `link_calls` | Lo step `analyze` |
+| `run_and_observe` | Lo step `dynamic` |
+| `assemble_graph` | Lo step `union` |
+
+`parse` non diventa nessuno degli otto: dice solo il piano, che resta la funzione `pipeline.plan`. Il resto dello stato, passo per passo (spec 8.11: là i dettagli):
 
 | Che cosa | Stato | Spec 8.11 |
 | --- | --- | --- |
@@ -215,42 +228,39 @@ I passi sono quelli della spec, 8.11: qui c'è solo lo stato, là i dettagli.
 
 ### Il disegno
 
-Proposta approvata, non il codice di oggi. Sette step, sempre nello stesso ordine.
+Gli otto id di `docs/specs/architettura.md`, sempre nello stesso ordine. Il piano non è uno step ma una funzione. Dove sta oggi ognuno: «Dal codice al disegno».
 
 ```mermaid
 flowchart LR
-  P[/Progetto/] --> scan
-  scan["1 scan<br>percorre cartelle e file<br>e chiede alla build<br>com'è fatto il progetto"] --> recognize
-  recognize["2 recognize<br>riconosce le tecnologie"] --> plan
-  plan["3 plan<br>decide chi gira su cosa"] --> parse
-  parse["4 parse<br>legge i sorgenti<br>che il piano gli dà"] --> resolve
-  resolve["5 resolve<br>risolve le chiamate"] --> observe
-  observe["6 observe<br>esegue i test, avvia l'app<br>e guarda cosa chiamano"] --> connect
-  connect["7 connect<br>unisce e dice cosa manca"] --> G[(Grafo completo)]
+  P[/Progetto/] --> lf["1 list_files<br>elenca file e linguaggi"] --> rc["2 read_code<br>legge simboli, import e riferimenti"]
+  rc --> rs["3 recognize_stack<br>riconosce le tecnologie"] --> fm["4 find_modules<br>moduli, unità e comandi di build"]
+  fm --> fe["5 find_entry_points<br>dove entra un utente o una richiesta"] --> lc["6 link_calls<br>risolve le chiamate"]
+  lc --> ro["7 run_and_observe<br>esegue test e app, guarda cosa chiamano"] --> ag["8 assemble_graph<br>unisce e dice cosa manca"] --> G[(Grafo completo)]
 ```
 
-| Step | Domanda a cui risponde | Adattatori | Strumento sotto | Esegue il progetto |
+| Id | Domanda a cui risponde | Adattatori | Strumento sotto | Esegue il progetto |
 | --- | --- | --- | --- | --- |
-| 1 `scan` | Quali cartelle e file ha il progetto, e quali moduli, unità di build e comandi di test dichiara? | scanner | il percorso dell'albero; cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
-| 2 `recognize` | Quali framework, librerie, strumenti e servizi usa? | recognizer | stack-analyser, il fork ([Lo step `stack`](#lo-step-stack)) | No |
-| 3 `plan` | Quale adattatore gira su quale parte, con che cosa gli serve, e quale no? | nessuno | — | No |
-| 4 `parse` | Che cosa c'è in ogni sorgente che il piano gli dà: simboli, import, chiamate? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
-| 5 `resolve` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
-| 6 `observe` | Che cosa chiamano davvero i test, e che cosa fa girare ogni controllo dell'app? | observer | un registratore per linguaggio; per l'app, Chromium senza interfaccia di Playwright | Solo nel container |
-| 7 `connect` | Qual è il grafo intero, e che cosa non contiene? | nessuno | — | No |
+| 1 `list_files` | Quali cartelle e file ha il progetto, in che linguaggio? | nessuno | il percorso dell'albero; il catalogo di Linguist | No |
+| 2 `read_code` | Che cosa c'è in ogni file: simboli, import, riferimenti? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
+| 3 `recognize_stack` | Quali strumenti di build, framework, librerie e servizi usa? | recognizer | stack-analyser, il fork ([Lo step `stack`](#lo-step-stack)) | No |
+| 4 `find_modules` | Quali moduli, unità di build e comandi di test dichiara? | scanner | cargo, gradle, maven, npm, cmake, go, … | Solo nel container |
+| 5 `find_entry_points` | Dove entra un utente o una richiesta, e in quale funzione? | scanner | query tree-sitter (`daodan/data/entry-queries.json`); Noir e le sorgenti dei framework nel container | Solo nel container |
+| 6 `link_calls` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
+| 7 `run_and_observe` | Che cosa chiamano davvero i test, e che cosa fa girare ogni controllo dell'app? | observer | un registratore per linguaggio; per l'app, Chromium senza interfaccia di Playwright | Solo nel container |
+| 8 `assemble_graph` | Qual è il grafo intero, e che cosa non contiene? | nessuno | — | No |
 
-Oggi `plan` è una funzione e non uno step, e gli step hanno ancora i nomi di prima: «Oggi nel codice». Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
+Oggi il piano è una funzione e gli step sono sei, con i nomi di prima: «Oggi nel codice». Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
 
 ### Regole
 
 - **Un orchestratore solo** (`scripts/pipeline/`) esegue gli step. Ogni step dichiara ciò che legge, ciò che scrive e che cosa succede se fallisce: o la corsa si ferma con causa e rimedio, o va avanti e lo dice.
 - **Un adattatore per strumento.** Tutta la logica di uno strumento sta nel suo adattatore, che si dichiara con nome e versione. Daodan non riscrive parser né compilatori; fanno eccezione, oggi, SQL e PL/SQL, letti con espressioni regolari (`scripts/languages/sql.py`, `plsql.py`).
-- **Il piano è un dato.** Oggi è una funzione (`daodan/core/pipeline/plan.py`): dai file dello snapshot e dalle dichiarazioni degli adattatori dà i nodi (adattatore, linguaggi, se chiede il container, di chi ha bisogno) e le lacune con la causa; lettura, passaggio e passo dinamico eseguono quei nodi. Proposta, non nel codice: `plan` come step, che legge anche tecnologie e unità.
+- **Il piano è un dato.** Oggi è una funzione (`daodan/core/pipeline/plan.py`): dai file dello snapshot e dalle dichiarazioni degli adattatori dà i nodi (adattatore, linguaggi, se chiede il container, di chi ha bisogno) e le lacune con la causa; lettura, passaggio e passo dinamico eseguono quei nodi. Resta una funzione, non uno step.
 - **Il codice del progetto gira solo nel container di Daodan.** Senza container lo step che ne ha bisogno è una lacuna, mai un'esecuzione sull'host.
 - **Ogni arco dice chi l'ha prodotto e quanto vale:** provato da un resolver, incerto, osservato in una corsa dei test, campionato.
 - **Una lacuna non è mai silenzio:** un linguaggio senza adattatore, un test non partito, un file che nessun indice copre sono scritti nel risultato.
 - **Tutto si segue mentre accade:** ogni step e ogni adattatore emette eventi (inizio, avanzamento, lacuna, fine), salvati in un giornale accanto allo snapshot. Lo `step.finished` di uno step fallito che la pipeline tollera porta `failed` con la causa.
-- **Ogni fatto ha un padrone solo.** Uno step non riscopre ciò che uno step prima ha stabilito: lo chiede a lui. Per questo `parse` viene dopo `scan`, `recognize` e `plan`: deve sapere quali file leggere, in che linguaggio e in quale modulo. Chi deve sapere che cosa, e da chi: spec, 8.2.
+- **Ogni fatto ha un padrone solo.** Uno step non riscopre ciò che uno step prima ha stabilito: lo chiede a lui. Per questo `find_entry_points` viene dopo `read_code`, `recognize_stack` e `find_modules`: deve sapere i simboli, i framework e i pacchetti. Chi deve sapere che cosa, e da chi: spec, 8.2.
 - **Un guasto resta dove nasce.** Un listener che fallisce, un giornale che non si può scrivere, una riga rotta del giornale, il programma di un adattatore che non parte: ognuno è detto con la causa e non ferma il resto. Un'analisi fermata, o morta senza una parola, non lascia step aperti nel giornale: chi sa che è finita ne scrive la fine. Che cosa resta aperto: spec, 8.9.
 
 ### Esempi
