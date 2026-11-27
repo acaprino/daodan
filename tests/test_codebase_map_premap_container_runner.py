@@ -133,7 +133,8 @@ def test_tsc_reads_the_tsconfigs_after_the_packages_are_restored_with_what_their
     assert setup.index("typescript@6.0.3") < setup.index(f"( {plan['lines'][0]} )") < setup.index(
         f"( {plan['lines'][1]} )")
     assert "npm install --no-audit --no-fund" in plan["lines"][0]  # with its lifecycle scripts, in the container
-    assert set(calls[0]["registries"]) - set(container.REGISTRIES) == {"repo.yarnpkg.com"}
+    assert set(calls[0]["registries"]) - set(container.REGISTRIES) == set()  # corepack's host is a registry now
+    assert "repo.yarnpkg.com" in calls[0]["registries"]
     assert calls[0]["memory"] == 3 * 2**30
 
 
@@ -229,8 +230,8 @@ def test_bazel_reaches_its_own_hosts_beside_the_registries_and_no_other_tool_doe
         container_runner.runner(manifest)([command("cmake")])
     bazel_run, cmake_run = calls
     assert set(bazel_run["registries"]) - set(container.REGISTRIES) == {
-        "bcr.bazel.build", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com",
-        "mirror.bazel.build", "codeload.github.com"}
+        "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com", "codeload.github.com"}
+    assert {"bcr.bazel.build", "mirror.bazel.build"} <= set(container.REGISTRIES)
     assert cmake_run["registries"] == container.REGISTRIES and cmake_run["commands"][0]["network"] == "none"
 
 

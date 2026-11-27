@@ -18,5 +18,26 @@
   "Deno": ["jsr.io"],
   "Nix": ["cache.nixos.org", "channels.nixos.org", "releases.nixos.org"],
   "dpkg": ["http://archive.ubuntu.com", "http://security.ubuntu.com", "http://ports.ubuntu.com"]
+ },
+ "toolchains": {
+  "Node.js": ["nodejs.org"],
+  "Go": ["go.dev", "dl.google.com"],
+  "Rust": ["static.rust-lang.org", "sh.rustup.rs"],
+  ".NET": ["dot.net", "builds.dotnet.microsoft.com"],
+  "Swift": ["download.swift.org"],
+  "Zig": ["ziglang.org"],
+  "Gradle distributions": ["services.gradle.org"],
+  "Google Maven": ["maven.google.com"],
+  "mise": ["mise-versions.jdx.dev", "mise-java.jdx.dev"],
+  "Adoptium": ["api.adoptium.net"],
+  "uv": ["releases.astral.sh"],
+  "Yarn corepack": ["repo.yarnpkg.com"],
+  "Debian": ["deb.debian.org"],
+  "Conan Center": ["center2.conan.io"],
+  "sbt": ["repo.scala-sbt.org"],
+  "Bazel": ["bcr.bazel.build", "mirror.bazel.build"],
+  "Playwright": ["cdn.playwright.dev", "playwright.download.prss.microsoft.com"],
+  "JDK vendors": ["corretto.aws", "cdn.azul.com", "download.oracle.com", "download.visualstudio.microsoft.com"],
+  "Ubuntu over HTTPS": ["archive.ubuntu.com", "security.ubuntu.com", "ports.ubuntu.com"]
  }
 }

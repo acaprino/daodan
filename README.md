@@ -65,7 +65,8 @@ nothing else; the tests run with no network. The registries are listed in
 [package-managers.json](daodan/data/package-managers.json). The managers' names come from Wikipedia's
 [List of software package management systems](https://en.wikipedia.org/w/index.php?title=List_of_software_package_management_systems&oldid=1379970373),
 revision 1379970373 of 13 October 2026, read on 24 November 2026. Only the managers a Linux container restores
-dependencies with are kept, plus Go modules. Wikipedia gives no hosts: they were written by hand and are probed by
+dependencies with are kept, plus Go modules; `toolchains` lists the downloads of the language toolchains that
+Daodan's tools fetch. Wikipedia gives no hosts: they were written by hand and are probed by
 [registry-hosts](benchmarks/registry-hosts/README.md). Hosts that take uploads beyond a package publish, such as
 GitHub and container registries, stay out; GitHub opens only for a project that declares a dependency on it.
 

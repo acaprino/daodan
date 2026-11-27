@@ -101,15 +101,16 @@ STREAM_SLACK = 2**26  # what tar headers and padding may add to the files' bytes
 HEADER_CAP = 2**13  # a pax or GNU long-name header: a 4096-byte path and the times fit
 # A member name no system may receive as written: a Windows device, a character Windows refuses or a control.
 UNSAFE_PART = re.compile(r'(?is)(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?|.*[\x00-\x1f\\:*?"<>|].*|.*[. ]')
-# The registries a preparation may reach, by host; everything else is refused by the proxy.
-# They are the hosts of `package-managers.json`: the managers Wikipedia's list names (the revision in `source`) that
-# a Linux container restores from, with Go's. The hosts were written from memory, not from each manager's
-# documentation; `benchmarks/registry-hosts/` reaches each one. Hosts that take uploads beyond a package publish
-# (GitHub and its API, container registries) stay out: a preparation runs project code, and GitHub opens only for a
-# project that declares it (`preparation.declared`). An `http://<host>` entry is an apt archive (`PROXY_SCRIPT`).
-REGISTRIES = tuple(dict.fromkeys(host for hosts in json.loads(
-    (Path(__file__).resolve().parents[1] / "data/package-managers.json").read_text(encoding="utf-8"))["managers"].values()
-    for host in hosts))
+# The registries a preparation may reach without asking, by host (`egress.decide`: any other host asks or is refused).
+# They are the hosts of `package-managers.json`: `managers`, the ones Wikipedia's list names (the revision in `source`)
+# that a Linux container restores from, with Go's, and `toolchains`, the downloads of the language toolchains that
+# Daodan's tools fetch (the owner's decision of 27 November 2026). The hosts were written from memory, not from each
+# manager's documentation; `benchmarks/registry-hosts/` reaches each one. Hosts that take uploads beyond a package
+# publish (GitHub and its API, container registries) and generic hosts stay out: a preparation runs project code, so
+# they ask the user. An `http://<host>` entry is an apt archive (`PROXY_SCRIPT`).
+_HOSTS = json.loads((Path(__file__).resolve().parents[1] / "data/package-managers.json").read_text(encoding="utf-8"))
+REGISTRIES = tuple(dict.fromkeys(host for part in ("managers", "toolchains") for hosts in _HOSTS[part].values()
+                                 for host in hosts))
 # Set on every container, empty when closed: the CLI adds its configured proxies only to unset names.
 PROXY_VARIABLES = ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "FTP_PROXY", "ALL_PROXY",
                    "http_proxy", "https_proxy", "no_proxy", "ftp_proxy", "all_proxy")

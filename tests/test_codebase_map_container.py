@@ -696,15 +696,19 @@ class FakeEngineTest(unittest.TestCase):
     def test_the_registries_are_the_hosts_of_the_package_managers_file(self):
         data = json.loads((Path(container.__file__).resolve().parents[1] / "data/package-managers.json")
                           .read_text(encoding="utf-8"))
-        hosts = [host for names in data["managers"].values() for host in names]
+        hosts = [host for part in ("managers", "toolchains") for names in data[part].values() for host in names]
         self.assertIn("oldid=", data["source"])  # the revision of Wikipedia's list the names were read from
         self.assertEqual(sorted(container.REGISTRIES), sorted(set(hosts)))
         self.assertEqual(len(hosts), len(set(hosts)))  # a host under one manager only
         for host in hosts:  # names only (`http://` for an apt archive): a port, a path or a wildcard would widen
             self.assertRegex(host, r"\A(http://)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\Z")
-        self.assertLessEqual({"registry.npmjs.org", "pypi.org", "http://archive.ubuntu.com"}, set(hosts))
+        self.assertLessEqual({"registry.npmjs.org", "pypi.org", "http://archive.ubuntu.com", "nodejs.org",
+                              "repo.yarnpkg.com", "download.visualstudio.microsoft.com"}, set(hosts))
         for host in hosts:  # hosts that take more than a package publish: a preparation runs project code
             self.assertFalse(host == "ghcr.io" or "github" in host or "docker" in host, host)
+        for host in ("storage.googleapis.com", "aka.ms", "cache-redirector.jetbrains.com", "scala.jfrog.io",
+                     "d2xrhe97vsfxuc.cloudfront.net", "dotnetcli.azureedge.net", "playwright.azureedge.net"):
+            self.assertNotIn(host, hosts)  # generic hosts and the azureedge ones ask (owner, 27 November 2026)
 
     def test_proxy_refuses_every_host_outside_the_registries(self):
         server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
