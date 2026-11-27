@@ -75,7 +75,8 @@ CALLABLE = ("project-callable",)
 
 
 # Protocol Buffers' raw fields, for the adapters that rewrite an index field by field and keep what they do not
-# know as it is (`indexers/go.py` `_keep`, `indexers/kotlin.py`, `docker_build.rewritten`). `Index.load` reads
+# know as it is (`indexers/go.py` `_keep`, `indexers/kotlin.py`,
+# `indexers/components.py`, `docker_build.rewritten`). `Index.load` reads
 # with SCIP's own schema (`scip_pb2`, generated from `scip.proto`).
 
 def _varint(data: bytes, at: int) -> tuple[int, int]:
@@ -105,6 +106,17 @@ def _fields(data: bytes):
         else:
             raise ValueError(f"unsupported wire type {wire}")
         yield number, wire, value
+
+
+def _ints(value, wire: int) -> list[int]:
+    """A repeated int32 field's numbers, packed or one by one."""
+    if wire == 0:
+        return [value]
+    out, at = [], 0
+    while at < len(value):
+        item, at = _varint(value, at)
+        out.append(item)
+    return out
 
 
 def _range(values) -> tuple | None:
