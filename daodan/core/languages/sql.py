@@ -1,7 +1,12 @@
 """
 SQL adapter (ANSI / vendor-neutral DDL/DML).
 
-Regex-based extraction. Treats top-level DDL as the "class/function" surface:
+Regex-based extraction, by owner's decision (27 November 2026) a derogation from the
+tree-sitter rule of AGENTS.md. Evaluated and not suited (benchmarks/sql-grammar, README
+and results/): tree-sitter `sql` of the language pack (no `plsql`, no package / type
+body nodes; ERROR in 320 of 346 SQL and 140 of 140 PL/SQL files), sqlglot (already a
+product dependency: 1 of 22 annotated objects, 0 PL/SQL files), ANTLR grammars-v4 (not run).
+Re-evaluate if a PL/SQL grammar outside the pack appears (docs/backlog.md). Treats top-level DDL as the "class/function" surface:
 
 - CREATE TABLE / VIEW / MATERIALIZED VIEW -> kind="table"|"view"
 - CREATE INDEX / SEQUENCE / TYPE          -> kind="index"|"sequence"|"type"
@@ -60,11 +65,11 @@ _CREATE_SCHEMA_RE = re.compile(
     re.IGNORECASE,
 )
 _CREATE_FUNCTION_RE = re.compile(
-    rf"\bCREATE(?:\s+OR\s+REPLACE)?\s+FUNCTION\s+(?P<name>{_IDENTIFIER})\s*\((?P<params>[^)]*)\)",
+    rf"\bCREATE(?:\s+OR\s+REPLACE)?\s+FUNCTION\s+(?P<name>{_IDENTIFIER})(?:\s*\((?P<params>[^)]*)\))?",
     re.IGNORECASE,
 )
 _CREATE_PROCEDURE_RE = re.compile(
-    rf"\bCREATE(?:\s+OR\s+REPLACE)?\s+PROCEDURE\s+(?P<name>{_IDENTIFIER})\s*\((?P<params>[^)]*)\)",
+    rf"\bCREATE(?:\s+OR\s+REPLACE)?\s+PROCEDURE\s+(?P<name>{_IDENTIFIER})(?:\s*\((?P<params>[^)]*)\))?",
     re.IGNORECASE,
 )
 _CREATE_TRIGGER_RE = re.compile(
@@ -343,7 +348,7 @@ def _parse(
 
     for m in _CREATE_FUNCTION_RE.finditer(masked):
         name = _identifier_name(content[m.start("name"):m.end("name")])
-        params = _parse_params(content[m.start("params"):m.end("params")])
+        params = _parse_params(content[m.start("params"):m.end("params")] if m.group("params") is not None else "")
         fn = FunctionInfo(
             name=name,
             parameters=params,
@@ -354,7 +359,7 @@ def _parse(
         ddl_spans.append((m.start(), m.end("name"), name, "function", fn))
     for m in _CREATE_PROCEDURE_RE.finditer(masked):
         name = _identifier_name(content[m.start("name"):m.end("name")])
-        params = _parse_params(content[m.start("params"):m.end("params")])
+        params = _parse_params(content[m.start("params"):m.end("params")] if m.group("params") is not None else "")
         fn = FunctionInfo(
             name=name,
             parameters=params,

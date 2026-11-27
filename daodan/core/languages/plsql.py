@@ -10,6 +10,15 @@ Builds on the SQL adapter for DDL and adds PL/SQL-specific extraction:
 - Cursor declarations         -> class_variables on the enclosing package
 - Exception declarations      -> class_variables on the enclosing package
 
+Regex reader, by owner's decision (27 November 2026), a derogation from the
+tree-sitter rule of AGENTS.md. Evaluated and not suited (benchmarks/sql-grammar,
+README and results/): tree-sitter `sql` of the language pack has no `plsql`
+grammar and no node for package / package body / type body (ERROR in 140 of 140
+PL/SQL files and 320 of 346 SQL files; 13 of the 22 annotated objects against the
+regex's 21); sqlglot (already a product dependency) reads 0 PL/SQL files (139 of
+140 ParseError); ANTLR grammars-v4 was not run. Subprogram start lines use
+`^[ \t]*`, not `^\s*`, which would swallow the blank lines before them.
+
 PL/SQL has no real "imports", but `%TYPE` and `%ROWTYPE` references identify
 implicit type dependencies; we surface them as imports for the dependency
 counter to work.
@@ -44,11 +53,11 @@ _TYPE_BODY_RE = re.compile(
     re.IGNORECASE,
 )
 _INNER_PROCEDURE_RE = re.compile(
-    r"^\s*PROCEDURE\s+(?P<name>\w+)\s*(?:\((?P<params>[^)]*)\))?",
+    r"^[ \t]*PROCEDURE\s+(?P<name>\w+)\s*(?:\((?P<params>[^)]*)\))?",
     re.IGNORECASE | re.MULTILINE,
 )
 _INNER_FUNCTION_RE = re.compile(
-    r"^\s*FUNCTION\s+(?P<name>\w+)\s*(?:\((?P<params>[^)]*)\))?\s+RETURN\s+(?P<ret>[\w%.]+)",
+    r"^[ \t]*FUNCTION\s+(?P<name>\w+)\s*(?:\((?P<params>[^)]*)\))?\s+RETURN\s+(?P<ret>[\w%.]+)",
     re.IGNORECASE | re.MULTILINE,
 )
 _CURSOR_RE = re.compile(
