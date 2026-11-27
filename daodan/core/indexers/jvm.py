@@ -120,6 +120,10 @@ PIDS = 4096  # threads count: Gradle, the Kotlin daemon and scip-java each start
 #   compiles, main and unit tests: the plugin puts no Android task in `scipCompileAll` (scip-java issue 177, closed
 #   as not planned), though it adds its javac plugin to every JavaCompile task of an Android project and dumps the
 #   configuration of every KotlinCompile task.
+# A Maven build writes its targetroot outside target/ (`MAVEN_TARGETROOT`, scip-java's `--targetroot`): scip-java
+# runs `mvn clean verify`, and a root pom that aggregates its modules without being their parent is built last, so
+# its `clean` deletes target/scip-targetroot, the default, after the modules wrote it (Bank of Anthos, T0.B.2:
+# scip-java exits 0 with no index). Gradle's default, build/scip-targetroot, stays.
 SCIP_GRADLE = r'''gradle.projectsEvaluated {
     gradle.rootProject.allprojects { project ->
         def all = project.tasks.findByName('scipCompileAll')
@@ -152,7 +156,8 @@ SCIP_INDEX = r'''scip_index() {
     step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
       -- "$@" --init-script "$init"
   else
-    step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
+    step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
+      --targetroot "$MAVEN_TARGETROOT"
   fi
 }
 '''.replace("@SCIP_GRADLE@", SCIP_GRADLE).replace("@ANDROID_GRADLE@", ANDROID_GRADLE)
@@ -163,6 +168,7 @@ export LANG=C.UTF-8 LC_ALL=C.UTF-8
 WORK=${DAODAN_WORK:-/work}${DAODAN_ROOT:+/$DAODAN_ROOT}
 OUT=${DAODAN_OUT:-$PHASE_OUT}
 SCIP_JAVA=/app/scip-java/bin/scip-java
+MAVEN_TARGETROOT="$WORK/.daodan-scip-targetroot"  # `SCIP_INDEX`: outside every module's target/
 mkdir -p "$OUT" /app/scip-java/bin "$HOME"
 cd "$WORK" || exit 70
 step() {
@@ -241,7 +247,7 @@ export PATH
 # files are written as a compile task (`kotlin.tasks`) under `$1`; the caller aggregates the targetroot again.
 # It returns 1, and runs nothing, when no module has a Kotlin file.
 MAVEN_KOTLIN = r'''maven_kotlin() {
-  local configs=$1 targetroot="$WORK/target/scip-targetroot" tab compiled module roots name list classpath
+  local configs=$1 targetroot="$MAVEN_TARGETROOT" tab compiled module roots name list classpath
   tab=$(printf '\t')
   mkdir -p "$configs"
   printf '%s\n' "${DAODAN_MODULES:-}" | while IFS="$tab" read -r module roots; do

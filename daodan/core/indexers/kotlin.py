@@ -234,7 +234,7 @@ PREPARE = r'''if [ "${DAODAN_TOOL:-}" = maven ] || { [ -z "${DAODAN_TOOL:-}" ] &
     && ! ls build.gradle build.gradle.kts settings.gradle settings.gradle.kts >/dev/null 2>&1; }; then
   scip_index
   maven_kotlin "$OUT/kotlin-configs" \
-    && step aggregate "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
+    && step aggregate "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$MAVEN_TARGETROOT"
 else
   scip_index
   if [ ! -f "$OUT/index.scip" ] && [ -n "${DAODAN_RAISE:-}" ]; then  # `jvm.RAISE_LEVELS`

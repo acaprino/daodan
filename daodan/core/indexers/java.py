@@ -76,7 +76,7 @@ def same_range(index) -> dict[tuple[str, str], bool]:
 PREPARE = r'''maven() { [ -f pom.xml ] && [ "${DAODAN_TOOL:-maven}" = maven ]; }
 kotlin_too() {
   maven && maven_kotlin "$(mktemp -d)" \
-    && step aggregate-kotlin "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
+    && step aggregate-kotlin "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$MAVEN_TARGETROOT"
   [ -s "$OUT/index.scip" ]
 }
 if scip_index && [ -s "$OUT/index.scip" ]; then kotlin_too; exit; fi
@@ -167,8 +167,8 @@ fi
 rm -f "$OUT/index.scip"
 scip_index && [ -s "$OUT/index.scip" ] && kotlin_too
 '''
-# Maven writes under `target/`, Gradle under `build/`: the build that ran made one of them, in every module.
-EXECUTE = r'''TARGETROOT=target/scip-targetroot
+# Maven writes to `$MAVEN_TARGETROOT` (`jvm.HEAD`), Gradle under `build/`: the build that ran made one of them.
+EXECUTE = r'''TARGETROOT=$MAVEN_TARGETROOT
 [ -d "$TARGETROOT" ] || TARGETROOT=build/scip-targetroot
 step aggregate "$SCIP_JAVA" aggregate --no-emit-inverse-relationships --output "$OUT/index-forward.scip" \
   "$TARGETROOT"

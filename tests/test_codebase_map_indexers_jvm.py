@@ -1304,6 +1304,33 @@ class RealContainerSmokeTest(unittest.TestCase):
         Run as written it would fail; the build passes only if the container calls the Maven Daodan brought."""
         self.index_fixture("java", wrapper=True)
 
+    def test_java_under_a_root_pom_that_aggregates_without_being_the_parent(self):
+        """Bank of Anthos (T0.B.2): the root pom lists the modules and is no module's parent, so Maven builds it
+        last and its `clean` deletes target/scip-targetroot after the modules wrote it. The index is written all
+        the same, with the module's documents: the targetroot is outside target/ (`jvm.SCIP_INDEX`)."""
+        engine = self.engine()
+        scratch = Path(tempfile.mkdtemp(prefix="daodan-jvm-smoke-"))
+        self.addCleanup(shutil.rmtree, scratch, ignore_errors=True)
+        project = scratch / "project" / "aggregator"
+        shutil.copytree(FIXTURES / "java", project / "app", ignore=lambda folder, names: [
+            name for name in names if name in OWN])
+        (project / "pom.xml").write_text(
+            '<project xmlns="http://maven.apache.org/POM/4.0.0">\n  <modelVersion>4.0.0</modelVersion>\n'
+            "  <groupId>fx</groupId>\n  <artifactId>aggregator</artifactId>\n  <version>1.0</version>\n"
+            "  <packaging>pom</packaging>\n  <modules>\n    <module>app</module>\n  </modules>\n</project>\n",
+            encoding="utf-8")
+        given = java.structure(pre_map(project, scratch / "snapshot"))
+        self.assertEqual(given["roots"], {""})
+        result = java.index(project, scratch / "work", engine=engine, memory=MEMORY["java"], **given)
+        print(json.dumps({"state": result.get("state"), "reason": result.get("reason"),
+                          "runs": [{key: run.get(key) for key in ("phase", "step", "returncode")}
+                                   for run in result["runs"]]}, indent=1))
+        self.assertTrue(result["indexes"], result.get("reason"))
+        index = code_graph.Index(project)
+        for path, prefix in result["indexes"]:
+            index.load(Path(path), prefix)
+        self.assertIn("app/src/main/java/fx/Use.java", index.documents)
+
     def test_kotlin_fixture_in_one_container(self):
         """No wrapper: the Gradle Daodan pins, downloaded and checked on the host, builds the fixture."""
         self.index_fixture("kotlin")
@@ -1453,13 +1480,18 @@ def _phase(tmp_path: Path, body: str, tool: str, index_code: int, files=("pom.xm
                     encoding="utf-8")
     scip.chmod(0o755)
     head = (f"DAODAN_TOOL={tool}\nOUT={out}\nWORK={work}\nTMPDIR={temporary}\nSCIP_JAVA={scip}\n"
+            f"MAVEN_TARGETROOT={work}/.daodan-scip-targetroot\n"
             f"step() {{ shift; \"$@\"; }}\n{jvm.SCIP_INDEX}"
             f"java() {{ echo java >> {calls}; return 1; }}\nmaven_kotlin() {{ echo maven_kotlin >> {calls}; }}\n")
     code = subprocess.run([BASH, "-c", head + body], cwd=work).returncode
     said = calls.read_text(encoding="utf-8") if calls.is_file() else ""
-    return code, said.replace(str(out), "$OUT").replace(str(temporary), "$TMPDIR").splitlines()
+    return code, said.replace(str(out), "$OUT").replace(str(temporary), "$TMPDIR").replace(str(work), "$WORK") \
+        .splitlines()
 
 
+# What a Maven build hands scip-java: a targetroot outside target/, which the root pom's `clean` deletes when it
+# aggregates the modules without being their parent (`jvm.SCIP_INDEX`).
+MAVEN_INDEX = "scip-java index --output $OUT/index.scip --build-tool=maven --targetroot $WORK/.daodan-scip-targetroot"
 # What a Gradle build hands scip-java: its own tasks, with Daodan's init script.
 GRADLE_INDEX = ("scip-java index --output $OUT/index.scip --build-tool=gradle -- clean scipPrintDependencies "
                 "scipCompileAll{} --init-script $TMPDIR/daodan-scip.gradle")
@@ -1471,7 +1503,7 @@ def test_each_build_tool_of_a_folder_runs_only_its_own_steps(tmp_path):
     root pom's compiler plugin when it gives no index, and only Maven's indexes the modules' Kotlin itself."""
     assert _phase(tmp_path / "1", java.PREPARE, "gradle", 1) == (1, [GRADLE_INDEX.format("")])
     assert _phase(tmp_path / "2", java.PREPARE, "maven", 1) == (
-        1, ["scip-java index --output $OUT/index.scip --build-tool=maven", "java"])
+        1, [MAVEN_INDEX, "java"])
     assert _phase(tmp_path / "3", java.PREPARE, "gradle", 0)[1] == [GRADLE_INDEX.format("")]
     assert "maven_kotlin" in _phase(tmp_path / "4", java.PREPARE, "maven", 0)[1]
     assert _phase(tmp_path / "5", kotlin.PREPARE, "gradle", 0)[1] == [GRADLE_INDEX.format("")]
@@ -1497,8 +1529,7 @@ def test_an_android_gradle_build_also_compiles_its_debug_variants(tmp_path):
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
 def test_a_maven_build_hands_scip_java_no_gradle_init_script(tmp_path):
-    assert _phase(tmp_path, java.PREPARE, "maven", 0, files=("pom.xml",))[1][0] == (
-        "scip-java index --output $OUT/index.scip --build-tool=maven")
+    assert _phase(tmp_path, java.PREPARE, "maven", 0, files=("pom.xml",))[1][0] == MAVEN_INDEX
     assert not (tmp_path / "tmp/daodan-scip.gradle").exists()
 
 
@@ -1682,9 +1713,12 @@ def test_under_maven_the_kotlin_files_are_those_in_the_source_folders_the_pre_ma
 
 
 def test_java_execution_reads_the_targetroot_and_the_classes_of_the_build_that_ran():
-    """Maven writes under `target/`, Gradle under `build/`: the forward aggregation and `javap` read whichever
-    the build made, in every module."""
-    assert "target/scip-targetroot" in java.EXECUTE and "build/scip-targetroot" in java.EXECUTE
+    """Maven writes its targetroot where Daodan tells scip-java, Gradle under `build/`: the forward aggregation
+    reads whichever the build made, and `javap` the classes of every module."""
+    assert "MAVEN_TARGETROOT=" in jvm.HEAD and '--targetroot "$MAVEN_TARGETROOT"' in jvm.SCIP_INDEX
+    assert "$MAVEN_TARGETROOT" in java.EXECUTE and "build/scip-targetroot" in java.EXECUTE
+    assert '"$MAVEN_TARGETROOT"' in java.PREPARE and '"$MAVEN_TARGETROOT"' in kotlin.PREPARE
+    assert 'targetroot="$MAVEN_TARGETROOT"' in jvm.MAVEN_KOTLIN
     assert "*/target/*classes/*" in java.EXECUTE and "*/build/classes/*" in java.EXECUTE
 
 
