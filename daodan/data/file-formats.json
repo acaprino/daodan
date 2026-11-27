@@ -26,6 +26,7 @@
  "makefiles": "(?i)^((gnu)?makefile(\\..+)?|.+\\.(mak|mms)|descrip\\.mms)$",
  "build_folders": ["profiles"],
  "dependency_directories": ["__pycache__", "build", "dist", "node_modules", "target", "vendor", "venv"],
+ "read_dot_directories": [".github", ".maestro"],
  "forbidden": [".env", ".env.*", "credentials.*", "secrets.*", "*.pem", "*.key", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*", ".npmrc", ".pypirc", ".netrc", "*service-account*.json", "*kubeconfig*", "*.tfstate", "*.tfstate.*", "*.keystore", "*.jks"],
  "secret_names": ["*secret*", "*credential*"]
 }

@@ -6,7 +6,8 @@ One rule, owned here, for every script that walks a tree:
 
 - what Git ignores, when the target is inside a work tree that does not
   ignore it and git answers;
-- every directory whose name starts with a dot;
+- every directory whose name starts with a dot, but those whose files the
+  stack tool reads (`file_formats.READ_DOT_DIRECTORIES`: `.github`, `.maestro`);
 - dependency and build directories, by name;
 - every link, to a file or to a directory, whether or not its target exists.
 
@@ -44,7 +45,7 @@ from typing import Iterator
 
 import file_formats
 
-__all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "git_executable", "work_tree", "workspace_glob"]
+__all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "READ_DOT_DIRECTORIES", "git_executable", "work_tree", "workspace_glob"]
 
 # First on every command line of Git on the host: a work tree's own configuration, and what it includes, can name
 # programs Git runs, and the analyzed project's code runs only in Daodan's container: core.fsmonitor wherever Git
@@ -86,6 +87,9 @@ def program(name: str) -> str | None:
 # Dependency and build output. Git usually ignores these too. They are named
 # here because a project with no repository has no ignore rule to consult.
 DEPENDENCY_DIRS = file_formats.DEPENDENCY_DIRECTORIES
+# The dot directories that are the project's own configuration, read by the stack tool: a CI workflow once never
+# reached the stack, and with it 31 of 88 technologies of the corpus.
+READ_DOT_DIRECTORIES = file_formats.READ_DOT_DIRECTORIES
 
 # Dot directories a reader does not need named back: the repository's own
 # store, and the Codebase Map's own output.
@@ -208,7 +212,7 @@ class Perimeter:
 
     def _skips_directory(self, path: Path, relative: str, record: bool) -> bool:
         name = path.name
-        if name.startswith("."):
+        if name.startswith(".") and name not in READ_DOT_DIRECTORIES:
             if record and name not in _UNREPORTED:
                 self._dot.add(path)
             return True

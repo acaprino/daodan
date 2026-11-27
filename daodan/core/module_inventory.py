@@ -12,7 +12,7 @@ import re
 import confinement
 import snapshot
 import source_files
-from tree_scope import DEPENDENCY_DIRS, Perimeter, workspace_glob
+from tree_scope import DEPENDENCY_DIRS, READ_DOT_DIRECTORIES, Perimeter, workspace_glob
 
 EMPTY_DIRECTORY = "directory holds no inventoried file"
 
@@ -113,7 +113,7 @@ class _Inventory:
             return "not a project-relative path"
         if snapshot.is_forbidden(parts[-1], self.root / rel):
             return "credential or secret file, never inventoried"
-        if any(part.startswith(".") for part in parts[:-1]):
+        if any(part.startswith(".") and part not in READ_DOT_DIRECTORIES for part in parts[:-1]):
             return "inside a dot directory, outside the map perimeter"
         if any(part in DEPENDENCY_DIRS for part in parts):
             return "inside a dependency or build directory, outside the map perimeter"
@@ -124,7 +124,7 @@ class _Inventory:
             exists, is_dir = False, False
         if not exists:
             return "absent from the tree"
-        if is_dir and parts[-1].startswith("."):
+        if is_dir and parts[-1].startswith(".") and parts[-1] not in READ_DOT_DIRECTORIES:
             return "inside a dot directory, outside the map perimeter"
         if self._perimeter is None:
             target = (self.root / self.target).resolve()

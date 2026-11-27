@@ -67,6 +67,11 @@ non lega `nodejs` né `python` ad alcuna sorgente: per `T1.B.7` va scelto se leg
 workflow di CI (`.github/`). Le più frequenti: `pnpm` 7 e `github.pages` 7 (workflow), `ruff` 5, `click` 4, `python` 3,
 `gcp` 3, `protobuf` 3. Sono le regole che il `.6` deve aggiungere (`T1.B.4`), ognuna con il file che la prova:
 
+Le 31 dei workflow erano perse perché il perimetro non entrava in `.github/`. Ora entra nelle cartelle punto i cui file il
+fork legge (`read_dot_directories` di `file-formats.json`: `.github`, `.maestro`), e l'espressione `(^|/)\.github/` del
+`vendor.yml` di Linguist non le esclude più; da rimisurare al giro corpus. `Dockerfile.gotenberg` resta fuori: Linguist
+conosce per nome solo `Dockerfile` e `Containerfile` (`linguist-catalog.json`).
+
 | Fixture | Voce (file) |
 | --- | --- |
 | `jvm-gradle-computed-deps` | `jackson` (`build.gradle`, `gradle.properties`) |
