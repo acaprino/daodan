@@ -372,6 +372,8 @@ def test_the_generators_line_says_what_the_projects_command_wrote_or_why_not(tmp
     bin_dir.mkdir()
     (work / "app").mkdir(parents=True)
     monkeypatch.setattr(typescript, "WORK", str(work))
+    # a log of its own: `preparation.LOG` is one file of the host's /tmp, which the workers running at once share
+    monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
     line = typescript.generator("app", "svelte-kit sync")
 
     def played(npx: str) -> str:

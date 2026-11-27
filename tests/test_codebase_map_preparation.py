@@ -473,12 +473,15 @@ esac
 """
 
 
-def test_a_dotnet_solution_that_does_not_restore_restores_each_of_its_projects_and_stays_a_gap(tmp_path):
+def test_a_dotnet_solution_that_does_not_restore_restores_each_of_its_projects_and_stays_a_gap(tmp_path, monkeypatch):
     """eShop: one project of the solution needs a workload the container lacks (NETSDK1147), and the solution's
     restore restores nothing; each project the solution lists is then restored on its own, and the failure stays
     a gap with the error lines of both."""
     import os
     import subprocess
+    # A log of its own: `preparation.LOG` is one file of the host's /tmp, which pytest's workers share. Another
+    # test's line truncating it while this one writes left NUL bytes in it, and grep said only "binary file matches".
+    monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
     tools, work, calls = tmp_path / "bin", tmp_path / "work", tmp_path / "calls.txt"
     for folder in (tools, work):
         folder.mkdir()
