@@ -41,3 +41,8 @@ PyYAML>=6
 # SCIP indexes, read with the schema of `scip.proto` (`scip_pb2.py`, whose header names the generator): no
 # link_calls without it. Pinned: the generated code checks the runtime against the version it was made with.
 protobuf==7.36.2
+
+# pip's own requirements-file parser as a library (pip's `req_file.py` and `constructors.py`, MIT): the pre-map
+# reads requirements files and the VCS requirements of Python manifests with it, never with pip (which builds
+# sdists, running the project's code). Pinned: the reader is part of the pre-map's identity.
+pip-requirements-parser==32.0.1

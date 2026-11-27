@@ -652,28 +652,25 @@ def restore_gaps(stderr: str) -> list[dict]:
               for manager, folder, lines in VCS_FAILED.findall(stderr or ""))]
 
 
-# A VCS requirement: `name @ git+https://...` (PEP 508) or pip's `git+https://...#egg=name`, and the `{ git = "..." }`
-# source of uv and Poetry.
-VCS_URL = re.compile(r"(?:([A-Za-z0-9][\w.-]*)\s*(?:\[[^\]]*\])?\s*@\s*)?\b((?:git|hg|svn|bzr)\+[a-z]+://[^\s\"',;]+)")
-VCS_SOURCE = re.compile(r"^\s*\"?([A-Za-z0-9][\w.-]*)\"?\s*=\s*\{[^}\n]*\bgit\s*=\s*\"([^\"]+)\"", re.M)
-
-
 def python_vcs(files, read) -> dict:
     """The VCS requirements the Python manifests among `files` declare (`read(rel)`, a file's text): `{names,
     hosts}`, their names and the hosts their URLs name, the only hosts a preparation reaches for them beside
-    the registries, as a CI fetches them."""
+    the registries, as a CI fetches them. Each manifest is read by its own format's reader
+    (`premap.requirements.vcs_requirements`: pip's parser, `packaging`, `tomllib`, `configparser`, `ast`)."""
     from urllib.parse import urlsplit
+    from premap.requirements import vcs_requirements
     names, hosts = set(), set()
     for rel in files:
         base = posixpath.basename(rel)
         if base not in ("pyproject.toml", "setup.cfg", "setup.py") and not (
                 base.endswith((".txt", ".in")) and "requirements" in rel):
             continue
-        text = read(rel) or ""
-        for name, url in [(name or "".join(re.findall(r"#egg=([\w.-]+)", url)[:1]), url.split("+", 1)[1])
-                          for name, url in VCS_URL.findall(text)] + VCS_SOURCE.findall(text):
+        for name, url in vcs_requirements(rel, read(rel) or ""):
             names.add(name)
-            hosts.add(urlsplit(url).hostname or "")
+            try:
+                hosts.add(urlsplit(url).hostname or "")
+            except ValueError:
+                continue
     return {"names": sorted(names - {""}), "hosts": sorted(hosts - {""})}
 
 

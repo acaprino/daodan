@@ -53,7 +53,8 @@ image = (modal.Image.debian_slim(python_version="3.12")
              f" && curl -sSfL https://nodejs.org/dist/{NODE}/SHASUMS256.txt | grep ' node-{NODE}-linux-x64.tar.xz$'"
              f" | sha256sum -c - && tar -C /opt -xJf node-{NODE}-linux-x64.tar.xz && rm node-{NODE}-linux-x64.tar.xz",
              f"PATH=/opt/node-{NODE}-linux-x64/bin:$PATH npm install -g --ignore-scripts renovate@44.239.1 typescript@6.0.3")
-         .pip_install("uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6")
+         .pip_install("uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6",
+                      "pip-requirements-parser==32.0.1")
          .env({"PATH": f"/root/.cargo/bin:/usr/local/go/bin:/opt/node-{NODE}-linux-x64/bin:/usr/local/bin:/usr/bin:/bin"}))
 if LOCAL:
     image = (image.add_local_file(REPO / "daodan/core/premap/enry_facts.go",

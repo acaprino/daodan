@@ -1,4 +1,4 @@
-"""Source: pip's requirements files, read as pip reads them, never run.
+"""Source: pip's requirements files, read with pip's own parser (`pip-requirements-parser`), never run.
 
 A requirements file is a `.txt` or `.in` whose name holds `requirements`, or one in a `requirements/` folder
 (it belongs to the folder above). A folder whose only Python manifest is a requirements file is a
@@ -13,20 +13,113 @@ the pre-map's.
 """
 from __future__ import annotations
 
+import ast
+import configparser
 import posixpath
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 import re
+import tempfile
+import tomllib
 
 from build_units import normalize_pypi_name, requirement_version
-from premap.origins import origin, requirement
+from premap.origins import origin
 
 NAME, VERSION, RANK = "requirements", "daodan/premap/v2", "reader"
-INCLUDE = re.compile(r"^(-r|--requirement|-c|--constraint)(?:\s+|=)(\S+)$")
-INDEX = re.compile(r"^(?:-i|--index-url|--extra-index-url|-f|--find-links)(?:\s+|=)(\S+)$")
-EDITABLE = re.compile(r"^(?:-e|--editable)(?:\s+|=)(\S+)$")
+# pip-compile's header names the `.in` it compiled: a comment, text without grammar.
 COMPILED = re.compile(r"^#\s+pip-compile\b.*?\s(\S+\.in)\s*$", re.M)
 PREFERRED = ("requirements.in", "requirements.txt")
-PKG_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])?\s*(?:[<>=!~;@#\s]|$)")
+INDEXES = ("index_url", "extra_index_urls", "find_links")  # pip's option names (`dest`) for where packages come from
+
+
+def read(text: str):
+    """A requirements file as pip reads it, with pip's own parser (`pip-requirements-parser`: pip's `req_file.py`
+    and `constructors.py` as a library): its requirements, its option lines (`-r`, `-c`, the indexes), its invalid
+    lines; nested files are not followed. The parser reads a path: the text goes to a temporary file with a UTF-8
+    BOM, which pip decodes before any locale."""
+    from pip_requirements_parser import RequirementsFile
+    with tempfile.TemporaryDirectory() as folder:
+        path = Path(folder) / "requirements.txt"
+        path.write_text(text, encoding="utf-8-sig")
+        return RequirementsFile.from_file(str(path))
+
+
+def local(link) -> bool:
+    """Whether pip's `link` names a path (a folder, an archive) rather than a URL."""
+    from pip_requirements_parser import is_url
+    return link is not None and not is_url(link.url)
+
+
+def vcs(text: str) -> tuple[str, str] | None:
+    """`(name, URL)` of one requirement that names a VCS URL, as pip reads it: PEP 508 `name @ git+URL` (parsed by
+    `packaging`) or pip's `git+URL#egg=name`; the URL without its `git+`; None for any other requirement."""
+    from pip_requirements_parser import build_install_req
+    try:
+        req = build_install_req(str(text).strip())
+    except Exception:  # pip's own refusal of a line that is no requirement: InstallationError, InvalidRequirement
+        return None
+    if req.link is None or not req.link.is_vcs:
+        return None
+    return req.name or "", req.link.url.split("+", 1)[1]
+
+
+def _strings(value) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    return [item for item in value if isinstance(item, str)] if isinstance(value, list) else []
+
+
+def _table(value) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
+def vcs_requirements(rel: str, text: str) -> list[tuple[str, str]]:
+    """The VCS requirements a Python manifest declares, `(name, URL)`: a requirements file read by pip's parser;
+    in `pyproject.toml` (`tomllib`) the PEP 508 lists (`[project]` dependencies and extras, `[dependency-groups]`,
+    `[build-system]`, uv's `dev-dependencies`) and the `git` sources of `[tool.uv.sources]` and of Poetry's
+    dependency tables; in `setup.cfg` (`configparser`) the requirement options of `[options]` and
+    `[options.extras_require]`; in `setup.py` (`ast`, never run) every string literal pip reads as one; any other
+    file is a requirements file."""
+    name = PurePosixPath(rel).name
+    found: list = []
+    if name == "pyproject.toml":
+        try:
+            data = tomllib.loads(text)
+        except tomllib.TOMLDecodeError:
+            return []
+        project, tool = _table(data.get("project")), _table(data.get("tool"))
+        uv, poetry = _table(tool.get("uv")), _table(tool.get("poetry"))
+        lists = [project.get("dependencies"), _table(data.get("build-system")).get("requires"),
+                 uv.get("dev-dependencies"), *_table(project.get("optional-dependencies")).values(),
+                 *_table(data.get("dependency-groups")).values()]
+        found += [vcs(item) for value in lists for item in _strings(value)]
+        sources = [_table(uv.get("sources")), _table(poetry.get("dependencies")), _table(poetry.get("dev-dependencies")),
+                   *(_table(_table(group).get("dependencies")) for group in _table(poetry.get("group")).values())]
+        found += [(key, entry["git"]) for source in sources for key, value in source.items()
+                  for entry in (value if isinstance(value, list) else [value])
+                  if isinstance(entry, dict) and isinstance(entry.get("git"), str)]
+    elif name == "setup.cfg":
+        parser = configparser.ConfigParser(interpolation=None, strict=False)
+        try:
+            parser.read_string(text)
+        except configparser.Error:
+            return []
+        values = [parser.get("options", key, fallback="") for key in
+                  ("install_requires", "setup_requires", "tests_require", "dependency_links")]
+        if parser.has_section("options.extras_require"):
+            values += [value for _key, value in parser.items("options.extras_require")]
+        found += [vcs(line) for value in values for line in value.splitlines()
+                  if line.strip() and not line.strip().startswith("#")]
+    elif name == "setup.py":
+        try:
+            tree = ast.parse(text)
+        except (SyntaxError, ValueError):
+            return []
+        found += [vcs(node.value) for node in ast.walk(tree)
+                  if isinstance(node, ast.Constant) and isinstance(node.value, str)]
+    else:  # a requirements file
+        found += [(req.name or "", req.link.url.split("+", 1)[1]) for req in read(text).requirements
+                  if req.link is not None and req.link.is_vcs]
+    return [item for item in found if item]
 
 
 def _parent(rel: str) -> str:
@@ -54,29 +147,22 @@ def _home(rel: str) -> str:
 
 
 def _lines(text: str) -> list[str]:
-    joined = re.sub(r"\\\n", " ", text)
-    return [re.split(r"(?:^|\s)#", line, maxsplit=1)[0].strip() for line in joined.splitlines()]
+    """The requirement lines of a requirements file, joined and without comments as pip reads them (`read`)."""
+    return [req.line for req in read(text).requirements if req.line]
 
 
 def _parse(text: str) -> dict:
-    out = {"includes": [], "constraints": [], "origins": set(), "paths": []}
-    for line in _lines(text):
-        if not line:
-            continue
-        include = INCLUDE.match(line)
-        if include:
-            out["includes" if include.group(1) in ("-r", "--requirement") else "constraints"].append(include.group(2))
-            continue
-        index = INDEX.match(line)
-        if index:
-            out["origins"].add(origin(index.group(1)))
-            continue
-        editable = EDITABLE.match(line)
-        target = editable.group(1) if editable else line if line.startswith((".", "/")) else None
-        if target is not None and not re.match(r"^[a-z+]+://", target):
-            out["paths"].append(target)
-        else:
-            out["origins"].add(requirement(line))
+    found = read(text)
+    out = {"includes": [], "constraints": [], "origins": set(), "paths": [], "requirements": found.requirements}
+    for line in found.options:
+        out["includes"] += line.options.get("requirements") or []
+        out["constraints"] += line.options.get("constraints") or []
+        out["origins"] |= {origin(url) for key in INDEXES for url in _strings(line.options.get(key))}
+    for req in found.requirements:
+        if local(req.link):  # `-e PATH` or a bare path: an edge to the unit there
+            out["paths"].append(req.link.url)
+        elif req.link is not None:  # `name @ URL`, a VCS URL, `-e URL`, an archive's URL
+            out["origins"].add(origin(req.link.url))
     out["origins"].discard(None)
     return out
 
@@ -171,19 +257,19 @@ def run(context):
         units.append(unit)
     packages: list[dict] = []
     seen_pkgs: set[tuple[str, str]] = set()
+    from pip_requirements_parser import break_args_options
     for rel in files:
         if rel in constraints:
             continue
-        for number, raw in enumerate(text(rel).splitlines(), 1):
-            stripped = raw.split("#", 1)[0].strip()
-            if not stripped or stripped.startswith("-"):
+        for req in parsed[rel]["requirements"]:
+            # a named requirement, bare or `name @ URL`; not an editable, a path, or a URL named by its `#egg=`
+            if not req.name or req.is_editable or (req.link is not None and not req.req.url):
                 continue
-            if match := PKG_NAME.match(stripped):
-                norm = normalize_pypi_name(match.group(1))
-                # the PEP 508 requirement before pip's own options (` --hash=...`) and a line continuation
-                version = requirement_version(re.split(r"\s+(?:--|\\$)", stripped, maxsplit=1)[0])
-                if (norm, rel) not in seen_pkgs:
-                    seen_pkgs.add((norm, rel))
-                    packages.append({"ecosystem": "pypi", "name": norm, "declared_in": f"{rel}#L{number}",
-                                     **({"version": version} if version else {})})
+            norm = normalize_pypi_name(req.name)
+            # the PEP 508 requirement before pip's own options (` --hash=...`), split as pip splits them
+            version = requirement_version(break_args_options(req.line)[0])
+            if (norm, rel) not in seen_pkgs:
+                seen_pkgs.add((norm, rel))
+                packages.append({"ecosystem": "pypi", "name": norm, "declared_in": f"{rel}#L{req.line_number}",
+                                 **({"version": version} if version else {})})
     return {"facts": {"units": units, **({"packages": packages} if packages else {})}, "gaps": gaps}
