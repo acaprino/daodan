@@ -19,7 +19,7 @@ ALLOWED = {
     "comment_rewriter.py": 39, "container.py": 11, "doc_review.py": 23, "docker_build.py": 12,
     "dynamic/__init__.py": 2, "dynamic/callgrind.py": 4, "dynamic/clang.py": 3, "dynamic/dotnet.py": 6,
     "dynamic/go.py": 1, "dynamic/javascript.py": 5, "dynamic/jvm.py": 4, "dynamic/python.py": 9, "dynamic/rust.py": 2,
-    "engine_tools.py": 1, "file_formats.py": 1, "file_inventory.py": 1, "format_catalog.py": 1, "flows.py": 7, "import_resolution.py": 1, "indexers/clang.py": 12,
+    "engine_tools.py": 1, "file_formats.py": 1, "file_inventory.py": 2, "format_catalog.py": 1, "flows.py": 7, "import_resolution.py": 1, "indexers/clang.py": 12,
     "indexers/clang_run.py": 7, "indexers/csharp.py": 8, "indexers/css.py": 59, "indexers/go.py": 7,
     "indexers/java.py": 6, "indexers/jvm.py": 10, "indexers/kotlin.py": 1, "indexers/python.py": 12,
     "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6,
@@ -56,4 +56,4 @@ def test_no_file_of_the_core_has_more_regular_expressions_than_it_had():
 
 
 def test_the_count_only_goes_down():
-    assert sum(ALLOWED.values()) <= 662  # 27 November 2026: +1, Composer's own PLATFORM_PACKAGE_REGEX on a package name (T1.B.9b); +2, Linguist's own `vendor`/`documentation` expressions on paths (T1.B.5); texts with no grammar; 659 on the 26th (660 on the 25th, 661 on the 24th, 667 on the 22nd, 835 on the 21st, 846 on the 20th); lower it with the files
+    assert sum(ALLOWED.values()) <= 663  # 27 November 2026: +1, Linguist's expressions tried on the dot directories the perimeter reads (`.github`, `.maestro`); +1, Composer's PLATFORM_PACKAGE_REGEX on a package name (T1.B.9b); +2, Linguist's `vendor`/`documentation` expressions on paths (T1.B.5); texts with no grammar; 659 on the 26th
