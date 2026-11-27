@@ -191,7 +191,7 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
     try:
         for name in names:
             container.checked(container.cli(engine, "volume", "create", name), "Node seed volume create")
-        container.internal_network(engine, network)
+        opened = container.internal_network(engine, network)  # a note of an engine older than Docker 28
         container.start_proxy(engine, proxy, network, tuple(request["hosts"]), project)
         logged.append(proxy)
         script = (container.named() if visibility == "blind" else "") + request["script"]
@@ -205,7 +205,7 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
         asked, denied = egress.collect(project, refusals())  # before the proxy goes
         if row.get("outcome") != "exited" or row.get("exit_code") != 0:  # the run says the gaps of its proxy
             raise container.Gap(row.get("cause") or "Node dependency preparation failed", "see node-restore.log",
-                                [*denied, *egress.approval_gap(asked)])
+                                [*opened, *denied, *egress.approval_gap(asked)])
         log = Path(row["log"]).read_text(encoding="utf-8", errors="replace")
         gaps = [*preparation.missing(log), *preparation.restore_gaps(log), *preparation.generation_gaps(log), *denied]
         if not gaps:  # a partial install remains usable by this consumer alone
