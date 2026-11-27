@@ -425,6 +425,16 @@ def test_one_python_folder_has_one_manager_its_lockfile_names():
     assert preparation.restores(["tools/requirements.txt", "api/pyproject.toml"]) == {"pip": ["api", "tools"]}
 
 
+def test_the_tools_say_what_their_recipes_need_as_root_and_the_jdk_stays_in_the_state_volume():
+    """`T3.A.6b`, the capabilities measured by `benchmarks/egress/modal_hardening.py`: `tar` from root needs CHOWN
+    and FOWNER, Go's, Rust's and vcpkg's recipes none; apt's git installs into the image. Temurin's JDK is used
+    where it is unpacked, in the state volume: the preparation, 65532, writes nothing at the container's root."""
+    assert preparation.setup(["node", "go"])["caps"] == ["CHOWN", "FOWNER"]
+    assert preparation.setup(["go", "rust", "vcpkg"])["caps"] == []
+    assert preparation.IMAGE_NEEDS == ("git",)
+    assert "/opt" not in preparation.UNPACK_JDK and f"{preparation.JDK_HOME}/bin" in preparation.PATH.split(":")
+
+
 def test_a_restore_names_what_it_needs_from_the_preparation():
     assert preparation.RESTORES["uv"]["needs"] == ["uv"] and preparation.RESTORES["poetry"]["needs"] == ["poetry"]
     assert all(n in preparation.NEEDS for spec in preparation.RESTORES.values() for n in spec.get("needs", ()))

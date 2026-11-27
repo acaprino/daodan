@@ -169,21 +169,26 @@ def fetched(url: str | None, sha256: str | None, name: str) -> Path:
 
 
 
-def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=(), needs=()) -> tuple[dict, list, tuple, list]:
-    """The setup command, the files it unpacks, the hosts beside the registries and the gaps known before it runs:
-    the tool's own (`TOOLS`), the project's toolchains it runs on (`runs_on`, installed by mise at the version
-    `stated`), what the commands name in `needs` (`preparation.NEEDS`), then the lines that restore the project's
-    packages (`restores`)."""
+def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=(), needs=()) -> tuple:
+    """The setup command, the files it unpacks, the hosts beside the registries, the gaps known before it runs and the
+    tools that install as root before it (`container.tool_phase`, `T3.A.6b`): the tool's own (`TOOLS`), the project's
+    toolchains it runs on (`runs_on`, installed by mise at the version `stated`), what the commands name in `needs`
+    (`preparation.NEEDS`), then the lines that restore the project's packages (`restores`). The setup runs as
+    `container.NOBODY`; a need that installs into the image (`preparation.IMAGE_NEEDS`) keeps the preparation one, as
+    root (tools None)."""
     spec = TOOLS[tool]
     chains = preparation.toolchains([t for t in stated if t.get("tool") in spec.get("runs_on", ())])
-    needs = preparation.setup({*needs, *(n for c in commands for n in c.get("needs", ()))})
+    asked = {*needs, *(n for c in commands for n in c.get("needs", ()))}
+    needs = preparation.setup(asked)
     network = "registries" if spec.get("registries") or needs["registries"] or chains["lines"] or restores or any(
         c.get("network") == "registries" for c in commands) else "none"
-    lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"], *chains["lines"], *needs["lines"], *restores]
+    tools = None if asked & set(preparation.IMAGE_NEEDS) else {"lines": needs["lines"], "caps": needs["caps"]}
+    lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"], *chains["lines"],
+             *(needs["lines"] if tools is None else ()), *restores]
     first = {"tool": tool, "argv": ["sh", "-c", " && ".join(f"( {line} )" for line in lines)], "cwd": ".",
              "env": ENV, "network": network}
     return (first, [*spec["files"], *chains["files"], *needs["files"]],
-            (*spec.get("hosts", ()), *chains["hosts"], *needs["hosts"]), chains["gaps"])
+            (*spec.get("hosts", ()), *chains["hosts"], *needs["hosts"]), chains["gaps"], tools)
 
 
 def _node(project: Path, refused=()) -> dict:
@@ -241,7 +246,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                     if spec.get("restores") == "python" else {"lines": [], "hosts": (), "gaps": []})
         restore_lines, shared = (node_preparation.options(restored, toolchains) if spec.get("restores") == "node"
                                  else (restored["lines"], {}))
-        first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines, restored.get("needs", ()))
+        first, files, hosts, gaps, tools = plan(tool, commands, toolchains, restore_lines, restored.get("needs", ()))
         gaps += restored["gaps"]  # a package folder no restore installs
         hosts = (*hosts, *restored["hosts"])
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
@@ -259,7 +264,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                     values=spec.get("values", False), engine=engine,
                     inputs=lambda: {**{f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files}, **written},
                     registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
-                    memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
+                    memory=int(spec.get("memory", 2) * 2**30), timeout=1800, tools=tools, **shared)
 
         import egress
         waiting, said = egress.preflight(str(project.resolve()), hosts)  # a host of the tool nobody decided: no run
@@ -274,8 +279,10 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if not answers or answers[0]["returncode"] != 0:
             raise RuntimeError(f"the {tool} setup failed: "
                                f"{(answers[0]['stderr'] if answers else '').strip()[-400:] or 'no answer'}")
-        # the preparation's gaps ride on the first answer
-        gaps += (preparation.missing(answers[0]["stderr"]) + preparation.restore_gaps(answers[0]["stderr"])
+        # the preparation's gaps ride on the first answer, the tools' on the log of the preparation they began
+        began = Path(result["record"]).parent / "prepare.log" if tools and result.get("record") else None
+        said = began.read_text(encoding="utf-8", errors="replace") if began and began.is_file() else ""
+        gaps += (preparation.missing(said) + preparation.missing(answers[0]["stderr"]) + preparation.restore_gaps(answers[0]["stderr"])
                  + preparation.generation_gaps(answers[0]["stderr"])
                  + list(result.get("gaps") or ()))  # and what the copy left out (`container.copy_perimeter`)
         if tool == "gradle":  # the repositories its builds declare (`gradle.retry`) that nobody decided: asked, the result stands

@@ -254,12 +254,12 @@ ASK_HEAP_MB = 3072  # 1,043 MB resident on klaxon with a 3 GB heap (benchmarks/i
 ASK_RUN = rf'''ask={ASK}
 if [ -d "$OUT/kotlin-configs" ] && [ -f "$ask/KotlinAsk.kt" ]; then
   jar="${{TMPDIR:-/tmp}}/daodan-kotlin-ask.jar"
-  step ask-compile /opt/java/openjdk/bin/java -Xmx1g -cp "$ask/compiler/*" \
+  step ask-compile /daodan/state/jdk/bin/java -Xmx1g -cp "$ask/compiler/*" \
     org.jetbrains.kotlin.cli.jvm.K2JVMCompiler "$ask/KotlinAsk.kt" \
     -classpath "$(ls -d "$ask"/runtime/*.jar | paste -sd: -)" -d "$jar" -jvm-target 17 -no-stdlib -no-reflect \
     -Xskip-prerelease-check {" ".join(f"-opt-in=org.jetbrains.kotlin.analysis.api.{name}" for name in KOTLIN_OPT_INS)} \
     < /dev/null \
-  && step ask /opt/java/openjdk/bin/java -Xmx{ASK_HEAP_MB}m -Djava.awt.headless=true -cp "$jar:$ask/runtime/*" \
+  && step ask /daodan/state/jdk/bin/java -Xmx{ASK_HEAP_MB}m -Djava.awt.headless=true -cp "$jar:$ask/runtime/*" \
     daodan.KotlinAskKt "$OUT/kotlin-configs" --across "$OUT/kotlin-answers.jsonl" < /dev/null
 fi
 '''

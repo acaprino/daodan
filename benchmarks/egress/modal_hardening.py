@@ -10,13 +10,21 @@ and `container.start_services`, with the flags of a variant put after `create`: 
 `--user 65532:65532`, both. Then the decided target: a recipe as root without `/work` and with `--cap-drop ALL` plus
 the least capabilities it needs (from Docker's default set, dropped one at a time while it still succeeds); a restore
 as `65532` with `--cap-drop ALL` on volumes owned by `65532`; a service as root with the least capabilities. The
-network is the engine's bridge: the proxy is `modal_probe.py`'s subject. Writes `results/hardening.json`.
+network is the engine's bridge: the proxy is `modal_probe.py`'s subject. The `daodan:` rows run Daodan's own
+containers as its code makes them (`container.UNPRIVILEGED`, `T3.A.6a`): the proxy opening a registry, the reader of
+the `.env` files, the probe of `leaves`, the pod and `reached`. Each recipe and restore runs once more as a split
+preparation runs it (`code`, `T3.A.6b`): `container.own` gives the copy to `65532`, `container.tool_phase` installs
+the recipes of `preparation.NEEDS` as root without /work with their `caps`, the rest runs as `65532` with
+`--cap-drop ALL` (`container.RESTORE`). A service runs as `start_services` creates it (`container.SERVICE`,
+`T3.A.6c`): postgres 17 and 18, mysql, redis and mongo, whose entrypoints drop to their user; its variants and least
+capabilities are those `T3.A.5` measured. Writes `results/hardening.json`.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import subprocess
+import time
 import sys
 import threading
 import urllib.request
@@ -136,7 +144,37 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
 
     head = f'set -u; mkdir -p {T}/bin "$HOME" {preparation.VENVS}'  # as `dynamic/python.py` starts a preparation
 
-    def recipe(name: str, image: str, files, lines: list[str], check: str = "", env: dict | None = None) -> dict:
+    def split(image: str, copy: Path, tools: dict | None, lines: list[str], env: dict | None = None) -> dict:
+        """As Daodan's split preparation runs: the copy given to 65532, `tools` as root, `lines` as 65532."""
+        mounts, out = volumes(True), runs / "logs" / uuid.uuid4().hex[:12]
+        out.mkdir(parents=True)
+        given = {**preparation.ENV, **(env or {})}
+        try:
+            made = container.own(engine, image, copy, mounts, limits, 1500, out, not (tools and tools["lines"]))
+            if made.get("outcome") == "exited" and made.get("exit_code") == 0 and tools and tools["lines"]:
+                made = container.tool_phase(engine, image, tools, "bridge", given, mounts[1], limits, 1500, out)
+            if made.get("outcome") != "exited" or made.get("exit_code") != 0:
+                said = Path(made["log"]).read_text(errors="replace")[-600:] if made.get("log") else ""
+                return {"ok": False, "error": f"{made['phase']}: {made.get('cause') or said}"}
+            local.flags = []
+            row = container.phase(engine, "run", image=image, command=["sh", "-c", "\n".join([head, *lines])],
+                                  network="bridge", env=given, limits=limits, timeout=1500, copy=None, outputs=[],
+                                  out_dir=out, volumes=mounts, flags=container.RESTORE)
+        finally:
+            drop(mounts)
+        log = Path(row["log"]).read_text(encoding="utf-8", errors="replace") if row.get("log") else ""
+        lines = [line for line in log.splitlines() if line.strip()]
+        marks = [line for line in lines if line.startswith("DAODAN-") and ("MISSING" in line or "FAILED" in line)]
+        ok = row.get("outcome") == "exited" and row.get("exit_code") == 0 and not marks
+        return {"ok": ok, "seconds": row.get("duration_seconds"),
+                "error": None if ok else (row.get("cause") or " | ".join([*marks[:3], *lines[-6:]]))[-900:]}
+
+    def needed(names) -> dict:
+        found = preparation.setup(names)
+        return {"lines": found["lines"], "caps": found["caps"]}
+
+    def recipe(name: str, image: str, files, lines: list[str], check: str = "", env: dict | None = None,
+               code: tuple | None = None) -> dict:
         inputs = fetched(files)
         copy = copy_of(f"recipe-{name}", {}, inputs)
         script = "\n".join([head, *lines, check])
@@ -153,9 +191,12 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
             finally:
                 drop(mounts)
         row["target"] = {"as": "root, no /work, --cap-drop ALL + least", **least(trial)}
+        if code is not None:  # (tools, lines as 65532)
+            row["code"] = split(image, copy, code[0], [*code[1], check], env)
         return row
 
-    def restore(name: str, image: str, files, project: dict[str, str], prepare: list[str], lines: list[str]) -> dict:
+    def restore(name: str, image: str, files, project: dict[str, str], prepare: list[str], lines: list[str],
+                needs=(), first=()) -> dict:
         inputs = fetched(files)
         copy = copy_of(f"restore-{name}", project, inputs)
         before = "\n".join([head, *prepare])
@@ -175,6 +216,7 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
         for variant, flags in VARIANTS.items():
             row["variants"][variant] = run(flags, False)
         row["target"] = {"as": "65532, --cap-drop ALL, volumes owned by 65532", **run([*DROP, *USER], True)}
+        row["code"] = split(image, copy, needed(needs), [*(f"( {line} )" for line in first), *lines])  # as `plan`
         return row
 
     def copy_row() -> dict:
@@ -214,36 +256,119 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
             finally:
                 for args in cleanup:
                     run(*args)
-        row = {"row": f"service:{name}", "image": pinned, "variants": {}}
-        for variant, flags in VARIANTS.items():
-            row["variants"][variant] = trial_flags(flags)
-        row["target"] = {"as": "root, --cap-drop ALL + least", **least(lambda caps: trial_flags(adds(caps)))}
-        return row
+        # as `start_services` creates it: `container.SERVICE` after the name, which a variant's flags before it would
+        # not take away (`T3.A.5` measured the variants and the least capabilities)
+        return {"row": f"service:{name}", "image": pinned, "variants": {}, "code": trial_flags([])}
+
+    def erun(*args, timeout=300, stdin=None):
+        return original(engine, *args, timeout=timeout, stdin=stdin)
+
+    def said(answer) -> str:
+        return (answer.stdout + answer.stderr).decode("utf-8", "replace").strip()[-600:]
+
+    def own(name: str, body) -> dict:
+        """A container of Daodan's own code, as `container` makes it: ok, or the error."""
+        try:
+            error = body()
+        except Exception as failure:  # noqa: BLE001 - the row says why
+            error = f"{type(failure).__name__}: {failure}"
+        return {"row": f"daodan:{name}", "variants": {},
+                "target": {"as": " ".join(container.UNPRIVILEGED), "ok": error is None, "error": error}}
+
+    def proxy() -> str | None:
+        token = uuid.uuid4().hex[:12]
+        network, box = f"daodan-net-{token}", f"daodan-proxy-{token}"
+        container.internal_network(engine, network)
+        try:
+            container.start_proxy(engine, box, network, ("registry.npmjs.org",), "hardening")
+            user = said(erun("inspect", "--format", "{{.Config.User}} {{.HostConfig.CapDrop}}", box))
+            ask = ("import socket; s = socket.create_connection(('proxy', 3128), 10); "
+                   "s.sendall(b'CONNECT registry.npmjs.org:443 HTTP/1.1\\r\\n\\r\\n'); print(s.recv(64))")
+            answer = erun("run", "--rm", "--network", network, container.PROXY_IMAGE, "python3", "-c", ask)
+            return None if b" 200 " in answer.stdout and user.startswith("65532:65532") else f"{user} | {said(answer)}"
+        finally:
+            erun("rm", "-f", box)
+            erun("network", "rm", network)
+
+    def dotenv() -> str | None:
+        project = runs / "projects" / "dotenv"
+        project.mkdir(parents=True)
+        (project / ".env").write_text("KEY=value\n", encoding="utf-8")
+        (project / ".env").chmod(0o600)  # the user's own: read by 65532 all the same (`bound`, readable)
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "p"]):
+            subprocess.run(command, cwd=project, check=True)
+        tar = runs / "copies" / "dotenv.tar"
+        tar.parent.mkdir(parents=True, exist_ok=True)
+        container.copy_perimeter(project, tar)
+        values, _public = container.dotenv_values(erun, tar, [".env"], uuid.uuid4().hex[:12])
+        return None if values == {".env": {"KEY": "value"}} else f"values {values}"
+
+    def probe() -> str | None:
+        network = f"daodan-net-{uuid.uuid4().hex[:12]}"
+        container.internal_network(engine, network)
+        try:
+            return container.leaves(erun, network, uuid.uuid4().hex[:12])
+        finally:
+            erun("network", "rm", network)
+
+    def pod() -> str | None:
+        token, cleanup = uuid.uuid4().hex[:12], []
+        try:
+            made, failure = container.start_pod(engine, [], "bridge", token, 120, cleanup)
+            if not made:
+                return f"pod: {failure}"
+            cleanup.insert(0, ("rm", "-f", f"daodan-listen-{token}"))
+            erun("run", "-d", "--name", f"daodan-listen-{token}", "--network", f"container:{made}",
+                 container.PROXY_IMAGE, "python3", "-m", "http.server", "8080")
+            for _ in range(30):
+                if container.reached(erun, f"container:{made}", ["8080"]):
+                    return None
+                time.sleep(1)
+            return "reached: port 8080 accepted no connection in 30 s"
+        finally:
+            for args in cleanup:
+                erun(*args)
 
     setup = preparation.setup
     jdk = (*preparation.TEMURIN, preparation.JDK_IN.rsplit("/", 1)[1])
-    java = "[ -x /opt/java/openjdk/bin/java ] || echo 'DAODAN-MISSING jdk' >&2"
+    java = f"[ -x {preparation.JDK_HOME}/bin/java ] || echo 'DAODAN-MISSING jdk' >&2"
     mise = preparation.toolchains([{"tool": "node", "version": "22.12.0"}])
-    jobs = [lambda: copy_row()]
+    jobs = [lambda: copy_row(), lambda: own("proxy", proxy), lambda: own("dotenv", dotenv),
+            lambda: own("leaves", probe), lambda: own("pod+reached", pod)]
     for name, base in (("node", preparation.IMAGE), ("uv", preparation.IMAGE), ("go", BUILDPACK), ("rust", BUILDPACK),
                        ("arm-none-eabi", BUILDPACK)):
-        jobs.append(lambda name=name, base=base: recipe(name, base, setup([name])["files"], setup([name])["lines"]))
+        jobs.append(lambda name=name, base=base: recipe(name, base, setup([name])["files"], setup([name])["lines"],
+                                                        code=(needed([name]), [])))
     jobs += [
         # on the Python image, whose VCS requirements need it (`dynamic/python.py`): the Debian one has no CA
         # certificates, so apt over https fails there before any capability counts; the proxy variable empty
-        lambda: recipe("git", PYTHON_IMAGE, [], setup(["git"])["lines"], env={"HTTPS_PROXY": ""}),
-        lambda: recipe("dotnet", BUILDPACK, setup(["dotnet"])["files"], setup(["dotnet"])["lines"]),
-        lambda: recipe("vcpkg", BUILDPACK, setup(["vcpkg"])["files"], setup(["vcpkg"])["lines"]),
-        lambda: recipe("conan", BUILDPACK, setup(["conan"])["files"], setup(["conan"])["lines"]),
-        lambda: recipe("poetry", PYTHON_IMAGE, setup(["poetry"])["files"], setup(["poetry"])["lines"]),
-        lambda: recipe("jdk", preparation.IMAGE, [jdk], [preparation.UNPACK_JDK], java),
+        # apt installs into the image: in a split preparation it cannot run apart, so the preparation stays root
+        # (`preparation.IMAGE_NEEDS`); no `code` row
+        lambda: recipe("git", PYTHON_IMAGE, [], setup(["git"])["lines"], env={"HTTPS_PROXY": "", "HTTP_PROXY": ""}),
+        lambda: recipe("dotnet", BUILDPACK, setup(["dotnet"])["files"], setup(["dotnet"])["lines"],
+                       code=(needed(["dotnet"]), [])),
+        lambda: recipe("vcpkg", BUILDPACK, setup(["vcpkg"])["files"], setup(["vcpkg"])["lines"],
+                       code=(needed(["vcpkg"]), [])),
+        lambda: recipe("conan", BUILDPACK, setup(["conan"])["files"], setup(["conan"])["lines"],
+                       code=(needed(["conan"]), [])),
+        lambda: recipe("poetry", PYTHON_IMAGE, setup(["poetry"])["files"], setup(["poetry"])["lines"],
+                       code=(needed(["poetry"]), [])),
+        lambda: recipe("jdk", preparation.IMAGE, [jdk], [preparation.UNPACK_JDK], java,
+                       code=(None, [preparation.UNPACK_JDK])),
         lambda: recipe("cmdline-tools", preparation.IMAGE, [jdk, *setup(["cmdline-tools"])["files"]],
-                       [preparation.UNPACK_JDK, *setup(["cmdline-tools"])["lines"]]),
+                       [preparation.UNPACK_JDK, *setup(["cmdline-tools"])["lines"]],
+                       code=({"lines": [preparation.UNPACK_JDK, *setup(["cmdline-tools"])["lines"]],
+                              "caps": setup(["cmdline-tools"])["caps"]}, [])),
         lambda: recipe("corepack", preparation.IMAGE, setup(["node"])["files"],
-                       [*setup(["node"])["lines"], preparation.COREPACK_INSTALL]),
-        lambda: recipe("mise", preparation.IMAGE, mise["files"], mise["lines"]),
+                       [*setup(["node"])["lines"], preparation.COREPACK_INSTALL],
+                       code=(needed(["node"]), [preparation.COREPACK_INSTALL])),
+        lambda: recipe("mise", preparation.IMAGE, mise["files"], mise["lines"], code=(None, mise["lines"])),
         lambda: service("postgres", "postgres:17", {"POSTGRES_PASSWORD": "daodan"}),
         lambda: service("mysql", "mysql:8.4", {"MYSQL_ROOT_PASSWORD": "daodan"}),
+        lambda: service("postgres-18", "postgres:18", {"POSTGRES_PASSWORD": "daodan"}),
+        lambda: service("redis", "redis:7", {}),
+        lambda: service("mongo", "mongo:7", {}),
     ]
     package = lambda extra: json.dumps({"name": "p", "version": "1.0.0", **extra,  # noqa: E731
                                         "dependencies": {"is-number": "7.0.0"}})
@@ -251,42 +376,44 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
         project = {"package.json": package({"packageManager": manager} if manager else {})}
         lines = preparation.node_prepare(list(project), project.__getitem__)["lines"]
         jobs.append(lambda name=name, project=project, lines=lines: restore(
-            name, preparation.IMAGE, setup(["node"])["files"], project, setup(["node"])["lines"], lines))
+            name, preparation.IMAGE, setup(["node"])["files"], project, setup(["node"])["lines"], lines, ["node"]))
     pyproject = ('[project]\nname = "p"\nversion = "0.1.0"\nrequires-python = ">=3.11"\n'
                  'dependencies = ["six==1.16.0"]\n')
     poetry = pyproject + '\n[tool.poetry]\npackage-mode = false\n'
     jobs += [
         lambda: restore("uv", PYTHON_IMAGE, setup(["uv"])["files"], {"pyproject.toml": pyproject},
                         [*setup(["uv"])["lines"], "cd /work && uv lock -q"],
-                        [preparation.restore("uv", ["."])]),
+                        [preparation.restore("uv", ["."])], ["uv"], ["cd /work && uv lock -q"]),
         lambda: restore("pip", PYTHON_IMAGE, setup(["uv"])["files"], {"requirements.txt": "six==1.16.0\n"},
-                        setup(["uv"])["lines"], [preparation.restore("pip", ["."])]),
+                        setup(["uv"])["lines"], [preparation.restore("pip", ["."])], ["uv"]),
         lambda: restore("poetry", PYTHON_IMAGE, setup(["poetry"])["files"], {"pyproject.toml": poetry},
                         [*setup(["poetry"])["lines"], "cd /work && poetry lock -q"],
-                        [preparation.restore("poetry", ["."])]),
+                        [preparation.restore("poetry", ["."])], ["poetry"], ["cd /work && poetry lock -q"]),
         lambda: restore("go", BUILDPACK, setup(["go"])["files"],
                         {"go.mod": "module p\n\ngo 1.22\n\nrequire golang.org/x/text v0.14.0\n"},
-                        setup(["go"])["lines"], [preparation.restore("go", ["."])]),
+                        setup(["go"])["lines"], [preparation.restore("go", ["."])], ["go"]),
         lambda: restore("cargo", BUILDPACK, setup(["rust"])["files"],
                         {"Cargo.toml": '[package]\nname = "p"\nversion = "0.1.0"\nedition = "2021"\n\n'
                                        '[dependencies]\nitoa = "=1.0.11"\n', "src/lib.rs": ""},
-                        setup(["rust"])["lines"], [preparation.restore("cargo", ["."])]),
+                        setup(["rust"])["lines"], [preparation.restore("cargo", ["."])], ["rust"]),
         lambda: restore("dotnet", BUILDPACK, setup(["dotnet"])["files"],
                         {"p.csproj": '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0'
                                      '</TargetFramework></PropertyGroup><ItemGroup><PackageReference '
                                      'Include="Newtonsoft.Json" Version="13.0.3" /></ItemGroup></Project>\n'},
-                        setup(["dotnet"])["lines"], [preparation.restore("dotnet", ["."])]),
+                        setup(["dotnet"])["lines"], [preparation.restore("dotnet", ["."])], ["dotnet"]),
         lambda: restore("maven", preparation.IMAGE, TOOLS["maven"]["files"],
                         {"pom.xml": '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0'
                                     '</modelVersion><groupId>p</groupId><artifactId>p</artifactId><version>1</version>'
                                     '<dependencies><dependency><groupId>junit</groupId><artifactId>junit</artifactId>'
                                     '<version>4.13.2</version></dependency></dependencies></project>\n'},
-                        TOOLS["maven"]["setup"], [preparation.UNPACK_JDK, preparation.restore("maven", ["."])]),
+                        TOOLS["maven"]["setup"], [preparation.UNPACK_JDK, preparation.restore("maven", ["."])],
+                        (), TOOLS["maven"]["setup"]),
         lambda: restore("gradle", preparation.IMAGE, TOOLS["gradle"]["files"],
                         {"settings.gradle": "rootProject.name = 'p'\n",
                          "build.gradle": "plugins { id 'java' }\nrepositories { mavenCentral() }\n"
                                          "dependencies { implementation 'junit:junit:4.13.2' }\n"},
-                        TOOLS["gradle"]["setup"], [preparation.UNPACK_JDK, preparation.restore("gradle", ["."])]),
+                        TOOLS["gradle"]["setup"], [preparation.UNPACK_JDK, preparation.restore("gradle", ["."])],
+                        (), TOOLS["gradle"]["setup"]),
     ]
 
     def guarded(job):
@@ -296,7 +423,7 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
             row = {"row": getattr(job, "__name__", "job"), "error": f"{type(error).__name__}: {error}"}
         print(json.dumps({"row": row.get("row"), "variants": {k: v["ok"] for k, v in row.get("variants", {}).items()},
                           "minimal": row.get("target", {}).get("minimal"), "target_ok": row.get("target", {}).get(
-                              "ok")}), flush=True)
+                              "ok"), "code_ok": row.get("code", {}).get("ok")}), flush=True)
         return row
 
     for image in {preparation.IMAGE, BUILDPACK, PYTHON_IMAGE, container.PROXY_IMAGE}:
@@ -353,10 +480,11 @@ else:
         result = json.loads(written)
         out = HERE / "results" / "hardening.json"
         out.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
-        print("| riga | " + " | ".join(VARIANTS) + " | obiettivo | capability minime |")
+        print("| riga | " + " | ".join(VARIANTS) + " | obiettivo | capability minime | codice |")
         for row in result["rows"]:
             target = row.get("target") or {}
             minimal = target.get("minimal")
             print(f"| {row['row']} | " + " | ".join(verdict(row.get("variants", {}).get(v)) for v in VARIANTS)
                   + f" | {verdict(target) if 'ok' in target else '-'} | "
-                  + ("-" if minimal is None else ", ".join(minimal) or "nessuna") + " |")
+                  + ("-" if minimal is None else ", ".join(minimal) or "nessuna") + " | "
+                  + (verdict(row["code"]) if "code" in row else "-") + " |")

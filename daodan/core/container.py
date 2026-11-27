@@ -97,7 +97,7 @@ IMAGE_NAME = re.compile(r"daodan-prepared-[0-9a-f]{12}")  # a preparation kept f
 RESULTS = "/daodan/out/results"  # each command's code and streams, brought back by `run_commands`
 NETWORKS = ("none", "registries")
 OUTPUT_CAP = 2**30  # what the declared outputs of a run may hold together
-RUN_FILES = (RECORD_NAME, "prepare.log", "execute.log", "node-restore.log", "clone-node.log")
+RUN_FILES = (RECORD_NAME, "prepare.log", "execute.log", "node-restore.log", "clone-node.log", "own.log")
 STREAM_SLACK = 2**26  # what tar headers and padding may add to the files' bytes, and far more
 HEADER_CAP = 2**13  # a pax or GNU long-name header: a 4096-byte path and the times fit
 # A member name no system may receive as written: a Windows device, a character Windows refuses or a control.
@@ -117,6 +117,20 @@ PROXY_VARIABLES = ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "FTP_PROXY", "ALL_PR
                    "http_proxy", "https_proxy", "no_proxy", "ftp_proxy", "all_proxy")
 PROXY_IMAGE = "python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e"
 PROXY_PORT = 3128
+NOBODY = "65532:65532"  # the user and group a container of Daodan's own code runs as: no account of any image
+UNPRIVILEGED = ("--cap-drop", "ALL", "--user", NOBODY, "--security-opt", "no-new-privileges")  # Daodan's containers
+# A preparation in three containers (`T3.A.6b`, capabilities measured by `benchmarks/egress/modal_hardening.py`): the
+# copy put in the volumes and given to `NOBODY` (`OWN`: Daodan's `chown` alone, no network); the tools of
+# `preparation.NEEDS` installed into the state volume as root, without /work, with only the capabilities their
+# recipes need (`tools`); the restore and the rest of the preparation as `NOBODY` with no capability (`RESTORE`).
+OWN = ("--cap-drop", "ALL", "--cap-add", "CHOWN")
+RESTORE = ("--cap-drop", "ALL", "--user", NOBODY)
+# A project's service runs as its image says, with no capability but those an entrypoint that makes its data folder
+# and drops to the service's user needs, measured by `modal_hardening.py` (`T3.A.6c`): `gosu` and the folder's mode
+# (DAC_OVERRIDE, SETGID, SETUID: postgres 17, mysql), its owner where the image does not make it (CHOWN, FOWNER:
+# postgres 18). One that needs another fails, a service gap with its cause.
+SERVICE = ("--cap-drop", "ALL", *(word for cap in ("CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID")
+                                  for word in ("--cap-add", cap)))
 # The preparation's network: no way out (`--internal`), no IPv6, and, where the engine has the option (Docker Engine
 # 28.0, API 1.48), no address of the host on its bridge, so the network's gateway is no way to the host's listeners
 # (`benchmarks/egress`). An older engine gets the network without it, and the run says so (`GATEWAY_OPEN`).
@@ -897,10 +911,10 @@ def dotenv_values(run: Callable, copy: Path, files: list[str], token: str,
     answer."""
     box = f"daodan-dotenv-{token}"
     try:
-        checked(run("create", "--name", box, "--network", "none", "--memory", str(64 * 2**20), "--pids-limit", "16",
-                    "--security-opt", "no-new-privileges", "-e", f"DAODAN_PUBLIC={PUBLIC_SECONDS}", "-w", WORKDIR,
+        checked(run("create", "--name", box, *UNPRIVILEGED, "--network", "none", "--memory", str(64 * 2**20),
+                    "--pids-limit", "16", "-e", f"DAODAN_PUBLIC={PUBLIC_SECONDS}", "-w", WORKDIR,
                     PROXY_IMAGE, "python3", "-c", RESOLVE, *files), "create of the reader of the .env files")
-        with bound(copy, [[rel, f"{WORKDIR}/{rel}"] for rel in (*files, *tracked)]) as handle:
+        with bound(copy, [[rel, f"{WORKDIR}/{rel}"] for rel in (*files, *tracked)], readable=True) as handle:
             checked(run("cp", "-", f"{box}:/", stdin=handle), "cp of the .env files")
         said = run("start", "-a", box, timeout=PUBLIC_SECONDS + 120)
     finally:
@@ -1137,12 +1151,14 @@ def sweep(engine: Engine) -> None:
 
 def phase(engine: Engine, name: str, *, image: str, command: list[str], network: str, env: dict[str, str],
           limits: dict, timeout: float, copy: Path | None, outputs: list[str], out_dir: Path,
-          volumes: list[str] = (), commit: str | None = None) -> dict:
-    """One container from create to rm, with the `name:path` volumes mounted: its record, with the outputs
-    brought back; with `commit`, a container that exited with 0 is first committed as that image (`committed`
-    in the record, or `commit_failed` with the engine's answer)."""
+          volumes: list[str] = (), commit: str | None = None, flags: tuple[str, ...] = (),
+          log: str | None = None) -> dict:
+    """One container from create to rm, with the `name:path` volumes mounted and `flags` (its user and
+    capabilities) after its name: its record, with the outputs brought back; with `commit`, a container that exited
+    with 0 is first committed as that image (`committed` in the record, or `commit_failed` with the engine's
+    answer). Its log is `<name>.log`, or with `log` the end of `<log>.log`, which an earlier phase began."""
     box = f"daodan-{uuid.uuid4().hex[:12]}"
-    args = ["create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
+    args = ["create", "--name", box, *flags, "--network", network, "--memory", str(limits["memory"]),
             "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
             "--security-opt", "no-new-privileges", "-w", WORKDIR]
     if limits.get("cpus"):
@@ -1153,6 +1169,7 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
         args += ["-v", mount]
     row = {"phase": name, "engine": engine.name, "image": image, "command": list(command), "network": network,
            "limits": {**limits, "seconds": timeout}, "volumes": list(volumes),
+           **({"flags": list(flags)} if flags else {}),
            "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "outputs": []}
     started = time.monotonic()
     try:
@@ -1160,9 +1177,9 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
         if copy is not None:
             with copy.open("rb") as handle:
                 checked(cli(engine, "cp", "-", f"{box}:/", stdin=handle), "cp of the copy")
-        log = out_dir / f"{name}.log"
-        row["log"] = str(log)
-        with log.open("wb") as handle:
+        path = out_dir / f"{log or name}.log"
+        row["log"] = str(path)
+        with path.open("ab" if log else "wb") as handle:
             try:
                 row["exit_code"] = cli(engine, "start", "-a", box, stdout=handle, stderr=subprocess.STDOUT,
                                        timeout=timeout).returncode
@@ -1317,7 +1334,7 @@ def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, .
                                                        *answers["allow"]])
                        if egress.decide(host, project, state, answers) == "allow")
     source = base64.b64encode(PROXY_SCRIPT.encode("utf-8")).decode("ascii")
-    checked(cli(engine, "create", "--name", box, "--memory", str(128 * 2**20), "--pids-limit", "64",
+    checked(cli(engine, "create", "--name", box, *UNPRIVILEGED, "--memory", str(128 * 2**20), "--pids-limit", "64",
                 PROXY_IMAGE, "python", "-c", f"import base64;exec(base64.b64decode('{source}'))",
                 str(PROXY_PORT), *registries), "create of the proxy")
     checked(cli(engine, "network", "connect", "--alias", "proxy", network, box), "network connect of the proxy")
@@ -1421,7 +1438,8 @@ def leaves(run: Callable, network: str, token: str) -> str | None:
     the tests; otherwise the engine's answer (Kiri 0.2.0 refuses: crates/kiri/src/daemon/engine.rs:2357)."""
     box = f"daodan-probe-{token}"
     try:
-        checked(run("create", "--name", box, "--network", network, PROXY_IMAGE, "true"), "create of the probe")
+        checked(run("create", "--name", box, *UNPRIVILEGED, "--network", network, PROXY_IMAGE, "true"),
+                "create of the probe")
         answer = run("network", "disconnect", network, box)
         said = (answer.stderr or answer.stdout or b"").decode("utf-8", "replace").strip()
         return None if answer.returncode == 0 else said[-300:] or f"code {answer.returncode}"
@@ -1473,17 +1491,18 @@ def reached(run: Callable, network: str, ports: list[str]) -> bool:
     """Whether each of `ports` accepts a connection at the localhost of `network`, asked from a container of the
     pod's own image in it, as GitLab's runner asks from a container beside the service."""
     try:
-        return run("run", "--rm", "--network", network, "--memory", str(64 * 2**20), "--pids-limit", "16",
-                   "--security-opt", "no-new-privileges", PROXY_IMAGE, "python3", "-c", REACH, *ports,
+        return run("run", "--rm", *UNPRIVILEGED, "--network", network, "--memory", str(64 * 2**20), "--pids-limit",
+                   "16", PROXY_IMAGE, "python3", "-c", REACH, *ports,
                    timeout=60).returncode == 0
     except subprocess.TimeoutExpired:
         return False
 
 
-def bound(copy: Path, files: list[list[str]]):
+def bound(copy: Path, files: list[list[str]], readable: bool = False):
     """A tar of the project's files a service's bind mounts name (`files`, each `[source in the project, target]`),
     from the copy's `work/` (`copy_perimeter`), each at its target: an empty folder for a source the copy does not
-    hold, as the engine makes one for a bind mount's missing source."""
+    hold, as the engine makes one for a bind mount's missing source. `readable`: each readable by any user, for a
+    container of Daodan's (`NOBODY`), where the engine's `cp` makes them root's."""
     out = tempfile.TemporaryFile()
     with tarfile.open(copy) as source, tarfile.open(fileobj=out, mode="w") as target:
         members = source.getmembers()
@@ -1494,7 +1513,8 @@ def bound(copy: Path, files: list[list[str]]):
             held = [one] if one is not None and not one.isdir() else [
                 member for member in members if member.name == prefix or member.name.startswith(prefix + "/")]
             for member in held:
-                target.addfile(member.replace(name=root + member.name[len(prefix):], deep=False),
+                mode = member.mode | (0o555 if member.isdir() else 0o444) if readable else member.mode
+                target.addfile(member.replace(name=root + member.name[len(prefix):], mode=mode, deep=False),
                                source.extractfile(member) if member.isfile() else None)
             if not held:
                 folder = tarfile.TarInfo(root)
@@ -1616,9 +1636,9 @@ def start_services(run: Callable, services: list[dict], network: str, limits: di
             args = [*args[:at], "disable", *args[at + 1:]] if at else [*args, "--health-interval", "disable"]
         try:
             if not created:
-                checked(run("create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
-                            "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
-                            "--security-opt", "no-new-privileges", *env, *args, service["pinned"],
+                checked(run("create", "--name", box, *SERVICE, "--network", network, "--memory",
+                            str(limits["memory"]), "--memory-swap", str(limits["memory"]), "--pids-limit",
+                            str(limits["pids"]), "--security-opt", "no-new-privileges", *env, *args, service["pinned"],
                             *service.get("command", ())), "create")
             if service.get("files") and not created:
                 if copy is None:
@@ -1643,12 +1663,38 @@ def start_pod(engine: Engine, services: list[dict], network: str, token: str, se
     hosts = sorted({f"--add-host={name}:127.0.0.1" for s in services
                     for name in (s.get("host"), *s.get("aliases", ())) if name not in (None, "localhost")})
     try:
-        checked(cli(engine, "create", "--name", pod, "--network", network, *hosts, "--memory", str(64 * 2**20),
-                    "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(seconds) + 600)), "create of the pod")
+        checked(cli(engine, "create", "--name", pod, *UNPRIVILEGED, "--network", network, *hosts, "--memory",
+                    str(64 * 2**20), "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(seconds) + 600)),
+                "create of the pod")
         checked(cli(engine, "start", pod), "start of the pod")
         return pod, None
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         return None, str(error)
+
+
+def own(engine: Engine, image: str, copy: Path | None, mounts: list[str], limits: dict, timeout: float,
+        out_dir: Path, state: bool = True) -> dict:
+    """The phase that puts the `copy` in the volumes of `mounts` and gives /work to `NOBODY`, and the state volume
+    with `state`: Daodan's `chown` alone, as root with no capability but `CHOWN`, with no network. Without `state`
+    the tools write it next (`tool_phase`), as root without DAC_OVERRIDE, which writes no folder of another user;
+    they give it to `NOBODY` themselves. Its record row."""
+    return phase(engine, "own", image=image, command=["chown", "-R", NOBODY, WORKDIR, *([STATE] if state else [])],
+                 network="none",
+                 env={}, limits=limits, timeout=timeout, copy=copy, outputs=[], out_dir=out_dir, volumes=mounts,
+                 flags=OWN)
+
+
+def tool_phase(engine: Engine, image: str, tools: dict, network: str, env: dict[str, str], state: str,
+               limits: dict, timeout: float, out_dir: Path, log: str = "prepare") -> dict:
+    """The recipes of `preparation.NEEDS` (`tools`' `lines`) as root, with the state volume (`state`, `name:path`)
+    and without /work, with no capability but those their recipes need (`tools`' `caps`) and `CHOWN`, which then
+    gives the state volume back to `NOBODY`; on `network`, the proxy's. Its log begins `<log>.log`; its row."""
+    caps = sorted({"CHOWN", *tools.get("caps", ())})
+    script = "\n".join(["set -u", f'mkdir -p "$HOME" {STATE}/tools/bin', *tools["lines"],
+                        f"chown -R {NOBODY} {STATE}"])
+    return phase(engine, "tools", image=image, command=["sh", "-c", script], network=network, env=env, limits=limits,
+                 timeout=timeout, copy=None, outputs=[], out_dir=out_dir, volumes=[state],
+                 flags=("--cap-drop", "ALL", *(word for cap in caps for word in ("--cap-add", cap))), log=log)
 
 
 def declared(record: Path, image: str, command: list[str], gap: Gap) -> dict:
@@ -1667,7 +1713,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                      engine: Engine | str | None = None,
                      inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
                      keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False,
-                     node_restore: dict | None = None) -> dict:
+                     node_restore: dict | None = None, tools: dict | None = None) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
@@ -1694,6 +1740,10 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     read, and what the run keeps is neither masked nor withheld.
     With `node_restore`, the analysis prepares the checkout in separate volumes and clones them read-only into
     this run's private work and state volumes before its own preparation. Each run still installs its adapter.
+    With `tools` (`preparation.setup`'s `{lines, caps}`: the recipes of `preparation.NEEDS`) the preparation is a
+    restore (`T3.A.6b`): the copy goes into the volumes, given to `NOBODY` (`own`); `tools` install as root into the
+    state volume alone (`tool_phase`); the preparation runs as `NOBODY` with no capability (`RESTORE`), unless the
+    CI's steps run in it. Without, one preparation as root, as a CI's job runs.
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
     if out_dir == project or project in out_dir.parents:
@@ -1803,6 +1853,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                     checked(cli(found, "volume", "create", name), "volume create")
                 mounts = [f"{names[0]}:{WORKDIR}", f"{names[1]}:{STATE}"]
                 prepare_copy = copy
+                (out_dir / "prepare.log").unlink(missing_ok=True)  # the phases of this preparation write it in turn
+                split = tools is not None
                 if node_restore:
                     import node_preparation
                     visibility = ("blind" if blind else "values") if digest.get("dotenv") else "plain"
@@ -1810,12 +1862,30 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         found, image, project, copy, node_restore, visibility, mounts, limits, prepare_timeout, out_dir, hide)
                     if restore_gaps:
                         result["gaps"] = [*(result.get("gaps") or ()), *restore_gaps]
+                if split:
+                    owned = own(found, image, prepare_copy, mounts, limits, prepare_timeout, out_dir,
+                                not tools.get("lines"))
+                    append_record(record, hidden(owned))
+                    if owned["outcome"] != "exited" or owned["exit_code"] != 0:
+                        result["cause"] = owned.get("cause") or f"the copy was not given to {NOBODY}; see own.log"
+                        report()
+                        return result
+                    prepare_copy = None
                 network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
                 if opened := internal_network(found, network):  # a note, not a stop: the run goes on
                     result["gaps"] = [*(result.get("gaps") or ()), *opened]
                 cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
                 start_proxy(found, proxy, network, tuple(registries), egress.name(project))
                 logged.append(proxy)
+                proxied = {**env, **exported_values, **proxy_environment(f"http://proxy:{PROXY_PORT}")}
+                if split and tools.get("lines"):
+                    made = tool_phase(found, image, tools, network, proxied, mounts[1], limits, prepare_timeout,
+                                      out_dir)
+                    append_record(record, hidden(made))
+                    if made["outcome"] != "exited" or made["exit_code"] != 0:
+                        result["cause"] = made.get("cause") or f"the tools did not install; see {made['log']}"
+                        report()
+                        return result
                 refused = leaves(engine_cli, network, token) if steps and pinned else None
                 if refused:  # the pod could not leave the network: no step runs beside the services
                     said_steps, steps = unrun(f"{found.name} cannot take the pod of the services off the preparation's "
@@ -1830,9 +1900,10 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         served, pinned = served + unstarted(failure), []
                 row = phase(found, "prepare", image=image, network=joined or network,
                             command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if steps
-                            else prepare, env={**env, **exported_values, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
-                            limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=prepare_copy, outputs=[],
-                            out_dir=out_dir, volumes=mounts, commit=kept_image)
+                            else prepare, env=proxied, limits=limits,
+                            timeout=prepare_timeout + (timeout if steps else 0), copy=prepare_copy, outputs=[],
+                            out_dir=out_dir, volumes=mounts, commit=kept_image,
+                            flags=RESTORE if split and not (steps or kept_image) else (), log="prepare")
                 read_refusals()  # before the proxy goes: `egress.collect` turns them into requests and gaps
                 append_record(record, {**hidden(row), "copy": digest})
                 if steps:

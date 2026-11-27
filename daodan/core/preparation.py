@@ -41,7 +41,7 @@ GITHUB = ("github.com", "codeload.github.com", "objects.githubusercontent.com", 
 UV = ("https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
       "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224", "uv.tar.gz")
 PATH = ":".join([f"{T}/bin", f"{T}/node/bin", f"{T}/npm/bin", f"{T}/go/bin", f"{T}/rust/bin", f"{T}/cmake/bin",
-                 "/opt/java/openjdk/bin",  # Temurin's java and jar, linked there (`UNPACK_JDK`)
+                 f"{STATE}/jdk/bin",  # Temurin's java and jar (`UNPACK_JDK`)
                  "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"])
 ENV = {"PATH": PATH, "HOME": f"{STATE}/home", "GOPATH": f"{STATE}/go", "GOCACHE": f"{STATE}/go-build",
        "GOTELEMETRY": "off", "CARGO_HOME": f"{STATE}/cargo", "UV_CACHE_DIR": f"{STATE}/uv",
@@ -59,26 +59,30 @@ RUST = [("https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-unkno
 UNPACK_UV = f"mkdir -p {T}/uvc {T}/bin && tar -xzf {IN}/uv.tar.gz -C {T}/uvc && ln -sf {T}/uvc/*/uv {T}/bin/uv"
 
 
-def unpacked(archive: str, home: str, program: str, link: str) -> str:
+def unpacked(archive: str, home: str, program: str) -> str:
     """Shell lines that unpack `archive`, a .tar.gz with one top folder, into `home` in the state volume once and
-    remove it, then link `home` at `link`: the volume carries `home` from the preparation to the execution, the
-    container's own root, where `link` is, does not."""
+    remove it: the volume carries `home` from the preparation to the execution, and `PATH` and the scripts look
+    there. Nothing goes to the container's own root, which the preparation (`NOBODY`) cannot write."""
     return (f"if [ ! -x {home}/{program} ] && [ -f {archive} ]; then\n"
             f"  mkdir -p {home} && tar -xzf {archive} -C {home} --strip-components=1 && rm -f {archive}\n"
-            f"fi\nmkdir -p {posixpath.dirname(link)} && ln -sfn {home} {link}\n")
+            f"fi\n")
 
 
-UNPACK_JDK = unpacked(JDK_IN, JDK_HOME, "bin/java", "/opt/java/openjdk")  # where `PATH` and the scripts look
+UNPACK_JDK = unpacked(JDK_IN, JDK_HOME, "bin/java")
+# What a recipe of `NEEDS` needs as root beside `CHOWN` (`container.tool_phase`), measured by
+# `benchmarks/egress/modal_hardening.py` (T3.A.5): `tar` from root sets the archive's owners and modes; the others none.
+TAR = ("CHOWN", "FOWNER")
+IMAGE_NEEDS = ("git",)  # the recipes that install into the image: in the preparation, which then runs as root
 ANDROID_HOME = f"{T}/android"  # the Android SDK: sdkmanager where Google's layout puts it, the packages it installs
 SDKMANAGER = f"{ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"  # it reads HTTPS_PROXY itself
 NEEDS = {
     "node": {"files": [NODE], "setup": [f"tar -xzf {IN}/node.tar.gz -C {T} && mv {T}/node-v24.22.3-linux-x64 {T}/node"],
-             "version": "24.22.3"},
+             "version": "24.22.3", "caps": TAR},
     "go": {"files": [GO], "setup": [f"tar -xzf {IN}/go.tar.gz -C {T}"], "version": "1.27.3"},
     "dotnet": {"files": [("https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.404/dotnet-sdk-10.0.404-linux-x64.tar.gz",
                           "c0610757a818fde4b960d27a0ac421f273068a05dc5ec7abafc01dbf84e9cb4d", "dotnet.tar.gz")],
                "setup": [f"mkdir -p {T}/dotnet && tar -xzf {IN}/dotnet.tar.gz -C {T}/dotnet"
-                         f" && ln -sf {T}/dotnet/dotnet {T}/bin/dotnet"], "version": "10.0.404"},
+                         f" && ln -sf {T}/dotnet/dotnet {T}/bin/dotnet"], "version": "10.0.404", "caps": TAR},
     "rust": {"files": RUST, "setup": [f"for c in rustc cargo; do mkdir -p {T}/x && tar -xJf {IN}/$c.tar.xz -C {T}/x"
                                       f" && cp -R {T}/x/$c-*/$c/. {T}/rust/ && rm -rf {T}/x; done"],
              "version": "1.99.1"},
@@ -89,11 +93,12 @@ NEEDS = {
                   f" && cp {IN}/vcpkg {T}/vcpkg/vcpkg && chmod 755 {T}/vcpkg/vcpkg && touch {T}/vcpkg/.vcpkg-root"
                   f" && ln -sf {T}/vcpkg/vcpkg {T}/bin/vcpkg"],
         "registries": True, "hosts": GITHUB, "version": "2026-10-29"},  # ports: sources where portfiles say
-    "uv": {"files": [UV], "setup": [UNPACK_UV], "version": "0.11.28"},
+    "uv": {"files": [UV], "setup": [UNPACK_UV], "version": "0.11.28", "caps": TAR},
     # The image's own git (VCS requirements need it; Python's Debian image has none), from its archive by the plain
     # HTTP its sources name: apt checks the signed Release files and each package's hash, and the proxy opens only a
     # GET or HEAD of `dists/` and `pool/` of a canonical archive (`http://deb.debian.org`, the Ubuntu ones). Not
     # https: a slim image without ca-certificates cannot verify it, and getting them would need this HTTP first.
+    # apt installs into the image, not the state volume: it runs in the preparation, root (`IMAGE_NEEDS`).
     "git": {"files": [], "setup": [
         'export DEBIAN_FRONTEND=noninteractive && apt-get -qq -o Acquire::http::Proxy="$HTTP_PROXY"'
         ' -o Acquire::Languages=none update && apt-get -qq -o Acquire::http::Proxy="$HTTP_PROXY"'
@@ -102,16 +107,17 @@ NEEDS = {
     "conan": {"files": [UV], "setup": [  # the image's Python has no pip: uv makes the environment
         f"{UNPACK_UV} && uv venv -q --python python3 {T}/conan && uv pip install -q --python {T}/conan conan==2.34.0"
         f" && ln -sf {T}/conan/bin/conan {T}/bin/conan"],
-              "registries": True, "hosts": ("center2.conan.io",), "version": "2.34.0"},
+              "registries": True, "hosts": ("center2.conan.io",), "version": "2.34.0", "caps": TAR},
     "poetry": {"files": [UV], "setup": [
         f"{UNPACK_UV} && uv venv -q --python python3 {T}/poetry && uv pip install -q --python {T}/poetry"
-        f" poetry==2.1.3 && ln -sf {T}/poetry/bin/poetry {T}/bin/poetry"], "registries": True, "version": "2.1.3"},
+        f" poetry==2.1.3 && ln -sf {T}/poetry/bin/poetry {T}/bin/poetry"], "registries": True, "version": "2.1.3",
+        "caps": TAR},
     "arm-none-eabi": {
         "files": [("https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/"
                    "arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi.tar.xz",
                    "597893282ac8c6ab1a4073977f2362990184599643b4c5ee34870a8215783a16", "arm-none-eabi.tar.xz")],
         "setup": [f"tar -xJf {IN}/arm-none-eabi.tar.xz -C {T} && ln -sf {T}/arm-gnu-toolchain-*/bin/* {T}/bin/"],
-        "version": "15.2.rel1"},
+        "version": "15.2.rel1", "caps": TAR},
     "cmdline-tools": {  # Google's Android SDK command-line tools, under the Android Software Development Kit License
         # Agreement (developer.android.com/studio/terms), unpacked by the JDK image's `jar`; the SDK's licences
         # are accepted as a CI accepts them, then sdkmanager installs what a build declares (`android`)
@@ -195,13 +201,15 @@ def mise_version(item: dict) -> str:
 
 
 def setup(names) -> dict:
-    """`{files, lines, registries, hosts}` for the needs `names`, in `NEEDS` order."""
+    """`{files, lines, registries, hosts, caps}` for the needs `names`, in `NEEDS` order: `caps`, what their recipes
+    need as root (`container.tool_phase`)."""
     chosen = [NEEDS[name] for name in NEEDS if name in set(names)]
     return {"files": [f for spec in chosen for f in spec["files"]],
             "lines": [f"{{ {line} ; }} >&2 || echo 'DAODAN-MISSING {name}@{NEEDS[name]['version']}' >&2"
                       for name in NEEDS if name in set(names) for line in NEEDS[name]["setup"]],
             "registries": any(spec.get("registries") for spec in chosen),
-            "hosts": tuple(dict.fromkeys(h for spec in chosen for h in spec.get("hosts", ())))}
+            "hosts": tuple(dict.fromkeys(h for spec in chosen for h in spec.get("hosts", ()))),
+            "caps": sorted({cap for spec in chosen for cap in spec.get("caps", ())})}
 
 
 # The files whose version their tool's documentation makes a minimum: a go.mod or go.work's go line is the least Go

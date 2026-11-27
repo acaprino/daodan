@@ -959,7 +959,8 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         self.assertEqual(self.asked.count(JDK_URL), 1)
         for phase in ("prepare", "execute"):
             script = (self.state / f"scripts/{phase}.sh").read_text(encoding="utf-8")
-            self.assertIn(f"ln -sfn {preparation.JDK_HOME} /opt/java/openjdk", script)
+            self.assertIn(preparation.UNPACK_JDK, script)
+            self.assertNotIn("/opt/java", script)  # the preparation, not root, writes the state volume alone
 
     def test_a_jdk_archive_with_another_checksum_is_refused_before_any_container(self):
         self.served[JDK_URL] = b"a changed jdk"
@@ -1603,7 +1604,7 @@ def test_the_locale_is_the_one_the_base_s_libc_carries():
 
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
-def test_the_jdk_archive_is_unpacked_once_into_the_state_volume_and_linked_where_the_scripts_look(tmp_path):
+def test_the_jdk_archive_is_unpacked_once_into_the_state_volume_where_the_scripts_look(tmp_path):
     state, opt = tmp_path / "state", tmp_path / "opt"
     archive = tmp_path / "jdk.tar.gz"
     with tarfile.open(archive, "w:gz") as bundle:
@@ -1613,13 +1614,13 @@ def test_the_jdk_archive_is_unpacked_once_into_the_state_volume_and_linked_where
         bundle.addfile(entry, io.BytesIO(data))
     (state / "in").mkdir(parents=True)
     shutil.copyfile(archive, state / "in" / Path(preparation.JDK_IN).name)
-    snippet = preparation.UNPACK_JDK.replace(preparation.STATE, str(state)).replace("/opt/java", str(opt))
+    snippet = preparation.UNPACK_JDK.replace(preparation.STATE, str(state))
     for _ in range(2):  # the execution finds it unpacked
         ran = subprocess.run([BASH, "-c", snippet], capture_output=True, text=True)
         assert ran.returncode == 0, ran.stderr
-    java = opt / "openjdk" / "bin" / "java"
+    java = state / "jdk" / "bin" / "java"
     assert java.is_file() and os.access(java, os.X_OK)
-    assert (opt / "openjdk").resolve() == (state / "jdk").resolve()
+    assert not opt.exists()  # nothing out of the state volume
     assert not (state / "in" / Path(preparation.JDK_IN).name).exists()
 
 
@@ -1670,7 +1671,7 @@ def test_the_head_runs_on_the_jdk_it_was_given_and_hands_gradle_every_jdk_there(
     assert ran.stdout.split()[-2:] == [str(installs / "21.0.9+10"), "21"], ran.stdout + ran.stderr
     written = jvm.properties(home / ".gradle/gradle.properties")
     assert written["org.gradle.java.installations.paths"].split(",") == [
-        "/opt/java/openjdk", *(str(installs / name) for name in ("11.0.29+7", "21.0.9+10", "8.0.512+9"))]
+        "/daodan/state/jdk", *(str(installs / name) for name in ("11.0.29+7", "21.0.9+10", "8.0.512+9"))]
     assert written["org.gradle.java.installations.auto-download"] == "false"
 
 

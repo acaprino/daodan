@@ -1347,6 +1347,10 @@ class PodTest(unittest.TestCase):
         [service] = self.created("daodan-svc-")
         self.assertEqual(service[service.index("--network") + 1], f"container:{name}")
         self.assertEqual(service[-1], PINNED)  # no command: the image's own
+        # as its image says, root, with only what an entrypoint that drops to its user needs (T3.A.6c)
+        self.assertEqual(service[3:15], ["--cap-drop", "ALL", "--cap-add", "CHOWN", "--cap-add", "DAC_OVERRIDE",
+                                         "--cap-add", "FOWNER", "--cap-add", "SETGID", "--cap-add", "SETUID"])
+        self.assertNotIn("--user", service)
         for item in ("POSTGRES_USER=tududi", "POSTGRES_PASSWORD=tududi", "POSTGRES_DB=tududi_test",
                      "pg_isready -U tududi", "--health-retries"):
             self.assertIn(item, service)
@@ -1416,6 +1420,7 @@ class PodTest(unittest.TestCase):
         [pod] = self.created("daodan-pod-")
         self.assertEqual(checks[0][checks[0].index("--network") + 1], f"container:{pod[pod.index('--name') + 1]}")
         self.assertIn(container.PROXY_IMAGE, checks[0])
+        self.assertEqual(checks[0][2:8], list(container.UNPRIVILEGED))  # no capability, not root (T3.A.6a)
         self.assertEqual(checks[0][-1], "5432")  # TCP only
         with mock.patch.object(container, "SERVICE_WAIT", 0):
             shutil.rmtree(self.out)
@@ -1543,6 +1548,8 @@ class PodTest(unittest.TestCase):
         name = pod[pod.index("--name") + 1]
         self.assertEqual(pod[pod.index("--network") + 1], network)  # the registries' network, while it prepares
         [probe] = [c for c in self.created("daodan-probe-")]
+        for own in (pod, probe):  # Daodan's own containers: no capability, not root (T3.A.6a)
+            self.assertEqual(own[3:9], list(container.UNPRIVILEGED))
         self.assertIn(["network", "disconnect", network, probe[probe.index("--name") + 1]], calls)
         [service] = self.created("daodan-svc-")
         [prepare, execute] = self.phases()
@@ -1623,12 +1630,17 @@ class PodTest(unittest.TestCase):
         spec = {**SPEC, "env": {"POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}"}, "dotenv": {"POSTGRES_PASSWORD": ".env"}}
         script = ("mkdir -p ../daodan/out && echo key $(sed -n 's/^SECRET_KEY=//p' .env) > ../daodan/out/tests-0.log"
                   " && cat .env")
+        project = self.dotenv_project()
+        (project / ".env").chmod(0o600)  # the user's own: the reader, not root, still reads it (T3.A.6a)
         with container.beside([spec], {}) as said:
-            result = container.run_in_container(self.dotenv_project(), ["sh", "-c", script], image="fake/runtime:1",
+            result = container.run_in_container(project, ["sh", "-c", script], image="fake/runtime:1",
                                                 out_dir=self.out, engine=self.engine, outputs=["/daodan/out"])
         reader = [call for call in self.created("daodan-dotenv-")]
+        with tarfile.open(self.state / "containers" / reader[0][2] / "copy.tar") as given:
+            assert {m.mode & 0o444 for m in given.getmembers() if m.isfile()} == {0o444}
         assert len(reader) == 1 and container.PROXY_IMAGE in reader[0] and reader[0][-2:] == [container.RESOLVE, ".env"]
         assert "none" == reader[0][reader[0].index("--network") + 1]
+        assert reader[0][3:9] == list(container.UNPRIVILEGED)  # no capability, not root (T3.A.6a)
         [service] = self.created("daodan-svc-")
         assert "POSTGRES_PASSWORD=changethis" in service
         kept = "\n".join(path.read_text(encoding="utf-8") for path in self.out.rglob("*") if path.is_file())
