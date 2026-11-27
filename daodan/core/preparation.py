@@ -369,7 +369,8 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
                     " then npm ci --ignore-scripts --no-audit --no-fund;"
                     " else npm install --ignore-scripts --no-audit --no-fund; fi"},
     # Lerna before 7 links and installs the packages `lerna.json` names with its own `bootstrap`, after the root's install
-    # put it in `node_modules` (`node_prepare`); its `--ignore-scripts` keeps the packages' lifecycle scripts off
+    # put it in `node_modules` (`node_prepare`); its `--ignore-scripts` keeps the packages' lifecycle scripts off. Lerna 7
+    # removed `bootstrap`: the root's package manager installs the workspaces it names (`lerna_major`)
     "lerna": {"marks": ("lerna.json",), "family": "lerna", "error": "lerna (ERR!|error)", "hosts": (),
               "line": "node_modules/.bin/lerna bootstrap --ignore-scripts"},
     # `unlocked`: the restore of a folder that names the manager (`packageManager`) and has no lockfile yet
@@ -588,6 +589,25 @@ def _lerna(text: str) -> list[str]:
     return [str(p) for p in patterns if isinstance(p, str)] if isinstance(patterns, list) else []
 
 
+def lerna_major(manifest: dict, lock: str) -> int | None:
+    """The major of the Lerna a Node root installs: the version its npm lockfile (`lock`, the text) holds, else the one
+    the range its manifest declares fixes (`^6.6.2`, `~6`, `6.x`, `6.6.2`); None when neither says (no Lerna, a range
+    open upward such as `>=6` or `*`). Hand-written on the range's first comparator: npm's `semver` is the official
+    reader, a Node program, and node-semver for Python is no dependency of the core (its pins are the snapshot's)."""
+    try:
+        data = json.loads(lock) if lock else {}
+    except ValueError:
+        data = {}
+    locked = ((data.get("packages") or {}).get("node_modules/lerna") or (data.get("dependencies") or {}).get("lerna")
+              or {}) if isinstance(data, dict) else {}
+    declared = next((str(manifest[field]["lerna"]) for field in DECLARED
+                     if isinstance(manifest.get(field), dict) and "lerna" in manifest[field]), "")
+    version = str(locked.get("version") or "") if isinstance(locked, dict) else ""
+    head = (version or declared).split("||")[0].strip().split(" ")[0].lstrip("^~=v")
+    digits = "".join(takewhile(str.isdigit, head))
+    return int(digits) if digits else None
+
+
 def _names(patterns: list[str], rel: str) -> bool:
     """Whether workspace `patterns` name the folder `rel`, relative to their root: `*` within a folder name,
     `**` across folders, a `!` pattern excludes."""
@@ -604,10 +624,10 @@ def node_prepare(files, read, stated=()) -> dict:
     whole on its own (pnpm's and Yarn's install the corepack they run, `COREPACK_INSTALL`), the hosts they reach
     beside npm's registry, and a `restore_failed` gap for each package
     folder that declares dependencies no restore installs: one inside a restore's folder whose workspaces do not
-    name it, unless the `lerna.json` of such a folder names it: then Lerna's `bootstrap` installs it there, after the
-    root's restore (`RESTORES["lerna"]`). A folder holding a local dependency outside the copy
-    (`local_dependencies`, and the pre-map's `stated` gaps, `refusals`: the `yarn.lock` entries Yarn's parser reads
-    in the container) does not restore. Project code: for a container's preparation only."""
+    name it, unless the `lerna.json` of such a folder names it and its Lerna is older than 7 (`lerna_major`): then
+    Lerna's `bootstrap` installs it there, after the root's restore (`RESTORES["lerna"]`). A folder holding a local
+    dependency outside the copy (`local_dependencies`, and the pre-map's `stated` gaps, `refusals`: the `yarn.lock`
+    entries Yarn's parser reads in the container) does not restore. Project code: for a container's preparation only."""
     files, named, manifests = list(files), {}, {}
     for rel in files:
         if posixpath.basename(rel) == "package.json":
@@ -663,12 +683,19 @@ def node_prepare(files, read, stated=()) -> dict:
         root = next((root for root in sorted(lerna, key=len, reverse=True) if root in owner and root != folder
                      and _inside(folder, root) and _names(lerna[root], folder if root == "." else folder[len(root) + 1:])),
                     None)
-        if root is not None:  # a package of a Lerna root a restore installs: its bootstrap installs it
+        lock = next((posixpath.normpath(f"{root}/{name}") for name in NPM_LOCKS
+                     if root is not None and posixpath.normpath(f"{root}/{name}") in files), None)
+        major = lerna_major(manifests.get(root, {}), read(lock) if lock else "") if root is not None else None
+        if root is not None and (major is None or major < 7):  # a Lerna root a restore installs: its bootstrap
             bootstrap.add(root)
             continue
+        detail = "no workspace above names this folder"
+        if root is not None:
+            detail = (f"Lerna {major} at {root} has no bootstrap (removed in Lerna 7), and the workspaces of its"
+                      " package manager do not name this folder")
         root = max((o for o in owner if _inside(folder, o)), key=len, default=None)
         gaps.append({"kind": "restore_failed", "manager": owner.get(root), "path": folder,
-                     "detail": "its packages are not installed: no workspace above names this folder"})
+                     "detail": f"its packages are not installed: {detail}"})
     if bootstrap:
         plan["lerna"] = sorted(bootstrap)
         lines.append(restore("lerna", sorted(bootstrap)))
