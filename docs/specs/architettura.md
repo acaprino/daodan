@@ -35,7 +35,7 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 | 7 | `run_and_observe` | Ciò che viene chiamato davvero | Comandi di test/avvio/build: da `find_modules`. Pagine da aprire: da `find_entry_points`. Grafo statico: da `link_calls` | Archi osservati; controlli premuti, con le funzioni partite |
 | 8 | `assemble_graph` | L'unione, e ciò che manca | Tutto | Grafo completo: archi fra moduli, ingressi uniti alle definizioni, osservato contro provato, lacune |
 
-- **La pre-mappa è il modello di build**, uscita di `find_modules`: non tiene più rotte, pagine ed eventi. Il lanciatore nel container (`premap/container_runner.py`) esce dalla pre-mappa ed è un servizio comune (vedi «Servizi comuni»).
+- **La pre-mappa è il modello di build**, uscita di `find_modules`: non tiene più rotte, pagine ed eventi. Il lanciatore (`container_runner.py`) esce dalla pre-mappa; il servizio comune è `container.run_in_container` con `egress.preflight` (vedi «Servizi comuni»).
 - **Chi riconosce è uno solo.** Uno strumento di build o un framework che il fork `stack-analyser` non conosce si aggiunge al fork. In Daodan `daodan/data/build-tools.json` lega ogni voce dello stack all'adattatore di `find_modules` che la usa.
 - **Che cosa usa ogni step**, per linguaggio, strumento di build e framework: `docs/pipeline/`, generata dalle dichiarazioni del codice (`daodan/core/pipeline_tree.py`).
 
@@ -521,7 +521,7 @@ Ogni anagrafica deve avere un controllo automatico di coerenza con il codice:
   - **Si approva solo dalla GUI.** MCP e riga di comando mostrano le richieste in attesa e non approvano mai: il modello legge il progetto analizzato, e un client MCP che è un agente può rispondere da sé a una elicitation.
   - **Lacune:** `approval_required` senza risposta o senza schermo; `host_denied` dopo un no o per un host in blacklist.
   - **Strumento del proxy:** `PROXY_SCRIPT` esteso, scelto dalla prova di `T3.A.2` (`benchmarks/egress/README.md`, «Proxy: la prova di `T3.A.2`») con la regola di `T3.A.3` (vince Smokescreen solo se da solo, con ACL `enforce`, non dà righe rosse): Smokescreen apre le porte 80 e 8443 di un host ammesso e ne inoltra l'HTTP in chiaro a ogni percorso; `PROXY_SCRIPT` apre un host ammesso che risolve a un indirizzo interno, e l'estensione risolve l'host, rifiuta un indirizzo che non è `ipaddress.ip_address(...).is_global` e si connette a quell'IP, non al nome. Criteri: solo porta 443, eccezione apt per percorso, whitelist e blacklist da file, nessun host rifiutato risolto dal proxy (lo risolve `egress`), nessun host ammesso aperto verso un indirizzo privato, loopback o link-local, rifiuti leggibili come `{host, port}`.
-- **Lanciatore dei comandi:** servizio comune a `find_modules`, `find_entry_points`, `link_calls` e `run_and_observe`.
+- **Lanciatore dei comandi:** `container_runner.py` per le sorgenti di `find_modules` e `find_entry_points`; `link_calls` e `run_and_observe` passano da `container.run_in_container`, il servizio comune con `egress.preflight`.
 - **Giornale:** traccia inizio, avanzamento, lacune e fine di ogni step e adattatore.
 - **Secretlint:** ogni testo che lascia la macchina o va a un LLM passa prima da Secretlint. **Nel codice:** `secret_mask`, che lo lancia, è chiamato da `daodan/core/app.py` (risultati degli strumenti e prompt) e da `daodan/core/mcp_server.py` (risultati ed errori).
 
