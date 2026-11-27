@@ -324,14 +324,20 @@ def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
 
 def test_every_hook_an_indexer_defines_is_reached():
     """A hook an indexer module defines and nothing calls is a silent difference between the measured graph and
-    the product's: each is reached through `adapter_traversal`, which the driver calls, or by the driver itself."""
+    the product's: each is reached through `adapter_traversal`, which the driver calls, or by the driver itself.
+    The driver is `engine_pass._index_stage`, which `index_stage` runs inside the indexer's `egress` scope; its calls
+    are read with Python's own parser."""
+    import ast
     import importlib
     import inspect
     import pkgutil
-    import resolve_edges
-    driver = inspect.getsource(resolve_edges.index_stage)
-    reached = set(re.findall(r'hasattr\(module, "(\w+)"\)', driver))
-    if "code_graph.adapter_traversal(module" in driver:
+    import engine_pass
+    calls = [node for node in ast.walk(ast.parse(inspect.getsource(engine_pass._index_stage)))
+             if isinstance(node, ast.Call) and node.args and isinstance(node.args[0], ast.Name)
+             and node.args[0].id == "module"]
+    reached = {call.args[1].value for call in calls if isinstance(call.func, ast.Name) and call.func.id == "hasattr"
+               and len(call.args) == 2 and isinstance(call.args[1], ast.Constant)}
+    if any(ast.unparse(call.func) == "code_graph.adapter_traversal" for call in calls):
         reached |= set(code_graph.TRAVERSAL_HOOKS)
     unreached = {}
     for item in pkgutil.iter_modules([str(SCRIPTS / "indexers")]):
