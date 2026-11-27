@@ -98,6 +98,17 @@ def test_fresh_until_the_snapshot_changes(tmp_path):
     assert premap.state(manifest)["state"] == "fresh"
 
 
+def test_an_added_file_no_reader_reads_makes_the_premap_stale(tmp_path):
+    """Unread files are no inventory rows, so the digest alone would keep a `no_analyzer` gap fresh and old."""
+    project, manifest, _ = build(tmp_path, "mixed")
+    assert premap.state(manifest)["state"] == "fresh"
+    (project / "extra.rb").write_text("puts 1\n", encoding="utf-8")
+    snapshot.read_project(project, manifest)
+    assert premap.state(manifest)["state"] == "stale"
+    assert premap.ensure(manifest)["schema"] == premap.SCHEMA
+    assert premap.state(manifest)["state"] == "fresh"
+
+
 def test_a_record_holds_no_dependencies_whatever_the_sources_say(tmp_path):
     """The libraries a unit uses are its analyzer's, resolved by the build tool while it indexes: a source that
     states them fails, and the record keeps the structure of the others."""

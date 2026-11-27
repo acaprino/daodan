@@ -374,7 +374,8 @@ def binding_matches(manifest: Path, binding: dict) -> bool:
     if stamp == binding.get("snapshot_stamp") and all(s is None or s[-1] for s in stamp):
         return True
     with open_snapshot(manifest) as store:
-        return inventory_digest(store) == binding.get("inventory_digest") and store["root"] == binding["root"]
+        return inventory_digest(store) == binding.get("inventory_digest") and store["root"] == binding["root"] \
+            and (store.get("unread") or {}) == binding.get("unread")
 
 
 def _inputs(digest, root, sources) -> str:
@@ -478,7 +479,7 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
     digest = inventory_digest(store)
     record = {"schema": SCHEMA,
               "binding": {"manifest": str(Path(manifest).resolve()), "inventory_digest": digest,
-                          "root": store["root"]},
+                          "root": store["root"], "unread": store.get("unread") or {}},
               "inputs_digest": _inputs(digest, store["root"], sources), "sources": statuses, **join(parts)}
     if any(p["ecosystem"] == "pypi" for p in record.get("packages", ())):
         record["packages"] = module_graph.external_packages(context.graph, record["packages"])
