@@ -746,6 +746,9 @@ def python_vcs(files, read) -> dict:
 
 
 NODE_LOCAL = ("file:", "link:", "portal:")  # npm's, pnpm's and Yarn's protocols for a folder (npm-package-arg, Yarn)
+# The paths a dependency spec names a folder or a tarball with (npm-package-arg: `./`, `../`, `/`, `~/`, or `.`
+# and `..` alone); `~1.2.3` is a semver range, not the home folder
+NODE_PATHS = ("./", "../", "/", "~/")
 PYTHON_LOCAL = ("pyproject.toml", "uv.lock", "poetry.lock")
 
 
@@ -774,7 +777,7 @@ def _node_local(rel: str, text: str) -> list[tuple[str, str, str]]:
     if name == "package.json":
         for field in DECLARED:
             for key, spec in (data.get(field) or {}).items() if isinstance(data.get(field), dict) else ():
-                if isinstance(spec, str) and spec.startswith((*NODE_LOCAL, ".", "/", "~")):
+                if isinstance(spec, str) and (spec.startswith((*NODE_LOCAL, *NODE_PATHS)) or spec in (".", "..")):
                     path = spec.split(":", 1)[1] if spec.startswith(NODE_LOCAL) else spec
                     found.append((f"{field}.{key}: {spec}", folder, path.removeprefix("//")))
     elif name == "package-lock.json":
