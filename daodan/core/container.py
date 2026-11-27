@@ -223,8 +223,10 @@ if os.environ.get("DAODAN_PUBLIC"):
 # for a GET or HEAD of apt's archive (`dists/`, `pool/`: apt checks the signed Release files and each package's
 # hash), one request a connection. Prints "ready <port>", and for each refusal a line `@@daodan-refused {"host","port"}`
 # that `run_in_container` reads from its log (`egress.refused`). It resolves no refused host: a container the project
-# runs in must not open a DNS channel through it. Proxies evaluated for `T3.A`: Smokescreen (a Go binary from a
-# release; the candidate), squid (ACLs and logs, but no apt exception by path), mitmproxy (it intercepts TLS: not needed).
+# runs in must not open a DNS channel through it. Proxies evaluated for `T3.A`: Smokescreen v1.0.1 (an attested image;
+# measured by `benchmarks/egress/modal_probe.py --proxy smokescreen`, it opens other ports of an allowed host and its
+# plain HTTP at any path: out), squid (ACLs and logs, but no apt exception by path), mitmproxy (it intercepts TLS: not
+# needed). This script stays, with the address an allowed host resolves to checked (`is_global`) and connected to.
 PROXY_SCRIPT = r'''
 import json, re, select, socket, sys, threading
 from urllib.parse import urlsplit
