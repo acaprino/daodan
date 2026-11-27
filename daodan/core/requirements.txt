@@ -37,3 +37,7 @@ sqlglot>=30
 
 # Compose service declarations in the fast scan (no Compose engine or interpolation).
 PyYAML>=6
+
+# SCIP indexes, read with the schema of `scip.proto` (`scip_pb2.py`, whose header names the generator): no
+# link_calls without it. Pinned: the generated code checks the runtime against the version it was made with.
+protobuf==7.36.2

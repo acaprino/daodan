@@ -72,7 +72,9 @@ SUFFIXES = {"/": "namespace", "#": "type", ".": "term", ":": "meta", "!": "macro
 CALLABLE = ("project-callable",)
 
 
-# Protocol Buffers, the few wire types SCIP uses.
+# Protocol Buffers' raw fields, for the adapters that rewrite an index field by field and keep what they do not
+# know as it is (`indexers/go.py` `_keep`, `indexers/kotlin.py`, `docker_build.rewritten`). `Index.load` reads
+# with SCIP's own schema (`scip_pb2`, generated from `scip.proto`).
 
 def _varint(data: bytes, at: int) -> tuple[int, int]:
     value = shift = 0
@@ -103,17 +105,7 @@ def _fields(data: bytes):
         yield number, wire, value
 
 
-def _ints(value, wire: int) -> list[int]:
-    if wire == 0:
-        return [value]
-    out, at = [], 0
-    while at < len(value):
-        item, at = _varint(value, at)
-        out.append(item)
-    return out
-
-
-def _range(values: list[int]) -> tuple | None:
+def _range(values) -> tuple | None:
     """`(line, start, end line, end)`, lines 1-based, from SCIP's three or four 0-based numbers."""
     if len(values) == 3:
         return values[0] + 1, values[1], values[0] + 1, values[2]
@@ -122,11 +114,23 @@ def _range(values: list[int]) -> tuple | None:
     return None
 
 
-def _typed(value: bytes, multi: bool) -> tuple | None:
-    fields = {number: item for number, wire, item in _fields(value) if wire == 0}
-    if multi:
-        return _range([fields.get(1, 0), fields.get(2, 0), fields.get(3, 0), fields.get(4, 0)])
-    return _range([fields.get(1, 0), fields.get(2, 0), fields.get(3, 0)])
+def _typed(message, oneof: str, single: str, multi: str, deprecated) -> tuple | None:
+    """An occurrence's range: the typed one when the indexer writes it, else the deprecated repeated one."""
+    which = message.WhichOneof(oneof)
+    if which == single:
+        value = getattr(message, single)
+        return _range([value.line, value.start_character, value.end_character])
+    if which == multi:
+        value = getattr(message, multi)
+        return _range([value.start_line, value.start_character, value.end_line, value.end_character])
+    return _range(deprecated)
+
+
+def _unknown(counter, where: str, message) -> None:
+    """Fields the schema does not know (an indexer newer than `scip.proto`), counted by number."""
+    from google.protobuf import unknown_fields
+    for field in unknown_fields.UnknownFieldSet(message):
+        counter[f"{where} field {field.field_number}"] += 1
 
 
 # Symbols.
@@ -264,44 +268,30 @@ class Index:
         return f"{rel}#{symbol}" if rel is not None and symbol.startswith("local ") else symbol
 
     def load(self, path: Path, prefix: str = "") -> None:
+        import scip_pb2  # protobuf: only reading an index needs it
         self.sources.append((Path(path), prefix))
-        for number, wire, value in _fields(Path(path).read_bytes()):
-            if number == 1 and wire == 2:
-                tool = ["", ""]
-                for field, kind, item in _fields(value):
-                    if field == 2 and kind == 2:
-                        for part, part_kind, text in _fields(item):
-                            if part in (1, 2) and part_kind == 2:
-                                tool[part - 1] = text.decode("utf-8", errors="replace")
-                self.tools.append((tool[0], tool[1]))
-            elif number == 2 and wire == 2:
-                self._document(value, prefix)
-            elif number == 3 and wire == 2:
-                self._information(value, None)
-            else:
-                self.unknown[f"index field {number}"] += 1
+        index = scip_pb2.Index()
+        index.ParseFromString(Path(path).read_bytes())
+        _unknown(self.unknown, "index", index)
+        if index.HasField("metadata"):
+            self.tools.append((index.metadata.tool_info.name, index.metadata.tool_info.version))
+        for document in index.documents:
+            self._document(document, prefix)
+        for information in index.external_symbols:
+            self._information(information, None)
 
-    def _document(self, data: bytes, prefix: str) -> None:
-        rel, unit, raw, informations = "", 0, [], []
-        for number, wire, value in _fields(data):
-            if number == 1 and wire == 2:
-                rel = value.decode("utf-8", errors="replace").replace("\\", "/")
-            elif number == 6 and wire == 0:
-                unit = int(value)
-            elif number == 2 and wire == 2:
-                raw.append(value)
-            elif number == 3 and wire == 2:
-                informations.append(value)
-            elif number not in (4, 5):
-                self.unknown[f"document field {number}"] += 1
+    def _document(self, document, prefix: str) -> None:
+        _unknown(self.unknown, "document", document)
+        rel = document.relative_path.replace("\\", "/")
         if not rel:
             return
         # A run in a module directory may name its documents from that directory or from the checkout.
         if prefix and not (self.root / rel).is_file():
             rel = f"{prefix}/{rel}"
         self.repeated[rel] += 1
-        self.units[rel] = UNITS.get(unit, "utf-16")
-        parsed = [occurrence for occurrence in map(lambda item: self._occurrence(item, rel), raw) if occurrence]
+        self.units[rel] = UNITS.get(document.position_encoding, "utf-16")
+        parsed = [occurrence for occurrence in map(lambda item: self._occurrence(item, rel), document.occurrences)
+                  if occurrence]
         locals_ = self._locals(rel, parsed) if self.repeated[rel] > 1 else {}
         occurrences = self.documents.setdefault(rel, [])
         for occurrence in parsed:
@@ -311,7 +301,7 @@ class Index:
             self.at[(rel, occurrence.line, occurrence.start)].append(occurrence)
             if occurrence.definition:
                 self.defs[occurrence.key].append((rel, occurrence))
-        for item in informations:
+        for item in document.symbols:
             self._information(item, rel, locals_)
 
     def _locals(self, rel: str, parsed: list[Occurrence]) -> dict[str, str]:
@@ -332,56 +322,26 @@ class Index:
                                  if item.key in defined else item.key)
         return {key: value for key, value in out.items() if key != value}
 
-    def _occurrence(self, data: bytes, rel: str) -> Occurrence | None:
-        place = enclosing = None
-        symbol, roles = "", 0
-        for number, wire, value in _fields(data):
-            if number == 1:
-                place = place or _range(_ints(value, wire))
-            elif number == 2 and wire == 2:
-                symbol = value.decode("utf-8", errors="replace")
-            elif number == 3 and wire == 0:
-                roles = int(value)
-            elif number in (8, 9) and wire == 2:
-                place = _typed(value, number == 9)  # the typed range wins over the deprecated one
-            elif number == 7:
-                enclosing = enclosing or _range(_ints(value, wire))
-            elif number in (10, 11) and wire == 2:
-                enclosing = _typed(value, number == 11)
-            elif number not in (4, 5, 6):
-                self.unknown[f"occurrence field {number}"] += 1
-        if place is None or not symbol:
+    def _occurrence(self, occurrence, rel: str) -> Occurrence | None:
+        _unknown(self.unknown, "occurrence", occurrence)
+        place = _typed(occurrence, "typed_range", "single_line_range", "multi_line_range", occurrence.range)
+        if place is None or not occurrence.symbol:
             return None
-        return Occurrence(*place, self.key(symbol, rel), bool(roles & 1), enclosing)
+        enclosing = _typed(occurrence, "typed_enclosing_range", "single_line_enclosing_range",
+                           "multi_line_enclosing_range", occurrence.enclosing_range)
+        return Occurrence(*place, self.key(occurrence.symbol, rel), bool(occurrence.symbol_roles & 1), enclosing)
 
-    def _information(self, data: bytes, rel: str | None, locals_: dict | None = None) -> None:
-        entry = {"kind": 0, "display": "", "enclosing": "", "documentation": "", "signature": ""}
+    def _information(self, information, rel: str | None, locals_: dict | None = None) -> None:
+        symbol = information.symbol
+        entry = {"kind": information.kind, "display": information.display_name,
+                 "enclosing": information.enclosing_symbol,
+                 "documentation": next((text for text in information.documentation if text), "")[:200],
+                 "signature": information.signature_documentation.text}
         locals_ = locals_ or {}
-        symbol = ""
-        for number, wire, value in _fields(data):
-            if number == 1 and wire == 2:
-                symbol = value.decode("utf-8", errors="replace")
-            elif number == 5 and wire == 0:
-                entry["kind"] = int(value)
-            elif number == 6 and wire == 2:
-                entry["display"] = value.decode("utf-8", errors="replace")
-            elif number == 8 and wire == 2:
-                entry["enclosing"] = value.decode("utf-8", errors="replace")
-            elif number == 3 and wire == 2 and not entry["documentation"]:
-                entry["documentation"] = value.decode("utf-8", errors="replace")[:200]
-            elif number == 7 and wire == 2:  # signature_documentation, a Document whose text is the signature
-                entry["signature"] = next((text.decode("utf-8", errors="replace") for field, kind, text in
-                                           _fields(value) if field == 5 and kind == 2), "")
-            elif number == 4 and wire == 2:
-                target, implementation = "", False
-                for field, kind, item in _fields(value):
-                    if field == 1 and kind == 2:
-                        target = item.decode("utf-8", errors="replace")
-                    elif field == 3 and kind == 0:
-                        implementation = bool(item)
-                if implementation and target:
-                    found = self.key(target, rel)
-                    entry.setdefault("implements", []).append(locals_.get(found, found))
+        for relationship in information.relationships:
+            if relationship.is_implementation and relationship.symbol:
+                found = self.key(relationship.symbol, rel)
+                entry.setdefault("implements", []).append(locals_.get(found, found))
         if not symbol:
             return
         key = self.key(symbol, rel)

@@ -35,7 +35,7 @@ import plugin_scripts  # noqa: E402
 from adapters import clang, java, kotlin  # noqa: E402
 from indexers import go, python  # noqa: E402
 
-PIP = ("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
+PIP = ("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "protobuf==7.36.2")
 RUN_KEYS = ("prefix", "phase", "step", "fallback", "returncode", "seconds", "peak_mb", "index_bytes",
             "same_occurrences", "reverse_relationships_dropped", "stderr_errors", "stderr_error_examples",
             "stderr_tail")

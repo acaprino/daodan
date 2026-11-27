@@ -1578,3 +1578,16 @@ I sei grafi dei fogli di stile (pipeline `stylesheet.py`, non un indicizzatore) 
 Falsi archi: zero in tutti i quattro indicizzatori con seconda fonte (go, rust-analyzer, scip-typescript JS e TS). Limiti: la seconda fonte (il passo dei motori) non è una verità, e i casi in cui A dà una destinazione del progetto e B finisce su un valore (`mixed: A project-other, B parameter`, `call-result`: chi 29, tududi JavaScript 1.082, tududi TypeScript 3.952) non sono contati come falsi archi per definizione; sono la classe da guardare se si vuole una misura più severa. Le 153 chiamate «diverse» di chi del primo join erano interfaccia contro implementazione e sono scomparse con la lettura completa.
 
 Modello di evidenza: nessun campo nuovo. Ciò che l'indice non decide si dice con `uncertain.reason` nel `refine` dell'adattatore, come già fa `adapters/clang.py` («one symbol defined at several places»); i buchi restano `holes`. Un campo nuovo si apre solo se una misura futura mostra un falso arco che `reason` non esprime.
+
+## 27 novembre 2026, SCIP letto con `scip.proto` (T2.B.2)
+
+`code_graph.Index.load` legge l'indice con i binding che `protoc` (grpcio-tools 1.85.1, su Modal) genera da `scip.proto` di sourcegraph/scip v0.9.0 (`daodan/core/scip_pb2.py`, comando in testa al file; `protobuf==7.36.2`), al posto del lettore Protocol Buffers scritto a mano. Prova: `modal run benchmarks/inference-audit/scip_reader.py --before 68e90a8` (corsa `ap-EiOHUXUJHVpYjxs10OVLah`, `results/scip-reader.json`): ogni indice letto dai due lettori, in un interprete nuovo, e confrontati tutti i campi che `Index` tiene (strumenti, documenti con le occorrenze, unità di posizione, definizioni, `SymbolInformation`, implementazioni, documenti ripetuti, campi sconosciuti).
+
+| Indici | Uguali | Lettura prima | Lettura dopo |
+| --- | --- | --- | --- |
+| 9 fixture di `tests/fixtures/code-graph/` (anche `ts-changed`) | 9/9 | ≤ 0,01 s | 0,03–0,06 s (importazione di protobuf) |
+| chi, tre indici di scip-go (1,7 MB) | 3/3 | 0,27 s | 0,33 s |
+| semver, due indici di rust-analyzer (0,5 MB) | 2/2 | 0,04 s | 0,10 s |
+| tududi, scip-typescript (44,6 MB) | 1/1 | 4,85 s | 5,61 s |
+
+Stesso `Index`, quindi stesso grafo, su tutti i 15 indici. La lettura di tududi costa 0,8 s in più (i 67,1 s del join del 13 novembre sono la lettura più il grafo). Il commit `after` del risultato è il codice del passo prima che vi si aggiungessero questo paragrafo e il risultato. Differenza nota, non vista negli indici misurati: un indice fatto di più indici concatenati ha per `protobuf` un solo `metadata` (prima uno per pezzo in `Index.tools`) e legge i `SymbolInformation` esterni dopo i documenti; una stringa non UTF-8 rende l'indice illeggibile (prima diventava `�`).
