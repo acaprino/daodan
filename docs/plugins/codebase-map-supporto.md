@@ -68,7 +68,7 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 
 | Fonte | Versione | Modo | Modulo | Casi per stato |
 | --- | --- | --- | --- | --- |
-| `modules.py` | daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.3.image.2 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
+| `modules.py` | daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.4.image.2 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
 | `python-build` | daodan/premap/v3 | lettore: legge i file | `premap/python_build.py` | not_needed 110, ran 12 |
 | `requirements` | daodan/premap/v2 | lettore: legge i file | `premap/requirements.py` | not_needed 114, ran 8 |
 | `python-tests` | daodan/premap/v1 | lettore: legge i file | `premap/python_tests.py` | not_needed 115, ran 7 |
