@@ -1,4 +1,4 @@
-"""The optional engine pass: probing, grading against this snapshot, declared coverage."""
+"""The derived edge pass: the analyzers' stages, the edge store bound to its snapshot, declared coverage."""
 from __future__ import annotations
 
 import hashlib
@@ -23,10 +23,10 @@ if str(SCRIPTS) not in sys.path:
 import resolve_edges
 import engine_pass  # noqa: E402
 import engine_tools  # noqa: E402
-import position_stage  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot
 from snapshot_store import _unpack, open_snapshot
+from test_codebase_map_edge_view import end, outside, write_answers
 
 
 def coverage_sums(coverage: dict) -> tuple[int, int]:
@@ -35,49 +35,11 @@ def coverage_sums(coverage: dict) -> tuple[int, int]:
         hole["count"] for hole in coverage["holes"].values())
 
 
-class Definition:
-    """An engine's answer: a path and the exact position of a name, in UTF-8 bytes.
+class EdgeStoreTests(unittest.TestCase):
+    """The store bound to its snapshot: refused when it is of another revision, malformed or of another resolver."""
 
-    Name and kind mirror what an engine reports; grading reads only the position.
-    """
-
-    def __init__(self, module_path, name, *, kind="function", line=2, column=8):
-        self.module_path = module_path
-        self.name = name
-        self.type = kind
-        self.line = line
-        self.column = column
-
-
-class StubEngine:
-    """An engine whose every answer is scripted, so grading is tested without a language server."""
-
-    name = "stub"
-
-    def __init__(self, answers=None, ready=True, reason=""):
-        self.answers = dict(answers or {})
-        self.ready = ready
-        self.reason = reason
-        self.asked = []
-        self.added_sys_path = ["<project>", "<venv-site-packages>"]
-        self.unusable = []
-
-    def probe(self):
-        return (True, "") if self.ready else (False, self.reason)
-
-    def identity(self):
-        return "stub@1.0"
-
-    def definitions(self, path, line, column):
-        self.asked.append((Path(path).name, line, column))
-        answer = self.answers.get((Path(path).name, line, column), self.answers.get((Path(path).name, line)))
-        return [] if answer is None else answer if isinstance(answer, list) else [answer]
-
-
-class ResolveEdgesTests(unittest.TestCase):
     SOURCES = {
-        # `helper.run()` leaves the lexical resolver with an unknown receiver, which
-        # is exactly the population an engine is asked about.
+        # `helper.run()` leaves the lexical resolver with an unknown receiver: the index answers it.
         "app/use.py": "class User:\n    def go(self, helper):\n        return helper.run()\n",
         "app/tool.py": "class Tool:\n    def run(self):\n        return 1\n\n\ndef free():\n    return 2\n",
     }
@@ -95,9 +57,10 @@ class ResolveEdgesTests(unittest.TestCase):
         snapshot.read_project(self.root, self.manifest)
         self.edges = self.root.parent / "engine-edges.sqlite"
 
-    def run_engine(self, engine, limit=None, **kwargs):
-        return resolve_edges.resolve_edges(self.manifest, engine=engine, limit=limit,
-                                           stride=1, out=self.edges, **kwargs)
+    def answer_run(self):
+        """The store with `helper.run()` answered by `Tool.run`."""
+        _identity, before = self.unresolved_run_reference()
+        write_answers(self.manifest, self.edges, {("app/use.py", before["span"][0]): [end("app/tool.py", "run", 2)]})
 
     def references(self):
         with open_snapshot(self.manifest) as store:
@@ -121,373 +84,8 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual({payload.get("resolver") for _id, _res, payload in rows},
                          {resolve_edges.resolution.LEXICAL_RESOLVER})
 
-    def test_a_project_symbol_the_lexical_resolver_missed_becomes_a_confirmed_edge(self):
-        _identity, before = self.unresolved_run_reference()
-        self.assertEqual(before["reason"], "unknown-receiver")
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "run")})
-        report = self.run_engine(engine)
-        self.assertTrue(report["available"], report)
-        self.assertEqual((report["confirmed_edges"], report["candidates"]), (1, 0))
-        # The probe lands on the callee name, not on the receiver.
-        line = self.SOURCES["app/use.py"].split("\n")[before["span"][0] - 1]
-        self.assertEqual(engine.asked,
-                         [("use.py", before["span"][0], line.index("helper") + len("helper."))])
-        edges, binding, reason = self.stored_edges()
-        self.assertIsNone(reason, reason)
-        self.assertEqual(len(edges), 1)
-        edge = edges[0]
-        self.assertEqual((edge["verdict"], edge["payload"]["detail"], edge["confidence"], edge["resolver"]),
-                         ("project-callable", "edge-call", "confirmed", "stub@1.0"))
-        self.assertTrue(edge["target_id"].startswith("app/tool.py::"), edge["target_id"])
-        # The stored payload qualifies its caller already; qualifying it twice
-        # produced `app/use.py::app/use.py::function@2:4` in a real engine run.
-        self.assertTrue(edge["caller"].startswith("app/use.py::function@"), edge["caller"])
-        self.assertEqual(edge["caller"].count("::"), 1, edge["caller"])
-        self.assertEqual(binding["engine"], "stub@1.0")
-        self.assertEqual((binding["confirmed"], binding["candidates"]), (1, 0))
-        # The snapshot is evidence: the lexical row is exactly what it was.
-        after = dict((identity, (resolution, payload)) for identity, resolution, payload
-                     in self.references())[_identity]
-        self.assertEqual(after[0], "unresolved")
-        self.assertEqual(after[1]["reason"], "unknown-receiver")
-        self.assertEqual(after[1]["resolver"], resolve_edges.resolution.LEXICAL_RESOLVER)
-        self.assertNotIn("confidence", after[1])
-
-    def test_the_snapshot_bytes_are_never_modified_by_an_engine_pass(self):
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "run")})
-        digest_before = hashlib.sha256(self.manifest.read_bytes()).hexdigest()
-        self.run_engine(engine)
-        self.assertEqual(hashlib.sha256(self.manifest.read_bytes()).hexdigest(), digest_before)
-
-    def test_stale_source_is_refused_before_the_engine_is_asked(self):
-        source = self.root / "app/use.py"
-        source.write_text(source.read_text().replace("helper.run()", "other_.run()"),
-                          encoding="utf-8")
-        self.edges.write_bytes(b"preserve previous output")
-        engine = StubEngine()
-        report = self.run_engine(engine)
-        self.assertFalse(report["available"], report)
-        self.assertIn("source differs from snapshot: app/use.py", report["reason"])
-        self.assertEqual(report["stage"], "before-inference")
-        self.assertEqual(engine.asked, [])
-        self.assertEqual(self.edges.read_bytes(), b"preserve previous output")
-
-    def test_an_indirect_dependency_change_prevents_a_new_store(self):
-        _identity, before = self.unresolved_run_reference()
-        owner = self
-
-        class ChangingEngine(StubEngine):
-            def definitions(self, path, line, column):
-                (owner.root / "app/tool.py").write_text("changed during inference\n",
-                                                        encoding="utf-8")
-                return super().definitions(path, line, column)
-
-        engine = ChangingEngine({("use.py", before["span"][0]):
-                                 Definition(self.root / "app/tool.py", "run")})
-        self.edges.write_bytes(b"preserve previous output")
-        report = self.run_engine(engine)
-        self.assertFalse(report["available"], report)
-        self.assertIn("app/tool.py", report["reason"])
-        self.assertEqual(report["stage"], "after-inference")
-        self.assertEqual(self.edges.read_bytes(), b"preserve previous output")
-
-    def test_output_cannot_replace_the_manifest_or_an_inventoried_source(self):
-        for destination in (self.manifest, self.root / "app/tool.py"):
-            with self.subTest(destination=destination):
-                original = destination.read_bytes()
-                engine = StubEngine()
-                report = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None,
-                                                     stride=1, out=destination)
-                self.assertFalse(report["available"], report)
-                self.assertIn("overwrite snapshot evidence", report["reason"])
-                self.assertEqual(destination.read_bytes(), original)
-                self.assertEqual(engine.asked, [])
-
-    def test_an_output_hardlink_to_source_is_refused(self):
-        original = (self.root / "app/tool.py").read_bytes()
-        try:
-            os.link(self.root / "app/tool.py", self.edges)
-        except OSError as error:
-            self.skipTest(f"hardlinks unavailable: {error}")
-        report = self.run_engine(StubEngine())
-        self.assertFalse(report["available"], report)
-        self.assertIn("overwrite snapshot evidence", report["reason"])
-        self.assertEqual(self.edges.read_bytes(), original)
-
-    def test_a_linked_output_parent_is_refused(self):
-        directory = self.root.parent / "linked-output"
-        try:
-            directory.symlink_to(self.root, target_is_directory=True)
-        except OSError as error:
-            self.skipTest(f"directory symlinks unavailable: {error}")
-        report = resolve_edges.resolve_edges(self.manifest, engine=StubEngine(), limit=None,
-                                             stride=1, out=directory / "new-edges.sqlite")
-        self.assertFalse(report["available"], report)
-        self.assertIn("symlink or reparse path", report["reason"])
-        self.assertFalse((self.root / "new-edges.sqlite").exists())
-
-    def test_a_matching_name_at_a_different_position_is_no_confirmed_target(self):
-        _identity, before = self.unresolved_run_reference()
-        for definition in (Definition(self.root / "app/tool.py", "run", line=3),
-                           Definition(self.root / "app/tool.py", "run", column=4),
-                           # An answer that names no declaration, as an instance does.
-                           Definition(self.root / "app/tool.py", "run", column=None)):
-            with self.subTest(definition=vars(definition)):
-                report = self.run_engine(StubEngine({("use.py", before["span"][0]): definition}))
-                self.assertEqual((report["confirmed_edges"], report["candidates"]), (0, 1))
-
-    def test_multiple_engine_targets_are_a_candidate_instead_of_a_first_answer_edge(self):
-        owner = self
-
-        class MultipleEngine(StubEngine):
-            def definitions(self, path, line, column):
-                return [Definition(owner.root / "app/tool.py", "run"),
-                        Definition(owner.root / "app/tool.py", "free", line=6, column=4)]
-
-        report = self.run_engine(MultipleEngine())
-        self.assertEqual((report["confirmed_edges"], report["candidates"]), (0, 1))
-        edges, _binding, reason = self.stored_edges()
-        self.assertIsNone(reason)
-        self.assertEqual(edges[0]["payload"]["detail"], "ambiguous-target")
-
-    def test_identical_engine_answers_can_converge_on_one_declaration(self):
-        owner = self
-
-        class DuplicateEngine(StubEngine):
-            def definitions(self, path, line, column):
-                return [Definition(owner.root / "app/tool.py", "run"),
-                        Definition(owner.root / "app/tool.py", "run")]
-
-        report = self.run_engine(DuplicateEngine())
-        self.assertEqual((report["confirmed_edges"], report["candidates"]), (1, 0))
-
-    def test_same_named_methods_arrive_at_the_exact_declaration(self):
-        tool = self.root / "app/tool.py"
-        tool.write_text(tool.read_text() + "\nclass Other:\n    def run(self):\n        return 3\n",
-                        encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        _identity, before = self.unresolved_run_reference()
-        report = self.run_engine(StubEngine({("use.py", before["span"][0]):
-                                             Definition(tool, "run", line=10)}))
-        self.assertEqual(report["confirmed_edges"], 1, report)
-        edges, _binding, reason = self.stored_edges()
-        self.assertIsNone(reason)
-        self.assertEqual(edges[0]["target_id"], "app/tool.py::function@10:4")
-
-    def test_unicode_before_the_callee_is_counted_in_bytes_at_the_engine_boundary(self):
-        source = 'class User:\n    def go(self, helper):\n        marker = "é"; return helper.run()\n'
-        (self.root / "app/use.py").write_text(source, encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine({("use.py", before["span"][0]):
-                             Definition(self.root / "app/tool.py", "run")})
-        report = self.run_engine(engine)
-        self.assertEqual(report["confirmed_edges"], 1, report)
-        line = source.splitlines()[2]
-        self.assertEqual(engine.asked[0][2], len(line[:line.index("run")].encode("utf-8")))
-
-    def test_a_multiline_callee_is_probed_on_its_final_line(self):
-        source = "class User:\n    def go(self, helper):\n        return (helper\n                .run)()\n"
-        (self.root / "app/use.py").write_text(source, encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        engine = StubEngine({("use.py", 4): Definition(self.root / "app/tool.py", "run")})
-        report = self.run_engine(engine)
-        self.assertEqual(report["confirmed_edges"], 1, report)
-        self.assertEqual(engine.asked, [("use.py", 4, source.splitlines()[3].index("run"))])
-
-    def test_a_failed_atomic_write_preserves_output_and_other_partial_files(self):
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine({("use.py", before["span"][0]):
-                             Definition(self.root / "app/tool.py", "run")})
-        self.edges.write_bytes(b"old output")
-        partial = self.edges.with_name(self.edges.name + ".partial")
-        partial.write_bytes(b"another invocation")
-        with mock.patch.object(os, "replace", side_effect=OSError("cannot replace")):
-            report = self.run_engine(engine)
-        self.assertFalse(report["available"], report)
-        self.assertEqual(report["stage"], "write")
-        self.assertIn("cannot replace", report["reason"])
-        self.assertEqual(self.edges.read_bytes(), b"old output")
-        self.assertEqual(partial.read_bytes(), b"another invocation")
-        self.assertEqual(list(self.edges.parent.glob(".engine-edges.sqlite.*.partial")), [])
-
-    def test_class_inference_does_not_land_on_a_same_named_method(self):
-        tool = self.root / "app/tool.py"
-        tool.write_text(tool.read_text() + "\nclass run:\n    pass\n", encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        _identity, before = self.unresolved_run_reference()
-        report = self.run_engine(StubEngine({("use.py", before["span"][0]):
-                                             Definition(tool, "run", kind="class", line=9, column=6)}))
-        self.assertEqual(report["confirmed_edges"], 1, report)
-        edges, _binding, reason = self.stored_edges()
-        self.assertIsNone(reason)
-        self.assertEqual((edges[0]["target_id"], edges[0]["payload"]["detail"]),
-                         ("app/tool.py::class@9:0", "edge-instantiation"))
-
-    def test_an_async_declaration_uses_its_name_position(self):
-        tool = self.root / "app/tool.py"
-        tool.write_text("class Tool:\n    async def run(self):\n        return 1\n",
-                        encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        _identity, before = self.unresolved_run_reference()
-        report = self.run_engine(StubEngine({("use.py", before["span"][0]):
-                                             Definition(tool, "run", line=2, column=14)}))
-        self.assertEqual(report["confirmed_edges"], 1, report)
-        edges, _binding, reason = self.stored_edges()
-        self.assertIsNone(reason)
-        self.assertEqual(edges[0]["target_id"], "app/tool.py::function@2:4")
-
-    def test_a_target_outside_the_inventory_is_external_and_produces_no_edge(self):
-        identity, before = self.unresolved_run_reference()
-        outside = self.root.parent / "elsewhere" / "venv" / "lib.py"
-        engine = StubEngine(answers={("use.py", before["span"][0]): Definition(outside, "run")})
-        report = self.run_engine(engine)
-        self.assertEqual(report["verdicts"].get("external-definition"), 1)
-        self.assertEqual(report["confirmed_edges"], 0)
-        self.assertTrue(self.edges.exists())
-        edges, binding, reason = self.stored_edges()
-        self.assertIsNone(reason)
-        self.assertEqual(edges, [])
-        self.assertEqual((binding["confirmed"], binding["candidates"]), (0, 0))
-        # Without an edge every call and read of the language is a hole, with its class and reason.
-        holes = {hole["reference_id"]: (hole["class"], hole["reason"]) for hole in resolve_edges.read_edge_holes(self.edges)}
-        self.assertEqual(holes[identity], ("engine-unresolved", "external-definition"))
-        with open_snapshot(self.manifest) as store:
-            sites = {row[0] for row in store.connection.execute(
-                "SELECT id FROM sem_references WHERE kind IN ('call','read')")}
-        self.assertEqual(set(holes), sites)
-
-    def test_a_project_name_that_is_no_symbol_stays_a_candidate(self):
-        _identity, before = self.unresolved_run_reference()
-        # `1` in `return 1`: a project position that names no declaration.
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "not_a_symbol", line=3, column=15)})
-        report = self.run_engine(engine)
-        self.assertEqual(report["verdicts"].get("project-not-a-symbol"), 1)
-        self.assertEqual((report["candidates"], report["confirmed_edges"]), (1, 0))
-        edges, _binding, reason = self.stored_edges()
-        self.assertIsNone(reason, reason)
-        self.assertEqual([(edge["payload"]["detail"], edge["confidence"], edge["target_id"])
-                          for edge in edges],
-                         [("project-not-a-symbol", "uncertain", None)])
-
-    def test_an_unready_engine_is_a_declared_degradation_that_writes_nothing(self):
-        engine = StubEngine(ready=False, reason="the engine is not installed")
-        report = self.run_engine(engine)
-        self.assertFalse(report["available"])
-        self.assertEqual(report["reason"], "the engine is not installed")
-        self.assertEqual(engine.asked, [])
-        self.assertFalse(self.edges.exists())
-
-    def test_a_dry_run_grades_without_writing_a_store(self):
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "run")})
-        report = self.run_engine(engine, dry_run=True)
-        self.assertEqual(report["confirmed_edges"], 1)
-        self.assertTrue(report["dry_run"])
-        self.assertEqual(report["edges_store"], None)
-        self.assertFalse(self.edges.exists())
-
-    def test_coverage_is_declared_against_the_population_it_asked_about(self):
-        report = self.run_engine(StubEngine(), limit=1)
-        self.assertEqual(report["asked"], 1)
-        self.assertGreaterEqual(report["population"], 1)
-        python = report["coverage"]["python"]
-        # The positions a limit leaves are holes: the coverage is a lower bound.
-        self.assertEqual((python["state"], python["sites"]), ("lower-bound", 1))
-        self.assertEqual(python["holes"]["engine-unresolved"]["count"], 1)
-        self.assertIn("builtin-lexical", report["note"])
-
-    def test_selected_dynamic_references_are_not_counted_as_engine_invocations(self):
-        (self.root / "app/use.py").write_text(
-            "def use(helper):\n    helper.run()\n    helper()()\n", encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        engine = StubEngine()
-        report = self.run_engine(engine)
-        self.assertGreater(report["selected"], report["asked"], report)
-        self.assertEqual(report["asked"], len(engine.asked))
-        self.assertEqual(report["verdicts"].get("dynamic-callee"), 1)
-
-    def test_failed_inferences_are_counted_as_actual_requests(self):
-        class FailingEngine(StubEngine):
-            def definitions(self, path, line, column):
-                super().definitions(path, line, column)
-                raise RuntimeError("engine failed")
-
-        engine = FailingEngine()
-        report = self.run_engine(engine)
-        self.assertEqual(report["asked"], len(engine.asked))
-        self.assertEqual(report["asked"], 1)
-        self.assertEqual(report["verdicts"], {"infer-error:RuntimeError": 1})
-
-    def test_invalid_positions_are_selected_but_never_counted_as_asked(self):
-        # `K` is declared, so the callee is named after a project declaration
-        # and stays in the population the engine is asked about.
-        source = "def K():\n    return 1\n\n\ndef use(helper):\n    helper.K()\n"
-        (self.root / "app/use.py").write_text(source, encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        # AST normalizes this identifier to K. A position that cannot be
-        # verified against its recorded spelling must remain unprobed.
-        engine = StubEngine()
-        report = self.run_engine(engine)
-        self.assertEqual((report["selected"], report["asked"], report["position_unverified"]),
-                         (1, 0, 1), report)
-        self.assertEqual(engine.asked, [])
-
-    def test_the_population_is_limited_to_the_engines_python_language(self):
-        (self.root / "app/use.ts").write_text(
-            "function use(helper) { return helper.run(); }\n", encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        engine = StubEngine()
-        report = self.run_engine(engine)
-        self.assertEqual(report["population"], 1, report)
-        self.assertEqual(report["population_language"], "python")
-        self.assertEqual({file for file, line, column in engine.asked}, {"use.py"})
-
-    def test_p95_uses_the_upper_sample_for_two_inferences(self):
-        (self.root / "app/use.py").write_text(
-            "def use(helper):\n    helper.run()\n    helper.free()\n", encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        # A clock that only the engine advances: 10 ms to start, then 100 and 200 ms per answer.
-        clock = [0.0]
-        steps = iter([0.01, 0.1, 0.2])
-
-        class TimedEngine(StubEngine):
-            def probe(self):
-                clock[0] += next(steps)
-                return super().probe()
-
-            def definitions(self, path, line, column):
-                clock[0] += next(steps)
-                return super().definitions(path, line, column)
-
-        with mock.patch.object(time, "perf_counter", side_effect=lambda: clock[0]):
-            report = self.run_engine(TimedEngine())
-        self.assertEqual(report["asked"], 2)
-        self.assertEqual(report["latency_mean_ms"], 150)
-        self.assertEqual(report["latency_p95_ms"], 200)
-        for field in ("probe_init_elapsed_ms", "inference_elapsed_ms", "total_elapsed_ms"):
-            self.assertTrue(math.isfinite(report[field]), (field, report))
-            self.assertGreaterEqual(report[field], 0)
-        self.assertEqual(report["probe_init_elapsed_ms"], 10)
-        self.assertEqual(report["inference_elapsed_ms"], 300)
-        self.assertEqual(report["total_elapsed_ms"], 310)
-        estimate = report["inference_only_extrapolation"]
-        self.assertEqual((estimate["asked"], estimate["selected"], estimate["population"], estimate["stride"]),
-                         (report["asked"], report["selected"], report["population"], report["stride"]))
-        self.assertEqual(estimate["estimated_ms"], 300)
-        self.assertIn("deterministic", estimate["sampling_bias"])
-        self.assertIn("excluded", estimate["cost_scope"])
-
     def test_edges_of_another_snapshot_revision_are_refused_not_joined(self):
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "run")})
-        self.run_engine(engine)
+        self.answer_run()
         (self.root / "app" / "use.py").write_text(
             "class User:\n    def go(self, helper):\n        return helper.run()\n"
             "# edited after the engine pass\n", encoding="utf-8")
@@ -497,14 +95,6 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertIsNotNone(binding)
         self.assertIn("different snapshot revision", reason)
 
-    def test_a_json_manifest_is_refused_because_it_holds_no_reference_table(self):
-        manifest = self.root.parent / "manifest.json"
-        snapshot.read_project(self.root, manifest, format="json")
-        report = resolve_edges.resolve_edges(manifest, engine=StubEngine(), limit=None,
-                                             stride=1, out=self.edges)
-        self.assertFalse(report["available"])
-        self.assertIn("sqlite", report["reason"])
-
     def test_a_malformed_derived_store_is_refused_with_a_reason(self):
         self.edges.write_bytes(b"not a SQLite database")
         edges, binding, reason = self.stored_edges()
@@ -513,10 +103,7 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertIn("invalid engine edge store", reason)
 
     def test_resolver_version_mismatch_is_rejected(self):
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "run")})
-        self.run_engine(engine)
+        self.answer_run()
         with mock.patch.object(semantic_store, "RESOLVER_VERSION", 999):
             edges, binding, reason = self.stored_edges()
         self.assertIsNone(edges)
@@ -530,22 +117,15 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertIsNone(missing_binding)
         self.assertIn("no engine edge store", missing_reason)
 
-        report = self.run_engine(StubEngine())
-        self.assertTrue(report["available"])
-        self.assertEqual((report["confirmed_edges"], report["candidates"]), (0, 0))
-        self.assertTrue(self.edges.is_file())
-        self.assertEqual(report["edges_store"], self.edges.as_posix())
+        write_answers(self.manifest, self.edges, {})
         edges, binding, reason = self.stored_edges()
         self.assertIsNone(reason)
         self.assertEqual(edges, [])
-        self.assertEqual(binding["confirmed"], 0)
-        self.assertEqual(binding["no_edges_reason"], "no-project-targets")
+        self.assertEqual(binding["languages"]["python"]["state"], "fresh")
+        self.assertTrue(binding["languages"]["python"]["coverage"]["holes"])
 
     def test_engine_target_must_belong_to_snapshot(self):
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "run")})
-        self.run_engine(engine)
+        self.answer_run()
         import sqlite3
         conn = sqlite3.connect(self.edges)
         try:
@@ -560,22 +140,14 @@ class ResolveEdgesTests(unittest.TestCase):
 
     def test_divergent_targets_remain_conflicts(self):
         import edge_view
-        _identity, before = self.unresolved_run_reference()
-        engine = StubEngine(answers={("use.py", before["span"][0]):
-                                     Definition(self.root / "app/tool.py", "run")})
-        self.run_engine(engine)
-        import sqlite3
+        _identity, _before = self.unresolved_run_reference()
+        self.answer_run()
         with open_snapshot(self.manifest) as store:
             row = store.connection.execute(
                 "SELECT id FROM sem_declarations WHERE file='app/tool.py' AND name='free'"
             ).fetchone()
             free_id = row[0]
-        conn = sqlite3.connect(self.manifest)
-        try:
-            # Simulate a reference already resolved lexically to `free` while engine says `run`
-            conn.close()
-        finally:
-            pass
+        # A reference the caller resolves lexically to `free` while the store says `run`.
         with open_snapshot(self.manifest) as store:
             edges, binding, reason = resolve_edges.read_edge_store(self.edges, store)
             self.assertIsNone(reason)
@@ -593,33 +165,22 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(ref_by_id[_identity]["target_id"], free_id)
 
 
-# The entries with Python on an entry named as the stub engines answer, for the tests of the position pass.
-POSITION_ENGINES = (engine_pass.EngineSpec("stub", ("python",), (), "tree_sitter", engine_pass.INDEXER_INSTALL, "python"),
+# The entries with Python on an entry named as the stores of `write_answers` name their resolver.
+STUB_ENGINES = (engine_pass.EngineSpec("stub", ("python",), (), "tree_sitter", engine_pass.INDEXER_INSTALL, "python"),
                     *(spec for spec in resolve_edges.ENGINES if spec.name != "scip-python"))
-POSITION_LANGUAGES = {language: spec for spec in reversed(POSITION_ENGINES) for language in spec.languages}
+STUB_LANGUAGES = {language: spec for spec in reversed(STUB_ENGINES) for language in spec.languages}
 
 
-def install_position_fixture(test):
-    """The position stub plays the installed Python analyzer in these pass lifecycle tests."""
+def install_stub_entry(test):
+    """The stub entry plays the installed Python analyzer in these pass lifecycle tests."""
     from indexers import python
-    test.enterContext(mock.patch.object(engine_pass, "ENGINES", POSITION_ENGINES))
-    test.enterContext(mock.patch.object(engine_pass, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
+    test.enterContext(mock.patch.object(engine_pass, "ENGINES", STUB_ENGINES))
+    test.enterContext(mock.patch.object(engine_pass, "ENGINE_LANGUAGES", STUB_LANGUAGES))
     test.enterContext(mock.patch.object(python, "VERSION", "1.0"))
-    original = position_stage.PositionStage._entries
-
-    def entries(stage, *args):
-        out = original(stage, *args)
-        if "python" in out:
-            row = out["python"]
-            row.update(indexer={"version": row["engine"].partition("@")[2]},
-                       adapter_digest=engine_pass.adapter_fingerprint("python"))
-        return out
-
-    test.enterContext(mock.patch.object(position_stage.PositionStage, "_entries", entries))
 
 
 class PassLifecycleTests(unittest.TestCase):
-    """The engine asked first about project names, its coverage, and the store's lifecycle."""
+    """The store's lifecycle: its state, the detached pass, the snapshot it follows."""
 
     SOURCES = {
         # One call of each kind: a builtin, a callee named after nothing the
@@ -631,7 +192,7 @@ class PassLifecycleTests(unittest.TestCase):
     }
 
     def setUp(self):
-        install_position_fixture(self)
+        install_stub_entry(self)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve() / "proj"
@@ -654,52 +215,20 @@ class PassLifecycleTests(unittest.TestCase):
     def run_line(self):
         return self.SOURCES["app/use.py"].split("\n").index("        return helper.run()") + 1
 
-    def confirming_engine(self):
-        return StubEngine(answers={("use.py", self.run_line()): Definition(self.root / "app/tool.py", "run")})
-
-    def run_pass(self, engine=None):
-        return resolve_edges.resolve_edges(self.manifest, engine=engine or self.confirming_engine(),
-                                           limit=None, stride=1)
-
-    def test_project_names_are_prioritized_but_other_names_are_asked(self):
-        engine = self.confirming_engine()
-        report = self.run_pass(engine)
-        self.assertTrue(report["available"], report)
-        self.assertEqual([line for _name, line, _column in engine.asked], [self.run_line(), self.run_line() - 1])
-        self.assertEqual(report["excluded_classes"], {"builtin": 1})
-        python = report["coverage"]["python"]
-        self.assertEqual(python["answered"]["project-callable"], 1)
-        self.assertEqual({name: hole["count"] for name, hole in python["holes"].items()},
-                         {"engine-unresolved": 1, "not-asked": 2})  # `len`, a builtin, and a read are not asked
-        self.assertEqual((coverage_sums(python)[0], python["state"]), (coverage_sums(python)[1], "lower-bound"))
-
-    def test_an_alias_absent_from_project_names_can_resolve_internally(self):
-        (self.root / "app/use.py").write_text(
-            "from .tool import Tool\ndef use():\n    alias = Tool.run\n    return alias(None)\n",
-            encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-        with open_snapshot(self.manifest) as store:
-            self.assertNotIn("alias", resolve_edges.project_callee_names(store.connection))
-        engine = StubEngine({("use.py", 4): Definition(self.root / "app/tool.py", "run")})
-        python = self.run_pass(engine)["coverage"]["python"]
-        self.assertEqual((python["answered"].get("project-callable"), python["answered"].get("external")), (1, None))
+    def run_pass(self):
+        """The Python entry's store, `helper.run()` answered by `Tool.run`."""
+        write_answers(self.manifest, resolve_edges.default_edge_store(self.manifest),
+                      {("app/use.py", self.run_line()): [end("app/tool.py", "run", 2)]}, languages=("python",))
 
     def test_each_language_says_whether_an_engine_covers_it(self):
         (self.root / "app/use.ts").write_text(
             "function use(helper) { return helper.run(); }\n", encoding="utf-8")
         snapshot.read_project(self.root, self.manifest)
-        report = self.run_pass()
-        self.assertEqual(list(report["coverage"]), ["python"])
+        self.run_pass()
         state = resolve_edges.edge_state(self.manifest)
         self.assertEqual((state["languages"]["python"]["engine"], state["languages"]["typescript"]["state"]),
                          ("stub@1.0", "missing"))
         self.assertEqual(state["coverage"]["python"]["answered"]["project-callable"], 1)
-
-    def test_a_changed_document_does_not_refuse_a_python_pass(self):
-        (self.root / "notes.md").write_text("# Notes, edited during the pass\n", encoding="utf-8")
-        report = self.run_pass()
-        self.assertTrue(report["available"], report)
-        self.assertEqual(report["source_verification"], {"before_inference": 2, "after_inference": 2})
 
     def test_the_store_state_follows_the_pass_and_the_snapshot(self):
         self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "missing")
@@ -861,183 +390,6 @@ class PassLifecycleTests(unittest.TestCase):
             self.assertEqual(ensure.call_count, calls)
             if calls:
                 self.assertEqual(ensure.call_args.args, (out,))
-
-
-class HomonymHolderTests(unittest.TestCase):
-    """Same-name calls and library-returned values in Python and TypeScript.
-
-    Holder-only responses cannot prove provenance. Follow-up responses that name
-    the actual callable can; the factory's location is never used as that proof.
-    Scripted engine responses test the common grading, not LSP inference quality.
-    """
-
-    SOURCES = {
-        "web/i18n.ts": "export function t(key: string): string {\n  return key;\n}\n",
-        "web/title.ts": "import { t } from './i18n';\nexport function title() {\n  return t('a');\n}\n",
-        "web/label.ts": ("import { useTranslation } from 'react-i18next';\nexport function label() {\n"
-                         "  const { t } = useTranslation();\n  return t('b');\n}\n"),
-        "web/memo.ts": ("import { useCallback } from 'react';\nfunction localT(key: string): string {\n"
-                        "  return key;\n}\nexport function heading() {\n  const t = useCallback(localT, []);\n"
-                        "  return t('titolo');\n}\n"),
-        "app/label.py": ("import gettext\n\n\ndef label():\n"
-                         "    t = gettext.translation('app', fallback=True).gettext\n    return t('b')\n"),
-        "app/memo.py": ("import functools\n\n\ndef local_t(key, upper):\n    return key.upper() if upper else key\n\n\n"
-                        "def heading():\n    t = functools.partial(local_t, upper=True)\n    return t('titolo')\n"),
-    }
-
-    def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name).resolve() / "proj"
-        for rel, text in self.SOURCES.items():
-            path = self.root / rel
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text, encoding="utf-8")
-        self.manifest = self.root.parent / "manifest.sqlite"
-        self.edges = self.root.parent / "engine-edges.sqlite"
-        snapshot.read_project(self.root, self.manifest)
-
-    def calls(self):
-        """The `t()` call of each file, unresolved by the lexical resolver, with its line."""
-        with open_snapshot(self.manifest) as store:
-            names = resolve_edges.project_callee_names(store.connection)
-            rows = [(row[0], row[1], _unpack(row[2])) for row in store.connection.execute(
-                "SELECT id, file, payload FROM sem_references WHERE kind='call' AND last_name='t'")]
-        return names, {file: (identity, payload) for identity, file, payload in rows}
-
-    def engine(self, language):
-        """Scripted answers: library calls land in packages, held `t()` calls on their variable."""
-        outside = self.root.parent / "packages"
-        lines = {rel: text.split("\n") for rel, text in self.SOURCES.items()}
-
-        def at(rel, needle):
-            line = next(index for index, text in enumerate(lines[rel], 1) if needle in text)
-            return line, lines[rel][line - 1].index(needle)
-
-        answers = {}
-        for rel, library, holder in (("web/label.ts", "useTranslation()", "{ t }"),
-                                     ("web/memo.ts", "useCallback(", "t ="),
-                                     ("app/label.py", "gettext.translation", "t ="),
-                                     ("app/memo.py", "functools.partial", "t =")):
-            line, _column = at(rel, library)
-            answers[(Path(rel).name, line)] = Definition(outside / "lib", library, line=1, column=0)
-            line, column = at(rel, holder)
-            column += holder.index("t")
-            holder_definition = Definition(self.root / rel, "t", line=line, column=column)
-            answers[(Path(rel).name, line + 1)] = holder_definition
-            answers[(Path(rel).name, line, column)] = holder_definition
-        line, column = at("web/i18n.ts", "t(key")
-        answers[("title.ts", 3)] = Definition(self.root / "web/i18n.ts", "t", line=line, column=column)
-        engine = StubEngine(answers)
-        engine.languages = (language,)
-        return engine
-
-    def verdicts(self):
-        for language in ("typescript", "python"):
-            resolve_edges.resolve_edges(self.manifest, engine=self.engine(language), limit=None, stride=1,
-                                        out=self.edges)
-        with open_snapshot(self.manifest) as store:
-            edges, _binding, reason = resolve_edges.read_edge_store(self.edges, store)
-        self.assertIsNone(reason)
-        _names, calls = self.calls()
-        by_reference = {edge["reference_id"]: edge["payload"]["detail"] for edge in edges}
-        return {file: by_reference.get(identity) for file, (identity, _payload) in calls.items()}
-
-    def test_the_name_filter_asks_the_engine_about_every_held_call(self):
-        names, calls = self.calls()
-        self.assertEqual(sorted(calls), ["app/label.py", "app/memo.py", "web/label.ts", "web/memo.ts", "web/title.ts"])
-        held = {file: resolve_edges.classify_reference(payload, names)
-                for file, (_identity, payload) in calls.items() if file != "web/title.ts"}
-        self.assertEqual(set(held.values()), {"askable"}, held)
-
-    def test_a_project_function_returned_by_a_library_stays_in_the_denominator(self):
-        verdicts = self.verdicts()
-        self.assertEqual((verdicts["web/memo.ts"], verdicts["app/memo.py"]),
-                         ("project-not-a-symbol", "project-not-a-symbol"))
-
-    def test_a_holder_without_callable_evidence_stays_unresolved(self):
-        verdicts = self.verdicts()
-        self.assertEqual((verdicts["web/label.ts"], verdicts["app/label.py"]),
-                         ("project-not-a-symbol", "project-not-a-symbol"))
-
-    def test_an_engine_answer_with_holder_and_callable_is_resolved(self):
-        engine = self.engine("typescript")
-        holder = engine.answers[("label.ts", 4)]
-        engine.answers[("label.ts", 4)] = [holder, engine.answers[("title.ts", 3)]]
-        resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1, out=self.edges)
-        with open_snapshot(self.manifest) as store:
-            edges, _, _ = resolve_edges.read_edge_store(self.edges, store)
-        _, calls = self.calls()
-        found = next(edge for edge in edges if edge["reference_id"] == calls["web/label.ts"][0])
-        self.assertEqual(found["payload"]["detail"], "edge-call")
-
-    def test_following_a_holder_uses_the_callable_not_the_factory(self):
-        for language, rel in (("typescript", "web/label.ts"), ("python", "app/label.py")):
-            before = resolve_edges.resolve_edges(self.manifest, engine=self.engine(language),
-                                                 limit=None, stride=1, out=self.edges)["coverage"][language]
-            engine = self.engine(language)
-            for key, answer in list(engine.answers.items()):
-                if len(key) == 3 and answer.module_path == self.root / rel:
-                    engine.answers[key] = Definition(self.root.parent / "packages/translate", "translate")
-            after = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None,
-                                                stride=1, out=self.edges)["coverage"][language]
-            # An answer outside the project is a hole that names it (`engine-unresolved`, reason external-definition).
-            outside = [coverage["holes"].get("engine-unresolved", {}).get("count", 0) for coverage in (before, after)]
-            self.assertEqual((outside[1], after["sites"]), (outside[0] + 1, before["sites"]))
-        with open_snapshot(self.manifest) as store:
-            edges, _, reason = resolve_edges.read_edge_store(self.edges, store)
-        self.assertIsNone(reason)
-        _, calls = self.calls()
-        verdicts = {edge["reference_id"]: edge["payload"]["detail"] for edge in edges}
-        for rel in ("web/memo.ts", "app/memo.py"):
-            self.assertEqual(verdicts[calls[rel][0]], "project-not-a-symbol")
-
-
-class ProvenanceGradingTests(unittest.TestCase):
-    def setUp(self):
-        self.root = Path(__file__).resolve().parent
-        self.path = self.root / "virtual.py"
-        self.external = Definition(self.root.parent / "outside.py", "external")
-        self.target = Definition(self.path, "run", line=100, column=0)
-        self.holder = Definition(self.path, "held", line=1, column=0)
-        self.table = ({**{(n, 0): (f"holder-{n}", "binding") for n in range(1, 100)},
-                       (100, 0): ("target", "function")}, set())
-
-    def grade(self, definitions, follow):
-        return resolve_edges.grade_all(definitions, {"virtual.py"}, {}, self.root,
-                                       lambda _: self.table, follow=follow)
-
-    def test_holder_beside_callable_keeps_the_confirmed_edge(self):
-        verdict, target = self.grade([self.holder, self.target], lambda _: [self.holder])
-        self.assertEqual((verdict, target["id"] if target else None), ("edge-call", "target"))
-
-    def test_repeated_branches_query_each_holder_once(self):
-        asked = []
-        def follow(location):
-            asked.append(location.line)
-            if location.line == 10:
-                return [self.target]
-            child = Definition(self.path, "held", line=location.line + 1, column=0)
-            return [child, child]
-        self.assertEqual(self.grade([self.holder], follow)[0], "edge-call")
-        self.assertEqual(asked, list(range(1, 11)))
-
-    def test_mixed_internal_external_and_missing_evidence_are_not_external(self):
-        for targets in ([self.target, self.external], [self.external, self.holder]):
-            self.assertEqual(self.grade([self.holder], lambda _: targets)[0], "ambiguous-target")
-
-    def test_cycle_stays_unknown(self):
-        self.assertEqual(self.grade([self.holder], lambda _: [self.holder])[0], "project-not-a-symbol")
-
-    def test_wide_graph_has_a_total_query_budget(self):
-        asked = []
-        def follow(location):
-            asked.append(location.line)
-            if location.line == 1:
-                return [Definition(self.path, "held", line=n, column=0) for n in range(2, 100)]
-            return [self.external]
-        self.assertNotEqual(self.grade([self.holder], follow)[0], "external-definition")
-        self.assertLessEqual(len(asked), 64)
 
 
 class PreparedEnvironmentTests(unittest.TestCase):
@@ -1294,15 +646,6 @@ class MultiLanguageTests(unittest.TestCase):
                 "SELECT name, kind, payload FROM sem_declarations WHERE file=? AND kind IN "
                 "('function','method','class')", (rel,))}
 
-    def python_engine(self):
-        return StubEngine({("use.py", 3): Definition(self.root / "app/tool.py", "run")})
-
-    def typescript_engine(self):
-        engine = StubEngine({("use.ts", 3): Definition(self.root / "web/tool.ts", "run", line=2, column=2)})
-        engine.languages = ("typescript",)
-        engine.identity = lambda: "tsstub@1.0"
-        return engine
-
     def test_tree_sitter_declarations_record_where_an_engine_names_them(self):
         tool = self.declarations("web/tool.ts")
         self.assertEqual(tool[("Tool", "class")]["name_span"][:2], [1, 13])
@@ -1330,9 +673,12 @@ class MultiLanguageTests(unittest.TestCase):
         self.assertEqual(ambiguous, set())
 
     def test_each_engine_keeps_the_entries_of_the_other_languages(self):
-        for engine in (self.python_engine(), self.typescript_engine(), self.python_engine()):
-            report = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1)
-            self.assertTrue(report["available"], report)
+        store = resolve_edges.default_edge_store(self.manifest)
+        python = {("app/use.py", 3): [end("app/tool.py", "run", 2)]}
+        write_answers(self.manifest, store, python, languages=("python",))
+        write_answers(self.manifest, store, {("web/use.ts", 3): [end("web/tool.ts", "run", 2)]},
+                      resolver="tsstub@1.0", languages=("typescript",))
+        write_answers(self.manifest, store, python, languages=("python",))
         with open_snapshot(self.manifest) as store:
             edges, binding, reason = resolve_edges.read_edge_store(
                 resolve_edges.default_edge_store(self.manifest), store)
@@ -1341,8 +687,8 @@ class MultiLanguageTests(unittest.TestCase):
                          {"python": "stub@1.0", "typescript": "tsstub@1.0"})
         self.assertEqual({language: entry["engine"] for language, entry in binding["languages"].items()},
                          {"python": "stub@1.0", "typescript": "tsstub@1.0"})
-        coverage = resolve_edges.edge_state(self.manifest)["coverage"]
-        self.assertEqual(sorted(coverage), ["python", "typescript"])
+        self.assertEqual(sorted(language for language, entry in binding["languages"].items() if entry["coverage"]),
+                         ["python", "typescript"])
 
     def stage_runner(self, outcomes, calls):
         """A fake `subprocess.run` writing each stage's report as the stage would."""
@@ -1405,137 +751,16 @@ class MultiLanguageTests(unittest.TestCase):
         self.assertIn(resolve_edges.LOG_NAME, result["languages"]["python"]["reason"])
 
 
-class DistributionTests(unittest.TestCase):
-    """Work goes where it is worth most: reuse what cannot have changed, edited files first, publish as it goes."""
-
-    SOURCES = {
-        "lib.py": "def helper():\n    return 1\n\n\nclass Box:\n    def open(self):\n        return 2\n",
-        "mid.py": "import lib\n\n\ndef middle(box):\n    return box.open()\n",
-        "top.py": "from mid import middle\n\n\ndef run(box):\n    return box.open()\n",
-        "other.py": "def alone(box):\n    return box.open()\n",
-    }
-
-    def setUp(self):
-        install_position_fixture(self)
-        self.temp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name).resolve() / "proj"
-        self.root.mkdir()
-        for rel, text in self.SOURCES.items():
-            (self.root / rel).write_text(text, encoding="utf-8")
-        self.manifest = self.root.parent / "manifest.sqlite"
-        snapshot.read_project(self.root, self.manifest)
-
-    def engine(self, context="ctx-1", fail_after=None):
-        owner = self
-
-        class CachingEngine(StubEngine):
-            """Every `open` call lands on `Box.open`; the context makes its answers reusable."""
-            probes = 0
-
-            def context(self):
-                return context
-
-            def probe(self):
-                CachingEngine.probes += 1
-                return super().probe()
-
-            def definitions(self, path, line, column):
-                if fail_after is not None and len(self.asked) >= fail_after:
-                    raise resolve_edges.EngineFailure("the server exited")
-                self.asked.append((Path(path).name, line, column))
-                return [Definition(owner.root / "lib.py", "open", line=6, column=8)]
-
-        return CachingEngine()
-
-    def run_engine(self, engine):
-        return resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1)
-
-    def edit(self, rel, text):
-        (self.root / rel).write_text(text, encoding="utf-8")
-        snapshot.read_project(self.root, self.manifest)
-
-    def test_an_unchanged_snapshot_reuses_every_answer_without_starting_the_engine(self):
-        first = self.run_engine(self.engine())
-        self.assertEqual((first["asked"], first["reused"], first["confirmed_edges"]), (3, 0, 3))
-        again = self.engine()
-        second = self.run_engine(again)
-        self.assertEqual((second["asked"], second["reused"], second["confirmed_edges"]), (0, 3, 3))
-        self.assertEqual((again.asked, type(again).probes), ([], 0))
-        self.assertEqual(second["languages"]["python"]["state"], "fresh")
-        self.assertEqual(Path(second["answer_cache"]).name, resolve_edges.ANSWERS_NAME)
-        self.assertEqual(second["coverage"]["python"]["answered"]["project-callable"], 3)
-
-    def test_an_edit_reasks_its_file_and_every_file_that_imports_it(self):
-        self.run_engine(self.engine())
-        # Every answer lands in lib.py, so editing lib.py would re-ask all of them.
-        self.edit("mid.py", self.SOURCES["mid.py"] + "\n\ndef extra():\n    return 3\n")
-        engine = self.engine()
-        report = self.run_engine(engine)
-        self.assertEqual(sorted(name for name, _line, _column in engine.asked), ["mid.py", "top.py"])
-        self.assertEqual((report["reused"], report["confirmed_edges"]), (1, 3))
-
-    def test_edited_files_are_asked_before_files_whose_imports_changed(self):
-        self.run_engine(self.engine())
-        (self.root / "lib.py").write_text(self.SOURCES["lib.py"] + "\n# edited\n", encoding="utf-8")
-        self.edit("other.py", "# edited\n" + self.SOURCES["other.py"])
-        engine = self.engine()
-        self.run_engine(engine)
-        self.assertEqual([name for name, _line, _column in engine.asked][0], "other.py")
-        self.assertEqual(len(engine.asked), 3)
-
-    def test_the_reusable_part_of_the_graph_is_published_before_the_engine_starts(self):
-        self.run_engine(self.engine())
-        self.edit("mid.py", self.SOURCES["mid.py"] + "\n\ndef extra():\n    return 3\n")
-        engine, seen = self.engine(), []
-        start = engine.probe
-
-        def probe():
-            with open_snapshot(self.manifest) as store:
-                edges, binding, reason = resolve_edges.read_edge_store(
-                    resolve_edges.default_edge_store(self.manifest), store)
-            seen.append((reason, len(edges or ()), (binding or {}).get("languages", {}).get("python", {}).get("state")))
-            return start()
-
-        engine.probe = probe
-        self.run_engine(engine)
-        self.assertEqual(seen, [(None, 1, "partial")])
-
-    def test_another_engine_context_reuses_nothing(self):
-        self.run_engine(self.engine())
-        engine = self.engine(context="ctx-2")
-        report = self.run_engine(engine)
-        self.assertEqual((report["asked"], report["reused"]), (3, 0))
-
-    def test_a_failed_pass_keeps_what_it_proved_and_the_next_one_resumes(self):
-        with mock.patch.object(position_stage, "PUBLISH_SECONDS", 0):
-            failed = self.run_engine(self.engine(fail_after=2))
-        self.assertFalse(failed["available"])
-        with open_snapshot(self.manifest) as store:
-            edges, binding, reason = resolve_edges.read_edge_store(
-                resolve_edges.default_edge_store(self.manifest), store)
-        self.assertIsNone(reason, reason)
-        self.assertEqual((len(edges), binding["languages"]["python"]["state"]), (2, "partial"))
-        resumable = resolve_edges.edge_state(self.manifest)["languages"]["python"]
-        self.assertEqual(resumable["state"], "failed")
-        self.assertIn("the next pass resumes", resumable["reason"])
-        engine = self.engine()
-        resumed = self.run_engine(engine)
-        self.assertEqual((resumed["asked"], resumed["reused"], resumed["confirmed_edges"]), (1, 2, 3))
-        self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "fresh")
-
-    def test_a_dry_run_asks_everything_and_writes_no_answer(self):
-        self.run_engine(self.engine())
-        engine = self.engine()
-        report = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1, dry_run=True)
-        self.assertEqual((report["asked"], report["reused"], report["answer_cache"]), (3, 0, None))
+class DigestTests(unittest.TestCase):
+    """A file's digest moves with what it imports: the index cache's inputs (`engine_pass._inputs`)."""
 
     def test_digests_follow_imports_and_cycles(self):
         hashes = {"a": "1", "b": "2", "c": "3", "d": "4"}
         dependencies = {"a": {"b"}, "b": {"a", "c"}, "d": set()}
-        before = resolve_edges.dependency_digests(hashes, dependencies)
+        import code_graph
+        before = code_graph.dependency_digests(hashes, dependencies)
         self.assertEqual(before["a"], before["b"])
-        after = resolve_edges.dependency_digests({**hashes, "c": "changed"}, dependencies)
+        after = code_graph.dependency_digests({**hashes, "c": "changed"}, dependencies)
         self.assertNotEqual(after["a"], before["a"])
         self.assertNotEqual(after["c"], before["c"])
         self.assertEqual(after["d"], before["d"])
@@ -1578,13 +803,6 @@ class ContractTests(unittest.TestCase):
         with open_snapshot(self.manifest) as store:
             return resolve_edges.symbol_table(store.connection, "types.ts", self.TYPES)
 
-    def grade(self, *positions):
-        definitions = [Definition(self.root / "types.ts", "?", line=line, column=column) for line, column in positions]
-        with open_snapshot(self.manifest) as store:
-            inventory = resolve_edges.inventory_files(store.connection)
-            return resolve_edges.grade_all(definitions, inventory, {}, self.root, lambda rel: resolve_edges.symbol_table(
-                store.connection, rel, self.TYPES))
-
     def test_callable_members_of_interfaces_and_types_are_contracts(self):
         table, ambiguous = self.table()
         self.assertEqual(ambiguous, set())
@@ -1598,12 +816,6 @@ class ContractTests(unittest.TestCase):
     def test_a_constructor_names_its_class(self):
         table, _ambiguous = self.table()
         self.assertEqual(table[self.at(11, "constructor")], table[self.at(10, "Box")])
-        verdict, target = self.grade(self.at(10, "Box"), self.at(11, "constructor"))
-        self.assertEqual((verdict, target["kind"]), ("edge-instantiation", "class"))
-
-    def test_the_value_holder_beside_a_callable_is_not_a_target(self):
-        self.assertEqual(self.grade(self.at(13, "box"), self.at(2, "get"))[0], "edge-call")
-        self.assertEqual(self.grade(self.at(5, "timeout")), ("project-not-a-symbol", None))
 
     def test_contracts_are_never_lexical_bindings(self):
         with open_snapshot(self.manifest) as store:
@@ -1845,45 +1057,6 @@ class NativeToolchainTests(unittest.TestCase):
             self.assertTrue((root / "src/lib.rs").is_file())
 
 
-class ScipTypedRangeTests(unittest.TestCase):
-    """The current SCIP schema writes an occurrence's range as a message, with zero fields left out."""
-
-    @staticmethod
-    def varint(value):
-        out = bytearray()
-        while True:
-            byte = value & 0x7F
-            value >>= 7
-            out.append(byte | (0x80 if value else 0))
-            if not value:
-                return bytes(out)
-
-    def field(self, number, payload):
-        if isinstance(payload, int):
-            return self.varint(number << 3) + self.varint(payload)
-        return self.varint(number << 3 | 2) + self.varint(len(payload)) + payload
-
-    def occurrence(self, symbol, roles, *range_fields):
-        single = b"".join(self.field(number, value) for number, value in range_fields if value)
-        return self.field(2, self.field(8, single) + self.field(2, symbol.encode()) + self.field(3, roles))
-
-    def test_single_line_ranges_are_read_without_their_zero_fields(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            (root / "a.go").write_text("package a\n\nfunc Run() {}\n\nfunc Go() { Run() }\n", encoding="utf-8")
-            symbol = "scip-go gomod demo . `demo`/Run()."
-            document = (self.field(1, b"a.go")
-                        + self.occurrence(symbol, 1, (1, 2), (2, 5), (3, 8))
-                        + self.occurrence(symbol, 0, (1, 4), (2, 13), (3, 16))
-                        + self.occurrence("local 0", 1, (2, 1), (3, 2)))
-            index = root / "index.scip"
-            index.write_bytes(self.field(2, document))
-            engine = resolve_edges.ScipEngine(root, [index])
-            self.assertEqual(engine.probe(), (True, ""))
-            found = engine.definitions(root / "a.go", 5, 13)
-        self.assertEqual([(location.line, location.column) for location in found], [(3, 5)])
-
-
 class PositionUnitTests(unittest.TestCase):
     def test_positions_convert_explicitly_between_units(self):
         line = 'x = "é😀"; run()'
@@ -1913,15 +1086,14 @@ class CalleePositionTests(unittest.TestCase):
 
 
 class LexicalCheckTests(unittest.TestCase):
-    """The engine is asked about the calls the lexical resolver bound too, and its answer wins."""
+    """The store answers the calls the lexical resolver bound too, and its answer wins."""
 
     SOURCES = {
         "app/use.py": "from app.tool import free\n\n\ndef go():\n    return free()\n",
         "app/tool.py": "def free():\n    return 2\n\n\ndef other():\n    return 3\n",
     }
-    setUp = ResolveEdgesTests.setUp
-    run_engine = ResolveEdgesTests.run_engine
-    references = ResolveEdgesTests.references
+    setUp = EdgeStoreTests.setUp
+    references = EdgeStoreTests.references
 
     def bound_call(self):
         for identity, resolution, payload in self.references():
@@ -1934,57 +1106,39 @@ class LexicalCheckTests(unittest.TestCase):
             return store.connection.execute(
                 "SELECT id FROM sem_declarations WHERE file='app/tool.py' AND name=?", (name,)).fetchone()[0]
 
-    def check(self, answer):
-        """The pass report, the view and the bound call's reference under one scripted answer."""
+    def check(self, ends):
+        """The view and the bound call's reference under the store's ends there."""
         import edge_view
         identity, line = self.bound_call()
-        engine = StubEngine(answers={} if answer is None else {("use.py", line): answer})
-        report = self.run_engine(engine)
-        self.assertTrue(report["available"], report)
-        self.assertEqual([asked[:2] for asked in engine.asked], [("use.py", line)])
+        write_answers(self.manifest, self.edges, {("app/use.py", line): ends} if ends else {})
         with open_snapshot(self.manifest) as store:
             view = edge_view.load_edge_view(store, engine_store=self.edges)
         self.assertEqual(view["conflicts"], [])
-        # The pass and the view give the same coverage.
-        self.assertEqual(report["coverage"], view["coverage"]["languages"])
-        return report, view, {item["id"]: item for item in view["references"]}[identity]
+        return view, {item["id"]: item for item in view["references"]}[identity]
 
     def test_the_same_answer_adds_the_engine_to_the_provenance(self):
-        report, view, reference = self.check(Definition(self.root / "app/tool.py", "free", line=1, column=4))
-        self.assertEqual(report["languages"]["python"]["checked"],
-                         {"population": 1, "asked": 1, "same": 1, "corrected": 0, "external": 0})
-        # `confirmed` stays the edges an engine adds where the lexical resolver had none.
-        self.assertEqual(report["confirmed_edges"], 0)
+        view, reference = self.check([end("app/tool.py", "free", 1)])
         self.assertEqual(reference["target_id"], self.declaration("free"))
         self.assertEqual(reference["provenance"], [resolve_edges.resolution.LEXICAL_RESOLVER, "stub@1.0"])
         self.assertEqual(view["coverage"]["languages"]["python"]["answered"].get("project-callable"), 1)
 
     def test_another_project_declaration_replaces_the_lexical_target(self):
-        report, view, reference = self.check(Definition(self.root / "app/tool.py", "other", line=5, column=4))
-        self.assertEqual(report["languages"]["python"]["checked"],
-                         {"population": 1, "asked": 1, "same": 0, "corrected": 1, "external": 0})
+        view, reference = self.check([end("app/tool.py", "other", 5)])
         self.assertEqual((reference["target_id"], reference["resolver"], reference["provenance"]),
                          (self.declaration("other"), "stub@1.0", ["stub@1.0"]))
         self.assertEqual(reference["lexical_target_id"], self.declaration("free"))
         self.assertEqual(view["coverage"]["languages"]["python"]["answered"].get("project-callable"), 1)
 
     def test_a_definition_outside_the_project_removes_the_lexical_edge(self):
-        vendor = self.root.parent / "vendor/lib.py"
-        vendor.parent.mkdir()
-        vendor.write_text("def free():\n    return 4\n", encoding="utf-8")
-        report, view, reference = self.check(Definition(vendor, "free", line=1, column=4))
-        self.assertEqual(report["languages"]["python"]["checked"],
-                         {"population": 1, "asked": 1, "same": 0, "corrected": 0, "external": 1})
+        view, reference = self.check([outside("vendor-lib")])
         self.assertEqual((reference["target_id"], reference["resolution"], reference["reason"]),
-                         (None, "unresolved", "engine-external-definition"))
+                         (None, "unresolved", "external"))
         self.assertEqual(reference["lexical_target_id"], self.declaration("free"))
         answered = view["coverage"]["languages"]["python"]["answered"]
         self.assertEqual((answered.get("external"), answered.get("project-callable")), (1, None))
 
     def test_no_engine_answer_keeps_the_lexical_target(self):
-        report, view, reference = self.check(None)
-        self.assertEqual(report["languages"]["python"]["checked"],
-                         {"population": 1, "asked": 1, "same": 0, "corrected": 0, "external": 0})
+        view, reference = self.check(None)
         self.assertEqual((reference["target_id"], reference["provenance"]),
                          (self.declaration("free"), [resolve_edges.resolution.LEXICAL_RESOLVER]))
         answered = view["coverage"]["languages"]["python"]["answered"]
@@ -2203,14 +1357,14 @@ class IndexerStageTests(unittest.TestCase):
         (project / "extra").mkdir()
         (project / "extra/more.go").write_text("package extra\n\nfunc More() int { return 1 }\n", encoding="utf-8")
         snapshot.read_project(project, manifest)
-        self.assertEqual(stage(), 2)  # a unit changed: one run for the language, of the changed file (T2.B.4)
-        self.assertEqual(calls[-1], ["extra/more.go"])
+        self.assertEqual(stage(), 2)  # a unit changed: one run for the language, whole (Go's `SUBSET` is off)
+        self.assertEqual(calls[-1], None)
         self.assertEqual(stage(), 2)
         with open(project / "go.mod", "a", encoding="utf-8") as handle:
             handle.write("\nrequire example.com/dep v1.0.0\n")
         snapshot.read_project(project, manifest)
         self.assertEqual(stage(), 3)  # a manifest changed, no Go file did: the language runs again, whole
-        self.assertEqual(calls, [None, ["extra/more.go"], None])
+        self.assertEqual(calls, [None, None, None])
 
     def test_a_changed_file_and_its_importers_are_indexed_again_and_merged_into_the_kept_index(self):
         # `ts` with `src/api/logService.js` of `ts-changed`: the indexer gets that file and those importing it, its
@@ -2218,6 +1372,8 @@ class IndexerStageTests(unittest.TestCase):
         # run over `ts-changed` gives.
         import egress
         from indexers import typescript
+        # The mechanism, off in the product since T2.B.5 measured a merged graph unlike the whole one.
+        self.enterContext(mock.patch.object(typescript, "SUBSET", True))
         indexer = {"name": "scip-typescript", "version": typescript.VERSION, "seconds": 1.0, "peak_mb": None}
         asked = []
 
@@ -2304,9 +1460,9 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual((seen["engine"].name, seen["declared"]["hosts"]), ("fake", ()))
 
     def test_the_stage_keeps_the_entries_of_the_other_languages(self):
-        project, manifest = self.project("go", self.PYTHON)
-        engine = StubEngine({("use.py", 3): Definition(project / "app/tool.py", "run")})
-        self.assertTrue(resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)["available"])
+        _project, manifest = self.project("go", self.PYTHON)
+        write_answers(manifest, resolve_edges.default_edge_store(manifest),
+                      {("app/use.py", 3): [end("app/tool.py", "run", 2)]}, languages=("python",))
         self.run_stage("scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"))
         with open_snapshot(manifest) as store:
             edges, binding, reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest), store)
@@ -2392,10 +1548,9 @@ class IndexerStageTests(unittest.TestCase):
         self.assertIsInstance(seen["engine"], container.Engine)
 
     def test_python_reads_from_its_index_and_an_entry_of_a_former_engine_is_not_fresh(self):
-        project, manifest = self.project("python")
-        engine = StubEngine({})
-        engine.languages, engine.identity = ("python",), lambda: "jedi@0.20.1"
-        resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)
+        _project, manifest = self.project("python")
+        write_answers(manifest, resolve_edges.default_edge_store(manifest), {}, resolver="jedi@0.20.1",
+                      languages=("python",))
         self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["python"]["state"], "missing")
         result, started, _indexed = self.run_stage(
             "scip-python", manifest, lambda project_dir, work_dir, files=None, **given: self.python_contract())
@@ -2506,7 +1661,7 @@ class IndexerStageTests(unittest.TestCase):
             "stylesheet": (("stylesheet",), "css", False)})
 
     def test_the_resolver_names_the_entry_not_the_indexer(self):
-        # rust-analyzer is also the engine of the position pass, and scip-java indexes Kotlin too.
+        # scip-java indexes Kotlin too: the entry names the source.
         import container
         _project, manifest = self.project("rust")
         indexer = {"name": "rust-analyzer", "version": "2026-11-09", "seconds": 1.0, "peak_mb": None}
@@ -2516,10 +1671,9 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(result["languages"]["rust"], {"state": "fresh", "engine": "scip-rust@2026-11-09"})
 
     def test_an_entry_from_the_former_source_is_not_fresh(self):
-        project, manifest = self.project("go")
-        engine = StubEngine({})
-        engine.languages, engine.identity = ("go",), lambda: "gopls@0.20.0"
-        resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)
+        _project, manifest = self.project("go")
+        write_answers(manifest, resolve_edges.default_edge_store(manifest), {}, resolver="gopls@0.20.0",
+                      languages=("go",))
         with open_snapshot(manifest) as store:
             _edges, binding, _reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest), store)
         self.assertEqual(binding["languages"]["go"]["engine"], "gopls@0.20.0")

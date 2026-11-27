@@ -36,8 +36,7 @@ def write_project(root: Path) -> None:
 
 class EngineImpactTests(unittest.TestCase):
     def setUp(self):
-        from test_codebase_map_edge_view import Definition, StubEngine
-        import resolve_edges
+        from test_codebase_map_edge_view import end, write_answers
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
@@ -51,15 +50,11 @@ class EngineImpactTests(unittest.TestCase):
         self.edges = self.manifest.with_name("engine-edges.sqlite")
         snapshot.read_project(self.root, self.manifest)
         self.before = artifact_digest(self.manifest)
-        self.engine = StubEngine({
-            ("bridge.py", 2): Definition(self.root / "leaf.py", "run", line=2, column=8),
-            ("entry.py", 2): Definition(self.root / "bridge.py", "middle", line=1, column=4),
-        })
-        resolve_edges.resolve_edges(self.manifest, engine=self.engine, limit=None, stride=1, out=self.edges)
+        write_answers(self.manifest, self.edges, {("bridge.py", 2): [end("leaf.py", "run", 2)],
+                                                  ("entry.py", 2): [end("bridge.py", "middle", 1)]})
 
     def test_engine_edges_reach_graph_and_both_impact_hops_without_inference(self):
         from store_graph import query_graph
-        asked = list(self.engine.asked)
         with open_snapshot(self.manifest) as store:
             graph = query_graph(store, ["leaf.py"], hops=2, engine_store=self.edges)
             packet = semantic_store.build_edit_impact(
@@ -73,7 +68,6 @@ class EngineImpactTests(unittest.TestCase):
         self.assertEqual(caller["edges"][0]["sites"][0]["resolver"], "stub@1.0")
         self.assertEqual(caller["edges"][0]["sites"][0]["start_line"], 2)
         self.assertIn("entry.py::top", {r["symbol_id"] for r in target["second_hop"]["listed"]})
-        self.assertEqual(self.engine.asked, asked)
         self.assertEqual(artifact_digest(self.manifest), self.before)
 
     def test_file_consumer_counts_engine_calls_and_card_freshness_stays_lexical(self):

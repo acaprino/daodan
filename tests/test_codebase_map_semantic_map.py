@@ -284,21 +284,17 @@ class SemanticMapTests(unittest.TestCase):
         self.assertTrue(self.output.is_file())
 
     def test_verified_engine_edges_keep_provenance_without_running_inference(self):
-        from test_codebase_map_edge_view import Definition, StubEngine
-        import resolve_edges
+        from test_codebase_map_edge_view import end, write_answers
         self.write("leaf.py", "class Worker:\n    def work(self):\n        return 1\n")
         self.write("caller.py", "def call(obj):\n    return obj.work()\n")
         self.refresh()
         self.seed({"symbol_id": "caller.py::call", "purpose": "Delegate work"})
         edges = self.manifest.with_name("engine-edges.sqlite")
-        engine = StubEngine({("caller.py", 2): Definition(self.root / "leaf.py", "work", line=2, column=8)})
-        resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1, out=edges)
-        asked = list(engine.asked)
+        write_answers(self.manifest, edges, {("caller.py", 2): [end("leaf.py", "work", 2)]})
         report = self.render(engine_store=edges)
         calls = [row for row in report["graph"]["calls"] if row["caller_entity_id"] == "caller.py::call"]
         self.assertEqual(calls[0]["target_entity_id"], "leaf.py::Worker.work")
         self.assertEqual(calls[0]["resolver"], "stub@1.0")
-        self.assertEqual(engine.asked, asked)
         row = next(row for row in report["entities"] if row["entity_id"] == "caller.py::call")
         self.assertEqual(row["freshness"], "fresh")
         self.assertEqual(row["freshness_basis"], "lexical")

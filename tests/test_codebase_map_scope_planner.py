@@ -370,12 +370,8 @@ class ScopePlannerTests(unittest.TestCase):
         request = self.request(None, base=None)
         missing = self.prepare(request)
         self.assertFalse(missing['resolver_profile']['profile']['engine_available'])
-        class EmptyEngine:
-            name = 'empty-test-engine'
-            def probe(self): return True, ''
-            def identity(self): return 'empty@1'
-            def definitions(self, *args): raise AssertionError('no calls were inventoried')
-        resolve_edges.resolve_edges(self.current, engine=EmptyEngine(), limit=None, stride=1)
+        from test_codebase_map_edge_view import write_answers
+        write_answers(self.current, resolve_edges.default_edge_store(self.current), {}, resolver='empty@1')
         empty = self.prepare(request)
         self.assertTrue(empty['resolver_profile']['profile']['engine_available'])
         self.assertEqual(empty['coverage']['engine']['status'], 'lower-bound')

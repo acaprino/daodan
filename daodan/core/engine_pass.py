@@ -27,11 +27,13 @@ import engine_tools
 from snapshot_store import logical_digest, open_snapshot
 from engine_tools import free_memory, node_environment
 from edge_store import default_edge_store, read_edge_store
-from position_stage import MEMORY_EXHAUSTED
 from tree_scope import program
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
+
+# What a stage's log says when it ran out of memory, in lower case.
+MEMORY_EXHAUSTED = ("memoryerror", "out of memory", "outofmemoryerror", "bad_alloc", "cannot allocate memory")
 
 # Files the derived pass leaves beside the edge store.
 REPORT_NAME = "engine-report.json"
@@ -527,8 +529,8 @@ def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | 
     stage_report.unlink(missing_ok=True)
     if not isinstance(stage, dict):  # no report, or one that is not a report
         return "failed", (f"the {spec.name} stage exited with code {completed.returncode} without a report; "
-                          f"see {LOG_NAME}"), None, {"memory_exhausted": bool(MEMORY_EXHAUSTED.search(
-                              _log_tail(manifest)))}
+                          f"see {LOG_NAME}"), None, {"memory_exhausted": any(
+                              word in _log_tail(manifest).lower() for word in MEMORY_EXHAUSTED)}
     if stage.get("available"):
         return None, None, None, stage
     install = stage.get("install")
@@ -558,7 +560,7 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     The indexer works in a directory removed after the stage; what it gave is kept in `index-cache/` beside the
     manifest, and a stage whose inputs did not change (`_inputs`) reads it there and runs no indexer. The cache is
     of the whole language, not of a unit: every adapter runs all its units in one container and does not split its
-    contract per unit (`_keep`). An adapter with `SUBSET` indexes again only the files that changed and those
+    contract per unit (`_keep`). An adapter with `SUBSET` (none, T2.B.5) indexes again only the changed files and those
     importing one (`_redone`), merged into the kept indexes (`_merged`). One that `needs_container` gets its engine
     here:
     without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
@@ -1018,12 +1020,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
         key: report[key]
         for key in (
             "engine", "available", "reason", "stage", "install", "project_root", "languages",
-            "population", "population_language", "selected", "asked", "reused", "answer_cache", "stride",
-            "confirmed_edges", "candidates", "no_edges_reason", "position_unverified",
-            "excluded_classes", "coverage", "verdicts", "memory_exhausted",
-            "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
-            "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
-            "edges_store", "coverage", "indexer", "gaps",
+            "coverage", "memory_exhausted", "edges_store", "indexer", "gaps",
         )
         if key in report
     }

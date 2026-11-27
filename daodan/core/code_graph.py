@@ -50,7 +50,7 @@ import json
 import subprocess
 import sys
 import time
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import NamedTuple
 
 UNITS = {1: "utf-8", 2: "utf-16", 3: "utf-32"}
@@ -151,7 +151,6 @@ def _unknown(counter, where: str, message) -> None:
 
 def file_dependencies(connection) -> dict[str, set[str]]:
     """The inventoried files each file imports: placed imports and modules reached through `sys.path`."""
-    from edge_grading import runtime_imports
     dependencies: dict[str, set[str]] = {}
     for source, target in connection.execute("SELECT source, target FROM sem_edges"):
         dependencies.setdefault(source, set()).add(target)
@@ -161,12 +160,44 @@ def file_dependencies(connection) -> dict[str, set[str]]:
     return dependencies
 
 
+def runtime_imports(connection) -> dict[str, dict]:
+    """Imports the snapshot could not place that reach a project module through `sys.path`.
+
+    A bare `import snapshot` the snapshot could not place is how a test or a
+    script reaches a tool after inserting the tool's directory into sys.path.
+    When exactly one directory holds an inventoried Python module of that name,
+    that directory is such a root. Standard-library names never make one. Returns,
+    per module name, the directory relative to the snapshot root, the module's
+    files and the files that import it.
+    """
+    from snapshot_store import _unpack
+    placed = {(row[0], row[1]) for row in connection.execute("SELECT file, module FROM sem_modules")}
+    importers: dict[str, set[str]] = {}
+    for file, blob in connection.execute("SELECT file, payload FROM sem_bindings WHERE kind='import'"):
+        module = (_unpack(blob) or {}).get("module") or ""
+        head = module.split(".")[0]
+        if head and not module.startswith(".") and (file, module) not in placed \
+                and head not in sys.stdlib_module_names:
+            importers.setdefault(head, set()).add(file)
+    found: dict[str, dict[str, set[str]]] = {}
+    for (rel,) in connection.execute("SELECT file FROM sem_coverage WHERE language='python'"):
+        path = PurePosixPath(rel)
+        package = path.name == "__init__.py"
+        name = path.parent.name if package else path.stem
+        if name in importers:
+            directory = (path.parent.parent if package else path.parent).as_posix()
+            found.setdefault(name, {}).setdefault(directory, set()).add(rel)
+    return {name: {"directory": directory, "files": sorted(files), "importers": sorted(importers[name])}
+            for name, places in sorted(found.items()) if len(places) == 1
+            for directory, files in places.items()}
+
+
 def dependency_digests(hashes: dict[str, str], dependencies: dict[str, set[str]]) -> dict[str, str]:
     """A digest per file over its own bytes and every file it reaches through imports.
 
     Two snapshots give a file the same digest only when neither it nor anything it
-    imports, directly or transitively, changed: the condition under which an engine
-    answer at one of its positions can be reused. The files of an import cycle share
+    imports, directly or transitively, changed: the condition under which a kept
+    index of it can be reused (`engine_pass._redone`). The files of an import cycle share
     one digest. Tarjan's algorithm, iterative, closes a component only after every
     component it reaches, so each digest is computed once.
     """

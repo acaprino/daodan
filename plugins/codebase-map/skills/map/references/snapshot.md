@@ -150,9 +150,9 @@ JavaScript, Vue and Svelte, scip-java for Java and Kotlin, scip-dotnet for C# an
 scip-clang for C and C++; the stylesheet graph. Each
 is installed on first use under the shared Daodan directory. `dynamic` runs the
 project's declared tests in a container under a recorder and adds the calls they
-execute as observed edges (`dynamic/`). Answers whose file,
-imports and target are unchanged come from `engine-answers.sqlite`, beside the
-card store; the store is published at once with them, then every 30 seconds. `resolve_edges.py
+execute as observed edges (`dynamic/`). An analyzer whose inputs are unchanged
+reuses its kept index (`index-cache/` beside the manifest); Go and TypeScript
+index again only the changed files and those importing them. `resolve_edges.py
 <manifest> --pass` runs the whole pass in the foreground; `--engine <name>
 --compact --report-out <report.json>` runs one stage.
 

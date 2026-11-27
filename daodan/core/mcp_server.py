@@ -124,9 +124,10 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         return await _invoke(ctx, service.search, run_id, query, anchors=anchors, limit=limit)
 
     @server.tool(annotations=writes)
-    async def codebase_map_index(ctx: Context, run_id: str, check: bool = False, break_lock: bool = False) -> dict:
-        """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind. Also reports the call-resolution engine store (fresh, running, missing, stale, failed, unavailable) and, per language, its coverage (sites with an answer by class, holes by class, uncertain arcs, complete or lower-bound), and, unless check is true, restarts its pass when it is not fresh or running."""
-        return await _invoke(ctx, service.index, run_id, check=check, break_lock=break_lock)
+    async def codebase_map_index(ctx: Context, run_id: str, check: bool = False, break_lock: bool = False,
+                                 targets: list[str] | None = None) -> dict:
+        """Report the bound run's lexical index state (fresh, missing, stale, corrupt, failed) and repair it unless check is true; break_lock removes the lock a crashed build left behind. Also reports the call-resolution engine store (fresh, running, missing, stale, failed, unavailable) and, per language, its coverage (sites with an answer by class, holes by class, uncertain arcs, complete or lower-bound), and, unless check is true, restarts its pass when it is not fresh or running. targets: paths of the project inside the run's target (no path::symbol) to index again at once, after you edit them: a changed one is read again into the snapshot and only what its change moves is indexed again; each target comes back with its language's edge state (fresh, running, ...) and, when fresh, its edges and holes by class with their cause."""
+        return await _invoke(ctx, service.index, run_id, check=check, break_lock=break_lock, targets=targets)
 
     @server.tool(annotations=writes)
     async def codebase_map_flows(ctx: Context, run_id: str, rules: list[dict] | None = None, start: str | None = None,

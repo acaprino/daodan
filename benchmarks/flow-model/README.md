@@ -23,6 +23,8 @@ Prova la [spec della fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sist
 |---|---|
 | 0 | `modal run benchmarks/flow-model/modal_engine_count.py --cases polar,tududi` |
 
+`modal_engine_count.py` misura il passo per posizione: risultati storici, il passo non esiste più (`T2.B.7`, 27 novembre 2026); i risultati restano.
+
 ## Risultati
 
 ### Misura 0, 11 novembre 2026, Modal (4 CPU, 16 GB per caso)
