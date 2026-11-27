@@ -537,8 +537,12 @@ def engine_environment(site: Path = Path("/site")) -> dict:
     # A plain Python child (`resolve_edges.py --pass`, no uv) must import Modal's client as this process does. On
     # Modal the client sits in `/pkg` and its dependencies elsewhere, neither in the interpreter's own site-packages
     # (measured on 23 November 2026: `No module named 'grpclib'`): the folders they are imported from go on the path.
+    # The interpreter's own site-packages comes before them: on Modal they hold the client's protobuf 6, and the
+    # product's `scip_pb2.py` is generated for protobuf 7 (measured on 27 November 2026: `mismatched Protobuf
+    # Gencode/Runtime major versions`, Java, JavaScript and Python `failed` in the pass). The client takes protobuf <8.
     import importlib
-    client = []
+    import sysconfig
+    client = [sysconfig.get_paths()["purelib"]]
     for name in ("modal", "grpclib", "synchronicity"):
         try:
             client.append(str(Path(importlib.import_module(name).__file__).resolve().parents[1]))
