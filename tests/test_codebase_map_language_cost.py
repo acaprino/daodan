@@ -60,3 +60,47 @@ BASES = ", ".join(f"public ns::VeryLongInterfaceName<int{number}>" for number in
     ids=["bases", "declared before", "only declared", "open comment", "string", "escaped quote", "apostrophe", "backslash"])
 def test_a_class_counts_where_it_is_code(text, language):
     assert detect_language(Path("a.h"), text) == language
+
+
+# A rule reads at most `detect.MAX_CHARS` of a text, and costs in line with what it reads: four times the text, at most eight
+# times the time (a quadratic rule would take sixteen). Below 50 ms the ratio is noise, so the text grows until it clears it.
+import languages.detect as detection  # noqa: E402
+
+RULE_IDS = ("ts.xml-document", "sql.oracle-words", "sql.anchored-type", "h.syntax-tree")
+UNITS = ("%", "a%", " \n", "create or replace ")
+
+
+def rule_of(rule_id):
+    return next(rule for group in detection.RULES.values() for rule in group if rule.id == rule_id)
+
+
+def best(rule, text):
+    times = []
+    for _ in range(3):
+        started = time.perf_counter()
+        rule.decide(text)
+        times.append(time.perf_counter() - started)
+    return min(times)
+
+
+@pytest.mark.parametrize("unit", UNITS, ids=["percent", "name-percent", "blank-lines", "create-or-replace"])
+@pytest.mark.parametrize("rule_id", RULE_IDS)
+def test_a_rule_costs_in_line_with_the_text_it_reads(rule_id, unit):
+    rule = rule_of(rule_id)
+    rule.decide("int a;\n")  # the first parse of a grammar pays for its set-up
+    size = 1_000
+    while size * 4 * len(unit) <= detection.MAX_CHARS and best(rule, unit * size) < 0.05:
+        size *= 2
+    small, large = best(rule, unit * size), best(rule, unit * size * 4)
+    assert large < 2
+    if small >= 0.05:
+        assert large / small < 8
+
+
+@pytest.mark.parametrize("rule_id", RULE_IDS)
+def test_a_word_after_the_bound_is_not_seen_by_the_rule(rule_id):
+    rule = rule_of(rule_id)
+    sample = rule.yes[0][0]
+    path = Path("a" + rule.extensions[0])
+    assert detection.detect(path, sample).decided_by == rule.id
+    assert detection.detect(path, " " * detection.MAX_CHARS + sample).decided_by == detection.EXTENSION

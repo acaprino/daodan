@@ -265,26 +265,26 @@ def r0check(name: str) -> list[dict]:
 
 @app.function(volumes={VOL: volume}, timeout=3600, cpu=2, memory=8192, block_network=True)
 def product(name: str, caps: list[int]) -> list[dict]:
-    """The product's own `detect_language` on every selected header, once for each bound in `caps` (`header.MAX_CHARS`; 0 is
+    """The product's own `detect_language` on every selected header, once for each bound in `caps` (`languages.detect.MAX_CHARS`; 0 is
     no bound): its answer ("objc" for None) and ms."""
     sys.path.insert(0, CORE)
     _reload()
     from languages import detect_language
-    from languages.detect.rules import header
-    bound = header.MAX_CHARS
+    import languages.detect as detection
+    bound = detection.MAX_CHARS
     detect_language(Path("x.h"), "int a;\nnamespace a { }\n")  # the first parse of a grammar pays for its set-up
     rows = []
     for path, data in _selected(name):
         text = data.decode("utf-8", errors="replace")
         row = {"p": name, "path": path, "size": len(data), "ans": {}, "ms": {}}
         for cap in caps:
-            header.MAX_CHARS = cap or 1 << 40
+            detection.MAX_CHARS = cap or 1 << 40
             t0 = time.perf_counter_ns()
             language = detect_language(Path("x.h"), text)
             row["ms"][str(cap)] = _round((time.perf_counter_ns() - t0) / 1e6)
             row["ans"][str(cap)] = language or "objc"
         rows.append(row)
-    header.MAX_CHARS = bound
+    detection.MAX_CHARS = bound
     return rows
 
 

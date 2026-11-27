@@ -25,6 +25,9 @@ TESTS = ("starts-with", "contains")
 FIELDS = {"id": str, "extensions": list, "language": str, "test": str, "texts": list, "why": str, "source": str,
           "yes": list, "no": list}
 OPTIONAL = {"ignore-case": bool}
+# The bytes of a text a rule reads: `source_files.MAX_PARSE_BYTES` (a test holds them equal; that module imports this
+# package). Above it the snapshot parses no file, so no rule reads its text, and a rule costs in line with this bound.
+MAX_CHARS = 2_000_000
 EXTENSION = "extension"  # `decided_by` when no rule answered
 # Linguist's name to Daodan's language; a name absent here is not read.
 LANGUAGE_OF = {name: language for language, names in file_formats.LINGUIST_NAMES.items() for name in names}
@@ -94,7 +97,7 @@ def detect(path: Path, text: str | None = None, rules: dict[str, tuple] | None =
     suffix = path.suffix.lower()
     if text is not None:
         for rule in (RULES if rules is None else rules).get(suffix, ()):
-            name = rule.decide(text)
+            name = rule.decide(text[:MAX_CHARS])
             if name is not None:
                 return Detection(LANGUAGE_OF.get(name), rule.id)
     return Detection(file_formats.SOURCES.get(suffix), EXTENSION)

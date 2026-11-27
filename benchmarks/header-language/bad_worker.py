@@ -4,7 +4,7 @@
 
 TARGET: `r0` (today's detector), `r0fix`, `r0fixq` and `r0fixqc` (the candidates, `Probe.r0_variant`), `c`, `cpp`, `objc` (one grammar's parse and query), `scan` (the linear check of an
 open comment), `product` (the product's own `detect_language` on a `.h`), `parse` (the adapter's parse of it, in the language found, which the
-product does next). MODE: `bound:N` (`product` and `parse`: the product with `header.MAX_CHARS` set to N, 0 for none), `raw` (the text as it is), `cut:N` (cut at a line within N bytes), `safe:N` (the same, and cut
+product does next). MODE: `bound:N` (`product` and `parse`: the product with `languages.detect.MAX_CHARS` set to N, 0 for none), `raw` (the text as it is), `cut:N` (cut at a line within N bytes), `safe:N` (the same, and cut
 back before a `/*` left open). Prints one JSON line: the milliseconds of the target alone, the grammar and the
 detector having been warmed on a small text first.
 """
@@ -38,9 +38,9 @@ elif target in ("r0fix", "r0fixq", "r0fixqc"):
 elif target in ("product", "parse"):  # the product's detection, and the parse it does next with the adapter of the language found
     sys.path.insert(0, core)
     from languages import detect_language, get_adapter  # noqa: E402
-    from languages.detect.rules import header  # noqa: E402
+    import languages.detect as detection  # noqa: E402
     if mode.startswith("bound:"):
-        header.MAX_CHARS = int(mode[6:]) or 1 << 40  # 0: no bound
+        detection.MAX_CHARS = int(mode[6:]) or 1 << 40  # 0: no bound
     for language in ("c", "cpp"):
         get_adapter(language).parse(warm, "x.h")
     detect_language(Path("x.h"), warm)

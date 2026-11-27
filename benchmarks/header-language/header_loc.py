@@ -21,7 +21,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 TODAY = REPO / "daodan" / "core" / "languages" / "__init__.py"
-HEADER = TODAY.with_name("header.py")  # route R3dx, in the product
+HEADER = TODAY.parent / "detect" / "rules" / "header.py"  # route R3dx, in the product
 RULE_COMMIT = "cd19c05e8"  # the last commit with the rule before in `TODAY`
 SKIP = {tokenize.COMMENT, tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT, tokenize.ENDMARKER, tokenize.ENCODING}
 

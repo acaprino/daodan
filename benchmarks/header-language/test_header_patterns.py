@@ -112,7 +112,7 @@ BEFORE_COMMIT = "3960973d8afb1c4e49d97d0da9d9e0fc72857c63"
 FIXQC_COMMIT = "cd19c05e8"  # where `fixqc` entered the product, until route R3dx replaced it
 LANGUAGES = Path(__file__).resolve().parents[2] / "daodan" / "core" / "languages"
 PRODUCT = LANGUAGES / "__init__.py"
-HEADER = LANGUAGES / "header.py"
+HEADER = LANGUAGES / "detect" / "rules" / "header.py"
 
 
 def _patterns_of(source: str) -> dict[str, str]:

@@ -415,7 +415,7 @@ def _growth(rows: list[dict]) -> dict:
 
 def product(data: dict, ran: dict, annotations: dict) -> dict:
     """The product's own answers (`modal_headers.py --step product`: `ran`) against route R3dx of the records (`data`). Per bound
-    of the text it reads (`header.MAX_CHARS`; "0" is none): the headers it answers otherwise than R3dx (key, R3dx's, its own), the
+    of the text it reads (`languages.detect.MAX_CHARS`; "0" is none): the headers it answers otherwise than R3dx (key, R3dx's, its own), the
     right answers by label, the symbols lost, the cost of a header, and the symbols a bound would lose if what lies beyond it
     were read C and the head not read at all (`c_beyond`: R3dx's answer for a header within the bound)."""
     records = [r for r in data["records"] if "error" not in r]

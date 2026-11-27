@@ -1,8 +1,8 @@
 """`.h`: Objective-C, C++ or C, read from the syntax tree (route R3dx of `benchmarks/header-language`).
 
 In order: Objective-C by its directives; C++ when its grammar finds a declaration C lacks outside a `__cplusplus` block;
-else the grammar that errs less, C on a tie. The text read is bounded by a count, never a clock: its first MAX_CHARS
-characters, cut before a comment that never closes (the grammars are quadratic on `/* /* /*`). A header whose first C++
+else the grammar that errs less, C on a tie. The text read is bounded by a count, never a clock: `detect.MAX_CHARS`
+bytes of it, cut before a comment that never closes (the grammars are quadratic on `/* /* /*`). A header whose first C++
 declaration lies further reads as C, the suffix's answer, as it does with no grammar. (`benchmarks/header-language`
 measures the bound: `results/product.json`.)
 
@@ -15,7 +15,6 @@ from __future__ import annotations
 import re
 from collections import deque
 
-MAX_CHARS = 2_000_000  # `source_files.MAX_PARSE_BYTES`: above it the snapshot parses no file, so reads none of it here
 
 # The only expressions left, on text with no tree to read: comments and strings, and the directives of Objective-C,
 # which the pack's Objective-C grammar takes C and C++ headers for (R2o and R3 of the benchmark lose 525 symbols to it).
@@ -66,9 +65,9 @@ def _cpp_declared(root) -> bool:
 
 
 def _head(content: str) -> str:
-    """The text the grammars read: the bound, and without the comment that runs to its end (`/*` with no `*/`: the
-    grammars read the rest of the text again at each one, and the bound can cut a comment open)."""
-    head = content[:MAX_CHARS]
+    """The text the grammars read, without the comment that runs to its end (`/*` with no `*/`: the grammars read the
+    rest of the text again at each one, and `detect` can cut a comment open at its bound)."""
+    head = content
     last = deque(_C_NOISE_RE.finditer(head), maxlen=1)
     return head[:last[0].start()] if last and last[0].end() == len(head) and last[0].group().startswith("/*") else head
 

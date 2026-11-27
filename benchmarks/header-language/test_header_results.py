@@ -84,7 +84,7 @@ def test_readme_gives_the_two_final_patterns_exactly_as_the_code_has_them():
     assert patterns.NOISE_FIXQ in text and patterns.CPP_FIXQC in text
 
 
-HEADER = HERE.parents[1] / "daodan" / "core" / "languages" / "header.py"
+HEADER = HERE.parents[1] / "daodan" / "core" / "languages" / "detect" / "__init__.py"
 
 
 def _shipped_bound() -> int:

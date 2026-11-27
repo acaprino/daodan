@@ -11,6 +11,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from languages import _treesitter, detect_language  # noqa: E402
 from languages.detect.rules import header  # noqa: E402
+import languages.detect as languages_detect  # noqa: E402
 from source_files import MAX_PARSE_BYTES  # noqa: E402
 
 
@@ -105,7 +106,7 @@ def test_the_rule_of_objective_c_comes_first_and_counts_in_code_only():
 
 
 def test_beyond_the_bound_the_header_is_read_by_its_head(monkeypatch):
-    monkeypatch.setattr(header, "MAX_CHARS", 1_000)
+    monkeypatch.setattr(languages_detect, "MAX_CHARS", 1_000)
     filler = "int a;\n" * 150
     assert read("namespace a { int x; }\n" + filler) == "cpp"
     assert read(filler + "namespace a { int x; }\n") == "c"
@@ -113,7 +114,7 @@ def test_beyond_the_bound_the_header_is_read_by_its_head(monkeypatch):
 
 
 def test_the_bound_is_what_the_snapshot_parses_and_no_more():
-    assert header.MAX_CHARS == MAX_PARSE_BYTES  # above it the snapshot parses no file: no parse here either
+    assert languages_detect.MAX_CHARS == MAX_PARSE_BYTES  # above it the snapshot parses no file: no parse here either
 
 
 def test_a_flat_run_of_errors_is_walked_in_line_with_its_length():

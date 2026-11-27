@@ -163,11 +163,11 @@ def test_the_product_answers_as_route_r3dx_with_the_rule_before_in_front(probe):
 
 
 def test_with_the_bound_off_a_longer_header_reads_as_route_r3dx_too(probe, monkeypatch):
-    from languages.detect.rules import header
+    import languages.detect as detection
     text = "int a;\n" * 200 + "namespace a { int x; }\n"
-    monkeypatch.setattr(header, "MAX_CHARS", 1_000)
+    monkeypatch.setattr(detection, "MAX_CHARS", 1_000)
     assert detect_language(Path("a.h"), text) == "c"  # the bound leaves the namespace out: the head is C
-    monkeypatch.setattr(header, "MAX_CHARS", len(text))
+    monkeypatch.setattr(detection, "MAX_CHARS", len(text))
     assert detect_language(Path("a.h"), text) == routes.decide("R3dx", {**probe.features(text.encode()), "r0": probe.r0(text)[0]}) == "cpp"
 
 
