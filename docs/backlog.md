@@ -45,6 +45,14 @@
 - Limite di tempo per stage e cursore in byte sul giornale (ex ondata 4, voci 5 e 6).
 - Renovate come terzo lettore pacchetti (ex ondata 2, voce 10); corsa settimanale confronto Linguist (ex ondata 1, voce 5).
 
+### 6. Soluzioni provvisorie da sostituire con quella pulita
+*Decisione del proprietario (27 novembre 2026): ogni ripiego accettato per andare avanti si sostituisce, appena possibile, con la soluzione pulita qui accanto.*
+- **Lettori SQL e PL/SQL a regex** (`daodan/core/languages/sql.py`, `plsql.py`, deroga di `T1.A.6`): pulita = una grammatica tree-sitter PL/SQL completa (package body, trigger, type body), misurata con `benchmarks/sql-grammar`.
+- **Isolamento della rete su Kiri** (Windows, `T0.C.8`): pulita = un motore che isoli il container dall'host in modo nativo (`com.docker.network.bridge.inhibit_ipv4` o equivalente) su tutte le piattaforme; finché Kiri non lo offre si usa il pod senza rete con il proxy su socket.
+- **Regex rimaste su testo con grammatica** in `daodan/core/indexers/clang.py` (si tolgono in `T2.B.13`), `daodan/core/requirements.py` `EDITABLE` e `preparation.py` `VCS_URL` (si tolgono in `T3.A.8a`): pulita = albero tree-sitter o parser ufficiale.
+- **Quarantene di `T0`** (`docs/verification/2026-11-25-baseline-t0.md`): Go `replace` e Composer `path` del fork (pulita = rilascio `.6` del fork, `T1.B.4`), test Playwright instabile (`T3.B`), smoke test Desktop con WebView2 vivo dopo l'uscita (Cancello `T1`).
+- **File generati riconosciuti solo da `.gitattributes`** (`T1.B`, senza go-enry): pulita = un rilevatore ufficiale del codice generato utilizzabile senza compilare (oggi nessuno: binding `enry` senza wheel, gem Linguist con estensioni native).
+
 ---
 
 ## Fermo o ritirato: non si rifà
