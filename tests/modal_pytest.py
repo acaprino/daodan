@@ -18,6 +18,10 @@ no test to run, is not one). `--store-durations` refreshes that file from the ru
 drops the tests that are gone): do it after the suite has changed much, and commit the file. One group again, alone:
 `-q -n 2 --splits 32 --group 14 --splitting-algorithm least_duration`.
 
+`--command` runs one command in the checkout instead of pytest, in the same image, and `--fetch` brings a file it wrote
+back to the same path here: a generated document whose test runs here, made with the same packages, e.g.
+`modal run tests/modal_pytest.py --command "python daodan/core/support_table.py build" --fetch docs/plugins/codebase-map-supporto.md`.
+
 # measured: the whole suite, 23 November 2026, seconds from the start to the end of the run (3919-3920 passed, 75 skipped,
 # 1202 subtests, no failure unless said). No shards: 8 cores, -n 8: 604 (the owner's), 506 (mine, pytest's own time);
 # 32 cores, -n 32: 618 (the owner's).
@@ -163,6 +167,15 @@ def pytest(arguments: list, capture: bool = False) -> tuple:
     return done.returncode, done.stdout or "", durations
 
 
+@app.function(cpu=2, memory=4096, timeout=900)
+def run(arguments: list, fetch: str) -> tuple:
+    """One command in the checkout, its output streamed: (exit code, the text of `fetch` after it, or None)."""
+    print("$", shlex.join(arguments), flush=True)
+    code = subprocess.run(arguments, cwd=REMOTE, env={**os.environ, "PYTHONUTF8": "1"}).returncode
+    path = Path(REMOTE, fetch)
+    return code, path.read_text(encoding="utf-8") if fetch and path.is_file() else None
+
+
 def shards_of(arguments: list) -> tuple:
     """`--shards N` out of the arguments: (the rest, N or 0)."""
     if "--shards" not in arguments:
@@ -194,7 +207,15 @@ def sharded(arguments: list, shards: int) -> list:
 
 
 @app.local_entrypoint()
-def main(args: str = ""):
+def main(args: str = "", command: str = "", fetch: str = ""):
+    if command:
+        code, text = run.remote(shlex.split(command), fetch)
+        if text is not None:
+            (REPO / fetch).write_text(text, encoding="utf-8", newline="\n")
+            print(f"{fetch} written")
+        if code or (fetch and text is None):
+            raise SystemExit(code or 1)
+        return
     arguments, shards = shards_of(shlex.split(args))
     results = sharded(arguments, shards) if shards else [pytest.remote(arguments)]
     # exit 5 is a group with no test to run (few tests, many groups): not a failure unless every group has none
