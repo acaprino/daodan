@@ -522,6 +522,20 @@ archive = { url = "https://user:token@archive.example.org/direct-1.0.tar.gz" }
                                  "https://pypi.org"]
 
 
+def test_uv_reader_makes_one_unit_without_a_name_of_a_root_that_is_no_package():
+    """A workspace root with no `[project]` lists its dependency groups as roots of `uv tree` (`zizmor v1 (group: dev)`):
+    they are dependencies, not packages, and the root is one unit with no name (the fastapi template)."""
+    lock = ('lock-version = "1.0"\n[[packages]]\nname = "app"\ndirectory = { path = "backend", editable = true }\n'
+            '[[packages]]\nname = "zizmor"\nindex = "https://pypi.org/simple"\n')
+    tree = ("zizmor v1.30.1 (group: dev)\ntyper v0.27.2 (group: dev)\n├── rich v15.0.0\nprek v0.5.3 (group: dev)\n"
+            "app v0.1.0\n├── alembic v1.20.0\n├── coverage v7.16.1 (group: dev)\n")
+    commands = [{"tool": "uv", "argv": argv, "cwd": ".", "env": uv.ENV, "network": "none"} for argv in (uv.EXPORT, uv.TREE)]
+    answers = [{"returncode": 0, "stdout": text, "stderr": ""} for text in (lock, tree)]
+    facts = uv.read(None, commands, answers)["facts"]
+    assert [(u.get("name"), u["root"]) for u in facts["units"]] == [("app", "backend"), (None, ".")]
+    assert facts["workspace"] == [{"tool": "uv", "root": ".", "members": ["backend"]}]
+
+
 def test_tsc_reader_gives_the_tsconfigs_in_reference_order_and_their_aliases(tmp_path):
     _, _, record = build(tmp_path, "tsc_alias", runner=replay("tsc_alias"))
     [web] = by_root(record, "npm-package").values()

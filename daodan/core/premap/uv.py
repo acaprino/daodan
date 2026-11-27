@@ -24,16 +24,22 @@ LINE = re.compile(r"^(?P<prefix>[\s│├└─]*)(?P<name>[A-Za-z0-9][A-Za-z0-9
                   r"(?P<rest>.*)$")
 
 
+VIRTUAL = ""  # in `_tree`, the root of a workspace that is no package: its dependency groups (`zizmor v1 (group: dev)`)
+
+
 def _tree(text: str) -> dict[str, list[str]]:
-    """`{root package: [direct dependency]}` from `uv tree --depth 1`."""
+    """`{root package: [direct dependency]}` from `uv tree --depth 1`. A root that carries `(group: ...)` is a dependency
+    group of a root with no `[project]`, not a package: it and what hangs from it go under `VIRTUAL`."""
     out, current = {}, None
     for line in text.splitlines():
         match = LINE.match(line)
         if not match:
             continue
         if not match.group("prefix"):
-            current = match.group("name")
+            current = VIRTUAL if "(group:" in match.group("rest") else match.group("name")
             out.setdefault(current, [])
+            if current == VIRTUAL:
+                out[VIRTUAL].append(match.group("name"))
         elif current is not None:
             out[current].append(match.group("name"))
     return out
@@ -69,6 +75,7 @@ def read(context, commands, results):
             if isinstance(t, dict))] if url for o in [origin(url)] if o})
         tree = answers[(folder, "tree")]
         trees = _tree(tree["stdout"]) if tree["returncode"] == 0 else {}
+        virtual = trees.pop(VIRTUAL, None)
         for name in sorted(set(local) | set(trees)):
             unit_root = local.get(name, folder)
             covered.add(unit_root)
@@ -79,6 +86,11 @@ def read(context, commands, results):
             if tree["returncode"] == 0:  # the edges between units come from `uv tree` alone
                 unit["depends_on"] = sorted(inner)
             units.append(unit)
+        if virtual is not None and folder not in local.values():  # the root names no package: one unit, with no name
+            covered.add(folder)
+            units.append({"kind": "python-project", "root": folder, "registries": registries,
+                          "manifest": "pyproject.toml" if folder == "." else f"{folder}/pyproject.toml",
+                          "depends_on": sorted({d for d in virtual if d in local or d in trees})})
         members = sorted(v for v in local.values() if v != folder)
         if members:
             workspaces.append({"tool": "uv", "root": folder, "members": members})
