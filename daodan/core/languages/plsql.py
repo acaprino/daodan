@@ -17,7 +17,7 @@ grammar and no node for package / package body / type body (ERROR in 140 of 140
 PL/SQL files and 320 of 346 SQL files; 13 of the 22 annotated objects against the
 regex's 21); sqlglot (already a product dependency) reads 0 PL/SQL files (139 of
 140 ParseError); ANTLR grammars-v4 was not run. Subprogram start lines use
-`^[ \t]*`, not `^\s*`, which would swallow the blank lines before them.
+`^[ \t]*`, not `^\\s*`, which would swallow the blank lines before them.
 
 PL/SQL has no real "imports", but `%TYPE` and `%ROWTYPE` references identify
 implicit type dependencies; we surface them as imports for the dependency
