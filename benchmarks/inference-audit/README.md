@@ -1027,6 +1027,20 @@ Lo snapshot passa al lettore le macro dei file con cui un file condivide un'unit
 | tinyxml2 `9148bdf719e9` | invariato: fatti per 3 file su 4 (`xmltest.cpp:336` diviso da un `#if`); nessuna chiamata risolta per include, perché le funzioni libere stanno nel namespace `tinyxml2` o nei corpi dei membri |
 | cosa resta | 9 file per un `#if` che divide un'istruzione (`gzlib.c:187`, `inflate.c:196`, `infback.c:45`, `puff.c:494`, `miniunz.c:630`, `unzip.c:1897`, `deflate.c:184`, una funzione di `trees.c` e una di `zip.c`); 3 per parole di un compilatore in un ramo spento (`ioapi.h:87`, `zutil.h:98`, `testzlib.c:20`). Per entrambi serve il ramo che il build sceglie, cioè l'indice |
 
+### 27 novembre 2026, toolchain C e C++ in archivi sull'immagine unica (T2.B.11)
+
+`clang_toolchain.py`: grafo di zlib e tinyxml2 da `debian:trixie-slim` senza apt, con gcc, g++, libc6-dev e make di noble scompattati da archivi verificati in un sysroot, contro il controllo (l'indice del 14 novembre, build-essential di apt, letto col codice di oggi). Corsa `fc-01M8EZ70HS2AXN6YCS4NB1K4BQ`, col codice del commit che porta questo risultato; risultato in `results/clang-toolchain.json`. Prima della corsa, due correzioni al banco: `adapters/clang.py` `SyntaxSnapshot.computed` (che `code_graph.build` chiede da `334ea4d96`; risponde «nessun callee calcolato», come il 14 novembre) e un container per corsa (`single_use_containers`: un container riusato trovava la toolchain già scompattata).
+
+| Parametro | Valore |
+| --- | --- |
+| toolchain | 51 pacchetti noble dello snapshot `20261114T000000Z` (43 assenti dalla base), alle versioni del 14 novembre (`versions_as_stored`); scaricati 71,1 MiB, scompattati 248,7 MiB; CMake 3.28.3 143,1 MiB; scip-clang v0.4.1 142,2 MiB; 103,6 s |
+| zlib | configure, build e indice con codice 0, nessun errore di scip-clang; 8,8 s. Contro il controllo: buchi (2.383) e file mancanti (42) uguali; nodi 3 solo nel controllo e 1 solo nel nuovo; archi 78 solo nel controllo e 94 solo nel nuovo (14.137 contro 14.153) |
+| tinyxml2 | come zlib, 6,1 s. Buchi (145) e file mancanti (1) uguali; nodi 3 e 3, archi 8 e 8 diversi |
+| le righe diverse | solo le macro delle intestazioni proprie di GCC (`stddef.h:401` e `:404`, `stdarg.h:50` e `:52`): scip-clang le nomina col percorso dell'installazione di GCC, che nel sysroot è `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/…` invece di `/usr/lib/gcc/…`; il simbolo cambia, e in tinyxml2 `stdarg.h` perde il pacchetto `libgcc-13-dev` che il controllo gli dava |
+| controllo contro il salvato | nodi, buchi e file mancanti uguali; ogni arco ha in più il campo `target`, che il codice scrive dopo il 14 novembre: deriva del codice, non della toolchain |
+
+Esito: righe non uguali, quindi `T2.B.12` non sposta C e C++ sull'immagine unica.
+
 ## 14 novembre 2026, fonti del programma intero: JavaScript e TypeScript
 
 Accanto al grafo letto dall'indice SCIP ci sono due seconde fonti, ciascuna in un suo adapter con la stessa forma

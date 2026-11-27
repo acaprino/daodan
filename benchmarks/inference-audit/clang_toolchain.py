@@ -340,8 +340,9 @@ def compare(old: dict, new: dict, examples: int = 15) -> dict:
 # The run
 
 
-# 4 cores and 4 GiB for at most 20 minutes cost at most 0.08 USD; the stored runs peaked at 402 MB.
-@app.function(cpu=4, memory=4096, timeout=1200, volumes={"/results": volume})
+# 4 cores and 4 GiB for at most 20 minutes cost at most 0.08 USD; the stored runs peaked at 402 MB. A container per
+# run: the toolchain is unpacked into fixed folders.
+@app.function(cpu=4, memory=4096, timeout=1200, volumes={"/results": volume}, single_use_containers=True)
 def prove(cases: list[str]) -> dict:
     import certifi
     os.environ["SSL_CERT_FILE"] = certifi.where()
