@@ -1667,3 +1667,20 @@ Risultati (corse `fc-01M8FNA7V3WNVE6BXQXE9YK7WG` e `fc-01M8FNA7XDXYWTHK5K5TS23NG
 - La cache del linguaggio funziona e rende: chi da 34 a 3 s, tududi da 183 a 81 s; su tududi il resto è la lettura dell'indice tenuto e la costruzione del grafo, che la cache non evita.
 - Il sottoinsieme non dà il grafo intero, in nessuno dei due linguaggi. Su chi le chiamate di `middleware` ai metodi di interfaccia del pacchetto radice (`Router#Get`, `Routes#Match`, `Router#Use`) restano senza definizione: scip-go, coi pacchetti nominati, le scrive con un simbolo che l'indice tenuto non definisce. Su tududi i documenti rifatti perdono occorrenze (12.099 `no-occurrence`) e legami fra file. Il guadagno di tempo è nullo su chi e del 25% su tududi. Esito: il sottoinsieme si spegne per Go e TypeScript (`SUBSET = False`), resta la cache del linguaggio.
 - Lo snapshot riletto da capo dopo la modifica costa 3,6 s su chi e 228,7 s su tududi (`read_project` senza lo snapshot precedente: il prodotto, in `refresh_working`, riusa le letture).
+
+## 28 novembre 2026, passaggio staccato e `self.metodo()` rimisurati (T2.B.18)
+
+Fonte del difetto: solo la nota di `3b856ab` (17 novembre), un passaggio staccato su quattro chiuso dopo circa 6 minuti senza store e 154 chiamate `self.m()` senza arco. `modal_detached.py`: otto container, ognuno con il codice di Daodan (`daodan/`, senza i test), il suo snapshot (`snapshot.py write --no-engine --no-index`), poi `engine_pass.ensure_edges` (il figlio staccato del prodotto, `-X faulthandler`, log accanto allo snapshot) interrogato ogni 5 s fino alla fine o a 1.800 s; i container dei motori nella Sandbox Modal del benchmark della pipeline. Le `self.m()` sono i riferimenti `call` Python dello snapshot con parti `self` e un nome, cercati per id nello store. `modal deploy benchmarks/inference-audit/modal_detached.py`, `python benchmarks/inference-audit/modal_detached.py spawn`, `fetch`; risultato `results/detached-pass.json` (snapshot, store e log di ogni corsa sul volume, `inference-audit/detached/<n>.tar.gz`). Codice del prodotto di `005f20e`.
+
+| Misura | Valore |
+| --- | --- |
+| passaggi chiusi `fresh` | 8 su 8 (C#, JavaScript, Python, fogli di stile; Go, Java, Kotlin `unavailable`: nessuna build nella pre-mappa) |
+| chiusi senza store, oltre il limite | 0, 0 |
+| durata del passaggio | da 1.238,6 a 1.601,3 s; snapshot da 340 a 433 s a parte |
+| durata per stage (corsa 7) | scip-python 956,2 s (indicizzatore 66,7 s, 1.644 MB), scip-typescript 163,5 s, scip-dotnet 56,8 s, fogli di stile 36,5 s |
+| chiamate `self.m()` | 1.141 in ogni corsa: 1.127 con arco, 14 buchi con causa, 0 senza riga |
+
+- Il difetto non si riproduce: nessun passaggio si chiude senza store e nessuno supera il limite. I 14 buchi sono metodi della libreria standard ereditati (`send_response`, `send_header`, `end_headers` di `http.server` in `core/visual.py`, `get_starttag_text` di `html.parser` in `core/indexers/css.py`): Pyright li lega, scip-python non nomina nulla lì, e il buco lo dice. Nessuna correzione.
+- Una prima serie (5 corse su 8 `failed`) girava su container senza PyYAML: gli stage di scip-typescript e dei fogli di stile, che uv fa girare sui pacchetti dell'interprete, cadevano su `import yaml` (`preparation._node_local`). Era l'immagine del benchmark, che ora installa `daodan/core/requirements.txt`; le corse riportate sono tutte su quella immagine.
+- Lo stage Python è il più lungo: 956 s, di cui 67 dell'indicizzatore; il resto (installazioni al primo uso, cause dei buchi, grafo) non è misurato a parte.
+
