@@ -52,6 +52,8 @@ sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
+# The pipeline benchmark's Modal Sandboxes, where `--change` runs the indexers that build in a container.
+PIPELINE = HERE.parents[1] / "benchmarks/project-model/modal_pipeline.py" if LOCAL else Path("/pm/modal_pipeline.py")
 AUDIT = ("modal_audit.py", "modal_scip.py", "plugin_scripts.py", "lang_python.py")
 # The cases `lang_python.py` keeps on the volume: its work folder (checkout, copy, snapshot) and its case there.
 KEPT = {"python-semver": ("graph-python/semver-plugin/work.tar.gz", "semver")}
@@ -76,11 +78,12 @@ def _image():
     """The base system: each indexer module downloads what it runs (`indexers/runtime.py`)."""
     image = (
         modal.Image.debian_slim(python_version="3.13")
-        .apt_install("git", "ca-certificates")
+        .apt_install("git", "ca-certificates", "xz-utils")
         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "protobuf==7.36.2")
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_dir(HERE / "adapters" if LOCAL else Path("/audit/adapters"), "/audit/adapters",
                        ignore=["**/__pycache__/**"])
+        .add_local_file(PIPELINE, "/pm/modal_pipeline.py")
     )
     for name in AUDIT:
         image = image.add_local_file(HERE / name if LOCAL else Path("/audit") / name, f"/audit/{name}")
@@ -316,38 +319,42 @@ CHANGES = {
                "function dayStartUTC(dateString, userTimezone) {\n"
                "    return dateStringToUTC(dateString, userTimezone, 'start');\n}\n\n"),
 }
-# One stage in its own interpreter, so that its children's peak (`RUSAGE_CHILDREN`) is of that stage alone: the
-# seconds, the report, the `subset` of each indexer run (None: the whole language; no run: the cache), the peaks.
-STEP = """
-import importlib, json, pathlib, resource, sys, time
-sys.path.insert(0, sys.argv[1])
-import resolve_edges as rx
-spec = next(spec for spec in rx.ENGINES if spec.name == sys.argv[2])
-module = importlib.import_module(f"indexers.{spec.indexer}")
-original, runs = module.index, []
-def counting(*args, **kwargs):
-    runs.append(kwargs.get("subset"))
-    return original(*args, **kwargs)
-module.index = counting
-begun = time.time()
-report = rx.index_stage(spec, *map(pathlib.Path, sys.argv[3:6]))
-print(json.dumps({"seconds": round(time.time() - begun, 1), "runs": runs,
-                  "report": {key: report.get(key) for key in ("available", "engine", "indexer", "languages", "reason")},
-                  "children_mb": round(resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024),
-                  "self_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)}))
-"""
+def _on_modal() -> None:
+    """An indexer that builds in a container runs in the pipeline benchmark's Modal Sandbox (`engine_on_modal`);
+    the hosts the project declares are taken as approved (`egress.preflight`): the measure is of the index, not of
+    the approval."""
+    sys.path.insert(0, "/pm")
+    import container
+    import egress
+    import modal_pipeline
+    modal_pipeline.engine_on_modal(container)
+    egress.preflight = lambda project, hosts: ([], [])
 
 
 def _step(spec_name: str, manifest: Path, target: Path, store: Path) -> dict:
-    import subprocess
-    done = subprocess.run([sys.executable, "-c", STEP, SCRIPTS, spec_name, str(manifest), str(target), str(store)],
-                          capture_output=True, text=True, timeout=1500)
-    if done.returncode:
-        return {"error": done.returncode, "stderr_tail": done.stderr[-3000:]}
-    out = json.loads(done.stdout.strip().splitlines()[-1])
-    out["runs"] = [{"subset": None} if subset is None else {"subset": len(subset), "files": subset[:30]}
-                   for subset in out["runs"]]
-    return out
+    """One stage: its seconds, its report, the `subset` of each indexer run (None: the whole language; no run: the
+    cache), the indexer's peak (`peak_mb` of its report: it runs in a sandbox, not as a child of this process)."""
+    import time
+    import resolve_edges as rx
+    spec = next(spec for spec in rx.ENGINES if spec.name == spec_name)
+    module = importlib.import_module(f"indexers.{spec.indexer}")
+    original, runs = module.index, []
+
+    def counting(*args, **kwargs):
+        subset = kwargs.get("subset")
+        runs.append({"subset": None} if subset is None else {"subset": len(subset), "files": subset[:30]})
+        return original(*args, **kwargs)
+
+    module.index = counting
+    begun = time.time()
+    try:
+        report = rx.index_stage(spec, manifest, target, out=store)
+    except Exception as error:  # noqa: BLE001 - the stage's failure is the step's outcome
+        return {"error": f"{type(error).__name__}: {error}", "runs": runs}
+    finally:
+        module.index = original
+    return {"seconds": round(time.time() - begun, 1), "runs": runs,
+            "report": {key: report.get(key) for key in ("available", "engine", "indexer", "languages", "reason")}}
 
 
 @app.function(cpu=4, memory=12288, timeout=3600, volumes={"/results": volume})
@@ -363,6 +370,7 @@ def change_case(name: str) -> dict:
     code = plugin_scripts.code_sha256()
     print("code", code, flush=True)
     started = time.time()
+    _on_modal()
     work, target, manifest, _answers, commit, _private = _prepare(name)
     # The snapshot read again by this code, so that only the change moves a digest between the steps.
     snapshot.read_project(target, manifest)
@@ -392,6 +400,9 @@ def change_case(name: str) -> dict:
     changed = step("changed")
     shutil.rmtree(manifest.parent / "index-cache", ignore_errors=True)
     whole = step("changed_whole")
+    if not (changed.is_file() and whole.is_file()):
+        result["stores"] = {"error": "a step wrote no store"}
+        return _save(name, result, started, "incremental")
     changed_rows, whole_rows = _rows(changed), _rows(whole)
     result["stores"] = {"equal": changed_rows == whole_rows, "changed": _counts(changed),
                         "differences": {table: {"only_changed": len(set(changed_rows[table]) - set(whole_rows[table])),
@@ -456,7 +467,7 @@ if __name__ == "__main__":
                 json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
             print(name, json.dumps({"stores": result.get("stores"), "snapshot_seconds": result.get("snapshot_seconds"),
                                     "steps": {label: {spec: {key: value.get(key) for key in (
-                                        "seconds", "runs", "children_mb", "self_mb", "error")}
+                                        "seconds", "runs", "error")}
                                         for spec, value in specs.items()}
                                         for label, specs in result.get("steps", {}).items()}}))
     else:

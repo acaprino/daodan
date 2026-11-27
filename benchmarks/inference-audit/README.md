@@ -1643,7 +1643,7 @@ Stesso `Index`, quindi stesso grafo, su tutti i 15 indici. La lettura di tududi 
 
 ## 27 novembre 2026, indice incrementale su chi e tududi (T2.B.5)
 
-`modal_stage.py spawn --change` fa girare, per ogni stage di indicizzatore del caso e ciascuno in un interprete suo (picco dei figli, `ru_maxrss`, di quello stage solo): lo stage intero senza `index-cache/`, lo stesso senza cambiamenti (cache del linguaggio, `T2.B.3`), lo stage dopo la modifica a mano (file rifatti, `subset` di `T2.B.4`) e lo stage intero sulla copia cambiata senza cache, il cui store deve essere uguale riga per riga a quello incrementale. Lo snapshot si rilegge col codice del passo prima della prima corsa, e dopo la modifica (secondi annotati a parte).
+`modal_stage.py spawn --change` fa girare, per ogni stage di indicizzatore del caso, con l'indicizzatore nella Sandbox Modal del benchmark della pipeline (`modal_pipeline.engine_on_modal`, come `container.run_in_container`; picco = `peak_mb` dell'indicizzatore, che non è un figlio del processo) e gli host dichiarati presi per approvati: lo stage intero senza `index-cache/`, lo stesso senza cambiamenti (cache del linguaggio, `T2.B.3`), lo stage dopo la modifica a mano (file rifatti, `subset` di `T2.B.4`) e lo stage intero sulla copia cambiata senza cache, il cui store deve essere uguale riga per riga a quello incrementale. Lo snapshot si rilegge col codice del passo prima della prima corsa, e dopo la modifica (secondi annotati a parte).
 
 | Parametro | Valore |
 | --- | --- |
