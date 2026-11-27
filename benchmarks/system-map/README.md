@@ -276,14 +276,14 @@ A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo n
 
 ### Campione, domande e protocollo cieco del refactoring (`T0.B.4`, 27 novembre 2026)
 
-**Campione.** `real-bank-of-anthos` (`../project-model/fixtures/real-bank-of-anthos/`): `system.json` (44 nodi, 27 flussi, 158 frecce) e `graph.json`, legati al commit di `source.json`, `db35fea9fd090150e2398106aadb475576f80d94`. Si controlla con `python reference.py check ../project-model/fixtures/real-bank-of-anthos/system.json CLONE`, mai con `pin`, che riscriverebbe il file.
+**Campione.** `real-bank-of-anthos` (`../project-model/fixtures/real-bank-of-anthos/`): `system.json` (44 nodi, 27 flussi, 158 frecce) e `graph.json`, legati al commit di `source.json`, `db35fea9fd090150e2398106aadb475576f80d94`. Si controlla con `python reference.py check ../project-model/fixtures/real-bank-of-anthos/system.json CLONE`, mai con `pin`, che riscriverebbe il file. Esito del 27 novembre 2026 su un clone a quel commit: `problems: []`, `notes: []` (44 nodi, 14 lacune).
 
 **Domande verificate.** In `../project-model/fixtures/real-bank-of-anthos/questions.json`: un sito di chiamata per tipo, con `at`/`has` del sito e delle destinazioni attese, lette sul sorgente al commit senza eseguirlo.
 
 | Tipo | Sito | Destinazioni attese |
 | --- | --- | --- |
 | callback | `src/ledger/balancereader/.../LedgerReader.java:135` (`callback.processTransaction`) | la lambda passata a `startWithCallback` in `BalanceReaderController.java:81` |
-| overload | nessuno | il progetto non ha metodi né costruttori sovraccaricati; i soli siti con sovraccarico vanno a librerie, fuori dal progetto |
+| overload | nessuno | il progetto non ha metodi né costruttori sovraccaricati; i soli siti con sovraccarico vanno a librerie, fuori dal progetto. **Decisione del proprietario (27 novembre 2026):** l'overload si misura sulle fixture di `T2.A` (`tests/fixtures/code-graph/`: Python, Java, Kotlin, C++ e TypeScript), non su questo campione |
 | dispatch dinamico | `src/frontend/frontend.py:145` (`executor.submit`) | `TracedThreadPoolExecutor.submit`, `src/frontend/traced_thread_pool_executor.py:34` (override di `ThreadPoolExecutor.submit`) |
 
 **Quota nascosta.** «Pagamento a un contatto» resta sempre visibile (serve al Cancello T2). Gli altri 26 flussi, ordinati per `name`, vanno a `random.Random(2026).sample(nomi, 9)`: i 9 estratti sono nascosti, un terzo dei 27; visibili 18. L'elenco non si scrive: si ricalcola con la stessa regola solo al Cancello T3; altrove se ne scrivono solo i totali. Il riferimento resta in chiaro: il nascondimento è una regola di condotta di chi valuta e corregge, non un meccanismo.
