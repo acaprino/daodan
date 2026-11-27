@@ -400,10 +400,12 @@ def change_case(name: str) -> dict:
     changed = step("changed")
     shutil.rmtree(manifest.parent / "index-cache", ignore_errors=True)
     whole = step("changed_whole")
-    if not (changed.is_file() and whole.is_file()):
-        result["stores"] = {"error": "a step wrote no store"}
+    import sqlite3
+    try:
+        changed_rows, whole_rows = _rows(changed), _rows(whole)
+    except sqlite3.Error as error:  # a step wrote no store: its report says why
+        result["stores"] = {"error": f"{type(error).__name__}: {error}"}
         return _save(name, result, started, "incremental")
-    changed_rows, whole_rows = _rows(changed), _rows(whole)
     result["stores"] = {"equal": changed_rows == whole_rows, "changed": _counts(changed),
                         "differences": {table: {"only_changed": len(set(changed_rows[table]) - set(whole_rows[table])),
                                                 "only_whole": len(set(whole_rows[table]) - set(changed_rows[table]))}
