@@ -372,10 +372,13 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
     # put it in `node_modules` (`node_prepare`); its `--ignore-scripts` keeps the packages' lifecycle scripts off
     "lerna": {"marks": ("lerna.json",), "family": "lerna", "error": "lerna (ERR!|error)", "hosts": (),
               "line": "node_modules/.bin/lerna bootstrap --ignore-scripts"},
-    # `unlocked`: the restore of a folder that names the manager (`packageManager`) and has no lockfile yet
+    # `unlocked`: the restore of a folder that names the manager (`packageManager`) and has no lockfile yet. pnpm's
+    # `strictDepBuilds` (pnpm.io/settings/build, on from pnpm 11) ends with ERR_PNPM_IGNORED_BUILDS an install that left
+    # a dependency's build script unrun, its packages installed: here the scripts are off on purpose, so it is off too
     "pnpm": {"marks": ("package.json",), "family": "node", "locks": ("pnpm-lock.yaml",), "error": "ERR_PNPM|ERROR",
-             "before": COREPACK, "hosts": (), "line": "corepack pnpm install --frozen-lockfile --ignore-scripts",
-             "unlocked": "corepack pnpm install --no-frozen-lockfile --ignore-scripts"},
+             "before": COREPACK, "hosts": (),
+             "line": "corepack pnpm install --frozen-lockfile --ignore-scripts --config.strict-dep-builds=false",
+             "unlocked": "corepack pnpm install --no-frozen-lockfile --ignore-scripts --config.strict-dep-builds=false"},
     "yarn": {"marks": ("package.json",), "family": "node", "locks": ("yarn.lock",), "before": COREPACK,
              "error": "^error|YN0[0-9]+: .*Error", "hosts": ("repo.yarnpkg.com",),  # corepack: Yarn 2 and later
              "line": "if [ -f .yarnrc.yml ]; then corepack yarn install --immutable --mode=skip-build;"
