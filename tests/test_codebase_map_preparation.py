@@ -232,35 +232,39 @@ def test_pnpm_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
 @pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real pnpm, on Modal (tests/modal_pytest.py)")
 @pytest.mark.parametrize("pnpm", [None, "9.15.9", "10.34.9", "11.29.0", "12.23.0"])
 def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap(tmp_path, monkeypatch, pnpm):
-    """hono-open-api-starter: pnpm 11 and later end an install that leaves a dependency's build script unrun with
-    ERR_PNPM_IGNORED_BUILDS (`strictDepBuilds`, pnpm.io/settings/build), the packages installed. The restore runs
-    without scripts on purpose, so the line turns that setting off: each pnpm installs, none is a gap; without the
-    setting, pnpm 11 and later fail (`None`: the pnpm corepack takes when the project names none)."""
+    """hono-open-api-starter: pnpm 11 and later end an install that leaves a dependency's build script unapproved,
+    so unrun, with ERR_PNPM_IGNORED_BUILDS (`strictDepBuilds`, pnpm.io/settings/build), the packages installed; the
+    install without scripts that follows, over the same `node_modules`, says it again. The preparation's line
+    (`scripts`, as `node_prepare`'s) turns that setting off, approving no build: each pnpm installs, no gap; without
+    the setting, pnpm 11 and later leave both gaps (`None`: the pnpm corepack takes when the project names none)."""
     import subprocess
     monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
-    work = tmp_path / "app"
-    work.mkdir()
-    manifest = {"name": "app", "version": "1.0.0", "dependencies": {"esbuild": "0.25.12"}}  # its postinstall script
-    if pnpm:
-        manifest["packageManager"] = f"pnpm@{pnpm}"
-    (work / "package.json").write_text(json.dumps(manifest), encoding="utf-8")
     node = Path(shutil.which("node")).resolve().parent  # corepack ships beside Node
     env = {**os.environ, "PATH": f"{node}:{os.environ['PATH']}", "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
            "COREPACK_HOME": str(tmp_path / "corepack")}
+    manifest = {"name": "app", "version": "1.0.0", "dependencies": {"esbuild": "0.25.12"}}  # its postinstall script
+    if pnpm:
+        manifest["packageManager"] = f"pnpm@{pnpm}"
 
-    def run(line):
-        return subprocess.run(["sh", "-c", line], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=300)
+    def run(line, folder):
+        (tmp_path / folder).mkdir()
+        (tmp_path / folder / "package.json").write_text(json.dumps(manifest), encoding="utf-8")
+        locked = subprocess.run(["sh", "-c", f"cd {folder} && corepack pnpm install --lockfile-only --ignore-scripts"],
+                                cwd=tmp_path, env=env, capture_output=True, text=True, timeout=300)
+        assert locked.returncode == 0, locked.stdout + locked.stderr
+        return subprocess.run(["sh", "-c", line], cwd=tmp_path, env=env, capture_output=True, text=True,
+                              timeout=900).stderr
 
-    locked = run("cd app && corepack pnpm install --lockfile-only --ignore-scripts")
-    assert locked.returncode == 0, locked.stdout + locked.stderr
-    version = run("cd app && corepack pnpm --version").stdout.strip()
-    line = preparation.restore("pnpm", ["app"])
-    done = run(line)
-    assert preparation.restore_gaps(done.stderr) == [], (version, done.stderr)
-    assert (work / "node_modules" / "esbuild" / "package.json").is_file()
-    if int(version.split(".")[0]) >= 11:  # the case: the line without the setting fails
-        (work / "node_modules").rename(tmp_path / "installed")
-        [gap] = preparation.restore_gaps(run(line.replace(" --config.strict-dep-builds=false", "")).stderr)
+    line = preparation.restore("pnpm", ["app"], scripts=True)
+    said = run(line, "app")
+    version = subprocess.run(["sh", "-c", "cd app && corepack pnpm --version"], cwd=tmp_path, env=env,
+                             capture_output=True, text=True, timeout=300).stdout.strip()
+    assert (preparation.restore_gaps(said), preparation.generation_gaps(said)) == ([], []), (version, said)
+    assert (tmp_path / "app" / "node_modules" / "esbuild" / "package.json").is_file()
+    if int(version.split(".")[0]) >= 11:  # the case: the line without the setting
+        said = run(line.replace(" --config.strict-dep-builds=false", "").replace("'app'", "'before'"), "before")
+        assert "DAODAN-GENERATE-FAILED pnpm before" in said and "ERR_PNPM_IGNORED_BUILDS" in said, (version, said)
+        [gap] = preparation.restore_gaps(said)
         assert "ERR_PNPM_IGNORED_BUILDS" in gap["detail"], (version, gap)
 
 
