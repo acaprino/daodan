@@ -1,7 +1,7 @@
 """The .NET source of the pre-map: MSBuild evaluations, recorded once in a Linux container, read into units.
 
-The answers are in `tests/fixtures/premap/dotnet/<case>.json`, captured with the .NET SDK 10.0.404 in
-`buildpack-deps:noble` from the project beside them (`tests/fixtures/premap/dotnet/<case>/`).
+The answers are in `tests/fixtures/premap/dotnet/<case>.json`, captured with the .NET SDK 10.0.404 on Modal
+(`tests/fixtures/premap/dotnet/record.py`) from the project beside them (`tests/fixtures/premap/dotnet/<case>/`).
 """
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / "daodan/core"))
 import premap  # noqa: E402
 from premap import dotnet  # noqa: E402
 import snapshot  # noqa: E402
+import technologies  # noqa: E402
 
 ANSWERS = Path(__file__).with_name("fixtures") / "premap" / "dotnet"
 LABEL = "dotnet@10.0.404"
@@ -88,3 +89,29 @@ def test_the_feeds_a_nuget_config_declares_are_registries_of_the_projects_below_
     units = {u["name"]: u for u in record["units"] if u["kind"] == "dotnet-project"}
     assert units["App"]["registries"] == ["https://nuget.corp.example"]
     assert units["Lib"]["registries"] == ["https://lib.example"]
+
+
+def test_a_package_directory_packages_props_versions_is_one_entry_used_by_each_project(tmp_path):
+    """Central package management: MSBuild's evaluation of each project holds the `PackageVersion` its reference takes and
+    the file that defines it; Serilog is one package, declared where its version is written and used by both projects.
+    Polly's reference in Api writes its own version (`VersionOverride`): the project declares it."""
+    readers = tuple(s for s in premap.SOURCES if not hasattr(s, "commands"))
+    record = build(tmp_path, "central-packages", sources=(*readers, dotnet))
+    serilog = [p for p in record["packages"] if p["name"] == "Serilog"]
+    assert [(p["declared_in"], p["version"], p["used_in"]) for p in serilog] == [
+        ("Directory.Packages.props#L6", "4.1.0", ["src/Api/Api.csproj#L7", "src/Core/Core.csproj#L6"])]
+    assert LABEL in serilog[0]["sources"]
+    assert sorted((p["declared_in"], p.get("version"), p.get("used_in")) for p in record["packages"]
+                  if p["name"] == "Polly") == [("Directory.Packages.props#L7", "8.5.0", None),
+                                               ("src/Api/Api.csproj#L8", "8.4.0", None)]
+
+
+def test_each_project_that_uses_a_central_package_links_to_it(real_stack, tmp_path):
+    """The stack step gives each module the library at the line of its project file that uses it, with the central
+    version; the file that writes the version is no module's use."""
+    readers = tuple(s for s in premap.SOURCES if not hasattr(s, "commands"))
+    record = build(tmp_path, "central-packages", sources=(*readers, dotnet))
+    stack = technologies.ensure(tmp_path / "out" / "manifest.sqlite", facts=record)
+    links = sorted((lib["path"], lib["line"], lib.get("version")) for unit in stack["units"]
+                   for lib in unit["libraries"] if lib["name"] == "Serilog")
+    assert links == [("src/Api/Api.csproj", 7, "4.1.0"), ("src/Core/Core.csproj", 6, "4.1.0")]

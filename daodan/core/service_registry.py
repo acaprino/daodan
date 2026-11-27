@@ -127,14 +127,16 @@ def service_site(service: dict) -> tuple[str | None, int | None]:
 
 def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | None, int | None, str | None]]:
     """(ecosystem, name, path, line, version) from Step 1's `packages`, `services` and `docker_builds`; `version`,
-    the package fact's (as its manifest writes it), None for none and for an image."""
+    the package fact's (as its manifest writes it), None for none and for an image. A package a central file
+    declares is also at each file that uses it (`used_in`), with the central version: the module's link to it."""
     raw = facts.get("packages")
     if raw is None and "sources" not in facts:
         raw = package_facts(manifest)
     out: list[tuple[str, str, str | None, int | None, str | None]] = []
     for item in raw or ():
-        path, line = _split_declared_in(item.get("declared_in"))
-        out.append((item["ecosystem"], item["name"], path, line, item.get("version")))
+        for place in [item.get("declared_in"), *(item.get("used_in") or ())]:
+            path, line = _split_declared_in(place)
+            out.append((item["ecosystem"], item["name"], path, line, item.get("version")))
     seen = {("docker", declared_image(name), path) for eco, name, path, *_ in out if eco == "docker"}
     for service in facts.get("services") or ():
         if service.get("image"):

@@ -156,9 +156,67 @@ def _set(entry: dict, facet: str, field: str, key: str | None, value, source: st
         entry["_from"][where] = source
     elif (facet, where) == ("units", "registries"):  # each source states where some dependencies come from
         holder[name] = sorted({*holder[name], *value})
+    elif (facet, where) == ("packages", "used_in"):  # each source states some of the files that use the package
+        holder[name] = _places([*holder[name], *value])
+    elif (facet, where) == ("packages", "declared_in") and _same(facet, field, holder[name], value) and (
+            "#" in str(value) and "#" not in str(holder[name])):  # the same file, and its line
+        holder[name] = value
     elif not _same(facet, field, holder[name], value):
         entry.setdefault("conflicts", []).append({"field": where, "value": value, "source": source,
                                                   "kept_from": entry["_from"][where]})
+
+
+def _file(place) -> str:
+    return str(place or "").split("#", 1)[0]
+
+
+def _places(places: list[str]) -> list[str]:
+    """One place per file, the one with its line where a source gives it."""
+    out: dict[str, str] = {}
+    for place in places:
+        if "#" in place or _file(place) not in out:
+            out[_file(place)] = place
+    return sorted(out.values())
+
+
+def _used(packages: list[dict]) -> list[dict]:
+    """A package whose version a central file writes (`used_in`: the files of the units that name it, as the source
+    that resolves the version states them) is one entry: the entries of other sources at that central file join it,
+    and an entry at a file of its `used_in` is that unit's use of it, its line the use's line."""
+    def key(entry: dict, place) -> tuple:
+        return entry["ecosystem"], str(entry["name"]).casefold(), _file(place)
+
+    def fold(target: dict, entry: dict, places: list[str]) -> None:
+        target["used_in"] = _places([*target["used_in"], *places])
+        target["sources"] += [s for s in entry["sources"] if s not in target["sources"]]
+
+    central: dict[tuple, dict] = {}
+    for entry in packages:
+        if entry.get("used_in"):
+            central.setdefault(key(entry, entry["declared_in"]), entry)
+    if not central:
+        return packages
+    kept = []
+    for entry in packages:
+        target = central.get(key(entry, entry.get("declared_in")))
+        if target is None or target is entry:
+            kept.append(entry)
+            continue
+        target["declared_in"] = _places([target["declared_in"], entry["declared_in"]])[0]
+        if "version" not in target and entry.get("version"):
+            target["version"] = entry["version"]
+        if entry.get("conflicts"):
+            target.setdefault("conflicts", []).extend(entry["conflicts"])
+        fold(target, entry, entry.get("used_in") or [])
+    uses = {key(entry, place): entry for entry in kept for place in entry.get("used_in") or ()}
+    out = []
+    for entry in kept:
+        target = None if entry.get("used_in") else uses.get(key(entry, entry.get("declared_in")))
+        if target is None:
+            out.append(entry)
+        else:
+            fold(target, entry, [entry["declared_in"]])
+    return out
 
 
 def _add(facet: str, entries: list[dict], item: dict, source: str) -> None:
@@ -201,6 +259,8 @@ def join(parts: list[dict]) -> dict:
     for entries in out.values():
         for entry in entries:
             entry.pop("_from")
+    if out.get("packages"):
+        out["packages"] = _used(out["packages"])
     covers = {(kind, root): part["source"] for part in parts for kind, roots in (part.get("covers") or {}).items()
               for root in roots}
     kept, superseded = [], []
@@ -378,7 +438,7 @@ def binding_matches(manifest: Path, binding: dict) -> bool:
 
 
 def _inputs(digest, root, sources) -> str:
-    value = [digest, root, [label(s) for s in sources], SCHEMA]
+    value = [digest, root, [label(s) for s in sources], SCHEMA, "package-used-in-v1"]
     if cargo in sources:
         value.append("cargo-package-graph-v1")
     if renovate in sources:

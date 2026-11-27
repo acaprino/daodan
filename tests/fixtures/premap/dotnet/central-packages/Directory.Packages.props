@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Serilog" Version="4.1.0" />
+    <PackageVersion Include="Polly" Version="8.5.0" />
+  </ItemGroup>
+</Project>

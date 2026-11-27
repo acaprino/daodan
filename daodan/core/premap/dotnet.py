@@ -9,7 +9,11 @@ its folder, with the project file as manifest, the projects its `ProjectReferenc
 through a property only the evaluation expands), its `Compile` items' folders as source roots, its
 `OutputType` and target frameworks in `config`, and as registries the origins of the package sources NuGet restores
 it from: those of the nuget.config of each folder from the root down to the project's, read from the file, a
-`<clear />` dropping the ones above, a disabled source left out. An evaluation that failed is a `model_failed` gap.
+`<clear />` dropping the ones above, a disabled source left out. With central package management
+(`ManagePackageVersionsCentrally`), a `PackageReference` without a version of its own takes the `PackageVersion` of the
+same name the evaluation holds: one `packages` fact per package and file that defines it (each item's
+`DefiningProjectFullPath`), with its `Version` and, in `used_in`, the project files whose references take it. An
+evaluation that failed is a `model_failed` gap.
 """
 from __future__ import annotations
 
@@ -25,8 +29,8 @@ DOWNLOAD = (("https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.404/dotnet-sdk
              "577d0eb17fec33d029104c5c63a1ab0accc3e28776274abef2218dbac5af18d2109b5406d26b31d76f5c245215e3ba0926a94c20"
              "246c672c41847c9e1eb1dc50"),)  # sha512, as Microsoft publishes it
 PROJECTS = (".csproj", ".fsproj", ".vbproj")
-PROPERTIES = ("AssemblyName", "OutputType", "TargetFramework", "TargetFrameworks")
-ITEMS = ("ProjectReference", "Compile")
+PROPERTIES = ("AssemblyName", "OutputType", "TargetFramework", "TargetFrameworks", "ManagePackageVersionsCentrally")
+ITEMS = ("ProjectReference", "Compile", "PackageReference", "PackageVersion")
 ENV = {"DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1", "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
        "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1", "DOTNET_CLI_HOME": "/tmp/daodan-dotnet",
        "MSBUILDDISABLENODEREUSE": "1"}
@@ -61,7 +65,7 @@ def read(context, commands, results):
             continue
         evaluated[manifest] = json.loads(text)
     names = {m: (e["Properties"].get("AssemblyName") or PurePosixPath(m).stem) for m, e in evaluated.items()}
-    units = []
+    units, central = [], {}
     for manifest, data in evaluated.items():
         properties, items = data["Properties"], data.get("Items", {})
         sources = {p for item in items.get("Compile", []) for p in [rel(item["FullPath"])] if p}
@@ -75,7 +79,23 @@ def read(context, commands, results):
         units.append({"name": names[manifest], "kind": "dotnet-project", "root": _folder(manifest),
                       "manifest": manifest, "source_roots": sorted({_folder(s) for s in sources}),
                       "depends_on": sorted(edges), "config": config, **({"registries": feeds} if feeds else {})})
-    return {"facts": {"units": units} if units else {}, "gaps": gaps}
+        if (properties.get("ManagePackageVersionsCentrally") or "").lower() != "true":
+            continue
+        versions = {item["Identity"].casefold(): item for item in items.get("PackageVersion", [])}
+        for item in items.get("PackageReference", []):
+            written = versions.get(item["Identity"].casefold())
+            if written is None or item.get("Version") or item.get("VersionOverride"):
+                continue  # a version of its own: the project file declares the package
+            where, user = rel(written["DefiningProjectFullPath"]), rel(item["DefiningProjectFullPath"])
+            if where and user:
+                fact = central.setdefault((written["Identity"].casefold(), where), {
+                    "ecosystem": "nuget", "name": written["Identity"], "declared_in": where,
+                    **({"version": written["Version"]} if written.get("Version") else {}), "used_in": []})
+                if user not in fact["used_in"]:
+                    fact["used_in"].append(user)
+    packages = [{**fact, "used_in": sorted(fact["used_in"])} for fact in central.values()]
+    facts = {**({"units": units} if units else {}), **({"packages": packages} if packages else {})}
+    return {"facts": facts, "gaps": gaps}
 
 
 CONFIGS = ("nuget.config", "NuGet.config", "NuGet.Config")  # the names NuGet looks for on Linux

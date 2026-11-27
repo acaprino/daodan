@@ -1,0 +1,80 @@
+{
+ "versions": {
+  "dotnet": "10.0.404"
+ },
+ "image": "tests/modal_pytest.py",
+ "runs": [
+  {
+   "command": {
+    "tool": "dotnet",
+    "argv": [
+     "dotnet",
+     "msbuild",
+     "Api.csproj",
+     "-nologo",
+     "-getProperty:AssemblyName",
+     "-getProperty:OutputType",
+     "-getProperty:TargetFramework",
+     "-getProperty:TargetFrameworks",
+     "-getProperty:ManagePackageVersionsCentrally",
+     "-getItem:ProjectReference",
+     "-getItem:Compile",
+     "-getItem:PackageReference",
+     "-getItem:PackageVersion"
+    ],
+    "cwd": "src/Api",
+    "env": {
+     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+     "DOTNET_NOLOGO": "1",
+     "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+     "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
+     "DOTNET_CLI_HOME": "/tmp/daodan-dotnet",
+     "MSBUILDDISABLENODEREUSE": "1"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n  \"Properties\": {\n    \"AssemblyName\": \"Api\",\n    \"OutputType\": \"Exe\",\n    \"TargetFramework\": \"net8.0\",\n    \"TargetFrameworks\": \"\",\n    \"ManagePackageVersionsCentrally\": \"true\"\n  },\n  \"Items\": {\n    \"ProjectReference\": [],\n    \"Compile\": [\n      {\n        \"Identity\": \"Program.cs\",\n        \"FullPath\": \"/work/src/Api/Program.cs\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Program\",\n        \"Extension\": \".cs\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Api/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"1970-01-01 00:00:00.0000000\",\n        \"CreatedTime\": \"1970-01-01 00:00:00.0000000\",\n        \"AccessedTime\": \"1970-01-01 00:00:00.0000000\",\n        \"DefiningProjectFullPath\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.DefaultItems.props\",\n        \"DefiningProjectDirectory\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/\",\n        \"DefiningProjectName\": \"Microsoft.NET.Sdk.DefaultItems\",\n        \"DefiningProjectExtension\": \".props\"\n      }\n    ],\n    \"PackageReference\": [\n      {\n        \"Identity\": \"Serilog\",\n        \"FullPath\": \"/work/src/Api/Serilog\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Serilog\",\n        \"Extension\": \"\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Api/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"\",\n        \"CreatedTime\": \"\",\n        \"AccessedTime\": \"\",\n        \"DefiningProjectFullPath\": \"/work/src/Api/Api.csproj\",\n        \"DefiningProjectDirectory\": \"/work/src/Api/\",\n        \"DefiningProjectName\": \"Api\",\n        \"DefiningProjectExtension\": \".csproj\"\n      },\n      {\n        \"Identity\": \"Polly\",\n        \"VersionOverride\": \"8.4.0\",\n        \"FullPath\": \"/work/src/Api/Polly\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Polly\",\n        \"Extension\": \"\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Api/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"\",\n        \"CreatedTime\": \"\",\n        \"AccessedTime\": \"\",\n        \"DefiningProjectFullPath\": \"/work/src/Api/Api.csproj\",\n        \"DefiningProjectDirectory\": \"/work/src/Api/\",\n        \"DefiningProjectName\": \"Api\",\n        \"DefiningProjectExtension\": \".csproj\"\n      }\n    ],\n    \"PackageVersion\": [\n      {\n        \"Identity\": \"Serilog\",\n        \"Version\": \"4.1.0\",\n        \"FullPath\": \"/work/src/Api/Serilog\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Serilog\",\n        \"Extension\": \"\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Api/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"\",\n        \"CreatedTime\": \"\",\n        \"AccessedTime\": \"\",\n        \"DefiningProjectFullPath\": \"/work/Directory.Packages.props\",\n        \"DefiningProjectDirectory\": \"/work/\",\n        \"DefiningProjectName\": \"Directory.Packages\",\n        \"DefiningProjectExtension\": \".props\"\n      },\n      {\n        \"Identity\": \"Polly\",\n        \"Version\": \"8.5.0\",\n        \"FullPath\": \"/work/src/Api/Polly\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Polly\",\n        \"Extension\": \"\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Api/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"\",\n        \"CreatedTime\": \"\",\n        \"AccessedTime\": \"\",\n        \"DefiningProjectFullPath\": \"/work/Directory.Packages.props\",\n        \"DefiningProjectDirectory\": \"/work/\",\n        \"DefiningProjectName\": \"Directory.Packages\",\n        \"DefiningProjectExtension\": \".props\"\n      }\n    ]\n  }\n}\n",
+    "stderr": "",
+    "root": "/work"
+   }
+  },
+  {
+   "command": {
+    "tool": "dotnet",
+    "argv": [
+     "dotnet",
+     "msbuild",
+     "Core.csproj",
+     "-nologo",
+     "-getProperty:AssemblyName",
+     "-getProperty:OutputType",
+     "-getProperty:TargetFramework",
+     "-getProperty:TargetFrameworks",
+     "-getProperty:ManagePackageVersionsCentrally",
+     "-getItem:ProjectReference",
+     "-getItem:Compile",
+     "-getItem:PackageReference",
+     "-getItem:PackageVersion"
+    ],
+    "cwd": "src/Core",
+    "env": {
+     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+     "DOTNET_NOLOGO": "1",
+     "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+     "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
+     "DOTNET_CLI_HOME": "/tmp/daodan-dotnet",
+     "MSBUILDDISABLENODEREUSE": "1"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n  \"Properties\": {\n    \"AssemblyName\": \"Core\",\n    \"OutputType\": \"Library\",\n    \"TargetFramework\": \"net8.0\",\n    \"TargetFrameworks\": \"\",\n    \"ManagePackageVersionsCentrally\": \"true\"\n  },\n  \"Items\": {\n    \"ProjectReference\": [],\n    \"Compile\": [\n      {\n        \"Identity\": \"Clock.cs\",\n        \"FullPath\": \"/work/src/Core/Clock.cs\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Clock\",\n        \"Extension\": \".cs\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Core/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"1970-01-01 00:00:00.0000000\",\n        \"CreatedTime\": \"1970-01-01 00:00:00.0000000\",\n        \"AccessedTime\": \"1970-01-01 00:00:00.0000000\",\n        \"DefiningProjectFullPath\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.DefaultItems.props\",\n        \"DefiningProjectDirectory\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/\",\n        \"DefiningProjectName\": \"Microsoft.NET.Sdk.DefaultItems\",\n        \"DefiningProjectExtension\": \".props\"\n      }\n    ],\n    \"PackageReference\": [\n      {\n        \"Identity\": \"Serilog\",\n        \"FullPath\": \"/work/src/Core/Serilog\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Serilog\",\n        \"Extension\": \"\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Core/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"\",\n        \"CreatedTime\": \"\",\n        \"AccessedTime\": \"\",\n        \"DefiningProjectFullPath\": \"/work/src/Core/Core.csproj\",\n        \"DefiningProjectDirectory\": \"/work/src/Core/\",\n        \"DefiningProjectName\": \"Core\",\n        \"DefiningProjectExtension\": \".csproj\"\n      }\n    ],\n    \"PackageVersion\": [\n      {\n        \"Identity\": \"Serilog\",\n        \"Version\": \"4.1.0\",\n        \"FullPath\": \"/work/src/Core/Serilog\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Serilog\",\n        \"Extension\": \"\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Core/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"\",\n        \"CreatedTime\": \"\",\n        \"AccessedTime\": \"\",\n        \"DefiningProjectFullPath\": \"/work/Directory.Packages.props\",\n        \"DefiningProjectDirectory\": \"/work/\",\n        \"DefiningProjectName\": \"Directory.Packages\",\n        \"DefiningProjectExtension\": \".props\"\n      },\n      {\n        \"Identity\": \"Polly\",\n        \"Version\": \"8.5.0\",\n        \"FullPath\": \"/work/src/Core/Polly\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Polly\",\n        \"Extension\": \"\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Core/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"\",\n        \"CreatedTime\": \"\",\n        \"AccessedTime\": \"\",\n        \"DefiningProjectFullPath\": \"/work/Directory.Packages.props\",\n        \"DefiningProjectDirectory\": \"/work/\",\n        \"DefiningProjectName\": \"Directory.Packages\",\n        \"DefiningProjectExtension\": \".props\"\n      }\n    ]\n  }\n}\n",
+    "stderr": "",
+    "root": "/work"
+   }
+  }
+ ]
+}

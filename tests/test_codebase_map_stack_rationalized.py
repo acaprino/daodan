@@ -278,6 +278,23 @@ def test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_
     assert not units[":"]["libraries"]
 
 
+def test_a_package_of_the_version_catalog_links_to_each_module_that_uses_it(real_stack, tmp_path):
+    """One catalog entry used by two build scripts: each module has the library at its own line, with the catalog's
+    version; the build holding the catalog has none."""
+    record = _stack(tmp_path, {
+        "settings.gradle.kts": 'rootProject.name = "inventory"\ninclude(":domain", ":api")\n',
+        "gradle/libs.versions.toml": (
+            '[versions]\njackson = "2.18.1"\n\n[libraries]\n'
+            'jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }\n'),
+        "domain/build.gradle.kts": "dependencies {\n    implementation(libs.jackson.databind)\n}\n",
+        "api/build.gradle.kts": "dependencies {\n    implementation(libs.jackson.databind)\n}\n",
+    })
+    units = {u["name"]: u for u in record["units"]}
+    assert {name: [(lib["path"], lib["line"], lib.get("version")) for lib in units[name]["libraries"]]
+            for name in (":domain", ":api", ":")} == {
+        ":domain": [("domain/build.gradle.kts", 2, "2.18.1")], ":api": [("api/build.gradle.kts", 2, "2.18.1")], ":": []}
+
+
 def test_a_library_has_the_version_its_package_fact_states_and_none_where_the_manifest_writes_none(real_stack, tmp_path):
     """The declared requirement, never resolved: a range as package.json writes it, the catalog's version of the
     `libs.*` accessor the build script uses; a Git reference has none, and the key is absent."""

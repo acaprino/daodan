@@ -15,6 +15,7 @@ import premap  # noqa: E402
 import modules  # noqa: E402
 from pipeline import Context, Scan, Stack, events  # noqa: E402
 from premap import dotnet, gradle, jvm_files, maven, module_graph, project_files, renovate, requirements  # noqa: E402
+import service_registry  # noqa: E402
 import snapshot  # noqa: E402
 import technologies  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
@@ -252,9 +253,50 @@ def test_jvm_files_carry_pom_and_gradle_versions_and_the_catalog_s(tmp_path):
         ("maven", "org.junit.jupiter:junit-jupiter", kts): "5.11.0",
         ("maven", "com.squareup.okhttp3:okhttp", kts): None,
         ("maven", "io.x:y", kts): None,
-        ("maven", "io.ktor:ktor-server-core", kts): "3.0.0",
         ("maven", "org.flywaydb.flyway", "h/build.gradle"): "10.0.0",
     }
+
+
+def test_a_package_of_the_version_catalog_is_one_entry_used_by_each_build_script(tmp_path):
+    """The catalog writes the version: one package, declared at the catalog's line, used at each script's `libs.*`."""
+    project = tmp_path / "proj"
+    files = {
+        "settings.gradle.kts": 'rootProject.name = "inventory"\ninclude(":domain", ":api")\n',
+        "gradle/libs.versions.toml": (
+            '[versions]\njackson = "2.18.1"\n\n[libraries]\n'
+            'jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }\n'),
+        "domain/build.gradle.kts": "dependencies {\n    implementation(libs.jackson.databind)\n}\n",
+        "api/build.gradle.kts": "dependencies {\n    implementation(libs.jackson.databind)\n}\n",
+    }
+    for rel, text in files.items():
+        path = project / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(project, manifest)
+    record = premap.write(manifest)
+    assert [(p["declared_in"], p["version"], p["used_in"]) for p in record["packages"]
+            if p["name"] == "com.fasterxml.jackson.core:jackson-databind"] == [
+        ("gradle/libs.versions.toml#L5", "2.18.1", ["api/build.gradle.kts#L2", "domain/build.gradle.kts#L2"])]
+
+
+def test_the_join_folds_a_unit_s_entry_into_the_central_package_it_uses():
+    """Another source's entry at a file of `used_in` is that use (its line kept); its entry at the central file joins."""
+    model = {"ecosystem": "nuget", "name": "Serilog", "declared_in": "Directory.Packages.props", "version": "4.1.0",
+             "used_in": ["a/A.csproj", "b/B.csproj"]}
+    readers = [{"ecosystem": "nuget", "name": "Serilog", "declared_in": "Directory.Packages.props#L6", "version": "4.1.0"},
+               {"ecosystem": "nuget", "name": "serilog", "declared_in": "a/A.csproj#L7", "version": "4.1.0"},
+               {"ecosystem": "nuget", "name": "Serilog", "declared_in": "c/C.csproj#L3", "version": "3.0.0"}]
+    renovate_csproj = [{"ecosystem": "nuget", "name": "Serilog", "declared_in": "b/B.csproj"}]
+    joined = premap.join([{"source": "dotnet@1", "rank": "model", "facts": {"packages": [model]}},
+                          {"source": "project-files@1", "rank": "reader", "facts": {"packages": readers}},
+                          {"source": "renovate@1", "rank": "reader", "facts": {"packages": renovate_csproj}}])["packages"]
+    assert [(p["declared_in"], p.get("used_in"), p["sources"]) for p in joined] == [
+        ("Directory.Packages.props#L6", ["a/A.csproj#L7", "b/B.csproj"], ["dotnet@1", "project-files@1", "renovate@1"]),
+        ("c/C.csproj#L3", None, ["project-files@1"])]
+    assert service_registry.step1_packages(Path("unused"), {"packages": joined}) == [
+        ("nuget", "Serilog", "Directory.Packages.props", 6, "4.1.0"), ("nuget", "Serilog", "a/A.csproj", 7, "4.1.0"),
+        ("nuget", "Serilog", "b/B.csproj", None, "4.1.0"), ("nuget", "Serilog", "c/C.csproj", 3, "3.0.0")]
 
 
 def test_project_files_carry_the_project_s_version_or_the_central_one(tmp_path):
@@ -368,7 +410,7 @@ def test_model_sources_emit_packages_without_changing_recorded_commands(tmp_path
         inventory = Inv()
         stated = {}
 
-    assert dotnet.ITEMS == ("ProjectReference", "Compile")
+    assert dotnet.ITEMS == ("ProjectReference", "Compile", "PackageReference", "PackageVersion")
     assert [c["argv"][0] for c in maven.commands(Ctx())] == ["sh"]
     assert [c["tool"] for c in gradle.commands(Ctx())] == ["gradle"]
     assert renovate.commands(Ctx())[0]["tool"] == "renovate"

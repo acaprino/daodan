@@ -48,8 +48,8 @@ MATCHER_VERSION = 5  # Cache identity for recognition and attribution changes wi
 
 
 def _versions_only(rel: str | None) -> bool:
-    """A Gradle version catalog or .NET central package versions: a package there has its version, and the module
-    that uses it declares it in its own build file (`premap.jvm_files` reads `libs.*`), not the one holding the file."""
+    """A Gradle version catalog or .NET central package versions: a package there has its version, and the modules
+    that use it are its `used_in` (`service_registry.step1_packages`), not the one holding the file."""
     name = Path(rel or "").name
     return name.endswith(".versions.toml") or name == "Directory.Packages.props"
 

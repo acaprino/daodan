@@ -8,7 +8,8 @@ property of the same pom or a literal, its field the path in the pom with the pl
 `maven-compiler-plugin.configuration.source`). A value naming a property the pom does not define, and a Gradle
 build's Java version, which lives in build scripts only Gradle runs, are `toolchain_undeclared` gaps, unless the
 build's `gradle/gradle-daemon-jvm.properties` states it: its `toolchainVersion` and `toolchainVendor`. A `libs.*`
-accessor in a build script is the package `gradle/libs.versions.toml` of its build names, declared on that line (v2).
+accessor in a build script is the package `gradle/libs.versions.toml` of its build names: the catalog declares it, the
+script's line uses it (`used_in`, v5).
 """
 from __future__ import annotations
 
@@ -20,7 +21,7 @@ import xml.etree.ElementTree as ET
 from build_units import pom_version
 import confinement
 
-NAME, VERSION, RANK = "jvm-files", "daodan/premap/v4", "reader"
+NAME, VERSION, RANK = "jvm-files", "daodan/premap/v5", "reader"
 DAEMON = "gradle/gradle-daemon-jvm.properties"  # what `updateDaemonJvm` writes: the JDK a Gradle build's daemon runs on
 WRAPPERS = {"gradle": ("gradle/wrapper/gradle-wrapper.properties", r"gradle-([0-9][^-/]*)-(?:bin|all)\.zip$"),
             "maven": (".mvn/wrapper/maven-wrapper.properties", r"apache-maven-([0-9][^-/]*)-bin\.zip$")}
@@ -198,7 +199,8 @@ def _pom_packages(rel: str, text: str, own: set[str], packages: list[dict], seen
             add(group, fields.get("artifactId", ""), fields.get("version"))
 
 
-def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set, accessors: dict | None = None) -> None:
+def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set, accessors: dict | None = None,
+                     catalog: str | None = None) -> None:
     base = PurePosixPath(rel).name
 
     def add(name: str, number: int, version: str | None = None) -> None:
@@ -233,7 +235,10 @@ def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set, acces
                 add(m.group(1), number, m.group(2))
         for m in ACCESSOR.finditer(code) if accessors else ():
             for coord, version in _uses(accessors, m.group(1)):
-                add(coord, number, version)
+                if (coord.casefold(), rel) not in seen:  # the catalog's package, used on this line
+                    seen.add((coord.casefold(), rel))
+                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": catalog,
+                                     **({"version": version} if version else {}), "used_in": [f"{rel}#L{number}"]})
 
 
 def run(context):
@@ -284,6 +289,7 @@ def run(context):
             _pom_packages(rel, text, own, packages, seen_pkgs)
         elif base in ("build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts") or base.endswith(".versions.toml"):
             build = max((f for f in catalogs if f == "." or rel.startswith(f + "/")), key=len, default=None)
-            _gradle_packages(rel, context.inventory.text(rel), packages, seen_pkgs, catalogs.get(build))
+            _gradle_packages(rel, context.inventory.text(rel), packages, seen_pkgs, catalogs.get(build),
+                             CATALOG if build == "." else f"{build}/{CATALOG}")
     facts = {"units": units, "toolchains": toolchains, **({"packages": packages} if packages else {})}
     return {"facts": facts, "gaps": gaps}
