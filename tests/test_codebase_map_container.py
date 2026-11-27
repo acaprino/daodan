@@ -526,9 +526,14 @@ class FakeEngineTest(unittest.TestCase):
         rows = (self.out / container.RECORD_NAME).read_text(encoding="utf-8").splitlines()
         self.assertEqual(json.loads(rows[-1])["outcome"], "gap")
 
-    def test_an_engine_older_than_docker_28_is_a_gap_and_no_network_is_created(self):
-        """Podman's API (1.41), Kiri 0.2.0's (1.47), Docker 27's: none takes the host's address off the bridge."""
-        for said in ("1.47", "1.41", "linux", ""):
+    def test_an_engine_older_than_docker_28_prepares_on_the_network_without_the_option_and_says_the_gateway_is_open(
+            self):
+        """Podman's API (1.41), Kiri 0.2.0's (1.47), Docker 27's: none takes the host's address off the bridge. The
+        preparation runs on the internal network without the option, and a `gateway_open` gap says the host's
+        listeners are within reach; from API 1.48 (Docker 28) the option is there and no such gap."""
+        option = ["--opt", "com.docker.network.bridge.inhibit_ipv4=true"]
+        for said, isolated in (("1.47", False), ("1.41", False), ("linux", False), ("", False), ("1.48", True),
+                               ("1.51", True)):
             with self.subTest(said=said):
                 (self.state / "calls.jsonl").unlink(missing_ok=True)
                 fake = self.scratch / "fake_old.py"
@@ -537,11 +542,21 @@ class FakeEngineTest(unittest.TestCase):
                 with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
                     result = container.run_in_container(self.project, ["exit", "0"], prepare=["exit", "0"],
                                                         image="fake/runtime:1", out_dir=self.out, engine=old)
-                self.assertEqual(result["state"], "gap", result)
-                self.assertIn("cannot take the host's address off", result["cause"])
-                self.assertEqual(result["remedy"], "run the preparation with Docker Engine 28.0 or later")
-                self.assertEqual([call for call in self.calls() if call[:2] == ["network", "create"]], [])
-                self.assertFalse([call for call in self.created() if "--network" in call])
+                self.assertEqual(result["state"], "done", result)
+                [created] = [call for call in self.calls() if call[:2] == ["network", "create"]]
+                network = created[-1]
+                self.assertEqual(created, ["network", "create", "--internal", "--ipv6=false",
+                                           *(option if isolated else ()), network])
+                gaps = [gap for gap in result.get("gaps") or () if gap["kind"] == "gateway_open"]
+                if isolated:
+                    self.assertEqual(gaps, [])
+                    continue
+                [gap] = gaps
+                self.assertEqual((gap["engine"], gap["api"]), ("old", said or "unknown"))
+                self.assertIn("listen on every address are reachable", gap["detail"])
+                self.assertIn("Docker Engine 28.0", gap["remedy"])
+                _proxy, prepare, _execute = self.created()[-3:]
+                self.assertEqual(prepare[prepare.index("--network") + 1], network)
 
     # Guarantee 3: network closed during execution, open only to registries during preparation.
     def test_execution_has_no_network_and_preparation_reaches_only_the_proxy(self):
