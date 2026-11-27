@@ -872,6 +872,16 @@ def test_the_links_and_url_requirements_of_a_requirements_file_are_registries(tm
         "https://github.com", "https://pypi.example.org", "ssh://gitlab.example.com"]
 
 
+def test_a_requirement_path_outside_the_copy_is_refused_and_one_inside_is_unresolved(tmp_path):
+    """The preparation's rule (`preparation.refusal`): a path outside the copy or absolute is
+    `local_dependency_refused`; one inside the copy with no build unit there stays `dependency_unresolved`."""
+    extra = {"requirements-local.txt": "../outside/pkg\n/srv/abs/pkg\n./missing\n"}
+    _, _, record = build(tmp_path, "req_includes", extra=extra)
+    assert {(g["entry"], g["file"], g["path"]) for g in gaps(record, "local_dependency_refused")} == {
+        ("../outside/pkg", "requirements-local.txt", "."), ("/srv/abs/pkg", "requirements-local.txt", ".")}
+    assert [g["detail"] for g in gaps(record, "dependency_unresolved")] == ["./missing: no build unit at missing"]
+
+
 def test_a_pip_compile_output_is_the_lock_of_its_in_file(tmp_path):
     _, _, record = build(tmp_path, "req_pip_tools")
     [unit] = by_root(record, "python-project").values()

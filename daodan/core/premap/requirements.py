@@ -5,7 +5,8 @@ A requirements file is a `.txt` or `.in` whose name holds `requirements`, or one
 `python-project` unit, without a name, its manifest `requirements.in`, else `requirements.txt`, else the first
 by name; a requirements file beside a `pyproject.toml` or below a Python unit adds to that unit and makes no
 other. `-r` includes belong to the including file's unit, `-c` constraints to none; `-e` and bare local paths
-(from the unit's folder, where pip runs) are edges to the unit at that path; the origins of `--index-url`,
+(from the unit's folder, where pip runs) are edges to the unit at that path, and one outside the copy or absolute
+is `local_dependency_refused` (`preparation.refusal`); the origins of `--index-url`,
 `--extra-index-url`, `--find-links` and of the URL a requirement names (`name @ URL`, a VCS URL, `-e URL`) are
 registries. A file pip-compile wrote (its header names the `.in` it compiled) goes with
 that `.in`. Every requirements file of a unit is in its `config.requirements`; the packages they name are not
@@ -22,6 +23,7 @@ import tempfile
 import tomllib
 
 from build_units import normalize_pypi_name, requirement_version
+import preparation
 from premap.origins import origin
 
 NAME, VERSION, RANK = "requirements", "daodan/premap/v2", "reader"
@@ -293,9 +295,9 @@ def run(context):
                 target = _join(folder, path)
                 if target in roots:
                     depends.add(roots[target])
-                else:
-                    gaps.append({"kind": "dependency_unresolved", "path": rel,
-                                 "detail": f"{path}: no build unit at {target}"})
+                else:  # one outside the copy or absolute is the preparation's refusal (`preparation.refusal`)
+                    gaps.append(preparation.refusal(rel, path, folder, path) or {
+                        "kind": "dependency_unresolved", "path": rel, "detail": f"{path}: no build unit at {target}"})
         if origins:
             unit["registries"] = sorted(origins)
         if depends:
