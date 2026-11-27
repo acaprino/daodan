@@ -21,43 +21,60 @@ import snapshot
 from snapshot_store import open_snapshot
 
 
-class Definition:
-    def __init__(self, module_path, name, *, kind="function", line=2, column=8):
-        self.module_path = module_path
-        self.name = name
-        self.type = kind
-        self.line = line
-        self.column = column
+def end(rel, name, line, *chain, uncertain=None):
+    """A call's end at the project's declaration `name` of `rel` (the one nearest `line`), through `chain`
+    (`"implementation"`: an implementation of the method a contract declares); `uncertain` is the reason a `refine`
+    gives an end it cannot decide."""
+    return {"verdict": "project-callable", "at": (rel, name, line), "chain": list(chain), "uncertain": uncertain}
 
 
-class StubEngine:
-    name = "stub"
+def outside(package):
+    """A call's end outside the project, in `package`."""
+    return {"verdict": "external", "symbol": f"stub npm {package} 1 `index.ts`/start().",
+            "external": {"manager": "npm", "package": package, "version": "1"}, "chain": []}
 
-    def __init__(self, answers=None, ready=True, reason="", implementations=None):
-        self.answers = dict(answers or {})
-        self.implemented = dict(implementations or {})
-        self.ready = ready
-        self.reason = reason
-        self.asked = []
 
-    def probe(self):
-        return (True, "") if self.ready else (False, self.reason)
+def write_answers(manifest, out, answers, resolver="stub@1.0", languages=None):
+    """The edge store of an indexer's stage (`code_graph.write_store`), with ends written by hand: `answers` maps a
+    call's `(file, line)`, or `(file, line, callee)` where a line holds several, to its ends (`end`, `outside`); a
+    call or read without ends that the lexical resolver left unresolved is a `no-occurrence` hole. One entry per
+    language of `languages` (default: each one with calls or reads)."""
+    import code_graph
+    with code_graph.Snapshot(manifest) as snap:
+        declarations = snap.connection.execute("SELECT id, file, name, l0 FROM sem_declarations").fetchall()
+        places = {identity: (caller, l0, c0) for identity, caller, l0, c0 in snap.connection.execute(
+            "SELECT id, caller, l0, c0 FROM sem_references")}
 
-    def identity(self):
-        return "stub@1.0"
+        def target(rel, name, line):
+            found = [(abs(l0 - line), identity) for identity, file, named, l0 in declarations
+                     if file == rel and named == name]
+            assert found, f"no declaration {name} in {rel}"
+            return min(found)[1]
 
-    def definitions(self, path, line, column):
-        self.asked.append((Path(path).name, line, column))
-        answer = self.answers.get((Path(path).name, line))
-        if isinstance(answer, list):
-            return answer
-        return [] if answer is None else [answer]
-
-    def implementations(self, path, line, column):
-        answer = self.implemented.get((Path(path).name, line))
-        if isinstance(answer, list):
-            return answer
-        return [] if answer is None else [answer]
+        rows = {}
+        for language in languages or sorted({language for language in snap.languages.values()
+                                             if any(True for _ in snap.references(language))}):
+            edges, holes = [], []
+            for identity, rel, kind, resolution, _lexical, span, parts, _reason in snap.references(language):
+                caller, l0, c0 = places[identity]
+                place = {"reference_id": identity, "file": snap.checkout.get(rel, rel), "kind": kind,
+                         "caller": caller, "l0": l0, "c0": c0, "language": language}
+                ends = answers.get((rel, span[0], parts[-1] if parts else ""), answers.get((rel, span[0]))) \
+                    if kind == "call" else None
+                for found in ends or ():
+                    doubt = found.get("uncertain")
+                    at = target(*found["at"]) if "at" in found else None
+                    edges.append({**place, "verdict": found["verdict"], "target_id": at,
+                                  "symbol": found.get("symbol") or f"stub {at}", "resolver": resolver,
+                                  "confidence": "uncertain" if doubt else "confirmed",
+                                  "external": found.get("external"),
+                                  "payload": {"chain": found["chain"], "detail": "",
+                                              **({"uncertain": {"reason": doubt}} if doubt else {})}})
+                if not ends and resolution != "resolved":
+                    holes.append({**place, "class": "no-occurrence", "reason": "-", "resolver": resolver})
+            coverage = resolve_edges.language_coverage(code_graph._sites(snap, language), edges, holes)
+            rows[language] = (edges, holes, coverage, {"name": "stub", "version": "1.0"})
+        return code_graph.write_store(snap, out, {}, resolver, rows)
 
 
 class EdgeViewTests(unittest.TestCase):
@@ -110,18 +127,14 @@ class EdgeViewTests(unittest.TestCase):
         import edge_view
 
         manifest_digest_before = hashlib.sha256(self.manifest.read_bytes()).hexdigest()
-        engine = StubEngine(answers={
-            ("use.py", 5): Definition(self.root / "app/contracts.py", "run", line=5, column=8),
-            ("use.py", 6): Definition(self.root / "app/contracts.py", "execute", line=10, column=8),
-            ("use.py", 7): Definition(self.root / "app/tool.py", "run", line=2, column=8),
-            ("use.py", 8): [
-                Definition(self.root / "app/tool.py", "run", line=2, column=8),
-                Definition(self.root / "app/tool.py", "helper_fn", line=5, column=4),
-            ],
+        write_answers(self.manifest, self.edges, {
+            ("app/use.py", 5): [end("app/contracts.py", "run", 5)],
+            ("app/use.py", 6): [end("app/contracts.py", "execute", 10)],
+            ("app/use.py", 7): [end("app/tool.py", "run", 2)],
+            # Two ends a refine could not decide between: one uncertain answer.
+            ("app/use.py", 8): [end("app/tool.py", "run", 2, uncertain="ambiguous-target"),
+                                end("app/tool.py", "helper_fn", 5, uncertain="ambiguous-target")],
         })
-        report = resolve_edges.resolve_edges(self.manifest, engine=engine, limit=None, stride=1, out=self.edges)
-        self.assertTrue(report["available"])
-        self.assertEqual((report["confirmed_edges"], report["candidates"]), (3, 1))
 
         with open_snapshot(self.manifest) as store:
             view = edge_view.load_edge_view(store, engine_store=self.edges)
@@ -131,7 +144,7 @@ class EdgeViewTests(unittest.TestCase):
         # The reads and the calls no engine answered are holes: a lower bound.
         self.assertEqual(view["coverage"]["status"], "lower-bound")
         python = view["coverage"]["languages"]["python"]
-        # The three confirmed edges and the candidate, uncertain.
+        # The three certain edges and the uncertain one.
         self.assertEqual((python["answered"].get("project-callable"), python["uncertain"]), (4, 1))
         self.assertEqual(view["profile"]["engine"], "stub@1.0")
         self.assertEqual(view["conflicts"], [])
@@ -157,7 +170,7 @@ class EdgeViewTests(unittest.TestCase):
         self.assertEqual(by_line[7]["resolver"], "stub@1.0")
         self.assertEqual(by_line[7]["target_kind"], "concrete")
 
-        # Line 8: ambiguous engine candidate stays unresolved in effective references
+        # Line 8: the uncertain answer stays unresolved in effective references
         self.assertEqual(by_line[8]["resolution"], "unresolved")
         self.assertIsNone(by_line[8]["target_id"])
         self.assertEqual(by_line[8]["engine_candidate"]["verdict"], "ambiguous-target")
@@ -171,16 +184,15 @@ class EdgeViewTests(unittest.TestCase):
             missing_view = edge_view.load_edge_view(store, engine_store=self.edges)
         self.assertEqual(missing_view["coverage"]["status"], "missing_store")
 
-        resolve_edges.resolve_edges(self.manifest, engine=StubEngine(), limit=1, stride=2, out=self.edges)
+        write_answers(self.manifest, self.edges, {})
         with open_snapshot(self.manifest) as store:
-            sampled_view = edge_view.load_edge_view(store, engine_store=self.edges)
-        # A pass that asks one position of two leaves the others as holes: a lower bound.
-        self.assertEqual(sampled_view["coverage"]["status"], "lower-bound")
-        python = sampled_view["coverage"]["languages"]["python"]
-        # What the limit left out reads apart from what is never asked.
-        self.assertEqual((python["state"], python["holes"]["not-selected"]["count"] > 0), ("lower-bound", True))
-        self.assertNotIn("sampled", sampled_view["coverage"])
-        self.assertTrue(sampled_view["profile"]["engine_available"])
+            holed_view = edge_view.load_edge_view(store, engine_store=self.edges)
+        # An index that answers no call leaves them as holes: a lower bound.
+        self.assertEqual(holed_view["coverage"]["status"], "lower-bound")
+        python = holed_view["coverage"]["languages"]["python"]
+        self.assertEqual((python["state"], python["holes"]["no-occurrence"]["count"] > 0), ("lower-bound", True))
+        self.assertNotIn("sampled", holed_view["coverage"])
+        self.assertTrue(holed_view["profile"]["engine_available"])
 
         self.edges.write_bytes(b"corrupted")
         with open_snapshot(self.manifest) as store:
@@ -215,15 +227,18 @@ class EdgeViewTests(unittest.TestCase):
 
     def test_cli_compact_mode_and_report_out_write_full_report_to_file_and_summary_to_stdout(self):
         report_file = self.root.parent / "full-engine-report.json"
-        engine = StubEngine(answers={
-            ("use.py", 7): Definition(self.root / "app/tool.py", "run", line=2, column=8),
-        })
+
+        def stage(spec, manifest, project_root, out=None):
+            write_answers(manifest, out, {("app/use.py", 7): [end("app/tool.py", "run", 2)]})
+            return {"available": True, "engine": "stub@1.0", "indexer": {"name": "stub", "version": "1.0"},
+                    "languages": {"python": {"state": "fresh"}}, "runs": [{"exit_code": 0}]}
+
         stdout = io.StringIO()
-        with mock.patch.object(resolve_edges, "ScipEngine", return_value=engine):
+        with mock.patch.object(resolve_edges, "index_stage", side_effect=stage):
             with contextlib.redirect_stdout(stdout):
                 code = resolve_edges.main([
                     str(self.manifest),
-                    "--engine", "scip",
+                    "--engine", "scip-python",
                     "--out", str(self.edges),
                     "--report-out", str(report_file),
                     "--compact",
@@ -232,11 +247,14 @@ class EdgeViewTests(unittest.TestCase):
         compact = json.loads(stdout.getvalue())
         full = json.loads(report_file.read_text(encoding="utf-8"))
         self.assertTrue(compact["available"])
-        self.assertEqual(compact["confirmed_edges"], 1)
+        self.assertEqual(compact["languages"], {"python": {"state": "fresh"}})
         self.assertEqual(compact["report_out"], report_file.as_posix())
-        self.assertNotIn("file_environments", compact)
-        self.assertIn("verdicts", full)
-        self.assertEqual(full["confirmed_edges"], 1)
+        self.assertNotIn("runs", compact)
+        self.assertIn("runs", full)
+        with open_snapshot(self.manifest) as store:
+            found, _binding, reason = resolve_edges.read_edge_store(self.edges, store)
+        self.assertIsNone(reason)
+        self.assertEqual([edge["l0"] for edge in found if edge["verdict"] == "project-callable"], [7])
 
 
 class MethodTargetTests(unittest.TestCase):
@@ -262,13 +280,8 @@ class MethodTargetTests(unittest.TestCase):
             (root / rel).write_text(text, encoding="utf-8")
         manifest, edges = root.parent / "manifest.sqlite", root.parent / "engine-edges.sqlite"
         snapshot.read_project(root, manifest)
-        engine = StubEngine(answers={
-            ("use.ts", 5): Definition(root / "app/contracts.ts", "start", line=2, column=2),
-            ("use.ts", 6): Definition(root / "app/shop.ts", "open", line=2, column=2),
-        })
-        engine.languages = ("typescript",)
-        report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1, out=edges)
-        self.assertEqual(report["confirmed_edges"], 2)
+        write_answers(manifest, edges, {("app/use.ts", 5): [end("app/contracts.ts", "start", 2)],
+                                        ("app/use.ts", 6): [end("app/shop.ts", "open", 2)]}, languages=("typescript",))
         self.root, self.manifest, self.edges = root, manifest, edges
 
     def test_a_method_and_a_contract_method_are_resolved_targets(self):
@@ -337,19 +350,12 @@ class ImplementationTests(unittest.TestCase):
             (root / rel).write_text(text, encoding="utf-8")
         manifest, edges = root.parent / "manifest.sqlite", root.parent / "engine-edges.sqlite"
         snapshot.read_project(root, manifest)
-        contract = Definition(root / "app/contracts.ts", "start", line=2, column=2)
-        web = Definition(root / "app/web.ts", "start", line=3, column=2)
-        mobile = Definition(root / "app/mobile.ts", "start", line=3, column=2)
-        vendor = root.parent / "vendor/checkout.ts"
-        vendor.parent.mkdir()
-        vendor.write_text("export class VendorCheckout {\n  start(plan: string): void {}\n}\n", encoding="utf-8")
-        outside = Definition(vendor, "start", line=2, column=2)
-        engine = StubEngine(answers={("use.ts", 4): contract, ("use.ts", 5): contract, ("use.ts", 6): contract},
-                            implementations={("use.ts", 4): web, ("use.ts", 5): [web, mobile],
-                                             ("use.ts", 6): [web, outside]})
-        engine.languages = ("typescript",)
-        report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1, out=edges)
-        self.assertEqual(report["confirmed_edges"], 3)
+        contract = end("app/contracts.ts", "start", 2)
+        web = end("app/web.ts", "start", 3, "implementation")
+        mobile = end("app/mobile.ts", "start", 3, "implementation")
+        write_answers(manifest, edges, {("app/use.ts", 4): [contract, web], ("app/use.ts", 5): [contract, web, mobile],
+                                        ("app/use.ts", 6): [contract, web, outside("vendor-checkout")]},
+                      languages=("typescript",))
         with open_snapshot(manifest) as store:
             view = edge_view.load_edge_view(store, engine_store=edges)
         by_line = {ref["span"][0]: ref for ref in view["references"] if ref["file"] == "app/use.ts"}

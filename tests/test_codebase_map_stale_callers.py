@@ -105,18 +105,17 @@ class StaleCallersTests(unittest.TestCase):
                             item["before_target"] == "pkg/b.py::helper" and
                             item["after_target"] == "pkg/b.py::extra" for item in drift))
 
-    def test_engine_availability_versions_and_sampling_do_not_assert_rewiring(self):
-        from test_codebase_map_edge_view import Definition, StubEngine
-        import resolve_edges
+    def test_engine_availability_and_versions_do_not_assert_rewiring(self):
+        from test_codebase_map_edge_view import end, write_answers
         (self.root / "pkg/a.py").write_text("def run(obj):\n    return obj.helper()\n", encoding="utf-8")
         snapshot.read_project(self.root, self.base)
         base_edges = self.root / "base-edges.sqlite"
         candidate_edges = self.root / "candidate-edges.sqlite"
         candidate = self.root / "candidate.sqlite"
-        engine = StubEngine({("a.py", 2): Definition(self.root / "pkg/b.py", "helper", line=1, column=4)})
-        resolve_edges.resolve_edges(self.base, engine=engine, limit=None, stride=1, out=base_edges)
+        helper = {("pkg/a.py", 2): [end("pkg/b.py", "helper", 1)]}
+        write_answers(self.base, base_edges, helper)
         snapshot.read_project(self.root, candidate)
-        resolve_edges.resolve_edges(candidate, engine=engine, limit=None, stride=1, out=candidate_edges)
+        write_answers(candidate, candidate_edges, helper)
         def compare(before, after):
             with open_snapshot(self.base) as base, open_snapshot(candidate) as current:
                 return semantic_store.build_stale_callers(
@@ -127,14 +126,9 @@ class StaleCallersTests(unittest.TestCase):
             self.assertEqual(result["engine_callee_drift"]["status"], "incomparable")
             self.assertEqual(result["engine_callee_drift"]["items"], [])
             self.assertIn("lexical_callee_drift", result)
-        engine.identity = lambda: "stub@2.0"
-        resolve_edges.resolve_edges(candidate, engine=engine, limit=None, stride=1, out=candidate_edges)
+        write_answers(candidate, candidate_edges, helper, resolver="stub@2.0")
         self.assertEqual(compare(base_edges, candidate_edges)["engine_callee_drift"]["status"], "incomparable")
-        engine.identity = lambda: "stub@1.0"
-        resolve_edges.resolve_edges(candidate, engine=engine, limit=0, stride=2, out=candidate_edges)
-        self.assertEqual(compare(base_edges, candidate_edges)["engine_callee_drift"]["status"], "incomparable")
-        engine.answers[("a.py", 2)] = Definition(self.root / "pkg/b.py", "extra", line=4, column=4)
-        resolve_edges.resolve_edges(candidate, engine=engine, limit=None, stride=1, out=candidate_edges)
+        write_answers(candidate, candidate_edges, {("pkg/a.py", 2): [end("pkg/b.py", "extra", 4)]})
         drift = compare(base_edges, candidate_edges)["engine_callee_drift"]
         self.assertEqual(drift["status"], "complete")
         self.assertEqual(drift["items"][0]["kind"], "rewired_call")
@@ -153,8 +147,7 @@ class StaleCallersTests(unittest.TestCase):
                 self.assertEqual(semantic_store._engine_comparison(view(before), view(after))[0], expected)
 
     def test_protocol_to_implementation_is_dispatch_evidence_not_confirmed_rewiring(self):
-        from test_codebase_map_edge_view import Definition, StubEngine
-        import resolve_edges
+        from test_codebase_map_edge_view import end, write_answers
         write_files(self.root, {
             "pkg/b.py": "from typing import Protocol\nclass P(Protocol):\n    def run(self): ...\nclass Impl:\n    def run(self): return 1\n",
             "pkg/a.py": "def run(obj):\n    return obj.run()\n",
@@ -163,11 +156,9 @@ class StaleCallersTests(unittest.TestCase):
         before_edges = self.root / "before.sqlite"
         after_edges = self.root / "after.sqlite"
         candidate = self.root / "candidate.sqlite"
-        engine = StubEngine({("a.py", 2): Definition(self.root / "pkg/b.py", "run", line=3, column=8)})
-        resolve_edges.resolve_edges(self.base, engine=engine, limit=None, stride=1, out=before_edges)
+        write_answers(self.base, before_edges, {("pkg/a.py", 2): [end("pkg/b.py", "run", 3)]})
         snapshot.read_project(self.root, candidate)
-        engine.answers[("a.py", 2)] = Definition(self.root / "pkg/b.py", "run", line=5, column=8)
-        resolve_edges.resolve_edges(candidate, engine=engine, limit=None, stride=1, out=after_edges)
+        write_answers(candidate, after_edges, {("pkg/a.py", 2): [end("pkg/b.py", "run", 5)]})
         with open_snapshot(self.base) as base, open_snapshot(candidate) as current:
             result = semantic_store.build_stale_callers(base, current,
                 base_engine_store=before_edges, candidate_engine_store=after_edges)
@@ -208,13 +199,11 @@ class StaleCallersTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_one_sided_engine_witness_survives_removed_target(self):
-        from test_codebase_map_edge_view import Definition, StubEngine
-        import resolve_edges
+        from test_codebase_map_edge_view import end, write_answers
         (self.root / "pkg/a.py").write_text("def run(obj):\n    return obj.helper()\n")
         snapshot.read_project(self.root, self.base)
         edges = self.root / "base-edges.sqlite"
-        engine = StubEngine({("a.py", 2): Definition(self.root / "pkg/b.py", "helper", line=1, column=4)})
-        resolve_edges.resolve_edges(self.base, engine=engine, limit=None, stride=1, out=edges)
+        write_answers(self.base, edges, {("pkg/a.py", 2): [end("pkg/b.py", "helper", 1)]})
         (self.root / "pkg/b.py").write_text("def extra():\n    return 10\n")
         candidate = self.root / "candidate.sqlite"
         snapshot.read_project(self.root, candidate)
