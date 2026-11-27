@@ -31,7 +31,6 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken
-from . import header
 from .detect import detect as _detect
 
 __all__ = [
@@ -106,14 +105,8 @@ def detect_language(file_path: Path, content: str | None = None) -> str | None:
     The language of a file: its extension, then the rules of that extension on its content (`languages.detect`),
     then the extension's own language. Returns the canonical language identifier, or None if unsupported.
 
-    A `.h` header with text is read from its syntax tree by `languages.header.header_language` (Objective-C,
-    C++, or C) until it becomes a class of `detect/rules/`.
+    A `.h` header with text is read from its syntax tree by `detect/rules/header.py` (Objective-C, C++, or C).
     """
-    suffix = file_path.suffix.lower()
-
-    if suffix == ".h" and content is not None:
-        return header.header_language(content)
-
     return _detect(file_path, content).language
 
 

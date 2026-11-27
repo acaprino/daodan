@@ -133,7 +133,7 @@ def test_each_kind_and_each_error_carries_the_line_of_its_first_node(probe):
 
 
 def test_the_product_keeps_two_of_the_frozen_patterns_so_a_change_there_fails_here(probe):
-    from languages import header  # the product's module, on the path since the probe was built
+    from languages.detect.rules import header  # the product's module, on the path since the probe was built
     noise, _ = patterns.VARIANTS["fixqc"]
     assert header._C_NOISE_RE.pattern == patterns.NOISE_FIXQ and header._C_NOISE_RE.flags == noise.flags
     assert header._OBJC_HEADER_RE.pattern == patterns.BEFORE_OBJC and header._OBJC_HEADER_RE.flags == patterns.OBJC.flags
@@ -163,7 +163,7 @@ def test_the_product_answers_as_route_r3dx_with_the_rule_before_in_front(probe):
 
 
 def test_with_the_bound_off_a_longer_header_reads_as_route_r3dx_too(probe, monkeypatch):
-    from languages import header
+    from languages.detect.rules import header
     text = "int a;\n" * 200 + "namespace a { int x; }\n"
     monkeypatch.setattr(header, "MAX_CHARS", 1_000)
     assert detect_language(Path("a.h"), text) == "c"  # the bound leaves the namespace out: the head is C

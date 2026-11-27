@@ -1,4 +1,4 @@
-"""A `.h` header is read as Objective-C, C++ or C from its syntax tree (`languages/header.py`, route R3dx of
+"""A `.h` header is read as Objective-C, C++ or C from its syntax tree (`languages/detect/rules/header.py`, route R3dx of
 `benchmarks/header-language`): the Objective-C rule first, then a declaration only C++ has, then the grammar that errs less."""
 import sys
 import time
@@ -9,7 +9,8 @@ import pytest
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
-from languages import _treesitter, detect_language, header  # noqa: E402
+from languages import _treesitter, detect_language  # noqa: E402
+from languages.detect.rules import header  # noqa: E402
 from source_files import MAX_PARSE_BYTES  # noqa: E402
 
 
@@ -136,6 +137,6 @@ def test_line_ends_a_bom_and_a_lone_surrogate_do_not_change_the_reading():
 def test_no_grammar_and_no_text_give_the_suffixs_answer(monkeypatch):
     text = "namespace a { int x; }\n"
     assert read(text) == "cpp" and detect_language(Path("a.h")) == "c"
-    monkeypatch.setattr(header, "get_parser", lambda language: None)
+    monkeypatch.setattr(_treesitter, "get_parser", lambda language: None)
     assert read(text) == "c"
     assert read("@interface X\n@end\n") is None  # the rule of Objective-C needs no grammar

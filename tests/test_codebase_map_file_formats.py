@@ -83,7 +83,7 @@ CARD = {"id": "ts.sample", "extensions": [".ts"], "language": "XML", "test": "st
 def test_every_rule_holds_on_its_own_samples():
     assert detection.problems() == []
     assert {rule.id for group in detection.RULES.values() for rule in group} >= {
-        "ts.xml-document", "sql.oracle-words", "sql.anchored-type"}
+        "ts.xml-document", "sql.oracle-words", "sql.anchored-type", "h.syntax-tree"}
 
 
 def test_a_shared_extension_is_decided_by_the_rule_that_answers_and_else_by_the_extension():

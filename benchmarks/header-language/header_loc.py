@@ -1,7 +1,7 @@
 """The lines of code each way of choosing a `.h` language would put in the product, counted from the benchmark code that
 is tested (`header_probe`, `header_routes`) and from the rule before route R3dx entered the product
 (`daodan/core/languages/__init__.py` at commit cd19c05e8, by `git show`), and the lines R3dx did put there
-(`daodan/core/languages/header.py`, and what `__init__.py` lost). Standard library only.
+(`daodan/core/languages/detect/rules/header.py`, and what `__init__.py` lost). Standard library only.
 
     python benchmarks/header-language/header_loc.py [--out results/loc.json]
 

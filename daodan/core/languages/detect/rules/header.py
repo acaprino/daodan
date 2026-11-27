@@ -1,17 +1,19 @@
-"""The language of a `.h` header, read from its syntax tree (route R3dx of `benchmarks/header-language`).
+"""`.h`: Objective-C, C++ or C, read from the syntax tree (route R3dx of `benchmarks/header-language`).
 
 In order: Objective-C by its directives; C++ when its grammar finds a declaration C lacks outside a `__cplusplus` block;
 else the grammar that errs less, C on a tie. The text read is bounded by a count, never a clock: its first MAX_CHARS
 characters, cut before a comment that never closes (the grammars are quadratic on `/* /* /*`). A header whose first C++
 declaration lies further reads as C, the suffix's answer, as it does with no grammar. (`benchmarks/header-language`
 measures the bound: `results/product.json`.)
+
+Tool: the tree-sitter grammars of C and C++ (`languages._treesitter`), the official parsers of those languages. The few
+expressions left read text with no tree: comments and strings, and the directives of Objective-C, which the pack's
+Objective-C grammar takes C and C++ headers for.
 """
 from __future__ import annotations
 
 import re
 from collections import deque
-
-from ._treesitter import get_parser
 
 MAX_CHARS = 2_000_000  # `source_files.MAX_PARSE_BYTES`: above it the snapshot parses no file, so reads none of it here
 
@@ -72,6 +74,7 @@ def _head(content: str) -> str:
 
 
 def _parse(language: str, source: bytes):
+    from ..._treesitter import get_parser  # imported here: a rule class stays independent of the parser until it asks
     loaded = get_parser(language)
     return loaded[0].parse(source).root_node if loaded else None
 
@@ -87,17 +90,27 @@ def _errors(root) -> int:
     return count
 
 
-def header_language(content: str) -> str | None:
-    """`"cpp"`, `"c"`, or None for Objective-C, which the snapshot does not read."""
-    if _OBJC_HEADER_RE.search(_C_NOISE_RE.sub(" ", content)):
-        return None
-    source = _head(content).encode("utf-8", "replace")
-    cpp = _parse("cpp", source)
-    if cpp is None:
-        return "c"
-    if _cpp_declared(cpp):
-        return "cpp"
-    c = _parse("c", source)
-    if c is None or not c.has_error:  # no error to count in C: C++ cannot have fewer, and a tie is C
-        return "c"
-    return "cpp" if _errors(cpp) < _errors(c) else "c"
+class HeaderLanguage:
+    """`.h`: C++ or Objective-C by Linguist's name; None for C, which the extension already answers."""
+    id = "h.syntax-tree"
+    extensions = (".h",)
+    languages = ("C++", "Objective-C")
+    why = ("A header is C, C++ or Objective-C and its suffix cannot say which: the directives of Objective-C, then a "
+           "declaration only C++ has, then the grammar that errs less, C on a tie.")
+    source = "Daodan, `languages/header.py` before T1.A.1 (route R3dx of `benchmarks/header-language`)."
+    yes = (("namespace a { int x; }\n", "C++"), ("@interface X\n@end\n", "Objective-C"))
+    no = ("int a;\n", "struct S { int a; int (*cb)(int); };\n", "")
+
+    def decide(self, text: str) -> str | None:
+        if _OBJC_HEADER_RE.search(_C_NOISE_RE.sub(" ", text)):
+            return "Objective-C"
+        source = _head(text).encode("utf-8", "replace")
+        cpp = _parse("cpp", source)
+        if cpp is None:
+            return None
+        if _cpp_declared(cpp):
+            return "C++"
+        c = _parse("c", source)
+        if c is None or not c.has_error:  # no error to count in C: C++ cannot have fewer, and a tie is C
+            return None
+        return "C++" if _errors(cpp) < _errors(c) else None

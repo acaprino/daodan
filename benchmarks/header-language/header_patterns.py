@@ -1,6 +1,6 @@
 """The patterns of the `.h` rule as it was before 25 November 2026 (commit 3960973d8 of `daodan/core/languages/__init__.py`),
 frozen here, and the candidates that were measured against it, each written in full. `fixqc` was the product's rule from
-25 November (commit cd19c05e8) until route R3dx took its place (`daodan/core/languages/header.py`): `CPP_FIXQC` is frozen at
+25 November (commit cd19c05e8) until route R3dx took its place (`daodan/core/languages/detect/rules/header.py`): `CPP_FIXQC` is frozen at
 that commit, `NOISE_FIXQ` is still the product's noise pattern, and the tests compare both. The results recorded in
 `results/` are of the rule before, which is what R0 means in them. A candidate is never made from another pattern by a replace: a replace that finds nothing changes
 nothing and says nothing. `test_header_patterns.py` checks that the frozen patterns are those of that commit (`git show`),

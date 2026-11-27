@@ -269,7 +269,8 @@ def product(name: str, caps: list[int]) -> list[dict]:
     no bound): its answer ("objc" for None) and ms."""
     sys.path.insert(0, CORE)
     _reload()
-    from languages import detect_language, header
+    from languages import detect_language
+    from languages.detect.rules import header
     bound = header.MAX_CHARS
     detect_language(Path("x.h"), "int a;\nnamespace a { }\n")  # the first parse of a grammar pays for its set-up
     rows = []

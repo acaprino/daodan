@@ -37,7 +37,8 @@ elif target in ("r0fix", "r0fixq", "r0fixqc"):
     extra = {}
 elif target in ("product", "parse"):  # the product's detection, and the parse it does next with the adapter of the language found
     sys.path.insert(0, core)
-    from languages import detect_language, get_adapter, header  # noqa: E402
+    from languages import detect_language, get_adapter  # noqa: E402
+    from languages.detect.rules import header  # noqa: E402
     if mode.startswith("bound:"):
         header.MAX_CHARS = int(mode[6:]) or 1 << 40  # 0: no bound
     for language in ("c", "cpp"):
