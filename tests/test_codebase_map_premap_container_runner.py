@@ -94,26 +94,6 @@ def test_what_the_copy_of_the_project_left_out_rides_on_the_first_answer(tmp_pat
     assert answers[0]["gaps"] == [left]
 
 
-def test_the_hosts_the_proxy_refused_become_a_request_or_a_host_denied_gap(tmp_path, no_download, monkeypatch):
-    """A refused host the user blocked is a `host_denied` gap on the first answer; any other waits for an answer in
-    `egress.pending` with its address, and says it is on the user's network when it is."""
-    import egress
-    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
-    egress.save({"whitelist": {}, "blacklist": ["bad.example.com"]})
-    _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
-    egress.PENDING.clear()
-    _calls, fake = recorder()
-    refused = [{"host": "bad.example.com", "port": "443"}, {"host": "10.0.0.5", "port": "8080"}]
-    with mock.patch.object(container, "run_commands", lambda *given, **options: {**fake(*given, **options),
-                                                                                  "refused": refused}):
-        answers = container_runner.runner(manifest)([command("go", "registries")])
-    [gap] = answers[0]["gaps"]
-    assert (gap["kind"], gap["host"], gap["port"]) == ("host_denied", "bad.example.com", "443")
-    [(project, held)] = egress.PENDING.items()  # the project, as the runner names it
-    assert [(r["host"], r["port"], r["address"], r["network"]) for r in egress.pending(project)] == [
-        ("10.0.0.5", "8080", "10.0.0.5", True)] and list(held) == [("10.0.0.5", "8080")]
-
-
 def test_a_setup_that_installs_from_a_registry_runs_in_the_preparation(tmp_path, no_download):
     _, manifest = manifest_of(tmp_path, {"tsconfig.json": "{}\n"})
     calls, fake = recorder()
@@ -523,28 +503,27 @@ def test_a_gradle_build_that_asks_for_a_newer_jvm_runs_again_on_the_jdk_the_proj
         assert all("JVM runtime version 21" in g["detail"] for g in answer.get("gaps", []))
 
 
-def test_a_gradle_build_that_fails_runs_again_reaching_the_repositories_its_settings_declare(tmp_path, no_download):
+def test_a_gradle_build_that_fails_runs_once_and_never_opens_the_repositories_its_settings_declare(tmp_path,
+                                                                                                    no_download):
     """real-app-kotlinconf: a plugin of `pluginManagement` comes from a repository the settings declare, which is
-    no registry. The settings record names it before the configure fails; a second run reaches it, and one that
-    fails too is a gap naming the hosts. A build that does not fail runs once."""
+    no registry. The settings record names it before the configure fails (`gradle.retry` lists it, for a preventive
+    request), but the runner no longer runs again reaching it by itself: the host opens only once the user approved
+    it (`egress`), and the build runs once, whatever its answer."""
+    from premap import gradle
     _, manifest = manifest_of(tmp_path, {"settings.gradle.kts": 'rootProject.name = "k"\n'})
     build = "\x1e" + json.dumps({"kind": "build", "root": "/work", "name": "k", "nested": False, "gradle": "9.9.1",
                                  "projects": [], "repositories": ["https://plugins.gradle.org/m2",
                                                                   "https://maven.example.dev/releases"]})
     failed = {"returncode": 1, "stdout": build + "\n", "stderr": "Could not resolve all artifacts for configuration"
                                                                  " 'classpath'.\n"}
-    for first, second, kinds in ((1, 0, []), (1, 1, ["declared_hosts_failed"]), (0, 0, [])):
-        calls = []
+    assert gradle.retry(failed) == ["maven.example.dev", "plugins.gradle.org"]
+    assert "retry" not in container_runner.TOOLS["gradle"]
+    calls = []
 
-        def run_commands(project, commands, **options):
-            calls.append(options)
-            code = first if len(calls) == 1 else second
-            return {"state": "done", "root": "/work", "results": [{"returncode": 0, "stdout": "", "stderr": ""},
-                                                                  {**failed, "returncode": code}]}
-        with mock.patch.object(container, "run_commands", run_commands):
-            [answer] = container_runner.runner(manifest)([command("gradle", "registries")])
-        assert len(calls) == (2 if first else 1) and "maven.example.dev" not in calls[0]["registries"]
-        assert not first or "maven.example.dev" in calls[1]["registries"]
-        assert answer["returncode"] == (second if first else 0)
-        assert [g["kind"] for g in answer.get("gaps", [])] == kinds
-        assert all("maven.example.dev" in g["detail"] for g in answer.get("gaps", []))
+    def run_commands(project, commands, **options):
+        calls.append(options)
+        return {"state": "done", "root": "/work", "results": [{"returncode": 0, "stdout": "", "stderr": ""}, failed]}
+    with mock.patch.object(container, "run_commands", run_commands):
+        [answer] = container_runner.runner(manifest)([command("gradle", "registries")])
+    assert len(calls) == 1 and "maven.example.dev" not in calls[0]["registries"]
+    assert answer["returncode"] == 1 and not answer.get("gaps")

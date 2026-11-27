@@ -31,6 +31,7 @@ for path in (str(SCRIPTS), str(HERE)):
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import egress  # noqa: E402
 import dynamic  # noqa: E402
 import preparation  # noqa: E402
 import snapshot  # noqa: E402
@@ -599,6 +600,7 @@ class ObserveTest(unittest.TestCase):
             self.assertIn(left, self.observe()["gaps"])
 
     def test_the_preparation_reaches_the_hosts_the_project_declares(self):
+        egress.session(str(self.project))["allow"] += ["crates.corp.example"]  # approved for this analysis: it opens only then
         self.play_run()
         self.observe(declared=("crates.corp.example",))
         self.assertIn("crates.corp.example", self.created()[0])

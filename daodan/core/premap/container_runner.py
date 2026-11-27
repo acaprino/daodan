@@ -3,16 +3,16 @@
 `runner(manifest)` returns the `runner(commands) -> results` that `premap.derive` calls once per model source.
 It runs the commands with `container.run_commands` over a copy of the project (the same runner the JVM and clang
 analyzers use): those whose `network` is `registries` in the preparation, behind the proxy that opens only the
-package registries (`container.REGISTRIES`) and the hosts a tool names in `TOOLS` (Bazel's), the others with no
-network. Before them, one setup command unpacks into `STATE/tools` the files the tool needs (`TOOLS`): each is
+package registries (`container.REGISTRIES`) and the hosts a tool names in `TOOLS` (Bazel's) that the user approved
+(`egress`), the others with no network. Before them, one setup command unpacks into `STATE/tools` the files the tool needs (`TOOLS`): each is
 downloaded once on the host into Daodan's shared directory and checked by sha256, then carried into the container;
 a setup that installs a package from a registry (TypeScript, Renovate, go-enry) runs in the preparation. A tool
 that reads what the project's packages hold (`restores`: tsc, whose tsconfigs extend installed and generated
 files; next, whose command is one of them) has them restored by the setup, the project's own way
 (`preparation.node_prepare`); a restore or a generation that fails, and a package folder no restore installs, is a
-gap on the first answer, and the commands run. A command that fails where its own answer names hosts the project declares for its build (`retry`: the
-repositories of Gradle's settings, where a `pluginManagement` plugin comes from) runs once more, reaching them; one
-that fails again is a `declared_hosts_failed` gap naming them. A run
+gap on the first answer, and the commands run. The hosts the project declares for its build (the repositories of
+Gradle's settings, where a `pluginManagement` plugin comes from) open only once the user approved them (`egress`): a
+command that fails reaching one has the `approval_required` gap of the run. A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
 its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the manifest.
 """
@@ -26,7 +26,6 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-import egress  # noqa: E402
 import preparation  # noqa: E402
 import node_preparation  # noqa: E402
 from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, noir, sbt  # noqa: E402
@@ -146,8 +145,7 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                                "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228", "gradle.zip")],
                "setup": [preparation.UNPACK_JDK, _jar("gradle.zip", "gradle-9.9.1", "gradle")],
                "image": preparation.IMAGE, "java": True,
-               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "retry": gradle.retry,
-               "asks": gradle.asked_jdk},
+               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "asks": gradle.asked_jdk},
     "sbt": {"files": [JDK, (*sbt.DOWNLOAD[0], "sbt.tgz")],
             "setup": [preparation.UNPACK_JDK, f"tar -xzf {IN}/sbt.tgz -C {T} && ln -sf {T}/sbt/bin/sbt {T}/bin/sbt"],
             "image": preparation.IMAGE,
@@ -199,7 +197,7 @@ def _python(project: Path) -> dict:
     the lines that make each folder's environment under `preparation.VENVS`, the tools they need, the hosts beside the registries."""
     files = preparation.perimeter_files(project)
     # shortcut: no VCS requirement is overridden (`preparation.python_vcs`, `without`) and no host a project declares is added
-    # (`preparation.declared`): a folder whose install needs them is a `restore_failed` gap; when one is met, take them as the analyzers do
+    # (`preparation.declared`), which ask the user (`egress`): a folder whose install needs them is a `restore_failed` gap; when one is met, take them as the analyzers do
     managers = {manager: folders for manager, folders in preparation.restores(files).items()
                 if preparation.RESTORES[manager].get("family") == "python"}
     # measured on Modal (`benchmarks/flask-routes/results/venv-dir.json`): `uv venv "<venvs>/."`, the root folder's environment, fails
@@ -251,15 +249,12 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                 for name, text in carried.items():
                     (Path(scratch) / name).write_bytes(text.encode("utf-8"))
                     written[f"{IN}/{name}"] = Path(scratch) / name
-                made = container.run_commands(
+                return container.run_commands(
                     project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
                     values=spec.get("values", False), engine=engine,
                     inputs=lambda: {**{f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files}, **written},
                     registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
                     memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
-                # the hosts the proxy refused: a request to answer, or a `host_denied` gap (`egress.collect`); the
-                # files that declare them are known where the pre-map's units are (`engine_pass`), not here
-                return {**made, "gaps": [*(made.get("gaps") or ()), *egress.collect(str(project), made)]}
 
         result = contained(ran, hosts, tool)
         if result["state"] == "gap":
@@ -275,23 +270,6 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                  + preparation.generation_gaps(answers[0]["stderr"])
                  + list(result.get("gaps") or ()))  # and what the copy left out (`container.copy_perimeter`)
         roots = [result["root"]] * len(answers)
-        # A command that failed resolving from hosts its own answer declares (`retry`) runs again reaching them.
-        failed = [n for n, answer in enumerate(answers) if n and answer["returncode"] != 0]
-        more = sorted({h for n in failed for h in spec["retry"](answers[n])} - {*container.REGISTRIES, *hosts}
-                      ) if spec.get("retry") else []
-        if more:
-            again = contained([ran[0], *(ran[n] for n in failed)], (*hosts, *more), f"{tool}-again")
-            said = ", ".join(more)
-            if again["state"] != "done" or len(again.get("results") or []) != len(failed) + 1:
-                gaps.append({"kind": "declared_hosts_failed", "detail": f"{tool}: the second run, reaching the "
-                             f"hosts the build declares ({said}), did not happen: {again.get('cause')}"})
-            else:
-                for n, answer in zip(failed, again["results"][1:]):
-                    answers[n], roots[n] = answer, again["root"]
-                    if answer["returncode"] != 0:
-                        gaps.append({"kind": "declared_hosts_failed", "path": ran[n]["cwd"], "hosts": more,
-                                     "detail": f"{tool} failed again reaching the hosts the build declares ({said}):"
-                                               f" {(answer['stderr'] or '').strip()[-300:]}"})
         # A command whose build needs a newer JVM than the image's (`asks`) runs once more on the JDK it names:
         # mise installs it in the setup, and the command runs with it as JAVA_HOME.
         asked = [(n, spec["asks"](answers[n]["stderr"] + answers[n]["stdout"], toolchains))
@@ -306,7 +284,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                 [ran[0]["argv"][2], *(f"( {line} )" for line in chains["lines"])])]}
             again = contained([setup, *({**ran[n], "argv": [*ran[n]["argv"][:2], home + ran[n]["argv"][2],
                                                             *ran[n]["argv"][3:]]} for n, _ in asked)],
-                              (*hosts, *more, *chains["hosts"]), f"{tool}-jdk")
+                              (*hosts, *chains["hosts"]), f"{tool}-jdk")
             gaps += chains["gaps"] + ([{**said, "path": ran[asked[0][0]]["cwd"]}] if said else [])
             if again["state"] != "done" or len(again.get("results") or []) != len(asked) + 1:
                 gaps.append({"kind": "jdk_from_build_error", "detail": f"{tool}: the run again on JDK "

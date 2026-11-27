@@ -147,16 +147,35 @@ def test_requests_split_the_refusals_into_requests_and_host_denied_gaps(monkeypa
     # a canonical host refused (another port) is neither a request nor a gap
 
 
-def test_collect_registers_the_requests_once_and_returns_the_gaps(monkeypatch):
+def test_collect_registers_the_requests_once_and_returns_them_with_the_gaps(monkeypatch):
     monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
     egress.save({"whitelist": {}, "blacklist": ["blocked.example.com"]})
-    result = {"refused": [{"host": "ask.example.com", "port": "443"}, {"host": "blocked.example.com", "port": "443"}]}
-    assert [g["host"] for g in egress.collect(PROJECT, result)] == ["blocked.example.com"]
-    assert [g["host"] for g in egress.collect(PROJECT, result)] == ["blocked.example.com"]  # the second run: no duplicate
+    refused = [{"host": "ask.example.com", "port": "443"}, {"host": "blocked.example.com", "port": "443"}]
+    asked, gaps = egress.collect(PROJECT, refused)
+    assert [r["host"] for r in asked] == ["ask.example.com"] and [g["host"] for g in gaps] == ["blocked.example.com"]
+    egress.collect(PROJECT, refused)  # the second run: no duplicate
     assert [r["host"] for r in egress.pending(PROJECT)] == ["ask.example.com"]
-    assert egress.pending("/work/other") == [] and egress.collect(PROJECT, {}) == []
+    assert egress.pending("/work/other") == []
     egress.SESSIONS[PROJECT] = egress.answer(egress.load(), egress.session(PROJECT), "ask.example.com", PROJECT, "no")[1]
-    assert [g["host"] for g in egress.collect(PROJECT, result)] == ["ask.example.com", "blocked.example.com"]
+    assert egress.collect(PROJECT, refused)[0] == []
+    assert [g["host"] for g in egress.collect(PROJECT, refused)[1]] == ["ask.example.com", "blocked.example.com"]
+
+
+def test_an_approval_gap_names_the_hosts_and_the_files_that_declare_them():
+    assert egress.approval_gap([]) == []
+    [gap] = egress.approval_gap([{"host": "a.example.com", "port": "443", "declared_in": ["pom.xml"]},
+                                 {"host": "b.example.com", "port": "80", "declared_in": []}])
+    assert gap["kind"] == "approval_required" and gap["hosts"] == ["a.example.com", "b.example.com"]
+    assert "a.example.com:443 (declared in pom.xml)" in gap["detail"] and "b.example.com:80" in gap["detail"]
+
+
+def test_an_apt_archive_is_approved_as_its_host_is():
+    state, session = egress.answer(egress.load(), egress.new_session(), "deb.example.com", PROJECT, "always")
+    assert egress.decide("http://deb.example.com", PROJECT, state, session) == "allow"
+    assert egress.decide("http://other.example.com", PROJECT, state, session) == "ask"
+    assert egress.decide("http://archive.ubuntu.com", PROJECT, state, session) == "allow"  # a canonical archive
+    state, session = egress.answer(state, session, "deb.example.com", PROJECT, "block")
+    assert egress.decide("http://deb.example.com", PROJECT, state, session) == "deny"
 
 
 def test_resolve_reaches_no_network_for_literals_and_localhost():

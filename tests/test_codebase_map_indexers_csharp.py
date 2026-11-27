@@ -34,6 +34,7 @@ for path in (str(SCRIPTS), str(HERE)):
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import egress  # noqa: E402
 import engine_tools  # noqa: E402
 import preparation  # noqa: E402
 import resolve_edges  # noqa: E402
@@ -240,6 +241,7 @@ class RunTest(unittest.TestCase):
         return self.state / "containers" / call[call.index("--name") + 1] / "fs"
 
     def test_the_preparation_reaches_the_feeds_the_project_declares(self):
+        egress.session(str(self.project))["allow"] += ["nuget.corp.example"]  # approved for this analysis: it opens only then
         self.play_success()
         self.index(declared={"hosts": ("nuget.corp.example",), "where": {}})
         self.assertIn("nuget.corp.example", self.created()[0])

@@ -148,7 +148,8 @@ def clone(engine, image, project, copy, request, visibility, mounts, limits, tim
     lock.mkdir(exist_ok=True)
     owner = int((folder / "owner").read_text(encoding="ascii"))
     with confinement.project_lock(lock, timeout=timeout):
-        names, gaps = _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, shared, lock, owner)
+        names, gaps = _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, shared, lock, owner,
+                            str(project))
     # Copy work and package caches. Each consumer bootstraps its own adapter and tools at their pinned versions.
     # Its helper files go in with this phase: an engine fills a volume from what is copied in before the start
     # only while the volume is empty, so after the clone they would stay under the mount, unseen.
@@ -165,8 +166,9 @@ def clone(engine, image, project, copy, request, visibility, mounts, limits, tim
     return None, gaps  # nothing is left for the consumer's preparation to copy in
 
 
-def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, shared, lock, owner):
+def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, shared, lock, owner, project):
     import container
+    import egress
     ready = lock / "ready"
     gaps = []
     if ready.exists():
@@ -184,7 +186,7 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
         for name in names:
             container.checked(container.cli(engine, "volume", "create", name), "Node seed volume create")
         container.checked(container.cli(engine, "network", "create", "--internal", network), "Node restore network")
-        container.start_proxy(engine, proxy, network, tuple(request["hosts"]))
+        container.start_proxy(engine, proxy, network, tuple(request["hosts"]), project)
         script = (container.named() if visibility == "blind" else "") + request["script"]
         row = container.phase(engine, "node-restore", image=image, network=network, command=["sh", "-ec", script],
                               env={**preparation.ENV, **container.proxy_environment(f"http://proxy:{container.PROXY_PORT}")},
@@ -193,10 +195,13 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
         container.mask_file(row.get("log"), hide)
         container.append_record(out_dir / container.RECORD_NAME,
                                 {**container.mask_row(row, hide), "preparation": lock.name})
+        asked, denied = egress.collect(project, egress.refused(
+            container.cli(engine, "logs", proxy).stdout.decode("utf-8", "replace")))  # before the proxy goes
         if row.get("outcome") != "exited" or row.get("exit_code") != 0:
-            raise container.Gap(row.get("cause") or "Node dependency preparation failed", "see node-restore.log")
+            raise container.Gap(row.get("cause") or "Node dependency preparation failed", "see node-restore.log"
+                                + (f"; {egress.approval_gap(asked)[0]['detail']}" if asked else ""))
         log = Path(row["log"]).read_text(encoding="utf-8", errors="replace")
-        gaps = [*preparation.missing(log), *preparation.restore_gaps(log), *preparation.generation_gaps(log)]
+        gaps = [*preparation.missing(log), *preparation.restore_gaps(log), *preparation.generation_gaps(log), *denied]
         if not gaps:  # a partial install remains usable by this consumer alone
             ready.write_text(token, encoding="ascii")
     except BaseException:

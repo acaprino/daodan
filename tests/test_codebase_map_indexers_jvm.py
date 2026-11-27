@@ -38,6 +38,7 @@ for path in (str(SCRIPTS), str(HERE)):
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import egress  # noqa: E402
 import preparation  # noqa: E402
 import resolve_edges  # noqa: E402
 import engine_tools  # noqa: E402
@@ -602,6 +603,7 @@ class PreparationTests:
     def test_a_build_whose_error_names_a_vendor_runs_again_on_that_vendor_s_jdk_and_says_which(self):
         self.serve_mise()
         self.asking(self.ASKS_JETBRAINS)
+        egress.session(str(self.project))["allow"] += ["cache-redirector.jetbrains.com"]  # approved for this analysis: it opens only then
         runs = self.then(self.play_success)
         result = self.index()
         self.assertTrue(result["indexes"])
@@ -768,6 +770,7 @@ class PreparationTests:
         self.assertIn("platforms;android-35: Warning: Failed to find package", result["gaps"][0]["detail"])
 
     def test_the_hosts_the_project_declares_are_reached_by_the_preparation(self):
+        egress.session(str(self.project))["allow"] += ["jitpack.io"]  # approved for this analysis: it opens only then
         self.play_success()
         self.index(declared={"hosts": ("jitpack.io",), "where": {"jitpack.io": ["pom.xml"]}})
         self.assertIn("jitpack.io", self.created()[0])
@@ -819,7 +822,9 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         self.play_success()
         self.index()
         proxy, prepare, execute = self.created()
-        self.assertEqual(proxy[proxy.index(str(container.PROXY_PORT)) + 1:], list(jvm.registries(self.project)))
+        # jcenter.bintray.com is no registry of `package-managers.json`: the proxy opens it once the user approved it
+        self.assertEqual(proxy[proxy.index(str(container.PROXY_PORT)) + 1:],
+                         [host for host in jvm.registries(self.project) if host != "jcenter.bintray.com"])
         for host in ("repo1.maven.org", "repo.maven.apache.org"):
             self.assertIn(host, proxy)
         portal = ("plugins.gradle.org", "plugins-artifacts.gradle.org")

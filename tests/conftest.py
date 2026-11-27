@@ -30,6 +30,16 @@ def _grammars():
 
 
 @pytest.fixture(autouse=True)
+def _forgotten_answers():
+    """The answers and requests of an analysis (`egress`) are not carried from one test to the next."""
+    yield
+    module = sys.modules.get("egress")
+    if module is not None:
+        module.SESSIONS.clear()
+        module.PENDING.clear()
+
+
+@pytest.fixture(autouse=True)
 def _forgotten_failures():
     """What `stack_analyser` remembers of a failed install is not carried from one test to the next."""
     yield

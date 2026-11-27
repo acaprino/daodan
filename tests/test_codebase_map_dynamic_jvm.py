@@ -30,6 +30,7 @@ for path in (str(SCRIPTS), str(HERE)):
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import egress  # noqa: E402
 import dynamic  # noqa: E402
 import preparation  # noqa: E402
 import resolve_edges  # noqa: E402
@@ -807,6 +808,7 @@ class ObserveTest(FakeEngineTest):
         self.assertIn("api.adoptium.net", self.created()[0])  # mise's downloads, through the preparation's proxy
 
     def test_the_hosts_the_project_declares_are_reached_by_the_preparation(self):
+        egress.session(str(self.project))["allow"] += ["jitpack.io"]  # approved for this analysis: it opens only then
         self.planned["declared"] = {"hosts": ("jitpack.io",), "where": {"jitpack.io": ["pom.xml"]}}
         self.observe(suites=self.suite(1))
         self.assertIn("jitpack.io", self.created()[0])

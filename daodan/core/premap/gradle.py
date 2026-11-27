@@ -69,7 +69,7 @@ def commands(context):
 
 def retry(answer: dict) -> list[str]:
     """The hosts of the repositories a failed answer's builds declare in their settings (a plugin of
-    `pluginManagement`): the runner's second run reaches them (`container_runner`)."""
+    `pluginManagement`), the hosts a preventive request names (`egress`); the runner no longer opens them by itself."""
     from urllib.parse import urlsplit
     found = set()
     for line in (answer.get("stdout") or "").split("\n"):

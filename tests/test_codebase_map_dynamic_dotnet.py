@@ -30,6 +30,7 @@ for path in (str(SCRIPTS), str(HERE)):
         sys.path.insert(0, path)
 
 import container  # noqa: E402
+import egress  # noqa: E402
 import dynamic  # noqa: E402
 import engine_tools  # noqa: E402
 import preparation  # noqa: E402
@@ -416,6 +417,7 @@ class ObserveTest(unittest.TestCase):
         return [call for call in calls if call[0] == "create"]
 
     def test_the_tests_run_recorded_in_the_container_and_a_project_that_does_not_build_is_said(self):
+        egress.session(str(self.project))["allow"] += ["nuget.corp.example"]  # approved for this analysis: it opens only then
         result = self.observe()
         self.assertIsNone(dynamic.malformed(result))
         self.assertEqual(result["state"], "ran")

@@ -29,6 +29,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import container  # noqa: E402
+import egress  # noqa: E402
 
 FAKE_CLI = r'''
 import io, json, shutil, sys, tarfile, time
@@ -180,6 +181,15 @@ class FakeEngineTest(unittest.TestCase):
         patcher = mock.patch.object(container, "volume_registry", return_value=self.registry)
         patcher.start()
         self.addCleanup(patcher.stop)
+        env = mock.patch.dict(os.environ, {"DAODAN_SHARED_DIR": str(self.scratch / "shared")})  # egress.json lives there
+        env.start()
+        self.addCleanup(env.stop)
+        egress.PENDING.clear()
+        egress.SESSIONS.clear()
+        lookup = mock.patch.object(egress, "resolve", side_effect=lambda rows, *_: [  # no lookup in a test
+            {**row, "address": None, "network": False} for row in rows])
+        lookup.start()
+        self.addCleanup(lookup.stop)
         self.project = self.scratch / "project"
         self.out = self.scratch / "out"
         files = {
@@ -687,6 +697,52 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn(["image", "rm", "-f", "daodan-prepared-aaaaaaaaaaaa"], calls)
         self.assertFalse(any("project/app:1" in call for call in calls))
         self.assertEqual(list(self.registry.glob("*")), [])
+
+    def test_the_proxy_opens_only_the_hosts_egress_allows_and_the_rest_asks(self):
+        """A canonical host and one the user approved for this project pass; any other host, GitHub's and a host the
+        project declares among them, is left to the proxy to refuse: it is a request to answer."""
+        hosts = ("registry.npmjs.org", "git.example.com", "github.com", "http://deb.example.com", "blocked.example.com",
+                 "http://archive.ubuntu.com")
+        egress.save({"whitelist": {str(self.project): ["git.example.com", "deb.example.com"]},
+                     "blacklist": ["blocked.example.com"]})
+        self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=hosts)["state"], "done")
+        [proxy, *_] = self.created()
+        self.assertEqual(proxy[proxy.index("3128") + 1:], ["registry.npmjs.org", "git.example.com",
+                                                          "http://deb.example.com", "http://archive.ubuntu.com"])
+        egress.save(egress.answer(egress.load(), egress.session(str(self.project)), "github.com",
+                                  str(self.project), "always")[0])
+        self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=hosts)["state"], "done")
+        self.assertIn("github.com", self.created()[3])  # the second run's proxy
+
+    def test_a_refused_host_is_a_request_and_a_step_that_fails_with_one_needs_approval(self):
+        (self.state / "refused.log").write_text(
+            '@@daodan-refused {"host": "git.example.com", "port": "443"}\n'
+            '@@daodan-refused {"host": "blocked.example.com", "port": "443"}\n', encoding="utf-8")
+        egress.save({"whitelist": {}, "blacklist": ["blocked.example.com"]})
+        done = self.run_operation(["exit", "0"], prepare=["exit", "0"])
+        self.assertEqual(done["state"], "done")  # a step that succeeds keeps its result, the request stays visible
+        self.assertEqual([row["host"] for row in done["asked"]], ["git.example.com"])
+        self.assertEqual([gap["kind"] for gap in done["gaps"] if gap["kind"] != "file_withheld"], ["host_denied"])
+        self.assertEqual([row["host"] for row in egress.pending(str(self.project))], ["git.example.com"])
+        failed = self.run_operation(["exit", "0"], prepare=["exit", "3"])
+        gaps = [gap for gap in failed["gaps"] if gap["kind"] != "file_withheld"]
+        self.assertEqual([gap["kind"] for gap in gaps], ["host_denied", "approval_required"])
+        self.assertEqual(gaps[1]["hosts"], ["git.example.com"])
+        self.assertEqual(len(egress.pending(str(self.project))), 1)  # once, however many runs asked
+
+    def test_run_commands_says_approval_required_when_a_command_failed_where_a_host_was_asked(self):
+        asked = [{"host": "git.example.com", "port": "443", "address": None, "network": False, "declared_in": []}]
+        for code, kinds in (("1", ["approval_required"]), ("0", [])):
+            out = self.scratch / f"commands-{code}"
+
+            def ran(*_, **__):  # the container's answer: the command's code, in the folder the run brings back
+                (out / "results" / "0").mkdir(parents=True)
+                (out / "results" / "0" / "code").write_text(code + "\n", encoding="utf-8")
+                return {"state": "done", "asked": asked}
+            with mock.patch.object(container, "run_in_container", ran):
+                result = container.run_commands(self.project, [{"tool": "t", "argv": ["x"]}], image="fake/runtime:1",
+                                                out_dir=out)
+            self.assertEqual([gap["kind"] for gap in result.get("gaps", [])], kinds)
 
     def test_the_hosts_the_proxy_refused_come_back_in_the_result_even_when_the_preparation_fails(self):
         (self.state / "refused.log").write_text(

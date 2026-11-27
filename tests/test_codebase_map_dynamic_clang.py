@@ -25,6 +25,7 @@ for path in (str(SCRIPTS), str(HERE)):
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import egress  # noqa: E402
 import dynamic  # noqa: E402
 import preparation  # noqa: E402
 import snapshot  # noqa: E402
@@ -366,6 +367,7 @@ class ObserveTest(unittest.TestCase):
         return (self.state / "scripts" / f"{phase}.sh").read_text(encoding="utf-8")
 
     def test_the_preparation_reaches_the_hosts_the_project_declares(self):
+        egress.session(str(self.project))["allow"] += ["conan.corp.example"]  # approved for this analysis: it opens only then
         self.play_run()
         self.observe(declared=("conan.corp.example",))
         self.assertIn("conan.corp.example", self.created()[0])
@@ -406,6 +408,7 @@ class ObserveTest(unittest.TestCase):
 
     def test_vcpkg_restores_in_the_preparation_and_the_configure_reads_its_toolchain(self):
         (self.project / "vcpkg.json").write_text('{"dependencies": ["fmt"]}', encoding="utf-8")
+        egress.session(str(self.project))["allow"] += ["github.com"]  # approved for this analysis: it opens only then
         self.play_run()
         self.observe()
         proxy, _prepare, _execute = self.created()

@@ -67,9 +67,10 @@ def decide(host: str, project: str, state: dict, session: dict | None = None) ->
     host, "ask" for any other."""
     from container import REGISTRIES  # here, not above: `container` will use this module to filter its proxy's hosts
     host, session = host.lower(), session or new_session()
-    if host in state["blacklist"] or host in session["deny"]:
+    bare = host.removeprefix("http://")  # an apt archive is approved as its host is
+    if bare in state["blacklist"] or bare in session["deny"]:
         return "deny"
-    if host in REGISTRIES or host in state["whitelist"].get(project, ()) or host in session["allow"]:
+    if host in REGISTRIES or bare in state["whitelist"].get(project, ()) or bare in session["allow"]:
         return "allow"
     return "ask"
 
@@ -163,16 +164,25 @@ def requests(refused: list[dict], project: str, state: dict, session: dict, wher
              for row, decision in decided if decision == "deny"])
 
 
-def collect(project: str, result: dict, where: dict | None = None) -> list[dict]:
-    """The refusals a run's `result` carries (`container.run_in_container`): the requests join the project's
-    `PENDING`, and the `host_denied` gaps come back."""
-    if not result.get("refused"):
-        return []
-    asks, gaps = requests(result["refused"], project, load(), session(project), where)
+def collect(project: str, refused: list[dict], where: dict | None = None) -> tuple[list[dict], list[dict]]:
+    """The refusals of a run (`container.run_in_container`): the requests join the project's `PENDING`, and come back
+    with the `host_denied` gaps, `(asked, gaps)`."""
+    asks, gaps = requests(refused, project, load(), session(project), where)
     held = PENDING.setdefault(project, {})
     for row in asks:
         held.setdefault((row["host"], row["port"]), row)
-    return gaps
+    return asks, gaps
+
+
+def approval_gap(asked: list[dict]) -> list[dict]:
+    """The `approval_required` gap of a step that failed with requests unanswered: none when it asked for nothing."""
+    if not asked:
+        return []
+    said = ", ".join(f"{row['host']}:{row['port']}" + (f" (declared in {', '.join(row['declared_in'])})"
+                                                        if row["declared_in"] else "") for row in asked)
+    return [{"kind": "approval_required", "hosts": [row["host"] for row in asked],
+             "detail": f"the step failed and asked for hosts the user has not approved: {said}; answer in the app, "
+                       "then analyze again"}]
 
 
 def pending(project: str) -> list[dict]:

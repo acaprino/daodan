@@ -1269,7 +1269,12 @@ def fetch(engine: Engine, box: str, path: str, out_dir: Path, budget: int) -> tu
     return [str(out_dir / member.name) for member in members if member.isfile()], total
 
 
-def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...]) -> None:
+def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...], project: str) -> None:
+    """The proxy of a preparation, open to the `registries` that `egress.decide` allows the project (`str(project)`):
+    any other host is refused, and what it was asked is in the proxy's log (`PROXY_SCRIPT`), where the host reads it
+    as a request or a `host_denied` gap."""
+    state, answers = egress.load(), egress.session(project)
+    registries = tuple(host for host in registries if egress.decide(host, project, state, answers) == "allow")
     source = base64.b64encode(PROXY_SCRIPT.encode("utf-8")).decode("ascii")
     checked(cli(engine, "create", "--name", box, "--memory", str(128 * 2**20), "--pids-limit", "64",
                 PROXY_IMAGE, "python", "-c", f"import base64;exec(base64.b64decode('{source}'))",
@@ -1631,7 +1636,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     execution joins and its variables reach both phases under `env`. The result's `state` is
     `done` (the command exited, `exit_code` says how), `timeout`, `failed` (with `cause`) or `gap`
     (with `cause` and `remedy`); `refused`, when the preparation's proxy refused a host, lists each `{host, port}`
-    asked of it; `outputs` lists the files brought back into `out_dir`; `services`, with
+    asked of it, and `asked` those the user has yet to answer (`egress.collect`), with their `gaps`:
+    `host_denied`, and `approval_required` when the run failed (for `run_commands`, a command did); `outputs` lists the files brought back into `out_dir`; `services`, with
     services, each `{name, image, pinned, outcome}`, `outcome` `ready` or `failed` with `cause`: the execution
     runs without a service that failed. Within `beside` with steps, they run at the end of the preparation
     (`steps_script`), with the services beside them where the engine takes the pod off the preparation's network
@@ -1759,7 +1765,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
                 checked(cli(found, "network", "create", "--internal", network), "network create")
                 cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
-                start_proxy(found, proxy, network, tuple(registries))
+                start_proxy(found, proxy, network, tuple(registries), str(project))
                 refused = leaves(engine_cli, network, token) if steps and pinned else None
                 if refused:  # the pod could not leave the network: no step runs beside the services
                     said_steps, steps = unrun(f"{found.name} cannot take the pod of the services off the preparation's "
@@ -1778,8 +1784,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                             limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=prepare_copy, outputs=[],
                             out_dir=out_dir, volumes=mounts, commit=kept_image)
                 # what the proxy refused, read before it goes: `egress.collect` turns it into requests and gaps
-                if said := egress.refused(cli(found, "logs", proxy).stdout.decode("utf-8", "replace")):
-                    result["refused"] = said
+                if turned := egress.refused(cli(found, "logs", proxy).stdout.decode("utf-8", "replace")):
+                    result["refused"] = turned
                 append_record(record, {**hidden(row), "copy": digest})
                 if steps:
                     log = Path(row["log"]).read_bytes().decode("utf-8", "replace") if row.get("log") else ""
@@ -1822,6 +1828,10 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
         result["cause"] = str(error)
         return result
     finally:
+        if result.get("refused"):  # the requests to answer and the denials, in the gaps of every caller
+            result["asked"], denied = egress.collect(str(project), result["refused"])
+            result["gaps"] = [*(result.get("gaps") or ()), *denied,
+                              *(egress.approval_gap(result["asked"]) if result["state"] != "done" else ())]
         if hide and isinstance(result.get("cause"), str):
             result["cause"] = hide(result["cause"])
         for args in cleanup:
@@ -1881,4 +1891,8 @@ def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Pa
                 if (folder / str(number) / name).is_file() else "" for name in ("code", *STREAMS)}
         code = read.pop("code").strip()
         results.append({"returncode": int(code) if code.lstrip("-").isdigit() else None, **read})
-    return {**result, "root": WORKDIR, "results": results}
+    gaps = result.get("gaps") or []
+    if result.get("asked") and any(item["returncode"] != 0 for item in results) and not any(
+            gap["kind"] == "approval_required" for gap in gaps):  # a command failed where the run asked for a host
+        gaps = [*gaps, *egress.approval_gap(result["asked"])]
+    return {**result, "root": WORKDIR, "results": results, **({"gaps": gaps} if gaps else {})}
