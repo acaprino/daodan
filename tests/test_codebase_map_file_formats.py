@@ -137,3 +137,13 @@ def test_rules_that_contradict_each_other_or_the_catalogue_are_named():
     rules = detection.load([{**CARD, "language": "Ruby"}], classes=())
     assert detection.problems(rules, {".ts": ["TypeScript", "XML"]}) == [
         "ts.sample: Linguist does not list Ruby for .ts (TypeScript, XML)"]
+
+
+def test_linguist_name_is_read_from_the_catalogue_alone():
+    from pathlib import Path
+    from languages.detect import linguist_name
+    assert linguist_name(Path("src/Dockerfile")) == ["Dockerfile"]  # a file name
+    assert linguist_name(Path("lib/a.rb")) == ["Ruby"]  # a suffix Daodan does not read
+    assert linguist_name(Path("a.PY")) == ["Python"]  # a suffix it reads, in lower case
+    assert linguist_name(Path("a.m")) == ["Limbo", "M", "MATLAB", "MUF", "Mercury", "Objective-C", "Wolfram Language"]
+    assert linguist_name(Path("a.nothing-of-linguist")) == [] and linguist_name(Path("noname")) == []

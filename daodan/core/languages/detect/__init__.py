@@ -12,6 +12,7 @@ rules and the catalogue disagree on.
 """
 from __future__ import annotations
 
+import json
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +22,7 @@ import file_formats
 from .rules import CLASSES
 
 RULES_PATH = file_formats.PATH.with_name("language-rules.toml")
+CATALOGUE_PATH = file_formats.PATH.with_name("linguist-catalog.json")
 TESTS = ("starts-with", "contains")
 FIELDS = {"id": str, "extensions": list, "language": str, "test": str, "texts": list, "why": str, "source": str,
           "yes": list, "no": list}
@@ -90,6 +92,23 @@ def load(cards: list[dict], classes=CLASSES) -> dict[str, tuple]:
 
 with RULES_PATH.open("rb") as _handle:
     RULES = load(tomllib.load(_handle).get("rule", []))
+
+
+with CATALOGUE_PATH.open(encoding="utf-8") as _handle:
+    _CATALOGUE = json.load(_handle)
+
+
+def linguist_name(path: Path) -> list[str]:
+    """What Linguist calls the file at `path`, from its catalogue alone: the file name, else the suffix. A suffix
+    several languages list answers all of them, in Linguist's order: choosing one takes Linguist's heuristics, which
+    are not applied here. An empty list is a name Linguist does not list."""
+    for table in ("filenames", "unread_filenames"):
+        if _CATALOGUE[table].get(path.name):
+            return list(_CATALOGUE[table][path.name])
+    for table in ("extensions", "unread_extensions"):
+        if _CATALOGUE[table].get(path.suffix.lower()):
+            return list(_CATALOGUE[table][path.suffix.lower()])
+    return []
 
 
 def detect(path: Path, text: str | None = None, rules: dict[str, tuple] | None = None) -> Detection:
