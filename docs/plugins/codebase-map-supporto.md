@@ -68,7 +68,7 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 
 | Fonte | Versione | Modo | Modulo | Casi per stato |
 | --- | --- | --- | --- | --- |
-| `modules.py` | daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.3.image.2 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
+| `modules.py` | daodan/module-graph/v1+compose.1.pyyaml.6.0.3.unit-resolution.3.image.2 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
 | `python-build` | daodan/premap/v3 | lettore: legge i file | `premap/python_build.py` | not_needed 110, ran 12 |
 | `requirements` | daodan/premap/v2 | lettore: legge i file | `premap/requirements.py` | not_needed 114, ran 8 |
 | `python-tests` | daodan/premap/v1 | lettore: legge i file | `premap/python_tests.py` | not_needed 115, ran 7 |
@@ -189,24 +189,24 @@ Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `lib
 
 Ognuna delle 499 voci `project` con una regola del fork ha la sua `category` scritta: nessuna è `framework` solo per il default.
 
-Riconoscimento dello stack sul corpus, giro del 19 novembre 2026 (`benchmarks/project-model/results/daodan_stack.json`), 178 fixture su 180 con record; per nome conta un nome una volta per fixture, per unità ogni unità che lo tiene.
+Riconoscimento dello stack sul corpus, giro del 27 novembre 2026 (`benchmarks/project-model/results/daodan_stack.json`), 184 fixture su 186 con record; per nome conta un nome una volta per fixture, per unità ogni unità che lo tiene.
 
 | Famiglia | Fixture | Framework per nome | Framework per unità | Servizi |
 | --- | --- | --- | --- | --- |
 | js | 20 | 10 / 10 (100,0 %) | 11 / 11 (100,0 %), 0 sbagliati | 1 / 1 (100,0 %), 0 in più |
 | py | 21 | 4 / 4 (100,0 %) | 4 / 4 (100,0 %), 0 sbagliati | 2 / 3 (66,7 %), 0 in più |
-| jvm | 34 | 36 / 42 (85,7 %) | 37 / 43 (86,0 %), 0 sbagliati | 1 / 2 (50,0 %), 0 in più |
+| jvm | 34 | 38 / 42 (90,5 %) | 39 / 43 (90,7 %), 0 sbagliati | 2 / 2 (100,0 %), 1 in più |
 | sys | 25 | 2 / 2 (100,0 %) | 1 / 2 (50,0 %), 1 sbagliato | nessuno atteso, 0 in più |
-| mix | 30 | 29 / 31 (93,5 %) | 32 / 37 (86,5 %), 0 sbagliati | 11 / 33 (33,3 %), 1 in più |
-| real | 10 | 99 / 127 (78,0 %) | 177 / 251 (70,5 %), 12 sbagliati | 30 / 84 (35,7 %), 9 in più |
-| stack | 38 | 182 / 352 (51,7 %) | 290 / 653 (44,4 %), 37 sbagliati | 96 / 395 (24,3 %), 55 in più |
-| tutte | 178 | 362 / 568 (63,7 %) | 552 / 1.001 (55,1 %), 50 sbagliati | 141 / 518 (27,2 %), 65 in più |
+| mix | 30 | 29 / 31 (93,5 %) | 32 / 37 (86,5 %), 0 sbagliati | 12 / 33 (36,4 %), 1 in più |
+| real | 15 | 144 / 163 (88,3 %) | 258 / 312 (82,7 %), 13 sbagliati | 59 / 124 (47,6 %), 18 in più |
+| stack | 39 | 360 / 393 (91,6 %) | 608 / 757 (80,3 %), 57 sbagliati | 180 / 451 (39,9 %), 92 in più |
+| tutte | 184 | 587 / 645 (91,0 %) | 953 / 1.166 (81,7 %), 71 sbagliati | 256 / 614 (41,7 %), 112 in più |
 
 Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: il fork di stack-analyser ha una regola per la voce (la colonna «Regola del fork»: `sì` se la voce viene dal catalogo del suo rilascio, `no` se il registro la nomina e il fork non la riconosce) e la riconosce da ciò che il progetto mostra (un pacchetto, un'immagine, un file, un sorgente). Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
 <details><summary>Framework, librerie e strumenti: 499 voci</summary>
 
-| Voce | Id | Classe | Regola del fork | Lettura propria | Fixture in cui lo step la trova (19 novembre 2026) |
+| Voce | Id | Classe | Regola del fork | Lettura propria | Fixture in cui lo step la trova (27 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
 | .NET Aspire | `dotnet-aspire` | framework | sì | — | 3 |
 | .NET MAUI | `dotnet-maui` | framework | sì | — | 1 |
@@ -214,7 +214,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | AdonisJS | `adonisjs` | framework | sì | — | 0 |
 | aiohttp | `aiohttp` | framework | sì | — | 1 |
 | Alpine.js | `alpinejs` | framework | sì | — | 2 |
-| Android | `android` | framework | sì | — | 5 |
+| Android | `android` | framework | sì | — | 7 |
 | Angular | `angular` | framework | sì | — | 4 |
 | AngularJS | `angularjs` | framework | sì | — | 0 |
 | Api Platform | `apiplatform` | framework | sì | — | 0 |
@@ -223,19 +223,19 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Assemble | `assemble` | framework | sì | — | 0 |
 | Astro | `astro` | framework | sì | frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`premap/astro.py`); stili con il compilatore del framework (`indexers/css_astro.py`) | 1 |
 | Axum | `axum` | framework | sì | — | 3 |
-| Blazor | `blazor` | framework | sì | — | 1 |
+| Blazor | `blazor` | framework | sì | — | 2 |
 | Blitzjs | `blitzjs` | framework | sì | — | 0 |
 | Capacitor | `capacitorjs` | framework | sì | — | 1 |
 | Celery | `celery` | framework | sì | — | 2 |
 | Chi | `chi` | framework | sì | — | 4 |
-| Compose for Wear OS | `compose-for-wear-os` | framework | sì | — | 0 |
+| Compose for Wear OS | `compose-for-wear-os` | framework | sì | — | 1 |
 | Compose Multiplatform | `compose-multiplatform` | framework | sì | — | 2 |
-| Connect | `connectrpc` | framework | sì | — | 0 |
+| Connect | `connectrpc` | framework | sì | — | 2 |
 | Cordova | `apacheCordova` | framework | sì | — | 0 |
 | Dioxus | `dioxus` | framework | sì | — | 0 |
 | Django | `django` | framework | sì | — | 7 |
-| Django Channels | `django-channels` | framework | sì | — | 0 |
-| Django REST framework | `django-rest-framework` | framework | sì | — | 0 |
+| Django Channels | `django-channels` | framework | sì | — | 1 |
+| Django REST framework | `django-rest-framework` | framework | sì | — | 3 |
 | Docsify | `docsify` | framework | sì | — | 0 |
 | Docus | `docus` | framework | sì | — | 0 |
 | Docusaurus | `docusaurus` | framework | sì | — | 1 |
@@ -245,20 +245,20 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Eleventy | `eleventy` | framework | sì | — | 0 |
 | ElysiaJS | `elysiajs` | framework | sì | — | 0 |
 | Ember | `emberjs` | framework | sì | — | 0 |
-| Expo | `expojs` | framework | sì | — | 3 |
+| Expo | `expojs` | framework | sì | — | 4 |
 | Express | `express` | framework | sì | — | 9 |
-| ExUnit | `exunit` | framework | sì | — | 0 |
-| FastAPI | `fastapi` | framework | sì | — | 6 |
-| FastEndpoints | `fastendpoints` | framework | sì | — | 0 |
+| ExUnit | `exunit` | framework | sì | — | 4 |
+| FastAPI | `fastapi` | framework | sì | — | 7 |
+| FastEndpoints | `fastendpoints` | framework | sì | — | 1 |
 | Fastify | `fastify` | framework | sì | — | 0 |
 | FastMCP | `fastmcp` | framework | sì | — | 1 |
-| Fiber | `fiber` | framework | sì | — | 0 |
-| Flask | `flask` | framework | sì | — | 5 |
+| Fiber | `fiber` | framework | sì | — | 1 |
+| Flask | `flask` | framework | sì | — | 7 |
 | Flutter | `flutter` | framework | sì | — | 2 |
-| flutter_test | `flutter-test` | framework | sì | — | 0 |
+| flutter_test | `flutter-test` | framework | sì | — | 2 |
 | FumaDocs | `fumadocs` | framework | sì | — | 1 |
 | Gatsby | `gatsby` | framework | sì | — | 0 |
-| Gin | `gin` | framework | sì | — | 1 |
+| Gin | `gin` | framework | sì | — | 2 |
 | Gradio | `gradio` | framework | sì | — | 1 |
 | Gridsome | `gridsome` | framework | sì | — | 0 |
 | HexoJS | `hexojs` | framework | sì | — | 0 |
@@ -267,42 +267,42 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Inferno | `infernojs` | framework | sì | — | 0 |
 | Ionic | `ionic` | framework | sì | — | 0 |
 | Jekyll | `jekyll` | framework | sì | — | 0 |
-| Jetpack Compose | `jetpack-compose` | framework | sì | — | 0 |
+| Jetpack Compose | `jetpack-compose` | framework | sì | — | 1 |
 | Koa | `koa` | framework | sì | — | 0 |
 | Kotlin Multiplatform | `kotlin-multiplatform` | framework | sì | — | 3 |
 | Ktor | `ktor` | framework | sì | — | 2 |
-| LangChain4j | `langchain4j` | framework | sì | — | 0 |
+| LangChain4j | `langchain4j` | framework | sì | — | 1 |
 | Laravel | `laravel` | framework | sì | — | 3 |
 | Lit | `litjs` | framework | sì | — | 0 |
-| MapKit | `mapkit` | framework | sì | — | 0 |
-| Materialize | `materialize-css` | framework | sì | — | 0 |
+| MapKit | `mapkit` | framework | sì | — | 1 |
+| Materialize | `materialize-css` | framework | sì | — | 1 |
 | Meteor | `meteorjs` | framework | sì | — | 0 |
-| Metro | `metro-kotlin` | framework | sì | — | 0 |
+| Metro | `metro-kotlin` | framework | sì | — | 1 |
 | Micronaut | `micronaut` | framework | sì | — | 0 |
 | Mithril | `mithriljs` | framework | sì | — | 0 |
 | MkDocs | `mkdocs` | framework | sì | — | 2 |
-| MudBlazor | `mudblazor` | framework | sì | — | 0 |
-| MyBatis | `mybatis` | framework | sì | — | 0 |
+| MudBlazor | `mudblazor` | framework | sì | — | 1 |
+| MyBatis | `mybatis` | framework | sì | — | 1 |
 | NestJS | `nestjs` | framework | sì | — | 2 |
-| Next.js | `nextjs` | framework | sì | — | 5 |
-| Nuxt.js | `nuxtjs` | framework | sì | — | 2 |
+| Next.js | `nextjs` | framework | sì | — | 7 |
+| Nuxt.js | `nuxtjs` | framework | sì | — | 3 |
 | Phaser | `phaserjs` | framework | sì | — | 0 |
 | Phoenix | `phoenix` | framework | sì | — | 3 |
 | Phoenix LiveView | `phoenix-liveview` | framework | sì | — | 3 |
-| Pico CSS | `pico-css` | framework | sì | — | 0 |
+| Pico CSS | `pico-css` | framework | sì | — | 1 |
 | Preact | `preactjs` | framework | sì | — | 1 |
-| proptest | `proptest` | framework | sì | — | 0 |
+| proptest | `proptest` | framework | sì | — | 1 |
 | Quarkus | `quarkus` | framework | sì | — | 1 |
-| Quarkus REST | `quarkus-rest` | framework | sì | — | 0 |
-| Quarkus WebSockets Next | `quarkus-websockets-next` | framework | sì | — | 0 |
+| Quarkus REST | `quarkus-rest` | framework | sì | — | 1 |
+| Quarkus WebSockets Next | `quarkus-websockets-next` | framework | sì | — | 1 |
 | Qwik | `qwikjs` | framework | sì | — | 0 |
-| React | `react` | framework | sì | — | 18 |
-| React Native | `react-native` | framework | sì | — | 3 |
+| React | `react` | framework | sì | — | 20 |
+| React Native | `react-native` | framework | sì | — | 4 |
 | RedwoodJs | `redwoodjs` | framework | sì | — | 0 |
 | Refine | `refinedev` | framework | sì | — | 0 |
 | Remix | `remixrun` | framework | sì | — | 0 |
 | Roq | `roq` | framework | sì | — | 0 |
-| rstest | `rstest` | framework | sì | — | 0 |
+| rstest | `rstest` | framework | sì | — | 1 |
 | Ruby on Rails | `rails` | framework | sì | — | 3 |
 | Scrapy | `scrapy` | framework | sì | — | 0 |
 | Shopify Hydrogen | `shopify.hydrogen` | framework | sì | — | 0 |
@@ -311,114 +311,114 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Slim | `slim` | framework | sì | — | 1 |
 | Solid js | `solidjs` | framework | sì | — | 0 |
 | Sphinx | `sphinx` | framework | sì | — | 2 |
-| Spring AI | `spring-ai` | framework | sì | — | 0 |
-| Spring AMQP | `spring-amqp` | framework | sì | — | 0 |
-| Spring Boot | `spring-boot` | framework | sì | — | 7 |
+| Spring AI | `spring-ai` | framework | sì | — | 1 |
+| Spring AMQP | `spring-amqp` | framework | sì | — | 1 |
+| Spring Boot | `spring-boot` | framework | sì | — | 8 |
 | Spring Boot Admin | `spring-boot-admin` | framework | sì | — | 1 |
 | Spring Cloud Config | `spring-cloud-config` | framework | sì | — | 1 |
-| Spring Cloud Gateway | `spring-cloud-gateway` | framework | sì | — | 0 |
+| Spring Cloud Gateway | `spring-cloud-gateway` | framework | sì | — | 1 |
 | Spring Cloud Netflix | `spring-cloud-netflix` | framework | sì | — | 1 |
-| Spring Data Elasticsearch | `spring-data-elasticsearch` | framework | sì | — | 0 |
-| Spring Data JPA | `spring-data-jpa` | framework | sì | — | 5 |
-| Spring Data MongoDB | `spring-data-mongodb` | framework | sì | — | 0 |
-| Spring Data Redis | `spring-data-redis` | framework | sì | — | 0 |
-| Spring MVC | `spring-mvc` | framework | sì | — | 6 |
+| Spring Data Elasticsearch | `spring-data-elasticsearch` | framework | sì | — | 1 |
+| Spring Data JPA | `spring-data-jpa` | framework | sì | — | 6 |
+| Spring Data MongoDB | `spring-data-mongodb` | framework | sì | — | 1 |
+| Spring Data Redis | `spring-data-redis` | framework | sì | — | 1 |
+| Spring MVC | `spring-mvc` | framework | sì | — | 7 |
 | Spring Security | `spring-security` | framework | sì | — | 2 |
 | Spring WebFlux | `spring-webflux` | framework | sì | — | 0 |
 | Stencil | `stenciljs` | framework | sì | — | 0 |
-| Stimulus | `stimulus` | framework | sì | — | 0 |
-| Strawberry GraphQL | `strawberry-graphql` | framework | sì | — | 0 |
+| Stimulus | `stimulus` | framework | sì | — | 2 |
+| Strawberry GraphQL | `strawberry-graphql` | framework | sì | — | 1 |
 | Streamlit | `streamlit` | framework | sì | — | 0 |
-| Svelte | `sveltejs` | framework | sì | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_svelte.py`) | 2 |
-| SvelteKit | `sveltekit` | framework | sì | — | 1 |
-| SwiftUI | `swiftui` | framework | sì | — | 0 |
-| Symfony | `symfony` | framework | sì | — | 0 |
-| Tanstack Start | `tanstackstart` | framework | sì | — | 0 |
+| Svelte | `sveltejs` | framework | sì | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_svelte.py`) | 3 |
+| SvelteKit | `sveltekit` | framework | sì | — | 2 |
+| SwiftUI | `swiftui` | framework | sì | — | 5 |
+| Symfony | `symfony` | framework | sì | — | 3 |
+| Tanstack Start | `tanstackstart` | framework | sì | — | 1 |
 | Tauri | `tauri` | framework | sì | — | 3 |
-| test | `dart-test` | framework | sì | — | 0 |
-| UIKit | `uikit` | framework | sì | — | 0 |
+| test | `dart-test` | framework | sì | — | 1 |
+| UIKit | `uikit` | framework | sì | — | 4 |
 | UmiJS | `umijs` | framework | sì | — | 0 |
 | VitePress | `vitepress` | framework | sì | — | 1 |
-| Vue.js | `vue` | framework | sì | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_vue.py`) | 8 |
+| Vue.js | `vue` | framework | sì | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_vue.py`) | 9 |
 | VuePress | `vuepress` | framework | sì | — | 0 |
-| Vuetify | `vuetify` | framework | sì | — | 0 |
-| Wagtail | `wagtail` | framework | sì | — | 0 |
+| Vuetify | `vuetify` | framework | sì | — | 1 |
+| Wagtail | `wagtail` | framework | sì | — | 1 |
 | Wasp | `wasp` | framework | sì | — | 0 |
-| WinUI | `winui` | framework | sì | — | 0 |
-| Yew | `yew` | framework | sì | — | 0 |
+| WinUI | `winui` | framework | sì | — | 1 |
+| Yew | `yew` | framework | sì | — | 1 |
 | Yii2 | `yii2` | framework | sì | — | 0 |
-| _hyperscript | `hyperscript` | library | sì | — | 0 |
+| _hyperscript | `hyperscript` | library | sì | — | 2 |
 | Ant Design | `antd` | library | sì | — | 1 |
 | Ant Design Icons | `antdicons` | library | sì | — | 1 |
-| Apache Avro | `avro` | library | sì | — | 0 |
+| Apache Avro | `avro` | library | sì | — | 1 |
 | Apache Beam | `apache-beam` | library | sì | — | 0 |
 | Apache Thrift | `apache_thrift` | library | sì | — | 0 |
 | AriaKit UI | `ariakitui` | library | sì | — | 0 |
 | Ark UI | `arkui` | library | sì | — | 0 |
 | ArkType | `arktype` | library | sì | — | 0 |
 | Base UI | `baseui` | library | sì | — | 0 |
-| Basecoat | `basecoat` | library | sì | — | 0 |
-| Bootstrap | `bootstrap` | library | sì | — | 5 |
+| Basecoat | `basecoat` | library | sì | — | 1 |
+| Bootstrap | `bootstrap` | library | sì | — | 8 |
 | Bootstrap Icons | `bootstrapicons` | library | sì | — | 1 |
-| Broadway | `broadway` | library | sì | — | 0 |
-| BullMQ | `bullmq` | library | sì | — | 0 |
-| Casbin | `casbin` | library | sì | — | 0 |
-| Catalyst | `github-catalyst` | library | sì | — | 0 |
+| Broadway | `broadway` | library | sì | — | 1 |
+| BullMQ | `bullmq` | library | sì | — | 1 |
+| Casbin | `casbin` | library | sì | — | 1 |
+| Catalyst | `github-catalyst` | library | sì | — | 1 |
 | Cats | `cats` | library | sì | — | 1 |
 | Chakra UI | `chakraui` | library | sì | — | 0 |
-| clap | `clap` | library | sì | — | 0 |
-| class-transformer | `class-transformer` | library | sì | — | 0 |
-| class-validator | `class-validator` | library | sì | — | 0 |
-| Click | `click` | library | sì | — | 8 |
+| clap | `clap` | library | sì | — | 4 |
+| class-transformer | `class-transformer` | library | sì | — | 2 |
+| class-validator | `class-validator` | library | sì | — | 2 |
+| Click | `click` | library | sì | — | 10 |
 | Cobra | `cobra` | library | sì | — | 2 |
 | CodeMirror | `codemirror` | library | sì | — | 8 |
-| Coil | `coil` | library | sì | — | 0 |
+| Coil | `coil` | library | sì | — | 2 |
 | D3.js | `d3js` | library | sì | — | 1 |
-| daisyUI | `daisyui` | library | sì | — | 1 |
-| dart_mappable | `dart-mappable` | library | sì | — | 0 |
+| daisyUI | `daisyui` | library | sì | — | 2 |
+| dart_mappable | `dart-mappable` | library | sì | — | 1 |
 | Dask | `dask` | library | sì | — | 0 |
 | Diesel | `dieselrs` | library | sì | — | 0 |
 | Doctrine ORM | `doctrinephp` | library | sì | — | 2 |
-| DOMPurify | `dompurify` | library | sì | — | 0 |
+| DOMPurify | `dompurify` | library | sì | — | 7 |
 | Drizzle ORM | `drizzleorm` | library | sì | — | 0 |
-| Ecto | `ecto` | library | sì | — | 0 |
-| EffectJS | `effectjs` | library | sì | — | 0 |
-| Element Plus | `element-plus` | library | sì | — | 0 |
+| Ecto | `ecto` | library | sì | — | 2 |
+| EffectJS | `effectjs` | library | sì | — | 1 |
+| Element Plus | `element-plus` | library | sì | — | 1 |
 | ELK.js | `elkjs` | library | sì | — | 0 |
 | ent. | `goent` | library | sì | — | 0 |
-| Entity Framework Core | `entity-framework-core` | library | sì | — | 5 |
-| Expo Router | `expo-router` | library | sì | — | 0 |
+| Entity Framework Core | `entity-framework-core` | library | sì | — | 6 |
+| Expo Router | `expo-router` | library | sì | — | 3 |
 | Exposed | `exposed` | library | sì | — | 1 |
 | Feather Icons | `feathericons` | library | sì | — | 0 |
 | Fluent UI | `fluentui` | library | sì | — | 0 |
-| flutter_rust_bridge | `flutter-rust-bridge` | library | sì | — | 0 |
-| Font Awesome | `fontawesome` | library | sì | — | 2 |
+| flutter_rust_bridge | `flutter-rust-bridge` | library | sì | — | 1 |
+| Font Awesome | `fontawesome` | library | sì | — | 4 |
 | GORM | `gorm` | library | sì | — | 2 |
-| graphql_client | `graphql-client-rust` | library | sì | — | 0 |
-| gRPC | `grpc` | library | sì | — | 5 |
-| gRPC-Gateway | `grpc-gateway` | library | sì | — | 0 |
+| graphql_client | `graphql-client-rust` | library | sì | — | 1 |
+| gRPC | `grpc` | library | sì | — | 7 |
+| gRPC-Gateway | `grpc-gateway` | library | sì | — | 2 |
 | Headless UI | `headlessui` | library | sì | — | 1 |
 | Hero UI | `heroui` | library | sì | — | 0 |
 | Heroicons | `heroicons` | library | sì | — | 2 |
-| Hibernate | `hibernate` | library | sì | — | 1 |
-| Hibernate Reactive | `hibernate-reactive` | library | sì | — | 0 |
-| Horologist | `horologist` | library | sì | — | 0 |
-| HTMX | `htmx` | library | sì | — | 3 |
-| HTTPX | `httpx` | library | sì | — | 4 |
+| Hibernate | `hibernate` | library | sì | — | 2 |
+| Hibernate Reactive | `hibernate-reactive` | library | sì | — | 1 |
+| Horologist | `horologist` | library | sì | — | 1 |
+| HTMX | `htmx` | library | sì | — | 4 |
+| HTTPX | `httpx` | library | sì | — | 5 |
 | HugeIcons | `hugeicons` | library | sì | — | 0 |
-| Hyper | `hyper-rust` | library | sì | — | 0 |
+| Hyper | `hyper-rust` | library | sì | — | 1 |
 | Imago | `imago` | library | sì | — | 0 |
 | Ionicons | `ionicons` | library | sì | — | 0 |
-| Jackson | `jackson` | library | sì | — | 4 |
-| Jinja | `jinja` | library | sì | — | 6 |
-| JMS Serializer | `jms-serializer` | library | sì | — | 0 |
+| Jackson | `jackson` | library | sì | — | 6 |
+| Jinja | `jinja` | library | sì | — | 9 |
+| JMS Serializer | `jms-serializer` | library | sì | — | 1 |
 | Joi | `joijs` | library | sì | — | 0 |
 | jOOQ | `jooq` | library | sì | — | 0 |
 | JSON Schema | `jsonschema` | library | sì | — | 5 |
-| Json.NET | `json-net` | library | sì | — | 0 |
-| Juniper | `juniper` | library | sì | — | 0 |
+| Json.NET | `json-net` | library | sì | — | 1 |
+| Juniper | `juniper` | library | sì | — | 1 |
 | Keras | `keras` | library | sì | — | 0 |
-| keyring | `keyring` | library | sì | — | 0 |
+| keyring | `keyring` | library | sì | — | 1 |
 | Knex | `knex` | library | sì | — | 0 |
 | Koin | `koin` | library | sì | — | 2 |
 | kotlinx.html | `kotlinx-html` | library | sì | — | 0 |
@@ -430,125 +430,125 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | LlamaIndex | `llamaindex` | library | sì | — | 0 |
 | Lombok | `lombok` | library | sì | — | 2 |
 | Lord Icon | `lordicon` | library | sì | — | 0 |
-| Lucide Icons | `lucideicons` | library | sì | — | 7 |
+| Lucide Icons | `lucideicons` | library | sì | — | 9 |
 | Mantine UI | `mantineui` | library | sì | — | 0 |
 | MapStruct | `mapstruct` | library | sì | — | 3 |
-| Marked | `marked` | library | sì | — | 0 |
-| marshmallow | `marshmallow` | library | sì | — | 0 |
+| Marked | `marked` | library | sì | — | 8 |
+| marshmallow | `marshmallow` | library | sì | — | 1 |
 | Material Design Icons | `materialdesignicons` | library | sì | — | 0 |
-| Material UI | `materialui` | library | sì | — | 0 |
+| Material UI | `materialui` | library | sì | — | 1 |
 | Matplotlib | `matplotlib` | library | sì | — | 1 |
-| MessagePack | `messagepack-dotnet` | library | sì | — | 0 |
-| MiniJinja | `minijinja` | library | sì | — | 0 |
+| MessagePack | `messagepack-dotnet` | library | sì | — | 1 |
+| MiniJinja | `minijinja` | library | sì | — | 1 |
 | Mlflow | `mlflow` | library | sì | — | 0 |
-| Mockall | `mockall` | library | sì | — | 0 |
-| Model Context Protocol SDK | `mcp` | library | sì | — | 2 |
+| Mockall | `mockall` | library | sì | — | 1 |
+| Model Context Protocol SDK | `mcp` | library | sì | — | 4 |
 | Monaco Editor | `monacoeditor` | library | sì | — | 1 |
-| Mongoose | `mongoose` | library | sì | — | 0 |
+| Mongoose | `mongoose` | library | sì | — | 1 |
 | Mono.Cecil | `mono-cecil` | library | sì | — | 0 |
-| MUI Icons | `muiicons` | library | sì | — | 0 |
+| MUI Icons | `muiicons` | library | sì | — | 1 |
 | NumPy | `numpy` | library | sì | — | 3 |
-| Oban | `oban` | library | sì | — | 0 |
-| OpenAPI | `openapi` | library | sì | — | 10 |
+| Oban | `oban` | library | sì | — | 2 |
+| OpenAPI | `openapi` | library | sì | — | 11 |
 | OpenCV | `opencv` | library | sì | — | 0 |
-| OpenTelemetry | `opentelemetry` | library | sì | — | 3 |
-| Panache | `panache` | library | sì | — | 0 |
+| OpenTelemetry | `opentelemetry` | library | sì | — | 7 |
+| Panache | `panache` | library | sì | — | 1 |
 | pandas | `pandas` | library | sì | — | 2 |
 | Passport | `passport` | library | sì | — | 2 |
 | Pebble | `pebble` | library | sì | — | 0 |
 | Phosphor Icons | `phosphoreicons` | library | sì | — | 0 |
 | picocli | `picocli` | library | sì | — | 1 |
-| Pillow | `pillow` | library | sì | — | 5 |
-| Pinia | `pinia` | library | sì | — | 0 |
+| Pillow | `pillow` | library | sì | — | 6 |
+| Pinia | `pinia` | library | sì | — | 2 |
 | Plotly | `plotly` | library | sì | — | 0 |
 | Polars | `polars` | library | sì | — | 0 |
 | Prisma | `prisma` | library | sì | — | 4 |
-| Protocol Buffers | `protobuf` | library | sì | — | 7 |
-| Pydantic | `pydantic` | library | sì | — | 6 |
+| Protocol Buffers | `protobuf` | library | sì | — | 10 |
+| Pydantic | `pydantic` | library | sì | — | 7 |
 | Pytorch | `pytorch` | library | sì | — | 0 |
-| PyYAML | `pyyaml` | library | sì | — | 0 |
-| Qmgo | `qmgo` | library | sì | — | 0 |
-| Qute | `qute` | library | sì | — | 0 |
+| PyYAML | `pyyaml` | library | sì | — | 5 |
+| Qmgo | `qmgo` | library | sì | — | 1 |
+| Qute | `qute` | library | sì | — | 1 |
 | Radix Icons | `radixicons` | library | sì | — | 0 |
-| Radix UI | `radixui` | library | sì | — | 3 |
-| Ratatui | `ratatui` | library | sì | — | 0 |
+| Radix UI | `radixui` | library | sì | — | 4 |
+| Ratatui | `ratatui` | library | sì | — | 2 |
 | Ray | `ray` | library | sì | — | 0 |
-| React DOM | `react-dom` | library | sì | — | 0 |
-| React Email | `reactemail` | library | sì | — | 2 |
+| React DOM | `react-dom` | library | sì | — | 19 |
+| React Email | `reactemail` | library | sì | — | 4 |
 | React Flow | `react-flow` | library | sì | — | 0 |
 | React Icons | `reacticons` | library | sì | — | 2 |
-| React Native Elements | `react-native-elements` | library | sì | — | 0 |
-| React Navigation | `react-navigation` | library | sì | — | 0 |
+| React Native Elements | `react-native-elements` | library | sì | — | 2 |
+| React Navigation | `react-navigation` | library | sì | — | 3 |
 | React Router | `reactrouterdom` | library | sì | — | 7 |
-| Refena | `refena` | library | sì | — | 0 |
+| Refena | `refena` | library | sì | — | 1 |
 | Reka UI | `rekaui` | library | sì | — | 0 |
 | Remix Icons | `remixicons` | library | sì | — | 0 |
 | Remix Router | `remixrouter` | library | sì | — | 0 |
 | Remult | `remult` | library | sì | — | 0 |
-| Requests | `requests` | library | sì | — | 9 |
+| Requests | `requests` | library | sì | — | 11 |
 | Resilience4j | `resilience4j` | library | sì | — | 1 |
-| Rich | `rich` | library | sì | — | 0 |
-| Routerino | `routerino` | library | sì | — | 0 |
-| RQ | `rq` | library | sì | — | 0 |
+| Rich | `rich` | library | sì | — | 5 |
+| Routerino | `routerino` | library | sì | — | 1 |
+| RQ | `rq` | library | sì | — | 2 |
 | Sandpack | `sandpackeditor` | library | sì | — | 0 |
 | Sass parser | `sass-parser` | library | sì | — | 0 |
 | scikit-learn | `scikitlearn` | library | sì | — | 1 |
 | SciPy | `scipy` | library | sì | — | 0 |
-| SeaORM | `sea-orm` | library | sì | — | 0 |
+| SeaORM | `sea-orm` | library | sì | — | 1 |
 | Sequel | `sequelruby` | library | sì | — | 0 |
 | Sequelize | `sequelize` | library | sì | — | 1 |
 | Serde | `serde` | library | sì | — | 8 |
-| serde_json | `serde-json` | library | sì | — | 0 |
-| Shadcn | `shadcn` | library | sì | — | 0 |
+| serde_json | `serde-json` | library | sì | — | 6 |
+| Shadcn | `shadcn` | library | sì | — | 4 |
 | Sidekiq | `sidekiq` | library | sì | — | 2 |
 | Simple Icons | `simpleicons` | library | sì | — | 0 |
-| SmallRye Reactive Messaging | `smallrye-reactive-messaging` | library | sì | — | 0 |
+| SmallRye Reactive Messaging | `smallrye-reactive-messaging` | library | sì | — | 1 |
 | Socket.io | `socketio` | library | sì | — | 2 |
-| Solid Queue | `solid-queue` | library | sì | — | 0 |
+| Solid Queue | `solid-queue` | library | sì | — | 1 |
 | spaCy | `spacy` | library | sì | — | 0 |
-| SQLAlchemy | `sqlalchemy` | library | sì | — | 3 |
+| SQLAlchemy | `sqlalchemy` | library | sì | — | 6 |
 | SQLGlot | `sqlglot` | library | sì | — | 0 |
 | SQLModel | `sqlmodel` | library | sì | — | 1 |
-| sqlx | `sqlx-go` | library | sì | — | 0 |
-| SQLx | `sqlx-rust` | library | sì | — | 0 |
+| sqlx | `sqlx-go` | library | sì | — | 1 |
+| SQLx | `sqlx-rust` | library | sì | — | 1 |
 | Superstruct | `superstruct` | library | sì | — | 0 |
-| Tabler | `tabler` | library | sì | — | 0 |
+| Tabler | `tabler` | library | sì | — | 1 |
 | Tabler Icons | `tablericons` | library | sì | — | 1 |
-| Tailwind | `tailwind` | library | sì | quali classi sono sue utility, dal Tailwind del progetto nel container (`indexers/css_tailwind.py`) | 12 |
+| Tailwind | `tailwind` | library | sì | quali classi sono sue utility, dal Tailwind del progetto nel container (`indexers/css_tailwind.py`) | 17 |
 | TanStack Router | `tanstackrouter` | library | sì | — | 1 |
-| tempfile | `tempfile-rust` | library | sì | — | 0 |
+| tempfile | `tempfile-rust` | library | sì | — | 2 |
 | Tensorflow | `tensorflow` | library | sì | — | 0 |
-| testify | `testify` | library | sì | — | 0 |
-| Testing Library | `testinglibrary` | library | sì | — | 11 |
+| testify | `testify` | library | sì | — | 6 |
+| Testing Library | `testinglibrary` | library | sì | — | 12 |
 | Thymeleaf | `thymeleaf` | library | sì | — | 3 |
 | Tiptap | `tiptap` | library | sì | — | 3 |
 | Tokio | `tokio` | library | sì | — | 4 |
 | Tree-sitter | `tree-sitter` | library | sì | — | 0 |
 | Tree-sitter Language Pack | `tree-sitter-language-pack` | library | sì | — | 0 |
 | TRPC | `trpc` | library | sì | — | 1 |
-| ts-rest | `ts-rest` | library | sì | — | 0 |
-| Turbo | `hotwire-turbo` | library | sì | — | 0 |
-| Twig | `twigphp` | library | sì | — | 1 |
+| ts-rest | `ts-rest` | library | sì | — | 1 |
+| Turbo | `hotwire-turbo` | library | sì | — | 2 |
+| Twig | `twigphp` | library | sì | — | 2 |
 | TypeBox | `typebox` | library | sì | — | 0 |
 | TypeORM | `typeorm` | library | sì | — | 1 |
-| Typer | `typer` | library | sì | — | 2 |
-| urfave/cli | `urfave-cli` | library | sì | — | 0 |
+| Typer | `typer` | library | sì | — | 3 |
+| urfave/cli | `urfave-cli` | library | sì | — | 2 |
 | urql | `urql` | library | sì | — | 1 |
 | Valibot | `valibot` | library | sì | — | 0 |
 | Viper | `viper` | library | sì | — | 3 |
-| Vue Router | `vue-router` | library | sì | — | 2 |
-| WatermelonDB | `watermelondb` | library | sì | — | 0 |
+| Vue Router | `vue-router` | library | sì | — | 3 |
+| WatermelonDB | `watermelondb` | library | sì | — | 1 |
 | webview2-com | `webview2-com` | library | sì | — | 0 |
-| Windows for Rust | `windows-rs` | library | sì | — | 0 |
-| wiremock | `wiremock-rs` | library | sì | — | 0 |
-| YARP | `yarp` | library | sì | — | 0 |
-| Zod | `zod` | library | sì | — | 7 |
+| Windows for Rust | `windows-rs` | library | sì | — | 2 |
+| wiremock | `wiremock-rs` | library | sì | — | 1 |
+| YARP | `yarp` | library | sì | — | 1 |
+| Zod | `zod` | library | sì | — | 8 |
 | Ada | `ada` | tool | sì | — | 0 |
-| Alembic | `alembic` | tool | sì | — | 3 |
+| Alembic | `alembic` | tool | sì | — | 5 |
 | Ansible | `ansible` | tool | sì | — | 0 |
-| Apache JMeter | `jmeter` | tool | sì | — | 0 |
+| Apache JMeter | `jmeter` | tool | sì | — | 1 |
 | ArchUnit | `archunit` | tool | sì | — | 1 |
-| Artillery | `artillery` | tool | sì | — | 0 |
+| Artillery | `artillery` | tool | sì | — | 1 |
 | asdf | `asdf` | tool | sì | — | 0 |
 | ASP.NET | `aspnet` | tool | sì | — | 0 |
 | Astro compiler | `astro-compiler` | tool | sì | — | 0 |
@@ -556,87 +556,87 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | AVA | `ava` | tool | sì | — | 0 |
 | AWS CDK | `awscdk` | tool | sì | — | 0 |
 | AWS CloudFormation | `aws.cloudformation` | tool | sì | — | 0 |
-| Babel | `babel` | tool | sì | — | 8 |
+| Babel | `babel` | tool | sì | — | 9 |
 | Bash | `bash` | tool | sì | — | 0 |
 | Biome JS | `biomejs` | tool | sì | — | 4 |
-| Bun | `bunsh` | tool | sì | — | 0 |
-| Bundler | `bundler` | tool | sì | — | 0 |
+| Bun | `bunsh` | tool | sì | — | 1 |
+| Bundler | `bundler` | tool | sì | — | 6 |
 | Bytebase | `bytebase` | tool | sì | — | 0 |
 | C | `c` | tool | sì | — | 0 |
 | C# | `csharp` | tool | sì | — | 0 |
 | C++ | `cplusplus` | tool | sì | — | 0 |
-| Capybara | `capybara` | tool | sì | — | 0 |
-| Cargo | `cargo` | tool | sì | — | 0 |
+| Capybara | `capybara` | tool | sì | — | 3 |
+| Cargo | `cargo` | tool | sì | — | 17 |
 | Chef | `chef` | tool | sì | — | 0 |
 | Clojure | `clojure` | tool | sì | — | 0 |
 | COBOL | `cobol` | tool | sì | — | 0 |
 | CoffeeScript | `coffeescript` | tool | sì | — | 0 |
-| Composer | `phpcomposer` | tool | sì | — | 0 |
+| Composer | `phpcomposer` | tool | sì | — | 7 |
 | containerd | `containerd` | tool | sì | — | 0 |
-| Create React App | `create-react-app` | tool | sì | — | 0 |
+| Create React App | `create-react-app` | tool | sì | — | 1 |
 | CSS | `css` | tool | sì | — | 0 |
 | Cypress | `cypressci` | tool | sì | — | 3 |
 | Dapr | `dapr` | tool | sì | — | 0 |
-| Dart | `dart` | tool | sì | — | 0 |
+| Dart | `dart` | tool | sì | — | 2 |
 | dbt | `dbt` | tool | sì | — | 0 |
 | Deno | `deno` | tool | sì | — | 1 |
-| Detox | `detox` | tool | sì | — | 0 |
-| Docker | `docker` | tool | sì | — | 40 |
-| Elixir | `elixir` | tool | sì | — | 0 |
-| Esbuild | `esbuild` | tool | sì | — | 5 |
-| Eslint | `eslint` | tool | sì | — | 23 |
+| Detox | `detox` | tool | sì | — | 1 |
+| Docker | `docker` | tool | sì | — | 45 |
+| Elixir | `elixir` | tool | sì | — | 4 |
+| Esbuild | `esbuild` | tool | sì | — | 9 |
+| Eslint | `eslint` | tool | sì | — | 24 |
 | Fern | `builtwithfern` | tool | sì | — | 0 |
 | Flyway | `flyway` | tool | sì | — | 0 |
 | FsCheck | `fscheck` | tool | sì | — | 0 |
 | Gatling | `gatling` | tool | sì | — | 1 |
 | GLSL | `glsl` | tool | sì | — | 0 |
 | goenv | `goenv` | tool | sì | — | 0 |
-| Golang | `golang` | tool | sì | — | 20 |
+| Golang | `golang` | tool | sì | — | 21 |
 | GolangCI Lint | `golangcilint` | tool | sì | — | 3 |
-| Gradle | `gradle` | tool | sì | — | 0 |
+| Gradle | `gradle` | tool | sì | — | 26 |
 | Grafana K6 | `k6` | tool | sì | — | 0 |
-| GraphiQL | `graphiql` | tool | sì | — | 0 |
-| Gunicorn | `gunicorn` | tool | sì | — | 6 |
+| GraphiQL | `graphiql` | tool | sì | — | 1 |
+| Gunicorn | `gunicorn` | tool | sì | — | 8 |
 | Haskell | `haskell` | tool | sì | — | 0 |
-| Hatchling | `hatchling` | tool | sì | — | 0 |
+| Hatchling | `hatchling` | tool | sì | — | 13 |
 | Helm | `helm` | tool | sì | — | 4 |
 | Java | `java` | tool | sì | — | 0 |
 | JavaScript | `javascript` | tool | sì | — | 0 |
-| Jest | `jest` | tool | sì | — | 9 |
-| JHipster | `jhipster` | tool | sì | — | 0 |
+| Jest | `jest` | tool | sì | — | 10 |
+| JHipster | `jhipster` | tool | sì | — | 1 |
 | JSX | `jsx` | tool | sì | — | 0 |
 | JUnit | `junit` | tool | sì | — | 22 |
-| JUnit Jupiter | `junit-jupiter` | tool | sì | — | 7 |
+| JUnit Jupiter | `junit-jupiter` | tool | sì | — | 8 |
 | Jupyter | `jupyter` | tool | sì | — | 0 |
 | Kotest | `kotest` | tool | sì | — | 0 |
 | Kotlin | `kotlin` | tool | sì | — | 0 |
-| kotlin.test | `kotlin-test` | tool | sì | — | 0 |
+| kotlin.test | `kotlin-test` | tool | sì | — | 2 |
 | Lego | `goacmelego` | tool | sì | — | 0 |
 | Less | `less` | tool | sì | — | 0 |
 | Lighthouse | `lighthouse` | tool | sì | — | 1 |
 | Liquibase | `liquibase` | tool | sì | — | 1 |
-| Locust | `locust` | tool | sì | — | 2 |
+| Locust | `locust` | tool | sì | — | 4 |
 | Lua | `lua` | tool | sì | — | 0 |
-| Maestro | `maestro` | tool | sì | — | 0 |
-| Material for MkDocs | `mkdocs-material` | tool | sì | — | 0 |
+| Maestro | `maestro` | tool | sì | — | 1 |
+| Material for MkDocs | `mkdocs-material` | tool | sì | — | 1 |
 | MATLAB | `matlab` | tool | sì | — | 0 |
-| Maven | `maven` | tool | sì | — | 0 |
-| Mintlify | `mintlify` | tool | sì | — | 0 |
+| Maven | `maven` | tool | sì | — | 24 |
+| Mintlify | `mintlify` | tool | sì | — | 1 |
 | Mocha | `mochajs` | tool | sì | — | 1 |
-| Mockito | `mockito` | tool | sì | — | 2 |
-| MockK | `mockk` | tool | sì | — | 0 |
+| Mockito | `mockito` | tool | sì | — | 4 |
+| MockK | `mockk` | tool | sì | — | 1 |
 | MockServer | `mockserver` | tool | sì | — | 0 |
 | MSTest | `mstest` | tool | sì | — | 1 |
-| NodeJS | `nodejs` | tool | sì | — | 61 |
+| NodeJS | `nodejs` | tool | sì | — | 66 |
 | npm | `npm` | tool | sì | — | 0 |
-| NuGet | `nuget` | tool | sì | — | 0 |
+| NuGet | `nuget` | tool | sì | — | 9 |
 | NUnit | `nunit` | tool | sì | — | 1 |
 | nvm | `nvm` | tool | sì | — | 0 |
 | NX | `nxjs` | tool | sì | — | 1 |
-| oapi-codegen | `oapi-codegen` | tool | sì | — | 0 |
+| oapi-codegen | `oapi-codegen` | tool | sì | — | 1 |
 | Objective-C | `objectivec` | tool | sì | — | 0 |
-| OxLint | `oxlint` | tool | sì | — | 1 |
-| Pact | `pact` | tool | sì | — | 0 |
+| OxLint | `oxlint` | tool | sì | — | 2 |
+| Pact | `pact` | tool | sì | — | 1 |
 | Parcel | `parceljs` | tool | sì | — | 0 |
 | Perl | `perl` | tool | sì | — | 0 |
 | PHP | `php` | tool | sì | — | 7 |
@@ -646,65 +646,65 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | PHPUnit | `phpunit` | tool | sì | — | 5 |
 | pip | `pip` | tool | sì | — | 0 |
 | pipenv | `pipenv` | tool | sì | — | 0 |
-| Playwright | `playwright` | tool | sì | — | 12 |
-| pnpm | `pnpm` | tool | sì | — | 0 |
+| Playwright | `playwright` | tool | sì | — | 15 |
+| pnpm | `pnpm` | tool | sì | — | 10 |
 | Podman | `podman` | tool | sì | — | 0 |
 | Poetry | `poetry` | tool | sì | — | 0 |
-| Prettier | `prettier` | tool | sì | — | 14 |
+| Prettier | `prettier` | tool | sì | — | 16 |
 | Pulumi | `pulumi` | tool | sì | — | 0 |
-| pytest | `pytest` | tool | sì | — | 9 |
-| Python | `python` | tool | sì | — | 16 |
-| Quinoa | `quinoa` | tool | sì | — | 0 |
+| pytest | `pytest` | tool | sì | — | 11 |
+| Python | `python` | tool | sì | — | 19 |
+| Quinoa | `quinoa` | tool | sì | — | 1 |
 | R | `r` | tool | sì | — | 0 |
 | Read The Docs | `readthedocs` | tool | sì | — | 0 |
 | Renovate | `renovate` | tool | sì | — | 6 |
-| Reqnroll | `reqnroll` | tool | sì | — | 0 |
-| REST Assured | `rest-assured` | tool | sì | — | 0 |
-| Robolectric | `robolectric` | tool | sì | — | 0 |
+| Reqnroll | `reqnroll` | tool | sì | — | 1 |
+| REST Assured | `rest-assured` | tool | sì | — | 1 |
+| Robolectric | `robolectric` | tool | sì | — | 2 |
 | Rolldown | `rolldown` | tool | sì | — | 1 |
 | Rollup | `rollup` | tool | sì | — | 4 |
 | Rspack | `rspack` | tool | sì | — | 0 |
-| RSpec | `rspec` | tool | sì | — | 0 |
+| RSpec | `rspec` | tool | sì | — | 3 |
 | Rubocop | `rubocop` | tool | sì | — | 1 |
-| Ruby | `ruby` | tool | sì | — | 7 |
+| Ruby | `ruby` | tool | sì | — | 6 |
 | rubyenv | `rubyenv` | tool | sì | — | 0 |
-| Ruff | `ruff` | tool | sì | — | 14 |
+| Ruff | `ruff` | tool | sì | — | 15 |
 | Rust | `rust` | tool | sì | — | 17 |
 | Scala | `scala` | tool | sì | — | 0 |
 | ScalaTest | `scalatest` | tool | sì | — | 1 |
 | SCSS | `scss` | tool | sì | — | 0 |
-| setuptools | `setuptools` | tool | sì | — | 0 |
+| setuptools | `setuptools` | tool | sì | — | 10 |
 | SharpFuzz | `sharpfuzz` | tool | sì | — | 0 |
 | SonarLint | `sonarlint` | tool | sì | — | 0 |
-| sqlc | `sqlc` | tool | sì | — | 0 |
-| SQLDelight | `sqldelight` | tool | sì | — | 0 |
+| sqlc | `sqlc` | tool | sì | — | 1 |
+| SQLDelight | `sqldelight` | tool | sì | — | 1 |
 | Storybook | `storybook` | tool | sì | — | 2 |
 | Stylelint | `stylelint` | tool | sì | — | 2 |
 | Stylus | `stylus` | tool | sì | — | 0 |
 | SWC | `swc` | tool | sì | — | 4 |
-| Swift | `swift` | tool | sì | — | 0 |
-| Terraform | `terraform` | tool | sì | — | 2 |
+| Swift | `swift` | tool | sì | — | 2 |
+| Terraform | `terraform` | tool | sì | — | 4 |
 | Terragrunt | `terragrunt` | tool | sì | — | 0 |
-| Testcontainers | `testcontainers` | tool | sì | — | 2 |
+| Testcontainers | `testcontainers` | tool | sì | — | 4 |
 | TestNG | `testng` | tool | sì | — | 1 |
 | TravisCI | `travisci` | tool | sì | — | 1 |
-| Turborepo | `turborepo` | tool | sì | — | 2 |
-| Typescript | `typescript` | tool | sì | — | 35 |
+| Turborepo | `turborepo` | tool | sì | — | 3 |
+| Typescript | `typescript` | tool | sì | — | 39 |
 | Ultracite | `ultracite` | tool | sì | — | 0 |
-| UnoCSS | `unocss` | tool | sì | — | 0 |
+| UnoCSS | `unocss` | tool | sì | — | 2 |
 | uv | `uv` | tool | sì | — | 1 |
 | Vale | `vale` | tool | sì | — | 1 |
 | Visual Basic .NET | `visualbasicnet` | tool | sì | — | 0 |
-| Vite | `vite` | tool | sì | — | 18 |
-| Vite+ | `vite-plus` | tool | sì | — | 0 |
-| Vitest | `vitest` | tool | sì | — | 11 |
+| Vite | `vite` | tool | sì | — | 20 |
+| Vite+ | `vite-plus` | tool | sì | — | 1 |
+| Vitest | `vitest` | tool | sì | — | 12 |
 | Vue | `vuejs` | tool | sì | — | 0 |
-| Vue SFC compiler | `vue-sfc-compiler` | tool | sì | — | 0 |
+| Vue SFC compiler | `vue-sfc-compiler` | tool | sì | — | 3 |
 | Webpack | `webpack` | tool | sì | — | 3 |
-| Webpack Encore | `webpack-encore` | tool | sì | — | 0 |
-| WireMock | `wiremock-java` | tool | sì | — | 0 |
+| Webpack Encore | `webpack-encore` | tool | sì | — | 1 |
+| WireMock | `wiremock-java` | tool | sì | — | 1 |
 | XO | `xo` | tool | sì | — | 0 |
-| xUnit | `xunit` | tool | sì | — | 2 |
+| xUnit | `xunit` | tool | sì | — | 4 |
 | Yarn | `yarn` | tool | sì | — | 0 |
 | Zig | `zig` | tool | sì | — | 0 |
 
@@ -725,7 +725,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 
 <details><summary>Servizi con una regola del fork: 719 voci</summary>
 
-| Servizio | Id | Tipo | Host | Marchio | Fixture in cui lo step lo trova (19 novembre 2026) |
+| Servizio | Id | Tipo | Host | Marchio | Fixture in cui lo step lo trova (27 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
 | 1Password | `1password` | servizio o API | — | sì | 0 |
 | Activeloop | `activeloop` | servizio o API | — | sì | 0 |
@@ -741,17 +741,17 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Airbyte | `airbyte` | servizio o API | — | sì | 0 |
 | Aircall | `aircall` | servizio o API | — | sì | 0 |
 | Airtable | `airtable` | servizio o API | — | sì | 0 |
-| Akahu | `akahu` | servizio o API | — | no | 0 |
+| Akahu | `akahu` | servizio o API | — | no | 1 |
 | Akamai | `akamai` | servizio o API | — | sì | 0 |
 | Alby | `alby` | servizio o API | — | sì | 0 |
 | Alchemy | `alchemy` | servizio o API | — | sì | 0 |
 | Algolia | `algolia` | database | — | sì | 1 |
 | Algorand | `algorand` | servizio o API | — | sì | 0 |
 | Alibaba Cloud | `alibabacloud` | servizio o API | — | sì | 0 |
-| Alipay | `alipay` | servizio o API | — | sì | 0 |
-| Aliyun OSS | `aliyun-oss` | filesystem | — | no | 0 |
+| Alipay | `alipay` | servizio o API | — | sì | 1 |
+| Aliyun OSS | `aliyun-oss` | filesystem | — | no | 2 |
 | Amplitude Analytics | `amplitude` | servizio o API | — | no | 0 |
-| Anthropic | `anthropic` | servizio o API | — | sì | 0 |
+| Anthropic | `anthropic` | servizio o API | — | sì | 1 |
 | Apache Airflow | `apache_airflow` | servizio o API | — | sì | 0 |
 | Apache Cassandra | `apache_cassandra` | database | — | sì | 0 |
 | Apache CouchDB | `apache_couchdb` | database | — | sì | 0 |
@@ -759,7 +759,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Apache Hadoop | `apache_hadoop` | database | — | sì | 0 |
 | Apache Hive | `apache_hive` | database | — | sì | 0 |
 | Apache Iceberg | `apache_iceberg` | database | — | no | 0 |
-| Apache Kafka | `apache_kafka` | coda | — | sì | 1 |
+| Apache Kafka | `apache_kafka` | coda | — | sì | 2 |
 | Apache Pulsar | `apache-pulsar` | coda | — | sì | 0 |
 | Apache Solr | `apache_solr` | database | — | sì | 0 |
 | Apache Spark | `apache_spark` | database | — | sì | 0 |
@@ -768,7 +768,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Apideck | `apideck` | servizio o API | — | no | 0 |
 | Apify | `apify` | servizio o API | — | no | 0 |
 | App Store | `app-store` | servizio o API | — | sì | 0 |
-| Apple | `apple` | servizio o API | — | sì | 0 |
+| Apple | `apple` | servizio o API | — | sì | 1 |
 | Apple Maps | `apple.maps` | servizio o API | — | no | 0 |
 | AppSignal | `appsignal` | servizio o API | — | sì | 0 |
 | AppVeyor | `appveyor` | servizio o API | — | sì | 0 |
@@ -781,78 +781,78 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Atlassian Trello | `atlassian.trello` | servizio o API | `api.trello.com` | no | 0 |
 | Atuin Hub | `atuin-hub` | servizio o API | `hub.atuin.sh` | no | 0 |
 | Atuin Sync | `atuin-sync` | servizio o API | `api.atuin.sh` | no | 0 |
-| Auth0 | `auth0` | autenticazione | — | sì | 0 |
-| AWS | `aws` | servizio o API | — | sì | 8 |
+| Auth0 | `auth0` | autenticazione | — | sì | 1 |
+| AWS | `aws` | servizio o API | — | sì | 13 |
 | AWS ActiveMQ | `aws.mq` | coda | — | sì | 0 |
 | AWS Amplify Hosting | `aws.amplifyhosting` | servizio o API | — | sì | 0 |
 | AWS Api Gateway | `aws.apigateway` | servizio o API | — | sì | 0 |
-| AWS Athena | `aws.athena` | database | — | sì | 0 |
+| AWS Athena | `aws.athena` | database | — | sì | 1 |
 | AWS Bedrock | `aws.bedrock` | servizio o API | — | sì | 0 |
 | AWS Block Storage | `aws.ebs` | database | — | sì | 0 |
-| AWS CloudFront | `aws.cloudfront` | database | — | sì | 0 |
+| AWS CloudFront | `aws.cloudfront` | database | — | sì | 2 |
 | AWS Cloudsearch | `aws.cloudsearch` | database | — | sì | 0 |
-| AWS Cloudwatch | `aws.cloudwatch` | servizio o API | — | sì | 0 |
+| AWS Cloudwatch | `aws.cloudwatch` | servizio o API | — | sì | 1 |
 | AWS Code Build | `aws.codebuild` | servizio o API | — | sì | 0 |
 | AWS Code Pipeline | `aws.codepipeline` | servizio o API | — | sì | 0 |
 | AWS Cognito | `aws.cognito` | autenticazione | — | sì | 0 |
 | AWS Comprehend | `aws.comprehend` | servizio o API | — | sì | 0 |
 | AWS Compute | `aws.ec2` | servizio o API | — | sì | 0 |
-| AWS Container | `aws.ecs` | servizio o API | — | sì | 0 |
-| AWS Container Registry | `aws.ecr` | database | — | sì | 0 |
+| AWS Container | `aws.ecs` | servizio o API | — | sì | 1 |
+| AWS Container Registry | `aws.ecr` | database | — | sì | 1 |
 | AWS Document DB | `aws.documentdb` | database | — | sì | 0 |
-| AWS DynamoDB | `aws.dynamodb` | database | — | sì | 0 |
-| AWS ElastiCache | `aws.elasticache` | database | — | sì | 0 |
+| AWS DynamoDB | `aws.dynamodb` | database | — | sì | 1 |
+| AWS ElastiCache | `aws.elasticache` | database | — | sì | 1 |
 | AWS Fargate | `aws.fargate` | servizio o API | — | sì | 0 |
 | AWS File System | `aws.efs` | database | — | sì | 0 |
 | AWS Glacier | `aws.glacier` | database | — | sì | 0 |
-| AWS Glue | `aws.glue` | servizio o API | — | sì | 0 |
+| AWS Glue | `aws.glue` | servizio o API | — | sì | 1 |
 | AWS Kafka | `aws.kafka` | coda | — | sì | 0 |
 | AWS Kinesis | `aws.kinesis` | coda | — | sì | 0 |
-| AWS Kms | `aws.kms` | servizio o API | — | sì | 0 |
+| AWS Kms | `aws.kms` | servizio o API | — | sì | 1 |
 | AWS Kubernetes | `aws.eks` | servizio o API | — | sì | 0 |
-| AWS Lambda | `aws.lambda` | servizio o API | — | sì | 0 |
+| AWS Lambda | `aws.lambda` | servizio o API | — | sì | 1 |
 | AWS Lightsail | `aws.lightsail` | servizio o API | — | sì | 0 |
 | AWS MemoryDB | `aws.memorydb` | database | — | sì | 0 |
 | AWS Neptune | `aws.neptune` | database | — | sì | 0 |
-| AWS Notification Service | `aws.sns` | servizio o API | — | sì | 0 |
+| AWS Notification Service | `aws.sns` | servizio o API | — | sì | 1 |
 | AWS Opensearch | `aws.opensearch` | database | — | sì | 0 |
 | AWS Polly | `aws.polly` | servizio o API | — | sì | 0 |
 | AWS RDS | `aws.rds` | database | — | sì | 0 |
 | AWS Redshift | `aws.redshift` | database | — | sì | 0 |
 | AWS Rekognition | `aws.rekognition` | servizio o API | — | sì | 0 |
-| AWS S3 | `aws.s3` | database | — | sì | 9 |
+| AWS S3 | `aws.s3` | database | — | sì | 12 |
 | AWS SageMaker | `aws.sagemaker` | servizio o API | — | sì | 0 |
-| AWS Secrets Manager | `aws.secretsmanager` | database | — | sì | 1 |
-| AWS Simple Email Service | `aws.ses` | servizio o API | — | sì | 0 |
-| AWS SQS | `aws.sqs` | coda | — | sì | 0 |
+| AWS Secrets Manager | `aws.secretsmanager` | database | — | sì | 2 |
+| AWS Simple Email Service | `aws.ses` | servizio o API | — | sì | 1 |
+| AWS SQS | `aws.sqs` | coda | — | sì | 2 |
 | AWS Step Functions | `aws.sfn` | servizio o API | — | sì | 0 |
 | AWS Timestream | `aws.timestream` | database | — | sì | 0 |
 | AWS Transcribe | `aws.transcribe` | servizio o API | — | sì | 0 |
 | AWS Translate | `aws.translate` | servizio o API | — | sì | 0 |
-| Azure | `azure` | servizio o API | — | sì | 1 |
-| Azure AI Document Intelligence | `azure.documentintelligence` | servizio o API | — | no | 0 |
+| Azure | `azure` | servizio o API | — | sì | 7 |
+| Azure AI Document Intelligence | `azure.documentintelligence` | servizio o API | — | no | 1 |
 | Azure App Service | `azure.appservice` | servizio o API | — | no | 0 |
 | Azure Application Insights | `azure.applicationinsights` | servizio o API | — | no | 0 |
-| Azure Blob Storage | `azure.blobstorage` | filesystem | — | no | 0 |
-| Azure Container Apps | `azure.containerapps` | servizio o API | — | no | 0 |
+| Azure Blob Storage | `azure.blobstorage` | filesystem | — | no | 2 |
+| Azure Container Apps | `azure.containerapps` | servizio o API | — | no | 2 |
 | Azure Cosmos DB | `azure.cosmosdb` | database | — | sì | 0 |
 | Azure Functions | `azure.functions` | servizio o API | — | sì | 0 |
-| Azure Key Vault | `azure.keyvault` | servizio o API | — | no | 0 |
+| Azure Key Vault | `azure.keyvault` | servizio o API | — | no | 1 |
 | Azure Kubernetes | `azure.aks` | servizio o API | — | sì | 0 |
 | Azure MariaDB | `azure.mariadb` | database | — | sì | 0 |
 | Azure MySQL | `azure.mysql` | database | — | sì | 0 |
-| Azure Openai | `azure.openai` | servizio o API | — | sì | 0 |
+| Azure Openai | `azure.openai` | servizio o API | — | sì | 1 |
 | Azure Postgres | `azure.postgres` | database | — | sì | 0 |
 | Azure Redis | `azure.redis` | database | — | sì | 0 |
 | Azure SQL | `azure.sql` | database | — | sì | 0 |
 | Azure Static Web Apps | `azure.staticwebapps` | servizio o API | — | sì | 1 |
-| Azure Storage | `azure.storage` | database | — | sì | 1 |
+| Azure Storage | `azure.storage` | database | — | sì | 0 |
 | AzureCI | `azure.ci` | servizio o API | — | sì | 0 |
 | Backblaze | `backblaze` | servizio o API | — | sì | 0 |
 | Backendless | `backendless` | servizio o API | — | sì | 0 |
 | Base44 | `base44` | servizio o API | — | no | 0 |
 | Beehiiv | `beehiiv` | servizio o API | — | no | 0 |
-| Better Auth | `betterauth` | autenticazione | — | sì | 0 |
+| Better Auth | `betterauth` | autenticazione | — | sì | 1 |
 | Better Stack | `betterstack` | servizio o API | — | sì | 0 |
 | BigCommerce | `bigcommerce` | servizio o API | — | sì | 0 |
 | Binance | `binance` | servizio o API | — | sì | 0 |
@@ -862,7 +862,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Bitwarden | `bitwarden` | servizio o API | — | sì | 0 |
 | Blackfire | `blackfire` | servizio o API | — | no | 0 |
 | Bluesky | `bluesky` | servizio o API | — | sì | 0 |
-| Boto3 | `boto3` | servizio o API | — | no | 4 |
+| Boto3 | `boto3` | servizio o API | — | no | 5 |
 | Box | `box` | servizio o API | — | sì | 0 |
 | Braintree | `braintree` | servizio o API | — | sì | 0 |
 | Braintrust | `braintrust` | servizio o API | — | sì | 0 |
@@ -873,7 +873,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Browserstack | `browserstack` | servizio o API | — | no | 1 |
 | Bugsnag | `bugsnag` | servizio o API | — | no | 0 |
 | bunq | `bunq` | servizio o API | — | sì | 0 |
-| Caddy | `caddy` | servizio o API | — | sì | 2 |
+| Caddy | `caddy` | servizio o API | — | sì | 3 |
 | Cal.com | `calcom` | servizio o API | — | sì | 0 |
 | Calendly | `calendly` | servizio o API | — | sì | 0 |
 | Campaign Monitor | `campaign-monitor` | servizio o API | — | sì | 0 |
@@ -891,17 +891,17 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | ClickSend | `clicksend` | servizio o API | — | no | 0 |
 | ClickUp | `clickup` | servizio o API | — | sì | 0 |
 | Cloud AI Platform | `gcp.aiplatform` | servizio o API | — | sì | 0 |
-| Cloud Artifact Registry | `gcp.artifactregistry` | database | — | sì | 0 |
+| Cloud Artifact Registry | `gcp.artifactregistry` | database | — | sì | 1 |
 | Cloud BigQuery | `gcp.bigquery` | database | — | sì | 0 |
 | Cloud BigTable | `gcp.bigtable` | database | — | sì | 0 |
-| Cloud Build | `gcp.cloudbuild` | servizio o API | — | sì | 0 |
+| Cloud Build | `gcp.cloudbuild` | servizio o API | — | sì | 1 |
 | Cloud Container Registry | `gcp.containerregistry` | database | — | no | 0 |
 | Cloud Dataflow | `gcp.dataflow` | servizio o API | — | sì | 0 |
 | Cloud Dataproc | `gcp.dataproc` | servizio o API | — | sì | 0 |
 | Cloud Datastore | `gcp.datastore` | database | — | sì | 0 |
 | Cloud Dialogflow | `gcp.dialogflow` | servizio o API | — | sì | 0 |
 | Cloud Functions | `gcp.functions` | servizio o API | — | sì | 0 |
-| Cloud Functions for Firebase | `firebase.functions` | servizio o API | — | no | 0 |
+| Cloud Functions for Firebase | `firebase.functions` | servizio o API | — | no | 1 |
 | Cloud KMS | `gcp.kms` | servizio o API | — | sì | 1 |
 | Cloud Language | `gcp.language` | servizio o API | — | sì | 0 |
 | Cloud Logging | `gcp.logging` | servizio o API | — | sì | 0 |
@@ -911,16 +911,16 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Cloud Spanner | `gcp.spanner` | database | — | sì | 0 |
 | Cloud Speech | `gcp.speech` | servizio o API | — | sì | 0 |
 | Cloud SQL | `gcp.sql` | database | — | sì | 0 |
-| Cloud Storage | `gcp.gcs` | database | — | sì | 2 |
+| Cloud Storage | `gcp.gcs` | database | — | sì | 3 |
 | Cloud Tasks | `gcp.tasks` | servizio o API | — | sì | 0 |
 | Cloud Vision | `gcp.vision` | servizio o API | — | sì | 0 |
 | CloudBees | `cloudbees` | servizio o API | — | sì | 0 |
 | CloudBees Codeship | `cloudbees.codeship` | servizio o API | — | no | 0 |
-| Cloudflare | `cloudflare` | servizio o API | — | sì | 0 |
+| Cloudflare | `cloudflare` | servizio o API | — | sì | 2 |
 | Cloudflare Pages | `cloudflare.pages` | servizio o API | — | sì | 0 |
 | Cloudflare R2 | `cloudflare.r2` | database | — | no | 0 |
-| Cloudflare Turnstile | `cloudflare.turnstile` | servizio o API | — | no | 0 |
-| Cloudflare Workers | `cloudflare.workers` | servizio o API | — | sì | 0 |
+| Cloudflare Turnstile | `cloudflare.turnstile` | servizio o API | — | no | 1 |
+| Cloudflare Workers | `cloudflare.workers` | servizio o API | — | sì | 1 |
 | Cloudinary | `cloudinary` | servizio o API | — | sì | 0 |
 | Cockroach Labs | `cockroach-labs` | database | — | sì | 0 |
 | CockroachDB | `cockroachdb` | database | — | no | 0 |
@@ -966,23 +966,23 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | DigitalOcean | `digitalocean` | servizio o API | — | sì | 0 |
 | Directus | `directus` | servizio o API | — | sì | 0 |
 | Discord | `discord` | servizio o API | — | sì | 1 |
-| Discord OAuth | `discord.oauth` | autenticazione | — | no | 0 |
+| Discord OAuth | `discord.oauth` | autenticazione | — | no | 1 |
 | Discourse | `discourse` | servizio o API | — | sì | 0 |
 | Docusign | `docusign` | servizio o API | — | no | 0 |
 | Dodo Payments | `dodo-payments` | servizio o API | — | sì | 0 |
 | Dokku | `dokku` | servizio o API | — | sì | 0 |
 | DroneCI | `droneci` | servizio o API | — | no | 0 |
-| Dropbox | `dropbox` | servizio o API | — | sì | 0 |
+| Dropbox | `dropbox` | servizio o API | — | sì | 1 |
 | Drupal | `drupal` | servizio o API | — | sì | 0 |
 | DuckDB | `duckdb` | database | — | sì | 0 |
 | DuckDuckGo Icons | `duckduckgo-icons` | servizio o API | `icons.duckduckgo.com` | no | 0 |
 | Dynatrace | `dynatrace` | servizio o API | — | sì | 0 |
-| eID Easy | `eideasy` | servizio o API | `id.eideasy.com` | no | 0 |
+| eID Easy | `eideasy` | servizio o API | `id.eideasy.com` | no | 1 |
 | Elastic Cloud | `elasticcloud` | servizio o API | — | sì | 0 |
-| Elasticsearch | `elasticsearch` | database | — | sì | 2 |
+| Elasticsearch | `elasticsearch` | database | — | sì | 3 |
 | Elevenlabs | `elevenlabs` | servizio o API | — | sì | 0 |
 | Enable Banking | `enable-banking` | servizio o API | `api.enablebanking.com` | no | 0 |
-| Envoy | `envoy` | gateway | — | no | 0 |
+| Envoy | `envoy` | gateway | — | no | 1 |
 | Equinix | `equinix` | servizio o API | — | no | 0 |
 | etcd | `etcd` | database | — | sì | 0 |
 | Event Store | `event-store` | database | — | sì | 0 |
@@ -994,22 +994,22 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Fastly | `fastly` | servizio o API | — | sì | 0 |
 | Fathom | `fathom` | servizio o API | — | sì | 0 |
 | Figma | `figma` | servizio o API | — | sì | 0 |
-| Firebase | `firebase` | servizio o API | — | sì | 1 |
-| Firebase Analytics | `firebase.analytics` | servizio o API | — | no | 0 |
-| Firebase Cloud Messaging | `firebase.messaging` | servizio o API | — | no | 0 |
+| Firebase | `firebase` | servizio o API | — | sì | 4 |
+| Firebase Analytics | `firebase.analytics` | servizio o API | — | no | 1 |
+| Firebase Cloud Messaging | `firebase.messaging` | servizio o API | — | no | 2 |
 | Firebase Firestore | `firebase.firestore` | database | — | no | 0 |
-| Firecrawl | `firecrawl` | servizio o API | — | no | 0 |
+| Firecrawl | `firecrawl` | servizio o API | — | no | 1 |
 | Firepit | `firepit` | servizio o API | — | no | 0 |
-| flagd | `flagd` | servizio o API | — | no | 0 |
-| Fluentd | `fluentd` | servizio o API | — | sì | 0 |
+| flagd | `flagd` | servizio o API | — | no | 1 |
+| Fluentd | `fluentd` | servizio o API | — | sì | 1 |
 | Flyio | `flyio` | servizio o API | — | sì | 1 |
 | Formbricks | `formbricks` | servizio o API | — | sì | 0 |
 | FoundationDB | `foundationdb` | database | — | no | 0 |
 | Freshdesk | `freshdesk` | servizio o API | — | no | 0 |
-| Friendly Captcha | `friendly-captcha` | servizio o API | — | no | 0 |
+| Friendly Captcha | `friendly-captcha` | servizio o API | — | no | 1 |
 | Frontegg | `frontegg` | autenticazione | — | no | 0 |
 | Fusionauth | `fusionauth` | autenticazione | — | sì | 0 |
-| GCP | `gcp` | servizio o API | — | sì | 3 |
+| GCP | `gcp` | servizio o API | — | sì | 6 |
 | Gemini AI | `geminiai` | servizio o API | `generativelanguage.googleapis.com` | no | 0 |
 | Ghost | `ghost` | servizio o API | — | sì | 0 |
 | GIPHY | `giphy` | servizio o API | — | sì | 0 |
@@ -1019,20 +1019,20 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | GitHub | `github` | servizio o API | `api.github.com` | sì | 1 |
 | Github Actions | `github.actions` | servizio o API | — | sì | 0 |
 | GitHub CodeQL | `github.codeql` | servizio o API | — | no | 0 |
-| GitHub OAuth | `github.oauth` | autenticazione | — | no | 0 |
+| GitHub OAuth | `github.oauth` | autenticazione | — | no | 2 |
 | Github Pages | `github.pages` | servizio o API | — | sì | 7 |
 | Gitlab | `gitlab` | servizio o API | — | sì | 0 |
 | Gitlab CI | `gitlab.ci` | servizio o API | — | no | 0 |
-| GitLab OAuth | `gitlab.oauth` | autenticazione | — | no | 0 |
+| GitLab OAuth | `gitlab.oauth` | autenticazione | — | no | 1 |
 | Gmail | `google.gmail` | servizio o API | — | sì | 0 |
 | GoCardless Bank Account Data | `gocardless-bank-account-data` | servizio o API | `bankaccountdata.gocardless.com` | no | 0 |
-| Google | `google` | servizio o API | — | sì | 0 |
+| Google | `google` | servizio o API | — | sì | 3 |
 | Google Ads | `google-ads` | servizio o API | — | sì | 0 |
 | Google Analytics | `google.analytics` | servizio o API | `analyticsadmin.googleapis.com` `analyticsdata.googleapis.com` | sì | 0 |
 | Google App Engine | `gcp.appengine` | servizio o API | — | sì | 0 |
 | Google Calendar | `google.calendar` | servizio o API | — | sì | 0 |
 | Google Chat | `google.chat` | servizio o API | — | sì | 0 |
-| Google Compute | `gcp.gce` | servizio o API | — | sì | 1 |
+| Google Compute | `gcp.gce` | servizio o API | — | sì | 2 |
 | Google DNS | `gcp.dns` | servizio o API | — | sì | 0 |
 | Google Docs | `google.docs` | servizio o API | — | sì | 0 |
 | Google Drive | `google.drive` | servizio o API | — | sì | 0 |
@@ -1042,19 +1042,19 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Google Kubernetes | `gcp.gke` | servizio o API | — | sì | 0 |
 | Google Maps | `gcp.maps` | servizio o API | — | sì | 0 |
 | Google Meet | `google.meet` | servizio o API | — | sì | 0 |
-| Google OAuth | `google.oauth` | autenticazione | — | no | 0 |
+| Google OAuth | `google.oauth` | autenticazione | — | no | 1 |
 | Google Pay | `google.pay` | gateway | — | sì | 0 |
-| Google reCAPTCHA | `google.recaptcha` | servizio o API | — | no | 0 |
+| Google reCAPTCHA | `google.recaptcha` | servizio o API | — | no | 1 |
 | Google Sheets | `google.sheets` | servizio o API | — | sì | 0 |
 | Google Slides | `google.slides` | servizio o API | — | sì | 0 |
 | Google Tasks | `google.tasks` | servizio o API | — | sì | 0 |
 | Google Translate | `gcp.translate` | servizio o API | — | sì | 0 |
-| Gotenberg | `gotenberg` | servizio o API | — | no | 0 |
-| Grafana | `grafana` | servizio o API | — | sì | 1 |
+| Gotenberg | `gotenberg` | servizio o API | — | no | 2 |
+| Grafana | `grafana` | servizio o API | — | sì | 2 |
 | Grafana LGTM | `grafana.lgtm` | servizio o API | — | no | 0 |
 | Gravatar | `gravatar` | servizio o API | — | sì | 0 |
 | Graylog | `graylog` | servizio o API | — | sì | 0 |
-| GreenMail | `greenmail` | servizio o API | — | no | 0 |
+| GreenMail | `greenmail` | servizio o API | — | no | 1 |
 | Groq | `groq` | servizio o API | — | no | 0 |
 | H2 | `h2` | database | — | no | 3 |
 | Hanko | `hanko` | autenticazione | — | no | 0 |
@@ -1071,7 +1071,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Hotjar | `hotjar` | servizio o API | — | sì | 0 |
 | HSQLDB | `hsqldb` | database | — | no | 1 |
 | HTTPD | `httpd` | servizio o API | — | no | 0 |
-| Huawei Cloud OBS | `huawei-obs` | filesystem | — | no | 0 |
+| Huawei Cloud OBS | `huawei-obs` | filesystem | — | no | 1 |
 | HubSpot | `hubspot` | servizio o API | — | sì | 0 |
 | Hugging Face | `huggingface` | servizio o API | — | sì | 1 |
 | HyperDX | `hyperdx` | servizio o API | — | no | 0 |
@@ -1079,12 +1079,12 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | IBM Cloud | `ibmcloud` | servizio o API | — | no | 0 |
 | ifttt | `ifttt` | servizio o API | — | sì | 0 |
 | Immich | `immich` | servizio o API | — | sì | 0 |
-| Inbucket | `inbucket` | servizio o API | — | no | 0 |
+| Inbucket | `inbucket` | servizio o API | — | no | 1 |
 | Infisical | `infisical` | servizio o API | — | no | 0 |
 | InfluxDB | `influxdb` | database | — | sì | 0 |
 | Inngest | `inngest` | servizio o API | — | no | 1 |
 | Instagram | `instagram` | servizio o API | — | sì | 0 |
-| Instana | `instana` | servizio o API | — | no | 0 |
+| Instana | `instana` | servizio o API | — | no | 1 |
 | Integration.app | `integrationapp` | servizio o API | — | no | 0 |
 | Intercom | `intercom` | servizio o API | — | sì | 0 |
 | Internet Archive | `internet-archive` | servizio o API | — | sì | 0 |
@@ -1113,10 +1113,10 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Koala Analytics | `koalaanalytics` | servizio o API | — | no | 0 |
 | Kong | `kong` | servizio o API | — | sì | 0 |
 | Koyeb | `koyeb` | servizio o API | — | sì | 0 |
-| Kubernetes | `kubernetes` | servizio o API | — | sì | 1 |
+| Kubernetes | `kubernetes` | servizio o API | — | sì | 2 |
 | Lago | `lago` | servizio o API | — | no | 0 |
 | LangChain Corporate | `langchain-corporate` | servizio o API | — | sì | 1 |
-| Laravel Nightwatch | `laravel-nightwatch` | servizio o API | — | no | 0 |
+| Laravel Nightwatch | `laravel-nightwatch` | servizio o API | — | no | 1 |
 | Last.fm | `lastfm` | servizio o API | `ws.audioscrobbler.com` | sì | 0 |
 | LaunchDarkly | `launchdarkly` | servizio o API | — | no | 0 |
 | Lemon Squeezy | `lemonsqueezy` | gateway | `api.lemonsqueezy.com` | sì | 0 |
@@ -1126,7 +1126,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Linear | `linear` | servizio o API | — | sì | 0 |
 | Linkedin | `linkedin` | servizio o API | — | no | 0 |
 | ListenBrainz | `listenbrainz` | servizio o API | `api.listenbrainz.org` `labs.api.listenbrainz.org` | no | 0 |
-| LiteFS | `litefs` | database | — | no | 0 |
+| LiteFS | `litefs` | database | — | no | 1 |
 | LiveChat | `livechat` | servizio o API | — | sì | 0 |
 | LiveKit | `livekit` | servizio o API | — | sì | 1 |
 | LM Studio | `lm-studio` | servizio o API | — | sì | 0 |
@@ -1146,44 +1146,44 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Mailgun | `mailgun` | servizio o API | — | sì | 0 |
 | Mailhog | `mailhog` | servizio o API | — | no | 1 |
 | Mailjet | `mailjet` | servizio o API | — | no | 0 |
-| Mailpit | `mailpit` | servizio o API | — | no | 0 |
+| Mailpit | `mailpit` | servizio o API | — | no | 2 |
 | Mailtrap | `mailtrap` | servizio o API | — | sì | 0 |
 | MajorLeagueCyber | `majorleaguecyber` | servizio o API | `api.majorleaguecyber.org` `auth.majorleaguecyber.org` | no | 0 |
 | Mandrill | `mandrill` | servizio o API | — | no | 0 |
 | Mapbox | `mapbox` | servizio o API | — | sì | 0 |
 | MapTiler | `maptiler` | servizio o API | — | sì | 0 |
-| MariaDB | `mariadb` | database | — | sì | 6 |
+| MariaDB | `mariadb` | database | — | sì | 2 |
 | Matomo | `matomo` | servizio o API | — | sì | 0 |
 | Matrix | `matrix` | servizio o API | — | sì | 0 |
 | Mattermost | `mattermost` | servizio o API | — | sì | 0 |
 | MaxMind | `maxmind` | servizio o API | — | no | 0 |
-| Meilisearch | `meilisearch` | database | — | sì | 1 |
+| Meilisearch | `meilisearch` | database | — | sì | 2 |
 | Meilisearch Cloud | `meilisearchcloud` | database | — | no | 0 |
 | Memcached | `memcached` | database | — | no | 0 |
 | Mercado Pago | `mercado-pago` | servizio o API | — | sì | 0 |
 | Merge.dev | `mergedev` | servizio o API | — | no | 0 |
 | Metabase | `metabase` | servizio o API | — | sì | 0 |
-| Microsoft | `microsoft` | servizio o API | — | no | 0 |
-| Microsoft Entra ID OAuth | `microsoft-entra-oauth` | autenticazione | — | no | 0 |
-| Microsoft OAuth | `microsoft.oauth` | autenticazione | — | no | 0 |
+| Microsoft | `microsoft` | servizio o API | — | no | 1 |
+| Microsoft Entra ID OAuth | `microsoft-entra-oauth` | autenticazione | — | no | 1 |
+| Microsoft OAuth | `microsoft.oauth` | autenticazione | — | no | 1 |
 | Microsoft Outlook | `microsoft.outlook` | servizio o API | — | no | 0 |
-| Microsoft SQL Server | `microsoft-sql-server` | database | — | no | 0 |
+| Microsoft SQL Server | `microsoft-sql-server` | database | — | no | 2 |
 | MicroStrategy | `microstrategy` | servizio o API | — | sì | 0 |
 | MilvusDB | `milvusdb` | database | — | no | 0 |
-| MinIO | `minio` | database | — | sì | 0 |
+| MinIO | `minio` | database | — | sì | 2 |
 | Miro | `miro` | servizio o API | — | sì | 0 |
 | Mistral AI | `mistralai` | servizio o API | — | sì | 0 |
 | Mixpanel | `mixpanel` | servizio o API | — | sì | 0 |
-| mock-oauth2-server | `mock-oauth2-server` | autenticazione | — | no | 0 |
+| mock-oauth2-server | `mock-oauth2-server` | autenticazione | — | no | 1 |
 | Modal | `modal` | servizio o API | — | sì | 0 |
 | ModelScope | `modelscope` | servizio o API | — | sì | 0 |
 | Monday | `monday` | servizio o API | — | no | 0 |
 | Mongo Express | `mongoexpress` | servizio o API | — | no | 2 |
-| MongoDB | `mongodb` | database | — | sì | 4 |
+| MongoDB | `mongodb` | database | — | sì | 5 |
 | MongoDB Atlas | `mongodbatlas` | servizio o API | — | no | 0 |
 | MS SQL | `mssql` | database | — | no | 0 |
 | MusicBrainz | `musicbrainz` | servizio o API | — | sì | 0 |
-| Mysql | `mysql` | database | — | sì | 9 |
+| Mysql | `mysql` | database | — | sì | 13 |
 | n8n | `n8n` | servizio o API | — | sì | 0 |
 | Nango | `nango` | servizio o API | — | no | 0 |
 | Nats | `nats` | coda | — | no | 0 |
@@ -1202,26 +1202,26 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | NX Cloud | `nxcloud` | servizio o API | — | no | 0 |
 | Oceanbase | `oceanbase` | database | — | sì | 0 |
 | Okta | `okta` | autenticazione | — | sì | 1 |
-| Okta OAuth | `okta.oauth` | autenticazione | — | no | 0 |
-| Ollama | `ollama` | servizio o API | — | sì | 0 |
+| Okta OAuth | `okta.oauth` | autenticazione | — | no | 1 |
+| Ollama | `ollama` | servizio o API | — | sì | 2 |
 | OMDb | `omdb` | servizio o API | `www.omdbapi.com` | no | 0 |
 | OneDrive | `microsoft.onedrive` | servizio o API | — | no | 0 |
 | OnlineOrNot | `onlineornot` | servizio o API | — | no | 0 |
-| Open Food Facts | `open-food-facts` | servizio o API | — | no | 0 |
-| Openai | `openai` | servizio o API | `api.openai.com` | no | 5 |
+| Open Food Facts | `open-food-facts` | servizio o API | — | no | 1 |
+| Openai | `openai` | servizio o API | `api.openai.com` | no | 6 |
 | OpenCage | `opencage` | servizio o API | — | sì | 0 |
-| OpenLDAP | `openldap` | autenticazione | — | no | 0 |
+| OpenLDAP | `openldap` | autenticazione | — | no | 1 |
 | OpenRouter | `openrouter` | gateway | — | sì | 0 |
 | OpenSea | `opensea` | servizio o API | — | sì | 0 |
-| OpenSearch | `opensearch` | database | — | sì | 0 |
-| OpenStack Swift | `openstack.swift` | filesystem | — | no | 0 |
+| OpenSearch | `opensearch` | database | — | sì | 1 |
+| OpenStack Swift | `openstack.swift` | filesystem | — | no | 1 |
 | OpenTelemetry Collector | `otel-collector` | servizio o API | — | no | 0 |
 | OpenTelemetry eBPF Profiler | `otel-ebpf-profiler` | servizio o API | — | no | 0 |
 | OpenZeppelin | `openzeppelin` | servizio o API | — | sì | 0 |
 | Opsgenie | `opsgenie` | servizio o API | `api.eu.opsgenie.com` `api.opsgenie.com` | sì | 0 |
 | Optimizely | `optimizely` | servizio o API | — | no | 0 |
 | Oracle Cloud | `oraclecloud` | servizio o API | — | no | 0 |
-| Oracle Database | `oracledatabase` | database | — | no | 0 |
+| Oracle Database | `oracledatabase` | database | — | no | 1 |
 | Orb | `withorb` | servizio o API | — | no | 0 |
 | Ory | `orysh` | autenticazione | — | sì | 0 |
 | OVH | `ovh` | servizio o API | — | sì | 0 |
@@ -1249,25 +1249,25 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Pingdom | `pingdom` | servizio o API | — | sì | 0 |
 | Pirsch Analytics | `pirschanalytics` | servizio o API | — | no | 0 |
 | PlaceKit | `placekit` | servizio o API | — | no | 0 |
-| Plain | `plain` | servizio o API | — | no | 0 |
+| Plain | `plain` | servizio o API | — | no | 1 |
 | PlanetScale | `planetscale` | database | — | sì | 0 |
 | Platform.sh | `platformsh` | servizio o API | — | sì | 0 |
-| Plausible | `plausible` | servizio o API | — | no | 0 |
-| Pluggy | `pluggy` | servizio o API | — | no | 0 |
+| Plausible | `plausible` | servizio o API | — | no | 1 |
+| Pluggy | `pluggy` | servizio o API | — | no | 1 |
 | PocketBase | `pocketbase` | database | — | sì | 0 |
 | Poe | `poe` | servizio o API | — | sì | 0 |
-| Polar | `polarsh` | gateway | — | no | 0 |
+| Polar | `polarsh` | gateway | — | no | 1 |
 | Polkadot | `polkadot` | servizio o API | — | sì | 0 |
-| Postgres | `postgresql` | database | — | sì | 32 |
+| Postgres | `postgresql` | database | — | sì | 38 |
 | Postgrest | `postgrest` | servizio o API | — | no | 0 |
-| PostHog | `posthog` | servizio o API | — | sì | 2 |
+| PostHog | `posthog` | servizio o API | — | sì | 3 |
 | Postman | `postman` | servizio o API | — | sì | 0 |
-| Postmark | `postmark` | servizio o API | — | no | 0 |
+| Postmark | `postmark` | servizio o API | — | no | 1 |
 | PowerSync | `powersync` | servizio o API | — | no | 0 |
 | Prestashop | `prestashop` | servizio o API | — | sì | 0 |
 | Prisma Cloud | `prismacloud` | servizio o API | — | no | 0 |
 | Prismic | `prismic` | servizio o API | — | sì | 0 |
-| Prometheus | `prometheus` | servizio o API | — | sì | 2 |
+| Prometheus | `prometheus` | servizio o API | — | sì | 7 |
 | PropelAuth | `propelauth` | autenticazione | — | no | 0 |
 | PubSub | `gcp.pubsub` | coda | — | sì | 0 |
 | Puppeteer | `puppeteer` | servizio o API | — | sì | 1 |
@@ -1281,7 +1281,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Qovery Cluster | `qovery.cluster` | servizio o API | — | no | 0 |
 | Qovery Database | `qovery.database` | database | — | no | 0 |
 | QuestDB | `questdb` | database | — | no | 0 |
-| RabbitMQ | `rabbitmq` | coda | — | sì | 4 |
+| RabbitMQ | `rabbitmq` | coda | — | sì | 5 |
 | Railway | `railway` | servizio o API | — | sì | 1 |
 | Railway MongoDB | `railway.mongodb` | database | — | no | 0 |
 | Railway MySQL | `railway.mysql` | database | — | no | 0 |
@@ -1291,10 +1291,10 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Razorpay | `razorpay` | servizio o API | — | sì | 0 |
 | ReadMe | `readme` | servizio o API | — | sì | 0 |
 | Reddit | `reddit` | servizio o API | — | sì | 0 |
-| Redis | `redis` | database | — | sì | 19 |
+| Redis | `redis` | database | — | sì | 24 |
 | RelativeCI | `relativeci` | servizio o API | — | no | 0 |
 | remove.bg | `removebg` | servizio o API | — | sì | 0 |
-| Render | `render` | servizio o API | — | sì | 1 |
+| Render | `render` | servizio o API | — | sì | 2 |
 | Replicate | `replicate` | servizio o API | — | sì | 0 |
 | Replit | `replit` | servizio o API | — | sì | 0 |
 | Replit Database | `replit.database` | database | — | no | 0 |
@@ -1326,11 +1326,11 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Segment | `segment` | servizio o API | — | no | 0 |
 | Selenium | `selenium` | servizio o API | — | sì | 0 |
 | Sendgrid | `sendgrid` | servizio o API | — | no | 0 |
-| Sentry | `sentry` | servizio o API | — | sì | 4 |
+| Sentry | `sentry` | servizio o API | — | sì | 10 |
 | ServiceNow | `servicenow` | servizio o API | — | no | 0 |
 | Shopify | `shopify` | servizio o API | — | sì | 0 |
 | Shortcut | `shortcut` | servizio o API | — | sì | 0 |
-| Sign in with Apple | `apple.signin` | autenticazione | — | no | 0 |
+| Sign in with Apple | `apple.signin` | autenticazione | — | no | 1 |
 | Signoz | `signoz` | servizio o API | — | no | 0 |
 | Simple Analytics | `simpleanalytics` | servizio o API | — | sì | 0 |
 | SimpleFIN Bridge | `simplefin` | servizio o API | `bridge.simplefin.org` | no | 0 |
@@ -1347,17 +1347,17 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | SparkPost | `sparkpost` | servizio o API | — | sì | 0 |
 | Split | `splitio` | servizio o API | — | no | 0 |
 | Splunk | `splunk` | servizio o API | — | sì | 0 |
-| Spotify | `spotify` | servizio o API | — | sì | 0 |
-| SQLite | `sqlite` | database | — | sì | 4 |
+| Spotify | `spotify` | servizio o API | — | sì | 1 |
+| SQLite | `sqlite` | database | — | sì | 12 |
 | Sqreen | `sqreen` | servizio o API | — | no | 0 |
 | Square | `squareup` | gateway | — | sì | 0 |
 | Squarespace | `squarespace` | servizio o API | — | sì | 0 |
 | Storyblok | `storyblok` | servizio o API | — | sì | 0 |
 | Strapi | `strapi` | servizio o API | — | sì | 0 |
-| Stripe | `stripe` | gateway | — | sì | 3 |
+| Stripe | `stripe` | gateway | — | sì | 5 |
 | StyleCI | `styleci` | servizio o API | — | no | 0 |
 | Stytch | `stytch` | autenticazione | — | no | 0 |
-| Supabase | `supabase` | servizio o API | — | sì | 0 |
+| Supabase | `supabase` | servizio o API | — | sì | 1 |
 | Supabase Auth | `supabase.auth` | autenticazione | — | sì | 0 |
 | Supabase Functions | `supabase.functions` | servizio o API | — | sì | 0 |
 | Supabase Postgres | `supabase.postgres` | database | — | sì | 0 |
@@ -1373,7 +1373,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Telegraf | `telegraf` | servizio o API | — | no | 0 |
 | Telegram | `telegram` | servizio o API | `api.telegram.org` | sì | 0 |
 | Tencent Cloud | `tencentcloud` | servizio o API | — | no | 0 |
-| Tencent COS | `tencent-cos` | filesystem | — | no | 0 |
+| Tencent COS | `tencent-cos` | filesystem | — | no | 1 |
 | Teradata | `teradata` | database | — | sì | 0 |
 | The Space Devs API | `space-devs` | servizio o API | `ll.thespacedevs.com` | no | 0 |
 | thirdweb | `thirdweb` | servizio o API | — | sì | 0 |
@@ -1393,7 +1393,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Twenty CRM | `twentycrm` | servizio o API | — | sì | 0 |
 | Twilio | `twilio` | servizio o API | `api.twilio.com` | no | 0 |
 | Twitch | `twitch` | servizio o API | — | sì | 0 |
-| Twitch OAuth | `twitch.oauth` | autenticazione | — | no | 0 |
+| Twitch OAuth | `twitch.oauth` | autenticazione | — | no | 1 |
 | Typesense | `typesense` | database | — | no | 0 |
 | Typesense Cloud | `typesensecloud` | database | — | no | 0 |
 | Unsplash | `unsplash` | servizio o API | — | sì | 0 |
@@ -1403,9 +1403,9 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Upstash Redis | `upstash.redis` | database | — | no | 1 |
 | Uptime Kuma | `uptimekuma` | servizio o API | — | sì | 0 |
 | Use Autumn | `useautumn` | gateway | — | no | 0 |
-| Valkey | `valkey` | database | — | no | 0 |
+| Valkey | `valkey` | database | — | no | 1 |
 | Vault | `hashicorp_vault` | servizio o API | — | sì | 0 |
-| Vercel | `vercel` | servizio o API | — | sì | 1 |
+| Vercel | `vercel` | servizio o API | — | sì | 3 |
 | Vercel AI | `vercel.ai` | servizio o API | — | no | 0 |
 | Vercel Analytics | `vercel.analytics` | servizio o API | — | no | 0 |
 | Vercel Blob | `vercel.blob` | database | — | no | 0 |
