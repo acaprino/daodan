@@ -1551,3 +1551,30 @@ Cosa cambia negli id: la versione del progetto è `_` in ogni esecuzione, e il n
 Una prova con una sola esecuzione dalla radice e un `executionEnvironments` di Pyright per ogni progetto non regge. Su un caso privato il modulo di un progetto Python ha un nome dove è definito e un altro dove è importato: resta senza definizione, e circa 2.200 archi `unknown` passano da un valore a un vicolo cieco. Le chiamate cambiano in 222 siti. Per questo ogni unità ha la sua esecuzione, come i moduli di Go.
 
 Costo fatturato da Modal: 0,192 USD. Nell'ora 19 UTC 0,162 (`daodan-stage-audit` 0,142, test MCP 0,015, confronto degli indici 0,006), con quattro giri di python-semver e di un caso privato e la prova scartata; nell'ora 20 0,030 per il giro finale, con le unità date dal driver.
+
+## 27 novembre 2026, evidenza per indicizzatore (T2.A)
+
+Dai `results/` esistenti, nessuna corsa nuova: `python -B benchmarks/inference-audit/evidence_summary.py`, risultato in `results/evidence-summary.tsv`. TypeScript c'era già (scip-typescript su tududi, JavaScript e TypeScript): nessuna corsa del passo `T2.A.4`.
+
+- **Confermati e falsi archi** vengono solo dai `scip-*-full.json` (seconda fonte A contro indice B): confermato = «same project target», falso arco = solo «different project target» (entrambi i lati hanno una destinazione del progetto e differiscono). Le celle `mixed` non sono falsi archi.
+- **Incerti e buchi** dei motori senza seconda fonte vengono dai `report` dei `graph-*-checks.json` e di `graph-kotlin-klaxon.json`; lì confermati e falsi archi restano vuoti.
+- `hand_check` (quattro forme diverse) e `other_languages` (i rapporti in più di zlib) non sono letti.
+
+| Indicizzatore | Confermati | Falsi archi | Incerti | Buchi | Secondi | MB |
+| --- | --- | --- | --- | --- | --- | --- |
+| scip-go (chi) | 1.014 | 0 | n/d | 0 | 12,8 | 338 |
+| rust-analyzer (semver) | 252 | 0 | n/d | 186 | 8,9 | 1.176 |
+| scip-typescript (tududi, JS) | 12.709 | 0 | n/d | 58 | 67,4 | 2.154 |
+| scip-typescript (tududi, TS) | 7.023 | 0 | n/d | 0 | 67,4 | 2.154 |
+| scip-clang (zlib C; tinyxml2 C++) | n/d | n/d | 4; 0 | 2.383; 145 | 4,8; 2,9 | 69; 83 |
+| scip-java (javapoet) | n/d | n/d | 0 | 10 | 37,7 | 639 |
+| scip-java (klaxon, Kotlin) | n/d | n/d | 251 | 330 | 107,2 | 2.205 |
+| scip-python (semver) | n/d | n/d | 0 | 64 | 7,5 | 369 |
+
+I sei grafi dei fogli di stile (pipeline `stylesheet.py`, non un indicizzatore) sono nel TSV, non qui. Tempo e memoria di scip-typescript sono una sola esecuzione per i due linguaggi.
+
+### Verdetto
+
+Falsi archi: zero in tutti i quattro indicizzatori con seconda fonte (go, rust-analyzer, scip-typescript JS e TS). Limiti: la seconda fonte (il passo dei motori) non è una verità, e i casi in cui A dà una destinazione del progetto e B finisce su un valore (`mixed: A project-other, B parameter`, `call-result`: chi 22, tududi JavaScript 1.082, tududi TypeScript 3.952) non sono contati come falsi archi per definizione; sono la classe da guardare se si vuole una misura più severa. Le 153 chiamate «diverse» di chi del primo join erano interfaccia contro implementazione e sono scomparse con la lettura completa.
+
+Modello di evidenza: nessun campo nuovo. Ciò che l'indice non decide si dice con `uncertain.reason` nel `refine` dell'adattatore, come già fa `adapters/clang.py` («one symbol defined at several places»); i buchi restano `holes`. Un campo nuovo si apre solo se una misura futura mostra un falso arco che `reason` non esprime.
