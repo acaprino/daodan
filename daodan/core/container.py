@@ -1270,7 +1270,7 @@ def fetch(engine: Engine, box: str, path: str, out_dir: Path, budget: int) -> tu
 
 
 def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...], project: str) -> None:
-    """The proxy of a preparation, open to the `registries` that `egress.decide` allows the project (`str(project)`):
+    """The proxy of a preparation, open to the `registries` that `egress.decide` allows the project (`egress.name`):
     any other host is refused, and what it was asked is in the proxy's log (`PROXY_SCRIPT`), where the host reads it
     as a request or a `host_denied` gap. The hosts the user approved for the project, always or for this analysis,
     are open too: the run that asked for one, run again after the answer, reaches it. Every host the proxy gets is one
@@ -1776,7 +1776,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
                 checked(cli(found, "network", "create", "--internal", network), "network create")
                 cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
-                start_proxy(found, proxy, network, tuple(registries), str(project))
+                start_proxy(found, proxy, network, tuple(registries), egress.name(project))
                 logged.append(proxy)
                 refused = leaves(engine_cli, network, token) if steps and pinned else None
                 if refused:  # the pod could not leave the network: no step runs beside the services
@@ -1856,7 +1856,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 pass
         found.stop()
         if result.get("refused"):  # the requests to answer and the denials, in the gaps of every caller
-            result["asked"], denied = egress.collect(str(project), result["refused"])
+            result["asked"], denied = egress.collect(egress.name(project), result["refused"])
             result["gaps"] = [*(result.get("gaps") or ()), *denied,
                               *(egress.approval_gap(result["asked"]) if result["state"] != "done" else ())]
         if hide and isinstance(result.get("cause"), str):

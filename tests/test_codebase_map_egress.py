@@ -341,21 +341,36 @@ def test_an_analysis_ended_in_another_process_leaves_no_answer_here_and_the_next
         "allow": [], "deny": ["10.0.0.2"]}
 
 
-def test_run_pass_begins_and_ends_the_egress_of_its_project(shared, monkeypatch):
-    import engine_pass
-    egress.collect(PROJECT, [{"host": "10.0.0.1", "port": "443"}])
-    egress.respond("10.0.0.2", PROJECT, "once")
+@pytest.mark.parametrize("fails", [False, True])
+def test_the_whole_analysis_begins_and_ends_the_egress_of_its_project(shared, monkeypatch, fails):
+    """The boundary is the analysis, all its steps (`pipeline.run`), not one of them: the pre-map's requests made in
+    it are not emptied by a later step, "once" serves the dynamic step too, and the answers end with it, even when it
+    fails."""
+    import pipeline
+    egress.collect(PROJECT, [{"host": "10.0.0.1", "port": "443"}])  # a request of the analysis before
+    egress.respond("10.0.0.2", PROJECT, "once")  # answered between two analyses
     seen = {}
 
-    def inside(manifest, report_path, bus=None):
-        seen.update(pending=egress.pending(PROJECT), allow=egress.session(PROJECT)["allow"])
+    def steps(manifest, listeners, **options):
+        seen.update(before=egress.pending(PROJECT), named=egress.name("/work/app/sub"))
+        egress.collect(egress.name("/work/app/sub"), [{"host": "10.0.0.3", "port": "443"}])  # the pre-map asks
+        seen.update(premap=[row["host"] for row in egress.pending(PROJECT)],
+                    allow=egress.session(PROJECT)["allow"])  # what the dynamic step finds, after the analyze one
+        if fails:
+            raise RuntimeError("a step that nobody foresaw")
         return {"ran": True}
 
-    monkeypatch.setattr(engine_pass, "_projects", lambda manifest: [PROJECT])
-    monkeypatch.setattr(engine_pass, "_run_pass", inside)
-    assert engine_pass.run_pass(Path("m.json"), Path("r.json")) == {"ran": True}
-    assert seen == {"pending": [], "allow": ["10.0.0.2"]}  # the answer given before the pass serves it
-    assert egress.session(PROJECT) == egress.new_session()  # and is forgotten when it ends
+    monkeypatch.setattr(egress, "project_of", lambda manifest: PROJECT)
+    monkeypatch.setattr(pipeline, "_run", steps)
+    if fails:
+        with pytest.raises(RuntimeError):
+            pipeline.run(Path("m.sqlite"))
+    else:
+        assert pipeline.run(Path("m.sqlite")) == {"ran": True}
+    assert seen == {"before": [], "named": PROJECT, "premap": ["10.0.0.3"], "allow": ["10.0.0.2"]}
+    assert egress.session(PROJECT) == egress.new_session()  # forgotten when the analysis ends, however it ends
+    assert [row["host"] for row in egress.pending(PROJECT)] == ["10.0.0.3"]  # the pre-map's request stays visible
+    assert egress.name("/work/app/sub") == "/work/app/sub"  # outside the analysis, a run names its own folder
 
 
 def test_a_missing_or_corrupt_shared_file_is_an_empty_one(shared):

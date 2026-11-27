@@ -8,10 +8,10 @@ string for one project. The four answers: "always" (this project), "once" (this 
 (this analysis) and "block" (every project, always).
 
 The requests still to answer and the answers that last for an analysis are shared between processes, which differ:
-the child that is refused, the app that answers, the pass that reads the answer. They are two files beside
+the child that is refused, the app that answers, the analysis that reads the answer. They are two files beside
 `egress.json` (`PENDING_FILE`, `SESSION_FILE`), written whole with a temporary file and `os.replace`, under an OS lock
-(`locked`); a missing or corrupt file is an empty one. `begin` empties a project's requests when its pass starts and
-`end` its answers when the pass ends, so "once" lasts for the pass the answer is used by. `PENDING` is this
+(`locked`); a missing or corrupt file is an empty one. `begin` empties a project's requests when its analysis starts and
+`end` its answers when it ends (`analysis`), so "once" lasts for the analysis the answer is used by. `PENDING` is this
 process's copy of the requests; the answers are read from their file each time, so one that an analysis ended
 elsewhere has forgotten is never kept here.
 """
@@ -46,6 +46,42 @@ LOOKUPS = 16  # the names one analysis looks up at most, counted in its row of `
 LOOKUP_SECONDS = 5  # how long the names of one run's refusals are looked up, all together
 REPLIES = ("always", "once", "no", "block")
 ASKER = contextvars.ContextVar("egress_asker", default="")  # the tool whose runs ask now (`asking`); "" none named
+PROJECT = contextvars.ContextVar("egress_project", default="")  # the analysed project's name (`within`); "" none
+
+
+def project_of(manifest: Path) -> str:
+    """The name of a snapshot's project: its store's root, whatever folder below it the snapshot targets. The analysis,
+    its stages and the app name one project by it."""
+    from snapshot_store import open_snapshot
+    with open_snapshot(Path(manifest)) as store:
+        return str(Path(store["root"]).resolve())
+
+
+def name(folder: Path | str) -> str:
+    """The project whose runs ask now: the analysis's (`within`), else the `folder` a run copies."""
+    return PROJECT.get() or str(Path(folder).resolve())
+
+
+@contextlib.contextmanager
+def within(project: str):
+    """Within it the runs over any folder of the project ask, and are answered, under its name (`project_of`)."""
+    token = PROJECT.set(project)
+    try:
+        yield
+    finally:
+        PROJECT.reset(token)
+
+
+@contextlib.contextmanager
+def analysis(project: str):
+    """One analysis of the project, all its steps: the requests of the one before are gone when it starts (`begin`),
+    its "once" and "no" answers when it ends, however it ends (`end`); its runs ask under the project's name."""
+    begin(project)
+    try:
+        with within(project):
+            yield
+    finally:
+        end(project)
 
 
 @contextlib.contextmanager
@@ -147,7 +183,7 @@ def respond(host: str, project: str, reply: str) -> None:
 
 
 def begin(project: str) -> None:
-    """A pass starts: the requests of the one before are gone, the run will ask again for what it still needs."""
+    """An analysis starts: the requests of the one before are gone, the run will ask again for what it still needs."""
     with locked():
         rows = _read(PENDING_FILE)
         rows.pop(project, None)
@@ -156,7 +192,7 @@ def begin(project: str) -> None:
 
 
 def end(project: str) -> None:
-    """A pass ends: what the user said "once" or "no" to for it is forgotten."""
+    """An analysis ends: what the user said "once" or "no" to for it is forgotten."""
     with locked():
         shared = _read(SESSION_FILE)
         shared.pop(project, None)

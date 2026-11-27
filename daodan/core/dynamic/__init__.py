@@ -570,6 +570,7 @@ def run(manifest: Path, bus) -> dict:
     asked: dict = {}
     declared, paths = None, {}  # the services of the project's CI (`services`), and where each is declared
     with code_graph.Snapshot(manifest) as snapshot:
+        project = str(Path(snapshot.store["root"]).resolve())  # the name `egress` asks under (`egress.project_of`)
         store = rx.default_edge_store(manifest)
         edges, binding, reason = rx.read_edge_store(store, snapshot.store)
         import engine_pass
@@ -612,7 +613,7 @@ def run(manifest: Path, bus) -> dict:
             record = premap.ensure(manifest)
             planned = module.plan(record, sorted(snapshot.checkout.values()), read)
             planned["declared"] = preparation.declared(record)  # the hosts its preparation reaches, as a CI does
-            egress.declare(str(snapshot.root.resolve()), planned["declared"]["where"])  # the requests name the files
+            egress.declare(project, planned["declared"]["where"])  # the requests name the files
             folder = manifest.parent / RUNS / entry
             cache_file = folder / "execution.json"
             expected = execution_cache.key(binding, graphs, wanted, module, planned)
@@ -655,7 +656,7 @@ def run(manifest: Path, bus) -> dict:
                 if "gap" in asked else None
             if result is None:  # a host the project declares that nobody decided: the runs do not start
                 with egress.asking(entry):  # the observer's hosts are asked about together
-                    waiting, said_hosts = egress.preflight(str(snapshot.root.resolve()), planned["declared"]["hosts"])
+                    waiting, said_hosts = egress.preflight(project, planned["declared"]["hosts"])
                 if waiting:
                     result = {"state": "failed", "cause": said_hosts[0]["detail"],
                               "remedy": "answer in the app, then analyze again", "gaps": said_hosts}
@@ -663,7 +664,7 @@ def run(manifest: Path, bus) -> dict:
                 bus.progress(STEP, number, len(waiting), analyzer=entry, phase="tests",
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")
                 with container.beside(declared["services"], {**declared["env"], **stepped["env"]},
-                                      stepped["steps"]) as said, egress.asking(entry):
+                                      stepped["steps"]) as said, egress.asking(entry), egress.within(project):
                     # Preserve the first attempt's raw per-process files and logs for audit.
                     output = folder / f"retry-{cached['attempt'] + 1}" if cached else folder
                     result = module.observe(snapshot.root, planned, output,

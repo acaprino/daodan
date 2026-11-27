@@ -1140,7 +1140,6 @@ def test_no_mcp_tool_answers_a_host_request_and_the_status_lists_them_by_tool(tm
     import importlib.util
     import inspect
     import egress
-    import engine_pass
     from test_codebase_map_reactive_server import _load_mcp_server  # the server, over a stub of `mcp` without it
 
     server = _load_mcp_server().create_server(tmp_path)
@@ -1164,7 +1163,7 @@ def test_no_mcp_tool_answers_a_host_request_and_the_status_lists_them_by_tool(tm
     service = mcp_service.MapService(project)
     service.create_run("src", "r1", engine=False)
     key = str(project.resolve())
-    monkeypatch.setattr(engine_pass, "_projects", lambda manifest: [key])
+    monkeypatch.setattr(egress, "project_of", lambda manifest: key)
     with egress.asking("gradle"):
         egress.collect(key, [{"host": "10.0.0.4", "port": "443"}], {"10.0.0.4": ["build.gradle"]})
     assert service.status("r1")["egress"] == [{"tool": "gradle", "project": key, "requests": [

@@ -421,30 +421,7 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
 
 
-def _projects(manifest: Path) -> list[str]:
-    """The names `egress` knows this snapshot's project by: its root, and the folder of its target when that differs
-    (the stages' `container.run_in_container` and `index_stage`'s)."""
-    with open_snapshot(manifest) as store:
-        root = Path(store["root"])
-        target = (root / store["target"]).resolve()
-    return sorted({str(root.resolve()), str(target.parent if target.is_file() else target)})
-
-
 def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
-    """The pass of `_run_pass`, with `egress`'s requests of the project emptied at its start and its "once" and "no"
-    answers forgotten at its end: an answer given between two passes serves the next."""
-    import egress
-    projects = _projects(Path(manifest).resolve())
-    for project in projects:
-        egress.begin(project)
-    try:
-        return _run_pass(manifest, report_path, bus)
-    finally:
-        for project in projects:
-            egress.end(project)
-
-
-def _run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     """Run each engine's stage in turn and record per language what came of it.
 
     A language already fresh in the store is not asked again; one the snapshot did
@@ -585,10 +562,11 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
 
     An analyzer that `READS` files by suffix is handed the snapshot's (`files`); one whose outcome is a `graph` of
     its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`). The hosts its runs ask for are
-    the indexer's (`egress.asking`).
+    the indexer's (`egress.asking`), asked under the project's name, its store's root, whatever folder the snapshot
+    targets (`egress.within`).
     """
     import egress
-    with egress.asking(spec.name):
+    with egress.asking(spec.name), egress.within(egress.project_of(manifest)):
         return _index_stage(spec, manifest, project_root, out)
 
 
@@ -604,7 +582,7 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
     # container reaches, as a CI does.
     declared = preparation.declared(record)
     import egress
-    egress.declare(str(Path(project_root).resolve()), declared["where"])  # the requests of its runs name the files
+    egress.declare(egress.name(project_root), declared["where"])  # the requests of its runs name the files
     if spec.needs_container:
         options["declared"] = declared
     if hasattr(module, "READS"):
@@ -619,7 +597,7 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
                 return {"available": False, "engine": spec.name,
                         "reason": f"the build runs only in a container: {gap.cause}", "install": gap.remedy}
         if options.get("roots") or options.get("units") or options.get("docker"):  # it will build: its hosts first
-            asked, said = egress.preflight(str(Path(project_root).resolve()), declared["hosts"])
+            asked, said = egress.preflight(egress.name(project_root), declared["hosts"])
             if asked:  # a host the project declares that nobody decided: the stage does not start
                 return {"available": False, "engine": spec.name, "reason": said[0]["detail"], "gaps": said}
     work = Path(tempfile.mkdtemp(prefix=f"daodan-{spec.name}-"))
