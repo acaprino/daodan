@@ -164,6 +164,20 @@ def test_a_child_process_gets_the_engine_in_container_and_in_engine_pass(tmp_pat
     assert child.returncode == 0 and child.stdout.strip() == "engine on modal", child.stderr
 
 
+def test_a_child_process_reads_scip_with_the_products_protobuf_not_the_clients(tmp_path):
+    """On Modal the client's dependencies, protobuf 6 among them, sit outside the interpreter's site-packages, where
+    the product's protobuf 7 is: the child's path puts site-packages first, so `scip_pb2.py` (generated for 7) loads
+    beside Modal's client. Measured on 27 November 2026: the pass failed Java, JavaScript and Python on it."""
+    import sysconfig
+    path = modal_pipeline.engine_environment(tmp_path / "site")["PYTHONPATH"].split(os.pathsep)
+    client = str(Path(modal_pipeline.modal.__file__).resolve().parents[1])
+    assert path.index(sysconfig.get_paths()["purelib"]) <= path.index(client)
+    environment = {**os.environ, "PYTHONPATH": os.pathsep.join([*path, str(HERE.parents[1] / "daodan/core")])}
+    child = subprocess.run([sys.executable, "-c", "import modal, scip_pb2\nprint('read')"],
+                           env=environment, cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert child.returncode == 0 and child.stdout.strip() == "read", child.stderr
+
+
 def test_the_addresses_of_an_apt_archive_are_ipv4_only_because_modals_allowlist_refuses_ipv6(monkeypatch):
     """Measured on Modal: `Network access allowlist does not support IPv6 CIDRs`. The lookup asks for IPv4 and writes /32."""
     import socket
