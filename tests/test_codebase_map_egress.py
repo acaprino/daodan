@@ -92,3 +92,44 @@ def test_a_malformed_entry_is_dropped_and_the_rest_kept(shared):
     (shared / "egress.json").write_text(json.dumps({"whitelist": {"p": ["a.example.com", 3], "q": "x"},
                                                     "blacklist": ["b.example.com", None]}), encoding="utf-8")
     assert egress.load() == {"whitelist": {"p": ["a.example.com"]}, "blacklist": ["b.example.com"]}
+
+
+def test_the_refusals_of_a_proxy_log_are_read_in_order_and_once():
+    log = "\n".join(["ready 3128", '@@daodan-refused {"host": "A.example.com", "port": "443"}', "noise",
+                     '@@daodan-refused {"host": "a.example.com", "port": "443"}', "@@daodan-refused not json",
+                     '@@daodan-refused {"host": 3, "port": "1"}', '@@daodan-refused {"host": "", "port": "1"}',
+                     '@@daodan-refused {"host": "10.0.0.1", "port": "8080"}', "@@daodan-refused []"])
+    assert egress.refused(log) == [{"host": "a.example.com", "port": "443"}, {"host": "10.0.0.1", "port": "8080"}]
+
+
+@pytest.mark.parametrize("address, expected", [
+    ("10.1.2.3", True), ("192.168.0.9", True), ("127.0.0.1", True), ("169.254.169.254", True), ("::1", True),
+    ("fe80::1", True), ("fd00::1", True), ("::ffff:10.0.0.1", True), ("93.184.216.34", False),
+    ("2606:2800:220:1::1", False), ("not an address", False)])
+def test_the_users_own_network_is_private_loopback_and_link_local(address, expected):
+    assert egress.private(address) is expected
+
+
+def test_resolve_reads_literals_and_looks_each_name_up_once_up_to_the_cap(monkeypatch):
+    asked = []
+
+    def lookup(host, *_, **__):
+        asked.append(host)
+        if host == "gone.example.com":
+            raise OSError("no such host")
+        return [(0, 0, 0, "", ("192.168.1.5" if host == "nas.example.com" else "93.184.216.34", 0))]
+
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lookup)
+    requests = [{"host": "10.0.0.1", "port": "443"}, {"host": "[::1]", "port": "443"},
+                {"host": "nas.example.com", "port": "443"}, {"host": "nas.example.com", "port": "8080"},
+                {"host": "gone.example.com", "port": "443"}, {"host": "late.example.com", "port": "443"}]
+    out = egress.resolve(requests, lookups=2)
+    assert asked == ["nas.example.com", "gone.example.com"]  # literals cost no lookup, a name one, the cap holds
+    assert [(r["host"], r["address"], r["network"]) for r in out] == [
+        ("10.0.0.1", "10.0.0.1", True), ("[::1]", "::1", True), ("nas.example.com", "192.168.1.5", True),
+        ("nas.example.com", "192.168.1.5", True), ("gone.example.com", None, False), ("late.example.com", None, False)]
+
+
+def test_resolve_reaches_no_network_for_literals_and_localhost():
+    out = egress.resolve([{"host": "127.0.0.1", "port": "80"}, {"host": "localhost", "port": "80"}])
+    assert out[0]["network"] is True and out[1]["network"] is True

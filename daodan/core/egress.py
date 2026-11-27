@@ -9,8 +9,10 @@ string for one project. The four answers: "always" (this project), "once" (this 
 """
 from __future__ import annotations
 
+import ipaddress
 import json
 import os
+import socket
 import sys
 from pathlib import Path
 
@@ -21,6 +23,8 @@ if str(SCRIPT_DIR) not in sys.path:
 from embedding_worker import shared_cache_dir  # noqa: E402
 
 FILE = "egress.json"
+MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
+LOOKUPS = 16  # the hosts one analysis resolves at most
 REPLIES = ("always", "once", "no", "block")
 
 
@@ -81,3 +85,56 @@ def answer(state: dict, session: dict, host: str, project: str, reply: str) -> t
     else:
         blacklist = sorted({*blacklist, host})
     return {"whitelist": whitelist, "blacklist": blacklist}, {"allow": allow, "deny": deny}
+
+
+def refused(log: str) -> list[dict]:
+    """The `{host, port}` of each refusal in a proxy's log, in order and once each."""
+    found = []
+    for line in log.splitlines():
+        if not line.startswith(MARK):
+            continue
+        try:
+            row = json.loads(line[len(MARK):])
+            host, port = row["host"], row["port"]
+        except (ValueError, KeyError, TypeError):
+            continue
+        if isinstance(host, str) and isinstance(port, str) and host:
+            entry = {"host": host.lower(), "port": port}
+            if entry not in found:
+                found.append(entry)
+    return found
+
+
+def private(address: str) -> bool:
+    """Whether an address is private, loopback or link-local: the user's own network, which a host must not reach
+    unasked. An IPv4 address inside an IPv6 one counts as the IPv4 one."""
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    ip = getattr(ip, "ipv4_mapped", None) or ip
+    return ip.is_private or ip.is_loopback or ip.is_link_local
+
+
+def resolve(requests: list[dict], lookups: int = LOOKUPS) -> list[dict]:
+    """Each request with the `address` of its host and whether it is the user's `network`, here on the host and not in
+    the proxy: a literal address is read as it is, any other name is looked up once, up to `lookups` names (the rest,
+    and a name that does not resolve, have no address)."""
+    found, looked = {}, 0
+    out = []
+    for request in requests:
+        host = request["host"].strip("[]")
+        if host not in found:
+            try:
+                ipaddress.ip_address(host)
+                found[host] = host
+            except ValueError:
+                found[host] = None
+                if looked < lookups:
+                    looked += 1
+                    try:
+                        found[host] = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)[0][4][0]
+                    except OSError:
+                        pass
+        out.append({**request, "address": found[host], "network": found[host] is not None and private(found[host])})
+    return out

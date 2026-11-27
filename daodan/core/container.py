@@ -214,9 +214,13 @@ if os.environ.get("DAODAN_PUBLIC"):
 # Runs in its own container; argv: port, then the allowed hosts, CONNECT to their port 443; a host given as
 # `http://<host>` (the apt sources a base image names over plain HTTP) is reached by plain HTTP at its port 80, only
 # for a GET or HEAD of apt's archive (`dists/`, `pool/`: apt checks the signed Release files and each package's
-# hash), one request a connection. Prints "ready <port>".
+# hash), one request a connection. Prints "ready <port>", and for each refusal a line `@@daodan-refused {"host","port"}`
+# that `run_in_container` reads from its log (`egress.refused`). It resolves no refused host: a container the project
+# runs in must not open a DNS channel through it. Proxies evaluated for `T3.A`: Smokescreen (a Go binary from a
+# release; the candidate), squid (ACLs and logs, but no apt exception by path), mitmproxy (it intercepts TLS: not needed).
 PROXY_SCRIPT = r'''
-import re, select, socket, sys, threading
+import json, re, select, socket, sys, threading
+from urllib.parse import urlsplit
 allowed = {host.lower() for host in sys.argv[2:] if not host.startswith("http://")}
 archives = {host[len("http://"):].lower() for host in sys.argv[2:] if host.startswith("http://")}
 ARCHIVE = re.compile(r"(?:/[^/?#\s]+)*/(?:dists|pool)/[^?#\s]*")
@@ -258,6 +262,19 @@ def relay(a, b):
         pass
     finally:
         a.close(); b.close()
+def refuse(client, words):
+    """The refusal, said on one line for the host that reads the log, and a 403."""
+    target = words[1].decode("latin-1") if len(words) > 1 else ""
+    if words[:1] == [b"CONNECT"]:
+        host, _, port = target.rpartition(":")
+    else:
+        try:
+            parts = urlsplit(target)
+            host, port = parts.hostname or "", str(parts.port or 80)
+        except ValueError:
+            host, port = target, ""
+    print("@@daodan-refused " + json.dumps({"host": host[:255], "port": port[:5]}), flush=True)
+    client.sendall(b"HTTP/1.1 403 Forbidden\r\n\r\n"); client.close()
 def serve(client):
     head = b""
     while b"\r\n\r\n" not in head and len(head) < 8192:
@@ -273,8 +290,7 @@ def serve(client):
             return fetch(client, words[0], place.lower(), path, head)
     host, _, port = words[1].decode("latin-1").rpartition(":") if len(words) == 3 and words[0] == b"CONNECT" else ("", "", "")
     if host.lower() not in allowed or port != "443":
-        print("refused", words[:2], flush=True)
-        client.sendall(b"HTTP/1.1 403 Forbidden\r\n\r\n"); client.close(); return
+        return refuse(client, words)
     try:
         upstream = socket.create_connection((host, 443), timeout=30)
     except OSError:

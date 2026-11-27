@@ -725,6 +725,18 @@ class FakeEngineTest(unittest.TestCase):
         self.assertTrue(ask(b"CONNECT example.com:443 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
         self.assertTrue(ask(b"CONNECT registry.npmjs.org:80 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
         self.assertTrue(ask(b"GET http://registry.npmjs.org/ HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
+        self.assertTrue(ask(b"CONNECT 169.254.169.254:443 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
+        self.assertTrue(ask(b"GET http://10.0.0.1:8080/x HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
+        self.assertTrue(ask(b"CONNECT [::1]:443 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
+        self.assertTrue(ask(b"GET http://[::1:80/x HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))  # not a URL
+        self.assertTrue(ask(b"BREW\r\n\r\n").startswith(b"HTTP/1.1 403"))
+        # each refusal is one line of the log, the host and port as asked and none resolved by the proxy
+        lines = [json.loads(server.stdout.readline().split(" ", 1)[1]) for _ in range(8)]
+        self.assertEqual(lines, [
+            {"host": "example.com", "port": "443"}, {"host": "registry.npmjs.org", "port": "80"},
+            {"host": "registry.npmjs.org", "port": "80"}, {"host": "169.254.169.254", "port": "443"},
+            {"host": "10.0.0.1", "port": "8080"}, {"host": "[::1]", "port": "443"},
+            {"host": "http://[::1:80/x", "port": ""}, {"host": "", "port": "80"}])
 
     def test_proxy_forwards_plain_http_to_an_apt_host_only_for_its_archive(self):
         """A base image's apt sources name their archive over plain HTTP, and apt checks the signed Release files and
@@ -780,6 +792,12 @@ class FakeEngineTest(unittest.TestCase):
             self.assertTrue(ask(refused + b"\r\n\r\n").startswith(b"HTTP/1.1 403"), refused)
         self.assertEqual(seen, [("GET", "/debian/dists/trixie/InRelease", "close"),  # the next request goes nowhere
                                 ("HEAD", "/debian/pool/main/c/cmake/cmake_3.31.deb", "close")])
+        # only the refusals are said, each as asked; what the proxy forwarded says nothing
+        said = [json.loads(server.stdout.readline().split(" ", 1)[1]) for _ in range(7)]
+        self.assertEqual(said, [{"host": "127.0.0.1", "port": "80"}, {"host": "127.0.0.1", "port": "80"},
+                                {"host": "127.0.0.1", "port": "8080"}, {"host": "127.0.0.1", "port": "80"},
+                                {"host": "127.0.0.1", "port": "80"}, {"host": "registry.npmjs.org", "port": "80"},
+                                {"host": "127.0.0.1", "port": "443"}])
 
     # Guarantee 3: limits.
     def test_limits_are_passed_and_a_timed_out_container_is_removed(self):
