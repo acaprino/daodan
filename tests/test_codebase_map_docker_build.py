@@ -484,7 +484,7 @@ def test_an_index_of_the_stage_names_the_checkout_s_files_and_drops_what_the_ste
     the COPY brought there, its occurrences and the index's other fields as they were."""
     plan = {"workdir": "/go/src/app", "copies": {"/go/src/app/main.go": "dispatch/main.go"}}
     source = tmp_path / "in.scip"
-    metadata = b"\x0a\x04meta"  # field 1, the index's metadata, kept as it is
+    metadata = b"\x0a\x08\x12\x06\x0a\x04meta"  # field 1, the index's metadata (tool_info.name), kept as it is
     source.write_bytes(metadata + document("main.go", [occurrence(3, 5, 6, "s main/F().", definition=True)])
                        + document("go.mod", []))
     out = tmp_path / "out.scip"
@@ -492,7 +492,7 @@ def test_an_index_of_the_stage_names_the_checkout_s_files_and_drops_what_the_ste
     index = code_graph.Index(tmp_path)
     index.load(out, "")
     assert sorted(index.documents) == ["dispatch/main.go"] and out.read_bytes().startswith(metadata)
-    assert [o.key for o in index.documents["dispatch/main.go"]] == ["s main/F()."]
+    assert [o.key for o in index.documents["dispatch/main.go"]] == ["s main/F()."] and index.tools == [("meta", "")]
 
 
 # ------------------------------------------------------------------ scip-go in the stage
