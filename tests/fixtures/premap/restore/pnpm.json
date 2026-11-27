@@ -1,9 +1,9 @@
 {
  "versions": {
-  "pnpm": "node 24.22.3"
+  "pnpm": "node 24.22.3, pnpm 12.23.0"
  },
- "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
- "line": "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1; for f in 'good' 'bad'; do ( cd \"$f\" && corepack pnpm install --frozen-lockfile --ignore-scripts ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+ "image": "tests/modal_pytest.py",
+ "line": "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1; for f in 'good' 'bad'; do ( cd \"$f\" && corepack pnpm install --frozen-lockfile --ignore-scripts --config.strict-dep-builds=false ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
  "result": {
   "returncode": 0,
   "stdout": "",

@@ -421,7 +421,7 @@ def test_a_restore_runs_the_lifecycle_scripts_first_and_falls_back_to_the_instal
     assert line.index(first) < line.index("DAODAN-GENERATE-FAILED") < line.index("npm ci --ignore-scripts")
     assert line.index("npm ci --ignore-scripts") < line.index("DAODAN-RESTORE-FAILED") and line.endswith("done; true")
     assert "timeout" not in plain and "GENERATE" not in plain  # the default is the line without project code
-    assert "corepack pnpm install --frozen-lockfile'" in preparation.restore("pnpm", ["."], scripts=True)
+    assert "corepack pnpm install --frozen-lockfile --config.strict-dep-builds=false'" in preparation.restore("pnpm", ["."], scripts=True)
     berry = preparation.restore("yarn", ["."], scripts=True)
     assert "corepack yarn install --immutable; else corepack yarn install --frozen-lockfile; fi'" in berry
     # A manager whose restore runs no project code has one line.

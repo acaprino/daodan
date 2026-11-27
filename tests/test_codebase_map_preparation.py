@@ -7,8 +7,12 @@ registry has.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import shutil
 import sys
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "daodan/core"))
@@ -225,6 +229,46 @@ def test_pnpm_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
     assert "OUTDATED_LOCKFILE" in gaps[0]["detail"]
 
 
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real pnpm, on Modal (tests/modal_pytest.py)")
+@pytest.mark.parametrize("pnpm", [None, "9.15.9", "10.34.9", "11.29.0", "12.23.0"])
+def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap(tmp_path, monkeypatch, pnpm):
+    """hono-open-api-starter: pnpm 11 and later end an install that leaves a dependency's build script unapproved,
+    so unrun, with ERR_PNPM_IGNORED_BUILDS (`strictDepBuilds`, pnpm.io/settings/build), the packages installed; the
+    install without scripts that follows, over the same `node_modules`, says it again from pnpm 12. The preparation's
+    line (`scripts`, as `node_prepare`'s) turns that setting off, approving no build: each pnpm installs, no gap;
+    without the setting, pnpm 11 and later leave gaps (`None`: the pnpm corepack takes when the project names none)."""
+    import subprocess
+    monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
+    node = Path(shutil.which("node")).resolve().parent  # corepack ships beside Node
+    env = {**os.environ, "PATH": f"{node}:{os.environ['PATH']}", "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
+           "COREPACK_HOME": str(tmp_path / "corepack")}
+    manifest = {"name": "app", "version": "1.0.0", "dependencies": {"esbuild": "0.25.12"}}  # its postinstall script
+    if pnpm:
+        manifest["packageManager"] = f"pnpm@{pnpm}"
+
+    def run(line, folder):
+        (tmp_path / folder).mkdir()
+        (tmp_path / folder / "package.json").write_text(json.dumps(manifest), encoding="utf-8")
+        locked = subprocess.run(["sh", "-c", f"cd {folder} && corepack pnpm install --lockfile-only --ignore-scripts"],
+                                cwd=tmp_path, env=env, capture_output=True, text=True, timeout=300)
+        assert locked.returncode == 0, locked.stdout + locked.stderr
+        return subprocess.run(["sh", "-c", line], cwd=tmp_path, env=env, capture_output=True, text=True,
+                              timeout=900).stderr
+
+    line = preparation.restore("pnpm", ["app"], scripts=True)
+    said = run(line, "app")
+    version = subprocess.run(["sh", "-c", "cd app && corepack pnpm --version"], cwd=tmp_path, env=env,
+                             capture_output=True, text=True, timeout=300).stdout.strip()
+    assert (preparation.restore_gaps(said), preparation.generation_gaps(said)) == ([], []), (version, said)
+    assert (tmp_path / "app" / "node_modules" / "esbuild" / "package.json").is_file()
+    if int(version.split(".")[0]) >= 11:  # the case: the line without the setting
+        said = run(line.replace(" --config.strict-dep-builds=false", "").replace("'app'", "'before'"), "before")
+        assert "DAODAN-GENERATE-FAILED pnpm before" in said and "ERR_PNPM_IGNORED_BUILDS" in said, (version, said)
+        if int(version.split(".")[0]) >= 12:  # measured: pnpm 11 says it only with the scripts, 12 without too
+            [gap] = preparation.restore_gaps(said)
+            assert "ERR_PNPM_IGNORED_BUILDS" in gap["detail"], (version, gap)
+
+
 def test_yarn_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
     gaps = preparation.restore_gaps(recorded("yarn")["stderr"])
     assert [(g["kind"], g["manager"], g["path"]) for g in gaps] == [("restore_failed", "yarn", "bad")]
@@ -262,7 +306,8 @@ def test_pnpm_and_yarn_run_a_corepack_with_npms_current_key_and_none_installed_i
         ran = calls.read_text(encoding="utf-8").splitlines()
         assert ran[0] == (f"npm install -g --prefix {tools}/corepack --engine-strict --no-audit --no-fund"
                           " --loglevel=error corepack@>=0.31.0 <=0.36.0")
-        assert ran[1:] == [f"{'bundled' if refuse else 'installed'} corepack pnpm install --frozen-lockfile"]
+        assert ran[1:] == [f"{'bundled' if refuse else 'installed'} corepack pnpm install --frozen-lockfile"
+                          " --config.strict-dep-builds=false"]
         assert preparation.missing(done.stderr) == ([{
             "kind": "toolchain_unavailable", "tool": "corepack", "version": ">=0.31.0",
             "detail": "corepack >=0.31.0: the preparation could not install it (its output is in the run's log)"}]
