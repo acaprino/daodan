@@ -148,6 +148,10 @@ class FakeEngineTest(unittest.TestCase):
         cache = self.scratch / "cache"
         for patcher in (mock.patch.dict(os.environ, {"LOCALAPPDATA": str(cache), "XDG_CACHE_HOME": str(cache)}),
                         mock.patch.object(jvm, "CLASSPATH", (("fx.test:tool:1.0", digest(JAR)),)),
+                        # the Analysis API's session: one small jar stands for its compiler's and its own
+                        mock.patch.object(kotlin, "KOTLIN_ANALYSIS", ("fx.test:tool:1.0", digest(JAR))),
+                        mock.patch.object(kotlin, "KOTLIN_RUNTIME", ()),
+                        mock.patch.object(kotlin, "KOTLIN_COMPILER", (("fx.test:tool:1.0", digest(JAR)),)),
                         mock.patch.object(jvm, "MAVEN", ("0.test", digest(MAVEN_ZIP))),
                         mock.patch.object(jvm, "GRADLE", ("0.test", digest(GRADLE_ZIP))),
                         mock.patch.object(preparation, "TEMURIN", (JDK_URL, digest(JDK_TAR))),
@@ -1108,6 +1112,35 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
 class KotlinContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
     language = "kotlin"
 
+    def test_the_analysis_api_session_runs_after_the_index_in_the_same_container(self):
+        """KotlinAsk.kt and the pinned jars come as inputs; the execution, without network, compiles it there and
+        runs one batch over the compile tasks, after their copy; its answers come back in the contract."""
+        out = jvm.OUT.lstrip("/")
+        self.play_success()  # the index and the compile tasks; the session's answers and steps beside them
+        self.play("execute", files={f"{out}/kotlin-answers.jsonl": "{}\n"},
+                  text=log(("configs", 0, ""), ("ask-compile", 0, ""), ("ask", 0, "kotlin-ask: 2 files"), peak=2**28))
+        result = self.index()
+        ask = self.arrived() / kotlin.ASK.lstrip("/")
+        self.assertEqual((ask / "KotlinAsk.kt").read_bytes(), kotlin.SOURCE.read_bytes())
+        self.assertEqual((ask / "runtime/tool-1.0.jar").read_bytes(), JAR)
+        self.assertEqual((ask / "compiler/tool-1.0.jar").read_bytes(), JAR)
+        execute = (self.state / "scripts/execute.sh").read_text(encoding="utf-8")
+        self.assertLess(execute.index("step configs"), execute.index("K2JVMCompiler"))
+        self.assertLess(execute.index("K2JVMCompiler"), execute.index("daodan.KotlinAskKt"))
+        self.assertIn('--across "$OUT/kotlin-answers.jsonl"', execute)
+        (answers, build), = result["answers"]
+        self.assertEqual((Path(answers).read_text(encoding="utf-8"), build), ("{}\n", ""))
+        self.assertEqual([run["step"] for run in result["runs"]][-2:], ["ask-compile", "ask"])
+
+    def test_a_failed_session_is_a_gap_and_the_index_stays(self):
+        self.play_success()
+        self.play("execute", text=log(("configs", 0, ""), ("ask-compile", 0, ""), ("ask", 1, "OutOfMemoryError")))
+        result = self.index()
+        self.assertTrue(result["indexes"])
+        self.assertEqual(result["answers"], [])
+        [gap] = [gap for gap in result["gaps"] if gap["kind"] == "analysis_failed"]
+        self.assertIn("OutOfMemoryError", gap["detail"])
+
     def test_gradle_runs_on_the_jdk_its_daemon_file_names_and_the_script_toolchains_are_installed_beside_it(self):
         """The daemon runs on the JDK `gradle-daemon-jvm.properties` names and compiles with the toolchains the scripts
         name, whatever their majors: the newest is no reason to run Gradle on it."""
@@ -1747,3 +1780,57 @@ def test_a_kotlin_index_from_a_build_that_ended_in_error_says_so(tmp_path):
     part = kotlin.finish(work, {"state": "done"}, runs, out)
     [gap] = part["gaps"]
     assert gap["kind"] == "build_failed" and "Build failed" in gap["detail"]
+
+
+# The Kotlin Analysis API's answers in `refine`: an index and answers written by hand, two compile tasks.
+API, APP = "lib/src/main/kotlin/fx/Api.kt", "app/src/main/kotlin/fx/App.kt"
+PARSE, PARSE_1 = "maven . . fx/Api#parse().", "maven . . fx/Api#parse(+1)."
+
+
+def _occurrence(line: int, start: int, key: str, definition: bool = False):
+    return code_graph.Occurrence(line, start, line, start + 5, key, definition, None)
+
+
+class _Index:
+    """What `kotlin.refine` reads of an index: definitions, documents, and no tree (no implicit call to find)."""
+    defs = {PARSE: [(API, _occurrence(3, 8, PARSE, True))], PARSE_1: [(API, _occurrence(5, 8, PARSE_1, True))]}
+    documents = {API: [_occurrence(3, 8, PARSE, True), _occurrence(5, 8, PARSE_1, True)],
+                 APP: [_occurrence(7, 4, PARSE), _occurrence(9, 8, PARSE)]}
+
+    @staticmethod
+    def tree(rel, language):
+        return None
+
+
+def test_an_answer_among_the_candidates_settles_the_edge_and_no_answer_leaves_it_uncertain(tmp_path):
+    """The index names `parse()` at two sites of another compile task: the session answered the first with
+    `parse(+1)`, the second not at all."""
+    asked = tmp_path / "kotlin-answers.jsonl"
+    asked.write_text(json.dumps({"kind": "ref", "file": APP, "line": 7, "column": 4,
+                                 "targets": [{"file": API, "line": 5}]}) + "\n", encoding="utf-8")
+    edges = [{"site": f"{APP}:{line}", "symbol": PARSE, "to": PARSE, "chain": []} for line in (7, 9)]
+    graph = {"edges": edges, "holes": []}
+    kotlin.refine(_Index(), graph, {API: "lib/compileKotlin", APP: "app/compileKotlin"},
+                  kotlin.answers([[asked, ""]]))
+    settled, left = graph["edges"]
+    assert settled["uncertain"]["reason"] == "overload-across-tasks" and settled["settled"] == PARSE_1
+    assert left["uncertain"] == {"reason": "overload-across-tasks", "candidates": [PARSE, PARSE_1]}
+    assert "settled" not in left
+
+
+def test_a_settled_edge_ends_at_its_candidate_with_the_references_of_its_site():
+    """`code_graph.build` after `refine`: the edge and the snapshot reference at its site end at the settled
+    candidate, certain; the index's key stays as `settled_from`."""
+    import types
+    old = code_graph.End("project-callable", PARSE, "parse-a", "")
+    new = code_graph.End("project-callable", PARSE_1, "parse-b", "")
+    traversal = types.SimpleNamespace(ends=lambda key: [new] if key == PARSE_1 else [old])
+    edge = {"site": f"{APP}:7", "symbol": PARSE, "to": PARSE, "chain": [], "end": "project-callable",
+            "target": "parse-a", "uncertain": {"reason": "overload-across-tasks", "candidates": [PARSE, PARSE_1]},
+            "settled": PARSE_1}
+    graph = {"edges": [edge], "nodes": [{"id": PARSE}, {"id": PARSE_1}]}
+    references = {1: {"site": f"{APP}:7", "ends": [old]}, 2: {"site": f"{APP}:9", "ends": [old]}}
+    code_graph._settled(_Index(), graph, references, types.SimpleNamespace(checkout={}), traversal)
+    assert edge == {"site": f"{APP}:7", "symbol": PARSE, "to": PARSE_1, "chain": [], "end": "project-callable",
+                    "target": "parse-b", "settled_from": PARSE}
+    assert references[1]["ends"] == [new] and references[2]["ends"] == [old]

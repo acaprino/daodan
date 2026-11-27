@@ -138,7 +138,7 @@ ROLES = {"indexed read": "get", "indexed assignment": "set", "for loop": "iterat
 
 def _image():
     edges = resolve_edges
-    kaa = " ".join(f"--intransitive {item}" for item in dict.fromkeys(
+    kaa = " ".join(f"--intransitive {item}" for item, _sha256 in dict.fromkeys(
         [edges.KOTLIN_ANALYSIS, *edges.KOTLIN_RUNTIME, *edges.KOTLIN_COMPILER]))
     return (
         modal.Image.debian_slim(python_version="3.13")

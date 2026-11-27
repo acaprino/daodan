@@ -1728,6 +1728,30 @@ class MavenArtifactTests(unittest.TestCase):
                     resolve_edges.maven_artifact("org.demo:broken:3.0")
             self.assertFalse((resolve_edges.maven_central_dir() / "org/demo/broken/3.0/broken-3.0.jar").exists())
 
+    def test_a_pinned_sha256_is_checked_beside_maven_central_s_sha1(self):
+        """A jar whose sha1 Maven Central confirms but whose sha256 is not the pinned one is refused, and a jar on
+        disk with another sha256 is not reused."""
+        import io
+        payload = b"jar bytes"
+
+        def answer(request, timeout):
+            return io.BytesIO(hashlib.sha1(payload).hexdigest().encode() if request.full_url.endswith(".sha1")
+                              else payload)
+
+        with tempfile.TemporaryDirectory() as temp, \
+                mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"), \
+                mock.patch.object(Path, "home", return_value=Path(temp) / "home"):
+            local = Path(temp) / "home/.m2/repository/org/demo/lib/1.0/lib-1.0.jar"
+            local.parent.mkdir(parents=True)
+            local.write_bytes(b"another build of the jar")
+            with mock.patch("urllib.request.urlopen", side_effect=answer):
+                fetched = resolve_edges.maven_artifact("org.demo:lib:1.0", hashlib.sha256(payload).hexdigest())
+            self.assertEqual(fetched, resolve_edges.maven_central_dir() / "org/demo/lib/1.0/lib-1.0.jar")
+            with mock.patch("urllib.request.urlopen", side_effect=answer), mock.patch.object(time, "sleep"):
+                with self.assertRaises(ValueError):
+                    resolve_edges.maven_artifact("org.demo:other:2.0", "0" * 64)
+            self.assertFalse((resolve_edges.maven_central_dir() / "org/demo/other/2.0/other-2.0.jar").exists())
+
     def test_two_downloads_of_one_file_at_once_both_end_with_it(self):
         """Two processes may fetch one file into the shared directory at once (a Maven jar): each writes a partial
         file of its own, verified, and neither retries nor fails."""

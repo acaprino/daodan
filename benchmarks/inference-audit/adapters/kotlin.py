@@ -18,5 +18,5 @@ VERSION = jvm.VERSION
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> dict:
     """The plugin's contract for the checkout, built here; `refused` lists the hosts the registry proxy refused."""
-    result, runs, out = jvm_here.run(project_dir, work_dir, plugin.PREPARE, plugin.EXECUTE)
+    result, runs, out = jvm_here.run(project_dir, work_dir, plugin.PREPARE, plugin.EXECUTE, inputs=plugin.ask_inputs)
     return {**plugin.finish(Path(work_dir), result, runs, out), "refused": result["refused"]}

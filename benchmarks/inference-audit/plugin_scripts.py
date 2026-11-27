@@ -17,5 +17,6 @@ def code_sha256() -> dict[str, str]:
     adapter beside this file: what a container runs, to compare with the checkout before trusting its results."""
     files = {"code_graph.py": SCRIPTS / "code_graph.py"}
     files.update({f"indexers/{path.name}": path for path in sorted((SCRIPTS / "indexers").glob("*.py"))})
+    files["indexers/KotlinAsk.kt"] = SCRIPTS / "indexers" / "KotlinAsk.kt"  # the Analysis API's session
     files.update({f"adapters/{path.name}": path for path in sorted((HERE / "adapters").glob("*.py"))})
     return {name: hashlib.sha256(path.read_bytes()).hexdigest()[:12] for name, path in files.items()}
