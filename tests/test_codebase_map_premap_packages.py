@@ -299,6 +299,50 @@ def test_the_join_folds_a_unit_s_entry_into_the_central_package_it_uses():
         ("nuget", "Serilog", "b/B.csproj", None, "4.1.0"), ("nuget", "Serilog", "c/C.csproj", 3, "3.0.0")]
 
 
+def test_a_catalog_or_workspace_entry_is_one_package_used_by_each_member(tmp_path):
+    """Renovate's answer: a pnpm catalog's entry (`pnpm.catalog.<name>`) and Cargo's `[workspace.dependencies]` are the
+    package, at their file; `catalog:`/`catalog:<name>` and `{ workspace = true }` (`inherited-dependency`) are its uses,
+    in the nearest table file above them. A use no table holds stays a package of its own file."""
+    class Ctx:
+        root, stated = tmp_path, {}
+        inventory = type("Inv", (), {"files": [], "directories": {"."}, "text": lambda self, _rel: ""})()
+
+    report = json.dumps({"repositories": {"local": {"packageFiles": {
+        "npm": [{"packageFile": "pnpm-workspace.yaml", "deps": [
+                    {"depName": "react", "currentValue": "^18.3.1", "depType": "pnpm.catalog.default"},
+                    {"depName": "react", "currentValue": "^17.0.2", "depType": "pnpm.catalog.legacy"}]},
+                {"packageFile": "apps/web/package.json", "deps": [
+                    {"depName": "react", "currentValue": "catalog:", "skipReason": "unspecified-version"},
+                    {"depName": "zod", "currentValue": "catalog:", "skipReason": "unspecified-version"}]},
+                {"packageFile": "apps/old/package.json", "deps": [
+                    {"depName": "react", "currentValue": "catalog:legacy", "skipReason": "unspecified-version"}]},
+                {"packageFile": "tools/pnpm-workspace.yaml", "deps": [
+                    {"depName": "react", "currentValue": "^19.0.0", "depType": "pnpm.catalog.default"}]},
+                {"packageFile": "tools/cli/package.json", "deps": [
+                    {"depName": "react", "currentValue": "catalog:", "skipReason": "unspecified-version"}]}],
+        "cargo": [{"packageFile": "Cargo.toml", "deps": [
+                      {"depName": "serde", "currentValue": "1.0.210", "depType": "workspace.dependencies"}]},
+                  {"packageFile": "crates/core/Cargo.toml", "deps": [
+                      {"depName": "serde", "depType": "dependencies", "skipReason": "inherited-dependency"}]}],
+    }}}})
+    got = renovate.read(Ctx(), [{"tool": "renovate"}], [{"returncode": 0, "stdout": report, "stderr": ""}])
+    assert sorted((p["name"], p["declared_in"], p.get("version"), p.get("used_in")) for p in got["facts"]["packages"]) == [
+        ("react", "pnpm-workspace.yaml", "^18.3.1", ["apps/old/package.json", "apps/web/package.json"]),
+        ("react", "tools/pnpm-workspace.yaml", "^19.0.0", ["tools/cli/package.json"]),
+        ("serde", "Cargo.toml", "1.0.210", ["crates/core/Cargo.toml"]),
+        ("zod", "apps/web/package.json", None, None)]
+    # one fact per package and file (the pre-map's identity): the legacy catalog's use joins the first catalog's entry
+    reader = [{"ecosystem": "npm", "name": "react", "declared_in": "apps/web/package.json#L3"},
+              {"ecosystem": "crates", "name": "serde", "declared_in": "crates/core/Cargo.toml#L7"},
+              {"ecosystem": "crates", "name": "serde", "declared_in": "Cargo.toml#L4", "version": "1.0.210"}]
+    joined = premap.join([{"source": "renovate@1", "rank": "reader", "facts": {"packages": got["facts"]["packages"]}},
+                          {"source": "modules.py@1", "rank": "reader", "facts": {"packages": reader}}])["packages"]
+    assert [(p["name"], p["declared_in"], p.get("used_in")) for p in joined if p["name"] != "zod"] == [
+        ("react", "pnpm-workspace.yaml", ["apps/old/package.json", "apps/web/package.json#L3"]),
+        ("react", "tools/pnpm-workspace.yaml", ["tools/cli/package.json"]),
+        ("serde", "Cargo.toml#L4", ["crates/core/Cargo.toml#L7"])]
+
+
 def test_project_files_carry_the_project_s_version_or_the_central_one(tmp_path):
     files = {
         "Directory.Packages.props": '<Project><ItemGroup><PackageVersion Include="xunit" Version="2.9.0" />'
