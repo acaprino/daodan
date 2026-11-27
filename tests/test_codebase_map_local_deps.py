@@ -4,7 +4,7 @@ The case `local_deps` of `tests/fixtures/premap/projects.json` holds, per format
 the project and one outside it or at an absolute path: `file:` in `package-lock.json`, `link:`/`file:` in
 `pnpm-lock.yaml`, `file:` in a Yarn 1 `yarn.lock`, `portal:`/`link:` in a Berry one, `-e`, bare paths and `file:` in
 `requirements.txt`, `editable`/`directory` in `uv.lock`, `directory`/`file` and `develop` in `poetry.lock`. What
-Renovate 44.239.1, `npm query :link` and `uv export --format pylock.toml` answered on it in a Linux container is in
+Renovate 44.239.1 (its extraction and the `@yarnpkg/parsers` it pins), `npm query :link` and `uv export --format pylock.toml` answered on it in a Linux container is in
 `tests/fixtures/premap/outputs/local_deps.json` (`benchmarks/project-model/modal_premap.py --store local_deps`).
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 
 import preparation  # noqa: E402
-from premap import requirements  # noqa: E402
+from premap import renovate, requirements  # noqa: E402
 
 FIXTURES = Path(__file__).with_name("fixtures") / "premap"
 CASE = json.loads((FIXTURES / "projects.json").read_text(encoding="utf-8"))["local_deps"]
@@ -169,3 +169,50 @@ def test_a_git_or_url_address_is_no_local_dependency():
                                                           "w": "https://example.org/w.tgz"}})}
     assert preparation.local_dependencies(sorted(texts), texts.get, "python") == []
     assert preparation.local_dependencies(sorted(texts), texts.get, "node") == []
+
+
+# ------------------------------------------------------------ yarn.lock: Yarn's own parser, in the container
+
+YARN1 = ["in@file:./in", "out@file:../../outside/out"]
+BERRY = ["abs@link:/srv/abs/berry::locator=berry-app%40workspace%3A.",
+         "in@portal:./in::locator=berry-app%40workspace%3A.",
+         "out@portal:../../outside/out::locator=berry-app%40workspace%3A."]
+
+
+def _yarn() -> dict:
+    return _answer("sh", ".", "-c", renovate.YARN_LOCKS, renovate.YARN_NAME)
+
+
+def test_yarn_s_parser_states_the_folder_descriptors_of_both_lockfiles():
+    """`@yarnpkg/parsers` (the one Renovate pins, in its container) reads a Yarn 1 and a Berry `yarn.lock`: the
+    descriptors whose range names a folder, with Berry's `locator` parameter."""
+    answered = _yarn()
+    assert answered["returncode"] == 0, answered["stderr"]
+    assert json.loads(answered["stdout"]) == {"yarn1/yarn.lock": YARN1, "berry/yarn.lock": BERRY}
+
+
+def test_a_yarn_lock_entry_outside_the_copy_is_refused():
+    """The same rule as the manifests': `./in` stays, an outside or absolute path is `local_dependency_refused`
+    naming the lockfile and the descriptor; a failed read is the source's `model_failed`."""
+    gaps = renovate._yarn_refused(_yarn())
+    assert {(gap["kind"], gap["path"], gap["file"], gap["entry"]) for gap in gaps} == {
+        ("local_dependency_refused", "yarn1", "yarn1/yarn.lock", YARN1[1]),
+        ("local_dependency_refused", "berry", "berry/yarn.lock", BERRY[0]),
+        ("local_dependency_refused", "berry", "berry/yarn.lock", BERRY[2])}
+    assert [gap["kind"] for gap in renovate._yarn_refused({"returncode": 2, "stdout": "", "stderr": "bad"})] == [
+        "model_failed"]
+
+
+def test_a_local_dependency_only_yarn_lock_states_keeps_its_restore_from_running():
+    """A `file:` dependency a package of the registry brings is in `yarn.lock` only: no manifest states it, so
+    `node_prepare` restores the folder until the pre-map's gap (`preparation.refusals`) is given as `stated`."""
+    files = {"app/package.json": json.dumps({"name": "app", "dependencies": {"x": "1.0.0"}}),
+             "app/yarn.lock": '# yarn lockfile v1\n\n\nx@1.0.0:\n  version "1.0.0"\n\n'
+                              '"y@file:../../outside/y":\n  version "1.0.0"\n'}
+    assert preparation.node_prepare(sorted(files), files.get)["restores"] == {"yarn": ["app"]}
+    stated = renovate._yarn_refused({"returncode": 0, "stderr": "",
+                                     "stdout": json.dumps({"app/yarn.lock": ["y@file:../../outside/y"]})})
+    record = {"gaps": [{**gap, "source": "renovate@44.239.1"} for gap in stated]}
+    planned = preparation.node_prepare(sorted(files), files.get, preparation.refusals(record))
+    assert planned["restores"] == {} and planned["lines"] == []
+    assert not [gap for gap in planned["gaps"] if gap["kind"] == "restore_failed"]

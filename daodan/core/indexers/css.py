@@ -145,11 +145,12 @@ def structure(record: dict) -> dict:
     from . import typescript
     stated = typescript.structure(record)
     paths, _gaps = typescript._aliases(stated.get("paths"), stated.get("members"))
-    return {key: value for key, value in (("tsconfig", stated.get("tsconfig")), ("paths", paths)) if value}
+    return {key: value for key, value in (("tsconfig", stated.get("tsconfig")), ("paths", paths),
+                                          ("refused", stated.get("refused"))) if value}
 
 
 def index(project_dir: Path, work_dir: Path, *, files: list[str], tsconfig: str | None = None,
-          paths: dict | None = None) -> dict:
+          paths: dict | None = None, refused=()) -> dict:
     """The analyzer's run: the graph over `files` outside dependency directories, its engines through
     `node_runner`, the scripts' program with `tsconfig` and `paths` (`structure`). `{"graph", "indexer"}`, the
     indexer's version a digest of every engine's (`versions`); without a graph, `state` `unavailable` with `reason`
@@ -160,7 +161,7 @@ def index(project_dir: Path, work_dir: Path, *, files: list[str], tsconfig: str 
              if not any(part in DEPENDENCY_DIRS or part.startswith(".") for part in rel.split("/"))]
     try:
         runtime.memory(NAME, MIN_FREE)
-        tailwind = tailwind_runner(project_dir, Path(work_dir))
+        tailwind = tailwind_runner(project_dir, Path(work_dir), refused)
         built = run(project_dir, node_runner(project_dir, Path(work_dir)), files, tailwind=tailwind,
                     program={"tsconfig": tsconfig, "paths": paths})
     except runtime.Unavailable as error:
@@ -208,7 +209,7 @@ OUT = "/daodan/out"  # where Tailwind's run writes, brought back by the containe
 PACKAGES = Path(__file__).with_name("css_packages.js")  # the restore's package sheets, read in the container
 
 
-def tailwind_runner(project_dir: Path, work_dir: Path):
+def tailwind_runner(project_dir: Path, work_dir: Path, refused=()):
     """The runner of the project's Tailwind (`css_tailwind`): its package, its config and its plugins are the
     project's code, so the script runs only in Daodan's container (`container.run_in_container`). The preparation,
     with the registries, installs Node and restores the project's packages its own way (`preparation.node_prepare`,
@@ -238,7 +239,7 @@ def tailwind_runner(project_dir: Path, work_dir: Path):
                        if path.name in LOCKS and not any(part in DEPENDENCY_DIRS or part.startswith(".")
                                                          for part in path.relative_to(project_dir).parent.parts))
         restored = node_modules(project_dir, preparation.node_prepare(
-            files, lambda rel: (project_dir / rel).read_text(encoding="utf-8", errors="replace")),
+            files, lambda rel: (project_dir / rel).read_text(encoding="utf-8", errors="replace"), refused),
             "Daodan's Tailwind script finds the project's tailwindcss only in node_modules")
         runner.gaps[:] = [gap for gap in restored["gaps"] if gap["kind"] == "build_edited"]
         node = preparation.setup(["node"])
