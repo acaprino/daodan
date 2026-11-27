@@ -1036,10 +1036,10 @@ Lo snapshot passa al lettore le macro dei file con cui un file condivide un'unit
 | toolchain | 51 pacchetti noble dello snapshot `20261114T000000Z` (43 assenti dalla base), alle versioni del 14 novembre (`versions_as_stored`); scaricati 71,1 MiB, scompattati 248,7 MiB; CMake 3.28.3 143,1 MiB; scip-clang v0.4.1 142,2 MiB; 103,6 s |
 | zlib | configure, build e indice con codice 0, nessun errore di scip-clang; 8,8 s. Contro il controllo: buchi (2.383) e file mancanti (42) uguali; nodi 3 solo nel controllo e 1 solo nel nuovo; archi 78 solo nel controllo e 94 solo nel nuovo (14.137 contro 14.153) |
 | tinyxml2 | come zlib, 6,1 s. Buchi (145) e file mancanti (1) uguali; nodi 3 e 3, archi 8 e 8 diversi |
-| le righe diverse | solo le macro delle intestazioni proprie di GCC (`stddef.h:401` e `:404`, `stdarg.h:50` e `:52`): scip-clang le nomina col percorso dell'installazione di GCC, che nel sysroot è `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/…` invece di `/usr/lib/gcc/…`; il simbolo cambia, e in tinyxml2 `stdarg.h` perde il pacchetto `libgcc-13-dev` che il controllo gli dava |
+| le righe diverse | solo le macro delle intestazioni proprie di GCC (`stddef.h:401` e `:404`, `stdarg.h:50` e `:52`): scip-clang le nomina col percorso dell'installazione di GCC, che nel sysroot è `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/…` invece di `/usr/lib/gcc/…`; il simbolo cambia, e cambia il pacchetto che nomina (zlib: `stddef.h:404` con `libgcc-13-dev` in 19 archi invece di 1; tinyxml2: `stdarg.h` lo perde). Contati su tutti gli archi dei due grafi, non solo sugli esempi del risultato |
 | controllo contro il salvato | nodi, buchi e file mancanti uguali; ogni arco ha in più il campo `target`, che il codice scrive dopo il 14 novembre: deriva del codice, non della toolchain |
 
-Esito: righe non uguali, quindi `T2.B.12` non sposta C e C++ sull'immagine unica.
+Esito: righe non uguali. Per `T2.B.12` C e C++ restano su `buildpack-deps:noble` (`indexers/clang.py` `IMAGE`), senza codice: con la toolchain in archivi cambiano i simboli delle macro delle intestazioni proprie di GCC (zlib 3/1 nodi e 78/94 archi, tinyxml2 3/3 nodi e 8/8 archi) e il pacchetto che nominano. Il resto del grafo è uguale riga per riga.
 
 ## 14 novembre 2026, fonti del programma intero: JavaScript e TypeScript
 
