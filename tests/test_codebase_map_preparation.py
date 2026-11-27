@@ -198,9 +198,8 @@ def test_the_jdk_a_build_names_with_a_vendor_is_asked_for_with_that_vendor_throu
 
 def test_a_nested_package_no_workspace_names_and_no_lockfile_of_its_own_stays_a_gap_not_an_install():
     """The owner's rule is every project at any depth, but a folder with no lockfile that no workspace names is not
-    restored on its own: it may be a member of a layout Daodan does not read (js-lerna: `lerna.json` names
-    `packages/*`, and `packages/b` depends on its sibling `@lrn/a` by a version range, which a restore of its own
-    would take from the registry), a publish manifest (js-angular's `projects/ui-kit`) or a test fixture."""
+    restored on its own: it may be a publish manifest (js-angular's `projects/ui-kit`) or a test fixture; a Lerna
+    package is its root's `lerna bootstrap`'s (below)."""
     manifests = {"package.json": {"name": "root"}, "package-lock.json": {},
                  "landing/package.json": {"name": "landing", "dependencies": {"ms": "2.1.3"}}}
     plan = preparation.node_prepare(list(manifests), lambda rel: json.dumps(manifests[rel]))
@@ -422,7 +421,7 @@ def test_the_preparation_reaches_the_hosts_the_project_declares_and_names_one_th
 def test_one_python_folder_has_one_manager_its_lockfile_names():
     files = ["pyproject.toml", "uv.lock", "packages/a/pyproject.toml", "svc/pyproject.toml", "svc/poetry.lock",
              "tools/requirements.txt"]
-    assert preparation.restores(files) == {"uv": ["."], "poetry": ["svc"]}
+    assert preparation.restores(files) == {"uv": ["."], "poetry": ["svc"], "pip": ["tools"]}  # a requirements file: its own (T1.B.9d)
     assert preparation.restores(["tools/requirements.txt", "api/pyproject.toml"]) == {"pip": ["api", "tools"]}
 
 
@@ -559,3 +558,29 @@ def test_a_nested_cargo_crate_with_its_own_lockfile_restores_on_its_own():
     files = ["Cargo.toml", "Cargo.lock", "crates/a/Cargo.toml", "tools/gen/Cargo.toml", "tools/gen/Cargo.lock"]
     assert preparation.restores(files) == {"cargo": [".", "tools/gen"]}
     assert preparation.restores(["shell/Cargo.toml", "shell/Cargo.lock"]) == {"cargo": ["shell"]}
+
+
+def test_a_package_lerna_json_names_is_installed_by_lerna_s_bootstrap_after_the_root_s_restore():
+    """js-lerna: `lerna.json` names `packages/*` (none: Lerna's default, the same), the root declares no workspaces and
+    `packages/b` depends on its sibling `@lrn/a`: Lerna's own `bootstrap` links and installs them, at the root, after
+    the root's install; a package Lerna does not name stays a gap."""
+    for lerna in ({"version": "1.0.0", "packages": ["packages/*"]}, {"version": "1.0.0"}):
+        manifests = {"package.json": {"name": "root", "devDependencies": {"lerna": "^6.6.2"}}, "lerna.json": lerna,
+                     "packages/a/package.json": {"name": "@lrn/a", "dependencies": {"ms": "2.1.3"}},
+                     "packages/b/package.json": {"name": "@lrn/b", "dependencies": {"@lrn/a": "^1.0.0"}},
+                     "landing/package.json": {"name": "landing", "dependencies": {"ms": "2.1.3"}}}
+        plan = prepared(manifests)
+        assert plan["restores"] == {"npm": ["."], "lerna": ["."]}
+        assert [(g["kind"], g["path"]) for g in plan["gaps"]] == [("restore_failed", "landing")]
+        assert plan["lines"][-1] == preparation.restore("lerna", ["."])
+        assert "node_modules/.bin/lerna bootstrap --ignore-scripts" in plan["lines"][-1]
+
+
+def test_a_nested_requirements_file_is_an_environment_of_its_own():
+    """pip installs a requirements file where it is, and no workspace names one: `docs/requirements.txt` under a uv
+    project is restored on its own; a pyproject member below the root stays the root's."""
+    files = ["pyproject.toml", "uv.lock", "libs/core/pyproject.toml", "docs/requirements.txt", "tools/x/requirements.txt"]
+    assert preparation.restores(files) == {"uv": ["."], "pip": ["docs", "tools/x"]}
+    assert preparation.python_environments(files) == {".": "uv", "docs": "pip", "tools/x": "pip"}
+    both = ["requirements.txt", "svc/pyproject.toml", "svc/requirements.txt"]  # a pyproject beside it: the root's
+    assert preparation.restores(both) == {"pip": ["."]}

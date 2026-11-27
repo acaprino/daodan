@@ -590,9 +590,9 @@
     "declares": [],
     "contains": []
   },
-  "pub_sdk_dependency_is_a_declared_package": {
+  "pub_sdk_itself_is_a_toolchain_not_a_package": {
     "files": {
-      "pubspec.yaml": "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n  remote: ^1.0.0\n"
+      "pubspec.yaml": "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n  flutter_test:\n    sdk: flutter\n  remote: ^1.0.0\n"
     },
     "units": [
       [
@@ -600,7 +600,7 @@
         "dart-package",
         ".",
         [
-          "flutter",
+          "flutter_test",
           "remote"
         ]
       ]

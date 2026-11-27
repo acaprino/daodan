@@ -724,6 +724,23 @@ def test_a_constraint_renovate_extracts_from_the_file_is_a_toolchain_not_a_packa
                                    "version": "^13"}]}
 
 
+def test_a_pub_sdk_is_the_module_graph_s_toolchain_and_no_package(tmp_path):
+    """`flutter: {sdk: flutter}` is the Flutter SDK, which the pubspec's `sdk:` names: a toolchain, not the package
+    Renovate's pub manager reports; `flutter_test`, a package the SDK ships, stays one."""
+    files = {"pubspec.yaml": "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n  dio: ^5.0.0\n"
+                             "dev_dependencies:\n  flutter_test:\n    sdk: flutter\n"}
+    facts = _renovate(tmp_path, files, {"pub": [{"packageFile": "pubspec.yaml", "deps": [
+        {"depName": "flutter", "depType": "dependencies", "currentValue": "", "datasource": "dart"},
+        {"depName": "dio", "depType": "dependencies", "currentValue": "^5.0.0", "datasource": "dart"},
+        {"depName": "flutter_test", "depType": "dev_dependencies", "currentValue": "", "datasource": "dart"}],
+        "extractedConstraints": {}}]})
+    assert [p["name"] for p in facts["packages"]] == ["dio", "flutter_test"]
+    with open_snapshot(tmp_path / "out" / "manifest.sqlite") as store:
+        found = module_graph.run(premap.Context(tmp_path / "out" / "manifest.sqlite", store))["facts"]
+    assert found["toolchains"] == [{"tool": "flutter", "declared_in": "pubspec.yaml"}]
+    assert {p["name"] for p in found["packages"]} == {"dio", "flutter_test"}
+
+
 def test_the_sdk_of_global_json_is_the_dotnet_toolchain(tmp_path):
     """Renovate names it `dotnet-sdk`: the tool the build runs on is `dotnet`, the name the preparation installs."""
     files = {"global.json": '{"sdk": {"version": "8.0.404", "rollForward": "latestFeature"}}\n'}
@@ -1136,6 +1153,19 @@ def test_a_bom_and_a_pom_parent_are_dependencies_with_their_role(tmp_path):
     assert [(p["name"], p.get("role")) for p in facts["packages"]] == [
         ("org.springframework.boot:spring-boot-starter-parent", "parent"), ("org.acme:root", "parent"),
         ("org.springframework.cloud:spring-cloud-dependencies", "bom"), ("junit:junit", None)]
+
+
+def test_a_gradle_platform_has_no_role_a_declared_gap(tmp_path):
+    """`implementation(platform("org.springframework.boot:spring-boot-dependencies:3.4.0"))`: Renovate's gradle manager
+    gives the coordinates with the depType of the configuration, as for any dependency, so no `role`; the one source
+    that states it, the `Category` attribute in Gradle's model, is not read (`renovate.ROLES`)."""
+    files = {"build.gradle.kts": 'dependencies {\n    implementation(platform("org.springframework.boot:'
+                                 'spring-boot-dependencies:3.4.0"))\n}\n'}
+    facts = _renovate(tmp_path, files, {"gradle": [{"packageFile": "build.gradle.kts", "deps": [
+        {"depName": "org.springframework.boot:spring-boot-dependencies", "currentValue": "3.4.0",
+         "depType": "dependencies"}]}]})
+    assert [(p["name"], p.get("role")) for p in facts["packages"]] == [
+        ("org.springframework.boot:spring-boot-dependencies", None)]
 
 
 def test_a_composer_platform_requirement_is_no_package(tmp_path):

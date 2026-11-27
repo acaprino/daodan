@@ -368,6 +368,10 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
             "line": f"if {' || '.join(f'[ -f {lock} ]' for lock in NPM_LOCKS)};"
                     " then npm ci --ignore-scripts --no-audit --no-fund;"
                     " else npm install --ignore-scripts --no-audit --no-fund; fi"},
+    # Lerna before 7 links and installs the packages `lerna.json` names with its own `bootstrap`, after the root's install
+    # put it in `node_modules` (`node_prepare`); its `--ignore-scripts` keeps the packages' lifecycle scripts off
+    "lerna": {"marks": ("lerna.json",), "family": "lerna", "error": "lerna (ERR!|error)", "hosts": (),
+              "line": "node_modules/.bin/lerna bootstrap --ignore-scripts"},
     # `unlocked`: the restore of a folder that names the manager (`packageManager`) and has no lockfile yet
     "pnpm": {"marks": ("package.json",), "family": "node", "locks": ("pnpm-lock.yaml",), "error": "ERR_PNPM|ERROR",
              "before": COREPACK, "hosts": (), "line": "corepack pnpm install --frozen-lockfile --ignore-scripts",
@@ -390,7 +394,9 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
     "poetry": {"marks": PYTHON, "family": "python", "locks": ("poetry.lock",), "needs": ["poetry"],
                "error": "poetry.lock|Error|error", "hosts": (),
                "line": "poetry install --no-root --no-interaction"},
-    "pip": {"marks": PYTHON, "family": "python", "needs": ["uv"], "before": UV_ENV,
+    # `alone`: a folder whose only mark is a requirements file is a project of its own at any depth: pip installs it
+    # where it is (`pip install -r`), and no workspace names one (uv's and Poetry's members are pyproject projects)
+    "pip": {"marks": PYTHON, "family": "python", "alone": ("requirements.txt",), "needs": ["uv"], "before": UV_ENV,
             "error": f"^error|No solution|not found|{UV_CAUSES}", "hosts": (),
             "line": f'r=requirements.txt; [ -f $r ] || r=pyproject.toml; uv venv -q --python python3 "{VENVS}/$f"'
                     f' && uv pip install -q --python "{VENVS}/$f" -r "$r"',
@@ -427,8 +433,8 @@ def _inside(rel: str, folder: str) -> bool:
 def restores(files) -> dict[str, list[str]]:
     """Per manager, the folders where its restore runs: each folder with a mark of its family that no other such
     folder holds (a Gradle build, a Maven reactor, a Node workspace restore their projects from their root), every
-    marked folder of a manager that is `nested` (each Go module is its own), and each folder with a lockfile of its
-    own (npm's too: `NPM_LOCKS`); within a family, the folder's lockfile names the manager, and the `default` one, else
+    marked folder of a manager that is `nested` (each Go module is its own) or marked only by its `alone` files (a
+    `requirements.txt`), and each folder with a lockfile of its own (npm's too: `NPM_LOCKS`); within a family, the folder's lockfile names the manager, and the `default` one, else
     the one without `locks`, is the manager of a folder without."""
     files = list(files)
     families: dict[str, list[str]] = {}
@@ -443,9 +449,14 @@ def restores(files) -> dict[str, list[str]]:
         locked = {_folder(rel): name for name in managers for rel in files
                   if posixpath.basename(rel) in RESTORES[name].get("locks", ())}
         default = next(name for name in managers if RESTORES[name].get("default") or not RESTORES[name].get("locks"))
+        alone, held = {m for name in managers for m in RESTORES[name].get("alone", ())}, {}
+        for rel in files if alone else ():
+            if posixpath.basename(rel) in marks:
+                held.setdefault(_folder(rel), set()).add(posixpath.basename(rel))
         for folder in marked:
             nested = any(RESTORES[name].get("nested") for name in managers)
-            if nested or folder in locked or not any(o != folder and _inside(folder, o) for o in marked):
+            own = bool(held.get(folder)) and held[folder] <= alone
+            if nested or own or folder in locked or not any(o != folder and _inside(folder, o) for o in marked):
                 out.setdefault(locked.get(folder, default), []).append(folder)
     return out
 
@@ -563,6 +574,20 @@ def _workspaces(manifest: dict, yaml: str, manager: str) -> list[str]:
     return re.findall(r"-\s*['\"]?([^'\"#\n]+?)['\"]?\s*(?:#.*)?$", block.group(1), re.MULTILINE) if block else []
 
 
+LERNA_PACKAGES = ["packages/*"]  # what Lerna reads when `lerna.json` names no `packages` (lerna.js.org, configuration)
+
+
+def _lerna(text: str) -> list[str]:
+    """The package patterns of a `lerna.json`: its `packages`, Lerna's default without them; none for a file JSON does
+    not read."""
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return []
+    patterns = data.get("packages", LERNA_PACKAGES) if isinstance(data, dict) else []
+    return [str(p) for p in patterns if isinstance(p, str)] if isinstance(patterns, list) else []
+
+
 def _names(patterns: list[str], rel: str) -> bool:
     """Whether workspace `patterns` name the folder `rel`, relative to their root: `*` within a folder name,
     `**` across folders, a `!` pattern excludes."""
@@ -579,7 +604,8 @@ def node_prepare(files, read) -> dict:
     whole on its own (pnpm's and Yarn's install the corepack they run, `COREPACK_INSTALL`), the hosts they reach
     beside npm's registry, and a `restore_failed` gap for each package
     folder that declares dependencies no restore installs: one inside a restore's folder whose workspaces do not
-    name it. Project code: for a container's preparation only."""
+    name it, unless the `lerna.json` of such a folder names it: then Lerna's `bootstrap` installs it there, after the
+    root's restore (`RESTORES["lerna"]`). Project code: for a container's preparation only."""
     files, named, manifests = list(files), {}, {}
     for rel in files:
         if posixpath.basename(rel) == "package.json":
@@ -624,16 +650,26 @@ def node_prepare(files, read) -> dict:
              + (f"{YARN_PROXY}; " if manager == "yarn" else "") + restore(manager, folders, unlocked, scripts=True)
              for manager, folders, unlocked in found]
     owner = {folder: manager for manager, folders in plan.items() for folder in folders}
-    gaps = local
+    lerna = {_folder(rel): _lerna(read(rel)) for rel in files if posixpath.basename(rel) == "lerna.json"}
+    gaps, bootstrap = list(local), set()
     for folder, manifest in sorted(manifests.items()):
         if folder in owner or not any(manifest.get(field) for field in DECLARED) or any(
                 _inside(folder, b) for b in blocked):
             continue
         if covered(folder, owner):
             continue
+        root = next((root for root in sorted(lerna, key=len, reverse=True) if root in owner and root != folder
+                     and _inside(folder, root) and _names(lerna[root], folder if root == "." else folder[len(root) + 1:])),
+                    None)
+        if root is not None:  # a package of a Lerna root a restore installs: its bootstrap installs it
+            bootstrap.add(root)
+            continue
         root = max((o for o in owner if _inside(folder, o)), key=len, default=None)
         gaps.append({"kind": "restore_failed", "manager": owner.get(root), "path": folder,
                      "detail": "its packages are not installed: no workspace above names this folder"})
+    if bootstrap:
+        plan["lerna"] = sorted(bootstrap)
+        lines.append(restore("lerna", sorted(bootstrap)))
     return {"restores": plan, "lines": lines, "gaps": gaps,
             "hosts": tuple(dict.fromkeys(host for manager in plan for host in RESTORES[manager]["hosts"]))}
 

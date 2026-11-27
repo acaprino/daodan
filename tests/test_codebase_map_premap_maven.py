@@ -1,7 +1,7 @@
 """The Maven source of the pre-map: `help:effective-pom` answers, recorded once in a Linux container, read into units.
 
-The answers are in `tests/fixtures/premap/maven/<case>.json`, captured with Maven 3.10.0 on Temurin 17 from the
-project beside them (`tests/fixtures/premap/maven/<case>/`).
+The answers are in `tests/fixtures/premap/maven/<case>.json`, captured on Modal with Maven 3.10.0 on OpenJDK 17 from the
+project beside them (`tests/fixtures/premap/maven/<case>/`) by `record.py` there.
 """
 from __future__ import annotations
 
@@ -142,3 +142,20 @@ def test_the_repositories_maven_resolves_from_are_registries(tmp_path):
     record = premap.write(manifest, sources=(maven,), runner=lambda commands: [{**run["result"], "stdout": stdout}])
     assert all(u["registries"] == ["https://jitpack.io", "https://repo.maven.apache.org"]
                for u in record["units"] if u["kind"] == "maven-module")
+
+
+def test_a_version_the_parent_s_dependency_management_writes_is_one_package_used_by_each_module(tmp_path):
+    """`managed`: the parent's `dependencyManagement` writes jackson-databind's and guava's versions; `core` and `api`
+    name them without one. Maven's `verbose` comments locate each version: one package at the parent's line, `used_in`
+    each module's dependency; slf4j-api, with its own version, stays core's."""
+    record = build(tmp_path, "managed")
+    got = {(p["name"], p["declared_in"]): p.get("used_in") for p in record["packages"]}
+    assert got == {
+        ("com.fasterxml.jackson.core:jackson-databind", "pom.xml#L20"): ["api/pom.xml#L18", "core/pom.xml#L17"],
+        ("com.google.guava:guava", "pom.xml#L25"): ["core/pom.xml#L13"],
+        ("org.slf4j:slf4j-api", "core/pom.xml"): None}
+    readers = tuple(s for s in premap.SOURCES if not hasattr(s, "commands"))
+    joined = build(tmp_path / "with-readers", "managed", sources=(*readers, maven))
+    jackson = [p for p in joined["packages"] if p["name"] == "com.fasterxml.jackson.core:jackson-databind"]
+    assert [(p["declared_in"].split("#")[0], p.get("version"), p["used_in"]) for p in jackson] == [
+        ("pom.xml", "2.17.2", ["api/pom.xml#L18", "core/pom.xml#L17"])]

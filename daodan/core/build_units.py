@@ -509,16 +509,23 @@ def _pubspec(inv, rel, text):
     data = _yaml(text)
     unit = _unit(rel, "dart-package", data.get("name") if isinstance(data.get("name"), str) else None)
     _described(unit, data)
-    deps = set()
+    deps, sdks = set(), set()
     for key in ("dependencies", "dev_dependencies"):
         table = data.get(key)
         if isinstance(table, dict):
             for dep, spec in table.items():
+                sdk = spec.get("sdk") if isinstance(spec, dict) else None
+                if isinstance(sdk, str):  # pub's SDK source (`sdk: flutter`): the SDK is a toolchain of the package
+                    sdks.add(sdk)
+                    if sdk == dep:  # the SDK itself, `flutter: {sdk: flutter}`, is no package
+                        continue
                 deps.add(dep)
                 if isinstance(spec, dict) and isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
     unit["dependencies"] = sorted(deps)
     unit["versions"] = {**_versions(_table(data.get("dev_dependencies"))), **_versions(_table(data.get("dependencies")))}
+    if sdks:
+        unit["sdks"] = sorted(sdks)
     workspace = data.get("workspace")
     if isinstance(workspace, list):
         unit["kind"] = "dart-workspace"

@@ -5,14 +5,17 @@ project's root with the report written to stdout and the log silenced: every man
 understands, and looks nothing up. `read` keeps, per package file, the toolchains only: the version-file
 managers, the engine fields of manifests, the `go` and `requires-python` directives, the runtime a Dockerfile,
 compose file or devcontainer starts from (the version its tag holds, `_image_version`), the constraints a file
-writes (Poetry's `python`, Composer's `php`, pub's `dart`), and the packages that are the language or its build
+writes (Poetry's `python`, Composer's `php`, pub's `dart`; a pub SDK, `flutter: {sdk: flutter}`, is the module graph's
+toolchain and no package), and the packages that are the language or its build
 tool (`PACKAGE_TOOLS`: TypeScript in a manifest, Scala and sbt in an sbt build, the Kotlin Gradle plugins, the Bun
 a workflow sets up). A
 constraint is kept only when the file writes its value (Renovate derives `npm` from a lockfile's format and repeats
 a root's `packageManager` on each member), a package only with a version (a pnpm `catalog:` reference has none: the
 catalog states it). A wrapper's entry for itself is not a toolchain: the Maven wrapper gives Maven's version, not
 its own. Each other package a file declares is a `packages` fact, with `version` the `currentValue` the file writes
-at it (`WRITTEN_ELSEWHERE`), never resolved: each analyzer's build tool resolves it.
+at it (`WRITTEN_ELSEWHERE`), never resolved: each analyzer's build tool resolves it. A package whose version a
+shared table writes (a pnpm or Yarn catalog, Cargo's `[workspace.dependencies]`) is one fact at the table's file, with
+`used_in` the files whose dependency takes it (`catalog:`, `{ workspace = true }`; `_central`, `_uses`).
 
 Of a service container a GitHub Actions job declares, Renovate's github-actions manager keeps the image alone
 (`lib/modules/manager/github-actions/schema.ts`). When a regular YAML workflow exists in `.github/workflows`,
@@ -56,8 +59,10 @@ TOOL_DEPTYPES = {"engines", "packageManager", "volta", "golang", "toolchain", "r
 WRAPPER_SELF = {"maven-wrapper", "gradle-wrapper"}  # a wrapper manager's entry for the wrapper itself, not the tool
 # A package that a build downloads to manage or inherit others, not to compile with: its `role`, by the depType Renovate's
 # maven manager gives it (`import`, a BOM in `dependencyManagement`; `parent`, `parent-root`, the POM parent). One field
-# keeps it a dependency, as decided, apart from the others. Gradle's `platform()` has no depType of its own in Renovate's
-# answer, nor an entry in Daodan's Gradle model: not stated.
+# keeps it a dependency, as decided, apart from the others. Gradle's `platform()` is a declared gap: Renovate's gradle
+# manager gives it no depType of its own (the dependency's coordinates only), and the one source that states it,
+# Gradle's model (the dependency's `Category` attribute, `platform` or `enforced-platform`), is not read by
+# `gradle_model.gradle`: the init script is part of each recorded Gradle answer's command, all to record again.
 ROLES = {("maven", "import"): "bom", ("maven", "parent"): "parent", ("maven", "parent-root"): "parent"}
 # Composer's platform packages (php, hhvm, ext-*, lib-*, composer, composer-plugin-api, composer-runtime-api): what the
 # PHP running the project has, never downloaded, so no package; `php` is a toolchain where the file states it. Composer's
@@ -701,7 +706,10 @@ def read(context, commands, results):
         except (KeyError, OSError, ValueError):
             return ""
 
-    toolchains, packages, seen_pkgs = [], [], set()
+    toolchains, packages, seen_pkgs, central, uses = [], [], set(), {}, []
+    graph = getattr(context, "graph", None) or {}  # pub's SDKs, as the module graph read them (`build_units`)
+    sdks = {(rel, sdk) for module in graph.get("modules", ()) for rel, names in (module.get("sdks") or {}).items()
+            for sdk in names}
     manager_ecosystems = {
         "maven": "maven", "gradle": "maven", "gradle-lite": "maven", "sbt": "maven",
         "nuget": "nuget", "pub": "pub", "mix": "hex", "hex": "hex", "swift": "swiftpm",
@@ -724,14 +732,22 @@ def read(context, commands, results):
                 # a constraint the file states (Poetry's `python`, global.json's `dotnet-sdk`) is a toolchain
                 if eco and manager not in VERSION_MANAGERS and dep.get("depType") not in TOOL_DEPTYPES and (
                         name not in (package_file.get("extractedConstraints") or {})) and not (
-                        manager == "composer" and COMPOSER_PLATFORM.match(name)):
+                        manager == "composer" and COMPOSER_PLATFORM.match(name)) and not (
+                        manager == "pub" and (path, name) in sdks):  # the SDK itself: a toolchain (`module_graph`)
                     pkg_name = declared_image(name) if eco == "docker" else name
                     written = isinstance(current, str) and current and not any(map(dep.get, WRITTEN_ELSEWHERE))
                     role = ROLES.get((manager, dep.get("depType")))
-                    if pkg_name and (eco, pkg_name.casefold(), path) not in seen_pkgs:
+                    table, use = _central(manager, dep)
+                    if use and pkg_name:  # a use of a shared table's entry: that entry's `used_in` (`_uses`)
+                        uses.append((eco, table, pkg_name, path))
+                    elif pkg_name and (eco, pkg_name.casefold(), path) not in seen_pkgs:
                         seen_pkgs.add((eco, pkg_name.casefold(), path))
                         packages.append({"ecosystem": eco, "name": pkg_name, "declared_in": path,
                                          **({"version": current} if written else {}), **({"role": role} if role else {})})
+                    if table and not use and pkg_name:
+                        central.setdefault((eco, table, pkg_name.casefold(), path), next(
+                            p for p in packages if (p["ecosystem"], p["name"].casefold(), p["declared_in"]) == (
+                                eco, pkg_name.casefold(), path)))
 
                 tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else (
                     DOCKER_RUNTIMES.get(declared_image(name), DEV_CONTAINERS.get(name)) if manager in IMAGE_MANAGERS
@@ -748,5 +764,45 @@ def read(context, commands, results):
                 if not key.startswith("%") and (_tool(key), path) not in known and isinstance(value, str) and (
                         value in written):  # a value no file writes is Renovate's deduction
                     toolchains.append({"tool": _tool(key), "version": value, "declared_in": path})
+    packages += _uses(central, uses, seen_pkgs)
     facts = {"toolchains": toolchains, **({"packages": packages} if packages else {}), **declared}
     return {"facts": facts, **({"gaps": gaps} if gaps else {})}
+
+
+def _central(manager: str, dep: dict) -> tuple[str | None, bool]:
+    """(table, False) for an entry of a table of shared versions, as Renovate's depType names it: a pnpm or Yarn
+    catalog (`pnpm.catalog.<name>`, `yarn.catalog.<name>`), Cargo's `[workspace.dependencies]`; (table, True) for a
+    dependency that takes its version from such a table: the `catalog:<name>` protocol (no name: `default`), Cargo's
+    `{ workspace = true }` (Renovate's `inherited-dependency`); (None, False) for any other."""
+    dep_type, value = str(dep.get("depType") or ""), str(dep.get("currentValue") or "")
+    if manager == "npm":
+        catalog = next((dep_type.removeprefix(p) for p in ("pnpm.catalog.", "yarn.catalog.") if dep_type.startswith(p)),
+                       None)
+        if catalog is not None:
+            return f"catalog:{catalog}", False
+        if value.startswith("catalog:"):
+            return f"catalog:{value.removeprefix('catalog:') or 'default'}", True
+    if manager == "cargo" and dep_type == "workspace.dependencies":
+        return "workspace", False
+    if manager == "cargo" and dep.get("skipReason") == "inherited-dependency":
+        return "workspace", True
+    return None, False
+
+
+def _uses(central: dict, uses: list, seen: set) -> list[dict]:
+    """Each use joins the entry of its table in the nearest file at or above it that holds that table (pnpm's
+    workspace file, Yarn's `.yarnrc.yml`, Cargo's workspace root: the file each tool looks for upwards); a use whose
+    table names no such entry stays a package of its own file, without version."""
+    kept = []
+    for eco, table, name, path in uses:
+        folder = PurePosixPath(path).parent
+        files = {held for e, t, _, held in central if e == eco and t == table}
+        nearest = max((held for held in files if PurePosixPath(held).parent in (folder, *folder.parents)),
+                      key=lambda held: len(PurePosixPath(held).parts), default=None)
+        entry = central.get((eco, table, name.casefold(), nearest))
+        if entry is not None:
+            entry["used_in"] = sorted({*entry.get("used_in", ()), path})
+        elif (eco, name.casefold(), path) not in seen:
+            seen.add((eco, name.casefold(), path))
+            kept.append({"ecosystem": eco, "name": name, "declared_in": path})
+    return kept

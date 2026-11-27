@@ -214,6 +214,7 @@ def _merge_units(units: list[dict]) -> dict[tuple[str, str, str | None], dict]:
                 "kinds": [unit["kind"]], "ecosystems": [unit["ecosystem"]], "description": unit["description"],
                 "manifests": [unit["path"]], "evidence": [{"path": unit["path"], "line": unit["line"]}],
                 "dependencies": set(unit["dependencies"]), "versions": {unit["path"]: dict(unit["versions"])},
+                "sdks": {unit["path"]: unit["sdks"]} if unit.get("sdks") else {},
                 "path_dependencies": list(unit["path_dependencies"]),
                 "patterns": [(pattern, unit["path"]) for pattern in unit["members"]], "registered_by": []}
             continue
@@ -229,6 +230,8 @@ def _merge_units(units: list[dict]) -> dict[tuple[str, str, str | None], dict]:
         merged["evidence"].append({"path": unit["path"], "line": unit["line"]})
         merged["dependencies"].update(unit["dependencies"])
         merged["versions"].setdefault(unit["path"], {}).update(unit["versions"])
+        if unit.get("sdks"):
+            merged["sdks"][unit["path"]] = unit["sdks"]
         merged["path_dependencies"].extend(unit["path_dependencies"])
         merged["patterns"].extend((pattern, unit["path"]) for pattern in unit["members"])
     return by_directory
@@ -255,7 +258,7 @@ def _register_members(inventory: _Inventory, by_directory: dict, gaps: list[dict
                     by_directory[member_key] = {
                         "directory": member, "name": None, "aliases": [], "kinds": ["workspace-member"],
                         "ecosystems": [merged["ecosystems"][0]], "description": None, "manifests": [],
-                        "evidence": [], "dependencies": set(), "versions": {}, "path_dependencies": [], "patterns": [],
+                        "evidence": [], "dependencies": set(), "versions": {}, "sdks": {}, "path_dependencies": [], "patterns": [],
                         "registered_by": []}
                 site = {"path": manifest, "line": _line_of(inventory.text(manifest), pattern)}
                 by_directory[member_key]["registered_by"].append((key, site))
@@ -282,6 +285,7 @@ def _build_module(inventory: _Inventory, merged: dict, by_directory: dict) -> di
         "registered_by": sorted({key[0] for key, _ in merged["registered_by"]}), "registrations": merged["registered_by"],
         "evidence": merged["evidence"], "dependencies": sorted(merged["dependencies"]),
         "versions": merged["versions"],  # manifest -> dependency -> its version requirement: the pre-map's, not modules.json's
+        "sdks": merged["sdks"],  # manifest -> the SDKs pub's `sdk:` source names: the pre-map's toolchains
         "path_dependencies": merged["path_dependencies"], "conflicts": [], "gaps": [], "status": "confirmed",
     }
 
@@ -680,6 +684,7 @@ def derive(store, *, ledger: list[dict] | None = None, edges: bool = True) -> di
     for module in modules:
         module.pop("path_dependencies", None)
         module.pop("versions", None)
+        module.pop("sdks", None)
     return _graph(store, inventory, modules, edge_list, gaps)
 
 
