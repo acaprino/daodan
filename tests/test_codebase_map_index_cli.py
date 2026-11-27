@@ -30,11 +30,15 @@ class IndexCliTests(unittest.TestCase):
         return self.run_cli("write", str(self.root), "--out", str(self.manifest), "--no-engine", *extra)
 
     def test_write_builds_the_index_and_no_index_skips_it(self):
+        # `write` runs the stack step, whose first install of stack-analyser and Node reports on stderr
+        # (`stack_analyser._installed`): it depends on which test warmed the shared cache, so it is not an error.
+        def errors(err):
+            return "".join(line for line in err.splitlines(True) if not line.rstrip().endswith("(first use)"))
         code, out, err = self.write("--no-index")
-        self.assertEqual((code, err), (0, ""))
+        self.assertEqual((code, errors(err)), (0, ""))
         self.assertFalse(self.index.exists())
         code, out, err = self.write()
-        self.assertEqual((code, err), (0, ""))
+        self.assertEqual((code, errors(err)), (0, ""))
         self.assertIn("index: rebuilt -> ", out)
         self.assertIn("(4 documents)", out)
         self.assertTrue(self.index.exists())
