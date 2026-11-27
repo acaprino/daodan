@@ -129,7 +129,7 @@ def _image():
     return (
         modal.Image.from_registry("ubuntu:24.04", add_python="3.13")
         .apt_install("git", "curl", "ca-certificates", *adapter.APT)
-        .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
+        .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "protobuf==7.36.2")
         .run_commands(*adapter.install_commands())
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_file(AUDIT / "modal_audit.py", "/audit/modal_audit.py")

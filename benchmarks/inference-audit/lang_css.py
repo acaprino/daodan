@@ -227,7 +227,7 @@ def _image():
     return (
         modal.Image.debian_slim(python_version="3.13")
         .apt_install("git", "curl", "ca-certificates", "xz-utils")
-        .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
+        .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "protobuf==7.36.2")
         .run_commands(
             f"curl -fsSL https://nodejs.org/dist/{NODE[0]}/{node} -o /tmp/{node}",
             f"echo '{NODE[1]}  /tmp/{node}' | sha256sum -c -",
