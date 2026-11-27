@@ -16,6 +16,16 @@ them, in the container or here, without running the indexer again. No model.
 `graph` writes `results/graph-<c|cpp>-<case>.json` (the graph) and `results/graph-<c|cpp>-<case>-checks.json`
 (the shared report, the counts proper to C and C++, the hand check). `--fixtures` indexes `fixtures/c` and
 `fixtures/cpp`, whose indexes the tests read.
+
+`--stage` runs the product instead (plan T2.B.15): over the product's snapshot of the checkout, the scip-clang stage
+of the pass (`resolve_edges.index_stage`, `indexers/clang.py`), its build in the pipeline benchmark's Modal Sandbox
+(`modal_pipeline._engine`, the hosts the project declares taken as approved); the graphs the stage builds are taken
+as it writes the store, with the hand check on its index and traversal. `fetch --stage` writes
+`results/clang-stage-<case>.json`, each language's report beside the stored one's (`results/graph-<c|cpp>-<case>-
+checks.json`, `report` and `other_languages`) with the keys that differ.
+
+    python benchmarks/inference-audit/lang_clang.py spawn --stage --cases zlib,tinyxml2
+    python benchmarks/inference-audit/lang_clang.py fetch --stage --cases zlib,tinyxml2
 """
 from __future__ import annotations
 
@@ -50,6 +60,7 @@ CASES = {
 }
 FIXTURES = {"c": "cfixture@0", "cpp": "cppfixture@0"}
 STORE = f"{TAG}/graph-clang"
+PIPELINE = HERE.parents[1] / "benchmarks/project-model/modal_pipeline.py" if LOCAL else Path("/pm/modal_pipeline.py")
 STORED = ("index.scip", "engine.json", "run.json", "compile_commands.json", "package-map.json", "scip-clang.log")
 
 # ---------------------------------------------------------------------------------------------------------
@@ -137,6 +148,7 @@ def _image():
         .add_local_dir(AUDIT / "adapters", "/audit/adapters", ignore=["**/__pycache__/**"])
         .add_local_dir(AUDIT / "fixtures/c", "/audit/fixtures/c", ignore=["index.scip"])
         .add_local_dir(AUDIT / "fixtures/cpp", "/audit/fixtures/cpp", ignore=["index.scip"])
+        .add_local_file(PIPELINE, "/pm/modal_pipeline.py")
     )
 
 
@@ -227,6 +239,62 @@ def index_case(case: str, label: str = "") -> dict:
             (store / "graph-error.txt").write_text(run["graph_error"], encoding="utf-8")
     volume.commit()
     return run
+
+
+@app.function(cpu=4, memory=8192, timeout=3600, volumes={"/results": volume})
+def stage_case(case: str) -> dict:
+    """The product's scip-clang stage on the case: its report, each language's graph report, the hand check."""
+    import shutil
+    import time
+    sys.path.insert(0, "/pm")
+    import egress
+    import modal_pipeline
+    import resolve_edges as rx
+    modal_pipeline._engine()
+    egress.preflight = lambda project, hosts: ([], [])  # the measure is of the index, not of the approval
+    started = time.time()
+    spec = CASES[case]
+    work = Path("/work") / f"stage-{case}"
+    shutil.rmtree(work, ignore_errors=True)  # a warm container keeps the previous call's files
+    target = _source(work / "src", spec, None)
+    manifest = work / "snapshot/manifest.sqlite"
+    result = {"case": case, "commit": spec["commit"], "code": plugin_scripts.code_sha256()}
+    result["snapshot"] = scip_graph.measured([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target),
+                                              "--out", str(manifest), "--no-engine", "--no-index"], SCRIPTS, None, 1800)
+    graphs, build = {}, scip_graph.build
+
+    def kept(index, snapshot, language, *args, **kwargs):
+        graph, references = build(index, snapshot, language, *args, **kwargs)
+        traversal = args[3] if len(args) > 3 else kwargs.get("traversal")  # after hops, indexer, reasons
+        graphs[language] = {"report": scip_graph.report(graph)}
+        if language == spec["language"]:
+            graphs[language]["hand_check"] = hand_check(index, traversal, HAND_CHECK.get(case, ()))
+        return graph, references
+
+    scip_graph.build = kept
+    begun = time.time()
+    try:
+        stage = rx.index_stage(next(item for item in rx.ENGINES if item.name == "scip-clang"), manifest, target,
+                               out=work / "stage-edges.sqlite")
+    finally:
+        scip_graph.build = build
+    result.update(stage_seconds=round(time.time() - begun, 1), seconds=round(time.time() - started, 1),
+                  stage={key: stage.get(key) for key in ("available", "engine", "indexer", "languages", "reason",
+                                                         "install", "gaps")},
+                  graphs=graphs)
+    out = Path("/results") / STORE / case / "stage.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    volume.commit()
+    return {key: result[key] for key in ("case", "stage_seconds")}
+
+
+def _differences(stored, got, path: str = "") -> list[str]:
+    """The keys whose values differ between two reports, the indexer's seconds and peak left out."""
+    if isinstance(stored, dict) and isinstance(got, dict):
+        return [item for key in sorted(set(stored) | set(got)) if f"{path}{key}" not in ("indexer",)
+                for item in _differences(stored.get(key), got.get(key), f"{path}{key}.")]
+    return [] if stored == got else [path.rstrip(".")]
 
 
 @app.function(cpu=2, memory=4096, timeout=1200, volumes={"/results": volume})
@@ -357,7 +425,10 @@ def _label(end, traversal) -> str:
 def _target(end) -> str | None:
     """A hand-check label: a project function by `file:line`, an external function by name, else None."""
     if end.cls == "project-callable":
-        return ("impl " if "implementation" in end.chain else "") + (end.target.split(" ")[0] if end.target else end.key)
+        place = end.target.split(" ")[0] if end.target else end.key
+        if "::" in place and "@" in place:  # the product snapshot's declaration id, `file::kind@line:column`
+            place = f"{place.split('::')[0]}:{place.rsplit('@', 1)[1].split(':')[0]}"
+        return ("impl " if "implementation" in end.chain else "") + place
     parts = scip_graph.split_symbol(scip_graph._global(end.key)) if end.cls == "external" else None
     items = scip_graph.descriptors(parts[4]) if parts else []
     return f"external {items[-1][0]}" if items and items[-1][1] == "method" else None
@@ -531,17 +602,32 @@ if __name__ == "__main__":
     parser.add_argument("--case")
     parser.add_argument("--label", default="")
     parser.add_argument("--fixtures", action="store_true")
+    parser.add_argument("--stage", action="store_true", help="the product's scip-clang stage (T2.B.15)")
     parser.add_argument("--files", help="with fetch: download the stored files of the run here")
     parser.add_argument("--dir", help="with graph: a directory filled by fetch --files")
     args = parser.parse_args()
     if args.command == "spawn":
         print("local code", plugin_scripts.code_sha256())
-        if args.fixtures:
+        if args.stage:
+            for case in args.cases.split(","):
+                print(case, modal.Function.from_name("daodan-graph-clang", "stage_case").spawn(case).object_id)
+        elif args.fixtures:
             print("fixtures", modal.Function.from_name("daodan-graph-clang", "index_fixtures").spawn(args.label).object_id)
         else:
             function = modal.Function.from_name("daodan-graph-clang", "index_case")
             for case in args.cases.split(","):
                 print(case, function.spawn(case, args.label).object_id)
+    elif args.command == "fetch" and args.stage:
+        for case in args.cases.split(","):
+            got = json.loads(b"".join(volume.read_file(f"{STORE}/{case}/stage.json")))
+            checks = json.loads((RESULTS / f"graph-{CASES[case]['language']}-{case}-checks.json").read_text())
+            stored = {checks["report"]["language"]: checks["report"], **checks.get("other_languages", {})}
+            got["compared"] = {language: {"differences": _differences(stored.get(language), graph["report"])}
+                               for language, graph in got["graphs"].items()}
+            got["compared"]["stored_hand_check"] = f"{checks['hand_check']['right']}/{checks['hand_check']['total']}"
+            path = RESULTS / f"clang-stage-{case}.json"
+            path.write_text(json.dumps(got, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+            print(path, json.dumps(got["compared"])[:2000])
     elif args.command == "fetch" and args.fixtures:
         for name in FIXTURES:
             for item in ("index.scip", "engine.json", "scip-clang.log", "compile_commands.json"):

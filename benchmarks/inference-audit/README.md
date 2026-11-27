@@ -1610,6 +1610,22 @@ Esito: soglia raggiunta su tutti e due.
 - Sessione Kotlin nel container: compilazione di `KotlinAsk.kt` 7,2 s, sessione 9,4 s (7,3 s di domande): 97 file, 17 nomi sovraccarichi, 405 riferimenti e 67 override chiesti, 337 risposte (270 riferimenti, 67 override). Picco del processo più grande dell'esecuzione 736 MB (heap massimo 3 GB). scip-java 98,3 s, 1.261 MB; corsa intera 155,1 s.
 - Costo: non letto dalla fattura di Modal.
 
+### C e C++: zlib e tinyxml2 (`T2.B.15`)
+
+Soglia, dal piano: conteggi del grafo uguali a `results/graph-c-zlib-checks.json` e `graph-cpp-tinyxml2-checks.json` (14 novembre, adattatore del benchmark), verifica a mano 20/20 su zlib e almeno 16/20 su tinyxml2, tempo e picco.
+
+Esecuzione, codice del prodotto di `005f20e`: `lang_clang.py spawn --stage --cases zlib,tinyxml2` (`fc-01M8FQE02WRK13XJ7WHB60KHW2`, `fc-01M8FQE071AYJD8ZT4XWYC2CS7`), poi `fetch --stage`: lo snapshot del prodotto sulla copia, lo stage scip-clang del passaggio (`indexers/clang.py`, la build nella Sandbox Modal del benchmark della pipeline, gli host dichiarati presi per approvati), i grafi presi mentre lo stage scrive lo store. Risultati: `results/clang-stage-{zlib,tinyxml2}.json`, con le chiavi del report che differiscono.
+
+| Caso | Nodi | Archi | File snapshot / indicizzati | Buchi | A mano | Stage (scip-clang) | Snapshot, picco |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| zlib (C) | 1.874 → 3.975 | 14.137 → 26.391 | 69 / 27 → 65 / 44 | 2.383 → 5.289 | 17/20 (era 20/20) | 76,7 s (34,8 s) | 133,6 s, 204 MB |
+| tinyxml2 (C++) | 2.063 → 2.069 | 7.978 → 8.141 | 4 / 3 → 4 / 3 | 145 → 193 | 16/20 (era 16/20) | 39,6 s (4,0 s) | 83,2 s, 210 MB |
+
+Esito: soglia **non** raggiunta sui conteggi (né su zlib né su tinyxml2) e sulla verifica a mano di zlib; raggiunta sulla verifica a mano di tinyxml2. Il picco di scip-clang non arriva dalla Sandbox (`peak_mb` vuoto).
+- I conteggi non sono confrontabili uno a uno: il prodotto conta anche le letture (`* read`: zlib 9.169 archi, tinyxml2 2.347), che l'adattatore del 14 novembre non dava; su zlib la build del prodotto compila 44 file invece di 27 (in più `contrib/minizip`, `contrib/puff`, `contrib/blast`, `contrib/untgz`, `test/infcover.c`: la pre-mappa trova le loro build) e lo snapshot del prodotto ne elenca 65 invece di 69. I buchi hanno le cause del lettore dall'albero (`T2.B.13`): ramo spento (zlib 818, tinyxml2 77), argomento di macro scartato (34), `extern "C"` (tinyxml2 84), conversione a un tipo di base (7), al posto di `no-occurrence`.
+- zlib a mano, i tre sbagliati: `deflate.c:1888` `_tr_tally_lit` e `trees.c:775` `send_bits`, attesi `value`, raggiungono i `typedef` dei cast nelle espansioni (`zutil.h:39`, `:41`, `zconf.h:402`), che lo snapshot del prodotto dichiara `class` e il grafo conta come chiamabili; `test/example.c:175` `deflateInit` ha anche `zlib.h:86` (il `typedef` `z_stream` del cast della macro). Stessa causa: un `typedef` C contato come classe chiamabile.
+- tinyxml2 a mano: gli stessi quattro sbagliati del 14 novembre (`~XMLNode` e `printf` senza occorrenza, `TIXML_SNPRINTF` e `TIXMLASSERT` `value`).
+
 ## 27 novembre 2026, soglia dei fogli di stile (T2.B.17)
 
 `lang_css.py` sui sette casi, due corse sullo stesso codice salvo il TypeScript del programma degli script: `39dfca8` (TypeScript 5.9.3 di `css_engines/`) e `d52925a` (`T2.B.16`, il TypeScript 6.0.3 di scip-typescript 0.6.2). `modal deploy benchmarks/inference-audit/lang_css.py`, `python benchmarks/inference-audit/lang_css.py spawn --cases v3-admin-vite,tududi,bulma,bootstrap3,hn-svelte,saas-starter,sc-website`, `fetch` con gli stessi casi; risultati in `results/graph-css-<caso>-checks.json` (quelli di `d52925a`).
