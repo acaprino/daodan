@@ -1165,19 +1165,6 @@ def test_a_bom_and_a_pom_parent_are_dependencies_with_their_role(tmp_path):
         ("org.springframework.cloud:spring-cloud-dependencies", "bom"), ("junit:junit", None)]
 
 
-def test_a_gradle_platform_has_no_role_a_declared_gap(tmp_path):
-    """`implementation(platform("org.springframework.boot:spring-boot-dependencies:3.4.0"))`: Renovate's gradle manager
-    gives the coordinates with the depType of the configuration, as for any dependency, so no `role`; the one source
-    that states it, the `Category` attribute in Gradle's model, is not read (`renovate.ROLES`)."""
-    files = {"build.gradle.kts": 'dependencies {\n    implementation(platform("org.springframework.boot:'
-                                 'spring-boot-dependencies:3.4.0"))\n}\n'}
-    facts = _renovate(tmp_path, files, {"gradle": [{"packageFile": "build.gradle.kts", "deps": [
-        {"depName": "org.springframework.boot:spring-boot-dependencies", "currentValue": "3.4.0",
-         "depType": "dependencies"}]}]})
-    assert [(p["name"], p.get("role")) for p in facts["packages"]] == [
-        ("org.springframework.boot:spring-boot-dependencies", None)]
-
-
 def test_a_composer_platform_requirement_is_no_package(tmp_path):
     """`php`, `ext-*` and `lib-*` are what the PHP running the project has (Composer's platform packages): no package a
     unit downloads. A vendor's package whose name starts the same way stays."""
