@@ -9,7 +9,9 @@ is installed or run. The catalogue (`data/linguist-catalog.json`) holds, for eac
 Daodan's register of file formats (`data/file-formats.json`) and for no other, the names of the Linguist languages
 that list it; an empty list is a format Linguist does not know. It names no language of Daodan's: the register joins
 the two (`languages[*].linguist`), and `check` says where they disagree. An extension is compared in lower case, as
-the snapshot reads a suffix.
+the snapshot reads a suffix. For the files Daodan does not read it holds the rest of Linguist's extensions and file
+names (`unread_extensions`, `unread_filenames`) and the `type` of every language (`types`), so a file nothing reads
+still has a name and a type.
 
     python format_catalog.py build [--gem FILE]     # FILE: the gem already fetched; else it is downloaded
     python format_catalog.py check
@@ -37,6 +39,7 @@ PACKAGE, VERSION = "github-linguist", "9.7.0"
 URL = f"https://rubygems.org/downloads/{PACKAGE}-{VERSION}.gem"
 SHA256 = "39a5e077e946029ef0ddbdc1344a53802455f4920f8c758d2a6b114d963d7734"
 MEMBER = "lib/linguist/languages.yml"
+TABLES = ("extensions", "filenames", "unread_extensions", "unread_filenames", "types")
 KINDS = ("SOURCES", "DOCUMENTS", "PRESENTATION", "STACK_SOURCES")  # the register's lists of extensions
 
 
@@ -57,19 +60,24 @@ def accepted() -> tuple[set[str], set[str]]:
 
 
 def catalog(languages: dict) -> dict:
-    """The catalogue of Daodan's accepted formats, from Linguist's languages."""
+    """The catalogue of Daodan's accepted formats, from Linguist's languages, then the rest of Linguist's formats and
+    the type of every language."""
     extensions, filenames = ({name: set() for name in names} for names in accepted())
+    unread_extensions, unread_filenames = {}, {}
     for language, entry in languages.items():
         for extension in entry.get("extensions") or ():
-            if extension.lower() in extensions:
-                extensions[extension.lower()].add(language)
+            where = extensions if extension.lower() in extensions else unread_extensions
+            where.setdefault(extension.lower(), set()).add(language)
         for filename in entry.get("filenames") or ():
-            if filename in filenames:
-                filenames[filename].add(language)
+            where = filenames if filename in filenames else unread_filenames
+            where.setdefault(filename, set()).add(language)
     return {"schema": SCHEMA, "source": {"package": PACKAGE, "version": VERSION, "url": URL, "sha256": SHA256,
                                          "file": MEMBER},
             "extensions": {name: sorted(found) for name, found in sorted(extensions.items())},
-            "filenames": {name: sorted(found) for name, found in sorted(filenames.items())}}
+            "filenames": {name: sorted(found) for name, found in sorted(filenames.items())},
+            "unread_extensions": {name: sorted(found) for name, found in sorted(unread_extensions.items())},
+            "unread_filenames": {name: sorted(found) for name, found in sorted(unread_filenames.items())},
+            "types": {name: entry.get("type") for name, entry in sorted(languages.items())}}
 
 
 def text(value: dict) -> str:
@@ -78,7 +86,7 @@ def text(value: dict) -> str:
         return "{\n" + ",\n".join(f"  {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}"
                                   for k, v in rows.items()) + "\n }"
     return ("{\n" + f' "schema": {json.dumps(value["schema"])},\n "source": {json.dumps(value["source"])},\n'
-            f' "extensions": {table(value["extensions"])},\n "filenames": {table(value["filenames"])}\n' + "}\n")
+            + ",\n".join(f' "{name}": {table(value[name])}' for name in TABLES) + "\n}\n")
 
 
 def check(value: object | None = None) -> list[str]:
@@ -104,6 +112,16 @@ def check(value: object | None = None) -> list[str]:
         for key in sorted(wanted ^ set(found)):
             problems.append(f"{name}: {key} is in the {'register' if key in wanted else 'catalogue'} only; "
                             "run `format_catalog.py build`")
+    types = value.get("types") if isinstance(value.get("types"), dict) else {}
+    for name in TABLES[:4]:
+        rows = value.get(name) if isinstance(value.get(name), dict) else {}
+        for key, names in sorted(rows.items()):
+            for language in names:
+                if language not in types:
+                    problems.append(f"{name}: {key} names {language}, which has no type in `types`")
+    for name in ("extensions", "filenames"):
+        for key in sorted(set(value.get(name) or ()) & set(value.get("unread_" + name) or ())):
+            problems.append(f"unread_{name}: {key} is also in {name}")
     if set(file_formats.LINGUIST_NAMES) != set(languages.SUPPORTED_LANGUAGES):
         problems.append("languages: the register and `languages.SUPPORTED_LANGUAGES` differ on "
                         + ", ".join(sorted(set(file_formats.LINGUIST_NAMES) ^ set(languages.SUPPORTED_LANGUAGES))))

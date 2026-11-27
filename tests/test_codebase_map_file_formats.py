@@ -17,6 +17,8 @@ import parser_identity
 LANGUAGES = """
 C: {type: programming, extensions: [".c", ".h"]}
 C++: {type: programming, extensions: [".cpp", ".H"]}
+Markdown: {type: prose, extensions: [".MD"], filenames: [README]}
+Dockerfile: {type: programming, filenames: [Dockerfile]}
 Starlark: {type: programming, extensions: [".bzl"], filenames: [BUILD, Tiltfile]}
 Zig: {type: programming, extensions: [".zig"]}
 """
@@ -50,8 +52,22 @@ def test_catalogue_is_linguists_names_for_the_accepted_formats_only(tmp_path, mo
     assert written["extensions"][".h"] == ["C", "C++"]  # `.H` is compared in lower case, as the snapshot reads it
     assert written["extensions"][".py"] == []  # accepted, and unknown to this Linguist
     assert ".zig" not in written["extensions"] and ".bzl" not in written["extensions"]  # not accepted: not listed
+    assert written["unread_extensions"] == {".bzl": ["Starlark"], ".zig": ["Zig"]}  # the rest, in lower case
+    assert written["unread_filenames"] == {"README": ["Markdown"], "Tiltfile": ["Starlark"]}
+    assert written["filenames"]["Dockerfile"] == ["Dockerfile"]  # a manifest Daodan accepts
+    assert written["types"] == {"C": "programming", "C++": "programming", "Dockerfile": "programming",
+                                "Markdown": "prose", "Starlark": "programming", "Zig": "programming"}
     assert written["filenames"]["BUILD"] == ["Starlark"] and "Tiltfile" not in written["filenames"]
     assert json.loads(format_catalog.text(written)) == written
+
+
+def test_check_names_a_name_without_a_type_and_a_key_in_both_tables():
+    catalogue = json.loads(format_catalog.PATH.read_text(encoding="utf-8"))
+    catalogue["unread_extensions"][".rb"] = ["Nothing"]
+    catalogue["unread_extensions"][".py"] = ["Python"]
+    problems = format_catalog.check(catalogue)
+    assert "unread_extensions: .rb names Nothing, which has no type in `types`" in problems
+    assert "unread_extensions: .py is also in extensions" in problems
 
 
 def test_check_names_a_language_linguist_does_not_give_the_extension():
