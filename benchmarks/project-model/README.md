@@ -814,3 +814,34 @@ Commit `1719b0b` (albero pulito), solo Modal, nessun LLM, costo 0. (a) `modal de
 ### Non misurato
 
 `run=corpus` (0 perdite su 180) e `run=suite`: del proprietario. Il confronto `unread` contro `enry.json` aspetta l'adattatore. Le perdite di `.h` C++ e dei due file di `mix-real-python-semver` aspettano una decisione.
+
+## `T1.B.2`: `excluded` senza go-enry, dai dati di Linguist, 27 novembre 2026
+
+### Parametri
+
+Nessuna corsa: si confrontano i risultati già committati. Per ogni fixture con un `output` in tutti e due (124), le voci
+`{path, why}` di `output.excluded` di `results/enry.json` (go-enry v2.9.6) contro `results/linguist_data.json` (dati del gem
+Linguist 9.7.0: `vendor.yml`, `documentation.yml`, `.gitattributes`, letti da `tools/linguist_data.py`, la cui traduzione `rx`
+delle espressioni è un lettore scritto a mano usato solo come misura; la cifra vera è quella di `run=corpus` in `T1.B.6`).
+Lockfile = i nomi che `lib/linguist/generated.rb` di Linguist 9.7.0 riconosce come lockfile (trascritti in
+`test_excluded_without_enry.py`: `generated.rb` è codice, non un dato). Test: `modal run tests/modal_pytest.py --args
+"benchmarks/project-model/test_excluded_without_enry.py -q"`.
+
+### Risultati
+
+| Motivo | Uguali | Mancanti senza go-enry | In più |
+| --- | --- | --- | --- |
+| `vendored` | 393 | 1 | 1 |
+| `documentation` | 540 | 1 | 25 |
+| `generated` | 3 | 146 | 2 |
+| `binary` | 0 | 554 | 0 |
+
+- I 146 `generated` mancanti: **40 lockfile in 27 progetti** (`Cargo.lock` 16, `package-lock.json` 10, `pnpm-lock.yaml` 6,
+  `uv.lock` 4, `poetry.lock`, `pdm.lock`, `Pipfile.lock` e `.terraform.lock.hcl` 1 ciascuno) e **106 di codice generato**
+  (`.go` 52, `.js` 25, `.cs` 9, `.h` 6, `.cc` 4, `.py` 3, `.d.ts.map` 2, altri 5). Il piano scriveva 39 in 26 progetti e
+  110: lasciava fuori `.terraform.lock.hcl`, che Linguist tratta come lockfile (`terraform_lock?`); valgono le cifre del test.
+- Oggi go-enry toglie i lockfile al perimetro passato al fork e `_signs` (`stack_recognition.py`) scarta le evidenze sotto un
+  percorso escluso: averli fuori da `excluded` è la correzione di un difetto, non una perdita.
+- I 554 `binary` sono immagini e font (`.png` 224, `.webp` 156, `.woff2` 85, `.jpg` 20, `.ttf` 20, `.ico` 14, altri 35):
+  `linguist_data` non calcola `binary` (codice Ruby e tipo mime, nessun dato).
+- I 2 `generated` in più vengono dall'attributo `linguist-generated` di `.gitattributes`, l'unica via di `linguist_data`.

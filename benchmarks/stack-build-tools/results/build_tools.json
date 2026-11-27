@@ -1,0 +1,1112 @@
+{
+ "tool": "stack_build_tools",
+ "version": "stack-analyser 1.27.6-daodan.5 on Node v22.23.4",
+ "command": "snapshot.read_project; premap.write(replayed runs); stack_recognition.run with and without packages, services, docker_builds",
+ "code": {
+  "container": [
+   "d1ce8a9526f25bd4"
+  ],
+  "local": "d2bf387df78c4b0d"
+ },
+ "executed_project_code": [
+  "no"
+ ],
+ "summary": {
+  "fixtures": 184,
+  "tools": {
+   "cargo": {
+    "sources": 17,
+    "fork": 17,
+    "both": 17,
+    "uncovered": 0,
+    "fork_only": 0,
+    "fork_with": 17,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "gradle": {
+    "sources": 26,
+    "fork": 26,
+    "both": 26,
+    "uncovered": 0,
+    "fork_only": 0,
+    "fork_with": 26,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "maven": {
+    "sources": 24,
+    "fork": 24,
+    "both": 24,
+    "uncovered": 0,
+    "fork_only": 0,
+    "fork_with": 24,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "npm": {
+    "sources": 65,
+    "fork": 3,
+    "both": 3,
+    "uncovered": 62,
+    "fork_only": 0,
+    "fork_with": 10,
+    "uncovered_fixtures": [
+     "js-angular",
+     "js-bun",
+     "js-cjs-esm-exports",
+     "js-lerna",
+     "js-local-and-git-deps",
+     "js-nextjs",
+     "js-npm-single",
+     "js-npm-workspaces",
+     "js-nx",
+     "js-pnpm-workspace",
+     "js-sveltekit",
+     "js-turborepo",
+     "js-vendored-generated",
+     "js-version-conflict",
+     "js-vite-react-ts",
+     "js-vue-pnpm",
+     "js-yarn-berry",
+     "mix-edge-submodules",
+     "mix-edge-vendored",
+     "mix-infra-compose",
+     "mix-infra-devcontainer",
+     "mix-infra-gha",
+     "mix-infra-tool-versions",
+     "mix-php-laravel",
+     "mix-poly-firebase",
+     "mix-poly-openapi",
+     "mix-real-tududi",
+     "real-app-full-stack-fastapi",
+     "real-app-hoppscotch",
+     "real-app-jhipster-sample",
+     "real-app-memos",
+     "real-auth0-go",
+     "real-stack-actual",
+     "real-stack-astro-paper",
+     "real-stack-bakerydemo",
+     "real-stack-bookstack",
+     "real-stack-ctfd",
+     "real-stack-documenso",
+     "real-stack-docuseal",
+     "real-stack-elk",
+     "real-stack-epic-stack",
+     "real-stack-gin-vue-admin",
+     "real-stack-jasontaylor-cleanarchitecture",
+     "real-stack-jellyfin-ios",
+     "real-stack-koel",
+     "real-stack-mattermost-mobile",
+     "real-stack-mealie",
+     "real-stack-nestjs-boilerplate",
+     "real-stack-netbox",
+     "real-stack-opengist",
+     "real-stack-owncast",
+     "real-stack-paperless-ngx",
+     "real-stack-plausible",
+     "real-stack-quarkus-super-heroes",
+     "real-stack-umami",
+     "real-stack-wallabag",
+     "real-stack-wger",
+     "real-svc-eshop",
+     "real-svc-otel-demo",
+     "real-svc-robot-shop",
+     "real-svc-voting-app",
+     "sys-rust-tauri"
+    ],
+    "beside": {
+     "nodejs": 62,
+     "typescript": 36,
+     "nxjs": 1,
+     "vite": 18,
+     "turborepo": 2,
+     "hatchling": 6,
+     "docker": 28,
+     "golang": 10,
+     "php": 6,
+     "phpcomposer": 6,
+     "phpunit": 4,
+     "cargo": 5,
+     "gradle": 4,
+     "pytest": 6,
+     "rust": 5,
+     "babel": 8,
+     "eslint": 23,
+     "jest": 9,
+     "playwright": 14,
+     "prettier": 14,
+     "swc": 4,
+     "webpack": 3,
+     "alembic": 3,
+     "biomejs": 4,
+     "python": 8,
+     "ruff": 6,
+     "mochajs": 1,
+     "rollup": 4,
+     "vitest": 11,
+     "vue-sfc-compiler": 3,
+     "archunit": 1,
+     "cypressci": 3,
+     "gatling": 1,
+     "jhipster": 1,
+     "lighthouse": 1,
+     "liquibase": 1,
+     "maven": 3,
+     "testcontainers": 2,
+     "golangcilint": 2,
+     "junit": 2,
+     "oxlint": 1,
+     "rolldown": 1,
+     "storybook": 2,
+     "esbuild": 7,
+     "gunicorn": 4,
+     "setuptools": 2,
+     "bundler": 4,
+     "capybara": 1,
+     "rspec": 1,
+     "rubocop": 1,
+     "ruby": 4,
+     "unocss": 2,
+     "nuget": 4,
+     "nunit": 1,
+     "renovate": 4,
+     "reqnroll": 1,
+     "vite-plus": 1,
+     "detox": 1,
+     "maestro": 1,
+     "mockito": 2,
+     "robolectric": 1,
+     "graphiql": 1,
+     "uv": 1,
+     "helm": 3,
+     "artillery": 1,
+     "oapi-codegen": 1,
+     "sqlc": 1,
+     "stylelint": 2,
+     "elixir": 2,
+     "terraform": 1,
+     "create-react-app": 1,
+     "jmeter": 1,
+     "mockk": 1,
+     "pact": 1,
+     "quinoa": 1,
+     "rest-assured": 1,
+     "wiremock-java": 1,
+     "phpstan": 1,
+     "webpack-encore": 1,
+     "xunit": 2,
+     "locust": 2,
+     "mkdocs-material": 1
+    }
+   },
+   "tsc": {
+    "sources": 35,
+    "fork": 39,
+    "both": 35,
+    "uncovered": 0,
+    "fork_only": 4,
+    "fork_with": 39,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "python": {
+    "sources": 39,
+    "fork": 1,
+    "both": 1,
+    "uncovered": 38,
+    "fork_only": 0,
+    "fork_with": 1,
+    "uncovered_fixtures": [
+     "mix-edge-submodules",
+     "mix-infra-tool-versions",
+     "mix-poly-firebase",
+     "mix-poly-grpc",
+     "mix-poly-openapi",
+     "mix-real-python-semver",
+     "py-conda-env",
+     "py-django",
+     "py-fastapi-compose",
+     "py-hatch-envs",
+     "py-monorepo-path-deps",
+     "py-namespace-packages",
+     "py-notebooks",
+     "py-pdm",
+     "py-pip-tools",
+     "py-poetry-groups",
+     "py-requirements-includes",
+     "py-setup-cfg-extras",
+     "py-setup-py-dynamic",
+     "py-setup-py-static",
+     "py-uv-src-layout",
+     "py-uv-workspace",
+     "py-vendored-generated",
+     "py-version-disagree",
+     "real-app-full-stack-fastapi",
+     "real-bank-of-anthos",
+     "real-microblog",
+     "real-stack-atuin",
+     "real-stack-bakerydemo",
+     "real-stack-ctfd",
+     "real-stack-healthchecks",
+     "real-stack-mealie",
+     "real-stack-paperless-ngx",
+     "real-stack-polar",
+     "real-stack-wger",
+     "real-svc-otel-demo",
+     "real-svc-robot-shop",
+     "real-svc-voting-app"
+    ],
+    "beside": {
+     "hatchling": 12,
+     "nodejs": 14,
+     "cargo": 3,
+     "gradle": 2,
+     "pytest": 9,
+     "rust": 3,
+     "typescript": 7,
+     "vite": 4,
+     "golang": 3,
+     "ruff": 9,
+     "setuptools": 10,
+     "gunicorn": 7,
+     "python": 15,
+     "docker": 15,
+     "alembic": 5,
+     "biomejs": 1,
+     "playwright": 5,
+     "junit-jupiter": 1,
+     "locust": 4,
+     "maven": 2,
+     "mockito": 1,
+     "terraform": 2,
+     "vale": 1,
+     "eslint": 5,
+     "prettier": 4,
+     "vue-sfc-compiler": 1,
+     "renovate": 1,
+     "vitest": 2,
+     "jest": 2,
+     "babel": 1,
+     "esbuild": 2,
+     "mintlify": 1,
+     "oxlint": 1,
+     "pnpm": 1,
+     "turborepo": 1,
+     "bundler": 1,
+     "cypressci": 1,
+     "elixir": 1,
+     "mkdocs-material": 1,
+     "nuget": 2,
+     "php": 2,
+     "phpcomposer": 2,
+     "ruby": 1,
+     "xunit": 1,
+     "helm": 1
+    }
+   },
+   "go": {
+    "sources": 20,
+    "fork": 21,
+    "both": 20,
+    "uncovered": 0,
+    "fork_only": 1,
+    "fork_with": 21,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "cmake": {
+    "sources": 10,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 10,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [
+     "mix-real-tinyxml2",
+     "mix-real-zlib",
+     "real-stack-localsend",
+     "real-svc-otel-demo",
+     "sys-c-macro-annotations",
+     "sys-cmake-presets",
+     "sys-cmake-targets",
+     "sys-cpp-header-only",
+     "sys-cpp-vcpkg-conan",
+     "sys-git-submodule-absent"
+    ],
+    "beside": {
+     "nuget": 2,
+     "cargo": 2,
+     "dart": 1,
+     "docker": 2,
+     "gradle": 2,
+     "rust": 2,
+     "bundler": 1,
+     "cypressci": 1,
+     "elixir": 1,
+     "esbuild": 1,
+     "eslint": 1,
+     "golang": 1,
+     "locust": 1,
+     "mkdocs-material": 1,
+     "nodejs": 1,
+     "php": 1,
+     "phpcomposer": 1,
+     "playwright": 1,
+     "pytest": 1,
+     "python": 1,
+     "ruby": 1,
+     "typescript": 1,
+     "xunit": 1
+    }
+   },
+   "meson": {
+    "sources": 0,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 0,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "bazel": {
+    "sources": 0,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 0,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "make": {
+    "sources": 0,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 0,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [],
+    "beside": {}
+   },
+   "autotools": {
+    "sources": 1,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 1,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [
+     "mix-real-zlib"
+    ],
+    "beside": {
+     "nuget": 1
+    }
+   },
+   "sbt": {
+    "sources": 1,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 1,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [
+     "jvm-sbt-two-subprojects"
+    ],
+    "beside": {}
+   },
+   "dotnet": {
+    "sources": 9,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 9,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [
+     "mix-dotnet-central",
+     "mix-real-zlib",
+     "real-stack-ardalis-cleanarchitecture",
+     "real-stack-jasontaylor-cleanarchitecture",
+     "real-stack-openbudgeteer",
+     "real-stack-peopleinspace",
+     "real-svc-eshop",
+     "real-svc-otel-demo",
+     "real-svc-voting-app"
+    ],
+    "beside": {
+     "nuget": 9,
+     "testcontainers": 1,
+     "xunit": 4,
+     "eslint": 2,
+     "nodejs": 4,
+     "nunit": 1,
+     "playwright": 3,
+     "renovate": 2,
+     "reqnroll": 1,
+     "typescript": 2,
+     "vite": 1,
+     "vitest": 1,
+     "docker": 3,
+     "gradle": 2,
+     "robolectric": 1,
+     "sqldelight": 1,
+     "bundler": 1,
+     "cargo": 1,
+     "cypressci": 1,
+     "elixir": 1,
+     "esbuild": 1,
+     "golang": 1,
+     "locust": 1,
+     "mkdocs-material": 1,
+     "php": 1,
+     "phpcomposer": 1,
+     "pytest": 1,
+     "python": 2,
+     "ruby": 1,
+     "rust": 1,
+     "gunicorn": 1
+    }
+   },
+   "mix": {
+    "sources": 4,
+    "fork": 0,
+    "both": 0,
+    "uncovered": 4,
+    "fork_only": 0,
+    "fork_with": 0,
+    "uncovered_fixtures": [
+     "mix-elixir-umbrella",
+     "real-stack-hexpm",
+     "real-stack-plausible",
+     "real-svc-otel-demo"
+    ],
+    "beside": {
+     "elixir": 4,
+     "docker": 3,
+     "esbuild": 3,
+     "eslint": 2,
+     "jest": 1,
+     "nodejs": 2,
+     "playwright": 2,
+     "prettier": 1,
+     "rollup": 1,
+     "stylelint": 1,
+     "swc": 1,
+     "terraform": 1,
+     "typescript": 2,
+     "bundler": 1,
+     "cargo": 1,
+     "cypressci": 1,
+     "golang": 1,
+     "gradle": 1,
+     "locust": 1,
+     "mkdocs-material": 1,
+     "nuget": 1,
+     "php": 1,
+     "phpcomposer": 1,
+     "pytest": 1,
+     "python": 1,
+     "ruby": 1,
+     "rust": 1,
+     "xunit": 1
+    }
+   },
+   "nx": {
+    "sources": 1,
+    "fork": 1,
+    "both": 1,
+    "uncovered": 0,
+    "fork_only": 0,
+    "fork_with": 1,
+    "uncovered_fixtures": [],
+    "beside": {}
+   }
+  },
+  "tool_ids": {
+   "alembic": {
+    "without": 5,
+    "with": 5
+   },
+   "archunit": {
+    "without": 1,
+    "with": 1
+   },
+   "artillery": {
+    "without": 1,
+    "with": 1
+   },
+   "babel": {
+    "without": 9,
+    "with": 9
+   },
+   "biomejs": {
+    "without": 4,
+    "with": 4
+   },
+   "bundler": {
+    "without": 6,
+    "with": 6
+   },
+   "bunsh": {
+    "without": 0,
+    "with": 1
+   },
+   "capybara": {
+    "without": 3,
+    "with": 3
+   },
+   "cargo": {
+    "without": 17,
+    "with": 17
+   },
+   "create-react-app": {
+    "without": 1,
+    "with": 1
+   },
+   "cypressci": {
+    "without": 3,
+    "with": 3
+   },
+   "dart": {
+    "without": 2,
+    "with": 2
+   },
+   "deno": {
+    "without": 1,
+    "with": 1
+   },
+   "detox": {
+    "without": 1,
+    "with": 1
+   },
+   "docker": {
+    "without": 44,
+    "with": 45
+   },
+   "elixir": {
+    "without": 4,
+    "with": 4
+   },
+   "esbuild": {
+    "without": 9,
+    "with": 9
+   },
+   "eslint": {
+    "without": 24,
+    "with": 24
+   },
+   "gatling": {
+    "without": 1,
+    "with": 1
+   },
+   "golang": {
+    "without": 21,
+    "with": 21
+   },
+   "golangcilint": {
+    "without": 2,
+    "with": 3
+   },
+   "gradle": {
+    "without": 26,
+    "with": 26
+   },
+   "graphiql": {
+    "without": 1,
+    "with": 1
+   },
+   "gunicorn": {
+    "without": 8,
+    "with": 8
+   },
+   "hatchling": {
+    "without": 13,
+    "with": 13
+   },
+   "helm": {
+    "without": 4,
+    "with": 4
+   },
+   "jest": {
+    "without": 10,
+    "with": 10
+   },
+   "jhipster": {
+    "without": 1,
+    "with": 1
+   },
+   "jmeter": {
+    "without": 1,
+    "with": 1
+   },
+   "junit": {
+    "without": 22,
+    "with": 22
+   },
+   "junit-jupiter": {
+    "without": 8,
+    "with": 8
+   },
+   "kotlin-test": {
+    "without": 1,
+    "with": 2
+   },
+   "lighthouse": {
+    "without": 1,
+    "with": 1
+   },
+   "liquibase": {
+    "without": 1,
+    "with": 1
+   },
+   "locust": {
+    "without": 4,
+    "with": 4
+   },
+   "maestro": {
+    "without": 1,
+    "with": 1
+   },
+   "maven": {
+    "without": 24,
+    "with": 24
+   },
+   "mintlify": {
+    "without": 1,
+    "with": 1
+   },
+   "mkdocs-material": {
+    "without": 1,
+    "with": 1
+   },
+   "mochajs": {
+    "without": 1,
+    "with": 1
+   },
+   "mockito": {
+    "without": 4,
+    "with": 4
+   },
+   "mockk": {
+    "without": 1,
+    "with": 1
+   },
+   "mstest": {
+    "without": 0,
+    "with": 1
+   },
+   "nodejs": {
+    "without": 65,
+    "with": 66
+   },
+   "nuget": {
+    "without": 9,
+    "with": 9
+   },
+   "nunit": {
+    "without": 1,
+    "with": 1
+   },
+   "nxjs": {
+    "without": 1,
+    "with": 1
+   },
+   "oapi-codegen": {
+    "without": 1,
+    "with": 1
+   },
+   "oxlint": {
+    "without": 2,
+    "with": 2
+   },
+   "pact": {
+    "without": 1,
+    "with": 1
+   },
+   "php": {
+    "without": 7,
+    "with": 7
+   },
+   "phpcomposer": {
+    "without": 7,
+    "with": 7
+   },
+   "phpstan": {
+    "without": 2,
+    "with": 2
+   },
+   "phpunit": {
+    "without": 5,
+    "with": 5
+   },
+   "playwright": {
+    "without": 15,
+    "with": 15
+   },
+   "pnpm": {
+    "without": 3,
+    "with": 10
+   },
+   "prettier": {
+    "without": 16,
+    "with": 16
+   },
+   "pytest": {
+    "without": 9,
+    "with": 11
+   },
+   "python": {
+    "without": 16,
+    "with": 19
+   },
+   "quinoa": {
+    "without": 1,
+    "with": 1
+   },
+   "renovate": {
+    "without": 6,
+    "with": 6
+   },
+   "reqnroll": {
+    "without": 1,
+    "with": 1
+   },
+   "rest-assured": {
+    "without": 1,
+    "with": 1
+   },
+   "robolectric": {
+    "without": 2,
+    "with": 2
+   },
+   "rolldown": {
+    "without": 1,
+    "with": 1
+   },
+   "rollup": {
+    "without": 4,
+    "with": 4
+   },
+   "rspec": {
+    "without": 3,
+    "with": 3
+   },
+   "rubocop": {
+    "without": 1,
+    "with": 1
+   },
+   "ruby": {
+    "without": 6,
+    "with": 6
+   },
+   "ruff": {
+    "without": 10,
+    "with": 15
+   },
+   "rust": {
+    "without": 17,
+    "with": 17
+   },
+   "scalatest": {
+    "without": 0,
+    "with": 1
+   },
+   "setuptools": {
+    "without": 10,
+    "with": 10
+   },
+   "sqlc": {
+    "without": 1,
+    "with": 1
+   },
+   "sqldelight": {
+    "without": 1,
+    "with": 1
+   },
+   "storybook": {
+    "without": 2,
+    "with": 2
+   },
+   "stylelint": {
+    "without": 2,
+    "with": 2
+   },
+   "swc": {
+    "without": 4,
+    "with": 4
+   },
+   "swift": {
+    "without": 2,
+    "with": 2
+   },
+   "terraform": {
+    "without": 4,
+    "with": 4
+   },
+   "testcontainers": {
+    "without": 4,
+    "with": 4
+   },
+   "testng": {
+    "without": 0,
+    "with": 1
+   },
+   "travisci": {
+    "without": 1,
+    "with": 1
+   },
+   "turborepo": {
+    "without": 3,
+    "with": 3
+   },
+   "typescript": {
+    "without": 39,
+    "with": 39
+   },
+   "unocss": {
+    "without": 2,
+    "with": 2
+   },
+   "uv": {
+    "without": 1,
+    "with": 1
+   },
+   "vale": {
+    "without": 1,
+    "with": 1
+   },
+   "vite": {
+    "without": 20,
+    "with": 20
+   },
+   "vite-plus": {
+    "without": 1,
+    "with": 1
+   },
+   "vitest": {
+    "without": 12,
+    "with": 12
+   },
+   "vue-sfc-compiler": {
+    "without": 3,
+    "with": 3
+   },
+   "webpack": {
+    "without": 3,
+    "with": 3
+   },
+   "webpack-encore": {
+    "without": 1,
+    "with": 1
+   },
+   "wiremock-java": {
+    "without": 1,
+    "with": 1
+   },
+   "xunit": {
+    "without": 4,
+    "with": 4
+   }
+  },
+  "lost": {
+   "entries": 88,
+   "fixtures": 39,
+   "by_category": {
+    "framework": 7,
+    "library": 27,
+    "service": 29,
+    "tool": 25
+   }
+  }
+ },
+ "errors": {
+  "real-stack-jellyfin": "no answer in 1800 s; stood at: Thread 0x00002b923086eb80 (most recent call first): File \"/repo/daodan/core/snapshot_store.py\", line 190 in get_file File \"/repo/daodan/core/snapshot_store.py\", line 773 in __getitem__ File \"<frozen _collections_abc>\", line 807 in get File \"/repo/daodan/core/import_resolution.py\", line 463 in declaring File \"/repo/daodan/core/import_resolution.py\", line 548 in by_module_name File \"/repo/daodan/core/import_resolution.py\", line 584 in resolve File \"/repo/daodan/core/import_resolution.py\", line 624 in iter_resolved_imports",
+  "real-stack-kuvasz": "no answer in 1800 s; stood at: Thread 0x00002b23e2c61b80 (most recent call first): File \"/repo/daodan/core/snapshot_store.py\", line 190 in get_file File \"/repo/daodan/core/snapshot_store.py\", line 773 in __getitem__ File \"<frozen _collections_abc>\", line 807 in get File \"/repo/daodan/core/import_resolution.py\", line 462 in declaring File \"/repo/daodan/core/import_resolution.py\", line 548 in by_module_name File \"/repo/daodan/core/import_resolution.py\", line 584 in resolve File \"/repo/daodan/core/import_resolution.py\", line 624 in iter_resolved_imports"
+ },
+"fixtures":{
+"js-angular":{"model":"partial","declarations":30,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript"],"with":["nodejs","typescript"]}},
+"js-bun":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript"],"with":["nodejs","typescript"]}},
+"js-cjs-esm-exports":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"js-deno":{"model":"partial","declarations":9,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["deno"],"with":["deno"]}},
+"js-lerna":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"js-local-and-git-deps":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"js-nextjs":{"model":"partial","declarations":16,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript"],"with":["nodejs","typescript"]}},
+"js-node-scripts":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"js-npm-single":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"js-npm-workspaces":{"model":"partial","declarations":7,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"js-nx":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"nx":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","nxjs","typescript"],"with":["nodejs","nxjs","typescript"]}},
+"js-pnpm-workspace":{"model":"partial","declarations":10,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript"],"with":["nodejs","typescript"]}},
+"js-static-html":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"js-sveltekit":{"model":"partial","declarations":12,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript","vite"],"with":["nodejs","typescript","vite"]}},
+"js-turborepo":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","turborepo"],"with":["nodejs","turborepo"]}},
+"js-vendored-generated":{"model":"partial","declarations":6,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":false}},"lost":[],"tool_ids":{"without":["nodejs","typescript"],"with":["nodejs","typescript"]}},
+"js-version-conflict":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"js-vite-react-ts":{"model":"partial","declarations":14,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript","vite"],"with":["nodejs","typescript","vite"]}},
+"js-vue-pnpm":{"model":"partial","declarations":10,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript","vite"],"with":["nodejs","typescript","vite"]}},
+"js-yarn-berry":{"model":"partial","declarations":5,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"jvm-android-app-lib":{"model":"partial","declarations":22,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle"],"with":["gradle"]}},
+"jvm-gradle-computed-deps":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"jackson","files":["build.gradle","gradle.properties"]}],"tool_ids":{"without":["gradle"],"with":["gradle"]}},
+"jvm-gradle-groovy-wrapper":{"model":"partial","declarations":6,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit-jupiter"],"with":["gradle","junit-jupiter"]}},
+"jvm-gradle-kts-catalog-composite":{"model":"partial","declarations":22,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit-jupiter"],"with":["gradle","junit-jupiter"]}},
+"jvm-gradle-locking":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle"],"with":["gradle"]}},
+"jvm-java-version-conflict":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true},"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","maven"],"with":["gradle","maven"]}},
+"jvm-kmp-common-jvm":{"model":"partial","declarations":7,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle"],"with":["gradle"]}},
+"jvm-kotlin-source-sets":{"model":"partial","declarations":7,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle"],"with":["gradle"]}},
+"jvm-maven-multi-bom-profile":{"model":"partial","declarations":26,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit-jupiter","maven"],"with":["junit-jupiter","maven"]}},
+"jvm-maven-release-apt":{"model":"partial","declarations":19,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit-jupiter","maven"],"with":["junit-jupiter","maven"]}},
+"jvm-maven-wrapper":{"model":"partial","declarations":9,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit-jupiter","maven"],"with":["junit-jupiter","maven"]}},
+"jvm-mixed-java-kotlin":{"model":"partial","declarations":18,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit-jupiter","maven"],"with":["junit-jupiter","maven"]}},
+"jvm-no-build":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"jvm-protobuf-generated":{"model":"partial","declarations":6,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle"],"with":["gradle"]}},
+"jvm-sbt-two-subprojects":{"model":"partial","declarations":5,"executed_project_code":"no","rows":{"sbt":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"cats","files":["build.sbt"]},{"id":"scalatest","files":["build.sbt"]}],"tool_ids":{"without":[],"with":["scalatest"]}},
+"jvm-spring-boot-managed":{"model":"partial","declarations":12,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","gradle"],"with":["docker","gradle"]}},
+"jvm-ver-gradle-mixed-tc8":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit"],"with":["gradle","junit"]}},
+"jvm-ver-gradle-src6":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit"],"with":["gradle","junit"]}},
+"jvm-ver-gradle-src8":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit"],"with":["gradle","junit"]}},
+"jvm-ver-gradle-tc11":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit"],"with":["gradle","junit"]}},
+"jvm-ver-gradle-tc21":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit"],"with":["gradle","junit"]}},
+"jvm-ver-gradle-tc25":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit"],"with":["gradle","junit"]}},
+"jvm-ver-gradle-tc8":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["gradle","junit"],"with":["gradle","junit"]}},
+"jvm-ver-mvn-11":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-14":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-21":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-25":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-5":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-6":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-7":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-8":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-9":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-cfg6":{"model":"partial","declarations":6,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"jvm-ver-mvn-rel8":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven"],"with":["junit","maven"]}},
+"mix-dart-flutter":{"model":"partial","declarations":12,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["dart"],"with":["dart"]}},
+"mix-dotnet-central":{"model":"partial","declarations":21,"executed_project_code":"no","rows":{"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nuget"],"with":["nuget"]}},
+"mix-edge-deep-manifest":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"mix-edge-empty":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"mix-edge-extensions":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"mix-edge-scripts":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"mix-edge-sql":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"mix-edge-submodules":{"model":"partial","declarations":9,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["hatchling","nodejs"],"with":["hatchling","nodejs"]}},
+"mix-edge-vendored":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs"],"with":["nodejs"]}},
+"mix-elixir-umbrella":{"model":"partial","declarations":5,"executed_project_code":"no","rows":{"mix":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["elixir"],"with":["elixir"]}},
+"mix-infra-compose":{"model":"partial","declarations":17,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["docker","nodejs"],"with":["docker","nodejs"]}},
+"mix-infra-devcontainer":{"model":"partial","declarations":8,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","typescript"],"with":["nodejs","typescript"]}},
+"mix-infra-gha":{"model":"partial","declarations":12,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":true,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"pnpm","files":[".github/workflows/ci.yml"]},{"id":"python","files":[".github/workflows/release.yml"]}],"tool_ids":{"without":["golang","nodejs"],"with":["golang","nodejs","pnpm","python"]}},
+"mix-infra-k8s-helm":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["helm"],"with":["helm"]}},
+"mix-infra-tool-versions":{"model":"partial","declarations":5,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["hatchling","nodejs"],"with":["hatchling","nodejs"]}},
+"mix-php-laravel":{"model":"partial","declarations":26,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nodejs","php","phpcomposer","phpunit","vite"],"with":["nodejs","php","phpcomposer","phpunit","vite"]}},
+"mix-poly-firebase":{"model":"partial","declarations":62,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true},"gradle":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","gradle","nodejs","pytest","rust","typescript","vite"],"with":["cargo","gradle","nodejs","pytest","rust","typescript","vite"]}},
+"mix-poly-grpc":{"model":"partial","declarations":9,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang","hatchling"],"with":["golang","hatchling"]}},
+"mix-poly-openapi":{"model":"partial","declarations":11,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["hatchling","nodejs","typescript"],"with":["hatchling","nodejs","typescript"]}},
+"mix-real-chi":{"model":"partial","declarations":14,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"mix-real-javapoet":{"model":"partial","declarations":42,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["junit","maven","mockito","renovate"],"with":["junit","maven","mockito","renovate"]}},
+"mix-real-klaxon":{"model":"partial","declarations":24,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"testng","files":["build.gradle.kts","klaxon/build.gradle.kts"]}],"tool_ids":{"without":["gradle","travisci"],"with":["gradle","testng","travisci"]}},
+"mix-real-python-semver":{"model":"partial","declarations":37,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["pytest","ruff","setuptools"],"with":["pytest","ruff","setuptools"]}},
+"mix-real-semver":{"model":"partial","declarations":15,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"mix-real-tinyxml2":{"model":"partial","declarations":5,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"mix-real-tududi":{"model":"partial","declarations":291,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"dompurify","files":["package.json"]},{"id":"honojs","files":["package.json"]},{"id":"zod","files":["package.json"]}],"tool_ids":{"without":["babel","docker","eslint","jest","nodejs","playwright","prettier","swc","typescript","webpack"],"with":["babel","docker","eslint","jest","nodejs","playwright","prettier","swc","typescript","webpack"]}},
+"mix-real-zlib":{"model":"partial","declarations":8,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true},"autotools":{"fork":false,"fork_with":false,"sources":true},"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["nuget"],"with":["nuget"]}},
+"mix-ruby-rails":{"model":"partial","declarations":22,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["bundler","capybara","rspec","ruby"],"with":["bundler","capybara","rspec","ruby"]}},
+"mix-swift-spm":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["swift"],"with":["swift"]}},
+"mix-terraform-modules":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["terraform"],"with":["terraform"]}},
+"py-conda-env":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"py-django":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["gunicorn","python"],"with":["gunicorn","python"]}},
+"py-fastapi-compose":{"model":"partial","declarations":17,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["docker","python","setuptools"],"with":["docker","python","setuptools"]}},
+"py-hatch-envs":{"model":"partial","declarations":6,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"pytest","files":["pyproject.toml"]},{"id":"ruff","files":["pyproject.toml"]}],"tool_ids":{"without":["hatchling"],"with":["hatchling","pytest","ruff"]}},
+"py-monorepo-path-deps":{"model":"partial","declarations":9,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["hatchling"],"with":["hatchling"]}},
+"py-namespace-packages":{"model":"partial","declarations":5,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["hatchling"],"with":["hatchling"]}},
+"py-notebooks":{"model":"partial","declarations":7,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["setuptools"],"with":["setuptools"]}},
+"py-pdm":{"model":"partial","declarations":8,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"ruff","files":["pyproject.toml"]}],"tool_ids":{"without":[],"with":["ruff"]}},
+"py-pep723-scripts":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"py-pip-tools":{"model":"partial","declarations":8,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"ruff","files":["dev-requirements.in","dev-requirements.txt"]}],"tool_ids":{"without":["python"],"with":["python","ruff"]}},
+"py-pipenv":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{},"lost":[{"id":"click","files":["Pipfile"]},{"id":"ruff","files":["Pipfile"]}],"tool_ids":{"without":[],"with":["ruff"]}},
+"py-poetry-groups":{"model":"partial","declarations":10,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["ruff"],"with":["ruff"]}},
+"py-requirements-includes":{"model":"partial","declarations":10,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"click","files":["requirements/base.txt"]},{"id":"numpy","files":["requirements/base.txt"]},{"id":"pytest","files":["requirements-dev.txt"]},{"id":"requests","files":["requirements/base.txt"]}],"tool_ids":{"without":["gunicorn","python","setuptools"],"with":["gunicorn","pytest","python","setuptools"]}},
+"py-setup-cfg-extras":{"model":"partial","declarations":12,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"click","files":["setup.cfg"]},{"id":"sphinx","files":["setup.cfg"]}],"tool_ids":{"without":["setuptools"],"with":["setuptools"]}},
+"py-setup-py-dynamic":{"model":"partial","declarations":1,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"py-setup-py-static":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"pyyaml","files":["setup.py"]},{"id":"requests","files":["setup.py"]}],"tool_ids":{"without":[],"with":[]}},
+"py-undeclared-scripts":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"py-uv-src-layout":{"model":"partial","declarations":10,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["hatchling","ruff"],"with":["hatchling","ruff"]}},
+"py-uv-workspace":{"model":"partial","declarations":8,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["hatchling"],"with":["hatchling"]}},
+"py-vendored-generated":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["setuptools"],"with":["setuptools"]}},
+"py-version-disagree":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["setuptools"],"with":["setuptools"]}},
+"real-app-full-stack-fastapi":{"model":"partial","declarations":253,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"bunsh","files":[".github/workflows/deploy.yml",".github/workflows/playwright.yml",".github/workflows/pre-commit.yml"]}],"tool_ids":{"without":["alembic","biomejs","docker","hatchling","nodejs","playwright","pytest","python","ruff","typescript","vite"],"with":["alembic","biomejs","bunsh","docker","hatchling","nodejs","playwright","pytest","python","ruff","typescript","vite"]}},
+"real-app-hoppscotch":{"model":"partial","declarations":1568,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"pnpm","files":[".github/workflows/build-hoppscotch-agent.yml",".github/workflows/build-hoppscotch-desktop.yml",".github/workflows/tests.yml"]}],"tool_ids":{"without":["cargo","docker","eslint","golang","jest","mochajs","nodejs","prettier","rollup","rust","typescript","vite","vitest","vue-sfc-compiler"],"with":["cargo","docker","eslint","golang","jest","mochajs","nodejs","pnpm","prettier","rollup","rust","typescript","vite","vitest","vue-sfc-compiler"]}},
+"real-app-jhipster-sample":{"model":"partial","declarations":295,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"h2","files":["pom.xml"]},{"id":"postgresql","files":["pom.xml"]}],"tool_ids":{"without":["archunit","cypressci","eslint","gatling","jhipster","lighthouse","liquibase","maven","nodejs","prettier","testcontainers","typescript","vitest"],"with":["archunit","cypressci","eslint","gatling","jhipster","lighthouse","liquibase","maven","nodejs","prettier","testcontainers","typescript","vitest"]}},
+"real-app-kotlinconf":{"model":"partial","declarations":351,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"github.pages","files":[".github/workflows/web-deploy.yml"]}],"tool_ids":{"without":["gradle","junit","kotlin-test","swift"],"with":["gradle","junit","kotlin-test","swift"]}},
+"real-app-memos":{"model":"partial","declarations":346,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"codecov","files":[".github/workflows/backend-tests.yml"]},{"id":"gcp","files":["go.mod"]},{"id":"gcp.gce","files":["go.mod"]},{"id":"opentelemetry","files":["go.mod"]},{"id":"pnpm","files":[".github/actions/setup-web/action.yml"]}],"tool_ids":{"without":["babel","biomejs","docker","golang","golangcilint","nodejs","testcontainers","typescript","vite","vitest"],"with":["babel","biomejs","docker","golang","golangcilint","nodejs","pnpm","testcontainers","typescript","vite","vitest"]}},
+"real-auth0-go":{"model":"none","declarations":11,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","golang","nodejs","playwright"],"with":["docker","golang","nodejs","playwright"]}},
+"real-bank-of-anthos":{"model":"none","declarations":318,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["docker","gunicorn","junit-jupiter","locust","maven","mockito","pytest","python","terraform"],"with":["docker","gunicorn","junit-jupiter","locust","maven","mockito","pytest","python","terraform"]}},
+"real-microblog":{"model":"none","declarations":55,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["alembic","docker","gunicorn","python","setuptools"],"with":["alembic","docker","gunicorn","python","setuptools"]}},
+"real-next-subscriptions":{"model":"none","declarations":30,"executed_project_code":"no","rows":{"npm":{"fork":true,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":false}},"lost":[],"tool_ids":{"without":["eslint","nodejs","pnpm","prettier","typescript"],"with":["eslint","nodejs","pnpm","prettier","typescript"]}},
+"real-stack-actual":{"model":"partial","declarations":718,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["babel","docker","eslint","gradle","junit","nodejs","oxlint","playwright","rolldown","storybook","typescript","vite","vitest"],"with":["babel","docker","eslint","gradle","junit","nodejs","oxlint","playwright","rolldown","storybook","typescript","vite","vitest"]}},
+"real-stack-ardalis-cleanarchitecture":{"model":"partial","declarations":573,"executed_project_code":"no","rows":{"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"github.pages","files":[".github/workflows/hugo-docs.yml"]},{"id":"hugo","files":[".github/workflows/docs-build.yml"]},{"id":"nodejs","files":[".github/workflows/repro-bug.yml"]}],"tool_ids":{"without":["nuget","testcontainers","xunit"],"with":["nodejs","nuget","testcontainers","xunit"]}},
+"real-stack-astro-paper":{"model":"partial","declarations":68,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"pnpm","files":[".github/workflows/ci.yml"]}],"tool_ids":{"without":["docker","eslint","nodejs","prettier","typescript"],"with":["docker","eslint","nodejs","pnpm","prettier","typescript"]}},
+"real-stack-atuin":{"model":"partial","declarations":1193,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","docker","rust","vale"],"with":["cargo","docker","rust","vale"]}},
+"real-stack-bakerydemo":{"model":"partial","declarations":51,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"boto3","files":["requirements/production.txt"]},{"id":"django","files":["requirements/base.txt"]},{"id":"elasticsearch","files":["requirements/production.txt"]},{"id":"gcp","files":["requirements/production.txt"]},{"id":"gcp.gcs","files":["requirements/production.txt"]},{"id":"ruff","files":["requirements/development.txt"]},{"id":"wagtail","files":["requirements/base.txt"]}],"tool_ids":{"without":["docker","eslint","nodejs","prettier","python"],"with":["docker","eslint","nodejs","prettier","python","ruff"]}},
+"real-stack-bookstack":{"model":"partial","declarations":201,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","esbuild","eslint","jest","nodejs","php","phpcomposer","phpunit","swc","typescript"],"with":["docker","esbuild","eslint","jest","nodejs","php","phpcomposer","phpunit","swc","typescript"]}},
+"real-stack-ctfd":{"model":"partial","declarations":399,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["alembic","docker","eslint","gunicorn","nodejs","prettier","pytest","python","ruff","setuptools","vite","vue-sfc-compiler"],"with":["alembic","docker","eslint","gunicorn","nodejs","prettier","pytest","python","ruff","setuptools","vite","vue-sfc-compiler"]}},
+"real-stack-documenso":{"model":"partial","declarations":793,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"gotenberg","files":["docker/development/Dockerfile.gotenberg"]}],"tool_ids":{"without":["babel","biomejs","docker","esbuild","nodejs","playwright","rollup","turborepo","typescript","vite","vitest"],"with":["babel","biomejs","docker","esbuild","nodejs","playwright","rollup","turborepo","typescript","vite","vitest"]}},
+"real-stack-docuseal":{"model":"partial","declarations":312,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"redis","files":["Dockerfile"]}],"tool_ids":{"without":["babel","bundler","capybara","docker","eslint","nodejs","rspec","rubocop","ruby","webpack"],"with":["babel","bundler","capybara","docker","eslint","nodejs","rspec","rubocop","ruby","webpack"]}},
+"real-stack-elk":{"model":"partial","declarations":272,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","eslint","nodejs","prettier","typescript","unocss","vite","vitest"],"with":["docker","eslint","nodejs","prettier","typescript","unocss","vite","vitest"]}},
+"real-stack-epic-stack":{"model":"partial","declarations":256,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","esbuild","eslint","nodejs","playwright","prettier","typescript","vite","vitest"],"with":["docker","esbuild","eslint","nodejs","playwright","prettier","typescript","vite","vitest"]}},
+"real-stack-fiber-go-template":{"model":"partial","declarations":70,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"openapi","files":["go.mod"]}],"tool_ids":{"without":["docker","golang"],"with":["docker","golang"]}},
+"real-stack-gin-vue-admin":{"model":"partial","declarations":408,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"jsonschema","files":["server/go.mod"]},{"id":"openapi","files":["server/go.mod"]},{"id":"protobuf","files":["server/go.mod"]}],"tool_ids":{"without":["docker","eslint","golang","nodejs","unocss","vite","vue-sfc-compiler"],"with":["docker","eslint","golang","nodejs","unocss","vite","vue-sfc-compiler"]}},
+"real-stack-healthchecks":{"model":"partial","declarations":83,"executed_project_code":"no","rows":{"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["docker","python"],"with":["docker","python"]}},
+"real-stack-hexpm":{"model":"partial","declarations":262,"executed_project_code":"no","rows":{"mix":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"gcp","files":[".github/workflows/main.yml"]}],"tool_ids":{"without":["docker","elixir","esbuild"],"with":["docker","elixir","esbuild"]}},
+"real-stack-jasontaylor-cleanarchitecture":{"model":"partial","declarations":422,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["eslint","nodejs","nuget","nunit","playwright","renovate","reqnroll","typescript","vite","vitest"],"with":["eslint","nodejs","nuget","nunit","playwright","renovate","reqnroll","typescript","vite","vitest"]}},
+"real-stack-jellyfin-ios":{"model":"partial","declarations":185,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["babel","bundler","eslint","jest","nodejs","ruby","typescript"],"with":["babel","bundler","eslint","jest","nodejs","ruby","typescript"]}},
+"real-stack-koel":{"model":"partial","declarations":296,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"pnpm","files":[".github/workflows/lint-frontend.yml",".github/workflows/release.yml",".github/workflows/unit-frontend.yml"]}],"tool_ids":{"without":["nodejs","php","phpcomposer","phpunit","typescript","vite","vite-plus","vitest"],"with":["nodejs","php","phpcomposer","phpunit","pnpm","typescript","vite","vite-plus","vitest"]}},
+"real-stack-lldap":{"model":"partial","declarations":592,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"codecov","files":[".github/workflows/rust.yml"]}],"tool_ids":{"without":["cargo","docker","rust"],"with":["cargo","docker","rust"]}},
+"real-stack-lobsters":{"model":"partial","declarations":132,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["bundler","capybara","docker","rspec","ruby"],"with":["bundler","capybara","docker","rspec","ruby"]}},
+"real-stack-localsend":{"model":"partial","declarations":484,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true},"gradle":{"fork":true,"fork_with":true,"sources":true},"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"azure","files":[".github/workflows/build_windows_cli_exe.yml",".github/workflows/build_windows_exe.yml",".github/workflows/build_windows_zip_arm64.yml",".github/workflows/build_windows_zip_x64.yml"]}],"tool_ids":{"without":["cargo","dart","docker","gradle","rust"],"with":["cargo","dart","docker","gradle","rust"]}},
+"real-stack-mall":{"model":"partial","declarations":155,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","maven"],"with":["docker","maven"]}},
+"real-stack-mattermost-mobile":{"model":"partial","declarations":639,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["bundler","detox","eslint","gradle","jest","junit","maestro","mockito","nodejs","robolectric","ruby","typescript"],"with":["bundler","detox","eslint","gradle","jest","junit","maestro","mockito","nodejs","robolectric","ruby","typescript"]}},
+"real-stack-mealie":{"model":"partial","declarations":410,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"click","files":["pyproject.toml"]},{"id":"depotdev","files":[".github/workflows/publish.yml"]},{"id":"discord","files":[".github/workflows/nightly.yml",".github/workflows/release.yml"]},{"id":"github.pages","files":[".github/workflows/docs.yml"]},{"id":"numpy","files":["pyproject.toml"]}],"tool_ids":{"without":["alembic","docker","eslint","nodejs","playwright","prettier","pytest","python","renovate","ruff","setuptools","typescript","vitest"],"with":["alembic","docker","eslint","nodejs","playwright","prettier","pytest","python","renovate","ruff","setuptools","typescript","vitest"]}},
+"real-stack-nestjs-boilerplate":{"model":"partial","declarations":197,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","eslint","jest","nodejs","prettier","renovate","swc","typescript"],"with":["docker","eslint","jest","nodejs","prettier","renovate","swc","typescript"]}},
+"real-stack-netbox":{"model":"partial","declarations":341,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["esbuild","eslint","graphiql","gunicorn","hatchling","nodejs","prettier","python","ruff","typescript","uv"],"with":["esbuild","eslint","graphiql","gunicorn","hatchling","nodejs","prettier","python","ruff","typescript","uv"]}},
+"real-stack-openbudgeteer":{"model":"partial","declarations":154,"executed_project_code":"no","rows":{"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["docker","nuget","xunit"],"with":["docker","nuget","xunit"]}},
+"real-stack-opengist":{"model":"partial","declarations":251,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"chi","files":["go.mod"]},{"id":"golangcilint","files":[".github/workflows/go.yml"]},{"id":"protobuf","files":["go.mod"]}],"tool_ids":{"without":["docker","golang","helm","nodejs","typescript","vite"],"with":["docker","golang","golangcilint","helm","nodejs","typescript","vite"]}},
+"real-stack-owncast":{"model":"partial","declarations":840,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"cobra","files":["tools/go.mod"]},{"id":"grpc","files":["tools/go.mod"]},{"id":"mysql","files":["tools/go.mod"]},{"id":"postgresql","files":["tools/go.mod"]},{"id":"protobuf","files":["go.mod","tools/go.mod"]},{"id":"urfave-cli","files":["tools/go.mod"]},{"id":"viper","files":["tools/go.mod"]}],"tool_ids":{"without":["artillery","babel","cargo","cypressci","docker","eslint","golang","golangcilint","jest","nodejs","oapi-codegen","prettier","renovate","rust","sqlc","storybook","stylelint","typescript"],"with":["artillery","babel","cargo","cypressci","docker","eslint","golang","golangcilint","jest","nodejs","oapi-codegen","prettier","renovate","rust","sqlc","storybook","stylelint","typescript"]}},
+"real-stack-paperless-ngx":{"model":"partial","declarations":484,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"github.pages","files":[".github/workflows/ci-docs.yml"]},{"id":"pnpm","files":[".github/workflows/ci-frontend.yml",".github/workflows/ci-release.yml",".github/workflows/translate-strings.yml"]},{"id":"python","files":[".github/workflows/ci-backend.yml",".github/workflows/ci-docs.yml",".github/workflows/ci-frontend.yml",".github/workflows/ci-lint.yml",".github/workflows/ci-release.yml"]}],"tool_ids":{"without":["docker","eslint","jest","nodejs","playwright","prettier","pytest","ruff","typescript"],"with":["docker","eslint","jest","nodejs","playwright","pnpm","prettier","pytest","python","ruff","typescript"]}},
+"real-stack-peopleinspace":{"model":"partial","declarations":456,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true},"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"github.pages","files":[".github/workflows/build-and-publish-web.yml"]},{"id":"kotlin-test","files":["build.gradle.kts","gradle/libs.versions.toml"]}],"tool_ids":{"without":["gradle","nuget","renovate","robolectric","sqldelight"],"with":["gradle","kotlin-test","nuget","renovate","robolectric","sqldelight"]}},
+"real-stack-plausible":{"model":"partial","declarations":471,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"mix":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"github.pages","files":[".github/workflows/publish-docs.yml"]}],"tool_ids":{"without":["docker","elixir","esbuild","eslint","jest","nodejs","playwright","prettier","rollup","stylelint","swc","terraform","typescript"],"with":["docker","elixir","esbuild","eslint","jest","nodejs","playwright","prettier","rollup","stylelint","swc","terraform","typescript"]}},
+"real-stack-polar":{"model":"none","declarations":590,"executed_project_code":"no","rows":{"npm":{"fork":true,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":false},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["alembic","babel","docker","esbuild","hatchling","jest","locust","mintlify","nodejs","oxlint","playwright","pnpm","pytest","python","ruff","terraform","turborepo","typescript","vite","vitest"],"with":["alembic","babel","docker","esbuild","hatchling","jest","locust","mintlify","nodejs","oxlint","playwright","pnpm","pytest","python","ruff","terraform","turborepo","typescript","vite","vitest"]}},
+"real-stack-quarkus-super-heroes":{"model":"partial","declarations":679,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"azure","files":[".github/workflows/azure-static-web-apps-orange-rock-0d20a680f.yml"]},{"id":"azure.staticwebapps","files":[".github/workflows/azure-static-web-apps-orange-rock-0d20a680f.yml"]},{"id":"docker","files":[".github/workflows/build-push-container-images.yml"]},{"id":"github.pages","files":[".github/workflows/deploy-docs-site.yml"]}],"tool_ids":{"without":["create-react-app","helm","jmeter","maven","mockito","mockk","nodejs","pact","playwright","quinoa","rest-assured","wiremock-java"],"with":["create-react-app","docker","helm","jmeter","maven","mockito","mockk","nodejs","pact","playwright","quinoa","rest-assured","wiremock-java"]}},
+"real-stack-spring-petclinic":{"model":"partial","declarations":150,"executed_project_code":"no","rows":{"gradle":{"fork":true,"fork_with":true,"sources":true},"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","gradle","maven","testcontainers"],"with":["docker","gradle","maven","testcontainers"]}},
+"real-stack-symfony-demo":{"model":"partial","declarations":106,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":["php","phpcomposer","phpstan","phpunit"],"with":["php","phpcomposer","phpstan","phpunit"]}},
+"real-stack-umami":{"model":"partial","declarations":265,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true}},"lost":[{"id":"pnpm","files":[".github/workflows/ci.yml"]}],"tool_ids":{"without":["biomejs","docker","esbuild","nodejs","playwright","rollup","typescript","vite","vitest"],"with":["biomejs","docker","esbuild","nodejs","playwright","pnpm","rollup","typescript","vite","vitest"]}},
+"real-stack-wallabag":{"model":"partial","declarations":438,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["babel","docker","eslint","golang","nodejs","php","phpcomposer","phpstan","phpunit","webpack","webpack-encore"],"with":["babel","docker","eslint","golang","nodejs","php","phpcomposer","phpstan","phpunit","webpack","webpack-encore"]}},
+"real-stack-wger":{"model":"partial","declarations":199,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"coveralls","files":[".github/workflows/ci.yml"]},{"id":"python","files":[".github/workflows/ci.yml"]}],"tool_ids":{"without":["docker","gunicorn","hatchling","nodejs","ruff"],"with":["docker","gunicorn","hatchling","nodejs","python","ruff"]}},
+"real-svc-eshop":{"model":"partial","declarations":525,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"mstest","files":["Directory.Packages.props"]}],"tool_ids":{"without":["nodejs","nuget","playwright","xunit"],"with":["mstest","nodejs","nuget","playwright","xunit"]}},
+"real-svc-otel-demo":{"model":"partial","declarations":2129,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true},"gradle":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true},"go":{"fork":true,"fork_with":true,"sources":true},"cmake":{"fork":false,"fork_with":false,"sources":true},"dotnet":{"fork":false,"fork_with":false,"sources":true},"mix":{"fork":false,"fork_with":false,"sources":true}},"lost":[{"id":"connectrpc","files":["src/checkout/go.mod","src/product-catalog/go.mod"]},{"id":"grpc-gateway","files":["src/checkout/go.mod","src/product-catalog/go.mod"]},{"id":"jackson","files":["src/ad/build.gradle"]},{"id":"prometheus","files":["src/ad/build.gradle"]},{"id":"testify","files":["src/product-catalog/go.mod"]}],"tool_ids":{"without":["bundler","cargo","cypressci","docker","elixir","esbuild","eslint","golang","gradle","locust","mkdocs-material","nodejs","nuget","php","phpcomposer","playwright","pytest","python","ruby","rust","typescript","xunit"],"with":["bundler","cargo","cypressci","docker","elixir","esbuild","eslint","golang","gradle","locust","mkdocs-material","nodejs","nuget","php","phpcomposer","playwright","pytest","python","ruby","rust","typescript","xunit"]}},
+"real-svc-petclinic-microservices":{"model":"partial","declarations":329,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["docker","junit-jupiter","maven"],"with":["docker","junit-jupiter","maven"]}},
+"real-svc-robot-shop":{"model":"partial","declarations":159,"executed_project_code":"no","rows":{"maven":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true},"go":{"fork":true,"fork_with":true,"sources":false}},"lost":[],"tool_ids":{"without":["docker","golang","helm","locust","maven","nodejs","php","phpcomposer","python"],"with":["docker","golang","helm","locust","maven","nodejs","php","phpcomposer","python"]}},
+"real-svc-voting-app":{"model":"partial","declarations":70,"executed_project_code":"no","rows":{"npm":{"fork":false,"fork_with":false,"sources":true},"python":{"fork":false,"fork_with":false,"sources":true},"dotnet":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["docker","gunicorn","nodejs","nuget","python"],"with":["docker","gunicorn","nodejs","nuget","python"]}},
+"real-sveltekit-realworld":{"model":"none","declarations":10,"executed_project_code":"no","rows":{"npm":{"fork":true,"fork_with":true,"sources":true},"tsc":{"fork":true,"fork_with":true,"sources":false}},"lost":[],"tool_ids":{"without":["nodejs","pnpm","prettier","typescript","vite"],"with":["nodejs","pnpm","prettier","typescript","vite"]}},
+"sys-bazel":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-c-macro-annotations":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-cmake-presets":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-cmake-targets":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-cpp-header-only":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-cpp-vcpkg-conan":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-git-submodule-absent":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cmake":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-go-buildtags":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-go-cgo":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-go-generated":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-go-nested":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-go-single":{"model":"partial","declarations":4,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-go-toolchain":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-go-vendor":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-go-workspace":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"go":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["golang"],"with":["golang"]}},
+"sys-make-plain":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-meson":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{},"lost":[],"tool_ids":{"without":[],"with":[]}},
+"sys-rust-buildrs":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"sys-rust-features":{"model":"partial","declarations":6,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"sys-rust-path-git":{"model":"partial","declarations":3,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"sys-rust-shared-test-module":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"sys-rust-single":{"model":"partial","declarations":2,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"sys-rust-tauri":{"model":"partial","declarations":10,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true},"npm":{"fork":false,"fork_with":false,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","nodejs","rust"],"with":["cargo","nodejs","rust"]}},
+"sys-rust-toolchain-conflict":{"model":"partial","declarations":0,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}},
+"sys-rust-workspace":{"model":"partial","declarations":10,"executed_project_code":"no","rows":{"cargo":{"fork":true,"fork_with":true,"sources":true}},"lost":[],"tool_ids":{"without":["cargo","rust"],"with":["cargo","rust"]}}
+}}
