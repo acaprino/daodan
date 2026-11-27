@@ -2567,6 +2567,20 @@
    "support": "none"
   },
   {
+   "id": "autotools",
+   "name": "GNU Autotools",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.gnu.org/software/automake/",
+   "mark": null,
+   "from": [
+    "additions",
+    "stack-analyser"
+   ],
+   "category": "tool",
+   "support": "full"
+  },
+  {
    "id": "ava",
    "name": "AVA",
    "kind": "project",
@@ -6252,6 +6266,21 @@
    "support": "none"
   },
   {
+   "id": "cmake",
+   "name": "CMake",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://cmake.org",
+   "mark": "marks/cmake.svg",
+   "from": [
+    "additions",
+    "simple-icons",
+    "stack-analyser"
+   ],
+   "category": "tool",
+   "support": "full"
+  },
+  {
    "id": "cni-genie",
    "name": "CNI-Genie",
    "kind": "project",
@@ -8621,6 +8650,21 @@
     "cncf-landscape"
    ],
    "support": "none"
+  },
+  {
+   "id": "dotnet",
+   "name": ".NET SDK",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://dotnet.microsoft.com",
+   "mark": "marks/dotnet.svg",
+   "from": [
+    "additions",
+    "simple-icons",
+    "stack-analyser"
+   ],
+   "category": "tool",
+   "support": "full"
   },
   {
    "id": "dotnet-aspire",
@@ -19302,6 +19346,21 @@
    "support": "partial"
   },
   {
+   "id": "mix",
+   "name": "Mix",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://hexdocs.pm/mix/",
+   "mark": "marks/mix.svg",
+   "from": [
+    "additions",
+    "simple-icons",
+    "stack-analyser"
+   ],
+   "category": "tool",
+   "support": "full"
+  },
+  {
    "id": "mixpanel",
    "name": "Mixpanel",
    "kind": "service",
@@ -26283,6 +26342,20 @@
     "stack-analyser"
    ],
    "category": "service",
+   "support": "full"
+  },
+  {
+   "id": "sbt",
+   "name": "sbt",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.scala-sbt.org",
+   "mark": null,
+   "from": [
+    "additions",
+    "stack-analyser"
+   ],
+   "category": "tool",
    "support": "full"
   },
   {

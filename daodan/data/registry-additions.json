@@ -447,6 +447,11 @@
    "by": "model"
   },
   {
+   "id": "autotools",
+   "site": "https://www.gnu.org/software/automake/",
+   "by": "catalog"
+  },
+  {
    "id": "avro",
    "site": "https://avro.apache.org/",
    "cncf": "Avro",
@@ -1500,6 +1505,11 @@
    "by": "model"
   },
   {
+   "id": "cmake",
+   "site": "https://cmake.org",
+   "by": "catalog"
+  },
+  {
    "id": "cobra",
    "category": "library",
    "by": "catalog"
@@ -1923,6 +1933,11 @@
    "type": "altro",
    "category": "library",
    "site": "https://github.com/cure53/DOMPurify",
+   "by": "catalog"
+  },
+  {
+   "id": "dotnet",
+   "site": "https://dotnet.microsoft.com",
    "by": "catalog"
   },
   {
@@ -4244,6 +4259,12 @@
    "type": "schermata"
   },
   {
+   "id": "mix",
+   "site": "https://hexdocs.pm/mix/",
+   "by": "catalog",
+   "simple_icon": "elixir"
+  },
+  {
    "id": "mixpanel",
    "site": "https://mixpanel.com",
    "by": "model"
@@ -5783,6 +5804,11 @@
    "type": "servizio o API",
    "site": "https://saucelabs.com",
    "by": "model"
+  },
+  {
+   "id": "sbt",
+   "site": "https://www.scala-sbt.org",
+   "by": "catalog"
   },
   {
    "id": "scalatest",
