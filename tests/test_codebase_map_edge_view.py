@@ -448,6 +448,33 @@ class IndexStoreTests(unittest.TestCase):
                                      ("unresolved", "project-value", self.RESOLVER))
         self.assertEqual(self.record("call src/web/store.ts:15 store.save")["target_kind"], "interface")
 
+    def test_resolved_ambiguous_and_unknown_need_no_field_beyond_target_candidate_and_hole(self):
+        # A reference sits in exactly one of `target_id` (resolved), `engine_candidate` (ambiguous) and `hole`
+        # (unknown, with its cause); an `external` end and a `project-value` one sit in none of the three:
+        # the first carries `external`, the second the reason `project-value`, both unresolved with no target.
+        seen = {"target_id": 0, "engine_candidate": 0, "hole": 0, "none": 0}
+        for site, want in sorted(self.ENDS.items()):
+            with self.subTest(site=site):
+                ref, end = self.record(site), want["end"]
+                placed = [name for name in ("target_id", "engine_candidate", "hole") if ref.get(name)]
+                if site == self.UNCERTAIN:
+                    self.assertEqual(placed, ["engine_candidate"])
+                elif isinstance(end, list):
+                    self.assertEqual(placed, ["target_id"])
+                elif end in ("dangling-local", self.MEMBER):
+                    self.assertEqual((placed, ref["hole"]), (["hole"], end))
+                else:
+                    self.assertEqual(placed, [])
+                    self.assertEqual((ref["resolution"], ref["target_id"]), ("unresolved", None))
+                    if end.startswith("external"):
+                        self.assertTrue(ref["external"])
+                    else:
+                        self.assertEqual((end, ref["reason"]), ("project-value", "project-value"))
+                        self.assertFalse(ref.get("external"))
+                self.assertLessEqual(len(placed), 1)
+                seen[placed[0] if placed else "none"] += 1
+        self.assertTrue(all(seen.values()), seen)  # the fixture holds every one of the four places
+
     def test_the_view_reports_each_languages_coverage_from_the_store(self):
         coverage = self.view["coverage"]
         self.assertEqual(sorted(coverage["languages"]), ["javascript", "typescript"])
