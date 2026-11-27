@@ -25,6 +25,7 @@ Read allowed inputs, local interfaces, construction/mutation sites, runtime/lang
 ## Causal checks
 
 - Check identity/equality, coercion, precision, units, overflow/underflow, narrowing and inclusive/exclusive bounds, including zero/null/empty/max. Trace boolean/bitwise precedence, negation, short-circuit side effects and dereference order.
+- For each equality or membership test that decides a state change (clear, commit, dedupe, skip), trace both operands to their producers. When one passed through trim, case folding, parsing or rounding and the other did not, show the input on which they differ and the state that stays wrong.
 - Verify initialization on every reachable branch, scope/shadowing, callback capture, mutable defaults, aliases and exposed internal collections. Inspect factories/builders, correct overrides, equality/hash consistency, iterator invalidation and terminal/cyclic handler chains.
 - Check casts, raw/generic collections and variance against actually accepted values and compiler/runtime guarantees; rejected code alone is not a runtime finding.
 - At I/O, await and mutation, trace partial success, discarded Result/error codes, broad catches, abort/panic, fallback and status to the caller. Check completion/callback exactly as the local contract requires; intentional detached work needs an owner and error path.
