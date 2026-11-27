@@ -1,0 +1,867 @@
+{
+ "rows": [
+  {
+   "row": "control-canonical-connect",
+   "kind": "proxy",
+   "outcome": "reached",
+   "detail": "HTTP/1.1 200 Connection established",
+   "expected": "reached",
+   "ok": true
+  },
+  {
+   "row": "control-approved-get",
+   "kind": "http",
+   "outcome": "reached",
+   "detail": "200 https://ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host/control-approved",
+   "expected": "reached",
+   "ok": true
+  },
+  {
+   "row": "direct-name",
+   "kind": "http",
+   "outcome": "blocked",
+   "detail": "<urlopen error [Errno -3] Try again>",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-ip-outside",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-ipv4-literal",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-ipv6-literal",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "redirect-301",
+   "kind": "http",
+   "outcome": "blocked",
+   "detail": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "redirect-302",
+   "kind": "http",
+   "outcome": "blocked",
+   "detail": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "dns-lookup-outside",
+   "kind": "dns",
+   "outcome": "blocked",
+   "detail": "[Errno -3] Try again",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "dns-lookup-token",
+   "kind": "dns",
+   "outcome": "blocked",
+   "detail": "[Errno -3] Try again",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "dns-udp-embedded",
+   "kind": "dns",
+   "outcome": "blocked",
+   "detail": "answer rcode 2",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "dns-udp-public",
+   "kind": "dns",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "dns-tcp-public",
+   "kind": "dns",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-refused-unresolved",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-outside-connect",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-ipv4-literal",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-ipv6-literal",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-metadata-connect",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-metadata-get",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-metadata",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-10x-connect",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-10x",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-loopback-get",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-localhost-connect",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-host-ip-connect",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-network-gateway",
+   "kind": "direct",
+   "outcome": "reached",
+   "detail": "connected to ('172.18.0.1', 8099)",
+   "expected": "blocked",
+   "ok": false
+  },
+  {
+   "row": "direct-docker0-gateway",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-host-ip",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno 101] Network unreachable",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "direct-host-docker-internal",
+   "kind": "direct",
+   "outcome": "blocked",
+   "detail": "[Errno -3] Try again",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-connect-port-80",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-connect-port-8443",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-connect-port-22",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "proxy-plain-http",
+   "kind": "proxy",
+   "outcome": "blocked",
+   "detail": "HTTP/1.1 403 Forbidden",
+   "expected": "blocked",
+   "ok": true
+  },
+  {
+   "row": "mark-dns-wire",
+   "expected": "only the host's lookup of the refused name",
+   "outcome": [],
+   "host_lookup": [
+    "16:40:22.219956 eth0  Out IP 172.20.51.196.50294 > 172.21.0.1.53: 50904+ [1au] A? refused-9b59f0f147.example.com. (59)",
+    "16:40:22.219969 eth0  Out IP 172.20.51.196.50294 > 172.21.0.1.53: 49617+ [1au] AAAA? refused-9b59f0f147.example.com. (59)"
+   ],
+   "ok": true
+  },
+  {
+   "row": "mark-vm-listeners",
+   "expected": "no connection",
+   "outcome": [
+    {
+     "listener": "0.0.0.0:8099",
+     "peer": [
+      "172.18.0.3",
+      40502
+     ]
+    }
+   ],
+   "ok": false
+  },
+  {
+   "row": "mark-canary-outside",
+   "expected": "no request",
+   "outcome": [],
+   "ok": true
+  },
+  {
+   "row": "mark-canary-allowed",
+   "expected": "only ['/approval-yes', '/control-approved', '/r301', '/r302']",
+   "outcome": [],
+   "ok": true
+  },
+  {
+   "row": "approval-outside-asks",
+   "expected": "failed, approval_required, pending, no mark",
+   "outcome": [
+    "failed",
+    [
+     "approval_required"
+    ],
+    [
+     "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host"
+    ]
+   ],
+   "marks": [],
+   "ok": true
+  },
+  {
+   "row": "approval-after-yes",
+   "expected": "done, canary reached",
+   "outcome": [
+    "done",
+    0,
+    []
+   ],
+   "marks": [
+    "8001 GET /approval-yes"
+   ],
+   "ok": true
+  },
+  {
+   "row": "approval-blacklist",
+   "expected": "failed, host_denied, nothing pending, no mark",
+   "outcome": [
+    "failed",
+    [
+     "host_denied"
+    ],
+    []
+   ],
+   "marks": [],
+   "ok": true
+  }
+ ],
+ "canary_hits": [
+  "8001 GET /control-approved",
+  "8001 GET /r301?to=https://ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host/from-301",
+  "8001 GET /r302?to=https://ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host/from-302",
+  "8001 GET /approval-yes"
+ ],
+ "driver": {
+  "token": "9b59f0f147",
+  "host_ip": "172.20.51.196",
+  "outside_ip": "149.51.54.79",
+  "ways": {
+   "run": {
+    "state": "done",
+    "exit_code": 0,
+    "cause": null,
+    "refused": [
+     {
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "443"
+     },
+     {
+      "host": "refused-9b59f0f147.example.com",
+      "port": "443"
+     },
+     {
+      "host": "1.1.1.1",
+      "port": "443"
+     },
+     {
+      "host": "[2606:4700:4700::1111]",
+      "port": "443"
+     },
+     {
+      "host": "169.254.169.254",
+      "port": "443"
+     },
+     {
+      "host": "169.254.169.254",
+      "port": "80"
+     },
+     {
+      "host": "10.0.0.1",
+      "port": "443"
+     },
+     {
+      "host": "127.0.0.1",
+      "port": "8098"
+     },
+     {
+      "host": "localhost",
+      "port": "8098"
+     },
+     {
+      "host": "172.20.51.196",
+      "port": "8099"
+     },
+     {
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "80"
+     },
+     {
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "8443"
+     },
+     {
+      "host": "registry.npmjs.org",
+      "port": "22"
+     }
+    ],
+    "asked": [
+     {
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "443",
+      "address": "149.51.54.79",
+      "network": false,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "refused-9b59f0f147.example.com",
+      "port": "443",
+      "address": null,
+      "network": false,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "1.1.1.1",
+      "port": "443",
+      "address": "1.1.1.1",
+      "network": false,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "[2606:4700:4700::1111]",
+      "port": "443",
+      "address": "2606:4700:4700::1111",
+      "network": false,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "169.254.169.254",
+      "port": "443",
+      "address": "169.254.169.254",
+      "network": true,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "169.254.169.254",
+      "port": "80",
+      "address": "169.254.169.254",
+      "network": true,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "10.0.0.1",
+      "port": "443",
+      "address": "10.0.0.1",
+      "network": true,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "127.0.0.1",
+      "port": "8098",
+      "address": "127.0.0.1",
+      "network": true,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "localhost",
+      "port": "8098",
+      "address": "127.0.0.1",
+      "network": true,
+      "declared_in": [],
+      "tool": ""
+     },
+     {
+      "host": "172.20.51.196",
+      "port": "8099",
+      "address": "172.20.51.196",
+      "network": true,
+      "declared_in": [],
+      "tool": ""
+     }
+    ],
+    "gaps": [
+     {
+      "kind": "host_denied",
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "80",
+      "declared_in": [],
+      "detail": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host:80 was refused: the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"
+     },
+     {
+      "kind": "host_denied",
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "8443",
+      "declared_in": [],
+      "detail": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host:8443 was refused: the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"
+     },
+     {
+      "kind": "host_denied",
+      "host": "registry.npmjs.org",
+      "port": "22",
+      "declared_in": [],
+      "detail": "registry.npmjs.org:22 was refused: the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"
+     }
+    ]
+   },
+   "rows": [
+    {
+     "row": "control-canonical-connect",
+     "kind": "proxy",
+     "outcome": "reached",
+     "detail": "HTTP/1.1 200 Connection established"
+    },
+    {
+     "row": "control-approved-get",
+     "kind": "http",
+     "outcome": "reached",
+     "detail": "200 https://ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host/control-approved"
+    },
+    {
+     "row": "direct-name",
+     "kind": "http",
+     "outcome": "blocked",
+     "detail": "<urlopen error [Errno -3] Try again>"
+    },
+    {
+     "row": "direct-ip-outside",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "direct-ipv4-literal",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "direct-ipv6-literal",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "redirect-301",
+     "kind": "http",
+     "outcome": "blocked",
+     "detail": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+     "row": "redirect-302",
+     "kind": "http",
+     "outcome": "blocked",
+     "detail": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+     "row": "dns-lookup-outside",
+     "kind": "dns",
+     "outcome": "blocked",
+     "detail": "[Errno -3] Try again"
+    },
+    {
+     "row": "dns-lookup-token",
+     "kind": "dns",
+     "outcome": "blocked",
+     "detail": "[Errno -3] Try again"
+    },
+    {
+     "row": "dns-udp-embedded",
+     "kind": "dns",
+     "outcome": "blocked",
+     "detail": "answer rcode 2"
+    },
+    {
+     "row": "dns-udp-public",
+     "kind": "dns",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "dns-tcp-public",
+     "kind": "dns",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "proxy-refused-unresolved",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-outside-connect",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-ipv4-literal",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-ipv6-literal",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-metadata-connect",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-metadata-get",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "direct-metadata",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "proxy-10x-connect",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "direct-10x",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "proxy-loopback-get",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-localhost-connect",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-host-ip-connect",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "direct-network-gateway",
+     "kind": "direct",
+     "outcome": "reached",
+     "detail": "connected to ('172.18.0.1', 8099)"
+    },
+    {
+     "row": "direct-docker0-gateway",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "direct-host-ip",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno 101] Network unreachable"
+    },
+    {
+     "row": "direct-host-docker-internal",
+     "kind": "direct",
+     "outcome": "blocked",
+     "detail": "[Errno -3] Try again"
+    },
+    {
+     "row": "proxy-connect-port-80",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-connect-port-8443",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-connect-port-22",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    },
+    {
+     "row": "proxy-plain-http",
+     "kind": "proxy",
+     "outcome": "blocked",
+     "detail": "HTTP/1.1 403 Forbidden"
+    }
+   ],
+   "log": "kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-ipv6-literal\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-metadata-connect\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-metadata-get\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"direct-metadata\", \"kind\": \"direct\", \"outcome\": \"blocked\", \"detail\": \"[Errno 101] Network unreachable\"}\nROW {\"row\": \"proxy-10x-connect\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"direct-10x\", \"kind\": \"direct\", \"outcome\": \"blocked\", \"detail\": \"[Errno 101] Network unreachable\"}\nROW {\"row\": \"proxy-loopback-get\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-localhost-connect\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-host-ip-connect\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"direct-network-gateway\", \"kind\": \"direct\", \"outcome\": \"reached\", \"detail\": \"connected to ('172.18.0.1', 8099)\"}\nROW {\"row\": \"direct-docker0-gateway\", \"kind\": \"direct\", \"outcome\": \"blocked\", \"detail\": \"[Errno 101] Network unreachable\"}\nROW {\"row\": \"direct-host-ip\", \"kind\": \"direct\", \"outcome\": \"blocked\", \"detail\": \"[Errno 101] Network unreachable\"}\nROW {\"row\": \"direct-host-docker-internal\", \"kind\": \"direct\", \"outcome\": \"blocked\", \"detail\": \"[Errno -3] Try again\"}\nROW {\"row\": \"proxy-connect-port-80\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-connect-port-8443\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-connect-port-22\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\nROW {\"row\": \"proxy-plain-http\", \"kind\": \"proxy\", \"outcome\": \"blocked\", \"detail\": \"HTTP/1.1 403 Forbidden\"}\n"
+  },
+  "ask": {
+   "run": {
+    "state": "failed",
+    "exit_code": null,
+    "cause": "preparation exited with code 1; see /runs/asking/prepare.log",
+    "refused": [
+     {
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "443"
+     }
+    ],
+    "asked": [
+     {
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "443",
+      "address": "149.51.54.79",
+      "network": false,
+      "declared_in": [],
+      "tool": ""
+     }
+    ],
+    "gaps": [
+     {
+      "kind": "approval_required",
+      "hosts": [
+       "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host"
+      ],
+      "detail": "the step failed and asked for hosts the user has not approved: ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host:443; answer in the app, then analyze again"
+     }
+    ]
+   },
+   "pending": [
+    {
+     "address": "149.51.54.79",
+     "declared_in": [],
+     "host": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+     "network": false,
+     "port": "443",
+     "tool": ""
+    }
+   ],
+   "log": "ROW {\"row\": \"fetch\", \"kind\": \"http\", \"outcome\": \"blocked\", \"detail\": \"<urlopen error Tunnel connection failed: 403 Forbidden>\"}\n"
+  },
+  "yes": {
+   "run": {
+    "state": "done",
+    "exit_code": 0,
+    "cause": null,
+    "refused": null,
+    "asked": null,
+    "gaps": null
+   },
+   "log": "ROW {\"row\": \"fetch\", \"kind\": \"http\", \"outcome\": \"reached\", \"detail\": \"200 https://ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host/approval-yes\"}\n"
+  },
+  "block": {
+   "run": {
+    "state": "failed",
+    "exit_code": null,
+    "cause": "preparation exited with code 1; see /runs/blocked/prepare.log",
+    "refused": [
+     {
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "443"
+     }
+    ],
+    "asked": [],
+    "gaps": [
+     {
+      "kind": "host_denied",
+      "host": "ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+      "port": "443",
+      "declared_in": [],
+      "detail": "ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host:443 was refused: the user blocked it or said no to it"
+     }
+    ]
+   },
+   "pending": [],
+   "log": "ROW {\"row\": \"fetch\", \"kind\": \"http\", \"outcome\": \"blocked\", \"detail\": \"<urlopen error Tunnel connection failed: 403 Forbidden>\"}\n"
+  },
+  "listener_hits": [
+   {
+    "listener": "0.0.0.0:8099",
+    "peer": [
+     "172.18.0.3",
+     40502
+    ]
+   }
+  ],
+  "dns_wire": [
+   "16:40:22.219956 eth0  Out IP 172.20.51.196.50294 > 172.21.0.1.53: 50904+ [1au] A? refused-9b59f0f147.example.com. (59)",
+   "16:40:22.219969 eth0  Out IP 172.20.51.196.50294 > 172.21.0.1.53: 49617+ [1au] AAAA? refused-9b59f0f147.example.com. (59)"
+  ],
+  "dns_wire_lines": 73,
+  "dns_wire_sample": [
+   "16:39:38.515182 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.49980: 32777 1/0/1 A 149.51.54.79 (118)",
+   "16:39:38.617906 eth0  Out IP 172.20.51.196.38054 > 172.21.0.1.53: 13537+ [1au] AAAA? registry-1.docker.io. (49)",
+   "16:39:38.618035 eth0  Out IP 172.20.51.196.36491 > 172.21.0.1.53: 28561+ [1au] A? registry-1.docker.io. (49)",
+   "16:39:38.619915 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.36491: 28561 8/0/1 A 50.19.162.72, A 100.51.157.111, A 54.164.230.250, A 44.221.185.149, A 3.213.195.155, A 100.62.12.53, A 52.6.118.125, A 54.235.137.156 (177)",
+   "16:39:38.622982 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.38054: 13537 8/0/1 AAAA 2600:1f18:2148:bc01:391a:b2e1:fe77:9da0, AAAA 2600:1f18:2148:bc00:22eb:529:1321:a3d7, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc01:baa2:2fbf:656:2050, AAAA 2600:1f18:2148:bc02:9c9d:4e9:203e:6637, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97 (273)",
+   "16:39:38.830160 eth0  Out IP 172.20.51.196.46766 > 172.21.0.1.53: 44658+ [1au] A? auth.docker.io. (43)",
+   "16:39:38.830301 eth0  Out IP 172.20.51.196.44186 > 172.21.0.1.53: 38866+ [1au] AAAA? auth.docker.io. (43)",
+   "16:39:38.833037 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.46766: 44658 3/0/1 CNAME auth.docker.io.cdn.cloudflare.net., A 172.64.144.78, A 104.18.43.178 (122)",
+   "16:39:38.833399 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.44186: 38866 3/0/1 CNAME auth.docker.io.cdn.cloudflare.net., AAAA 2606:4700:4403::ac40:904e, AAAA 2a06:98c1:3104::6812:2bb2 (146)",
+   "16:39:39.315507 eth0  Out IP 172.20.51.196.43687 > 172.21.0.1.53: 42113+ [1au] A? registry-1.docker.io. (49)",
+   "16:39:39.315526 eth0  Out IP 172.20.51.196.39248 > 172.21.0.1.53: 65488+ [1au] AAAA? registry-1.docker.io. (49)",
+   "16:39:39.315853 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.39248: 65488 8/0/1 AAAA 2600:1f18:2148:bc01:391a:b2e1:fe77:9da0, AAAA 2600:1f18:2148:bc00:22eb:529:1321:a3d7, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc01:baa2:2fbf:656:2050, AAAA 2600:1f18:2148:bc02:9c9d:4e9:203e:6637, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97 (273)",
+   "16:39:39.316299 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.43687: 42113 8/0/1 A 50.19.162.72, A 100.51.157.111, A 54.164.230.250, A 44.221.185.149, A 3.213.195.155, A 100.62.12.53, A 52.6.118.125, A 54.235.137.156 (177)",
+   "16:39:39.381296 eth0  Out IP 172.20.51.196.36257 > 172.21.0.1.53: 35577+ [1au] AAAA? production.cloudfront.docker.com. (61)",
+   "16:39:39.381379 eth0  Out IP 172.20.51.196.39635 > 172.21.0.1.53: 32252+ [1au] A? production.cloudfront.docker.com. (61)",
+   "16:39:39.393647 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.39635: 32252 5/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., A 52.85.129.97, A 52.85.129.84, A 52.85.129.3, A 52.85.129.87 (168)",
+   "16:39:39.395551 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.36257: 35577 9/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., AAAA 2600:9000:2004:ac00:9:4855:aac0:93a1, AAAA 2600:9000:2004:e000:9:4855:aac0:93a1, AAAA 2600:9000:2004:ce00:9:4855:aac0:93a1, AAAA 2600:9000:2004:b000:9:4855:aac0:93a1, AAAA 2600:9000:2004:aa00:9:4855:aac0:93a1, AAAA 2600:9000:2004:4000:9:4855:aac0:93a1, AAAA 2600:9000:2004:e600:9:4855:aac0:93a1, AAAA 2600:9000:2004:9400:9:4855:aac0:93a1 (328)",
+   "16:39:39.409937 eth0  Out IP 172.20.51.196.50813 > 172.21.0.1.53: 15433+ [1au] AAAA? registry-1.docker.io. (49)",
+   "16:39:39.409965 eth0  Out IP 172.20.51.196.39703 > 172.21.0.1.53: 41607+ [1au] A? registry-1.docker.io. (49)",
+   "16:39:39.410174 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.39703: 41607 8/0/1 A 54.235.137.156, A 50.19.162.72, A 100.51.157.111, A 54.164.230.250, A 44.221.185.149, A 3.213.195.155, A 100.62.12.53, A 52.6.118.125 (177)",
+   "16:39:39.410537 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.50813: 15433 8/0/1 AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97, AAAA 2600:1f18:2148:bc01:391a:b2e1:fe77:9da0, AAAA 2600:1f18:2148:bc00:22eb:529:1321:a3d7, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc01:baa2:2fbf:656:2050, AAAA 2600:1f18:2148:bc02:9c9d:4e9:203e:6637, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a (273)",
+   "16:39:39.411141 eth0  Out IP 172.20.51.196.34595 > 172.21.0.1.53: 21393+ [1au] AAAA? registry-1.docker.io. (49)",
+   "16:39:39.411203 eth0  Out IP 172.20.51.196.57834 > 172.21.0.1.53: 32752+ [1au] A? registry-1.docker.io. (49)",
+   "16:39:39.411206 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.34595: 21393 8/0/1 AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97, AAAA 2600:1f18:2148:bc01:391a:b2e1:fe77:9da0, AAAA 2600:1f18:2148:bc00:22eb:529:1321:a3d7, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc01:baa2:2fbf:656:2050, AAAA 2600:1f18:2148:bc02:9c9d:4e9:203e:6637 (273)",
+   "16:39:39.411361 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.57834: 32752 8/0/1 A 52.6.118.125, A 54.235.137.156, A 50.19.162.72, A 100.51.157.111, A 54.164.230.250, A 44.221.185.149, A 3.213.195.155, A 100.62.12.53 (177)",
+   "16:39:39.504176 eth0  Out IP 172.20.51.196.33052 > 172.21.0.1.53: 609+ [1au] AAAA? registry-1.docker.io. (49)",
+   "16:39:39.504202 eth0  Out IP 172.20.51.196.33692 > 172.21.0.1.53: 30644+ [1au] A? registry-1.docker.io. (49)",
+   "16:39:39.504340 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.33692: 30644 8/0/1 A 100.62.12.53, A 52.6.118.125, A 54.235.137.156, A 50.19.162.72, A 100.51.157.111, A 54.164.230.250, A 44.221.185.149, A 3.213.195.155 (177)",
+   "16:39:39.504440 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.33052: 609 8/0/1 AAAA 2600:1f18:2148:bc02:9c9d:4e9:203e:6637, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97, AAAA 2600:1f18:2148:bc01:391a:b2e1:fe77:9da0, AAAA 2600:1f18:2148:bc00:22eb:529:1321:a3d7, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc01:baa2:2fbf:656:2050 (273)",
+   "16:39:39.521160 eth0  Out IP 172.20.51.196.49815 > 172.21.0.1.53: 31872+ [1au] AAAA? registry-1.docker.io. (49)",
+   "16:39:39.521201 eth0  Out IP 172.20.51.196.47516 > 172.21.0.1.53: 26259+ [1au] A? registry-1.docker.io. (49)",
+   "16:39:39.521308 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.47516: 26259 8/0/1 A 3.213.195.155, A 100.62.12.53, A 52.6.118.125, A 54.235.137.156, A 50.19.162.72, A 100.51.157.111, A 54.164.230.250, A 44.221.185.149 (177)",
+   "16:39:39.521315 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.49815: 31872 8/0/1 AAAA 2600:1f18:2148:bc01:baa2:2fbf:656:2050, AAAA 2600:1f18:2148:bc02:9c9d:4e9:203e:6637, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97, AAAA 2600:1f18:2148:bc01:391a:b2e1:fe77:9da0, AAAA 2600:1f18:2148:bc00:22eb:529:1321:a3d7, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d (273)",
+   "16:39:39.600741 eth0  Out IP 172.20.51.196.48020 > 172.21.0.1.53: 56307+ [1au] AAAA? production.cloudfront.docker.com. (61)",
+   "16:39:39.600802 eth0  Out IP 172.20.51.196.45771 > 172.21.0.1.53: 40386+ [1au] A? production.cloudfront.docker.com. (61)",
+   "16:39:39.600915 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.48020: 56307 9/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., AAAA 2600:9000:2004:ac00:9:4855:aac0:93a1, AAAA 2600:9000:2004:e000:9:4855:aac0:93a1, AAAA 2600:9000:2004:ce00:9:4855:aac0:93a1, AAAA 2600:9000:2004:b000:9:4855:aac0:93a1, AAAA 2600:9000:2004:aa00:9:4855:aac0:93a1, AAAA 2600:9000:2004:4000:9:4855:aac0:93a1, AAAA 2600:9000:2004:e600:9:4855:aac0:93a1, AAAA 2600:9000:2004:9400:9:4855:aac0:93a1 (328)",
+   "16:39:39.601009 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.45771: 40386 5/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., A 52.85.129.97, A 52.85.129.84, A 52.85.129.3, A 52.85.129.87 (168)",
+   "16:39:39.670047 eth0  Out IP 172.20.51.196.56531 > 172.21.0.1.53: 8689+ [1au] A? registry-1.docker.io. (49)",
+   "16:39:39.670056 eth0  Out IP 172.20.51.196.35811 > 172.21.0.1.53: 53466+ [1au] AAAA? registry-1.docker.io. (49)",
+   "16:39:39.670240 eth0  In  IP 172.21.0.1.53 > 172.20.51.196.56531: 8689 8/0/1 A 44.221.185.149, A 3.213.195.155, A 100.62.12.53, A 52.6.118.125, A 54.235.137.156, A 50.19.162.72, A 100.51.157.111, A 54.164.230.250 (177)"
+  ],
+  "egress_state": {
+   "whitelist": {},
+   "blacklist": [
+    "ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host"
+   ]
+  },
+  "seconds": 50.0,
+  "allowed": "ta-01m8ey0kqg23a8656yrghkkypv-8001-82k5jnrff9s2z580r62cbhljt.w.modal.host",
+  "outside": "ta-01m8ey0kqg23a8656yrghkkypv-8002-82k5jnrff9s2z580r62cbhljt.w.modal.host"
+ }
+}
