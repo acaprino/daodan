@@ -234,9 +234,9 @@ def test_pnpm_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
 def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap(tmp_path, monkeypatch, pnpm):
     """hono-open-api-starter: pnpm 11 and later end an install that leaves a dependency's build script unapproved,
     so unrun, with ERR_PNPM_IGNORED_BUILDS (`strictDepBuilds`, pnpm.io/settings/build), the packages installed; the
-    install without scripts that follows, over the same `node_modules`, says it again. The preparation's line
-    (`scripts`, as `node_prepare`'s) turns that setting off, approving no build: each pnpm installs, no gap; without
-    the setting, pnpm 11 and later leave both gaps (`None`: the pnpm corepack takes when the project names none)."""
+    install without scripts that follows, over the same `node_modules`, says it again from pnpm 12. The preparation's
+    line (`scripts`, as `node_prepare`'s) turns that setting off, approving no build: each pnpm installs, no gap;
+    without the setting, pnpm 11 and later leave gaps (`None`: the pnpm corepack takes when the project names none)."""
     import subprocess
     monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
     node = Path(shutil.which("node")).resolve().parent  # corepack ships beside Node
@@ -264,8 +264,9 @@ def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap
     if int(version.split(".")[0]) >= 11:  # the case: the line without the setting
         said = run(line.replace(" --config.strict-dep-builds=false", "").replace("'app'", "'before'"), "before")
         assert "DAODAN-GENERATE-FAILED pnpm before" in said and "ERR_PNPM_IGNORED_BUILDS" in said, (version, said)
-        [gap] = preparation.restore_gaps(said)
-        assert "ERR_PNPM_IGNORED_BUILDS" in gap["detail"], (version, gap)
+        if int(version.split(".")[0]) >= 12:  # measured: pnpm 11 says it only with the scripts, 12 without too
+            [gap] = preparation.restore_gaps(said)
+            assert "ERR_PNPM_IGNORED_BUILDS" in gap["detail"], (version, gap)
 
 
 def test_yarn_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
