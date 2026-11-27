@@ -126,10 +126,44 @@ def test_resolve_reads_literals_and_looks_each_name_up_once_up_to_the_cap(monkey
                 {"host": "nas.example.com", "port": "443"}, {"host": "nas.example.com", "port": "8080"},
                 {"host": "gone.example.com", "port": "443"}, {"host": "late.example.com", "port": "443"}]
     out = egress.resolve(requests, lookups=2)
-    assert asked == ["nas.example.com", "gone.example.com"]  # literals cost no lookup, a name one, the cap holds
+    assert sorted(asked) == ["gone.example.com", "nas.example.com"]  # literals cost no lookup, a name one, the cap
     assert [(r["host"], r["address"], r["network"]) for r in out] == [
         ("10.0.0.1", "10.0.0.1", True), ("[::1]", "::1", True), ("nas.example.com", "192.168.1.5", True),
         ("nas.example.com", "192.168.1.5", True), ("gone.example.com", None, False), ("late.example.com", None, False)]
+
+
+def test_a_name_that_is_no_valid_name_or_does_not_answer_in_time_has_no_address(monkeypatch):
+    """The real lookup raises ValueError for a label of 64 characters and for an empty one; a lookup past the time
+    is left behind."""
+    out = egress.resolve([{"host": "a" * 64 + ".x", "port": "443"}, {"host": "a..b", "port": "443"}])
+    assert [r["address"] for r in out] == [None, None]
+    import threading
+    release = threading.Event()
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda *_, **__: release.wait(5) and [])
+    try:
+        assert egress.resolve([{"host": "slow.example.com", "port": "443"}], seconds=0.1)[0]["address"] is None
+    finally:
+        release.set()
+
+
+def test_one_analysis_looks_up_lookups_names_in_all_and_a_pending_request_not_again(monkeypatch):
+    asked = []
+    monkeypatch.setattr(egress, "LOOKUPS", 3)
+    monkeypatch.setattr(egress.socket, "getaddrinfo",
+                        lambda host, *_, **__: asked.append(host) or [(0, 0, 0, "", ("93.184.216.34", 0))])
+    egress.collect(PROJECT, [{"host": "a.example.com", "port": "443"}, {"host": "b.example.com", "port": "443"}])
+    egress.collect(PROJECT, [{"host": "a.example.com", "port": "443"}, {"host": "10.0.0.9", "port": "443"}])
+    assert sorted(asked) == ["a.example.com", "b.example.com"]  # pending, a is not looked up again
+    [*_, late] = egress.collect(PROJECT, [{"host": "c.example.com", "port": "443"},
+                                          {"host": "d.example.com", "port": "443"}])[0]
+    assert len(asked) == 3 and late["address"] is None  # the third name of the analysis, then no more
+    egress.respond("c.example.com", PROJECT, "no")  # an answer keeps the count
+    egress.collect(PROJECT, [{"host": "e.example.com", "port": "443"}])
+    assert len(asked) == 3
+    egress.end(PROJECT)  # the next analysis looks up again
+    egress.begin(PROJECT)
+    egress.collect(PROJECT, [{"host": "e.example.com", "port": "443"}])
+    assert asked[-1] == "e.example.com" and len(asked) == 4
 
 
 def test_requests_split_the_refusals_into_requests_and_host_denied_gaps(monkeypatch):
@@ -144,7 +178,9 @@ def test_requests_split_the_refusals_into_requests_and_host_denied_gaps(monkeypa
                                                                  ("host_denied", "no.example.com", "443")]
     assert [(r["host"], r["port"], r["address"], r["network"], r["declared_in"]) for r in asked] == [
         ("ask.example.com", "443", "93.184.216.34", False, ["pom.xml"]), ("10.0.0.5", "8080", "10.0.0.5", True, [])]
-    # a canonical host refused (another port) is neither a request nor a gap
+    # a canonical host refused at 443 (the run did not list it) is neither a request nor a gap
+    [gap] = egress.requests([{"host": "pypi.org", "port": "8443"}], PROJECT, state, session)[1]
+    assert (gap["kind"], gap["port"]) == ("host_denied", "8443") and "port 443 only" in gap["detail"]
 
 
 def test_collect_registers_the_requests_once_and_returns_them_with_the_gaps(monkeypatch):

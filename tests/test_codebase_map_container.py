@@ -31,6 +31,8 @@ if str(SCRIPTS) not in sys.path:
 import container  # noqa: E402
 import egress  # noqa: E402
 
+RESOLVE = egress.resolve  # the real lookup: the tests replace it with none
+
 FAKE_CLI = r'''
 import io, json, shutil, sys, tarfile, time
 from pathlib import Path
@@ -708,7 +710,8 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=hosts)["state"], "done")
         [proxy, *_] = self.created()
         self.assertEqual(proxy[proxy.index("3128") + 1:], ["registry.npmjs.org", "git.example.com",
-                                                          "http://deb.example.com", "http://archive.ubuntu.com"])
+                                                          "http://deb.example.com", "http://archive.ubuntu.com",
+                                                          "deb.example.com"])  # approved: open at 443 too
         egress.save(egress.answer(egress.load(), egress.session(str(self.project)), "github.com",
                                   str(self.project), "always")[0])
         self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=hosts)["state"], "done")
@@ -757,6 +760,57 @@ class FakeEngineTest(unittest.TestCase):
         (self.state / "refused.log").unlink()
         self.assertNotIn("refused", self.run_operation(["exit", "0"], prepare=["exit", "0"]))
         self.assertNotIn("refused", self.run_operation(["exit", "0"]))  # no preparation, no proxy
+
+    def test_a_host_that_is_no_valid_name_is_a_request_and_the_proxy_and_its_network_still_go(self):
+        """A label of 64 characters and an empty one make the real lookup raise ValueError, not OSError: the run
+        keeps its result, the requests have no address, and the proxy, its network and the volumes are removed."""
+        long, empty = "a" * 64 + ".x", "a..b"
+        (self.state / "refused.log").write_text(
+            f'@@daodan-refused {{"host": "{long}", "port": "443"}}\n'
+            f'@@daodan-refused {{"host": "{empty}", "port": "443"}}\n', encoding="utf-8")
+        with mock.patch.object(egress, "resolve", RESOLVE):  # the real lookup, which raises before any DNS query
+            done = self.run_operation(["exit", "0"], prepare=["exit", "0"])
+        self.assertEqual(done["state"], "done")
+        self.assertEqual([(row["host"], row["address"]) for row in done["asked"]], [(long, None), (empty, None)])
+        [proxy] = [call[call.index("--name") + 1] for call in self.created() if "3128" in call]
+        calls = self.calls()
+        self.assertIn(["rm", "-f", proxy], calls)
+        self.assertIn(["network", "rm", proxy.replace("daodan-proxy-", "daodan-net-")], calls)
+        self.assertEqual(list((self.state / "volumes").iterdir()), [])
+
+    def test_the_refusals_of_a_preparation_that_raised_are_still_read_before_the_proxy_goes(self):
+        (self.state / "refused.log").write_text('@@daodan-refused {"host": "git.example.com", "port": "443"}\n',
+                                                encoding="utf-8")
+        real = container.phase
+
+        def phase(engine, name, **options):
+            if name == "prepare":
+                raise subprocess.TimeoutExpired(["prepare"], 1)
+            return real(engine, name, **options)
+
+        with mock.patch.object(container, "phase", side_effect=phase):
+            failed = self.run_operation(["exit", "0"], prepare=["exit", "0"])
+        self.assertEqual(failed["state"], "failed")
+        self.assertEqual(failed["refused"], [{"host": "git.example.com", "port": "443"}])
+        self.assertEqual([gap["kind"] for gap in failed["gaps"] if gap["kind"] != "file_withheld"],
+                         ["approval_required"])
+        self.assertEqual([row["host"] for row in egress.pending(str(self.project))], ["git.example.com"])
+        calls = self.calls()
+        logs = max(index for index, call in enumerate(calls) if call[0] == "logs")
+        self.assertLess(logs, next(index for index, call in enumerate(calls) if call[:2] == ["rm", "-f"]
+                                   and call[2].startswith("daodan-proxy-")))
+
+    def test_an_approved_host_is_open_and_refused_at_another_port_is_a_host_denied_gap(self):
+        egress.save({"whitelist": {str(self.project): ["git.example.com"]}, "blacklist": []})
+        (self.state / "refused.log").write_text('@@daodan-refused {"host": "git.example.com", "port": "8443"}\n',
+                                                encoding="utf-8")
+        done = self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=("registry.npmjs.org",))
+        [proxy] = [call for call in self.created() if "3128" in call]
+        self.assertEqual(proxy[proxy.index("3128") + 1:], ["registry.npmjs.org", "git.example.com"])
+        self.assertEqual(done.get("asked"), [])
+        [gap] = [gap for gap in done["gaps"] if gap["kind"] != "file_withheld"]
+        self.assertEqual((gap["kind"], gap["host"], gap["port"]), ("host_denied", "git.example.com", "8443"))
+        self.assertIn("port 443 only", gap["detail"])
 
     def test_failed_preparation_stops_before_execution(self):
         result = self.run_operation(["exit", "0"], prepare=["exit", "3"])

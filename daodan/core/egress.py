@@ -16,6 +16,7 @@ are this process's copy of them.
 """
 from __future__ import annotations
 
+import concurrent.futures
 import contextlib
 import ipaddress
 import json
@@ -39,7 +40,8 @@ PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (ho
 WHERE: dict[str, dict] = {}  # project -> {host: [files that declare it]}, from `declare`
 SESSIONS: dict[str, dict] = {}  # project -> the answers that last for its analysis
 MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
-LOOKUPS = 16  # the hosts one analysis resolves at most
+LOOKUPS = 16  # the names one analysis looks up at most, counted in its row of `SESSION_FILE` ("looked")
+LOOKUP_SECONDS = 5  # how long the names of one run's refusals are looked up, all together
 REPLIES = ("always", "once", "no", "block")
 
 
@@ -91,10 +93,23 @@ def _hosts(value) -> list[str]:
     return sorted({h for h in value if isinstance(h, str)}) if isinstance(value, list) else []
 
 
+def _row(shared: dict, project: str) -> dict:
+    row = shared.get(project)
+    return row if isinstance(row, dict) else {}
+
+
+def _looked(project: str) -> int:
+    """How many names the project's analysis has looked up (`resolve`), from its row of the shared file."""
+    looked = _row(_read(SESSION_FILE), project).get("looked")
+    return looked if isinstance(looked, int) and looked >= 0 else 0
+
+
 def _held(project: str) -> dict | None:
-    """The answers of the project's analysis in the shared file, if it has any."""
-    row = _read(SESSION_FILE).get(project)
-    return {"allow": _hosts(row.get("allow")), "deny": _hosts(row.get("deny"))} if isinstance(row, dict) else None
+    """The answers of the project's analysis in the shared file, if it has any (a row of lookups alone has none)."""
+    row = _row(_read(SESSION_FILE), project)
+    if not {"allow", "deny"} & set(row):
+        return None
+    return {"allow": _hosts(row.get("allow")), "deny": _hosts(row.get("deny"))}
 
 
 def session(project: str) -> dict:
@@ -113,7 +128,7 @@ def respond(host: str, project: str, reply: str) -> None:
         state, answers = answer(load(), session(project), host, project, reply)
         save(state)
         shared = _read(SESSION_FILE)
-        shared[project] = answers
+        shared[project] = {**_row(shared, project), **answers}
         _write(SESSION_FILE, shared)
         SESSIONS[project] = answers
         rows = _read(PENDING_FILE)
@@ -224,50 +239,69 @@ def private(address: str) -> bool:
     return ip.is_private or ip.is_loopback or ip.is_link_local
 
 
-def resolve(requests: list[dict], lookups: int = LOOKUPS) -> list[dict]:
+def _name(host: str) -> str | None:
+    """The name `resolve` looks up for a host, None for a literal address."""
+    host = host.strip("[]")
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        return host
+    return None
+
+
+def resolve(requests: list[dict], lookups: int = LOOKUPS, seconds: float = LOOKUP_SECONDS) -> list[dict]:
     """Each request with the `address` of its host and whether it is the user's `network`, here on the host and not in
-    the proxy: a literal address is read as it is, any other name is looked up once, up to `lookups` names (the rest,
-    and a name that does not resolve, have no address)."""
-    found, looked = {}, 0
-    out = []
-    for request in requests:
-        host = request["host"].strip("[]")
-        if host not in found:
+    the proxy: a literal address is read as it is, any other name is looked up once, up to `lookups` names and for
+    `seconds` in all (the rest, a name that does not resolve and one that is no valid name have no address)."""
+    hosts = [request["host"].strip("[]") for request in requests]
+    found = {host: None if _name(host) else host for host in hosts}
+    names = [host for host in found if found[host] is None][:max(lookups, 0)]
+    if names:
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=len(names))
+        asked = {pool.submit(socket.getaddrinfo, name, None, type=socket.SOCK_STREAM): name for name in names}
+        done, _ = concurrent.futures.wait(asked, timeout=seconds)
+        pool.shutdown(wait=False, cancel_futures=True)  # a lookup past the time is left to end on its own
+        for future in done:
             try:
-                ipaddress.ip_address(host)
-                found[host] = host
-            except ValueError:
-                found[host] = None
-                if looked < lookups:
-                    looked += 1
-                    try:
-                        found[host] = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)[0][4][0]
-                    except OSError:
-                        pass
-        out.append({**request, "address": found[host], "network": found[host] is not None and private(found[host])})
-    return out
+                found[asked[future]] = future.result()[0][4][0]
+            except (OSError, ValueError, IndexError):  # ValueError: an empty label or one past 63 characters
+                pass
+    return [{**request, "address": found[host], "network": found[host] is not None and private(found[host])}
+            for request, host in zip(requests, hosts)]
 
 
 def requests(refused: list[dict], project: str, state: dict, session: dict, where: dict | None = None,
-             lookups: int = LOOKUPS) -> tuple[list[dict], list[dict]]:
+             lookups: int = LOOKUPS, known: dict | None = None) -> tuple[list[dict], list[dict]]:
     """What the refusals of a run (`refused`) are: the requests to answer, each `{host, port, address, network,
-    declared_in}` (`resolve`; `where`, `preparation.declared`'s, gives the files that declare a host), and the
-    `host_denied` gaps, for a host the user blocked or refused in this analysis. A refused host that `decide` allows
-    (a canonical one asked on another port) is neither."""
-    where = where or {}
+    declared_in}` (`resolve`, but for a request `known`, by `(host, port)`, already has them; `where`,
+    `preparation.declared`'s, gives the files that declare a host), and the `host_denied` gaps, for a host the user
+    blocked or refused in this analysis and for an allowed host the proxy refused at a port it does not open (at 443,
+    an allowed host the run did not list is neither)."""
+    where, known = where or {}, known or {}
     decided = [(row, decide(row["host"], project, state, session)) for row in refused]
-    asked = resolve([row for row, decision in decided if decision == "ask"], lookups)
-    return ([{**row, "declared_in": where.get(row["host"], [])} for row in asked],
-            [{"kind": "host_denied", "host": row["host"], "port": row["port"],
-              "declared_in": where.get(row["host"], []),
-              "detail": f"{row['host']}:{row['port']} was refused: the user blocked it or said no to it"}
-             for row, decision in decided if decision == "deny"])
+    fresh = {(row["host"], row["port"]): row for row in resolve(
+        [row for row, decision in decided if decision == "ask" and (row["host"], row["port"]) not in known], lookups)}
+    asked = [{**row, "address": (fresh.get(key) or known[key]).get("address"),
+              "network": bool((fresh.get(key) or known[key]).get("network")), "declared_in": where.get(row["host"], [])}
+             for row, decision in decided if decision == "ask" for key in [(row["host"], row["port"])]]
+    why = {"deny": "the user blocked it or said no to it",
+           "allow": "the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"}
+    return asked, [{"kind": "host_denied", "host": row["host"], "port": row["port"],
+                    "declared_in": where.get(row["host"], []),
+                    "detail": f"{row['host']}:{row['port']} was refused: {why[decision]}"}
+                   for row, decision in decided if decision == "deny" or decision == "allow" and row["port"] != "443"]
 
 
 def collect(project: str, refused: list[dict], where: dict | None = None) -> tuple[list[dict], list[dict]]:
     """The refusals of a run (`container.run_in_container`): the requests join the project's pending ones, in this
-    process and in the shared file, and come back with the `host_denied` gaps, `(asked, gaps)`."""
-    asks, gaps = requests(refused, project, load(), session(project), WHERE.get(project) if where is None else where)
+    process and in the shared file, and come back with the `host_denied` gaps, `(asked, gaps)`. A request already
+    pending is not looked up again, and one analysis looks up `LOOKUPS` names in all (`_looked`)."""
+    known = {(row["host"], row["port"]): row for row in pending(project)}
+    state, answers, budget = load(), session(project), max(LOOKUPS - _looked(project), 0)
+    asks, gaps = requests(refused, project, state, answers, WHERE.get(project) if where is None else where, budget,
+                          known)
+    looked = min(len({_name(row["host"]) for row in asks if (row["host"], row["port"]) not in known} - {None}),
+                 budget)
     held = PENDING.setdefault(project, {})
     for row in asks:
         held.setdefault((row["host"], row["port"]), row)
@@ -275,9 +309,13 @@ def collect(project: str, refused: list[dict], where: dict | None = None) -> tup
         with locked():
             rows = _read(PENDING_FILE)
             there = rows.get(project) if isinstance(rows.get(project), list) else []
-            known = {(row.get("host"), row.get("port")) for row in there if isinstance(row, dict)}
-            rows[project] = [*there, *(row for row in asks if (row["host"], row["port"]) not in known)]
+            have = {(row.get("host"), row.get("port")) for row in there if isinstance(row, dict)}
+            rows[project] = [*there, *(row for row in asks if (row["host"], row["port"]) not in have)]
             _write(PENDING_FILE, rows)
+            if looked:
+                shared = _read(SESSION_FILE)
+                shared[project] = {**_row(shared, project), "looked": _looked(project) + looked}
+                _write(SESSION_FILE, shared)
     return asks, gaps
 
 

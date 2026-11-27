@@ -68,7 +68,8 @@ revision 1379970373 of 13 October 2026, read on 24 November 2026. Only the manag
 dependencies with are kept, plus Go modules; `toolchains` lists the downloads of the language toolchains that
 Daodan's tools fetch. Wikipedia gives no hosts: they were written by hand and are probed by
 [registry-hosts](benchmarks/registry-hosts/README.md). Hosts that take uploads beyond a package publish, such as
-GitHub and container registries, stay out; GitHub opens only for a project that declares a dependency on it.
+GitHub and container registries, stay out: like any other host, they open only once the user approves them in the
+app, for the project or for one analysis.
 
 ## Plugins
 

@@ -177,6 +177,60 @@ def test_failed_node_seed_is_removed_before_the_consumer_can_start(tmp_path, mon
     assert [p[0] for p in phases] == ["node-restore"]
 
 
+def _refusing(monkeypatch, lines):
+    """The proxies started, each with the project it serves; the first, the seed's, says `lines` in its log."""
+    started, cli = [], container.cli
+    monkeypatch.setattr(container, "start_proxy", lambda *args: started.append(args))
+    monkeypatch.setattr(container, "cli", lambda engine, *args, **options: subprocess.CompletedProcess(
+        args, 0, "".join(f"{egress.MARK}{line}\n" for line in lines).encode(), b"")
+        if args[:1] == ("logs",) and started and args[1] == started[0][1] else cli(engine, *args, **options))
+    return started
+
+
+def _node_project(tmp_path):
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "package.json").write_text('{"name":"app"}')
+    (project / "package-lock.json").write_text('{"lockfileVersion":3}')
+    manifest = tmp_path / "snapshot" / "manifest.sqlite"
+    snapshot.read_project(project, manifest)
+    return project, manifest
+
+
+def test_the_seed_s_proxy_serves_its_project_and_its_refusals_are_requests_and_host_denied_gaps(tmp_path, monkeypatch,
+                                                                                               engine):
+    fake, volumes, phases = engine
+    project, manifest = _node_project(tmp_path)
+    key = str(project.resolve())
+    egress.save({"whitelist": {}, "blacklist": ["blocked.example.com"]})
+    started = _refusing(monkeypatch, ['{"host": "10.0.0.7", "port": "443"}',
+                                      '{"host": "blocked.example.com", "port": "443"}'])
+    with node_preparation.analysis():
+        first, = container_runner.runner(manifest, fake)([{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": "."}])
+    assert [phase for phase, _, _ in phases][:1] == ["node-restore"] and started
+    assert all(args[-1] == key for args in started)  # the seed's proxy and the consumer's serve the project
+    assert [(g["host"], g["port"]) for g in first["gaps"] if g["kind"] == "host_denied"] == [
+        ("blocked.example.com", "443")]
+    assert not any(g["kind"] == "approval_required" for g in first["gaps"])  # the restore succeeded: its result stands
+    assert [row["host"] for row in egress.pending(key)] == ["10.0.0.7"]
+
+
+def test_a_seed_that_failed_asking_for_a_host_says_approval_required(tmp_path, monkeypatch, engine):
+    fake, volumes, phases = engine
+    project, manifest = _node_project(tmp_path)
+    _refusing(monkeypatch, ['{"host": "10.0.0.7", "port": "443"}'])
+    original = container.phase
+    monkeypatch.setattr(container, "phase", lambda _engine, name, **kwargs: {**original(_engine, name, **kwargs),
+                                                                             "exit_code": 1})
+    with node_preparation.analysis(), pytest.raises(container.Gap) as raised:
+        container_runner.runner(manifest, fake)([{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": "."}])
+    [gap] = [g for g in raised.value.gaps if g["kind"] == "approval_required"]
+    assert gap["hosts"] == ["10.0.0.7"] and gap["detail"].startswith("the step failed and asked for hosts")
+    assert raised.value.remedy == "see node-restore.log"  # a gap of its own, not words in the remedy
+    assert [row["host"] for row in egress.pending(str(project.resolve()))] == ["10.0.0.7"]
+    assert not volumes
+
+
 def test_a_step_without_a_container_is_a_gap_with_its_cause_and_starts_nothing(tmp_path, monkeypatch):
     project = tmp_path / "project"
     project.mkdir()

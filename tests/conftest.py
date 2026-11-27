@@ -30,8 +30,13 @@ def _grammars():
 
 
 @pytest.fixture(autouse=True)
-def _forgotten_answers():
-    """The answers and requests of an analysis (`egress`) are not carried from one test to the next."""
+def _forgotten_answers(tmp_path, monkeypatch):
+    """The answers and requests of an analysis (`egress`) are not carried from one test to the next, and a test reads
+    and writes them in its own folder, never in the user's shared one, unless it names one (`DAODAN_SHARED_DIR`)."""
+    import egress
+    monkeypatch.setattr(egress, "shared_cache_dir",
+                        lambda: Path(os.environ.get("DAODAN_SHARED_DIR") or tmp_path / "egress-shared"))
+
     def forget():
         module = sys.modules.get("egress")
         if module is not None:

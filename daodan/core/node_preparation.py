@@ -182,11 +182,17 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
     network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
     lease.touch()
     container.record_volumes(entry, engine.name, owner, names)
+    logged = []  # the proxy whose refusals are still to read
+
+    def refusals():
+        return egress.refused(container.cli(engine, "logs", logged.pop()).stdout.decode("utf-8", "replace"))
+
     try:
         for name in names:
             container.checked(container.cli(engine, "volume", "create", name), "Node seed volume create")
         container.checked(container.cli(engine, "network", "create", "--internal", network), "Node restore network")
         container.start_proxy(engine, proxy, network, tuple(request["hosts"]), project)
+        logged.append(proxy)
         script = (container.named() if visibility == "blind" else "") + request["script"]
         row = container.phase(engine, "node-restore", image=image, network=network, command=["sh", "-ec", script],
                               env={**preparation.ENV, **container.proxy_environment(f"http://proxy:{container.PROXY_PORT}")},
@@ -195,11 +201,10 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
         container.mask_file(row.get("log"), hide)
         container.append_record(out_dir / container.RECORD_NAME,
                                 {**container.mask_row(row, hide), "preparation": lock.name})
-        asked, denied = egress.collect(project, egress.refused(
-            container.cli(engine, "logs", proxy).stdout.decode("utf-8", "replace")))  # before the proxy goes
-        if row.get("outcome") != "exited" or row.get("exit_code") != 0:
-            raise container.Gap(row.get("cause") or "Node dependency preparation failed", "see node-restore.log"
-                                + (f"; {egress.approval_gap(asked)[0]['detail']}" if asked else ""))
+        asked, denied = egress.collect(project, refusals())  # before the proxy goes
+        if row.get("outcome") != "exited" or row.get("exit_code") != 0:  # the run says the gaps of its proxy
+            raise container.Gap(row.get("cause") or "Node dependency preparation failed", "see node-restore.log",
+                                [*denied, *egress.approval_gap(asked)])
         log = Path(row["log"]).read_text(encoding="utf-8", errors="replace")
         gaps = [*preparation.missing(log), *preparation.restore_gaps(log), *preparation.generation_gaps(log), *denied]
         if not gaps:  # a partial install remains usable by this consumer alone
@@ -208,6 +213,11 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
         container.remove_volumes(engine, entry, owner, names)
         raise
     finally:
+        if logged:  # the restore stopped before they were read: its requests still wait for an answer
+            try:
+                egress.collect(project, refusals())
+            except (OSError, subprocess.TimeoutExpired):
+                pass
         container.cli(engine, "rm", "-f", proxy)
         container.cli(engine, "network", "rm", network)
     return names, gaps

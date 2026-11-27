@@ -264,7 +264,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
             raise container.Gap(said[0]["detail"], "answer in the app, then analyze again", said)
         result = contained(ran, hosts, tool)
         if result["state"] == "gap":
-            raise container.Gap(result["cause"], result["remedy"])
+            raise container.Gap(result["cause"], result["remedy"], result.get("gaps") or ())
         answers = result.get("results") or []
         if result["state"] != "done":
             raise RuntimeError(f"the {tool} container run ended {result['state']}: {result.get('cause')}")
