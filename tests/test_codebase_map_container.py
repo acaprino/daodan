@@ -47,7 +47,7 @@ box = lambda name: state / "containers" / name
 volume = lambda name: state / "volumes" / name
 verb = args[0] if args else ""
 if verb == "version" or verb == "info":
-    print("linux")
+    print("1.51" if "{{.Server.APIVersion}}" in args else "linux")  # Docker 29
 elif verb == "create":
     rest, mounts = args[1:], []
     while rest[0] in VALUED:
@@ -527,14 +527,35 @@ class FakeEngineTest(unittest.TestCase):
         rows = (self.out / container.RECORD_NAME).read_text(encoding="utf-8").splitlines()
         self.assertEqual(json.loads(rows[-1])["outcome"], "gap")
 
+    def test_an_engine_older_than_docker_28_is_a_gap_and_no_network_is_created(self):
+        """Podman's API (1.41), Kiri 0.2.0's (1.47), Docker 27's: none takes the host's address off the bridge."""
+        for said in ("1.47", "1.41", "linux", ""):
+            with self.subTest(said=said):
+                (self.state / "calls.jsonl").unlink(missing_ok=True)
+                fake = self.scratch / "fake_old.py"
+                fake.write_text(FAKE_CLI.replace('"1.51" if', f'"{said}" if'), encoding="utf-8")
+                old = container.Engine("old", (sys.executable, str(fake), str(self.state)))
+                with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+                    result = container.run_in_container(self.project, ["exit", "0"], prepare=["exit", "0"],
+                                                        image="fake/runtime:1", out_dir=self.out, engine=old)
+                self.assertEqual(result["state"], "gap", result)
+                self.assertIn("cannot take the host's address off", result["cause"])
+                self.assertEqual(result["remedy"], "run the preparation with Docker Engine 28.0 or later")
+                self.assertEqual([call for call in self.calls() if call[:2] == ["network", "create"]], [])
+                self.assertFalse([call for call in self.created() if "--network" in call])
+
     # Guarantee 3: network closed during execution, open only to registries during preparation.
     def test_execution_has_no_network_and_preparation_reaches_only_the_proxy(self):
         result = self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=("registry.npmjs.org",))
         self.assertEqual(result["state"], "done", result)
         calls = self.calls()
-        internal = [call for call in calls if call[:3] == ["network", "create", "--internal"]]
+        internal = [call for call in calls if call[:2] == ["network", "create"]]
         self.assertEqual(len(internal), 1)
-        network = internal[0][3]
+        network = internal[0][-1]
+        # No way out, no IPv6, and no address of the host on the bridge: the gateway is no way to the host.
+        self.assertEqual(internal[0], ["network", "create", "--internal", "--ipv6=false", "--opt",
+                                       "com.docker.network.bridge.inhibit_ipv4=true", network])
+        self.assertIn(["version", "--format", "{{.Server.APIVersion}}"], calls)
         proxy, prepare, execute = self.created()
         self.assertNotIn("--network", proxy)
         self.assertIn("registry.npmjs.org", proxy)

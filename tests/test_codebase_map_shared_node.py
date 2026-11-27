@@ -32,6 +32,8 @@ def engine(tmp_path, monkeypatch):
             states.pop(args[2], None)
         elif args[:2] == ("volume", "inspect") and args[2] not in states:
             return subprocess.CompletedProcess(args, 1, b"", b"not found")
+        elif args[0] == "version":  # Docker 29: its networks take the option that keeps the host off them
+            return subprocess.CompletedProcess(args, 0, b"1.51\n", b"")
         return subprocess.CompletedProcess(args, 0, b"", b"")
     monkeypatch.setattr(container, "cli", cli)
     def phase(_engine, name, *, out_dir, volumes, copy, command, network, **opts):

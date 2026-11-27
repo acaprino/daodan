@@ -117,6 +117,10 @@ PROXY_VARIABLES = ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "FTP_PROXY", "ALL_PR
                    "http_proxy", "https_proxy", "no_proxy", "ftp_proxy", "all_proxy")
 PROXY_IMAGE = "python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e"
 PROXY_PORT = 3128
+# The preparation's network: no way out (`--internal`), no IPv6, and no address of the host on its bridge, so the
+# network's gateway is no way to the host's listeners (`benchmarks/egress`). Docker's option, from Engine 28.0 (API 1.48).
+INTERNAL_NETWORK = ("--internal", "--ipv6=false", "--opt", "com.docker.network.bridge.inhibit_ipv4=true")
+INTERNAL_API = (1, 48)
 SERVICE_WAIT = 600  # the seconds a service may stay `starting`: GitHub's runner waits as long as its health check
 SERVICE_STATE = "{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}"
 BESIDE = contextvars.ContextVar("beside", default=None)  # `beside`'s services, variables, steps and `Said`
@@ -1269,6 +1273,20 @@ def fetch(engine: Engine, box: str, path: str, out_dir: Path, budget: int) -> tu
     return [str(out_dir / member.name) for member in members if member.isfile()], total
 
 
+def internal_network(engine: Engine, network: str) -> None:
+    """The preparation's `network` (`INTERNAL_NETWORK`): containers on it reach each other and the proxy by name, the
+    engine's resolver, never the host. An engine whose API is older than Docker's 28.0 (Podman's, Kiri 0.2.0's, an
+    older Docker's) would ignore or refuse the option and leave the host at the gateway: a Gap, never that network."""
+    said = cli(engine, "version", "--format", "{{.Server.APIVersion}}", timeout=30).stdout.decode("utf-8", "replace")
+    # The engine's API version is two whole numbers (`1.48`): no grammar, nothing a version library would add.
+    api = tuple(int(part) for part in said.strip().split(".")) if re.fullmatch(r"\d+\.\d+", said.strip()) else ()
+    if api < INTERNAL_API:
+        raise Gap(f"{engine.name} (API {said.strip() or 'unknown'}) cannot take the host's address off the "
+                  "preparation's network: the project's code would reach the host's services through its gateway",
+                  "run the preparation with Docker Engine 28.0 or later")
+    checked(cli(engine, "network", "create", *INTERNAL_NETWORK, network), "network create")
+
+
 def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...], project: str) -> None:
     """The proxy of a preparation, open to the `registries` that `egress.decide` allows the project (`str(project)`):
     any other host is refused, and what it was asked is in the proxy's log (`PROXY_SCRIPT`), where the host reads it
@@ -1773,7 +1791,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                     if restore_gaps:
                         result["gaps"] = [*(result.get("gaps") or ()), *restore_gaps]
                 network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
-                checked(cli(found, "network", "create", "--internal", network), "network create")
+                internal_network(found, network)
                 cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
                 start_proxy(found, proxy, network, tuple(registries), str(project))
                 logged.append(proxy)

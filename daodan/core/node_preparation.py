@@ -190,7 +190,7 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
     try:
         for name in names:
             container.checked(container.cli(engine, "volume", "create", name), "Node seed volume create")
-        container.checked(container.cli(engine, "network", "create", "--internal", network), "Node restore network")
+        container.internal_network(engine, network)
         container.start_proxy(engine, proxy, network, tuple(request["hosts"]), project)
         logged.append(proxy)
         script = (container.named() if visibility == "blind" else "") + request["script"]
