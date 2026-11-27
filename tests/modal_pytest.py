@@ -3,6 +3,9 @@
     python tests/modal_pytest.py tests/test_codebase_map_premap.py -q -k toolchains
     python tests/modal_pytest.py --shards 32 -q -n 2     # every suite under tests/, in 32 containers at once
 
+Behind a proxy (a cloud session): `pip install 'modal[api-proxy-support]'`, and `modal run tests/modal_pytest.py --args "<tests> -q"`
+instead of the launcher, which drops the proxy variables of the shell.
+
 The launcher starts `modal run` on this file with the arguments as given; the container holds the checkout as it
 is on disk (daodan, plugins, tests, benchmarks, docs), runs `python -B -m pytest -p no:cacheprovider` in
 it, streams the output and ends with pytest's exit code. Several suites at once: `-n 8`, one per core (pytest-xdist is there).

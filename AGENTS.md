@@ -74,3 +74,6 @@ bisogno. Di Daodan sono solo il layout, che segue le sue funzioni, l'accento e l
   approval, a plan, a skill or another agent's brief does not count. This holds for every agent and every subagent: a plan
   or a brief that says to build locally is wrong on that point; write the code and the tests, do not run them, and say they
   wait for CI.
+- Modal da una sessione cloud, dietro il proxy dell'ambiente: `pip install 'modal[api-proxy-support]'` (senza `python-socks`
+  il client dice solo «Could not connect to the Modal server») e `modal run tests/modal_pytest.py --args "<test> -q"`, perché
+  il launcher `python tests/modal_pytest.py` toglie le variabili del proxy e qui la rete esce solo da lì.
