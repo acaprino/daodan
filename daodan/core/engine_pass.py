@@ -421,7 +421,30 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
 
 
+def _projects(manifest: Path) -> list[str]:
+    """The names `egress` knows this snapshot's project by: its root, and the folder of its target when that differs
+    (the stages' `container.run_in_container` and `index_stage`'s)."""
+    with open_snapshot(manifest) as store:
+        root = Path(store["root"])
+        target = (root / store["target"]).resolve()
+    return sorted({str(root.resolve()), str(target.parent if target.is_file() else target)})
+
+
 def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
+    """The pass of `_run_pass`, with `egress`'s requests of the project emptied at its start and its "once" and "no"
+    answers forgotten at its end: an answer given between two passes serves the next."""
+    import egress
+    projects = _projects(Path(manifest).resolve())
+    for project in projects:
+        egress.begin(project)
+    try:
+        return _run_pass(manifest, report_path, bus)
+    finally:
+        for project in projects:
+            egress.end(project)
+
+
+def _run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     """Run each engine's stage in turn and record per language what came of it.
 
     A language already fresh in the store is not asked again; one the snapshot did

@@ -5,15 +5,24 @@ the hosts the user approved. A host in neither list asks; a host the user blocke
 The user's answers live in `egress.json` in the per-user shared folder (`embedding_worker.shared_cache_dir`), never in
 the project: `{"whitelist": {<project>: [<host>]}, "blacklist": [<host>]}`. A project is named by the caller, one
 string for one project. The four answers: "always" (this project), "once" (this analysis: the `session`), "no"
-(this analysis) and "block" (every project, always). The module is pure but for `load` and `save`.
+(this analysis) and "block" (every project, always).
+
+The requests still to answer and the answers that last for an analysis are shared between processes, which differ:
+the child that is refused, the app that answers, the pass that reads the answer. They are two files beside
+`egress.json` (`PENDING_FILE`, `SESSION_FILE`), written whole with a temporary file and `os.replace`, under an OS lock
+(`locked`); a missing or corrupt file is an empty one. `begin` empties a project's requests when its pass starts and
+`end` its answers when the pass ends, so "once" lasts for the pass the answer is used by. `PENDING` and `SESSIONS`
+are this process's copy of them.
 """
 from __future__ import annotations
 
+import contextlib
 import ipaddress
 import json
 import os
 import socket
 import sys
+import time
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -21,8 +30,11 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from embedding_worker import shared_cache_dir  # noqa: E402
+from run_store import _try_lock  # noqa: E402  the OS byte-range lock the store takes for its registry
 
 FILE = "egress.json"
+PENDING_FILE, SESSION_FILE, LOCK = "egress-pending.json", "egress-session.json", "egress.lock"
+LOCK_SECONDS = 5  # past it the file is read and written without the lock: a stuck holder must not stop an analysis
 PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (host, port): the analysis's register
 SESSIONS: dict[str, dict] = {}  # project -> the answers that last for its analysis
 MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
@@ -35,9 +47,96 @@ def new_session() -> dict:
     return {"allow": [], "deny": []}
 
 
+@contextlib.contextmanager
+def locked():
+    """The shared files for this process alone (the OS releases the lock if its holder dies)."""
+    folder = shared_cache_dir()
+    descriptor = None
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        descriptor = os.open(folder / LOCK, os.O_CREAT | os.O_RDWR, 0o600)
+        deadline = time.monotonic() + LOCK_SECONDS
+        while not _try_lock(descriptor) and time.monotonic() < deadline:
+            time.sleep(0.02)
+    except OSError:
+        pass
+    try:
+        yield
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)  # closing the descriptor releases its lock
+
+
+def _read(name: str) -> dict:
+    try:
+        held = json.loads((shared_cache_dir() / name).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return held if isinstance(held, dict) else {}
+
+
+def _write(name: str, value: dict) -> None:
+    path = shared_cache_dir() / name
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        partial = path.with_name(f"{name}.{os.getpid()}.partial")
+        partial.write_text(json.dumps(value, sort_keys=True, indent=1), encoding="utf-8")
+        os.replace(partial, path)
+    except OSError:
+        pass  # the copy in this process still holds it
+
+
+def _hosts(value) -> list[str]:
+    return sorted({h for h in value if isinstance(h, str)}) if isinstance(value, list) else []
+
+
+def _held(project: str) -> dict | None:
+    """The answers of the project's analysis in the shared file, if it has any."""
+    row = _read(SESSION_FILE).get(project)
+    return {"allow": _hosts(row.get("allow")), "deny": _hosts(row.get("deny"))} if isinstance(row, dict) else None
+
+
 def session(project: str) -> dict:
-    """The answers of the project's analysis, made on first use."""
-    return SESSIONS.setdefault(project, new_session())
+    """The answers of the project's analysis: this process's copy, made on first use and brought up to the shared
+    file's when it has an entry for the project (the same dict each time, so a caller may change it)."""
+    mine = SESSIONS.setdefault(project, new_session())
+    if (held := _held(project)) is not None:
+        mine["allow"][:], mine["deny"][:] = held["allow"], held["deny"]
+    return mine
+
+
+def respond(host: str, project: str, reply: str) -> None:
+    """The user's `reply` about `host`, kept: "always" and "block" in `egress.json`, "once" and "no" in the analysis's
+    answers, shared; the request is no longer pending. Called by whoever answers, in any process."""
+    with locked():
+        state, answers = answer(load(), session(project), host, project, reply)
+        save(state)
+        shared = _read(SESSION_FILE)
+        shared[project] = answers
+        _write(SESSION_FILE, shared)
+        SESSIONS[project] = answers
+        rows = _read(PENDING_FILE)
+        rows[project] = [row for row in rows.get(project, []) if row.get("host") != host.lower()]
+        _write(PENDING_FILE, rows)
+    PENDING.get(project, {}).pop(next((k for k in PENDING.get(project, {}) if k[0] == host.lower()), None), None)
+
+
+def begin(project: str) -> None:
+    """A pass starts: the requests of the one before are gone, the run will ask again for what it still needs."""
+    with locked():
+        rows = _read(PENDING_FILE)
+        rows.pop(project, None)
+        _write(PENDING_FILE, rows)
+    PENDING.pop(project, None)
+
+
+def end(project: str) -> None:
+    """A pass ends: what the user said "once" or "no" to for it is forgotten."""
+    with locked():
+        shared = _read(SESSION_FILE)
+        shared.pop(project, None)
+        _write(SESSION_FILE, shared)
+    SESSIONS.pop(project, None)
 
 
 def load() -> dict:
@@ -165,12 +264,19 @@ def requests(refused: list[dict], project: str, state: dict, session: dict, wher
 
 
 def collect(project: str, refused: list[dict], where: dict | None = None) -> tuple[list[dict], list[dict]]:
-    """The refusals of a run (`container.run_in_container`): the requests join the project's `PENDING`, and come back
-    with the `host_denied` gaps, `(asked, gaps)`."""
+    """The refusals of a run (`container.run_in_container`): the requests join the project's pending ones, in this
+    process and in the shared file, and come back with the `host_denied` gaps, `(asked, gaps)`."""
     asks, gaps = requests(refused, project, load(), session(project), where)
     held = PENDING.setdefault(project, {})
     for row in asks:
         held.setdefault((row["host"], row["port"]), row)
+    if asks:
+        with locked():
+            rows = _read(PENDING_FILE)
+            there = rows.get(project) if isinstance(rows.get(project), list) else []
+            known = {(row.get("host"), row.get("port")) for row in there if isinstance(row, dict)}
+            rows[project] = [*there, *(row for row in asks if (row["host"], row["port"]) not in known)]
+            _write(PENDING_FILE, rows)
     return asks, gaps
 
 
@@ -186,5 +292,8 @@ def approval_gap(asked: list[dict]) -> list[dict]:
 
 
 def pending(project: str) -> list[dict]:
-    """The requests of the project's analysis that wait for an answer."""
+    """The requests of the project's analysis that wait for an answer, whichever process was refused."""
+    shared = _read(PENDING_FILE).get(project)
+    if isinstance(shared, list):  # the file is the truth: a request answered in another process is gone from it
+        return [row for row in shared if isinstance(row, dict) and "host" in row and "port" in row]
     return list(PENDING.get(project, {}).values())

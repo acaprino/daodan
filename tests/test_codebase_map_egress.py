@@ -181,3 +181,89 @@ def test_an_apt_archive_is_approved_as_its_host_is():
 def test_resolve_reaches_no_network_for_literals_and_localhost():
     out = egress.resolve([{"host": "127.0.0.1", "port": "80"}, {"host": "localhost", "port": "80"}])
     assert out[0]["network"] is True and out[1]["network"] is True
+
+
+CHILD = """
+import sys
+sys.path.insert(0, {scripts!r})
+import egress
+{body}
+"""
+
+
+def _process(body: str, shared) -> str:
+    """A process of its own over the same shared folder: its stdout."""
+    import os
+    import subprocess
+    done = subprocess.run([sys.executable, "-c", CHILD.format(scripts=str(SCRIPTS), body=body)], capture_output=True,
+                          text=True, env={**os.environ, "DAODAN_SHARED_DIR": str(shared)}, timeout=60)
+    assert done.returncode == 0, done.stderr
+    return done.stdout
+
+
+def test_a_request_one_process_makes_another_sees_and_answers_and_the_first_sees_the_answer(shared):
+    refused = [{"host": "93.184.216.34", "port": "443"}, {"host": "10.0.0.5", "port": "8080"}]
+    _process(f"egress.collect({PROJECT!r}, {refused!r}, {{'10.0.0.5': ['pom.xml']}})", shared)
+    seen = json.loads(_process(f"import json; print(json.dumps([r['host'] for r in egress.pending({PROJECT!r})]))",
+                               shared))
+    assert seen == ["93.184.216.34", "10.0.0.5"]
+    assert [r["host"] for r in egress.pending(PROJECT)] == seen  # this process reads what a child wrote
+    _process(f"egress.respond('10.0.0.5', {PROJECT!r}, 'once'); egress.respond('93.184.216.34', {PROJECT!r}, 'no')",
+             shared)
+    assert egress.pending(PROJECT) == []
+    answered = egress.session(PROJECT)
+    assert answered == {"allow": ["10.0.0.5"], "deny": ["93.184.216.34"]}
+    assert egress.decide("10.0.0.5", PROJECT, egress.load(), answered) == "allow"
+    again = _process(f"import json; print(json.dumps(egress.session({PROJECT!r})))", shared)
+    assert json.loads(again) == answered  # a child of the pass finds it
+
+
+def test_always_and_block_answered_elsewhere_reach_this_process(shared):
+    _process(f"egress.respond('git.example.com', {PROJECT!r}, 'always'); "
+             f"egress.respond('bad.example.com', {PROJECT!r}, 'block')", shared)
+    state = egress.load()
+    assert egress.decide("git.example.com", PROJECT, state, egress.session(PROJECT)) == "allow"
+    assert egress.decide("bad.example.com", "/work/other", state, egress.session("/work/other")) == "deny"
+
+
+def test_a_pass_empties_its_requests_when_it_starts_and_its_answers_when_it_ends(shared):
+    egress.collect(PROJECT, [{"host": "10.0.0.1", "port": "443"}])
+    egress.collect("/work/other", [{"host": "10.0.0.2", "port": "443"}])
+    egress.respond("10.0.0.1", PROJECT, "once")
+    egress.collect(PROJECT, [{"host": "10.0.0.3", "port": "443"}])
+    egress.begin(PROJECT)
+    assert egress.pending(PROJECT) == [] and [r["host"] for r in egress.pending("/work/other")] == ["10.0.0.2"]
+    assert egress.session(PROJECT)["allow"] == ["10.0.0.1"]  # the answer given between two passes serves the next
+    egress.end(PROJECT)
+    assert egress.session(PROJECT) == egress.new_session()
+    assert json.loads(_process(f"import json; print(json.dumps(egress.session({PROJECT!r})))", shared)) == \
+        egress.new_session()
+
+
+def test_run_pass_begins_and_ends_the_egress_of_its_project(shared, monkeypatch):
+    import engine_pass
+    egress.collect(PROJECT, [{"host": "10.0.0.1", "port": "443"}])
+    egress.respond("10.0.0.2", PROJECT, "once")
+    seen = {}
+
+    def inside(manifest, report_path, bus=None):
+        seen.update(pending=egress.pending(PROJECT), allow=egress.session(PROJECT)["allow"])
+        return {"ran": True}
+
+    monkeypatch.setattr(engine_pass, "_projects", lambda manifest: [PROJECT])
+    monkeypatch.setattr(engine_pass, "_run_pass", inside)
+    assert engine_pass.run_pass(Path("m.json"), Path("r.json")) == {"ran": True}
+    assert seen == {"pending": [], "allow": ["10.0.0.2"]}  # the answer given before the pass serves it
+    assert egress.session(PROJECT) == egress.new_session()  # and is forgotten when it ends
+
+
+def test_a_missing_or_corrupt_shared_file_is_an_empty_one(shared):
+    shared.mkdir(parents=True)
+    for name in (egress.PENDING_FILE, egress.SESSION_FILE):
+        (shared / name).write_text("{not json", encoding="utf-8")
+    assert egress.pending(PROJECT) == [] and egress.session(PROJECT) == egress.new_session()
+    egress.respond("x.example.com", PROJECT, "once")  # and it is written whole again
+    assert json.loads((shared / egress.SESSION_FILE).read_text(encoding="utf-8")) == {
+        PROJECT: {"allow": ["x.example.com"], "deny": []}}
+    (shared / egress.PENDING_FILE).write_text(json.dumps({PROJECT: "no"}), encoding="utf-8")
+    assert egress.pending(PROJECT) == []

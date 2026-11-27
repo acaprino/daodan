@@ -32,11 +32,16 @@ def _grammars():
 @pytest.fixture(autouse=True)
 def _forgotten_answers():
     """The answers and requests of an analysis (`egress`) are not carried from one test to the next."""
+    def forget():
+        module = sys.modules.get("egress")
+        if module is not None:
+            module.SESSIONS.clear()
+            module.PENDING.clear()
+            for name in (module.PENDING_FILE, module.SESSION_FILE):  # the files the processes of an analysis share
+                (module.shared_cache_dir() / name).unlink(missing_ok=True)
+    forget()
     yield
-    module = sys.modules.get("egress")
-    if module is not None:
-        module.SESSIONS.clear()
-        module.PENDING.clear()
+    forget()
 
 
 @pytest.fixture(autouse=True)
