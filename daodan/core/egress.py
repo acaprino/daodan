@@ -36,6 +36,7 @@ FILE = "egress.json"
 PENDING_FILE, SESSION_FILE, LOCK = "egress-pending.json", "egress-session.json", "egress.lock"
 LOCK_SECONDS = 5  # past it the file is read and written without the lock: a stuck holder must not stop an analysis
 PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (host, port): the analysis's register
+WHERE: dict[str, dict] = {}  # project -> {host: [files that declare it]}, from `declare`
 SESSIONS: dict[str, dict] = {}  # project -> the answers that last for its analysis
 MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
 LOOKUPS = 16  # the hosts one analysis resolves at most
@@ -266,7 +267,7 @@ def requests(refused: list[dict], project: str, state: dict, session: dict, wher
 def collect(project: str, refused: list[dict], where: dict | None = None) -> tuple[list[dict], list[dict]]:
     """The refusals of a run (`container.run_in_container`): the requests join the project's pending ones, in this
     process and in the shared file, and come back with the `host_denied` gaps, `(asked, gaps)`."""
-    asks, gaps = requests(refused, project, load(), session(project), where)
+    asks, gaps = requests(refused, project, load(), session(project), WHERE.get(project) if where is None else where)
     held = PENDING.setdefault(project, {})
     for row in asks:
         held.setdefault((row["host"], row["port"]), row)
@@ -280,15 +281,35 @@ def collect(project: str, refused: list[dict], where: dict | None = None) -> tup
     return asks, gaps
 
 
-def approval_gap(asked: list[dict]) -> list[dict]:
-    """The `approval_required` gap of a step that failed with requests unanswered: none when it asked for nothing."""
+def declare(project: str, where: dict) -> None:
+    """The files that declare each host of the project's run (`preparation.declared`'s `where`), which the requests
+    of its runs name; this process's, set by the step that reads them."""
+    WHERE[project] = dict(where)
+
+
+def preflight(project: str, hosts: tuple[str, ...]) -> tuple[list[dict], list[dict]]:
+    """The hosts a run is about to open that the user has not decided, before it starts: `(asked, gaps)`, the requests
+    (now pending) and the `approval_required` gap of the step that does not start. A host that is allowed, or that the
+    user refused, does not stop it: the proxy refuses the latter and says `host_denied` if the run reaches it."""
+    state, answers = load(), session(project)
+    ask = [{"host": host.removeprefix("http://"), "port": "80" if host.startswith("http://") else "443"}
+           for host in dict.fromkeys(name.lower() for name in hosts) if decide(host, project, state, answers) == "ask"]
+    asked, _ = collect(project, ask)
+    return asked, approval_gap(asked, "before")
+
+
+def approval_gap(asked: list[dict], how: str = "failed") -> list[dict]:
+    """The `approval_required` gap of a step with requests unanswered, none when it asked for nothing: `how` is
+    "failed" (it failed asking), "before" (it did not start for them) or "ran" (it ran, and its result stands, without
+    hosts its build declares)."""
     if not asked:
         return []
     said = ", ".join(f"{row['host']}:{row['port']}" + (f" (declared in {', '.join(row['declared_in'])})"
                                                         if row["declared_in"] else "") for row in asked)
+    what = {"failed": "the step failed and asked for", "before": "the step did not start: it needs",
+            "ran": "the step ran without"}[how]
     return [{"kind": "approval_required", "hosts": [row["host"] for row in asked],
-             "detail": f"the step failed and asked for hosts the user has not approved: {said}; answer in the app, "
-                       "then analyze again"}]
+             "detail": f"{what} hosts the user has not approved: {said}; answer in the app, then analyze again"}]
 
 
 def pending(project: str) -> list[dict]:

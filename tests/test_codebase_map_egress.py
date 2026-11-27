@@ -169,6 +169,34 @@ def test_an_approval_gap_names_the_hosts_and_the_files_that_declare_them():
     assert "a.example.com:443 (declared in pom.xml)" in gap["detail"] and "b.example.com:80" in gap["detail"]
 
 
+def test_preflight_asks_for_the_hosts_nobody_decided_and_names_the_files_that_declare_them(monkeypatch):
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    egress.save({"whitelist": {PROJECT: ["ok.example.com"]}, "blacklist": ["blocked.example.com"]})
+    egress.declare(PROJECT, {"10.1.1.1": ["pom.xml", "build.gradle"]})
+    hosts = ("pypi.org", "ok.example.com", "blocked.example.com", "10.1.1.1", "Github.com", "10.1.1.1",
+             "http://deb.example.com", "http://archive.ubuntu.com")
+    asked, gaps = egress.preflight(PROJECT, hosts)
+    assert [(r["host"], r["port"], r["declared_in"]) for r in asked] == [
+        ("10.1.1.1", "443", ["pom.xml", "build.gradle"]), ("github.com", "443", []), ("deb.example.com", "80", [])]
+    assert asked[0]["network"] is True  # a private address is the user's own network
+    [gap] = gaps
+    assert gap["kind"] == "approval_required" and gap["hosts"] == ["10.1.1.1", "github.com", "deb.example.com"]
+    assert gap["detail"].startswith("the step did not start: it needs hosts the user has not approved: ")
+    assert "10.1.1.1:443 (declared in pom.xml, build.gradle)" in gap["detail"]
+    assert [r["host"] for r in egress.pending(PROJECT)] == ["10.1.1.1", "github.com", "deb.example.com"]
+    assert egress.preflight(PROJECT, ("pypi.org", "ok.example.com", "blocked.example.com")) == ([], [])  # none stops it
+    egress.respond("github.com", PROJECT, "once")
+    assert [r["host"] for r in egress.preflight(PROJECT, ("github.com", "10.1.1.1"))[0]] == ["10.1.1.1"]
+    assert egress.preflight("/work/other", ("github.com",))[0][0]["declared_in"] == []  # declared for another project
+
+
+def test_an_approval_gap_says_whether_the_step_failed_did_not_start_or_ran():
+    row = [{"host": "a.example.com", "port": "443", "declared_in": []}]
+    assert egress.approval_gap(row)[0]["detail"].startswith("the step failed and asked for hosts")
+    assert egress.approval_gap(row, "before")[0]["detail"].startswith("the step did not start: it needs hosts")
+    assert egress.approval_gap(row, "ran")[0]["detail"].startswith("the step ran without hosts the user")
+
+
 def test_an_apt_archive_is_approved_as_its_host_is():
     state, session = egress.answer(egress.load(), egress.new_session(), "deb.example.com", PROJECT, "always")
     assert egress.decide("http://deb.example.com", PROJECT, state, session) == "allow"

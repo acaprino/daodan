@@ -349,9 +349,9 @@ WSL_ENABLE = "enable WSL 2 once, as administrator: wsl --install --no-distributi
 class Gap(Exception):
     """No engine can run here: what is missing and what makes it possible."""
 
-    def __init__(self, cause: str, remedy: str):
+    def __init__(self, cause: str, remedy: str, gaps: list[dict] = ()):
         super().__init__(cause)
-        self.cause, self.remedy = cause, remedy
+        self.cause, self.remedy, self.gaps = cause, remedy, list(gaps)  # `gaps`: the declared gaps that say it
 
 
 class Engine(NamedTuple):

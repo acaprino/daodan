@@ -209,12 +209,45 @@ def test_an_indexer_reaches_the_hosts_the_project_declares_and_one_it_could_not_
         def index(project_dir, work_dir, files=None, **options):
             given.update(options)
             return _contract(gaps=[failed])
+        import egress
+        egress.session(str(Path(_project_dir).resolve()))["allow"].append("proxy.corp.example")  # approved for the pass
         with mock.patch("preparation.declared", return_value=declared), \
                 mock.patch("container.find_engine", return_value="the engine"):
             _result, seen = _run(manifest, index, fields={"needs_container": builds})
         assert given.get("declared") == (declared if builds else None)
+        assert egress.WHERE[str(Path(_project_dir).resolve())] == declared["where"]  # its runs' requests name the files
         [gap] = _gaps(seen, "analyze", "host_unreachable")
         assert gap["host"] == "proxy.corp.example" and gap["declared_in"] == ["go.mod"]
+
+
+def test_a_declared_host_nobody_decided_stops_the_stage_before_its_build_and_after_the_answer_it_builds(tmp_path,
+                                                                                                     monkeypatch):
+    """The preventive request: an indexer that builds in a container does not start while a host the project declares
+    waits for an answer; the pass says `approval_required` with the file that declares it, and the same pass, after the
+    answer, builds."""
+    import egress
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    project_dir, manifest = _project(tmp_path)
+    key = str(Path(project_dir).resolve())
+    declared = {"hosts": ("proxy.corp.example",), "where": {"proxy.corp.example": ["go.mod"]}}
+    built = []
+
+    def index(project_dir, work_dir, files=None, **options):
+        built.append(options)
+        return _contract()
+    with mock.patch("preparation.declared", return_value=declared), \
+            mock.patch("container.find_engine", return_value="the engine"):
+        result, seen = _run(manifest, index, fields={"needs_container": True})
+        assert built == [] and result["analyze"]["languages"]["go"]["state"] in ("failed", "unavailable")
+        [gap] = _gaps(seen, "analyze", "approval_required")
+        assert gap["hosts"] == ["proxy.corp.example"] and "did not start" in gap["detail"]
+        assert "proxy.corp.example:443 (declared in go.mod)" in gap["detail"]
+        assert [(row["host"], row["declared_in"]) for row in egress.pending(key)] == [("proxy.corp.example", ["go.mod"])]
+        egress.respond("proxy.corp.example", key, "once")  # between two passes: the next one is served by it
+        _result, seen = _run(manifest, index, fields={"needs_container": True})
+    assert len(built) == 1 and not _gaps(seen, "analyze", "approval_required")
+    assert egress.pending(key) == [] and egress.session(key) == egress.new_session()  # the pass ended: forgotten
 
 
 def test_a_wanted_language_the_stage_does_not_report_is_missing(tmp_path):

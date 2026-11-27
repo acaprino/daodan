@@ -428,7 +428,8 @@ def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | 
                                   seconds=round(time.monotonic() - started, 3))
                     return status, None, [{"kind": "model_not_run", "source": status["source"], "cause": error.cause,
                                            "detail": f"{len(commands)} model commands not run: {error.cause}",
-                                           "remedy": error.remedy}]
+                                           "remedy": error.remedy},
+                                          *({**gap, "source": status["source"]} for gap in getattr(error, "gaps", ()))]
                 if len(results) != len(commands):
                     raise ValueError(f"the runner answered {len(results)} of {len(commands)} commands")
                 prepared = [g for r in results for g in r.get("gaps") or ()]

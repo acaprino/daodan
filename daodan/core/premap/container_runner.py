@@ -12,7 +12,9 @@ files; next, whose command is one of them) has them restored by the setup, the p
 (`preparation.node_prepare`); a restore or a generation that fails, and a package folder no restore installs, is a
 gap on the first answer, and the commands run. The hosts the project declares for its build (the repositories of
 Gradle's settings, where a `pluginManagement` plugin comes from) open only once the user approved them (`egress`): a
-command that fails reaching one has the `approval_required` gap of the run. A run
+command that fails reaching one has the `approval_required` gap of the run; the repositories a Gradle build declares
+that nobody decided (`gradle.retry`) are requests with a gap on the answer, its result standing. A host of the tool
+that nobody decided stops the run before it starts (`egress.preflight`): the source is not run, with that gap. A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
 its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the manifest.
 """
@@ -256,6 +258,10 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                     registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
                     memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
 
+        import egress
+        waiting, said = egress.preflight(str(project.resolve()), hosts)  # a host of the tool nobody decided: no run
+        if waiting:
+            raise container.Gap(said[0]["detail"], "answer in the app, then analyze again", said)
         result = contained(ran, hosts, tool)
         if result["state"] == "gap":
             raise container.Gap(result["cause"], result["remedy"])
@@ -269,6 +275,9 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         gaps += (preparation.missing(answers[0]["stderr"]) + preparation.restore_gaps(answers[0]["stderr"])
                  + preparation.generation_gaps(answers[0]["stderr"])
                  + list(result.get("gaps") or ()))  # and what the copy left out (`container.copy_perimeter`)
+        if tool == "gradle":  # the repositories its builds declare (`gradle.retry`) that nobody decided: asked, the result stands
+            waiting, _ = egress.preflight(str(project.resolve()), tuple(h for a in answers[1:] for h in gradle.retry(a)))
+            gaps += egress.approval_gap(waiting, "ran")
         roots = [result["root"]] * len(answers)
         # A command whose build needs a newer JVM than the image's (`asks`) runs once more on the JDK it names:
         # mise installs it in the setup, and the command runs with it as JAVA_HOME.

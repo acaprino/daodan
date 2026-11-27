@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import container  # noqa: E402
+import egress  # noqa: E402
 import premap  # noqa: E402
 from premap import container_runner  # noqa: E402
 import snapshot  # noqa: E402
@@ -57,6 +58,25 @@ def recorder(answers=None, state="done"):
 
 def command(tool, network="none", **fields):
     return {"tool": tool, "argv": [tool, "x"], "cwd": ".", "env": {"A": "1"}, "network": network, **fields}
+
+
+ASKING = ("github.com", "codeload.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com",
+          "dotnetcli.azureedge.net", "playwright.azureedge.net", "storage.googleapis.com", "aka.ms", "cache-redirector.jetbrains.com", "d2xrhe97vsfxuc.cloudfront.net",
+          "scala.jfrog.io")  # the fixed hosts of the tools that ask (T0.C.1): the runs below take them as approved
+
+
+@pytest.fixture
+def undecided():
+    """A test that asks for this fixture leaves those hosts undecided."""
+
+
+@pytest.fixture(autouse=True)
+def approved(request, monkeypatch):
+    if "undecided" in request.fixturenames:
+        return
+    decide = egress.decide
+    monkeypatch.setattr(egress, "decide", lambda host, project, state, session=None: "allow" if host in ASKING
+                        else decide(host, project, state, session))
 
 
 @pytest.fixture
@@ -504,14 +524,17 @@ def test_a_gradle_build_that_asks_for_a_newer_jvm_runs_again_on_the_jdk_the_proj
 
 
 def test_a_gradle_build_that_fails_runs_once_and_never_opens_the_repositories_its_settings_declare(tmp_path,
-                                                                                                    no_download):
+                                                                                                    no_download,
+                                                                                                    monkeypatch):
     """real-app-kotlinconf: a plugin of `pluginManagement` comes from a repository the settings declare, which is
     no registry. The settings record names it before the configure fails (`gradle.retry` lists it, for a preventive
     request), but the runner no longer runs again reaching it by itself: the host opens only once the user approved
     it (`egress`), and the build runs once, whatever its answer."""
     from premap import gradle
-    _, manifest = manifest_of(tmp_path, {"settings.gradle.kts": 'rootProject.name = "k"\n'})
-    build = "\x1e" + json.dumps({"kind": "build", "root": "/work", "name": "k", "nested": False, "gradle": "9.9.1",
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    project, manifest = manifest_of(tmp_path, {"settings.gradle.kts": 'rootProject.name = "k"\n'})
+    build ="\x1e" + json.dumps({"kind": "build", "root": "/work", "name": "k", "nested": False, "gradle": "9.9.1",
                                  "projects": [], "repositories": ["https://plugins.gradle.org/m2",
                                                                   "https://maven.example.dev/releases"]})
     failed = {"returncode": 1, "stdout": build + "\n", "stderr": "Could not resolve all artifacts for configuration"
@@ -526,4 +549,26 @@ def test_a_gradle_build_that_fails_runs_once_and_never_opens_the_repositories_it
     with mock.patch.object(container, "run_commands", run_commands):
         [answer] = container_runner.runner(manifest)([command("gradle", "registries")])
     assert len(calls) == 1 and "maven.example.dev" not in calls[0]["registries"]
-    assert answer["returncode"] == 1 and not answer.get("gaps")
+    assert answer["returncode"] == 1
+    [gap] = answer["gaps"]  # the declared repository nobody decided is a request, and the build's result stands
+    assert (gap["kind"], gap["hosts"]) == ("approval_required", ["maven.example.dev"])
+    assert gap["detail"].startswith("the step ran without hosts the user has not approved: maven.example.dev:443")
+    assert [row["host"] for row in egress.pending(str(project.resolve()))] == ["maven.example.dev"]
+
+
+def test_a_tool_whose_fixed_hosts_ask_does_not_start_and_says_approval_required(tmp_path, no_download, monkeypatch,
+                                                                              undecided):
+    """The runner stops, before any engine is looked for, at the hosts of the tool (Bazel's GitHub among them) that
+    nobody decided (`egress.preflight`), and the pre-map source is `model_not_run` with the gap."""
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    asked = []
+    monkeypatch.setattr(container, "find_engine", lambda: asked.append("engine"))
+    project, manifest = manifest_of(tmp_path, {"MODULE.bazel": "module(name = 'x')\n"})
+    record = premap.write(manifest, sources=(premap.bazel,), runner=container_runner.runner(manifest))
+    assert asked == []  # not even an engine was looked for
+    kinds = [gap["kind"] for gap in record["gaps"]]
+    assert "model_not_run" in kinds and "approval_required" in kinds
+    [gap] = [gap for gap in record["gaps"] if gap["kind"] == "approval_required"]
+    assert "github.com" in gap["hosts"] and "did not start" in gap["detail"]
+    assert "github.com" in [row["host"] for row in egress.pending(str(project.resolve()))]

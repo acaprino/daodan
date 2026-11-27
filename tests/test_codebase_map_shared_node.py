@@ -8,6 +8,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import container
+import egress
 from dynamic import javascript
 from indexers import typescript
 import node_preparation
@@ -102,6 +103,8 @@ def test_tsc_index_and_observer_share_one_restore_and_isolate_every_consumer(tmp
         container_runner.runner(manifest, fake)(tsc)
         assert [name for name, _, _ in phases].count("node-restore") == 2
         assert len(volumes) == 4
+        egress.session(str(project.resolve()))["allow"] += [  # mise takes node from GitHub: approved for this analysis
+            "github.com", "codeload.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com"]
         container_runner.runner(manifest, fake)(tsc, toolchains=[{"tool": "node", "version": "20.19.0"}])
         assert [name for name, _, _ in phases].count("node-restore") == 3
     assert volumes == {}

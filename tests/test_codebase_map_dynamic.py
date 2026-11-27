@@ -873,12 +873,43 @@ def test_every_observer_reaches_the_hosts_the_project_declares_and_one_that_did_
                 "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]}
     module = fake(observed)
     module.observe = lambda project, given, out_dir, engine: planned.append(given) or observed
+    import egress
+    egress.session(str(Path(_project).resolve()))["allow"].append("pypi.corp.example")  # approved for this analysis
     with mock.patch.object(dynamic, "observers", return_value=[module]), \
             mock.patch("preparation.declared", return_value=declared):
         _result, seen, _asked = step(manifest)
     assert planned[0]["declared"] == declared
+    assert egress.WHERE[str(Path(_project).resolve())] == declared["where"]  # the requests of its runs name the files
     [gap] = gaps(seen, "host_unreachable")
     assert gap["host"] == "pypi.corp.example" and gap["declared_in"] == ["requirements.txt"]
+
+
+def test_a_declared_host_nobody_decided_stops_the_observer_and_after_the_answer_it_runs(tmp_path, monkeypatch):
+    """The preventive request: the observer does not start and the step says `approval_required`, naming the file that
+    declares the host; the host waits in `egress.pending`; the same step, run again after the answer, observes."""
+    import egress
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    static_store(manifest)
+    key = str(Path(project).resolve())
+    declared = {"hosts": ("pypi.corp.example",), "where": {"pypi.corp.example": ["requirements.txt"]}}
+    observed = {"state": "ran", "sites": [], "gaps": [], "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]}
+    started = []
+    module = fake(observed)
+    module.observe = lambda project, given, out_dir, engine: started.append(given) or observed
+    with mock.patch.object(dynamic, "observers", return_value=[module]), \
+            mock.patch("preparation.declared", return_value=declared):
+        _result, seen, _asked = step(manifest)
+        assert started == []
+        [gap] = gaps(seen, "approval_required")
+        assert gap["hosts"] == ["pypi.corp.example"] and "did not start" in gap["detail"]
+        assert "pypi.corp.example:443 (declared in requirements.txt)" in gap["detail"]
+        [request] = egress.pending(key)
+        assert (request["host"], request["declared_in"]) == ("pypi.corp.example", ["requirements.txt"])
+        egress.respond("pypi.corp.example", key, "once")
+        step(manifest)
+    assert len(started) == 1 and egress.pending(key) == []
 
 
 @pytest.mark.parametrize("exit_code, seconds, state", [

@@ -41,6 +41,8 @@ analysis, together with the evidence they already produced. `DAODAN_DYNAMIC=off`
 Every plan also gets `declared` (`preparation.declared`): the hosts the project declares for its dependencies,
 which the observer's preparation reaches beside the registries, as a CI does; a failed restore whose words name one
 it could not reach is a `host_unreachable` gap naming the host and the files that declare it (`preparation.unreached`).
+A declared host nobody decided (`egress`) stops the run before it starts, as an `approval_required` gap naming the files
+(`egress.preflight`, `egress.declare`).
 
 The services the project's CI starts beside its tests (the pre-map's `services`) start beside every container run
 of an observer, with the variables its jobs give the tests (`services()`, `container.beside`), so no observer has
@@ -546,6 +548,7 @@ def run(manifest: Path, bus) -> dict:
     import code_graph
     import container
     import premap
+    import egress
     import preparation
     import resolve_edges as rx
     from . import execution_cache
@@ -609,6 +612,7 @@ def run(manifest: Path, bus) -> dict:
             record = premap.ensure(manifest)
             planned = module.plan(record, sorted(snapshot.checkout.values()), read)
             planned["declared"] = preparation.declared(record)  # the hosts its preparation reaches, as a CI does
+            egress.declare(str(snapshot.root.resolve()), planned["declared"]["where"])  # the requests name the files
             folder = manifest.parent / RUNS / entry
             cache_file = folder / "execution.json"
             expected = execution_cache.key(binding, graphs, wanted, module, planned)
@@ -649,6 +653,11 @@ def run(manifest: Path, bus) -> dict:
                     asked["gap"] = gap
             result = {"state": "gap", "cause": asked["gap"].cause, "remedy": asked["gap"].remedy} \
                 if "gap" in asked else None
+            if result is None:  # a host the project declares that nobody decided: the runs do not start
+                waiting, said_hosts = egress.preflight(str(snapshot.root.resolve()), planned["declared"]["hosts"])
+                if waiting:
+                    result = {"state": "failed", "cause": said_hosts[0]["detail"],
+                              "remedy": "answer in the app, then analyze again", "gaps": said_hosts}
             if result is None:
                 bus.progress(STEP, number, len(waiting), analyzer=entry, phase="tests",
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")

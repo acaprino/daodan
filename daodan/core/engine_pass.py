@@ -596,6 +596,8 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     # The hosts the project declares for its dependencies, which the preparation of an indexer that builds in a
     # container reaches, as a CI does.
     declared = preparation.declared(record)
+    import egress
+    egress.declare(str(Path(project_root).resolve()), declared["where"])  # the requests of its runs name the files
     if spec.needs_container:
         options["declared"] = declared
     if hasattr(module, "READS"):
@@ -609,6 +611,10 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
             if options.get("roots") or options.get("units"):  # with nothing to build, the indexer says that
                 return {"available": False, "engine": spec.name,
                         "reason": f"the build runs only in a container: {gap.cause}", "install": gap.remedy}
+        if options.get("roots") or options.get("units") or options.get("docker"):  # it will build: its hosts first
+            asked, said = egress.preflight(str(Path(project_root).resolve()), declared["hosts"])
+            if asked:  # a host the project declares that nobody decided: the stage does not start
+                return {"available": False, "engine": spec.name, "reason": said[0]["detail"], "gaps": said}
     work = Path(tempfile.mkdtemp(prefix=f"daodan-{spec.name}-"))
     try:
         result = module.index(Path(project_root), work, **options)
