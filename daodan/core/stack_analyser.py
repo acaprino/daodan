@@ -21,9 +21,9 @@ from pathlib import Path
 
 from container import Gap
 
-VERSION = "1.27.6-daodan.5"
+VERSION = "1.27.6-daodan.6"
 URL = f"https://github.com/acaprino/stack-analyser-daodan/releases/download/v{VERSION}/stack-analyser-daodan-{VERSION}.tgz"
-SHA256 = "e87658b2d630df6cb90de21070e86f91efdbe6a7b841dbeb3aab6add6332475c"  # of the `.tgz` above
+SHA256 = "d9f9b2f0200b5f4ed2479fa1583a9ff308d96ca7bf5accde9df5827ed772a209"  # of the `.tgz` above
 PROGRAM = "package/dist/cli.mjs"  # in the archive
 TIMEOUT = 300  # seconds for one project, start included; the real run time is not measured yet
 UNSET = "NODE_"  # what Node reads as its own options or module paths

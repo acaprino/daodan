@@ -1,7 +1,7 @@
 {
  "schema": "daodan/service-registry/v1",
  "versions": {
-  "stack-analyser": "1.27.6-daodan.5",
+  "stack-analyser": "1.27.6-daodan.6",
   "simple-icons": "16.37.0",
   "cncf-landscape": "75b47639d132b3a7afa31ecc84a90f61b8072dd6"
  },

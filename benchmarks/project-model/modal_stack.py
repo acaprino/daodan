@@ -82,9 +82,9 @@ NODE = ("https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.gz",
         "b8492284c76a54baf58d61668dd0e41ee0fc98adabf9503d30f05d08f55b4406")
 FETCH_NODE = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
               "assert hashlib.sha256(data).hexdigest() == '%s'; open('/tmp/node.tar.gz', 'wb').write(data)\"" % NODE)
-STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser-daodan/releases/download/v1.27.6-daodan.5/"
-                  "stack-analyser-daodan-1.27.6-daodan.5.tgz",
-                  "e87658b2d630df6cb90de21070e86f91efdbe6a7b841dbeb3aab6add6332475c", "/opt/stack-analyser")
+STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser-daodan/releases/download/v1.27.6-daodan.6/"
+                  "stack-analyser-daodan-1.27.6-daodan.6.tgz",
+                  "d9f9b2f0200b5f4ed2479fa1583a9ff308d96ca7bf5accde9df5827ed772a209", "/opt/stack-analyser")
 FETCH_STACK_ANALYSER = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
                         "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s/release.tgz', 'wb').write(data)\""
                         % STACK_ANALYSER)
