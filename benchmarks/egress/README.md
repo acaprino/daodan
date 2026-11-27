@@ -12,9 +12,10 @@ Due canarini su Modal, raggiungibili da Internet in HTTPS (tunnel di Modal), reg
 
 ## Risultati misurati
 
-27 novembre 2026, con il codice di questa cartella sulla base `7f773af`, su Modal (`ap-c9r58rXxewDbWV64u5wPwf`, `results/2026-11-27.json`): 38 righe su 40 come atteso.
+27 novembre 2026, con il codice di questa cartella sulla base `1ec9f03` (rete della preparazione con `com.docker.network.bridge.inhibit_ipv4=true`), su Modal (`ap-PXESuugu9xRIfq946cGuwg`, `results/2026-11-27.json`): 40 righe su 40 come atteso.
 
 - Bloccate e senza segno: uscita diretta per nome (DNS «Try again»), per IP del canarino, IPv4 e IPv6 letterali (rete irraggiungibile); redirect 301 e 302 (il CONNECT verso `outside` riceve 403, il canarino non riceve nulla); DNS dal container (il risolutore del motore dà SERVFAIL e non inoltra, UDP e TCP 53 pubblici irraggiungibili); nel proxy il nome rifiutato (403, sul filo solo la risoluzione dell'host su `eth0`), l'host fuori lista, gli IP letterali v4/v6, `169.254.169.254`, `10.0.0.1`, `127.0.0.1`, `localhost`, l'IP della VM, le porte 80, 8443, 22 e l'HTTP in chiaro; dal container `169.254.169.254`, `10.0.0.1`, `172.17.0.1`, l'IP della VM e `host.docker.internal`.
 - Approvazione: l'host fuori lista dà `failed`, `approval_required` e la richiesta in attesa, senza segno; dopo «once» il passo riesce (`done`, il canarino riceve `/approval-yes`); l'host in blacklist dà `failed`, solo `host_denied`, nessuna richiesta.
 - Controlli positivi: il proxy apre `registry.npmjs.org:443` e il canarino approvato.
-- **Uscita non bloccata (cancello rosso):** dal container della preparazione la connessione TCP al gateway della rete `--internal` (`172.18.0.1:8099`, l'host stesso) si apre, e l'ascoltatore della VM su tutti gli indirizzi la registra. Un servizio dell'host in ascolto su `0.0.0.0` è raggiungibile dal codice del progetto. Non corretto qui: va al proprietario.
+- Gateway della rete della preparazione: la connessione TCP a `172.18.0.1:8099` è rifiutata (`Connection refused`) e l'ascoltatore della VM su tutti gli indirizzi non registra nulla: con l'opzione il bridge non ha l'indirizzo dell'host. Prima (`ap-c9r58rXxewDbWV64u5wPwf`, sulla base `7f773af`, rete solo `--internal`) la connessione si apriva e l'ascoltatore la registrava (cancello rosso).
+- Motori: l'opzione è di Docker Engine 28.0 (API 1.48). Un motore con API più vecchia (Podman, Kiri 0.2.0 che dichiara 1.47, Docker 27) non crea la rete: la preparazione è una lacuna (`container.internal_network`).
