@@ -11,7 +11,7 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
    read, and takes no fact of the pre-map.
 2. `scan`: the module graph and the pre-map, the project's modules; a source of the pre-map that `build-tools.json`
    names runs only for a build tool the stack found (`premap.BUILD_TOOLS`), and the model commands run in Daodan's
-   container (`premap.container_runner`). Then each module gets the technologies its files declare
+   container (`container_runner`). Then each module gets the technologies its files declare
    (`technologies.ensure`). It too reads only the inventory and the stack's record.
 3. `parse`: says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files, executed by
    `snapshot.write_reading`, `engine_pass.pass_plan` and `dynamic.run`. It reads no file: the one reading is
@@ -125,7 +125,7 @@ def _runner(manifest: Path):
     (`container.find_engine`): the engine found goes to the first run, which ends it, and the next runs find their
     own; without one, every model source gets the same `container.Gap` at once, with no second wait."""
     import container
-    from premap import container_runner
+    import container_runner
     asked: dict = {}
 
     def run(commands: list[dict], toolchains: list[dict] = ()) -> list[dict]:

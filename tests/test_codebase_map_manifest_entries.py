@@ -55,7 +55,7 @@ def test_manifest_declarations_survive_reopening_without_a_source_read(tmp_path,
 def test_frozen_workflow_triggers_and_service_sites_do_not_guess_a_function_from_a_command(tmp_path, monkeypatch):
     from premap import module_graph, renovate
     from premap.flow_entries import evidence
-    from test_codebase_map_premap_container_runner import manifest_of
+    from test_codebase_map_container_runner import manifest_of
 
     workflow = ".github/workflows/sync.yml"
     triggers = {"push": None, "workflow_dispatch": None, "schedule": [{"cron": "0 4 * * *"}]}
@@ -91,7 +91,7 @@ def next_links(tmp_path, files, noir_report=None):
     """The links of a Next.js snapshot whose pre-map was made from the real `next typegen` output of the fixture and,
     when given, from a Noir report."""
     from premap import nextjs, noir
-    from test_codebase_map_premap_container_runner import manifest_of
+    from test_codebase_map_container_runner import manifest_of
     from test_codebase_map_premap_nextjs import VALIDATOR
 
     def run(commands):

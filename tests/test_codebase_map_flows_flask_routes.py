@@ -21,7 +21,7 @@ import flows
 import premap
 from premap import flask_app, noir
 from test_codebase_map_manifest_entries import noir_route
-from test_codebase_map_premap_container_runner import manifest_of
+from test_codebase_map_container_runner import manifest_of
 from test_codebase_map_premap_flask import QUERY, project, recorded
 
 RULES = [

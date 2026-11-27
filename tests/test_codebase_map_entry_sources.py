@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from test_codebase_map_premap_container_runner import manifest_of, premap
+from test_codebase_map_container_runner import manifest_of, premap
 import flows
 from premap import cargo, noir, python_build, renovate
 from premap.flow_entries import evidence

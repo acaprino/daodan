@@ -21,7 +21,7 @@ import entries
 import flows
 import premap
 from premap import django_app
-from test_codebase_map_premap_container_runner import manifest_of
+from test_codebase_map_container_runner import manifest_of
 from test_codebase_map_premap_django import QUERY, WIRED, project, recorded
 
 RULES = [

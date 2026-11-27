@@ -14,7 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import premap  # noqa: E402
-from premap import container_runner, dockerfile  # noqa: E402
+import container_runner  # noqa: E402
+from premap import dockerfile  # noqa: E402
 
 FIXTURES = ROOT / "tests/fixtures/premap/dockerfile"
 

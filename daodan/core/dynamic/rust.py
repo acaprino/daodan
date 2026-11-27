@@ -43,7 +43,7 @@ from pathlib import Path
 
 import preparation
 from dynamic import callgrind
-from premap.container_runner import IMAGE  # Ubuntu 24.04: gcc for linking, dpkg, python3
+from container_runner import IMAGE  # Ubuntu 24.04: gcc for linking, dpkg, python3
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
 NAME, VERSION, LANGUAGES = "dynamic-callgrind-rust", f"{callgrind.VALGRIND_VERSION}+1", ("rust",)

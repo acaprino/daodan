@@ -18,7 +18,7 @@ TESTS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TESTS.parent / "daodan/core"))
 sys.path.insert(0, str(TESTS))
 import premap  # noqa: E402
-from test_codebase_map_premap_container_runner import manifest_of  # noqa: E402
+from test_codebase_map_container_runner import manifest_of  # noqa: E402
 
 SOURCES = {
     "package.json": "{}\n",

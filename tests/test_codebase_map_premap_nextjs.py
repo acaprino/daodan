@@ -6,7 +6,7 @@ for `benchmarks/system-map/real-paths/next-shop` (`tests/fixtures/premap/next/va
 from pathlib import Path
 from unittest.mock import patch
 
-from test_codebase_map_premap_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import container, container_runner, manifest_of, premap, recorder
 
 SHOP_DIR = Path(__file__).resolve().parents[1] / "benchmarks/system-map/real-paths/next-shop"
 SHOP = {path.relative_to(SHOP_DIR).as_posix(): path.read_text(encoding="utf-8")

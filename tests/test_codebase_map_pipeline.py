@@ -506,7 +506,7 @@ def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_f
     the engine found once is given to the first run (it ends with that run), the others find their own."""
     import container
     import premap
-    from premap import container_runner
+    import container_runner
     manifest = _go_snapshot(tmp_path)
     engine = container.Engine("fake", ("fake",))
     asked = []

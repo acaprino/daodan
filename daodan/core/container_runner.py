@@ -1,4 +1,7 @@
-"""The runner of the pre-map's model commands: each source's commands in one container run, in Daodan's container.
+"""The runner of the commands of the steps (the pre-map's model sources, those of framework that `find_entry_points` will
+take): each source's commands in one container run, in Daodan's container. The analyzers (`link_calls`) and the observers
+(`run_and_observe`) take only `IMAGE` and `TOOLS` from it: their runs go through `container.run_in_container`, which with
+`egress.preflight` is the service every step shares.
 
 `runner(manifest)` returns the `runner(commands) -> results` that `premap.derive` calls once per model source.
 It runs the commands with `container.run_commands` over a copy of the project (the same runner the JVM and clang
@@ -24,9 +27,10 @@ from pathlib import Path
 import sys
 import tempfile
 
-SCRIPT_DIR = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
+SCRIPTS = SCRIPT_DIR / "premap"  # Daodan's own files a tool carries (no URL: `dockerfile_stages.go`, the `.mjs` scripts), beside their sources
 
 import preparation  # noqa: E402
 import node_preparation  # noqa: E402
@@ -160,9 +164,9 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
 
 
 def fetched(url: str | None, sha256: str | None, name: str) -> Path:
-    """`preparation.fetched`; `dockerfile_stages.go` (no URL) is Daodan's own, beside this
-    module."""
-    return Path(__file__).with_name(name) if url is None else preparation.fetched(url, sha256, name)
+    """`preparation.fetched`; a file with no URL is Daodan's own, beside the sources that use it (`SCRIPTS`)."""
+    return SCRIPTS / name if url is None else preparation.fetched(url, sha256, name)
+
 
 
 def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=(), needs=()) -> tuple[dict, list, tuple, list]:

@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import test_codebase_map_premap_angular as angular_tests  # noqa: E402
-from test_codebase_map_premap_container_runner import manifest_of, premap  # noqa: E402
+from test_codebase_map_container_runner import manifest_of, premap  # noqa: E402
 
 
 def _without_declarations(manifest: Path) -> None:

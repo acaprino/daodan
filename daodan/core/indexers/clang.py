@@ -991,7 +991,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     lines = [*chains["lines"], *needs["lines"], *([CMAKE_ON_PATH] if restored else []),
              *(item["line"] for item in restored.values()),
              *([f"python3 {TOOLS}/clang_run.py prepare {TOOLS}/units.json || true"] if fetches else [])]
-    from premap.container_runner import TOOLS as RUNNERS
+    from container_runner import TOOLS as RUNNERS
     command = ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus)]
     options = {"prepare": ["sh", "-c", "\n".join([f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *lines])],
                "registries": tuple(dict.fromkeys([*(container.REGISTRIES if needs["registries"] or fetches else ()),

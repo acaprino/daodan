@@ -12,7 +12,7 @@ import egress
 from dynamic import javascript
 from indexers import typescript
 import node_preparation
-from premap import container_runner
+import container_runner
 import preparation
 import snapshot
 

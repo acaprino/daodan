@@ -35,7 +35,8 @@ import container  # noqa: E402
 import dynamic  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
-from premap import compose, container_runner, renovate  # noqa: E402
+import container_runner  # noqa: E402
+from premap import compose, renovate  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 from test_codebase_map_container import FAKE_CLI  # noqa: E402
 from test_codebase_map_dynamic import SAMPLED_LIB, gaps, static_store, step, write_project  # noqa: E402

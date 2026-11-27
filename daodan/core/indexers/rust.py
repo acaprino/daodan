@@ -34,7 +34,7 @@ from pathlib import Path, PurePosixPath
 
 import code_graph
 import preparation
-from premap.container_runner import IMAGE  # Ubuntu 24.04: gcc and the linker the build scripts' builds need
+from container_runner import IMAGE  # Ubuntu 24.04: gcc and the linker the build scripts' builds need
 
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).

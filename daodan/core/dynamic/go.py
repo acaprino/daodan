@@ -33,7 +33,7 @@ from pathlib import Path
 
 import dynamic
 import preparation
-from premap.container_runner import IMAGE  # gcc for cgo, git, timeout
+from container_runner import IMAGE  # gcc for cgo, git, timeout
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
 NAME, VERSION, LANGUAGES = "dynamic-record-go", "1", ("go",)

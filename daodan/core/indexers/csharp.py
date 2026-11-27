@@ -96,7 +96,7 @@ PATCH = Path(__file__).with_name("scip-dotnet.patch")  # a name with type argume
 BUILD = f"{VERSION}+daodan.{hashlib.sha256(PATCH.read_bytes()).hexdigest()[:12]}"  # the version the index states
 NEWEST = "net10.0"  # the newest runtime the source builds for (`TargetFrameworks`)
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # what the
-# SDK needs (glibc, libssl, zlib) and git for the patch: the image of `premap/container_runner.py`
+# SDK needs (glibc, libssl, zlib) and git for the patch: the image of `container_runner.py`
 HOME, OUT, WORK = f"{preparation.STATE}/scip-dotnet", "/daodan/out", "/work"
 REGISTRIES = ("api.nuget.org",)  # packages are read here and pushed to www.nuget.org, never listed
 ENV = {**preparation.ENV, "TERM": "dumb", "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
