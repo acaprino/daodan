@@ -1948,7 +1948,7 @@
     "tests/test_codebase_map_modules.py::test_regression[npm_file_dependency_is_resolved_by_path]": 0.14012683800000048,
     "tests/test_codebase_map_modules.py::test_regression[pnpm_explicit_exclusion]": 0.15251940699999977,
     "tests/test_codebase_map_modules.py::test_regression[projects_sharing_a_folder_stay_separate_units]": 0.16992119100000735,
-    "tests/test_codebase_map_modules.py::test_regression[pub_sdk_dependency_is_a_declared_package]": 0.12804076699999456,
+    "tests/test_codebase_map_modules.py::test_regression[pub_sdk_itself_is_a_toolchain_not_a_package]": 0.12804076699999456,
     "tests/test_codebase_map_modules.py::test_regression[python_build_requirements]": 0.05970704799999993,
     "tests/test_codebase_map_modules.py::test_regression[python_development_groups]": 0.11803950399999863,
     "tests/test_codebase_map_modules.py::test_regression[renamed_path_dependency_is_internal]": 0.1479611969999972,

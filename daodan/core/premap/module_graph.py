@@ -6,7 +6,8 @@ kind the pre-map knows; a
 workspace member without its own manifest is a member, not a unit; an included Gradle build is a unit, not a
 member. A unit is named as its build tool names it (`_names`), and has no name where no file gives one.
 Another entry refers to a unit by `references`: its name, or its root when the name cannot tell it apart. The
-graph's gaps are kept. This is the one conversion of the graph: the benchmark's adapter calls `facts`, which
+graph's gaps are kept. The SDK a pub package's dependency comes from (`sdk: flutter`) is a toolchain of its pubspec;
+the SDK itself (`flutter: {sdk: flutter}`) is no package (`build_units`). This is the one conversion of the graph: the benchmark's adapter calls `facts`, which
 also gives the names of each unit's external dependencies; the pre-map takes only its structure (`run`).
 """
 from __future__ import annotations
@@ -24,7 +25,7 @@ try:
     _yaml_version = metadata.version("PyYAML")
 except metadata.PackageNotFoundError:
     _yaml_version = "unavailable"
-NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.4.image.2", "reader"
+NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.4.image.2.sdk.1", "reader"
 PACKAGE_ECOSYSTEM = {
     "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
     "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
@@ -308,7 +309,10 @@ def run(context) -> dict:
              for gap in module.get("gaps") or []]
     found = facts(graph)
     packages, configured, unread = _declared_packages(graph, context.inventory)
+    sdks = sorted({(sdk, rel) for module in graph["modules"] for rel, names in (module.get("sdks") or {}).items()
+                   for sdk in names})
     out = {"units": found["units"], "workspace": found["workspace"],
            **({"packages": packages} if packages else {}),
+           **({"toolchains": [{"tool": sdk, "declared_in": rel} for sdk, rel in sdks]} if sdks else {}),
            **({"configured_services": configured} if configured else {})}
     return {"facts": out, "gaps": gaps + unread}

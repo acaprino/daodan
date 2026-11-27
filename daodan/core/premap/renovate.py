@@ -5,7 +5,8 @@ project's root with the report written to stdout and the log silenced: every man
 understands, and looks nothing up. `read` keeps, per package file, the toolchains only: the version-file
 managers, the engine fields of manifests, the `go` and `requires-python` directives, the runtime a Dockerfile,
 compose file or devcontainer starts from (the version its tag holds, `_image_version`), the constraints a file
-writes (Poetry's `python`, Composer's `php`, pub's `dart`), and the packages that are the language or its build
+writes (Poetry's `python`, Composer's `php`, pub's `dart`; a pub SDK, `flutter: {sdk: flutter}`, is the module graph's
+toolchain and no package), and the packages that are the language or its build
 tool (`PACKAGE_TOOLS`: TypeScript in a manifest, Scala and sbt in an sbt build, the Kotlin Gradle plugins, the Bun
 a workflow sets up). A
 constraint is kept only when the file writes its value (Renovate derives `npm` from a lockfile's format and repeats
@@ -704,6 +705,9 @@ def read(context, commands, results):
             return ""
 
     toolchains, packages, seen_pkgs, central, uses = [], [], set(), {}, []
+    graph = getattr(context, "graph", None) or {}  # pub's SDKs, as the module graph read them (`build_units`)
+    sdks = {(rel, sdk) for module in graph.get("modules", ()) for rel, names in (module.get("sdks") or {}).items()
+            for sdk in names}
     manager_ecosystems = {
         "maven": "maven", "gradle": "maven", "gradle-lite": "maven", "sbt": "maven",
         "nuget": "nuget", "pub": "pub", "mix": "hex", "hex": "hex", "swift": "swiftpm",
@@ -726,7 +730,8 @@ def read(context, commands, results):
                 # a constraint the file states (Poetry's `python`, global.json's `dotnet-sdk`) is a toolchain
                 if eco and manager not in VERSION_MANAGERS and dep.get("depType") not in TOOL_DEPTYPES and (
                         name not in (package_file.get("extractedConstraints") or {})) and not (
-                        manager == "composer" and COMPOSER_PLATFORM.match(name)):
+                        manager == "composer" and COMPOSER_PLATFORM.match(name)) and not (
+                        manager == "pub" and (path, name) in sdks):  # the SDK itself: a toolchain (`module_graph`)
                     pkg_name = declared_image(name) if eco == "docker" else name
                     written = isinstance(current, str) and current and not any(map(dep.get, WRITTEN_ELSEWHERE))
                     role = ROLES.get((manager, dep.get("depType")))

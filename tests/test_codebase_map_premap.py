@@ -724,6 +724,23 @@ def test_a_constraint_renovate_extracts_from_the_file_is_a_toolchain_not_a_packa
                                    "version": "^13"}]}
 
 
+def test_a_pub_sdk_is_the_module_graph_s_toolchain_and_no_package(tmp_path):
+    """`flutter: {sdk: flutter}` is the Flutter SDK, which the pubspec's `sdk:` names: a toolchain, not the package
+    Renovate's pub manager reports; `flutter_test`, a package the SDK ships, stays one."""
+    files = {"pubspec.yaml": "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n  dio: ^5.0.0\n"
+                             "dev_dependencies:\n  flutter_test:\n    sdk: flutter\n"}
+    facts = _renovate(tmp_path, files, {"pub": [{"packageFile": "pubspec.yaml", "deps": [
+        {"depName": "flutter", "depType": "dependencies", "currentValue": "", "datasource": "dart"},
+        {"depName": "dio", "depType": "dependencies", "currentValue": "^5.0.0", "datasource": "dart"},
+        {"depName": "flutter_test", "depType": "dev_dependencies", "currentValue": "", "datasource": "dart"}],
+        "extractedConstraints": {}}]})
+    assert [p["name"] for p in facts["packages"]] == ["dio", "flutter_test"]
+    with open_snapshot(tmp_path / "out" / "manifest.sqlite") as store:
+        found = module_graph.run(premap.Context(tmp_path / "out" / "manifest.sqlite", store))["facts"]
+    assert found["toolchains"] == [{"tool": "flutter", "declared_in": "pubspec.yaml"}]
+    assert {p["name"] for p in found["packages"]} == {"dio", "flutter_test"}
+
+
 def test_the_sdk_of_global_json_is_the_dotnet_toolchain(tmp_path):
     """Renovate names it `dotnet-sdk`: the tool the build runs on is `dotnet`, the name the preparation installs."""
     files = {"global.json": '{"sdk": {"version": "8.0.404", "rollForward": "latestFeature"}}\n'}

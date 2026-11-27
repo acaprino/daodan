@@ -428,9 +428,11 @@ def test_readers_collect_declared_packages_across_jvm_dotnet_flutter_pip_and_doc
     assert ("nuget", "Microsoft.AspNetCore.App", "dotnet-app/App.csproj") in got
     assert ("nuget", "Microsoft.EntityFrameworkCore", "dotnet-app/App.csproj") in got
     assert ("nuget", "xunit", "dotnet-app/Directory.Packages.props") in got
-    assert ("pub", "flutter", "mobile/pubspec.yaml") in got
-    assert ("pub", "flutter_test", "mobile_test/pubspec.yaml") in got
+    assert ("pub", "flutter", "mobile/pubspec.yaml") not in got  # the SDK itself: a toolchain
+    assert ("pub", "flutter_test", "mobile_test/pubspec.yaml") in got  # a package the SDK ships
     assert ("pub", "flutter", "mobile_test/pubspec.yaml") not in got
+    assert {(t["tool"], t["declared_in"]) for t in record["toolchains"] if t["tool"] == "flutter"} == {
+        ("flutter", "mobile/pubspec.yaml"), ("flutter", "mobile_test/pubspec.yaml")}
     assert ("pub", "dio", "mobile/pubspec.yaml") in got
     assert ("pypi", "fastapi", "py/requirements.txt") in got
     assert ("pypi", "sqlmodel", "py/extra.txt") in got
@@ -439,7 +441,7 @@ def test_readers_collect_declared_packages_across_jvm_dotnet_flutter_pip_and_doc
     assert ("docker", "build", "Dockerfile") not in got
     assert ("docker", "redis", "docker-compose.yml") in got
     assert {(p["ecosystem"], p["name"]) for p in module_graph.package_facts(manifest)} >= {
-        ("pub", "flutter"), ("pypi", "fastapi"), ("docker", "redis")
+        ("pub", "dio"), ("pypi", "fastapi"), ("docker", "redis")
     }
 
 
