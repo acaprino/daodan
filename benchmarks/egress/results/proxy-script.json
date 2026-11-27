@@ -12,7 +12,7 @@
    "row": "control-approved-get",
    "kind": "http",
    "outcome": "reached",
-   "detail": "200 https://ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host/control-approved",
+   "detail": "200 https://ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host/control-approved",
    "expected": "reached",
    "ok": true
   },
@@ -293,8 +293,8 @@
    "kind": "measure",
    "outcome": "measured",
    "detail": {
-    "start_seconds": 0.41,
-    "memory": "8.578MiB / 128MiB",
+    "start_seconds": 0.4,
+    "memory": "8.91MiB / 128MiB",
     "image_bytes": 69866703
    },
    "expected": "measured",
@@ -305,8 +305,8 @@
    "expected": "only the host's lookup of the refused name",
    "outcome": [],
    "host_lookup": [
-    "23:14:53.527410 eth0  Out IP 172.20.72.67.56423 > 172.21.0.1.53: 35357+ [1au] A? refused-3b3d4aa3be.example.com. (59)",
-    "23:14:53.527422 eth0  Out IP 172.20.72.67.56423 > 172.21.0.1.53: 26645+ [1au] AAAA? refused-3b3d4aa3be.example.com. (59)"
+    "23:39:05.340517 eth0  Out IP 172.20.21.24.54759 > 172.21.0.1.53: 19360+ [1au] A? refused-218b81c796.example.com. (59)",
+    "23:39:05.340531 eth0  Out IP 172.20.21.24.54759 > 172.21.0.1.53: 39595+ [1au] AAAA? refused-218b81c796.example.com. (59)"
    ],
    "ok": true
   },
@@ -337,7 +337,7 @@
      "approval_required"
     ],
     [
-     "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host"
+     "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host"
     ]
    ],
    "marks": [],
@@ -372,15 +372,15 @@
  ],
  "canary_hits": [
   "8001 GET /control-approved",
-  "8001 GET /r301?to=https://ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host/from-301",
-  "8001 GET /r302?to=https://ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host/from-302",
+  "8001 GET /r301?to=https://ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host/from-301",
+  "8001 GET /r302?to=https://ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host/from-302",
   "8001 GET /approval-yes"
  ],
  "driver": {
   "proxy": "script",
-  "token": "3b3d4aa3be",
-  "host_ip": "172.20.72.67",
-  "outside_ip": "20.225.121.109",
+  "token": "218b81c796",
+  "host_ip": "172.20.21.24",
+  "outside_ip": "149.51.51.133",
   "ways": {
    "run": {
     "state": "done",
@@ -388,11 +388,11 @@
     "cause": null,
     "refused": [
      {
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "443"
      },
      {
-      "host": "refused-3b3d4aa3be.example.com",
+      "host": "refused-218b81c796.example.com",
       "port": "443"
      },
      {
@@ -424,15 +424,15 @@
       "port": "8098"
      },
      {
-      "host": "172.20.72.67",
+      "host": "172.20.21.24",
       "port": "8099"
      },
      {
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "80"
      },
      {
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "8443"
      },
      {
@@ -450,15 +450,15 @@
     ],
     "asked": [
      {
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "443",
-      "address": "20.225.121.109",
+      "address": "149.51.51.133",
       "network": false,
       "declared_in": [],
       "tool": ""
      },
      {
-      "host": "refused-3b3d4aa3be.example.com",
+      "host": "refused-218b81c796.example.com",
       "port": "443",
       "address": null,
       "network": false,
@@ -522,9 +522,9 @@
       "tool": ""
      },
      {
-      "host": "172.20.72.67",
+      "host": "172.20.21.24",
       "port": "8099",
-      "address": "172.20.72.67",
+      "address": "172.20.21.24",
       "network": true,
       "declared_in": [],
       "tool": ""
@@ -533,17 +533,17 @@
     "gaps": [
      {
       "kind": "host_denied",
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "80",
       "declared_in": [],
-      "detail": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host:80 was refused: the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"
+      "detail": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host:80 was refused: the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"
      },
      {
       "kind": "host_denied",
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "8443",
       "declared_in": [],
-      "detail": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host:8443 was refused: the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"
+      "detail": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host:8443 was refused: the proxy opens an allowed host at port 443 only (an apt archive at 80, for its files)"
      },
      {
       "kind": "host_denied",
@@ -565,7 +565,7 @@
      "row": "control-approved-get",
      "kind": "http",
      "outcome": "reached",
-     "detail": "200 https://ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host/control-approved"
+     "detail": "200 https://ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host/control-approved"
     },
     {
      "row": "direct-name",
@@ -776,8 +776,8 @@
      "kind": "measure",
      "outcome": "measured",
      "detail": {
-      "start_seconds": 0.41,
-      "memory": "8.578MiB / 128MiB",
+      "start_seconds": 0.4,
+      "memory": "8.91MiB / 128MiB",
       "image_bytes": 69866703
      }
     }
@@ -791,15 +791,15 @@
     "cause": "preparation exited with code 1; see /runs/asking/prepare.log",
     "refused": [
      {
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "443"
      }
     ],
     "asked": [
      {
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "443",
-      "address": "20.225.121.109",
+      "address": "149.51.51.133",
       "network": false,
       "declared_in": [],
       "tool": ""
@@ -809,17 +809,17 @@
      {
       "kind": "approval_required",
       "hosts": [
-       "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host"
+       "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host"
       ],
-      "detail": "the step failed and asked for hosts the user has not approved: ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host:443; answer in the app, then analyze again"
+      "detail": "the step failed and asked for hosts the user has not approved: ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host:443; answer in the app, then analyze again"
      }
     ]
    },
    "pending": [
     {
-     "address": "20.225.121.109",
+     "address": "149.51.51.133",
      "declared_in": [],
-     "host": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+     "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
      "network": false,
      "port": "443",
      "tool": ""
@@ -836,7 +836,7 @@
     "asked": null,
     "gaps": null
    },
-   "log": "ROW {\"row\": \"fetch\", \"kind\": \"http\", \"outcome\": \"reached\", \"detail\": \"200 https://ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host/approval-yes\"}\n"
+   "log": "ROW {\"row\": \"fetch\", \"kind\": \"http\", \"outcome\": \"reached\", \"detail\": \"200 https://ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host/approval-yes\"}\n"
   },
   "block": {
    "run": {
@@ -845,7 +845,7 @@
     "cause": "preparation exited with code 1; see /runs/blocked/prepare.log",
     "refused": [
      {
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "443"
      }
     ],
@@ -853,10 +853,10 @@
     "gaps": [
      {
       "kind": "host_denied",
-      "host": "ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
+      "host": "ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
       "port": "443",
       "declared_in": [],
-      "detail": "ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host:443 was refused: the user blocked it or said no to it"
+      "detail": "ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host:443 was refused: the user blocked it or said no to it"
      }
     ]
    },
@@ -866,60 +866,60 @@
   "proxy_logs": [],
   "listener_hits": [],
   "dns_wire": [
-   "23:14:53.527410 eth0  Out IP 172.20.72.67.56423 > 172.21.0.1.53: 35357+ [1au] A? refused-3b3d4aa3be.example.com. (59)",
-   "23:14:53.527422 eth0  Out IP 172.20.72.67.56423 > 172.21.0.1.53: 26645+ [1au] AAAA? refused-3b3d4aa3be.example.com. (59)"
+   "23:39:05.340517 eth0  Out IP 172.20.21.24.54759 > 172.21.0.1.53: 19360+ [1au] A? refused-218b81c796.example.com. (59)",
+   "23:39:05.340531 eth0  Out IP 172.20.21.24.54759 > 172.21.0.1.53: 39595+ [1au] AAAA? refused-218b81c796.example.com. (59)"
   ],
-  "dns_wire_lines": 160,
+  "dns_wire_lines": 177,
   "dns_wire_sample": [
-   "23:14:10.422468 eth0  Out IP 172.20.72.67.52271 > 172.21.0.1.53: 44281+ [1au] AAAA? registry-1.docker.io. (49)",
-   "23:14:10.422518 eth0  Out IP 172.20.72.67.36815 > 172.21.0.1.53: 1800+ [1au] A? registry-1.docker.io. (49)",
-   "23:14:10.424812 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.52271: 44281 8/0/1 AAAA 2600:1f18:2148:bc00:380f:264d:80ec:c243, AAAA 2600:1f18:2148:bc00:7024:e5d0:d28f:b2c0, AAAA 2600:1f18:2148:bc02:58ad:43d1:e1fd:7c75, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc02:3af6:8146:f226:7403, AAAA 2600:1f18:2148:bc01:a006:7c50:ab6f:3fd4, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a, AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea (273)",
-   "23:14:10.425062 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.36815: 1800 8/0/1 A 54.144.31.81, A 54.164.230.250, A 52.4.168.198, A 184.72.244.236, A 52.2.152.130, A 3.216.131.223, A 3.231.137.126, A 184.197.245.234 (177)",
-   "23:14:10.479279 eth0  Out IP 172.20.72.67.38412 > 172.21.0.1.53: 26516+ [1au] AAAA? auth.docker.io. (43)",
-   "23:14:10.479282 eth0  Out IP 172.20.72.67.34879 > 172.21.0.1.53: 62477+ [1au] A? auth.docker.io. (43)",
-   "23:14:10.481069 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.38412: 26516 3/0/1 CNAME auth.docker.io.cdn.cloudflare.net., AAAA 2a06:98c1:3104::6812:2bb2, AAAA 2606:4700:4403::ac40:904e (146)",
-   "23:14:10.481892 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.34879: 62477 3/0/1 CNAME auth.docker.io.cdn.cloudflare.net., A 104.18.43.178, A 172.64.144.78 (122)",
-   "23:14:10.749875 eth0  Out IP 172.20.72.67.45111 > 172.21.0.1.53: 45006+ [1au] A? registry-1.docker.io. (49)",
-   "23:14:10.749875 eth0  Out IP 172.20.72.67.38697 > 172.21.0.1.53: 50633+ [1au] AAAA? registry-1.docker.io. (49)",
-   "23:14:10.750015 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.45111: 45006 8/0/1 A 54.144.31.81, A 54.164.230.250, A 52.4.168.198, A 184.72.244.236, A 52.2.152.130, A 3.216.131.223, A 3.231.137.126, A 184.197.245.234 (177)",
-   "23:14:10.750032 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.38697: 50633 8/0/1 AAAA 2600:1f18:2148:bc00:380f:264d:80ec:c243, AAAA 2600:1f18:2148:bc00:7024:e5d0:d28f:b2c0, AAAA 2600:1f18:2148:bc02:58ad:43d1:e1fd:7c75, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc02:3af6:8146:f226:7403, AAAA 2600:1f18:2148:bc01:a006:7c50:ab6f:3fd4, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a, AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea (273)",
-   "23:14:10.764240 eth0  Out IP 172.20.72.67.40949 > 172.21.0.1.53: 9191+ [1au] AAAA? production.cloudfront.docker.com. (61)",
-   "23:14:10.764315 eth0  Out IP 172.20.72.67.60636 > 172.21.0.1.53: 49376+ [1au] A? production.cloudfront.docker.com. (61)",
-   "23:14:10.766585 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.40949: 9191 9/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., AAAA 2600:9000:28b2:0:9:4855:aac0:93a1, AAAA 2600:9000:28b2:f200:9:4855:aac0:93a1, AAAA 2600:9000:28b2:ba00:9:4855:aac0:93a1, AAAA 2600:9000:28b2:ec00:9:4855:aac0:93a1, AAAA 2600:9000:28b2:7400:9:4855:aac0:93a1, AAAA 2600:9000:28b2:5800:9:4855:aac0:93a1, AAAA 2600:9000:28b2:da00:9:4855:aac0:93a1, AAAA 2600:9000:28b2:aa00:9:4855:aac0:93a1 (328)",
-   "23:14:10.766677 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.60636: 49376 5/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., A 3.171.139.85, A 3.171.139.62, A 3.171.139.86, A 3.171.139.63 (168)",
-   "23:14:10.780396 eth0  Out IP 172.20.72.67.54101 > 172.21.0.1.53: 63586+ [1au] AAAA? registry-1.docker.io. (49)",
-   "23:14:10.780413 eth0  Out IP 172.20.72.67.43706 > 172.21.0.1.53: 42682+ [1au] A? registry-1.docker.io. (49)",
-   "23:14:10.780521 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.43706: 42682 8/0/1 A 184.197.245.234, A 54.144.31.81, A 54.164.230.250, A 52.4.168.198, A 184.72.244.236, A 52.2.152.130, A 3.216.131.223, A 3.231.137.126 (177)",
-   "23:14:10.780784 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.54101: 63586 8/0/1 AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea, AAAA 2600:1f18:2148:bc00:380f:264d:80ec:c243, AAAA 2600:1f18:2148:bc00:7024:e5d0:d28f:b2c0, AAAA 2600:1f18:2148:bc02:58ad:43d1:e1fd:7c75, AAAA 2600:1f18:2148:bc02:550c:fb4b:fde0:d, AAAA 2600:1f18:2148:bc02:3af6:8146:f226:7403, AAAA 2600:1f18:2148:bc01:a006:7c50:ab6f:3fd4, AAAA 2600:1f18:2148:bc01:6ba5:abe1:6d4:6d3a (273)",
-   "23:14:10.806136 eth0  Out IP 172.20.72.67.59118 > 172.21.0.1.53: 25827+ [1au] AAAA? production.cloudfront.docker.com. (61)",
-   "23:14:10.806175 eth0  Out IP 172.20.72.67.39079 > 172.21.0.1.53: 37795+ [1au] A? production.cloudfront.docker.com. (61)",
-   "23:14:10.806230 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.59118: 25827 9/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., AAAA 2600:9000:28b2:0:9:4855:aac0:93a1, AAAA 2600:9000:28b2:f200:9:4855:aac0:93a1, AAAA 2600:9000:28b2:ba00:9:4855:aac0:93a1, AAAA 2600:9000:28b2:ec00:9:4855:aac0:93a1, AAAA 2600:9000:28b2:7400:9:4855:aac0:93a1, AAAA 2600:9000:28b2:5800:9:4855:aac0:93a1, AAAA 2600:9000:28b2:da00:9:4855:aac0:93a1, AAAA 2600:9000:28b2:aa00:9:4855:aac0:93a1 (328)",
-   "23:14:10.806250 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.39079: 37795 5/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., A 3.171.139.85, A 3.171.139.62, A 3.171.139.86, A 3.171.139.63 (168)",
-   "23:14:12.269369 eth0  Out IP 172.20.72.67.48236 > 172.21.0.1.53: 4007+ AAAA? registry.npmjs.org. (36)",
-   "23:14:12.269384 eth0  Out IP 172.20.72.67.59678 > 172.21.0.1.53: 3777+ A? registry.npmjs.org. (36)",
-   "23:14:12.271226 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.59678: 3777 12/0/0 A 104.16.4.34, A 104.16.2.34, A 104.16.11.34, A 104.16.7.34, A 104.16.3.34, A 104.16.8.34, A 104.16.9.34, A 104.16.0.34, A 104.16.6.34, A 104.16.5.34, A 104.16.1.34, A 104.16.10.34 (228)",
-   "23:14:12.271584 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.48236: 4007 12/0/0 AAAA 2606:4700::6810:122, AAAA 2606:4700::6810:722, AAAA 2606:4700::6810:522, AAAA 2606:4700::6810:a22, AAAA 2606:4700::6810:922, AAAA 2606:4700::6810:322, AAAA 2606:4700::6810:422, AAAA 2606:4700::6810:222, AAAA 2606:4700::6810:622, AAAA 2606:4700::6810:b22, AAAA 2606:4700::6810:822, AAAA 2606:4700::6810:22 (372)",
-   "23:14:12.282005 eth0  Out IP 172.20.72.67.43071 > 172.21.0.1.53: 46020+ AAAA? ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host. (91)",
-   "23:14:12.282024 eth0  Out IP 172.20.72.67.51209 > 172.21.0.1.53: 45800+ A? ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host. (91)",
-   "23:14:12.293028 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.51209: 45800 1/0/0 A 20.225.121.109 (107)",
-   "23:14:12.293539 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.43071: 46020 0/1/0 (147)",
-   "23:14:22.468749 eth0  Out IP 172.20.72.67.46308 > 172.21.0.1.53: 63061+ AAAA? ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host. (91)",
-   "23:14:22.468780 eth0  Out IP 172.20.72.67.41568 > 172.21.0.1.53: 62851+ A? ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host. (91)",
-   "23:14:22.468970 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.46308: 63061 0/1/0 (169)",
-   "23:14:22.468971 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.41568: 62851 1/0/0 A 20.225.121.109 (107)",
-   "23:14:22.641921 eth0  Out IP 172.20.72.67.46472 > 172.21.0.1.53: 52679+ AAAA? ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host. (91)",
-   "23:14:22.641954 eth0  Out IP 172.20.72.67.35565 > 172.21.0.1.53: 52449+ A? ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host. (91)",
-   "23:14:22.642110 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.46472: 52679 0/1/0 (169)",
-   "23:14:22.642365 eth0  In  IP 172.21.0.1.53 > 172.20.72.67.35565: 52449 1/0/0 A 20.225.121.109 (107)"
+   "23:38:21.151892 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.44154: 16933 1/0/1 A 149.51.51.133 (118)",
+   "23:38:21.297502 eth0  Out IP 172.20.21.24.43032 > 172.21.0.1.53: 55964+ [1au] AAAA? registry-1.docker.io. (49)",
+   "23:38:21.297546 eth0  Out IP 172.20.21.24.44957 > 172.21.0.1.53: 20281+ [1au] A? registry-1.docker.io. (49)",
+   "23:38:21.304620 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.44957: 20281 8/0/1 A 184.72.244.236, A 32.200.17.251, A 50.16.200.49, A 44.213.138.104, A 100.26.133.58, A 3.237.55.85, A 184.197.245.234, A 100.55.234.118 (177)",
+   "23:38:21.305273 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.43032: 55964 8/0/1 AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea, AAAA 2600:1f18:2148:bc00:d5b:ea34:a66d:c4c7, AAAA 2600:1f18:2148:bc01:5e5a:4896:bb6d:3f3d, AAAA 2600:1f18:2148:bc00:bdea:75c4:dd49:1c8f, AAAA 2600:1f18:2148:bc01:380a:3e00:146a:9db9, AAAA 2600:1f18:2148:bc00:4c07:abbb:2009:4009, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97 (273)",
+   "23:38:21.504762 eth0  Out IP 172.20.21.24.40488 > 172.21.0.1.53: 23450+ [1au] AAAA? auth.docker.io. (43)",
+   "23:38:21.504844 eth0  Out IP 172.20.21.24.39215 > 172.21.0.1.53: 7488+ [1au] A? auth.docker.io. (43)",
+   "23:38:21.511486 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.40488: 23450 3/0/1 CNAME auth.docker.io.cdn.cloudflare.net., AAAA 2606:4700:4403::ac40:904e, AAAA 2a06:98c1:3104::6812:2bb2 (146)",
+   "23:38:21.512784 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.39215: 7488 3/0/1 CNAME auth.docker.io.cdn.cloudflare.net., A 104.18.43.178, A 172.64.144.78 (122)",
+   "23:38:21.999699 eth0  Out IP 172.20.21.24.52483 > 172.21.0.1.53: 61981+ [1au] A? registry-1.docker.io. (49)",
+   "23:38:21.999700 eth0  Out IP 172.20.21.24.59989 > 172.21.0.1.53: 12492+ [1au] AAAA? registry-1.docker.io. (49)",
+   "23:38:22.000221 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.59989: 12492 8/0/1 AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea, AAAA 2600:1f18:2148:bc00:d5b:ea34:a66d:c4c7, AAAA 2600:1f18:2148:bc01:5e5a:4896:bb6d:3f3d, AAAA 2600:1f18:2148:bc00:bdea:75c4:dd49:1c8f, AAAA 2600:1f18:2148:bc01:380a:3e00:146a:9db9, AAAA 2600:1f18:2148:bc00:4c07:abbb:2009:4009, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97 (273)",
+   "23:38:22.000435 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.52483: 61981 8/0/1 A 184.72.244.236, A 32.200.17.251, A 50.16.200.49, A 44.213.138.104, A 100.26.133.58, A 3.237.55.85, A 184.197.245.234, A 100.55.234.118 (177)",
+   "23:38:22.065061 eth0  Out IP 172.20.21.24.58181 > 172.21.0.1.53: 64794+ [1au] AAAA? production.cloudfront.docker.com. (61)",
+   "23:38:22.065157 eth0  Out IP 172.20.21.24.48924 > 172.21.0.1.53: 16417+ [1au] A? production.cloudfront.docker.com. (61)",
+   "23:38:22.072237 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.48924: 16417 5/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., A 52.85.129.3, A 52.85.129.97, A 52.85.129.84, A 52.85.129.87 (168)",
+   "23:38:22.072429 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.58181: 64794 9/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., AAAA 2600:9000:2004:6000:9:4855:aac0:93a1, AAAA 2600:9000:2004:4200:9:4855:aac0:93a1, AAAA 2600:9000:2004:d600:9:4855:aac0:93a1, AAAA 2600:9000:2004:de00:9:4855:aac0:93a1, AAAA 2600:9000:2004:a600:9:4855:aac0:93a1, AAAA 2600:9000:2004:a800:9:4855:aac0:93a1, AAAA 2600:9000:2004:8a00:9:4855:aac0:93a1, AAAA 2600:9000:2004:8600:9:4855:aac0:93a1 (328)",
+   "23:38:22.106376 eth0  Out IP 172.20.21.24.40478 > 172.21.0.1.53: 58319+ [1au] AAAA? registry-1.docker.io. (49)",
+   "23:38:22.106402 eth0  Out IP 172.20.21.24.36035 > 172.21.0.1.53: 65103+ [1au] A? registry-1.docker.io. (49)",
+   "23:38:22.106761 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.40478: 58319 8/0/1 AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97, AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea, AAAA 2600:1f18:2148:bc00:d5b:ea34:a66d:c4c7, AAAA 2600:1f18:2148:bc01:5e5a:4896:bb6d:3f3d, AAAA 2600:1f18:2148:bc00:bdea:75c4:dd49:1c8f, AAAA 2600:1f18:2148:bc01:380a:3e00:146a:9db9, AAAA 2600:1f18:2148:bc00:4c07:abbb:2009:4009, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193 (273)",
+   "23:38:22.107139 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.36035: 65103 8/0/1 A 100.55.234.118, A 184.72.244.236, A 32.200.17.251, A 50.16.200.49, A 44.213.138.104, A 100.26.133.58, A 3.237.55.85, A 184.197.245.234 (177)",
+   "23:38:22.211962 eth0  Out IP 172.20.21.24.41297 > 172.21.0.1.53: 11648+ [1au] AAAA? registry-1.docker.io. (49)",
+   "23:38:22.212083 eth0  Out IP 172.20.21.24.44291 > 172.21.0.1.53: 55785+ [1au] A? registry-1.docker.io. (49)",
+   "23:38:22.212272 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.41297: 11648 8/0/1 AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97, AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea, AAAA 2600:1f18:2148:bc00:d5b:ea34:a66d:c4c7, AAAA 2600:1f18:2148:bc01:5e5a:4896:bb6d:3f3d, AAAA 2600:1f18:2148:bc00:bdea:75c4:dd49:1c8f, AAAA 2600:1f18:2148:bc01:380a:3e00:146a:9db9, AAAA 2600:1f18:2148:bc00:4c07:abbb:2009:4009 (273)",
+   "23:38:22.212273 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.44291: 55785 8/0/1 A 184.197.245.234, A 100.55.234.118, A 184.72.244.236, A 32.200.17.251, A 50.16.200.49, A 44.213.138.104, A 100.26.133.58, A 3.237.55.85 (177)",
+   "23:38:22.249995 eth0  Out IP 172.20.21.24.60106 > 172.21.0.1.53: 40176+ [1au] AAAA? production.cloudfront.docker.com. (61)",
+   "23:38:22.250010 eth0  Out IP 172.20.21.24.49843 > 172.21.0.1.53: 2920+ [1au] A? production.cloudfront.docker.com. (61)",
+   "23:38:22.250617 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.60106: 40176 9/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., AAAA 2600:9000:2004:6000:9:4855:aac0:93a1, AAAA 2600:9000:2004:4200:9:4855:aac0:93a1, AAAA 2600:9000:2004:d600:9:4855:aac0:93a1, AAAA 2600:9000:2004:de00:9:4855:aac0:93a1, AAAA 2600:9000:2004:a600:9:4855:aac0:93a1, AAAA 2600:9000:2004:a800:9:4855:aac0:93a1, AAAA 2600:9000:2004:8a00:9:4855:aac0:93a1, AAAA 2600:9000:2004:8600:9:4855:aac0:93a1 (328)",
+   "23:38:22.250618 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.49843: 2920 5/0/1 CNAME d3ipk8a4rcghwr.cloudfront.net., A 52.85.129.3, A 52.85.129.97, A 52.85.129.84, A 52.85.129.87 (168)",
+   "23:38:22.377555 eth0  Out IP 172.20.21.24.37358 > 172.21.0.1.53: 63702+ [1au] AAAA? registry-1.docker.io. (49)",
+   "23:38:22.377580 eth0  Out IP 172.20.21.24.35154 > 172.21.0.1.53: 8764+ [1au] A? registry-1.docker.io. (49)",
+   "23:38:22.378237 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.35154: 8764 8/0/1 A 3.237.55.85, A 184.197.245.234, A 100.55.234.118, A 184.72.244.236, A 32.200.17.251, A 50.16.200.49, A 44.213.138.104, A 100.26.133.58 (177)",
+   "23:38:22.378248 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.37358: 63702 8/0/1 AAAA 2600:1f18:2148:bc00:4c07:abbb:2009:4009, AAAA 2600:1f18:2148:bc00:96be:3cf1:30db:d193, AAAA 2600:1f18:2148:bc02:5378:7c3b:58a6:bb97, AAAA 2600:1f18:2148:bc00:6f9d:1ac:fdf8:8dea, AAAA 2600:1f18:2148:bc00:d5b:ea34:a66d:c4c7, AAAA 2600:1f18:2148:bc01:5e5a:4896:bb6d:3f3d, AAAA 2600:1f18:2148:bc00:bdea:75c4:dd49:1c8f, AAAA 2600:1f18:2148:bc01:380a:3e00:146a:9db9 (273)",
+   "23:38:23.599567 eth0  Out IP 172.20.21.24.39348 > 172.21.0.1.53: 57520+ AAAA? registry.npmjs.org. (36)",
+   "23:38:23.599631 eth0  Out IP 172.20.21.24.49990 > 172.21.0.1.53: 57323+ A? registry.npmjs.org. (36)",
+   "23:38:23.600405 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.49990: 57323 12/0/0 A 104.16.3.34, A 104.16.10.34, A 104.16.5.34, A 104.16.7.34, A 104.16.11.34, A 104.16.4.34, A 104.16.1.34, A 104.16.8.34, A 104.16.0.34, A 104.16.9.34, A 104.16.6.34, A 104.16.2.34 (228)",
+   "23:38:23.606517 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.39348: 57520 12/0/0 AAAA 2606:4700::6810:822, AAAA 2606:4700::6810:222, AAAA 2606:4700::6810:122, AAAA 2606:4700::6810:622, AAAA 2606:4700::6810:322, AAAA 2606:4700::6810:922, AAAA 2606:4700::6810:b22, AAAA 2606:4700::6810:722, AAAA 2606:4700::6810:522, AAAA 2606:4700::6810:a22, AAAA 2606:4700::6810:22, AAAA 2606:4700::6810:422 (372)",
+   "23:38:23.622356 eth0  Out IP 172.20.21.24.54380 > 172.21.0.1.53: 39781+ AAAA? ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host. (91)",
+   "23:38:23.622442 eth0  Out IP 172.20.21.24.40697 > 172.21.0.1.53: 39583+ A? ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host. (91)",
+   "23:38:23.707133 eth0  In  IP 172.21.0.1.53 > 172.20.21.24.40697: 39583 1/0/0 A 149.51.51.133 (107)"
   ],
   "egress_state": {
    "whitelist": {},
    "blacklist": [
-    "ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host"
+    "ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host"
    ]
   },
-  "seconds": 69.4,
-  "allowed": "ta-01m8fmjr7p5npver0xtanypajv-8001-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host",
-  "outside": "ta-01m8fmjr7p5npver0xtanypajv-8002-fhi2nvtyseq8wd9v5jn2m6ifs.w.modal.host"
+  "seconds": 76.3,
+  "allowed": "ta-01m8fnz1pejrv0qc9dwheptbfv-8001-q7gqgui9fyhvixlla57oxyipc.w.modal.host",
+  "outside": "ta-01m8fnz1pejrv0qc9dwheptbfv-8002-q7gqgui9fyhvixlla57oxyipc.w.modal.host"
  }
 }

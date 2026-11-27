@@ -437,6 +437,17 @@ def test_every_need_names_the_version_a_failed_install_reports():
     assert all("DAODAN-MISSING" in line for line in lines) and any("vcpkg@2026-10-29" in line for line in lines)
 
 
+def test_the_needs_install_as_root_before_the_setup_and_one_into_the_image_keeps_one_root_preparation():
+    """`T3.A.6b`: the recipes of `NEEDS` are the tools `container.tool_phase` installs as root, out of the setup that
+    then runs as 65532; apt's git installs into the image, which a phase apart would lose: none apart then."""
+    import preparation
+    first, *_, tools = container_runner.plan("cargo", [command("cargo", needs=["rust"])])
+    assert tools == {"lines": preparation.setup(["rust"])["lines"], "caps": []}
+    assert not any(line in first["argv"][-1] for line in tools["lines"])
+    first, *_, tools = container_runner.plan("cargo", [command("cargo", needs=["rust", "git"])])
+    assert tools is None and all(line in first["argv"][-1] for line in preparation.setup(["git", "rust"])["lines"])
+
+
 def test_cargo_runs_on_the_rust_the_project_states_behind_mise():
     import preparation
     first, *_ = container_runner.plan("cargo", [command("cargo")], [{"tool": "rust", "version": "1.80.0"}])

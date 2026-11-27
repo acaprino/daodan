@@ -365,7 +365,9 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
             if node_restore:  # as `node_preparation._seed` and `clone`: the tools stay the restore's own
                 import preparation
                 hidden = container.named() if blind and digest.get("dotenv") else ""
-                row = _phase(boxes[-1], "node-restore", f"{unpack} && sh -ec {shlex.quote(hidden + node_restore['script'])}"
+                tools = "".join(f"{line}\n" for line in node_restore["tools"]["lines"])  # `container.tool_phase`'s
+                script = f'mkdir -p {preparation.T}/bin "$HOME"\n' + tools + hidden + node_restore["script"]
+                row = _phase(boxes[-1], "node-restore", f"{unpack} && sh -ec {shlex.quote(script)}"
                              f" && rm -rf {preparation.T}", preparation.ENV, prepare_timeout, out_dir)
                 container.mask_file(row["log"], hide)
                 container.append_record(record, {**container.mask_row(row, hide), "image": image})

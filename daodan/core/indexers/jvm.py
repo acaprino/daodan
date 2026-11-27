@@ -181,7 +181,7 @@ step() {
   return $code
 }
 trap 'echo "DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)"' EXIT
-export JAVA_HOME=${JAVA_HOME:-/opt/java/openjdk}
+export JAVA_HOME=${JAVA_HOME:-/daodan/state/jdk}
 JDK=17
 for java in /daodan/state/tools/mise/installs/java/*/bin/java; do  # the JDK the preparation installed to run on
   [ -x "$java" ] && "$java" -version 2>&1 | grep -q "version \"\(1\.\)\?$DAODAN_JDK[.\"]" \
@@ -209,7 +209,7 @@ JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.hom
 export GRADLE_USER_HOME="$HOME/.gradle"
 # A Gradle build finds its toolchains among the image's JDK and those the preparation installed, and downloads
 # none: Gradle's `org.gradle.java.installations` properties, in its user home, which every build of a run reads.
-paths=/opt/java/openjdk
+paths=/daodan/state/jdk
 for java in /daodan/state/tools/mise/installs/java/*/bin/java; do
   [ -x "$java" ] && paths="$paths,${java%/bin/java}"
 done

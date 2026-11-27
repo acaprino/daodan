@@ -40,19 +40,29 @@ def engine(tmp_path, monkeypatch):
         row = {"phase": name, "outcome": "exited", "exit_code": 0, "outputs": [],
                "log": str(out_dir / f"{name}.log")}
         Path(row["log"]).write_text("", encoding="utf-8")
-        work = states[volumes[0].split(":")[0]]
         phases.append((name, list(volumes), command))
+        if name == "tools":  # root, on the state volume alone: Node's recipe, never the project (`T3.A.6b`)
+            assert copy is None and len(volumes) == 1 and volumes[0].endswith(":/daodan/state")
+            assert opts["flags"][:2] == ("--cap-drop", "ALL") and "--user" not in opts["flags"]
+            assert any("node.tar.gz" in line for line in command[-1].splitlines())
+            return row
+        work = states[volumes[0].split(":")[0]]
         # As Docker does: what is copied in before the start reaches a volume only while that volume is empty.
         state = volumes[1].split(":")[0]
         if copy is not None and state not in written:
             with tarfile.open(copy) as bundle:
                 arrived[state] = {path for path in bundle.getnames() if path.startswith("daodan/state/")}
         written.update(volume.split(":")[0] for volume in volumes[:2])
-        if name == "node-restore":
-            assert network.startswith("daodan-net-")
-            with tarfile.open(copy) as bundle:
-                assert "work/package-lock.json" in bundle.getnames()
-                assert all("recorder" not in path and "scip-typescript" not in path for path in bundle.getnames())
+        if name == "own":  # the copy, given to 65532 by Daodan's chown alone
+            assert network == "none" and command[:2] == ["chown", "-R"] and command[3] == "/work"
+            if copy is not None:  # the seed's: the checkout and Node's tools, no consumer's helper
+                with tarfile.open(copy) as bundle:
+                    assert "work/package-lock.json" in bundle.getnames()
+                    assert all("recorder" not in path and "scip-typescript" not in path for path in bundle.getnames())
+        elif name == "node-restore":
+            assert network.startswith("daodan-net-") and copy is None
+            assert opts["flags"] == container.RESTORE  # as 65532, with no capability
+            assert "node.tar.gz" not in command[-1]  # Node installed before, as root
             work.add("node_modules/restored")
         elif name == "clone-node":
             assert network == "none" and all(v.endswith(":ro") for v in volumes[2:])
@@ -171,13 +181,13 @@ def test_failed_node_seed_is_removed_before_the_consumer_can_start(tmp_path, mon
     original = container.phase
     def fail(_engine, name, **kwargs):
         row = original(_engine, name, **kwargs)
-        assert name == "node-restore"
-        return {**row, "exit_code": 1}
+        assert name in ("own", "tools", "node-restore")
+        return {**row, "exit_code": 1 if name == "node-restore" else 0}
     monkeypatch.setattr(container, "phase", fail)
     with node_preparation.analysis(), pytest.raises(container.Gap, match="Node dependency preparation failed"):
         container_runner.runner(manifest, fake)([{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": "."}])
     assert not volumes
-    assert [p[0] for p in phases] == ["node-restore"]
+    assert [p[0] for p in phases] == ["own", "tools", "node-restore"]
 
 
 def _refusing(monkeypatch, lines):
@@ -210,7 +220,7 @@ def test_the_seed_s_proxy_serves_its_project_and_its_refusals_are_requests_and_h
                                       '{"host": "blocked.example.com", "port": "443"}'])
     with node_preparation.analysis():
         first, = container_runner.runner(manifest, fake)([{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": "."}])
-    assert [phase for phase, _, _ in phases][:1] == ["node-restore"] and started
+    assert [phase for phase, _, _ in phases][:3] == ["own", "tools", "node-restore"] and started
     assert all(args[-1] == key for args in started)  # the seed's proxy and the consumer's serve the project
     assert [(g["host"], g["port"]) for g in first["gaps"] if g["kind"] == "host_denied"] == [
         ("blocked.example.com", "443")]
@@ -224,7 +234,7 @@ def test_a_seed_that_failed_asking_for_a_host_says_approval_required(tmp_path, m
     _refusing(monkeypatch, ['{"host": "10.0.0.7", "port": "443"}'])
     original = container.phase
     monkeypatch.setattr(container, "phase", lambda _engine, name, **kwargs: {**original(_engine, name, **kwargs),
-                                                                             "exit_code": 1})
+                                                                             "exit_code": int(name == "node-restore")})
     with node_preparation.analysis(), pytest.raises(container.Gap) as raised:
         container_runner.runner(manifest, fake)([{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": "."}])
     [gap] = [g for g in raised.value.gaps if g["kind"] == "approval_required"]

@@ -104,9 +104,11 @@ def options(restored: dict, toolchains=(), hosts=()) -> tuple[list[str], dict]:
         return restored["lines"], {}
     chains = preparation.toolchains([t for t in toolchains if t.get("tool") == "node"
                                     and preparation.EXACT.match(str(t.get("version") or ""))])
-    script = "\n".join([f"mkdir -p {preparation.T}/bin \"$HOME\"", *preparation.setup(["node"])["lines"],
-                        *chains["lines"], "cd /work || exit 70", *restored["lines"]])
-    return [], {"node_restore": {"script": script, "inputs": [f"{preparation.IN}/{name}" for _, _, name in
+    node = preparation.setup(["node"])  # as root, before the restore (`container.tool_phase`)
+    script = "\n".join([f"mkdir -p {preparation.T}/bin \"$HOME\"", *chains["lines"], "cd /work || exit 70",
+                        *restored["lines"]])
+    return [], {"node_restore": {"tools": {"lines": node["lines"], "caps": node["caps"]}, "script": script,
+                                 "inputs": [f"{preparation.IN}/{name}" for _, _, name in
                                                               (preparation.NODE, *chains["files"])],
                                  "hosts": sorted({*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
                                                   *hosts})}}
@@ -195,10 +197,23 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
         container.start_proxy(engine, proxy, network, tuple(request["hosts"]), project)
         logged.append(proxy)
         script = (container.named() if visibility == "blind" else "") + request["script"]
+        env = {**preparation.ENV, **container.proxy_environment(f"http://proxy:{container.PROXY_PORT}")}
+        mounts = [f"{names[0]}:{container.WORKDIR}", f"{names[1]}:{container.STATE}"]
+        (out_dir / "node-restore.log").unlink(missing_ok=True)  # the tools, then the restore, write it
+        # the copy given to `NOBODY`, Node installed as root without /work, the restore as `NOBODY` (`T3.A.6b`)
+        for step in (lambda: container.own(engine, image, shared, mounts, limits, timeout, out_dir, False),
+                     lambda: container.tool_phase(engine, image, request["tools"], network, env, mounts[1], limits,
+                                                  timeout, out_dir, log="node-restore")):
+            made = step()
+            container.mask_file(made.get("log"), hide)
+            container.append_record(out_dir / container.RECORD_NAME,
+                                    {**container.mask_row(made, hide), "preparation": lock.name})
+            if made.get("outcome") != "exited" or made.get("exit_code") != 0:
+                raise container.Gap(made.get("cause") or f"the {made['phase']} phase of the Node restore failed",
+                                    f"see {Path(made['log']).name}", opened)
         row = container.phase(engine, "node-restore", image=image, network=network, command=["sh", "-ec", script],
-                              env={**preparation.ENV, **container.proxy_environment(f"http://proxy:{container.PROXY_PORT}")},
-                              limits=limits, timeout=timeout, copy=shared, outputs=[], out_dir=out_dir,
-                              volumes=[f"{names[0]}:{container.WORKDIR}", f"{names[1]}:{container.STATE}"])
+                              env=env, limits=limits, timeout=timeout, copy=None, outputs=[], out_dir=out_dir,
+                              volumes=mounts, flags=container.RESTORE, log="node-restore")
         container.mask_file(row.get("log"), hide)
         container.append_record(out_dir / container.RECORD_NAME,
                                 {**container.mask_row(row, hide), "preparation": lock.name})

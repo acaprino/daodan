@@ -617,6 +617,51 @@ class FakeEngineTest(unittest.TestCase):
         self.assertGreater(removed[0], calls.index(["rm", "-f", execute[execute.index("--name") + 1]]))
         self.assertEqual(list(self.registry.glob("*")), [])
 
+    def test_a_restore_runs_as_nobody_after_its_tools_install_as_root_without_the_work_volume(self):
+        """`T3.A.6b`: the copy goes into the volumes, given to 65532 by Daodan's `chown` alone (root, CHOWN only, no
+        network); the recipes of `NEEDS` run as root on the state volume alone, with their capabilities and CHOWN; the
+        restore runs as 65532 with no capability. The flags are the same on every API: Kiri's (1.47) too."""
+        tools = {"lines": ["emit-tools"], "caps": ["CHOWN", "FOWNER"]}
+        for said in ("1.51", "1.47"):
+            with self.subTest(api=said):
+                (self.state / "calls.jsonl").unlink(missing_ok=True)
+                fake = self.scratch / "fake_api.py"
+                fake.write_text(FAKE_CLI.replace('"1.51" if', f'"{said}" if'), encoding="utf-8")
+                engine = container.Engine("api", (sys.executable, str(fake), str(self.state)))
+                with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+                    result = container.run_in_container(
+                        self.project, ["exit", "0"], prepare=["emit", "/daodan/state/restored", "yes"],
+                        image="fake/runtime:1", out_dir=self.out, engine=engine, tools=tools,
+                        inputs={"/daodan/state/in/tool.tgz": self.project / "package.json"})
+                self.assertEqual(result["state"], "done", result)
+                owned, _proxy, made, prepare, execute = self.created()
+                work, state = self.mounts(prepare)
+                self.assertEqual(owned[3:7], ["--cap-drop", "ALL", "--cap-add", "CHOWN"])
+                self.assertEqual(owned[owned.index("--network") + 1], "none")
+                self.assertEqual(json.loads((self.state / "containers" / owned[2] / "command.json").read_text()),
+                                 ["chown", "-R", "65532:65532", "/work"])  # the state: the tools' to give
+                self.assertEqual(self.mounts(owned), [work, state])
+                self.assertEqual(made[3:9], ["--cap-drop", "ALL", "--cap-add", "CHOWN", "--cap-add", "FOWNER"])
+                self.assertEqual(self.mounts(made), [state])  # no /work: no file of the project
+                script = json.loads((self.state / "containers" / made[2] / "command.json").read_text())[-1]
+                self.assertEqual(script.splitlines()[2:], ["emit-tools", "chown -R 65532:65532 /daodan/state"])
+                self.assertEqual(made[made.index("--network") + 1], prepare[prepare.index("--network") + 1])
+                self.assertEqual(prepare[3:7], ["--cap-drop", "ALL", "--user", "65532:65532"])
+                self.assertNotIn("--user", execute)
+                copied = [call[2].split(":")[0] for call in self.calls() if call[:2] == ["cp", "-"]]
+                self.assertEqual(copied, [owned[2]])  # the copy goes in once, given to 65532
+                self.assertIn("started " + made[2], (self.out / "prepare.log").read_text())
+                self.assertIn("started " + prepare[2], (self.out / "prepare.log").read_text())
+
+    def test_a_restore_whose_tools_fail_stops_before_it_runs(self):
+        with mock.patch.object(container, "free_memory", return_value=64 * 2**30), \
+                mock.patch.object(container, "tool_phase", return_value={
+                    "phase": "tools", "outcome": "exited", "exit_code": 1, "log": str(self.out / "prepare.log")}):
+            result = self.run_operation(["exit", "0"], prepare=["exit", "0"], tools={"lines": ["x"], "caps": []})
+        self.assertEqual(result["state"], "failed")
+        self.assertIn("the tools did not install", result["cause"])
+        self.assertEqual(len(self.created()), 2)  # the proxy and `own`: no restore, no execution
+
     def test_the_volumes_are_removed_by_name_after_a_failed_preparation_or_a_timeout(self):
         for prepare, command, timeout in ((["exit", "3"], ["exit", "0"], 600), (["exit", "0"], ["sleep", "30"], 2)):
             with self.subTest(prepare=prepare, command=command):

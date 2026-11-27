@@ -81,7 +81,7 @@ ASM = ("org.ow2.asm:asm:9.11.1", "ae4e6e10d59d0a1500317764b21881ad883f8550e33c66
 RECORD = Path(__file__).resolve().parent / "jvm_record"
 AGENT = f"{preparation.IN}/dynamic-jvm"  # the agent's sources and ASM, and the jars built from them, in the container
 RELEASE = 8  # the agent's class files, for test JVMs from 8 on; its JDK 9 and 10 parts are of their JDK
-IMAGE_JDK = "/opt/java/openjdk/bin/"  # the image's JDK, which builds the agent whichever JDK runs the build
+IMAGE_JDK = f"{preparation.JDK_HOME}/bin/"  # Temurin's JDK (`UNPACK_JDK`), which builds the agent whatever JDK runs the build
 SYNTHETIC, BRIDGE = 0x1000, 0x40
 GRADLE_TEST = ["gradle", "--no-daemon", "--offline", "--continue", "--console=plain"]  # + the preparation's tasks
 MAVEN_TEST = ["mvn", "-B", "-o", "-fae", "-Dmaven.test.failure.ignore=true", "test"]

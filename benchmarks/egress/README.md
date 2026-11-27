@@ -110,3 +110,12 @@ Provenienza di Smokescreen, verificata il 27 novembre 2026 da una funzione Modal
 ### Container di Daodan (`T3.A.6a`)
 
 27 novembre 2026, codice del commit di `T3.A.6a`, Modal `ap-G60kFoE4zQ5VCcpX2NNEKM`: le righe `daodan:` di `modal_hardening.py` girano come le crea il codice, con `container.UNPRIVILEGED` (`--cap-drop ALL --user 65532:65532 --security-opt no-new-privileges`). Riescono tutte: il proxy apre `registry.npmjs.org:443` (`200`), il lettore dei `.env` legge un `.env` `0600` (`bound` lo dà leggibile a tutti), la sonda di `leaves` lascia la rete, il pod tiene la rete e `reached` trova la porta. Sonda del proxy 44/44 (`ap-kJ2vwrxePl1Gm6WZk9ZTc1`). In questa corsa la ricetta `git` cade in ogni variante per la misura, non per il codice: dopo `9100773` la riga usa `$HTTP_PROXY` con `set -u`, che sulla rete bridge non c'è (corretta in `T3.A.6b`).
+
+### Preparazione divisa (`T3.A.6b`)
+
+27 novembre 2026, codice del commit di `T3.A.6b`, Modal `ap-LPd7VGNU9jvbIF3mPfIfmi`, colonna `codice` di `modal_hardening.py`: ogni riga gira come una preparazione divisa (`run_in_container(..., tools=)`): `container.own` mette la copia nei volumi e dà `/work` a `65532` (root, solo `CHOWN`, senza rete); `container.tool_phase` installa le ricette di `NEEDS` come root nel solo volume di `STATE`, con le capability di `setup()["caps"]` più `CHOWN`, e poi lo dà a `65532`; il resto gira come `65532` con `--cap-drop ALL` (`container.RESTORE`).
+
+- Riescono tutte le ricette (`node`, `uv`, `go`, `rust`, `arm-none-eabi`, `dotnet`, `vcpkg`, `conan`, `poetry`, `cmdline-tools`; JDK, corepack e mise come `65532`) e i ripristini npm, pnpm, yarn, uv, pip, poetry, go, cargo, dotnet. Maven e Gradle: l'obiettivo di `T3.A.5` ora riesce (il JDK si usa in `STATE/jdk`, niente `/opt/java`); nella colonna `codice` cadono per la misura (le righe del loro `setup` senza la subshell che `container_runner.plan` mette), corretta e rimisurata in `T3.A.6c`.
+- `own` non dà `STATE` a `65532` quando seguono gli strumenti: root senza `DAC_OVERRIDE` non scrive in una cartella di un altro utente (prima corsa `ap-LtzOjhkAZUiJlLE5KeOl59`, `npm: not found`).
+- `git` (`apt`) installa nell'immagine, che una fase a parte perderebbe: con `git` fra i bisogni (`preparation.IMAGE_NEEDS`) la preparazione resta una, root.
+- Sonda del proxy 44/44 (`ap-fJ5xrHIXHd2eqUGCXG93kn`).
