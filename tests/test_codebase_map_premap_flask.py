@@ -627,10 +627,12 @@ def test_a_uv_workspace_member_runs_in_the_environment_of_the_workspace_root_and
     assert "poetry" not in command["argv"][2]
 
 
-def test_a_root_pyproject_with_a_requirements_file_in_a_subfolder_uses_the_root_environment(tmp_path):
+def test_a_requirements_file_in_a_subfolder_of_a_root_pyproject_is_an_environment_of_its_own(tmp_path):
+    """pip installs `api/requirements.txt` where it is (`preparation.RESTORES["pip"]["alone"]`, T1.B.9d): `api` runs in
+    its own environment, the one that has Flask."""
     import preparation
     [command] = commands_of(tmp_path, project(LAYOUTS / "root-and-sub"))
-    assert command["cwd"] == "api" and command["venv"] == "." and f"{preparation.VENVS}/./bin/python" in command["argv"][2]
+    assert command["cwd"] == "api" and command["venv"] == "api" and f"{preparation.VENVS}/api/bin/python" in command["argv"][2]
 
 
 def test_a_poetry_project_asks_poetry_for_its_environment_where_it_lives_in_poetrys_own_cache(tmp_path):
@@ -686,12 +688,14 @@ def test_the_script_run_by_the_python_poetry_names_gives_the_rows_of_a_project_t
     assert row["site"] == f"wsgi.py:{line_of(files, 'wsgi.py', 'def hello(')}" and [c["cwd"] for c in asked] == ["."]
 
 
-def test_a_project_whose_requirements_are_in_a_subfolder_of_a_root_that_does_not_declare_flask_is_a_gap_that_names_the_missing_package(tmp_path):
+def test_an_environment_without_flask_is_a_gap_that_names_the_missing_package_and_the_environment(tmp_path):
+    """The answer recorded when `api` still ran in the root's environment, which lacks Flask (before T1.B.9d): the gap
+    names the package and the environment the command ran in, now `api`'s own."""
     answer = recorded("root-and-sub")
     assert answer["returncode"] == 3 and "No module named 'flask'" in answer["stderr"]
     record, gaps, _ = read(tmp_path, project(LAYOUTS / "root-and-sub"), [answer], sources=SOURCES)
     assert rows(record) == [] and [g["kind"] for g in gaps] == ["model_failed"] and gaps[0]["path"] == "api"
-    assert "No module named 'flask'" in gaps[0]["detail"] and "restored for '.'" in gaps[0]["detail"]
+    assert "No module named 'flask'" in gaps[0]["detail"] and "restored for 'api'" in gaps[0]["detail"]
 
 
 # ---------------------------------------------------------- what is persisted, and where the script runs

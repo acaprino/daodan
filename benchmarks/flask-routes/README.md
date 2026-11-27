@@ -143,7 +143,7 @@ Le righe delle applicazioni montate non si emettono: il percorso servito è `pre
 | --- | --- | --- | --- |
 | `uv-workspace` | `api`, la radice (`uv sync --all-packages`: le dipendenze dei membri sono nell'ambiente della radice) | 0 in 0,53 s, 53 MB | `/hello` e `static`, la riga su `api/wsgi.py` |
 | `poetry` | la radice, Poetry (`"$(cd /work/. && poetry env info -e)"`) | 0 in 1,73 s, 88 MB | `/hello` e `static`; Flask è dichiarato solo in `pyproject.toml` (la sorgente `requirements` non lo legge: lo dice il grafo dei moduli) |
-| `root-and-sub` | `api`, la radice (`pip`: installa le dipendenze di `pyproject.toml`, non `api/requirements.txt`) | 3 in 0,15 s | `ModuleNotFoundError: No module named 'flask'`; la lacuna lo dice con l'ambiente («the Python of the environment restored for '.'») |
+| `root-and-sub` | `api`, la radice (`pip`: installa le dipendenze di `pyproject.toml`, non `api/requirements.txt`) | 3 in 0,15 s | `ModuleNotFoundError: No module named 'flask'`; la lacuna lo dice con l'ambiente («the Python of the environment restored for '.'»). Da T1.B.9d `api/requirements.txt` ha il suo ambiente (`preparation.RESTORES["pip"]["alone"]`): misura da rifare |
 | `installed-copy` | la radice | 0 in 0,64 s | `/own` è una riga, `/shared` una lacuna: copia installata del progetto |
 
 Il progetto sta in `/work` anche nella prova (il ripristino e il comando si fanno lì: l'ambiente di Poetry è chiave del percorso).
