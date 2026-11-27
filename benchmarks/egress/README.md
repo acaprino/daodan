@@ -61,3 +61,35 @@ Provenienza di Smokescreen, verificata il 27 novembre 2026 da una funzione Modal
 - La riga d è rossa per entrambi per la stessa causa, che non è del proxy: il tunnel verso `deb.debian.org:443` si apre, poi apt dà `certificate verify failed` perché `debian:trixie-slim` (`preparation.IMAGE`) non ha `ca-certificates`, e la riga di `NEEDS["git"]` passa le fonti a `https://`. È un difetto di `preparation.NEEDS["git"]`.
 - Approvazione (fuori lista, dopo il sì, blacklist) e segni: verdi per entrambi; per Smokescreen i rifiuti sono le decisioni con `allow: false` del suo log JSON, che scrive su stderr.
 - Le richieste `GET` della sonda portano l'intestazione `Host`: senza, il server HTTP di Smokescreen risponde `400` prima della politica (prima corsa `ap-ws5xOLBrk5nOuiWMsDccg0`).
+
+## Capability e utente non root (`T3.A.5`)
+
+`modal_hardening.py` misura cosa rompono `--cap-drop ALL` e `--user 65532:65532` nelle fasi della preparazione e nei servizi. Ogni riga passa da `container.phase` e `container.start_services` di Daodan, con i flag della variante subito dopo `create`, in una VM Sandbox con Docker 29.10.0, sulla rete bridge del motore (il proxy è la prova di `modal_probe.py`).
+
+| Parametro | Valori |
+|---|---|
+| Varianti | oggi (nessun flag), `--cap-drop ALL`, `--user 65532:65532`, entrambi |
+| Ricette | ogni voce di `preparation.NEEDS` più `UNPACK_JDK`, `COREPACK_INSTALL` e mise in `STATE` (`toolchains`, node 22.12.0), ciascuna sull'immagine che la usa (Debian di `preparation.IMAGE`, `buildpack-deps` di `indexers.clang`, Python di `indexers.python` per `git` e `poetry`) |
+| Ripristini | uno per gestore di `RESTORES` (`node_prepare` per npm, pnpm, yarn; `restore` per gli altri; Maven e Gradle con gli strumenti di `container_runner.TOOLS`), dopo una fase root di oggi che installa lo strumento |
+| Copia e volumi | `copy_perimeter` copiato con `cp` in `/work` e `STATE`, scrittura in entrambi |
+| Servizi | `postgres:17`, `mysql:8.4` (fissati per digest), nel pod di `start_pod`, attesa `ports`, `SERVICE_WAIT` 180 s |
+| Obiettivo | ricetta: root, senza `/work`, `--cap-drop ALL` più le minime; ripristino e copia: `65532` con `--cap-drop ALL` su volumi intestati a `65532` da una fase root (`chown -R`); servizio: root con le minime |
+| Capability minime | dal set predefinito di Docker (14) se ne toglie una per volta, nel suo ordine, finché la riga riesce (con due capability che si sostituiscono l'insieme dipende dall'ordine) |
+
+27 novembre 2026, base `121a254`, Modal `ap-0ddm0qtmuEo9PWOznnLivw`, `results/hardening.json` (errore e passi per riga). Tutte le righe riescono oggi.
+
+| Riga | `--cap-drop ALL` (root) | Capability minime | `--user 65532` (volumi di oggi) | Obiettivo |
+|---|---|---|---|---|
+| ricette `node`, `uv`, `dotnet`, `conan`, `poetry`, `arm-none-eabi`, `corepack` | rotta: `tar` da root non cambia proprietario (`uid 1000`, `1001`, `2001`) né modo | `CHOWN`, `FOWNER` | rotta | riesce |
+| ricetta `git` (`apt-get`) | rotta: `apt` passa a `_apt` (`setgroups`, `setresuid`) e scrive le liste | `DAC_OVERRIDE`, `SETGID`, `SETUID` | rotta: `sed -i` in `/etc/apt` | riesce |
+| ricette `go`, `rust`, `vcpkg`, `jdk` (`UNPACK_JDK`), `cmdline-tools`, `mise` | riesce | nessuna | rotta | riesce |
+| copia in `/work` e `STATE` | riesce | — | rotta: `/daodan/state` è di root | riesce |
+| ripristini npm, pnpm, yarn, uv, pip, poetry, go, cargo, dotnet | riesce | nessuna | rotta: cache in `STATE` (`npm-cache`, `home/.cache/node/corepack`, `uv`, `go`), `/work/Cargo.lock`, primo avvio di dotnet | riesce |
+| ripristini Maven, Gradle | riesce | nessuna | rotta | **rotta**: `UNPACK_JDK` fa `mkdir /opt/java` nella radice del container, senza `java` Maven e Gradle si fermano |
+| servizio postgres | rotta: `chmod` della cartella dati, passaggio a `postgres` | `DAC_OVERRIDE`, `SETGID`, `SETUID` | rotta: `initdb` non cambia i permessi della cartella dati | riesce |
+| servizio mysql | rotta: `setgid` di `mysqld` | `DAC_OVERRIDE`, `SETGID`, `SETUID` | riesce | riesce |
+
+- Ricette da root: `--cap-drop ALL` con `CHOWN`, `FOWNER`, `DAC_OVERRIDE`, `SETGID`, `SETUID` copre ogni ricetta; le ultime tre servono solo a `git` (`apt`). `tar --no-same-owner --no-same-permissions` toglierebbe `CHOWN` e `FOWNER` (non misurato).
+- Servizi: dell'atteso servono `DAC_OVERRIDE`, `SETGID`, `SETUID`; `CHOWN` e `FOWNER` no (le cartelle dei dati sono già dell'utente del servizio nell'immagine).
+- Ripristino come `65532`: riesce sui volumi intestati a `65532`, tranne dove serve il JDK: il collegamento `/opt/java/openjdk` (`UNPACK_JDK`, `PATH`) va fatto altrove (`T3.A.6b`).
+- Fuori dalla misura: sulla Debian di `preparation.IMAGE` (senza `ca-certificates` né `xz`) `apt-get` in https, `go mod download` e le ricette `.tar.xz` falliscono già oggi (prima corsa `ap-uU9Zxqb4t5kr545THVknlz`); qui girano sulle immagini che le usano.
