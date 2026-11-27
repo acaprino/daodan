@@ -1,0 +1,683 @@
+{
+ "case": "chi",
+ "commit": "c64ed7d6635f33a8b2feaff7dcfa55677023ac7d",
+ "code": {
+  "code_graph.py": "c536e51360d5",
+  "indexers/__init__.py": "67a8a5b52d41",
+  "indexers/clang.py": "4fe01164c84e",
+  "indexers/clang_run.py": "c1ea74dc335f",
+  "indexers/components.py": "d46475644269",
+  "indexers/csharp.py": "d791ccbca98d",
+  "indexers/css.py": "68ff0d7e347c",
+  "indexers/css_astro.py": "c8157d430209",
+  "indexers/css_csstree.py": "d9ed24317d3d",
+  "indexers/css_less.py": "d74d9e3004ae",
+  "indexers/css_sass.py": "c2a5e278bdfc",
+  "indexers/css_stylus.py": "a8d16d83fc4d",
+  "indexers/css_svelte.py": "10e35514b1c3",
+  "indexers/css_tailwind.py": "d7536cfbb251",
+  "indexers/css_typescript.py": "a82b9c69c6d0",
+  "indexers/css_vue.py": "371de29e0479",
+  "indexers/go.py": "8c2ec6228e4a",
+  "indexers/java.py": "4c36b9ca4357",
+  "indexers/jvm.py": "c0ad14c4ba49",
+  "indexers/kotlin.py": "f16e64bd3c42",
+  "indexers/python.py": "27ea410254f8",
+  "indexers/python_unbound.py": "49e96c46d1f4",
+  "indexers/runtime.py": "fd355346a48c",
+  "indexers/rust.py": "f94e32a260ff",
+  "indexers/typescript.py": "3a9e1f337477",
+  "indexers/typescript_types.py": "8d7033172e18",
+  "indexers/KotlinAsk.kt": "77b5faec27f5",
+  "adapters/clang.py": "c73b59af36f4",
+  "adapters/go_callgraph.py": "04f53f7ee62a",
+  "adapters/java.py": "0861828a7eec",
+  "adapters/js_jelly.py": "e3ef3f9aa8cd",
+  "adapters/jvm_callgraph.py": "27d24421e478",
+  "adapters/jvm_here.py": "03948f8e704d",
+  "adapters/kotlin.py": "17254bcde28c",
+  "adapters/kotlin_analysis.py": "5eef9336bea9",
+  "adapters/ts_compiler.py": "089c8aa85ec8"
+ },
+ "change": {
+  "file": "middleware/nocache.go",
+  "inserted": "// NoCacheTwice wraps a handler in NoCache twice (the incremental benchmark's change).\nfunc NoCacheTwice(h http.Handler) http.Handler { return NoCache(NoCache(h)) }\n\n"
+ },
+ "steps": {
+  "whole": {
+   "scip-go": {
+    "seconds": 34.1,
+    "runs": [
+     {
+      "subset": null
+     }
+    ],
+    "report": {
+     "available": true,
+     "engine": "scip-go@v0.2.9",
+     "indexer": {
+      "name": "scip-go",
+      "version": "v0.2.9",
+      "seconds": 8.0,
+      "peak_mb": null
+     },
+     "languages": {
+      "go": {
+       "state": "fresh"
+      }
+     },
+     "reason": null
+    }
+   }
+  },
+  "unchanged": {
+   "scip-go": {
+    "seconds": 3.1,
+    "runs": [],
+    "report": {
+     "available": true,
+     "engine": "scip-go@v0.2.9",
+     "indexer": {
+      "name": "scip-go",
+      "version": "v0.2.9",
+      "seconds": 8.0,
+      "peak_mb": null
+     },
+     "languages": {
+      "go": {
+       "state": "fresh"
+      }
+     },
+     "reason": null
+    }
+   }
+  },
+  "changed": {
+   "scip-go": {
+    "seconds": 47.8,
+    "runs": [
+     {
+      "subset": 1,
+      "files": [
+       "middleware/nocache.go"
+      ]
+     }
+    ],
+    "report": {
+     "available": true,
+     "engine": "scip-go@v0.2.9",
+     "indexer": {
+      "name": "scip-go",
+      "version": "v0.2.9",
+      "seconds": 9.0,
+      "peak_mb": null
+     },
+     "languages": {
+      "go": {
+       "state": "fresh"
+      }
+     },
+     "reason": null
+    }
+   }
+  },
+  "changed_whole": {
+   "scip-go": {
+    "seconds": 40.4,
+    "runs": [
+     {
+      "subset": null
+     }
+    ],
+    "report": {
+     "available": true,
+     "engine": "scip-go@v0.2.9",
+     "indexer": {
+      "name": "scip-go",
+      "version": "v0.2.9",
+      "seconds": 8.0,
+      "peak_mb": null
+     },
+     "languages": {
+      "go": {
+       "state": "fresh"
+      }
+     },
+     "reason": null
+    }
+   }
+  }
+ },
+ "snapshot_seconds": 3.7,
+ "stores": {
+  "equal": false,
+  "changed": {
+   "edges": {
+    "go external": 7921,
+    "go project-callable": 3361,
+    "go project-value": 9100
+   },
+   "holes": {
+    "go call-result": 6,
+    "go element": 1,
+    "go undefined-project-symbol": 17
+   }
+  },
+  "differences": {
+   "edges": {
+    "only_changed": 0,
+    "only_whole": 34,
+    "examples": {
+     "only_changed": [],
+     "only_whole": [
+      [
+       "middleware/get_head.go::reference#10",
+       "middleware/get_head.go",
+       "go",
+       "call",
+       "middleware/get_head.go::function@11:25",
+       "29",
+       "7",
+       "project-callable",
+       "chi.go::method@131:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Routes#Match.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/get_head.go::reference#10",
+       "middleware/get_head.go",
+       "go",
+       "call",
+       "middleware/get_head.go::function@11:25",
+       "29",
+       "7",
+       "project-callable",
+       "mux.go::function@373:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Match().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/get_head_test.go::reference#17",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "middleware/get_head_test.go::function@25:19",
+       "26",
+       "2",
+       "project-callable",
+       "chi.go::method@102:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Head.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/get_head_test.go::reference#17",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "middleware/get_head_test.go::function@25:19",
+       "26",
+       "2",
+       "project-callable",
+       "mux.go::function@161:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Head().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/get_head_test.go::reference#21",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "middleware/get_head_test.go::function@25:19",
+       "30",
+       "2",
+       "project-callable",
+       "chi.go::method@101:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Get.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/get_head_test.go::reference#21",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "middleware/get_head_test.go::function@25:19",
+       "30",
+       "2",
+       "project-callable",
+       "mux.go::function@155:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Get().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/get_head_test.go::reference#8",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "middleware/get_head_test.go::function@18:22",
+       "19",
+       "2",
+       "project-callable",
+       "chi.go::method@101:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Get.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/get_head_test.go::reference#8",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "middleware/get_head_test.go::function@18:22",
+       "19",
+       "2",
+       "project-callable",
+       "mux.go::function@155:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Get().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#111",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@118:34",
+       "119",
+       "2",
+       "project-callable",
+       "chi.go::method@101:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Get.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#111",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@118:34",
+       "119",
+       "2",
+       "project-callable",
+       "mux.go::function@155:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Get().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#54",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@68:34",
+       "69",
+       "2",
+       "project-callable",
+       "chi.go::method@73:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Use.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#54",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@68:34",
+       "69",
+       "2",
+       "project-callable",
+       "mux.go::function@100:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Use().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#56",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@68:34",
+       "70",
+       "2",
+       "project-callable",
+       "chi.go::method@101:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Get.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#56",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@68:34",
+       "70",
+       "2",
+       "project-callable",
+       "mux.go::function@155:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Get().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#58",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@68:34",
+       "73",
+       "2",
+       "project-callable",
+       "chi.go::method@101:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Get.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#58",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@68:34",
+       "73",
+       "2",
+       "project-callable",
+       "mux.go::function@155:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Get().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#9",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@29:34",
+       "30",
+       "2",
+       "project-callable",
+       "chi.go::method@101:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Router#Get.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/strip_test.go::reference#9",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "middleware/strip_test.go::function@29:34",
+       "30",
+       "2",
+       "project-callable",
+       "mux.go::function@155:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Get().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/supress_notfound.go::reference#3",
+       "middleware/supress_notfound.go",
+       "go",
+       "call",
+       "middleware/supress_notfound.go::function@17:26",
+       "19",
+       "12",
+       "project-callable",
+       "chi.go::method@131:1",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Routes#Match.",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[],\"detail\":\"\"}'"
+      ],
+      [
+       "middleware/supress_notfound.go::reference#3",
+       "middleware/supress_notfound.go",
+       "go",
+       "call",
+       "middleware/supress_notfound.go::function@17:26",
+       "19",
+       "12",
+       "project-callable",
+       "mux.go::function@373:0",
+       "scip-go gomod github.com/go-chi/chi/v5 . `github.com/go-chi/chi/v5`/Mux#Match().",
+       "scip-go@v0.2.9",
+       "confirmed",
+       "b'j{\"chain\":[\"implementation\"],\"detail\":\"\"}'"
+      ]
+     ]
+    }
+   },
+   "holes": {
+    "only_changed": 17,
+    "only_whole": 0,
+    "examples": {
+     "only_changed": [
+      [
+       "middleware/get_head.go::reference#10",
+       "middleware/get_head.go",
+       "go",
+       "call",
+       "29",
+       "7",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/get_head_test.go::reference#17",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "26",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/get_head_test.go::reference#21",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "30",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/get_head_test.go::reference#8",
+       "middleware/get_head_test.go",
+       "go",
+       "call",
+       "19",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/strip_test.go::reference#111",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "119",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/strip_test.go::reference#54",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "69",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/strip_test.go::reference#56",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "70",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/strip_test.go::reference#58",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "73",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/strip_test.go::reference#9",
+       "middleware/strip_test.go",
+       "go",
+       "call",
+       "30",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/supress_notfound.go::reference#3",
+       "middleware/supress_notfound.go",
+       "go",
+       "call",
+       "19",
+       "12",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/supress_notfound_test.go::reference#14",
+       "middleware/supress_notfound_test.go",
+       "go",
+       "call",
+       "25",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/supress_notfound_test.go::reference#18",
+       "middleware/supress_notfound_test.go",
+       "go",
+       "call",
+       "28",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/supress_notfound_test.go::reference#5",
+       "middleware/supress_notfound_test.go",
+       "go",
+       "call",
+       "16",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/url_format_test.go::reference#13",
+       "middleware/url_format_test.go",
+       "go",
+       "call",
+       "29",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/url_format_test.go::reference#47",
+       "middleware/url_format_test.go",
+       "go",
+       "call",
+       "56",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/url_format_test.go::reference#49",
+       "middleware/url_format_test.go",
+       "go",
+       "call",
+       "57",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ],
+      [
+       "middleware/url_format_test.go::reference#7",
+       "middleware/url_format_test.go",
+       "go",
+       "call",
+       "22",
+       "2",
+       "undefined-project-symbol",
+       "unknown-receiver",
+       "scip-go@v0.2.9"
+      ]
+     ],
+     "only_whole": []
+    }
+   },
+   "externals": {
+    "only_changed": 0,
+    "only_whole": 0,
+    "examples": {
+     "only_changed": [],
+     "only_whole": []
+    }
+   }
+  }
+ },
+ "seconds": 134.8
+}
