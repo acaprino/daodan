@@ -570,7 +570,7 @@ class MapService:
 
         `targets`, paths of the project inside the run's target, are indexed again at once unless `check`: a target
         whose bytes differ from the snapshot is read again into it (the other files' parses reused), and the pass
-        restarts, each analyzer running again only where its inputs moved (`engine_pass._redone`). The answer holds,
+        restarts, each analyzer running again only where its inputs moved (`engine_pass._inputs`). The answer holds,
         per target, the state of its language's edges and, once fresh, its edges and its holes by class with their
         cause."""
         if not isinstance(check, bool) or not isinstance(break_lock, bool):

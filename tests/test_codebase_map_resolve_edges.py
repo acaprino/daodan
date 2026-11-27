@@ -1336,7 +1336,7 @@ class IndexerStageTests(unittest.TestCase):
 
         def index(project_dir, work_dir, files=None, **given):
             # The index in the work directory, removed after the stage, with a file beside it named after it.
-            calls.append(given.get("subset"))
+            calls.append(True)
             written = Path(work_dir) / "scip-go-0.scip"
             shutil.copyfile(self.FIXTURES / "go/index.scip", written)
             written.with_suffix(".unbound.jsonl").write_text("{}\n", encoding="utf-8")
@@ -1357,63 +1357,12 @@ class IndexerStageTests(unittest.TestCase):
         (project / "extra").mkdir()
         (project / "extra/more.go").write_text("package extra\n\nfunc More() int { return 1 }\n", encoding="utf-8")
         snapshot.read_project(project, manifest)
-        self.assertEqual(stage(), 2)  # a unit changed: one run for the language, whole (Go's `SUBSET` is off)
-        self.assertEqual(calls[-1], None)
+        self.assertEqual(stage(), 2)  # a unit changed: one run for the language, whole
         self.assertEqual(stage(), 2)
         with open(project / "go.mod", "a", encoding="utf-8") as handle:
             handle.write("\nrequire example.com/dep v1.0.0\n")
         snapshot.read_project(project, manifest)
         self.assertEqual(stage(), 3)  # a manifest changed, no Go file did: the language runs again, whole
-        self.assertEqual(calls, [None, None, None])
-
-    def test_a_changed_file_and_its_importers_are_indexed_again_and_merged_into_the_kept_index(self):
-        # `ts` with `src/api/logService.js` of `ts-changed`: the indexer gets that file and those importing it, its
-        # index (the documents of `ts-changed`'s index for them) merged into the kept one gives the store a whole
-        # run over `ts-changed` gives.
-        import egress
-        from indexers import typescript
-        # The mechanism, off in the product since T2.B.5 measured a merged graph unlike the whole one.
-        self.enterContext(mock.patch.object(typescript, "SUBSET", True))
-        indexer = {"name": "scip-typescript", "version": typescript.VERSION, "seconds": 1.0, "peak_mb": None}
-        asked = []
-
-        def partial(source, rels, out):
-            import scip_pb2
-            index = scip_pb2.Index()
-            index.ParseFromString(source.read_bytes())
-            kept = [document for document in index.documents if rels is None or document.relative_path in rels]
-            del index.documents[:]
-            index.documents.extend(kept)
-            out.write_bytes(index.SerializeToString())
-            return out
-
-        def index_of(which):
-            def index(project_dir, work_dir, files=None, **given):
-                asked.append(given.get("subset"))
-                written = partial(self.FIXTURES / which / "index.scip", given.get("subset"),
-                                  Path(work_dir) / "scip-typescript-0.scip")
-                return {"indexes": [[str(written), ""]], "runs": [], "indexer": indexer}
-            return index
-
-        def edges(manifest):
-            with open_snapshot(manifest) as store:
-                found, _binding, reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest),
-                                                                        store)
-            self.assertIsNone(reason, reason)
-            return sorted(json.dumps(edge, sort_keys=True) for edge in found)
-
-        quiet = {"preflight": (egress, "preflight", lambda project, hosts: ([], []))}
-        project, manifest = self.project("ts")
-        self.run_stage("scip-typescript", manifest, index_of("ts"), **quiet)
-        shutil.copyfile(self.FIXTURES / "ts-changed/src/api/logService.js", project / "src/api/logService.js")
-        snapshot.read_project(project, manifest)
-        result, _started, _indexed = self.run_stage("scip-typescript", manifest, index_of("ts-changed"), **quiet)
-        self.assertEqual(asked, [None, ["src/api/alias.js", "src/api/jobs.js", "src/api/logService.js"]])
-        self.assertEqual(result["languages"]["javascript"]["state"], "fresh")
-        whole, whole_manifest = self.project("ts-changed")
-        self.run_stage("scip-typescript", whole_manifest, index_of("ts-changed"), **quiet)
-        self.assertEqual(asked[-1], None)
-        self.assertEqual(edges(manifest), edges(whole_manifest))
 
     def test_reuse_requires_the_installed_pin_and_the_adapter_that_built_the_entry(self):
         from indexers import go

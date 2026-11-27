@@ -45,9 +45,6 @@ NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"g
 # The container's memory, not measured yet: scip-go's build, then its runs (335 MB peak on chi on the host,
 # benchmarks/inference-audit, 13 November 2026).
 MIN_FREE = MEMORY = 4 * 2**30
-# `index` takes the stage's `subset` (`engine_pass._redone`), off: on chi and tududi the kept index with the
-# subset's merged in is not the whole graph of the changed copy (benchmarks/inference-audit README, T2.B.5)
-SUBSET = False
 OUT = "/daodan/out/scip-go"
 SCIP_GO = f"{preparation.T}/bin/scip-go"
 # The indexer's own build, in every command of the execution: Daodan's Go alone, whatever a `toolchain` line
@@ -537,12 +534,11 @@ def _run(back: Path, number: int, work_dir: Path, command: list[str]) -> dict:
             "index_bytes": index.stat().st_size if index.is_file() else 0}
 
 
-def _boxed(project_dir: Path, work_dir: Path, files: list[str], roots: set[str], declared: dict, engine,
-           named: bool = False) -> dict:
+def _boxed(project_dir: Path, work_dir: Path, files: list[str], roots: set[str], declared: dict, engine) -> dict:
     """One container run (`scripts`), read back: `{runs, constraints, gaps}`, a run per module of `roots` that
     holds a Go file, then the further runs made, each with no index where scip-go wrote none, and `{file: why}`
     for the files a build constraint, a file name or cgo left without a document; without the container run,
-    `{state, reason, gaps}`. `named`: each run names the packages of `files`, not `./...` (the stage's subset)."""
+    `{state, reason, gaps}`."""
     import container
     out = work_dir / "container"
     shutil.rmtree(out, ignore_errors=True)
@@ -552,9 +548,8 @@ def _boxed(project_dir: Path, work_dir: Path, files: list[str], roots: set[str],
         if home is not None:
             held[home].add(posixpath.dirname(rel)[len(home) + 1 if home else 0:])
     # `./...` leaves out the directories Go ignores (`_x`, `.x`, `testdata`): each is named as a package.
-    runs = [(root or ".", [f"./{folder}" if folder else "." for folder in sorted(held[root])] if named else
-             ["./...", *(f"./{folder}" for folder in sorted(held[root]) if any(
-                 part.startswith(("_", ".")) or part == "testdata" for part in folder.split("/")))])
+    runs = [(root or ".", ["./...", *(f"./{folder}" for folder in sorted(held[root]) if any(
+                part.startswith(("_", ".")) or part == "testdata" for part in folder.split("/")))])
             for root in sorted(roots) if held[root]]
     if not runs:
         return {"runs": [], "constraints": {}, "gaps": []}
@@ -702,22 +697,19 @@ def _docker(project: Path, work_dir: Path, files: list[str], roots: set[str], bu
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str], docker=(),
-          declared: dict | None = None, engine=None, subset: list[str] | None = None) -> dict:
+          declared: dict | None = None, engine=None) -> dict:
     """The scip-go index of `project_dir` for `files` (default: every `.go` file), in Daodan's container with the
     engine the pass found (`NEEDS_CONTAINER`) and the hosts the project declares (`declared`): `roots` the folders
     of its modules as the pre-map names them, `docker` its Dockerfiles as BuildKit reads them (`_docker`); see the
-    module's docstring. Nothing of it runs on the host. `subset`, the files the stage has to index again (changed,
-    or importing one that did): each run names their packages, scip-go's own patterns, instead of `./...`."""
+    module's docstring. Nothing of it runs on the host."""
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    if subset is not None:
-        files = subset
-    elif files is None:
+    if files is None:
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*.go"))
     roots = set(roots)
     runtime.clear(work_dir, "scip-go")
-    boxed = _boxed(project_dir, work_dir, files, roots, declared or {}, engine, named=subset is not None)
+    boxed = _boxed(project_dir, work_dir, files, roots, declared or {}, engine)
     if "state" in boxed:
         return {"indexes": [], "runs": [], "indexer": code_graph.indexer("scip-go", VERSION, []), **boxed}
     built, docker_reasons, gaps = _docker(project_dir, work_dir, files, roots, docker)

@@ -197,7 +197,7 @@ def dependency_digests(hashes: dict[str, str], dependencies: dict[str, set[str]]
 
     Two snapshots give a file the same digest only when neither it nor anything it
     imports, directly or transitively, changed: the condition under which a kept
-    index of it can be reused (`engine_pass._redone`). The files of an import cycle share
+    index of it can be reused (`engine_pass._inputs`). The files of an import cycle share
     one digest. Tarjan's algorithm, iterative, closes a component only after every
     component it reaches, so each digest is computed once.
     """
@@ -383,9 +383,8 @@ class Index:
     def key(symbol: str, rel: str | None) -> str:
         return f"{rel}#{symbol}" if rel is not None and symbol.startswith("local ") else symbol
 
-    def load(self, path: Path, prefix: str = "", skip=()) -> None:
-        """The documents, occurrences and SymbolInformation of one SCIP file; `skip`, checkout-relative files whose
-        documents this one no longer gives (a later index made them again)."""
+    def load(self, path: Path, prefix: str = "") -> None:
+        """The documents, occurrences and SymbolInformation of one SCIP file."""
         import scip_pb2  # protobuf: only reading an index needs it
         self.sources.append((Path(path), prefix))
         index = scip_pb2.Index()
@@ -394,11 +393,11 @@ class Index:
         if index.HasField("metadata"):
             self.tools.append((index.metadata.tool_info.name, index.metadata.tool_info.version))
         for document in index.documents:
-            self._document(document, prefix, skip)
+            self._document(document, prefix)
         for information in index.external_symbols:
             self._information(information, None)
 
-    def _document(self, document, prefix: str, skip=()) -> None:
+    def _document(self, document, prefix: str) -> None:
         _unknown(self.unknown, "document", document)
         rel = document.relative_path.replace("\\", "/")
         if not rel:
@@ -406,8 +405,6 @@ class Index:
         # A run in a module directory may name its documents from that directory or from the checkout.
         if prefix and not (self.root / rel).is_file():
             rel = f"{prefix}/{rel}"
-        if rel in skip:
-            return
         self.repeated[rel] += 1
         self.units[rel] = UNITS.get(document.position_encoding, "utf-16")
         parsed = [occurrence for occurrence in map(lambda item: self._occurrence(item, rel), document.occurrences)

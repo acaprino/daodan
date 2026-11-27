@@ -560,10 +560,7 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     The indexer works in a directory removed after the stage; what it gave is kept in `index-cache/` beside the
     manifest, and a stage whose inputs did not change (`_inputs`) reads it there and runs no indexer. The cache is
     of the whole language, not of a unit: every adapter runs all its units in one container and does not split its
-    contract per unit (`_keep`). An adapter with `SUBSET` (none, T2.B.5) indexes again only the changed files and those
-    importing one (`_redone`), merged into the kept indexes (`_merged`). One that `needs_container` gets its engine
-    here:
-    without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
+    contract per unit (`_keep`). One that `needs_container` gets its engine here: without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
     `engine` (the resolver: the entry's name, `@`, the indexer's version), `indexer` and `languages`; without
     an index, the indexer's `reason` and, when it is `unavailable`, its `install`; `gaps`, what the indexer's
     preparation could not do (a restore, a toolchain) and each build, unit or run that gave no index
@@ -603,15 +600,9 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
     with code_graph.Snapshot(manifest) as snap:
         if hasattr(module, "READS"):
             options["files"] = sorted(rel for rel in snap.checkout.values() if Path(rel).suffix.lower() in module.READS)
-        inputs, root = _inputs(spec, record, snap), snap.root
+        inputs = _inputs(spec, record, snap)
     cache = Path(manifest).parent / INDEX_CACHE / spec.name
-    result, earlier = _cached(cache, _key(inputs))
-    redone = _redone(module, inputs, earlier) if result is None else None
-    if redone is not None and not redone["subset"]:  # files gone, none changed: no run
-        result = _merged(earlier[1], None, redone["gone"], root)
-        _keep(cache, inputs, result, None)
-    elif redone is not None:
-        options["subset"] = redone["subset"]
+    result = _cached(cache, _key(inputs))
     if result is None and spec.needs_container:
         import container
         try:
@@ -628,8 +619,6 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
     try:
         if result is None:
             result = module.index(Path(project_root), work, **options)
-            if redone is not None:
-                result = _merged(earlier[1], result, {*redone["subset"], *redone["gone"]}, root)
             _keep(cache, inputs, result, work)
         indexer = result.get("indexer") or {}
         # The entry names the source: rust-analyzer is also an engine, and scip-java indexes Kotlin too.
@@ -647,8 +636,8 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
                     rows[result["graph"]["language"]] = (*module.rows(result["graph"], resolver), indexer)
                 else:
                     index = code_graph.Index(snap.root)
-                    for path, prefix, *skip in result["indexes"]:
-                        index.load(Path(path), prefix, set(skip[0]) if skip else ())
+                    for path, prefix in result["indexes"]:
+                        index.load(Path(path), prefix)
                     hops, traversal, _prepared = code_graph.adapter_traversal(module, index, snap)
                     static = module.static(index) if hasattr(module, "static") else None
                     # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
@@ -715,47 +704,6 @@ def _key(inputs: dict) -> str:
     return hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
 
 
-def _redone(module, inputs: dict, earlier: tuple | None) -> dict | None:
-    """What a stage indexes again when its adapter takes a `subset` (Go names packages, TypeScript the generated
-    tsconfig's files) and only files of its languages changed since the kept contract: `subset`, the files whose
-    digest moved (changed, or importing one that did, transitively), `gone`, the files removed. None runs the whole
-    language: nothing kept, another adapter, a manifest or lockfile changed, or an adapter without `subset`."""
-    if earlier is None or not getattr(module, "SUBSET", False):
-        return None
-    before, _kept = earlier
-    if (before.get("adapter"), before.get("declared")) != (inputs["adapter"], inputs["declared"]):
-        return None
-    return {"subset": sorted(rel for rel, digest in inputs["files"].items() if before["files"].get(rel) != digest),
-            "gone": sorted(set(before["files"]) - set(inputs["files"]))}
-
-
-def _merged(kept: dict, new: dict | None, redone, root: Path) -> dict:
-    """The kept contract, each of its indexes without the documents of `redone` and of the new run's indexes
-    (`Index.load`'s `skip`), then the new run's indexes, the rest of its contract on top and its `configs` merged
-    into the kept ones. A new run that failed is the stage's outcome, as a whole run's would be."""
-    import code_graph
-    new = new or {}
-    if new.get("state"):
-        return new
-    made = set(redone)
-    for path, prefix, *_skip in new.get("indexes", ()):
-        probe = code_graph.Index(root)
-        probe.load(Path(path), prefix)
-        made |= set(probe.documents)
-    indexes = [[path, prefix, sorted({*(skip[0] if skip else ()), *made})] for path, prefix, *skip in kept["indexes"]]
-    merged = {**kept, **new, "indexes": [*indexes, *(list(item) for item in new.get("indexes", ()))]}
-    if "configs" in kept and "configs" in new:
-        merged["configs"] = _deep(kept["configs"], new["configs"])
-    return merged
-
-
-def _deep(old, new):
-    """`new` over `old`, dictionaries merged key by key."""
-    if isinstance(old, dict) and isinstance(new, dict):
-        return {**old, **{key: _deep(old.get(key), value) for key, value in new.items()}}
-    return new
-
-
 def _moved(value, old: str, new: str, found: set | None = None):
     """`value` with every path under `old` named under `new` (`found` gets the paths), its tuples and sets as lists,
     its paths as text."""
@@ -774,23 +722,21 @@ def _moved(value, old: str, new: str, found: set | None = None):
     return value
 
 
-def _cached(cache: Path, key: str) -> tuple[dict | None, tuple | None]:
-    """The kept contract when its inputs are these (`key`), its files in the cache, else None; and the kept inputs
-    with the kept contract, for `_redone`."""
+def _cached(cache: Path, key: str) -> dict | None:
+    """The kept contract when its inputs are these (`key`), its files in the cache, else None."""
     try:
         inputs = json.loads((cache / "inputs.json").read_text(encoding="utf-8"))
         kept = _moved(json.loads((cache / "result.json").read_text(encoding="utf-8")), "{cache}", str(cache / "files"))
     except (OSError, ValueError):
-        return None, None
-    return (kept if _key(inputs) == key else None), (inputs, kept)
+        return None
+    return kept if _key(inputs) == key else None
 
 
 def _keep(cache: Path, inputs: dict, result: dict, work: Path | None) -> None:
     """A contract that gave an index (or a graph), kept for the next stage: its inputs, and the files it names in the
     work directory (indexes, the compile tasks Kotlin's `refine` reads) or in the cache copied beside it. One entry
     per analyzer, of the whole language: every adapter runs all its units in one container and gives one contract,
-    which it does not split per unit, so a changed unit runs the language again (or, with `subset`, its changed
-    files). Keeping is best effort: the stage goes on without."""
+    which it does not split per unit, so a changed unit runs the language again. Keeping is best effort: the stage goes on without."""
     if result.get("state") or not (result.get("indexes") or result.get("graph")):
         return
     files, generation = cache / "files", _key(inputs)[:12]
