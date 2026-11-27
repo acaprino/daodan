@@ -1,0 +1,31 @@
+{
+  "_": "Hand-annotated: the objects a person sees in each file. [kind, name (lowercase, quotes off), first line, last line, inner]. The first line is the CREATE (a subprogram: its PROCEDURE or FUNCTION); the last line is the one that closes it, without the `/` after it. inner is true for a subprogram of a package, not a CREATE of its own. The words of comments, strings and dynamic SQL are not objects.",
+  "orders.pks": {"dialect": "oracle", "objects": [
+    ["package", "orders_api", 4, 10, false],
+    ["procedure", "add_item", 8, 8, true],
+    ["function", "total", 9, 9, true]]},
+  "orders.pkb": {"dialect": "oracle", "objects": [
+    ["package-body", "orders_api", 1, 27, false],
+    ["function", "fee", 4, 7, true],
+    ["procedure", "add_item", 9, 18, true],
+    ["function", "total", 20, 25, true]]},
+  "audit.trg": {"dialect": "oracle", "objects": [
+    ["trigger", "trg_orders_bi", 1, 9, false],
+    ["trigger", "trg_orders_audit", 12, 26, false]]},
+  "quoting.sql": {"dialect": "postgres", "objects": [
+    ["table", "order items", 1, 4, false],
+    ["table", "sales.region.totals", 5, 5, false],
+    ["view", "v_open", 6, 6, false],
+    ["function", "add_one", 7, 11, false],
+    ["function", "tag_it", 12, 12, false]]},
+  "nested_comment.sql": {"dialect": "postgres", "objects": [
+    ["table", "t_real", 2, 2, false]]},
+  "ddl.sql": {"dialect": "oracle", "objects": [
+    ["sequence", "seq_customer", 1, 1, false],
+    ["table", "customers", 2, 5, false],
+    ["index", "ix_customers_name", 6, 6, false],
+    ["view", "v_customers", 7, 8, false],
+    ["view", "mv_totals", 9, 9, false],
+    ["procedure", "touch", 10, 13, false],
+    ["function", "customer_name", 15, 15, false]]}
+}

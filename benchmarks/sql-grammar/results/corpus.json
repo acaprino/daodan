@@ -1,0 +1,122 @@
+[
+ {
+  "accepted": 300,
+  "archive_bytes": 1409570,
+  "archive_sha256": "3d37547c95acb6ddd002de333e3065ffa47f1ecf1bf27b6bcb85c82a0fbaa67c",
+  "commit": "072dfbc1d0ed37f8da9c0ff87823906483ea3887",
+  "fingerprint": "b9e4473d9271f50d",
+  "holes": [],
+  "license": "Apache-2.0",
+  "license_line": "Apache License",
+  "license_sha256": "27c748a70d596030",
+  "project": "utplsql",
+  "ref": "v3.1.14",
+  "repo": "utPLSQL/utPLSQL",
+  "selected": 300,
+  "selected_bytes": 1044544
+ },
+ {
+  "accepted": 21,
+  "archive_bytes": 678567,
+  "archive_sha256": "d2dc430ba1d841d713fd04adb2e443103a473d3fe506bccdf6d73a2ca73c7d69",
+  "commit": "600f0c44cd0cc7f064776d31de50e9006d3476c4",
+  "fingerprint": "1f50cc854fe98323",
+  "holes": [
+   "v3.1.1: HTTPError HTTP Error 404: Not Found",
+   "v3.1.0: HTTPError HTTP Error 404: Not Found"
+  ],
+  "license": "MIT",
+  "license_line": "The MIT License (MIT)",
+  "license_sha256": "79a500ec10db5fe4",
+  "project": "logger",
+  "ref": "heads/master",
+  "repo": "OraOpenSource/Logger",
+  "selected": 21,
+  "selected_bytes": 153423
+ },
+ {
+  "accepted": 24,
+  "archive_bytes": 954438,
+  "archive_sha256": "dd8380496bb0f3233b9805ea82a7ab26cb32977fc041044e377b7985b45a18f4",
+  "commit": "503dee13a1d713185f91a2215dde710eb4d4f968",
+  "fingerprint": "4e9a2b2ea2b29cbf",
+  "holes": [],
+  "license": "MIT",
+  "license_line": "This software has been released under the MIT license:",
+  "license_sha256": "9f3aaf98473b5b98",
+  "project": "pljson",
+  "ref": "v3.5.0",
+  "repo": "pljson/pljson",
+  "selected": 24,
+  "selected_bytes": 264974
+ },
+ {
+  "accepted": 26,
+  "archive_bytes": 112282,
+  "archive_sha256": "4e18623ce03a178dbcb3297df13e01edc971323a1f198042e31ff40a9cf92482",
+  "commit": "b6217292bc744211eaee9e1d11ca7a0b495bc44d",
+  "fingerprint": "4fd86c0c61a9ab00",
+  "holes": [
+   "v1.0.0: HTTPError HTTP Error 404: Not Found"
+  ],
+  "license": "MIT",
+  "license_line": "The MIT License (MIT)",
+  "license_sha256": "2ac8bb6828921899",
+  "project": "oos-utils",
+  "ref": "heads/master",
+  "repo": "OraOpenSource/oos-utils",
+  "selected": 26,
+  "selected_bytes": 215082
+ },
+ {
+  "accepted": 89,
+  "archive_bytes": 12010899,
+  "archive_sha256": "94d47c97fb71227f88bfc01100b07de4622d7db592dec74f2d581f4fb9cbe509",
+  "commit": "e3325a83e56c516815844025418a96ecaf219751",
+  "fingerprint": "5a7ea3afdcfca9c8",
+  "holes": [],
+  "license": "UPL-1.0",
+  "license_line": "Copyright (c) 2023 Oracle and/or its affiliates. All rights reserved.",
+  "license_sha256": "2da4f8e1f04662e5",
+  "project": "oracle-schemas",
+  "ref": "v23.3",
+  "repo": "oracle-samples/db-sample-schemas",
+  "selected": 89,
+  "selected_bytes": 5047888
+ },
+ {
+  "accepted": 223,
+  "archive_bytes": 28247062,
+  "archive_sha256": "9a4b01944f9749e90e28b58e3c8556d900b68e3eef02ee509284d5312831787d",
+  "commit": "d7ec59a63d745ba74fba0e280bbf85dc6d1caa3e",
+  "fingerprint": "bad12bd9e20f8a45",
+  "holes": [],
+  "license": "PostgreSQL",
+  "license_line": "",
+  "license_sha256": "",
+  "project": "postgres-regress",
+  "ref": "REL_17_0",
+  "repo": "postgres/postgres",
+  "selected": 223,
+  "selected_bytes": 4061199
+ },
+ {
+  "accepted": 7,
+  "archive_bytes": 21733425,
+  "archive_sha256": "b5c467d61ad34ae2e8cd2252bab05dd1921ecd9b2ff2c5c7646d206d5c57db54",
+  "commit": "6ea53f812254c91a602f61c0ef62beca3fa676b1",
+  "fingerprint": "caef4b08495f4f20",
+  "holes": [
+   "3.1.0: HTTPError HTTP Error 404: Not Found",
+   "3.0.0: HTTPError HTTP Error 404: Not Found"
+  ],
+  "license": "PostgreSQL",
+  "license_line": "PostgreSQL License",
+  "license_sha256": "dcc10ac50b94172e",
+  "project": "pagila",
+  "ref": "heads/master",
+  "repo": "devrimgunduz/pagila",
+  "selected": 5,
+  "selected_bytes": 100464
+ }
+]

@@ -1,0 +1,350 @@
+[
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 194.53
+  },
+  "kind": "ddl",
+  "large": {
+   "bytes": 588890,
+   "maxrss_kb": 160604,
+   "ms": 7867.26
+  },
+  "memory_mb": [
+   4.7,
+   98.4
+  ],
+  "n": [
+   5000,
+   20000
+  ],
+  "ratio": 1.71,
+  "reader": "regex",
+  "small": {
+   "bytes": 143890,
+   "maxrss_kb": 64652,
+   "ms": 1126.38
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 0.18
+  },
+  "kind": "ddl",
+  "large": {
+   "bytes": 588890,
+   "maxrss_kb": 123292,
+   "ms": 494.99
+  },
+  "memory_mb": [
+   5.3,
+   62.0
+  ],
+  "n": [
+   5000,
+   20000
+  ],
+  "ratio": 0.98,
+  "reader": "tree",
+  "small": {
+   "bytes": 143890,
+   "maxrss_kb": 65316,
+   "ms": 123.26
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 103.23
+  },
+  "kind": "ddl",
+  "large": {
+   "bytes": 588890,
+   "maxrss_kb": 135532,
+   "ms": 2204.54
+  },
+  "memory_mb": [
+   0.0,
+   73.9
+  ],
+  "n": [
+   5000,
+   20000
+  ],
+  "ratio": 0.89,
+  "reader": "glot",
+  "small": {
+   "bytes": 143890,
+   "maxrss_kb": 59848,
+   "ms": 603.04
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 132.63
+  },
+  "kind": "package",
+  "large": {
+   "bytes": 543780,
+   "maxrss_kb": 69724,
+   "ms": 2183.76
+  },
+  "memory_mb": [
+   0.0,
+   9.6
+  ],
+  "n": [
+   500,
+   2000
+  ],
+  "ratio": 1.24,
+  "reader": "regex",
+  "small": {
+   "bytes": 135280,
+   "maxrss_kb": 59848,
+   "ms": 438.54
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 0.2
+  },
+  "kind": "package",
+  "large": {
+   "bytes": 543780,
+   "maxrss_kb": 82584,
+   "ms": 630.18
+  },
+  "memory_mb": [
+   0.0,
+   22.2
+  ],
+  "n": [
+   500,
+   2000
+  ],
+  "ratio": 0.92,
+  "reader": "tree",
+  "small": {
+   "bytes": 135280,
+   "maxrss_kb": 59848,
+   "ms": 171.24
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 101.93
+  },
+  "kind": "package",
+  "large": {
+   "bytes": 543780,
+   "maxrss_kb": 60344,
+   "ms": 1490.78
+  },
+  "memory_mb": [
+   0.0,
+   0.5
+  ],
+  "n": [
+   500,
+   2000
+  ],
+  "ratio": 1.73,
+  "reader": "glot",
+  "small": {
+   "bytes": 135280,
+   "maxrss_kb": 59848,
+   "ms": 214.76
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 124.44
+  },
+  "kind": "open_comment",
+  "large": {
+   "bytes": 240000,
+   "maxrss_kb": 59848,
+   "ms": 360.67
+  },
+  "memory_mb": [
+   0.0,
+   0.0
+  ],
+  "n": [
+   20000,
+   80000
+  ],
+  "ratio": 0.52,
+  "reader": "regex",
+  "small": {
+   "bytes": 60000,
+   "maxrss_kb": 59848,
+   "ms": 174.86
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 0.17
+  },
+  "kind": "open_comment",
+  "large": {
+   "bytes": 240000,
+   "maxrss_kb": 122476,
+   "ms": 76110.48
+  },
+  "memory_mb": [
+   5.0,
+   61.2
+  ],
+  "n": [
+   20000,
+   80000
+  ],
+  "ratio": 3.93,
+  "reader": "tree",
+  "small": {
+   "bytes": 60000,
+   "maxrss_kb": 64920,
+   "ms": 4840.31
+  },
+  "verdict": "superlinear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 103.18
+  },
+  "kind": "open_comment",
+  "large": {
+   "bytes": 240000,
+   "maxrss_kb": 59848,
+   "ms": 161.03
+  },
+  "memory_mb": [
+   0.0,
+   0.0
+  ],
+  "n": [
+   20000,
+   80000
+  ],
+  "ratio": 0.36,
+  "reader": "glot",
+  "small": {
+   "bytes": 60000,
+   "maxrss_kb": 59848,
+   "ms": 112.72
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 125.96
+  },
+  "kind": "dollar_run",
+  "large": {
+   "bytes": 320000,
+   "maxrss_kb": 60680,
+   "ms": 613.21
+  },
+  "memory_mb": [
+   0.0,
+   0.8
+  ],
+  "n": [
+   20000,
+   80000
+  ],
+  "ratio": 0.66,
+  "reader": "regex",
+  "small": {
+   "bytes": 80000,
+   "maxrss_kb": 59848,
+   "ms": 232.71
+  },
+  "verdict": "linear"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 0.16
+  },
+  "kind": "dollar_run",
+  "large": {
+   "bytes": 320000,
+   "maxrss_kb": 84424,
+   "ms": 164.6
+  },
+  "memory_mb": [
+   0.0,
+   24.0
+  ],
+  "n": [
+   20000,
+   80000
+  ],
+  "ratio": 1.19,
+  "reader": "tree",
+  "small": {
+   "bytes": 80000,
+   "maxrss_kb": 59848,
+   "ms": 34.63
+  },
+  "verdict": "noise"
+ },
+ {
+  "base": {
+   "bytes": 10,
+   "maxrss_kb": 59848,
+   "ms": 90.82
+  },
+  "kind": "dollar_run",
+  "large": {
+   "bytes": 320000,
+   "maxrss_kb": 59848,
+   "ms": 373.96
+  },
+  "memory_mb": [
+   0.0,
+   0.0
+  ],
+  "n": [
+   20000,
+   80000
+  ],
+  "ratio": 0.57,
+  "reader": "glot",
+  "small": {
+   "bytes": 80000,
+   "maxrss_kb": 59848,
+   "ms": 163.15
+  },
+  "verdict": "linear"
+ }
+]

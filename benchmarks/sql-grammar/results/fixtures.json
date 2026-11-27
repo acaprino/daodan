@@ -1,0 +1,2003 @@
+{
+ "files": {
+  "audit.trg": {
+   "err": {
+    "error": 1,
+    "error_bytes": 538,
+    "missing": 0
+   },
+   "g": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 0,
+       "missing": 2
+      }
+     },
+     "kinds": {
+      "trigger": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing trigger trg_orders_audit line 12",
+      "missing trigger trg_orders_bi line 1"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 2,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 0.66,
+    "objects": []
+   },
+   "gd": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 0,
+       "missing": 2
+      }
+     },
+     "kinds": {
+      "trigger": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing trigger trg_orders_audit line 12",
+      "missing trigger trg_orders_bi line 1"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 2,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 0.73,
+    "objects": []
+   },
+   "gold": 2,
+   "lang": "plsql",
+   "ms": {
+    "rx": 1.45,
+    "ts": 0.25
+   },
+   "rx": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 2,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "trigger": {
+       "end_diff": 0,
+       "end_unknown": 2,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 2,
+      "extra": 0,
+      "found": 2,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "trigger",
+      "trg_orders_bi",
+      1,
+      null
+     ],
+     [
+      "trigger",
+      "trg_orders_audit",
+      12,
+      null
+     ]
+    ]
+   },
+   "ts": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 0,
+       "missing": 2
+      }
+     },
+     "kinds": {
+      "trigger": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing trigger trg_orders_audit line 12",
+      "missing trigger trg_orders_bi line 1"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 2,
+      "start_diff": 0
+     }
+    },
+    "objects": []
+   }
+  },
+  "ddl.sql": {
+   "err": {
+    "error": 5,
+    "error_bytes": 94,
+    "missing": 0
+   },
+   "g": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 0,
+       "missing": 7
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "index": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "sequence": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function customer_name line 15",
+      "missing index ix_customers_name line 6",
+      "missing procedure touch line 10",
+      "missing sequence seq_customer line 1",
+      "missing table customers line 2",
+      "missing view mv_totals line 9",
+      "missing view v_customers line 7"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 7,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 2.86,
+    "objects": []
+   },
+   "gd": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 0,
+       "missing": 7
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "index": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "sequence": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function customer_name line 15",
+      "missing index ix_customers_name line 6",
+      "missing procedure touch line 10",
+      "missing sequence seq_customer line 1",
+      "missing table customers line 2",
+      "missing view mv_totals line 9",
+      "missing view v_customers line 7"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 7,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 1.3,
+    "objects": []
+   },
+   "gold": 7,
+   "lang": "sql",
+   "ms": {
+    "rx": 1.94,
+    "ts": 0.32
+   },
+   "rx": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 6,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "index": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "sequence": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 2,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function customer_name line 15"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 6,
+      "extra": 0,
+      "found": 6,
+      "missing": 1,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "sequence",
+      "seq_customer",
+      1,
+      null
+     ],
+     [
+      "table",
+      "customers",
+      2,
+      null
+     ],
+     [
+      "index",
+      "ix_customers_name",
+      6,
+      null
+     ],
+     [
+      "view",
+      "v_customers",
+      7,
+      null
+     ],
+     [
+      "view",
+      "mv_totals",
+      9,
+      null
+     ],
+     [
+      "procedure",
+      "touch",
+      10,
+      null
+     ]
+    ]
+   },
+   "ts": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 6,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "index": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "sequence": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function customer_name line 15"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 6,
+      "missing": 1,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "sequence",
+      "seq_customer",
+      1,
+      1,
+      false
+     ],
+     [
+      "table",
+      "customers",
+      2,
+      5,
+      false
+     ],
+     [
+      "index",
+      "ix_customers_name",
+      6,
+      6,
+      false
+     ],
+     [
+      "view",
+      "v_customers",
+      7,
+      8,
+      false
+     ],
+     [
+      "view",
+      "mv_totals",
+      9,
+      9,
+      false
+     ],
+     [
+      "procedure",
+      "touch",
+      10,
+      13,
+      false
+     ]
+    ]
+   }
+  },
+  "nested_comment.sql": {
+   "err": {
+    "error": 1,
+    "error_bytes": 2,
+    "missing": 0
+   },
+   "g": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 1,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 1,
+      "extra": 0,
+      "found": 1,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": null,
+    "ms": 0.24,
+    "objects": [
+     [
+      "table",
+      "t_real",
+      2
+     ]
+    ]
+   },
+   "gd": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 1,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 1,
+      "extra": 0,
+      "found": 1,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": null,
+    "ms": 0.24,
+    "objects": [
+     [
+      "table",
+      "t_real",
+      2
+     ]
+    ]
+   },
+   "gold": 1,
+   "lang": "sql",
+   "ms": {
+    "rx": 0.41,
+    "ts": 0.04
+   },
+   "rx": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 1,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 1,
+      "extra": 0,
+      "found": 1,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "table",
+      "t_real",
+      2,
+      null
+     ]
+    ]
+   },
+   "ts": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 1,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 1,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "extra table ghost_nested line 1"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 1,
+      "found": 1,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "table",
+      "ghost_nested",
+      1,
+      1,
+      false
+     ],
+     [
+      "table",
+      "t_real",
+      2,
+      2,
+      false
+     ]
+    ]
+   }
+  },
+  "orders.pkb": {
+   "err": {
+    "error": 11,
+    "error_bytes": 525,
+    "missing": 0
+   },
+   "g": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 3
+      },
+      "top": {
+       "found": 0,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      },
+      "package-body": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function fee line 4",
+      "missing function total line 20",
+      "missing package-body orders_api line 1",
+      "missing procedure add_item line 9"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 4,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 0.67,
+    "objects": []
+   },
+   "gd": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 3
+      },
+      "top": {
+       "found": 0,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      },
+      "package-body": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function fee line 4",
+      "missing function total line 20",
+      "missing package-body orders_api line 1",
+      "missing procedure add_item line 9"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 4,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 0.94,
+    "objects": []
+   },
+   "gold": 4,
+   "lang": "plsql",
+   "ms": {
+    "rx": 1.67,
+    "ts": 0.57
+   },
+   "rx": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 3,
+       "missing": 0
+      },
+      "top": {
+       "found": 1,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 2,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 2
+      },
+      "package-body": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 1
+      }
+     },
+     "notes": [
+      "line function fee: 4 vs 2",
+      "line function total: 20 vs 19",
+      "line procedure add_item: 9 vs 8"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 4,
+      "extra": 0,
+      "found": 4,
+      "missing": 0,
+      "start_diff": 3
+     }
+    },
+    "objects": [
+     [
+      "package-body",
+      "orders_api",
+      1,
+      null
+     ],
+     [
+      "function",
+      "fee",
+      2,
+      null
+     ],
+     [
+      "procedure",
+      "add_item",
+      8,
+      null
+     ],
+     [
+      "function",
+      "total",
+      19,
+      null
+     ]
+    ]
+   },
+   "ts": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 1,
+       "missing": 2
+      },
+      "top": {
+       "found": 0,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      },
+      "package-body": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 1
+      }
+     },
+     "notes": [
+      "missing function fee line 4",
+      "missing function total line 20",
+      "missing package-body orders_api line 1",
+      "line procedure add_item: 9 vs 1"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 1,
+      "missing": 3,
+      "start_diff": 1
+     }
+    },
+    "objects": [
+     [
+      "procedure",
+      "add_item",
+      1,
+      18,
+      false
+     ]
+    ]
+   }
+  },
+  "orders.pks": {
+   "err": {
+    "error": 3,
+    "error_bytes": 269,
+    "missing": 0
+   },
+   "g": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 2
+      },
+      "top": {
+       "found": 0,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "package": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function total line 9",
+      "missing package orders_api line 4",
+      "missing procedure add_item line 8"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 3,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 0.51,
+    "objects": []
+   },
+   "gd": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 2
+      },
+      "top": {
+       "found": 0,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "package": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function total line 9",
+      "missing package orders_api line 4",
+      "missing procedure add_item line 8"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 3,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 7.79,
+    "objects": []
+   },
+   "gold": 3,
+   "lang": "plsql",
+   "ms": {
+    "rx": 100.43,
+    "ts": 0.5
+   },
+   "rx": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 2,
+       "missing": 0
+      },
+      "top": {
+       "found": 1,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "package": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 3,
+      "extra": 0,
+      "found": 3,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "package",
+      "orders_api",
+      4,
+      null
+     ],
+     [
+      "procedure",
+      "add_item",
+      8,
+      null
+     ],
+     [
+      "function",
+      "total",
+      9,
+      null
+     ]
+    ]
+   },
+   "ts": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 2
+      },
+      "top": {
+       "found": 0,
+       "missing": 1
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "package": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      },
+      "procedure": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function total line 9",
+      "missing package orders_api line 4",
+      "missing procedure add_item line 8"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 3,
+      "start_diff": 0
+     }
+    },
+    "objects": []
+   }
+  },
+  "quoting.sql": {
+   "err": {
+    "error": 0,
+    "error_bytes": 0,
+    "missing": 0
+   },
+   "g": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 0,
+       "missing": 5
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 2,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 0,
+       "missing": 1,
+       "start_diff": 0
+      }
+     },
+     "notes": [
+      "missing function add_one line 7",
+      "missing function tag_it line 12",
+      "missing table order items line 1",
+      "missing table sales.region.totals line 5",
+      "missing view v_open line 6"
+     ],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 0,
+      "missing": 5,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": "ParseError",
+    "ms": 1.02,
+    "objects": []
+   },
+   "gd": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 5,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 2,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 2,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 5,
+      "extra": 0,
+      "found": 5,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "commands": 0,
+    "failure": null,
+    "ms": 5.56,
+    "objects": [
+     [
+      "table",
+      "order items",
+      1
+     ],
+     [
+      "table",
+      "sales.region.totals",
+      5
+     ],
+     [
+      "view",
+      "v_open",
+      6
+     ],
+     [
+      "function",
+      "add_one",
+      7
+     ],
+     [
+      "function",
+      "tag_it",
+      12
+     ]
+    ]
+   },
+   "gold": 5,
+   "lang": "sql",
+   "ms": {
+    "rx": 1.73,
+    "ts": 0.23
+   },
+   "rx": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 5,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 2,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 2,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 1,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 5,
+      "extra": 0,
+      "found": 5,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "table",
+      "order items",
+      1,
+      null
+     ],
+     [
+      "table",
+      "sales.region.totals",
+      5,
+      null
+     ],
+     [
+      "view",
+      "v_open",
+      6,
+      null
+     ],
+     [
+      "function",
+      "add_one",
+      7,
+      null
+     ],
+     [
+      "function",
+      "tag_it",
+      12,
+      null
+     ]
+    ]
+   },
+   "ts": {
+    "cmp": {
+     "by_level": {
+      "inner": {
+       "found": 0,
+       "missing": 0
+      },
+      "top": {
+       "found": 5,
+       "missing": 0
+      }
+     },
+     "kinds": {
+      "function": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "table": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 2,
+       "missing": 0,
+       "start_diff": 0
+      },
+      "view": {
+       "end_diff": 0,
+       "end_unknown": 0,
+       "extra": 0,
+       "found": 1,
+       "missing": 0,
+       "start_diff": 0
+      }
+     },
+     "notes": [],
+     "total": {
+      "end_diff": 0,
+      "end_unknown": 0,
+      "extra": 0,
+      "found": 5,
+      "missing": 0,
+      "start_diff": 0
+     }
+    },
+    "objects": [
+     [
+      "table",
+      "order items",
+      1,
+      4,
+      false
+     ],
+     [
+      "table",
+      "sales.region.totals",
+      5,
+      5,
+      false
+     ],
+     [
+      "view",
+      "v_open",
+      6,
+      6,
+      false
+     ],
+     [
+      "function",
+      "add_one",
+      7,
+      11,
+      false
+     ],
+     [
+      "function",
+      "tag_it",
+      12,
+      12,
+      false
+     ]
+    ]
+   }
+  }
+ },
+ "g": {
+  "by_level": {
+   "inner": {
+    "found": 0,
+    "missing": 5
+   },
+   "top": {
+    "found": 1,
+    "missing": 16
+   }
+  },
+  "kinds": {
+   "function": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 6,
+    "start_diff": 0
+   },
+   "index": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "package": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "package-body": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "procedure": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 3,
+    "start_diff": 0
+   },
+   "sequence": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "table": {
+    "end_diff": 0,
+    "end_unknown": 1,
+    "extra": 0,
+    "found": 1,
+    "missing": 3,
+    "start_diff": 0
+   },
+   "trigger": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 2,
+    "start_diff": 0
+   },
+   "view": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 3,
+    "start_diff": 0
+   }
+  },
+  "total": {
+   "end_diff": 0,
+   "end_unknown": 1,
+   "extra": 0,
+   "found": 1,
+   "missing": 21,
+   "start_diff": 0
+  }
+ },
+ "gd": {
+  "by_level": {
+   "inner": {
+    "found": 0,
+    "missing": 5
+   },
+   "top": {
+    "found": 6,
+    "missing": 11
+   }
+  },
+  "kinds": {
+   "function": {
+    "end_diff": 0,
+    "end_unknown": 2,
+    "extra": 0,
+    "found": 2,
+    "missing": 4,
+    "start_diff": 0
+   },
+   "index": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "package": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "package-body": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "procedure": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 3,
+    "start_diff": 0
+   },
+   "sequence": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "table": {
+    "end_diff": 0,
+    "end_unknown": 3,
+    "extra": 0,
+    "found": 3,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "trigger": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 2,
+    "start_diff": 0
+   },
+   "view": {
+    "end_diff": 0,
+    "end_unknown": 1,
+    "extra": 0,
+    "found": 1,
+    "missing": 2,
+    "start_diff": 0
+   }
+  },
+  "total": {
+   "end_diff": 0,
+   "end_unknown": 6,
+   "extra": 0,
+   "found": 6,
+   "missing": 16,
+   "start_diff": 0
+  }
+ },
+ "plsql_in_pack": "DownloadError: Download error: Language 'plsql' not available for download. Available groups: [\"all\"]",
+ "rx": {
+  "by_level": {
+   "inner": {
+    "found": 5,
+    "missing": 0
+   },
+   "top": {
+    "found": 16,
+    "missing": 1
+   }
+  },
+  "kinds": {
+   "function": {
+    "end_diff": 0,
+    "end_unknown": 5,
+    "extra": 0,
+    "found": 5,
+    "missing": 1,
+    "start_diff": 2
+   },
+   "index": {
+    "end_diff": 0,
+    "end_unknown": 1,
+    "extra": 0,
+    "found": 1,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "package": {
+    "end_diff": 0,
+    "end_unknown": 1,
+    "extra": 0,
+    "found": 1,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "package-body": {
+    "end_diff": 0,
+    "end_unknown": 1,
+    "extra": 0,
+    "found": 1,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "procedure": {
+    "end_diff": 0,
+    "end_unknown": 3,
+    "extra": 0,
+    "found": 3,
+    "missing": 0,
+    "start_diff": 1
+   },
+   "sequence": {
+    "end_diff": 0,
+    "end_unknown": 1,
+    "extra": 0,
+    "found": 1,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "table": {
+    "end_diff": 0,
+    "end_unknown": 4,
+    "extra": 0,
+    "found": 4,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "trigger": {
+    "end_diff": 0,
+    "end_unknown": 2,
+    "extra": 0,
+    "found": 2,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "view": {
+    "end_diff": 0,
+    "end_unknown": 3,
+    "extra": 0,
+    "found": 3,
+    "missing": 0,
+    "start_diff": 0
+   }
+  },
+  "total": {
+   "end_diff": 0,
+   "end_unknown": 21,
+   "extra": 0,
+   "found": 21,
+   "missing": 1,
+   "start_diff": 3
+  }
+ },
+ "ts": {
+  "by_level": {
+   "inner": {
+    "found": 1,
+    "missing": 4
+   },
+   "top": {
+    "found": 12,
+    "missing": 5
+   }
+  },
+  "kinds": {
+   "function": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 2,
+    "missing": 4,
+    "start_diff": 0
+   },
+   "index": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 1,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "package": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "package-body": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 1,
+    "start_diff": 0
+   },
+   "procedure": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 2,
+    "missing": 1,
+    "start_diff": 1
+   },
+   "sequence": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 1,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "table": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 1,
+    "found": 4,
+    "missing": 0,
+    "start_diff": 0
+   },
+   "trigger": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 0,
+    "missing": 2,
+    "start_diff": 0
+   },
+   "view": {
+    "end_diff": 0,
+    "end_unknown": 0,
+    "extra": 0,
+    "found": 3,
+    "missing": 0,
+    "start_diff": 0
+   }
+  },
+  "total": {
+   "end_diff": 0,
+   "end_unknown": 0,
+   "extra": 1,
+   "found": 13,
+   "missing": 9,
+   "start_diff": 1
+  }
+ }
+}
