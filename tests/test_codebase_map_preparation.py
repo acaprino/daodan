@@ -240,7 +240,7 @@ def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap
     monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
     work = tmp_path / "app"
     work.mkdir()
-    manifest = {"name": "app", "version": "1.0.0", "dependencies": {"core-js": "3.38.1"}}  # a postinstall script
+    manifest = {"name": "app", "version": "1.0.0", "dependencies": {"esbuild": "0.25.12"}}  # its postinstall script
     if pnpm:
         manifest["packageManager"] = f"pnpm@{pnpm}"
     (work / "package.json").write_text(json.dumps(manifest), encoding="utf-8")
@@ -257,7 +257,7 @@ def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap
     line = preparation.restore("pnpm", ["app"])
     done = run(line)
     assert preparation.restore_gaps(done.stderr) == [], (version, done.stderr)
-    assert (work / "node_modules" / "core-js" / "package.json").is_file()
+    assert (work / "node_modules" / "esbuild" / "package.json").is_file()
     if int(version.split(".")[0]) >= 11:  # the case: the line without the setting fails
         (work / "node_modules").rename(tmp_path / "installed")
         [gap] = preparation.restore_gaps(run(line.replace(" --config.strict-dep-builds=false", "")).stderr)
