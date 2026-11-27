@@ -406,7 +406,11 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
                "line": "{ s=$(ls *.slnx *.sln 2>/dev/null | head -n 1); dotnet restore $s || { [ -n \"$s\" ] &&"
                        " dotnet sln \"$s\" list | tail -n +3 | tr '\\\\' / | while read -r p; do dotnet restore"
                        " \"$p\"; done; false; }; }"},
-    "cargo": {"marks": ("Cargo.toml",), "needs": ["rust"], "error": "^error|^Caused by|^  ", "hosts": (),
+    # A `Cargo.lock` is written at the root of a Cargo workspace: a crate below another with its own is a workspace of
+    # its own, restored where it sits; one without is a member the root restores.
+    "cargo": {"marks": ("Cargo.toml",), "locks": ("Cargo.lock",), "default": True, "needs": ["rust"],
+              "error": "^error|^Caused by|^  ", "hosts": (),
+
               "line": "if [ -f Cargo.lock ]; then cargo fetch --locked; else cargo fetch; fi"},
 }
 LOG = "/tmp/daodan-restore.log"

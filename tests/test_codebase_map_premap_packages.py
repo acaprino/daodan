@@ -438,3 +438,25 @@ def test_renovate_carries_the_value_the_file_writes_and_maven_s_effective_pom_no
     joined = premap.join([{"source": "maven@3.10.0", "rank": "model", "facts": model["facts"]},
                           {"source": "jvm_files@1", "rank": "reader", "facts": {"packages": [reader]}}])["packages"]
     assert [(p["version"], p.get("conflicts")) for p in joined] == [("2.17.0", None)]
+
+
+def test_a_package_a_unit_depends_on_as_a_unit_of_the_project_is_not_external():
+    """The edges the model sources state (Go's `replace`, Cargo's path dependencies, npm's links, the Maven reactor) say
+    which declared package is the project's own unit: its sign at the declaring unit's manifest leaves, the others stay."""
+    units = [{"root": "api", "kind": "go-module", "name": "example.com/api", "manifest": "api/go.mod",
+              "depends_on": ["example.com/lib"]},
+             {"root": "lib", "kind": "go-module", "name": "example.com/lib", "manifest": "lib/go.mod", "depends_on": []},
+             {"root": "web", "kind": "npm-package", "name": "@acme/web", "manifest": "web/package.json",
+              "depends_on": ["@Acme/UI", "react"]},
+             {"root": "ui", "kind": "npm-package", "name": "@acme/ui", "manifest": "ui/package.json", "depends_on": []}]
+    packages = [{"ecosystem": "go", "name": "example.com/lib", "declared_in": "api/go.mod#L5"},
+                {"ecosystem": "go", "name": "example.com/lib", "declared_in": "tools/go.mod#L3"},  # not that unit's edge
+                {"ecosystem": "go", "name": "github.com/x/y", "declared_in": "api/go.mod#L6"},
+                {"ecosystem": "npm", "name": "@acme/ui", "declared_in": "web/package.json#L4"},
+                {"ecosystem": "npm", "name": "react", "declared_in": "web/package.json#L5"},  # no unit of the project
+                {"ecosystem": "docker", "name": "example.com/lib", "declared_in": "api/go.mod"}]
+    kept = module_graph.external_packages({"modules": [], "edges": []}, packages, units)
+    assert [(p["name"], p["declared_in"]) for p in kept] == [
+        ("example.com/lib", "tools/go.mod#L3"), ("github.com/x/y", "api/go.mod#L6"), ("react", "web/package.json#L5"),
+        ("example.com/lib", "api/go.mod")]
+    assert module_graph.external_packages({"modules": [], "edges": []}, packages) == packages  # no unit, nothing leaves

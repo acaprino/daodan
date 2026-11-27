@@ -24,7 +24,7 @@ try:
     _yaml_version = metadata.version("PyYAML")
 except metadata.PackageNotFoundError:
     _yaml_version = "unavailable"
-NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.3.image.2", "reader"
+NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.4.image.2", "reader"
 PACKAGE_ECOSYSTEM = {
     "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
     "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
@@ -177,9 +177,25 @@ def facts(graph: dict) -> dict:
     return {"units": units, "workspace": list(workspaces.values()), "dependencies": dependencies}
 
 
-def external_packages(graph: dict, packages: list[dict]) -> list[dict]:
-    """Discard PyPI signs at the pyproject that explicitly resolves them to a local workspace member or directory."""
+def _own(name: str, ecosystem: str | None) -> str:
+    return normalize_pypi_name(name) if ecosystem in (None, "pypi") else name.casefold()
+
+
+def external_packages(graph: dict, packages: list[dict], units=()) -> list[dict]:
+    """Discard the signs of the project's own units: a PyPI sign at the pyproject that explicitly resolves it to a local
+    workspace member or directory (`graph`), and a sign of any ecosystem at a unit's manifest whose name that unit's
+    `depends_on` holds as a unit of the project (`units`: the edges the model sources state, Go's `replace`, Cargo's
+    path dependencies, npm's links, the Maven and Gradle reactors; no file is read again). An image is never a unit."""
+    names = {_own(u["name"], None) for u in units if u.get("name")}
+    edges = {(u["manifest"], _own(d, None)) for u in units if u.get("manifest")
+             for d in u.get("depends_on") or () if isinstance(d, str) and _own(d, None) in names}
+    edges |= {(u["manifest"], d.casefold()) for u in units if u.get("manifest")
+              for d in u.get("depends_on") or () if isinstance(d, str) and _own(d, None) in names}
+    if edges:
+        packages = [p for p in packages if p["ecosystem"] == "docker" or not isinstance(p.get("name"), str)
+                    or ((p.get("declared_in") or "").partition("#")[0], _own(p["name"], p["ecosystem"])) not in edges]
     python = {m["id"]: m for m in graph["modules"] if "python" in m.get("ecosystems", ())}
+
     local = set()
     for edge in graph["edges"]:
         if edge["kind"] != "declares" or edge["source"] not in python or edge["target"] not in python:
