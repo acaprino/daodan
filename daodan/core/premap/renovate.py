@@ -54,6 +54,17 @@ VERSION_MANAGERS = {"asdf", "mise", "proto", "nvm", "nodenv", "pyenv", "rust-too
                     "maven-wrapper", "bazelisk", "ruby-version", "bun-version", "terraform-version"}
 TOOL_DEPTYPES = {"engines", "packageManager", "volta", "golang", "toolchain", "requires-python", "required_version"}
 WRAPPER_SELF = {"maven-wrapper", "gradle-wrapper"}  # a wrapper manager's entry for the wrapper itself, not the tool
+# A package that a build downloads to manage or inherit others, not to compile with: its `role`, by the depType Renovate's
+# maven manager gives it (`import`, a BOM in `dependencyManagement`; `parent`, `parent-root`, the POM parent). One field
+# keeps it a dependency, as decided, apart from the others. Gradle's `platform()` has no depType of its own in Renovate's
+# answer, nor an entry in Daodan's Gradle model: not stated.
+ROLES = {("maven", "import"): "bom", ("maven", "parent"): "parent", ("maven", "parent-root"): "parent"}
+# Composer's platform packages (php, hhvm, ext-*, lib-*, composer, composer-plugin-api, composer-runtime-api): what the
+# PHP running the project has, never downloaded, so no package; `php` is a toolchain where the file states it. Composer's
+# own definition, `PlatformRepository::PLATFORM_PACKAGE_REGEX` (src/Composer/Repository/PlatformRepository.php), on a
+# package name: an identifier, no grammar.
+COMPOSER_PLATFORM = re.compile(r"^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*"
+                               r"|composer(?:-(?:plugin|runtime)-api)?)$", re.IGNORECASE)
 # A dependency's `currentValue` the file does not write at it: a variable's (a property, a catalog's version), one
 # read out of other text (a Git reference, an alias: `currentRawValue` holds it), one Renovate skips (a path, a URL)
 WRITTEN_ELSEWHERE = ("sharedVariableName", "currentRawValue", "skipReason")
@@ -712,13 +723,16 @@ def read(context, commands, results):
                     continue
                 # a constraint the file states (Poetry's `python`, global.json's `dotnet-sdk`) is a toolchain
                 if eco and manager not in VERSION_MANAGERS and dep.get("depType") not in TOOL_DEPTYPES and (
-                        name not in (package_file.get("extractedConstraints") or {})):
+                        name not in (package_file.get("extractedConstraints") or {})) and not (
+                        manager == "composer" and COMPOSER_PLATFORM.match(name)):
                     pkg_name = declared_image(name) if eco == "docker" else name
                     written = isinstance(current, str) and current and not any(map(dep.get, WRITTEN_ELSEWHERE))
+                    role = ROLES.get((manager, dep.get("depType")))
                     if pkg_name and (eco, pkg_name.casefold(), path) not in seen_pkgs:
                         seen_pkgs.add((eco, pkg_name.casefold(), path))
                         packages.append({"ecosystem": eco, "name": pkg_name, "declared_in": path,
-                                         **({"version": current} if written else {})})
+                                         **({"version": current} if written else {}), **({"role": role} if role else {})})
+
                 tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else (
                     DOCKER_RUNTIMES.get(declared_image(name), DEV_CONTAINERS.get(name)) if manager in IMAGE_MANAGERS
                     else _package_tool(manager, name, dep))

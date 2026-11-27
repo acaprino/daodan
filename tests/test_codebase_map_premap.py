@@ -1121,3 +1121,31 @@ def test_the_pre_map_follows_the_build_tools_of_the_stack_record_of_its_inventor
     assert premap.state(manifest)["state"] == "fresh"
     stack(["golang"], inventory="another")
     assert premap.state(manifest)["state"] == "stale"  # every source again
+
+
+def test_a_bom_and_a_pom_parent_are_dependencies_with_their_role(tmp_path):
+    """Renovate's maven depTypes: `import` is a BOM of `dependencyManagement`, `parent` and `parent-root` the POM parent;
+    both stay dependencies, with `role`; a dependency to compile with has none."""
+    files = {"pom.xml": "<project/>\n"}
+    facts = _renovate(tmp_path, files, {"maven": [{"packageFile": "pom.xml", "deps": [
+        {"depName": "org.springframework.boot:spring-boot-starter-parent", "currentValue": "3.4.0", "depType": "parent"},
+        {"depName": "org.acme:root", "currentValue": "1", "depType": "parent-root"},
+        {"depName": "org.springframework.cloud:spring-cloud-dependencies", "currentValue": "2025.1.0", "depType": "import",
+         "sharedVariableName": "spring-cloud.version"},
+        {"depName": "junit:junit", "currentValue": "4.13.2", "depType": "test"}]}]})
+    assert [(p["name"], p.get("role")) for p in facts["packages"]] == [
+        ("org.springframework.boot:spring-boot-starter-parent", "parent"), ("org.acme:root", "parent"),
+        ("org.springframework.cloud:spring-cloud-dependencies", "bom"), ("junit:junit", None)]
+
+
+def test_a_composer_platform_requirement_is_no_package(tmp_path):
+    """`php`, `ext-*` and `lib-*` are what the PHP running the project has (Composer's platform packages): no package a
+    unit downloads. A vendor's package whose name starts the same way stays."""
+    files = {"composer.json": '{"require": {"php": "^8.2", "ext-json": "*", "lib-icu": "*", "monolog/monolog": "^3"}}\n'}
+    facts = _renovate(tmp_path, files, {"composer": [{"packageFile": "composer.json", "deps": [
+        {"depName": "php", "currentValue": "^8.2", "depType": "require", "datasource": "github-tags"},
+        {"depName": "ext-json", "currentValue": "*", "depType": "require", "skipReason": "unsupported"},
+        {"depName": "lib-icu", "currentValue": "*", "depType": "require"},
+        {"depName": "phpunit/phpunit", "currentValue": "^11", "depType": "require-dev"},
+        {"depName": "php-http/client", "currentValue": "^1", "depType": "require"}]}]})
+    assert [p["name"] for p in facts["packages"]] == ["phpunit/phpunit", "php-http/client"]
