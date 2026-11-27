@@ -15,7 +15,6 @@ MOTIVO_A = "Lo stack senza le dichiarazioni della pre-mappa (T1.B.7), accettato 
 MOTIVO_B = "Fuori dalle 88 di T1.B.1: viene da .github/ o da una dichiarazione che lo stack non vede più; accettato dal proprietario il 27 novembre 2026 finché il perimetro non legge .github/"
 ACCEPTED: dict[tuple[str, str, str], str] = {
     ("mix-real-klaxon", "frameworks_by_name", "testng"): MOTIVO_A,
-    ("real-app-kotlinconf", "services", "githubpages"): MOTIVO_B,
     ("real-stack-documenso", "services", "gotenberg"): MOTIVO_A,
     ("real-stack-docuseal", "services", "redis"): MOTIVO_A,
     ("real-stack-peopleinspace", "frameworks_by_name", "kotlintest"): MOTIVO_B,
