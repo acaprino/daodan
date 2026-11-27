@@ -2,13 +2,14 @@
 Modal with each language's pinned indexer, through its `index()`: the plugin's for Go and Python, which install
 what they need themselves, the adapters' for Java and Kotlin, which run the plugin's two phases in the function's
 container, on the plugin's image (`adapters/jvm_here.py`), and the adapter's for C and C++ (`adapters/clang.py`:
-CMake's configure and build of the fixture, then scip-clang), and TypeScript's (`ts`: npm's install of the fixture's
-packages, then the pinned scip-typescript, as `tests/test_codebase_map_code_graph.py` documents). No model or graph; a snapshot only for the
+CMake's configure and build of the fixture, then scip-clang), and TypeScript's (`ts`, and `ts-changed`, `ts` with one
+file changed: npm's install of the fixture's packages, then the pinned scip-typescript, as
+`tests/test_codebase_map_code_graph.py` documents). No model or graph; a snapshot only for the
 pre-map the indexers take their structure from.
 
     modal deploy benchmarks/inference-audit/fixture_indexes.py
-    python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp,ts
-    python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp,ts
+    python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp,ts,ts-changed
+    python benchmarks/inference-audit/fixture_indexes.py fetch --languages go,python,java,kotlin,c,cpp,ts,ts-changed
 
 `spawn` uploads a fixture's sources, never its `index.scip`, `expected.json` or `kotlin-configs/`. The container
 runs the adapter's `index()` and keeps on the volume (`inference-audit/fixture-indexes/<language>/`) the index the
@@ -34,7 +35,7 @@ import plugin_scripts  # noqa: E402
 from adapters import clang, java, kotlin  # noqa: E402
 from indexers import go, python  # noqa: E402
 
-PIP = ("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
+PIP = ("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "protobuf==7.36.2")
 RUN_KEYS = ("prefix", "phase", "step", "fallback", "returncode", "seconds", "peak_mb", "index_bytes",
             "same_occurrences", "reverse_relationships_dropped", "stderr_errors", "stderr_error_examples",
             "stderr_tail")
@@ -119,9 +120,10 @@ def _index(language: str, sources: dict[str, bytes]) -> dict:
     return {key: result[key] for key in ("language", "indexer", "indexes", "error")}
 
 
-def _index_ts(sources: dict[str, bytes]) -> dict:
-    """The pinned scip-typescript over the uploaded fixture, its packages installed by npm without their scripts
-    (the fixture's code runs only here, in the function's container); the versions it ran with are on `run.json`."""
+def _index_ts(sources: dict[str, bytes], name: str = "ts") -> dict:
+    """The pinned scip-typescript over the uploaded fixture `name`, its packages installed by npm without their scripts
+    (the fixture's code runs only here, in the function's container); the versions it ran with are on `run.json`.
+    The project sits at `/work/ts` for every fixture, so that two of them index the same paths."""
     import shutil
     import subprocess
     import traceback
@@ -132,7 +134,7 @@ def _index_ts(sources: dict[str, bytes]) -> dict:
         path = project / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
-    store = Path("/results") / STORE / "ts"
+    store = Path("/results") / STORE / name
     shutil.rmtree(store, ignore_errors=True)
     store.mkdir(parents=True)
     npm = ("--ignore-scripts", "--no-audit", "--no-fund")
@@ -143,7 +145,7 @@ def _index_ts(sources: dict[str, bytes]) -> dict:
                           f"@sourcegraph/scip-typescript@{TS_INDEXER}"]),
              ("index", [str(prefix / "bin/scip-typescript"), "index", "--cwd", ".", "--output", "index.scip",
                         "--no-progress-bar"]))
-    result = {"language": "ts", "code": plugin_scripts.code_sha256(), "indexer": f"scip-typescript@{TS_INDEXER}",
+    result = {"language": name, "code": plugin_scripts.code_sha256(), "indexer": f"scip-typescript@{TS_INDEXER}",
               "error": None, "indexes": [], "runs": []}
     try:
         for name, command in steps:
@@ -194,6 +196,11 @@ def index_ts(sources: dict) -> dict:
     return _index_ts(sources)
 
 
+@app.function(image=_ts_image(), cpu=2, memory=4096, **FUNCTION)
+def index_ts_changed(sources: dict) -> dict:
+    return _index_ts(sources, "ts-changed")
+
+
 @app.function(image=_clang_image(), cpu=2, memory=4096, **FUNCTION)
 def index_c(sources: dict) -> dict:
     return _index("c", sources)
@@ -219,14 +226,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("spawn", "fetch"))
-    parser.add_argument("--languages", default="go,python,java,kotlin,c,cpp,ts")
+    parser.add_argument("--languages", default="go,python,java,kotlin,c,cpp,ts,ts-changed")
     args = parser.parse_args()
     chosen = [item.strip() for item in args.languages.split(",") if item.strip()]
     local = plugin_scripts.code_sha256()
     print("code", local)
     for language in chosen:
         if args.command == "spawn":
-            function = modal.Function.from_name("daodan-fixture-indexes", f"index_{language}")
+            function = modal.Function.from_name("daodan-fixture-indexes", f"index_{language.replace('-', '_')}")
             sources = _sources(language)
             print(language, len(sources), "files", function.spawn(sources).object_id)
             continue

@@ -1,0 +1,111 @@
+{
+ "before": "68e90a85638a7862ff1a676995ce60f7afa406c9",
+ "after": "15de3b85e84eed6604c7a161c857e46fa8b7f660",
+ "rows": [
+  {
+   "index": "fixture c",
+   "bytes": 19356,
+   "seconds_before": 0.0,
+   "seconds_after": 0.04,
+   "different": []
+  },
+  {
+   "index": "fixture cpp",
+   "bytes": 307226,
+   "seconds_before": 0.01,
+   "seconds_after": 0.06,
+   "different": []
+  },
+  {
+   "index": "fixture go",
+   "bytes": 6373,
+   "seconds_before": 0.0,
+   "seconds_after": 0.03,
+   "different": []
+  },
+  {
+   "index": "fixture java",
+   "bytes": 11457,
+   "seconds_before": 0.0,
+   "seconds_after": 0.03,
+   "different": []
+  },
+  {
+   "index": "fixture kotlin",
+   "bytes": 8038,
+   "seconds_before": 0.0,
+   "seconds_after": 0.03,
+   "different": []
+  },
+  {
+   "index": "fixture python",
+   "bytes": 26224,
+   "seconds_before": 0.0,
+   "seconds_after": 0.03,
+   "different": []
+  },
+  {
+   "index": "fixture rust",
+   "bytes": 4134,
+   "seconds_before": 0.0,
+   "seconds_after": 0.03,
+   "different": []
+  },
+  {
+   "index": "fixture ts",
+   "bytes": 37676,
+   "seconds_before": 0.0,
+   "seconds_after": 0.04,
+   "different": []
+  },
+  {
+   "index": "fixture ts-changed",
+   "bytes": 38139,
+   "seconds_before": 0.0,
+   "seconds_after": 0.04,
+   "different": []
+  },
+  {
+   "index": "chi scip-go-0.scip",
+   "bytes": 1632115,
+   "seconds_before": 0.25,
+   "seconds_after": 0.25,
+   "different": []
+  },
+  {
+   "index": "chi scip-go-1.scip",
+   "bytes": 64652,
+   "seconds_before": 0.01,
+   "seconds_after": 0.04,
+   "different": []
+  },
+  {
+   "index": "chi scip-go-2.scip",
+   "bytes": 39509,
+   "seconds_before": 0.01,
+   "seconds_after": 0.04,
+   "different": []
+  },
+  {
+   "index": "semver rust-analyzer-0.scip",
+   "bytes": 496873,
+   "seconds_before": 0.04,
+   "seconds_after": 0.07,
+   "different": []
+  },
+  {
+   "index": "semver rust-analyzer-1.scip",
+   "bytes": 14108,
+   "seconds_before": 0.0,
+   "seconds_after": 0.03,
+   "different": []
+  },
+  {
+   "index": "tududi scip-typescript-0.scip",
+   "bytes": 44550689,
+   "seconds_before": 4.85,
+   "seconds_after": 5.61,
+   "different": []
+  }
+ ]
+}

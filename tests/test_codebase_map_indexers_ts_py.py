@@ -218,6 +218,18 @@ def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in
     assert "no workspace" in gaps["restore_failed", "tools/gen"]["detail"]
 
 
+def test_a_subset_is_the_whole_list_of_files_of_the_generated_tsconfig(sandbox):
+    """The stage's `subset` (the files to index again): the program's files are those, its imports reached as
+    usual; nothing else of the run changes."""
+    project = _written(sandbox["root"] / "project" / "mono", {**MONOREPO, "pnpm-lock.yaml": "lockfileVersion: 9\n"})
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    result = typescript.index(project, sandbox["root"] / "work", subset=["packages/web/src/main.ts"],
+                              **typescript.structure(RECORD))
+    assert "state" not in result, result.get("reason")
+    config = json.loads(Path(box.asked[0]["inputs"][typescript.CONFIG]).read_text(encoding="utf-8"))
+    assert config["include"] == ["packages/web/src/main.ts", typescript.REFERENCES]
+
+
 def test_the_index_the_container_brings_back_feeds_the_graph(sandbox):
     project = _project(sandbox, "ts")
     box = _contained(sandbox, index=FIXTURES / "ts/index.scip")

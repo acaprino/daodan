@@ -5,6 +5,7 @@ lifecycle beside the snapshot (`edge_state`, `ensure_edges`, `reset_pass`, `stop
 `ENGINES` is built last: an adapter imports `resolve_edges` back, which takes this module's other names."""
 from __future__ import annotations
 
+import glob
 import hashlib
 import importlib.util
 import json
@@ -554,7 +555,12 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     """An indexer's stage: its index of the project, the graph of each of its languages the snapshot holds,
     saved in the store beside the other languages' entries (`code_graph.write_store`).
 
-    The indexer works in a directory removed after the stage. One that `needs_container` gets its engine here:
+    The indexer works in a directory removed after the stage; what it gave is kept in `index-cache/` beside the
+    manifest, and a stage whose inputs did not change (`_inputs`) reads it there and runs no indexer. The cache is
+    of the whole language, not of a unit: every adapter runs all its units in one container and does not split its
+    contract per unit (`_keep`). An adapter with `SUBSET` indexes again only the files that changed and those
+    importing one (`_redone`), merged into the kept indexes (`_merged`). One that `needs_container` gets its engine
+    here:
     without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
     `engine` (the resolver: the entry's name, `@`, the indexer's version), `indexer` and `languages`; without
     an index, the indexer's `reason` and, when it is `unavailable`, its `install`; `gaps`, what the indexer's
@@ -592,10 +598,19 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
     egress.declare(egress.name(project_root), declared["where"])  # the requests of its runs name the files
     if spec.needs_container:
         options["declared"] = declared
-    if hasattr(module, "READS"):
-        with code_graph.Snapshot(manifest) as snap:
+    with code_graph.Snapshot(manifest) as snap:
+        if hasattr(module, "READS"):
             options["files"] = sorted(rel for rel in snap.checkout.values() if Path(rel).suffix.lower() in module.READS)
-    if spec.needs_container:
+        inputs, root = _inputs(spec, record, snap), snap.root
+    cache = Path(manifest).parent / INDEX_CACHE / spec.name
+    result, earlier = _cached(cache, _key(inputs))
+    redone = _redone(module, inputs, earlier) if result is None else None
+    if redone is not None and not redone["subset"]:  # files gone, none changed: no run
+        result = _merged(earlier[1], None, redone["gone"], root)
+        _keep(cache, inputs, result, None)
+    elif redone is not None:
+        options["subset"] = redone["subset"]
+    if result is None and spec.needs_container:
         import container
         try:
             options["engine"] = container.find_engine()
@@ -609,7 +624,11 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
                 return {"available": False, "engine": spec.name, "reason": said[0]["detail"], "gaps": said}
     work = Path(tempfile.mkdtemp(prefix=f"daodan-{spec.name}-"))
     try:
-        result = module.index(Path(project_root), work, **options)
+        if result is None:
+            result = module.index(Path(project_root), work, **options)
+            if redone is not None:
+                result = _merged(earlier[1], result, {*redone["subset"], *redone["gone"]}, root)
+            _keep(cache, inputs, result, work)
         indexer = result.get("indexer") or {}
         # The entry names the source: rust-analyzer is also an engine, and scip-java indexes Kotlin too.
         resolver = f"{spec.name}@{indexer.get('version')}"
@@ -626,8 +645,8 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
                     rows[result["graph"]["language"]] = (*module.rows(result["graph"], resolver), indexer)
                 else:
                     index = code_graph.Index(snap.root)
-                    for path, prefix in result["indexes"]:
-                        index.load(Path(path), prefix)
+                    for path, prefix, *skip in result["indexes"]:
+                        index.load(Path(path), prefix, set(skip[0]) if skip else ())
                     hops, traversal, _prepared = code_graph.adapter_traversal(module, index, snap)
                     static = module.static(index) if hasattr(module, "static") else None
                     # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
@@ -669,6 +688,134 @@ def _index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path
                 **({"gaps": noted} if noted else {})}
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+INDEX_CACHE = "index-cache"
+
+
+def _inputs(spec: EngineSpec, record: dict, snap) -> dict:
+    """What an indexer's contract depends on: the adapter's code and pins (its indexer's version among them), the
+    manifests and lockfiles the pre-map read for the project's units, packages and toolchains, and each file of its
+    languages, checkout-relative, with a digest over it and every file it imports (`code_graph.dependency_digests`):
+    a file's digest moves when the file or one it reaches through imports changed."""
+    import code_graph
+    hashes = {rel: header.get("raw_hash") for rel, header in snap.store.iter_file_headers_only()}
+    digests = code_graph.dependency_digests(hashes, code_graph.file_dependencies(snap.connection))
+    declared = sorted({unit["manifest"] for unit in record.get("units", ()) if unit.get("manifest")}
+                      | {item["declared_in"] for name in ("packages", "toolchains") for item in record.get(name, ())
+                         if item.get("declared_in")})
+    return {"adapter": adapter_fingerprint(spec.indexer), "declared": [[rel, hashes.get(rel)] for rel in declared],
+            "files": {snap.checkout[rel]: digests.get(rel) for rel, language in snap.languages.items()
+                      if language in spec.languages and rel in snap.checkout}}
+
+
+def _key(inputs: dict) -> str:
+    return hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
+
+
+def _redone(module, inputs: dict, earlier: tuple | None) -> dict | None:
+    """What a stage indexes again when its adapter takes a `subset` (Go names packages, TypeScript the generated
+    tsconfig's files) and only files of its languages changed since the kept contract: `subset`, the files whose
+    digest moved (changed, or importing one that did, transitively), `gone`, the files removed. None runs the whole
+    language: nothing kept, another adapter, a manifest or lockfile changed, or an adapter without `subset`."""
+    if earlier is None or not getattr(module, "SUBSET", False):
+        return None
+    before, _kept = earlier
+    if (before.get("adapter"), before.get("declared")) != (inputs["adapter"], inputs["declared"]):
+        return None
+    return {"subset": sorted(rel for rel, digest in inputs["files"].items() if before["files"].get(rel) != digest),
+            "gone": sorted(set(before["files"]) - set(inputs["files"]))}
+
+
+def _merged(kept: dict, new: dict | None, redone, root: Path) -> dict:
+    """The kept contract, each of its indexes without the documents of `redone` and of the new run's indexes
+    (`Index.load`'s `skip`), then the new run's indexes, the rest of its contract on top and its `configs` merged
+    into the kept ones. A new run that failed is the stage's outcome, as a whole run's would be."""
+    import code_graph
+    new = new or {}
+    if new.get("state"):
+        return new
+    made = set(redone)
+    for path, prefix, *_skip in new.get("indexes", ()):
+        probe = code_graph.Index(root)
+        probe.load(Path(path), prefix)
+        made |= set(probe.documents)
+    indexes = [[path, prefix, sorted({*(skip[0] if skip else ()), *made})] for path, prefix, *skip in kept["indexes"]]
+    merged = {**kept, **new, "indexes": [*indexes, *(list(item) for item in new.get("indexes", ()))]}
+    if "configs" in kept and "configs" in new:
+        merged["configs"] = _deep(kept["configs"], new["configs"])
+    return merged
+
+
+def _deep(old, new):
+    """`new` over `old`, dictionaries merged key by key."""
+    if isinstance(old, dict) and isinstance(new, dict):
+        return {**old, **{key: _deep(old.get(key), value) for key, value in new.items()}}
+    return new
+
+
+def _moved(value, old: str, new: str, found: set | None = None):
+    """`value` with every path under `old` named under `new` (`found` gets the paths), its tuples and sets as lists,
+    its paths as text."""
+    if isinstance(value, os.PathLike):
+        value = os.fspath(value)
+    if isinstance(value, str):
+        if value.startswith((old + os.sep, old + "/")):
+            if found is not None:
+                found.add(value)
+            return new + value[len(old):]
+        return value
+    if isinstance(value, dict):
+        return {key: _moved(item, old, new, found) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [_moved(item, old, new, found) for item in value]
+    return value
+
+
+def _cached(cache: Path, key: str) -> tuple[dict | None, tuple | None]:
+    """The kept contract when its inputs are these (`key`), its files in the cache, else None; and the kept inputs
+    with the kept contract, for `_redone`."""
+    try:
+        inputs = json.loads((cache / "inputs.json").read_text(encoding="utf-8"))
+        kept = _moved(json.loads((cache / "result.json").read_text(encoding="utf-8")), "{cache}", str(cache / "files"))
+    except (OSError, ValueError):
+        return None, None
+    return (kept if _key(inputs) == key else None), (inputs, kept)
+
+
+def _keep(cache: Path, inputs: dict, result: dict, work: Path | None) -> None:
+    """A contract that gave an index (or a graph), kept for the next stage: its inputs, and the files it names in the
+    work directory (indexes, the compile tasks Kotlin's `refine` reads) or in the cache copied beside it. One entry
+    per analyzer, of the whole language: every adapter runs all its units in one container and gives one contract,
+    which it does not split per unit, so a changed unit runs the language again (or, with `subset`, its changed
+    files). Keeping is best effort: the stage goes on without."""
+    if result.get("state") or not (result.get("indexes") or result.get("graph")):
+        return
+    files, generation = cache / "files", _key(inputs)[:12]
+    held, made, temp = set(), set(), None
+    try:
+        value = _moved(result, str(files), "{cache}", held)
+        text = json.dumps(_moved(value, str(work), f"{{cache}}/{generation}", made) if work else value)
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        temp = Path(tempfile.mkdtemp(prefix=f"{cache.name}-", dir=cache.parent))
+        # A file goes with the files beside it named after it (`unanswered` reads TypeScript's `.unbound.jsonl`).
+        sources = [(base, prefix, item) for base, prefix, found in ((files, "", held), (work, generation, made))
+                   for path in found for item in (Path(path), *(Path(path).parent.glob(
+                       f"{glob.escape(Path(path).stem)}.*") if Path(path).is_file() else ()))]
+        for base, prefix, source in sources:
+            target = temp / "files" / prefix / source.relative_to(base)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if source.is_dir():
+                shutil.copytree(source, target, dirs_exist_ok=True)
+            elif source.is_file():
+                shutil.copy2(source, target)
+        (temp / "result.json").write_text(text, encoding="utf-8")
+        (temp / "inputs.json").write_text(json.dumps(inputs, sort_keys=True), encoding="utf-8")
+        shutil.rmtree(cache, ignore_errors=True)
+        temp.rename(cache)
+    except (OSError, TypeError, ValueError):
+        if temp is not None:
+            shutil.rmtree(temp, ignore_errors=True)
 
 
 def _none_indexed(language: str, files: dict) -> str:

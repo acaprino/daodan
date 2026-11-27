@@ -365,6 +365,7 @@ class ImplementationTests(unittest.TestCase):
 class IndexStoreTests(unittest.TestCase):
     """The store written from the graph of `fixtures/code-graph/ts`, read through the view: one source per reference."""
 
+    FIXTURE = "ts"
     RESOLVER = "scip-typescript@0.5.2"
     ENDS = json.loads((Path(__file__).resolve().parent / "fixtures/code-graph/ts-ends.json").read_text(encoding="utf-8"))
     MEMBER = __import__("indexers.typescript", fromlist=["MEMBER"]).MEMBER  # the adapter's cause of a member's hole
@@ -377,7 +378,7 @@ class IndexStoreTests(unittest.TestCase):
         import importlib
         cls.temp = tempfile.TemporaryDirectory()
         root = Path(cls.temp.name).resolve()
-        shutil.copytree(Path(__file__).resolve().parent / "fixtures/code-graph/ts", root / "ts")
+        shutil.copytree(Path(__file__).resolve().parent / "fixtures/code-graph" / cls.FIXTURE, root / "ts")
         cls.manifest, cls.edges = root / "manifest.sqlite", root / "engine-edges.sqlite"
         snapshot.read_project(root / "ts", cls.manifest)
         adapter = importlib.import_module("indexers.typescript")
@@ -553,6 +554,16 @@ class IndexStoreTests(unittest.TestCase):
         self.assertEqual(view["coverage"]["status"], "rejected_store")
         ref = {item["id"]: item for item in view["references"]}[self.record("call src/api/jobs.js:18 makeHandler")["id"]]
         self.assertEqual(ref["provenance"], [resolve_edges.resolution.LEXICAL_RESOLVER])
+
+
+class ChangedIndexStoreTests(IndexStoreTests):
+    """The same store from `fixtures/code-graph/ts-changed`, `ts` with one file changed (`src/api/logService.js`: a
+    symbol renamed, a new call to a file that imports it), with its own index and ends: the project the incremental
+    index (T2.2) must answer as a full one does."""
+
+    FIXTURE = "ts-changed"
+    ENDS = json.loads((Path(__file__).resolve().parent / "fixtures/code-graph/ts-changed-ends.json")
+                      .read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

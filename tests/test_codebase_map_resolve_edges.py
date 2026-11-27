@@ -2174,6 +2174,91 @@ class IndexerStageTests(unittest.TestCase):
             replay = edge_view.load_edge_view(manifest, engine_store=resolve_edges.default_edge_store(manifest))
             self.assertIn("go", replay["coverage"]["languages"])
 
+    def test_unchanged_inputs_reuse_the_index_and_a_change_runs_the_language_once(self):
+        # The cache is of the whole language: every adapter runs all its units in one container and gives one
+        # contract, which it does not split per unit.
+        project, manifest = self.project("go")
+        calls = []
+
+        def index(project_dir, work_dir, files=None, **given):
+            # The index in the work directory, removed after the stage, with a file beside it named after it.
+            calls.append(given.get("subset"))
+            written = Path(work_dir) / "scip-go-0.scip"
+            shutil.copyfile(self.FIXTURES / "go/index.scip", written)
+            written.with_suffix(".unbound.jsonl").write_text("{}\n", encoding="utf-8")
+            return {**self.contract("go"), "indexes": [[str(written), ""]]}
+
+        def stage():
+            resolve_edges.default_edge_store(manifest).unlink(missing_ok=True)  # the stage runs again
+            result, started, _indexed = self.run_stage("scip-go", manifest, index)
+            self.assertEqual(len(started), 1)
+            self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
+            return len(calls)
+
+        self.assertEqual(stage(), 1)
+        kept = manifest.parent / engine_pass.INDEX_CACHE / "scip-go" / "files"
+        self.assertEqual(sorted(path.name for path in kept.rglob("*") if path.is_file()),
+                         ["scip-go-0.scip", "scip-go-0.unbound.jsonl"])
+        self.assertEqual(stage(), 1)  # snapshot and dependencies unchanged: no indexer run
+        (project / "extra").mkdir()
+        (project / "extra/more.go").write_text("package extra\n\nfunc More() int { return 1 }\n", encoding="utf-8")
+        snapshot.read_project(project, manifest)
+        self.assertEqual(stage(), 2)  # a unit changed: one run for the language, of the changed file (T2.B.4)
+        self.assertEqual(calls[-1], ["extra/more.go"])
+        self.assertEqual(stage(), 2)
+        with open(project / "go.mod", "a", encoding="utf-8") as handle:
+            handle.write("\nrequire example.com/dep v1.0.0\n")
+        snapshot.read_project(project, manifest)
+        self.assertEqual(stage(), 3)  # a manifest changed, no Go file did: the language runs again, whole
+        self.assertEqual(calls, [None, ["extra/more.go"], None])
+
+    def test_a_changed_file_and_its_importers_are_indexed_again_and_merged_into_the_kept_index(self):
+        # `ts` with `src/api/logService.js` of `ts-changed`: the indexer gets that file and those importing it, its
+        # index (the documents of `ts-changed`'s index for them) merged into the kept one gives the store a whole
+        # run over `ts-changed` gives.
+        import egress
+        from indexers import typescript
+        indexer = {"name": "scip-typescript", "version": typescript.VERSION, "seconds": 1.0, "peak_mb": None}
+        asked = []
+
+        def partial(source, rels, out):
+            import scip_pb2
+            index = scip_pb2.Index()
+            index.ParseFromString(source.read_bytes())
+            kept = [document for document in index.documents if rels is None or document.relative_path in rels]
+            del index.documents[:]
+            index.documents.extend(kept)
+            out.write_bytes(index.SerializeToString())
+            return out
+
+        def index_of(which):
+            def index(project_dir, work_dir, files=None, **given):
+                asked.append(given.get("subset"))
+                written = partial(self.FIXTURES / which / "index.scip", given.get("subset"),
+                                  Path(work_dir) / "scip-typescript-0.scip")
+                return {"indexes": [[str(written), ""]], "runs": [], "indexer": indexer}
+            return index
+
+        def edges(manifest):
+            with open_snapshot(manifest) as store:
+                found, _binding, reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest),
+                                                                        store)
+            self.assertIsNone(reason, reason)
+            return sorted(json.dumps(edge, sort_keys=True) for edge in found)
+
+        quiet = {"preflight": (egress, "preflight", lambda project, hosts: ([], []))}
+        project, manifest = self.project("ts")
+        self.run_stage("scip-typescript", manifest, index_of("ts"), **quiet)
+        shutil.copyfile(self.FIXTURES / "ts-changed/src/api/logService.js", project / "src/api/logService.js")
+        snapshot.read_project(project, manifest)
+        result, _started, _indexed = self.run_stage("scip-typescript", manifest, index_of("ts-changed"), **quiet)
+        self.assertEqual(asked, [None, ["src/api/alias.js", "src/api/jobs.js", "src/api/logService.js"]])
+        self.assertEqual(result["languages"]["javascript"]["state"], "fresh")
+        whole, whole_manifest = self.project("ts-changed")
+        self.run_stage("scip-typescript", whole_manifest, index_of("ts-changed"), **quiet)
+        self.assertEqual(asked[-1], None)
+        self.assertEqual(edges(manifest), edges(whole_manifest))
+
     def test_reuse_requires_the_installed_pin_and_the_adapter_that_built_the_entry(self):
         from indexers import go
         entry = {"engine": f"scip-go@{go.VERSION}", "indexer": {"version": go.VERSION}}

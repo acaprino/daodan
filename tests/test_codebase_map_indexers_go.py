@@ -354,6 +354,16 @@ def test_scip_go_runs_in_each_folder_and_names_the_directories_go_ignores(tmp_pa
 
 
 @played
+def test_a_subset_names_the_packages_of_its_files_in_the_modules_that_hold_them(tmp_path, monkeypatch):
+    """The stage's `subset` (the files to index again): each run names their packages, never `./...`; a module
+    that holds none of them does not run."""
+    project = modules(tmp_path / "project")
+    _result, _asked, runs = boxed(tmp_path, monkeypatch, project, {"": (FIXTURES / "go/index.scip").read_bytes()},
+                                  roots={"", "tools"}, subset=["calls.go", "_examples/demo/main.go"])
+    assert [(run["which"], run["patterns"]) for run in runs] == [("", [".", "./_examples/demo"])]
+
+
+@played
 def test_a_run_without_an_index_is_the_reason_its_module_s_files_have_no_document(tmp_path, monkeypatch):
     """`configs` is what the stage hands `tasks`, then `missing`: the folders of the modules, and those whose run
     wrote no index."""

@@ -41,7 +41,7 @@ CASES = {
 image = (
     modal.Image.debian_slim(python_version="3.13")
     .apt_install("git", "curl", "ca-certificates", "nodejs", "npm", "unzip", "xz-utils")
-    .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
+    .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "protobuf==7.36.2")
     .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
 )
 app = modal.App("daodan-inference-audit", image=image)
