@@ -40,7 +40,7 @@ def _expressions() -> dict[str, re.Pattern]:
     """Linguist's expressions of each reason, joined as Linguist joins them (`Regexp.union`). A path is text with no
     grammar, so an expression is allowed on it (`AGENTS.md`); `format_catalog.check` proves each compiles with `re`.
     An expression that holds for a dot directory the perimeter enters (`READ_DOT_DIRECTORIES`) is left out: Linguist's
-    `(^|/)\.github/` keeps CI configuration out of its language statistics, and that configuration is the project's own,
+    `(^|/)\\.github/` keeps CI configuration out of its language statistics, and that configuration is the project's own,
     the stack tool's evidence (`.gitattributes` still decides)."""
     catalogue = json.loads(format_catalog.PATH.read_text(encoding="utf-8"))
     return {why: re.compile("|".join(expression for expression in catalogue[table]
