@@ -10,6 +10,26 @@ Prova le vie d'uscita di un container della preparazione su un Docker vero, con 
 
 Due canarini su Modal, raggiungibili da Internet in HTTPS (tunnel di Modal), registrano ogni richiesta: `allowed` (l'host che l'utente approva) e `outside` (mai approvato). `driver.py` gira in una VM Sandbox con il demone Docker (come `benchmarks/project-model/modal_engine.py`) ed esegue `rows.py` come preparazione di un progetto. Segni cercati: richieste sui canarini fuori dai percorsi attesi, connessioni a due ascoltatori della VM (8099 su tutti gli indirizzi, 8098 sul loopback), query DNS col gettone della corsa sul filo (`tcpdump -i any`), fuori dalla risoluzione dell'host dei nomi rifiutati (`egress.resolve`). Esito in `results/<data>.json`.
 
+## Proxy: criteri
+
+I due candidati di `T3.A` sui criteri di `docs/specs/architettura.md` («Strumento del proxy»), come dal codice letto: Smokescreen al tag `v1.0.1`, `PROXY_SCRIPT` in `daodan/core/container.py`. La prova che decide è `modal_probe.py --proxy script|smokescreen`.
+
+| Criterio | Smokescreen `v1.0.1` | `PROXY_SCRIPT` |
+|---|---|---|
+| Solo porta 443 | no: l'ACL è per host, senza porta (`acl/v1/yaml_loader.go`); le porte valgono solo per gli indirizzi (`--deny-address IP:PORT`) | sì: CONNECT solo a `:443` |
+| Eccezione apt per percorso | no: l'HTTP in chiaro di un host ammesso passa con ogni percorso | sì: `GET`/`HEAD` di `dists/` e `pool/` sugli archivi `http://<host>` |
+| Whitelist e blacklist da file | sì: ACL YAML (`version: v1`, `default.allowed_domains`, `action: enforce`, `global_deny_list`) da `--egress-acl-file` o `acl_file` | sì, a monte: `start_proxy` prende i soli host che `egress.decide` ammette dai file di `egress` e li passa in argv |
+| Nessun host rifiutato risolto dal proxy | sì: risolve solo se l'ACL ammette (`checkIfRequestShouldBeProxied`, `smokescreen.go:1382`) | sì: confronta il nome e non lo risolve |
+| Nessun host ammesso aperto verso un indirizzo privato, loopback o link-local | sì: classifica l'indirizzo risolto e rifiuta non global unicast, loopback, privati, CGNAT, IPv6 con IPv4 dentro (`ip_policy.go`), salvo `--allow-range` o `--unsafe-allow-private-ranges` | no: `create_connection` al nome ammesso, qualunque indirizzo dia |
+| Rifiuti leggibili come `{host, port}` | sì: log JSON (`logrus.JSONFormatter`), riga `CANONICAL-PROXY-DECISION` con `allow`, `requested_host` (`host:porta`), `decision_reason` | sì: `@@daodan-refused {"host","port"}` (`egress.refused`) |
+| Ruolo del client | senza certificato TLS il ruolo manca: serve `allow_missing_role: true` (solo dal file di configurazione) per cadere sulla regola `default` | non serve |
+| Licenza | MIT (`LICENSE.txt`) | MIT (quella di Daodan) |
+
+Provenienza di Smokescreen, verificata il 27 novembre 2026 da una funzione Modal (`ap-aEAopqWqOpl2BVgkc5ZvpS`; dalla sessione github.com risponde 403) con l'API REST di GitHub, il registro `ghcr.io` e `gh attestation verify` 2.63.2 sul bundle dell'API delle attestazioni:
+
+- Release `v1.0.1` (pubblicata il 25 novembre 2026, tag `38641dd`): `smokescreen_v1.0.1_linux_amd64.tar.gz` sha256 `6021eda5f2c95e37c7fc1966debccf3714f8740e2784ed9e9d0087b21a0ccf06`, uguale a `SHA256SUMS` (`sha256sum -c`: OK) e al `digest` dell'asset; attestazione verificata (`gh attestation verify <tar> -R stripe/smokescreen`: esito 0).
+- Immagine `ghcr.io/stripe/smokescreen:v1.0.1`: indice OCI `sha256:e62052a184ce5ef97c32b00a32583fc5376d4ca5d9ec941cf9a4566eef0556e8` (linux/amd64 `sha256:55b1254d…`, linux/arm64 `sha256:ce7f84a9…`), distroless `static:nonroot` per digest, `USER 65532:65532`, porta 4750. `gh attestation verify oci://ghcr.io/stripe/smokescreen@sha256:e62052a1… -R stripe/smokescreen`: esito 0, firmata da `.github/workflows/release.yml@refs/tags/v1.0.1`, commit `b464c02`. Da qui l'immagine si usa solo come `ghcr.io/stripe/smokescreen@sha256:e62052a184ce5ef97c32b00a32583fc5376d4ca5d9ec941cf9a4566eef0556e8`.
+
 ## Risultati misurati
 
 27 novembre 2026, con il codice di questa cartella sulla base `1ec9f03` (rete della preparazione con `com.docker.network.bridge.inhibit_ipv4=true`), su Modal (`ap-PXESuugu9xRIfq946cGuwg`, `results/2026-11-27.json`): 40 righe su 40 come atteso.
