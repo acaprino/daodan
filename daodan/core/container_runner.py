@@ -186,11 +186,12 @@ def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=(), 
             (*spec.get("hosts", ()), *chains["hosts"], *needs["hosts"]), chains["gaps"])
 
 
-def _node(project: Path) -> dict:
+def _node(project: Path, refused=()) -> dict:
     """The restore of the Node packages the copy of the project holds (`preparation.node_prepare`), from the
-    manifests and lockfiles the snapshot perimeter walks: the snapshot itself keeps no `yarn.lock`."""
+    manifests and lockfiles the snapshot perimeter walks: the snapshot itself keeps no `yarn.lock`; a folder the
+    pre-map `refused` (`preparation.refusals`: a `yarn.lock` entry outside the copy) does not restore."""
     return preparation.node_prepare(preparation.perimeter_files(project),
-                                    lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
+                                    lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"), refused)
 
 
 def _python(project: Path) -> dict:
@@ -224,7 +225,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
 
     default = toolchains
 
-    def run(commands: list[dict], toolchains: list[dict] = ()) -> list[dict]:
+    def run(commands: list[dict], toolchains: list[dict] = (), refused: list[dict] = ()) -> list[dict]:
         toolchains = toolchains or default
         tool = commands[0]["tool"]
         if tool not in TOOLS or any(c["tool"] != tool for c in commands):
@@ -236,8 +237,8 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if any("/" in name or name in ("", ".", "..") for name in carried):
             raise ValueError(f"a file a command carries is a name, not a path: {sorted(carried)}")
         commands = [{k: v for k, v in c.items() if k != "inputs"} for c in commands]
-        restored = ({"node": _node, "python": _python}.get(spec.get("restores"), lambda _project: {"lines": [], "hosts": (), "gaps": []})
-                    )(project)
+        restored = (_node(project, refused) if spec.get("restores") == "node" else _python(project)
+                    if spec.get("restores") == "python" else {"lines": [], "hosts": (), "gaps": []})
         restore_lines, shared = (node_preparation.options(restored, toolchains) if spec.get("restores") == "node"
                                  else (restored["lines"], {}))
         first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines, restored.get("needs", ()))
@@ -307,10 +308,10 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         return [{**answer, "root": roots[n + 1], **({"gaps": gaps} if n == 0 and gaps else {})}
                 for n, answer in enumerate(answers[1:])]
 
-    def by_tool(commands: list[dict], toolchains: list[dict] = ()) -> list[dict]:
+    def by_tool(commands: list[dict], toolchains: list[dict] = (), refused: list[dict] = ()) -> list[dict]:
         import egress
         with egress.asking(commands[0]["tool"] if commands else ""):  # the tool's hosts are asked about together
-            return run(commands, toolchains)
+            return run(commands, toolchains, refused)
 
     by_tool.uses_default_container = engine is None
     return by_tool

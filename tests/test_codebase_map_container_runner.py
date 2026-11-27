@@ -201,6 +201,45 @@ def test_each_nested_app_with_its_own_lockfile_is_restored_beside_the_root_and_n
     assert "gaps" not in answer
 
 
+def test_a_folder_the_pre_map_refused_for_its_yarn_lock_is_not_restored(tmp_path, no_download):
+    """The pre-map's `local_dependency_refused` gap of a `yarn.lock` entry outside the copy (`premap/renovate.py`),
+    given as `refused`, keeps that folder's restore out of the setup; the other folder still restores."""
+    import preparation
+    files = {"tsconfig.json": "{}\n"}
+    for app in ("ok", "out"):
+        files[f"{app}/package.json"] = '{"name": "' + app + '", "dependencies": {"ms": "2.1.3"}}\n'
+        files[f"{app}/yarn.lock"] = "# yarn lockfile v1\n"
+    _, manifest = manifest_of(tmp_path, files)
+    refused = [{"kind": "local_dependency_refused", "path": "out", "file": "out/yarn.lock",
+                "entry": "y@file:../../outside/y", "detail": "outside", "source": "renovate@44.239.1"}]
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        [answer] = container_runner.runner(manifest)([command("tsc")], refused=refused)
+    setup = calls[0]["commands"][0]["argv"][-1]
+    assert preparation.restore("yarn", ["ok"], scripts=True) in setup and "'out'" not in setup
+    assert "gaps" not in answer  # the refusal is the pre-map's gap, not said again
+
+
+def test_the_pre_map_gives_a_runner_the_yarn_lock_refusals_of_the_sources_before(tmp_path):
+    """`premap.derive` passes each runner that takes `refused` the `yarn.lock` refusals stated so far."""
+    import preparation
+    seen = []
+
+    def runner(commands, toolchains=(), refused=()):
+        seen.append((commands[0]["tool"], [gap["file"] for gap in refused]))
+        if commands[0]["tool"] == "renovate":
+            return [{"returncode": 0, "stdout": "{}" if i == 0 else '{"ok/yarn.lock": ["y@file:../../y"]}',
+                     "stderr": "", "root": "/work"} for i in range(len(commands))]
+        return [{"returncode": 1, "stdout": "", "stderr": "no", "root": "/work"} for _ in commands]
+
+    _, manifest = manifest_of(tmp_path, {"ok/package.json": '{"name": "ok"}\n', "ok/yarn.lock": "# yarn lockfile v1\n",
+                                         "tsconfig.json": "{}\n"})
+    record = premap.write(manifest, runner=runner)
+    assert [gap["file"] for gap in preparation.refusals(record)] == ["ok/yarn.lock"]
+    after = [files for tool, files in seen[[tool for tool, _ in seen].index("renovate") + 1:]]
+    assert after and all(files == ["ok/yarn.lock"] for files in after)
+
+
 def test_a_package_folder_no_restore_installs_is_a_gap_on_the_answers(tmp_path, no_download):
     """A package under the root's restore that its workspaces do not name declares dependencies nobody installs."""
     _, manifest = manifest_of(tmp_path, {

@@ -833,9 +833,10 @@ def refusal(rel: str, entry: str, folder: str, path: str) -> dict | None:
 
 
 def refusals(record: dict) -> list[dict]:
-    """The `local_dependency_refused` gaps of the pre-map `record` (`premap/renovate.py`: `yarn.lock` read with
-    Yarn's parser), which `node_prepare` takes as `stated`."""
-    return [gap for gap in record.get("gaps") or () if gap.get("kind") == "local_dependency_refused"]
+    """The `local_dependency_refused` gaps of the pre-map `record` that `node_prepare` takes as `stated`: those of a
+    `yarn.lock` (`premap/renovate.py`, read with Yarn's parser); the Python ones are `python_restores`' own."""
+    return [gap for gap in record.get("gaps") or () if gap.get("kind") == "local_dependency_refused"
+            and posixpath.basename(gap.get("file") or "") == "yarn.lock"]
 
 
 def refused(folders, gaps: list[dict]) -> set[str]:

@@ -876,6 +876,4 @@ preparazione rifiuti solo quelle assolute o fuori dalla copia (decisione del pro
 ### Non misurato
 
 - `@pnpm/lockfile.fs`: non è nel container della pre-mappa.
-- Il ripristino della pre-mappa stessa (`container_runner._node`, per `tsc` e gli altri comandi con `restores`) non ha
-  ancora le lacune di Renovate: lì vale solo il rifiuto dei manifest e dei lockfile letti in Python.
 - `setup.py` e `setup.cfg` con un percorso locale: rari, non letti per il rifiuto.
