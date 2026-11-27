@@ -45,7 +45,9 @@ NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"g
 # The container's memory, not measured yet: scip-go's build, then its runs (335 MB peak on chi on the host,
 # benchmarks/inference-audit, 13 November 2026).
 MIN_FREE = MEMORY = 4 * 2**30
-SUBSET = True  # `index` takes the stage's `subset`: the files to index again (`engine_pass._redone`)
+# `index` takes the stage's `subset` (`engine_pass._redone`), off: on chi and tududi the kept index with the
+# subset's merged in is not the whole graph of the changed copy (benchmarks/inference-audit README, T2.B.5)
+SUBSET = False
 OUT = "/daodan/out/scip-go"
 SCIP_GO = f"{preparation.T}/bin/scip-go"
 # The indexer's own build, in every command of the execution: Daodan's Go alone, whatever a `toolchain` line

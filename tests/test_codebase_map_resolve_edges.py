@@ -1357,14 +1357,14 @@ class IndexerStageTests(unittest.TestCase):
         (project / "extra").mkdir()
         (project / "extra/more.go").write_text("package extra\n\nfunc More() int { return 1 }\n", encoding="utf-8")
         snapshot.read_project(project, manifest)
-        self.assertEqual(stage(), 2)  # a unit changed: one run for the language, of the changed file (T2.B.4)
-        self.assertEqual(calls[-1], ["extra/more.go"])
+        self.assertEqual(stage(), 2)  # a unit changed: one run for the language, whole (Go's `SUBSET` is off)
+        self.assertEqual(calls[-1], None)
         self.assertEqual(stage(), 2)
         with open(project / "go.mod", "a", encoding="utf-8") as handle:
             handle.write("\nrequire example.com/dep v1.0.0\n")
         snapshot.read_project(project, manifest)
         self.assertEqual(stage(), 3)  # a manifest changed, no Go file did: the language runs again, whole
-        self.assertEqual(calls, [None, ["extra/more.go"], None])
+        self.assertEqual(calls, [None, None, None])
 
     def test_a_changed_file_and_its_importers_are_indexed_again_and_merged_into_the_kept_index(self):
         # `ts` with `src/api/logService.js` of `ts-changed`: the indexer gets that file and those importing it, its
@@ -1372,6 +1372,8 @@ class IndexerStageTests(unittest.TestCase):
         # run over `ts-changed` gives.
         import egress
         from indexers import typescript
+        # The mechanism, off in the product since T2.B.5 measured a merged graph unlike the whole one.
+        self.enterContext(mock.patch.object(typescript, "SUBSET", True))
         indexer = {"name": "scip-typescript", "version": typescript.VERSION, "seconds": 1.0, "peak_mb": None}
         asked = []
 

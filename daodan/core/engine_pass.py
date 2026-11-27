@@ -560,7 +560,7 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     The indexer works in a directory removed after the stage; what it gave is kept in `index-cache/` beside the
     manifest, and a stage whose inputs did not change (`_inputs`) reads it there and runs no indexer. The cache is
     of the whole language, not of a unit: every adapter runs all its units in one container and does not split its
-    contract per unit (`_keep`). An adapter with `SUBSET` indexes again only the files that changed and those
+    contract per unit (`_keep`). An adapter with `SUBSET` (none, T2.B.5) indexes again only the changed files and those
     importing one (`_redone`), merged into the kept indexes (`_merged`). One that `needs_container` gets its engine
     here:
     without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
