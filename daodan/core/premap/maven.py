@@ -12,8 +12,10 @@ parent declares), and what maven-compiler-plugin leaves out of each source folde
 its `excludes` and `testExcludes`, each pattern relative to that folder); the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
 included, as members. The dependencies it lists that the reactor does not build are its packages, without a version:
 the effective pom's is the one after inheritance and interpolation (a parent's or a BOM's `dependencyManagement`, a
-property), not the text the pom writes, which `jvm_files` states. A pom.xml no reactor holds states nothing: Maven
-does not build it.
+property), not the text the pom writes, which `jvm_files` states. A dependency whose version another pom of the
+reactor writes (a parent's `dependencyManagement`), as the help plugin's `verbose` comments locate it, is one package
+at that pom and the line of its version, `used_in` each module's pom and the line of its dependency's artifactId. A pom.xml no reactor holds states
+nothing: Maven does not build it.
 """
 from __future__ import annotations
 
@@ -28,7 +30,8 @@ DOWNLOAD = (("https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven
              "1f6d9909266510f039f59aa0e13dcd2c66da85f043e56276e41f2918f8bddaff"),)  # what the runner carries
 FILE = "pom.xml"
 HELP = "org.apache.maven.plugins:maven-help-plugin:3.5.1:effective-pom"
-SCRIPT = f'o=$(mktemp) && mvn -B -ntp -q {HELP} -Doutput="$o" >&2 && cat "$o"'
+# `verbose`: each element with the pom and line it comes from, as a comment (the help plugin's InputLocation)
+SCRIPT = f'o=$(mktemp) && mvn -B -ntp -q {HELP} -Dverbose -Doutput="$o" >&2 && cat "$o"'
 NS = "{http://maven.apache.org/POM/4.0.0}"
 # Where a plugin's configuration names the folders it compiles: kotlin-maven-plugin, build-helper-maven-plugin.
 PLUGIN_SOURCES = (("sourceDirs", "sourceDir"), ("sources", "source"))
@@ -58,8 +61,24 @@ def _text(node, path: str) -> str | None:
     return found.text.strip() if found is not None and found.text else None
 
 
+def model_id(project) -> str:
+    """`groupId:artifactId:version`, as the help plugin's `verbose` comments name the pom an element comes from."""
+    return ":".join(str(_text(project, f"{NS}{tag}")) for tag in ("groupId", "artifactId", "version"))
+
+
+def _location(node, tag: str) -> tuple[str | None, int | None]:
+    """The pom (its model id) and line the `verbose` comment after `node`'s child `tag` names: the help plugin's
+    `<!-- g:a:v, line N -->`, plain text it writes, read by its last `, line `; (None, None) for none."""
+    children = list(node)
+    for child, after in zip(children, children[1:]):
+        if child.tag == f"{NS}{tag}" and after.tag is ET.Comment:
+            model, _, line = (after.text or "").strip().rpartition(", line ")
+            return (model, int(line)) if model and line.isdigit() else (None, None)
+    return None, None
+
+
 def read(context, commands, results):
-    units, workspaces, packages, gaps, seen_pkgs = [], [], [], [], set()
+    units, workspaces, packages, gaps, seen_pkgs, central = [], [], [], [], set(), {}
     for command, result in zip(commands, results):
         root = result.get("root") or "/"
         text = result["stdout"] or ""
@@ -67,7 +86,7 @@ def read(context, commands, results):
             gaps.append({"kind": "model_failed", "path": command["cwd"],
                          "detail": f"mvn help:effective-pom: {(result['stderr'] or text).strip()[-300:]}"})
             continue
-        tree = ET.fromstring(text[text.index("<"):])
+        tree = ET.fromstring(text[text.index("<"):], ET.XMLParser(target=ET.TreeBuilder(insert_comments=True)))
         projects = [tree] if tree.tag == f"{NS}project" else tree.findall(f"{NS}project")
 
         def rel(path: str | None) -> str | None:
@@ -104,7 +123,19 @@ def read(context, commands, results):
                         for d in project.findall(f"{NS}dependencies/{NS}dependency")
                         if _text(d, f"{NS}groupId") and _text(d, f"{NS}artifactId")}
             for coord in sorted(all_deps - set(found)):
-                if (coord.casefold(), manifest) not in seen_pkgs:
+                node = next(d for d in project.findall(f"{NS}dependencies/{NS}dependency")
+                            if f"{_text(d, f'{NS}groupId')}:{_text(d, f'{NS}artifactId')}" == coord)
+                model, line = _location(node, "version")
+                written = found.get(":".join(model.split(":")[:2])) if model else None
+                if written is not None and written[0] is not project:  # another reactor pom writes the version
+                    where = f"{posixpath.join(written[1], FILE).removeprefix('./')}#L{line}"
+                    used, at = _location(node, "artifactId")
+                    fact = central.setdefault((coord.casefold(), where), {
+                        "ecosystem": "maven", "name": coord, "declared_in": where, "used_in": []})
+                    use = f"{manifest}#L{at}" if used == model_id(project) and at else manifest
+                    if use not in fact["used_in"]:
+                        fact["used_in"].append(use)
+                elif (coord.casefold(), manifest) not in seen_pkgs:
                     seen_pkgs.add((coord.casefold(), manifest))
                     packages.append({"ecosystem": "maven", "name": coord, "declared_in": manifest})
             units.append({"name": key, "kind": "maven-module", "root": folder,
@@ -119,6 +150,7 @@ def read(context, commands, results):
             first = rel(posixpath.dirname(_text(top, f"{NS}build/{NS}directory") or "")) or command["cwd"]
             workspaces.append({"tool": "maven", "root": first,
                                "members": sorted(f for _, f in found.values() if f != first)})
+    packages += [{**fact, "used_in": sorted(fact["used_in"])} for fact in central.values()]
     facts = {key: value for key, value in (("units", units), ("workspace", workspaces),
                                            ("packages", packages)) if value}
     return {"facts": facts, "gaps": gaps}

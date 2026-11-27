@@ -445,6 +445,8 @@ def _inputs(digest, root, sources) -> str:
         value.append("workflow-triggers-v1")
         value.append("package-roles-v1")
         value.append("package-tables-v1")
+    if maven in sources:
+        value.append("maven-managed-versions-v1")
     if noir in sources:
         value.append("noir-entry-paths-v3")
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
