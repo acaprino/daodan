@@ -188,7 +188,7 @@ Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `lib
 
 Ognuna delle 504 voci `project` con una regola del fork ha la sua `category` scritta: nessuna è `framework` solo per il default.
 
-Riconoscimento dello stack sul corpus, giro del 27 novembre 2026 (`benchmarks/project-model/results/daodan_stack.json`), 184 fixture su 186 con record; per nome conta un nome una volta per fixture, per unità ogni unità che lo tiene.
+Riconoscimento dello stack sul corpus, giro del 28 novembre 2026 (`benchmarks/project-model/results/daodan_stack.json`), 184 fixture su 186 con record; per nome conta un nome una volta per fixture, per unità ogni unità che lo tiene.
 
 | Famiglia | Fixture | Framework per nome | Framework per unità | Servizi |
 | --- | --- | --- | --- | --- |
@@ -196,16 +196,16 @@ Riconoscimento dello stack sul corpus, giro del 27 novembre 2026 (`benchmarks/pr
 | py | 21 | 4 / 4 (100,0 %) | 4 / 4 (100,0 %), 0 sbagliati | 2 / 3 (66,7 %), 0 in più |
 | jvm | 34 | 38 / 42 (90,5 %) | 39 / 43 (90,7 %), 0 sbagliati | 2 / 2 (100,0 %), 1 in più |
 | sys | 25 | 2 / 2 (100,0 %) | 1 / 2 (50,0 %), 1 sbagliato | nessuno atteso, 0 in più |
-| mix | 30 | 28 / 31 (90,3 %) | 30 / 37 (81,1 %), 0 sbagliati | 12 / 33 (36,4 %), 1 in più |
-| real | 15 | 144 / 163 (88,3 %) | 262 / 312 (84,0 %), 13 sbagliati | 58 / 124 (46,8 %), 15 in più |
-| stack | 39 | 359 / 393 (91,3 %) | 604 / 757 (79,8 %), 55 sbagliati | 178 / 451 (39,5 %), 76 in più |
-| tutte | 184 | 585 / 645 (90,7 %) | 951 / 1.166 (81,6 %), 69 sbagliati | 253 / 614 (41,2 %), 93 in più |
+| mix | 30 | 28 / 31 (90,3 %) | 30 / 37 (81,1 %), 0 sbagliati | 12 / 33 (36,4 %), 12 in più |
+| real | 15 | 145 / 163 (89,0 %) | 262 / 312 (84,0 %), 14 sbagliati | 59 / 124 (47,6 %), 35 in più |
+| stack | 39 | 359 / 393 (91,3 %) | 604 / 757 (79,8 %), 56 sbagliati | 185 / 451 (41,0 %), 157 in più |
+| tutte | 184 | 586 / 645 (90,9 %) | 951 / 1.166 (81,6 %), 71 sbagliati | 261 / 614 (42,5 %), 205 in più |
 
 Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: il fork di stack-analyser ha una regola per la voce (la colonna «Regola del fork»: `sì` se la voce viene dal catalogo del suo rilascio, `no` se il registro la nomina e il fork non la riconosce) e la riconosce da ciò che il progetto mostra (un pacchetto, un'immagine, un file, un sorgente). Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
 <details><summary>Framework, librerie e strumenti: 504 voci</summary>
 
-| Voce | Id | Classe | Regola del fork | Lettura propria | Fixture in cui lo step la trova (27 novembre 2026) |
+| Voce | Id | Classe | Regola del fork | Lettura propria | Fixture in cui lo step la trova (28 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
 | .NET Aspire | `dotnet-aspire` | framework | sì | — | 3 |
 | .NET MAUI | `dotnet-maui` | framework | sì | — | 1 |
@@ -262,7 +262,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Gridsome | `gridsome` | framework | sì | — | 0 |
 | HexoJS | `hexojs` | framework | sì | — | 0 |
 | Hono | `honojs` | framework | sì | — | 1 |
-| Hugo | `hugo` | framework | sì | — | 0 |
+| Hugo | `hugo` | framework | sì | — | 1 |
 | Inferno | `infernojs` | framework | sì | — | 0 |
 | Ionic | `ionic` | framework | sì | — | 0 |
 | Jekyll | `jekyll` | framework | sì | — | 0 |
@@ -559,7 +559,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Babel | `babel` | tool | sì | — | 9 |
 | Bash | `bash` | tool | sì | — | 0 |
 | Biome JS | `biomejs` | tool | sì | — | 4 |
-| Bun | `bunsh` | tool | sì | — | 0 |
+| Bun | `bunsh` | tool | sì | — | 2 |
 | Bundler | `bundler` | tool | sì | — | 6 |
 | Bytebase | `bytebase` | tool | sì | — | 0 |
 | C | `c` | tool | sì | — | 0 |
@@ -576,16 +576,16 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | containerd | `containerd` | tool | sì | — | 0 |
 | Create React App | `create-react-app` | tool | sì | — | 1 |
 | CSS | `css` | tool | sì | — | 0 |
-| Cypress | `cypressci` | tool | sì | — | 3 |
+| Cypress | `cypressci` | tool | sì | — | 4 |
 | Dapr | `dapr` | tool | sì | — | 0 |
 | Dart | `dart` | tool | sì | — | 2 |
 | dbt | `dbt` | tool | sì | — | 0 |
 | Deno | `deno` | tool | sì | — | 1 |
 | Detox | `detox` | tool | sì | — | 1 |
-| Docker | `docker` | tool | sì | — | 44 |
+| Docker | `docker` | tool | sì | — | 45 |
 | Elixir | `elixir` | tool | sì | — | 4 |
 | Esbuild | `esbuild` | tool | sì | — | 9 |
-| Eslint | `eslint` | tool | sì | — | 24 |
+| Eslint | `eslint` | tool | sì | — | 25 |
 | Fern | `builtwithfern` | tool | sì | — | 0 |
 | Flyway | `flyway` | tool | sì | — | 0 |
 | FsCheck | `fscheck` | tool | sì | — | 0 |
@@ -594,7 +594,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | GNU Autotools | `autotools` | tool | sì | — | 0 |
 | goenv | `goenv` | tool | sì | — | 0 |
 | Golang | `golang` | tool | sì | — | 21 |
-| GolangCI Lint | `golangcilint` | tool | sì | — | 2 |
+| GolangCI Lint | `golangcilint` | tool | sì | — | 3 |
 | Gradle | `gradle` | tool | sì | — | 26 |
 | Grafana K6 | `k6` | tool | sì | — | 0 |
 | GraphiQL | `graphiql` | tool | sì | — | 1 |
@@ -630,7 +630,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | MockK | `mockk` | tool | sì | — | 1 |
 | MockServer | `mockserver` | tool | sì | — | 0 |
 | MSTest | `mstest` | tool | sì | — | 1 |
-| NodeJS | `nodejs` | tool | sì | — | 65 |
+| NodeJS | `nodejs` | tool | sì | — | 66 |
 | npm | `npm` | tool | sì | — | 21 |
 | NuGet | `nuget` | tool | sì | — | 9 |
 | NUnit | `nunit` | tool | sì | — | 1 |
@@ -656,11 +656,11 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Prettier | `prettier` | tool | sì | — | 16 |
 | Pulumi | `pulumi` | tool | sì | — | 0 |
 | pytest | `pytest` | tool | sì | — | 11 |
-| Python | `python` | tool | sì | — | 16 |
+| Python | `python` | tool | sì | — | 19 |
 | Quinoa | `quinoa` | tool | sì | — | 1 |
 | R | `r` | tool | sì | — | 0 |
 | Read The Docs | `readthedocs` | tool | sì | — | 0 |
-| Renovate | `renovate` | tool | sì | — | 6 |
+| Renovate | `renovate` | tool | sì | — | 9 |
 | Reqnroll | `reqnroll` | tool | sì | — | 1 |
 | REST Assured | `rest-assured` | tool | sì | — | 1 |
 | Robolectric | `robolectric` | tool | sì | — | 2 |
@@ -683,7 +683,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | sqlc | `sqlc` | tool | sì | — | 1 |
 | SQLDelight | `sqldelight` | tool | sì | — | 1 |
 | Storybook | `storybook` | tool | sì | — | 2 |
-| Stylelint | `stylelint` | tool | sì | — | 2 |
+| Stylelint | `stylelint` | tool | sì | — | 3 |
 | Stylus | `stylus` | tool | sì | — | 0 |
 | SWC | `swc` | tool | sì | — | 4 |
 | Swift | `swift` | tool | sì | — | 2 |
@@ -729,7 +729,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 
 <details><summary>Servizi con una regola del fork: 719 voci</summary>
 
-| Servizio | Id | Tipo | Host | Marchio | Fixture in cui lo step lo trova (27 novembre 2026) |
+| Servizio | Id | Tipo | Host | Marchio | Fixture in cui lo step lo trova (28 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
 | 1Password | `1password` | servizio o API | — | sì | 0 |
 | Activeloop | `activeloop` | servizio o API | — | sì | 0 |
@@ -833,7 +833,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | AWS Timestream | `aws.timestream` | database | — | sì | 0 |
 | AWS Transcribe | `aws.transcribe` | servizio o API | — | sì | 0 |
 | AWS Translate | `aws.translate` | servizio o API | — | sì | 0 |
-| Azure | `azure` | servizio o API | — | sì | 5 |
+| Azure | `azure` | servizio o API | — | sì | 7 |
 | Azure AI Document Intelligence | `azure.documentintelligence` | servizio o API | — | no | 1 |
 | Azure App Service | `azure.appservice` | servizio o API | — | no | 0 |
 | Azure Application Insights | `azure.applicationinsights` | servizio o API | — | no | 0 |
@@ -849,7 +849,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Azure Postgres | `azure.postgres` | database | — | sì | 0 |
 | Azure Redis | `azure.redis` | database | — | sì | 0 |
 | Azure SQL | `azure.sql` | database | — | sì | 0 |
-| Azure Static Web Apps | `azure.staticwebapps` | servizio o API | — | sì | 0 |
+| Azure Static Web Apps | `azure.staticwebapps` | servizio o API | — | sì | 1 |
 | Azure Storage | `azure.storage` | database | — | sì | 0 |
 | AzureCI | `azure.ci` | servizio o API | — | sì | 0 |
 | Backblaze | `backblaze` | servizio o API | — | sì | 0 |
@@ -891,7 +891,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | CirrusCI | `cirrusci` | servizio o API | — | sì | 0 |
 | Civo | `civo` | servizio o API | — | sì | 0 |
 | Clerk | `clerk` | autenticazione | — | sì | 0 |
-| ClickHouse | `clickhouse` | database | — | sì | 2 |
+| ClickHouse | `clickhouse` | database | — | sì | 3 |
 | ClickSend | `clicksend` | servizio o API | — | no | 0 |
 | ClickUp | `clickup` | servizio o API | — | sì | 0 |
 | Cloud AI Platform | `gcp.aiplatform` | servizio o API | — | sì | 0 |
@@ -929,7 +929,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Cockroach Labs | `cockroach-labs` | database | — | sì | 0 |
 | CockroachDB | `cockroachdb` | database | — | no | 0 |
 | Code Climate | `codeclimate` | servizio o API | — | sì | 0 |
-| Codecov | `codecov` | servizio o API | — | sì | 3 |
+| Codecov | `codecov` | servizio o API | — | sì | 5 |
 | CodeSandbox | `codesandbox` | servizio o API | — | sì | 0 |
 | CodeSandboxCI | `codesandboxci` | servizio o API | — | no | 0 |
 | Cohere AI | `cohereai` | servizio o API | — | no | 0 |
@@ -945,7 +945,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Convex | `convexdb` | database | — | sì | 0 |
 | CoreDNS | `coredns` | servizio o API | — | no | 0 |
 | Couchbase | `couchbase` | database | — | sì | 0 |
-| Coveralls | `coveralls` | servizio o API | — | sì | 0 |
+| Coveralls | `coveralls` | servizio o API | — | sì | 1 |
 | Coze | `coze` | servizio o API | — | sì | 0 |
 | CrateDB | `cratedb` | database | — | sì | 0 |
 | Crawl4AI | `crawl4ai` | servizio o API | — | no | 0 |
@@ -964,12 +964,12 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Deepseek | `deepseek` | servizio o API | — | sì | 0 |
 | Deepsource | `deepsource` | servizio o API | — | no | 0 |
 | Deno Deploy | `denodeploy` | servizio o API | — | sì | 0 |
-| Dependabot | `dependabot` | servizio o API | — | sì | 0 |
-| Depot.dev | `depotdev` | servizio o API | — | no | 1 |
+| Dependabot | `dependabot` | servizio o API | — | sì | 24 |
+| Depot.dev | `depotdev` | servizio o API | — | no | 2 |
 | diagrams.net | `diagrams-net` | servizio o API | `embed.diagrams.net` | sì | 0 |
 | DigitalOcean | `digitalocean` | servizio o API | — | sì | 0 |
 | Directus | `directus` | servizio o API | — | sì | 0 |
-| Discord | `discord` | servizio o API | — | sì | 0 |
+| Discord | `discord` | servizio o API | — | sì | 1 |
 | Discord OAuth | `discord.oauth` | autenticazione | — | no | 1 |
 | Discourse | `discourse` | servizio o API | — | sì | 0 |
 | Docusign | `docusign` | servizio o API | — | no | 0 |
@@ -991,7 +991,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | etcd | `etcd` | database | — | sì | 0 |
 | Event Store | `event-store` | database | — | sì | 0 |
 | Evernote | `evernote` | servizio o API | — | sì | 0 |
-| Expo.dev | `expodev` | servizio o API | — | sì | 0 |
+| Expo.dev | `expodev` | servizio o API | — | sì | 1 |
 | Fabric | `fabric` | servizio o API | — | no | 0 |
 | Facebook | `facebook` | servizio o API | — | sì | 0 |
 | FastAPI Cloud | `fastapi-cloud` | servizio o API | — | no | 0 |
@@ -1013,7 +1013,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Friendly Captcha | `friendly-captcha` | servizio o API | — | no | 1 |
 | Frontegg | `frontegg` | autenticazione | — | no | 0 |
 | Fusionauth | `fusionauth` | autenticazione | — | sì | 0 |
-| GCP | `gcp` | servizio o API | — | sì | 4 |
+| GCP | `gcp` | servizio o API | — | sì | 5 |
 | Gemini AI | `geminiai` | servizio o API | `generativelanguage.googleapis.com` | no | 0 |
 | Ghost | `ghost` | servizio o API | — | sì | 0 |
 | GIPHY | `giphy` | servizio o API | — | sì | 0 |
@@ -1021,10 +1021,10 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Gitea | `gitea` | servizio o API | — | sì | 0 |
 | GitGuardian | `gitguardian` | servizio o API | — | no | 0 |
 | GitHub | `github` | servizio o API | `api.github.com` | sì | 1 |
-| Github Actions | `github.actions` | servizio o API | — | sì | 0 |
-| GitHub CodeQL | `github.codeql` | servizio o API | — | no | 0 |
+| Github Actions | `github.actions` | servizio o API | — | sì | 57 |
+| GitHub CodeQL | `github.codeql` | servizio o API | — | no | 14 |
 | GitHub OAuth | `github.oauth` | autenticazione | — | no | 2 |
-| Github Pages | `github.pages` | servizio o API | — | sì | 0 |
+| Github Pages | `github.pages` | servizio o API | — | sì | 7 |
 | Gitlab | `gitlab` | servizio o API | — | sì | 0 |
 | Gitlab CI | `gitlab.ci` | servizio o API | — | no | 0 |
 | GitLab OAuth | `gitlab.oauth` | autenticazione | — | no | 1 |
@@ -1156,7 +1156,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Mandrill | `mandrill` | servizio o API | — | no | 0 |
 | Mapbox | `mapbox` | servizio o API | — | sì | 0 |
 | MapTiler | `maptiler` | servizio o API | — | sì | 0 |
-| MariaDB | `mariadb` | database | — | sì | 2 |
+| MariaDB | `mariadb` | database | — | sì | 5 |
 | Matomo | `matomo` | servizio o API | — | sì | 0 |
 | Matrix | `matrix` | servizio o API | — | sì | 0 |
 | Mattermost | `mattermost` | servizio o API | — | sì | 0 |
@@ -1187,7 +1187,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | MongoDB Atlas | `mongodbatlas` | servizio o API | — | no | 0 |
 | MS SQL | `mssql` | database | — | no | 0 |
 | MusicBrainz | `musicbrainz` | servizio o API | — | sì | 0 |
-| Mysql | `mysql` | database | — | sì | 12 |
+| Mysql | `mysql` | database | — | sì | 13 |
 | n8n | `n8n` | servizio o API | — | sì | 0 |
 | Nango | `nango` | servizio o API | — | no | 0 |
 | Nats | `nats` | coda | — | no | 0 |
@@ -1262,7 +1262,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | Poe | `poe` | servizio o API | — | sì | 0 |
 | Polar | `polarsh` | gateway | — | no | 1 |
 | Polkadot | `polkadot` | servizio o API | — | sì | 0 |
-| Postgres | `postgresql` | database | — | sì | 37 |
+| Postgres | `postgresql` | database | — | sì | 39 |
 | Postgrest | `postgrest` | servizio o API | — | no | 0 |
 | PostHog | `posthog` | servizio o API | — | sì | 3 |
 | Postman | `postman` | servizio o API | — | sì | 0 |
@@ -1341,7 +1341,7 @@ Le voci di servizio del catalogo: 833, 830 di `kind` `service` e 3 di `kind` `pr
 | SimpleSAMLphp | `simplesamlphp` | servizio o API | — | no | 0 |
 | Sitecore | `sitecore` | servizio o API | — | sì | 0 |
 | Sitecore XM cloud | `sitecore.xmlcloud` | servizio o API | — | no | 0 |
-| Slack | `slack` | servizio o API | — | no | 0 |
+| Slack | `slack` | servizio o API | — | no | 1 |
 | SmartThings | `smartthings` | servizio o API | — | sì | 0 |
 | Snowflake | `snowflake` | database | — | sì | 0 |
 | Snyk | `snyk` | servizio o API | — | sì | 0 |
