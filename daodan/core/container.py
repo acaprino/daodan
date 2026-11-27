@@ -1279,7 +1279,8 @@ def internal_network(engine: Engine, network: str) -> None:
     older Docker's) would ignore or refuse the option and leave the host at the gateway: a Gap, never that network."""
     said = cli(engine, "version", "--format", "{{.Server.APIVersion}}", timeout=30).stdout.decode("utf-8", "replace")
     # The engine's API version is two whole numbers (`1.48`): no grammar, nothing a version library would add.
-    api = tuple(int(part) for part in said.strip().split(".")) if re.fullmatch(r"\d+\.\d+", said.strip()) else ()
+    parts = said.strip().split(".")
+    api = tuple(map(int, parts)) if len(parts) == 2 and all(p.isascii() and p.isdigit() for p in parts) else ()
     if api < INTERNAL_API:
         raise Gap(f"{engine.name} (API {said.strip() or 'unknown'}) cannot take the host's address off the "
                   "preparation's network: the project's code would reach the host's services through its gateway",
