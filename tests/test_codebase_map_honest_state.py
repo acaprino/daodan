@@ -210,7 +210,7 @@ def test_an_indexer_reaches_the_hosts_the_project_declares_and_one_it_could_not_
             given.update(options)
             return _contract(gaps=[failed])
         import egress
-        egress.session(str(Path(_project_dir).resolve()))["allow"].append("proxy.corp.example")  # approved for the pass
+        egress.respond("proxy.corp.example", str(Path(_project_dir).resolve()), "once")  # approved for the pass
         with mock.patch("preparation.declared", return_value=declared), \
                 mock.patch("container.find_engine", return_value="the engine"):
             _result, seen = _run(manifest, index, fields={"needs_container": builds})
@@ -248,6 +248,39 @@ def test_a_declared_host_nobody_decided_stops_the_stage_before_its_build_and_aft
         _result, seen = _run(manifest, index, fields={"needs_container": True})
     assert len(built) == 1 and not _gaps(seen, "analyze", "approval_required")
     assert egress.pending(key) == [] and egress.session(key) == egress.new_session()  # the pass ended: forgotten
+
+
+def test_a_snapshot_of_a_folder_below_the_root_asks_and_is_answered_under_the_root(tmp_path, monkeypatch):
+    """One project, one name: the store's root, whatever folder the snapshot targets. The stage asks under it, the app
+    answers under it (its checkout's folder) and the next analysis is served by that answer."""
+    import egress
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
+    root = tmp_path / "repo"
+    shutil.copytree(FIXTURES / "go", root / "sub", ignore=shutil.ignore_patterns("index.scip", "expected.json"))
+    for argv in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-qm",
+                                                 "one"]):
+        subprocess.run(["git", "-C", str(root), *argv], check=True, capture_output=True)
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root / "sub", manifest)
+    key, below = str(root.resolve()), str((root / "sub").resolve())
+    assert egress.project_of(manifest) == key
+    declared = {"hosts": ("proxy.corp.example",), "where": {"proxy.corp.example": ["sub/go.mod"]}}
+    built = []
+
+    def index(project_dir, work_dir, files=None, **options):
+        built.append(project_dir)
+        return _contract()
+    with mock.patch("preparation.declared", return_value=declared), \
+            mock.patch("container.find_engine", return_value="the engine"):
+        _run(manifest, index, fields={"needs_container": True})
+        assert built == [] and egress.pending(below) == []
+        assert [(row["host"], row["declared_in"]) for row in egress.pending(key)] == [
+            ("proxy.corp.example", ["sub/go.mod"])]
+        egress.respond("proxy.corp.example", key, "once")
+        _result, seen = _run(manifest, index, fields={"needs_container": True})
+    assert [Path(folder).resolve() for folder in built] == [Path(below)]  # the stage still builds its own folder
+    assert not _gaps(seen, "analyze", "approval_required")
 
 
 def test_a_wanted_language_the_stage_does_not_report_is_missing(tmp_path):

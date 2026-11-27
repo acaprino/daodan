@@ -288,8 +288,17 @@ class StepFailed(Exception):
 
 def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | None = None,
         report_path: Path | None = None, fast_scan: bool = False) -> dict:
+    """`_run` as one analysis: the shared Node volumes (`node_preparation.analysis`) and the hosts its steps ask for,
+    from the pre-map's to the dynamic step's, under the project's name (`egress.analysis`): what the user answered
+    "once" or "no" serves every step of the next analysis and ends with it."""
+    import contextlib
+    import egress
     import node_preparation
-    with node_preparation.analysis():
+    try:
+        project = egress.project_of(Path(manifest).resolve())
+    except (OSError, ValueError, KeyError):  # an unreadable store: the first step says why, with its remedy
+        project = None
+    with node_preparation.analysis(), egress.analysis(project) if project else contextlib.nullcontext():
         return _run(manifest, listeners, start=start, stop=stop, report_path=report_path, fast_scan=fast_scan)
 
 

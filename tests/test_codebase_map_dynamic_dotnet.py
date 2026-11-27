@@ -417,7 +417,7 @@ class ObserveTest(unittest.TestCase):
         return [call for call in calls if call[0] == "create"]
 
     def test_the_tests_run_recorded_in_the_container_and_a_project_that_does_not_build_is_said(self):
-        egress.session(str(self.project))["allow"] += ["nuget.corp.example"]  # approved for this analysis: it opens only then
+        egress.respond("nuget.corp.example", str(self.project), "once")  # approved for this analysis: it opens only then
         result = self.observe()
         self.assertIsNone(dynamic.malformed(result))
         self.assertEqual(result["state"], "ran")

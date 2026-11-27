@@ -808,7 +808,7 @@ class ObserveTest(FakeEngineTest):
         self.assertIn("api.adoptium.net", self.created()[0])  # mise's downloads, through the preparation's proxy
 
     def test_the_hosts_the_project_declares_are_reached_by_the_preparation(self):
-        egress.session(str(self.project))["allow"] += ["jitpack.io"]  # approved for this analysis: it opens only then
+        egress.respond("jitpack.io", str(self.project), "once")  # approved for this analysis: it opens only then
         self.planned["declared"] = {"hosts": ("jitpack.io",), "where": {"jitpack.io": ["pom.xml"]}}
         self.observe(suites=self.suite(1))
         self.assertIn("jitpack.io", self.created()[0])

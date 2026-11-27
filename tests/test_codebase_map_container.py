@@ -187,7 +187,6 @@ class FakeEngineTest(unittest.TestCase):
         env.start()
         self.addCleanup(env.stop)
         egress.PENDING.clear()
-        egress.SESSIONS.clear()
         lookup = mock.patch.object(egress, "resolve", side_effect=lambda rows, *_: [  # no lookup in a test
             {**row, "address": None, "network": False} for row in rows])
         lookup.start()
@@ -737,6 +736,19 @@ class FakeEngineTest(unittest.TestCase):
                                   str(self.project), "always")[0])
         self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=hosts)["state"], "done")
         self.assertIn("github.com", self.created()[3])  # the second run's proxy
+
+    def test_a_host_approved_and_then_blocked_never_reaches_the_proxy(self):
+        """"Block" wins over every list: an approval for always or for this analysis no longer opens the host, nor does
+        a whitelist that still holds it (a file written by hand or before the block)."""
+        project = str(self.project)
+        egress.respond("git.example.com", project, "always")
+        egress.respond("git.example.com", project, "once")
+        egress.respond("git.example.com", project, "block")
+        egress.save({**egress.load(), "whitelist": {project: ["git.example.com"]}})
+        self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"],
+                                            registries=("registry.npmjs.org", "git.example.com"))["state"], "done")
+        [proxy] = [call for call in self.created() if "3128" in call]
+        self.assertEqual(proxy[proxy.index("3128") + 1:], ["registry.npmjs.org"])
 
     def test_a_refused_host_is_a_request_and_a_step_that_fails_with_one_needs_approval(self):
         (self.state / "refused.log").write_text(

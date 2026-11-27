@@ -21,7 +21,6 @@ PROJECT = "/work/app"
 def shared(tmp_path, monkeypatch):
     monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
     egress.PENDING.clear()
-    egress.SESSIONS.clear()
     return tmp_path / "shared"
 
 
@@ -73,6 +72,14 @@ def test_block_refuses_everywhere_even_a_canonical_or_an_approved_host():
         assert egress.decide(host, "/work/other", state, egress.new_session()) == "deny"
 
 
+def test_block_takes_the_host_out_of_the_whitelists_and_the_analysis_allowed_hosts():
+    state, session = egress.answer(egress.load(), egress.new_session(), "x.example.com", PROJECT, "always")
+    state, session = egress.answer(state, session, "x.example.com", "/work/other", "always")
+    state, session = egress.answer(state, session, "x.example.com", PROJECT, "once")
+    state, session = egress.answer(state, session, "x.example.com", PROJECT, "block")
+    assert state["whitelist"] == {PROJECT: [], "/work/other": []} and session["allow"] == []
+
+
 def test_answer_changes_nothing_it_was_given_and_refuses_an_unknown_reply():
     state, session = egress.load(), egress.new_session()
     egress.answer(state, session, "x.example.com", PROJECT, "always")
@@ -87,6 +94,17 @@ def test_an_unreadable_file_is_an_empty_state(shared, text):
     shared.mkdir(parents=True)
     (shared / "egress.json").write_text(text, encoding="utf-8")
     assert egress.load() == {"whitelist": {}, "blacklist": []}
+    with pytest.raises(ValueError, match="cannot be read"):  # an answer is not saved over what could not be read
+        egress.respond("x.example.com", PROJECT, "always")
+    assert (shared / "egress.json").read_text(encoding="utf-8") == text
+
+
+def test_save_writes_through_a_temporary_file_of_its_own_and_leaves_none(shared):
+    shared.mkdir(parents=True)
+    (shared / "egress.partial").mkdir()  # a fixed temporary name another writer holds
+    egress.save({"whitelist": {PROJECT: ["a.example.com"]}, "blacklist": []})
+    assert egress.load()["whitelist"] == {PROJECT: ["a.example.com"]}
+    assert sorted(path.name for path in shared.iterdir()) == ["egress.json", "egress.partial"]
 
 
 def test_a_malformed_entry_is_dropped_and_the_rest_kept(shared):
@@ -212,7 +230,7 @@ def test_collect_registers_the_requests_once_and_returns_them_with_the_gaps(monk
     egress.collect(PROJECT, refused)  # the second run: no duplicate
     assert [r["host"] for r in egress.pending(PROJECT)] == ["ask.example.com"]
     assert egress.pending("/work/other") == []
-    egress.SESSIONS[PROJECT] = egress.answer(egress.load(), egress.session(PROJECT), "ask.example.com", PROJECT, "no")[1]
+    egress.respond("ask.example.com", PROJECT, "no")
     assert egress.collect(PROJECT, refused)[0] == []
     assert [g["host"] for g in egress.collect(PROJECT, refused)[1]] == ["ask.example.com", "blocked.example.com"]
 
@@ -324,21 +342,46 @@ def test_a_pass_empties_its_requests_when_it_starts_and_its_answers_when_it_ends
         egress.new_session()
 
 
-def test_run_pass_begins_and_ends_the_egress_of_its_project(shared, monkeypatch):
-    import engine_pass
-    egress.collect(PROJECT, [{"host": "10.0.0.1", "port": "443"}])
-    egress.respond("10.0.0.2", PROJECT, "once")
+def test_an_analysis_ended_in_another_process_leaves_no_answer_here_and_the_next_reply_does_not_bring_it_back(shared):
+    egress.respond("10.0.0.1", PROJECT, "once")  # the app's process answers for one analysis
+    assert egress.session(PROJECT)["allow"] == ["10.0.0.1"]
+    _process(f"egress.end({PROJECT!r})", shared)  # the analysis ends in its own process
+    assert egress.session(PROJECT) == egress.new_session()
+    egress.respond("10.0.0.2", PROJECT, "no")  # the app answers for the next analysis
+    assert json.loads((shared / egress.SESSION_FILE).read_text(encoding="utf-8"))[PROJECT] == {
+        "allow": [], "deny": ["10.0.0.2"]}
+
+
+@pytest.mark.parametrize("fails", [False, True])
+def test_the_whole_analysis_begins_and_ends_the_egress_of_its_project(shared, monkeypatch, fails):
+    """The boundary is the analysis, all its steps (`pipeline.run`), not one of them: the pre-map's requests made in
+    it are not emptied by a later step, "once" serves the dynamic step too, and the answers end with it, even when it
+    fails."""
+    import pipeline
+    egress.collect(PROJECT, [{"host": "10.0.0.1", "port": "443"}])  # a request of the analysis before
+    egress.respond("10.0.0.2", PROJECT, "once")  # answered between two analyses
     seen = {}
 
-    def inside(manifest, report_path, bus=None):
-        seen.update(pending=egress.pending(PROJECT), allow=egress.session(PROJECT)["allow"])
+    def steps(manifest, listeners, **options):
+        seen.update(before=egress.pending(PROJECT), named=egress.name("/work/app/sub"))
+        egress.collect(egress.name("/work/app/sub"), [{"host": "10.0.0.3", "port": "443"}])  # the pre-map asks
+        seen.update(premap=[row["host"] for row in egress.pending(PROJECT)],
+                    allow=egress.session(PROJECT)["allow"])  # what the dynamic step finds, after the analyze one
+        if fails:
+            raise RuntimeError("a step that nobody foresaw")
         return {"ran": True}
 
-    monkeypatch.setattr(engine_pass, "_projects", lambda manifest: [PROJECT])
-    monkeypatch.setattr(engine_pass, "_run_pass", inside)
-    assert engine_pass.run_pass(Path("m.json"), Path("r.json")) == {"ran": True}
-    assert seen == {"pending": [], "allow": ["10.0.0.2"]}  # the answer given before the pass serves it
-    assert egress.session(PROJECT) == egress.new_session()  # and is forgotten when it ends
+    monkeypatch.setattr(egress, "project_of", lambda manifest: PROJECT)
+    monkeypatch.setattr(pipeline, "_run", steps)
+    if fails:
+        with pytest.raises(RuntimeError):
+            pipeline.run(Path("m.sqlite"))
+    else:
+        assert pipeline.run(Path("m.sqlite")) == {"ran": True}
+    assert seen == {"before": [], "named": PROJECT, "premap": ["10.0.0.3"], "allow": ["10.0.0.2"]}
+    assert egress.session(PROJECT) == egress.new_session()  # forgotten when the analysis ends, however it ends
+    assert [row["host"] for row in egress.pending(PROJECT)] == ["10.0.0.3"]  # the pre-map's request stays visible
+    assert egress.name("/work/app/sub") == "/work/app/sub"  # outside the analysis, a run names its own folder
 
 
 def test_a_missing_or_corrupt_shared_file_is_an_empty_one(shared):

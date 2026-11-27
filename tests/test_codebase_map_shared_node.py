@@ -105,8 +105,9 @@ def test_tsc_index_and_observer_share_one_restore_and_isolate_every_consumer(tmp
         container_runner.runner(manifest, fake)(tsc)
         assert [name for name, _, _ in phases].count("node-restore") == 2
         assert len(volumes) == 4
-        egress.session(str(project.resolve()))["allow"] += [  # mise takes node from GitHub: approved for this analysis
-            "github.com", "codeload.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com"]
+        for host in ("github.com", "codeload.github.com", "objects.githubusercontent.com",
+                     "release-assets.githubusercontent.com"):  # mise takes node from GitHub: approved for this analysis
+            egress.respond(host, str(project.resolve()), "once")
         container_runner.runner(manifest, fake)(tsc, toolchains=[{"tool": "node", "version": "20.19.0"}])
         assert [name for name, _, _ in phases].count("node-restore") == 3
     assert volumes == {}

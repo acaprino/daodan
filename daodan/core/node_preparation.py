@@ -137,6 +137,7 @@ def clone(engine, image, project, copy, request, visibility, mounts, limits, tim
     """Restore into separate engine-managed volumes, then copy them read-only into this consumer's volumes, with
     its helper files: the copy its own preparation still has to take in, none."""
     import container
+    import egress
     folder = _session()
     shared, extra = copy.with_name("node.tar"), copy.with_name("inputs.tar")
     _split(copy, shared, extra, request["inputs"])
@@ -149,7 +150,7 @@ def clone(engine, image, project, copy, request, visibility, mounts, limits, tim
     owner = int((folder / "owner").read_text(encoding="ascii"))
     with confinement.project_lock(lock, timeout=timeout):
         names, gaps = _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, shared, lock, owner,
-                            str(project))
+                            egress.name(project))
     # Copy work and package caches. Each consumer bootstraps its own adapter and tools at their pinned versions.
     # Its helper files go in with this phase: an engine fills a volume from what is copied in before the start
     # only while the volume is empty, so after the clone they would stay under the mount, unseen.

@@ -8,11 +8,12 @@ string for one project. The four answers: "always" (this project), "once" (this 
 (this analysis) and "block" (every project, always).
 
 The requests still to answer and the answers that last for an analysis are shared between processes, which differ:
-the child that is refused, the app that answers, the pass that reads the answer. They are two files beside
+the child that is refused, the app that answers, the analysis that reads the answer. They are two files beside
 `egress.json` (`PENDING_FILE`, `SESSION_FILE`), written whole with a temporary file and `os.replace`, under an OS lock
-(`locked`); a missing or corrupt file is an empty one. `begin` empties a project's requests when its pass starts and
-`end` its answers when the pass ends, so "once" lasts for the pass the answer is used by. `PENDING` and `SESSIONS`
-are this process's copy of them.
+(`locked`); a missing or corrupt file is an empty one. `begin` empties a project's requests when its analysis starts and
+`end` its answers when it ends (`analysis`), so "once" lasts for the analysis the answer is used by. `PENDING` is this
+process's copy of the requests; the answers are read from their file each time, so one that an analysis ended
+elsewhere has forgotten is never kept here.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ import json
 import os
 import socket
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -40,12 +42,47 @@ PENDING_FILE, SESSION_FILE, LOCK = "egress-pending.json", "egress-session.json",
 LOCK_SECONDS = 5  # past it the file is read and written without the lock: a stuck holder must not stop an analysis
 PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (host, port): the analysis's register
 WHERE: dict[str, dict] = {}  # project -> {host: [files that declare it]}, from `declare`
-SESSIONS: dict[str, dict] = {}  # project -> the answers that last for its analysis
 MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
 LOOKUPS = 16  # the names one analysis looks up at most, counted in its row of `SESSION_FILE` ("looked")
 LOOKUP_SECONDS = 5  # how long the names of one run's refusals are looked up, all together
 REPLIES = ("always", "once", "no", "block")
 ASKER = contextvars.ContextVar("egress_asker", default="")  # the tool whose runs ask now (`asking`); "" none named
+PROJECT = contextvars.ContextVar("egress_project", default="")  # the analysed project's name (`within`); "" none
+
+
+def project_of(manifest: Path) -> str:
+    """The name of a snapshot's project: its store's root, whatever folder below it the snapshot targets. The analysis,
+    its stages and the app name one project by it."""
+    from snapshot_store import open_snapshot
+    with open_snapshot(Path(manifest)) as store:
+        return str(Path(store["root"]).resolve())
+
+
+def name(folder: Path | str) -> str:
+    """The project whose runs ask now: the analysis's (`within`), else the `folder` a run copies."""
+    return PROJECT.get() or str(Path(folder).resolve())
+
+
+@contextlib.contextmanager
+def within(project: str):
+    """Within it the runs over any folder of the project ask, and are answered, under its name (`project_of`)."""
+    token = PROJECT.set(project)
+    try:
+        yield
+    finally:
+        PROJECT.reset(token)
+
+
+@contextlib.contextmanager
+def analysis(project: str):
+    """One analysis of the project, all its steps: the requests of the one before are gone when it starts (`begin`),
+    its "once" and "no" answers when it ends, however it ends (`end`); its runs ask under the project's name."""
+    begin(project)
+    try:
+        with within(project):
+            yield
+    finally:
+        end(project)
 
 
 @contextlib.contextmanager
@@ -91,15 +128,24 @@ def _read(name: str) -> dict:
     return held if isinstance(held, dict) else {}
 
 
-def _write(name: str, value: dict) -> None:
-    path = shared_cache_dir() / name
+def _replace(path: Path, value: dict) -> None:
+    """`path` holds `value`, written whole: a temporary file of its own beside it, then `os.replace`."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, partial = tempfile.mkstemp(prefix=f"{path.name}.", suffix=".partial", dir=path.parent)
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        partial = path.with_name(f"{name}.{os.getpid()}.partial")
-        partial.write_text(json.dumps(value, sort_keys=True, indent=1), encoding="utf-8")
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(json.dumps(value, sort_keys=True, indent=1))
         os.replace(partial, path)
+    except BaseException:
+        Path(partial).unlink(missing_ok=True)
+        raise
+
+
+def _write(name: str, value: dict) -> None:
+    try:
+        _replace(shared_cache_dir() / name, value)
     except OSError:
-        pass  # the copy in this process still holds it
+        pass  # the requests' copy in this process still holds them
 
 
 def _hosts(value) -> list[str]:
@@ -126,24 +172,20 @@ def _held(project: str) -> dict | None:
 
 
 def session(project: str) -> dict:
-    """The answers of the project's analysis: this process's copy, made on first use and brought up to the shared
-    file's when it has an entry for the project (the same dict each time, so a caller may change it)."""
-    mine = SESSIONS.setdefault(project, new_session())
-    if (held := _held(project)) is not None:
-        mine["allow"][:], mine["deny"][:] = held["allow"], held["deny"]
-    return mine
+    """The answers of the project's analysis, as the shared file holds them now: none when it has no entry for the
+    project (an analysis that ended, in any process, forgot them). A new value each time: `respond` changes them."""
+    return _held(project) or new_session()
 
 
 def respond(host: str, project: str, reply: str) -> None:
     """The user's `reply` about `host`, kept: "always" and "block" in `egress.json`, "once" and "no" in the analysis's
     answers, shared; the request is no longer pending. Called by whoever answers, in any process."""
     with locked():
-        state, answers = answer(load(), session(project), host, project, reply)
+        state, answers = answer(load(strict=True), session(project), host, project, reply)
         save(state)
         shared = _read(SESSION_FILE)
         shared[project] = {**_row(shared, project), **answers}
         _write(SESSION_FILE, shared)
-        SESSIONS[project] = answers
         rows = _read(PENDING_FILE)
         rows[project] = [row for row in rows.get(project, []) if row.get("host") != host.lower()]
         _write(PENDING_FILE, rows)
@@ -151,7 +193,7 @@ def respond(host: str, project: str, reply: str) -> None:
 
 
 def begin(project: str) -> None:
-    """A pass starts: the requests of the one before are gone, the run will ask again for what it still needs."""
+    """An analysis starts: the requests of the one before are gone, the run will ask again for what it still needs."""
     with locked():
         rows = _read(PENDING_FILE)
         rows.pop(project, None)
@@ -160,22 +202,29 @@ def begin(project: str) -> None:
 
 
 def end(project: str) -> None:
-    """A pass ends: what the user said "once" or "no" to for it is forgotten."""
+    """An analysis ends: what the user said "once" or "no" to for it is forgotten."""
     with locked():
         shared = _read(SESSION_FILE)
         shared.pop(project, None)
         _write(SESSION_FILE, shared)
-    SESSIONS.pop(project, None)
 
 
-def load() -> dict:
-    """The saved answers; an absent or unreadable file is an empty state, and only well-formed entries are kept."""
+def load(strict: bool = False) -> dict:
+    """The saved answers; an absent or unreadable file is an empty state, and only well-formed entries are kept. With
+    `strict`, for whoever saves what it loaded, a file that is there and cannot be read is a ValueError: an answer is
+    never saved over the blacklist and whitelists it could not read."""
+    path = shared_cache_dir() / FILE
     try:
-        held = json.loads((shared_cache_dir() / FILE).read_text(encoding="utf-8"))
+        held = json.loads(path.read_text(encoding="utf-8"))
         whitelist, blacklist = held["whitelist"], held["blacklist"]
         if not isinstance(whitelist, dict) or not isinstance(blacklist, list):
-            raise TypeError
-    except (OSError, ValueError, KeyError, TypeError):
+            raise TypeError("whitelist is no object or blacklist no list")
+    except FileNotFoundError:
+        return {"whitelist": {}, "blacklist": []}
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        if strict:
+            raise ValueError(f"{path} cannot be read ({type(error).__name__}: {error}): no answer is saved over it; "
+                             "repair or remove the file, then answer again") from error
         return {"whitelist": {}, "blacklist": []}
     return {"whitelist": {project: sorted({h for h in hosts if isinstance(h, str)})
                           for project, hosts in whitelist.items() if isinstance(hosts, list)},
@@ -183,11 +232,7 @@ def load() -> dict:
 
 
 def save(state: dict) -> None:
-    path = shared_cache_dir() / FILE
-    path.parent.mkdir(parents=True, exist_ok=True)
-    partial = path.with_suffix(".partial")
-    partial.write_text(json.dumps(state, sort_keys=True, indent=1), encoding="utf-8")
-    os.replace(partial, path)
+    _replace(shared_cache_dir() / FILE, state)
 
 
 def decide(host: str, project: str, state: dict, session: dict | None = None) -> str:
@@ -218,8 +263,10 @@ def answer(state: dict, session: dict, host: str, project: str, reply: str) -> t
         allow = sorted({*allow, host})
     elif reply == "no":
         allow, deny = [name for name in allow if name != host], sorted({*deny, host})
-    else:
+    else:  # blocked: out of every list that would open it
         blacklist = sorted({*blacklist, host})
+        whitelist = {name: [h for h in hosts if h != host] for name, hosts in whitelist.items()}
+        allow = [name for name in allow if name != host]
     return {"whitelist": whitelist, "blacklist": blacklist}, {"allow": allow, "deny": deny}
 
 
