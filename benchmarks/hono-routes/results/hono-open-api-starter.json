@@ -1,0 +1,338 @@
+{
+ "application": {
+  "repository": "w3cj/hono-open-api-starter",
+  "commit": "0d5f3bf523f525667d58edb38011e377e5898fc4",
+  "licence": "MIT",
+  "chosen": [
+   "src/app.ts"
+  ],
+  "note": "Node server, pnpm; `OpenAPIHono` routes (`openapi(route, handler)`); no `main`: `dev` runs `tsx watch src/index.ts`"
+ },
+ "run": {
+  "name": "hono-open-api-starter",
+  "restore": {
+   "restores": {
+    "pnpm": [
+     "."
+    ]
+   },
+   "gaps": [],
+   "hosts": [],
+   "argv": [
+    "sh",
+    "-c",
+    "( mkdir -p /daodan/state/tools/bin /daodan/state/home ) && ( tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ) && ( export PATH=/daodan/state/tools/corepack/bin:$PATH; [ -x /daodan/state/tools/corepack/bin/corepack ] || { npm install -g --prefix /daodan/state/tools/corepack --engine-strict --no-audit --no-fund --loglevel=error \"corepack@>=0.31.0 <=0.36.0\" >&2 || echo 'DAODAN-MISSING corepack@>=0.31.0' >&2; }; export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1; for f in '.'; do ( cd \"$f\" && timeout 600 sh -c 'corepack pnpm install --frozen-lockfile' ) > /tmp/daodan-restore.log 2>&1 || { { printf 'DAODAN-GENERATE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-GENERATE-END; } >&2; ( cd \"$f\" && corepack pnpm install --frozen-lockfile --ignore-scripts ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; done; true )"
+   ],
+   "returncode": 0,
+   "seconds": 12.3,
+   "stdout": "",
+   "stderr": "\nadded 1 package in 787ms\nDAODAN-GENERATE-FAILED pnpm .\nError: ERR_PNPM_IGNORED_BUILDS\nDAODAN-GENERATE-END\nDAODAN-RESTORE-FAILED pnpm .\nError: ERR_PNPM_IGNORED_BUILDS\nDAODAN-RESTORE-END\n"
+  },
+  "node": "v24.22.3",
+  "hono_folders": [
+   "."
+  ],
+  "declared": [
+   {
+    "argv": [
+     "node",
+     "/tmp/declared.mjs",
+     "."
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 0.09,
+    "max_rss_mb": 122.3,
+    "stdout_tail": "\nDAODAN-ANSWER {\"folder\":\".\",\"name\":\"hono-open-api-starter\",\"main\":null,\"exports\":null,\"declared\":{},\"wrangler_files\":[]}\n",
+    "stderr_tail": "",
+    "answer": {
+     "folder": ".",
+     "name": "hono-open-api-starter",
+     "main": null,
+     "exports": null,
+     "declared": {},
+     "wrangler_files": []
+    }
+   }
+  ],
+  "inspect": [
+   {
+    "module": "src/app.ts",
+    "found_by": [
+     "chosen by hand"
+    ],
+    "loader": "node",
+    "argv": [
+     "node",
+     "/tmp/inspect.mjs",
+     "/work/src/app.ts"
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 0.15,
+    "max_rss_mb": 136.2,
+    "stdout_tail": "_FOUND]: Cannot find package '@/lib' imported from /work/src/app.ts\\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)\\n    at packageResolve (node:internal/modules/esm/resolve:784:25)\\n    at moduleResolve (node:internal/modules/esm/resolve:873:18)\\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\\n    at #resolve (node:internal/modules/esm/loader:687:17)\\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)\"}\n",
+    "stderr_tail": "",
+    "answer": {
+     "module": "/work/src/app.ts",
+     "error": "Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@/lib' imported from /work/src/app.ts\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)\n    at packageResolve (node:internal/modules/esm/resolve:784:25)\n    at moduleResolve (node:internal/modules/esm/resolve:873:18)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)"
+    }
+   },
+   {
+    "module": "src/app.ts",
+    "found_by": [
+     "chosen by hand"
+    ],
+    "loader": "node --import tsx",
+    "argv": [
+     "node",
+     "--import",
+     "tsx",
+     "/tmp/inspect.mjs",
+     "/work/src/app.ts"
+    ],
+    "cwd": "/work",
+    "returncode": 1,
+    "seconds": 1.89,
+    "max_rss_mb": 336.7,
+    "stdout_tail": "[dotenv@17.2.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`\n",
+    "stderr_tail": "❌ Invalid env:\n{\n  \"LOG_LEVEL\": [\n    \"Invalid option: expected one of \\\"fatal\\\"|\\\"error\\\"|\\\"warn\\\"|\\\"info\\\"|\\\"debug\\\"|\\\"trace\\\"|\\\"silent\\\"\"\n  ],\n  \"DATABASE_URL\": [\n    \"Invalid input: expected string, received undefined\"\n  ]\n}\n",
+    "answer": null
+   },
+   {
+    "module": "src/app.ts",
+    "found_by": [
+     "env of .env.example"
+    ],
+    "loader": "node --import tsx",
+    "env_file": ".env.example",
+    "argv": [
+     "node",
+     "--import",
+     "tsx",
+     "/tmp/inspect.mjs",
+     "/work/src/app.ts"
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 1.75,
+    "max_rss_mb": 336.8,
+    "stdout_tail": "[handler]\",\"isMiddleware\":false},{\"path\":\"/tasks\",\"method\":\"GET\",\"name\":\"list\",\"isMiddleware\":false},{\"path\":\"/tasks\",\"method\":\"POST\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/tasks\",\"method\":\"POST\",\"name\":\"create\",\"isMiddleware\":false},{\"path\":\"/tasks/:id\",\"method\":\"GET\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/tasks/:id\",\"method\":\"GET\",\"name\":\"getOne\",\"isMiddleware\":false},{\"path\":\"/tasks/:id\",\"method\":\"PATCH\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/tasks/:id\",\"method\":\"PATCH\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/tasks/:id\",\"method\":\"PATCH\",\"name\":\"patch\",\"isMiddleware\":false},{\"path\":\"/tasks/:id\",\"method\":\"DELETE\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/tasks/:id\",\"method\":\"DELETE\",\"name\":\"remove\",\"isMiddleware\":false}]}}\n",
+    "stderr_tail": "",
+    "answer": {
+     "module": "/work/src/app.ts",
+     "exports": [
+      "default"
+     ],
+     "apps": {
+      "default": [
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "requestId2",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/doc",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/reference",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/tasks",
+        "method": "GET",
+        "name": "list",
+        "isMiddleware": false
+       },
+       {
+        "path": "/tasks",
+        "method": "POST",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/tasks",
+        "method": "POST",
+        "name": "create",
+        "isMiddleware": false
+       },
+       {
+        "path": "/tasks/:id",
+        "method": "GET",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/tasks/:id",
+        "method": "GET",
+        "name": "getOne",
+        "isMiddleware": false
+       },
+       {
+        "path": "/tasks/:id",
+        "method": "PATCH",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/tasks/:id",
+        "method": "PATCH",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/tasks/:id",
+        "method": "PATCH",
+        "name": "patch",
+        "isMiddleware": false
+       },
+       {
+        "path": "/tasks/:id",
+        "method": "DELETE",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/tasks/:id",
+        "method": "DELETE",
+        "name": "remove",
+        "isMiddleware": false
+       }
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "read": {
+  "name": "hono-open-api-starter",
+  "snapshot_seconds": 0.5,
+  "noir": {
+   "argv": [
+    "noir",
+    "scan",
+    "/work",
+    "-f",
+    "json",
+    "--no-log"
+   ],
+   "returncode": 0,
+   "seconds": 0.7,
+   "stderr_tail": "",
+   "endpoints": 7
+  },
+  "noir_rows": [
+   {
+    "method": "GET",
+    "path": "/reference",
+    "site": "src/lib/configure-open-api.ts:16",
+    "handler": null,
+    "symbol": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/",
+    "site": "src/routes/index.route.ts:10",
+    "handler": null,
+    "symbol": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/tasks",
+    "site": "src/routes/tasks/tasks.routes.ts:11",
+    "handler": null,
+    "symbol": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "POST",
+    "path": "/tasks",
+    "site": "src/routes/tasks/tasks.routes.ts:23",
+    "handler": null,
+    "symbol": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "GET",
+    "path": "/tasks/{id}",
+    "site": "src/routes/tasks/tasks.routes.ts:45",
+    "handler": null,
+    "symbol": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "PATCH",
+    "path": "/tasks/{id}",
+    "site": "src/routes/tasks/tasks.routes.ts:68",
+    "handler": null,
+    "symbol": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   },
+   {
+    "method": "DELETE",
+    "path": "/tasks/{id}",
+    "site": "src/routes/tasks/tasks.routes.ts:96",
+    "handler": null,
+    "symbol": null,
+    "gap": "noir reports this entry without a unique snapshot handler at its site"
+   }
+  ],
+  "noir_gaps": {},
+  "functions": 34
+ },
+ "loads": [
+  {
+   "module": "src/app.ts",
+   "found_by": [
+    "env of .env.example"
+   ],
+   "loader": "node --import tsx",
+   "export": "default",
+   "raw_entries": 16,
+   "middleware": 8,
+   "inspect_routes": 8,
+   "noir_routes": 7,
+   "common": 7,
+   "only_inspect": [
+    [
+     "GET",
+     "/doc"
+    ]
+   ],
+   "only_noir": [],
+   "inspect_handlers": {
+    "nameless": 3,
+    "unique": 5
+   },
+   "noir_bound": 0,
+   "common_bound_by_both": 0,
+   "common_same_function": 0
+  }
+ ]
+}

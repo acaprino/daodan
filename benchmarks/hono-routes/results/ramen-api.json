@@ -1,0 +1,626 @@
+{
+ "application": {
+  "repository": "yusukebe/ramen-api",
+  "commit": "a2d3f10137fdd8a128b61b09e022fa7421bc3bf3",
+  "licence": "MIT",
+  "chosen": [
+   "src/index.ts"
+  ],
+  "note": "Cloudflare Workers, pnpm; `main` in package.json and in wrangler.jsonc; a `@/` path alias of tsconfig"
+ },
+ "run": {
+  "name": "ramen-api",
+  "restore": {
+   "restores": {
+    "pnpm": [
+     "."
+    ]
+   },
+   "gaps": [],
+   "hosts": [],
+   "argv": [
+    "sh",
+    "-c",
+    "( mkdir -p /daodan/state/tools/bin /daodan/state/home ) && ( tar -xzf /daodan/state/in/node.tar.gz -C /daodan/state/tools && mv /daodan/state/tools/node-v24.22.3-linux-x64 /daodan/state/tools/node ) && ( export PATH=/daodan/state/tools/corepack/bin:$PATH; [ -x /daodan/state/tools/corepack/bin/corepack ] || { npm install -g --prefix /daodan/state/tools/corepack --engine-strict --no-audit --no-fund --loglevel=error \"corepack@>=0.31.0 <=0.36.0\" >&2 || echo 'DAODAN-MISSING corepack@>=0.31.0' >&2; }; export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1; for f in '.'; do ( cd \"$f\" && timeout 600 sh -c 'corepack pnpm install --frozen-lockfile' ) > /tmp/daodan-restore.log 2>&1 || { { printf 'DAODAN-GENERATE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-GENERATE-END; } >&2; ( cd \"$f\" && corepack pnpm install --frozen-lockfile --ignore-scripts ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED pnpm %s\\n' \"$f\"; { grep -E 'ERR_PNPM|ERROR' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; done; true )"
+   ],
+   "returncode": 0,
+   "seconds": 10.0,
+   "stdout": "",
+   "stderr": "\nadded 1 package in 698ms\n"
+  },
+  "node": "v24.22.3",
+  "hono_folders": [
+   "."
+  ],
+  "declared": [
+   {
+    "argv": [
+     "node",
+     "/tmp/declared.mjs",
+     "."
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 1.33,
+    "max_rss_mb": 337.2,
+    "stdout_tail": "\nDAODAN-ANSWER {\"folder\":\".\",\"name\":\"ramen-api\",\"main\":\"src/index.ts\",\"exports\":null,\"declared\":{\"main\":\"/work/src/index.ts\",\"wrangler\":\"/work/src/index.ts\"},\"wrangler_files\":[\"wrangler.jsonc\"]}\n",
+    "stderr_tail": "",
+    "answer": {
+     "folder": ".",
+     "name": "ramen-api",
+     "main": "src/index.ts",
+     "exports": null,
+     "declared": {
+      "main": "/work/src/index.ts",
+      "wrangler": "/work/src/index.ts"
+     },
+     "wrangler_files": [
+      "wrangler.jsonc"
+     ]
+    }
+   }
+  ],
+  "inspect": [
+   {
+    "module": "src/index.ts",
+    "found_by": [
+     "main of .",
+     "wrangler of .",
+     "chosen by hand"
+    ],
+    "loader": "node",
+    "argv": [
+     "node",
+     "/tmp/inspect.mjs",
+     "/work/src/index.ts"
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 0.23,
+    "max_rss_mb": 140.7,
+    "stdout_tail": "T_FOUND]: Cannot find module '/work/src/mcp' imported from /work/src/index.ts\\n    at finalizeResolution (node:internal/modules/esm/resolve:272:11)\\n    at moduleResolve (node:internal/modules/esm/resolve:879:10)\\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\\n    at #resolve (node:internal/modules/esm/loader:687:17)\\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)\\n    at ModuleJob.link (node:internal/modules/esm/module_job:381:17)\"}\n",
+    "stderr_tail": "",
+    "answer": {
+     "module": "/work/src/index.ts",
+     "error": "Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/work/src/mcp' imported from /work/src/index.ts\n    at finalizeResolution (node:internal/modules/esm/resolve:272:11)\n    at moduleResolve (node:internal/modules/esm/resolve:879:10)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)\n    at ModuleJob.link (node:internal/modules/esm/module_job:381:17)"
+    }
+   },
+   {
+    "module": "src/index.ts",
+    "found_by": [
+     "tsx of the probe (the project has none)"
+    ],
+    "loader": "node --import file:///opt/probe-tsx/node_modules/tsx/dist/loader.mjs",
+    "env_file": null,
+    "argv": [
+     "node",
+     "--import",
+     "file:///opt/probe-tsx/node_modules/tsx/dist/loader.mjs",
+     "/tmp/inspect.mjs",
+     "/work/src/index.ts"
+    ],
+    "cwd": "/work",
+    "returncode": 0,
+    "seconds": 1.28,
+    "max_rss_mb": 196.4,
+    "stdout_tail": "Middleware\":true},{\"path\":\"/content/*\",\"method\":\"GET\",\"name\":\"[handler]\",\"isMiddleware\":false},{\"path\":\"/*\",\"method\":\"ALL\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/\",\"method\":\"GET\",\"name\":\"[handler]\",\"isMiddleware\":false},{\"path\":\"/shops\",\"method\":\"GET\",\"name\":\"[handler]\",\"isMiddleware\":false},{\"path\":\"/shops/:id\",\"method\":\"GET\",\"name\":\"[handler]\",\"isMiddleware\":false},{\"path\":\"/authors/:id\",\"method\":\"GET\",\"name\":\"[handler]\",\"isMiddleware\":false},{\"path\":\"/images/:shopId/:filename\",\"method\":\"GET\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/images/:shopId/:filename\",\"method\":\"GET\",\"name\":\"[handler]\",\"isMiddleware\":false},{\"path\":\"/graphql\",\"method\":\"ALL\",\"name\":\"[middleware]\",\"isMiddleware\":true},{\"path\":\"/mcp\",\"method\":\"ALL\",\"name\":\"[handler]\",\"isMiddleware\":false}]}}\n",
+    "stderr_tail": "",
+    "answer": {
+     "module": "/work/src/index.ts",
+     "exports": [
+      "app",
+      "default"
+     ],
+     "apps": {
+      "app": [
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "poweredBy",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "prettyJSON",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "cors",
+        "isMiddleware": true
+       },
+       {
+        "path": "/content/*",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/shops",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/shops/:id",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/authors/:id",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/images/:shopId/:filename",
+        "method": "GET",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/images/:shopId/:filename",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/graphql",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/mcp",
+        "method": "ALL",
+        "name": "[handler]",
+        "isMiddleware": false
+       }
+      ],
+      "default": [
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "poweredBy",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "prettyJSON",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "cors",
+        "isMiddleware": true
+       },
+       {
+        "path": "/content/*",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/*",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/shops",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/shops/:id",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/authors/:id",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/images/:shopId/:filename",
+        "method": "GET",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/images/:shopId/:filename",
+        "method": "GET",
+        "name": "[handler]",
+        "isMiddleware": false
+       },
+       {
+        "path": "/graphql",
+        "method": "ALL",
+        "name": "[middleware]",
+        "isMiddleware": true
+       },
+       {
+        "path": "/mcp",
+        "method": "ALL",
+        "name": "[handler]",
+        "isMiddleware": false
+       }
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "read": {
+  "name": "ramen-api",
+  "snapshot_seconds": 2.5,
+  "noir": {
+   "argv": [
+    "noir",
+    "scan",
+    "/work",
+    "-f",
+    "json",
+    "--no-log"
+   ],
+   "returncode": 0,
+   "seconds": 0.8,
+   "stderr_tail": "",
+   "endpoints": 19
+  },
+  "noir_rows": [
+   {
+    "method": "GET",
+    "path": "/content/*",
+    "site": "src/index.ts:31",
+    "handler": "closure",
+    "symbol": "src/index.ts::GET /content/*",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/",
+    "site": "src/index.ts:40",
+    "handler": "closure",
+    "symbol": "src/index.ts::GET /",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/shops",
+    "site": "src/index.ts:46",
+    "handler": "closure",
+    "symbol": "src/index.ts::GET /shops",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/shops/:id",
+    "site": "src/index.ts:59",
+    "handler": "closure",
+    "symbol": "src/index.ts::GET /shops/:id",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/authors/:id",
+    "site": "src/index.ts:78",
+    "handler": "closure",
+    "symbol": "src/index.ts::GET /authors/:id",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/images/:shopId/:filename",
+    "site": "src/index.ts:101",
+    "handler": "closure",
+    "symbol": "src/index.ts::GET /images/:shopId/:filename",
+    "gap": null
+   },
+   {
+    "method": "DELETE",
+    "path": "/mcp/",
+    "site": "src/mcp.ts:72",
+    "handler": "closure",
+    "symbol": "src/mcp.ts::DELETE /mcp/",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/mcp/",
+    "site": "src/mcp.ts:72",
+    "handler": "closure",
+    "symbol": "src/mcp.ts::DELETE /mcp/",
+    "gap": null
+   },
+   {
+    "method": "HEAD",
+    "path": "/mcp/",
+    "site": "src/mcp.ts:72",
+    "handler": "closure",
+    "symbol": "src/mcp.ts::DELETE /mcp/",
+    "gap": null
+   },
+   {
+    "method": "OPTIONS",
+    "path": "/mcp/",
+    "site": "src/mcp.ts:72",
+    "handler": "closure",
+    "symbol": "src/mcp.ts::DELETE /mcp/",
+    "gap": null
+   },
+   {
+    "method": "PATCH",
+    "path": "/mcp/",
+    "site": "src/mcp.ts:72",
+    "handler": "closure",
+    "symbol": "src/mcp.ts::DELETE /mcp/",
+    "gap": null
+   },
+   {
+    "method": "POST",
+    "path": "/mcp/",
+    "site": "src/mcp.ts:72",
+    "handler": "closure",
+    "symbol": "src/mcp.ts::DELETE /mcp/",
+    "gap": null
+   },
+   {
+    "method": "PUT",
+    "path": "/mcp/",
+    "site": "src/mcp.ts:72",
+    "handler": "closure",
+    "symbol": "src/mcp.ts::DELETE /mcp/",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/content/shops.json",
+    "site": "test/mockApp.ts:5",
+    "handler": "closure",
+    "symbol": "test/mockApp.ts::GET /content/shops.json",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/content/shops/yoshimuraya/info.json",
+    "site": "test/mockApp.ts:11",
+    "handler": "closure",
+    "symbol": "test/mockApp.ts::GET /content/shops/yoshimuraya/info.json",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/content/shops/sugitaya/info.json",
+    "site": "test/mockApp.ts:27",
+    "handler": "closure",
+    "symbol": "test/mockApp.ts::GET /content/shops/sugitaya/info.json",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/content/shops/takasagoya/info.json",
+    "site": "test/mockApp.ts:43",
+    "handler": "closure",
+    "symbol": "test/mockApp.ts::GET /content/shops/takasagoya/info.json",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/content/authors/yusukebe/info.json",
+    "site": "test/mockApp.ts:59",
+    "handler": "closure",
+    "symbol": "test/mockApp.ts::GET /content/authors/yusukebe/info.json",
+    "gap": null
+   },
+   {
+    "method": "GET",
+    "path": "/content/:filename{.+\\.jpg}",
+    "site": "test/mockApp.ts:67",
+    "handler": "closure",
+    "symbol": "test/mockApp.ts::GET /content/:filename{.+\\.jpg}",
+    "gap": null
+   }
+  ],
+  "noir_gaps": {},
+  "functions": 407
+ },
+ "loads": [
+  {
+   "module": "src/index.ts",
+   "found_by": [
+    "tsx of the probe (the project has none)"
+   ],
+   "loader": "node --import file:///opt/probe-tsx/node_modules/tsx/dist/loader.mjs",
+   "export": "app",
+   "raw_entries": 14,
+   "middleware": 7,
+   "inspect_routes": 7,
+   "noir_routes": 19,
+   "common": 6,
+   "only_inspect": [
+    [
+     "ALL",
+     "/mcp"
+    ]
+   ],
+   "only_noir": [
+    [
+     "DELETE",
+     "/mcp"
+    ],
+    [
+     "GET",
+     "/content/authors/yusukebe/info.json"
+    ],
+    [
+     "GET",
+     "/content/shops.json"
+    ],
+    [
+     "GET",
+     "/content/shops/sugitaya/info.json"
+    ],
+    [
+     "GET",
+     "/content/shops/takasagoya/info.json"
+    ],
+    [
+     "GET",
+     "/content/shops/yoshimuraya/info.json"
+    ],
+    [
+     "GET",
+     "/content/{}"
+    ],
+    [
+     "GET",
+     "/mcp"
+    ],
+    [
+     "HEAD",
+     "/mcp"
+    ],
+    [
+     "OPTIONS",
+     "/mcp"
+    ],
+    [
+     "PATCH",
+     "/mcp"
+    ],
+    [
+     "POST",
+     "/mcp"
+    ],
+    [
+     "PUT",
+     "/mcp"
+    ]
+   ],
+   "inspect_handlers": {
+    "nameless": 7
+   },
+   "noir_bound": 19,
+   "common_bound_by_both": 0,
+   "common_same_function": 0
+  },
+  {
+   "module": "src/index.ts",
+   "found_by": [
+    "tsx of the probe (the project has none)"
+   ],
+   "loader": "node --import file:///opt/probe-tsx/node_modules/tsx/dist/loader.mjs",
+   "export": "default",
+   "raw_entries": 14,
+   "middleware": 7,
+   "inspect_routes": 7,
+   "noir_routes": 19,
+   "common": 6,
+   "only_inspect": [
+    [
+     "ALL",
+     "/mcp"
+    ]
+   ],
+   "only_noir": [
+    [
+     "DELETE",
+     "/mcp"
+    ],
+    [
+     "GET",
+     "/content/authors/yusukebe/info.json"
+    ],
+    [
+     "GET",
+     "/content/shops.json"
+    ],
+    [
+     "GET",
+     "/content/shops/sugitaya/info.json"
+    ],
+    [
+     "GET",
+     "/content/shops/takasagoya/info.json"
+    ],
+    [
+     "GET",
+     "/content/shops/yoshimuraya/info.json"
+    ],
+    [
+     "GET",
+     "/content/{}"
+    ],
+    [
+     "GET",
+     "/mcp"
+    ],
+    [
+     "HEAD",
+     "/mcp"
+    ],
+    [
+     "OPTIONS",
+     "/mcp"
+    ],
+    [
+     "PATCH",
+     "/mcp"
+    ],
+    [
+     "POST",
+     "/mcp"
+    ],
+    [
+     "PUT",
+     "/mcp"
+    ]
+   ],
+   "inspect_handlers": {
+    "nameless": 7
+   },
+   "noir_bound": 19,
+   "common_bound_by_both": 0,
+   "common_same_function": 0
+  }
+ ]
+}
