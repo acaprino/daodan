@@ -21,9 +21,15 @@ driver gives scip-python its Python projects (`UNITS`), as the pre-map will. A p
 indexer log. `fetch` sets beside each result the stored one it confirms: `results/scip-<case>-confirm.json`,
 `CONFIRM` for the others.
 
+`--change` measures the incremental stage instead (`change_case`): each stage whole, again unchanged, after the
+case's hand change (`CHANGES`), and whole on the changed copy; `fetch --change` writes
+`results/scip-<case>-incremental.json`.
+
     modal deploy benchmarks/inference-audit/modal_stage.py
     python benchmarks/inference-audit/modal_stage.py spawn --cases chi,semver,tududi [--entries scip-python]
     python benchmarks/inference-audit/modal_stage.py fetch --cases chi,semver,tududi
+    python benchmarks/inference-audit/modal_stage.py spawn --cases chi,tududi --change
+    python benchmarks/inference-audit/modal_stage.py fetch --cases chi,tududi --change
 """
 from __future__ import annotations
 
@@ -150,19 +156,12 @@ def _folders(graph: dict) -> dict:
                      "holes_by_class": dict(sorted(counts["holes"].items()))} for folder, counts in sorted(out.items())}
 
 
-@app.function(cpu=4, memory=12288, timeout=1800, volumes={"/results": volume})
-def stage_case(name: str, entries: str = "") -> dict:
-    """One case: the product's stages, the benchmark's build of the same index, the two stores, road A's own."""
+def _prepare(name: str) -> tuple:
+    """The case's checkout and its kept snapshot (and road A's answers, when kept) in `/work/<case>`: the work
+    folder, the target, the manifest, the answers' path, the commit and whether the case is private."""
     import shutil
     import tarfile
-    import time
-    import code_graph
     import modal_scip as ms
-    import resolve_edges as rx
-    from snapshot_store import open_snapshot
-    code = plugin_scripts.code_sha256()
-    print("code", code, flush=True)  # compared with the checkout before trusting the run
-    started = time.time()
     if name in KEPT:  # the folder the kept snapshot binds its sources in
         stored, folder = KEPT[name]
         work = Path("/work") / folder
@@ -185,6 +184,23 @@ def stage_case(name: str, entries: str = "") -> dict:
         shutil.copyfile(kept / "manifest.sqlite", manifest)
         answers_path = work / "answers.sqlite"
         shutil.copyfile(kept / "answers.sqlite", answers_path)
+    return work, target, manifest, answers_path, commit, private
+
+
+@app.function(cpu=4, memory=12288, timeout=1800, volumes={"/results": volume})
+def stage_case(name: str, entries: str = "") -> dict:
+    """One case: the product's stages, the benchmark's build of the same index, the two stores, road A's own."""
+    import shutil
+    import tarfile
+    import time
+    import code_graph
+    import modal_scip as ms
+    import resolve_edges as rx
+    from snapshot_store import open_snapshot
+    code = plugin_scripts.code_sha256()
+    print("code", code, flush=True)  # compared with the checkout before trusting the run
+    started = time.time()
+    work, target, manifest, answers_path, commit, private = _prepare(name)
     with open_snapshot(manifest) as store:
         present = rx.snapshot_languages(store.connection)
     chosen = {entry for entry in entries.split(",") if entry}
@@ -289,10 +305,105 @@ def stage_case(name: str, entries: str = "") -> dict:
     return _save(name, result, started)
 
 
-def _save(name: str, result: dict, started: float) -> dict:
+# The hand change of each case for `--change`, written in the README before the run: the file, the text it is
+# inserted before, the inserted text (a new function calling one of the file's own, which moves the lines below).
+CHANGES = {
+    "chi": ("middleware/nocache.go", "// Unix epoch time\n",
+            "// NoCacheTwice wraps a handler in NoCache twice (the incremental benchmark's change).\n"
+            "func NoCacheTwice(h http.Handler) http.Handler { return NoCache(NoCache(h)) }\n\n"),
+    "tududi": ("backend/utils/timezone-utils.js", "/**\n * Convert a date string from user timezone to UTC",
+               "// The start of a day in UTC (the incremental benchmark's change).\n"
+               "function dayStartUTC(dateString, userTimezone) {\n"
+               "    return dateStringToUTC(dateString, userTimezone, 'start');\n}\n\n"),
+}
+# One stage in its own interpreter, so that its children's peak (`RUSAGE_CHILDREN`) is of that stage alone: the
+# seconds, the report, the `subset` of each indexer run (None: the whole language; no run: the cache), the peaks.
+STEP = """
+import importlib, json, pathlib, resource, sys, time
+sys.path.insert(0, sys.argv[1])
+import resolve_edges as rx
+spec = next(spec for spec in rx.ENGINES if spec.name == sys.argv[2])
+module = importlib.import_module(f"indexers.{spec.indexer}")
+original, runs = module.index, []
+def counting(*args, **kwargs):
+    runs.append(kwargs.get("subset"))
+    return original(*args, **kwargs)
+module.index = counting
+begun = time.time()
+report = rx.index_stage(spec, *map(pathlib.Path, sys.argv[3:6]))
+print(json.dumps({"seconds": round(time.time() - begun, 1), "runs": runs,
+                  "report": {key: report.get(key) for key in ("available", "engine", "indexer", "languages", "reason")},
+                  "children_mb": round(resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024),
+                  "self_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)}))
+"""
+
+
+def _step(spec_name: str, manifest: Path, target: Path, store: Path) -> dict:
+    import subprocess
+    done = subprocess.run([sys.executable, "-c", STEP, SCRIPTS, spec_name, str(manifest), str(target), str(store)],
+                          capture_output=True, text=True, timeout=1500)
+    if done.returncode:
+        return {"error": done.returncode, "stderr_tail": done.stderr[-3000:]}
+    out = json.loads(done.stdout.strip().splitlines()[-1])
+    out["runs"] = [{"subset": None} if subset is None else {"subset": len(subset), "files": subset[:30]}
+                   for subset in out["runs"]]
+    return out
+
+
+@app.function(cpu=4, memory=12288, timeout=3600, volumes={"/results": volume})
+def change_case(name: str) -> dict:
+    """The incremental stage on one case: each indexer stage of its languages whole (no `index-cache/`), again with
+    nothing changed (the language's cache), after the hand change of `CHANGES` (the files it moves: `subset`), and
+    whole on the changed copy without the cache, whose store must equal the incremental one row by row."""
+    import shutil
+    import time
+    import resolve_edges as rx
+    import snapshot
+    from snapshot_store import open_snapshot
+    code = plugin_scripts.code_sha256()
+    print("code", code, flush=True)
+    started = time.time()
+    work, target, manifest, _answers, commit, _private = _prepare(name)
+    # The snapshot read again by this code, so that only the change moves a digest between the steps.
+    snapshot.read_project(target, manifest)
+    with open_snapshot(manifest) as store:
+        present = rx.snapshot_languages(store.connection)
+    specs = [spec.name for spec in rx.ENGINES if spec.indexer
+             and any(rx.ENGINE_LANGUAGES.get(language) is spec for language in present)]
+    rel, before, inserted = CHANGES[name]
+    result = {"case": name, "commit": commit, "code": code, "change": {"file": rel, "inserted": inserted},
+              "steps": {}}
+
+    def step(label: str) -> Path:
+        store = work / f"{label}-edges.sqlite"
+        result["steps"][label] = {spec: _step(spec, manifest, target, store) for spec in specs}
+        print(label, json.dumps(result["steps"][label])[:1500], flush=True)
+        return store
+
+    step("whole")
+    step("unchanged")
+    path = target / rel
+    text = path.read_text(encoding="utf-8")
+    assert text.count(before) == 1, f"{rel}: the anchor is not there once"
+    path.write_text(text.replace(before, inserted + before), encoding="utf-8")
+    begun = time.time()
+    snapshot.read_project(target, manifest)
+    result["snapshot_seconds"] = round(time.time() - begun, 1)
+    changed = step("changed")
+    shutil.rmtree(manifest.parent / "index-cache", ignore_errors=True)
+    whole = step("changed_whole")
+    changed_rows, whole_rows = _rows(changed), _rows(whole)
+    result["stores"] = {"equal": changed_rows == whole_rows, "changed": _counts(changed),
+                        "differences": {table: {"only_changed": len(set(changed_rows[table]) - set(whole_rows[table])),
+                                                "only_whole": len(set(whole_rows[table]) - set(changed_rows[table]))}
+                                        for table in changed_rows}}
+    return _save(name, result, started, "incremental")
+
+
+def _save(name: str, result: dict, started: float, kind: str = "stage") -> dict:
     import time
     result["seconds"] = round(time.time() - started, 1)
-    destination = Path("/results") / TAG / f"scip-{name}-stage.json"
+    destination = Path("/results") / TAG / f"scip-{name}-{kind}.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     volume.commit()
@@ -329,13 +440,25 @@ if __name__ == "__main__":
     parser.add_argument("command", choices=("spawn", "fetch"))
     parser.add_argument("--cases", default="chi,semver,tududi")
     parser.add_argument("--entries", default="")
+    parser.add_argument("--change", action="store_true", help="the incremental stage around each case's CHANGES")
     args = parser.parse_args()
     chosen = [c.strip() for c in args.cases.split(",") if c.strip()]
     if args.command == "spawn":
         print("local code", plugin_scripts.code_sha256(), flush=True)
-        function = modal.Function.from_name("daodan-stage-audit", "stage_case")
+        function = modal.Function.from_name("daodan-stage-audit", "change_case" if args.change else "stage_case")
         for name in chosen:
-            print(name, function.spawn(name, args.entries).object_id)
+            print(name, (function.spawn(name) if args.change else function.spawn(name, args.entries)).object_id)
+    elif args.change:
+        RESULTS.mkdir(parents=True, exist_ok=True)
+        for name in chosen:
+            result = json.loads(b"".join(volume.read_file(f"{TAG}/scip-{name}-incremental.json")))
+            (RESULTS / f"scip-{name}-incremental.json").write_text(
+                json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+            print(name, json.dumps({"stores": result.get("stores"), "snapshot_seconds": result.get("snapshot_seconds"),
+                                    "steps": {label: {spec: {key: value.get(key) for key in (
+                                        "seconds", "runs", "children_mb", "self_mb", "error")}
+                                        for spec, value in specs.items()}
+                                        for label, specs in result.get("steps", {}).items()}}))
     else:
         RESULTS.mkdir(parents=True, exist_ok=True)
         for name in chosen:

@@ -1640,3 +1640,17 @@ Esito: soglia raggiunta su tutti e due.
 | tududi, scip-typescript (44,6 MB) | 1/1 | 4,85 s | 5,61 s |
 
 Stesso `Index`, quindi stesso grafo, su tutti i 15 indici. La lettura di tududi costa 0,8 s in più (i 67,1 s del join del 13 novembre sono la lettura più il grafo). Il commit `after` del risultato è il codice del passo prima che vi si aggiungessero questo paragrafo e il risultato. Differenza nota, non vista negli indici misurati: un indice fatto di più indici concatenati ha per `protobuf` un solo `metadata` (prima uno per pezzo in `Index.tools`) e legge i `SymbolInformation` esterni dopo i documenti; una stringa non UTF-8 rende l'indice illeggibile (prima diventava `�`).
+
+## 27 novembre 2026, indice incrementale su chi e tududi (T2.B.5)
+
+`modal_stage.py spawn --change` fa girare, per ogni stage di indicizzatore del caso e ciascuno in un interprete suo (picco dei figli, `ru_maxrss`, di quello stage solo): lo stage intero senza `index-cache/`, lo stesso senza cambiamenti (cache del linguaggio, `T2.B.3`), lo stage dopo la modifica a mano (file rifatti, `subset` di `T2.B.4`) e lo stage intero sulla copia cambiata senza cache, il cui store deve essere uguale riga per riga a quello incrementale. Lo snapshot si rilegge col codice del passo prima della prima corsa, e dopo la modifica (secondi annotati a parte).
+
+| Parametro | Valore |
+| --- | --- |
+| casi | chi e tududi ai commit sopra, sorgenti e snapshot di `scip-inputs/<caso>` |
+| modifica di chi | in `middleware/nocache.go`, prima di `// Unix epoch time`, una funzione nuova `NoCacheTwice(h)` che chiama `NoCache(NoCache(h))` (tre righe: le righe sotto si spostano) |
+| modifica di tududi | in `backend/utils/timezone-utils.js`, prima del commento di `dateStringToUTC`, una funzione nuova `dayStartUTC(dateString, userTimezone)` che chiama `dateStringToUTC` (cinque righe) |
+| macchina | Modal, 4 CPU e 12 GB, solo il sistema di base |
+| soglia | senza cambiamenti nessuna esecuzione dell'indicizzatore; dopo la modifica un'esecuzione col solo sottoinsieme (il file e chi lo importa); store incrementale uguale riga per riga a quello intero della copia cambiata |
+| riferimento | stage intero chi 54 s, tududi 885 s; indicizzatore 10,1 s e 59,1 s (14 novembre) |
+| risultati | `results/scip-{chi,tududi}-incremental.json` |
