@@ -1,7 +1,8 @@
 """The file inventory, the first write of a snapshot (spec 8.6): every file of the perimeter, once, as read.
 
 One row per file, `{size, mtime, raw_hash, language}`, in walk order, in a SQLite store with no file entries.
-`snapshot.write_reading` reads the files it lists, in this order and language.
+`snapshot.write_reading` reads the files it lists, in this order and language. The header counts, by Linguist's name
+and type, the files of the perimeter no reader reads (`unread`), from their names alone.
 """
 from __future__ import annotations
 
@@ -11,8 +12,9 @@ import tempfile
 from pathlib import Path
 
 from languages import detect_language
+from languages.detect import linguist_name, linguist_type
 from snapshot_store import SnapshotWriter, _plain
-from source_files import git_info, iter_files, MAX_FILE_BYTES, relative_to_root, repo_root, scope_record
+from source_files import git_info, is_inventory_path, iter_walked, MAX_FILE_BYTES, relative_to_root, repo_root, scope_record
 from tree_scope import Perimeter
 
 SCHEMA = 1  # the only header schema `SnapshotWriter.finish` accepts
@@ -52,6 +54,25 @@ def _temporary_beside(out: Path) -> Path:
     return temporary
 
 
+def _unread(counts: dict[str, list]) -> dict:
+    """`{name: {"type", "files"}}` of the files counted by `_count`: a suffix several languages list stays under the
+    suffix with its `candidates`, of their type if they share one (`.md` is Markdown, prose, and GCC Machine
+    Description, programming: no type, so no gap); a name Linguist does not give is `Unknown`."""
+    found = {}
+    for key, (names, files) in sorted(counts.items()):
+        types = {linguist_type(name) for name in names}
+        kind = types.pop() if len(types) == 1 else "Unknown"  # candidates of two types: no type is guessed
+        found[key] = {"type": kind, "files": files, **({"candidates": names} if len(names) > 1 else {})}
+    return found
+
+
+def _count(counts: dict[str, list], path: Path) -> None:
+    """Count one file by the name Linguist gives it: its own name, the suffix when several, `Unknown` when none."""
+    names = linguist_name(path)
+    key = names[0] if len(names) == 1 else path.suffix.lower() or path.name if names else "Unknown"
+    counts.setdefault(key, [names, 0])[1] += 1
+
+
 def write(target: Path, out: Path, *, parse_results: dict | None = None, progress=None) -> dict:
     """Walk the perimeter of `target` once and publish its inventory at `out`; returns the header."""
     target = Path(target).resolve()
@@ -67,7 +88,11 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
     try:
         with SnapshotWriter(temporary, "sqlite") as writer:
             count = 0
-            for path in iter_files(target, perimeter):
+            counts: dict[str, list] = {}
+            for path in iter_walked(target, perimeter):
+                if not is_inventory_path(path):
+                    _count(counts, path)  # nothing of it is read
+                    continue
                 try:
                     read = _read_source(path, supplied, metrics)
                 except OSError:
@@ -81,11 +106,14 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
                     progress("reading", count)
                 writer.put_inventory(relative_to_root(path, root), {
                     "size": len(data), "mtime": round(st.st_mtime, 3),
-                    "raw_hash": hashlib.sha256(data).hexdigest(), "language": detect_language(path, _text(data))})
+                    "raw_hash": hashlib.sha256(data).hexdigest(), "language": (
+                        language := detect_language(path, _text(data)))})
+                if language is None:
+                    _count(counts, path)
                 del data
             header = {"schema": SCHEMA, "target": relative_to_root(target, root) or ".", "root": root.as_posix(),
                       "scope": scope_record(perimeter, root), "git": git_info(root), "metrics": metrics,
-                      "reading": "not-started"}
+                      "unread": _unread(counts), "reading": "not-started"}
             writer.finish(header)
         os.replace(temporary, out)
         return header

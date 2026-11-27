@@ -92,6 +92,30 @@ class SnapshotSplitTests(unittest.TestCase):
             self.assertEqual(store.get_file("shape.h")["parser_profile"], snapshot.parser_profile(root / "shape.h", "cpp"))
             self.assertEqual(store.get_file("main.py")["language"], "python")
 
+    def test_the_header_counts_the_files_no_reader_reads_by_linguists_name_and_type(self):
+        """`.rb` is not in the inventory and none of its bytes is read; `.php` is, with no language of Daodan's. Both
+        are counted from their names alone: a suffix several languages list stays under the suffix, a name Linguist
+        does not give is `Unknown`, and a file Daodan reads is not counted."""
+        import file_inventory
+        root = self.base / "tree"
+        root.mkdir()
+        for name in ("app.rb", "lib.rb", "index.php", "main.py", "data.xyzzy", "Dockerfile"):
+            (root / name).write_text("x = 1\n", encoding="utf-8")
+        inventory = self.base / "inventory.sqlite"
+        header = file_inventory.write(root, inventory)
+        with snapshot_store.open_snapshot(inventory) as store:
+            rows = dict(store.iter_inventory())
+        self.assertNotIn("app.rb", rows)
+        self.assertEqual(header["metrics"]["files_read"], len(rows))  # `.rb` and `.xyzzy` are not among the reads
+        self.assertEqual(header["unread"]["Ruby"], {"type": "programming", "files": 2})
+        self.assertEqual(header["unread"][".php"], {"type": "programming", "files": 1, "candidates": ["Hack", "PHP"]})
+        self.assertEqual(header["unread"]["Unknown"], {"type": "Unknown", "files": 1})
+        self.assertNotIn("Python", header["unread"])
+        split = self.base / "manifest.sqlite"
+        snapshot.write_reading(inventory, split)
+        with snapshot_store.open_snapshot(split) as store:
+            self.assertEqual(store.get("unread"), header["unread"], "the snapshot keeps what the inventory counted")
+
     def test_a_file_changed_between_the_two_writes_is_recorded_as_read(self):
         import file_inventory
         root = self.base / "tree"

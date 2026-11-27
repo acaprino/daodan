@@ -255,17 +255,27 @@ def indexed_by() -> dict[str, frozenset]:
             for analyzer in _analyzers() if analyzer.UNIT_KINDS for language in analyzer.LANGUAGES}
 
 
-def _unlisted(record: dict) -> list[dict]:
+def _unlisted(record: dict, unread: dict) -> list[dict]:
     """Each programming language go-enry counts that no analyzer lists: its code is in no graph. A language whose
     type the answer does not give is no gap: the type is go-enry's, never guessed. Nor is one whose every file is a
-    build definition (`build`, `enry.build_definition`): what it declares is the pre-map's own facts."""
+    build definition (`build`, `enry.build_definition`): what it declares is the pre-map's own facts. The snapshot
+    counts the files it does not read by Linguist's name and type (`unread`, from the names alone), and a
+    programming language among them is the same gap, where go-enry did not count it already; a suffix several
+    languages list (`candidates`) is a gap when all are programming and none is listed, as the files may be any of
+    them."""
     listed = {name for analyzer in _analyzers() for language in analyzer.LANGUAGES
               for name in (suffix_table.NAMES.get(language, language), *ALSO.get(language, ()))}
+    counted = [item for item in record.get("languages", [])
+               if item.get("type") == "programming" and not item.get("build") and item["language"] not in listed]
+    seen = {item["language"] for item in record.get("languages", [])}
+    for name, item in sorted(unread.items()):
+        names = item.get("candidates") or [name]
+        if item["type"] == "programming" and not seen & set(names) and not listed & set(names):
+            counted.append({"language": " / ".join(names), "files": item["files"]})
     return [{"kind": "no_analyzer", "language": item["language"], "files": item["files"], "source": RULE,
              "detail": f"{item['files']} {item['language']} files and no analyzer lists the language: their code is "
                        "in no graph"}
-            for item in record.get("languages", [])
-            if item.get("type") == "programming" and not item.get("build") and item["language"] not in listed]
+            for item in counted]
 
 
 def _coverage(record: dict, context: Context) -> list[dict]:
@@ -477,7 +487,8 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
     for unit in record["units"]:
         unit.setdefault("depends_on", [])
     record["units"].sort(key=lambda u: (u["root"], u["kind"], u.get("name") or ""))
-    record["gaps"] = gaps + _run_facts(record, context) + _coverage(record, context) + _unlisted(record)
+    record["gaps"] = (gaps + _run_facts(record, context) + _coverage(record, context)
+                      + _unlisted(record, store.get("unread") or {}))
     return record
 
 

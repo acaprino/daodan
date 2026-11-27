@@ -114,6 +114,19 @@ def is_inventory_path(path: PurePath) -> bool:
             or not suffix and path.parent.name in BUILD_FOLDERS)
 
 
+def iter_walked(target: Path, perimeter: Perimeter | None = None) -> Iterator[Path]:
+    """Every file the walk of the perimeter allows, whether or not the snapshot records its kind, in a stable order."""
+    perimeter = perimeter or Perimeter(target)
+    for directory, filenames in perimeter.walk():
+        for name in filenames:
+            path = directory / name
+            if is_forbidden(name, path):
+                continue
+            if target.is_file() and path != target:
+                continue
+            yield path
+
+
 def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Path]:
     """
     Every file in the target the snapshot records, in a stable order.
@@ -123,16 +136,9 @@ def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Pat
     whose name starts with a dot, no dependency or build output. Pass a
     perimeter to read back afterwards what the walk left out.
     """
-    perimeter = perimeter or Perimeter(target)
-    for directory, filenames in perimeter.walk():
-        for name in filenames:
-            path = directory / name
-            if is_forbidden(name, path):
-                continue
-            if target.is_file() and path != target:
-                continue
-            if is_inventory_path(path):
-                yield path
+    for path in iter_walked(target, perimeter):
+        if is_inventory_path(path):
+            yield path
 
 
 def read_text(path: Path) -> str:

@@ -111,6 +111,11 @@ def linguist_name(path: Path) -> list[str]:
     return []
 
 
+def linguist_type(name: str) -> str:
+    """The type Linguist gives a language (programming, data, markup, prose); `Unknown` for a name it does not give."""
+    return _CATALOGUE["types"].get(name) or "Unknown"
+
+
 def detect(path: Path, text: str | None = None, rules: dict[str, tuple] | None = None) -> Detection:
     """The language of the file at `path` whose text is `text`; without the text, its extension's."""
     suffix = path.suffix.lower()

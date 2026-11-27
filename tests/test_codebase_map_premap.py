@@ -1002,6 +1002,24 @@ def test_a_programming_language_no_analyzer_lists_is_a_gap_with_its_files(tmp_pa
     assert "3 Scala files" in found["Scala"]["detail"]
 
 
+def test_files_no_reader_reads_are_a_no_analyzer_gap_from_linguists_catalogue_without_go_enry(tmp_path):
+    """A Ruby file and a PHP file are counted by name and type from the catalogue alone, with no go-enry in the
+    answer; Markdown and JSON are not programming languages. go-enry's own count of a language wins over the
+    snapshot's, which never repeats it."""
+    extra = {"lib/a.rb": "puts 1\n", "lib/b.rb": "puts 2\n", "web/index.php": "<?php\n", "NOTES.md": "# n\n",
+             "data.json": "{}\n"}
+    _, _, record = build(tmp_path, "mixed", extra=extra)
+    assert "languages" not in record
+    found = {gap["language"]: gap for gap in gaps(record, "no_analyzer")}
+    assert found["Ruby"]["files"] == 2 and found["Ruby"]["source"] == premap.RULE
+    assert found["Hack / PHP"]["files"] == 1  # `.php` is listed by two languages: Linguist's order, no guess
+    assert set(found) == {"Ruby", "Hack / PHP"}  # `.md` is Markdown or GCC Machine Description: two types, no gap
+    counted = fake("counted", "scanner", lambda context: {"facts": {"languages": [
+        {"language": "Ruby", "files": 2, "type": "programming"}]}})
+    _, _, record = build(tmp_path / "again", "mixed", sources=(counted,), extra=extra)
+    assert [gap["files"] for gap in gaps(record, "no_analyzer") if gap["language"] == "Ruby"] == [2]
+
+
 def test_enry_gives_each_language_its_type_when_the_answer_has_it(tmp_path):
     """`daodan-enry` prints go-enry's type of each file's language: the facet carries it. An answer without it
     (the stored one) states no type, and the pre-map raises no `no_analyzer` gap from it."""
