@@ -274,6 +274,22 @@ Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-ma
 
 A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo non espone un ingresso o un effetto, attribuire l'omissione alla raccolta delle evidenze. Se il riferimento è visibile al modello e viene interpretato male, attribuirla alla scoperta semantica. **Risultati del nuovo protocollo e fixture completa: da produrre.**
 
+### Campione, domande e protocollo cieco del refactoring (`T0.B.4`, 27 novembre 2026)
+
+**Campione.** `real-bank-of-anthos` (`../project-model/fixtures/real-bank-of-anthos/`): `system.json` (44 nodi, 27 flussi, 158 frecce) e `graph.json`, legati al commit di `source.json`, `db35fea9fd090150e2398106aadb475576f80d94`. Si controlla con `python reference.py check ../project-model/fixtures/real-bank-of-anthos/system.json CLONE`, mai con `pin`, che riscriverebbe il file.
+
+**Domande verificate.** In `../project-model/fixtures/real-bank-of-anthos/questions.json`: un sito di chiamata per tipo, con `at`/`has` del sito e delle destinazioni attese, lette sul sorgente al commit senza eseguirlo.
+
+| Tipo | Sito | Destinazioni attese |
+| --- | --- | --- |
+| callback | `src/ledger/balancereader/.../LedgerReader.java:135` (`callback.processTransaction`) | la lambda passata a `startWithCallback` in `BalanceReaderController.java:81` |
+| overload | nessuno | il progetto non ha metodi né costruttori sovraccaricati; i soli siti con sovraccarico vanno a librerie, fuori dal progetto |
+| dispatch dinamico | `src/frontend/frontend.py:145` (`executor.submit`) | `TracedThreadPoolExecutor.submit`, `src/frontend/traced_thread_pool_executor.py:34` (override di `ThreadPoolExecutor.submit`) |
+
+**Quota nascosta.** «Pagamento a un contatto» resta sempre visibile (serve al Cancello T2). Gli altri 26 flussi, ordinati per `name`, vanno a `random.Random(2026).sample(nomi, 9)`: i 9 estratti sono nascosti, un terzo dei 27; visibili 18. L'elenco non si scrive: si ricalcola con la stessa regola solo al Cancello T3; altrove se ne scrivono solo i totali. Il riferimento resta in chiaro: il nascondimento è una regola di condotta di chi valuta e corregge, non un meccanismo.
+
+**Protocollo cieco.** Variante A del confronto qui sopra: il mapper attuale sull'intero sistema, con la richiesta «analizza questo sistema»; riferimento, domande e aree attese fuori dall'ambiente dell'agente; archivio di solo codice sullo stesso commit (`python code_archive.py OUT.tar CLONE@db35fea9fd090150e2398106aadb475576f80d94`); due ripetizioni indipendenti a parità di modello, tetto e budget; il valutatore confronta con `score.py system` solo dopo il salvataggio di `map.json`, e prima di ogni richiesta di review.
+
 ### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
 
 Eseguire `python benchmarks/system-map/pipeline_reuse.py`. Lo script crea una volta il manifest SQLite della fixture `js-npm-single`, poi avvia due processi distinti che chiamano `pipeline.run` senza saltare passi. La fixture dichiara pacchetti npm e il comando `node --test`. Ogni corsa imposta `DAODAN_CONTAINER=off`. Le grammatiche e l’ambiente uv di Daodan erano già disponibili.

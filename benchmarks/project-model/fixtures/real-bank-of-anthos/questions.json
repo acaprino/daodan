@@ -1,0 +1,42 @@
+{
+ "case": "bank-of-anthos",
+ "commit": "db35fea9fd090150e2398106aadb475576f80d94",
+ "made": "2026-11-27",
+ "how": "letto il sorgente al commit, senza eseguirlo; `at` e `has` come in system.json: la riga del sito e un testo che contiene",
+ "questions": [
+  {
+   "kind": "callback",
+   "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/LedgerReader.java:135",
+   "has": "callback.processTransaction(transaction);",
+   "question": "Che cosa esegue la chiamata a processTransaction sulla callback registrata?",
+   "expected": [
+    {
+     "at": "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:81",
+     "has": "this.ledgerReader.startWithCallback(transaction -> {",
+     "symbol": "BalanceReaderController.BalanceReaderController",
+     "why": "l'unico LedgerReaderCallback del servizio è la lambda passata a startWithCallback nel costruttore; aggiorna il saldo in cache"
+    }
+   ],
+   "not": ["le lambda omonime di transactionhistory e ledgermonolith: LedgerReader e LedgerReaderCallback sono copie per servizio, in pacchetti diversi"]
+  },
+  {
+   "kind": "overload",
+   "at": null,
+   "absent": "nessun metodo o costruttore del progetto è sovraccaricato: in ogni classe Java (src/**, anche i test) ogni nome è dichiarato una volta, e Python e JavaScript non hanno sovraccarico; i soli siti con sovraccarico chiamano librerie (per esempio new ResponseEntity<>(...) di Spring, LOGGER.debug di SLF4J), le cui destinazioni sono fuori dal progetto"
+  },
+  {
+   "kind": "dynamic dispatch",
+   "at": "src/frontend/frontend.py:145",
+   "has": "executor.submit(api_call.make_call):",
+   "question": "Quale submit esegue la chiamata su executor?",
+   "expected": [
+    {
+     "at": "src/frontend/traced_thread_pool_executor.py:34",
+     "has": "def submit(self, function, *args, **kwargs):",
+     "symbol": "TracedThreadPoolExecutor.submit",
+     "why": "executor viene da `with TracedThreadPoolExecutor(...) as executor` (frontend.py:141; __enter__ di Executor rende self): l'override della sottoclasse vince su ThreadPoolExecutor.submit, che richiama con super().submit"
+    }
+   ]
+  }
+ ]
+}
