@@ -49,6 +49,9 @@ RANKS = ("model", "reader", "scanner")
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, npm_start, jvm_files, project_files,
            gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
            gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, angular, astro)
+# Each build tool the stack names (a registry id of `category` `tool`) -> the `NAME`s of the sources that model it
+# (`daodan/data/build-tools.json`); its coherence with the registry and `SOURCES` is a test of the pre-map.
+BUILD_TOOLS = json.loads((SCRIPT_DIR.parent / "data" / "build-tools.json").read_text(encoding="utf-8"))
 # The sources whose `framework_entries` rows are entries of their own (a page, a route handler): `flow_entries.evidence` reads
 # each one's rows and gaps, and the key of the cached links hashes each one's file (`flows._links_reader_digest`). Another
 # framework's source is one more name here, with its table in `entry-queries.json` under its `NAME`. `angular` and `astro` are not:

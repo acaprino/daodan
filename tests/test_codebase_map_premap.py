@@ -1107,3 +1107,35 @@ def test_a_language_whose_files_are_all_build_definitions_is_no_gap(tmp_path):
     counted = fake("counted", "scanner", lambda context: {"facts": {"languages": facts["languages"]}})
     _, _, record = build(tmp_path, "mixed", sources=(counted,))
     assert {gap["language"] for gap in gaps(record, "no_analyzer")} == {"Makefile", "Shell"}
+
+
+# The sources with model commands that no build tool of the registry names, each with why.
+NOT_A_BUILD_TOOL = {
+    "go-enry": "the languages and the excluded files: it leaves with T1.B.6",
+    "renovate": "the declared files of every manager, not one build tool's model",
+    "compose": "the services Compose declares, not a build",
+    "buildkit": "the stages of a Dockerfile, the images: the stack's services",
+    "noir": "the routes: find_entry_points",
+    "next": "a framework's entries: T1.C moves it to find_entry_points",
+    "react-router": "a framework's entries: T1.C moves it to find_entry_points",
+    "nuxt": "a framework's entries: T1.C moves it to find_entry_points",
+    "sveltekit": "a framework's entries: T1.C moves it to find_entry_points",
+    "angular": "a framework's entries: T1.C moves it to find_entry_points",
+    "astro": "a framework's entries: T1.C moves it to find_entry_points",
+    "cmake": "the registry has no entry for it until the fork's .6 (T1.B.4)",
+    "meson": "the registry has no entry for it until the fork's .6 (T1.B.4)",
+    "bazel": "the registry has no entry for it until the fork's .6 (T1.B.4)",
+    "make": "the registry has no entry for it until the fork's .6 (T1.B.4)",
+    "sbt": "the registry has no entry for it until the fork's .6 (T1.B.4)",
+    "dotnet": "the registry has no entry for it until the fork's .6 (T1.B.4)",
+}
+
+
+def test_build_tools_names_registry_tools_and_pre_map_sources_and_every_model_source_has_a_tool():
+    import service_registry
+    tools = {e["id"] for e in service_registry.load()["entries"] if service_registry.entry_category(e) == "tool"}
+    named = {name for names in premap.BUILD_TOOLS.values() for name in names}
+    assert set(premap.BUILD_TOOLS) <= tools
+    assert named <= {source.NAME for source in premap.SOURCES}
+    modelled = {source.NAME for source in premap.SOURCES if hasattr(source, "commands")}
+    assert modelled - named == set(NOT_A_BUILD_TOOL)

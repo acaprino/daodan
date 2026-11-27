@@ -1,0 +1,13 @@
+{
+  "cargo": ["cargo"],
+  "golang": ["go"],
+  "gradle": ["gradle"],
+  "maven": ["maven"],
+  "npm": ["npm"],
+  "pip": ["requirements"],
+  "pnpm": ["npm"],
+  "poetry": ["python-build"],
+  "typescript": ["tsc"],
+  "uv": ["uv"],
+  "yarn": ["npm"]
+}
