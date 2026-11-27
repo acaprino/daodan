@@ -1,4 +1,5 @@
 // What the page draws from: one object, a new one at each change. `repository.ts`, `stages.ts`, `run.ts` and `graph.ts` read it.
+import type { Reply } from './egress.ts';
 import type { Graph } from './graph.ts';
 import type { AppState, Checked, Context, Engine, Pass, RunEvent } from './server.ts';
 import type { Kept } from './storage.ts';
@@ -58,6 +59,8 @@ export type Snapshot = Readonly<{
   events: readonly RunEvent[];
   engineDraft: EngineDraft | null; engineSaid: string; engineTone: '' | 'good' | 'bad'; engineBusy: readonly EngineWork[];
   question: string; asked: Asked | null;
+  hostsHidden: readonly string[];  // the groups of host requests the person put aside, by `groupKey`
+  hostsReplying: Reply | '';  // the answer to the group in view being sent
 }>;
 
 type Run = Pick<Snapshot, 'server'>;

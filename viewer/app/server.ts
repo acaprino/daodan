@@ -16,6 +16,11 @@ export type Mapped = {
   state: string; cause?: string | null; needs_review?: { nodes?: Review; flows?: Review; refused_proposals?: Review };
   discovery?: { count?: number; effect_coverage?: { without_entry?: number } };
 };
+// A host a tool of the project asked to reach outside the registries: its port, the address it resolves to (null where it does
+// not), whether that address is in the user's own network, and the files of the project that declare it.
+export type HostRequest = { host: string; port: number; address: string | null; network: boolean; declared_in: string[] };
+// The requests of one tool, answered together.
+export type HostGroup = { tool: string; project: string; requests: HostRequest[] };
 export type AppState = {
   context?: Context | null;
   job?: Job;
@@ -26,6 +31,7 @@ export type AppState = {
   asked?: { state: string; question?: string; cause?: string | null };
   links?: Links;
   mapped?: Mapped;
+  egress?: HostGroup[];
 };
 
 // An event of the run's own journal (`run`), or of its pipeline.

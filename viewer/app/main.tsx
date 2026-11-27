@@ -19,6 +19,7 @@ import { engineActions, EngineScreen } from './engine-screen.tsx';
 import { FrameContext } from './frame.tsx';
 import type { Detail, Frame } from './frame.tsx';
 import { graphActions, GraphScreen } from './graph-screen.tsx';
+import { HostsDialog } from './hosts-dialog.tsx';
 import { short } from './repository.ts';
 import { serviceLine, statusOf } from './run.ts';
 import { ctx, slug } from './snapshot.ts';
@@ -118,6 +119,7 @@ function App() {
         </Column>
       </Inspector>}>
       <place.Screen />
+      <HostsDialog />
     </AppWindow>
   </FrameContext>;
 }

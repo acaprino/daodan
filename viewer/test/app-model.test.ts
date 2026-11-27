@@ -167,6 +167,42 @@ test('a result takes the place of the same one, and an error never does', async 
   assert.deepEqual(notices, [{ id: cleared, text: cleared }, { kind: 'error', text: 'caduto' }, { kind: 'error', text: 'caduto' }]);
 });
 
+const hostGroup = (tool: string, host: string) =>
+  ({ tool, project: '/p', requests: [{ host, port: 443, address: '10.0.0.4', network: true, declared_in: ['build.gradle'] }] });
+
+test('the answer to a group of hosts is sent for all its hosts, once, and the new state and a notice follow', async () => {
+  const gradle = hostGroup('gradle', 'repo.example.com'), npm = hostGroup('npm', 'npm.example.com');
+  let answer: (value: unknown) => void = () => undefined;
+  const { model, sources, now, asked, said } = setup({ '/api/app/egress': () => new Promise(resolve => { answer = resolve; }) });
+  model.start();
+  sources[0].send('app', { ...ready, egress: [gradle, npm] });
+  const sent = model.replyHosts('once');
+  model.replyHosts('block');  // one answer at a time
+  model.hideHosts();  // nor is the window put aside while it is sent
+  assert.deepEqual([asked('/api/app/egress').map(call => call.body), now().hostsReplying, now().hostsHidden],
+    [[{ hosts: ['repo.example.com'], reply: 'once' }], 'once', []]);
+  assert.equal((asked('/api/app/egress')[0].init?.headers as Record<string, string>)['X-Daodan-Token'], 'segreto');  // the server's guard
+  answer({ ...ready, egress: [npm] });
+  await sent;
+  assert.deepEqual([now().server?.egress, now().hostsReplying], [[npm], '']);
+  assert.ok(said().includes('Host approvati per questa analisi: repo.example.com.'));
+});
+
+test('a refused answer is said and the group waits; one put aside is offered again from the palette', async () => {
+  const gradle = hostGroup('gradle', 'repo.example.com');
+  const { model, sources, now, notices, asked } = setup({ '/api/app/egress': () => fails(400, 'risposta sconosciuta') });
+  model.start();
+  sources[0].send('app', { ...ready, egress: [gradle] });
+  await model.replyHosts('always');
+  assert.deepEqual([notices.at(-1), now().hostsReplying, now().server?.egress], [{ kind: 'error', text: 'risposta sconosciuta' }, '', [gradle]]);
+  model.hideHosts();
+  assert.equal(now().hostsHidden.length, 1);
+  await model.replyHosts('no');  // nothing is in view: nothing is sent
+  assert.equal(asked('/api/app/egress').length, 1);
+  model.showHosts();
+  assert.deepEqual(now().hostsHidden, []);
+});
+
 test('a run in view again, after none or chosen anew, is read again', async () => {
   const { model, sources, now, asked } = setup({ '/api/app/premap': () => premap, '/api/app/graph': () => graph() },
     { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });

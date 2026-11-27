@@ -4,6 +4,8 @@ import type { Notify } from '@acaprino/imago';
 import { causeOf, whenFree } from '../src/http.ts';
 import { markAddress } from '../src/marks.ts';
 import { FAILURE } from '../src/words.ts';
+import { groupKey, pendingGroup, repliedWords, replyBody } from './egress.ts';
+import type { Reply } from './egress.ts';
 import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { accessible, preferredBranch, repositorySlug, urlError } from './repository.ts';
@@ -31,6 +33,7 @@ export function createModel(host: Host) {
     premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, groupWanted: stored.kept.screen === 'graph',
     engineFromStep: false, pathPage: null, symbols: null, events: [],
     engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null,
+    hostsHidden: [], hostsReplying: '',
   };
   const listeners = new Set<() => void>();
   // What no screen draws: which run and groups the last answers are of, the question whose answer is awaited, the check and the
@@ -374,6 +377,32 @@ export function createModel(host: Host) {
     } catch (error) { show({ state: 'failed', cause: causeOf(error) }); }
   }
 
+  // -- the hosts the project's tools asked to reach -------------------------------------------------------------------
+
+  // The person's answer to the group in view, for all its hosts; one at a time. The server's answer is its new state, without the
+  // group; a refusal is said and the window stays.
+  async function replyHosts(reply: Reply): Promise<void> {
+    const group = pendingGroup(now.server?.egress, now.hostsHidden);
+    if (!group || now.hostsReplying) return;
+    const body = replyBody(group, reply);
+    set({ hostsReplying: reply });
+    try {
+      const found = await post<AppState>('/api/app/egress', body);
+      set({ hostsReplying: '' });
+      applyState(found);
+      say(repliedWords(reply, body.hosts));
+    } catch (error) {
+      set({ hostsReplying: '' });
+      say(causeOf(error), 'error');
+    }
+  }
+  // The window closed without an answer: the group waits, and the palette offers it again (`showHosts`).
+  function hideHosts() {
+    const group = pendingGroup(now.server?.egress, now.hostsHidden);
+    if (group && !now.hostsReplying) set({ hostsHidden: [...now.hostsHidden, groupKey(group)] });
+  }
+  const showHosts = () => set({ hostsHidden: [] });
+
   // The server's answer to these is its new state.
   const act = (path: string) => post<AppState>(path, {}).then(applyState).catch(error => say(causeOf(error), 'error'));
 
@@ -400,5 +429,6 @@ export function createModel(host: Host) {
     openPaths, nextPaths, previousPaths, listPaths, retryPaths,
     retryPass: () => act('/api/app/retry'), findLinks: () => act('/api/app/link'),
     editEngine, saveEngine, probeEngine, forgetKey, setQuestion: (question: string) => set({ question }), ask,
+    replyHosts, hideHosts, showHosts,
   };
 }
