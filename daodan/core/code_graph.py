@@ -340,7 +340,9 @@ class Index:
     def key(symbol: str, rel: str | None) -> str:
         return f"{rel}#{symbol}" if rel is not None and symbol.startswith("local ") else symbol
 
-    def load(self, path: Path, prefix: str = "") -> None:
+    def load(self, path: Path, prefix: str = "", skip=()) -> None:
+        """The documents, occurrences and SymbolInformation of one SCIP file; `skip`, checkout-relative files whose
+        documents this one no longer gives (a later index made them again)."""
         import scip_pb2  # protobuf: only reading an index needs it
         self.sources.append((Path(path), prefix))
         index = scip_pb2.Index()
@@ -349,11 +351,11 @@ class Index:
         if index.HasField("metadata"):
             self.tools.append((index.metadata.tool_info.name, index.metadata.tool_info.version))
         for document in index.documents:
-            self._document(document, prefix)
+            self._document(document, prefix, skip)
         for information in index.external_symbols:
             self._information(information, None)
 
-    def _document(self, document, prefix: str) -> None:
+    def _document(self, document, prefix: str, skip=()) -> None:
         _unknown(self.unknown, "document", document)
         rel = document.relative_path.replace("\\", "/")
         if not rel:
@@ -361,6 +363,8 @@ class Index:
         # A run in a module directory may name its documents from that directory or from the checkout.
         if prefix and not (self.root / rel).is_file():
             rel = f"{prefix}/{rel}"
+        if rel in skip:
+            return
         self.repeated[rel] += 1
         self.units[rel] = UNITS.get(document.position_encoding, "utf-16")
         parsed = [occurrence for occurrence in map(lambda item: self._occurrence(item, rel), document.occurrences)
