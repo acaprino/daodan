@@ -230,7 +230,12 @@ def plan(record: dict, files: list[str], read) -> dict:
                          [KEEP_GOING] if test["runner"] == "pytest" else [])],
                      "env": env, "manager": held.get(env), "install": bool(packaged),
                      **({"deps": deps} if deps else {}), **({"python_request": request} if request else {})})
-    return {"runs": runs, "gaps": gaps, "toolchains": toolchains, "vcs": preparation.python_vcs(sorted(files), read)}
+    # an environment whose restore would install a local dependency outside the copy is not made: its runs do not run
+    local = preparation.local_dependencies(sorted(files), read, "python")
+    blocked = preparation.refused({run["env"] for run in runs if run["env"] is not None}, local)
+    runs = [run for run in runs if run["env"] not in blocked]
+    return {"runs": runs, "gaps": gaps + local, "toolchains": toolchains,
+            "vcs": preparation.python_vcs(sorted(files), read)}
 
 
 def _interpreter(number: int, run: dict) -> str:

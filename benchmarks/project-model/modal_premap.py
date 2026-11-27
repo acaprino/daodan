@@ -2,8 +2,8 @@
 
 The container holds the plugin's scripts and the pinned tools the pre-map's model sources name: Go 1.27.3,
 Rust 1.99.1 (rustup's proxies with `RUSTUP_TOOLCHAIN` set by the command), uv 0.11.28, Node 24.22.3 with
-Renovate 44.239.1 and TypeScript 6.0.3, and `daodan-enry` built from
-`premap/enry_facts.go` with go-enry v2.9.6. A case is written to `/work/<case>`, snapshotted, and `premap.write` runs with a runner that
+Renovate 44.239.1 and TypeScript 6.0.3 (go-enry left the pre-map in T1.9: `_languages` finds no `daodan-enry`
+answer). A case is written to `/work/<case>`, snapshotted, and `premap.write` runs with a runner that
 executes each command in its `cwd` there (network on: the preparation and the run are not split here).
 
 `--store` keeps, for each case of `tests/fixtures/premap/projects.json`, every model command with its answer in
@@ -53,14 +53,11 @@ image = (modal.Image.debian_slim(python_version="3.12")
              f" && curl -sSfL https://nodejs.org/dist/{NODE}/SHASUMS256.txt | grep ' node-{NODE}-linux-x64.tar.xz$'"
              f" | sha256sum -c - && tar -C /opt -xJf node-{NODE}-linux-x64.tar.xz && rm node-{NODE}-linux-x64.tar.xz",
              f"PATH=/opt/node-{NODE}-linux-x64/bin:$PATH npm install -g --ignore-scripts renovate@44.239.1 typescript@6.0.3")
-         .pip_install("uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6")
+         .pip_install("uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6",
+                      "pip-requirements-parser==32.0.1")
          .env({"PATH": f"/root/.cargo/bin:/usr/local/go/bin:/opt/node-{NODE}-linux-x64/bin:/usr/local/bin:/usr/bin:/bin"}))
 if LOCAL:
-    image = (image.add_local_file(REPO / "daodan/core/premap/enry_facts.go",
-                                  "/opt/daodan-enry/main.go", copy=True)
-             .run_commands("cd /opt/daodan-enry && go mod init daodan-enry && go get github.com/go-enry/go-enry/v2@v2.9.6"
-                           " && go build -o /usr/local/bin/daodan-enry .")
-             .add_local_dir(REPO / "daodan/core", REMOTE_SCRIPTS,
+    image = (image.add_local_dir(REPO / "daodan/core", REMOTE_SCRIPTS,
                                  ignore=["**/__pycache__/**"])
              .add_local_dir(REPO / "daodan/data", "/daodan/map/data")  # `container` reads package-managers.json
              .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures")

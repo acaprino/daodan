@@ -365,6 +365,34 @@ def test_a_python_folder_whose_install_fails_is_installed_again_without_its_vcs_
     assert gap["kind"] == "vcs_not_installed" and gap["manager"] == "uv" and "mylib @" in gap["detail"]
 
 
+def test_vcs_requirements_are_read_by_each_manifest_s_own_reader():
+    """T3.A.8a: pip's parser for requirements files and setup.py's strings, `packaging` for PEP 508 lists, `tomllib`
+    for uv's and Poetry's `git` sources, `configparser` for setup.cfg: a URL in a comment or a string that is no
+    requirement names nothing, an editable path with extras is no VCS requirement."""
+    texts = {
+        "requirements.txt": "# old @ git+https://comment.example.com/old\n-e ./libs/a[extra]\n"
+                            "tool @ git+ssh://git@gitlab.com/acme/tool.git ; python_version >= '3.9'\n"
+                            "git+https://hg.example.org/pkg.git#egg=pkg\n",
+        "pyproject.toml": '[project]\ndependencies = ["a @ git+https://pep621.example.com/a"]\n'
+                          '[project.optional-dependencies]\nx = ["b @ git+https://extra.example.com/b"]\n'
+                          '[dependency-groups]\ndev = ["c @ git+https://group.example.com/c", {include-group = "x"}]\n'
+                          '[tool.uv.sources]\nd = [{ git = "https://uv.example.com/d", marker = "sys_platform == \'linux\'" }]\n'
+                          '[tool.poetry.dependencies]\ne = { git = "https://poetry.example.com/e.git", branch = "main" }\n'
+                          '[tool.poetry.group.test.dependencies]\nf = { git = "https://group.poetry.example.com/f" }\n'
+                          'description = "not @ git+https://nowhere.example.com/x"\n',
+        "svc/setup.cfg": "[options]\ninstall_requires =\n    g @ git+https://cfg.example.com/g\n    requests>=2\n"
+                         "[options.extras_require]\nh = h @ git+https://cfg-extra.example.com/h\n",
+        "lib/setup.py": 'from setuptools import setup\n# i @ git+https://comment.example.com/i\n'
+                        'setup(name="lib", install_requires=["i @ git+https://setup.example.com/i", "Programming :: x"])\n',
+        "lib/broken/setup.py": "setup(\n",
+    }
+    assert preparation.python_vcs(sorted(texts), texts.get) == {
+        "names": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "pkg", "tool"],
+        "hosts": ["cfg-extra.example.com", "cfg.example.com", "extra.example.com", "gitlab.com", "group.example.com",
+                  "group.poetry.example.com", "hg.example.org", "pep621.example.com", "poetry.example.com",
+                  "setup.example.com", "uv.example.com"]}
+
+
 def test_the_preparation_reaches_the_hosts_the_project_declares_and_names_one_that_does_not_answer():
     """As a CI, the preparation reaches the hosts a project declares for its dependencies (the pre-map's
     `registries`: an index, a repository, a feed, a VCS host) and no other; github.com brings the hosts GitHub serves

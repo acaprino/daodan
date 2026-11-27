@@ -845,3 +845,36 @@ Lockfile = i nomi che `lib/linguist/generated.rb` di Linguist 9.7.0 riconosce co
 - I 554 `binary` sono immagini e font (`.png` 224, `.webp` 156, `.woff2` 85, `.jpg` 20, `.ttf` 20, `.ico` 14, altri 35):
   `linguist_data` non calcola `binary` (codice Ruby e tipo mime, nessun dato).
 - I 2 `generated` in più vengono dall'attributo `linguist-generated` di `.gitattributes`, l'unica via di `linguist_data`.
+
+## Le dipendenze locali dai lettori ufficiali, 27 novembre 2026 (`T3.A.7`)
+
+Domanda: quale lettore ufficiale dice, per ogni formato, una dipendenza locale con il suo percorso, così che la
+preparazione rifiuti solo quelle assolute o fuori dalla copia (decisione del proprietario per `T3.A`).
+
+### Parametri
+
+- Caso `local_deps` di `tests/fixtures/premap/projects.json`: per ogni formato una dipendenza dentro la copia e una
+  fuori (`../../outside/…`) o assoluta (`/srv/abs/…`).
+- Risposte in un container Linux: `modal run benchmarks/project-model/modal_premap.py --store local_deps`
+  (`ap-Z9eyIP0bo1zVT8K7GjnXOp`; Renovate 44.239.1, uv 0.11.28, npm di Node 24.22.3) in
+  `tests/fixtures/premap/outputs/local_deps.json`; test `tests/test_codebase_map_local_deps.py`.
+
+### Risultati
+
+| Formato | Lettore provato | Percorso detto | Coperto |
+| --- | --- | --- | --- |
+| `package.json` (npm, pnpm, Yarn) | Renovate, `skipReason` | sì, in `currentValue`: `file:` → `file`, `link:`/`portal:` → `unspecified-version` (lo stesso di ogni versione illeggibile) | sì, ma il motivo non distingue: si legge il JSON con i protocolli di npm-package-arg e Yarn |
+| `package-lock.json` | `npm query :link --package-lock-only` (Arborist) | sì, `location` | sì; nella preparazione basta il formato documentato (`link`, `resolved`) con `json` |
+| `pnpm-lock.yaml` | `@pnpm/lockfile.fs` | — | non nel container (né in Renovate): YAML con PyYAML (`importers.*.version` `link:`/`file:`, `resolution.directory`) |
+| `yarn.lock` v1 e Berry | `@yarnpkg/parsers` 3.1.0 | non provato | è nel container dentro Renovate, non collegato: le dipendenze locali dirette sono quelle dei `package.json` della copia |
+| `requirements.txt` | Renovate | no: `-e` e i percorsi non compaiono | no |
+| `requirements.txt` | parser di pip (`pip-requirements-parser` 32.0.1) | sì, `-e`, percorso nudo, `file:` | sì |
+| `pyproject.toml` (uv, Poetry) | Renovate | no: `path-dependency` senza percorso | no: si legge con `tomllib` (`[tool.uv.sources]`, tabelle di Poetry) |
+| `uv.lock` | `uv export --frozen --format pylock.toml` | sì, `directory.path` ed `editable` | sì; nella preparazione `tomllib` sul `uv.lock` (`source.directory`/`editable`/`path`), senza container |
+| `poetry.lock` | `tomllib` sul formato di Poetry | sì, `source.type` `directory`/`file` e `url` | sì |
+
+### Non misurato
+
+- `@pnpm/lockfile.fs`: non è nel container della pre-mappa. `@yarnpkg/parsers` vi è (dipendenza di Renovate) ma
+  nessun comando lo usa: una dipendenza `file:` di un pacchetto del registro, scritta solo nel `yarn.lock`, non è vista.
+- `setup.py` e `setup.cfg` con un percorso locale: rari, non letti per il rifiuto.

@@ -200,14 +200,16 @@ def _python(project: Path) -> dict:
     files = preparation.perimeter_files(project)
     # shortcut: no VCS requirement is overridden (`preparation.python_vcs`, `without`) and no host a project declares is added
     # (`preparation.declared`), which ask the user (`egress`): a folder whose install needs them is a `restore_failed` gap; when one is met, take them as the analyzers do
-    managers = {manager: folders for manager, folders in preparation.restores(files).items()
-                if preparation.RESTORES[manager].get("family") == "python"}
+    # a folder whose restore would install a local dependency outside the copy does not restore: a gap
+    planned = preparation.python_restores(files, lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
+    managers = planned["restores"]
     # measured on Modal (`benchmarks/flask-routes/results/venv-dir.json`): `uv venv "<venvs>/."`, the root folder's environment, fails
     # when `<venvs>` is not there (`uv venv <venvs>/api` makes it): the setup makes `tools/bin` and `home`, not `venvs`
     return {"lines": [f"mkdir -p {preparation.VENVS}", *(preparation.restore(manager, folders) for manager, folders in managers.items())]
             if managers else [],
             "needs": [n for manager in managers for n in preparation.RESTORES[manager].get("needs", ())],
-            "hosts": tuple(dict.fromkeys(h for manager in managers for h in preparation.RESTORES[manager]["hosts"])), "gaps": []}
+            "hosts": tuple(dict.fromkeys(h for manager in managers for h in preparation.RESTORES[manager]["hosts"])),
+            "gaps": planned["gaps"]}
 
 
 def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
