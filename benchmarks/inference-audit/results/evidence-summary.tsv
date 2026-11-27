@@ -1,0 +1,17 @@
+file	indexer	language	confirmed	false	uncertain	holes	seconds	mb
+graph-c-zlib-checks.json	scip-clang	c			4	2383	4.8	69
+graph-cpp-tinyxml2-checks.json	scip-clang	cpp			0	145	2.9	83
+graph-css-bootstrap3-checks.json	codebase-map stylesheet.py + less + typescript + tailwindcss	css			143210	1577	4.2	388
+graph-css-bulma-checks.json	codebase-map stylesheet.py + sass-parser + typescript + tailwindcss	css			8846500	7711	13.1	310
+graph-css-hn-svelte-checks.json	codebase-map stylesheet.py + svelte + typescript + tailwindcss	css			27	17	1.9	304
+graph-css-saas-starter-checks.json	codebase-map stylesheet.py + typescript + tailwindcss	css			1279	39	4.5	579
+graph-css-tududi-checks.json	codebase-map stylesheet.py + typescript + tailwindcss	css			924	350	23.0	1450
+graph-css-v3-admin-vite-checks.json	codebase-map stylesheet.py + sass-parser + @vue/compiler-sfc + sass-parser + typescript + tailwindcss	css			425	21	6.0	699
+graph-java-javapoet-checks.json	scip-java	java			0	10	37.7	639
+graph-kotlin-klaxon.json	scip-java	kotlin			251	330	107.2	2205
+graph-python-semver-checks.json	scip-python	python			0	64	7.5	369
+graph-python-semver-plugin-checks.json	scip-python	python			0	64	7.9	355
+scip-chi-full.json	scip-go	go	1014	0		0	12.8	338
+scip-semver-full.json	rust-analyzer	rust	252	0		186	8.9	1176
+scip-tududi-full.json	scip-typescript	javascript	12709	0		58	67.4	2154
+scip-tududi-full.json	scip-typescript	typescript	7023	0		0	67.4	2154
