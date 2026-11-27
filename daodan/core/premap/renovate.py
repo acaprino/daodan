@@ -749,8 +749,8 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
 
 def read(context, commands, results):
     result = results[0]
-    workflows = next((r for c, r in zip(commands, results) if c["argv"] == ["sh", "-c", EACH]), None)
-    yarn = next((r for c, r in zip(commands, results) if c["argv"][2:4] == [YARN_LOCKS, YARN_NAME]), None)
+    workflows = next((r for c, r in zip(commands, results) if c.get("argv") == ["sh", "-c", EACH]), None)
+    yarn = next((r for c, r in zip(commands, results) if (c.get("argv") or [])[2:4] == [YARN_LOCKS, YARN_NAME]), None)
     tests = (getattr(context, "stated", None) or {}).get("tests") or []
     declared, gaps = _workflows(workflows, compose.reader(context), tests) if workflows else ({}, [])
     started, unread = compose.scripts(context)  # and the test scripts that start Docker Compose
