@@ -38,3 +38,46 @@ Per ripetere la lettura (da una cartella vuota; i tarball sono dati, non si inst
 - Nulla è stato eseguito: nessun `router.stack` stampato, nessuna applicazione caricata, nessuna misura di tempo o memoria.
 - `express-list-endpoints` su Express 5 non è provato (lo dice il suo README); altre versioni (`router` 1.x, Express 4 sotto la 4.21) e altri strumenti di terzi non sono letti.
 - Il risolutore di Express e Hono di GitNexus (task 17) resta «da valutare eseguendolo».
+
+## Metodo di GitNexus (27 novembre 2026, `T1.C.2`)
+
+**Versione di partenza:** `abhigyanpatwari/GitNexus`, commit `acf755a1b70ea91208aac9437c2a552579a62b70` (27 novembre 2026), pacchetto `gitnexus` 1.6.12 (`gitnexus/package.json`). Licenza PolyForm Noncommercial 1.0.0 (`LICENSE`): qui c'è solo il metodo, descritto con parole nostre; nessuna riga di codice, query o tabella è copiata. Lettura da un clone in una cartella temporanea, nulla eseguito. A ogni versione nuova si rileggono le novità di questi file e si aggiorna questa sezione (e il modulo di `T1.C.8`).
+
+File letti (sotto `gitnexus/src/core/ingestion/route-extractors/`): `framework-route-types.ts` (i fatti), `framework-route-facts.ts` (dall'albero ai fatti, per file), `framework-route-resolver.ts` (i fatti di tutti i file risolti insieme), `framework-route-paths.ts` (composizione dei prefissi), `route-path.ts` (unione di prefisso e percorso).
+
+**Il metodo in due tempi.**
+
+1. *Per file, dall'albero tree-sitter già letto (nessun secondo parser):* ogni dichiarazione, import (ESM e `require`), esportazione (`export`, `export *`, `module.exports`/`exports.x`) e ogni assegnazione diventano un piccolo valore simbolico (sconosciuto, funzione, array, nome legato, import, membro, chiamata). Si registrano le chiamate a membro con nome `get`, `post`, `put`, `delete`, `patch`, `all`, `route`, `use` (destinatario, argomenti, percorso del primo argomento se è una stringa letterale che inizia con `/` o un array di sole stringhe così, riga), le chiamate a funzioni semplici o importate (per i parametri inoltrati, sotto) e le scritture di proprietà su un valore (che lo rendono incerto).
+2. *Su tutto il progetto:* i valori si valutano seguendo nomi, import ed esportazioni fra file (con il risolutore di moduli del progetto, non con ipotesi sul file system; un `export *` ambiguo non dà valore), con limiti di profondità e di passi.
+
+**Come riconosce un'app o un router.** Un valore è un'app se è la chiamata del valore predefinito importato dal pacchetto `express` (import, `require` o namespace), un router se è la chiamata di `Router` importato da `express` o letto come membro di esso; un'istanza di Hono è `new` di `Hono` importato da `hono`. Se il risolutore del progetto manda lo specificatore a un file del repository (alias di `tsconfig`), quel file vince sul nome del pacchetto. Ogni chiamata che crea un'istanza ne è l'identità; un nome legato a più valori, o un'istanza su cui il codice scrive una proprietà, non si risolve più (incerta, non indovinata).
+
+**Come compone i prefissi di `use` fra file.** `x.use(prefisso?, ...figli)` su un'app o un router dà un arco «montaggio» da `x` a ogni figlio che si valuta a un router o un'app (anche dentro array, anche importato da un altro file); il prefisso è il percorso letterale, oppure vuoto se il primo argomento è già un gestore o un router, oppure *ignoto* se non è letterale. Poi, per ogni gruppo di istanze collegate, si parte dalle istanze che nessuno monta e si scende accumulando i prefissi (più prefissi danno più percorsi; i cicli si fermano; oltre un tetto di espansioni il gruppo non dà rotte). Un figlio montato con prefisso ignoto non ha prefissi: le sue rotte non escono, invece di uscire alla radice. Un solo salto attraverso una funzione: se il destinatario, il percorso o il figlio di una chiamata è un parametro di una funzione con nome, si prende l'argomento di ciascuna chiamata a quella funzione (niente catene di inoltri).
+
+**Che cosa fa di:**
+
+- *un gestore scritto sul posto:* è un valore «funzione» identificato dalla posizione nel file; il nome dato alla rotta è quello posizionale che il resto del grafo dà alla funzione senza nome;
+- *un gestore con nome:* il nome resta solo se è un identificatore legato, nello stesso file e una sola volta, a una dichiarazione di funzione; un parametro, un alias importato o un valore ignoto non prendono il nome di un'altra funzione omonima;
+- *un array di gestori o una catena di middleware:* conta l'ultimo argomento della chiamata come gestore; gli altri non sono rotte;
+- *`route(p).get(h).post(h2)`:* `route` con percorso letterale su un'app o un router dà un costruttore che porta il percorso; ogni verbo concatenato registra una rotta su quel percorso e sul destinatario originale (con un solo argomento basta);
+- *un percorso non letterale* (variabile, template, concatenazione): la rotta non esce; un `use` con prefisso non letterale fa sparire le rotte del figlio (sopra);
+- *Hono:* solo i verbi con percorso letterale su `new Hono()`; `route` e `basePath` di Hono non compongono prefissi (le rotte escono con il percorso scritto).
+
+I metodi sono `get`, `post`, `put`, `delete`, `patch` e `all` (che diventa «ogni metodo»); `head`, `options` e gli altri verbi di Express non sono letti. Le rotte uguali (file, riga, metodo, percorso, nome) si fondono.
+
+**Che cosa ne prende Daodan (`T1.C.8`):** il metodo (valori simbolici dall'albero, montaggi come archi, prefissi composti dalle radici, prefisso ignoto come lacuna con la causa), non il codice. Il legame al gestore in Daodan è lo `span` della funzione (uguaglianza di due dati), non il nome posizionale di GitNexus; le forme di chiamata e i metodi sono dati in `daodan/data/entry-queries.json`, sezione `express`.
+
+**Strumenti valutati, accanto:** nessuna interfaccia pubblica di Express elenca le rotte (sezioni sopra); `express-list-endpoints` 7.1.1 legge campi interni (`app._router.stack`, `layer.regexp` con espressioni regolari), non dà file né riga del gestore e non regge Express 5 (sopra); Noir 1.5.0 dà le rotte ma lega male i gestori (la base sotto). Per questo il lettore resta un modulo nostro (`T1.C.8`).
+
+### La base da battere: Noir 1.5.0 sulle tre applicazioni Express
+
+Dai risultati già nel repository (`benchmarks/noir-binding/results/summary.json`, `by_framework.express`; `results/after.json`, `applications`), applicazioni e commit di `benchmarks/noir-binding/apps.py`, Noir 1.5.0 (`apps.NOIR`). Nessuna corsa nuova.
+
+| Applicazione | Commit | Noir | `http` | con nome del gestore | legati per nome (prima misura) | legati dal legatore di oggi | non legati |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| node-express-boilerplate | `179ae84efec6` | 15 | 15 | 13 | 0 | 13 | 2 |
+| anything-llm | `593c0943facb` | 426 | 424 | 354 | 4 | 354 | 70 |
+| juice-shop | `c9f99228d9d5` | 206 | 188 | 117 | 1 | 106 | 82 |
+| **Totale** | | **647** | **627** | **484** | **5** | **473** | **154** |
+
+«Legati dal legatore di oggi» è `bound_now` di `after.json`: la seconda versione del legatore (posizione e nome concorde), misurata con una copia congelata il 24 novembre; `daodan/core/binder.py` di develop (`d8bf191`) ha la stessa impronta registrata nel README di `noir-binding` (`ffc1518965192abd`), mentre `flows.py` e `premap/noir.py` sono cambiati da allora: la cifra vale per quel legatore, non è rimisurata qui. Dei 627 `http`, 143 non hanno un nome di gestore da Noir (70 di anything-llm vengono da un `.json`), e dei 484 con nome 11 di juice-shop sono fabbriche non legate (`servePublicFiles()`). **Il modulo di `T1.C.8` si collega (`T1.C.9`) solo se lega almeno 473 rotte su queste tre applicazioni, senza legami sbagliati nel campione.**
