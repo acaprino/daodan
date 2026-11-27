@@ -94,6 +94,17 @@ def test_an_unreadable_file_is_an_empty_state(shared, text):
     shared.mkdir(parents=True)
     (shared / "egress.json").write_text(text, encoding="utf-8")
     assert egress.load() == {"whitelist": {}, "blacklist": []}
+    with pytest.raises(ValueError, match="cannot be read"):  # an answer is not saved over what could not be read
+        egress.respond("x.example.com", PROJECT, "always")
+    assert (shared / "egress.json").read_text(encoding="utf-8") == text
+
+
+def test_save_writes_through_a_temporary_file_of_its_own_and_leaves_none(shared):
+    shared.mkdir(parents=True)
+    (shared / "egress.partial").mkdir()  # a fixed temporary name another writer holds
+    egress.save({"whitelist": {PROJECT: ["a.example.com"]}, "blacklist": []})
+    assert egress.load()["whitelist"] == {PROJECT: ["a.example.com"]}
+    assert sorted(path.name for path in shared.iterdir()) == ["egress.json", "egress.partial"]
 
 
 def test_a_malformed_entry_is_dropped_and_the_rest_kept(shared):
