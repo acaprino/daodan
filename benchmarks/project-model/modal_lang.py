@@ -108,16 +108,20 @@ def _image():
     image = (
         modal.Image.debian_slim(python_version="3.13")
         .run_commands(*BUILD)
-        .pip_install(f"magika=={VERSIONS['magika']}", "pyyaml")
+        .pip_install(f"magika=={VERSIONS['magika']}", "pyyaml", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5")
         .run_function(_convert)
         .add_local_file(ROOT / "tools/enry_facts.go", "/opt/enryfacts/main.go", copy=True)
         .run_commands(GO_FACTS)
-        .env({"DAODAN_SCRIPTS": "/daodan/map/core", "LINGUIST_DATA": DATA})
+        .env({"DAODAN_SCRIPTS": "/daodan/map/core", "LINGUIST_DATA": DATA, "DAODAN_SHARED_DIR": "/opt/daodan-shared"})
+        # the grammars of C and C++ (what reads a `.h`, `detect/rules/header.py`) are fetched once, here: the offline
+        # run has no network, and without a grammar every `.h` answers C, the suffix's language
+        .add_local_dir(REPO / "daodan" if LOCAL else Path("/daodan/map"), "/daodan/map", copy=True,
+                       ignore=["**/__pycache__/**", "**/tests/**"])
+        .run_commands("cd /daodan/map/core && python -c \"from languages import _treesitter as t; "
+                      "assert t.get_parser('c') and t.get_parser('cpp')\"")
     )
     return (
-        image.add_local_dir(REPO / "daodan" if LOCAL else Path("/daodan/map"), "/daodan/map",
-                            ignore=["**/__pycache__/**", "**/tests/**"])
-        .add_local_dir(ROOT / "tools", "/pm/tools", ignore=["**/__pycache__/**"])
+        image.add_local_dir(ROOT / "tools", "/pm/tools", ignore=["**/__pycache__/**"])
         .add_local_dir(ROOT / "fixtures", "/pm/fixtures")
     )
 

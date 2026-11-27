@@ -141,3 +141,48 @@ def test_no_grammar_and_no_text_give_the_suffixs_answer(monkeypatch):
     monkeypatch.setattr(_treesitter, "get_parser", lambda language: None)
     assert read(text) == "c"
     assert read("@interface X\n@end\n") is None  # the rule of Objective-C needs no grammar
+
+
+# The shape of tinyxml2.h (everything under an include guard, the C++ in a namespace) and of a C header with the
+# `extern "C"` guard C++ compilers need (zlib.h): the first is C++, the second stays C.
+TINYXML2_SHAPE = """#ifndef TINYXML2_INCLUDED
+#define TINYXML2_INCLUDED
+#include <limits.h>
+#if defined(_MSC_VER)
+#   pragma warning(push)
+#endif
+namespace tinyxml2 {
+class XMLDocument;
+class TINYXML2_LIB XMLNode {
+public:
+    const XMLDocument* GetDocument() const { return _document; }
+private:
+    XMLDocument* _document;
+};
+}
+#endif
+"""
+C_GUARD_SHAPE = """#ifndef ZLIB_H
+#define ZLIB_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+typedef struct z_stream_s { unsigned avail_in; int (*zalloc)(void *); } z_stream;
+int deflate(z_stream *strm, int flush);
+#ifdef __cplusplus
+}
+#endif
+#endif
+"""
+
+
+def test_a_header_shaped_like_tinyxml2_is_cpp_and_one_like_zlib_is_c():
+    assert read(TINYXML2_SHAPE) == "cpp" and read(C_GUARD_SHAPE) == "c"
+
+
+def test_the_language_benchmark_image_has_the_grammars_this_rule_reads_with():
+    """Without them every `.h` of the `lang` facet answers C (the suffix's answer); the pins are the product's."""
+    pins = Path(__file__).resolve().parents[1].joinpath("pyproject.toml").read_text(encoding="utf-8")
+    image = Path(__file__).resolve().parents[1].joinpath("benchmarks/project-model/modal_lang.py").read_text(encoding="utf-8")
+    for pin in ("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5"):
+        assert pin in pins and pin in image
