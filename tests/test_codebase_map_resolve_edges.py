@@ -687,8 +687,8 @@ class MultiLanguageTests(unittest.TestCase):
                          {"python": "stub@1.0", "typescript": "tsstub@1.0"})
         self.assertEqual({language: entry["engine"] for language, entry in binding["languages"].items()},
                          {"python": "stub@1.0", "typescript": "tsstub@1.0"})
-        coverage = resolve_edges.edge_state(self.manifest)["coverage"]
-        self.assertEqual(sorted(coverage), ["python", "typescript"])
+        self.assertEqual(sorted(language for language, entry in binding["languages"].items() if entry["coverage"]),
+                         ["python", "typescript"])
 
     def stage_runner(self, outcomes, calls):
         """A fake `subprocess.run` writing each stage's report as the stage would."""
