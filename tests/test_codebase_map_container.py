@@ -885,8 +885,8 @@ class FakeEngineTest(unittest.TestCase):
             self.assertNotIn(host, hosts)  # generic hosts and the azureedge ones ask (owner, 27 November 2026)
 
     def test_proxy_refuses_every_host_outside_the_registries(self):
-        server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
-                                  stdout=subprocess.PIPE, text=True)
+        server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org",
+                                   "localhost"], stdout=subprocess.PIPE, text=True)
         self.addCleanup(server.wait)
         self.addCleanup(server.kill)
         port = int(server.stdout.readline().split()[1])
@@ -895,6 +895,21 @@ class FakeEngineTest(unittest.TestCase):
             with socket.create_connection(("127.0.0.1", port), timeout=5) as client:
                 client.sendall(request)
                 return client.recv(1024)
+
+        # an approved name that resolves to the loopback is refused before any connection (`T3.A`, row a): a
+        # listener at its port 443 would take it, and gets nothing
+        try:
+            listener = socket.create_server(("127.0.0.1", 443))
+        except OSError:
+            listener = None
+        if listener:
+            self.addCleanup(listener.close)
+            listener.settimeout(0.5)
+        self.assertTrue(ask(b"CONNECT localhost:443 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
+        self.assertEqual(json.loads(server.stdout.readline().split(" ", 1)[1]), {"host": "localhost", "port": "443"})
+        if listener:
+            with self.assertRaises(socket.timeout):
+                listener.accept()
 
         self.assertTrue(ask(b"CONNECT example.com:443 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
         self.assertTrue(ask(b"CONNECT registry.npmjs.org:80 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
@@ -1381,6 +1396,26 @@ class FakeEngineTest(unittest.TestCase):
         flat = [token for call in self.calls() for token in call]
         self.assertNotIn("context", flat)
         self.assertNotIn("--context", flat)
+
+
+@unittest.skipUnless(os.environ.get("MODAL_TASK_ID"), "a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_the_proxy_opens_an_allowed_host_at_the_global_address_it_resolves_to():
+    """`T3.A`: the proxy resolves an allowed host, checks the address and connects to it: a TLS handshake through
+    the tunnel reaches the registry under its own name."""
+    import ssl
+    server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
+                              stdout=subprocess.PIPE, text=True)
+    try:
+        port = int(server.stdout.readline().split()[1])
+        with socket.create_connection(("127.0.0.1", port), timeout=30) as client:
+            client.sendall(b"CONNECT registry.npmjs.org:443 HTTP/1.1\r\n\r\n")
+            assert client.recv(1024).startswith(b"HTTP/1.1 200")
+            with ssl.create_default_context().wrap_socket(client, server_hostname="registry.npmjs.org") as tls:
+                tls.sendall(b"HEAD / HTTP/1.1\r\nHost: registry.npmjs.org\r\nConnection: close\r\n\r\n")
+                assert tls.recv(1024).startswith(b"HTTP/1.1 ")
+    finally:
+        server.kill()
+        server.wait()
 
 
 @unittest.skipUnless(os.environ.get("MODAL_TASK_ID"), "a real proof on Modal (tests/modal_pytest.py)")

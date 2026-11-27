@@ -223,10 +223,12 @@ if os.environ.get("DAODAN_PUBLIC"):
 # for a GET or HEAD of apt's archive (`dists/`, `pool/`: apt checks the signed Release files and each package's
 # hash), one request a connection. Prints "ready <port>", and for each refusal a line `@@daodan-refused {"host","port"}`
 # that `run_in_container` reads from its log (`egress.refused`). It resolves no refused host: a container the project
-# runs in must not open a DNS channel through it. Proxies evaluated for `T3.A`: Smokescreen (a Go binary from a
-# release; the candidate), squid (ACLs and logs, but no apt exception by path), mitmproxy (it intercepts TLS: not needed).
+# runs in must not open a DNS channel through it. Proxies evaluated for `T3.A`: Smokescreen v1.0.1 (an attested image;
+# measured by `benchmarks/egress/modal_probe.py --proxy smokescreen`, it opens other ports of an allowed host and its
+# plain HTTP at any path: out), squid (ACLs and logs, but no apt exception by path), mitmproxy (it intercepts TLS: not
+# needed). This script stays, with the address an allowed host resolves to checked (`is_global`) and connected to.
 PROXY_SCRIPT = r'''
-import json, re, select, socket, sys, threading
+import ipaddress, json, re, select, socket, sys, threading
 from urllib.parse import urlsplit
 allowed = {host.lower() for host in sys.argv[2:] if not host.startswith("http://")}
 archives = {host[len("http://"):].lower() for host in sys.argv[2:] if host.startswith("http://")}
@@ -269,6 +271,10 @@ def relay(a, b):
         pass
     finally:
         a.close(); b.close()
+def public(text):
+    """Whether an address is on the Internet (`is_global`), an IPv4 one inside an IPv6 one judged as itself."""
+    address = ipaddress.ip_address(text.split("%", 1)[0])
+    return (getattr(address, "ipv4_mapped", None) or address).is_global
 def refuse(client, words):
     """The refusal, said on one line for the host that reads the log, and a 403."""
     target = words[1].decode("latin-1") if len(words) > 1 else ""
@@ -298,8 +304,12 @@ def serve(client):
     host, _, port = words[1].decode("latin-1").rpartition(":") if len(words) == 3 and words[0] == b"CONNECT" else ("", "", "")
     if host.lower() not in allowed or port != "443":
         return refuse(client, words)
-    try:
-        upstream = socket.create_connection((host, 443), timeout=30)
+    try:  # the address it is opened at, checked: an approved name that resolves into the user's network is refused
+        address = next((found[4][:2] for found in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
+                        if public(found[4][0])), None)
+        if address is None:
+            return refuse(client, words)
+        upstream = socket.create_connection(address, timeout=30)
     except OSError:
         client.sendall(b"HTTP/1.1 502 Bad Gateway\r\n\r\n"); client.close(); return
     client.sendall(b"HTTP/1.1 200 Connection established\r\n\r\n")

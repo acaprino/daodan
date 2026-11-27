@@ -2,10 +2,12 @@
 each way out the plan names (`T0.C.8`), tried once, one `ROW {...}` line each. Standard library only: the image is
 `container.PROXY_IMAGE`, Python with nothing added. argv[1] is a JSON object: `mode` ("rows" or "fetch"), the canary
 hosts `allowed` (approved for the run) and `outside` (never approved), `outside_ip`, `host_ip` (the VM's address),
-`token` (in every name looked up, to find it on the wire) and, for "fetch", `url` (exit 1 when it is not reached).
+`token` (in every name looked up, to find it on the wire), `internal` (approved names the proxy's container resolves to
+an internal address, `T3.A.2` row a) and, for "fetch", `url` (exit 1 when it is not reached).
 
-A row is `reached` when the way out answered (a 200 of the proxy to a CONNECT, a TCP connection, a DNS answer, the
-target's HTTP answer), `blocked` otherwise; `detail` says what came back.
+A row is `reached` when the way out answered (an answer of the proxy other than its refusal, 403 for `PROXY_SCRIPT` and
+407 for Smokescreen: a 502 says it tried to connect; a TCP connection, a DNS answer, the target's HTTP answer),
+`blocked` otherwise; `detail` says what came back.
 """
 import json
 import os
@@ -13,11 +15,13 @@ import socket
 import struct
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 ARGS = json.loads(sys.argv[1])
 PROXY = os.environ.get("HTTPS_PROXY", "")  # http://proxy:3128, set by `run_in_container`
 TIMEOUT = 5
+REFUSALS = (["403"], ["407"], [])  # the refusal of `PROXY_SCRIPT`, Smokescreen's, no status line
 
 
 def row(name, kind, reached, detail):
@@ -25,16 +29,19 @@ def row(name, kind, reached, detail):
                                "detail": str(detail)[:300]}), flush=True)
 
 
-def ask_proxy(name, request_line):
-    """One request line to the proxy, raw: its status line is the proxy's answer (403 refused, 200 tunnel open)."""
+def ask_proxy(name, request_line, timeout=TIMEOUT):
+    """One request line to the proxy, raw: its status line is the proxy's answer (a refusal, 200 tunnel open)."""
     host, port = PROXY.removeprefix("http://").rsplit(":", 1)
+    words = request_line.split()
+    if words[0] == "GET":  # HTTP/1.1 wants its Host header: without one Smokescreen's server answers 400 first
+        request_line += "\r\nHost: " + urllib.parse.urlsplit(words[1]).netloc
     try:
-        with socket.create_connection((host, int(port)), timeout=TIMEOUT) as link:
+        with socket.create_connection((host, int(port)), timeout=timeout) as link:
             link.sendall(request_line.encode("latin-1") + b"\r\n\r\n")
             status = link.recv(4096).split(b"\r\n", 1)[0].decode("latin-1")
     except OSError as error:
         return row(name, "proxy", False, f"no answer: {error}")
-    row(name, "proxy", status.split()[1:2] not in (["403"], []), status)
+    row(name, "proxy", status.split()[1:2] not in REFUSALS, status)
 
 
 def connect(name, host, port, family=socket.AF_UNSPEC):
@@ -141,6 +148,10 @@ def rows():
     ask_proxy("proxy-connect-port-8443", f"CONNECT {allowed}:8443 HTTP/1.1")
     ask_proxy("proxy-connect-port-22", "CONNECT registry.npmjs.org:22 HTTP/1.1")
     ask_proxy("proxy-plain-http", f"GET http://{allowed}/plain-http HTTP/1.1")
+    # Approved names the proxy's container resolves to an internal address (`--add-host`): it must not connect. The
+    # wait outlasts a proxy's own connect timeout (30 s), so a refused or timed-out attempt answers 502, not silence.
+    for label, host in sorted(ARGS["internal"].items()):
+        ask_proxy(f"proxy-allowed-to-{label}", f"CONNECT {host}:443 HTTP/1.1", timeout=40)
 
 
 if ARGS["mode"] == "rows":
