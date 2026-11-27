@@ -133,7 +133,7 @@ def _profile(provider):
 
 def _destination(manifest, index):
     manifest, index = retrieval._destination(manifest, index)
-    if index.name in {'cards.sqlite', 'retrieval.sqlite', 'engine-edges.sqlite', 'engine-answers.sqlite'}:
+    if index.name in {'cards.sqlite', 'retrieval.sqlite', 'engine-edges.sqlite'}:
         raise ValueError('embedding destination would replace another evidence store')
     return manifest, index
 

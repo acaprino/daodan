@@ -27,11 +27,13 @@ import engine_tools
 from snapshot_store import logical_digest, open_snapshot
 from engine_tools import free_memory, node_environment
 from edge_store import default_edge_store, read_edge_store
-from position_stage import MEMORY_EXHAUSTED
 from tree_scope import program
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
+
+# What a stage's log says when it ran out of memory, in lower case.
+MEMORY_EXHAUSTED = ("memoryerror", "out of memory", "outofmemoryerror", "bad_alloc", "cannot allocate memory")
 
 # Files the derived pass leaves beside the edge store.
 REPORT_NAME = "engine-report.json"
@@ -527,8 +529,8 @@ def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | 
     stage_report.unlink(missing_ok=True)
     if not isinstance(stage, dict):  # no report, or one that is not a report
         return "failed", (f"the {spec.name} stage exited with code {completed.returncode} without a report; "
-                          f"see {LOG_NAME}"), None, {"memory_exhausted": bool(MEMORY_EXHAUSTED.search(
-                              _log_tail(manifest)))}
+                          f"see {LOG_NAME}"), None, {"memory_exhausted": any(
+                              word in _log_tail(manifest).lower() for word in MEMORY_EXHAUSTED)}
     if stage.get("available"):
         return None, None, None, stage
     install = stage.get("install")
@@ -1018,12 +1020,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
         key: report[key]
         for key in (
             "engine", "available", "reason", "stage", "install", "project_root", "languages",
-            "population", "population_language", "selected", "asked", "reused", "answer_cache", "stride",
-            "confirmed_edges", "candidates", "no_edges_reason", "position_unverified",
-            "excluded_classes", "coverage", "verdicts", "memory_exhausted",
-            "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
-            "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
-            "edges_store", "coverage", "indexer", "gaps",
+            "coverage", "memory_exhausted", "edges_store", "indexer", "gaps",
         )
         if key in report
     }

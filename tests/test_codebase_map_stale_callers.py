@@ -134,18 +134,6 @@ class StaleCallersTests(unittest.TestCase):
         self.assertEqual(drift["items"][0]["kind"], "rewired_call")
         self.assertEqual(drift["items"][0]["after_target"], "pkg/b.py::extra")
 
-    def test_the_engine_comparison_reads_what_each_limit_left_out(self):
-        """Complete without `not-selected` holes, partial when both left out as many, incomparable otherwise."""
-        def view(left_out):
-            holes = {"not-selected": {"count": left_out, "examples": []}} if left_out else {}
-            return {"profile": {"engine_available": True, "engine": "stub@1.0"},
-                    "coverage": {"languages": {"python": {"holes": {"not-asked": {"count": 2}, **holes}}}}}
-
-        for before, after, expected in ((0, 0, "complete"), (3, 3, "partial"), (0, 3, "incomparable"),
-                                        (2, 3, "incomparable")):
-            with self.subTest(before=before, after=after):
-                self.assertEqual(semantic_store._engine_comparison(view(before), view(after))[0], expected)
-
     def test_protocol_to_implementation_is_dispatch_evidence_not_confirmed_rewiring(self):
         from test_codebase_map_edge_view import end, write_answers
         write_files(self.root, {

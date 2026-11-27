@@ -490,7 +490,7 @@ In `daodan/core/`, Python con sola libreria standard salvo gli opzionali detti. 
 - `snapshot.py`: `scope`, `write`, `index`, `search`, `resolve`, `runtime`, `diff`, `carry`, `prepare`, `check`, `publish`, `register`, `unregister`, `meta-query`, `meta-upsert`, `edit-impact`, `symbols-at`, `stale-callers`, `context`, `technologies`, `files`, `refresh`, `hook`.
 - `source_reader.py`: `outline` (metadati dei simboli), `graph` (chiamanti e chiamati dal manifest, 1-3 salti), `read` (blocchi di sorgente verificati per simbolo, intervallo o file intero).
 - `modules.py`: `build`, `query`, `brief`, `propose`.
-- `resolve_edges.py`: con `--pass` il passaggio, cioè gli step della pipeline fino a `union` (sezione Pipeline), con gli archi in `engine-edges.sqlite`, come li avviano in background `snapshot.py write` e `codebase_map_create_run`; con `--engine <analyzer>` o `--engine scip` un solo stadio.
+- `resolve_edges.py`: con `--pass` il passaggio, cioè gli step della pipeline fino a `union` (sezione Pipeline), con gli archi in `engine-edges.sqlite`, come li avviano in background `snapshot.py write` e `codebase_map_create_run`; con `--engine <analyzer>` un solo stadio.
 - `semantic_map.py`: vista `semantic-map.md` delle schede di un'area.
 - `embedding_worker.py`: embedding locali opzionali, su richiesta esplicita.
 - `analyze_file.py`, `ast_parser.py`, `classifier.py`, `usage_finder.py`: analisi di un file, estrazione grezza, criticità, usi di un simbolo.

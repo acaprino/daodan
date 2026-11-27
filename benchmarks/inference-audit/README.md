@@ -18,6 +18,8 @@ Verifica, per ogni linguaggio, il grafo che Daodan costruisce dall'indice SCIP d
 
 Esecuzione: `modal run --detach benchmarks/inference-audit/modal_audit.py`; un container per caso, risultati sul volume `daodan-flow-results`.
 
+`modal_audit.py` e la strada A di `modal_scip.py` (il passo per posizione, `engine-answers.sqlite`): risultati storici, il passo non esiste più (`T2.B.7`, 27 novembre 2026); i risultati restano.
+
 ## Risultati
 
 ### 13 novembre 2026, indice SCIP contro motori

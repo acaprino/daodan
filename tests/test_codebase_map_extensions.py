@@ -14,7 +14,6 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import import_resolution  # noqa: E402
-import resolve_edges  # noqa: E402
 import semantic_index  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
@@ -27,49 +26,6 @@ from languages import (  # noqa: E402
 )
 from snapshot_store import open_snapshot  # noqa: E402
 from read_manifest import read_manifest  # noqa: E402
-
-
-def _encode_varint(value: int) -> bytes:
-    out = bytearray()
-    while value > 0x7F:
-        out.append((value & 0x7F) | 0x80)
-        value >>= 7
-    out.append(value & 0x7F)
-    return bytes(out)
-
-
-def _pb_field_varint(field_no: int, value: int) -> bytes:
-    return _encode_varint((field_no << 3) | 0) + _encode_varint(value)
-
-
-def _pb_field_bytes(field_no: int, payload: bytes) -> bytes:
-    return _encode_varint((field_no << 3) | 2) + _encode_varint(len(payload)) + payload
-
-
-def _pb_scip_occurrence(rng: list[int], symbol: str, roles: int) -> bytes:
-    packed_range = b"".join(_encode_varint(x) for x in rng)
-    return (
-        _pb_field_bytes(1, packed_range)
-        + _pb_field_bytes(2, symbol.encode("utf-8"))
-        + (_pb_field_varint(3, roles) if roles else b"")
-    )
-
-
-def _pb_scip_document(relative_path: str, language: str, occurrences: list[bytes]) -> bytes:
-    body = _pb_field_bytes(1, relative_path.encode("utf-8"))
-    for occ in occurrences:
-        body += _pb_field_bytes(2, occ)
-    body += _pb_field_bytes(4, language.encode("utf-8"))
-    return body
-
-
-def _pb_scip_index(tool_name: str, tool_version: str, documents: list[bytes]) -> bytes:
-    tool_info = _pb_field_bytes(1, tool_name.encode("utf-8")) + _pb_field_bytes(2, tool_version.encode("utf-8"))
-    metadata = _pb_field_varint(1, 0) + _pb_field_bytes(2, tool_info)
-    out = _pb_field_bytes(1, metadata)
-    for doc in documents:
-        out += _pb_field_bytes(2, doc)
-    return out
 
 
 class KotlinLanguageTests(unittest.TestCase):
@@ -518,7 +474,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                                             "two/src/ui.ts": None, "three/src/ui.ts": None})
 
 
-class SqlAstAndScipEngineTests(unittest.TestCase):
+class SqlAstTests(unittest.TestCase):
     def test_sql_adapter_populates_semantic_declarations_and_table_references(self):
         sql_code = (
             "CREATE TABLE orders (id INT PRIMARY KEY, user_id INT);\n"
@@ -574,67 +530,6 @@ class SqlAstAndScipEngineTests(unittest.TestCase):
                 "view.sql",
             )
             self.assertTrue(any("sqlglot" in n for n in result.notes))
-
-    def test_resolve_edges_scip_engine_resolves_multi_language_calls_from_protobuf_index(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "tsproj"
-            root.mkdir(parents=True)
-            # `service.execute()` on an unannotated parameter is unresolved lexically ("unknown-receiver")
-            (root / "caller.ts").write_text(
-                "export function run(service: any) {\n"
-                "  return service.execute();\n"
-                "}\n",
-                encoding="utf-8",
-            )
-            (root / "worker.ts").write_text(
-                "export class Worker {\n"
-                "  execute() {\n"
-                "    return 42;\n"
-                "  }\n"
-                "}\n",
-                encoding="utf-8",
-            )
-            manifest = root.parent / "manifest.sqlite"
-            snapshot.read_project(root, manifest)
-
-            sym = "scip-typescript npm pkg 1.0.0 worker.ts/Worker#execute()."
-            doc_worker = _pb_scip_document(
-                "worker.ts",
-                "typescript",
-                # line 1 (0-based) = line 2 (`  execute() {`), char 2..9
-                [_pb_scip_occurrence([1, 2, 1, 9], sym, 1)],
-            )
-            doc_caller = _pb_scip_document(
-                "caller.ts",
-                "typescript",
-                # line 1 (0-based) = line 2 (`  return service.execute();`), char 17..24 (`execute`)
-                [_pb_scip_occurrence([1, 17, 1, 24], sym, 0)],
-            )
-            scip_bytes = _pb_scip_index("scip-typescript", "0.3.14", [doc_worker, doc_caller])
-            scip_path = root / "index.scip"
-            scip_path.write_bytes(scip_bytes)
-
-            edges_out = root.parent / "engine-edges.sqlite"
-            engine = resolve_edges.ScipEngine(root, [scip_path])
-            report = resolve_edges.resolve_edges(
-                manifest,
-                engine=engine,
-                limit=None,
-                stride=1,
-                out=edges_out,
-            )
-            self.assertTrue(report["available"], report)
-            self.assertEqual(report["confirmed_edges"], 1)
-            with open_snapshot(manifest) as store:
-                edges, binding, reason = resolve_edges.read_edge_store(edges_out, store)
-            self.assertIsNone(reason)
-            self.assertEqual(len(edges), 1)
-            self.assertEqual(edges[0]["resolver"], "scip:scip-typescript@0.3.14")
-            self.assertEqual(edges[0]["payload"]["detail"], "edge-call")
-            self.assertTrue(
-                edges[0]["target_id"].startswith(("worker.ts::method@", "worker.ts::function@")),
-                edges[0]["target_id"],
-            )
 
 
 if __name__ == "__main__":

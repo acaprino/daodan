@@ -28,7 +28,7 @@ ALLOWED = {
     "languages/javascript.py": 5, "languages/kotlin.py": 8, "languages/markup.py": 2, "languages/plsql.py": 9,
      "languages/rust.py": 8, "languages/sfc.py": 3, "languages/sql.py": 19,
     "languages/stylesheet.py": 34,  "mark_svg.py": 11, "mcp_service.py": 1,
-    "module_inventory.py": 1, "module_records.py": 2, "modules.py": 1, "position_stage.py": 1,
+    "module_inventory.py": 1, "module_records.py": 2, "modules.py": 1,
     "premap/autotools.py": 3, "premap/cmake.py": 6, "premap/compose.py": 10,
     "premap/dockerfile.py": 2, "premap/gitmodules.py": 3, "premap/gradle.py": 1, "premap/jvm_files.py": 13,
     "premap/make.py": 3, "premap/meson.py": 1, "premap/module_graph.py": 3, "premap/npm_lock.py": 2,
@@ -56,4 +56,4 @@ def test_no_file_of_the_core_has_more_regular_expressions_than_it_had():
 
 
 def test_the_count_only_goes_down():
-    assert sum(ALLOWED.values()) <= 662  # 27 November 2026: +1, Composer's own PLATFORM_PACKAGE_REGEX on a package name (T1.B.9b); +2, Linguist's own `vendor`/`documentation` expressions on paths (T1.B.5); texts with no grammar; 659 on the 26th (660 on the 25th, 661 on the 24th, 667 on the 22nd, 835 on the 21st, 846 on the 20th); lower it with the files
+    assert sum(ALLOWED.values()) <= 661  # 27 November 2026: -1, the position stage gone (T2.B.7); +1, Composer's own PLATFORM_PACKAGE_REGEX on a package name (T1.B.9b); +2, Linguist's own `vendor`/`documentation` expressions on paths (T1.B.5); texts with no grammar; 659 on the 26th (660 on the 25th, 661 on the 24th, 667 on the 22nd, 835 on the 21st, 846 on the 20th); lower it with the files
