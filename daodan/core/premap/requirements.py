@@ -43,10 +43,64 @@ def read(text: str):
         return RequirementsFile.from_file(str(path))
 
 
-def local(link) -> bool:
-    """Whether pip's `link` names a path (a folder, an archive) rather than a URL."""
+def local_path(link) -> str | None:
+    """The path pip's `link` names (a folder, an archive): as written, or a `file:` URL's; None for another URL."""
     from pip_requirements_parser import is_url
-    return link is not None and not is_url(link.url)
+    if link is None:
+        return None
+    if not is_url(link.url):
+        return link.url
+    return link.path if link.scheme == "file" else None
+
+
+def local_requirements(rel: str, text: str) -> list[tuple[str, str]]:
+    """The local dependencies a Python manifest declares, `(entry, path as written)`: in a requirements file
+    (pip's parser) each `-e PATH`, bare path or `file:` URL; in `pyproject.toml` (`tomllib`) each `path` source of
+    `[tool.uv.sources]` and of Poetry's dependency tables, and each PEP 508 `name @ file:...` of its lists."""
+    if PurePosixPath(rel).name != "pyproject.toml":
+        return [(req.line or "", path) for req in read(text).requirements
+                for path in [local_path(req.link)] if path is not None]
+    from pip_requirements_parser import build_install_req
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:
+        return []
+    found = []
+    for _where, key, entry in _sources(data):
+        if isinstance(entry.get("path"), str):
+            found.append((key, entry["path"]))
+    for item in _lists(data):
+        try:
+            req = build_install_req(item.strip())
+        except Exception:  # pip's refusal of a string that is no requirement
+            continue
+        path = local_path(req.link) if req.req is None or req.req.url else None
+        if path is not None:
+            found.append((req.name or item, path))
+    return found
+
+
+def _lists(data: dict) -> list[str]:
+    """The PEP 508 strings of a `pyproject.toml`: `[project]` dependencies and extras, `[dependency-groups]`,
+    `[build-system]`, uv's `dev-dependencies`."""
+    project, uv = _table(data.get("project")), _table(_table(data.get("tool")).get("uv"))
+    lists = [project.get("dependencies"), _table(data.get("build-system")).get("requires"), uv.get("dev-dependencies"),
+             *_table(project.get("optional-dependencies")).values(), *_table(data.get("dependency-groups")).values()]
+    return [item for value in lists for item in _strings(value)]
+
+
+def _sources(data: dict) -> list[tuple[str, str, dict]]:
+    """`(table, name, entry)` of each source table of a `pyproject.toml`: `[tool.uv.sources]` (an entry or a list
+    of them) and Poetry's dependency tables."""
+    tool = _table(data.get("tool"))
+    poetry = _table(tool.get("poetry"))
+    tables = [("tool.uv.sources", _table(_table(tool.get("uv")).get("sources"))),
+              ("tool.poetry.dependencies", _table(poetry.get("dependencies"))),
+              ("tool.poetry.dev-dependencies", _table(poetry.get("dev-dependencies"))),
+              *((f"tool.poetry.group.{name}.dependencies", _table(_table(group).get("dependencies")))
+                for name, group in _table(poetry.get("group")).items())]
+    return [(where, key, entry) for where, table in tables for key, value in table.items()
+            for entry in (value if isinstance(value, list) else [value]) if isinstance(entry, dict)]
 
 
 def vcs(text: str) -> tuple[str, str] | None:
@@ -86,17 +140,8 @@ def vcs_requirements(rel: str, text: str) -> list[tuple[str, str]]:
             data = tomllib.loads(text)
         except tomllib.TOMLDecodeError:
             return []
-        project, tool = _table(data.get("project")), _table(data.get("tool"))
-        uv, poetry = _table(tool.get("uv")), _table(tool.get("poetry"))
-        lists = [project.get("dependencies"), _table(data.get("build-system")).get("requires"),
-                 uv.get("dev-dependencies"), *_table(project.get("optional-dependencies")).values(),
-                 *_table(data.get("dependency-groups")).values()]
-        found += [vcs(item) for value in lists for item in _strings(value)]
-        sources = [_table(uv.get("sources")), _table(poetry.get("dependencies")), _table(poetry.get("dev-dependencies")),
-                   *(_table(_table(group).get("dependencies")) for group in _table(poetry.get("group")).values())]
-        found += [(key, entry["git"]) for source in sources for key, value in source.items()
-                  for entry in (value if isinstance(value, list) else [value])
-                  if isinstance(entry, dict) and isinstance(entry.get("git"), str)]
+        found += [vcs(item) for item in _lists(data)]
+        found += [(key, entry["git"]) for _where, key, entry in _sources(data) if isinstance(entry.get("git"), str)]
     elif name == "setup.cfg":
         parser = configparser.ConfigParser(interpolation=None, strict=False)
         try:
@@ -159,8 +204,9 @@ def _parse(text: str) -> dict:
         out["constraints"] += line.options.get("constraints") or []
         out["origins"] |= {origin(url) for key in INDEXES for url in _strings(line.options.get(key))}
     for req in found.requirements:
-        if local(req.link):  # `-e PATH` or a bare path: an edge to the unit there
-            out["paths"].append(req.link.url)
+        path = local_path(req.link)
+        if path is not None:  # `-e PATH`, a bare path, a `file:` URL: an edge to the unit there
+            out["paths"].append(path)
         elif req.link is not None:  # `name @ URL`, a VCS URL, `-e URL`, an archive's URL
             out["origins"].add(origin(req.link.url))
     out["origins"].discard(None)

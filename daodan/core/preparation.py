@@ -612,6 +612,11 @@ def node_prepare(files, read) -> dict:
             roots[folder] = manager
     found = [(manager, [f for f in folders if f in roots], unlocked) for manager, folders, unlocked in found]
     found = [row for row in found if row[1]]
+    # A restore that would install a local dependency outside the copy, or at an absolute path, does not run.
+    local = local_dependencies(files, read, "node")
+    blocked = refused({folder for _manager, folders, _unlocked in found for folder in folders}, local)
+    found = [(manager, kept, unlocked) for manager, folders, unlocked in found
+             for kept in [[f for f in folders if f not in blocked]] if kept]
     plan: dict[str, list[str]] = {}
     for manager, folders, _unlocked in found:
         plan[manager] = sorted(plan.get(manager, []) + folders)
@@ -619,9 +624,10 @@ def node_prepare(files, read) -> dict:
              + (f"{YARN_PROXY}; " if manager == "yarn" else "") + restore(manager, folders, unlocked, scripts=True)
              for manager, folders, unlocked in found]
     owner = {folder: manager for manager, folders in plan.items() for folder in folders}
-    gaps = []
+    gaps = local
     for folder, manifest in sorted(manifests.items()):
-        if folder in owner or not any(manifest.get(field) for field in DECLARED):
+        if folder in owner or not any(manifest.get(field) for field in DECLARED) or any(
+                _inside(folder, b) for b in blocked):
             continue
         if covered(folder, owner):
             continue
@@ -672,6 +678,133 @@ def python_vcs(files, read) -> dict:
             except ValueError:
                 continue
     return {"names": sorted(names - {""}), "hosts": sorted(hosts - {""})}
+
+
+NODE_LOCAL = ("file:", "link:", "portal:")  # npm's, pnpm's and Yarn's protocols for a folder (npm-package-arg, Yarn)
+PYTHON_LOCAL = ("pyproject.toml", "uv.lock", "poetry.lock")
+
+
+def _escapes(folder: str, target: str) -> str | None:
+    """Why the path `target`, written in a file of `folder`, is refused: absolute, or outside the copy of the
+    project once joined to `folder`; None for a path inside the copy (a workspace, a member: legitimate)."""
+    if target.startswith(("/", "~", "\\")) or target[1:3] in (":/", ":\\"):  # POSIX, home, Windows
+        return "an absolute path"
+    joined = posixpath.normpath(posixpath.join(folder, target))
+    return "outside the copy of the project" if joined == ".." or joined.startswith("../") else None
+
+
+def _node_local(rel: str, text: str) -> list[tuple[str, str, str]]:
+    """`(entry, folder the path is from, path)` of each local dependency a Node file states: a manifest's
+    dependency with a folder protocol or a path (JSON); `package-lock.json`'s linked packages (`link`, `resolved`,
+    npm's documented format, JSON); `pnpm-lock.yaml`'s importers whose version is `link:` or `file:` and its
+    packages resolved from a `directory` (YAML). Yarn's lockfile repeats the manifests' specs: they are read there."""
+    import yaml
+    name, folder = posixpath.basename(rel), _folder(rel)
+    found = []
+    try:
+        data = yaml.safe_load(text) if name == "pnpm-lock.yaml" else json.loads(text)
+    except (ValueError, yaml.YAMLError):
+        return []
+    data = data if isinstance(data, dict) else {}
+    if name == "package.json":
+        for field in DECLARED:
+            for key, spec in (data.get(field) or {}).items() if isinstance(data.get(field), dict) else ():
+                if isinstance(spec, str) and spec.startswith((*NODE_LOCAL, ".", "/", "~")):
+                    path = spec.split(":", 1)[1] if spec.startswith(NODE_LOCAL) else spec
+                    found.append((f"{field}.{key}: {spec}", folder, path.removeprefix("//")))
+    elif name == "package-lock.json":
+        for key, entry in (data.get("packages") or {}).items() if isinstance(data.get("packages"), dict) else ():
+            resolved = entry.get("resolved") if isinstance(entry, dict) else None
+            if isinstance(resolved, str) and (entry.get("link") or resolved.startswith("file:")):  # a folder, a tarball
+                found.append((f"packages.{key}: {resolved}", folder, resolved.removeprefix("file:")))
+    elif name == "pnpm-lock.yaml":
+        importers = data.get("importers") if isinstance(data.get("importers"), dict) else {".": data}
+        for importer, deps in importers.items():
+            for field in DECLARED:
+                table = deps.get(field) if isinstance(deps, dict) else None
+                for key, value in table.items() if isinstance(table, dict) else ():
+                    version = value.get("version") if isinstance(value, dict) else value
+                    if isinstance(version, str) and version.startswith(("link:", "file:")):
+                        found.append((f"importers.{importer}.{field}.{key}: {version}",
+                                      posixpath.normpath(posixpath.join(folder, str(importer))),
+                                      version.split(":", 1)[1]))
+        for key, entry in (data.get("packages") or {}).items() if isinstance(data.get("packages"), dict) else ():
+            resolution = entry.get("resolution") if isinstance(entry, dict) else None
+            if isinstance(resolution, dict) and isinstance(resolution.get("directory"), str):
+                found.append((f"packages.{key}", folder, resolution["directory"]))
+    return found
+
+
+def _python_local(rel: str, text: str) -> list[tuple[str, str, str]]:
+    """`(entry, folder the path is from, path)` of each local dependency a Python file states: requirements files
+    and `pyproject.toml` by `premap.requirements.local_requirements`; `uv.lock`'s `directory`, `editable` and `path`
+    sources and `poetry.lock`'s `directory` and `file` ones (`tomllib`, the formats uv and Poetry document)."""
+    import tomllib
+    from premap.requirements import local_requirements
+    name, folder = posixpath.basename(rel), _folder(rel)
+    if name not in ("uv.lock", "poetry.lock"):
+        return [(entry, folder, path) for entry, path in local_requirements(rel, text)]
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:
+        return []
+    found = []
+    for package in data.get("package") or [] if isinstance(data.get("package"), list) else []:
+        source = package.get("source") if isinstance(package, dict) else None
+        if not isinstance(source, dict):
+            continue
+        if name == "uv.lock":
+            found += [(f"{package.get('name')}: {key} = {source[key]}", folder, source[key])
+                      for key in ("directory", "editable", "path") if isinstance(source.get(key), str)]
+        elif source.get("type") in ("directory", "file") and isinstance(source.get("url"), str):
+            found.append((f"{package.get('name')}: {source['type']} = {source['url']}", folder, source["url"]))
+    return found
+
+
+def local_dependencies(files, read, family: str) -> list[dict]:
+    """A `local_dependency_refused` gap for each local dependency of the `family` (`node` or `python`) that a file
+    among `files` (`read(rel)`, its text) states with an absolute path or one outside the copy of the project
+    (decision of the owner for T3.A): its folder's restore does not run (`refused`). A path inside the copy, a
+    workspace or a member, is legitimate; a `git+` or URL address is no local dependency (its host is approved,
+    T0.C)."""
+    gaps = []
+    for rel in files:
+        base = posixpath.basename(rel)
+        if family == "node" and base in ("package.json", "package-lock.json", "pnpm-lock.yaml"):
+            reader = _node_local
+        elif family == "python" and (base in PYTHON_LOCAL or (base.endswith((".txt", ".in")) and "requirements" in rel)):
+            reader = _python_local
+        else:
+            continue
+        try:
+            text = read(rel)
+        except OSError:
+            continue
+        for entry, folder, path in reader(rel, text or ""):
+            why = _escapes(folder, path)
+            if why:
+                gaps.append({"kind": "local_dependency_refused", "path": _folder(rel), "file": rel, "entry": entry,
+                             "detail": f"{rel}: {entry} is a local dependency at {why}: the restore of "
+                                       f"{_folder(rel)} does not run (only paths inside the copy are restored)"})
+    return gaps
+
+
+def refused(folders, gaps: list[dict]) -> set[str]:
+    """The restore folders among `folders` whose restore does not run: one holding the folder of a
+    `local_dependency_refused` gap (`local_dependencies`), whose restore would install it."""
+    held = [gap["path"] for gap in gaps if gap["kind"] == "local_dependency_refused"]
+    return {folder for folder in folders if any(_inside(path, folder) for path in held)}
+
+
+def python_restores(files, read) -> dict:
+    """`{restores, gaps}`: per Python manager the folders its restore runs in (`restores`), less those `refused`
+    for a local dependency outside the copy, with their `local_dependency_refused` gaps."""
+    gaps = local_dependencies(files, read, "python")
+    plan = {manager: folders for manager, folders in restores(files).items() if RESTORES[manager].get("family") == "python"}
+    blocked = refused({f for folders in plan.values() for f in folders}, gaps)
+    plan = {manager: kept for manager, folders in plan.items() for kept in [[f for f in folders if f not in blocked]]
+            if kept}
+    return {"restores": plan, "gaps": gaps}
 
 
 def without(names: list[str]) -> str:
