@@ -90,8 +90,9 @@ image = (
     .add_local_dir(ROOT / "benchmarks/project-model/fixtures" / PROOF, f"{ENGINE_FOLDER}/fixtures/{PROOF}")
 )
 app = modal.App("daodan-system-map", image=image)
-# The account the agent runs bill: its OAuth token (`claude setup-token`) as CLAUDE_CODE_OAUTH_TOKEN.
-CLAUDE_SECRET = "claude-code-alt"
+# The account the agent runs bill: its OAuth token (`claude setup-token`) as CLAUDE_CODE_OAUTH_TOKEN. `claude-code-alt`
+# has its weekly limit spent until 2 December 2026; `claude-code`, the first account, answers again (27 November).
+CLAUDE_SECRET = "claude-code"
 GATEWAY_SECRET = "daodan-gateway"
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
