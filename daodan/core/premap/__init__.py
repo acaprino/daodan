@@ -504,8 +504,11 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None, tools=
               "binding": {"manifest": str(Path(manifest).resolve()), "inventory_digest": digest,
                           "root": store["root"], "unread": store.get("unread") or {}, "excluded": listed},
               "inputs_digest": _inputs(digest, store["root"], sources), "sources": statuses, **join(parts)}
-    if any(p["ecosystem"] == "pypi" for p in record.get("packages", ())):
-        record["packages"] = module_graph.external_packages(context.graph, record["packages"])
+    if record.get("packages"):  # the units' own packages leave; PyPI's also by the module graph
+        python = any(p["ecosystem"] == "pypi" for p in record["packages"])
+        record["packages"] = module_graph.external_packages(context.graph if python else {"modules": [], "edges": []},
+                                                            record["packages"], record.get("units", ()))
+
     gaps.extend(record.pop("superseded", []))
     record.setdefault("units", [])
     for unit in record["units"]:
