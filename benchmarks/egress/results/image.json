@@ -1,0 +1,44 @@
+[
+ {
+  "image": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+  "is_preparation_image": false,
+  "has": "ls: cannot access '/etc/ssl/certs/ca-certificates.crt': No such file or directory",
+  "apt": {
+   "ok": true,
+   "exit": 0,
+   "log": "rl5.40:amd64 (5.40.1-6+deb13u1) ...\nSetting up perl (5.40.1-6+deb13u1) ...\nSetting up libp11-kit0:amd64 (0.25.5-3) ...\nSetting up libgssapi-krb5-2:amd64 (1.21.3-5+deb13u2) ...\nSetting up libgnutls30t64:amd64 (3.8.9-3+deb13u4) ...\nSetting up libpsl5t64:amd64 (0.21.2-1.1+b1) ...\nSetting up liberror-perl (0.17030-1) ...\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b5) ...\nSetting up libngtcp2-crypto-gnutls8:amd64 (1.11.0-1+deb13u1) ...\nSetting up libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u7) ...\nSetting up git (1:2.47.3-0+deb13u1) ...\nProcessing triggers for libc-bin (2.41-12+deb13u4) ..."
+  },
+  "xz": {
+   "ok": false,
+   "exit": 127,
+   "log": "tar (child): xz: Cannot exec: No such file or directory\ntar (child): Error is not recoverable: exiting now\ntar: Child returned status 2\ntar: Error is not recoverable: exiting now\ntar (child): xz: Cannot exec: No such file or directory\ntar (child): Error is not recoverable: exiting now\ntar: Child returned status 2\ntar: Error is not recoverable: exiting now\nDAODAN-MISSING rust@1.99.1\nsh: 3: rustc: not found"
+  },
+  "go": {
+   "ok": false,
+   "exit": 1,
+   "log": "go: golang.org/x/text@v0.21.0: Get \"https://proxy.golang.org/golang.org/x/text/@v/v0.21.0.info\": tls: failed to verify certificate: x509: certificate signed by unknown authority"
+  },
+  "refused": []
+ },
+ {
+  "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+  "is_preparation_image": true,
+  "has": "/etc/ssl/certs/ca-certificates.crt\n/usr/bin/xz",
+  "apt": {
+   "ok": true,
+   "exit": 0,
+   "log": "git version 2.43.0"
+  },
+  "xz": {
+   "ok": true,
+   "exit": 0,
+   "log": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\ncargo 1.99.1 (5f94df478 2026-08-27)"
+  },
+  "go": {
+   "ok": true,
+   "exit": 0,
+   "log": "go version go1.27.3 linux/amd64"
+  },
+  "refused": []
+ }
+]

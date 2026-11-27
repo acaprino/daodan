@@ -59,6 +59,19 @@ Provenienza di Smokescreen, verificata il 27 novembre 2026 da una funzione Modal
 | (g) `measure-proxy` | avvio 0,42 s, 9,4 MiB, immagine 69,9 MB | avvio 0,25 s, 5,5 MiB, immagine 26,8 MB |
 
 - La riga d è rossa per entrambi per la stessa causa, che non è del proxy: il tunnel verso `deb.debian.org:443` si apre, poi apt dà `certificate verify failed` perché `debian:trixie-slim` (`preparation.IMAGE`) non ha `ca-certificates`, e la riga di `NEEDS["git"]` passa le fonti a `https://`. È un difetto di `preparation.NEEDS["git"]`.
+- Corretto (27 novembre 2026): `NEEDS["git"]` lascia le fonti apt in `http://` come l'immagine le nomina (apt verifica i `Release` firmati e l'hash di ogni pacchetto; il proxy apre solo `GET`/`HEAD` di `dists/` e `pool/`, e `http://deb.debian.org` si aggiunge agli archivi canonici accanto a quelli di Ubuntu), e `preparation.IMAGE` diventa `buildpack-deps:noble` per digest, l'immagine che le altre lingue usano già, con `ca-certificates` e `xz`. `--proxy script` su questa base: `ap-C1AmQnb8Yt6p01fUuyWkc3` (`results/proxy-script.json`), 44 righe su 44; la riga d dà `git version 2.43.0`.
+
+### Immagine di base: cosa serve alle ricette (`modal_image.py`)
+
+`modal run benchmarks/egress/modal_image.py`: gli stessi tre casi sull'immagine di prima e su `preparation.IMAGE`, in un container Modal di quell'immagine dietro `PROXY_SCRIPT` aperto a `container.REGISTRIES`, con l'ambiente della preparazione. 27 novembre 2026, `ap-DrW6s3JiZybpB7lZ8Xf6Lr`, `results/image.json`; il proxy non rifiuta nulla.
+
+| Caso | `debian:trixie-slim` (prima) | `buildpack-deps:noble` (`preparation.IMAGE`) |
+|---|---|---|
+| `apt`: `NEEDS["git"]`, poi `git --version` | riesce (fonti `http://`) | riesce: `git version 2.43.0` |
+| `xz`: `NEEDS["rust"]` (`.tar.xz`), poi `rustc`, `cargo` | rotta: `tar` non trova `xz` | riesce: `rustc 1.99.1`, `cargo 1.99.1` |
+| `go`: `NEEDS["go"]`, poi `go mod download golang.org/x/text@v0.21.0` | rotta: `x509: certificate signed by unknown authority` (niente `ca-certificates.crt`) | riesce: `go1.27.3` |
+
+- L'immagine nuova non apre host nuovi ed è fissata per digest; installare `ca-certificates` e `xz-utils` in ogni preparazione sulla Debian slim chiederebbe l'archivio a ogni corsa, con versioni che seguono l'archivio.
 - Approvazione (fuori lista, dopo il sì, blacklist) e segni: verdi per entrambi; per Smokescreen i rifiuti sono le decisioni con `allow: false` del suo log JSON, che scrive su stderr.
 - Le richieste `GET` della sonda portano l'intestazione `Host`: senza, il server HTTP di Smokescreen risponde `400` prima della politica (prima corsa `ap-ws5xOLBrk5nOuiWMsDccg0`).
 

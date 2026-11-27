@@ -1444,6 +1444,29 @@ def test_on_modal_apt_updates_and_downloads_from_debian_s_plain_http_archive_thr
     assert refused == []
 
 
+@unittest.skipUnless(os.environ.get("MODAL_TASK_ID"), "a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_the_git_recipe_installs_from_debian_s_archive_through_a_proxy_open_only_to_its_hosts():
+    """`preparation.NEEDS["git"]`'s own line, with the proxy open only to the recipe's hosts (canonical ones): apt
+    reaches the archive by plain HTTP and asks nothing else, no https tunnel the image could not verify."""
+    import preparation
+    hosts = preparation.NEEDS["git"]["hosts"]
+    assert all(egress.decide(host, "/work/p", egress.load()) == "allow" for host in hosts)
+    server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", *hosts],
+                              stdout=subprocess.PIPE, text=True)
+    try:
+        port = int(server.stdout.readline().split()[1])
+        done = subprocess.run(["sh", "-c", " && ".join(preparation.NEEDS["git"]["setup"]) + " && git --version"],
+                              env={**os.environ, **container.proxy_environment(f"http://127.0.0.1:{port}")},
+                              capture_output=True, text=True, timeout=600)
+        print(done.stdout[-2000:], done.stderr[-2000:], flush=True)
+        assert done.returncode == 0 and "git version" in done.stdout
+    finally:
+        server.kill()
+        refused = [line for line in server.stdout.read().splitlines() if "refused" in line]
+        server.wait()
+    assert refused == []
+
+
 SMOKE = os.environ.get("DAODAN_CONTAINER_SMOKE") == "1"
 ALPINE = "alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf"
 # nft in a root of its own inside Daodan's distribution, fetched and checked by apk; it reads the namespace it runs in.

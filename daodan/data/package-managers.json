@@ -17,7 +17,8 @@
   "CPAN": ["www.cpan.org"],
   "Deno": ["jsr.io"],
   "Nix": ["cache.nixos.org", "channels.nixos.org", "releases.nixos.org"],
-  "dpkg": ["http://archive.ubuntu.com", "http://security.ubuntu.com", "http://ports.ubuntu.com"]
+  "dpkg": ["http://archive.ubuntu.com", "http://security.ubuntu.com", "http://ports.ubuntu.com",
+           "http://deb.debian.org"]
  },
  "toolchains": {
   "Node.js": ["nodejs.org"],

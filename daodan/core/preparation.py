@@ -25,9 +25,12 @@ from tree_scope import Perimeter, workspace_glob
 
 STATE = "/daodan/state"
 IN, T = f"{STATE}/in", f"{STATE}/tools"
-# The base every container run starts from (Debian's slim image, glibc 2.41): what a language needs beside it,
-# its toolchain and its tools, comes into the run as an input.
-IMAGE = "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2"
+# The base every container run starts from: what a language needs beside it, its toolchain and its tools, comes
+# into the run as an input. The image the other languages already run on (`premap.container_runner.IMAGE`, Ubuntu
+# 24.04, glibc 2.39), pinned by digest: it has what the recipes and restores need, the CA certificates https clients
+# read (`go mod download`, cargo, git, mise) and `xz` (`tar -xJf`). Debian's slim image, the base before, has
+# neither (`benchmarks/egress/README.md`, `modal_image.py`); installing them in each run would ask the archive anew.
+IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"
 # Temurin's JDK 17 (17.0.21+9), the release asset and the sha256 Adoptium publishes for it: the JDK of scip-java
 # and of the pre-map's JVM build tools.
 TEMURIN = ("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/"
@@ -87,11 +90,15 @@ NEEDS = {
                   f" && ln -sf {T}/vcpkg/vcpkg {T}/bin/vcpkg"],
         "registries": True, "hosts": GITHUB, "version": "2026-10-29"},  # ports: sources where portfiles say
     "uv": {"files": [UV], "setup": [UNPACK_UV], "version": "0.11.28"},
-    "git": {"files": [], "setup": [  # the Debian image's own, from its archive over https: VCS requirements need it
-        "sed -i 's|http://|https://|' /etc/apt/sources.list.d/debian.sources && export DEBIAN_FRONTEND=noninteractive"
-        ' && apt-get -qq -o Acquire::https::Proxy="$HTTPS_PROXY" -o Acquire::Languages=none update && apt-get -qq'
-        ' -o Acquire::https::Proxy="$HTTPS_PROXY" install -y --no-install-recommends git'],
-        "hosts": ("deb.debian.org",), "version": "debian"},
+    # The image's own git (VCS requirements need it; Python's Debian image has none), from its archive by the plain
+    # HTTP its sources name: apt checks the signed Release files and each package's hash, and the proxy opens only a
+    # GET or HEAD of `dists/` and `pool/` of a canonical archive (`http://deb.debian.org`, the Ubuntu ones). Not
+    # https: a slim image without ca-certificates cannot verify it, and getting them would need this HTTP first.
+    "git": {"files": [], "setup": [
+        'export DEBIAN_FRONTEND=noninteractive && apt-get -qq -o Acquire::http::Proxy="$HTTP_PROXY"'
+        ' -o Acquire::Languages=none update && apt-get -qq -o Acquire::http::Proxy="$HTTP_PROXY"'
+        ' install -y --no-install-recommends git'],
+        "hosts": ("http://deb.debian.org",), "version": "debian"},
     "conan": {"files": [UV], "setup": [  # the image's Python has no pip: uv makes the environment
         f"{UNPACK_UV} && uv venv -q --python python3 {T}/conan && uv pip install -q --python {T}/conan conan==2.34.0"
         f" && ln -sf {T}/conan/bin/conan {T}/bin/conan"],

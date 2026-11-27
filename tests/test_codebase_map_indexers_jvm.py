@@ -950,7 +950,7 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         self.assertEqual(len(self.asked), 3)
 
     def test_the_image_is_the_common_base_and_the_jdk_comes_as_an_input(self):
-        self.assertRegex(jvm.IMAGE, r"^debian:trixie-slim@sha256:[0-9a-f]{64}$")
+        self.assertRegex(jvm.IMAGE, r"^buildpack-deps:noble@sha256:[0-9a-f]{64}$")
         self.assertEqual(jvm.IMAGE, preparation.IMAGE)
         self.play_success()
         self.index()
