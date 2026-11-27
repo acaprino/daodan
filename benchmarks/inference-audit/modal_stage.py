@@ -408,7 +408,12 @@ def change_case(name: str) -> dict:
         return _save(name, result, started, "incremental")
     result["stores"] = {"equal": changed_rows == whole_rows, "changed": _counts(changed),
                         "differences": {table: {"only_changed": len(set(changed_rows[table]) - set(whole_rows[table])),
-                                                "only_whole": len(set(whole_rows[table]) - set(changed_rows[table]))}
+                                                "only_whole": len(set(whole_rows[table]) - set(changed_rows[table])),
+                                                # the first rows of each side, to read the cause
+                                                "examples": {"only_changed": sorted(set(changed_rows[table])
+                                                                                    - set(whole_rows[table]))[:20],
+                                                             "only_whole": sorted(set(whole_rows[table])
+                                                                                  - set(changed_rows[table]))[:20]}}
                                         for table in changed_rows}}
     return _save(name, result, started, "incremental")
 
