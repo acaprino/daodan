@@ -46,6 +46,7 @@ SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
+LISTED = "list_files"  # the source of the files the snapshot's header leaves out (`file_inventory.excluded`)
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, npm_start, jvm_files, project_files,
            gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
            gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, angular, astro)
@@ -378,7 +379,8 @@ def binding_matches(manifest: Path, binding: dict) -> bool:
         return True
     with open_snapshot(manifest) as store:
         return inventory_digest(store) == binding.get("inventory_digest") and store["root"] == binding["root"] \
-            and (store.get("unread") or {}) == binding.get("unread")
+            and (store.get("unread") or {}) == binding.get("unread") \
+            and (store.get("excluded") or []) == binding.get("excluded")
 
 
 def _inputs(digest, root, sources) -> str:
@@ -480,10 +482,15 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
         if part:
             parts.append(part)
         gaps.extend(found)
+    listed = store.get("excluded") or []
+    if listed:  # the files the snapshot leaves out are the pre-map's too, joined with the sources' (submodules)
+        parts.append({"source": LISTED, "rank": "reader", "facts": {"excluded": listed}})
+    if store.get("excluded_unknown"):
+        gaps.append({"kind": "attributes_unread", "path": ".", "detail": store["excluded_unknown"], "source": LISTED})
     digest = inventory_digest(store)
     record = {"schema": SCHEMA,
               "binding": {"manifest": str(Path(manifest).resolve()), "inventory_digest": digest,
-                          "root": store["root"], "unread": store.get("unread") or {}},
+                          "root": store["root"], "unread": store.get("unread") or {}, "excluded": listed},
               "inputs_digest": _inputs(digest, store["root"], sources), "sources": statuses, **join(parts)}
     if any(p["ecosystem"] == "pypi" for p in record.get("packages", ())):
         record["packages"] = module_graph.external_packages(context.graph, record["packages"])

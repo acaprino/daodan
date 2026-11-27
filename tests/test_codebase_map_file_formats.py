@@ -24,13 +24,19 @@ Zig: {type: programming, extensions: [".zig"]}
 """
 
 
+PATHS = {"vendor": "- (^|/)vendor/\n- ^deps/\n", "documentation": "- ^[Dd]ocs?/\n"}
+
+
 def _gem(folder: Path) -> Path:
     """A gem as RubyGems packs one: a tar holding `data.tar.gz`, which holds the files."""
-    data, body = io.BytesIO(), LANGUAGES.encode()
+    data = io.BytesIO()
     with tarfile.open(fileobj=data, mode="w:gz") as inner:
-        member = tarfile.TarInfo(format_catalog.MEMBER)
-        member.size = len(body)
-        inner.addfile(member, io.BytesIO(body))
+        for name, text in ((format_catalog.MEMBER, LANGUAGES),
+                           *((format_catalog.PATHS[table], text) for table, text in PATHS.items())):
+            body = text.encode()
+            member = tarfile.TarInfo(name)
+            member.size = len(body)
+            inner.addfile(member, io.BytesIO(body))
     gem = folder / "linguist.gem"
     with tarfile.open(gem, "w") as outer:
         member = tarfile.TarInfo("data.tar.gz")
@@ -46,9 +52,10 @@ def test_register_and_catalogue_hold():
 def test_catalogue_is_linguists_names_for_the_accepted_formats_only(tmp_path, monkeypatch):
     gem = _gem(tmp_path)
     with pytest.raises(ValueError, match="sha256"):
-        format_catalog.linguist_languages(gem)  # not the pinned gem
+        format_catalog.linguist_data(gem)  # not the pinned gem
     monkeypatch.setattr(format_catalog, "SHA256", hashlib.sha256(gem.read_bytes()).hexdigest())
-    written = format_catalog.catalog(format_catalog.linguist_languages(gem))
+    written = format_catalog.catalog(*format_catalog.linguist_data(gem))
+    assert written["vendor"] == ["(^|/)vendor/", "^deps/"] and written["documentation"] == ["^[Dd]ocs?/"]
     assert written["extensions"][".h"] == ["C", "C++"]  # `.H` is compared in lower case, as the snapshot reads it
     assert written["extensions"][".py"] == []  # accepted, and unknown to this Linguist
     assert ".zig" not in written["extensions"] and ".bzl" not in written["extensions"]  # not accepted: not listed
@@ -68,6 +75,62 @@ def test_check_names_a_name_without_a_type_and_a_key_in_both_tables():
     problems = format_catalog.check(catalogue)
     assert "unread_extensions: .rb names Nothing, which has no type in `types`" in problems
     assert "unread_extensions: .py is also in extensions" in problems
+
+
+def test_check_names_an_expression_of_linguist_that_re_does_not_compile():
+    catalogue = json.loads(format_catalog.PATH.read_text(encoding="utf-8"))
+    catalogue["vendor"].append("(?<name>a)\\h")
+    catalogue["documentation"] = []
+    problems = format_catalog.check(catalogue)
+    assert any(line.startswith("vendor: '(?<name>a)\\\\h' does not compile with `re`") for line in problems)
+    assert "documentation: no expressions; run `format_catalog.py build`" in problems
+
+
+def _checkout(folder: Path, files: dict[str, str]) -> None:
+    for rel, text in files.items():
+        (folder / rel).parent.mkdir(parents=True, exist_ok=True)
+        (folder / rel).write_text(text, encoding="utf-8", newline="\n")
+
+
+def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_nothing_of_the_checkout(tmp_path):
+    """The rule above all others (`AGENTS.md`): reading `.gitattributes` runs nothing of the project. The checkout's
+    Git configuration names its own programs (an fsmonitor hook, a filter on every file, a hooks folder), each of which,
+    run, leaves a mark: `git check-attr` reads the attributes, and no mark is left."""
+    import subprocess
+    import file_inventory
+    project, marks = tmp_path / "proj", tmp_path / "marks"
+    marks.mkdir()
+    mark = f"#!/bin/sh\ntouch {marks}/\"$(basename \"$0\")\"\ncat\n"
+    _checkout(project, {"app.py": "x = 1\n", "README.md": "# r\n", "third_party/lib.js": "var a;\n",
+                        "gen/api_pb2.py": "y = 2\n", "docs/guide.md": "kept\n", "tools/mark.sh": mark,
+                        **{f"tools/hooks/{hook}": mark for hook in ("pre-commit", "post-checkout", "post-index-change",
+                                                                    "reference-transaction")},
+                        ".gitattributes": "* filter=evil\ngen/** linguist-generated\ndocs/** -linguist-documentation\n"})
+    for script in (project / "tools").rglob("*"):
+        script.chmod(0o755)
+    subprocess.run(["git", "init", "-q", str(project)], check=True)
+    for key, value in (("core.fsmonitor", str(project / "tools/mark.sh")), ("core.hooksPath", str(project / "tools/hooks")),
+                       ("filter.evil.clean", str(project / "tools/mark.sh")),
+                       ("filter.evil.smudge", str(project / "tools/mark.sh")),
+                       ("filter.evil.process", str(project / "tools/mark.sh")), ("filter.evil.required", "true")):
+        subprocess.run(["git", "-C", str(project), "config", key, value], check=True)
+    header = file_inventory.write(project, tmp_path / "inventory.sqlite")
+    assert {(entry["path"], entry["why"]) for entry in header["excluded"]} == {
+        (".gitattributes", "vendored"), ("third_party/", "vendored"), ("README.md", "documentation"),
+        ("gen/", "generated")}  # vendor/ is a dependency folder: the walk never enters it
+    assert "excluded_unknown" not in header  # docs/ is unset by the attributes, gen/ set: Git answered
+    assert list(marks.iterdir()) == []
+
+
+def test_without_a_work_tree_the_attributes_are_not_read_and_the_header_says_so(tmp_path):
+    import file_inventory
+    import source_files
+    _checkout(tmp_path / "proj", {"gen/api_pb2.py": "y = 2\n", "docs/a.md": "d\n",
+                                  ".gitattributes": "gen/** linguist-generated\n"})
+    header = file_inventory.write(tmp_path / "proj", tmp_path / "inventory.sqlite")
+    assert {(entry["path"], entry["why"]) for entry in header["excluded"]} == {
+        (".gitattributes", "vendored"), ("docs/", "documentation")}
+    assert header["excluded_unknown"] == source_files.NO_ATTRIBUTES
 
 
 def test_check_names_a_language_linguist_does_not_give_the_extension():

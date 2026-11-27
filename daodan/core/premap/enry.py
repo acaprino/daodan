@@ -15,6 +15,7 @@ import collections
 import json
 import posixpath
 
+import file_inventory
 import source_files
 
 NAME, VERSION, RANK = "go-enry", "v2.9.6", "scanner"
@@ -52,23 +53,7 @@ def read(context, commands, results):
                 other.add(row["language"])
             if row.get("type"):
                 types[row["language"]] = row["type"]
-    # A folder whose every file has one reason is one entry, `folder/`; the files of a mixed folder stay apart.
-    under: dict[str, set] = collections.defaultdict(set)
-    for path, why in reasons.items():
-        parts = path.split("/")
-        for depth in range(1, len(parts)):
-            under["/".join(parts[:depth])].add(why)
-    excluded = {}
-    for path, why in sorted(reasons.items()):
-        if why is None:
-            continue
-        parts, entry = path.split("/"), path
-        for depth in range(1, len(parts)):
-            if under["/".join(parts[:depth])] == {why}:
-                entry = "/".join(parts[:depth]) + "/"
-                break
-        excluded[entry] = why
     return {"facts": {"languages": [{"language": name, "files": n, **({"type": types[name]} if name in types else {}),
                                      **({"build": True} if name not in other else {})}
                                     for name, n in sorted(counts.items())],
-                      "excluded": [{"path": path, "why": why} for path, why in excluded.items()]}}
+                      "excluded": file_inventory.grouped(reasons)}}

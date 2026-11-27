@@ -2,22 +2,85 @@
 
 One row per file, `{size, mtime, raw_hash, language}`, in walk order, in a SQLite store with no file entries.
 `snapshot.write_reading` reads the files it lists, in this order and language. The header counts, by Linguist's name
-and type, the files of the perimeter no reader reads (`unread`), from their names alone.
+and type, the files of the perimeter no reader reads (`unread`), from their names alone, and names the files of the
+perimeter that are not the project's own code (`excluded`, `{path, why}`): vendored or documentation by Linguist's
+expressions on the path (`vendor`, `documentation` of `linguist-catalog.json`), or as `.gitattributes` says
+(`linguist-vendored`, `linguist-generated`, `linguist-documentation`, read by `git check-attr`). A generated file is
+known only from `.gitattributes`: Linguist's `generated.rb` is code, not data. Where Git cannot read the attributes
+the project declares, `excluded_unknown` says why.
 """
 from __future__ import annotations
 
+import collections
+import functools
 import hashlib
+import json
 import os
+import re
 import tempfile
 from pathlib import Path
 
 from languages import detect_language
 from languages.detect import linguist_name, linguist_type
 from snapshot_store import SnapshotWriter, _plain
-from source_files import git_info, is_inventory_path, iter_walked, MAX_FILE_BYTES, relative_to_root, repo_root, scope_record
+import format_catalog
+from source_files import (git_attributes, git_info, is_inventory_path, iter_walked, MAX_FILE_BYTES, relative_to_root,
+                          repo_root, scope_record)
 from tree_scope import Perimeter
 
 SCHEMA = 1  # the only header schema `SnapshotWriter.finish` accepts
+WHY = ("vendored", "generated", "documentation")  # the first that holds is the file's reason
+ATTRIBUTES = {"vendored": "linguist-vendored", "generated": "linguist-generated",
+              "documentation": "linguist-documentation"}
+EXPRESSIONS = {"vendored": "vendor", "documentation": "documentation"}  # the catalogue's table of each reason
+
+
+@functools.cache
+def _expressions() -> dict[str, re.Pattern]:
+    """Linguist's expressions of each reason, joined as Linguist joins them (`Regexp.union`). A path is text with no
+    grammar, so an expression is allowed on it (`AGENTS.md`); `format_catalog.check` proves each compiles with `re`."""
+    catalogue = json.loads(format_catalog.PATH.read_text(encoding="utf-8"))
+    return {why: re.compile("|".join(catalogue[table])) for why, table in EXPRESSIONS.items()}
+
+
+def _holds(why: str, rel: str, value: str | None) -> bool:
+    """Whether `rel` is `why`: as `.gitattributes` says when it sets or unsets the attribute, else by Linguist's
+    expressions (a generated file has none)."""
+    if value in ("set", "true"):
+        return True
+    if value in ("unset", "false"):
+        return False
+    return why in EXPRESSIONS and _expressions()[why].search(rel) is not None
+
+
+def grouped(reasons: dict[str, str | None]) -> list[dict]:
+    """`[{path, why}]` of the files with a reason: a folder whose every file has one reason is one entry, `folder/`;
+    the files of a mixed folder stay apart."""
+    under: dict[str, set] = collections.defaultdict(set)
+    for path, why in reasons.items():
+        parts = path.split("/")
+        for depth in range(1, len(parts)):
+            under["/".join(parts[:depth])].add(why)
+    excluded = {}
+    for path, why in sorted(reasons.items()):
+        if why is None:
+            continue
+        parts, entry = path.split("/"), path
+        for depth in range(1, len(parts)):
+            if under["/".join(parts[:depth])] == {why}:
+                entry = "/".join(parts[:depth]) + "/"
+                break
+        excluded[entry] = why
+    return [{"path": path, "why": why} for path, why in excluded.items()]
+
+
+def excluded(root: Path, paths: list[str]) -> tuple[list[dict], str | None]:
+    """The files of `paths` (relative to `root`) that are not the project's own code, grouped by folder, and why the
+    attributes the project declares were not read, if they were not."""
+    said, unknown = git_attributes(root, paths, ATTRIBUTES.values())
+    reasons = {rel: next((why for why in WHY if _holds(why, rel, said.get(rel, {}).get(ATTRIBUTES[why]))), None)
+               for rel in paths}
+    return grouped(reasons), unknown
 
 
 def _text(data: bytes) -> str:
@@ -89,7 +152,9 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
         with SnapshotWriter(temporary, "sqlite") as writer:
             count = 0
             counts: dict[str, list] = {}
+            walked: list[str] = []
             for path in iter_walked(target, perimeter):
+                walked.append(relative_to_root(path, root))
                 if not is_inventory_path(path):
                     _count(counts, path)  # nothing of it is read
                     continue
@@ -111,9 +176,11 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
                 if language is None:
                     _count(counts, path)
                 del data
+            left_out, unknown = excluded(root, walked)
             header = {"schema": SCHEMA, "target": relative_to_root(target, root) or ".", "root": root.as_posix(),
                       "scope": scope_record(perimeter, root), "git": git_info(root), "metrics": metrics,
-                      "unread": _unread(counts), "reading": "not-started"}
+                      "unread": _unread(counts), "excluded": left_out,
+                      **({"excluded_unknown": unknown} if unknown else {}), "reading": "not-started"}
             writer.finish(header)
         os.replace(temporary, out)
         return header

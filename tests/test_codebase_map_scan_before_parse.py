@@ -171,7 +171,8 @@ def test_a_file_the_pre_map_excludes_is_read_like_any_other_and_the_plan_counts_
     result = pipeline.run(manifest, listeners=[seen.append], start="scan", stop="parse", fast_scan=True)
     assert "failed" not in result["parse"], result
     record = json.loads(premap.path(manifest).read_text(encoding="utf-8"))
-    assert [(entry["path"], entry["why"]) for entry in record["excluded"]] == [("lib/", "submodule")]
+    assert [(entry["path"], entry["why"]) for entry in record["excluded"]] == [("lib/", "submodule"),
+                                                                              (".gitmodules", "vendored")]
     with open_snapshot(manifest) as store:
         assert "f" in store.get_file("lib/x.py")["symbols"] and "g" in store.get_file("app.py")["symbols"]
     [said] = [event for event in seen if event["kind"] == "log" and event["message"] == "the plan"]

@@ -896,7 +896,7 @@ def test_a_uv_workspace_is_one_python_run_at_its_root(tmp_path):
 
 def test_an_absent_submodule_is_excluded_and_a_gap(tmp_path):
     _, _, record = build(tmp_path, "submodule_absent")
-    [excluded] = record["excluded"]
+    [excluded] = [e for e in record["excluded"] if e["why"] == "submodule"]  # `.gitmodules` is Linguist's vendored
     assert excluded["path"] == "vendor/logfmt/" and excluded["why"] == "submodule"
     [gap] = gaps(record, "submodule_absent")
     assert gap["path"] == "vendor/logfmt" and gap["source"].startswith("gitmodules@")
