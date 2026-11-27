@@ -565,19 +565,84 @@ class MapService:
                                       verify=False)
             return {**retrieval.public_result(result), "run_id": run_id, "index_state": "fresh"}
 
-    def index(self, run_id, check=False, break_lock=False):
-        """Report or repair the run's lexical index beside its snapshot."""
+    def index(self, run_id, check=False, break_lock=False, targets=None):
+        """Report or repair the run's lexical index beside its snapshot.
+
+        `targets`, paths of the project inside the run's target, are indexed again at once unless `check`: a target
+        whose bytes differ from the snapshot is read again into it (the other files' parses reused), and the pass
+        restarts, each analyzer running again only where its inputs moved (`engine_pass._redone`). The answer holds,
+        per target, the state of its language's edges and, once fresh, its edges and its holes by class with their
+        cause."""
         if not isinstance(check, bool) or not isinstance(break_lock, bool):
             raise ValueError("check and break_lock must be booleans")
+        if targets is not None and (not isinstance(targets, list) or not 1 <= len(targets) <= MAX_LIMIT
+                                    or not all(isinstance(item, str) for item in targets)):
+            raise ValueError(f"targets must be a list of 1 to {MAX_LIMIT} project paths")
         with self._operation(write=not check):
-            run, state, manifest, _ = self._bound_run(run_id)
+            run, state, manifest, target = self._bound_run(run_id)
+            files = None if targets is None else self._target_files(manifest, target, targets)
+            if files and not check and self._changed(manifest, files):
+                resolve_edges.reset_pass(manifest.path)
+                snapshot.read_project(target, manifest.path, format=manifest.format, previous=manifest)
+                self._event(run, "snapshot_refreshed", message=f"{len(files)} targets")
             result = retrieval.ensure_index(manifest.path, check=check, break_lock=break_lock)
             if not check and result.get("action") in ("rebuilt", "refreshed"):
                 self._event(run, "index_refreshed", message=result["action"])
             engine = self._engine(state, manifest.path, repair=not check)
             if not check:
                 self._engine_event(run, engine)
-            return {**result, "engine": engine, "run_id": run_id}
+            answer = {**result, "engine": engine, "run_id": run_id}
+            if files is not None:
+                answer["targets"] = self._target_edges(manifest.path, files, engine)
+            return answer
+
+    def _target_files(self, manifest, target, targets):
+        """Each target, a path of the project inside the run's target, with its key in the snapshot."""
+        root = Path(manifest["root"]).resolve()
+        files = {}
+        for value in targets:
+            confinement.reject_link_chain(self.project_root / _relative(value))
+            path = (self.project_root / value).resolve()
+            if path != target and not path.is_relative_to(target) or not path.is_relative_to(root):
+                raise ValueError(f"target is not a path of the run's target: {value}")
+            files[value] = path.relative_to(root).as_posix()
+        return files
+
+    def _changed(self, manifest, files):
+        """Whether a target's bytes differ from the snapshot's: changed, added or removed."""
+        headers, root = file_headers(manifest), Path(manifest["root"])
+        for key in files.values():
+            path = root / key
+            known = headers.get(key)
+            if path.is_file() != (known is not None):
+                return True
+            if known is not None and hashlib.sha256(path.read_bytes()).hexdigest() != known.get("raw_hash"):
+                return True
+        return False
+
+    def _target_edges(self, manifest, files, engine):
+        """Per target: its language, the state of that language's edges and, when fresh, the store's edges at the
+        file and its holes by class, each with one cause."""
+        import sqlite3
+        languages = (engine.get("languages") or {})
+        with open_snapshot(manifest) as store:
+            known = dict(store.connection.execute("SELECT file, language FROM sem_coverage"))
+        rows, path = [], resolve_edges.default_edge_store(manifest)
+        for value, key in files.items():
+            language = known.get(key)
+            state = (languages.get(language) or {}).get("state", "missing") if language else "not-in-snapshot"
+            row = {"path": value, "file": key, "language": language, "state": state}
+            if state == "fresh" and path.is_file():
+                connection = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
+                try:
+                    row["edges"] = connection.execute("SELECT count(*) FROM edges WHERE file=?", (key,)).fetchone()[0]
+                    row["holes"] = [{"class": cls, "count": count, "reason": reason} for cls, count, reason in
+                                    connection.execute("SELECT class, count(*), min(reason) FROM holes WHERE file=? "
+                                                       "GROUP BY class ORDER BY class", (key,))]
+                finally:
+                    connection.close()
+            rows.append(row)
+        return rows
 
     def modules(self, run_id, query=None, refresh=False, brief=False, limit=10, proposals=None, replace_proposals=False):
         """Modules of the bound run: summary, the candidates for a name, the brief for a model, or proposals.

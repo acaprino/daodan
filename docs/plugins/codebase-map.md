@@ -178,7 +178,7 @@ In pratica: riscrivere lo snapshot sugli stessi file lascia fresche pre-mappa, s
 | `snapshot.py write` (`snapshot.cmd_write`) | `read_project` | `scan` intero, con i comandi nel container, e `stack`; niente con `--no-modules` | `ensure_edges`; niente con `--no-engine` |
 | `codebase_map_create_run` (`MapService.create_run`) | `read_project` | `scan` veloce (`fast_scan`) e `stack`. Con il formato JSON solo il grafo dei moduli | `ensure_edges`, salvo `engine=false` |
 | L'app (`App._prepare`) | Come `create_run`, che chiama; per un run che c'è già, `MapService.index` | Come `create_run` | Come `create_run` |
-| `codebase_map_index` (`MapService.index`) | Nessuno: ripara l'indice lessicale | Nessuna pipeline | `ensure_edges`, salvo `check` o `engine=false` |
+| `codebase_map_index` (`MapService.index`) | Nessuno: ripara l'indice lessicale; con `targets` cambiati, `read_project` sul run | Nessuna pipeline | `ensure_edges`, salvo `check` o `engine=false`; con `targets` rifà solo ciò che la modifica sposta (cache degli indici) |
 | Aggiornamento dell'hook (`snapshot._refresh_locked`) | `read_project`, che riusa lo snapshot di prima, salvo in una ricostruzione intera | `scan` veloce e `stack` | `ensure_edges`, salvo `engine=false` |
 | Processo staccato (`resolve_edges.py --pass`) | Nessuno: usa lo store che trova | — | Gli step fino a `union` |
 | Operazioni isolate (`store_consumers.temporary_snapshot`) | `read_project` | Nessuna pipeline | — |
