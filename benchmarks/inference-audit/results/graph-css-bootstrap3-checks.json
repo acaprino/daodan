@@ -2,36 +2,40 @@
  "case": "bootstrap3",
  "commit": "68b0d231a13201eb14acd3dc84e51543d16e5f7e",
  "code": {
-  "css.py": "49854bf56415",
-  "css_astro.js": "60aedc755928",
-  "css_astro.py": "83ae4f9723f2",
-  "css_engines.json": "2cf04c7179fb",
-  "css_expressions.js": "f576bae77c67",
-  "css_less.js": "7ea43d4fc4c2",
-  "css_less.py": "1f082b76eb1f",
-  "css_sass.js": "446f2ff01f26",
-  "css_sass.py": "45180a7e614c",
-  "css_stylus.js": "22c5cf93eff5",
-  "css_stylus.py": "bbe7cdfae4fe",
-  "css_svelte.js": "3814c915a7a8",
-  "css_svelte.py": "6c91a62cd587",
-  "css_tailwind.js": "4dca22ec9809",
-  "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "a8e11983317d",
-  "css_typescript.py": "6ff05448a8d6",
-  "css_vue.js": "4fbf1fcf22e4",
-  "css_vue.py": "93c02e4a9797"
+  "css.py": "68ff0d7e347c",
+  "css_astro.js": "8540fd418bcd",
+  "css_astro.py": "c8157d430209",
+  "css_csstree.js": "95745fb2320c",
+  "css_csstree.py": "d9ed24317d3d",
+  "css_engines/package-lock.json": "65b5d0432220",
+  "css_engines/package.json": "0c44f73dae98",
+  "css_expressions.js": "33f6bee6a535",
+  "css_less.js": "339b386c0042",
+  "css_less.py": "d74d9e3004ae",
+  "css_packages.js": "dc4a31328ff5",
+  "css_sass.js": "0237ed14d335",
+  "css_sass.py": "c2a5e278bdfc",
+  "css_stylus.js": "753915f10641",
+  "css_stylus.py": "a8d16d83fc4d",
+  "css_svelte.js": "8fc8b2a1f906",
+  "css_svelte.py": "10e35514b1c3",
+  "css_tailwind.js": "ca0e48f2964b",
+  "css_tailwind.py": "d7536cfbb251",
+  "css_typescript.js": "a7d6310ce90c",
+  "css_typescript.py": "a82b9c69c6d0",
+  "css_vue.js": "a6ef281e17e8",
+  "css_vue.py": "371de29e0479"
  },
  "files_given": 282,
- "npm_install_seconds": 239.4,
- "node_modules": "/root/.cache/daodan/npm/a0a3270c083f19e7/node_modules",
+ "npm_install_seconds": 9.4,
+ "node_modules": "/work/bootstrap3/src/node_modules",
  "report": {
-  "language": "css",
+  "language": "stylesheet",
   "indexer": {
-   "name": "codebase-map stylesheet.py + less + typescript + tailwindcss",
-   "version": "e62b3f368913 + 4.9.1 + 5.9.3 + None",
-   "seconds": 4.2,
-   "peak_mb": 388
+   "name": "codebase-map stylesheet.py + @eslint/css-tree + less + typescript + tailwindcss",
+   "version": "cdb9de69a3ed + 4.1.3 + 4.9.1 + 6.0.3 + None",
+   "seconds": 4.0,
+   "peak_mb": 402
   },
   "files": {
    "snapshot": 282,
@@ -92,9 +96,11 @@
    "interpolated-selector rule": 15,
    "no-font-face font-face": 22,
    "no-rule class": 118,
-   "no-rule id": 1353,
+   "no-rule id": 1351,
+   "remote-sheet id": 2,
    "template-tag class": 1,
    "template-tag-glued class": 1,
+   "unparsed declaration": 66,
    "unresolved-import import": 7,
    "unresolved-import script": 56,
    "url-scheme import": 2,
@@ -105,11 +111,11 @@
     "class": "no-rule",
     "kind": "id",
     "reason": "-",
-    "count": 1353,
+    "count": 1351,
     "examples": [
      "docs/_includes/ads.html:1 _carbonads_js",
-     "docs/_includes/customizer-variables.html:103 input-@font-family-base",
-     "docs/_includes/customizer-variables.html:1630 help-block-@thumbnail-padding"
+     "docs/_includes/customizer-variables.html:98 help-block-@font-family-monospace",
+     "docs/_includes/customizer-variables.html:1625 thumbnails"
     ]
    },
    {
@@ -121,6 +127,17 @@
      "docs/_includes/components/navbar.html:36 collapsed",
      "docs/_includes/js/scrollspy.html:10 collapsed",
      "docs/examples/tooltip-viewport/index.html:38 tooltip-right"
+    ]
+   },
+   {
+    "class": "unparsed",
+    "kind": "declaration",
+    "reason": "-",
+    "count": 66,
+    "examples": [
+     "docs/assets/css/docs.css:387 filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\"#563d7c\", endColorstr=\"#6F5499\", GradientType=0)",
+     "docs/dist/css/bootstrap-theme.min.css:5 filter: progid:DXImageTransform.Microsoft.gradient(enabled=false)",
+     "docs/dist/css/bootstrap-theme.min.css:5 filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff0ad4e', endColorstr='#ffec971f', GradientType=0)"
     ]
    },
    {
@@ -164,6 +181,16 @@
     "examples": [
      "docs/_includes/getting-started/download.html:34 {{ site.cdn.css }}",
      "docs/_includes/getting-started/template.html:18 {{ site.cdn.css }}"
+    ]
+   },
+   {
+    "class": "remote-sheet",
+    "kind": "id",
+    "reason": "a sheet not read may declare it: https://cdn.jsdelivr.net/docsearch.js/2/docsearch.min.css",
+    "count": 2,
+    "examples": [
+     "docs/_includes/header.html:25 bs-theme-stylesheet",
+     "docs/_includes/header.html:27 bs-theme-stylesheet"
     ]
    },
    {
@@ -299,11 +326,11 @@
   },
   "holes_by_class": {
    "no-rule id": {
-    "count": 1353,
+    "count": 1351,
     "examples": [
      "docs/_includes/ads.html:1 _carbonads_js",
-     "docs/_includes/customizer-variables.html:103 input-@font-family-base",
-     "docs/_includes/customizer-variables.html:1630 help-block-@thumbnail-padding"
+     "docs/_includes/customizer-variables.html:98 help-block-@font-family-monospace",
+     "docs/_includes/customizer-variables.html:1625 thumbnails"
     ]
    },
    "no-rule class": {
@@ -312,6 +339,14 @@
      "docs/_includes/components/navbar.html:36 collapsed",
      "docs/_includes/js/scrollspy.html:10 collapsed",
      "docs/examples/tooltip-viewport/index.html:38 tooltip-right"
+    ]
+   },
+   "unparsed declaration": {
+    "count": 66,
+    "examples": [
+     "docs/assets/css/docs.css:387 filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=\"#563d7c\", endColorstr=\"#6F5499\", GradientType=0)",
+     "docs/dist/css/bootstrap-theme.min.css:5 filter: progid:DXImageTransform.Microsoft.gradient(enabled=false)",
+     "docs/dist/css/bootstrap-theme.min.css:5 filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff0ad4e', endColorstr='#ffec971f', GradientType=0)"
     ]
    },
    "unresolved-import script": {
@@ -344,6 +379,13 @@
      "docs/_includes/getting-started/download.html:34 {{ site.cdn.css }}",
      "docs/_includes/getting-started/template.html:18 {{ site.cdn.css }}",
      "docs/_includes/header.html:19 {{ site.baseurl }}/dist/css/bootstrap.css"
+    ]
+   },
+   "remote-sheet id": {
+    "count": 2,
+    "examples": [
+     "docs/_includes/header.html:25 bs-theme-stylesheet",
+     "docs/_includes/header.html:27 bs-theme-stylesheet"
     ]
    },
    "url-scheme import": {
@@ -578,5 +620,5 @@
   }
  ],
  "components": {},
- "seconds": 249.9
+ "seconds": 19.3
 }

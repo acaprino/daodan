@@ -106,15 +106,18 @@ UNBOUND_CAUSES = {"any": "a member of a value of type any: only execution knows 
 T = preparation.T
 MANAGERS = ("npm", "pnpm", "yarn")  # the Node managers of `preparation.RESTORES`
 PEAK = "trap 'echo \"DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)\"' EXIT"
+# The indexer from npm without its install scripts, into `INDEXER`: its TypeScript is also the stylesheet graph's
+# (`css.tailwind_runner`).
+INSTALL = f'''{{ npm install -g --prefix {T}/npm --ignore-scripts --no-audit --no-fund --loglevel=error\
+ @sourcegraph/scip-typescript@{VERSION} ; }} >&2
+[ -e {T}/npm/bin/scip-typescript ] || {{ echo 'DAODAN-MISSING scip-typescript@{VERSION}' >&2; exit 70; }}'''
 # The preparation: Daodan's Node, the indexer (before a stated Node is first on the path), `{chains}`, `{restores}`,
 # the framework's `{generators}`, `{types}`, then the components' tools (`{frameworks}`).
 PREPARE = f'''set -u
 {PEAK}
 mkdir -p {T}/bin "$HOME"
 {{node}}
-{{{{ npm install -g --prefix {T}/npm --ignore-scripts --no-audit --no-fund --loglevel=error\
- @sourcegraph/scip-typescript@{VERSION} ; }}}} >&2
-[ -e {T}/npm/bin/scip-typescript ] || {{{{ echo 'DAODAN-MISSING scip-typescript@{VERSION}' >&2; exit 70; }}}}
+{{install}}
 {{chains}}
 cd {WORK} || exit 70
 {{restores}}
@@ -609,7 +612,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
                                               *components.include(parts)], tsconfig, aliases)
     generators = sorted({(folder, command) for _here, folder, _file, command in _extending(project_dir) if command})
     restore_lines, shared = node_preparation.options(restored, stated, (declared or {}).get("hosts", ()))
-    prepare = PREPARE.format(node="\n".join(preparation.setup(["node"])["lines"]), chains="\n".join(chains["lines"]),
+    prepare = PREPARE.format(node="\n".join(preparation.setup(["node"])["lines"]), install=INSTALL,
+                             chains="\n".join(chains["lines"]),
                              restores="\n".join(restore_lines), types=types,
                              generators="\n".join(generator(folder, command) for folder, command in generators),
                              frameworks="\n".join(components.install(parts)))

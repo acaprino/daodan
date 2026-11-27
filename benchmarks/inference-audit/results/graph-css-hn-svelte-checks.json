@@ -2,36 +2,40 @@
  "case": "hn-svelte",
  "commit": "0010bbea06781f11797c71a3497e7e0c1beff702",
  "code": {
-  "css.py": "49854bf56415",
-  "css_astro.js": "60aedc755928",
-  "css_astro.py": "83ae4f9723f2",
-  "css_engines.json": "2cf04c7179fb",
-  "css_expressions.js": "f576bae77c67",
-  "css_less.js": "7ea43d4fc4c2",
-  "css_less.py": "1f082b76eb1f",
-  "css_sass.js": "446f2ff01f26",
-  "css_sass.py": "45180a7e614c",
-  "css_stylus.js": "22c5cf93eff5",
-  "css_stylus.py": "bbe7cdfae4fe",
-  "css_svelte.js": "3814c915a7a8",
-  "css_svelte.py": "6c91a62cd587",
-  "css_tailwind.js": "4dca22ec9809",
-  "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "a8e11983317d",
-  "css_typescript.py": "6ff05448a8d6",
-  "css_vue.js": "4fbf1fcf22e4",
-  "css_vue.py": "93c02e4a9797"
+  "css.py": "68ff0d7e347c",
+  "css_astro.js": "8540fd418bcd",
+  "css_astro.py": "c8157d430209",
+  "css_csstree.js": "95745fb2320c",
+  "css_csstree.py": "d9ed24317d3d",
+  "css_engines/package-lock.json": "65b5d0432220",
+  "css_engines/package.json": "0c44f73dae98",
+  "css_expressions.js": "33f6bee6a535",
+  "css_less.js": "339b386c0042",
+  "css_less.py": "d74d9e3004ae",
+  "css_packages.js": "dc4a31328ff5",
+  "css_sass.js": "0237ed14d335",
+  "css_sass.py": "c2a5e278bdfc",
+  "css_stylus.js": "753915f10641",
+  "css_stylus.py": "a8d16d83fc4d",
+  "css_svelte.js": "8fc8b2a1f906",
+  "css_svelte.py": "10e35514b1c3",
+  "css_tailwind.js": "ca0e48f2964b",
+  "css_tailwind.py": "d7536cfbb251",
+  "css_typescript.js": "a7d6310ce90c",
+  "css_typescript.py": "a82b9c69c6d0",
+  "css_vue.js": "a6ef281e17e8",
+  "css_vue.py": "371de29e0479"
  },
  "files_given": 20,
- "npm_install_seconds": 61.7,
- "node_modules": "/root/.cache/daodan/npm/802e5e0ab784d2b7/node_modules",
+ "npm_install_seconds": 5.7,
+ "node_modules": "/work/hn-svelte/src/node_modules",
  "report": {
-  "language": "css",
+  "language": "stylesheet",
   "indexer": {
-   "name": "codebase-map stylesheet.py + svelte + typescript + tailwindcss",
-   "version": "e62b3f368913 + 5.57.3 + 5.9.3 + None",
-   "seconds": 1.9,
-   "peak_mb": 304
+   "name": "codebase-map stylesheet.py + @eslint/css-tree + svelte + @eslint/css-tree + typescript + tailwindcss",
+   "version": "cdb9de69a3ed + 4.1.3 + 5.57.3 + 4.1.3 + 6.0.3 + None",
+   "seconds": 2.0,
+   "peak_mb": 256
   },
   "files": {
    "snapshot": 20,
@@ -63,7 +67,7 @@
   },
   "edges_removed": {},
   "holes_by_class": {
-   "no-font-face font-face": 12,
+   "no-font-face font-face": 10,
    "no-rule class": 3,
    "no-rule id": 1,
    "unresolved-import import": 1
@@ -73,10 +77,10 @@
     "class": "no-font-face",
     "kind": "font-face",
     "reason": "-",
-    "count": 12,
+    "count": 10,
     "examples": [
      "static/global.css:15 Roboto",
-     "static/global.css:15 Oxygen",
+     "static/global.css:15 Ubuntu",
      "static/global.css:15 Droid Sans"
     ]
    },
@@ -130,10 +134,10 @@
   },
   "holes_by_class": {
    "no-font-face font-face": {
-    "count": 12,
+    "count": 10,
     "examples": [
      "static/global.css:15 Roboto",
-     "static/global.css:15 Oxygen",
+     "static/global.css:15 Ubuntu",
      "static/global.css:15 Droid Sans"
     ]
    },
@@ -175,23 +179,23 @@
      }
     },
     {
-     "site": "src/components/Nav.svelte:9",
-     "symbol": "--fg-light",
-     "to": "static/global.css:10 --fg-light",
+     "site": "src/components/ThemeToggler.svelte:40",
+     "symbol": ".dark",
+     "to": "src/routes/item/[id].svelte:27 :global(html).dark .item",
      "uncertain": {
-      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
-      "candidates": [
-       "static/global.css:10 --fg-light",
-       "static/global.css:4 --fg-light"
-      ]
+      "reason": "sheet-not-proven-loaded"
      }
     },
     {
-     "site": "src/components/ThemeToggler.svelte:40",
-     "symbol": ".dark",
-     "to": "static/global.css:7 html.dark",
+     "site": "src/components/Nav.svelte:49",
+     "symbol": "--fg",
+     "to": "static/global.css:9 --fg",
      "uncertain": {
-      "reason": "sheet-not-proven-loaded"
+      "reason": "cascade and inheritance pick one per element; sheet-not-proven-loaded",
+      "candidates": [
+       "static/global.css:3 --fg",
+       "static/global.css:9 --fg"
+      ]
      }
     },
     {
@@ -384,5 +388,5 @@
   }
  ],
  "components": {},
- "seconds": 64.1
+ "seconds": 8.4
 }

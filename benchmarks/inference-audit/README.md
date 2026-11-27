@@ -1607,3 +1607,23 @@ Esito: soglia raggiunta su tutti e due.
 - klaxon, altri conteggi: la sessione non aggiunge né toglie archi (`code_graph._settled` cambia solo la fine dell'arco deciso), quindi nodi (5.223), archi (16.309), file e buchi sono quelli dello stesso codice senza risposte. Rispetto al risultato del 17 novembre (`3b856ab`) gli archi sono 16.309 contro 16.191 e un buco `no-position` è diventato `computed-callee`: vengono dal codice cambiato nel frattempo, non dalla sessione; nessuna corsa senza sessione allo stesso commit li separa riga per riga.
 - Sessione Kotlin nel container: compilazione di `KotlinAsk.kt` 7,2 s, sessione 9,4 s (7,3 s di domande): 97 file, 17 nomi sovraccarichi, 405 riferimenti e 67 override chiesti, 337 risposte (270 riferimenti, 67 override). Picco del processo più grande dell'esecuzione 736 MB (heap massimo 3 GB). scip-java 98,3 s, 1.261 MB; corsa intera 155,1 s.
 - Costo: non letto dalla fattura di Modal.
+
+## 27 novembre 2026, soglia dei fogli di stile (T2.B.17)
+
+`lang_css.py` sui sette casi, due corse sullo stesso codice salvo il TypeScript del programma degli script: `39dfca8` (TypeScript 5.9.3 di `css_engines/`) e `d52925a` (`T2.B.16`, il TypeScript 6.0.3 di scip-typescript 0.6.2). `modal deploy benchmarks/inference-audit/lang_css.py`, `python benchmarks/inference-audit/lang_css.py spawn --cases v3-admin-vite,tududi,bulma,bootstrap3,hn-svelte,saas-starter,sc-website`, `fetch` con gli stessi casi; risultati in `results/graph-css-<caso>-checks.json` (quelli di `d52925a`).
+
+| Caso | Nodi | Archi | Buchi | A mano | Secondi 5.9.3 → 6.0.3 |
+| --- | --- | --- | --- | --- | --- |
+| v3-admin-vite | 624 | 952 | 36 | 15/15 | 97,0 → 94,7 |
+| tududi | 2.669 | 39.626 | 351 | 20/20 | 53,6 → 73,4 |
+| bulma | 109.307 | 8.862.180 | 7.800 | 7/11 | 110,4 → 134,1 |
+| bootstrap3 | 4.218 | 147.232 | 1.643 | 15/15 | 24,8 → 19,3 |
+| hn-svelte | 81 | 73 | 15 | 16/16 | 6,6 → 8,4 |
+| saas-starter | 560 | 1.311 | 42 | 15/15 | 37,7 → 37,6 |
+| sc-website | 580 | 115 | 250 | 12/15 | 28,3 → 31,1 |
+
+- **5.9.3 → 6.0.3:** i `checks` sono uguali campo per campo (report, riepilogo, controllo a mano, componenti) salvo la versione del motore e i secondi: nessuna perdita, nessun guadagno.
+- **File:** nessuno perso senza motivo; mancano solo i due `.pug` di bootstrap3 («template language: no reader»).
+- **Soglia ≥15/15 a mano:** non raggiunta su bulma (le attese sono 11: sbagliate `.button`, che non raggiunge `App.module.css:53`; `.fas`, arco verso le regole di `docs.scss` invece del buco; `.algolia-content` con un `interpolated-selector` in più; `#js-menu-toggle` con un `no-rule` in più) e su styled-components-website, prima misura (12/15: `.error-page` dello `<style>` dentro JSX, che il grafo non legge; `--sc-color-text` e `--sc-color-surface`, attesi buchi `undeclared`, raggiungono `components/GlobalStyles.tsx:24` e `:34`). Uguale con le due versioni di TypeScript.
+- **Conteggi contro i `checks` precedenti** (codice `css.py` `49854bf56415`): le differenze vengono dal codice cambiato da allora (il fork di CSSTree, buchi `unparsed` e `remote-sheet` nuovi, bulma +9.964 archi), non da TypeScript; i nuovi `checks` sono il riferimento.
+- Gli archi senza unità di caricamento restano `sheet-not-proven-loaded` (le unità dal bundler sono di `T3.B`).

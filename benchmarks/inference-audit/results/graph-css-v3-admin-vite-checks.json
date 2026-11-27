@@ -2,36 +2,40 @@
  "case": "v3-admin-vite",
  "commit": "c2c895d71d571e9c18c2453fa85469a479c79fc6",
  "code": {
-  "css.py": "49854bf56415",
-  "css_astro.js": "60aedc755928",
-  "css_astro.py": "83ae4f9723f2",
-  "css_engines.json": "2cf04c7179fb",
-  "css_expressions.js": "f576bae77c67",
-  "css_less.js": "7ea43d4fc4c2",
-  "css_less.py": "1f082b76eb1f",
-  "css_sass.js": "446f2ff01f26",
-  "css_sass.py": "45180a7e614c",
-  "css_stylus.js": "22c5cf93eff5",
-  "css_stylus.py": "bbe7cdfae4fe",
-  "css_svelte.js": "3814c915a7a8",
-  "css_svelte.py": "6c91a62cd587",
-  "css_tailwind.js": "4dca22ec9809",
-  "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "a8e11983317d",
-  "css_typescript.py": "6ff05448a8d6",
-  "css_vue.js": "4fbf1fcf22e4",
-  "css_vue.py": "93c02e4a9797"
+  "css.py": "68ff0d7e347c",
+  "css_astro.js": "8540fd418bcd",
+  "css_astro.py": "c8157d430209",
+  "css_csstree.js": "95745fb2320c",
+  "css_csstree.py": "d9ed24317d3d",
+  "css_engines/package-lock.json": "65b5d0432220",
+  "css_engines/package.json": "0c44f73dae98",
+  "css_expressions.js": "33f6bee6a535",
+  "css_less.js": "339b386c0042",
+  "css_less.py": "d74d9e3004ae",
+  "css_packages.js": "dc4a31328ff5",
+  "css_sass.js": "0237ed14d335",
+  "css_sass.py": "c2a5e278bdfc",
+  "css_stylus.js": "753915f10641",
+  "css_stylus.py": "a8d16d83fc4d",
+  "css_svelte.js": "8fc8b2a1f906",
+  "css_svelte.py": "10e35514b1c3",
+  "css_tailwind.js": "ca0e48f2964b",
+  "css_tailwind.py": "d7536cfbb251",
+  "css_typescript.js": "a7d6310ce90c",
+  "css_typescript.py": "a82b9c69c6d0",
+  "css_vue.js": "a6ef281e17e8",
+  "css_vue.py": "371de29e0479"
  },
  "files_given": 131,
- "npm_install_seconds": 29.9,
+ "npm_install_seconds": 87.6,
  "node_modules": "/work/pnpm/src/node_modules",
  "report": {
-  "language": "css",
+  "language": "stylesheet",
   "indexer": {
-   "name": "codebase-map stylesheet.py + sass-parser + @vue/compiler-sfc + sass-parser + typescript + tailwindcss",
-   "version": "e62b3f368913 + 0.5.6 + 3.5.45 + 0.5.6 + 5.9.3 + None",
-   "seconds": 6.0,
-   "peak_mb": 699
+   "name": "codebase-map stylesheet.py + @eslint/css-tree + sass-parser + @vue/compiler-sfc + sass-parser + typescript + tailwindcss",
+   "version": "cdb9de69a3ed + 4.1.3 + 0.5.6 + 3.5.45 + 0.5.6 + 6.0.3 + None",
+   "seconds": 5.0,
+   "peak_mb": 700
   },
   "files": {
    "snapshot": 131,
@@ -90,10 +94,23 @@
    "no-rule class": 3,
    "spread class": 1,
    "undeclared custom-property": 5,
+   "unparsed declaration": 1,
    "url-scheme import": 1,
+   "value-not-matched keyframes": 14,
    "variable class": 2
   },
   "holes": [
+   {
+    "class": "value-not-matched",
+    "kind": "keyframes",
+    "reason": "-",
+    "count": 14,
+    "examples": [
+     "element-plus/dist/index.css:1 animation: Matching for a tree with var() is not supported",
+     "element-plus/dist/index.css:1 animation: Matching for a tree with var() is not supported",
+     "element-plus/dist/index.css:1 animation: Matching for a tree with var() is not supported"
+    ]
+   },
    {
     "class": "no-font-face",
     "kind": "font-face",
@@ -156,6 +173,15 @@
     ]
    },
    {
+    "class": "unparsed",
+    "kind": "declaration",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "element-plus/dist/index.css:1 filter: alpha(opacity=0)"
+    ]
+   },
+   {
     "class": "url-scheme",
     "kind": "import",
     "reason": "virtual:uno.css",
@@ -211,6 +237,14 @@
    "parameter": 1
   },
   "holes_by_class": {
+   "value-not-matched keyframes": {
+    "count": 14,
+    "examples": [
+     "element-plus/dist/index.css:1 animation: Matching for a tree with var() is not supported",
+     "element-plus/dist/index.css:1 animation: Matching for a tree with var() is not supported",
+     "element-plus/dist/index.css:1 animation: Matching for a tree with var() is not supported"
+    ]
+   },
    "no-font-face font-face": {
     "count": 8,
     "examples": [
@@ -252,6 +286,12 @@
     "count": 1,
     "examples": [
      "src/common/composables/useTheme.ts:58 ...otherThemeNameList"
+    ]
+   },
+   "unparsed declaration": {
+    "count": 1,
+    "examples": [
+     "element-plus/dist/index.css:1 filter: alpha(opacity=0)"
     ]
    },
    "url-scheme import": {
@@ -500,5 +540,5 @@
    "parent component (child-root) certain": 10
   }
  },
- "seconds": 37.2
+ "seconds": 94.7
 }

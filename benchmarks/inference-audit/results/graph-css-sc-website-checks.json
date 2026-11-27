@@ -1,0 +1,661 @@
+{
+ "case": "sc-website",
+ "commit": "e70dc5c3f513b4a72ce20d0a1a76fe9891c4a071",
+ "code": {
+  "css.py": "68ff0d7e347c",
+  "css_astro.js": "8540fd418bcd",
+  "css_astro.py": "c8157d430209",
+  "css_csstree.js": "95745fb2320c",
+  "css_csstree.py": "d9ed24317d3d",
+  "css_engines/package-lock.json": "65b5d0432220",
+  "css_engines/package.json": "0c44f73dae98",
+  "css_expressions.js": "33f6bee6a535",
+  "css_less.js": "339b386c0042",
+  "css_less.py": "d74d9e3004ae",
+  "css_packages.js": "dc4a31328ff5",
+  "css_sass.js": "0237ed14d335",
+  "css_sass.py": "c2a5e278bdfc",
+  "css_stylus.js": "753915f10641",
+  "css_stylus.py": "a8d16d83fc4d",
+  "css_svelte.js": "8fc8b2a1f906",
+  "css_svelte.py": "10e35514b1c3",
+  "css_tailwind.js": "ca0e48f2964b",
+  "css_tailwind.py": "d7536cfbb251",
+  "css_typescript.js": "a7d6310ce90c",
+  "css_typescript.py": "a82b9c69c6d0",
+  "css_vue.js": "a6ef281e17e8",
+  "css_vue.py": "371de29e0479"
+ },
+ "files_given": 139,
+ "npm_install_seconds": 15.8,
+ "node_modules": "/work/pnpm/src/node_modules",
+ "report": {
+  "language": "stylesheet",
+  "indexer": {
+   "name": "codebase-map stylesheet.py + @eslint/css-tree + typescript + tailwindcss",
+   "version": "cdb9de69a3ed + 4.1.3 + 6.0.3 + None",
+   "seconds": 12.1,
+   "peak_mb": 886
+  },
+  "files": {
+   "snapshot": 139,
+   "indexed": 139,
+   "missing": [],
+   "missing_count": 0
+  },
+  "nodes": 580,
+  "edges": 115,
+  "symbols_by_kind": {
+   "external module": 1,
+   "project container": 1,
+   "project custom-property": 49,
+   "project layer": 1,
+   "project module": 3,
+   "project property": 7,
+   "project rule": 518
+  },
+  "edges_by_end": {
+   "external import": 1,
+   "project class": 34,
+   "project container": 3,
+   "project custom-property": 74,
+   "project import": 3
+  },
+  "callable_chain_hops": {},
+  "hop_tags": {
+   "css-text": 54,
+   "classList": 19,
+   "literal-type": 9,
+   "className=": 7
+  },
+  "edges_uncertain": {
+   "cascade and inheritance pick one per element": 20,
+   "sheet-not-proven-loaded": 9,
+   "cascade and inheritance pick one per element; sheet-not-proven-loaded": 8
+  },
+  "edges_removed": {},
+  "holes_by_class": {
+   "call id": 1,
+   "interpolated-selector rule": 20,
+   "no-font-face font-face": 50,
+   "no-keyframes keyframes": 3,
+   "no-rule class": 2,
+   "no-rule id": 82,
+   "parameter class": 2,
+   "parameter id": 2,
+   "property class": 3,
+   "property id": 1,
+   "template id": 2,
+   "undeclared custom-property": 28,
+   "unparsed rule": 2,
+   "unparsed statement": 50,
+   "value-not-matched keyframes": 2
+  },
+  "holes": [
+   {
+    "class": "no-rule",
+    "kind": "id",
+    "reason": "-",
+    "count": 82,
+    "examples": [
+     "components/BlogComments.tsx:23 comments",
+     "components/CompanyLogos.tsx:520 path27258",
+     "components/CompanyLogos.tsx:618 g338"
+    ]
+   },
+   {
+    "class": "unparsed",
+    "kind": "statement",
+    "reason": "-",
+    "count": 50,
+    "examples": [
+     "utils/media.ts:7 ${inner};",
+     "components/CompatibilityMatrix.tsx:583 ${baseCell} padding-left: ${theme.space[3]}; gap: ${theme.space[2]}; min-width: 0;",
+     "components/HomepageHeroEditor.tsx:147 ${mobile(css` padding: ${theme.space[20]} ${theme.layout.gutterFluid} 0; `)}"
+    ]
+   },
+   {
+    "class": "no-font-face",
+    "kind": "font-face",
+    "reason": "-",
+    "count": 50,
+    "examples": [
+     "app/blog/[slug]/opengraph-image.tsx:133 Inter",
+     "components/DocsPageNav.tsx:108 __dd0__",
+     "components/Nav/Navbar.tsx:45 __dd2__"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "custom-property",
+    "reason": "-",
+    "count": 23,
+    "examples": [
+     "app/blog/blog.css:16 --sc-color-blogAccent",
+     "components/codeMixins.ts:26 --code-fw",
+     "app/error.tsx:40 --sc-radius-md"
+    ]
+   },
+   {
+    "class": "interpolated-selector",
+    "kind": "rule",
+    "reason": "-",
+    "count": 20,
+    "examples": [
+     "components/Link.tsx:62 @media (min-width: ${1000 / 16}em) { &:hover }",
+     "components/CompatibilityMatrix.tsx:687 ${Tbody} > *:last-child &",
+     "components/SmallShowcase/index.tsx:99 &:hover ${Label}"
+    ]
+   },
+   {
+    "class": "property",
+    "kind": "class",
+    "reason": "-",
+    "count": 3,
+    "examples": [
+     "app/layout.tsx:101 inter.variable",
+     "app/layout.tsx:101 figtree.variable",
+     "app/layout.tsx:101 googleSansCode.variable"
+    ]
+   },
+   {
+    "class": "no-keyframes",
+    "kind": "keyframes",
+    "reason": "-",
+    "count": 3,
+    "examples": [
+     "components/CelebrationEffect.tsx:218 __dd0__",
+     "app/not-found.tsx:97 __dd11__",
+     "components/UsersLogos/index.tsx:40 __dd0__"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "custom-property",
+    "reason": "fallback fallback",
+    "count": 3,
+    "examples": [
+     "utils/cssCompat.ts:415 --name",
+     "utils/cssCompat.ts:415 --foo",
+     "utils/cssCompat.ts:415 --prefix-path"
+    ]
+   },
+   {
+    "class": "value-not-matched",
+    "kind": "keyframes",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "components/CelebrationEffect.tsx:259 animation: Matching for a tree with var() is not supported",
+     "components/ShowcaseTile.tsx:96 animation: Mismatch"
+    ]
+   },
+   {
+    "class": "parameter",
+    "kind": "id",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "components/BlogListPage.tsx:27 year",
+     "components/Anchor.tsx:23 id"
+    ]
+   },
+   {
+    "class": "template",
+    "kind": "id",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "components/CompatibilityMatrix.tsx:220 compat-${entry.id}",
+     "components/CompatibilityMatrix.tsx:246 compat-detail-${entry.id}"
+    ]
+   },
+   {
+    "class": "unparsed",
+    "kind": "rule",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "components/CodeBlock.tsx:30 ${codeTextMixin} background-color: ${theme.color.codeBg}; border-radius: ${theme.radius.lg}; border: 1px solid __d",
+     "components/UsersLogos/index.tsx:59 ${logoMonochromeMixin} transition: opacity 125ms ease-in-out; flex-shrink: 0; svg"
+    ]
+   },
+   {
+    "class": "parameter",
+    "kind": "class",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "components/CodeBlock.tsx:25 className",
+     "components/LogoConcepts/PlatonicLogo.tsx:356 className"
+    ]
+   },
+   {
+    "class": "no-rule",
+    "kind": "class",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "components/LiveEdit.tsx:46 notranslate",
+     "app/error.tsx:5 error-page"
+    ]
+   },
+   {
+    "class": "call",
+    "kind": "id",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "utils/mdx-components.tsx:40 titleToDash(title)"
+    ]
+   },
+   {
+    "class": "property",
+    "kind": "id",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "app/releases/page.tsx:50 release.name"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "custom-property",
+    "reason": "fallback 0.875rem",
+    "count": 1,
+    "examples": [
+     "app/homepage.css:35 --sc-text-sm"
+    ]
+   },
+   {
+    "class": "undeclared",
+    "kind": "custom-property",
+    "reason": "fallback var(--x, fallback",
+    "count": 1,
+    "examples": [
+     "utils/cssCompat.ts:418 --x"
+    ]
+   }
+  ],
+  "external_packages": {
+   "npm bluesky-comments@0.13.1": 1
+  }
+ },
+ "summary": {
+  "nodes_by_kind": {
+   "rule": 518,
+   "custom-property": 49,
+   "property": 7,
+   "module": 3,
+   "container": 1,
+   "layer": 1,
+   "module external": 1
+  },
+  "edges_by_kind_end": {
+   "class project": 34,
+   "container project": 3,
+   "custom-property project": 74,
+   "import external": 1,
+   "import project": 3
+  },
+  "edges_by_chain": {
+   "css-text": 54,
+   "-": 35,
+   "classList": 10,
+   "classList > literal-type": 9,
+   "className=": 7
+  },
+  "holes_by_class": {
+   "no-rule id": {
+    "count": 82,
+    "examples": [
+     "components/BlogComments.tsx:23 comments",
+     "components/CompanyLogos.tsx:520 path27258",
+     "components/CompanyLogos.tsx:618 g338"
+    ]
+   },
+   "unparsed statement": {
+    "count": 50,
+    "examples": [
+     "utils/media.ts:7 ${inner};",
+     "components/CompatibilityMatrix.tsx:583 ${baseCell} padding-left: ${theme.space[3]}; gap: ${theme.space[2]}; min-width: 0;",
+     "components/HomepageHeroEditor.tsx:147 ${mobile(css` padding: ${theme.space[20]} ${theme.layout.gutterFluid} 0; `)}"
+    ]
+   },
+   "no-font-face font-face": {
+    "count": 50,
+    "examples": [
+     "app/blog/[slug]/opengraph-image.tsx:133 Inter",
+     "components/DocsPageNav.tsx:108 __dd0__",
+     "components/Nav/Navbar.tsx:45 __dd2__"
+    ]
+   },
+   "undeclared custom-property": {
+    "count": 28,
+    "examples": [
+     "app/blog/blog.css:16 --sc-color-blogAccent",
+     "utils/cssCompat.ts:415 --spacing",
+     "app/error.tsx:35 --font-sans"
+    ]
+   },
+   "interpolated-selector rule": {
+    "count": 20,
+    "examples": [
+     "components/Link.tsx:62 @media (min-width: ${1000 / 16}em) { &:hover }",
+     "components/CompatibilityMatrix.tsx:687 ${Tbody} > *:last-child &",
+     "components/SmallShowcase/index.tsx:99 &:hover ${Label}"
+    ]
+   },
+   "property class": {
+    "count": 3,
+    "examples": [
+     "app/layout.tsx:101 inter.variable",
+     "app/layout.tsx:101 figtree.variable",
+     "app/layout.tsx:101 googleSansCode.variable"
+    ]
+   },
+   "no-keyframes keyframes": {
+    "count": 3,
+    "examples": [
+     "components/CelebrationEffect.tsx:218 __dd0__",
+     "app/not-found.tsx:97 __dd11__",
+     "components/UsersLogos/index.tsx:40 __dd0__"
+    ]
+   },
+   "value-not-matched keyframes": {
+    "count": 2,
+    "examples": [
+     "components/CelebrationEffect.tsx:259 animation: Matching for a tree with var() is not supported",
+     "components/ShowcaseTile.tsx:96 animation: Mismatch"
+    ]
+   },
+   "parameter id": {
+    "count": 2,
+    "examples": [
+     "components/BlogListPage.tsx:27 year",
+     "components/Anchor.tsx:23 id"
+    ]
+   },
+   "template id": {
+    "count": 2,
+    "examples": [
+     "components/CompatibilityMatrix.tsx:220 compat-${entry.id}",
+     "components/CompatibilityMatrix.tsx:246 compat-detail-${entry.id}"
+    ]
+   },
+   "unparsed rule": {
+    "count": 2,
+    "examples": [
+     "components/CodeBlock.tsx:30 ${codeTextMixin} background-color: ${theme.color.codeBg}; border-radius: ${theme.radius.lg}; border: 1px solid __d",
+     "components/UsersLogos/index.tsx:59 ${logoMonochromeMixin} transition: opacity 125ms ease-in-out; flex-shrink: 0; svg"
+    ]
+   },
+   "parameter class": {
+    "count": 2,
+    "examples": [
+     "components/CodeBlock.tsx:25 className",
+     "components/LogoConcepts/PlatonicLogo.tsx:356 className"
+    ]
+   },
+   "no-rule class": {
+    "count": 2,
+    "examples": [
+     "components/LiveEdit.tsx:46 notranslate",
+     "app/error.tsx:5 error-page"
+    ]
+   },
+   "call id": {
+    "count": 1,
+    "examples": [
+     "utils/mdx-components.tsx:40 titleToDash(title)"
+    ]
+   },
+   "property id": {
+    "count": 1,
+    "examples": [
+     "app/releases/page.tsx:50 release.name"
+    ]
+   }
+  },
+  "uncertain": {
+   "edges": 37,
+   "references": 23,
+   "examples": [
+    {
+     "site": "app/homepage.css:5",
+     "symbol": "--sc-color-text",
+     "to": "components/GlobalStyles.tsx:24 @property --sc-color-text",
+     "uncertain": {
+      "reason": "sheet-not-proven-loaded"
+     }
+    },
+    {
+     "site": "components/CelebrationEffect.tsx:148",
+     "symbol": "--particle-color",
+     "to": "components/CelebrationEffect.tsx:208 --particle-color",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "components/CelebrationEffect.tsx:208 --particle-color",
+       "components/CelebrationEffect.tsx:237 --particle-color"
+      ]
+     }
+    },
+    {
+     "site": "components/CelebrationEffect.tsx:160",
+     "symbol": "--particle-color",
+     "to": "components/CelebrationEffect.tsx:237 --particle-color",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "components/CelebrationEffect.tsx:208 --particle-color",
+       "components/CelebrationEffect.tsx:237 --particle-color"
+      ]
+     }
+    },
+    {
+     "site": "components/CelebrationEffect.tsx:250",
+     "symbol": "--particle-color",
+     "to": "components/CelebrationEffect.tsx:208 --particle-color",
+     "uncertain": {
+      "reason": "cascade and inheritance pick one per element",
+      "candidates": [
+       "components/CelebrationEffect.tsx:208 --particle-color",
+       "components/CelebrationEffect.tsx:237 --particle-color"
+      ]
+     }
+    },
+    {
+     "site": "app/error.tsx:41",
+     "symbol": "--sc-color-surface",
+     "to": "components/GlobalStyles.tsx:34 @property --sc-color-surface",
+     "uncertain": {
+      "reason": "sheet-not-proven-loaded"
+     }
+    }
+   ]
+  }
+ },
+ "hand_check": [
+  {
+   "site": "app/page.tsx:17",
+   "kind": "class",
+   "symbol": ".hero-header",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "app/page.tsx:24",
+   "kind": "class",
+   "symbol": ".hero-tagline",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "app/page.tsx:27",
+   "kind": "class",
+   "symbol": ".hero-subtitle",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "app/page.tsx:36",
+   "kind": "class",
+   "symbol": ".hero-used-by",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "components/ClientLayout.tsx:27",
+   "kind": "class",
+   "symbol": ".root",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "app/error.tsx:5",
+   "kind": "class",
+   "symbol": ".error-page",
+   "right": false,
+   "missing": {
+    ".error-page": [
+     "app/error.tsx:11",
+     "app/error.tsx:22",
+     "app/error.tsx:28",
+     "app/error.tsx:34",
+     "app/error.tsx:46"
+    ]
+   },
+   "extra": {
+    ".error-page": [
+     "hole:no-rule"
+    ]
+   },
+   "expected_ends": 5,
+   "graph_ends": 1
+  },
+  {
+   "site": "components/LiveEdit.tsx:46",
+   "kind": "class",
+   "symbol": ".notranslate",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "app/error.tsx:39",
+   "kind": "custom-property",
+   "symbol": "--sc-color-border",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "app/error.tsx:30",
+   "kind": "custom-property",
+   "symbol": "--sc-color-textSecondary",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "app/homepage.css:34",
+   "kind": "custom-property",
+   "symbol": "--sc-color-textMuted",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 2,
+   "graph_ends": 2
+  },
+  {
+   "site": "app/error.tsx:19",
+   "kind": "custom-property",
+   "symbol": "--sc-color-text",
+   "right": false,
+   "missing": {
+    "--sc-color-text": [
+     "hole:undeclared"
+    ]
+   },
+   "extra": {
+    "--sc-color-text": [
+     "components/GlobalStyles.tsx:24"
+    ]
+   },
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "app/error.tsx:24",
+   "kind": "custom-property",
+   "symbol": "--sc-text-2xl",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "app/error.tsx:29",
+   "kind": "custom-property",
+   "symbol": "--sc-text-base",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "app/error.tsx:40",
+   "kind": "custom-property",
+   "symbol": "--sc-radius-md",
+   "right": true,
+   "missing": {},
+   "extra": {},
+   "expected_ends": 1,
+   "graph_ends": 1
+  },
+  {
+   "site": "app/error.tsx:41",
+   "kind": "custom-property",
+   "symbol": "--sc-color-surface",
+   "right": false,
+   "missing": {
+    "--sc-color-surface": [
+     "hole:undeclared"
+    ]
+   },
+   "extra": {
+    "--sc-color-surface": [
+     "components/GlobalStyles.tsx:34"
+    ]
+   },
+   "expected_ends": 1,
+   "graph_ends": 1
+  }
+ ],
+ "components": {},
+ "seconds": 31.1
+}

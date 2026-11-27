@@ -30,6 +30,8 @@ from indexers import css  # noqa: E402
 
 FIXTURES = HERE / "fixtures/css-graph"
 RECORDED = FIXTURES / "recorded"
+# scip-typescript with its own TypeScript, in the Modal image of the suites (`tests/modal_pytest.py`).
+SCIP_TYPESCRIPT = Path("/opt/components-vue2/node_modules/@sourcegraph/scip-typescript")
 
 
 def key(script, payload) -> tuple:
@@ -1207,11 +1209,12 @@ MARKING = {  # project files that, run as code, leave a mark in `marks/`: none o
 
 def test_the_engines_on_the_host_read_the_projects_files_and_run_none(tmp_path):
     """AGENTS.md: the project's code runs only in the container. The stylesheet engines Daodan starts on the host
-    (the fork of CSSTree, sass-parser, less, stylus, the Vue, Svelte and Astro compilers, TypeScript, in
-    `css.node_runner`) parse a
-    project whose config files, plugins, component scripts and inline JavaScript each leave a mark when run: every
-    engine reads them, and no mark appears. Tailwind, which loads its config, runs only in the container (off in
-    the suites: a gap, no run). Real engines: Node and the pinned engines are installed (on Modal)."""
+    (the fork of CSSTree, sass-parser, less, stylus, the Vue, Svelte and Astro compilers, in `css.node_runner`)
+    parse a project whose config files, plugins, component scripts and inline JavaScript each leave a mark when
+    run: every engine reads them, and no mark appears. Tailwind, which loads its config, and the scripts' program,
+    on scip-typescript's TypeScript, run only in the container (off in the suites: a gap, no run, the scripts
+    missing with its reason). Real engines: Node and the pinned engines are installed (on Modal)."""
+    from indexers import css_typescript
     project = tmp_path / "project"
     for rel, text in MARKING.items():
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -1219,10 +1222,14 @@ def test_the_engines_on_the_host_read_the_projects_files_and_run_none(tmp_path):
     (project / "marks").mkdir()
     result = css.index(project, tmp_path / "work", files=css.walk(project))
     engines = {engine["name"]: engine["version"] for engine in result["graph"]["engines"]}
+    container = {"tailwindcss", "typescript"}
     assert {"@eslint/css-tree", "sass-parser", "less", "stylus", "@vue/compiler-sfc", "svelte", "@astrojs/compiler",
-            "typescript"} <= set(engines) and all(engines[name] for name in engines if name != "tailwindcss"), engines
-    assert engines["tailwindcss"] is None  # no container in the suites: Tailwind did not run
-    assert {item["path"] for item in result["graph"]["files"]["missing"]} <= {"P.astro"}, result["graph"]["files"]
+            *container} <= set(engines) and all(engines[name] for name in engines if name not in container), engines
+    assert {engines[name] for name in container} == {None}  # no container in the suites: neither ran
+    scripts = {rel for rel in MARKING if rel.endswith(css_typescript.SUFFIXES) and not rel.startswith("node_modules/")}
+    missing = {item["path"]: item["reason"] for item in result["graph"]["files"]["missing"]}
+    assert set(missing) - {"P.astro"} == scripts, result["graph"]["files"]
+    assert all("runs only in a container" in missing[rel] for rel in scripts), missing
     assert sorted(path.name for path in (project / "marks").iterdir()) == []
     # The control: run as code, a marking file does leave its mark.
     import subprocess
@@ -1238,7 +1245,10 @@ def test_a_helper_imported_from_a_package_not_installed_is_read_by_the_package_i
     have no declaration; their imports name the packages, and `cn`, which returns `twMerge(clsx(inputs))`, is
     read as tailwind-merge: its literal arguments are class sites, not a `call` hole. memos merges with the
     function `extendTailwindMerge` makes, which has twMerge's signature (tailwind-merge's API reference). A project
-    module's import names no package (real TypeScript, on Modal)."""
+    module's import names no package (real TypeScript, on Modal: scip-typescript's, as in the container, from the
+    image's `/opt/components-vue2`, `tests/modal_pytest.py`)."""
+    if not SCIP_TYPESCRIPT.is_dir():
+        pytest.skip("scip-typescript is in the Modal image of the suites")
     project = tmp_path / "project"
     (project / "src/lib").mkdir(parents=True)
     (project / "src/lib/utils.ts").write_text(
@@ -1256,7 +1266,14 @@ def test_a_helper_imported_from_a_package_not_installed_is_read_by_the_package_i
         'export const B = () => <p className={own("gap-2")} />;\n'
         'import { cx } from "./lib/merge";\nexport const C = () => <i className={cx("grid", "m-1")} />;\n',
         encoding="utf-8")
-    built = css.run(project, css.node_runner(project, tmp_path / "work"), css.walk(project))
+    host = css.node_runner(project, tmp_path / "work")
+
+    def container(script, payload):  # the container's runs: the scripts' program on scip-typescript's TypeScript
+        if Path(script).stem != "css_typescript":
+            return None, {"seconds": 0, "state": "failed", "reason": "no container in the suites"}
+        return host(script, {**payload, "indexer": str(SCIP_TYPESCRIPT)})
+    built = css.run(project, host, css.walk(project), tailwind=container)
+    assert next(engine for engine in built["engines"] if engine["name"] == "typescript")["version"].startswith("6.")
     holes = {(hole["name"], hole["class"]) for hole in built["holes"] if hole["kind"] == "class"}
     assert {("flex", "no-rule"), ("p-4", "no-rule"), ("grid", "no-rule"), ("m-1", "no-rule")} <= holes, holes
     assert [name for name, cls in holes if cls == "call"] == ['own("gap-2")']
@@ -1327,7 +1344,7 @@ exports.__unstable__loadDesignSystem = async (css, { base, loadStylesheet }) => 
                                                        "text-base-x": "4.0.0"})
 
 
-@pytest.mark.parametrize("script", ["css_tailwind.js", "typescript_unbound.js"])
+@pytest.mark.parametrize("script", ["css_tailwind.js", "css_typescript.js", "typescript_unbound.js"])
 def test_a_script_that_runs_only_in_the_container_parses(tmp_path, script):
     """No suite runs a container, so these scripts are parsed here (`node --check`, which runs nothing): a syntax
     error would otherwise reach only the real run."""
@@ -1432,6 +1449,10 @@ def test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it
     package = json.dumps({"name": "@acme/ui", "version": "1.2.3", "exports": {"./styles.css": "./dist/styles.css"}})
 
     def container(script, payload):
+        if Path(script).stem == "css_typescript":  # the scripts' reader, as its run answers: a script imports a sheet
+            return {"typescript": "6.0.3", "files": ["web/src/main.ts"],
+                    "records": [{"t": "import", "file": "web/src/main.ts", "line": 1, "spec": "@acme/kit/kit.css"}]}, \
+                {"seconds": 0}
         calls.append((Path(script).name, payload))
         return {"files": {"web/node_modules/@acme/ui/package.json": package,
                           "web/node_modules/@acme/ui/dist/styles.css": ".mu-a { color: red }\n",
@@ -1441,15 +1462,11 @@ def test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it
                           "../out.css": ""},  # names that would leave the copy's folder: not written
                 "missing": [], "workspace": [], "error": None}, {"seconds": 0}
 
-    def host(script, payload):  # the scripts' reader, as its run on the host answers: a script imports a sheet
-        if Path(script).stem == "css_csstree":  # the sheets, read by the engine of plain CSS
-            return csstree({"web/src/index.css": sheet_import("@acme/ui/styles.css"),
-                            ".mu-a { color: red }\n": sheet_rule("mu-a", "color", "red"),
-                            ".kit-a { color: blue }\n": sheet_rule("kit-a", "color", "blue")}, payload), {"seconds": 0}
-        assert Path(script).stem == "css_typescript", f"no other host engine reads these files: {script}"
-        return {"typescript": "5.9.3", "files": ["web/src/main.ts"],
-                "records": [{"t": "import", "file": "web/src/main.ts", "line": 1, "spec": "@acme/kit/kit.css"}]}, \
-            {"seconds": 0}
+    def host(script, payload):  # the sheets, read by the engine of plain CSS
+        assert Path(script).stem == "css_csstree", f"no other host engine reads these files: {script}"
+        return csstree({"web/src/index.css": sheet_import("@acme/ui/styles.css"),
+                        ".mu-a { color: red }\n": sheet_rule("mu-a", "color", "red"),
+                        ".kit-a { color: blue }\n": sheet_rule("kit-a", "color", "blue")}, payload), {"seconds": 0}
     (project / "web/src/main.ts").write_text('import "@acme/kit/kit.css";\n', encoding="utf-8")
     (project / "web/index.html").write_text(
         '<link rel="stylesheet" href="/src/index.css">\n<script type="module" src="/src/main.ts"></script>\n'
@@ -1515,3 +1532,45 @@ def test_tailwinds_run_brings_back_the_packages_sheets_after_the_same_restore(tm
         "packages": [["src", "@acme/ui"], ["src", "tailwindcss"]]}
     assert inputs["css_packages.js"] == css.PACKAGES
     assert [(hole["name"], hole["class"]) for hole in built["holes"] if hole["kind"] == "class"] == []
+
+
+def test_the_scripts_program_runs_in_the_container_on_scip_typescripts_typescript(tmp_path):
+    """No second TypeScript: the scripts' program (`css_typescript.js`) runs in the stage's container, after the
+    restore, on the TypeScript of scip-typescript, which its preparation installs as the TypeScript analyzer does
+    (`typescript.INSTALL`, `typescript.INDEXER`); nothing of it runs on the host, and its version is the engine's."""
+    from unittest import mock
+    import container
+    import preparation
+    from indexers import typescript
+    project = tmp_path / "web"
+    (project / "src").mkdir(parents=True)
+    (project / "package.json").write_text('{"dependencies": {"react": "^19.0.0"}}', encoding="utf-8")
+    (project / "src/index.css").write_text(".a { color: red }\n", encoding="utf-8")
+    (project / "src/App.tsx").write_text('import "./index.css";\nexport const A = () => <i className="a" />;\n',
+                                         encoding="utf-8")
+    runs = []
+    answers = {"css_typescript": {"typescript": "6.0.3", "files": ["src/App.tsx"], "records": []},
+               "css_packages": {"files": {}, "missing": [], "workspace": [], "error": None}}
+
+    def run_in_container(copy, command, **options):
+        inputs = {Path(key).name: value for key, value in options["inputs"]().items()}
+        runs.append((options["prepare"][-1], command[-1], inputs))
+        out = Path(options["out_dir"]) / "out"
+        out.mkdir(parents=True)
+        for stem, data in answers.items():
+            if f"{stem}.js" in command[-1]:
+                (out / f"{stem}-out.json").write_text(json.dumps(data), encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": []}
+
+    def host(script, payload):
+        assert Path(script).stem == "css_csstree", f"no other host engine reads these files: {script}"
+        return csstree({"src/index.css": sheet_rule("a", "color", "red")}, payload), {"seconds": 0}
+    with mock.patch.object(container, "run_in_container", run_in_container), \
+            mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
+        built = css.run(project, host, css.walk(project), tailwind=css.tailwind_runner(project, tmp_path / "work"))
+    prepare, execute, inputs = runs[0]
+    assert "css_typescript.js" in execute and typescript.INSTALL in prepare
+    assert prepare.index(typescript.INSTALL) < prepare.index("exit 0")
+    assert json.loads(inputs["css_typescript-in.json"].read_text(encoding="utf-8"))["indexer"] == typescript.INDEXER
+    assert all(typescript.INSTALL not in later for later, _execute, _inputs in runs[1:])
+    assert {engine["name"]: engine["version"] for engine in built["engines"]}["typescript"] == "6.0.3"

@@ -41,11 +41,13 @@ TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
 import code_graph as scip_graph  # noqa: E402
-from indexers import css  # noqa: E402
+from indexers import css, typescript  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
 NODE = ("v22.23.4", "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce")  # as modal_scip.py
 ENGINES = PLUGIN / "core/indexers/css_engines"
+# scip-typescript at the product's version, whose TypeScript the scripts' program runs on (`css.tailwind_runner`).
+INDEXER = "/opt/scip-typescript/lib/node_modules/@sourcegraph/scip-typescript"
 TESTS = HERE.parents[1] / "tests" if LOCAL else Path("/tests")
 # One small project per family, pinned by commit (tududi from modal_audit.CASES).
 CSS_CASES = {
@@ -233,6 +235,8 @@ def _image():
         )
         .pip_install("pytest==8.4.2")
         .env({"PATH": "/opt/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"})
+        .run_commands("npm install -g --prefix /opt/scip-typescript --ignore-scripts --no-audit --no-fund "
+                      f"--loglevel=error @sourcegraph/scip-typescript@{typescript.VERSION}")
         .add_local_dir(ENGINES, "/engines", copy=True)
         # The lockfile pins every package with its integrity; without it npm resolves and writes one.
         .run_commands("cd /engines && if [ -f package-lock.json ]; then npm ci --ignore-scripts --no-audit --no-fund "
@@ -258,14 +262,15 @@ def code_sha256() -> dict:
 
 def node_runner(engines: Path, project: Path, work: Path):
     """The runner the stylesheet graph's engines run through (`indexers/css_sass.py`): `node <script> IN OUT` in the
-    project's root, IN the payload with `engines` added (the folder of the engines' package.json), IN and OUT in
-    `work`; a run without data says why (`state`, `reason`)."""
+    project's root, IN the payload with `engines` added (the folder of the engines' package.json) and `indexer`
+    (scip-typescript's, for the scripts' program, as the container's runner adds it), IN and OUT in `work`; a run
+    without data says why (`state`, `reason`)."""
     import os
 
     def runner(script, payload):
         work.mkdir(parents=True, exist_ok=True)
         settings, output = work / f"{Path(script).stem}-in.json", work / f"{Path(script).stem}-out.json"
-        settings.write_text(json.dumps({**payload, "engines": str(engines)}), encoding="utf-8")
+        settings.write_text(json.dumps({**payload, "engines": str(engines), "indexer": INDEXER}), encoding="utf-8")
         output.unlink(missing_ok=True)
         measured = scip_graph.measured(["node", str(script), str(settings), str(output)], str(project),
                                        {**os.environ, "NODE_OPTIONS": "--max-old-space-size=6144"}, 3600)

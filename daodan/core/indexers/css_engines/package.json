@@ -9,7 +9,6 @@
     "less": "4.9.1",
     "sass-parser": "0.5.6",
     "stylus": "0.64.0",
-    "svelte": "5.57.3",
-    "typescript": "5.9.3"
+    "svelte": "5.57.3"
   }
 }

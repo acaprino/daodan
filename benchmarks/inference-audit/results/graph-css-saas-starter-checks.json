@@ -2,36 +2,40 @@
  "case": "saas-starter",
  "commit": "6e33e58b1e553a41fe22e6b941a7229a002de361",
  "code": {
-  "css.py": "49854bf56415",
-  "css_astro.js": "60aedc755928",
-  "css_astro.py": "83ae4f9723f2",
-  "css_engines.json": "2cf04c7179fb",
-  "css_expressions.js": "f576bae77c67",
-  "css_less.js": "7ea43d4fc4c2",
-  "css_less.py": "1f082b76eb1f",
-  "css_sass.js": "446f2ff01f26",
-  "css_sass.py": "45180a7e614c",
-  "css_stylus.js": "22c5cf93eff5",
-  "css_stylus.py": "bbe7cdfae4fe",
-  "css_svelte.js": "3814c915a7a8",
-  "css_svelte.py": "6c91a62cd587",
-  "css_tailwind.js": "4dca22ec9809",
-  "css_tailwind.py": "c9419a41c53a",
-  "css_typescript.js": "a8e11983317d",
-  "css_typescript.py": "6ff05448a8d6",
-  "css_vue.js": "4fbf1fcf22e4",
-  "css_vue.py": "93c02e4a9797"
+  "css.py": "68ff0d7e347c",
+  "css_astro.js": "8540fd418bcd",
+  "css_astro.py": "c8157d430209",
+  "css_csstree.js": "95745fb2320c",
+  "css_csstree.py": "d9ed24317d3d",
+  "css_engines/package-lock.json": "65b5d0432220",
+  "css_engines/package.json": "0c44f73dae98",
+  "css_expressions.js": "33f6bee6a535",
+  "css_less.js": "339b386c0042",
+  "css_less.py": "d74d9e3004ae",
+  "css_packages.js": "dc4a31328ff5",
+  "css_sass.js": "0237ed14d335",
+  "css_sass.py": "c2a5e278bdfc",
+  "css_stylus.js": "753915f10641",
+  "css_stylus.py": "a8d16d83fc4d",
+  "css_svelte.js": "8fc8b2a1f906",
+  "css_svelte.py": "10e35514b1c3",
+  "css_tailwind.js": "ca0e48f2964b",
+  "css_tailwind.py": "d7536cfbb251",
+  "css_typescript.js": "a7d6310ce90c",
+  "css_typescript.py": "a82b9c69c6d0",
+  "css_vue.js": "a6ef281e17e8",
+  "css_vue.py": "371de29e0479"
  },
  "files_given": 43,
- "npm_install_seconds": 36.2,
- "node_modules": "/root/.cache/daodan/npm/be8f5c5d84cc1467/node_modules",
+ "npm_install_seconds": 31.2,
+ "node_modules": "/work/saas-starter/src/node_modules",
  "report": {
-  "language": "css",
+  "language": "stylesheet",
   "indexer": {
-   "name": "codebase-map stylesheet.py + typescript + tailwindcss",
-   "version": "e62b3f368913 + 5.9.3 + 4.1.7",
-   "seconds": 4.5,
-   "peak_mb": 579
+   "name": "codebase-map stylesheet.py + @eslint/css-tree + typescript + tailwindcss",
+   "version": "cdb9de69a3ed + 4.1.3 + 6.0.3 + 4.1.7",
+   "seconds": 5.3,
+   "peak_mb": 572
   },
   "files": {
    "snapshot": 43,
@@ -40,7 +44,7 @@
    "missing_count": 0
   },
   "nodes": 560,
-  "edges": 1310,
+  "edges": 1311,
   "symbols_by_kind": {
    "external class": 364,
    "external custom-property": 2,
@@ -58,7 +62,7 @@
    "external layer": 5,
    "project custom-property": 222,
    "project import": 1,
-   "project variant": 9
+   "project variant": 10
   },
   "callable_chain_hops": {},
   "hop_tags": {
@@ -76,7 +80,9 @@
    "no-rule class": 1,
    "no-rule id": 11,
    "parameter class": 23,
-   "property class": 1
+   "property class": 1,
+   "unparsed statement": 1,
+   "value-not-matched font-face": 2
   },
   "holes": [
    {
@@ -113,12 +119,31 @@
     ]
    },
    {
+    "class": "value-not-matched",
+    "kind": "font-face",
+    "reason": "-",
+    "count": 2,
+    "examples": [
+     "tailwindcss/index.css:519 font-family: Mismatch",
+     "tailwindcss/index.css:605 font-family: Mismatch"
+    ]
+   },
+   {
     "class": "property",
     "kind": "class",
     "reason": "-",
     "count": 1,
     "examples": [
      "app/layout.tsx:26 manrope.className"
+    ]
+   },
+   {
+    "class": "unparsed",
+    "kind": "statement",
+    "reason": "-",
+    "count": 1,
+    "examples": [
+     "tw-animate-css/dist/tw-animate.css:1 0%,70%,100% { opacity: 1; }20%,50% { opacity: 0; }"
     ]
    },
    {
@@ -154,10 +179,10 @@
    "import external": 2,
    "import project": 1,
    "layer external": 5,
-   "variant project": 9
+   "variant project": 10
   },
   "edges_by_chain": {
-   "-": 993,
+   "-": 994,
    "tailwind-merge": 245,
    "cva": 65,
    "@apply": 7
@@ -187,10 +212,23 @@
      "app/globals.css:80 Helvetica"
     ]
    },
+   "value-not-matched font-face": {
+    "count": 2,
+    "examples": [
+     "tailwindcss/index.css:519 font-family: Mismatch",
+     "tailwindcss/index.css:605 font-family: Mismatch"
+    ]
+   },
    "property class": {
     "count": 1,
     "examples": [
      "app/layout.tsx:26 manrope.className"
+    ]
+   },
+   "unparsed statement": {
+    "count": 1,
+    "examples": [
+     "tw-animate-css/dist/tw-animate.css:1 0%,70%,100% { opacity: 1; }20%,50% { opacity: 0; }"
     ]
    },
    "no-rule class": {
@@ -406,5 +444,5 @@
   }
  ],
  "components": {},
- "seconds": 41.7
+ "seconds": 37.6
 }
