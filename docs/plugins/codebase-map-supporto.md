@@ -198,8 +198,8 @@ Riconoscimento dello stack sul corpus, giro del 27 novembre 2026 (`benchmarks/pr
 | sys | 25 | 2 / 2 (100,0 %) | 1 / 2 (50,0 %), 1 sbagliato | nessuno atteso, 0 in più |
 | mix | 30 | 29 / 31 (93,5 %) | 32 / 37 (86,5 %), 0 sbagliati | 12 / 33 (36,4 %), 1 in più |
 | real | 15 | 144 / 163 (88,3 %) | 258 / 312 (82,7 %), 13 sbagliati | 59 / 124 (47,6 %), 18 in più |
-| stack | 39 | 360 / 393 (91,6 %) | 608 / 757 (80,3 %), 57 sbagliati | 180 / 451 (39,9 %), 92 in più |
-| tutte | 184 | 587 / 645 (91,0 %) | 953 / 1.166 (81,7 %), 71 sbagliati | 256 / 614 (41,7 %), 112 in più |
+| stack | 39 | 360 / 393 (91,6 %) | 604 / 757 (79,8 %), 58 sbagliati | 180 / 451 (39,9 %), 92 in più |
+| tutte | 184 | 587 / 645 (91,0 %) | 949 / 1.166 (81,4 %), 72 sbagliati | 256 / 614 (41,7 %), 112 in più |
 
 Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: il fork di stack-analyser ha una regola per la voce (la colonna «Regola del fork»: `sì` se la voce viene dal catalogo del suo rilascio, `no` se il registro la nomina e il fork non la riconosce) e la riconosce da ciò che il progetto mostra (un pacchetto, un'immagine, un file, un sorgente). Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
@@ -450,7 +450,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Oban | `oban` | library | sì | — | 2 |
 | OpenAPI | `openapi` | library | sì | — | 11 |
 | OpenCV | `opencv` | library | sì | — | 0 |
-| OpenTelemetry | `opentelemetry` | library | sì | — | 7 |
+| OpenTelemetry | `opentelemetry` | library | sì | — | 6 |
 | Panache | `panache` | library | sì | — | 1 |
 | pandas | `pandas` | library | sì | — | 2 |
 | Passport | `passport` | library | sì | — | 2 |
@@ -627,7 +627,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | MockServer | `mockserver` | tool | sì | — | 0 |
 | MSTest | `mstest` | tool | sì | — | 1 |
 | NodeJS | `nodejs` | tool | sì | — | 66 |
-| npm | `npm` | tool | sì | — | 0 |
+| npm | `npm` | tool | sì | — | 21 |
 | NuGet | `nuget` | tool | sì | — | 9 |
 | NUnit | `nunit` | tool | sì | — | 1 |
 | nvm | `nvm` | tool | sì | — | 0 |
@@ -646,7 +646,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | pip | `pip` | tool | sì | — | 0 |
 | pipenv | `pipenv` | tool | sì | — | 0 |
 | Playwright | `playwright` | tool | sì | — | 15 |
-| pnpm | `pnpm` | tool | sì | — | 10 |
+| pnpm | `pnpm` | tool | sì | — | 13 |
 | Podman | `podman` | tool | sì | — | 0 |
 | Poetry | `poetry` | tool | sì | — | 0 |
 | Prettier | `prettier` | tool | sì | — | 16 |
