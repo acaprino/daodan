@@ -401,6 +401,11 @@ class SyntaxSnapshot:
     def callee(self, rel: str, span: tuple, parts: list) -> tuple[int, int] | None:
         return (span[0], span[1]) if parts else None
 
+    def computed(self, rel: str, span: tuple) -> tuple[None, None]:
+        """`build` asks what a callee with no name is; this reader keeps none of its expression, so such a call stays
+        without a position, as when the runs of 14 November 2026 were built."""
+        return None, None
+
 
 # ---------------------------------------------------------------------------------------------------------
 # Hops

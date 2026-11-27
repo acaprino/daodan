@@ -1,0 +1,522 @@
+{
+ "base": "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2",
+ "cases": {
+  "zlib": {
+   "perimeter_as_stored": true,
+   "runs": [
+    {
+     "step": "configure",
+     "returncode": 0,
+     "seconds": 1.1,
+     "peak_mb": 38,
+     "diagnostics": null
+    },
+    {
+     "step": "build",
+     "returncode": 0,
+     "seconds": 1.2,
+     "peak_mb": 47,
+     "diagnostics": null
+    },
+    {
+     "step": "index",
+     "returncode": 0,
+     "seconds": 0.6,
+     "peak_mb": 55,
+     "diagnostics": {
+      "errors": 0,
+      "warnings": 0,
+      "error_examples": [],
+      "tail": "[ 4/34] Merged partial index for /work/zlib/mirror/deflate.c\n[ 5/34] Merged partial index for /work/zlib/mirror/gzclose.c\n[ 6/34] Merged partial index for /work/zlib/mirror/gzlib.c\n[ 7/34] Merged partial index for /work/zlib/mirror/gzread.c\n[ 8/34] Merged partial index for /work/zlib/mirror/gzwrite.c\n[ 9/34] Merged partial index for /work/zlib/mirror/infback.c\n[10/34] Merged partial index for /work/zlib/mirror/inftrees.c\n[11/34] Merged partial index for /work/zlib/mirror/inflate.c\n[12/34] Merged partial index for /work/zlib/mirror/inffast.c\n[13/34] Merged partial index for /work/zlib/mirror/uncompr.c\n[14/34] Merged partial index for /work/zlib/mirror/zutil.c\n[15/34] Merged partial index for /work/zlib/mirror/compress.c\n[16/34] Merged partial index for /work/zlib/mirror/trees.c\n[17/34] Merged partial index for /work/zlib/mirror/adler32.c\n[18/34] Merged partial index for /work/zlib/mirror/crc32.c\n[19/34] Merged partial index for /work/zlib/mirror/gzclose.c\n[20/34] Merged partial index for /work/zlib/mirror/gzlib.c\n[21/34] Merged partial index for /work/zlib/mirror/deflate.c\n[22/34] Merged partial index for /work/zlib/mirror/gzread.c\n[23/34] Merged partial index for /work/zlib/mirror/gzwrite.c\n[24/34] Merged partial index for /work/zlib/mirror/infback.c\n[25/34] Merged partial index for /work/zlib/mirror/inflate.c\n[26/34] Merged partial index for /work/zlib/mirror/inftrees.c\n[27/34] Merged partial index for /work/zlib/mirror/inffast.c\n[28/34] Merged partial index for /work/zlib/mirror/uncompr.c\n[29/34] Merged partial index for /work/zlib/mirror/trees.c\n[30/34] Merged partial index for /work/zlib/mirror/zutil.c\n[31/34] Merged partial index for /work/zlib/mirror/test/example.c\n[32/34] Merged partial index for /work/zlib/mirror/test/minigzip.c\n[33/34] Merged partial index for /work/zlib/mirror/test/example.c\n[34/34] Merged partial index for /work/zlib/mirror/test/minigzip.c\nFinished indexing 34 translation units in 0.6s (indexing: 0.5s, merging: 0.0s, num errored TUs: 0).\n"
+     }
+    }
+   ],
+   "stored_runs": [
+    {
+     "step": "configure",
+     "returncode": 0,
+     "seconds": 2.0,
+     "diagnostics": null
+    },
+    {
+     "step": "build",
+     "returncode": 0,
+     "seconds": 2.1,
+     "diagnostics": null
+    },
+    {
+     "step": "index",
+     "returncode": 0,
+     "seconds": 0.7,
+     "diagnostics": {
+      "errors": 0,
+      "warnings": 0,
+      "error_examples": [],
+      "tail": "[ 4/34] Merged partial index for /work/zlib/mirror/deflate.c\n[ 5/34] Merged partial index for /work/zlib/mirror/gzclose.c\n[ 6/34] Merged partial index for /work/zlib/mirror/gzlib.c\n[ 7/34] Merged partial index for /work/zlib/mirror/gzread.c\n[ 8/34] Merged partial index for /work/zlib/mirror/gzwrite.c\n[ 9/34] Merged partial index for /work/zlib/mirror/inflate.c\n[10/34] Merged partial index for /work/zlib/mirror/inftrees.c\n[11/34] Merged partial index for /work/zlib/mirror/infback.c\n[12/34] Merged partial index for /work/zlib/mirror/inffast.c\n[13/34] Merged partial index for /work/zlib/mirror/uncompr.c\n[14/34] Merged partial index for /work/zlib/mirror/trees.c\n[15/34] Merged partial index for /work/zlib/mirror/zutil.c\n[16/34] Merged partial index for /work/zlib/mirror/compress.c\n[17/34] Merged partial index for /work/zlib/mirror/adler32.c\n[18/34] Merged partial index for /work/zlib/mirror/crc32.c\n[19/34] Merged partial index for /work/zlib/mirror/gzclose.c\n[20/34] Merged partial index for /work/zlib/mirror/gzlib.c\n[21/34] Merged partial index for /work/zlib/mirror/deflate.c\n[22/34] Merged partial index for /work/zlib/mirror/gzread.c\n[23/34] Merged partial index for /work/zlib/mirror/gzwrite.c\n[24/34] Merged partial index for /work/zlib/mirror/infback.c\n[25/34] Merged partial index for /work/zlib/mirror/inflate.c\n[26/34] Merged partial index for /work/zlib/mirror/uncompr.c\n[27/34] Merged partial index for /work/zlib/mirror/inffast.c\n[28/34] Merged partial index for /work/zlib/mirror/inftrees.c\n[29/34] Merged partial index for /work/zlib/mirror/trees.c\n[30/34] Merged partial index for /work/zlib/mirror/zutil.c\n[31/34] Merged partial index for /work/zlib/mirror/test/minigzip.c\n[32/34] Merged partial index for /work/zlib/mirror/test/example.c\n[33/34] Merged partial index for /work/zlib/mirror/test/example.c\n[34/34] Merged partial index for /work/zlib/mirror/test/minigzip.c\nFinished indexing 34 translation units in 0.6s (indexing: 0.6s, merging: 0.0s, num errored TUs: 0).\n"
+     }
+    }
+   ],
+   "scip_clang_warnings": {
+    "is not one of clang/clang++/gcc/g++/nvcc": false,
+    "may be unable to locate standard library headers": false
+   },
+   "first_command": "/daodan/tools/c/usr/bin/x86_64-linux-gnu-gcc-13 --sysroot=/daodan/tools/c -DZLIB_DLL -D_LARGEFILE64_SOURCE=1 -I/work/zlib/mirror/build -I/work/zlib/mirror -g -fPIC -o CMakeFiles/zlib.dir/adler32.c.o -c /work/zlib/mirror/adler32.c",
+   "new_vs_control": {
+    "equal": false,
+    "files": {
+     "old": {
+      "snapshot": 69,
+      "indexed": 27
+     },
+     "new": {
+      "snapshot": 69,
+      "indexed": 27
+     }
+    },
+    "nodes": {
+     "old": 1874,
+     "new": 1872,
+     "only_old": 3,
+     "only_new": 1,
+     "examples_old": [
+      "cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!",
+      "cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!",
+      "cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!"
+     ],
+     "examples_new": [
+      "cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!"
+     ],
+     "changed": 0,
+     "examples_changed": []
+    },
+    "edges": {
+     "old": 14137,
+     "new": 14153,
+     "only_old": 78,
+     "only_new": 94,
+     "examples_old": [
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_compress(d0489a02ea06dfc6).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:411\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_compress(d0489a02ea06dfc6).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:416\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_uncompress(fda57c8427c60377).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:461\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_uncompress(fda57c8427c60377).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:466\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_decomp(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzread.c:185\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:531\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:534\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:543\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:552\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_init(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzwrite.c:17\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_init(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzwrite.c:26\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_init(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzwrite.c:44\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_look(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzread.c:84\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_look(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzread.c:84\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_open(731d016a20827edc).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:102\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}"
+     ],
+     "examples_new": [
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_compress(d0489a02ea06dfc6).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:411\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_compress(d0489a02ea06dfc6).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:416\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_uncompress(fda57c8427c60377).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:461\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ file_uncompress(fda57c8427c60377).\", \"kind\": \"unknown\", \"site\": \"test/minigzip.c:466\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_decomp(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzread.c:185\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_decomp(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzread.c:185\", \"symbol\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:531\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:534\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:543\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_error(b3e12012326d2820).\", \"kind\": \"unknown\", \"site\": \"gzlib.c:552\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_init(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzwrite.c:17\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_init(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzwrite.c:26\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_init(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzwrite.c:44\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_look(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzread.c:84\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ gz_look(ffe843beb8c331be).\", \"kind\": \"unknown\", \"site\": \"gzread.c:84\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:404:9`!\"}"
+     ]
+    },
+    "holes": {
+     "old": 2383,
+     "new": 2383,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    },
+    "missing": {
+     "old": 42,
+     "new": 42,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    }
+   },
+   "control_vs_stored": {
+    "equal": false,
+    "files": {
+     "old": {
+      "snapshot": 69,
+      "indexed": 27
+     },
+     "new": {
+      "snapshot": 69,
+      "indexed": 27
+     }
+    },
+    "nodes": {
+     "old": 1874,
+     "new": 1874,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": [],
+     "changed": 0,
+     "examples_changed": []
+    },
+    "edges": {
+     "old": 14137,
+     "new": 14137,
+     "only_old": 14137,
+     "only_new": 14137,
+     "examples_old": [
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ file_compress(d0489a02ea06dfc6).\", \"kind\": \"call\", \"site\": \"test/minigzip.c:415\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ file_uncompress(fda57c8427c60377).\", \"kind\": \"call\", \"site\": \"test/minigzip.c:460\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ main(afcd3168fc1188a4).\", \"kind\": \"call\", \"site\": \"test/minigzip.c:551\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:107\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:110\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:128\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:129\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:131\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:93\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"crc32.c\", \"kind\": \"unknown\", \"site\": \"crc32.c:82\", \"symbol\": \"cxx . . $ `<built-in>:372:9`!\", \"to\": \"cxx . . $ `<built-in>:372:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"crc32.c\", \"kind\": \"unknown\", \"site\": \"crc32.c:82\", \"symbol\": \"cxx . . $ `<built-in>:374:9`!\", \"to\": \"cxx . . $ `<built-in>:374:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ _tr_stored_block(e0094ca591caacfe).\", \"kind\": \"call\", \"site\": \"trees.c:865\", \"symbol\": \"cxx . . $ memcpy(cc817cb175f282d).\", \"to\": \"cxx . . $ memcpy(cc817cb175f282d).\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ adler32_combine(551f9fdfca9bf338).\", \"kind\": \"unknown\", \"site\": \"adler32.c:158\", \"symbol\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off_t#\", \"to\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off_t#\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ adler32_combine64(551f9fdfca9bf338).\", \"kind\": \"unknown\", \"site\": \"adler32.c:162\", \"symbol\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\", \"to\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ adler32_combine_(551f9fdfca9bf338).\", \"kind\": \"unknown\", \"site\": \"adler32.c:133\", \"symbol\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\", \"to\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\"}"
+     ],
+     "examples_new": [
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ file_compress(d0489a02ea06dfc6).\", \"kind\": \"call\", \"site\": \"test/minigzip.c:415\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ file_uncompress(fda57c8427c60377).\", \"kind\": \"call\", \"site\": \"test/minigzip.c:460\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ main(afcd3168fc1188a4).\", \"kind\": \"call\", \"site\": \"test/minigzip.c:551\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:107\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:110\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:128\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1879:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:129\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:131\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1880:13`!\"}",
+      "{\"chain\": [], \"end\": \"dead-end\", \"from\": \"cxx . zlib 51b7f2abdade$ test_gzio(24a4beb24605093f).\", \"kind\": \"call\", \"site\": \"test/example.c:93\", \"symbol\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\", \"target\": null, \"to\": \"cxx . zlib 51b7f2abdade$ `zlib.h:1878:13`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"crc32.c\", \"kind\": \"unknown\", \"site\": \"crc32.c:82\", \"symbol\": \"cxx . . $ `<built-in>:372:9`!\", \"target\": null, \"to\": \"cxx . . $ `<built-in>:372:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"crc32.c\", \"kind\": \"unknown\", \"site\": \"crc32.c:82\", \"symbol\": \"cxx . . $ `<built-in>:374:9`!\", \"target\": null, \"to\": \"cxx . . $ `<built-in>:374:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ _tr_stored_block(e0094ca591caacfe).\", \"kind\": \"call\", \"site\": \"trees.c:865\", \"symbol\": \"cxx . . $ memcpy(cc817cb175f282d).\", \"target\": null, \"to\": \"cxx . . $ memcpy(cc817cb175f282d).\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ adler32_combine(551f9fdfca9bf338).\", \"kind\": \"unknown\", \"site\": \"adler32.c:158\", \"symbol\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off_t#\", \"target\": null, \"to\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off_t#\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ adler32_combine64(551f9fdfca9bf338).\", \"kind\": \"unknown\", \"site\": \"adler32.c:162\", \"symbol\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\", \"target\": null, \"to\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . zlib 51b7f2abdade$ adler32_combine_(551f9fdfca9bf338).\", \"kind\": \"unknown\", \"site\": \"adler32.c:133\", \"symbol\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\", \"target\": null, \"to\": \"cxx . libc6-dev 2.39-0ubuntu8.12$ off64_t#\"}"
+     ]
+    },
+    "holes": {
+     "old": 2383,
+     "new": 2383,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    },
+    "missing": {
+     "old": 42,
+     "new": 42,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    }
+   },
+   "seconds": 8.8
+  },
+  "tinyxml2": {
+   "perimeter_as_stored": true,
+   "runs": [
+    {
+     "step": "configure",
+     "returncode": 0,
+     "seconds": 0.7,
+     "peak_mb": 38,
+     "diagnostics": null
+    },
+    {
+     "step": "build",
+     "returncode": 0,
+     "seconds": 1.0,
+     "peak_mb": 77,
+     "diagnostics": null
+    },
+    {
+     "step": "index",
+     "returncode": 0,
+     "seconds": 0.4,
+     "peak_mb": 58,
+     "diagnostics": {
+      "errors": 0,
+      "warnings": 0,
+      "error_examples": [],
+      "tail": "[1/2] Indexed /work/tinyxml2/mirror/tinyxml2.cpp\n[2/2] Indexed /work/tinyxml2/mirror/xmltest.cpp\n[1/2] Merged partial index for /work/tinyxml2/mirror/tinyxml2.cpp\n[2/2] Merged partial index for /work/tinyxml2/mirror/xmltest.cpp\nFinished indexing 2 translation units in 0.3s (indexing: 0.3s, merging: 0.0s, num errored TUs: 0).\n"
+     }
+    }
+   ],
+   "stored_runs": [
+    {
+     "step": "configure",
+     "returncode": 0,
+     "seconds": 1.0,
+     "diagnostics": null
+    },
+    {
+     "step": "build",
+     "returncode": 0,
+     "seconds": 1.5,
+     "diagnostics": null
+    },
+    {
+     "step": "index",
+     "returncode": 0,
+     "seconds": 0.4,
+     "diagnostics": {
+      "errors": 0,
+      "warnings": 0,
+      "error_examples": [],
+      "tail": "[1/2] Indexed /work/tinyxml2/mirror/tinyxml2.cpp\n[2/2] Indexed /work/tinyxml2/mirror/xmltest.cpp\n[1/2] Merged partial index for /work/tinyxml2/mirror/tinyxml2.cpp\n[2/2] Merged partial index for /work/tinyxml2/mirror/xmltest.cpp\nFinished indexing 2 translation units in 0.3s (indexing: 0.3s, merging: 0.0s, num errored TUs: 0).\n"
+     }
+    }
+   ],
+   "scip_clang_warnings": {
+    "is not one of clang/clang++/gcc/g++/nvcc": false,
+    "may be unable to locate standard library headers": false
+   },
+   "first_command": "/daodan/tools/c/usr/bin/x86_64-linux-gnu-g++-13 --sysroot=/daodan/tools/c -DTINYXML2_DEBUG -D_FILE_OFFSET_BITS=64 -I/work/tinyxml2/mirror -g -fvisibility=hidden -fvisibility-inlines-hidden -o CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -c /work/tinyxml2/mirror/tinyxml2.cpp",
+   "new_vs_control": {
+    "equal": false,
+    "files": {
+     "old": {
+      "snapshot": 4,
+      "indexed": 3
+     },
+     "new": {
+      "snapshot": 4,
+      "indexed": 3
+     }
+    },
+    "nodes": {
+     "old": 2063,
+     "new": 2063,
+     "only_old": 3,
+     "only_new": 3,
+     "examples_old": [
+      "cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!",
+      "cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:50:9`!",
+      "cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:52:9`!"
+     ],
+     "examples_new": [
+      "cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!",
+      "cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!",
+      "cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!"
+     ],
+     "changed": 0,
+     "examples_changed": []
+    },
+    "edges": {
+     "old": 7978,
+     "new": 7978,
+     "only_old": 8,
+     "only_new": 8,
+     "examples_old": [
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).\", \"kind\": \"unknown\", \"site\": \"xmltest.cpp:2371\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).\", \"kind\": \"unknown\", \"site\": \"xmltest.cpp:2374\", \"symbol\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\", \"target\": null, \"to\": \"cxx . . $ `/usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#SetError(1f6982509a965239).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2517\", \"symbol\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:50:9`!\", \"target\": null, \"to\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:50:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#SetError(1f6982509a965239).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2519\", \"symbol\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:52:9`!\", \"target\": null, \"to\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:52:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2611\", \"symbol\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:50:9`!\", \"target\": null, \"to\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:50:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2619\", \"symbol\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:52:9`!\", \"target\": null, \"to\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:52:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2621\", \"symbol\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:50:9`!\", \"target\": null, \"to\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:50:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2626\", \"symbol\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:52:9`!\", \"target\": null, \"to\": \"cxx . libgcc-13-dev 13.3.0-6ubuntu2_24.04.1$ `stdarg.h:52:9`!\"}"
+     ],
+     "examples_new": [
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).\", \"kind\": \"unknown\", \"site\": \"xmltest.cpp:2371\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ main(d8e43b79a186046c).\", \"kind\": \"unknown\", \"site\": \"xmltest.cpp:2374\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stddef.h:401:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#SetError(1f6982509a965239).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2517\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#SetError(1f6982509a965239).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2519\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2611\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2619\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2621\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:50:9`!\"}",
+      "{\"chain\": [], \"end\": \"external\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLPrinter#Print(326aeb464d16410c).\", \"kind\": \"call\", \"site\": \"tinyxml2.cpp:2626\", \"symbol\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!\", \"target\": null, \"to\": \"cxx . . $ `/daodan/tools/c/usr/bin/../lib/gcc/x86_64-linux-gnu/13/include/stdarg.h:52:9`!\"}"
+     ]
+    },
+    "holes": {
+     "old": 145,
+     "new": 145,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    },
+    "missing": {
+     "old": 1,
+     "new": 1,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    }
+   },
+   "control_vs_stored": {
+    "equal": false,
+    "files": {
+     "old": {
+      "snapshot": 4,
+      "indexed": 3
+     },
+     "new": {
+      "snapshot": 4,
+      "indexed": 3
+     }
+    },
+    "nodes": {
+     "old": 2063,
+     "new": 2063,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": [],
+     "changed": 0,
+     "examples_changed": []
+    },
+    "edges": {
+     "old": 7978,
+     "new": 7978,
+     "only_old": 7978,
+     "only_new": 7978,
+     "examples_old": [
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:296\", \"symbol\": \"cxx . . $ tinyxml2/DynArray#`DynArray<T, INITIAL_SIZE>`(e69189ea3840cdc4).\", \"to\": \"cxx . . $ tinyxml2/DynArray#`DynArray<T, INITIAL_SIZE>`(e69189ea3840cdc4).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:297\", \"symbol\": \"cxx . . $ tinyxml2/DynArray#`operator=`(e69189ea3840cdc4).\", \"to\": \"cxx . . $ tinyxml2/DynArray#`operator=`(e69189ea3840cdc4).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPoolT#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:437\", \"symbol\": \"cxx . . $ tinyxml2/MemPoolT#`MemPoolT<ITEM_SIZE>`(da7816c2084610f1).\", \"to\": \"cxx . . $ tinyxml2/MemPoolT#`MemPoolT<ITEM_SIZE>`(da7816c2084610f1).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPoolT#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:438\", \"symbol\": \"cxx . . $ tinyxml2/MemPoolT#`operator=`(da7816c2084610f1).\", \"to\": \"cxx . . $ tinyxml2/MemPoolT#`operator=`(da7816c2084610f1).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/StrPair#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:192\", \"symbol\": \"cxx . . $ tinyxml2/StrPair#StrPair(70da401b8cb13f61).\", \"to\": \"cxx . . $ tinyxml2/StrPair#StrPair(70da401b8cb13f61).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/StrPair#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:193\", \"symbol\": \"cxx . . $ tinyxml2/StrPair#`operator=`(70da401b8cb13f61).\", \"to\": \"cxx . . $ tinyxml2/StrPair#`operator=`(70da401b8cb13f61).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLAttribute#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1248\", \"symbol\": \"cxx . . $ tinyxml2/XMLAttribute#XMLAttribute(46512157a6d0904f).\", \"to\": \"cxx . . $ tinyxml2/XMLAttribute#XMLAttribute(46512157a6d0904f).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLAttribute#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1249\", \"symbol\": \"cxx . . $ tinyxml2/XMLAttribute#`operator=`(46512157a6d0904f).\", \"to\": \"cxx . . $ tinyxml2/XMLAttribute#`operator=`(46512157a6d0904f).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1056\", \"symbol\": \"cxx . . $ tinyxml2/XMLComment#XMLComment(7cf7cf64ddeebc32).\", \"to\": \"cxx . . $ tinyxml2/XMLComment#XMLComment(7cf7cf64ddeebc32).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1057\", \"symbol\": \"cxx . . $ tinyxml2/XMLComment#`operator=`(6b6b363e8c6bf72d).\", \"to\": \"cxx . . $ tinyxml2/XMLComment#`operator=`(6b6b363e8c6bf72d).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1095\", \"symbol\": \"cxx . . $ tinyxml2/XMLDeclaration#XMLDeclaration(97c89a16a8f84a61).\", \"to\": \"cxx . . $ tinyxml2/XMLDeclaration#XMLDeclaration(97c89a16a8f84a61).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1096\", \"symbol\": \"cxx . . $ tinyxml2/XMLDeclaration#`operator=`(5f08bf31e292bbb5).\", \"to\": \"cxx . . $ tinyxml2/XMLDeclaration#`operator=`(5f08bf31e292bbb5).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1934\", \"symbol\": \"cxx . . $ tinyxml2/XMLDocument#XMLDocument(6af5ace9cad5d207).\", \"to\": \"cxx . . $ tinyxml2/XMLDocument#XMLDocument(6af5ace9cad5d207).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1935\", \"symbol\": \"cxx . . $ tinyxml2/XMLDocument#`operator=`(6af5ace9cad5d207).\", \"to\": \"cxx . . $ tinyxml2/XMLDocument#`operator=`(6af5ace9cad5d207).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLElement#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1690\", \"symbol\": \"cxx . . $ tinyxml2/XMLElement#XMLElement(199f68c0c204440f).\", \"to\": \"cxx . . $ tinyxml2/XMLElement#XMLElement(199f68c0c204440f).\"}"
+     ],
+     "examples_new": [
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:296\", \"symbol\": \"cxx . . $ tinyxml2/DynArray#`DynArray<T, INITIAL_SIZE>`(e69189ea3840cdc4).\", \"target\": \"tinyxml2.h:296 DynArray (declaration)\", \"to\": \"cxx . . $ tinyxml2/DynArray#`DynArray<T, INITIAL_SIZE>`(e69189ea3840cdc4).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/DynArray#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:297\", \"symbol\": \"cxx . . $ tinyxml2/DynArray#`operator=`(e69189ea3840cdc4).\", \"target\": \"tinyxml2.h:297 operator= (declaration)\", \"to\": \"cxx . . $ tinyxml2/DynArray#`operator=`(e69189ea3840cdc4).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPoolT#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:437\", \"symbol\": \"cxx . . $ tinyxml2/MemPoolT#`MemPoolT<ITEM_SIZE>`(da7816c2084610f1).\", \"target\": \"tinyxml2.h:437 MemPoolT (declaration)\", \"to\": \"cxx . . $ tinyxml2/MemPoolT#`MemPoolT<ITEM_SIZE>`(da7816c2084610f1).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/MemPoolT#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:438\", \"symbol\": \"cxx . . $ tinyxml2/MemPoolT#`operator=`(da7816c2084610f1).\", \"target\": \"tinyxml2.h:438 operator= (declaration)\", \"to\": \"cxx . . $ tinyxml2/MemPoolT#`operator=`(da7816c2084610f1).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/StrPair#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:192\", \"symbol\": \"cxx . . $ tinyxml2/StrPair#StrPair(70da401b8cb13f61).\", \"target\": \"tinyxml2.h:192 StrPair (declaration)\", \"to\": \"cxx . . $ tinyxml2/StrPair#StrPair(70da401b8cb13f61).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/StrPair#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:193\", \"symbol\": \"cxx . . $ tinyxml2/StrPair#`operator=`(70da401b8cb13f61).\", \"target\": \"tinyxml2.h:193 operator= (declaration)\", \"to\": \"cxx . . $ tinyxml2/StrPair#`operator=`(70da401b8cb13f61).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLAttribute#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1248\", \"symbol\": \"cxx . . $ tinyxml2/XMLAttribute#XMLAttribute(46512157a6d0904f).\", \"target\": \"tinyxml2.h:1248 XMLAttribute (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLAttribute#XMLAttribute(46512157a6d0904f).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLAttribute#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1249\", \"symbol\": \"cxx . . $ tinyxml2/XMLAttribute#`operator=`(46512157a6d0904f).\", \"target\": \"tinyxml2.h:1249 operator= (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLAttribute#`operator=`(46512157a6d0904f).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1056\", \"symbol\": \"cxx . . $ tinyxml2/XMLComment#XMLComment(7cf7cf64ddeebc32).\", \"target\": \"tinyxml2.h:1056 XMLComment (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLComment#XMLComment(7cf7cf64ddeebc32).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLComment#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1057\", \"symbol\": \"cxx . . $ tinyxml2/XMLComment#`operator=`(6b6b363e8c6bf72d).\", \"target\": \"tinyxml2.h:1057 operator= (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLComment#`operator=`(6b6b363e8c6bf72d).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1095\", \"symbol\": \"cxx . . $ tinyxml2/XMLDeclaration#XMLDeclaration(97c89a16a8f84a61).\", \"target\": \"tinyxml2.h:1095 XMLDeclaration (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLDeclaration#XMLDeclaration(97c89a16a8f84a61).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDeclaration#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1096\", \"symbol\": \"cxx . . $ tinyxml2/XMLDeclaration#`operator=`(5f08bf31e292bbb5).\", \"target\": \"tinyxml2.h:1096 operator= (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLDeclaration#`operator=`(5f08bf31e292bbb5).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1934\", \"symbol\": \"cxx . . $ tinyxml2/XMLDocument#XMLDocument(6af5ace9cad5d207).\", \"target\": \"tinyxml2.h:1934 XMLDocument (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLDocument#XMLDocument(6af5ace9cad5d207).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLDocument#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1935\", \"symbol\": \"cxx . . $ tinyxml2/XMLDocument#`operator=`(6af5ace9cad5d207).\", \"target\": \"tinyxml2.h:1935 operator= (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLDocument#`operator=`(6af5ace9cad5d207).\"}",
+      "{\"chain\": [\"declaration\"], \"end\": \"project-callable\", \"from\": \"cxx . tinyxml2 9148bdf719e9$ tinyxml2/XMLElement#\", \"kind\": \"unknown\", \"site\": \"tinyxml2.h:1690\", \"symbol\": \"cxx . . $ tinyxml2/XMLElement#XMLElement(199f68c0c204440f).\", \"target\": \"tinyxml2.h:1690 XMLElement (declaration)\", \"to\": \"cxx . . $ tinyxml2/XMLElement#XMLElement(199f68c0c204440f).\"}"
+     ]
+    },
+    "holes": {
+     "old": 145,
+     "new": 145,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    },
+    "missing": {
+     "old": 1,
+     "new": 1,
+     "only_old": 0,
+     "only_new": 0,
+     "examples_old": [],
+     "examples_new": []
+    }
+   },
+   "seconds": 6.1
+  }
+ },
+ "tools": {
+  "stamp": "20261114T000000Z",
+  "base_lacks": [
+   "python3",
+   "gcc",
+   "g++",
+   "make",
+   "cmake",
+   "git",
+   "curl",
+   "ca-certificates"
+  ],
+  "packages": 51,
+  "lacking_in_base": [
+   "binutils",
+   "binutils-common",
+   "binutils-x86-64-linux-gnu",
+   "cpp",
+   "cpp-13",
+   "cpp-13-x86-64-linux-gnu",
+   "cpp-x86-64-linux-gnu",
+   "g++",
+   "g++-13",
+   "g++-13-x86-64-linux-gnu",
+   "g++-x86-64-linux-gnu",
+   "gcc",
+   "gcc-13",
+   "gcc-13-base",
+   "gcc-13-x86-64-linux-gnu",
+   "gcc-x86-64-linux-gnu",
+   "libasan8",
+   "libatomic1",
+   "libbinutils",
+   "libc-dev-bin",
+   "libc6-dev",
+   "libcc1-0",
+   "libcrypt-dev",
+   "libctf-nobfd0",
+   "libctf0",
+   "libgcc-13-dev",
+   "libgomp1",
+   "libgprofng0",
+   "libhwasan0",
+   "libisl23",
+   "libitm1",
+   "libjansson4",
+   "liblsan0",
+   "libmpc3",
+   "libmpfr6",
+   "libquadmath0",
+   "libsframe1",
+   "libstdc++-13-dev",
+   "libtsan2",
+   "libubsan1",
+   "linux-libc-dev",
+   "make",
+   "rpcsvc-proto"
+  ],
+  "versions": {
+   "libc6-dev": "2.39-0ubuntu8.12",
+   "libgcc-13-dev": "13.3.0-6ubuntu2~24.04.1",
+   "libstdc++-13-dev": "13.3.0-6ubuntu2~24.04.1"
+  },
+  "versions_as_stored": true,
+  "absolute_links_rewritten": 0,
+  "download_mib": {
+   "packages": 71.1,
+   "cmake": 50.2,
+   "scip-clang": 142.2
+  },
+  "unpacked_mib": {
+   "sysroot": 248.7,
+   "cmake": 143.1,
+   "scip-clang": 142.2
+  },
+  "seconds": 103.6
+ }
+}
