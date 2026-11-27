@@ -290,6 +290,42 @@ A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo n
 
 **Protocollo cieco.** Variante A del confronto qui sopra: il mapper attuale sull'intero sistema, con la richiesta «analizza questo sistema»; riferimento, domande e aree attese fuori dall'ambiente dell'agente; archivio di solo codice sullo stesso commit (`python code_archive.py OUT.tar CLONE@db35fea9fd090150e2398106aadb475576f80d94`); due ripetizioni indipendenti a parità di modello, tetto e budget; il valutatore confronta con `score.py system` solo dopo il salvataggio di `map.json`, e prima di ogni richiesta di review.
 
+### Diagnosi della scoperta cieca (`T0.B.2`, 27 novembre 2026)
+
+Daodan a `936fb06`, Bank of Anthos a `db35fea9fd090150e2398106aadb475576f80d94` (`code_archive.py`: 411 file tenuti, 38 lasciati, 3 segreti mascherati). Tag `t0b2-anthos`, `--rules session --scopes system --models haiku,qwen --reps 2`, in `results/system/t0b2-anthos/` (fuori da git). Le due `map.json` di Qwen (ripetizioni 1 e 2) hanno lo stesso sha256, `33205a43e74978107052de4f212e8f39b893afaeed48e9e2b0650ef92cee5951`: sono vuote, 0 nodi e 0 flussi.
+
+- **Haiku 5.5: non misurato.** La sessione delle regole finisce al primo turno con «You've hit your weekly limit · resets Dec 2, 1am (UTC)» dell'account del secret `claude-code-alt`. Senza regole la run si ferma e la ripetizione 2 non parte.
+- **Qwen, ripetizione 1:** la sessione delle regole registra 26 regole, poi si chiude con un errore del gateway (`BadRequestError` su `input_tokens`, finestra di contesto). Il mapper smista 14 schede su 97 (10 escluse, 4 irrisolte). Al 45° turno manda una proposta di 22 nodi e 9 flussi, ma il budget della sessione (3 USD, stimato da Claude Code sul nome del modello) la ferma prima della risposta. Non si registra nulla.
+- **Qwen, ripetizione 2:** il mapper rifà la classificazione delle forme e prova a tentoni il formato delle regole. Dopo 44 turni si chiude con «response exceeded the 32000 output token maximum», senza aver proposto nulla.
+- **Collegamenti** (`links.json` della ripetizione 1): 39 ingressi, tutti rotte; 164 archi `chiama`; rotte `offered` 21, `called` 0, `linked` 0. Java `failed` nel passaggio del motore; JavaScript, Python e fogli di stile `fresh`.
+
+Flussi trovati: 0 su 27 per entrambi i modelli. Dei 9 nascosti, 9 mancati. Per ogni flusso si guarda dove cade l'ingresso: i file del nodo d'ingresso oppure, per un nodo senza codice, la riga citata della prima freccia e i file del nodo che raggiunge. La causa è il primo passo che perde il flusso. Il mapper non ha registrato niente, quindi un ingresso presente e collegato si perde nel `mapper`.
+
+| Flusso | Tipo dell'ingresso | Fra quelli di `links.json` | Un percorso parte da lì | Il mapper l'ha aperto o proposto | Causa |
+| --- | --- | --- | --- | --- | --- |
+| Accesso con nome utente e password | controllo dell'interfaccia | no | no | no | `find_entry_points` |
+| Uscita | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
+| Verifica del token JWT nei servizi | rotta | sì | sì | sì | `mapper` |
+| Consenso all'accesso di un'applicazione esterna | rotta | sì | sì | sì | `mapper` |
+| Deposito da un conto esterno | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
+| Pagamento a un contatto | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
+| Controllo del saldo prima di un trasferimento | rotta | sì | sì | no | `mapper` |
+| Rifiuto delle transazioni duplicate | controllo dell'interfaccia | no | no | sì | `find_entry_points` |
+| Aggiornamento dei saldi in memoria | orario | no | no | no | `find_entry_points` |
+| Aggiornamento dello storico in memoria | orario | no | no | no | `find_entry_points` |
+| Sonde di salute dei servizi | orario | sì | sì | sì | `mapper` |
+| Generazione del carico | avvio di un processo | no | no | no | `find_entry_points` |
+| Creazione delle transazioni dimostrative | avvio di un processo | no | no | sì | `find_entry_points` |
+| Popolamento dei database su Cloud SQL | comando | no | no | sì | `find_entry_points` |
+| Esportazione delle tracce | avvio di un processo | sì | sì | sì | `mapper` |
+| Posizione del pod nel piè di pagina | avvio di un processo | sì | sì | sì | `mapper` |
+| Costruzione e rilascio con Skaffold | comando | no | no | sì | `find_entry_points` |
+| Rilascio continuo di una squadra | evento del repository | no | no | no | `find_entry_points` |
+
+Totali per causa, sui 18 flussi visibili mancati: `find_entry_points` 12, `mapper` 6, `list_files` 0, `link_calls` 0, `assemble_graph` 0, `confronto` 0. Nascosti mancati: 9.
+
+Costo: su Modal circa 0,7 USD (app `daodan-system-map` 0,37 USD, più le sandbox della pipeline di quelle ore, condivise con altri giri). Su Anthropic 0 USD, perché Haiku non ha girato. Per Qwen Claude Code stima 7,13 USD con i suoi prezzi, ma il modello passa dal gateway del proprietario.
+
 ### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
 
 Eseguire `python benchmarks/system-map/pipeline_reuse.py`. Lo script crea una volta il manifest SQLite della fixture `js-npm-single`, poi avvia due processi distinti che chiamano `pipeline.run` senza saltare passi. La fixture dichiara pacchetti npm e il comando `node --test`. Ogni corsa imposta `DAODAN_CONTAINER=off`. Le grammatiche e l’ambiente uv di Daodan erano già disponibili.

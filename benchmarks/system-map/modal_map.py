@@ -63,6 +63,8 @@ CASES = {
     "tududi": {"repo": "https://github.com/chrisvel/tududi.git",
                "commit": "71da9d7b34dfd1600657e9c5ddf40420206fd263", "target": ".",
                "rules": "benchmarks/tududi-flow/rules.json"},
+    # the sample of T0.B.4, from `code_archive.py` on the commit of its `source.json`
+    "bank-of-anthos": {"tar": True, "target": "."},
 }
 
 SKIP = ["**/__pycache__/**", "**/node_modules/**", "**/tests/**"]
