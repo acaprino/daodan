@@ -5,13 +5,14 @@ Each step has the same contract: `NAME`, `INPUTS` (what it reads, written by the
 stop, else the words that say how it goes on) and `run(context)`; it says what it does on the context's event bus
 (`pipeline.events`). The snapshot is the pipeline's input; the flows read the complete graph after it.
 
-1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
-   commands run in Daodan's container (`premap.container_runner`). It reads only the inventory
-   (`file_inventory.write`), so it runs before the files are read.
-2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, recognized by the
-   pinned stack-analyser release from the pre-map's declarations and the files it reads by itself, executing
-   nothing of the project (`technologies.ensure`, `stack_recognition.run`); it too reads only the inventory, the
-   modules and the pre-map. A fast scan keeps the signs of the sources it did not run (`technologies.merge`).
+1. `stack`: the frameworks, libraries, tools and services the project's files show, recognized by the pinned
+   stack-analyser release on the files `list_files` keeps, executing nothing of the project
+   (`stack_recognition.ensure`). It reads only the inventory (`file_inventory.write`), so it runs before the files are
+   read, and takes no fact of the pre-map.
+2. `scan`: the module graph and the pre-map, the project's modules; a source of the pre-map that `build-tools.json`
+   names runs only for a build tool the stack found (`premap.BUILD_TOOLS`), and the model commands run in Daodan's
+   container (`premap.container_runner`). Then each module gets the technologies its files declare
+   (`technologies.ensure`). It too reads only the inventory and the stack's record.
 3. `parse`: says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files, executed by
    `snapshot.write_reading`, `engine_pass.pass_plan` and `dynamic.run`. It reads no file: the one reading is
    `snapshot.read_project`, which every caller runs first, and a store that holds only its inventory stops the step.
@@ -84,13 +85,14 @@ class Parse:
 
 
 class Scan:
-    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("inventory",), ("modules", "premap"), None
+    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("inventory", "stack"), ("modules", "premap", "technologies"), None
 
     @staticmethod
     def run(context: Context) -> dict:
         import modules
         import premap
-        _inventory_only(context.manifest)  # the first step: a store that cannot be read stops the run here
+        import technologies
+        _inventory_only(context.manifest)  # a store that cannot be read stops the run here
         bus, manifest = context.bus, context.manifest
         graph = modules.ensure_structure(manifest)
         if graph["state"] != "fresh":
@@ -106,8 +108,16 @@ class Scan:
         synced = modules.sync_with_premap(manifest, record)
         for gap in record.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
-        return {"modules": len(synced["modules"]), "graph": graph["graph"], "action": graph.get("action"),
-                "units": len(record["units"]), "gaps": len(record["gaps"]), "premap": str(premap.path(manifest))}
+        out = {"modules": len(synced["modules"]), "graph": graph["graph"], "action": graph.get("action"),
+               "units": len(record["units"]), "gaps": len(record["gaps"]), "premap": str(premap.path(manifest))}
+        try:  # the technologies of each module, with the file that declares them: the analysis needs none
+            out["technologies"] = len(technologies.ensure(manifest, facts=record)["technologies"])
+        except Exception as error:  # noqa: BLE001 - said, as a failed stack step is, and the run goes on
+            cause = f"{type(error).__name__}: {error}"
+            bus.emit("log", f"the technologies of the modules: {error}", step=Scan.NAME, level="error", cause=cause,
+                     remedy=Stack.WITHOUT)
+            out["technologies_failed"] = cause
+        return out
 
 
 def _runner(manifest: Path):
@@ -134,15 +144,16 @@ def _runner(manifest: Path):
 
 
 class Stack:
-    NAME, INPUTS, OUTPUTS = "stack", ("inventory", "modules", "premap"), ("technologies",)
+    NAME, INPUTS, OUTPUTS = "stack", ("inventory",), ("stack",)
     WITHOUT = "the analysis goes on; scan again to recognize the technologies"  # the analysis needs no technology
 
     @staticmethod
     def run(context: Context) -> dict:
-        import technologies
-        record = technologies.ensure(context.manifest)
-        return {"technologies": len(record["technologies"]), "units": len(record["units"]),
-                "modules": len(record["modules"]), "path": str(technologies.path(context.manifest))}
+        import stack_recognition
+        _inventory_only(context.manifest)  # the first step: a store that cannot be read stops the run here
+        record = stack_recognition.ensure(context.manifest)
+        return {"technologies": len(record["found"]), "tools": record["tools"],
+                "path": str(stack_recognition.path(context.manifest))}
 
 
 class Analyze:
@@ -274,7 +285,8 @@ class Union:
                          "examples": conflicts["examples"], "detail": detail}, language)
 
 
-STEPS = (Scan, Stack, Parse, Analyze, Dynamic, Union)
+STEPS = (Stack, Scan, Parse, Analyze, Dynamic, Union)
+
 # What the pipeline is given, the snapshot `read_project` wrote (its inventory, and the files read): every other input of a
 # step is the output of a step before it.
 INPUTS = ("inventory", "snapshot")

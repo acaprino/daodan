@@ -390,15 +390,15 @@ Il rilascio è fissato e verificato con sha256: `stack_analyser.VERSION` (`1.27.
 Il registro (`data/service-registry.json`) è solo anagrafica: nome, tipo, categoria, sito, marchio, host. Non ha segni.
 Disegno e motivi: la spec dello stack dal fork, nella storia di git (commit `614c940`).
 
-**Una scansione, in ordine** (`stack_recognition.run`, poi `technologies.derive`):
+**Una scansione, in ordine** (`stack_recognition.ensure`, poi `premap.ensure` e `technologies.derive`): lo step `stack` gira
+per primo, sui file di `list_files`, senza i fatti della pre-mappa.
 
-1. `scan` scrive la pre-mappa: i fatti e lo stato di ogni fonte (`premap.ensure`).
-2. Pacchetti, immagini dei servizi e basi dei Dockerfile diventano dichiarazioni, una per fonte (`stack_recognition.declarations`).
-3. Il perimetro va al fork in un file: cartelle da saltare, percorsi esclusi dalla pre-mappa, file vietati o dal nome segreto, ogni link (`stack_recognition.perimeter`).
-4. Il fork gira sull'host, con il Node di Daodan, in una cartella sua: legge file, non esegue nulla del progetto (`stack_analyser.run`).
-5. Le sue prove diventano segni; gli host negli URL dei sorgenti si aggiungono come menzioni (`stack_recognition._signs`, `registry_hosts.check_hosts`, `stack_recognition.found`).
-6. I segni nuovi si uniscono a quelli conservati dal record di prima (`technologies.merge`).
-7. Ogni modulo riceve le tecnologie dichiarate nei suoi file; il record va in `technologies.json` (`technologies.derive`, `technologies.ensure`).
+1. Il perimetro va al fork in un file: cartelle da saltare, percorsi che l'header dello snapshot esclude (`excluded`), file vietati o dal nome segreto, ogni link (`stack_recognition.perimeter`).
+2. Il fork gira sull'host, con il Node di Daodan, in una cartella sua: legge file, non esegue nulla del progetto, non riceve dichiarazioni (`stack_analyser.run`).
+3. Le sue prove diventano segni; gli host negli URL dei sorgenti si aggiungono come menzioni (`stack_recognition._signs`, `registry_hosts.check_hosts`, `stack_recognition.found`); il record va in `stack.json`, con gli strumenti di build trovati (`stack_recognition.ensure`, `tools`).
+4. `scan` scrive la pre-mappa: una fonte che `build-tools.json` nomina gira solo per uno strumento trovato dal fork; senza il record del fork girano tutte (`premap._chosen`).
+5. I segni nuovi si uniscono a quelli conservati dal record di prima (`technologies.merge`).
+6. Ogni modulo riceve le tecnologie dichiarate nei suoi file; il record va in `technologies.json` (`technologies.derive`, `technologies.ensure`).
 
 Niente di ciò che il fork incontra ferma lo step: diventa un controllore `failed` e un buco `checker_failed` con causa e rimedio (`stack_recognition._failed`).
 
@@ -408,7 +408,7 @@ Niente di ciò che il fork incontra ferma lo step: diventa un controllore `faile
 - Conserva gli altri, ognuno con la scansione da cui viene, finché il suo file esiste e la pre-mappa non lo esclude.
 - Quando conserva qualcosa scrive il buco `signs_kept`, con le fonti e le scansioni.
 - Una tecnologia resta finché ha un segno.
-- Le fonti eseguite (`ran`): `registry_hosts`; `stack-analyser`, se il fork ha girato; e solo allora le fonti della pre-mappa in stato `ran` o `not_needed` (`stack_recognition._premap_sources`).
+- Le fonti eseguite (`ran`): `registry_hosts`; `stack-analyser`, se il fork ha girato. Il segno di un'altra fonte (una dichiarazione della pre-mappa di prima) non si conserva (`stack_recognition.SOURCES`).
 
 **Veloce e completa.**
 
@@ -434,11 +434,10 @@ Le misure del piano 2: [README di project-model](../../benchmarks/project-model/
 | `path` | Il file, relativo alla radice del progetto |
 | `line` | La riga, quando la fonte la conosce; altrimenti `null` |
 | `strength` | `declared`; `mentioned` per `env` e `host`. Una tecnologia con soli segni `mentioned` sta in `mentioned`, non in `technologies` |
-| `source` | Chi l'ha letto: `stack-analyser` (il fork da solo), l'etichetta di una fonte della pre-mappa (`nome@versione`), `registry_hosts` |
+| `source` | Chi l'ha letto: `stack-analyser` (il fork), `registry_hosts` |
 | `scan` | L'`inputs_digest` della pre-mappa della scansione che l'ha prodotto |
 
-Lo stesso pacchetto nello stesso file può avere due segni: la lettura del fork e la dichiarazione della pre-mappa, con la riga.
-Restano entrambi. `technologies.sites` ne fa un sito per (`sign`, `path`, `line`): un segno senza riga è il sito di una riga del suo file, se il file ne ha una per la tecnologia; altrimenti un sito per nome.
+`technologies.sites` fa un sito per (`sign`, `path`, `line`): un segno senza riga è il sito di una riga del suo file, se il file ne ha una per la tecnologia; altrimenti un sito per nome.
 Le variabili d'ambiente nei sorgenti non danno più menzioni. I servizi generici del fork (`aws`, `azure`, `google`, …) restano come li dà.
 
 **Node.** Il fork gira sul Node di Daodan, mai su quello della macchina:
@@ -455,17 +454,18 @@ Le variabili d'ambiente nei sorgenti non danno più menzioni. I servizi generici
 | Node non si installa (meno di 1 GB libero, `DAODAN_SHARED_DIR` non assoluta, sha256 diverso) | Come sopra | `stack_analyser.node`, `runtime.room`, `runtime.fetching` |
 | Il fork fallisce (non parte, esce con un errore, non scrive JSON, non risponde in 300 s) | Come sopra, ma il fallimento non è ricordato: riprova la scansione dopo che cambia gli ingressi, o un processo nuovo | `stack_analyser._start`, `_answer`, `TIMEOUT` |
 | Il fork dà una prova malformata | La prova si scarta e si conta (`evidence_malformed`); le altre restano | `stack_recognition._item`, `_signs` |
-| C'è un record scritto con il fork fermo | Alla lettura dopo è vecchio e si deriva di nuovo, se il processo non ricorda un'installazione fallita e non l'ha derivato lui con gli stessi ingressi | `technologies._read` |
+| C'è un record scritto con il fork fermo | Alla lettura dopo è vecchio e si deriva di nuovo, se il processo non ricorda un'installazione fallita e non l'ha derivato lui con gli stessi ingressi; `technologies.json` segue `stack.json` | `stack_recognition._read` |
 | Un file è cancellato | I segni conservati su quel file se ne vanno | `technologies.merge` (`exists`) |
-| Un percorso diventa escluso | Il fork non lo apre; le sue prove e i segni conservati lì si scartano; una dichiarazione lì è il buco `declaration_not_sent` | `stack_recognition.perimeter`, `_signs`, `declarations`; `technologies.derive` (`exists`) |
-| Si fissa un rilascio nuovo | Il record è vecchio (`VERSION` e `SHA256` sono fra i suoi ingressi); il rilascio si scarica al primo uso. Un id che il registro non ha esce con il suo nome e il buco `not_in_registry`, finché `registry_build.py build` non rigenera il registro | `technologies._inputs`, `stack_recognition.found` |
+| Un percorso diventa escluso | Il fork non lo apre; le sue prove e i segni conservati lì si scartano | `stack_recognition.perimeter`, `_signs`; `technologies.derive` (`exists`) |
+| Si fissa un rilascio nuovo | Il record è vecchio (`VERSION` e `SHA256` sono fra i suoi ingressi); il rilascio si scarica al primo uso. Un id che il registro non ha esce con il suo nome e il buco `not_in_registry`, finché `registry_build.py build` non rigenera il registro | `stack_recognition._inputs`, `found` |
 
 **Dove sta ogni cosa** (in `daodan/core/`):
 
 | Modulo | Responsabilità |
 | --- | --- |
 | `premap/` | I fatti della pre-mappa e lo stato di ogni fonte (`premap.ensure`) |
-| `stack_recognition.py` | La traduzione: dichiarazioni, perimetro, prove in segni, menzioni di host (`run`) |
+| `stack_recognition.py` | Lo step `stack`: perimetro, prove in segni, menzioni di host (`run`), il record e gli strumenti di build (`ensure`, `tools`) |
+
 | `stack_analyser.py` | Il rilascio fissato: installarlo, lanciarlo, leggerne il catalogo (`cli`, `node`, `run`, `catalogue`) |
 | `indexers/runtime.py` | Il Node di Daodan (`node`) |
 | `registry_hosts.py` | Gli host negli URL dei sorgenti, letti con tree-sitter, come menzioni (`check_hosts`) |

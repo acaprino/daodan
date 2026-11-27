@@ -269,13 +269,10 @@ class RecognizeTests(unittest.TestCase):
         shutil.rmtree(cls.work, True)
 
     def test_each_sign_says_where_it_is(self):
-        # the release reads each file by itself (no line) and is given the pre-map's declarations: both stay, each with
-        # its source (the source's name, the label up to `@`)
+        # the release reads each file by itself (no line): the stack runs before the pre-map and is given no declaration
         signs = {(s["sign"], s["value"], s["path"], s["line"], s["source"].partition("@")[0])
                  for s in self.found["stripe"]["signs"]}
-        self.assertEqual(signs, {("package", "stripe", "web/package.json", 1, "modules.py"),
-                                 ("package", "stripe", "web/package.json", None, "stack-analyser"),
-                                 ("package", "stripe", "api/requirements.txt", 1, "requirements"),
+        self.assertEqual(signs, {("package", "stripe", "web/package.json", None, "stack-analyser"),
                                  ("package", "stripe", "api/requirements.txt", None, "stack-analyser")})
         self.assertEqual((self.found["stripe"]["source"], self.found["stripe"]["type"]), ("registry", "gateway"))
 
@@ -320,13 +317,6 @@ class RecognizeTests(unittest.TestCase):
         self.assertNotIn(("package", "api/requirements.txt"), signs)
         self.assertEqual(sorted(p.name for p in Path(self.manifest).parent.glob(".technologies-*")), [])
 
-    def test_a_service_of_the_premap_is_a_sign_at_the_file_declaring_it(self):
-        workflow = ".github/workflows/ci.yml"
-        found = {r["id"]: r for r in stack_recognition.run(self.manifest, facts={"services": [
-            {"name": "db", "image": "postgres:16-alpine", "declared_in": workflow + "#jobs.test.services.db",
-             "sources": ["renovate@1"]}]})["found"]}
-        self.assertEqual(found["postgresql"]["signs"], [{"sign": "package", "value": "postgres", "path": workflow,
-                                                         "line": None, "strength": "declared", "source": "renovate@1"}])
 
 
 HOSTILE = b"""<?xml version="1.0"?>

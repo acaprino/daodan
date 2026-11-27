@@ -51,7 +51,8 @@ SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm
            gitmodules, autotools, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
            gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, angular, astro)
 # Each build tool the stack names (a registry id of `category` `tool`) -> the `NAME`s of the sources that model it
-# (`daodan/data/build-tools.json`); its coherence with the registry and `SOURCES` is a test of the pre-map.
+# (`daodan/data/build-tools.json`); its coherence with the registry and `SOURCES` is a test of the pre-map. A source it
+# names runs only for a tool the stack found (`_chosen`); the others run on every project.
 BUILD_TOOLS = json.loads((SCRIPT_DIR.parent / "data" / "build-tools.json").read_text(encoding="utf-8"))
 # The sources whose `framework_entries` rows are entries of their own (a page, a route handler): `flow_entries.evidence` reads
 # each one's rows and gaps, and the key of the cached links hashes each one's file (`flows._links_reader_digest`). Another
@@ -454,11 +455,29 @@ def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | 
             [{**gap, "source": name} for gap in result.get("gaps") or []])
 
 
-def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dict:
+def _chosen(sources, tools) -> tuple:
+    """`sources` without those `BUILD_TOOLS` names for no tool of `tools` (the registry ids the stack found): they run no
+    command and state no gap. With `tools` None (no stack record of this inventory, or the tool did not run) all run."""
+    sources = tuple(SOURCES if sources is None else sources)
+    if tools is None:
+        return sources
+    named = {name for names in BUILD_TOOLS.values() for name in names}
+    wanted = {name for tool in tools for name in BUILD_TOOLS.get(tool, ())}
+    return tuple(source for source in sources if source.NAME not in named or source.NAME in wanted)
+
+
+def _tools(manifest: Path, digest: str):
+    """The build tools the stack step found for the inventory of `digest` (`stack_recognition.named`)."""
+    import stack_recognition
+    return stack_recognition.named(manifest, digest)
+
+
+def derive(manifest: Path, store, sources=None, runner=None, report=None, tools=None) -> dict:
     """The pre-map of the snapshot in `store`; `runner(commands) -> results` runs the model commands, each
     `{tool, argv, cwd, env}` under the project's root, each result `{returncode, stdout, stderr, root}` with
-    `root` the project's absolute path where it ran."""
-    sources = tuple(SOURCES if sources is None else sources)
+    `root` the project's absolute path where it ran; `tools`, the build tools the stack found, chooses the sources
+    (`_chosen`)."""
+    sources = _chosen(sources, tools)
     context = Context(manifest, store)
     ran: dict[int, tuple] = {}
     readers = [i for i, s in enumerate(sources) if not hasattr(s, "commands")]
@@ -504,7 +523,7 @@ def write(manifest: Path, sources=None, runner=None, report=None) -> dict:
     confinement.reject_link_chain(target)
     with open_snapshot(manifest) as store:
         stamp = _snapshot_stamp(manifest)
-        record = derive(manifest, store, sources, runner, report)
+        record = derive(manifest, store, sources, runner, report, _tools(manifest, inventory_digest(store)))
         if inventory_digest(store) != record["binding"]["inventory_digest"] or _snapshot_stamp(manifest) != stamp:
             raise ValueError("snapshot changed during the pre-map; retry")
         record["binding"]["snapshot_stamp"] = stamp
@@ -530,7 +549,7 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
     except (OSError, ValueError) as error:
         return {**report, "state": "corrupt", "reason": str(error)}
     binding = record.get("binding") or {}
-    sources = tuple(SOURCES if sources is None else sources)
+    sources = _chosen(sources, _tools(manifest, binding.get("inventory_digest")))
     current = _inputs(binding.get("inventory_digest"), binding.get("root"), sources)
     if record.get("inputs_digest") != current or not binding_matches(manifest, binding):
         return {**report, "state": "stale", "reason": "snapshot or sources changed since the pre-map"}

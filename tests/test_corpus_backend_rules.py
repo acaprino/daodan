@@ -11,6 +11,7 @@ if str(CORE) not in sys.path:
     sys.path.insert(0, str(CORE))
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
+import technologies  # noqa: E402
 from pipeline import Context, Scan, Stack, events  # noqa: E402
 from test_codebase_map_stack_recognition import fact, package_signs, recognized  # noqa: E402
 
@@ -106,8 +107,9 @@ def test_reader_only_scan_and_stack_identify_spring_boot_in_its_declaring_module
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(root, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
+    Stack.run(context)  # the stack first: its build tools choose the pre-map's sources
     facts = json.loads(Path(Scan.run(context)["premap"]).read_text(encoding="utf-8"))
-    record = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))
+    record = json.loads(technologies.path(manifest).read_text(encoding="utf-8"))
 
     packages = {(p["name"], p.get("version"), p["declared_in"]) for p in facts["packages"] if p["ecosystem"] == "maven"}
     assert {
@@ -120,5 +122,5 @@ def test_reader_only_scan_and_stack_identify_spring_boot_in_its_declaring_module
               for unit in record["units"] if "spring-boot" in unit["frameworks"]}
     assert owners == {
         ("api",): {"path": "api/pom.xml", "line": 7},
-        ("worker",): {"path": "worker/build.gradle.kts", "line": 2},
+        ("worker",): {"path": "worker/build.gradle.kts"},  # the release names the plugin by its marker artifact: no line
     }

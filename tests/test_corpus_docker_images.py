@@ -9,6 +9,7 @@ if str(CORE) not in sys.path:
 
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
+import technologies  # noqa: E402
 from pipeline import Context, Scan, Stack, events  # noqa: E402
 from test_codebase_map_stack_recognition import package_signs, recognized  # noqa: E402
 
@@ -36,26 +37,26 @@ def test_dockerfile_and_compose_keep_the_original_registry_and_owning_publisher(
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(project, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
+    Stack.run(context)  # the stack first: its build tools choose the pre-map's sources
     facts = json.loads(Path(Scan.run(context)["premap"]).read_text(encoding="utf-8"))
-    stack = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))
+    stack = json.loads(technologies.path(manifest).read_text(encoding="utf-8"))
     packages = {d["name"] for d in facts["packages"] if d["ecosystem"] == "docker"}
     assert packages == {"postgres", "private.example:5000/library/postgres", "custom/redis",
                         "redis", "mirror.example/redis", "localhost:5000/playwright", "mcr.microsoft.com/playwright"}
     assert {s["image"] for s in facts["configured_services"]} == {
         "docker.io/library/postgres:16", "private.example:5000/library/postgres:16", "custom/redis:7"}
-    # the release reads each file by itself (no line, the repository as written) and is given the pre-map's
-    # declarations (the name as the pre-map keeps it): both stay, each with its source (the label up to `@`)
+    # the release reads each file by itself (the repository as written), given none of the pre-map's declarations: the
+    # line is where the pre-map declares the image (`technologies._placed`)
     signs = {e["id"]: {(s["value"], s["path"], s["line"], s["source"].partition("@")[0])
                        for s in e["signs"] if s["sign"] == "package"} for e in stack["technologies"]}
-    assert signs["postgresql"] == {("postgres", "compose.yaml", 3, "modules.py"),
-                                   ("docker.io/library/postgres", "compose.yaml", None, "stack-analyser")}
-    assert signs["redis"] == {("redis", "Dockerfile", 1, "modules.py"),
-                              ("registry-1.docker.io/library/redis", "Dockerfile", None, "stack-analyser")}
-    assert signs["playwright"] == {("mcr.microsoft.com/playwright", "Dockerfile", 4, "modules.py"),
-                                   ("mcr.microsoft.com/playwright", "Dockerfile", None, "stack-analyser")}
+    assert signs["postgresql"] == {("docker.io/library/postgres", "compose.yaml", 3, "stack-analyser")}
+    assert signs["redis"] == {("registry-1.docker.io/library/redis", "Dockerfile", 1, "stack-analyser")}
+    assert signs["playwright"] == {("mcr.microsoft.com/playwright", "Dockerfile", 4, "stack-analyser")}
 
 
 def test_saved_packages_ci_service_images_and_docker_builds_share_exact_match_semantics(real_stack, tmp_path):
+    """The catalogue's rule for an image name, whatever file names it: each image is given to the release as a
+    declaration (`recognized`), as `step1_packages` keeps it."""
     leaf = "gcr.io/distroless/nodejs24-debian13"  # real-svc-otel-demo, src/frontend/Dockerfile
     facts = {
         "packages": [{"ecosystem": "docker", "name": "index.docker.io/library/postgres", "declared_in": "compose.yaml#L8",
@@ -72,7 +73,10 @@ def test_saved_packages_ci_service_images_and_docker_builds_share_exact_match_se
     }
     packages = service_registry.step1_packages(Path("unused"), facts)
     assert sum(path == "compose.yaml" for _, _, path, *_ in packages) == 1
-    matches = package_signs(recognized(tmp_path, **facts))
+    matches = package_signs(recognized(tmp_path, packages=[
+        {"ecosystem": "docker", "name": name, "declared_in": f"{path}#L{line}" if line else path, "sources": ["test@1"]}
+        for _, name, path, line, _ in packages]))
+
     assert {s for s in matches if s[0] in {"postgresql", "redis", "nodejs"}} == {
         ("postgresql", "index.docker.io/library/postgres", "compose.yaml", 8),
         ("postgresql", "registry-1.docker.io/bitnami/postgresql", "job.yaml", None),

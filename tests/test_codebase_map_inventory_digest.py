@@ -25,7 +25,7 @@ from test_codebase_map_premap_container_runner import manifest_of  # noqa: E402
 
 def _scanned(tmp_path):
     root, manifest = manifest_of(tmp_path, FILES)
-    pipeline.run(manifest, start="scan", stop="stack", fast_scan=True)
+    pipeline.run(manifest, stop="scan", fast_scan=True)
     modules.ensure_graph(manifest)
     return root, manifest
 

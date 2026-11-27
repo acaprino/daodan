@@ -46,8 +46,9 @@ def test_scan_and_stack_resolve_a_dependency_at_its_declaring_package(tmp_path):
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(project, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
+    Stack.run(context)  # the stack first: its build tools choose the pre-map's sources
     graph = modules.load_graph(Path(Scan.run(context)["graph"]))
-    record = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))
+    record = json.loads(technologies.path(manifest).read_text(encoding="utf-8"))
     edges = [(e["kind"], e["source"], e["target"]) for e in graph["edges"]]
     assert {(src, dst) for kind, src, dst in edges if kind == "declares"} == {
         ("worker@a", "left"), ("worker@b", "right")}

@@ -16,6 +16,7 @@ import file_inventory  # noqa: E402
 import modules  # noqa: E402
 import pipeline  # noqa: E402
 import premap  # noqa: E402
+import stack_recognition  # noqa: E402
 import snapshot  # noqa: E402
 import technologies  # noqa: E402
 from test_codebase_map_module_edges_in_connect import FILES  # noqa: E402
@@ -34,9 +35,9 @@ def _project(tmp_path) -> Path:
 
 
 def _written(manifest: Path) -> dict:
-    """The three files `scan` and `stack` write, without what names this very snapshot file."""
+    """The four files `stack` and `scan` write, without what names this very snapshot file."""
     out = {}
-    for name in (premap.FILE, modules.graph_name(manifest).name, technologies.path(manifest).name):
+    for name in (stack_recognition.FILE, premap.FILE, modules.graph_name(manifest).name, technologies.path(manifest).name):
         record = json.loads(manifest.with_name(name).read_text(encoding="utf-8"))
         for key in ("binding",):
             record.pop(key, None)
@@ -46,8 +47,8 @@ def _written(manifest: Path) -> dict:
     return out
 
 
-def test_the_steps_are_scan_stack_then_parse():
-    assert [step.NAME for step in pipeline.STEPS][:3] == ["scan", "stack", "parse"]
+def test_the_steps_are_stack_scan_then_parse():
+    assert [step.NAME for step in pipeline.STEPS][:3] == ["stack", "scan", "parse"]
 
 
 def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(real_stack, tmp_path):
@@ -56,7 +57,7 @@ def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(
     snapshot.read_project(root, read)
     file_inventory.write(root, listed)
     for manifest in (read, listed):
-        result = pipeline.run(manifest, start="scan", stop="stack", fast_scan=True)
+        result = pipeline.run(manifest, stop="scan", fast_scan=True)
         assert "failed" not in result["scan"] and "failed" not in result["stack"], result
     assert "pushbullet" in {item["id"] for item in _written(read)[technologies.path(read).name]["mentioned"]}  # a sign read in the text
     assert _written(listed) == _written(read)
@@ -83,7 +84,7 @@ def test_what_scan_and_stack_wrote_stays_fresh_once_the_files_are_read(tmp_path)
     root = _project(tmp_path)
     manifest = tmp_path / "out" / "manifest.sqlite"
     file_inventory.write(root, manifest)
-    result = pipeline.run(manifest, start="scan", stop="stack", fast_scan=True)
+    result = pipeline.run(manifest, stop="scan", fast_scan=True)
     assert "failed" not in result["scan"] and "failed" not in result["stack"], result
     snapshot.read_project(root, manifest)  # the reading replaces the store that held only the inventory
     assert premap.state(manifest)["state"] == "fresh"

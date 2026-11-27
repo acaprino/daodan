@@ -157,8 +157,8 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
-    assert steps == [("step.started", "scan"), ("step.finished", "scan"), ("step.started", "stack"),
-                     ("step.finished", "stack"), ("step.started", "parse"), ("step.finished", "parse"),
+    assert steps == [("step.started", "stack"), ("step.finished", "stack"), ("step.started", "scan"),
+                     ("step.finished", "scan"), ("step.started", "parse"), ("step.finished", "parse"),
                      ("step.started", "analyze"),
                      ("step.finished", "analyze"), ("step.started", "dynamic"), ("step.finished", "dynamic"),
                      ("step.started", "union"), ("step.finished", "union")]
@@ -187,8 +187,8 @@ def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp
     snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert list(result) == ["scan"]
-    assert [e["step"] for e in seen if e["kind"].startswith("step.")] == ["scan", "scan"]
+    assert list(result) == ["stack", "scan"]
+    assert [e["step"] for e in seen if e["kind"].startswith("step.")] == ["stack", "stack", "scan", "scan"]
     with mock.patch.object(pipeline.Analyze, "run", side_effect=pipeline.StepFailed("no store", "write it")):
         result = pipeline.run(manifest, listeners=[seen.append], start="analyze")
     assert result == {"analyze": {"failed": "no store", "remedy": "write it"}}
@@ -222,19 +222,23 @@ def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs
 
 
 def test_a_failing_stack_step_says_why_and_does_not_stop_the_steps_after_it(tmp_path):
-    import technologies
+    """The scan goes on without the stack's build tools (every source of `find_modules` runs), and says that the
+    technologies of the modules failed as the stack step did."""
+    import stack_recognition
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
     snapshot.read_project(tmp_path / "p", manifest)
     seen = []
-    with mock.patch.object(technologies, "ensure", side_effect=OSError("disk full")):
-        result = pipeline.run(manifest, listeners=[seen.append], start="stack", stop="stack")
-    assert result == {"stack": {"failed": "OSError: disk full"}}
-    [said] = [e for e in seen if e["level"] == "error"]
-    assert (said["kind"], said["step"]) == ("log", "stack") and said["data"]["remedy"] == pipeline.Stack.WITHOUT
-    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "stack"}
-    assert seen[-1]["data"]["failed"] == "OSError: disk full"  # a listener of the step's end alone knows how it ended
+    with mock.patch.object(stack_recognition, "ensure", side_effect=OSError("disk full")):
+        result = pipeline.run(manifest, listeners=[seen.append], stop="scan", fast_scan=True)
+    assert result["stack"] == {"failed": "OSError: disk full"}
+    assert "failed" not in result["scan"] and result["scan"]["technologies_failed"] == "OSError: disk full"
+    said = [e for e in seen if e["level"] == "error"]
+    assert [(e["kind"], e["step"], e["data"]["remedy"]) for e in said] == [
+        ("log", "stack", pipeline.Stack.WITHOUT), ("log", "scan", pipeline.Stack.WITHOUT)]
+    [ended] = [e for e in seen if e["kind"] == "step.finished" and e["step"] == "stack"]
+    assert ended["data"]["failed"] == "OSError: disk full"  # a listener of the step's end alone knows how it ended
 
 
 def test_the_union_says_why_no_run_was_observed_when_the_dynamic_step_gave_no_reason(tmp_path):
@@ -320,7 +324,7 @@ def test_the_pass_records_how_long_each_stage_took(tmp_path):
 
 def test_a_start_or_stop_that_names_no_step_is_refused_before_any_event(tmp_path):
     seen = []
-    with pytest.raises(ValueError, match="no step 'analyse': the steps are scan, stack, parse, analyze, dynamic, union"):
+    with pytest.raises(ValueError, match="no step 'analyse': the steps are stack, scan, parse, analyze, dynamic, union"):
         pipeline.run(tmp_path / "manifest.sqlite", listeners=[seen.append], start="analyse")
     assert seen == [] and not (tmp_path / events.JOURNAL).exists()
 
@@ -364,7 +368,9 @@ def test_an_error_a_step_the_others_need_does_not_foresee_is_said_before_it_leav
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
-    assert [step.NAME for step in pipeline.STEPS] == ["scan", "stack", "parse", "analyze", "dynamic", "union"]
+    assert [step.NAME for step in pipeline.STEPS] == ["stack", "scan", "parse", "analyze", "dynamic", "union"]
+    assert pipeline.Stack.INPUTS == ("inventory",)  # the stack takes no fact of the pre-map
+
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
     # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
@@ -409,15 +415,15 @@ def test_the_parse_step_stops_on_a_store_that_holds_only_its_inventory_and_only_
 
 
 def test_a_snapshot_that_cannot_be_read_stops_the_run_with_its_remedy(tmp_path):
-    """The first step, the scan, stops the run with the remedy: a step failure, not an error; so does the parse step, where
-    a run starts at it (the detached pass starts at `stack`)."""
+    """The first step, the stack, stops the run with the remedy: a step failure, not an error; so do the scan and the parse
+    step, where a run starts at one of them."""
     manifest = tmp_path / "out" / "manifest.sqlite"
     manifest.parent.mkdir()
     manifest.write_bytes(b"not a snapshot")
     for written in (True, False):
         if not written:
             manifest.unlink()
-        for first in ("scan", "parse"):
+        for first in ("stack", "scan", "parse"):
             seen = []
             result = pipeline.run(manifest, listeners=[seen.append], start=first, stop=first)
             assert list(result) == [first] and result[first]["remedy"] == "write the snapshot again"

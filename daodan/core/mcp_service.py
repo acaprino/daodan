@@ -499,7 +499,7 @@ class MapService:
                     self._event(run, "index_failed", message=f"{index['state']}: {index['reason']}")
                 if format == "sqlite":
                     import pipeline
-                    piped = pipeline.run(run / state["snapshot"]["path"], stop="stack", fast_scan=True)
+                    piped = pipeline.run(run / state["snapshot"]["path"], stop="scan", fast_scan=True)
                     scanned = piped["scan"]
                     if "failed" in scanned:
                         self._event(run, "modules_failed", message=str(scanned["failed"])[:MAX_MESSAGE])

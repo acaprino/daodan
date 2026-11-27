@@ -1085,3 +1085,39 @@ def test_build_tools_names_registry_tools_and_pre_map_sources_and_every_model_so
     assert named <= {source.NAME for source in premap.SOURCES}
     modelled = {source.NAME for source in premap.SOURCES if hasattr(source, "commands")}
     assert modelled - named == set(NOT_A_BUILD_TOOL)
+
+
+def test_a_source_build_tools_names_runs_only_for_a_tool_the_stack_found():
+    """`find_modules` follows the stack: a source of `build-tools.json` runs for a tool the stack found, one it does not
+    name runs on every project, and without the stack's tools (None) every source runs."""
+    named = {name for names in premap.BUILD_TOOLS.values() for name in names}
+    kept = {source.NAME for source in premap._chosen(None, ["cargo"])}
+    assert "cargo" in kept and not (named - {"cargo"}) & kept
+    assert {source.NAME for source in premap.SOURCES} - named <= kept  # renovate, compose, noir, cmake...
+    assert premap._chosen(None, None) == premap.SOURCES
+    assert {source.NAME for source in premap._chosen(None, ["nodejs"])} & named == {"npm", "npm-files", "npm-tests",
+                                                                                   "npm-start"}
+
+
+def test_the_pre_map_follows_the_build_tools_of_the_stack_record_of_its_inventory(tmp_path):
+    """A stack record of this inventory chooses the sources, and the pre-map is stale once it names other tools; a
+    record of another inventory chooses nothing."""
+    import stack_recognition
+    from snapshot_store import inventory_digest
+    _, manifest, everything = build(tmp_path, "npm_workspace")
+    assert "npm-files" in {s["source"].partition("@")[0] for s in everything["sources"]}
+    with open_snapshot(manifest) as store:
+        digest = inventory_digest(store)
+
+    def stack(tools, inventory=digest):
+        stack_recognition.path(manifest).write_text(json.dumps({
+            "schema": stack_recognition.SCHEMA, "inventory_digest": inventory, "tools": tools}), encoding="utf-8")
+
+    stack(["golang"])
+    assert premap.state(manifest)["state"] == "stale"
+    record = premap.ensure(manifest)
+    stated = {s["source"].partition("@")[0] for s in record["sources"]}
+    assert not {"npm", "npm-files", "npm-tests", "npm-start"} & stated and {"go", "renovate"} <= stated
+    assert premap.state(manifest)["state"] == "fresh"
+    stack(["golang"], inventory="another")
+    assert premap.state(manifest)["state"] == "stale"  # every source again

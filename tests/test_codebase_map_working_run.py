@@ -152,16 +152,16 @@ class WorkingRunTests(unittest.TestCase):
             modules.graph_name(working))["modules"]})
 
     def test_the_first_refresh_keeps_the_signs_of_the_full_scan_sources_it_does_not_run(self):
-        """A source only the full scan runs (here `renovate`) keeps its signs, with the full scan's `scan`, in the
+        """A source the refresh does not run (here the host check) keeps its signs, with the full scan's `scan`, in the
         working run born from the published one."""
         import stack_recognition
         import technologies
-        renovate = {"sign": "package", "value": "redis", "path": "src/app.py", "line": 1, "strength": "declared",
-                    "source": "renovate@41"}
+        hosts = {"sign": "host", "value": "redis", "path": "src/app.py", "line": 1, "strength": "declared",
+                    "source": "registry_hosts"}
         redis = {"id": "redis", "name": "Redis", "kind": "service", "category": "service", "type": "altro",
-                 "site": None, "mark": None, "source": "registry", "signs": [renovate]}
+                 "site": None, "mark": None, "source": "registry", "signs": [hosts]}
         ran = {"checker": "stack-analyser", "state": "ran"}
-        full = {"found": [redis], "checkers": [ran], "gaps": [], "ran": ["renovate", "stack-analyser"]}
+        full = {"found": [redis], "checkers": [ran], "gaps": [], "ran": ["registry_hosts", "stack-analyser"]}
         fast = {"found": [], "checkers": [ran], "gaps": [], "ran": ["stack-analyser"]}
         with mock.patch.object(stack_recognition, "run", return_value=full):
             self.service.create_run("src", "second", engine=False)
@@ -178,7 +178,7 @@ class WorkingRunTests(unittest.TestCase):
             self.assertEqual(self.refresh()["status"], "fresh")
         record = technologies.recorded(self.working / "snapshot/manifest.sqlite")
         self.assertEqual([(s["source"], s["scan"]) for e in record["technologies"] for s in e["signs"]],
-                         [("renovate@41", scan)])
+                         [("registry_hosts", scan)])
 
     def test_3_one_refresh_runs_one_waits_the_rest_are_dropped(self):
         self.assertEqual(self.refresh()["status"], "fresh")
