@@ -2150,6 +2150,43 @@ class IndexerStageTests(unittest.TestCase):
             replay = edge_view.load_edge_view(manifest, engine_store=resolve_edges.default_edge_store(manifest))
             self.assertIn("go", replay["coverage"]["languages"])
 
+    def test_unchanged_inputs_reuse_the_index_and_a_change_runs_the_language_once(self):
+        # The cache is of the whole language: every adapter runs all its units in one container and gives one
+        # contract, which it does not split per unit.
+        import shutil
+        project, manifest = self.project("go")
+        calls = []
+
+        def index(project_dir, work_dir, files=None, **given):
+            # The index in the work directory, removed after the stage, with a file beside it named after it.
+            calls.append(sorted(given["roots"]))
+            written = Path(work_dir) / "scip-go-0.scip"
+            shutil.copyfile(self.FIXTURES / "go/index.scip", written)
+            written.with_suffix(".unbound.jsonl").write_text("{}\n", encoding="utf-8")
+            return {**self.contract("go"), "indexes": [[str(written), ""]]}
+
+        def stage():
+            resolve_edges.default_edge_store(manifest).unlink(missing_ok=True)  # the stage runs again
+            result, started, _indexed = self.run_stage("scip-go", manifest, index)
+            self.assertEqual(len(started), 1)
+            self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
+            return len(calls)
+
+        self.assertEqual(stage(), 1)
+        kept = manifest.parent / engine_pass.INDEX_CACHE / "scip-go" / "files"
+        self.assertEqual(sorted(path.name for path in kept.iterdir()), ["scip-go-0.scip", "scip-go-0.unbound.jsonl"])
+        self.assertEqual(stage(), 1)  # snapshot and dependencies unchanged: no indexer run
+        (project / "extra").mkdir()
+        (project / "extra/more.go").write_text("package extra\n\nfunc More() int { return 1 }\n", encoding="utf-8")
+        snapshot.read_project(project, manifest)
+        self.assertEqual(stage(), 2)  # a unit changed: one run for the language
+        self.assertEqual(calls[-1], [""])
+        self.assertEqual(stage(), 2)
+        with open(project / "go.mod", "a", encoding="utf-8") as handle:
+            handle.write("\nrequire example.com/dep v1.0.0\n")
+        snapshot.read_project(project, manifest)
+        self.assertEqual(stage(), 3)  # a manifest changed, no Go file did: the language runs again
+
     def test_reuse_requires_the_installed_pin_and_the_adapter_that_built_the_entry(self):
         from indexers import go
         entry = {"engine": f"scip-go@{go.VERSION}", "indexer": {"version": go.VERSION}}

@@ -2,7 +2,6 @@
 with the answer cache that spares it what cannot have changed."""
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import re
@@ -12,11 +11,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import semantic_store
+from code_graph import dependency_digests, file_dependencies
 from snapshot_store import _unpack, open_snapshot
 from source_positions import EngineFailure
 from edge_grading import (callee_column, CANDIDATE_REASONS, classify_reference, edge_destination, grade, grade_all,
-                          inventory_files, POSITION_ENDS, project_callee_names, runtime_imports, symbol_table,
-                          verify_sources)
+                          inventory_files, POSITION_ENDS, project_callee_names, symbol_table, verify_sources)
 from edge_store import (coverage_violation, default_edge_store, EDGE_SCHEMA, kept_languages, language_coverage,
                         store_binding, write_edge_store)
 
@@ -52,74 +51,6 @@ def default_answers_path(manifest: Path) -> Path:
     """The answer cache of the analysis a snapshot belongs to, beside its card store."""
     import card_store
     return card_store.default_cards_path(manifest).with_name(ANSWERS_NAME)
-
-
-def file_dependencies(connection) -> dict[str, set[str]]:
-    """The inventoried files each file imports: placed imports and modules reached through `sys.path`."""
-    dependencies: dict[str, set[str]] = {}
-    for source, target in connection.execute("SELECT source, target FROM sem_edges"):
-        dependencies.setdefault(source, set()).add(target)
-    for item in runtime_imports(connection).values():
-        for importer in item["importers"]:
-            dependencies.setdefault(importer, set()).update(item["files"])
-    return dependencies
-
-
-def dependency_digests(hashes: dict[str, str], dependencies: dict[str, set[str]]) -> dict[str, str]:
-    """A digest per file over its own bytes and every file it reaches through imports.
-
-    Two snapshots give a file the same digest only when neither it nor anything it
-    imports, directly or transitively, changed: the condition under which an engine
-    answer at one of its positions can be reused. The files of an import cycle share
-    one digest. Tarjan's algorithm, iterative, closes a component only after every
-    component it reaches, so each digest is computed once.
-    """
-    def reach(node):
-        return sorted(item for item in dependencies.get(node, ()) if item in hashes and item != node)
-
-    index: dict[str, int] = {}
-    low: dict[str, int] = {}
-    stack: list[str] = []
-    on_stack: set[str] = set()
-    digests: dict[str, str] = {}
-    for root in sorted(hashes):
-        if root in index:
-            continue
-        index[root] = low[root] = len(index)
-        stack.append(root)
-        on_stack.add(root)
-        work = [(root, iter(reach(root)))]
-        while work:
-            node, children = work[-1]
-            for child in children:
-                if child not in index:
-                    index[child] = low[child] = len(index)
-                    stack.append(child)
-                    on_stack.add(child)
-                    work.append((child, iter(reach(child))))
-                    break
-                if child in on_stack:
-                    low[node] = min(low[node], index[child])
-            else:
-                work.pop()
-                if work:
-                    low[work[-1][0]] = min(low[work[-1][0]], low[node])
-                if low[node] == index[node]:
-                    members = []
-                    while True:
-                        item = stack.pop()
-                        on_stack.discard(item)
-                        members.append(item)
-                        if item == node:
-                            break
-                    members.sort()
-                    inside = set(members)
-                    beyond = sorted({digests[item] for member in members for item in reach(member)
-                                     if item not in inside})
-                    digest = hashlib.sha256(json.dumps(
-                        [[[member, hashes[member]] for member in members], beyond]).encode("utf-8")).hexdigest()
-                    digests.update(dict.fromkeys(members, digest))
-    return digests
 
 
 def file_ranks(connection) -> dict[str, float]:
