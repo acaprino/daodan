@@ -18,4 +18,8 @@ Due canarini su Modal, raggiungibili da Internet in HTTPS (tunnel di Modal), reg
 - Approvazione: l'host fuori lista dà `failed`, `approval_required` e la richiesta in attesa, senza segno; dopo «once» il passo riesce (`done`, il canarino riceve `/approval-yes`); l'host in blacklist dà `failed`, solo `host_denied`, nessuna richiesta.
 - Controlli positivi: il proxy apre `registry.npmjs.org:443` e il canarino approvato.
 - Gateway della rete della preparazione: la connessione TCP a `172.18.0.1:8099` è rifiutata (`Connection refused`) e l'ascoltatore della VM su tutti gli indirizzi non registra nulla: con l'opzione il bridge non ha l'indirizzo dell'host. Prima (`ap-c9r58rXxewDbWV64u5wPwf`, sulla base `7f773af`, rete solo `--internal`) la connessione si apriva e l'ascoltatore la registrava (cancello rosso).
-- Motori: l'opzione è di Docker Engine 28.0 (API 1.48). Un motore con API più vecchia (Podman, Kiri 0.2.0 che dichiara 1.47, Docker 27) non crea la rete: la preparazione è una lacuna (`container.internal_network`).
+- Motori: l'opzione è di Docker Engine 28.0 (API 1.48). Su un motore con API più vecchia (Podman, Kiri 0.2.0 che dichiara 1.47, Docker 27) la rete si crea senza l'opzione e la preparazione procede con la lacuna non bloccante `gateway_open` (`container.internal_network`, decisione del proprietario del 27 novembre 2026).
+
+| Riga | Docker ≥ 28 | Motori < 28 (Kiri 0.2.0, Docker 27, Podman) |
+|---|---|---|
+| `direct-network-gateway` (TCP al gateway della rete della preparazione) | bloccata (misurata, sopra) | raggiunta: atteso, miglioramento futuro (non misurato qui; prima corsa rossa `ap-c9r58rXxewDbWV64u5wPwf` con la sola `--internal`) |
