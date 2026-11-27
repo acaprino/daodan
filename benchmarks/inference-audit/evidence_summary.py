@@ -4,11 +4,15 @@
 
 One row per file and language:
 - `scip-*-full.json` (join.languages.<lang>.cells: A = the second source, B = the index): confirmed = "same project
-  target"; false = both answered and differ ("different project target", "mixed: A x, B y" with neither silent);
+  target"; false = both sides have a project target and they differ ("different project target"; the `mixed: A x, B y` cell is reached
+  only when neither side has a project target, so it is not a false arc);
   holes = "only A has a project target" (the second source found a target the index lacks); seconds and MB are the
   indexer's.
 - files with a `report` (graph-*-checks.json, graph-kotlin-klaxon.json): uncertain = sum of `edges_uncertain`,
-  holes = sum of the `count` of each `holes` group; no second source there, so confirmed and false stay empty.
+  holes = sum of the `count` of each `holes` group; confirmed and false stay empty there. Discarded: `hand_check` is in
+  every one of those files but has four shapes ({right,total}, {right,of}, a list with a `right` flag per site, a list
+  with a `verdict`), so reading it needs a reader per shape; and `other_languages` (zlib: a cpp report) holds extra
+  reports that are not read, so those rows are missing.
 Not read: strong-*.json (each engine writes its own shape: no field is the same across them) and the raw graph-*.json
 (the same graph as its -checks file, holes listed one by one).
 """
@@ -19,20 +23,12 @@ import sys
 from pathlib import Path
 
 RESULTS = Path(__file__).resolve().parent / "results"
-SILENT = {"none", "not-asked"}  # a side that gave no answer: no disagreement
 COLUMNS = ("file", "indexer", "language", "confirmed", "false", "uncertain", "holes", "seconds", "mb")
 
 
 def cells_row(cells: dict, indexer: dict) -> dict:
     """Confirmed, false arcs and holes from the cells of one language, with the indexer's seconds and MB."""
-    false = 0
-    for label, count in cells.items():
-        if label == "different project target":
-            false += count
-        elif label.startswith("mixed: A "):
-            a, _, b = label.removeprefix("mixed: A ").partition(", B ")
-            if not {a, b} & SILENT:
-                false += count
+    false = cells.get("different project target", 0)
     return {"confirmed": cells.get("same project target", 0), "false": false,
             "holes": cells.get("only A has a project target", 0),
             "seconds": indexer.get("seconds"), "mb": indexer.get("peak_rss_mb")}

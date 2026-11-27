@@ -12,15 +12,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import evidence_summary as summary  # noqa: E402
 
 
-def test_cells_count_confirmed_false_arcs_and_holes_and_leave_silent_sides_out():
+def test_cells_count_confirmed_false_arcs_and_holes_and_leave_mixed_cells_out():
     cells = {"same project target": 10, "both none": 7, "both external": 5,
              "different project target": 2,
-             "mixed: A project-other, B parameter": 3,  # both answered, differ: false
-             "mixed: A external, B none": 4,  # the index is silent: not false
-             "mixed: A not-asked, B external": 6,  # the second source did not ask: not false
+             "mixed: A project-other, B parameter": 3,  # neither side has a project target: not a false arc
+             "mixed: A external, B none": 4,
+             "mixed: A not-asked, B external": 6,
              "only A has a project target": 8, "only B has a project target": 9}
     row = summary.cells_row(cells, {"seconds": 12.8, "peak_rss_mb": 338})
-    assert row == {"confirmed": 10, "false": 5, "holes": 8, "seconds": 12.8, "mb": 338}
+    assert row == {"confirmed": 10, "false": 2, "holes": 8, "seconds": 12.8, "mb": 338}
 
 
 def test_a_report_sums_uncertain_edges_and_the_count_of_each_hole_group():
