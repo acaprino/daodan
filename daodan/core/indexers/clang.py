@@ -51,6 +51,7 @@ when its symbol has bodies at several places, each place a candidate. `unanswere
 """
 from __future__ import annotations
 
+import bisect
 import collections
 import json
 import posixpath
@@ -189,39 +190,60 @@ def enclose(index) -> int:
     return done
 
 
-MACRO = re.compile(r"`[^`]*:\d+:\d+`!$")  # a macro's symbol: scip-clang names it by where it is defined
-IDENTIFIER = re.compile(rb"[A-Za-z_]\w*")
-LITERAL = re.compile(rb'"(?:\\.|[^"\\])*"' rb"|'(?:\\.|[^'\\])*'|//.*|/\*.*?\*/")  # blanked: no names there
+# A macro's symbol: scip-clang names it by where it is defined. A SCIP symbol is no source: no grammar reads it.
+MACRO = re.compile(r"`([^`]*):(\d+):\d+`!$")
+# The leaves of the C and C++ grammars that write a name (a keyword that names a type is `primitive_type`).
+NAMES = frozenset({"identifier", "field_identifier", "type_identifier", "namespace_identifier",
+                   "statement_identifier", "primitive_type"})
 
 
-def _arguments(lines: list[bytes], line: int, end: int) -> list[tuple[int, int, bytes]]:
-    """`(line, byte column, name)` of each identifier in the arguments of a macro invoked at `line`, its name ending
-    at byte `end`: the parenthesized list after it, across lines; none without one."""
-    row, column = line - 1, end
-    while row < len(lines) and not lines[row][column:].strip():
-        row, column = row + 1, 0
-    if row >= len(lines):
-        return []
-    column += len(lines[row][column:]) - len(lines[row][column:].lstrip())
-    if lines[row][column:column + 1] != b"(":
+def _tokens(index, rel: str) -> list[tuple[int, int, str, bytes]]:
+    """`(line, byte column, type, text)` of each leaf of the file's tree, in order, as tree-sitter reads the bytes
+    as they are (`_tree` reads them prepared, which blanks some directives and macros), without the leaves the
+    parser supplies as missing; none without a grammar. Comments and literals are leaves of their own (or hold
+    no name), so a name in them is no token here."""
+    key = (rel, "tokens")
+    if key not in index._trees:
+        from languages._treesitter import get_parser
+        loaded = get_parser(_language(index, rel))
+        try:
+            source = (index.root / rel).read_bytes()
+        except OSError:
+            source = None
+        out = []
+        cursor = loaded[0].parse(source).walk() if loaded and source is not None else None
+        while cursor is not None:
+            node = cursor.node
+            if node.child_count == 0 and not node.is_missing:
+                out.append((node.start_point[0] + 1, node.start_point[1], node.type, node.text))
+            if cursor.goto_first_child() or cursor.goto_next_sibling():
+                continue
+            while cursor.goto_parent():
+                if cursor.goto_next_sibling():
+                    break
+            else:
+                cursor = None
+        index._trees[key] = out
+    return index._trees[key]
+
+
+def _arguments(index, rel: str, line: int, end: int) -> list[tuple[int, int, bytes]]:
+    """`(line, byte column, name)` of each name in the arguments of a macro invoked at `line`, its name ending at
+    byte `end`: the parenthesized list of tokens right after it, across lines; none without one."""
+    tokens = _tokens(index, rel)
+    at = bisect.bisect_left(tokens, (line, end))
+    if at == len(tokens) or tokens[at][2] != "(":
         return []
     depth, out = 0, []
-    for row in range(row, min(len(lines), row + 200)):
-        text = LITERAL.sub(lambda found: b" " * len(found.group()), lines[row])
-        while column < len(text):
-            byte = text[column:column + 1]
-            word = IDENTIFIER.match(text, column) if depth and (column == 0 or not (
-                text[column - 1:column].isalnum() or text[column - 1:column] == b"_")) else None
-            if word:
-                out.append((row + 1, column, word.group()))
-                column = word.end()
-                continue
-            depth += byte == b"("
-            depth -= byte == b")"
-            if depth == 0:
-                return out
-            column += 1
-        column = 0
+    for row, column, kind, text in tokens[at:]:
+        if row >= tokens[at][0] + 200:
+            return []
+        depth += kind == "("
+        depth -= kind == ")"
+        if depth == 0:
+            return out
+        if kind in NAMES:
+            out.append((row, column, text))
     return []
 
 
@@ -248,16 +270,6 @@ def macro_arguments(index) -> int:
     arguments name sits at the macro's name. Each identifier of the arguments takes the symbol of its name written
     there, when one symbol has that name, and the macro's name keeps what no argument took: its body's own;
     returns how many occurrences it placed."""
-    sources: dict[str, list[bytes]] = {}
-
-    def lines(rel: str) -> list[bytes]:
-        if rel not in sources:
-            try:
-                sources[rel] = (index.root / rel).read_bytes().split(b"\n")
-            except OSError:
-                sources[rel] = []
-        return sources[rel]
-
     added = 0
     for rel, occurrences in index.documents.items():
         groups, moved = collections.defaultdict(list), set()
@@ -272,7 +284,7 @@ def macro_arguments(index) -> int:
                 for name in () if MACRO.search(item.key) else _written(index, item.key):
                     named[name].add(item.key)
             taken = set()
-            for row, column, word in _arguments(lines(rel), line, end):
+            for row, column, word in _arguments(index, rel, line, end):
                 keys = named.get(word.decode("utf-8", errors="replace"), ())
                 if len(keys) == 1 and not index.at.get((rel, row, column)):
                     occurrences.append(code_graph.Occurrence(row, column, row, column + len(word), next(iter(keys)),
@@ -342,35 +354,57 @@ EXTERN_C = ("`{}`, declared for C++ only in an `extern \"C\"` block (the C libra
             "released)")
 DEPENDENT = ("a member, in a template, of a value whose type may depend on the template's parameters: clang "
              "resolves it only where the template is instantiated, and the index names it nowhere")
-DIRECTIVE = re.compile(rb"\s*#\s*(?:if|ifdef|ifndef|elif|elifdef|elifndef)\b")
 BRANCHES = ("preproc_if", "preproc_ifdef", "preproc_elif", "preproc_elifdef", "preproc_else")
 # The types C and C++ build in, the callee of a conversion like `unsigned(1)` (the reader's grammar reads the
 # keyword as a function's name).
 TYPES = frozenset({"bool", "char", "char8_t", "char16_t", "char32_t", "double", "float", "int", "long", "short",
                    "signed", "unsigned", "void", "wchar_t"})
-OPENS, ENDS = re.compile(rb"\s*#\s*if"), re.compile(rb"\s*#\s*endif\b")
-TURNS = re.compile(rb"\s*#\s*(?:elif|else)\b")
+# The tokens of the conditional directives, as the C and C++ grammars name them.
+OPENS = frozenset({"#if", "#ifdef", "#ifndef"})
+TURNS = frozenset({"#elif", "#elifdef", "#elifndef", "#else"})
+ENDS = "#endif"
+CONDITIONS = OPENS | TURNS - {"#else"}  # the directives that test a name
 
 
-def _branch(source: list[bytes], line: int) -> tuple[int, int, int] | None:
+def _directives(index, rel: str) -> dict[int, str]:
+    """The conditional directive each line of the file opens with, by the token it starts with (`_tokens`). Inside
+    an expression the grammar still reads the directive's token, in an ERROR node; where no `#if` it knows is open
+    it reads `#elif`, `#else` and `#endif` as a `preproc_directive`, whose text names it."""
+    out, last = {}, 0
+    for row, _column, kind, text in _tokens(index, rel):
+        if row == last:
+            continue
+        last = row
+        if kind == "preproc_directive":
+            kind = "#" + text[1:].strip().decode("utf-8", errors="replace")
+        if kind in OPENS or kind in TURNS or kind == ENDS:
+            out[row] = kind
+    return out
+
+
+def _branch(directives: dict[int, str], line: int) -> tuple[int, int, int] | None:
     """The innermost branch of a conditional directive holding `line`, by the directives' lines alone (where the
     reader's tree has none: a directive inside an expression): its directive's line, the `#if`'s, and the line of
     the directive that ends it, 1-based."""
     groups = []  # per open `#if`: its line and its current branch's
-    for number, text in enumerate(source[:line - 1], 1):
-        if OPENS.match(text):
+    for number in sorted(directives):
+        kind = directives[number]
+        if number >= line:
+            break
+        if kind in OPENS:
             groups.append([number, number])
-        elif TURNS.match(text) and groups:
+        elif kind in TURNS and groups:
             groups[-1][1] = number
-        elif ENDS.match(text) and groups:
+        elif kind == ENDS and groups:
             groups.pop()
     if not groups:
         return None
     depth = 0
-    for number, text in enumerate(source[line:], line + 1):
-        if depth == 0 and (TURNS.match(text) or ENDS.match(text)):
+    for number in sorted(number for number in directives if number > line):
+        kind = directives[number]
+        if depth == 0 and kind not in OPENS:
             return groups[-1][1], groups[-1][0], number
-        depth += bool(OPENS.match(text)) - bool(ENDS.match(text))
+        depth += (kind in OPENS) - (kind == ENDS)
     return None
 
 
@@ -392,10 +426,10 @@ def _dropped(index, rel: str) -> dict[tuple[int, int], str]:
         for item in items:
             for name in () if MACRO.search(item.key) else _written(index, item.key):
                 held[name].add(item.key)
-        defined = re.search(r"`([^`]*):(\d+):\d+`!$", macro)
+        defined = MACRO.search(macro)
         name = source[line - 1][start:end].decode("utf-8", errors="replace")
         where = f"{posixpath.basename(defined.group(1))}:{defined.group(2)}"
-        for row, column, word in _arguments(source, line, end):
+        for row, column, word in _arguments(index, rel, line, end):
             word = word.decode("utf-8", errors="replace")
             keys = held.get(word, ())
             if not keys:
@@ -422,23 +456,28 @@ def unanswered(index):
             lines[rel] = {item.line for item in index.documents[rel]}
         return not any(first < row < last for row in lines[rel])
 
-    def extern_c(rel: str, source: list[bytes], line: int, column: int) -> str | None:
+    def extern_c(rel: str, node, line: int, column: int) -> str | None:
         """In a C++ file, an unqualified name (or `std::`'s) the index defines nowhere, or in C files only: the C
-        library's, or the project's own C, which C++ reaches only through an `extern "C"` declaration."""
-        if _language(index, rel) != "cpp":
+        library's, or the project's own C, which C++ reaches only through an `extern "C"` declaration. `node` is
+        the reader's leaf at the site: no member (`field_identifier`), and qualified only by `std`."""
+        if _language(index, rel) != "cpp" or node is None or node.child_count or node.type not in NAMES \
+                or node.type == "field_identifier" or tuple(node.start_point) != (line - 1, column):
             return None
-        text = source[line - 1]
-        found = IDENTIFIER.match(text, column)
-        before = text[:column].rstrip()
-        if not found or before.endswith((b".", b"->")) or (before.endswith(b"::") and not re.search(
-                rb"(?<![\w:])std\s*::$", before)):
-            return None
+        named = node  # `std::max<int>`: the name of a template's instance is the instance
+        while _names(named.parent, ("template_function", "template_type"), named):
+            named = named.parent
+        if _names(named.parent, ("qualified_identifier",), named):
+            holder = named.parent
+            scope = holder.child_by_field_name("scope")
+            if scope is None or scope.type != "namespace_identifier" or scope.text != b"std" \
+                    or _names(holder.parent, ("qualified_identifier",), holder):  # `::x`, `a::x`, `a::std::x`
+                return None
         if not defined:
             for key, places in index.defs.items():
                 if "#local " not in key:
                     for name in _written(index, key):
                         defined.setdefault(name, set()).update(_language(index, place) for place, _item in places)
-        name = found.group().decode("utf-8", errors="replace")
+        name = node.text.decode("utf-8", errors="replace")
         return EXTERN_C.format(name) if defined.get(name, set()) <= {"c"} else None
 
     def cause(position: tuple) -> str | None:
@@ -450,11 +489,13 @@ def unanswered(index):
         if (line, column) in dropped[rel]:
             return dropped[rel][(line, column)]
         source = (index.root / rel).read_bytes().split(b"\n")
-        if DIRECTIVE.match(source[line - 1]):
+        directives = _directives(index, rel)
+        if directives.get(line) in CONDITIONS:
             return UNDEFINED
         tree = _tree(index, rel)
         node = tree.root_node.descendant_for_point_range((line - 1, column), (line - 1, column + 1)) \
             if tree is not None else None
+        site = node
         callee = node.parent.child_by_field_name("function") if node is not None and node.parent is not None \
             and node.parent.type == "call_expression" else None
         if callee is not None and callee.id == node.id and node.text.decode("utf-8", "replace") in TYPES:
@@ -482,15 +523,21 @@ def unanswered(index):
             last = closing.start_point[0] + 1 if closing is not None else node.end_point[0] + 2
             if silent(rel, node.start_point[0] + 1, last):
                 return said(*(at.start_point[0] + 1 for at in (node, holder) if at is not None))
-        branch = _branch(source, line)  # where the tree has no branch here, or one it misplaces
+        branch = _branch(directives, line)  # where the tree has no branch here, or one it misplaces
         if branch and silent(rel, branch[0], branch[2]):
             return said(branch[0], branch[1])
-        return extern_c(rel, source, line, column)
+        return extern_c(rel, site, line, column)
     return cause
 
 
 # ---------------------------------------------------------------------------------------------------------
 # Hops
+
+
+def _names(parent, types: tuple, child) -> bool:
+    """Whether `child` is the `name` of `parent`, a node of one of `types`."""
+    found = parent.child_by_field_name("name") if parent is not None and parent.type in types else None
+    return found is not None and found.id == child.id
 
 
 def _language(index, rel: str) -> str:

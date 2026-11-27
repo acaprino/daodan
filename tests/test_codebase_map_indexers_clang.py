@@ -327,6 +327,56 @@ def test_a_file_nothing_failed_for_is_said_so():
         "gen/g.cc": False, "lib/b.cc": False, "lib/a.c": False}
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# What the reader reads from tree-sitter's tokens
+
+
+DIRECTIVES_C = ("int f(int n) {\n"
+                "  return g(n,\n"
+                "#  if WIDE\n"
+                "    h(n)\n"
+                "#else\n"
+                "    0\n"
+                "#endif\n"
+                "  );\n"
+                "}\n"
+                "/*\n"
+                "#if NOT_A_DIRECTIVE\n"
+                "*/\n"
+                "#endif\n")
+
+
+def test_the_directives_are_the_grammars_tokens_inside_an_expression_and_never_in_a_comment(tmp_path):
+    """gzlib.c's `#ifdef WIDECHAR` inside an expression: the grammar reads it in an ERROR node, with its `#else` and
+    `#endif`; an `#endif` with no `#if` open is a `preproc_directive` that names it; a line of a comment that reads
+    like a directive is no directive (a pattern on the line's text took it for one)."""
+    (tmp_path / "run.c").write_text(DIRECTIVES_C, encoding="utf-8")
+    index = code_graph.Index(tmp_path)
+    directives = clang._directives(index, "run.c")
+    assert directives == {3: "#if", 5: "#else", 7: "#endif", 13: "#endif"}
+    assert clang._branch(directives, 4) == (3, 3, 5)
+    assert clang._branch(directives, 6) == (5, 3, 7)
+    assert clang._branch(directives, 12) is None
+
+
+ARGUMENTS_C = ("#define CHECK(x, m) (x)\n"
+               "int run(int n) { CHECK(n > twice(n) /* skip */, \"no name\"); return n; }\n"
+               "int two(int n) {\n"
+               "    return CHECK(n,\n"
+               "        twice(n));\n"
+               "}\n")
+
+
+def test_a_macros_arguments_are_the_names_among_the_tokens_of_its_parentheses(tmp_path):
+    """The names a macro's arguments write, across lines; none in a comment or a string; none without parentheses
+    right after the name."""
+    (tmp_path / "run.c").write_text(ARGUMENTS_C, encoding="utf-8")
+    index = code_graph.Index(tmp_path)
+    assert clang._arguments(index, "run.c", 2, 22) == [(2, 23, b"n"), (2, 27, b"twice"), (2, 33, b"n")]
+    assert clang._arguments(index, "run.c", 4, 16) == [(4, 17, b"n"), (5, 8, b"twice"), (5, 14, b"n")]
+    assert clang._arguments(index, "run.c", 2, 13) == []  # `n)`: no list after the name
+
+
 def test_a_workspace_is_configured_once_at_its_root():
     """Members of a CMake workspace (`add_subdirectory`) are configured from the workspace's root; a unit in no
     workspace from its own; units of other build tools and languages are left to their indexers. The states are

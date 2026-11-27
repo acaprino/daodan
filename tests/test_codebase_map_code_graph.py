@@ -793,7 +793,8 @@ DROPPED_C = ("#define Assert(cond, msg)\n"
              "    return bits + (note != 0);\n"
              "}\n")
 CAST_CPP = ("unsigned twice(unsigned v) {\n    return v + unsigned(1);\n}\n"
-            "template <class T> void reset(T *node) {\n    node->pool = 0;\n}\n")
+            "template <class T> void reset(T *node) {\n    node->pool = 0;\n}\n"
+            "void say(const char *s) {\n    std::puts(s);\n    geo::puts(s);\n}\n")
 
 
 def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tmp_path):
@@ -853,6 +854,10 @@ def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tm
     assert found[("run.c:22", "UNSET")] == clang.UNDEFINED  # tinyxml2's `#ifdef TINYXML2_DEBUG` in an initializer
     assert found[("cast.cpp:2", "unsigned")] == clang.BUILT_IN.format("unsigned")
     assert found[("cast.cpp:5", "node.pool")] == clang.DEPENDENT  # tinyxml2.h's `returnNode->_memPool`
+    # A name the index defines nowhere, unqualified or `std::`'s, is the C library's through `extern "C"`; one another
+    # namespace qualifies is not.
+    puts = {key[0]: hole for key, hole in found.items() if "puts" in key[1]}
+    assert puts == {"cast.cpp:8": clang.EXTERN_C.format("puts"), "cast.cpp:9": "no-occurrence"}, puts
 
 
 def test_clang_an_explicit_destructor_call_ends_at_the_destructor(tmp_path):
