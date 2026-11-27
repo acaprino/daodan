@@ -125,6 +125,12 @@ UNPRIVILEGED = ("--cap-drop", "ALL", "--user", NOBODY, "--security-opt", "no-new
 # recipes need (`tools`); the restore and the rest of the preparation as `NOBODY` with no capability (`RESTORE`).
 OWN = ("--cap-drop", "ALL", "--cap-add", "CHOWN")
 RESTORE = ("--cap-drop", "ALL", "--user", NOBODY)
+# A project's service runs as its image says, with no capability but those an entrypoint that makes its data folder
+# and drops to the service's user needs, measured by `modal_hardening.py` (`T3.A.6c`): `gosu` and the folder's mode
+# (DAC_OVERRIDE, SETGID, SETUID: postgres 17, mysql), its owner where the image does not make it (CHOWN, FOWNER:
+# postgres 18). One that needs another fails, a service gap with its cause.
+SERVICE = ("--cap-drop", "ALL", *(word for cap in ("CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID")
+                                  for word in ("--cap-add", cap)))
 # The preparation's network: no way out (`--internal`), no IPv6, and, where the engine has the option (Docker Engine
 # 28.0, API 1.48), no address of the host on its bridge, so the network's gateway is no way to the host's listeners
 # (`benchmarks/egress`). An older engine gets the network without it, and the run says so (`GATEWAY_OPEN`).
@@ -1630,9 +1636,9 @@ def start_services(run: Callable, services: list[dict], network: str, limits: di
             args = [*args[:at], "disable", *args[at + 1:]] if at else [*args, "--health-interval", "disable"]
         try:
             if not created:
-                checked(run("create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
-                            "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
-                            "--security-opt", "no-new-privileges", *env, *args, service["pinned"],
+                checked(run("create", "--name", box, *SERVICE, "--network", network, "--memory",
+                            str(limits["memory"]), "--memory-swap", str(limits["memory"]), "--pids-limit",
+                            str(limits["pids"]), "--security-opt", "no-new-privileges", *env, *args, service["pinned"],
                             *service.get("command", ())), "create")
             if service.get("files") and not created:
                 if copy is None:

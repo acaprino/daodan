@@ -1347,6 +1347,10 @@ class PodTest(unittest.TestCase):
         [service] = self.created("daodan-svc-")
         self.assertEqual(service[service.index("--network") + 1], f"container:{name}")
         self.assertEqual(service[-1], PINNED)  # no command: the image's own
+        # as its image says, root, with only what an entrypoint that drops to its user needs (T3.A.6c)
+        self.assertEqual(service[3:15], ["--cap-drop", "ALL", "--cap-add", "CHOWN", "--cap-add", "DAC_OVERRIDE",
+                                         "--cap-add", "FOWNER", "--cap-add", "SETGID", "--cap-add", "SETUID"])
+        self.assertNotIn("--user", service)
         for item in ("POSTGRES_USER=tududi", "POSTGRES_PASSWORD=tududi", "POSTGRES_DB=tududi_test",
                      "pg_isready -U tududi", "--health-retries"):
             self.assertIn(item, service)

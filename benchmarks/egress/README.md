@@ -119,3 +119,7 @@ Provenienza di Smokescreen, verificata il 27 novembre 2026 da una funzione Modal
 - `own` non dà `STATE` a `65532` quando seguono gli strumenti: root senza `DAC_OVERRIDE` non scrive in una cartella di un altro utente (prima corsa `ap-LtzOjhkAZUiJlLE5KeOl59`, `npm: not found`).
 - `git` (`apt`) installa nell'immagine, che una fase a parte perderebbe: con `git` fra i bisogni (`preparation.IMAGE_NEEDS`) la preparazione resta una, root.
 - Sonda del proxy 44/44 (`ap-fJ5xrHIXHd2eqUGCXG93kn`).
+
+### Servizi (`T3.A.6c`)
+
+27 novembre 2026, codice del commit di `T3.A.6c`, Modal `ap-WVBSgABP8tJJr1PoruGlqq`: i servizi girano come li crea `start_services`, root con `--cap-drop ALL` e `container.SERVICE` (`CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `SETGID`, `SETUID`), senza `--user`. Partono postgres 17 e 18, mysql 8.4, redis 7 e mongo 7. Le tre di `T3.A.5` (`DAC_OVERRIDE`, `SETGID`, `SETUID`) non bastano a postgres 18, che crea e intesta la sua cartella dei dati (`/var/lib/postgresql/18/docker`) e cambia il modo di `/run/postgresql`: `chown`/`chmod: Operation not permitted` nel test su Docker vero (`ap-6NChOnYiDmn2j4osPHu33f`), da qui `CHOWN` e `FOWNER`. Con la colonna `codice` di questa corsa riescono anche i ripristini Maven e Gradle (righe del `setup` in subshell, come `container_runner.plan`). Sonda del proxy 44/44 (`ap-6NChOnYiDmn2j4osPHu33f`, il proxy non cambia).

@@ -15,7 +15,9 @@ containers as its code makes them (`container.UNPRIVILEGED`, `T3.A.6a`): the pro
 the `.env` files, the probe of `leaves`, the pod and `reached`. Each recipe and restore runs once more as a split
 preparation runs it (`code`, `T3.A.6b`): `container.own` gives the copy to `65532`, `container.tool_phase` installs
 the recipes of `preparation.NEEDS` as root without /work with their `caps`, the rest runs as `65532` with
-`--cap-drop ALL` (`container.RESTORE`). Writes `results/hardening.json`.
+`--cap-drop ALL` (`container.RESTORE`). A service runs as `start_services` creates it (`container.SERVICE`,
+`T3.A.6c`): postgres 17 and 18, mysql, redis and mongo, whose entrypoints drop to their user; its variants and least
+capabilities are those `T3.A.5` measured. Writes `results/hardening.json`.
 """
 from __future__ import annotations
 
@@ -254,11 +256,9 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
             finally:
                 for args in cleanup:
                     run(*args)
-        row = {"row": f"service:{name}", "image": pinned, "variants": {}}
-        for variant, flags in VARIANTS.items():
-            row["variants"][variant] = trial_flags(flags)
-        row["target"] = {"as": "root, --cap-drop ALL + least", **least(lambda caps: trial_flags(adds(caps)))}
-        return row
+        # as `start_services` creates it: `container.SERVICE` after the name, which a variant's flags before it would
+        # not take away (`T3.A.5` measured the variants and the least capabilities)
+        return {"row": f"service:{name}", "image": pinned, "variants": {}, "code": trial_flags([])}
 
     def erun(*args, timeout=300, stdin=None):
         return original(engine, *args, timeout=timeout, stdin=stdin)
@@ -366,6 +366,9 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
         lambda: recipe("mise", preparation.IMAGE, mise["files"], mise["lines"], code=(None, mise["lines"])),
         lambda: service("postgres", "postgres:17", {"POSTGRES_PASSWORD": "daodan"}),
         lambda: service("mysql", "mysql:8.4", {"MYSQL_ROOT_PASSWORD": "daodan"}),
+        lambda: service("postgres-18", "postgres:18", {"POSTGRES_PASSWORD": "daodan"}),
+        lambda: service("redis", "redis:7", {}),
+        lambda: service("mongo", "mongo:7", {}),
     ]
     package = lambda extra: json.dumps({"name": "p", "version": "1.0.0", **extra,  # noqa: E731
                                         "dependencies": {"is-number": "7.0.0"}})
