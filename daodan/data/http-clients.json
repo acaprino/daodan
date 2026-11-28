@@ -1,16 +1,16 @@
 {
-  "about": "The functions that make an HTTP request, as the engine names them (the package manager, the package, the descriptors of the symbol with no version): a table because the engine names the function, and which functions are an HTTP client is a fact about the library, not about a project. `url` is the index of the argument that holds the URL, `method` where the method is read (a rule's own spelling: `arg1.method|GET`, the `method` key of the object written as argument 1, GET when it is absent; `arg0`, argument 0; a literal, the method the function sends), both from the signature the package declares (`fetch(input, init?)`; `request(method, url, **kwargs)`, `get(url, params=None, **kwargs)` and the others of `requests.api`, which send their own method).",
+  "about": "The functions that make an HTTP request, as the engine names them (the package manager, the package, the descriptors of the symbol with no version): a table because the engine names the function, and which functions are an HTTP client is a fact about the library, not about a project. `url` is the index of the argument that holds the URL, `method` where the method is read (a rule's own spelling: `arg1.method|GET`, the `method` key of the object written as argument 1, GET when it is absent; `arg0`, argument 0; a literal, the method the function sends), both from the signature the package declares (`fetch(input, init?)`; `request(method, url, **kwargs)`, `get(url, params=None, **kwargs)` and the others of `requests.api`, which send their own method). `parameters`, where a call can pass an argument by name, is the name of the parameter at each place, from the same signature: the engine binds a keyword to its parameter (scip-python's occurrence at `method=` is `request().(method)`), but no field of its index gives the parameter's place (checked on scip-python 0.6.8's index of `tests/fixtures/http-wrapper-python`: no SymbolInformation in `external_symbols` for a function of `requests`, so no `signature_documentation` and no `relationships`, and a parameter's descriptor holds its name alone, written for a keyword `**kwargs` takes too, `put().(headers)`). A TypeScript call passes no argument by name, so `fetch` has none.",
   "clients": [
     {"manager": "npm", "package": "typescript", "descriptors": "lib/`lib.dom.d.ts`/fetch().", "url": 0, "method": "arg1.method|GET"},
     {"manager": "npm", "package": "typescript", "descriptors": "lib/`lib.dom.d.ts`/WindowOrWorkerGlobalScope#fetch().", "url": 0, "method": "arg1.method|GET"},
     {"manager": "npm", "package": "@types/node", "descriptors": "web-globals/`fetch.d.ts`/global/fetch().", "url": 0, "method": "arg1.method|GET"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/request().", "url": 1, "method": "arg0"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/get().", "url": 0, "method": "GET"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/options().", "url": 0, "method": "OPTIONS"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/head().", "url": 0, "method": "HEAD"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/post().", "url": 0, "method": "POST"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/put().", "url": 0, "method": "PUT"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/patch().", "url": 0, "method": "PATCH"},
-    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/delete().", "url": 0, "method": "DELETE"}
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/request().", "url": 1, "method": "arg0", "parameters": ["method", "url"]},
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/get().", "url": 0, "method": "GET", "parameters": ["url", "params"]},
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/options().", "url": 0, "method": "OPTIONS", "parameters": ["url"]},
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/head().", "url": 0, "method": "HEAD", "parameters": ["url"]},
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/post().", "url": 0, "method": "POST", "parameters": ["url", "data", "json"]},
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/put().", "url": 0, "method": "PUT", "parameters": ["url", "data"]},
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/patch().", "url": 0, "method": "PATCH", "parameters": ["url", "data"]},
+    {"manager": "python", "package": "requests", "descriptors": "`requests.api`/delete().", "url": 0, "method": "DELETE", "parameters": ["url"]}
   ]
 }

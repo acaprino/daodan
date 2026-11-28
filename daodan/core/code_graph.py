@@ -1080,10 +1080,12 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
             kinds = by_position.get(position, ())
             kind = kinds[0] if len(set(kinds)) == 1 else "unknown"
             source = holder.get(i, rel)
+            # where no reference of the snapshot is: the byte column too, the only key to the node (a keyword argument)
+            column = {"column": index.to_bytes(rel, occurrence.line, occurrence.start)} if kind == "unknown" else {}
             for end in ends(position, [occurrence.key]):
                 edges.append({"from": source, "to": end.key, "symbol": occurrence.key,
                               "site": f"{rel}:{occurrence.line}", "kind": kind, "chain": list(end.chain),
-                              "end": end.cls, "target": end.target})
+                              "end": end.cls, "target": end.target, **column})
     for rel in documents:
         nodes.setdefault(rel, {"id": rel, "kind": "module", "file": rel, "line": 1, "external": None})
     for edge in edges:
@@ -1172,7 +1174,8 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str, rows:
     A snapshot reference's ends are its rows, `uncertain` where `refine` marked the edge of that end at its
     site; an end `refine` removed is counted in `edges_removed` and not saved. A reference the index answers
     nothing at, or only with removed ends, is a hole, like an implicit call an adapter adds. An occurrence the
-    snapshot lists no reference for is a row of kind `unknown`, which no consumer reads. `symbol` is the key
+    snapshot lists no reference for is a row of kind `unknown` at its line and byte column (the edge view's
+    `occurrences`: a keyword argument's parameter, an attribute's member). `symbol` is the key
     the end is at; an external end's package goes to `externals`. Each language's entry holds its coverage
     (`resolve_edges.language_coverage`) over every call and read the snapshot lists for it: a store that would
     hold nothing for one of them is not written, and the ValueError lists those sites by kind.
@@ -1217,7 +1220,7 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str, rows:
             if edge["kind"] == "unknown":
                 rel, line = edge["site"].rsplit(":", 1)
                 place = {"reference_id": None, "file": snapshot.rel.get(rel, rel), "kind": "unknown", "caller": None,
-                         "l0": int(line), "c0": None}
+                         "l0": int(line), "c0": edge.get("column")}
                 edges.append(row(place, edge["end"], edge["to"], edge.get("target"), edge["chain"], "",
                                  edge.get("uncertain"), **{"from": edge["from"]}))
         for hole in graph["holes"]:

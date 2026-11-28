@@ -58,8 +58,10 @@ route wins, a tie is an uncertain link, a gap with its candidates. A route `find
 handler, not a page, on a function the snapshot resolves) is offered too, with the service `*`: it meets a call of
 any service, and a route of the call's own service, from a rule, comes before it; a catch-all path is a gap. A call the
 engine resolves into the HTTP client table (`daodan/data/http-clients.json`) asks for a route with no rule, its URL and method
-read where the table says, as a rule reads them, and so does a call of a wrapper `http_wrappers.py` proves, by the rule it
-proposes; with no rule naming one service, they ask with none and meet only the declared routes. The services of others the brief lists (the
+read where the table says, as a rule reads them (at their place, or passed by name where the engine's occurrence at
+the keyword names the parameter of that place, the row's `parameters`), and so does a call of a wrapper
+`http_wrappers.py` proves, by the rule it proposes; with no rule naming one service, they ask with none and meet only
+the declared routes. The services of others the brief lists (the
 stack step's technologies and the external modules of the module graph, by id) are nodes too: a symbol in a file
 a service cites as evidence uses it (`dichiarato`), except in a file where an engine resolved a call into a package
 the stack step ties to that service: there the function that makes such a call uses it, once per service and at its
@@ -291,6 +293,11 @@ class Facts:
             span = ref.get("span") or [None, None]
             self.reads[(ref["file"], span[0], span[1])].append(ref)
             self.uses[ref["file"]].append(ref)
+        # The symbols the index names where the snapshot lists no reference (a keyword argument's parameter), by place.
+        self.occurrences = defaultdict(list)
+        for edge in view.get("occurrences") or ():
+            if edge.get("c0") is not None:
+                self.occurrences[(edge["file"], edge["l0"], edge["c0"])].append(edge["symbol"])
         self.called = defaultdict(list)
         self.calls_at = defaultdict(list)  # the calls the snapshot records, by where their callee starts
         self.native_dispatch_callers = {r["caller"] for r in view["references"] if "tauri_command" in r}
@@ -641,7 +648,8 @@ def _members(node, tree: Tree) -> tuple[dict[str, object], bool] | None:
 
 def _positional(node, tree: Tree) -> list | None:
     """The arguments of a call node as `_read_call` lists them: a node each, None where the argument has a keyword
-    (`f(a, key=b)`: its place is not the one a rule counts); None when the node is no call."""
+    (`f(a, key=b)`: its place is not the one a rule counts, `_argument` reads it by the engine's binding, `_named`);
+    None when the node is no call."""
     import entries
     listed = node.child_by_field_name("arguments")
     if listed is None or not listed.children or listed.children[0].type != "(":
@@ -649,10 +657,23 @@ def _positional(node, tree: Tree) -> list | None:
     return [None if keyword else value for keyword, value in entries._arguments(node, tree.source)]
 
 
+def _named(node) -> list[tuple]:
+    """The arguments of a call node passed by name, `(keyword node, value node)`, as `entries._arguments` reads them."""
+    out = []
+    for child in node.child_by_field_name("arguments").named_children:
+        name, value = child.child_by_field_name("name"), child.child_by_field_name("value")
+        if not child.is_extra and name is not None and value is not None:
+            out.append((name, value))
+    return out
+
+
 def _read_call(facts: Facts, ref: dict, parts: list[str]) -> dict | str:
     """The call a reference records, read from its file's tree, or why it cannot be read: the node of the call, its
-    arguments (`_positional`) and the file's tree."""
+    arguments (`_positional`), the file's tree, and what `_argument` needs to read an argument passed by name: the
+    functions the engine ends the call in (`callees`, its `external_symbols`) and the names of their parameters by place
+    (`parameters`, the client table's row, `http_wrappers.asked`; None for any other call)."""
     import entries
+    import http_wrappers
     span = ref.get("span") or [None] * 4
     tree = facts.tree(ref["file"])
     if isinstance(tree, str):
@@ -661,13 +682,58 @@ def _read_call(facts: Facts, ref: dict, parts: list[str]) -> dict | str:
     args = _positional(node, tree) if node is not None else None
     if args is None:
         return "call arguments not readable"
+    spec = http_wrappers.asked(ref)
     return {"file": ref["file"], "line": span[0], "parts": parts, "tree": tree, "node": node, "args": args,
-            "scope": ref.get("scope")}
+            "scope": ref.get("scope"), "callees": ref.get("external_symbols") or [],
+            "parameters": spec.get("parameters") if spec else None}
+
+
+def _parameter(symbol: str, callee: str) -> str | None:
+    """The name of the parameter of `callee` that the engine's `symbol` is: in SCIP's grammar the callee's symbol
+    followed by one parameter descriptor (scip-python's `request().(method)`); None for any other symbol."""
+    import code_graph
+    found = code_graph.descriptors(symbol[len(callee):]) if symbol.startswith(callee) else []
+    return found[0][0] if len(found) == 1 and found[0][1] == "parameter" else None
+
+
+ABSENT = object()  # no argument of the call is the one asked for
+
+
+def _argument(call: dict, index: int, facts) -> object:
+    """Argument `index` of a call: the one written at that place, else the one passed by name that the engine binds to
+    parameter `index` of the function called. The binding is the engine's: its occurrence at the keyword names the
+    parameter's symbol, `callee().(name)`; the name of parameter `index` is the table's row (`call["parameters"]`),
+    from the signature the package declares, since the index gives no parameter's place (`_read_call`). `ABSENT` when no
+    argument is it; None when an argument passed by name may be it and the engine binds that keyword to no parameter
+    of the function called, the cause in `call["unbound"]`. A call with no `parameters` reads its arguments by place
+    alone: one passed by name is None."""
+    import entries
+    args, parameters = call["args"], call.get("parameters")
+    if index < len(args) and args[index] is not None:
+        return args[index]
+    if parameters is None:
+        return None if index < len(args) else ABSENT
+    unbound = []
+    for keyword, value in _named(call["node"]):
+        names = {name for symbol in facts.occurrences.get((call["file"], *entries._at(keyword)), ())
+                 for callee in call["callees"] if (name := _parameter(symbol, callee)) is not None}
+        if index < len(parameters) and parameters[index] in names:
+            return value
+        if not names:
+            unbound.append(entries._text(call["tree"].source, keyword))
+    if unbound:
+        call["unbound"] = (f"argument {index} may be the one passed by name as {', '.join(unbound)}, which the engine "
+                          "binds to no parameter of the function called")
+        return None
+    return ABSENT
 
 
 def _not_literal(call: dict) -> str:
-    """Why a value is a gap: it is computed, or its grammar has no reader of strings (`QUERIES["strings"]`)."""
+    """Why a value is a gap: an argument passed by name the engine binds to no parameter (`_argument`), else it is
+    computed, or its grammar has no reader of strings (`QUERIES["strings"]`)."""
     import entries
+    if call.get("unbound"):
+        return call["unbound"]
     grammar = call["tree"].grammar
     return "not a literal" if grammar in entries.QUERIES["strings"] else f"not a literal ({grammar} strings are not read)"
 
@@ -677,16 +743,17 @@ def _nested(spec: str, call: dict, facts, strip: str, template: bool = False):
     in the object written as argument N; after `|`, the value when that argument or key is absent."""
     match = _NESTED.match(spec)
     index, inner, default = int(match.group(1)), match.group(2), match.group(3)
-    if index >= len(call["args"]):
+    node, tree = _argument(call, index, facts), call["tree"]
+    if node is ABSENT:
         return default
-    node, tree = call["args"][index], call["tree"]
     if node is None:
         return None
     if inner.startswith("arg") and inner[3:].isdigit():
         args = _positional(node, tree)
         if args is None:
             return None
-        return _value(inner, {**call, "args": args}, facts, strip, template) if int(inner[3:]) < len(args) else default
+        inside = {**call, "node": node, "args": args, "parameters": None}  # a call no table row names
+        return _value(inner, inside, facts, strip, template) if int(inner[3:]) < len(args) else default
     members = _members(node, tree)
     if members is None or members[1]:  # no object literal, or a spread that may hold the key
         return None
@@ -694,8 +761,9 @@ def _nested(spec: str, call: dict, facts, strip: str, template: bool = False):
 
 
 def _value(spec, call, facts, strip: str = "", template: bool = False):
-    """A rule field: a literal string, `argN` read from the call, `partN` of the written callee,
-    or a value nested in an argument (`_nested`). A template is refused unless `template`."""
+    """A rule field: a literal string, `argN` read from the call (`_argument`: at its place, else passed by name and
+    bound by the engine), `partN` of the written callee, or a value nested in an argument (`_nested`). A template is
+    refused unless `template`."""
     if _NESTED.match(str(spec)):
         return _nested(str(spec), call, facts, strip, template)
     match = _ARG.match(str(spec))
@@ -704,9 +772,10 @@ def _value(spec, call, facts, strip: str = "", template: bool = False):
     index = int(match.group(2))
     if match.group(1) == "part":
         return call["parts"][index] if index < len(call["parts"]) else None
-    if index >= len(call["args"]):
+    node = _argument(call, index, facts)
+    if node is None or node is ABSENT:
         return None
-    value = facts.literal(call["args"][index], call["tree"])
+    value = facts.literal(node, call["tree"])
     if value is not None and strip and value.startswith(strip):
         value = value[len(strip):]
     return None if value is None or ("${" in value and not template) else value

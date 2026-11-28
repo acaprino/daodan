@@ -41,10 +41,11 @@ a function F calls too, and a builtin reached by another name (`builtins.exec`) 
 Each other case is a gap with its site and its cause, never a candidate: a URL built from a parameter (the gap names the
 argument's node type: a template, a binary expression, a call), a parameter that is written again, shadowed, destructured
 or rest, a method that is no literal, ends outside the table mixed with ends in it, calls of the client that read the route
-differently, a name two declarations share, a URL passed by name where a named argument reads a parameter of F
-(`requests.request(method="POST", url=url)`: a rule reads an argument by its place, and the gap cannot tell which named
-argument is the URL). Else a function that is not named (a callback), one the URL is not a parameter of, a call with no
-URL and a call whose ends are not the table's are no wrapper and no gap. A wrapper of a wrapper (a function
+differently, a name two declarations share, a URL that may be passed by name, as a keyword reading a parameter of F the
+engine binds to no parameter of the client (`flows._argument`; `requests.request(method="POST", url=url)` is read, since the
+engine's occurrence at each keyword names the client's parameter, and the row names the parameter of each place).
+Else a function that is not named (a callback), one the URL is not a parameter of, a call with no URL and a call whose
+ends are not the table's are no wrapper and no gap. A wrapper of a wrapper (a function
 that passes its own parameter to a proved wrapper) is not proved here: it needs the proof of the wrapper it calls, and no
 rule yet. The table's entries are JavaScript's, TypeScript's and Python's; one for another language needs its reader to
 declare assignment targets and to leave unresolved what it cannot read.
@@ -269,13 +270,15 @@ def prove(facts: flows.Facts, view: dict) -> tuple[list[dict], list[dict]]:
         if isinstance(call, str):
             refuse(owner, site, call)
             continue
-        args, tree = call["args"], call["tree"]
-        if spec["url"] < len(args) and args[spec["url"]] is None:  # Python: the URL, and all after it, passed by name
-            named = [node for keyword, node in entries._arguments(call["node"], tree.source) if keyword]
+        tree = call["tree"]
+        argument = flows._argument(call, spec["url"], facts)
+        if argument is None:  # passed by name, maybe: a keyword the engine binds to no parameter
+            named = [node for _, node in flows._named(call["node"])]
             if own := [name for node in named for name in _parameters_read(facts, owner, tree, node)]:
-                refuse(owner, site, f"the call passes {', '.join(own)} by name, and a rule reads an argument by its place")
+                refuse(owner, site, f"the call passes {', '.join(own)} by name: "
+                                    + (call.get("unbound") or "the table's row gives no place of a parameter"))
             continue
-        argument = flows._unwrapped(args[spec["url"]]) if spec["url"] < len(args) else None
+        argument = flows._unwrapped(argument) if argument is not flows.ABSENT else None
         if argument is None:
             continue
         own = _parameters_read(facts, owner, tree, argument)
