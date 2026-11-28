@@ -13,7 +13,7 @@ if str(SCRIPTS) not in sys.path:
 
 import premap  # noqa: E402
 import modules  # noqa: E402
-from pipeline import Context, Scan, Stack, events  # noqa: E402
+from pipeline import Context, FindModules, RecognizeStack, events  # noqa: E402
 from premap import dotnet, gradle, jvm_files, maven, module_graph, project_files, renovate, requirements  # noqa: E402
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
@@ -47,8 +47,8 @@ def test_scan_and_stack_resolve_a_dependency_at_its_declaring_package(tmp_path):
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(project, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
-    Stack.run(context)  # the stack first: its build tools choose the pre-map's sources
-    graph = modules.load_graph(Path(Scan.run(context)["graph"]))
+    RecognizeStack.run(context)  # the stack first: its build tools choose the pre-map's sources
+    graph = modules.load_graph(Path(FindModules.run(context)["graph"]))
     record = json.loads(technologies.path(manifest).read_text(encoding="utf-8"))
     edges = [(e["kind"], e["source"], e["target"]) for e in graph["edges"]]
     assert {(src, dst) for kind, src, dst in edges if kind == "declares"} == {

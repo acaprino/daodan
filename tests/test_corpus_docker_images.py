@@ -10,7 +10,7 @@ if str(CORE) not in sys.path:
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
 import technologies  # noqa: E402
-from pipeline import Context, Scan, Stack, events  # noqa: E402
+from pipeline import Context, FindModules, RecognizeStack, events  # noqa: E402
 from test_codebase_map_stack_recognition import package_signs, recognized  # noqa: E402
 
 
@@ -37,8 +37,8 @@ def test_dockerfile_and_compose_keep_the_original_registry_and_owning_publisher(
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(project, manifest)
     context = Context(manifest, events.Bus(), fast_scan=True)
-    Stack.run(context)  # the stack first: its build tools choose the pre-map's sources
-    facts = json.loads(Path(Scan.run(context)["premap"]).read_text(encoding="utf-8"))
+    RecognizeStack.run(context)  # the stack first: its build tools choose the pre-map's sources
+    facts = json.loads(Path(FindModules.run(context)["premap"]).read_text(encoding="utf-8"))
     stack = json.loads(technologies.path(manifest).read_text(encoding="utf-8"))
     packages = {d["name"] for d in facts["packages"] if d["ecosystem"] == "docker"}
     assert packages == {"postgres", "private.example:5000/library/postgres", "custom/redis",
