@@ -1,16 +1,18 @@
-"""The pre-map on Modal, in a Linux container: snapshot, sources, model commands and score, nothing on this PC.
+"""The pre-map on Modal: snapshot, sources, model commands and score, nothing on this PC.
 
-The container holds the plugin's scripts and the pinned tools the pre-map's model sources name: Go 1.27.3,
-Rust 1.99.1 (rustup's proxies with `RUSTUP_TOOLCHAIN` set by the command), uv 0.11.28, Node 24.22.3 with
-Renovate 44.239.1 and TypeScript 6.0.3 (go-enry left the pre-map in T1.9: `_languages` finds no `daodan-enry`
-answer). A case is written to `/work/<case>`, snapshotted, and `premap.write` runs with a runner that
-executes each command in its `cwd` there (network on: the preparation and the run are not split here).
+`--score` and `--store` run the pre-map as the product runs it (`T1.F.4`): in a VM Sandbox with Docker's daemon (as
+`modal_engine.py`), `engine_premap_driver.py` gives every model command to the product's own launcher,
+`container_runner.runner(manifest)`, so the firewall, the phases and the requests are the product's (`T1.F.3`): every
+run behind Daodan's proxy, the canonical registries and the approved hosts open, any other host a request. Nobody
+answers during a run, as in MCP and on the command line: the request is refused at once and kept in the fixture's result
+(`egress`). The answers are per fixture in `egress-answers.json` (`{fixture: [host]}`), given as «Sempre» for the
+fixture's project before it runs. A sandbox has `--hours` (4); `--parallel` (24) run at once.
 
 `--store` keeps, for each case of `tests/fixtures/premap/projects.json`, every model command with its answer in
 `tests/fixtures/premap/outputs/<case>.json`: the readers' tests replay them. `--score` scores corpus fixtures
 (`fixtures/<name>`) against their `expected.json`, beside `modules.py` read the way `tools/daodan_modules.py`
-reads it, and writes the scores to `--out`. The code hash of this driver and of `premap/` is printed on both
-sides; they must match.
+reads it, and writes the scores to `--out`, with each fixture's unanswered requests (`egress.requests`). The code hash of
+the drivers, of `premap/` and of the modules that run its commands is printed on both sides; they must match.
 
     python -m modal run benchmarks/project-model/modal_premap.py --store go_nested,rust_buildrs,uv_workspace
     python -m modal run benchmarks/project-model/modal_premap.py --score js,py,jvm,sys,mix,real --out OUT.json
@@ -19,9 +21,12 @@ sides; they must match.
 `--runs` also keeps, per fixture, every model command with its answer (`results/premap-runs/<fixture>.json.gz`):
 `tools/premap_replay.py` replays them on this PC, so a change to a reader is scored without a new run.
 
-`--network` runs the pre-map of one real repository with Renovate's commands given the network and refused it (a
-Sandbox with `block_network`, as in the pipeline), with and without the stack's `--tools`, and Renovate alone on two
-small projects, one whose config extends a preset of GitHub's (`renovate_network`):
+`--network` and `--presets` are the measures of 28 November 2026 (README, «Renovate con la rete e senza») and keep their
+own container, with the pinned tools on it: Go 1.27.3, Rust 1.99.1, uv 0.11.28, Node 24.22.3 with Renovate 44.239.1 and
+TypeScript 6.0.3. `--network` runs the pre-map of one real repository with Renovate's commands given the whole network
+(`_runner`, the arm the reference had before `T1.F.4`) and refused it (a Sandbox with `block_network`), with and without
+the stack's `--tools`, and Renovate alone on small projects, one whose config extends a preset of GitHub's
+(`renovate_network`):
 
     python -m modal run benchmarks/project-model/modal_premap.py --network real-bank-of-anthos --tools maven,python --out OUT.json
 
@@ -35,7 +40,7 @@ prepare` keeps on the volume `daodan-flow-results`) has a container of its own.
 """
 from __future__ import annotations
 
-import hashlib
+import concurrent.futures
 import json
 import os
 import shutil
@@ -51,8 +56,12 @@ LOCAL = (HERE / "score.py").is_file()
 REPO = HERE.parents[1] if LOCAL else Path("/")
 GO = ("go1.27.3.linux-amd64.tar.gz", "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40")
 NODE = "v24.22.3"  # `premap/renovate.py` NODE
+DOCKER = "https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0.tgz"  # `modal_engine.py`
 REMOTE_SCRIPTS = "/daodan/map/core"  # container paths: POSIX strings, whatever runs the client
 REMOTE_PM = "/pm"
+DRIVER = "engine_premap_driver.py"
+PIP = ("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6",
+       "pip-requirements-parser==32.0.1")
 
 image = (modal.Image.debian_slim(python_version="3.12")
          .apt_install("curl", "ca-certificates", "git", "gcc", "libc6-dev", "xz-utils")
@@ -64,30 +73,106 @@ image = (modal.Image.debian_slim(python_version="3.12")
              f" && curl -sSfL https://nodejs.org/dist/{NODE}/SHASUMS256.txt | grep ' node-{NODE}-linux-x64.tar.xz$'"
              f" | sha256sum -c - && tar -C /opt -xJf node-{NODE}-linux-x64.tar.xz && rm node-{NODE}-linux-x64.tar.xz",
              f"PATH=/opt/node-{NODE}-linux-x64/bin:$PATH npm install -g --ignore-scripts renovate@44.239.1 typescript@6.0.3")
-         .pip_install("uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6",
-                      "pip-requirements-parser==32.0.1")
+         .pip_install("uv==0.11.28", *PIP)
          .env({"PATH": f"/root/.cargo/bin:/usr/local/go/bin:/opt/node-{NODE}-linux-x64/bin:/usr/local/bin:/usr/bin:/bin"}))
+# `--score` and `--store`: Docker's daemon and the product's code, no tool of the pre-map (the product's runs fetch them)
+engine_image = (modal.Image.debian_slim(python_version="3.13")  # as `benchmarks/egress/modal_probe.py`
+                .apt_install("ca-certificates", "curl", "iptables", "xz-utils", "procps", "git")
+                .pip_install(*PIP, "protobuf==7.36.2", "jsonpointer==3.0.0")  # `project_file`, where «Sempre» is kept
+                .run_commands(f"curl -fsSL {DOCKER} -o /tmp/d.tgz && mkdir -p /opt/docker && "
+                              "tar -xzf /tmp/d.tgz -C /opt/docker --strip-components=1"))
+
+
+def _with_code(base, copy: bool):
+    """`base` with the product's code, the fixtures, the scorer and the driver at their container paths."""
+    return (base.add_local_dir(REPO / "daodan/core", REMOTE_SCRIPTS, copy=copy, ignore=["**/__pycache__/**"])
+            .add_local_dir(REPO / "daodan/data", "/daodan/map/data", copy=copy)  # `container` reads package-managers.json
+            .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures", copy=copy)
+            .add_local_file(HERE / "score.py", f"{REMOTE_PM}/score.py", copy=copy)
+            .add_local_file(HERE / "tools/daodan_modules.py", f"{REMOTE_PM}/tools/daodan_modules.py", copy=copy)
+            .add_local_file(HERE / "tools/native_common.py", f"{REMOTE_PM}/tools/native_common.py", copy=copy)
+            .add_local_file(REPO / "tests/fixtures/premap/projects.json", f"{REMOTE_PM}/projects.json", copy=copy)
+            .add_local_file(HERE / DRIVER, f"{REMOTE_PM}/{DRIVER}", copy=copy))
+
+
 if LOCAL:
-    image = (image.add_local_dir(REPO / "daodan/core", REMOTE_SCRIPTS,
-                                 ignore=["**/__pycache__/**"])
-             .add_local_dir(REPO / "daodan/data", "/daodan/map/data")  # `container` reads package-managers.json
-             .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures")
-             .add_local_file(HERE / "score.py", f"{REMOTE_PM}/score.py")
-             .add_local_file(HERE / "tools/daodan_modules.py", f"{REMOTE_PM}/tools/daodan_modules.py")
-             .add_local_file(HERE / "tools/native_common.py", f"{REMOTE_PM}/tools/native_common.py")
-             .add_local_file(REPO / "tests/fixtures/premap/projects.json", f"{REMOTE_PM}/projects.json"))
+    image = _with_code(image, False)
+    engine_image = (_with_code(engine_image, True)  # a Sandbox's image: copied in
+                    .add_local_file(HERE / "modal_premap.py", f"{REMOTE_PM}/modal_premap.py", copy=True)
+                    .add_local_file(HERE / "egress-answers.json", f"{REMOTE_PM}/egress-answers.json", copy=True))
+
 app = modal.App("daodan-premap", image=image)
 volume = modal.Volume.from_name("daodan-flow-results")
 
 
-def code_hash(driver: Path, premap_dir: Path) -> str:
-    digest = hashlib.sha256()
-    for file in [driver, *sorted(premap_dir.glob("*.py"))]:
-        digest.update(file.name.encode() + b"\0" + file.read_bytes().replace(b"\r\n", b"\n"))
-    return digest.hexdigest()[:16]
+def _driver():
+    """`engine_premap_driver`, beside this file here and at `REMOTE_PM` in the containers."""
+    folder = str(HERE if LOCAL else Path(REMOTE_PM))
+    if folder not in sys.path:
+        sys.path.insert(0, folder)
+    import engine_premap_driver
+    return engine_premap_driver
+
+
+def _code() -> str:
+    """The code's hash on this side (`engine_premap_driver.code_hash`)."""
+    folder = HERE if LOCAL else Path(REMOTE_PM)
+    return _driver().code_hash([Path(__file__), folder / DRIVER], REPO / "daodan/core" if LOCAL else Path(REMOTE_SCRIPTS))
+
+
+def _real(name: str) -> Path:
+    """A real repository's clone at `/work/<name>` (`engine_premap_driver.lay_out`)."""
+    return _driver().lay_out(name, Path("/work") / name)
+
+
+def _case(name: str, files: dict | None) -> tuple[Path, Path]:
+    """The case at `/work/<name>`, its manifest beside it."""
+    out = Path("/work") / f"{name}.out"
+    shutil.rmtree(out, ignore_errors=True)
+    return _driver().lay_out(name, Path("/work") / name, files), out / "manifest.sqlite"
+
+
+def _boxed_job(job: dict, hours: float) -> tuple[dict, dict]:
+    """`engine_premap_driver.py` over `job` in a VM Sandbox with Docker's daemon (as `modal_engine.py`), the clones'
+    volume mounted: `({code, versions}, {name: result})`. Each fixture's result is read as soon as the driver has
+    written it, so a sandbox past its `hours`, or lost, costs only the fixtures not done; each of those says why."""
+    seconds, start, done, said, box = int(hours * 3600), {}, {}, "", None
+    try:
+        box = modal.Sandbox.create(image=engine_image, app=modal.App.lookup("daodan-premap-engine", create_if_missing=True),
+                                   cpu=4, memory=16384, timeout=seconds, runtime="vm", volumes={"/results": volume})
+        box.exec("sh", "-c", "PATH=/opt/docker:$PATH nohup dockerd > /tmp/dockerd.log 2>&1 &")
+        for _ in range(90):
+            if box.exec("/opt/docker/docker", "info", timeout=30).wait() == 0:
+                break
+            time.sleep(1)
+        process = box.exec("python", "-u", f"{REMOTE_PM}/{DRIVER}", json.dumps(job), timeout=max(seconds - 300, 600))
+        tail = ""
+        for chunk in process.stdout:  # the stream comes in chunks, not lines (`modal_engine.py`)
+            *lines, tail = (tail + chunk).split("\n")
+            for line in lines:
+                print(f"[{job['names'][0]}] {line.rstrip()[:300]}", flush=True)
+                if line.startswith("START "):
+                    start = json.loads(line[len("START "):])
+                elif line.startswith("DONE "):
+                    name = line.split()[1]
+                    done[name] = json.loads(box.exec("cat", f"/runs/out/{name}.json", timeout=600).stdout.read())
+        said = f"the driver ended {process.wait()}: {process.stderr.read()[-1500:]}"
+    except Exception as error:  # noqa: BLE001 - past its time or lost: what was read stands
+        said = f"{type(error).__name__}: {error}"
+    finally:
+        if box is not None:
+            box.terminate()
+    print(f"[{job['names'][0]}] {said}", flush=True)
+    return start, {name: done.get(name) or {"error": f"no answer: {said}"} for name in job["names"]}
+
+
+def _boxed_jobs(jobs: list[dict], hours: float, parallel: int) -> list[tuple[dict, dict]]:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, min(parallel, len(jobs)))) as pool:
+        return list(pool.map(lambda job: _boxed_job(job, hours), jobs))
 
 
 def _runner(log: list):
+    """Every command on this function's container, with its whole network: `renovate_network`'s open arm."""
     def run(commands):
         answers = []
         for command in commands:
@@ -104,105 +189,10 @@ def _runner(log: list):
     return run
 
 
-def _case(name: str, files: dict | None) -> tuple[Path, Path]:
-    project, out = Path("/work") / name, Path("/work") / f"{name}.out"
-    shutil.rmtree(project, ignore_errors=True)
-    shutil.rmtree(out, ignore_errors=True)
-    if files is None:
-        shutil.copytree(Path(REMOTE_PM) / "fixtures" / name, project)
-    else:
-        for rel, text in files.items():
-            (project / rel).parent.mkdir(parents=True, exist_ok=True)
-            (project / rel).write_text(text, encoding="utf-8", newline="\n")
-    return project, out / "manifest.sqlite"
-
-
 def _versions() -> dict:
     return {argv[0]: subprocess.run(argv, capture_output=True, text=True,
                                     env={**os.environ, "RUSTUP_TOOLCHAIN": "1.99.1"}).stdout.strip()
             for argv in (["go", "version"], ["cargo", "--version"], ["uv", "--version"], ["renovate", "--version"])}
-
-
-def _real(name: str) -> Path:
-    """A real repository's clone at its pinned commit, from the archive `modal_native.py prepare` stored; without an
-    archive, cloned here at that commit (shallow), as `modal_stack.py` does."""
-    import tarfile
-    project, part = Path("/work") / name, Path("/work/real-part") / name
-    shutil.rmtree(project, ignore_errors=True)
-    shutil.rmtree(part, ignore_errors=True)
-    archive = Path("/results/project-model/native-real") / f"{name}.tar.gz"
-    if not archive.is_file():
-        source = json.loads((Path(REMOTE_PM) / "fixtures" / name / "source.json").read_text(encoding="utf-8"))
-        project.mkdir(parents=True)
-        for argv in (["git", "init", "-q"], ["git", "remote", "add", "origin", source["repo"]],
-                     ["git", "fetch", "-q", "--depth", "1", "origin", source["commit"]],
-                     ["git", "checkout", "-q", "FETCH_HEAD"]):
-            done = subprocess.run(argv, cwd=project, capture_output=True, text=True, timeout=900,
-                                  env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
-            if done.returncode:
-                raise RuntimeError(f"{' '.join(argv[:3])}: {done.stderr.strip()[-300:]}")
-        return project
-    part.mkdir(parents=True)
-    with tarfile.open(archive) as tar:
-        tar.extractall(part, filter="tar")
-    (part / name).rename(project)
-    return project
-
-
-@app.function(cpu=1.0, memory=2048, timeout=900)
-def store_outputs(names: list) -> dict:
-    sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM, f"{REMOTE_PM}/tools"]
-    import premap
-    import snapshot
-    out = {"code": code_hash(Path(__file__), Path(REMOTE_SCRIPTS) / "premap"), "versions": _versions(), "store": {}}
-    projects = json.loads((Path(REMOTE_PM) / "projects.json").read_text(encoding="utf-8"))
-    for name in names:
-        project, manifest = _case(name, projects[name])
-        os.environ["PREMAP_ROOT"] = str(project)
-        snapshot.read_project(project, manifest)
-        log: list = []
-        premap.write(manifest, runner=_runner(log))
-        out["store"][name] = log
-    return out
-
-
-@app.function(cpu=1.0, memory=3072, timeout=2400, volumes={"/results": volume})
-def score_fixtures(names: list) -> dict:
-    sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM, f"{REMOTE_PM}/tools"]
-    import daodan_modules
-    import modules
-    import premap
-    import score as scorer
-    import snapshot
-    out = {"code": code_hash(Path(__file__), Path(REMOTE_SCRIPTS) / "premap"), "versions": _versions(), "score": {}}
-    for name in names:
-        fixture = Path(REMOTE_PM) / "fixtures" / name
-        expected = json.loads((fixture / "expected.json").read_text(encoding="utf-8"))
-        started = time.monotonic()
-        try:
-            if (fixture / "source.json").is_file():
-                project = _real(name)
-                manifest = Path("/work") / f"{name}.out" / "manifest.sqlite"
-                shutil.rmtree(manifest.parent, ignore_errors=True)
-            else:
-                project, manifest = _case(name, None)
-            os.environ["PREMAP_ROOT"] = str(project)
-            snapshot.read_project(project, manifest)
-            graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
-            middle = time.monotonic()
-            log = []
-            record = premap.write(manifest, runner=_runner(log))
-            languages = _languages(manifest, log)
-        except Exception as error:  # noqa: BLE001 - a fixture's failure is its result
-            out["score"][name] = {"error": f"{type(error).__name__}: {error}"}
-            continue
-        out["score"][name] = {"base": scorer.score(expected, daodan_modules.convert(graph)),
-                              "premap": scorer.score(expected, record), "sources": record["sources"],
-                              "gaps": record["gaps"], "output": record,
-                              "languages_per_file": languages, "runs": log,
-                              "seconds": {"snapshot_and_graph": round(middle - started, 2),
-                                          "premap": round(time.monotonic() - middle, 2)}}
-    return out
 
 
 # `--network`: two small projects of the same Python, one whose Renovate config extends a preset of GitHub's
@@ -275,7 +265,7 @@ def renovate_network(name: str, tools: list) -> dict:
     import snapshot
     from premap import renovate
     from snapshot_store import open_snapshot
-    out = {"code": code_hash(Path(__file__), Path(REMOTE_SCRIPTS) / "premap"), "versions": _versions(), "arms": {}}
+    out = {"code": _code(), "versions": _versions(), "arms": {}}
     real = _real(name)
     synthetic = {"syn-plain": SYNTHETIC, "syn-preset": {**SYNTHETIC, "renovate.json": json.dumps({"extends": [PRESET]})},
                  "syn-disabled": {**SYNTHETIC, "renovate.json": json.dumps({"enabled": False})}}
@@ -377,53 +367,27 @@ def renovate_presets(names: list) -> dict:
     if done.returncode:
         raise RuntimeError(f"the presets' reader failed: {done.stderr.strip()[-600:]}")
     read = json.loads(done.stdout)
-    return {"code": code_hash(Path(__file__), Path(REMOTE_SCRIPTS) / "premap"), "renovate": _versions()["renovate"],
+    return {"code": _code(), "renovate": _versions()["renovate"],
             "fixtures": {name: read[folder] for name, folder in folders.items()}}
 
 
-def _languages(manifest: Path, log: list) -> dict:
-    """Per file of the snapshot, its suffix-table language against go-enry's: what replacing the table would change."""
-    from premap import suffix_table
-    from snapshot_store import open_snapshot
-    import modules
-    run = next((r["result"] for r in log if r["command"]["tool"] == "daodan-enry"), None)
-    if run is None or run["returncode"] != 0:
-        return {"error": "daodan-enry did not answer"}
-    rows = {row["path"]: row for row in json.loads(run["stdout"])}
-    with open_snapshot(manifest) as store:
-        headers = modules._Inventory(store).headers
-    out = {"same": 0, "changed": {}, "table_only": {}, "enry_only": {}, "left_out_by_enry": {}, "examples": {}}
-    for rel, header in sorted(headers.items()):
-        table = header.get("language")
-        table = suffix_table.NAMES.get(table, table) if table else None
-        row = rows.get(rel) or {}
-        why = next((w for w in ("vendored", "generated", "documentation", "binary") if row.get(w)), None)
-        guess = row.get("language") or None
-        if why and table:
-            key, bucket = f"{table} ({why})", "left_out_by_enry"
-        elif table == guess:
-            out["same"] += table is not None
-            continue
-        elif table and guess:
-            key, bucket = f"{table} -> {guess}", "changed"
-        elif table:
-            key, bucket = table, "table_only"
-        else:
-            key, bucket = guess, "enry_only"
-        out[bucket][key] = out[bucket].get(key, 0) + 1
-        out["examples"].setdefault(f"{bucket}: {key}", [])
-        if len(out["examples"][f"{bucket}: {key}"]) < 2:
-            out["examples"][f"{bucket}: {key}"].append(rel)
-    return out
+def _answers(fixtures: list[str]) -> dict:
+    """`egress-answers.json`, `{fixture: [host]}`, refused here before any sandbox when it is not that shape."""
+    answers = json.loads((HERE / "egress-answers.json").read_text(encoding="utf-8"))
+    if not isinstance(answers, dict) or any(name not in fixtures or not isinstance(hosts, list)
+                                            or not all(isinstance(host, str) and host for host in hosts)
+                                            for name, hosts in answers.items()):
+        raise SystemExit("egress-answers.json: an object {fixture: [host]}, each fixture one of fixtures/ or projects.json")
+    return answers
 
 
 @app.local_entrypoint()
 def main(store: str = "", score: str = "", out: str = "", runs: str = "", network: str = "", tools: str = "",
-         presets: bool = False):
-    local = code_hash(Path(__file__), REPO / "daodan/core/premap")
+         presets: bool = False, hours: float = 4.0, parallel: int = 24):
+    local = _code()
     print("code", local, flush=True)
+    fixtures = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
     if presets:  # every fixture's Renovate config and the presets it extends (`renovate_presets`)
-        fixtures = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
         real = [n for n in fixtures if (HERE / "fixtures" / n / "source.json").is_file()]
         answers = list(renovate_presets.map([[n for n in fixtures if n not in real], *([n] for n in real)]))
         found = {name: said for answer in answers for name, said in answer["fixtures"].items()}
@@ -447,42 +411,48 @@ def main(store: str = "", score: str = "", out: str = "", runs: str = "", networ
                   said["extract"]["returncode"], said["extract"]["managers"], flush=True)
         Path(out).write_text(json.dumps(answer, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         return
+    cases = json.loads((REPO / "tests/fixtures/premap/projects.json").read_text(encoding="utf-8"))
+    _answers([*fixtures, *cases])
     if store:
-        answer = store_outputs.remote([s for s in store.split(",") if s])
-        print("remote code", answer["code"], "same" if answer["code"] == local else "DIFFERENT", answer["versions"],
-              flush=True)
-        for name, log in answer["store"].items():
+        start, done = _boxed_job({"mode": "store", "names": [s for s in store.split(",") if s]}, hours)
+        print("remote code", start.get("code"), "same" if start.get("code") == local else "DIFFERENT",
+              start.get("versions"), flush=True)
+        for name, said in done.items():
+            if "error" in said:
+                print("not stored", name, said["error"], flush=True)
+                continue
             target = REPO / "tests/fixtures/premap/outputs" / f"{name}.json"
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(json.dumps({"versions": answer["versions"], "runs": log}, indent=1, ensure_ascii=False)
-                              + "\n", encoding="utf-8")
-            print("stored", name, len(log), flush=True)
+            target.write_text(json.dumps({"versions": start.get("versions"), "runs": said["runs"]}, indent=1,
+                                         ensure_ascii=False) + "\n", encoding="utf-8")
+            print("stored", name, len(said["runs"]), "requests", said["egress"]["requests"], flush=True)
     if not score:
         return
-    fixtures = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
     batches = []
     for spec in score.split(","):
-        if spec in ("js", "py", "jvm", "sys", "mix"):  # a family's hand-written fixtures in one container
+        if spec in ("js", "py", "jvm", "sys", "mix"):  # a family's hand-written fixtures in one sandbox
             batches.append([n for n in fixtures if n.startswith(spec + "-") and not (HERE / "fixtures" / n / "source.json").is_file()])
-        elif spec == "real":  # every real repository in a container of its own
+        elif spec == "real":  # every real repository in a sandbox of its own
             batches += [[n] for n in fixtures if (HERE / "fixtures" / n / "source.json").is_file()]
         elif spec:
             batches.append([spec])
-    results, codes = {}, set()
-    for answer in score_fixtures.map(batches, return_exceptions=True):
-        if isinstance(answer, Exception):
-            print("a container failed:", answer, flush=True)
-            continue
-        codes.add(answer["code"])
-        for name, result in answer["score"].items():
+    results, codes, asked = {}, set(), {}
+    for start, done in _boxed_jobs([{"mode": "score", "names": names} for names in batches if names], hours, parallel):
+        codes.add(start.get("code"))
+        for name, result in done.items():
             log = result.pop("runs", None)
             if runs and log is not None:  # every model command with its answer, to replay the pre-map here
                 import gzip
                 target = Path(runs) / f"{name}.json.gz"
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(gzip.compress(json.dumps({"versions": answer["versions"], "runs": log}, indent=1,
+                target.write_bytes(gzip.compress(json.dumps({"versions": start.get("versions"), "runs": log}, indent=1,
                                                             ensure_ascii=False).encode("utf-8") + b"\n", 9, mtime=0))
-        results.update(answer["score"])
-    print("remote code", sorted(codes), "same" if codes == {local} else "DIFFERENT", flush=True)
+            for group in (result.get("egress") or {}).get("requests", ()):  # the requests nobody answered
+                for request in group["requests"]:
+                    asked.setdefault(f"{request['host']}:{request['port']}", set()).add(f"{name} ({group['tool']})")
+        results.update(done)
+    print("remote code", sorted(map(str, codes)), "same" if codes == {local} else "DIFFERENT", flush=True)
+    print("requests without an answer:", json.dumps({host: sorted(seen) for host, seen in sorted(asked.items())},
+                                                    indent=1) if asked else "none", flush=True)
     Path(out).write_text(json.dumps(results, indent=1), encoding="utf-8")
-    print("scored", len(results), "->", out, flush=True)
+    print("scored", len(results), "errors", sum("error" in r for r in results.values()), "->", out, flush=True)

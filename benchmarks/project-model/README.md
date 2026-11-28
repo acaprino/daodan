@@ -980,7 +980,9 @@ riferimento `results/daodan_premap_corpus.json` (`modal_premap.py`) 18.
   fetch error: external-host-error` e `Skipping the rest ... error in init phase`. Il repository finisce senza leggere un
   file, con uscita 0 e `packageFiles` vuoto; il riferimento ha la rete (`_runner` non guarda `network`) e il preset si
   risolve.
-- Non misurato: il riferimento con i comandi `network: none` davvero senza rete su tutto il corpus.
+- Non misurato: il riferimento con i comandi `network: none` davvero senza rete su tutto il corpus. Dopo `T1.F.3` ogni
+  comando gira dietro il firewall: il riferimento così è la sezione «Il riferimento della pre-mappa dietro il firewall
+  del prodotto».
 
 ### I preset fuori da Renovate nel corpus (T0.C.10, informativo)
 
@@ -1025,3 +1027,66 @@ che ignora la `network` dei comandi.
 - Non misurato: Renovate dietro il proxy di Daodan. `sandbox_run` apre gli host per nome (`outbound_domain_allowlist`)
   senza proxy; che Renovate 44.239.1 usi `HTTPS_PROXY` è letto nei suoi sorgenti (`lib/proxy.ts`, `global-agent`), non
   misurato con `PROXY_SCRIPT`.
+
+## Il riferimento della pre-mappa dietro il firewall del prodotto (`T1.F.4`)
+
+Il riferimento della pre-mappa (`results/daodan_premap_corpus.json`) dava ai comandi di modello tutta la rete della
+funzione di Modal (`_runner`), e poteva contare voci che il prodotto, dietro il suo firewall, non trova. Ora `--score` e
+`--store` eseguono le sorgenti con il lanciatore del prodotto in un motore vero: firewall, fasi e richieste sono quelli
+del prodotto (`T1.F.3`).
+
+### Parametri
+
+- Comando, dalla radice del repository: `modal run benchmarks/project-model/modal_premap.py --score
+  js,py,jvm,sys,mix,real --out benchmarks/project-model/results/daodan_premap_corpus.json --runs
+  benchmarks/project-model/results/premap-runs`, con `--hours` (4) e `--parallel` (24) come sotto.
+- Motore: il demone di Docker 29.10.0 (binari statici) in una VM Sandbox di Modal (`runtime="vm"`, 4 CPU, 16 GiB), come
+  `modal_engine.py` e `benchmarks/egress/modal_probe.py`; `container.find_engine()` lo trova come su Linux. Il driver
+  nella Sandbox è `engine_premap_driver.py`.
+- Lanciatore: `container_runner.runner(manifest)`, chiamato come lo chiama il passo della pipeline (`pipeline._runner`: i
+  comandi e le toolchain), dentro `node_preparation.analysis()` ed `egress.analysis(progetto)` come `pipeline.run`. Ogni
+  sorgente di modello è un run di `container.run_commands`: preparazione ed esecuzione dietro `container.PROXY_SCRIPT`,
+  aperti i registri canonici (`container.REGISTRIES`) e gli host approvati per il progetto, ogni altro host una richiesta.
+- Immagini e strumenti: quelli del prodotto (`container_runner.IMAGE`, `preparation.IMAGE` per i build JVM, l'immagine
+  del proxy), con i file e le versioni di `container_runner.TOOLS` e `preparation`, scaricati e controllati per sha256
+  come nel prodotto; non più gli strumenti installati sulla funzione.
+- Risposte: `egress-answers.json`, `{fixture: [host]}`, date come «Sempre» (`egress.respond`) per il progetto della
+  fixture prima della corsa. La fixture sta in `/work/<fixture>/c/source`, una checkout dell'App, e la risposta resta nel
+  suo `project.daodan` (`egress.project_file_of`). Il file parte vuoto: la prima misura è «nessuno risponde».
+- Nessuno risponde durante la corsa (niente `DAODAN_ANSWERS`, come MCP e riga di comando): un host fuori dalla whitelist
+  è rifiutato subito e la richiesta resta. Ogni fixture la tiene in `egress.requests` (`egress.groups`: strumento, host,
+  porta); a fine corsa il driver stampa ogni host chiesto con le fixture e gli strumenti che l'hanno chiesto.
+- Tempi: ogni run del container ha il limite del prodotto (1.800 s, `container_runner`); ogni Sandbox ha `--hours`, e una
+  fixture non finita allo scadere è un `error` con `no answer` e la causa.
+- Fixture: le 122 scritte a mano (`js` 20, `py` 21, `jvm` 34, `sys` 25, `mix` 22), una Sandbox per famiglia, copiate
+  intere come prima, `expected.json` compreso e senza Git; le 64 reali, una Sandbox ciascuna, dal clone archiviato sul
+  volume `daodan-flow-results` (`modal_native.py prepare`) o clonate al commit di `source.json`. `--parallel` Sandbox
+  insieme.
+- Uscita: `--out` ha per fixture le chiavi di prima (`base`, `premap`, `sources`, `gaps`, `output`, `seconds`) più
+  `egress` (`answered`, `requests`); `languages_per_file` non c'è più (go-enry è uscito dalla pre-mappa in T1.9).
+  `--runs` tiene i comandi con le risposte del prodotto, la prima con le lacune della preparazione, e
+  `tools/premap_replay.py` li riproduce come prima; una sorgente che il prodotto non avvia (un host del suo strumento
+  senza risposta, `egress.preflight`) non ha comandi registrati.
+- `--store` gira nello stesso modo, una Sandbox per tutti i casi; `--network` e `--presets` restano le misure del 28
+  novembre, sul loro container con gli strumenti installati.
+
+### Risultati
+
+Da riempire dopo la corsa. «Prima»: `results/daodan_premap_corpus.json` del commit `435058de` (`_runner`, rete aperta,
+184 fixture); «dopo»: la corsa con `egress-answers.json` vuoto. Voci trovate, in più e sbagliate sulle attese, sommate
+come `tools/premap_replay.py` (`totals`).
+
+| Faccetta | Prima | Dopo | Attese |
+| --- | --- | --- | --- |
+| `units` | | | |
+| `units.depends_on` | | | |
+| `workspace` | | | |
+| `workspace.members` | | | |
+| `toolchains` | | | |
+| `dependencies` | | | |
+
+| Host chiesto senza risposta | Strumenti | Fixture |
+| --- | --- | --- |
+| | | |
+
+- Corsa: id dell'app, commit, fixture con un risultato e con `error`, secondi della più lenta.
