@@ -964,5 +964,48 @@ riferimento `results/daodan_premap_corpus.json` (`modal_premap.py`) 18.
   fetch error: external-host-error` e `Skipping the rest ... error in init phase`. Il repository finisce senza leggere un
   file, con uscita 0 e `packageFiles` vuoto; il riferimento ha la rete (`_runner` non guarda `network`) e il preset si
   risolve.
-- Non misurato: il riferimento con i comandi `network: none` davvero senza rete su tutto il corpus (quanti altri progetti
-  estendono un preset remoto).
+- Non misurato: il riferimento con i comandi `network: none` davvero senza rete su tutto il corpus.
+
+### I preset fuori da Renovate nel corpus (T0.C.10, informativo)
+
+Quante fixture hanno una config di Renovate che estende un preset che Renovate non ha in sé.
+
+- Comando: `modal run benchmarks/project-model/modal_premap.py --presets --out results/renovate-presets.json`
+  (`renovate_presets`, corsa `ap-92TWZ1Q99ZqwticQRhwRK1`, commit `bdd3b73e7`). Parametri: le 186 fixture con
+  `expected.json`, le 64 reali sui loro cloni (`_real`). Il file è quello che Renovate 44.239.1 prende, con le sue
+  funzioni: il primo di `getConfigFileNames()` che c'è (`package.json` solo con la chiave `renovate`, come
+  `detectConfigFile`), letto da `parseFileConfig` (JSON5 per `.json5`, JSONC per gli altri); ogni voce di `extends` ha la
+  sorgente che le dà `parsePreset`. Si leggono solo gli `extends` della config, non quelli dei preset che estende (sono in
+  rete).
+- Risultato: 10 fixture su 186 hanno una config; 3 estendono un preset fuori da Renovate, tutti `github>` (su
+  `api.github.com`): `real-bank-of-anthos`, `real-stack-jellyfin`, `real-stack-jellyfin-ios`. Le altre 7 estendono solo
+  preset interni (`config:base`, `config:recommended`, `group:`, `schedule:`, …).
+
+### Il preset chiesto nell'app, sul percorso del prodotto (T0.C.10, 28 novembre 2026)
+
+Se l'host di un preset diventa una richiesta di `egress` e, approvato, Renovate lo raggiunge: la pipeline intera su Bank of
+Anthos, con `container_runner` e i container su Sandbox di Modal (`sandbox_run`), non con il `_runner` di `modal_premap.py`
+che ignora la `network` dei comandi.
+
+- Comando: `modal run benchmarks/project-model/modal_pipeline.py --cases real-bank-of-anthos --out OUT.json`, poi lo stesso
+  con `--approve api.github.com` (l'host approvato «sempre» per il progetto nello stato di `egress` della corsa, prima che
+  parta). Parametro: la risposta dell'utente sull'host. Corse sul commit `f1a908af3`: `ap-m3blMuiPzUjU3DdwM3Cwap` (senza
+  risposta) e `ap-ZDmpDyTi52NXbYzJIBAS3J` (approvato); risultati in
+  `results/pipeline/2026-11-28-t0c10-renovate-{undecided,approved}.json`. Le stesse due su `6ed40ad0f` (prima della
+  correzione di `_asked`, che non tocca una corsa sola) davano gli stessi numeri (`ap-CcLVrdN1VkbuZpyALBYmcw`,
+  `ap-5PeGJkaGGnMVhZkYSZTQAj`). Con l'albero pulito, `code.differs` dei due file elenca 4 e 1096 percorsi, tutti sotto
+  `benchmarks/project-model/` e nessuno sotto `daodan/`: `code()` dà risposte diverse per lo stesso commit lanciato da Git
+  Bash e da PowerShell (non indagato). `test_renovate_preset.py` rilegge i due risultati.
+- Non misurato qui: che Renovate, una volta in rete, non chieda altri host (`sandbox_run` non tiene il registro di un
+  proxy); la sorgente di Renovate dice `network: ["none"]` anche dopo il rilancio con la rete.
+
+| Risposta | Toolchain | Lacune di Renovate | Richieste in `egress` | Azione del piano | Corse di Renovate |
+| --- | --- | --- | --- | --- | --- |
+| nessuna | 5 | `approval_required` (`api.github.com`) e `model_failed` (Host error, `api.github.com`) | `api.github.com:443`, strumento `renovate` | `awaiting_approval` | `renovate` (senza rete) |
+| «sempre» | 18, voce per voce (strumento, versione, file) quelle del riferimento `results/daodan_premap_corpus.json` | nessuna | nessuna | `done` | `renovate`, poi `renovate-hosts` (preparazione, con l'host) |
+
+- Il rilancio gira nella preparazione dietro lo stesso proxy che installa Renovate: oltre all'host approvato raggiunge i
+  registri canonici, come ogni comando `registries`; il resto resta chiuso.
+- Non misurato: Renovate dietro il proxy di Daodan. `sandbox_run` apre gli host per nome (`outbound_domain_allowlist`)
+  senza proxy; che Renovate 44.239.1 usi `HTTPS_PROXY` è letto nei suoi sorgenti (`lib/proxy.ts`, `global-agent`), non
+  misurato con `PROXY_SCRIPT`.

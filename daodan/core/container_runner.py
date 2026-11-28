@@ -16,8 +16,11 @@ files; next, whose command is one of them) has them restored by the setup, the p
 (`preparation.node_prepare`); a restore or a generation that fails, and a package folder no restore installs, is a
 gap on the first answer, and the commands run. The hosts the project declares for its build (the repositories of
 Gradle's settings, where a `pluginManagement` plugin comes from) open only once the user approved them (`egress`): a
-command that fails reaching one has the `approval_required` gap of the run; the repositories a Gradle build declares
-that nobody decided (`gradle.retry`) are requests with a gap on the answer, its result standing. A host of the tool
+command that fails reaching one has the `approval_required` gap of the run. The hosts an answer names that its run did
+not reach (`TOOLS`' `named`: the repositories a Gradle build declares, `gradle.retry`; a preset the project's Renovate
+config extends, `renovate.asked`) are requests with a gap on the answer, its result standing, until the user decides;
+a command with no network that names a host the user approved runs once more in the preparation, behind the proxy
+that opens it beside the registries, as every command there (`reach`). A host of the tool
 that nobody decided stops the run before it starts (`egress.preflight`): the source is not run, with that gap. A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
 its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the manifest.
@@ -37,7 +40,7 @@ BUILD_SCRIPTS = SCRIPT_DIR / "premap"  # the same, beside the pre-map's sources 
 import preparation  # noqa: E402
 import node_preparation  # noqa: E402
 from entry_points import noir  # noqa: E402
-from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, sbt  # noqa: E402
+from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, renovate, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -130,7 +133,9 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
     # says why the source is not in `entry_points.SOURCES`
     "flask": {"files": [(None, None, "flask_routes.py")], "setup": [f"cp {IN}/flask_routes.py {T}/flask_routes.py"],
               "registries": True, "restores": "python", "memory": 3},
-    "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
+    # `named`: the hosts an answer names that its run did not reach (`reach`): a preset the project's config extends
+    "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True,
+                 "named": renovate.asked},
     "compose": {"files": [(*compose.DOWNLOAD, "docker-compose")],  # Compose's own binary: it reads, no engine runs
                 "setup": [f"cp {IN}/docker-compose {T}/bin/docker-compose && chmod 755 {T}/bin/docker-compose"]},
     "cmake": {"files": [(*cmake.DOWNLOAD[0], "cmake.tar.gz"), NINJA],
@@ -150,7 +155,8 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                                "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228", "gradle.zip")],
                "setup": [preparation.UNPACK_JDK, _jar("gradle.zip", "gradle-9.9.1", "gradle")],
                "image": preparation.IMAGE, "java": True,
-               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "asks": gradle.asked_jdk},
+               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "asks": gradle.asked_jdk,
+               "named": gradle.retry},  # the repositories its builds' settings declare
     "sbt": {"files": [JDK, (*sbt.DOWNLOAD[0], "sbt.tgz")],
             "setup": [preparation.UNPACK_JDK, f"tar -xzf {IN}/sbt.tgz -C {T} && ln -sf {T}/sbt/bin/sbt {T}/bin/sbt"],
             "image": preparation.IMAGE,
@@ -258,6 +264,34 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                          **({"argv": ["sh", "-c", f'{preparation.UNPACK_JDK}{preparation.JAVA_PROXY}; exec "$@"',
                                      c["tool"], *c["argv"]]}
                             if spec.get("java") else {})} for c in commands)]
+        def reach(named, answers: list[dict], roots: list) -> list[dict]:
+            """The hosts the answers name (`TOOLS`' `named`): a command with no network that names an approved one runs
+            once more in the preparation, behind the proxy that opens it, and its answer stands for the first (a host
+            its second answer names is not run for again); the rest are the user's requests (`approval_required`, the
+            result standing) or `host_denied` (`egress.collect`)."""
+            name = str(project.resolve())
+            found = {n: named(answers[n]) for n in range(1, len(answers))}
+            state, answered = egress.load(), egress.session(name)
+            closed = {n for n in found if ran[n].get("network", "none") == "none"}
+            opened = tuple(dict.fromkeys(host for n in sorted(closed) for host in found[n]
+                                         if egress.decide(host, name, state, answered) == "allow"))
+            again = [n for n in sorted(closed) if set(found[n]) & set(opened)]
+            told = []
+            if again:
+                run = contained([ran[0], *({**ran[n], "network": "registries"} for n in again)], (*hosts, *opened),
+                                f"{tool}-hosts")
+                done = run.get("results") or []
+                if run["state"] != "done" or len(done) != len(again) + 1 or done[0]["returncode"] != 0:
+                    told.append({"kind": "model_failed", "path": ".", "detail": f"{tool}: the run again with the hosts "
+                                 f"the user approved ({', '.join(opened)}) did not happen: "
+                                 f"{run.get('cause') or 'its setup failed'}"})
+                else:
+                    for n, answer in zip(again, done[1:]):
+                        answers[n], roots[n], found[n] = answer, run["root"], named(answer)
+            asked, denied = egress.collect(name, [{"host": host, "port": "443"} for host in dict.fromkeys(
+                host for named_hosts in found.values() for host in named_hosts)])
+            return told + [gap for gap in denied if gap not in gaps] + egress.approval_gap(asked, "ran")
+
         def contained(given: list[dict], allowed: tuple, out: str) -> dict:
             with tempfile.TemporaryDirectory(prefix="daodan-inputs-") as scratch:
                 written = {}
@@ -292,10 +326,9 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                  + preparation.restore_gaps(answers[0]["stderr"])
                  + preparation.generation_gaps(f"{answers[0]['stderr']}\n{said}")
                  + list(result.get("gaps") or ()))  # and what the copy left out (`container.copy_perimeter`)
-        if tool == "gradle":  # the repositories its builds declare (`gradle.retry`) that nobody decided: asked, the result stands
-            waiting, _ = egress.preflight(str(project.resolve()), tuple(h for a in answers[1:] for h in gradle.retry(a)))
-            gaps += egress.approval_gap(waiting, "ran")
         roots = [result["root"]] * len(answers)
+        if spec.get("named"):
+            gaps += reach(spec["named"], answers, roots)
         # A command whose build needs a newer JVM than the image's (`asks`) runs once more on the JDK it names:
         # mise installs it in the setup, and the command runs with it as JAVA_HOME.
         asked = [(n, spec["asks"](answers[n]["stderr"] + answers[n]["stdout"], toolchains))

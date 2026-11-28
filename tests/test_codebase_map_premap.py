@@ -259,6 +259,33 @@ def test_ensure_with_a_runner_runs_the_model_commands_a_fresh_premap_left_not_ru
     assert premap.ensure(manifest, runner=lambda commands: pytest.fail("ran twice")) == again
 
 
+def test_a_premap_whose_run_asked_the_user_about_a_host_runs_again_with_the_answer(tmp_path, monkeypatch):
+    """With a runner the pre-map is stale while a source waits on the user about a host: a request (`approval_required`),
+    whatever its answer, and a host refused for one analysis ("no") once that analysis has ended; a host the user
+    blocked, and an allowed one the proxy refused at a port other than 443, keep it fresh (`egress`). Without a runner
+    it stays as it is."""
+    import egress
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    runner = lambda commands: []  # noqa: E731 - any runner
+    for case, gap in (("asked", {"kind": "approval_required", "hosts": ["api.github.com"], "detail": "asked"}),
+                      ("port", {"kind": "host_denied", "host": "pypi.org", "port": "80", "detail": "443 only"}),
+                      ("refused", {"kind": "host_denied", "host": "api.github.com", "port": "443", "detail": "no"})):
+        sources = [fake("asker", "reader", lambda context, gap=gap: {"facts": {}, "gaps": [gap]})]
+        project, manifest, _ = build(tmp_path / case, "mixed", sources=sources)
+        name = str(project.resolve())
+        assert premap.state(manifest, sources=sources)["state"] == "fresh"
+        if case != "refused":  # a request waits; an allowed host the proxy opens at 443 only stays refused at 80
+            assert premap.state(manifest, sources=sources, runner=runner)["state"] == ("stale" if case == "asked"
+                                                                                       else "fresh")
+            continue
+        egress.respond("api.github.com", name, "no")  # refused in this analysis: what it said stands
+        assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"
+        egress.end(name)  # the analysis ended, and its "no" with it: the next one asks again
+        assert premap.state(manifest, sources=sources, runner=runner)["state"] == "stale"
+        egress.respond("api.github.com", name, "block")
+        assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"
+
+
 def test_every_command_is_data_with_its_network():
     for source in (go, cargo, uv, renovate, tsc, npm):
         assert hasattr(source, "commands") and hasattr(source, "read")
@@ -887,6 +914,10 @@ def test_a_repository_renovate_ends_before_reading_its_files_is_a_gap_not_an_emp
         assert "toolchains" not in result["facts"] and "packages" not in result["facts"]
         [gap] = [g for g in result["gaps"] if g["kind"] == "model_failed"]
         assert gap["detail"].startswith("renovate ended the repository (") and said in gap["detail"], gap
+        # the host of the URL the preset was asked at, which the runner asks the user about (`container_runner.reach`)
+        assert renovate.asked(answer) == (["api.github.com"] if case == "preset" else [])
+    for other in ({"stdout": '{"yarn.lock": []}'}, {"stdout": ".github/workflows/ci.yml\nnull\n"}, {"stdout": ""}):
+        assert renovate.asked(other) == []  # the answers of the other commands name no host
 
 
 # -------------------------------------------------------- requirements files

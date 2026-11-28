@@ -35,6 +35,9 @@ it uploaded and the paths where the two differ.
     python -m modal run benchmarks/project-model/modal_pipeline.py --cases js,py,jvm,sys,mix,real --out OUT.json
     DAODAN_FOLDER=<folder> python -m modal run benchmarks/project-model/modal_pipeline.py --folder-out DIR
 
+`--approve HOST,...` approves those hosts for each case's project before it runs, as the app's "always" does (`egress`);
+each case says the hosts it approved and the requests its run left (`egress`).
+
 The last form runs the pipeline on a folder of this PC and brings its snapshot, pre-map, edge store and events
 back into DIR; `--folder-stop link_calls` ends it after that step, without the tests of the dynamic step.
 """
@@ -638,8 +641,11 @@ def run_folder(stop: str | None = None) -> dict:
 
 # A request and a limit: the function mostly waits for its sandboxes, and is billed for what it uses above the request.
 @app.function(cpu=(2.0, 16.0), memory=(4096, 32768), timeout=7200, volumes={"/results": volume})
-def run_cases(names: list) -> dict:
+def run_cases(names: list, approve: list = ()) -> dict:
+    """The pipeline on each case; the hosts of `approve` approved for its project before it runs, as the app's
+    "always" (`egress.respond`, in this function's own state), and the requests its run left in `egress`."""
     sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM]
+    import egress
     import pipeline
     import premap
     import score as scorer
@@ -654,6 +660,8 @@ def run_cases(names: list) -> dict:
             manifest = Path("/runs") / name / "manifest.sqlite"
             shutil.rmtree(manifest.parent, ignore_errors=True)
             snapshot.read_project(project, manifest)
+            for host in approve:
+                egress.respond(host, egress.project_of(manifest), "always")
             seen, clock, said = [], {}, []
 
             def listen(event, seen=seen, clock=clock, said=said, started=started):
@@ -684,6 +692,7 @@ def run_cases(names: list) -> dict:
                                                   "premap-runs/*/results/0/stdout", "dynamic-runs/**/*.log")
                                   for file in sorted(manifest.parent.glob(pattern)) if file.stat().st_size},
                          "plan": json.loads(json.dumps(plan.current(manifest), default=str)), **entry_sites(manifest),
+                         "egress": {"approved": list(approve), "requests": egress.groups([egress.project_of(manifest)])},
                          "seconds": round(time.monotonic() - started, 1)}
         except Exception as error:  # noqa: BLE001 - a case's failure is its result
             import traceback
@@ -693,7 +702,7 @@ def run_cases(names: list) -> dict:
 
 
 @app.local_entrypoint()
-def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = "", folder_stop: str = ""):
+def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = "", folder_stop: str = "", approve: str = ""):
     if folder_out:  # the folder of DAODAN_FOLDER: its run's files into `folder_out`
         answer = run_folder.remote(folder_stop or None)
         target = Path(folder_out)
@@ -718,7 +727,8 @@ def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = "", f
         else:
             batches.append([spec])
     results = {}
-    for answer in run_cases.map(batches, return_exceptions=True):
+    approved = [host for host in approve.split(",") if host]
+    for answer in run_cases.map(batches, kwargs={"approve": approved}, return_exceptions=True):
         if isinstance(answer, Exception):
             print("a container failed:", answer, flush=True)
             continue
