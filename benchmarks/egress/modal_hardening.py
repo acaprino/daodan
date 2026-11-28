@@ -17,7 +17,8 @@ preparation runs it (`code`, `T3.A.6b`): `container.own` gives the copy to `6553
 the recipes of `preparation.NEEDS` as root without /work with their `caps`, the rest runs as `65532` with
 `--cap-drop ALL` (`container.RESTORE`). A service runs as `start_services` creates it (`container.SERVICE`,
 `T3.A.6c`): postgres 17 and 18, mysql, redis and mongo, whose entrypoints drop to their user; its variants and least
-capabilities are those `T3.A.5` measured. Writes `results/hardening.json`.
+capabilities are those `T3.A.5` measured. A `preparer:` row runs the preparation an analyzer or an observer writes
+(its `scripts`) split the same way: the proof that moves it to `65532`. Writes `results/hardening.json`.
 """
 from __future__ import annotations
 
@@ -416,6 +417,51 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
                         (), TOOLS["gradle"]["setup"]),
     ]
 
+    # The preparers of the analyzers and the observers as their code makes them (`T3.A` decision 2): the script their
+    # own `scripts` writes for a small project, its `tools` (the recipes of `preparation.NEEDS`) as root, the rest
+    # as 65532 with `--cap-drop ALL` (`split`, as `run_in_container` with `tools`). A row that passes is the proof
+    # the preparer runs so; one that fails keeps it root, with the cause.
+    from indexers import go as go_indexer, rust as rust_indexer
+    from dynamic import callgrind, go as go_observer, python as python_observer, rust as rust_observer
+    from container_runner import IMAGE as RUNNER_IMAGE
+    module = "module p\n\ngo 1.22\n\nrequire golang.org/x/text v0.14.0\n"
+    crate = {"Cargo.toml": '[package]\nname = "p"\nversion = "0.1.0"\nedition = "2021"\n\n'
+                           '[dependencies]\nitoa = "=1.0.11"\n', "src/lib.rs": ""}
+
+    def preparer(name: str, project: dict[str, str], built, names, extra=None, image: str = RUNNER_IMAGE) -> dict:
+        prepare, _execute, needs = built()
+        tools = needed(names)  # the recipes of `names` out of the script, as root before it
+        for line in tools["lines"]:
+            prepare = prepare.replace(f"{line}\n", "")
+        inputs = {**fetched(needs["files"]), **(extra() if extra else {})}
+        copy = copy_of(f"preparer-{name}", project, inputs)
+        return {"row": f"preparer:{name}", "image": image, "script": prepare, "variants": {},
+                "code": split(image, copy, tools, [prepare])}
+
+    def analyzer() -> dict[str, Path]:  # the copy carries rust-analyzer: its preparation only gives it its mode
+        dummy = runs / "rust-analyzer"
+        dummy.write_text("#!/bin/sh\n", encoding="utf-8")
+        return {rust_indexer.ANALYZER: dummy}
+
+    def valgrind() -> dict[str, Path]:  # what `callgrind.inputs` carries, Ubuntu's archive the source of Valgrind
+        return {f"{IN}/{callgrind.READER.name}": callgrind.READER,
+                **fetched([(callgrind.VALGRIND[0][0], *callgrind.VALGRIND[1:]), callgrind.PYELFTOOLS])}
+    jobs += [
+        lambda: preparer("indexers.go", {"go.mod": module},
+                         lambda: go_indexer.scripts([(".", ["./..."])], []), ["go"]),
+        lambda: preparer("dynamic.go", {"go.mod": module},
+                         lambda: go_observer.scripts({"runs": [{"root": ".", "argv": go_observer.ARGV}]}), ["go"]),
+        lambda: preparer("indexers.rust", crate, lambda: rust_indexer.scripts(["."], []), ["rust"], analyzer),
+        lambda: preparer("dynamic.rust", crate,
+                         lambda: rust_observer.scripts({"runs": [{"root": ".", "argv": rust_observer.ARGV}]}),
+                         ["rust"], valgrind),
+        # no VCS requirement: git, from apt into the image, would keep it root (`preparation.IMAGE_NEEDS`)
+        lambda: preparer("dynamic.python", {"requirements.txt": "six==1.16.0\n"},
+                         lambda: python_observer.scripts({"runs": [
+                             {"env": ".", "manager": "pip", "root": ".", "runner": "pytest", "install": False,
+                              "deps": None, "argv": ["-m", "pytest"]}]}), ["uv"], image=PYTHON_IMAGE),
+    ]
+
     def guarded(job):
         try:
             row = job()
@@ -426,7 +472,7 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
                               "ok"), "code_ok": row.get("code", {}).get("ok")}), flush=True)
         return row
 
-    for image in {preparation.IMAGE, BUILDPACK, PYTHON_IMAGE, container.PROXY_IMAGE}:
+    for image in {preparation.IMAGE, BUILDPACK, PYTHON_IMAGE, RUNNER_IMAGE, container.PROXY_IMAGE}:
         container.checked(original(engine, "pull", image, timeout=1800), f"pull of {image}")
     with ThreadPoolExecutor(max_workers=6) as pool:
         rows = list(pool.map(guarded, jobs))
@@ -447,7 +493,8 @@ else:
     DOCKER = "https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0.tgz"
     image = (modal.Image.debian_slim(python_version="3.13")
              .apt_install("ca-certificates", "curl", "iptables", "xz-utils", "procps", "git")
-             .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6")
+             .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6",
+                          "protobuf==7.36.2", "pip-requirements-parser==32.0.1")
              .run_commands(f"curl -fsSL {DOCKER} -o /tmp/d.tgz && mkdir -p /opt/docker && "
                            "tar -xzf /tmp/d.tgz -C /opt/docker --strip-components=1")
              .add_local_dir(REPO / "daodan/core", "/daodan/map/core", copy=True, ignore=["**/__pycache__/**"])
