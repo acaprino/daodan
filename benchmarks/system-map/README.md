@@ -411,6 +411,10 @@ Lacune che restano, non colpa della preparazione di Daodan o da decidere:
 - **Make.** Il `Makefile` del progetto chiede `PROJECT_ID`.
 - **Test non dichiarati.** Né JavaScript né `frontend` o `loadgenerator` dichiarano test.
 
+### Cancello T1 (`T1.E.7`, 28 novembre 2026)
+
+Stesso archivio della diagnosi, la pipeline intera con i container e senza LLM (`benchmarks/project-model/modal_pipeline.py --cases real-bank-of-anthos`, `ap-IopIxUMcOvMhPPm341Wol4`; test `benchmarks/project-model/test_gate_t1.py`). Un piano solo di otto step `done`; moduli senza perdite; 5 toolchain su 37, le 13 perse spiegate dalla lacuna di Renovate (preset remoto della config del progetto, senza rete); 44 siti di rotte e 0 dei 27 controlli che avviano i flussi del riferimento, che sono controlli dell'interfaccia e dichiarazioni di rilascio, non rotte. Numeri e corse in `docs/verification/2026-11-25-baseline-t0.md`, sezione «T1.E e Cancello T1».
+
 ### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
 
 Eseguire `python benchmarks/system-map/pipeline_reuse.py`. Lo script crea una volta il manifest SQLite della fixture `js-npm-single`, poi avvia due processi distinti che chiamano `pipeline.run` senza saltare passi. La fixture dichiara pacchetti npm e il comando `node --test`. Ogni corsa imposta `DAODAN_CONTAINER=off`. Le grammatiche e l’ambiente uv di Daodan erano già disponibili.
