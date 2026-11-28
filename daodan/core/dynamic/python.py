@@ -226,7 +226,8 @@ def plan(record: dict, files: list[str], read) -> dict:
         packaged = env is not None and (posixpath.normpath(f"{env}/setup.py") in files or (
             manifest in files and "[build-system]" in read(manifest)))
         runs.append({"root": root, "runner": test["runner"], "declared_in": test.get("declared_in"),
-                     "argv": ["-m", test["runner"], *test.get("args", ()), *(
+                     "argv": ["-m", test["runner"], *(dynamic.arguments(test["argv"], test["runner"])
+                                                       if test.get("argv") else test.get("args", ())), *(
                          [KEEP_GOING] if test["runner"] == "pytest" else [])],
                      "env": env, "manager": held.get(env), "install": bool(packaged),
                      **({"deps": deps} if deps else {}), **({"python_request": request} if request else {})})

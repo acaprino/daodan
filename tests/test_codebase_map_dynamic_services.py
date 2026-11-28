@@ -39,7 +39,7 @@ import container_runner  # noqa: E402
 from premap import compose, renovate  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 from test_codebase_map_container import FAKE_CLI  # noqa: E402
-from test_codebase_map_dynamic import SAMPLED_LIB, gaps, static_store, step, write_project  # noqa: E402
+from test_codebase_map_dynamic import BOX_LIB, gaps, static_store, step, write_project  # noqa: E402
 
 # chrisvel/tududi at 71da9d7b34dfd1600657e9c5ddf40420206fd263, .github/workflows/ci.yml as Renovate's YAML library
 # prints it: the job that runs the backend's tests and the PostgreSQL its tests reach at localhost
@@ -628,6 +628,32 @@ def test_a_step_before_the_tests_that_daodan_does_not_run_is_a_fact_with_its_cau
                          ("4", "${{ secrets.NPM_TOKEN }}"), ("5", "pwsh"), ("6", "docker compose exec")):
         assert said in facts[number]["cause"] and "run" not in facts[number], (number, facts[number])
     assert facts["3"]["name"] == "Seed"
+
+
+def test_a_ci_step_that_starts_a_runner_an_observer_declares_is_a_tests_entry_with_its_steps(tmp_path):
+    """`go test -tags e2e ./...` in a step, `cargo test --workspace` in a GitLab line: a runner an observer
+    declares (`go.RUNNER`, `rust.RUNNER`) that runs no stated entry is a `tests` entry of the CI, in the step's
+    folder, with its words; the steps before it are its `ci_steps`, the step itself its test step. The same runner
+    again in that folder is the first one only; a step that runs a stated entry (pytest) declares none."""
+    workflow = {"jobs": {"e2e": {"defaults": {"run": {"working-directory": "svc"}}, "steps": [
+        {"uses": "actions/checkout@v4"}, {"name": "Migrate", "run": "make migrate"},
+        {"run": "go test -tags e2e ./...", "env": {"DB": "x"}}, {"run": "go test ./..."}]},
+        "unit": {"steps": [{"run": "pytest -m integration"}]}}}
+    tests = [{"root": ".", "runner": "pytest", "declared_in": "pyproject.toml#tool.pytest.ini_options"}]
+    out = read_steps(tmp_path, {"svc/go.mod": "module svc\n"}, tests, {
+        ".github/workflows/e2e.yml": workflow, ".gitlab-ci.yml": {"test": {"script": ["cargo test --workspace"]}}})
+    path = ".github/workflows/e2e.yml#jobs.e2e.steps."
+    assert out["facts"]["tests"] == [
+        {"root": "svc", "runner": "go test", "argv": ["go", "test", "-tags", "e2e", "./..."], "declared_in": path + "2",
+         "source": "ci"},
+        {"root": ".", "runner": "cargo test", "argv": ["cargo", "test", "--workspace"],
+         "declared_in": ".gitlab-ci.yml#test.script.0", "source": "ci"}]
+    steps = [item for item in out["facts"]["ci_steps"] if item["tests"] != tests[0]["declared_in"]]
+    assert steps == [
+        {"declared_in": path + "1", "tests": path + "2", "name": "Migrate", "cwd": "svc", "run": "make migrate"},
+        {"declared_in": path + "2", "tests": path + "2", "test": True, "env": {"DB": "x"}},
+        {"declared_in": ".gitlab-ci.yml#test.script.0", "tests": ".gitlab-ci.yml#test.script.0", "name": "test",
+         "test": True}]
 
 
 def test_an_observer_s_runs_get_the_steps_before_their_tests_and_a_gap_for_each_that_does_not_run():
@@ -1838,7 +1864,7 @@ def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped:
 
 def run_step(tmp_path, entries: list[dict], runs: list[list[dict]], state: str = "ran", ci_steps=(), stepped=(),
              found=()):
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     static_store(manifest)
     seen: dict = {}
     record = {"services": entries, "tests": [], "ci_steps": list(ci_steps)}

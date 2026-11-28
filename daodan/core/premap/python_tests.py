@@ -29,10 +29,9 @@ from __future__ import annotations
 import configparser
 from pathlib import PurePosixPath
 import re
-import shlex
 import tomllib
 
-from premap import requirements
+from premap import requirements, shell
 
 NAME, VERSION, RANK = "python-tests", "daodan/premap/v1", "reader"
 CONFIGS = ("pytest.ini", ".pytest.ini", "pytest.toml", ".pytest.toml")
@@ -157,10 +156,10 @@ def _pytest(rel: str, text: str) -> str | None:
 def _unittest(text: str) -> list[str] | None:
     """The arguments of the first `python -m unittest` line written without a variable, None when there is none."""
     for written in UNITTEST.findall(text):
-        try:
-            words = [word for word in shlex.split(written) if word != "{posargs}"]
-        except ValueError:
+        said = shell.commands(written)
+        if said is None:
             continue
+        words = [word for _, command in said for word in command if word != "{posargs}"]
         if all(PLAIN.match(word) for word in words):
             return words
     return None

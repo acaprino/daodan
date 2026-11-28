@@ -13,7 +13,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 
 import premap  # noqa: E402
-from premap import npm_start  # noqa: E402
+from premap import npm_start, shell  # noqa: E402
 import snapshot  # noqa: E402
 
 READERS = tuple(source for source in premap.SOURCES if not hasattr(source, "commands"))
@@ -135,3 +135,25 @@ def test_a_package_without_scripts_or_with_none_of_them_states_nothing(tmp_path)
     record = premapped(tmp_path, {"package.json": json.dumps({"name": "p"}), "lib/package.json": package(lint="eslint .")})
     assert "starts" not in record and "builds" not in record
     assert not [gap for gap in record["gaps"] if gap["kind"] in ("no_start_command", "build_command_missing")]
+
+
+def test_the_shell_reader_gives_each_simple_command_from_the_syntax_tree():
+    """One reader for every shell text of the pre-map: the commands inside `if`, `&&` and a substitution, the
+    variables before a program, quotes removed and expansions as written, a continuation joined, a comment none."""
+    script = ('if true; then PORT=3000 NODE_ENV="a b" next start \\\n  --port \'4000\'; fi # npm test\n'
+              'cd web && echo "x $(pwd)" > out.txt\n')
+    assert shell.commands(script) == [
+        ({}, ["true"]), ({"PORT": "3000", "NODE_ENV": "a b"}, ["next", "start", "--port", "4000"]),
+        ({}, ["cd", "web"]), ({}, ["echo", "x $(pwd)"]), ({}, ["pwd"])]
+    [(_, words, line, whole)] = shell.written("docker compose \\\n  up -d")
+    assert (words, line, whole) == (["docker", "compose", "up", "-d"], "docker compose    up -d", True)
+
+
+def test_no_module_of_the_pre_map_splits_shell_text_with_shlex():
+    """`shlex` splits words, not commands: in the pre-map it only writes an argv back as a line."""
+    import ast
+    for path in sorted((SCRIPTS / "premap").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        used = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)
+                and isinstance(node.value, ast.Name) and node.value.id == "shlex"}
+        assert used <= {"join", "quote"}, (path.name, used)

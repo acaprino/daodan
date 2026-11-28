@@ -16,10 +16,10 @@ to the project where they lie inside it), `build` where Compose builds the image
 option here applies, and the job's `job_env`. A Compose that does not read the files is a
 `model_failed` gap naming the step, a variable it does not find a `model_partial` one.
 
-`invocations` and `options` read a step's script as the shell splits its words (`shlex`): a `docker compose` or
-`docker-compose` command whose subcommand is `up`, from the variables it sets on, past `sudo` and the shell's
-keywords. `started` reads them in a script and in the shell scripts of the checkout it runs (a word that names one:
-`.sh`, or a shell's `#!`), three levels deep, each from its caller's folder: one that changes folder and runs
+`invocations` and `options` read a step's script from its syntax tree (`premap/shell.py`): a `docker compose`
+or `docker-compose` command whose subcommand is `up`, from the variables it sets on, past `sudo` and the other
+programs that run the next word (`WRAPPERS`). `started` reads them in a script and in the shell scripts of the
+checkout it runs (a word that names one: `.sh`, or a shell's `#!`), three levels deep, each from its caller's folder: one that changes folder and runs
 Compose is a `compose_not_read` gap.
 """
 from __future__ import annotations
@@ -28,9 +28,10 @@ import json
 from pathlib import Path
 import posixpath
 import re
-import shlex
+import shlex  # only to write an argv back as a line (`shlex.join`)
 
 import confinement
+from premap import shell
 from source_files import is_forbidden
 
 
@@ -100,8 +101,7 @@ DOWNLOAD = ("https://github.com/docker/compose/releases/download/v5.6.1/docker-c
             "47737f4236e6d3ccea7291995203f8f018058783b4c3a9469119811a0b5db8c0")
 MENTION = re.compile(r"\bdocker[ \t]+compose\b|\bdocker-compose\b")  # a line that may run Docker Compose
 ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
-PUNCTUATION = ";&|()<>"  # what ends a simple command
-LEADERS = {"then", "do", "else", "elif", "if", "while", "until", "!", "{", "sudo", "exec", "time", "command", "nohup"}
+WRAPPERS = {"sudo", "exec", "time", "command", "nohup"}  # programs that run the next word as a program
 VALUED = {"-f", "--file", "-p", "--project-name", "--project-directory", "--env-file", "--profile", "--parallel",
           "--ansi", "--progress"}  # Compose's global options that take a value
 UP_VALUED = {"--attach", "--exit-code-from", "--no-attach", "--pull", "--scale", "-t", "--timeout", "--wait-timeout"}
@@ -110,7 +110,7 @@ INERT = {"networks", "restart", "container_name", "labels", "logging", "profiles
          "deploy", "expose", "stop_grace_period", "stop_signal", "hostname", "domainname"}  # nothing the tests reach
 UNSET = re.compile(r"variable is not set", re.I)  # Compose's warning for a variable it interpolates blank
 SHELL = re.compile(r"#!\s*\S*/(?:env\s+)?(?:ba|da|a|k|z)?sh\b")  # a shell script's first line
-MOVES = re.compile(r"(?:^|[;&|({]|\bthen|\bdo|\belse)\s*(?:cd|pushd)(?:\s|$)", re.M)  # a command that changes folder
+MOVES = {"cd", "pushd"}  # the commands that change folder
 DEPTH = 3  # the shell scripts a script runs, and the Makefiles a recipe's make runs, followed this deep
 MAKE = {"make", "gmake"}  # programs that run a Makefile's targets
 MAKEFILES = ("GNUmakefile", "makefile", "Makefile")  # the files GNU make reads, in its order
@@ -140,32 +140,27 @@ def _split(argv: list[str]) -> tuple[dict, list[str], str | None, list[str]]:
 
 
 def simple_commands(script: str) -> list[list[str]]:
-    """Each simple command of a shell `script` as its words, from the program on (past the shell's keywords and the
-    variables it sets); a line the shell's words do not split is none."""
+    """Each simple command of a shell `script` as its words, from the program on (past the variables it sets and
+    `WRAPPERS`)."""
     return [words for _, words in assigned(script)]
 
 
+def _wrapped(words: list[str]) -> int:
+    """Where the program a command runs is among its words: past `WRAPPERS` and the variables set after one."""
+    start = 0
+    while start < len(words) and (words[start] in WRAPPERS or start and ASSIGNMENT.match(words[start])):
+        start += 1
+    return start
+
+
 def assigned(script: str) -> list[tuple[dict, list[str]]]:
-    """Each simple command of a shell `script` as the variables it sets for its program (`NAME=value` before it,
-    as the shell's words give them) and its words from the program on."""
+    """Each simple command of a shell `script` (`shell.commands`) as the variables it sets for its program
+    (`NAME=value` before it, or after a wrapper) and its words from the program on; none with no bash grammar."""
     found = []
-    for line in script.replace("\\\n", " ").splitlines():
-        try:
-            lexer = shlex.shlex(line, posix=True, punctuation_chars=PUNCTUATION)
-            lexer.whitespace_split, lexer.commenters = True, "#"
-            words = list(lexer)
-        except ValueError:
-            continue
-        command: list[str] = []
-        for word in [*words, ";"]:
-            if not set(word) <= set(PUNCTUATION):
-                command.append(word)
-                continue
-            start = next((n for n, w in enumerate(command) if w not in LEADERS and not ASSIGNMENT.match(w)),
-                         len(command))
-            sets = dict(word.split("=", 1) for word in command[:start] if ASSIGNMENT.match(word))
-            found += [(sets, command[start:])] if command[start:] else []
-            command = []
+    for sets, words in shell.commands(script) or ():
+        start = _wrapped(words)
+        sets = {**sets, **dict(word.split("=", 1) for word in words[:start] if ASSIGNMENT.match(word))}
+        found += [(sets, words[start:])] if words[start:] else []
     return found
 
 
@@ -182,33 +177,19 @@ def invocations(script: str) -> tuple[list[list[str]], list[str]]:
     """The `up` commands of Docker Compose in a shell `script`, each as its words from the variables it sets on,
     and the lines that run one in a way its words do not say (a variable, a substitution, an open quote)."""
     found, unread = [], []
-    for line in script.replace("\\\n", " ").splitlines():
-        if not MENTION.search(line):
-            continue
-        try:
-            lexer = shlex.shlex(line, posix=True, punctuation_chars=PUNCTUATION)
-            lexer.whitespace_split, lexer.commenters = True, "#"
-            words = list(lexer)
-        except ValueError:
-            unread.append(line.strip())
-            continue
-        command, unclear = [], False
-        for word in [*words, ";"]:
-            if not set(word) <= set(PUNCTUATION):
-                command.append(word)
-                continue
-            start = next((n for n, w in enumerate(command) if w not in LEADERS), len(command))
-            at = next((n for n in range(start, len(command)) if not ASSIGNMENT.match(command[n])), len(command))
-            if command[at:at + 2] == ["docker", "compose"] or command[at:at + 1] == ["docker-compose"]:
-                argv, computed = command[start:], lambda word: "$" in word or "`" in word
-                subcommand = _split(argv)[2]
-                if any(map(computed, argv)) and (subcommand in (None, "up") or computed(subcommand)):
-                    unclear = True
-                elif subcommand == "up":
-                    found.append(argv)
-            command = []
-        if unclear:
-            unread.append(line.strip())
+
+    def computed(word: str) -> bool:
+        return "$" in word or "`" in word
+    for sets, words, line, whole in shell.written(script) or ():
+        start = next((n for n, word in enumerate(words) if word not in WRAPPERS), len(words))
+        at = next((n for n in range(start, len(words)) if not ASSIGNMENT.match(words[n])), len(words))
+        if words[at:at + 2] == ["docker", "compose"] or words[at:at + 1] == ["docker-compose"]:
+            argv = [f"{name}={value}" for name, value in sets.items()] + words[start:]
+            subcommand = _split(argv)[2]
+            if not whole or any(map(computed, argv)) and (subcommand in (None, "up") or computed(subcommand)):
+                unread += [] if line in unread else [line]
+            elif subcommand == "up":
+                found.append(argv)
     return found, unread
 
 
@@ -235,14 +216,8 @@ def not_read(path: str, line: str) -> dict:
 def _runs(text: str, cwd: str, read) -> list[str]:
     """The shell scripts of the checkout a shell `text` run from `cwd` names (a word with a `/` or `.sh` that is
     such a file: `.sh`, or a shell's `#!`), each relative to the project."""
-    try:
-        lexer = shlex.shlex(text.replace("\\\n", " "), posix=True, punctuation_chars=PUNCTUATION)
-        lexer.whitespace_split, lexer.commenters = True, "#"
-        words = list(lexer)
-    except ValueError:
-        return []
     found = []
-    for word in words:
+    for word in (word for _, words in shell.commands(text) or () for word in words):
         if ("/" not in word and not word.endswith(".sh")) or set("$`=*") & set(word) or word.startswith("-"):
             continue
         rel = posixpath.normpath(posixpath.join(cwd, word))
@@ -362,7 +337,7 @@ def started(path: str, text: str, cwd: str, read, depth: int = 0) -> tuple[list[
     for rel in _runs(text, cwd, read) if depth < DEPTH else ():
         body = read(rel)
         more, said = started(rel, body, cwd, read, depth + 1)
-        if (more or said) and MOVES.search(body):
+        if (more or said) and any(words[0] in MOVES for words in simple_commands(body)):
             more, said = [], [{"kind": "compose_not_read", "path": rel,
                                "detail": f"{rel} changes folder and runs Docker Compose, or a script that does, in "
                                          "a folder Daodan does not follow: the services it starts do not start beside "

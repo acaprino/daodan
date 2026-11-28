@@ -1,0 +1,44 @@
+name: ci
+on: [push, pull_request]
+env:
+  MODE: ci
+defaults:
+  run:
+    working-directory: web
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    container: node:24
+    defaults:
+      run:
+        shell: bash
+    services:
+      db:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: secret
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready
+    env:
+      DATABASE_URL: postgres://postgres:secret@db:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: migrate
+        run: npm run migrate
+        working-directory: api
+        env:
+          STAGE: test
+      - name: test
+        if: github.event_name == 'push'
+        run: npm test -- --shard ${{ matrix.shard }}
+        shell: sh
+    strategy:
+      matrix:
+        shard: [1, 2]
+  e2e:
+    runs-on: ubuntu-24.04
+    needs: test
+    steps:
+      - run: |
+          docker compose up -d --wait
+          npx playwright test

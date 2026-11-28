@@ -10,10 +10,9 @@ samples (Profiler: a function's callers without the call's line) or counts funct
 coverage); its Debugger would pause at every call. OpenTelemetry's auto-instrumentation patches libraries
 (http, pg, express...): their boundaries only. So the recorder is a Babel plugin that passes every callee
 through a function of its own, and asks the inspector where the function called is defined; it prints with
-@babel/core (`BABEL`, MIT, from npm at that version). V8's sampling profiler (`--cpu-prof`) is the second source
-the step takes (`sampled` pairs, `dynamic.join_sampled`) only where the recorder has no hook: the one runner of
-that kind is Bun's, which is not V8, and the files the recorder misses are said (`not_observed`), so no run
-takes it.
+@babel/core (`BABEL`, MIT, from npm at that version). V8's sampling profiler (`--cpu-prof`) would help only where
+the recorder has no hook: the one runner of that kind is Bun's, which is not V8, and the files the recorder misses
+are said (`not_observed`), so the step takes no sampled source.
 
 `plan` reads the pre-map, and a Playwright script's configuration. The command is the one the project declares:
 the `test` script of each package and, for a folder and runner it does not reach, the package's script that starts
@@ -187,6 +186,12 @@ def plan(record: dict, files: list[str], read) -> dict:
     gaps = [{"kind": "runner_not_observed", "path": test.get("declared_in"), "runner": test["runner"],
              "detail": f"{test.get('declared_in')} runs {test['runner']}: {NOT_OBSERVED[test['runner']]}; its "
                        "tests do not run"} for test in tests if test["runner"] in NOT_OBSERVED]
+    # a runner a CI step starts itself, not through a package's script: the scripts are what this observer runs
+    gaps += [{"kind": "runner_not_observed", "path": test["declared_in"], "runner": test["runner"],
+              "detail": f"{test['declared_in']} runs `{shlex.join(test['argv'])}` itself: Daodan runs a package's "
+                        "test scripts, not a runner a CI step starts; its tests do not run"}
+             for test in tests if test.get("argv") and test["runner"] not in NOT_OBSERVED]
+    tests = [test for test in tests if not test.get("argv")]
     served = [gap for test in tests if test["runner"] == "playwright" for gap in [web_server(test, files, read)] if gap]
     gaps += served
     hosted = {gap["path"] for gap in served if gap["kind"] == "tests_need_container_engine"}

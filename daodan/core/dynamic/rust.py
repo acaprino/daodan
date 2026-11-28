@@ -41,6 +41,7 @@ import re
 import shlex
 from pathlib import Path
 
+import dynamic
 import preparation
 from dynamic import callgrind
 from container_runner import IMAGE  # Ubuntu 24.04: gcc for linking, dpkg, python3
@@ -89,7 +90,8 @@ def _folder(root: str | None) -> str:
 
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, toolchains}` from the pre-map `record`, the snapshot's `files` and `read(rel)` their text: a
-    run is `{root, runner, argv}`, a root whose crates hold no test a `no_tests` gap."""
+    run is `{root, runner, argv}`, the command a `tests` entry declares for the root (`dynamic.declared`, with its
+    `declared_in`) else `ARGV`; a root whose crates hold no test a `no_tests` gap."""
     crates = sorted({_folder(unit["root"]) for unit in record.get("units", []) if unit["kind"] in UNIT_KINDS})
     if not crates:
         return {"runs": [], "toolchains": [], "gaps": [{
@@ -110,7 +112,9 @@ def plan(record: dict, files: list[str], read) -> dict:
     runs, gaps, chains = [], [], []
     for root, members in sorted(roots.items()):
         if any(tested(crate) for crate in members):
-            runs.append({"root": root, "runner": RUNNER, "argv": ARGV})
+            chosen = dynamic.declared(record, RUNNER, root)
+            runs.append({"root": root, "runner": RUNNER, "argv": chosen["argv"], "declared_in": chosen["declared_in"]}
+                        if chosen else {"root": root, "runner": RUNNER, "argv": ARGV})
             chains += [item for item in _toolchain(record.get("toolchains") or [], root) if item not in chains]
         else:
             gaps.append({"kind": "no_tests", "path": root, "detail": f"the crates of {root} hold no test (no "

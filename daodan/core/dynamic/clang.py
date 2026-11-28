@@ -41,6 +41,7 @@ import re
 import shlex
 from pathlib import Path
 
+import dynamic
 import preparation
 from dynamic import callgrind
 from indexers import clang as index
@@ -74,7 +75,8 @@ def _inside(rel: str, folder: str) -> bool:
 
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, toolchains}` from the pre-map `record`, the snapshot's `files` and `read(rel)` their text: a
-    run is `{root, runner, argv}`, a root that declares no test a `no_tests` gap."""
+    run is `{root, runner, argv}`, the command a `tests` entry declares for the root (`dynamic.declared`, with its
+    `declared_in`) else `ARGV`; a root that declares no test a `no_tests` gap."""
     units, states = index.configure_roots(record.get("units"), record.get("workspace"))
     gaps = [{"kind": "runner_not_observed", "path": state["root"],
              "detail": f"{state['root']}: {state['cause']}; its tests are not observed"} for state in states]
@@ -93,7 +95,9 @@ def plan(record: dict, files: list[str], read) -> dict:
             gaps.append({"kind": "no_tests", "path": root, "detail": f"no CMake file of {root} declares a test "
                          "(add_test, with enable_testing or include(CTest)): no ctest to run"})
             continue
-        runs.append({"root": root, "runner": RUNNER, "argv": ARGV})
+        chosen = dynamic.declared(record, RUNNER, root)
+        runs.append({"root": root, "runner": RUNNER, "argv": chosen["argv"], "declared_in": chosen["declared_in"]}
+                    if chosen else {"root": root, "runner": RUNNER, "argv": ARGV})
     wanted = index.wanted_cmake([item for item in record.get("toolchains") or [] if item.get("tool") == "cmake"])
     return {"runs": runs, "gaps": gaps, "toolchains": [wanted] if wanted and runs else []}
 

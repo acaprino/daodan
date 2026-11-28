@@ -295,9 +295,9 @@ def test_a_mock_is_not_a_destination(tmp_path):
     assert ("lib.py", 6, "real") not in ends(rows, manifest) and facts["mocked"] == 1
 
 
-# ------------------------------------------------------------------ sampled pairs
+# ------------------------------------------------------------------ a library with method calls
 
-SAMPLED_LIB = '''def one(box):
+BOX_LIB = '''def one(box):
     return 1
 
 
@@ -316,61 +316,16 @@ def use(box):
 def twice(box):
     return box.get() + box.get()
 '''
-AT = {name: f"lib.py::function@{at}" for name, at in (("one", "1:0"), ("get", "6:4"), ("put", "9:4"),
-                                                         ("use", "13:0"), ("twice", "17:0"))}
 
 
 def frame(name: str, line: int, column: int | None = 0) -> dict:
-    """A function of lib.py as a profiler's frame names it: its line from 0, its column when the profiler has it."""
+    """A function of lib.py as a recorder's callee names it: its line from 0, its column when the recorder has it."""
     return {"kind": "project", "file": "lib.py", "line": line, "column": column, "name": name, "type": "function"}
 
 
-# What a profiler gives: caller and callee of one stack, with the line of the call when it has it.
-PAIRS = [{"caller": frame("use", 12), "callee": frame("get", 5, 4), "line": 13},
-         {"caller": frame("use", 12, None), "callee": frame("put", 8, None), "line": 13},
-         {"caller": frame("put", 8, 4), "callee": frame("one", 0), "line": 9},  # through a parameter: `fn`
-         {"caller": frame("twice", 16), "callee": frame("get", 5, 4), "line": 17},  # two calls of `get` there
-         {"caller": frame("twice", 16), "callee": frame("get", 5, 4), "line": None}]
-SAMPLER = dynamic.resolver(observer, sampled=True)
-
-
-def test_a_sampled_pair_closes_the_hole_of_the_one_call_its_line_names_else_joins_two_declarations(tmp_path):
-    """A pair is placed on the call of its line in the caller with the callee's name when there is one only; else
-    it is an edge between the two declarations that answers no reference. Where the exact recorder saw the same
-    call, the exact end closes the hole; the two are counted apart."""
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
-    out = static_store(manifest)
-    exact = [{"file": "lib.py", "line": 13, "column": 15, "name": "get", "role": "call",
-              "callees": [frame("get", 5, 4)]}]
-    with code_graph.Snapshot(manifest) as snap:
-        edges, _binding, _reason = rx.read_edge_store(out, snap.store)
-        rows, facts = dynamic.join(snap, "python", exact, edges, observer)
-        sampled, said = dynamic.join_sampled(snap, "python", PAIRS, observer)
-        assert SAMPLER != RESOLVER and all(row["confidence"] == "sampled" and row["resolver"] == SAMPLER
-                                           for row in sampled)
-        assert {(row["l0"], row["target_id"]) for row in sampled if row["reference_id"]} == {
-            (14, AT["get"]), (14, AT["put"])}
-        assert {(row["caller"], row["l0"], row["target_id"], row["payload"]["unplaced"]) for row in sampled
-                if row["reference_id"] is None} == {(AT["put"], 10, AT["one"], "not-found"),
-                                                    (AT["twice"], 18, AT["get"], "ambiguous"),
-                                                    (AT["twice"], None, AT["get"], "no-line")}
-        assert said == {"pairs": 5, "placed": 2, "unplaced": {"ambiguous": 1, "no-line": 1, "not-found": 1}}
-        coverage = code_graph.write_observed(snap, out, "python", rows + sampled,
-                                             {"resolver": RESOLVER, **facts, "sampled": {"resolver": SAMPLER, **said}})
-    assert (coverage["answered"]["observed"], coverage["answered"]["sampled"]) == (1, 1)
-    assert coverage["observed"]["closed"] == coverage["sampled"]["closed"] == {"no-occurrence": 1}
-    assert (coverage["sampled"]["sites"], coverage["sampled"]["edges"]) == (2, 5)
-    assert coverage["sampled"]["resolver"] == SAMPLER and coverage["sampled"]["pairs"] == 5
-    assert coverage["sites"] == sum(coverage["answered"].values()) + sum(
-        hole["count"] for hole in coverage["holes"].values())
-    view = edge_view.load_edge_view(manifest)
-    calls = {(record["file"], record["span"][0], (record.get("parts") or [""])[-1]): record
-             for record in view["references"]}
-    assert (calls[("lib.py", 14, "get")]["target_id"], calls[("lib.py", 14, "get")]["confidence"]) == (
-        AT["get"], "observed")  # the exact end first
-    put = calls[("lib.py", 14, "put")]
-    assert (put["target_id"], put["confidence"], put["provenance"]) == (AT["put"], "sampled", [SAMPLER])
-    assert calls[("lib.py", 10, "fn")]["target_id"] is None  # an edge between declarations answers no call
+# The exact sites of `use`: `box.get()` and `box.put(one)`, each with its callee.
+GET = {"file": "lib.py", "line": 13, "column": 15, "name": "get", "role": "call", "callees": [frame("get", 5, 4)]}
+PUT = {"file": "lib.py", "line": 13, "column": 27, "name": "put", "role": "call", "callees": [frame("put", 8, 4)]}
 
 
 # ------------------------------------------------------------------ the step
@@ -624,7 +579,7 @@ def fake(observed: dict, entry: str = "dynamic-fake-python") -> SimpleNamespace:
 
 @pytest.mark.parametrize("interrupted", ["timeout", "killed"])
 def test_retry_only_the_interrupted_suite_and_keep_its_earlier_edges(tmp_path, interrupted):
-    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     store = static_store(manifest)
     suites = [{"root": "first", "runner": "pytest"}, {"root": "second", "runner": "playwright"}]
     stub = fake({})
@@ -636,17 +591,16 @@ def test_retry_only_the_interrupted_suite_and_keep_its_earlier_edges(tmp_path, i
         browser = {"status": "observed", "documents": 1, "observed": 2, "pending": 1}
         entries = [{**test, "state": state, **({"controls": browser} if test["runner"] == "playwright" else {})}
                    for test, state in zip(planned["runs"], states)]
-        return {"state": "ran", "sites": [], "sampled": [PAIRS[0] if len(calls) == 1 else PAIRS[2]],
-                "runs": entries[::-1], "gaps": []}
+        return {"state": "ran", "sites": [GET if len(calls) == 1 else PUT], "runs": entries[::-1], "gaps": []}
     stub.observe = observe
     with mock.patch.object(dynamic, "observers", return_value=[stub]):
         first, _, _ = step(manifest)
         completed, _, _ = step(manifest)
         hot, _, asked = step(manifest)
     assert calls == [["first", "second"], ["second"]]
-    assert first["languages"]["python"]["sampled"]["edges"] == 1
+    assert first["languages"]["python"]["edges"] == 1
     assert hot == completed and not asked.called
-    assert hot["languages"]["python"]["sampled"]["edges"] == 2
+    assert hot["languages"]["python"]["edges"] == 2
     assert hot["ui_controls"] == [{"root": "second", "status": "observed", "documents": 2, "observed": 4, "pending": 2}]
     with code_graph.Snapshot(manifest) as snap:
         _, binding, _ = rx.read_edge_store(store, snap.store)
@@ -675,7 +629,7 @@ def union(manifest: Path, result: dict) -> list[dict]:
 
 @pytest.mark.parametrize("status", ["observed", "partial"])
 def test_runtime_reports_browser_actions_even_when_no_call_edge_was_placed(tmp_path, status):
-    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     static_store(manifest)
     controls = {"status": status, "documents": 1, "observed": 1, "pending": 0}
     run = {"root": ".", "runner": "playwright", "state": "ran", "controls": controls}
@@ -701,7 +655,7 @@ def test_runtime_reports_browser_actions_even_when_no_call_edge_was_placed(tmp_p
 def test_a_completed_zero_edge_suite_runs_again_if_its_producer_changes(tmp_path, monkeypatch, changed):
     import engine_pass
     from dynamic import execution_cache
-    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     static_store(manifest)
     run = {"root": ".", "runner": "playwright", "state": "ran", "exit_code": 0}
     stub = fake({"state": "ran", "sites": [], "runs": [run], "gaps": []})
@@ -729,14 +683,14 @@ def test_a_completed_zero_edge_suite_runs_again_if_its_producer_changes(tmp_path
 
 
 def test_one_successful_suite_is_reused_with_evidence_in_only_one_of_its_languages(tmp_path):
-    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB, "ui.js": "export const label = 1;\n"})
+    _, manifest = write_project(tmp_path, {"lib.py": BOX_LIB, "ui.js": "export const label = 1;\n"})
     store = static_store(manifest)
     with code_graph.Snapshot(manifest) as snap:
         edges, binding, _ = rx.read_edge_store(store, snap.store)
         binding["languages"]["javascript"] = {"engine": "fixture@1", "state": "fresh", "coverage": {}}
         rx.write_edge_store(store, edges, binding, rx.read_edge_holes(store))
     run = {"root": ".", "runner": "pytest", "state": "ran", "exit_code": 0}
-    stub = fake({"state": "ran", "sites": [], "sampled": [PAIRS[0]], "runs": [run], "gaps": []})
+    stub = fake({"state": "ran", "sites": [GET], "runs": [run], "gaps": []})
     stub.LANGUAGES = ("python", "javascript")
     stub.observe = mock.Mock(wraps=stub.observe)
     with mock.patch.object(dynamic, "observers", return_value=[stub]):
@@ -744,21 +698,21 @@ def test_one_successful_suite_is_reused_with_evidence_in_only_one_of_its_languag
         hot, _, asked = step(manifest)
     assert cold == hot and stub.observe.call_count == 1 and not asked.called
     assert hot["languages"]["javascript"]["state"] == "not-observed"
-    assert hot["languages"]["python"]["sampled"]["edges"] == 1
+    assert hot["languages"]["python"]["edges"] == 1
     for analyzed in (cold, hot):
         context = pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL)))
         context.results["run_and_observe"] = analyzed
         pipeline.AssembleGraph.run(context)
         report = pipeline.runtime(manifest)
-        assert report["state"] == "observed" and report["languages"]["python"]["edges"] == 0
-        assert report["languages"]["python"]["sampled"]["edges"] == 1
+        assert report["state"] == "observed" and report["languages"]["python"]["edges"] == 1
+        assert "sampled" not in report["languages"]["python"]
 
 
 @pytest.mark.parametrize("runs, broken", [
     ([{"root": ".", "argv": ["go", "test", "./..."], "exit_code": 0}], "runner, state"),
     ([{"root": ".", "runner": "go test", "state": "done"}], "done")])
 def test_an_observer_result_that_breaks_the_contract_is_a_gap_naming_the_observer(tmp_path, runs, broken):
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     out = static_store(manifest)
     observed = {"state": "ran", "sites": [], "runs": runs, "gaps": []}
     with mock.patch.object(dynamic, "observers", return_value=[fake(observed)]):
@@ -776,7 +730,7 @@ def test_an_observer_result_that_breaks_the_contract_is_a_gap_naming_the_observe
 
 def test_the_union_ends_the_run_whatever_one_language_holds(tmp_path):
     """A store an older observer wrote, with a test entry that names no state: the union says it and goes on."""
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     out = static_store(manifest)
     with code_graph.Snapshot(manifest) as snap:
         code_graph.write_observed(snap, out, "python", [], {"resolver": "old@1", "tests": [{"root": "."}]})
@@ -795,7 +749,7 @@ def test_the_union_ends_the_run_whatever_one_language_holds(tmp_path):
      "not-observed", "no call")])
 def test_a_run_that_ran_no_test_or_recorded_nothing_is_not_observed(tmp_path, observed, state, why):
     """Nothing is kept of it, so the next analysis tries again; the union says the graph is static, and why."""
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     out = static_store(manifest)
     with mock.patch.object(dynamic, "observers", return_value=[fake(observed)]):
         result, seen, _asked = step(manifest)
@@ -808,20 +762,17 @@ def test_a_run_that_ran_no_test_or_recorded_nothing_is_not_observed(tmp_path, ob
     assert why in gap["detail"]
 
 
-SITE = {"line": 13, "column": 15, "name": "get", "role": "call", "callees": [frame("get", 5, 4)]}
-
-
 @pytest.mark.parametrize("sites, said", [
     ([], "made no call from a python file of the project; the files with calls, which no test executed: lib.py"),
-    ([{**SITE, "file": "venv/lib/python3.13/site-packages/lib.py"}],
+    ([{**GET, "file": "venv/lib/python3.13/site-packages/lib.py"}],
      "the recorder saw calls in 1 files the snapshot does not hold: venv/lib/python3.13/site-packages/lib.py"),
-    ([{**SITE, "file": "lib.py", "line": 0, "column": 0, "name": "", "role": "ClassDef"}],
+    ([{**GET, "line": 0, "column": 0, "name": "", "role": "ClassDef"}],
      "saw 1 call sites in python files, none at a reference of the static graph (ClassDef 1)")])
 def test_a_run_that_placed_nothing_says_what_its_recorder_saw(tmp_path, sites, said):
     """Tests that call nothing of the project (an import and an assert) leave nothing to place: the reason says
     so, with the files with calls that no test executed, apart from a recorder that saw calls in files the snapshot
     does not hold or at no reference."""
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     static_store(manifest)
     observed = {"state": "ran", "sites": sites, "gaps": [], "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]}
     with mock.patch.object(dynamic, "observers", return_value=[fake(observed)]):
@@ -830,39 +781,11 @@ def test_a_run_that_placed_nothing_says_what_its_recorder_saw(tmp_path, sites, s
     assert python["state"] == "not-observed" and said in python["reason"]
 
 
-def test_a_profiler_alone_gives_sampled_edges_and_no_claim_on_what_it_did_not_see(tmp_path):
-    """An observer whose run returns sampled pairs and no exact site: its edges are counted apart, and nothing is
-    said of the files no sample named."""
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
-    static_store(manifest)
-    ran = [{"root": ".", "runner": "pytest", "declared_in": "conftest.py", "state": "ran"}]
-    sampler = SimpleNamespace(NAME="dynamic-sample-python", VERSION="1", LANGUAGES=("python",),
-                              external=observer.external, plan=lambda record, files, read: {"runs": ran, "gaps": []},
-                              observe=lambda project, planned, out_dir, engine: {
-                                  "state": "ran", "sites": [], "sampled": PAIRS, "runs": ran, "gaps": []})
-    with mock.patch.object(dynamic, "observers", return_value=[sampler]):
-        result, seen, asked = step(manifest)
-    assert asked.call_count == 1
-    assert result["languages"]["python"] == {"state": "observed", "sites": 0, "edges": 0, "closed": 0,
-                                             "sampled": {"sites": 2, "edges": 5, "closed": 2}}
-    seen = []
-    bus = pipeline.events.Bus()
-    bus.subscribe(seen.append)
-    context = pipeline.Context(manifest, bus)
-    context.results["run_and_observe"] = result
-    union = pipeline.AssembleGraph.run(context)
-    assert not gaps(seen, "not-observed") and not gaps(seen, "files-not-executed")
-    [said] = [event for event in seen if event["kind"] == "log"]
-    assert said["message"] == "python: 2 sites and 5 edges sampled in a run, 2 holes closed"
-    assert said["data"]["resolver"] == "dynamic-sample-python@1:sampled"
-    assert "files" not in union["languages"]["python"]["coverage"]["observed"]
-
-
 def test_every_observer_reaches_the_hosts_the_project_declares_and_one_that_did_not_answer_is_a_gap(tmp_path):
     """The step gives each plan the hosts the project declares for its dependencies (`preparation.declared`,
     which the observer's preparation reaches), and turns a failed restore whose words name one it could not reach
     into a gap naming the host and the files that declare it, whichever observer ran."""
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     static_store(manifest)
     declared = {"hosts": ("pypi.corp.example",), "where": {"pypi.corp.example": ["requirements.txt"]}}
     failed = {"kind": "restore_failed", "manager": "pip", "path": ".",
@@ -890,7 +813,7 @@ def test_a_declared_host_nobody_decided_stops_the_observer_and_after_the_answer_
     import egress
     monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
     monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
-    project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     static_store(manifest)
     key = str(Path(project).resolve())
     declared = {"hosts": ("pypi.corp.example",), "where": {"pypi.corp.example": ["requirements.txt"]}}

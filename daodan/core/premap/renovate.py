@@ -37,6 +37,13 @@ once as the runner expands it, `computed` naming those that reference a variable
 the pipeline includes is not read: an `include_not_read` gap names it; a job that runs Docker Compose, on the Docker
 the job starts, is a `compose_not_read` one.
 
+A step of a workflow or a line of GitLab's pipeline whose command starts, as its program, a test runner an observer of
+the dynamic step declares (`dynamic.observers()`: their `RUNNERS` and `RUNNER`; a package manager runs a package's
+scripts, which `npm_tests` reads) and that runs no `tests` entry already stated is a `tests` entry of its own,
+`{root, runner, argv, declared_in, source: "ci"}`: the step's folder, the runner, the command's words, the step
+(`<workflow>#jobs.<id>.steps.<n>`, `<pipeline>#<job>.<key>.<n>`); one per folder and runner, the first. Its steps
+before it and its variables are `ci_steps` like those of any entry.
+
 Where the copy holds a `yarn.lock` beside a manifest, one more command reads each one with Yarn's own parser
 (`@yarnpkg/parsers`' `parseSyml`, v1 and Berry, the version Renovate pins, beside the Renovate on the path) and prints
 the descriptors whose range names a folder (`file:`, `link:`, `portal:`): a local dependency a package of the registry
@@ -50,9 +57,9 @@ import json
 from pathlib import PurePosixPath
 import posixpath
 import re
-import shlex
+import shlex  # only to write an argv back as a line (`shlex.join`)
 
-from premap import compose, npm_tests
+from premap import compose, npm_tests, shell
 from premap.module_graph import declared_image
 
 NAME, VERSION, RANK = "renovate", "44.239.1", "reader"  # it reads declared files and runs no project code
@@ -95,8 +102,12 @@ GITLAB = ".gitlab-ci.yml"  # where GitLab reads a project's pipeline, unless the
 SERVICES = re.compile(r"""["']?\bservices["']?\s*:""")  # a workflow that may declare a service container
 INCLUDE = re.compile(r"""(?m)^["']?include["']?\s*:""")  # a pipeline that includes files, which may declare one
 SCRIPT = re.compile(r"""(?m)^\s*["']?(?:before_)?script["']?\s*:""")  # a GitLab job's lines
-# Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins
-YAML = '"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
+# Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins.
+# GitHub's own parser, @actions/workflow-parser 0.3.61, was measured against it (benchmarks/ci-workflows, T3.B.4):
+# it reads every valid workflow and gives the schema's errors, but its converted model drops each step's
+# `working-directory` and `shell` and the `defaults` they come from, and rewrites a line with `${{ }}` as
+# `format(...)`: what this reader takes of a step. So the workflows stay on this library, with the rules here.
+YAML ='"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
 # The library's visitor (its CLI's `--visit`) that prints GitLab's `!reference [path]`, a tag the library does
 # not know and would print as the path itself, as `{"!reference": [path]}`, which the reader resolves.
 REFERENCE = ('export default { Seq(_, node) { if (node.tag !== "!reference") return;'
@@ -345,7 +356,8 @@ def _composed_tests(script: str, tests: list[dict], read) -> list[tuple[dict, st
             rel, _, name = str(entry.get("declared_in") or "").partition("#scripts.")
             try:
                 text = (json.loads(read(rel) or "{}").get("scripts") or {}).get(name) if name else None
-                own = shlex.split(text) if isinstance(text, str) else []
+                said = shell.commands(text) if isinstance(text, str) else None
+                own = said[0][1] if said and len(said) == 1 else []
             except (ValueError, AttributeError):
                 own = []
             if (own and words[:len(own)] == own) or (entry.get("runner") not in (None, *PACKAGE_MANAGERS) and
@@ -382,11 +394,62 @@ def _tests_of(script: str, cwd: str, tests: list[dict], read) -> list[tuple[dict
         elif entry.get("runner") not in (None, *PACKAGE_MANAGERS) and (
                 _inside(cwd, entry.get("root") or ".") or _inside(entry.get("root") or ".", cwd)):
             running = [sets for sets, command in commands
-                       if entry["runner"] in {word.rsplit("/", 1)[-1] for word in command}]
+                       if entry["runner"] in {word.rsplit("/", 1)[-1] for word in command}
+                       or _starts(command, entry["runner"])]
         else:
             running = []
         if running:
             found.append((entry, {key: value for sets in running for key, value in sets.items()}))
+    return found
+
+
+def _starts(command: list[str], runner: str) -> bool:
+    """Whether a command's words start `runner` (`go test`, `pytest`) as its program, the program's folder aside."""
+    parts = runner.split()
+    return bool(command) and [command[0].rsplit("/", 1)[-1], *command[1:len(parts)]] == parts
+
+
+def _runners() -> list[str]:
+    """The test runners the dynamic step's observers declare (`RUNNERS`, `RUNNER`), the longest first; a package
+    manager is none: it runs a package's scripts."""
+    import dynamic
+    names = {name for module in dynamic.observers()
+             for name in (*getattr(module, "RUNNERS", ()), getattr(module, "RUNNER", None)) if isinstance(name, str)}
+    return sorted((name for name in names if name.split()[0] not in PACKAGE_MANAGERS),
+                  key=lambda name: (-len(name.split()), name))
+
+
+def _declared(here: str, script: str, cwd: str, tests: list[dict], read, runners: list[str]) -> dict | None:
+    """The `tests` entry a CI step's shell `script` run from `cwd` declares (the module's docstring), None where it
+    runs an entry of `tests` (`_tests_of`), starts no runner of `runners` or one `tests` holds for `cwd`."""
+    if _tests_of(script, cwd, tests, read):
+        return None
+    held = {(posixpath.normpath(entry.get("root") or "."), entry.get("runner")) for entry in tests}
+    for _, command in compose.assigned(script):
+        runner = None if _composed(command) else next((name for name in runners if _starts(command, name)), None)
+        if runner is not None:
+            return None if (cwd, runner) in held else {"root": cwd, "runner": runner, "argv": command,
+                                                       "declared_in": here, "source": "ci"}
+    return None
+
+
+def _ci_tests(rel: str, doc, tests: list[dict], read, runners: list[str]) -> list[dict]:
+    """The `tests` entries the steps of the workflow `doc` declare (`_declared`), in the folder GitHub runs each
+    step in; none for a computed folder or one outside the checkout."""
+    if not isinstance(doc, dict) or not isinstance(doc.get("jobs"), dict):
+        return []
+    found, where = [], _directory(doc)
+    for job_id, job in doc["jobs"].items():
+        if not isinstance(job, dict) or not isinstance(job.get("steps"), list):
+            continue
+        folder = _directory(job) or where
+        for index, step in enumerate(job["steps"]):
+            script = step.get("run") if isinstance(step, dict) else None
+            cwd = posixpath.normpath(str(step.get("working-directory") or folder or ".")) if script else ""
+            if not isinstance(script, str) or "${{" in cwd or cwd.startswith(("/", "..")):
+                continue
+            entry = _declared(f"{rel}#jobs.{job_id}.steps.{index}", script, cwd, [*tests, *found], read, runners)
+            found += [entry] if entry else []
     return found
 
 
@@ -621,6 +684,36 @@ def _flat(item) -> list[str]:
         if isinstance(item, list) else []
 
 
+def _gitlab_jobs(rel: str, doc):
+    """Each job of GitLab's pipeline `doc` with a script, its templates applied (`_extended`), and its lines in the
+    order its shell runs them: `(job_id, job, [(declared_in, line)])`."""
+    default = doc["default"] if isinstance(doc.get("default"), dict) else {}
+    for job_id, job in doc.items():
+        if job_id in GITLAB_KEYWORDS or str(job_id).startswith(".") or not isinstance(job, dict):
+            continue
+        job = _extended(doc, job)
+        if "script" not in job or _unresolved(job):  # `_gitlab` says the reference
+            continue
+        before = job["before_script"] if "before_script" in job else default.get("before_script") if _inherits(
+            job, "default", "before_script") else None
+        yield job_id, job, [(f"{rel}#{job_id}.{key}.{index}", line) for key, value in (("before_script", before),
+                                                                                         ("script", job["script"]))
+                            for index, item in enumerate(_lines(value)) for line in item]
+
+
+def _gitlab_tests(rel: str, doc, tests: list[dict], read, runners: list[str]) -> list[dict]:
+    """The `tests` entries the lines of GitLab's pipeline `doc` declare (`_declared`), each in the project's
+    folder, where GitLab runs them."""
+    if not isinstance(doc, dict):
+        return []
+    found = []
+    for _job_id, _job, lines in _gitlab_jobs(rel, doc):
+        for here, line in lines:
+            entry = _declared(here, line, ".", [*tests, *found], read, runners) if isinstance(line, str) else None
+            found += [entry] if entry else []
+    return found
+
+
 def _gitlab_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[dict]:
     """The lines a job of GitLab's pipeline `doc` runs before its tests, as the `ci_steps` facet states them.
     GitLab runs a job's `before_script` (its own, or `default:`'s when it inherits it) and `script` lines in one
@@ -631,20 +724,9 @@ def _gitlab_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[
     Compose, which runs on the Docker the job starts: Daodan runs no line of that job."""
     if not tests or not isinstance(doc, dict):
         return []
-    default = doc["default"] if isinstance(doc.get("default"), dict) else {}
     top = doc["variables"] if isinstance(doc.get("variables"), dict) else {}
     facts = []
-    for job_id, job in doc.items():
-        if job_id in GITLAB_KEYWORDS or str(job_id).startswith(".") or not isinstance(job, dict):
-            continue
-        job = _extended(doc, job)
-        if "script" not in job or _unresolved(job):  # `_gitlab` says the reference
-            continue
-        before = job["before_script"] if "before_script" in job else default.get("before_script") if _inherits(
-            job, "default", "before_script") else None
-        lines = [(f"{rel}#{job_id}.{key}.{index}", line) for key, value in (("before_script", before),
-                                                                             ("script", job["script"]))
-                 for index, item in enumerate(_lines(value)) for line in item]
+    for job_id, job, lines in _gitlab_jobs(rel, doc):
         variables, computed, _ = _variables(top, job)
         for number, (here, line) in enumerate(lines):
             for entry, sets in _tests_of(line, ".", tests, read):
@@ -723,7 +805,8 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
     if answer["returncode"] != 0:
         return {}, [{"kind": "model_failed", "path": WORKFLOWS, "detail": f"yaml: {answer['stderr'].strip()[-400:]}"}]
     lines, errors = answer["stdout"].splitlines(), answer["stderr"].splitlines()
-    services, steps, triggers, gaps, before, claimed = [], [], [], [], [], set()
+    services, steps, triggers, gaps, before, claimed, declared = [], [], [], [], [], set(), []
+    runners = _runners()
     for rel, text in zip(lines[::2], lines[1::2]):
         doc = json.loads(text)
         if doc is None:  # the library's message is the line that names the error, above Node's stack
@@ -735,14 +818,16 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
             doc = _referenced(doc)
             found, said = _gitlab(rel, doc)
             services, gaps = services + found, gaps + said
-            before += _gitlab_steps(rel, doc, list(tests), read, claimed)
+            declared += _gitlab_tests(rel, doc, [*tests, *declared], read, runners)
+            before += _gitlab_steps(rel, doc, [*tests, *declared], read, claimed)
         else:
             triggers.extend(workflow_triggers(rel, doc))
             found, said = _steps(rel, doc, read)
             services, steps, gaps = services + _services(rel, doc), steps + found, gaps + said
-            before += _ci_steps(rel, doc, list(tests), read, claimed)
+            declared += _ci_tests(rel, doc, [*tests, *declared], read, runners)
+            before += _ci_steps(rel, doc, [*tests, *declared], read, claimed)
     return {name: facts for name, facts in (("services", services), ("workflow_triggers", triggers),
-                                            ("compose", steps), ("ci_steps", before))
+                                            ("compose", steps), ("ci_steps", before), ("tests", declared))
             if facts}, gaps
 
 
