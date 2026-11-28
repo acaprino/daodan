@@ -543,7 +543,7 @@ Ogni passo è un commit a sé. Nessuna build, lint o test sull'host: Python su M
 
 **Punti del piano che non reggono sul codice:**
 - «Bloccata da `T2.C`, `T1.E`»: `T2.D.2` e `T2.D.5` toccano solo Python e i passi della mappa non toccano i file di `T1.E`; solo i passi sull'App aspettano `T1.E`.
-- «Il Cancello aspetta `T0.B.4`»: `T0.B.4` è già `[x]`; il Cancello aspetta invece `T2.B` (soglie SCIP, passo per posizione, `engine-answers.sqlite`), `FERMA` su `T2.B.14`, e una fonte per i profili di Bank of Anthos.
+- «Il Cancello aspetta `T0.B.4`»: `T0.B.4` è già `[x]`; il Cancello aspetta invece `T2.B` (soglie SCIP, passo per posizione, `engine-answers.sqlite`) (`VERIFICATA` il 28 novembre 2026, `T2.B.14` tolto dal proprietario), e una fonte per i profili di Bank of Anthos.
 - «Scendere e risalire»: la mappa ha due modi (entrare e aprire sul posto) e la spec uno; l'App dispone con dagre nella tela, che rifà i posti a ogni apertura.
 - Punto 6 di T2, «la pagina riceve solo ciò che è aperto»: vero per l'App, non per la mappa, che carica l'involucro intero e lo proietta da sé.
 
