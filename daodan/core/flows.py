@@ -54,7 +54,7 @@ a grammar that does not load) the rule yields a gap for that call, with the caus
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service and method and a path schema that meets: the most literal
-route wins, a tie is an uncertain link, a gap with its candidates. A route Noir or Next.js declares (a route
+route wins, a tie is an uncertain link, a gap with its candidates. A route `find_entry_points` declares (a route
 handler, not a page, on a function the snapshot resolves) is offered too, with the service `*`: it meets a call of
 any service, and a route of the call's own service, from a rule, comes before it; a catch-all path is a gap. The services of others the brief lists (the
 stack step's technologies and the external modules of the module graph, by id) are nodes too: a symbol in a file
@@ -81,8 +81,6 @@ import sys
 from collections import Counter, defaultdict, deque
 from functools import cache, cached_property
 from pathlib import Path, PurePosixPath
-from typing import Callable, NamedTuple
-from urllib.parse import urlsplit
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -90,6 +88,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import binder  # noqa: E402
 import edge_view  # noqa: E402
+from link_types import ANY_SERVICE, REST, join  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
@@ -191,7 +190,7 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
         if rule["link"] in ("rotta", "offre") and set(rule["route"]) != {"service", "method", "path"}:
             raise ValueError(f"{where}: route has exactly service, method and path")
         if rule["link"] in ("rotta", "offre") and rule["route"]["service"] == ANY_SERVICE:
-            raise ValueError(f"{where}: the service {ANY_SERVICE} is reserved for the routes Noir and Next.js declare: "
+            raise ValueError(f"{where}: the service {ANY_SERVICE} is reserved for the routes find_entry_points declares: "
                              "a rule names the service of its route")
         if "handler" in rule:
             # `handler` is a field of the rule (`arg1`, `last`), not source text.
@@ -694,116 +693,6 @@ def _value(spec, call, facts, strip: str = "", template: bool = False):
     return None if value is None or ("${" in value and not template) else value
 
 
-# ---------------------------------------------------------------- link types
-
-class LinkType(NamedTuple):
-    """A link type: its name, its role pair (who asks, who offers), how the raw values a rule reads become a
-    key (None: a gap) and how an asking key meets an offering one (None: they do not; higher is closer)."""
-    name: str
-    pair: tuple[str, str]
-    key: Callable[..., tuple | None]
-    meet: Callable[[tuple, tuple], tuple | None]
-
-
-def join(kind: LinkType, asking: list[dict], offering: list[dict]) -> list[tuple[dict, list[dict]]]:
-    """Each asking point (a dict with a `key`) with the offering points it meets best: one is a link,
-    several an uncertain link, none a single side."""
-    out = []
-    for point in asking:
-        met = [(m, o) for o in offering if (m := kind.meet(point["key"], o["key"])) is not None]
-        best = max((m for m, _ in met), default=None)
-        out.append((point, [o for m, o in met if m == best]))
-    return out
-
-
-# A route's segment is text with no grammar: the parameter spellings of the frameworks (`<id>`, `{id}`).
-_PATH_PARAMETER = re.compile(r"<[^<>/]*>|\{[^{}/]*\}")
-
-
-def _holes(text: str) -> str | None:
-    """The text with every `${...}` as `\\0`; None when one is not closed."""
-    out, i = [], 0
-    while i < len(text):
-        if not text.startswith("${", i):
-            out.append(text[i])
-            i += 1
-            continue
-        depth, j = 0, i + 1
-        while j < len(text):
-            depth += {"{": 1, "}": -1}.get(text[j], 0)
-            if depth == 0:
-                break
-            j += 1
-        if depth:
-            return None
-        out.append("\0")
-        i = j + 1
-    return "".join(out)
-
-
-def _rest_key(service, method, path) -> tuple | None:
-    """(service, METHOD, path schema). The query, the fragment and the base URL before the first segment,
-    literal or not, are not part of the key; a parameter, interpolated (`${id}`) or declared (`:id`, `<id>`,
-    `{id}`), is `{}`. A path whose first segment is interpolated is computed: a gap."""
-    text = None if None in (service, method, path) else _holes(path)
-    if text is None:
-        return None
-    head = text.lstrip("\0")
-    try:
-        split = urlsplit(head)  # the query and the fragment end the path; `//host` or `scheme://host` is the base URL
-    except ValueError:  # a host in brackets that never closes
-        return None
-    # A scheme with no `//` after it (`items:batch`) is no base URL: it stays a segment.
-    based = bool(split.netloc) or bool(split.scheme) and head[len(split.scheme) + 1:].startswith("//")
-    rest = split.path if based else (head[:len(split.scheme) + 1] if split.scheme else "") + split.path
-    if not rest or (based or head != text) and not rest.startswith("/"):
-        return None  # an interpolation glued to what follows it, or nothing after the base
-    segments = [s for s in rest.split("/") if s]
-    if segments and "\0" in segments[0]:
-        return None
-    segments = ["{}" if s.startswith(":") else _PATH_PARAMETER.sub("{}", s.replace("\0", "{}")) for s in segments]
-    return str(service), str(method).upper(), "/" + "/".join(segments)
-
-
-def _segment_grade(asked: str, offered: str) -> int | None:
-    """2 the same, 1 a literal filling a parameter, 0 a hole glued to a literal that must equal one, None no."""
-    if asked == offered:
-        return 2
-    if offered == "{}":
-        return 1
-    if "{}" in asked and "{" not in offered:
-        # Both texts are Daodan's own, made by `_rest_key`: segments with `{}` for a hole, no grammar.
-        pattern = "".join("[^/]*" if part == "{}" else re.escape(part) for part in re.split(r"(\{\})", asked))
-        return 0 if re.fullmatch(pattern, offered) else None
-    return None
-
-
-ANY_SERVICE = "*"  # the service of an offered route no rule names (Noir and Next.js do not know it): it meets any
-
-
-def _rest_meet(asked: tuple, offered: tuple) -> tuple | None:
-    """Same method and number of segments, every segment meeting, and the same service or an offered `ANY_SERVICE`
-    (the asking side names its service: it is never `*`). The service comes first: a route of the asked service
-    before one of `*`, so a declared route only fills where no route of a rule meets. Then (True, total) when no
-    hole has to equal a literal, the most literal route first; (False, 0) otherwise, so loose candidates tie; a route
-    of `*` meets only the first kind: a hole that would have to equal one of its literals is no link to a route no
-    rule vouches for."""
-    if asked[1] != offered[1] or offered[0] not in (asked[0], ANY_SERVICE):
-        return None
-    calls, routes = asked[2].strip("/").split("/"), offered[2].strip("/").split("/")
-    grades = [_segment_grade(c, r) for c, r in zip(calls, routes)] if len(calls) == len(routes) else [None]
-    if None in grades:
-        return None
-    exact, strict = offered[0] == asked[0], min(grades) >= 1
-    if not (exact or strict):
-        return None
-    # shortcut: the service ranks before the literal, so a rule's `/x/{}` beats a declared `/x/search`, when a measured project shows the declared route was the right one
-    return (exact, strict, sum(grades) if strict else 0)
-
-
-REST = LinkType("rest", ("rotta", "offre"), _rest_key, _rest_meet)  # the guide's "metodo e schema del percorso"
-
-
 def _store_index(node):
     """The index of `store[INDEX]`: `store` is a name, a dotted name all the way down, or the result of a call
     (`get_db()[NAME]`); None for any other node."""
@@ -1122,7 +1011,7 @@ def _declared_routes(found: list[dict], offered: list[dict]) -> tuple[list[dict]
 
 def _spec_routes(rows: list[dict], offered: list[dict]) -> tuple[list[dict], list[dict]]:
     """`(points, gaps)`: the routes a specification file declares and no function holds, offered at the file's own symbol. `rows` are
-    Noir's rows tagged `spec-only` that the binder could not place on a function (the tool says it is a contract, so nothing is
+    the step's rows tagged `spec-only` that the binder could not place on a function (the tool says it is a contract, so nothing is
     guessed from the file's name). A route a point of `offered` already has, by method and path schema and whatever its service, is
     the contract agreeing with the code and adds none; a row with no single method and schema is a gap. A call that meets such a
     point meets the contract: its edge says `spec`.
@@ -1162,37 +1051,12 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         view = edge_view.load_edge_view(store)
         facts = Facts(store, db, view)
         candidates = entry_reader._cached_rows(manifest, (facts, db, view))
+        import entry_points
         from entry_points.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
         declared = bind_declared(declared, facts, view, rules, manifest)
-        # One route, one entry: the route of a source outside `entry_points.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
-        # of them (the text of the path where a row has no schema), in the file or on the function that row starts, is that row,
-        # provided its method is the row's or the row has none (a page answers any; Noir's method is not copied onto it). Another
-        # path, or a method no row of that file and path carries, is a route of its own.
-        from entry_points import FRAMEWORK_SOURCES
-        tuple_names = {source.NAME for source in FRAMEWORK_SOURCES}
-        def file_of(site: str) -> str:
-            file, _, line = site.rpartition(":")
-            return file if line.isdecimal() else site
-
-        def route_of(item: dict):
-            return item.get("schema") or item.get("path")
-
-        by_path = defaultdict(list)
-        for item in declared:
-            if item["reader"] in tuple_names and not item.get("gap"):
-                by_path[route_of(item)].append(item)
-        kept = []
-        for item in declared:
-            method = item.get("method")
-            same = next((n for n in by_path.get(route_of(item), ())
-                         if (file_of(n["site"]) == file_of(item["site"]) or n["symbol"] == item["symbol"])
-                         and (not method or n.get("method") in (None, method))), None) \
-                if item["reader"] not in tuple_names and "schema" in item else None
-            if same is None:
-                kept.append(item)
-        declared = kept
+        declared = entry_points.one_entry(declared)  # one route, one entry: the step's own rows decide
         # A route only a specification declares has no function to hold it: it is no entry and no gap, a point offered below.
         spec_rows = [item for item in declared if item.get("spec_only") and item.get("gap")]
         declared = [item for item in declared if not (item.get("spec_only") and item.get("gap"))]
@@ -1234,9 +1098,8 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                 command = ref["tauri_command"]
                 lexical = ref.get("lexical_target_id")
                 declaration = facts.declarations.get(lexical)
-                sdk = ref.get("external") or {}
                 if (command and declaration and declaration["file"].endswith(".rs") and not edge_view.uncertainty(ref) and
-                        (ref["target_id"] == lexical or (sdk.get("manager"), sdk.get("package")) == ("npm", "@tauri-apps/api"))):
+                        (ref["target_id"] == lexical or edge_view.into_command_sdk(ref))):
                     native = lexical
                     calls.append({"from": caller, "to": facts.node(native), "site": site,
                                   "target_site": f"{declaration['file']}:{declaration['line']}",
@@ -1372,7 +1235,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         starts = {entry["symbol"] for entry in entries if entry.get("reader") != "observed"}
         entries[:] = [entry for entry in entries if entry.get("reader") != "observed" or entry["symbol"] not in starts]
         actions[:] = [action for action in actions if action.get("reader") != "observed" or action["handler"] not in starts]
-        # The routes Noir and Next.js declare are offered too, for a call to meet: they are entries already, and add none.
+        # The routes `find_entry_points` declares are offered too, for a call to meet: they are entries already, and add none.
         declared_points, declared_gaps = _declared_routes(entries, routes_offered)
         spec_points, spec_gaps = _spec_routes(spec_rows, [*routes_offered, *declared_points])
         routes_offered += declared_points + spec_points
@@ -1386,8 +1249,8 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                 if node:
                     symbols_by_file[declaration["file"]].add(node)
 
-    edges = [{"type": "chiama", "origin": "diretto", **c}
-             for c in calls]
+    edges = [{"type": "chiama", "origin": "diretto", **call}
+             for call in calls]
     for access in accesses:
         store_node = f"store:{access['store']}/{access['key']}"
         ends = (access["symbol"], store_node) if access["link"] == "scrive" else (store_node, access["symbol"])
@@ -1478,7 +1341,7 @@ def _links_reader_digest() -> str:
     digest = hashlib.sha256()
     for path in (Path(__file__), SCRIPT_DIR / "binder.py", SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
                  SCRIPT_DIR / "entry_points" / "__init__.py", SCRIPT_DIR / "entry_points" / "flow_entries.py",
-                 SCRIPT_DIR / "entry_points" / "noir.py",
+                 SCRIPT_DIR / "entry_points" / "noir.py", SCRIPT_DIR / "link_types.py",
                  *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
                  SCRIPT_DIR / "entry_points" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
                  SCRIPT_DIR / "premap" / "python_build.py", SCRIPT_DIR / "languages" / "rust.py",

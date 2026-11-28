@@ -150,6 +150,36 @@ def bound(manifest: Path, record: dict, facts=None, routes: list[dict] | None = 
     return {"reading": stamp, "rows": found, "route_named": dict(facts.route_named)}
 
 
+def one_entry(declared: list[dict]) -> list[dict]:
+    """One route, one entry: the bound rows `declared` (`flows.bind_declared`) less the route of a source outside
+    `FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one of them (the text of the path where a row has no schema), in
+    the file or on the function that row starts, provided its method is the row's or the row has none (a page answers any;
+    Noir's method is not copied onto it). Another path, or a method no row of that file and path carries, is a route of its own."""
+    framework = {source.NAME for source in FRAMEWORK_SOURCES}
+
+    def file_of(site: str) -> str:
+        file, _, line = site.rpartition(":")
+        return file if line.isdecimal() else site
+
+    def route_of(item: dict):
+        return item.get("schema") or item.get("path")
+
+    by_path: dict = {}
+    for item in declared:
+        if item["reader"] in framework and not item.get("gap"):
+            by_path.setdefault(route_of(item), []).append(item)
+    kept = []
+    for item in declared:
+        method = item.get("method")
+        same = next((n for n in by_path.get(route_of(item), ())
+                     if (file_of(n["site"]) == file_of(item["site"]) or n["symbol"] == item["symbol"])
+                     and (not method or n.get("method") in (None, method))), None) \
+            if item["reader"] not in framework and "schema" in item else None
+        if same is None:
+            kept.append(item)
+    return kept
+
+
 def write(manifest: Path, sources=None, runner=None, report=None, stated: dict | None = None) -> dict:
     """Derive and publish `entry-points.json` beside the manifest, on the pre-map `stated`: by default the one beside it, of
     this snapshot, else one derived now (`premap.ensure`)."""
