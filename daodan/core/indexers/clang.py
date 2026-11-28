@@ -644,7 +644,12 @@ def same_range(index) -> dict[tuple[str, str], bool]:
 
 def classify(index):
     """`project` for a package the index defines symbols of, `namespace` for a namespace, the stated package of
-    any other symbol (`(none)` for the package scip-clang writes `.`)."""
+    any other symbol (`(none)` for the package scip-clang writes `.`). A type defined only in C files is a `value`:
+    C has no constructor, so a reference to a type (a cast, `sizeof`, a declaration) calls nothing, though the
+    snapshot declares a struct or a `typedef` as a class. The type is what scip-clang states, the symbol's
+    descriptor suffix `#`; its SymbolInformation.kind is 0 (scip-clang v0.4.1 writes none, see the recorded
+    `tests/fixtures/code-graph/c/index.scip`), and clang's cursor kind would need a clang in the image, which
+    carries scip-clang alone."""
     own = set()
     for key in index.defs:
         parts = code_graph.split_symbol(code_graph._global(key))
@@ -660,7 +665,10 @@ def classify(index):
             return "namespace"
         package, version = parts[2], parts[3].rstrip("$")
         if (package, version) in own:
-            return "project"
+            places = index.defs.get(key, ())
+            c_type = items and items[-1][1] == "type" and places and all(
+                _language(index, rel) == "c" for rel, _occurrence in places)
+            return "value" if c_type else "project"
         return {"manager": parts[1], "package": package, "version": version} if package != "." else \
             {"manager": parts[1], "package": "(none)", "version": "-"}
     return stated

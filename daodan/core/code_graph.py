@@ -12,6 +12,7 @@ the index defines it. An adapter may add, each passed by its driver to `Traversa
     missing(index, rels) -> {rel: reason}       snapshot files the index holds no document for
     same_range(index) -> {(definition key, other key): bool}   at a shared range: True alias, False never
     classify(key) -> "project" | "namespace" | {"manager", "package", "version"} | None (the default rule)
+                     | "value", a project symbol no reference calls, whatever the snapshot declares where it is
                      | the cause of a dead end, for a key the index defines nowhere
     static(index) -> {(rel, line, byte column)}  member references dispatched statically
     refine(index, graph) -> None                 holes added, edges marked `uncertain` or `removed`
@@ -714,7 +715,7 @@ class Traversal:
             return [End("dead-end", key, None, "cycle")]
         self.active.add(key)
         index, found, aliased, stated = self.index, [], False, self.stated(key)
-        places = index.defs.get(key, ()) if stated in (None, "project") else ()
+        places = index.defs.get(key, ()) if stated in (None, "project", "value") else ()
         rebound = [target for target, tag in self.hops.get(key, ()) if tag == "rebinding"]
         if rebound:  # where the symbol is bound at run time, in place of where the index defines it
             places, aliased = (), True
@@ -725,7 +726,7 @@ class Traversal:
         for rel, occurrence in places:
             verdict, target = self.snapshot.grade(
                 self.snapshot.rel.get(rel, rel), occurrence.line, index.to_bytes(rel, occurrence.line, occurrence.start))
-            if verdict == "callable":
+            if verdict == "callable" and stated != "value":
                 found.append(End("project-callable", key, target, ""))
                 aliased = True
                 continue
@@ -914,12 +915,12 @@ class Traversal:
             return End("namespace", key, None, "")
         if isinstance(stated, dict):
             return End("external", key, None, package_name(stated))
-        if isinstance(stated, str) and stated != "project":  # the adapter's cause of a dead end
+        if isinstance(stated, str) and stated not in ("project", "value"):  # the adapter's cause of a dead end
             return End("dead-end", key, None, stated)
         parts = split_symbol(_global(key))
         if parts is None:
             return End("dead-end", key, None, "dangling-local")
-        if stated == "project" or tuple(parts[1:4]) in self.own:
+        if stated in ("project", "value") or tuple(parts[1:4]) in self.own:
             return End("dead-end", key, None, "undefined-project-symbol")
         return End("external", key, None, package_name(key))
 
