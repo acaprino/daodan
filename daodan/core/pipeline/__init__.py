@@ -2,7 +2,8 @@
 
 Each step has the same contract: `NAME`, `INPUTS` (what it reads, written by the steps before it), `OUTPUTS`
 (what it writes), `WITHOUT` (what the pipeline does when the step fails: None where the steps after it need it and
-stop, else the words that say how it goes on) and `run(context)`; it says what it does on the context's event bus
+stop, else the words that say how it goes on), `EXECUTES` (where what it runs runs: "no" where it runs nothing,
+"container" in Daodan's container) and `run(context)`; it says what it does on the context's event bus
 (`pipeline.events`). The snapshot is the pipeline's input; the flows read the complete graph after it.
 
 The eight ids of the design (`IDS`, docs/specs/architettura.md, «La pipeline a otto step»): `list_files`
@@ -84,6 +85,7 @@ def _inventory_only(manifest: Path) -> bool:
 
 class FindModules:
     NAME, INPUTS, OUTPUTS, WITHOUT = "find_modules", ("inventory", "stack"), ("modules", "premap", "technologies"), None
+    EXECUTES = "container"  # the model commands (`container_runner`)
 
     @staticmethod
     def run(context: Context) -> dict:
@@ -145,6 +147,7 @@ class FindModules:
 
 class FindEntryPoints:
     NAME, INPUTS, OUTPUTS = "find_entry_points", ("inventory", "stack", "premap", "snapshot"), ("entry_points",)
+    EXECUTES = "container"  # Noir and the frameworks' own tools
     WITHOUT = "the analysis goes on without routes; analyze again"  # `link_calls` does not read them
 
     @staticmethod
@@ -204,6 +207,7 @@ def _runner(manifest: Path):
 
 class RecognizeStack:
     NAME, INPUTS, OUTPUTS = "recognize_stack", ("inventory",), ("stack",)
+    EXECUTES = "no"  # the pinned stack-analyser reads the files, and runs nothing of the project
     WITHOUT = "the analysis goes on; scan again to recognize the technologies"  # the analysis needs no technology
 
     @staticmethod
@@ -228,6 +232,7 @@ class RecognizeStack:
 
 class LinkCalls:
     NAME, INPUTS, OUTPUTS, WITHOUT = "link_calls", ("snapshot", "premap"), ("edges",), None
+    EXECUTES = "container"  # an analyzer that builds the project builds it there (`EngineSpec.needs_container`)
 
     @staticmethod
     def run(context: Context) -> dict:
@@ -244,6 +249,7 @@ class LinkCalls:
 
 class RunAndObserve:
     NAME, INPUTS, OUTPUTS = "run_and_observe", ("snapshot", "premap", "edges"), ("observed",)
+    EXECUTES = "container"  # the project's tests and its app
     WITHOUT = "the graph is the static one; run the analysis again"  # what a run observes is added to that graph
 
     @staticmethod
@@ -256,7 +262,7 @@ class AssembleGraph:
     # `modules.ensure_graph` derives the module edges from the snapshot's symbols and the graph `find_modules` wrote; the
     # static links (`flows.cached_links`) join the HTTP calls to the routes of `entry_points`
     NAME, INPUTS, OUTPUTS = "assemble_graph", ("snapshot", "modules", "entry_points", "edges", "observed"), ("graph",)
-    WITHOUT = None
+    WITHOUT, EXECUTES = None, "no"
     # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
     # extension, JNI): each stage loads only its own index, so no edge joins them.
     APART = (("java", "kotlin"), ("go", "c"), ("python", "c"), ("python", "cpp"), ("java", "c"), ("java", "cpp"))
