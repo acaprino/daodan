@@ -283,9 +283,17 @@ def vm(command, services) -> bool:
     return bool(services) or callgrind.VALGRIND_BIN in " ".join(command)
 
 
+def prepare_line(unpack: str, run: list[str], tools: dict | None) -> str:
+    """The preparation sandbox's script: the copy unpacked, the recipes of `tools` (`container.tool_script`), when they
+    are any, then `run`. A recipe that fails says so (`DAODAN-MISSING`) and the preparation goes on, as with Docker."""
+    import container
+    installed = f"sh -c {shlex.quote(container.tool_script(tools))} && " if tools and tools.get("lines") else ""
+    return f"{unpack} && mkdir -p \"$HOME\" && {installed}exec {shlex.join(run)}"
+
+
 def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), env=None, timeout=600,
                 prepare_timeout=1800, memory=2 * 2**30, inputs=None, dotenv_env=(), blind=False, node_restore=None,
-                registries=None, **_):
+                registries=None, tools=None, **_):
     """`container.run_in_container` on Modal Sandboxes: the same arguments and result (the module's docstring),
     `container.beside`'s services, variables and steps included. With steps and services, the services start in
     the preparation's sandbox, the steps beside them, and start again from what they kept (the snapshot holds
@@ -293,7 +301,9 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     `container.REGISTRIES`), is the preparation sandbox's allowlist (`preparation_network`): the same hosts Daodan's
     proxy lets through, for TLS on port 443; a destination outside them is refused. `node_restore`, the restore an analysis shares between its runs
     (`node_preparation`), runs here in each run's own preparation sandbox, before `prepare`: no volume passes from
-    one sandbox to the next, so a round on Modal does not measure the sharing."""
+    one sandbox to the next, so a round on Modal does not measure the sharing. `tools`, the recipes of
+    `preparation.NEEDS` that `container.tool_phase` installs as root before a restore, run first in the preparation's
+    sandbox (`prepare_line`), so their log begins `prepare.log` as it does there."""
     import container
     out_dir = Path(out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -408,7 +418,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                     pinned = []
             if prepare:
                 run = ["sh", "-c", container.steps_script(steps, timeout, token), "sh", *prepare] if steps else prepare
-                row = _phase(boxes[-1], "prepare", f"{unpack} && mkdir -p \"$HOME\" && exec {shlex.join(run)}",
+                row = _phase(boxes[-1], "prepare", prepare_line(unpack, run, tools),
                              {**env, **exported}, prepare_timeout + (timeout if steps else 0), out_dir)
                 container.mask_file(row["log"], hide)
                 container.append_record(record, {**container.mask_row(row, hide), "image": image,
