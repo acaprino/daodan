@@ -54,6 +54,18 @@ def call_ends(ref: dict):
         yield {**end, **flag}
 
 
+# The package of the page's `invoke` of Tauri, as an engine names a call it resolved into a package (`external`).
+TAURI_SDK = ("npm", "@tauri-apps/api")
+
+
+def into_command_sdk(ref: dict) -> bool:
+    """Whether an engine resolved the call `ref` into the package of the page's `invoke` (`TAURI_SDK`): the SDK dispatches
+    the command, so the registered native function is its destination. Kept here, by the reader of the engine's answers,
+    so that the links name no tool."""
+    sdk = ref.get("external") or {}
+    return (sdk.get("manager"), sdk.get("package")) == TAURI_SDK
+
+
 def uncertainty(evidence: dict) -> str | None:
     """Why a call, a binding, or an effect derived from it cannot establish a path."""
     if evidence.get("conflict"):
