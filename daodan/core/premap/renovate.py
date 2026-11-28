@@ -95,8 +95,12 @@ GITLAB = ".gitlab-ci.yml"  # where GitLab reads a project's pipeline, unless the
 SERVICES = re.compile(r"""["']?\bservices["']?\s*:""")  # a workflow that may declare a service container
 INCLUDE = re.compile(r"""(?m)^["']?include["']?\s*:""")  # a pipeline that includes files, which may declare one
 SCRIPT = re.compile(r"""(?m)^\s*["']?(?:before_)?script["']?\s*:""")  # a GitLab job's lines
-# Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins
-YAML = '"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
+# Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins.
+# GitHub's own parser, @actions/workflow-parser 0.3.61, was measured against it (benchmarks/ci-workflows, T3.B.4):
+# it reads every valid workflow and gives the schema's errors, but its converted model drops each step's
+# `working-directory` and `shell` and the `defaults` they come from, and rewrites a line with `${{ }}` as
+# `format(...)`: what this reader takes of a step. So the workflows stay on this library, with the rules here.
+YAML ='"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
 # The library's visitor (its CLI's `--visit`) that prints GitLab's `!reference [path]`, a tag the library does
 # not know and would print as the path itself, as `{"!reference": [path]}`, which the reader resolves.
 REFERENCE = ('export default { Seq(_, node) { if (node.tag !== "!reference") return;'
