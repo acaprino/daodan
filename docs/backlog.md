@@ -51,6 +51,19 @@
 - Deployment, StatefulSet e Job di Kubernetes, profili di Skaffold, trigger di Cloud Build in Terraform (5 dei 7 flussi persi su Bank of Anthos, `benchmarks/system-map/README.md`, «Da dove verrebbero gli ingressi persi»). Strumenti ufficiali: `kustomize build`, `skaffold render`/`diagnose`, il lettore HCL di HashiCorp. Si riprende solo se una misura sul corpus mostra che contano su più progetti.
 - Orari e thread scritti nel codice: nessuna tabella nostra; restano al modello come candidati `residuo` (provenienza «modello»), con i fatti del compilatore sul candidato quando la build gira.
 
+### 5c. Lacune dei framework sotto la soglia (misurate in `T1.C.14`, 28 novembre 2026)
+
+*Usate da meno di 3 progetti del corpus (`benchmarks/project-model/README.md`, «Le lacune dei framework sul corpus», Modal `ap-qp05LDKvpZZjl0xxLrffh8`). I casi di API e di `pages/` sono contati sulle 122 fixture con i file: «non misurate» sono le clonate che dichiarano il framework. Si riprende quando una misura le porta a 3, prima di tutto clonando quelle fixture su Modal.*
+- **Next.js senza `typegen`** (prima della 15.5): 2 (`js-nextjs`, `real-next-subscriptions`). Fonte ufficiale per quelle versioni: da valutare.
+- **Next.js `pages/`**: 0; non misurate 6. Fonte da provare: ciò che `next typegen` scrive per `pages/` (non misurato).
+- **React Router `createBrowserRouter`** e **`basename`**: 0 e 0; non misurate 7 (5 senza `@react-router/dev`, che hanno già la lacuna `model_partial` di `react_router`). Fonte: per `basename` il modulo `virtual:react-router/server-build`; per le rotte scritte nel codice nessun comando, l'esplorazione.
+- **SvelteKit 1**: 0. **SvelteKit `actions`**: 0; non misurata 1 (`real-sveltekit-realworld`). Nessun file di `svelte-kit sync` nomina le azioni (`benchmarks/sveltekit-routes`): fonte da valutare.
+- **Nuxt 2**: 0 (il corpus ha solo Nuxt 4).
+- **Angular `@HostListener` e `host`**: 0; non misurate 3. Fonte: `getHostElement` del controllore dei template (`benchmarks/angular-compiler`).
+- **Astro, `astro:routes:resolved`**: 1 (`real-stack-astro-paper`). Fonte: `sync()` dell'API con l'hook (`benchmarks/astro-compiler`).
+- **Go senza framework (`net/http`)**: 0; non misurate 11 con l'id `golang`. Fonte: go/types o scip-go sull'ultimo argomento della registrazione.
+- **Wrapper HTTP, parti non misurate**: il wrapper di un wrapper e i client di altri linguaggi (i client `axios`, `requests` e `httpx` sono `T1.C.15`).
+
 ### 6. Soluzioni provvisorie da sostituire con quella pulita
 *Decisione del proprietario (27 novembre 2026): ogni ripiego accettato per andare avanti si sostituisce, appena possibile, con la soluzione pulita qui accanto.*
 - **Lettori SQL e PL/SQL a regex** (`daodan/core/languages/sql.py`, `plsql.py`, deroga di `T1.A.6`): pulita = una grammatica tree-sitter PL/SQL completa (package body, trigger, type body), misurata con `benchmarks/sql-grammar`.
