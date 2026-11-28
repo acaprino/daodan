@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DATA } from '../pipeline/data.ts';
+import { DATA, STEPS } from '../pipeline/data.ts';
 import { countOf, detailOf, groupsOf, itemsOf, lineOf, pathOf, rowId, stepId } from '../pipeline/tree.ts';
 import type { Path } from '../pipeline/tree.ts';
 
@@ -66,4 +66,11 @@ test('the choices are in their groups, in the order of the data', () => {
   const groups = groupsOf(DATA);
   assert.deepEqual(groups.map(group => group.label), ['Linguaggi', 'Strumenti di build', 'Framework']);
   assert.equal(groups.flatMap(group => group.options).length, DATA.choices.length);
+});
+
+test('the numbered steps of the plan carry the ids of the pipeline, which the app reads from STEPS alone', () => {
+  assert.equal(STEPS, DATA.steps);
+  assert.deepEqual(pathOf(DATA, 'plan', null).steps.map(step => step.id), ['list_files', 'read_code', 'recognize_stack', 'find_modules',
+    'find_entry_points', 'link_calls', 'run_and_observe', 'assemble_graph']);
+  assert.ok(STEPS.today.every(step => step.id === undefined) && pathOf(DATA, 'plan', null).beside.every(step => step.id === undefined));
 });

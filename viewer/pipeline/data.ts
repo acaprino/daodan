@@ -2,6 +2,33 @@
 // writes it again, and `check` (tests/test_codebase_map_pipeline_tree.py) fails when it is behind.
 import type { Data } from './tree.ts';
 
+// The steps alone, which the app imports by their `id`: the bundle leaves `DATA` out.
+export const STEPS: Data['steps'] = {
+  today: [
+    {"key": "s1", "title": "Elenco dei file", "code": "list_files", "what": "Percorre la cartella. Di ogni file: hash e linguaggio.", "writes": "l'elenco dei file"},
+    {"key": "s2", "title": "Lettura del codice", "code": "read_code", "what": "Apre ogni file dell'elenco: simboli, import, chiamate.", "writes": "lo snapshot: simboli, import, chiamate"},
+    {"key": "s3", "title": "Struttura del progetto", "code": "find_modules, find_entry_points", "what": "Scrive moduli e pre-mappa, poi i punti di ingresso nello step che segue.", "writes": "modules.json, premap.json ed entry-points.json"},
+    {"key": "s4", "title": "Tecnologie", "code": "recognize_stack", "what": "Riconosce framework, librerie, strumenti e servizi, e li assegna ai moduli.", "writes": "technologies.json"},
+    {"key": "s5", "title": "Chiamate", "code": "link_calls", "what": "Per ogni linguaggio, l'analizzatore ufficiale dice dove punta ogni chiamata.", "writes": "gli archi provati (engine-edges.sqlite)"},
+    {"key": "s6", "title": "Esecuzione", "code": "run_and_observe", "what": "Test e app nel container: ciò che viene chiamato davvero.", "writes": "gli archi osservati"},
+    {"key": "s7", "title": "Grafo finale", "code": "assemble_graph", "what": "Unisce e dice cosa manca.", "writes": "il grafo completo"},
+    {"key": "after", "title": "Dopo la pipeline", "code": "flussi e schede", "what": "Legame di rotte ed eventi alle funzioni, flussi, schede del modello. Oggi il legame avviene fuori dagli step.", "writes": "i flussi"},
+    {"key": "common", "title": "Servizi comuni", "code": "container e preparazione", "what": "Ciò che ogni step usa quando deve eseguire qualcosa: il motore, l'immagine, le toolchain, i registri.", "writes": ""},
+  ],
+  plan: [
+    {"key": "p1", "title": "Elenco dei file", "code": "1_list_files", "what": "Percorre la cartella. Di ogni file: hash e linguaggio.", "writes": "l'elenco dei file", "id": "list_files"},
+    {"key": "p2", "title": "Lettura del codice", "code": "2_read_code", "what": "Apre ogni file dell'elenco: simboli, import, chiamate.", "writes": "lo snapshot: simboli, import, chiamate", "id": "read_code"},
+    {"key": "p3", "title": "Tecnologie", "code": "3_recognize_stack", "what": "Solo analisi: quali strumenti di build, framework e tecnologie ci sono, e dove. Nessun modulo.", "writes": "le tecnologie, con il file che prova ogni voce", "id": "recognize_stack"},
+    {"key": "p4", "title": "Moduli", "code": "4_find_modules", "what": "Per ogni strumento di build trovato al 3, il suo adattatore dà moduli, dipendenze, comandi.", "writes": "il modello di build: moduli, dipendenze, comandi", "id": "find_modules"},
+    {"key": "p5", "title": "Punti di ingresso", "code": "5_find_entry_points", "what": "Per ogni framework trovato al 3, il suo strumento dà rotte, pagine ed eventi, legati alle funzioni.", "writes": "i punti di ingresso, legati alle funzioni", "id": "find_entry_points"},
+    {"key": "p6", "title": "Chiamate", "code": "6_link_calls", "what": "Per ogni linguaggio, l'analizzatore ufficiale dice dove punta ogni chiamata.", "writes": "gli archi provati", "id": "link_calls"},
+    {"key": "p7", "title": "Esecuzione", "code": "7_run_and_observe", "what": "Test e app nel container: ciò che viene chiamato davvero.", "writes": "gli archi osservati", "id": "run_and_observe"},
+    {"key": "p8", "title": "Grafo finale", "code": "8_assemble_graph", "what": "Unisce e dice cosa manca.", "writes": "il grafo completo", "id": "assemble_graph"},
+    {"key": "pafter", "title": "Dopo la pipeline", "code": "flussi e schede", "what": "Flussi e schede del modello, sul grafo completo.", "writes": "flussi e schede"},
+    {"key": "common", "title": "Servizi comuni", "code": "container e preparazione", "what": "Ciò che ogni step usa quando deve eseguire qualcosa: il motore, l'immagine, le toolchain, i registri.", "writes": ""},
+  ],
+};
+
 export const DATA: Data = {
   rows: [
     {"today": "s1", "plan": "p1", "name": "perimetro", "file": "tree_scope.py", "kind": "regola", "where": "host", "tool": "Git: git ls-files --others --ignored", "does": "Decide dove non entrare: ciò che Git ignora, cartelle con il punto, dipendenze e build, link.", "langs": [], "fam": [], "fw": [], "all": true, "status": null, "declared": null, "when": "sempre", "when_plan": "sempre", "ver": ""},
@@ -116,31 +143,7 @@ export const DATA: Data = {
     {"today": "s7", "plan": "p8", "name": "archi fra moduli", "file": "modules.py", "kind": "regola", "where": "host", "tool": "Codice nostro", "does": "Import e chiamate fra un modulo e l'altro, dagli archi provati.", "langs": [], "fam": [], "fw": [], "all": true, "status": null, "declared": null, "when": "sempre", "when_plan": "sempre", "ver": ""},
     {"today": "s7", "plan": "p8", "name": "lacune", "file": "pipeline/__init__.py", "kind": "regola", "where": "host", "tool": "Codice nostro", "does": "Dice cosa manca: file fuori dall'indice, linguaggi senza analizzatore, chiamate fra due linguaggi (Java e Kotlin, Go e C, Python e C).", "langs": [], "fam": [], "fw": [], "all": true, "status": null, "declared": null, "when": "sempre", "when_plan": "sempre", "ver": ""},
   ],
-  steps: {
-    today: [
-      {"key": "s1", "title": "Elenco dei file", "code": "list_files", "what": "Percorre la cartella. Di ogni file: hash e linguaggio.", "writes": "l'elenco dei file"},
-      {"key": "s2", "title": "Lettura del codice", "code": "read_code", "what": "Apre ogni file dell'elenco: simboli, import, chiamate.", "writes": "lo snapshot: simboli, import, chiamate"},
-      {"key": "s3", "title": "Struttura del progetto", "code": "find_modules, find_entry_points", "what": "Scrive moduli e pre-mappa, poi i punti di ingresso nello step che segue.", "writes": "modules.json, premap.json ed entry-points.json"},
-      {"key": "s4", "title": "Tecnologie", "code": "recognize_stack", "what": "Riconosce framework, librerie, strumenti e servizi, e li assegna ai moduli.", "writes": "technologies.json"},
-      {"key": "s5", "title": "Chiamate", "code": "link_calls", "what": "Per ogni linguaggio, l'analizzatore ufficiale dice dove punta ogni chiamata.", "writes": "gli archi provati (engine-edges.sqlite)"},
-      {"key": "s6", "title": "Esecuzione", "code": "run_and_observe", "what": "Test e app nel container: ciò che viene chiamato davvero.", "writes": "gli archi osservati"},
-      {"key": "s7", "title": "Grafo finale", "code": "assemble_graph", "what": "Unisce e dice cosa manca.", "writes": "il grafo completo"},
-      {"key": "after", "title": "Dopo la pipeline", "code": "flussi e schede", "what": "Legame di rotte ed eventi alle funzioni, flussi, schede del modello. Oggi il legame avviene fuori dagli step.", "writes": "i flussi"},
-      {"key": "common", "title": "Servizi comuni", "code": "container e preparazione", "what": "Ciò che ogni step usa quando deve eseguire qualcosa: il motore, l'immagine, le toolchain, i registri.", "writes": ""},
-    ],
-    plan: [
-      {"key": "p1", "title": "Elenco dei file", "code": "1_list_files", "what": "Percorre la cartella. Di ogni file: hash e linguaggio.", "writes": "l'elenco dei file"},
-      {"key": "p2", "title": "Lettura del codice", "code": "2_read_code", "what": "Apre ogni file dell'elenco: simboli, import, chiamate.", "writes": "lo snapshot: simboli, import, chiamate"},
-      {"key": "p3", "title": "Stack", "code": "3_recognize_stack", "what": "Solo analisi: quali strumenti di build, framework e tecnologie ci sono, e dove. Nessun modulo.", "writes": "lo stack, con il file che prova ogni voce"},
-      {"key": "p4", "title": "Moduli", "code": "4_find_modules", "what": "Per ogni strumento di build trovato al 3, il suo adattatore dà moduli, dipendenze, comandi.", "writes": "il modello di build: moduli, dipendenze, comandi"},
-      {"key": "p5", "title": "Punti di ingresso", "code": "5_find_entry_points", "what": "Per ogni framework trovato al 3, il suo strumento dà rotte, pagine ed eventi, legati alle funzioni.", "writes": "i punti di ingresso, legati alle funzioni"},
-      {"key": "p6", "title": "Chiamate", "code": "6_link_calls", "what": "Per ogni linguaggio, l'analizzatore ufficiale dice dove punta ogni chiamata.", "writes": "gli archi provati"},
-      {"key": "p7", "title": "Esecuzione", "code": "7_run_and_observe", "what": "Test e app nel container: ciò che viene chiamato davvero.", "writes": "gli archi osservati"},
-      {"key": "p8", "title": "Grafo finale", "code": "8_assemble_graph", "what": "Unisce e dice cosa manca.", "writes": "il grafo completo"},
-      {"key": "pafter", "title": "Dopo la pipeline", "code": "flussi e schede", "what": "Flussi e schede del modello, sul grafo completo.", "writes": "flussi e schede"},
-      {"key": "common", "title": "Servizi comuni", "code": "container e preparazione", "what": "Ciò che ogni step usa quando deve eseguire qualcosa: il motore, l'immagine, le toolchain, i registri.", "writes": ""},
-    ],
-  },
+  steps: STEPS,
   choices: [
     {"id": "lang:python", "name": "Python", "group": "Linguaggi", "langs": ["python"], "fam": ["python"], "fw": []},
     {"id": "lang:java", "name": "Java", "group": "Linguaggi", "langs": ["java"], "fam": ["jvm"], "fw": []},

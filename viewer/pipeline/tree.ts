@@ -11,7 +11,8 @@ export type Row = {
   langs: string[]; fam: string[]; fw: string[]; all: boolean; status: string | null; declared: string | null;
   when: string; when_plan: string; ver: string;
 };
-export type Step = { key: string; title: string; code: string; what: string; writes: string };
+// `id`: the step of the pipeline (`pipeline.IDS`) a numbered step of the plan is.
+export type Step = { key: string; title: string; code: string; what: string; writes: string; id?: string };
 // A language, a build tool or a framework, with what goes with it.
 export type Choice = { id: string; name: string; group: string; langs: string[]; fam: string[]; fw: string[] };
 export type Data = { rows: Row[]; steps: Record<Mode, Step[]>; choices: Choice[] };
