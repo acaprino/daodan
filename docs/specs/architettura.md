@@ -186,13 +186,11 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 
 ## File di progetto
 
-`[deciso]` Un file `.daodan` è un database SQLite. Il [DDL normativo, schema 2](#schema-sqlite-v2) (`daodan/core/project_schema.sql`) definisce le tabelle, i vincoli e gli indici. Le regole di identità e integrità qui sotto completano il DDL. Apertura, salvataggio e rianalisi nell’app sono assegnati a T2.E.
+`[deciso]` Un file `.daodan` è un database SQLite. Il [DDL normativo](#schema-sqlite) (`daodan/core/project_schema.sql`) definisce le tabelle, i vincoli e gli indici. Le regole di identità e integrità qui sotto completano il DDL. Apertura, salvataggio e rianalisi nell’app sono assegnati a T2.E.
 
 ### Come riconoscere il file
 
-Il formato richiede SQLite 3.38 o successivo con funzioni JSON disponibili. Le tabelle usano tipi STRICT. L'intestazione è quella di SQLite. Il lettore verifica `application_id = 0x44414F44` (DAOD), `user_version = 2` e lo schema atteso prima di usare il file. Il DDL inizializza soltanto un database vuoto. Un lettore che incontra una versione sconosciuta spiega quale versione serve. Per migrare, si crea prima una copia consistente, si applicano le modifiche e si aggiorna `user_version` nella stessa transazione. Una copia da condividere a database aperto si ottiene con l'API di backup di SQLite, così include anche i commit già visibili in WAL. [Intestazione e pragma](https://sqlite.org/pragma.html) · [Backup SQLite](https://sqlite.org/backup.html)
-
-La v1 al commit `c7bc75b` ha le stesse 21 tabelle e accetta specie libere in SQL. Per portare un file v1 alla v2, leggere uno snapshot coerente e validare **tutte le versioni** dei nodi, comprese quelle chiuse. Se una specie è sconosciuta si indica ID, revisione e valore, lasciando intatto il file di partenza. Se i dati sono validi, si copiano tutte le righe in un nuovo database inizializzato col DDL v2, mantenendo chiavi, UUID e storia. Inserimento in un'unica transazione con vincoli esterni differiti; prima di sostituire il file si verificano chiavi esterne, integrità e uguaglianza dei dati delle 21 tabelle. Il nuovo vincolo rifiuta specie estranee anche con un inserimento SQL diretto.
+Il formato richiede SQLite 3.38 o successivo con funzioni JSON disponibili. Le tabelle usano tipi STRICT. L'intestazione è quella di SQLite. Il lettore verifica `application_id = 0x44414F44` (DAOD), `user_version = 1` e lo schema atteso prima di usare il file. Il DDL inizializza soltanto un database vuoto. Un lettore che incontra una versione sconosciuta spiega quale versione serve. Fino al primo rilascio il formato ha una sola versione, la 1, e lo schema cambia sul posto senza migrazioni: un file scritto da una build di sviluppo precedente si rifiuta con la causa e si rifà analizzando il progetto. Una copia da condividere a database aperto si ottiene con l'API di backup di SQLite, così include anche i commit già visibili in WAL. [Intestazione e pragma](https://sqlite.org/pragma.html) · [Backup SQLite](https://sqlite.org/backup.html)
 
 ### Tabelle
 
@@ -270,9 +268,9 @@ In Bank of Anthos, «Pagamento a un contatto» ha un solo ID di flusso. Sullo st
 
 ### Prove di accettazione del formato
 
-Rinomina `payment.py` in `transfer.py` dopo un edit manuale: con un'unica corrispondenza verificabile restano lo stesso ID e l'edit, anche dopo riapertura. Ripeti senza Git. Copia invece il file lasciando l'originale: la copia ha un nuovo ID e l'edit resta sull'originale. Con due candidati uguali o una rinomina più modifica segnalata solo per similarità, richiedi conferma e verifica autore, decisione e storia. Verifica infine che tutte le 24 specie siano accettate, che una inventata venga rifiutata nel DDL e dall'importatore, e che un ciclo tra padri venga rifiutato dal writer. Per la migrazione v1 → v2 verifica ID e revisioni dopo riapertura, e il rifiuto di una specie sconosciuta presente solo nello storico. La prova del proprietario, su v1 in memoria, copre creazione e rilettura di un progetto minimo. Le prove end-to-end usano un file su disco attraverso l'app.
+Rinomina `payment.py` in `transfer.py` dopo un edit manuale: con un'unica corrispondenza verificabile restano lo stesso ID e l'edit, anche dopo riapertura. Ripeti senza Git. Copia invece il file lasciando l'originale: la copia ha un nuovo ID e l'edit resta sull'originale. Con due candidati uguali o una rinomina più modifica segnalata solo per similarità, richiedi conferma e verifica autore, decisione e storia. Verifica infine che tutte le 24 specie siano accettate, che una inventata venga rifiutata nel DDL e dall'importatore, e che un ciclo tra padri venga rifiutato dal writer. La prova del proprietario, in memoria, copre creazione e rilettura di un progetto minimo. Le prove end-to-end usano un file su disco attraverso l'app.
 
-### Schema SQLite v2
+### Schema SQLite
 
 Il DDL completo per creare un file vuoto è [`daodan/core/project_schema.sql`](../../daodan/core/project_schema.sql): un solo posto, che il codice esegue per creare un file e per confrontare lo schema di quello che apre.
 

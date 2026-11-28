@@ -1,4 +1,4 @@
-"""The project file `.daodan` (`docs/specs/architettura.md`, «File di progetto»): a SQLite database of schema 2, its
+"""The project file `.daodan` (`docs/specs/architettura.md`, «File di progetto»): a SQLite database of format version 1, its
 DDL in `project_schema.sql`, the one place it lives. This module creates, opens and recognises the file, writes its
 revisions and reads its state; it has no interface.
 
@@ -26,15 +26,14 @@ from pathlib import Path
 from jsonpointer import JsonPointer, JsonPointerException, resolve_pointer, set_pointer  # RFC 6901: not in the stdlib
 from snapshot_store import _plain
 
-__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "applied", "changes",
+__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "ProjectError", "analyse", "applied", "changes",
            "commit", "confirm", "conflicts", "copy", "create", "edit", "find", "head", "history", "incoming", "key_of",
-           "migrate", "open_project", "pair", "read", "release", "resolve", "source_of", "state", "upgrade"]
+           "open_project", "pair", "read", "release", "resolve", "source_of", "state"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
-FORMAT_VERSION = 2
+FORMAT_VERSION = 1  # the one version until the first release: the schema changes in place, no migration
 SQLITE_MINIMUM = (3, 38)  # JSON functions and STRICT tables
-MIGRATIONS: dict = {}  # an older user_version -> its migration in `migrate` (T2.E.8), filled below
 BUSY_TIMEOUT_S = 10
 
 TABLES = {"node": "nodes", "edge": "edges", "flow": "flows", "variant": "variants", "step": "steps", "gap": "gaps",
@@ -131,8 +130,6 @@ def open_project(path: Path | str, write: bool = False) -> sqlite3.Connection:
         if identity != APPLICATION_ID:
             raise ProjectError(f"non è un file di progetto di Daodan: {path} (application_id {identity:#x})")
         if version != FORMAT_VERSION:
-            if version in MIGRATIONS:
-                raise ProjectError(f"serve la migrazione da v{version} (`migrate`): {path}")
             raise ProjectError(f"questo file chiede la versione {version} del formato di Daodan, "
                                f"questa legge la {FORMAT_VERSION}: {path}")
         found = frozenset(db.execute("SELECT type, name, tbl_name, sql FROM sqlite_schema"))
@@ -150,105 +147,9 @@ def open_project(path: Path | str, write: bool = False) -> sqlite3.Connection:
     return db
 
 
-# ---------------------------------------------------------------------------------------------------------------
-# Migration from an older version, in a verified copy
-
-
-def _from_v1(db: sqlite3.Connection) -> None:
-    """Version 1 has the same 21 tables and columns; its `nodes.species` has no CHECK. Every species of every
-    version, closed ones too, must be one of version 2, else the cause names the object, the revision and the
-    value; then each table is copied from the attached `old`."""
-    from node_model import SPECIES  # the same 24 as the DDL's CHECK (`test_every_species_of_the_code_enters...`)
-    unknown = db.execute(f"SELECT v.object_id, v.from_rev, n.species FROM old.nodes AS n JOIN old.versions AS v"
-                         f" USING (version_id) WHERE n.species NOT IN ({', '.join('?' * len(SPECIES))})"
-                         f" ORDER BY v.from_rev, v.object_id", SPECIES).fetchall()
-    if unknown:
-        raise ProjectError("specie sconosciute nella v1: " + ", ".join(
-            f"{object_id} (revisione {rev}): {species!r}" for object_id, rev, species in unknown[:5]))
-    for table in _tables(db, "main"):
-        db.execute(f"INSERT INTO main.{table} SELECT * FROM old.{table}")
-
-
-MIGRATIONS[1] = _from_v1
-
-
-def _tables(db: sqlite3.Connection, schema: str) -> list[str]:
-    return [name for (name,) in db.execute(f"SELECT name FROM {schema}.sqlite_schema WHERE type = 'table' ORDER BY name")]
-
-
-def upgrade(path: Path | str) -> bool:
-    """Migrate the project file at `path` when its version is an older one `MIGRATIONS` knows (`migrate`); whether it
-    did. A file of this version, or one that is no project file, is left to `open_project` to accept or refuse."""
-    path = Path(path)
-    _plain(path)
-    try:
-        with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=BUSY_TIMEOUT_S)) as db:
-            identity, version = (db.execute(f"PRAGMA {name}").fetchone()[0] for name in ("application_id", "user_version"))
-    except sqlite3.DatabaseError:
-        return False
-    if identity != APPLICATION_ID or version not in MIGRATIONS:
-        return False
-    migrate(path)
-    return True
-
-
-def migrate(path: Path | str) -> None:
-    """Take the project file at `path` from its version to `FORMAT_VERSION`, all or nothing: a consistent copy with
-    `Connection.backup`, a new file beside it from the DDL, the migration of that version (`MIGRATIONS`) from the
-    attached copy in one transaction, then `foreign_key_check` empty, `integrity_check` `ok` and every table equal in
-    both directions (`EXCEPT`); only then the new file replaces the old one, which stays as it was otherwise."""
-    path = Path(path)
-    _plain(path)
-    if not path.is_file():
-        raise ProjectError(f"nessun file di progetto: {path}")
-    token = uuid.uuid4().hex
-    copy, fresh = path.with_name(f".{path.name}.{token}.old"), path.with_name(f".{path.name}.{token}.new")
-    try:
-        with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=BUSY_TIMEOUT_S)) as source:
-            try:
-                identity, version = (source.execute(f"PRAGMA {name}").fetchone()[0]
-                                     for name in ("application_id", "user_version"))
-            except sqlite3.DatabaseError as error:
-                raise ProjectError(f"non è un file di progetto di Daodan: {path} ({error})") from error
-            if identity != APPLICATION_ID or version not in MIGRATIONS:
-                raise ProjectError(f"nessuna migrazione per {path} (application_id {identity:#x}, versione {version})")
-            with closing(sqlite3.connect(copy)) as target:
-                source.backup(target)
-        _initialize(fresh)
-        with closing(sqlite3.connect(fresh.resolve().as_uri(), uri=True, isolation_level=None)) as db:
-            db.execute("ATTACH DATABASE ? AS old", (copy.resolve().as_uri() + "?mode=ro",))
-            tables = _tables(db, "main")
-            if _tables(db, "old") != tables:
-                raise ProjectError(f"le tabelle di {path} non sono quelle della v{version}")
-            db.execute("BEGIN IMMEDIATE")
-            db.execute("PRAGMA defer_foreign_keys=ON")
-            try:
-                MIGRATIONS[version](db)
-                if db.execute("PRAGMA main.foreign_key_check").fetchall():
-                    raise ProjectError(f"la copia di {path} cita oggetti che non esistono")
-                db.execute("COMMIT")
-            except BaseException:
-                db.execute("ROLLBACK")
-                raise
-            if db.execute("PRAGMA main.integrity_check").fetchall() != [("ok",)]:
-                raise ProjectError(f"la copia di {path} non è integra")
-            for table in tables:
-                for one, other in (("main", "old"), ("old", "main")):
-                    if db.execute(f"SELECT 1 FROM (SELECT * FROM {one}.{table} EXCEPT SELECT * FROM {other}.{table})"
-                                  f" LIMIT 1").fetchone():
-                        raise ProjectError(f"la tabella {table} migrata non è uguale a quella di {path}")
-            db.execute("DETACH DATABASE old")
-        with closing(open_project(fresh)):
-            pass  # the new file is one this version recognises
-        os.replace(fresh, path)
-    finally:
-        copy.unlink(missing_ok=True)
-        fresh.unlink(missing_ok=True)
-
-
 def create(path: Path | str, *, name: str | None = None, source: dict | None = None, analysis: dict | None = None,
            rows: list[dict] = (), author: str = "daodan") -> None:
-    """A project file of schema 2 at `path`, which must not exist. With `source` and `analysis` it holds the
+    """A project file of this version at `path`, which must not exist. With `source` and `analysis` it holds the
     project: snapshot, analysis, revision 1 (`analysis`, by `author`) with `rows`, and the one row of `project`,
     written together in a file beside `path` and moved onto it only once checked; without them, the empty schema.
     `source` has the columns of `source_snapshots`; `analysis` has `daodan_version`, `config` (an object) and

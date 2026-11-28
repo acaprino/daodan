@@ -531,8 +531,7 @@ class App:
 
     @staticmethod
     def _opened(path: Path, write: bool = False):
-        """The project file at `path`, migrated first when it is of an older version (`project_file.upgrade`)."""
-        project_file.upgrade(path)
+        """The project file at `path` (`project_file.open_project`), closed when the block ends."""
         return closing(project_file.open_project(path, write=write))
 
     def _reading(self, write: bool = False):

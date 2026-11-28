@@ -34,7 +34,7 @@ from project_file import ProjectError  # noqa: E402
 CLEAN = {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
          "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
 PAYMENT = "def pay(amount):\n    return amount\n"
-V1 = HERE / "fixtures/project-file/v1.sql"
+EARLIER = HERE / "fixtures/project-file/earlier-build.sql"  # an earlier development build's DDL (c7bc75b)
 
 
 def git(folder: Path, *arguments: str) -> str:
@@ -241,11 +241,12 @@ def test_the_24_species_are_accepted_and_an_invented_one_is_refused_by_the_ddl_a
         assert sorted(row["fields"]["species"] for row in project_file.state(db).values()) == sorted(node_model.SPECIES)
         with pytest.raises(ProjectError, match="CHECK"):
             project_file.commit(db, expected_head=1, kind="manual", author="ada", summary="x", opened=[_node("bad", "inventata")])
-    # a file whose nodes take any species is not one this version opens: its schema is not the DDL's
+    # a file of an earlier development build, of the same version, whose nodes take any species is not one this
+    # build opens: its schema is not the DDL's
     loose = tmp_path / "loose.daodan"
     with closing(sqlite3.connect(loose, isolation_level=None)) as db:
-        db.executescript(V1.read_text(encoding="utf-8").replace("PRAGMA user_version = 1", "PRAGMA user_version = 2"))
-    with pytest.raises(ProjectError, match="lo schema non è quello della versione 2"):
+        db.executescript(EARLIER.read_text(encoding="utf-8"))
+    with pytest.raises(ProjectError, match="lo schema non è quello della versione 1"):
         project_file.open_project(loose).close()
 
 
@@ -260,43 +261,3 @@ def test_a_cycle_between_parents_is_refused_by_the_writer_and_the_file_stays_as_
                                 opened=[_node("a", "cartella", "b")])
         assert project_file.head(db) == 1
     assert path.read_bytes() == kept
-
-
-def _v1(path: Path, history: str) -> None:
-    """A file of version 1 at `path`: a folder and a file whose first version, closed at revision 2, has the species
-    `history`."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with closing(sqlite3.connect(path, isolation_level=None)) as db:
-        db.executescript(V1.read_text(encoding="utf-8"))
-        db.execute("INSERT INTO source_snapshots (source_id, git_commit, repository_uri) VALUES (1, ?, 'https://github.com/o/n')",
-                   ("a" * 40,))
-        db.execute("INSERT INTO analyses VALUES (1, 1, 'v1', '{}', '2026-01-01T00:00:00+00:00')")
-        for rev in (1, 2):
-            db.execute("INSERT INTO revisions VALUES (?, ?, ?, 1, 'analysis', 'daodan', '2026-01-01T00:00:00+00:00', 'v1')",
-                       (rev, f"r{rev}", rev - 1 or None))
-        db.execute("INSERT INTO project VALUES (1, 'p-uuid', 'o/n', 2)")
-        db.execute("INSERT INTO objects VALUES ('dir', 'node'), ('file', 'node')")
-        for version, item, start, end, species, parent in ((1, "dir", 1, None, "cartella", None), (2, "file", 1, 2, history, "dir"),
-                                                           (3, "file", 2, None, "file", "dir")):
-            db.execute("INSERT INTO versions VALUES (?, ?, ?, ?, 'analysis')", (version, item, start, end))
-            db.execute("INSERT INTO nodes (version_id, parent_id, name, species, position, status, abstraction)"
-                       " VALUES (?, ?, ?, ?, 'interno', 'confermato', 'concreto')", (version, parent, item, species))
-
-
-def test_a_v1_file_of_the_repository_migrates_when_the_app_opens_it_and_one_with_an_unknown_species_stays(tmp_path):
-    app = launcher.App(tmp_path / "work", environment={})
-    path = app.work / "repositories" / "o" / "n" / repository.PROJECT
-    app.context = {"run_id": "r", "path": str(tmp_path), "project": str(path)}
-    _v1(path, "simbolo")
-    told = app.project_history({})
-    assert told["head"] == 2 and [item["rev"] for item in told["revisions"]] == [1, 2]
-    with closing(project_file.open_project(path)) as db:
-        assert db.execute("PRAGMA user_version").fetchone() == (2,)
-        assert project_file.state(db, 1)["file"]["fields"]["species"] == "simbolo"
-    path.unlink()
-    _v1(path, "inventata")
-    kept = path.read_bytes()
-    with pytest.raises(ProjectError, match=r"file \(revisione 1\): 'inventata'"):
-        app.project_history({})
-    assert path.read_bytes() == kept
-    app.close()

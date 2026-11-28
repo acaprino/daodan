@@ -1,8 +1,8 @@
--- Daodan project file, schema 2. Initialize an empty database only.
+-- Daodan project file, format version 1. Initialize an empty database only.
 PRAGMA foreign_keys = ON;
 BEGIN;
 PRAGMA application_id = 0x44414F44; -- "DAOD"
-PRAGMA user_version = 2;
+PRAGMA user_version = 1;
 
 CREATE TABLE source_snapshots (
     source_id INTEGER PRIMARY KEY,
