@@ -46,6 +46,11 @@
 - Importazione del vecchio esempio Bank of Anthos (ZIP con `project.json` e `v2/graph.sqlite`, cinque tabelle, un altro identificativo SQLite) nel `.daodan` (uscita da `T2.E.1`): conserverebbe l'originale e recupererebbe dal manifest revisioni e provenienza, con «unknown» e una lacuna per ciò che non si recupera; cambiare estensione o solo `user_version` non converte il contenuto. Nessuno scrive oggi quel formato.
 - Renovate come terzo lettore pacchetti (ex ondata 2, voce 10); corsa settimanale confronto Linguist (ex ondata 1, voce 5).
 
+### 5b. Ingressi dai manifesti di rilascio (deciso dal proprietario il 28 novembre 2026)
+
+- Deployment, StatefulSet e Job di Kubernetes, profili di Skaffold, trigger di Cloud Build in Terraform (5 dei 7 flussi persi su Bank of Anthos, `benchmarks/system-map/README.md`, «Da dove verrebbero gli ingressi persi»). Strumenti ufficiali: `kustomize build`, `skaffold render`/`diagnose`, il lettore HCL di HashiCorp. Si riprende solo se una misura sul corpus mostra che contano su più progetti.
+- Orari e thread scritti nel codice: nessuna tabella nostra; restano al modello come candidati `residuo` (provenienza «modello»), con i fatti del compilatore sul candidato quando la build gira.
+
 ### 6. Soluzioni provvisorie da sostituire con quella pulita
 *Decisione del proprietario (27 novembre 2026): ogni ripiego accettato per andare avanti si sostituisce, appena possibile, con la soluzione pulita qui accanto.*
 - **Lettori SQL e PL/SQL a regex** (`daodan/core/languages/sql.py`, `plsql.py`, deroga di `T1.A.6`): pulita = una grammatica tree-sitter PL/SQL completa (package body, trigger, type body), misurata con `benchmarks/sql-grammar`.
