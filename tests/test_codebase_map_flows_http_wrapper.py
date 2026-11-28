@@ -691,8 +691,10 @@ class PythonWrapperTests(unittest.TestCase):
         column, `flows.Facts` finds it under the keyword's node, and `argN` reads the argument bound to parameter N."""
         number, text = next((number, text) for number, text in enumerate(py_sources()["app/refused.py"].split("\n"), 1)
                             if "method=\"POST\"" in text)
+        # the line holds the module `requests` too (its own occurrence, no reference): only the keywords are asked here
         self.assertEqual({(edge["c0"], edge["symbol"]) for edge in self.view["occurrences"]
-                          if (edge["file"], edge["l0"]) == ("app/refused.py", number)},
+                          if (edge["file"], edge["l0"]) == ("app/refused.py", number)
+                          and edge["symbol"].startswith(REQUEST)},
                          {(text.index("method="), f"{REQUEST}(method)"), (text.index("url="), f"{REQUEST}(url)")})
         [ref] = [ref for ref in self.view["references"] if (ref["file"], ref["span"][0]) == ("app/refused.py", number)
                  and ref["parts"] == ["requests", "request"]]
