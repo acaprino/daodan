@@ -26,12 +26,18 @@ code{font-size:.9em;overflow-wrap:anywhere}
 <body>
 <main>
 <h1>Domande aperte</h1>
-<p class="sub">28 novembre 2026. Fonte: <code>docs/plans/refactoring.md</code>, «Domande rimandate al proprietario». Nessuna blocca il lavoro: dove c'è una scelta provvisoria, è già nel codice. I consigli seguono la regola «niente overfitting».</p>
+<p class="sub">28 novembre 2026, sera. Fonte: <code>docs/plans/refactoring.md</code>, «Domande rimandate al proprietario». Nessuna blocca il lavoro: dove c'è una scelta provvisoria, è già nel codice. I consigli seguono la regola «niente overfitting». Chiuse oggi: Cancello T1 (verde), scoperta cieca fuori dal cancello, preset di Renovate (scelta A, passo T0.C.10).</p>
 
-<h2>Corse da approvare</h2>
+<h2>Promemoria</h2>
 <ol>
-<li><b>Cancello T1 (T1.E.7).</b> Corsa Modal su Bank of Anthos con i container, senza LLM, più la suite. La lancio?<span class="r">sì: chiude T1.</span></li>
-<li><b>Scoperta cieca su Bank of Anthos.</b> Già approvata (circa 1,3 USD), ma si è fermata: il limite settimanale del modello degli agenti torna il 4 dicembre.<span class="r">rilanciarla il 4 dicembre.</span></li>
+<li><b>Scoperta cieca su Bank of Anthos.</b> Approvata (circa 1,3 USD), fuori dal cancello di T1.C. Il limite settimanale degli agenti torna il 4 dicembre.<span class="r">rilanciarla il 4 dicembre.</span></li>
+</ol>
+
+<h2>Cancello T1 e analisi</h2>
+<ol>
+<li><b>Il metro degli ingressi del Cancello T1.</b> I 27 controlli che avviano i flussi di Bank of Anthos sono pulsanti nei template e dichiarazioni di rilascio, nessuna rotta: 0 su 27 anche con tutti i candidati statici. Oggi la soglia è 0; la non regressione la prova il prima/dopo identico di T1.C.12.<span class="r">tenere così; il metro conta quando T3 misura l'osservato.</span></li>
+<li><b>Il metodo passato per nome (T1.C.15).</b> <code>requests.request(method="POST", url=url)</code> in un wrapper è una lacuna, perché il lettore legge gli argomenti solo per posizione. Il compilatore lega già ogni parola chiave al suo parametro.<span class="r">sì, aggiungere la forma per nome: vale per ogni linguaggio con argomenti con nome.</span></li>
+<li><b>Il riferimento della pre-mappa misura con la rete aperta.</b> Il banco <code>modal_premap.py</code> ignora il «nessuna rete» dei comandi, quindi il riferimento può contare voci che il prodotto non trova.<span class="r">sì, correggere il banco: un riferimento deve girare come il prodotto.</span></li>
 </ol>
 
 <h2>Mappa e progetto</h2>
@@ -50,6 +56,9 @@ code{font-size:.9em;overflow-wrap:anywhere}
 <li><b>Quanto ha scritto ogni passo (T1.E).</b> Aggiungere alle azioni il numero di unità e righe scritte, come già fa il riconoscimento dello stack?<span class="r">sì, è un dato che c'è già.</span></li>
 <li><b>Testi del server (T1.E).</b> Cause e rimedi arrivano in inglese: mostrarli come dati, senza tradurli?<span class="r">sì.</span></li>
 <li><b>Consensi prima della scelta del progetto (T1.E).</b> La politica di rete e container si vede solo a progetto scelto; prima girano solo passi che non eseguono nulla.<span class="r">va bene così.</span></li>
+<li><b>Togliere un comando (T3.B.8).</b> «Togli il comando» agisce subito, senza conferma né annullamento: una proposta dell'assistente tolta non torna.<span class="r">va bene per i comandi tuoi; per una proposta basta che l'assistente possa riproporla.</span></li>
+<li><b>Impostare sopra una proposta (T3.B.8).</b> Modificare e impostare un comando proposto lo rende tuo, senza dire che veniva dall'assistente.<span class="r">va bene: l'hai scritto tu.</span></li>
+<li><b>La finestra dei comandi nella spec (T3.B.8).</b> La riga dei comandi dell'utente in <code>architettura.md</code> non nomina la finestra dell'App.<span class="r">sì, una riga nella spec.</span></li>
 </ol>
 
 <h2>Esecuzione (T3.B)</h2>
