@@ -165,7 +165,8 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
                 raise ValueError(f"{where}: supplied classifications must have source modello; registry decisions come from Daodan")
             if set(rule) != {"link", "reader", "shape", "entry", "source"} or rule["link"] != "ingresso" or (
                     rule["reader"] not in (entries.ATTRIBUTE, entries.ARGUMENT, entries.DECORATOR, entries.NOIR, entries.MANIFEST,
-                                             *(source.NAME for source in (*entry_points.FRAMEWORK_SOURCES, *entry_points.TEMPLATE_SOURCES)))
+                                             *(source.NAME for source in (*entry_points.FRAMEWORK_SOURCES, *entry_points.TEMPLATE_SOURCES,
+                                                                         *entry_points.TREE_SOURCES)))
                     or not isinstance(rule["shape"], str) or not rule["shape"]
                     or rule["entry"] not in (*entries.ENTRY_KINDS, entries.NO_ENTRY)):
                 raise ValueError(f"{where}: invalid shape classification or entry kind")

@@ -1,0 +1,7 @@
+{
+  "name": "express-v4-fixture",
+  "private": true,
+  "dependencies": {
+    "express": "4.21.2"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "express-v5-fixture",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "express": "5.1.0"
+  }
+}
