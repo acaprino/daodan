@@ -270,7 +270,9 @@ def _installs(run: dict, python: str) -> list[tuple[str, str]]:
 
 def scripts(planned: dict) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and what the preparation needs beside them (`{files, hosts,
-    gaps}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has)."""
+    gaps, tools}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has,
+    the recipes of `preparation.NEEDS` installed as root before the preparation, which then runs as
+    `container.NOBODY`; None where git, which apt installs into the image, keeps the preparation one, as root)."""
     runs = planned["runs"]
     chains = preparation.toolchains(planned.get("toolchains") or [])
     restores: dict[str, list[str]] = {}
@@ -281,8 +283,9 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
     needs = preparation.setup({"uv", *(["git"] if vcs["names"] or vcs["hosts"] else []),
                                *(need for manager in restores
                                  for need in preparation.RESTORES[manager].get("needs", ()))})
+    apart = not vcs["names"] and not vcs["hosts"]  # no git (`preparation.IMAGE_NEEDS`)
     prepare = ["set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']} {VENVS}", *chains["lines"],
-               *needs["lines"], preparation.UV_ENV, *([preparation.without(vcs["names"])] if vcs["names"] else []),
+               *([] if apart else needs["lines"]), preparation.UV_ENV, *([preparation.without(vcs["names"])] if vcs["names"] else []),
                *(preparation.restore(manager, folders) for manager, folders in restores.items())]
     execute = ["set -u", f"mkdir -p {OUT}", f"{PYTHON3} {IN}/{RECORDER.name} site {SITE} || exit 70",
                # $1 the run, $2 its folder, $3 its Python, then the runner's arguments
@@ -314,6 +317,7 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
     declared = (planned.get("declared") or {}).get("hosts", ())
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n",
             {"files": [*chains["files"], *needs["files"]], "gaps": chains["gaps"],
+             "tools": {"lines": needs["lines"], "caps": needs["caps"]} if apart else None,
              "hosts": (*chains["hosts"], *needs["hosts"], *vcs["hosts"], *declared,
                        *(host for manager in restores for host in preparation.RESTORES[manager]["hosts"]))})
 
@@ -438,7 +442,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     result = container.run_in_container(
         project, ["sh", "-c", execute], image=IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare], outputs=[OUT],
         env={**preparation.ENV, "LANG": "C.UTF-8"}, timeout=len(runs) * (LIMIT + 120), memory=MEMORY,
-        registries=container.REGISTRIES + tuple(dict.fromkeys(needs["hosts"])), engine=engine, inputs=inputs)
+        registries=container.REGISTRIES + tuple(dict.fromkeys(needs["hosts"])), engine=engine, inputs=inputs,
+        tools=needs["tools"])
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
                 "gaps": []}

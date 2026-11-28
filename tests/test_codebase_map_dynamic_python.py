@@ -191,6 +191,13 @@ def test_the_declared_vcs_requirements_bring_git_and_their_hosts_and_nothing_els
     planned, prepare, _execute = scripts_of([PYTEST], ["requirements.txt"], texts={"requirements.txt": "click\n"})
     assert planned["vcs"] == {"names": [], "hosts": []} and "apt-get" not in prepare
     assert f"> {preparation.WITHOUT}" not in prepare and "github.com" not in observer.scripts(planned)[2]["hosts"]
+    # Without git, which apt installs into the image, uv installs as root before the preparation, which runs as
+    # 65532 (`T3.A`, `preparer:dynamic.python` of `benchmarks/egress/modal_hardening.py`); with it, all as root.
+    uv = preparation.setup(["uv"])
+    assert observer.scripts(planned)[2]["tools"] == {"lines": uv["lines"], "caps": uv["caps"]}
+    assert uv["lines"][0] not in prepare
+    planned, prepare, _execute = scripts_of([PYTEST], ["requirements.txt", "tests/test_a.py"], texts=texts)
+    assert observer.scripts(planned)[2]["tools"] is None and uv["lines"][0] in prepare
 
 
 def test_an_empty_environment_is_made_for_tests_no_manifest_holds():
