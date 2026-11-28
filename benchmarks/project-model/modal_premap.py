@@ -25,6 +25,11 @@ small projects, one whose config extends a preset of GitHub's (`renovate_network
 
     python -m modal run benchmarks/project-model/modal_premap.py --network real-bank-of-anthos --tools maven,python --out OUT.json
 
+`--presets` counts the fixtures whose Renovate config extends a preset outside Renovate (`renovate_presets`): the config
+file Renovate itself would take and the source of each preset, from the installed Renovate's own code (`PRESETS`):
+
+    python -m modal run benchmarks/project-model/modal_premap.py --presets --out OUT.json
+
 A family's fixtures share one container; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume `daodan-flow-results`) has a container of its own.
 """
@@ -313,6 +318,69 @@ def renovate_network(name: str, tools: list) -> dict:
     return out
 
 
+# `--presets`: the config of each folder as Renovate 44.239.1 finds and reads it, with its own modules: the first of
+# `getConfigFileNames()` that is there (`package.json` only with a `renovate` key, a string being one preset, as
+# `detectConfigFile` and `detectRepoFileConfig` take it, lib/workers/repository/init/merge.ts), read by `parseFileConfig`
+# (JSON5 for `.json5`, JSONC for the rest), and each preset its `extends` names given its `presetSource` by `parsePreset`.
+# Only the config's own `extends` are read: the presets they extend in turn are on the network.
+PRESETS = """const [dist, ...folders] = process.argv.slice(2);
+const fs = await import('node:fs');
+const { getConfigFileNames } = await import(`${dist}/config/app-strings.js`);
+const { parseFileConfig } = await import(`${dist}/config/parse.js`);
+const { parsePreset } = await import(`${dist}/config/presets/parse.js`);
+const out = {};
+for (const folder of folders) {
+  let found = null;
+  for (const name of getConfigFileNames()) {
+    const file = `${folder}/${name}`;
+    if (!fs.existsSync(file) || !fs.statSync(file).isFile()) continue;
+    const raw = fs.readFileSync(file, 'utf8');
+    if (name === 'package.json') {
+      let pJson;
+      try { pJson = JSON.parse(raw); } catch { continue; }
+      if (!pJson.renovate) continue;
+      found = { file: name, config: typeof pJson.renovate === 'string' ? { extends: [pJson.renovate] } : pJson.renovate };
+    } else {
+      const parsed = parseFileConfig(name, raw.length ? raw : '{}');
+      found = parsed.success ? { file: name, config: parsed.parsedContents } : { file: name, error: parsed.validationError };
+    }
+    break;
+  }
+  if (found && found.config) {
+    const named = found.config.extends;
+    found.presets = (Array.isArray(named) ? named : named ? [named] : []).map((preset) => {
+      try { return { preset, source: parsePreset(preset).presetSource }; } catch (error) { return { preset, error: error.message }; }
+    });
+    delete found.config;
+  }
+  out[folder] = found;
+}
+process.stdout.write(JSON.stringify(out));
+"""
+INSIDE = ("internal", "relative")  # `parsePreset`'s sources Renovate resolves without a request: its own presets, the config's files
+
+
+@app.function(cpu=1.0, memory=2048, timeout=1800, volumes={"/results": volume})
+def renovate_presets(names: list) -> dict:
+    """The Renovate config of each fixture of `names` and the presets it extends (`PRESETS`): a real repository's clone
+    (`_real`), a hand-written fixture as it is."""
+    sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM, f"{REMOTE_PM}/tools"]
+    dist = subprocess.run(["npm", "root", "-g"], capture_output=True, text=True, check=True).stdout.strip() + "/renovate/dist"
+    script = Path("/tmp/daodan-presets.mjs")
+    script.write_text(PRESETS, encoding="utf-8")
+    folders = {}
+    for name in names:
+        fixture = Path(REMOTE_PM) / "fixtures" / name
+        folders[name] = str(_real(name) if (fixture / "source.json").is_file() else fixture)
+    done = subprocess.run(["node", str(script), dist, *folders.values()], capture_output=True, text=True, timeout=600,
+                          env={**os.environ, "LOG_LEVEL": "fatal"})
+    if done.returncode:
+        raise RuntimeError(f"the presets' reader failed: {done.stderr.strip()[-600:]}")
+    read = json.loads(done.stdout)
+    return {"code": code_hash(Path(__file__), Path(REMOTE_SCRIPTS) / "premap"), "renovate": _versions()["renovate"],
+            "fixtures": {name: read[folder] for name, folder in folders.items()}}
+
+
 def _languages(manifest: Path, log: list) -> dict:
     """Per file of the snapshot, its suffix-table language against go-enry's: what replacing the table would change."""
     from premap import suffix_table
@@ -350,9 +418,27 @@ def _languages(manifest: Path, log: list) -> dict:
 
 
 @app.local_entrypoint()
-def main(store: str = "", score: str = "", out: str = "", runs: str = "", network: str = "", tools: str = ""):
+def main(store: str = "", score: str = "", out: str = "", runs: str = "", network: str = "", tools: str = "",
+         presets: bool = False):
     local = code_hash(Path(__file__), REPO / "daodan/core/premap")
     print("code", local, flush=True)
+    if presets:  # every fixture's Renovate config and the presets it extends (`renovate_presets`)
+        fixtures = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
+        real = [n for n in fixtures if (HERE / "fixtures" / n / "source.json").is_file()]
+        answers = list(renovate_presets.map([[n for n in fixtures if n not in real], *([n] for n in real)]))
+        found = {name: said for answer in answers for name, said in answer["fixtures"].items()}
+        remote = {name: [p for p in said.get("presets") or () if p.get("source") not in INSIDE]
+                  for name, said in found.items() if said}
+        summary = {"fixtures": len(found), "with_config": sum(bool(said) for said in found.values()),
+                   "extending_outside": sorted(name for name, named in remote.items() if named),
+                   "by_source": {source: sorted({n for n, named in remote.items() for p in named
+                                                 if p.get("source", "error") == source})
+                                 for source in sorted({p.get("source", "error") for named in remote.values()
+                                                       for p in named})}}
+        print(json.dumps(summary, indent=1), "remote code", sorted({a["code"] for a in answers}), "local", local, flush=True)
+        Path(out).write_text(json.dumps({"summary": summary, "renovate": answers[0]["renovate"], "fixtures": found},
+                                        indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        return
     if network:  # one real repository, Renovate with the network open and blocked (`renovate_network`)
         answer = renovate_network.remote(network, [t for t in tools.split(",") if t])
         print("remote code", answer["code"], "same" if answer["code"] == local else "DIFFERENT", flush=True)
