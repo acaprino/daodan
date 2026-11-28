@@ -117,7 +117,7 @@ image = (modal.Image.debian_slim(python_version="3.13")
          .pip_install("pytest", "pytest-xdist", "pytest-split==0.11.0", "uv==0.11.28", "tree-sitter==0.26.0",
                       "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30", "keyring>=25", "PyYAML>=6", "protobuf==7.36.2",
-                      "pip-requirements-parser==32.0.1")
+                      "pip-requirements-parser==32.0.1", "jsonpointer==3.0.0")
          .run_commands(FETCH_SECRETLINT, f"chmod +x {SECRETLINT[2]}")
          .run_commands(f"mkdir -p {STACK_ANALYSER[2]}", FETCH_STACK_ANALYSER,
                        f"tar -xzf {STACK_ANALYSER[2]}/release.tgz -C {STACK_ANALYSER[2]}"))

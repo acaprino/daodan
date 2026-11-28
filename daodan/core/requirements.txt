@@ -46,3 +46,7 @@ protobuf==7.36.2
 # reads requirements files and the VCS requirements of Python manifests with it, never with pip (which builds
 # sdists, running the project's code). Pinned: the reader is part of the pre-map's identity.
 pip-requirements-parser==32.0.1
+
+# JSON Pointer (RFC 6901) for the fields of a manual edit in the project file (project_file.py): the standard
+# library has none. Pinned: an edit's field is read the same way by every copy of the file.
+jsonpointer==3.0.0
