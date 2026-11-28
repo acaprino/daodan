@@ -28,6 +28,7 @@ Read workload, replicas, concurrency topology, queue/pool sizes, downstream capa
 - Check retained work outside bounded queues; pacing, rejection, cancellation and overload responses must actually reach producers. Include actor mailboxes and worker pools blocked by dependent tasks.
 - Verify identity, tenant/global scope, window/reset and atomicity of quota accounting across replicas. Check bypassing identity changes and weight expensive fan-out when the requirement demands fairness.
 - Trace synchronized cache expiry and repeated misses to origin work; determine whether coalescing, staggering or actual capacity bounds prevent stampede.
+- Compare the work done before authentication or admission with the cost to the caller, and follow work that continues after the caller cancels or disconnects.
 - Show starvation or exhaustion through reachable occupancy and completion dependencies, not arbitrary universal pool sizes.
 
 ## Counterevidence

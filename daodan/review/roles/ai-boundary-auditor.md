@@ -27,6 +27,7 @@ Load only applicable sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/r
 - Inspect capability delegation, tool allowlists, approval binding and reused context across users/tenants. A prompt asking the model to obey policy is not an independently enforced grant.
 - Construct a reachable unauthorized effect, including exfiltration through a permitted-looking destination or confused-deputy action. An injected sentence without an effect path remains a lead.
 - Check rejected requests and downstream guard behavior, including alternative tools and indirect calls.
+- For MCP servers, tool registries and sub-agents, check that a tool is bound to an authenticated server identity rather than to a name or description another server can shadow, that the dispatcher validates the arguments it executes and not only the schema the model saw, that a delegate holds no authority its caller lacks, and that a model-driven loop of actions has an enforced bound.
 
 ## Counterevidence
 
@@ -34,5 +35,5 @@ Effective external authorization and destination/capability validation can block
 
 ## Boundaries and output
 
-Structured output compatibility belongs to api-contract; semantic quality and regressions to domain/test review; ordinary endpoint permissions to authorization. Preserve a single root cause with cross-reviewer evidence.
+Structured output compatibility belongs to api-contract; semantic quality and regressions to domain/test review; ordinary endpoint permissions to authorization; model output rendered as HTML, links or markdown to browser-security. Preserve a single root cause with cross-reviewer evidence.
 Add untrusted source, authority transition, proposed tool/action, external guard and reachable effect or explicit failed premise.

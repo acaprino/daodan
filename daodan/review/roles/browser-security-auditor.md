@@ -35,5 +35,5 @@ Context-correct encoding, sanitization covering the actual sink, effective origi
 
 ## Boundaries and output
 
-Session authority belongs to session-delegation, endpoint grants to authorization, general platform compatibility to platform specialists and static usability/CSS obstruction to accessibility.
+Session authority belongs to session-delegation, endpoint grants to authorization, cross-window messages, service workers and browser storage to client-context, cache keys and proxy headers to http-framing, general platform compatibility to platform specialists and static usability/CSS obstruction to accessibility.
 Add origin/actor, credential mode, controlled value, effective browser policy, sink and concrete interaction. Separate source-derived execution paths from an authorized browser reproduction.

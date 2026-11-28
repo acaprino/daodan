@@ -34,5 +34,5 @@ Effective server/provider verification and externally enforced session revocatio
 
 ## Boundaries and output
 
-Object/operation grants belong to authorization. General encryption, secret exposure and key confidentiality belong to secret-exposure; webhook authenticity to callback-authenticity; correct authenticated duplicate effects to remote-effect.
+Object/operation grants belong to authorization; federated callbacks, MFA, account linking and recovery to identity-transition. General encryption, secret exposure and key confidentiality belong to secret-exposure; webhook authenticity to callback-authenticity; correct authenticated duplicate effects to remote-effect.
 Add credential lifecycle, authority at each step, attacker capability and the failing verification/renewal transition. Never reproduce usable credentials.
