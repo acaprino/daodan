@@ -7,6 +7,7 @@ derived): the envelope turns it into `concrete` (`node_model.concrete`). It keep
 the cache and a dozen tests with no new reader."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 
@@ -692,6 +693,19 @@ def derive(store, *, ledger: list[dict] | None = None, edges: bool = True) -> di
     return _graph(store, inventory, modules, edge_list, gaps)
 
 
+def premap_digest(premap_record: dict) -> str | None:
+    """Which pre-map a module graph holds: its `inputs_digest` with the state of each source (without its `seconds`).
+    The commands a quick caller left `not_run` and a later run ran give the same inputs and other facts (a toolchain's
+    version), and the graph must take them; the binding to the store file stays out, so an inventory and its read
+    snapshot hold the same graph. None for a record with no `inputs_digest`, which binds to no snapshot."""
+    if not premap_record.get("inputs_digest"):
+        return None
+    sources = [{key: value for key, value in source.items() if key != "seconds"}
+               for source in premap_record.get("sources") or ()]
+    text = json.dumps([premap_record["inputs_digest"], sources], sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def enrich_with_premap(store, graph: dict, premap_record: dict) -> dict:
     """Align a derived module graph with pre-map model units, excluded paths and inherited toolchains."""
     inventory = _Inventory(store)
@@ -798,6 +812,6 @@ def enrich_with_premap(store, graph: dict, premap_record: dict) -> dict:
     edge_list = [edge_map[k] for k in sorted(edge_map)]
     updated = {**graph, "modules": modules, "edges": edge_list,
                "coverage": _coverage_summary(inventory, modules, edge_list)}
-    if premap_record.get("inputs_digest"):
-        updated["premap_digest"] = premap_record["inputs_digest"]
+    if premap_digest(premap_record):
+        updated["premap_digest"] = premap_digest(premap_record)
     return updated

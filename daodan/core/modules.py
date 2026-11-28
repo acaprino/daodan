@@ -43,7 +43,7 @@ from module_records import (DECLARED_FILE, DECLARED_SCHEMA, LEDGER_FILE, LEDGER_
                             MAX_MEMBERS, MAX_MODULES, MODULE_KINDS, ledger_name, load_ledger, resolve_evidence,
                             resolve_members, validate_module, validate_modules, write_ledger)
 from module_derive import (MAX_EDGE_EVIDENCE, NATURES, PHYSICAL, PROVENANCES, SCHEMA, STATUSES, status_counts,  # noqa: E402,F401
-                           derive, enrich_with_premap)
+                           derive, enrich_with_premap, premap_digest)
 
 GRAPH_FILE = "modules.json"
 VIEW_FILE = "modules.md"
@@ -215,7 +215,7 @@ def sync_with_premap(manifest: Path, premap_record: dict) -> dict:
     _plain(graph_path)
     _plain(view_path)
     previous = load_graph(graph_path)
-    if premap_record.get("inputs_digest") and previous.get("premap_digest") == premap_record.get("inputs_digest"):
+    if premap_digest(premap_record) and previous.get("premap_digest") == premap_digest(premap_record):
         return previous
     with open_snapshot(manifest) as store:
         before = _inputs_digest(manifest, store)

@@ -130,7 +130,7 @@ class FindModules:
             return None
         record = json.loads(premap.path(manifest).read_text(encoding="utf-8"))
         synced = modules.load_graph(Path(graph["graph"]))
-        if not record.get("inputs_digest") or synced.get("premap_digest") != record["inputs_digest"] \
+        if not record.get("inputs_digest") or synced.get("premap_digest") != modules.premap_digest(record) \
                 or technologies.state(manifest, facts=record) != "fresh":
             return None
         return FindModules.summary(manifest, {**graph, "action": "none"}, synced, record, technologies.recorded(manifest))
