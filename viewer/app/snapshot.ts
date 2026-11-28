@@ -1,4 +1,5 @@
 // What the page draws from: one object, a new one at each change. `repository.ts`, `plan.ts`, `path.ts`, `notices.ts` and `graph.ts` read it.
+import type { CommandDraft } from './commands.ts';
 import type { Reply } from './egress.ts';
 import type { Graph } from './graph.ts';
 import type { Project } from './project.ts';
@@ -64,6 +65,8 @@ export type Snapshot = Readonly<{
   hostsReplying: Reply | '';  // the answer to the group in view being sent
   project: Project | null; projectError: string;  // the project file's history and conflicts, read with the graph
   projectBusy: string;  // what is being sent to the project file: an edit, a resolution, a copy
+  commandDraft: CommandDraft | null;  // the form of the window of the commands, null while it is closed
+  commandBusy: string;  // what is being sent about a command: `set`, or the `workOf` a kept one
 }>;
 
 type Run = Pick<Snapshot, 'server'>;

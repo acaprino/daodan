@@ -15,6 +15,7 @@ import { Mark } from '../src/mark.tsx';
 import { DAODAN } from '../src/page.ts';
 import { plural } from '../src/words.ts';
 import { analysisActions, AnalysisScreen } from './analysis.tsx';
+import { CommandDialog } from './command-form.tsx';
 import { engineActions, EngineScreen } from './engine-screen.tsx';
 import { FrameContext } from './frame.tsx';
 import type { Detail, Frame } from './frame.tsx';
@@ -122,6 +123,7 @@ function App() {
       </Inspector>}>
       <place.Screen />
       <HostsDialog />
+      <CommandDialog />
       <ProjectFileCommands />
     </AppWindow>
   </FrameContext>;

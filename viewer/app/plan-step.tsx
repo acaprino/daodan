@@ -71,10 +71,19 @@ function ActionFacts({ row }: { row: ActionRow }) {
       { name: 'Stato', value: row.state },
       row.detail ? { name: 'Strumento', value: row.detail } : null,
       ...row.facts.map((fact, index) => ({ name: ['Codice del progetto', 'Dove', 'Rete'][index], value: fact })),
+      row.command ? { name: 'Comando', value: row.command } : null,
       { name: 'Azione', value: row.id, code: true },
     ]} />
     {row.note && <Text as="p" pre>{row.note}</Text>}
   </Column>;
+}
+
+// The one control of an action: the answer it waits for on its hosts, else the window of the command it runs (`command-form.tsx`).
+function ActionControl({ row }: { row: ActionRow }) {
+  if (row.waiting) return <Button variant="outline" size="sm" onClick={model.showHosts}>Rispondi</Button>;
+  const at = row.commandAt;
+  return at && <Button variant="outline" size="sm" aria-label={`Comando: ${row.title}`} onClick={() => model.showCommand(at.kind, at.root)}>
+    <Icon name="terminal" />Comando</Button>;
 }
 
 function Actions({ step }: { step: string }) {
@@ -85,9 +94,9 @@ function Actions({ step }: { step: string }) {
   return <Section title="Azioni" level={3} icon={<Icon name="tasks" />}>
     <ItemList aria-label="Azioni del passo">{rows.map(row =>
       <ItemRow key={row.id} title={row.title} wrapTitle description={row.note ? <Text pre>{row.note}</Text> : row.detail}
-        facts={row.facts.map(text => ({ text }))} end={<Badge variant="secondary" tone={row.tone}>{row.state}</Badge>}
+        facts={[...row.facts, row.command].filter(Boolean).map(text => ({ text }))} end={<Badge variant="secondary" tone={row.tone}>{row.state}</Badge>}
         onClick={() => show({ id: 'plan.action', key: row.id, title: 'Azione del piano', icon: 'info', name: row.title, content: <ActionFacts row={row} /> })}
-        control={row.waiting ? <Button variant="outline" size="sm" onClick={model.showHosts}>Rispondi</Button> : undefined} controlSide="end" />)}
+        control={row.waiting || row.commandAt ? <ActionControl row={row} /> : undefined} controlSide="end" />)}
     </ItemList>
   </Section>;
 }

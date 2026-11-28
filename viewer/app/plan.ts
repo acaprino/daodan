@@ -6,7 +6,7 @@ import { STEPS } from '../pipeline/data.ts';
 import { number, plural } from '../src/words.ts';
 import { isPreparing, preparation } from './repository.ts';
 import { passAlert, passWord } from './notices.ts';
-import type { Plan, PlanAction, PlanStep, Policy } from './server.ts';
+import type { CommandKind, Plan, PlanAction, PlanStep, Policy } from './server.ts';
 import { complete, ctx, pass } from './snapshot.ts';
 import type { Snapshot } from './snapshot.ts';
 
@@ -62,10 +62,16 @@ const ACTION_STATE: Record<PlanAction['state'], [string, BadgeTone | undefined]>
   skipped: [UP_TO_DATE, 'success'], not_possible: ['Non possibile', 'warning'], awaiting_approval: ['Attende la tua risposta', 'warning'],
 };
 const NETWORK: Record<string, string> = { registries: 'registri dei pacchetti' };
+// The command an app is explored with, where the person or the assistant stated it.
+const STATED: Record<NonNullable<PlanAction['grade']>, string> = { confermato: 'Comando confermato da te', proposto: 'Comando proposto dall’assistente' };
 
 export type ActionRow = {
   id: string; step: string; title: string; detail: string; state: string; tone?: BadgeTone; facts: string[]; note: string; hosts: string[];
   waiting: boolean;  // it waits for the person's answer on its hosts, in the window of the hosts
+  command: string;  // who stated the command it runs, or nothing
+  // The kind and the folder the window of the commands opens on from it: an app's start in its folder, the tests from the root (an
+  // observer's action is of every folder its language has). Null for an action that runs no command of the project.
+  commandAt: { kind: CommandKind; root: string } | null;
 };
 // An action in words: what it does, the tool or the adapter, its state, the three facts of where it runs, and why it cannot.
 export function actionRow(action: PlanAction): ActionRow {
@@ -78,6 +84,8 @@ export function actionRow(action: PlanAction): ActionRow {
   return {
     id: action.id, step: action.step, title: KIND[action.kind]?.(action) ?? action.id, detail: [tools && `Strumento: ${tools}`, files].filter(Boolean).join(' · '),
     state, tone, waiting, hosts: action.hosts ?? [],
+    command: action.grade ? STATED[action.grade] ?? '' : '',
+    commandAt: action.kind === 'explore' ? { kind: 'starts', root: action.target.root ?? '.' } : action.kind === 'observe' ? { kind: 'tests', root: '.' } : null,
     facts: [
       action.project_code ? 'Esegue il codice del progetto' : 'Non esegue il codice del progetto',
       action.container ? 'Nel container' : 'Sull’host, senza eseguire nulla',

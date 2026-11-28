@@ -21,6 +21,14 @@ export type Mapped = {
 export type HostRequest = { host: string; port: number; address: string | null; network: boolean; declared_in: string[] };
 // The requests of one tool, answered together.
 export type HostGroup = { tool: string; project: string; requests: HostRequest[] };
+// A command the person or the assistant stated for a folder of the project (`commands.py`): what runs its tests, starts or builds
+// it, as its words. `by` `user` is `confermato`, `assistant` `proposto`; one the person confirmed keeps `proposed_by`. A `tests` one
+// has the `runner` it starts.
+export type CommandKind = 'tests' | 'starts' | 'builds';
+export type Command = {
+  kind: CommandKind; root: string; argv: string[]; by: 'user' | 'assistant'; grade: 'confermato' | 'proposto';
+  port?: number; surface?: string; runner?: string; proposed_by?: 'assistant';
+};
 // The one plan of the run (`codebase_map_status.plan`, `daodan snapshot plan`): the eight steps in order with their state, what a run
 // may reach, the actions with theirs, and the gaps. The states and kinds are the server's closed lists (`plan.STATES`,
 // `plan.ACTION_STATES`, `plan.ACTIONS`); `viewer/test/plan.json` is checked against them.
@@ -35,6 +43,7 @@ export type PlanAction = {
   target: { languages?: string[]; files?: number; unit_kinds?: string[]; source?: string; technologies?: number; root?: string };
   state: StepState | 'not_possible' | 'awaiting_approval';
   tools?: string[]; network?: string[]; hosts?: string[]; gap?: string; cause?: string | null; remedy?: string | null;
+  by?: Command['by']; grade?: Command['grade'];  // an app explored with a command the person or the assistant stated
 };
 export type Policy = {
   network: { canonical: string[]; approved: string[]; blocked: string[]; other: string; answered_in: string };
@@ -53,6 +62,7 @@ export type AppState = {
   links?: Links;
   mapped?: Mapped;
   egress?: HostGroup[];
+  commands?: Command[];  // the selected checkout's, as kept
   project?: { state: string; rev?: number | null; cause?: string | null };  // the repository's project file, written at each analysis
 };
 
