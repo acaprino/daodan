@@ -467,6 +467,9 @@ def _run(source, context: Context, runner, toolchains=(), refused=(),
     try:
         if hasattr(source, "commands"):
             commands = source.commands(context)
+            if commands:  # the tools that run them (the one `egress.asking` names) and the network they ask for, for the plan
+                status.update(tools=sorted({command["tool"] for command in commands}),
+                              network=sorted({command["network"] for command in commands if "network" in command}))
             if not commands:
                 result = None
             elif runner is None:

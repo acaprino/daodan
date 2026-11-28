@@ -349,7 +349,8 @@ def test_the_plan_says_the_steps_and_actions_of_the_last_analysis(tmp_path, shar
     assert (actions["read_code:go"]["state"], actions["read_code:go"]["container"]) == ("done", False)
     assert actions["link_calls:scip-go"]["state"] == "pending" and actions["link_calls:scip-go"]["target"]["languages"] == ["go"]
     assert all(not action["project_code"] or action["container"] for action in planned["actions"])
-    assert actions["find_modules"]["state"] == "done"
+    assert "find_modules" not in actions and "recognize_stack" not in actions  # their fresh records stand for the steps
+    assert actions["recognize_stack:stack-analyser"]["state"] in ("done", "failed")
     assert planned["policy"]["network"]["approved"] == ["git.example.com"]
     with open_snapshot(manifest) as store:
         assert [gap for gap in planned["gaps"] if gap is not planning.DOWNLOADS] == planning.plan(planning.stored(store))["gaps"]
@@ -376,3 +377,44 @@ def test_an_action_is_not_possible_with_the_cause_and_remedy_of_its_need_and_a_f
     assert _states(planned, "actions")["link_calls:scip-python"] == "skipped"
     assert _states(planned)["link_calls"] == "running"
     assert _states(planned, "actions")["link_calls:scip-go"] == "not_possible"  # its parser is still missing
+
+
+def test_a_request_of_gradle_waits_for_its_model_action_alone_and_a_no_makes_it_not_possible(tmp_path, shared):
+    """The sources of the pre-map are actions of `find_modules`, with the tools and the network their commands name: a
+    request `egress.pending` holds for gradle (the tool `egress.asking` named, as `container_runner` asks) puts its action
+    alone in `awaiting_approval`, with the hosts only; the user's "no" makes it `not_possible` with `host_denied`."""
+    import container
+    import egress
+    import premap
+    from premap import go as premap_go, gradle as premap_gradle
+    planning = _planning()
+    root = _project(tmp_path / "project", {"settings.gradle": "rootProject.name = 'shop'\n", "build.gradle": "\n",
+                                           "go.mod": "module example.com/billing\n\ngo 1.22\n", "billing.go": GO})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    project = egress.project_of(manifest)
+
+    def runner(commands):  # as `container_runner` asks: gradle's host nobody decided stops it, the others find no engine
+        with egress.asking(commands[0]["tool"]):
+            if commands[0]["tool"] == "gradle":
+                _waiting, said = egress.preflight(project, ("repo.example.com",))
+                raise container.Gap(said[0]["detail"], "answer in the app, then analyze again", said)
+        raise container.Gap("no container engine answers", "start Docker or Podman")
+
+    looked = lambda rows, *args, **kwargs: [{**row, "address": None, "network": False} for row in rows]  # noqa: E731
+    with mock.patch.object(egress, "resolve", side_effect=looked):
+        premap.write(manifest, runner=runner)  # every source: the record is fresh for the plan
+    gradle, go = premap.label(premap_gradle), premap.label(premap_go)
+    actions = {action["id"]: action for action in planning.current(manifest)["actions"]}
+    waiting = actions[f"find_modules:{gradle}"]
+    assert (waiting["state"], waiting["hosts"], waiting["tools"], waiting["network"]) == (
+        "awaiting_approval", ["repo.example.com"], ["gradle"], ["registries"])
+    assert set(waiting) == {"id", "step", "kind", "target", "project_code", "container", "state", "hosts", "tools", "network"}
+    assert waiting["kind"] == "model" and waiting["project_code"] and waiting["container"]
+    assert [action["id"] for action in actions.values() if action["state"] == "awaiting_approval"] == [f"find_modules:{gradle}"]
+    assert (actions[f"find_modules:{go}"]["state"], actions[f"find_modules:{go}"]["gap"]) == ("not_possible", "model_not_run")
+    assert "find_modules" not in actions  # the record's sources stand for the step
+    egress.reply(project, ["repo.example.com"], "no")
+    refused = {action["id"]: action for action in planning.current(manifest)["actions"]}[f"find_modules:{gradle}"]
+    assert (refused["state"], refused["gap"], refused["hosts"]) == ("not_possible", "host_denied", ["repo.example.com"])
+    assert refused["cause"] and refused["remedy"]

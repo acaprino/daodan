@@ -193,7 +193,8 @@ KINDS = {"read": (READ_CODE, False), "recognize": ("recognize_stack", False), "m
          "explore": (RUN_AND_OBSERVE, True), "assemble": ("assemble_graph", False)}
 NODE_KIND = {READ_CODE: "read", LINK_CALLS: "resolve", RUN_AND_OBSERVE: "observe"}
 STEPWIDE = ("recognize", "model", "entries", "assemble")  # the steps with no adapter: one action each
-STATES = ("pending", "running", "done", "failed", "skipped")  # a step's; an action adds `not_possible`
+STATES = ("pending", "running", "done", "failed", "skipped")  # a step's; an action adds these
+ACTION_STATES = (*STATES, "not_possible", "awaiting_approval")
 DOWNLOADS = {"kind": "download_size_unknown",
              "detail": "how much a run downloads is not known before it runs: no source gives its size"}
 
@@ -207,9 +208,12 @@ def current(manifest) -> dict:
       (`WITHOUT is None`).
     - `policy`: what a run may reach (`egress`) and the container engine (`DAODAN_CONTAINER`).
     - `actions`: each `{id, step, kind, target, project_code, container, state}`, `kind` one of `ACTIONS`: the nodes
-      of the plan of the store (`plan(stored(store))`, `target` their `on`) and one per step with no adapter. The
-      state comes from the step's `analyzer.*` events since it began (`fresh` is `skipped`); `not_possible`, with
-      `cause` and `remedy`, from `analyzer.unavailable` or a need that failed (`blocked`).
+      of the plan of the store (`plan(stored(store))`, `target` their `on`); those the steps 3–5 find in their fresh
+      records (`_found`: `recognize`, `model` and `entries` per source, with its `tools` and `network`, `explore` per
+      app), else one for the step. The state, one of `ACTION_STATES`, comes from the step's `analyzer.*` events since
+      it began (`fresh` is `skipped`) or the record; `not_possible`, with `cause` and `remedy`, from
+      `analyzer.unavailable`, a need that failed (`blocked`) or a host the user refused (`host_denied`);
+      `awaiting_approval`, with `hosts`, while a request of one of its tools waits for an answer (`_asked`).
     - `gaps`: the plan's, and the size of the downloads, which no source gives."""
     from pathlib import Path
     from pipeline import events
@@ -230,14 +234,111 @@ def current(manifest) -> dict:
     steps, begun = _steps(header, unreadable, recorded)
     planned = plan(rows) if header is not None else {"nodes": [], "gaps": []}
     by_step = {step["id"]: step for step in steps}
-    actions = [_node_action(node, by_step, begun, recorded, unparsed) for node in planned["nodes"]]
+    project = _project(manifest) if header is not None else None
+    asked = _asked(project)
+    actions = [_node_action(node, by_step, begun, recorded, unparsed, asked) for node in planned["nodes"]]
+    found = _found(manifest, by_step, begun, recorded, asked) if header is not None else {}
     for kind in STEPWIDE:
+        if found.get(kind) is not None:  # the actions the step's fresh record shows
+            actions.extend(found[kind])
+            continue
         step = by_step[KINDS[kind][0]]
         container = step["executes"] == "container"
         actions.append(_action(step["id"], step["id"], kind, {}, KINDS[kind][1] and container, container,
                                {key: step[key] for key in ("state", "cause", "remedy") if key in step}))
-    return {"steps": steps, "policy": _policy(_project(manifest) if header is not None else None), "actions": actions,
-            "gaps": [*planned["gaps"], DOWNLOADS]}
+    actions.extend(found.get("explore") or ())
+    return {"steps": steps, "policy": _policy(project), "actions": actions, "gaps": [*planned["gaps"], DOWNLOADS]}
+
+
+def _asked(project: str | None):
+    """The state of an action that asked for hosts, from `egress`: `awaiting_approval` with the `hosts` a request of one of
+    its `tools` waits for (`egress.pending`: the tool `egress.asking` named), else `not_possible` with `host_denied` for
+    the hosts of its gaps the user refused (`egress.decide`), else None. The requests' ports, addresses and declaring
+    files stay in `egress.groups`."""
+    import egress
+    waiting = egress.pending(project) if project else []
+    state, answers = (egress.load(), egress.session(project)) if project else (None, None)
+
+    def asked(tools, hosts=()) -> dict | None:
+        held = sorted({row["host"] for row in waiting if row.get("tool") in tools})
+        if held:
+            return {"state": "awaiting_approval", "hosts": held}
+        refused = sorted({host for host in hosts if project and egress.decide(host, project, state, answers) == "deny"})
+        if refused:
+            return {"state": "not_possible", "gap": "host_denied", "hosts": refused,
+                    "cause": f"the user refused {', '.join(refused)}", "remedy": "analyze again: the hosts are asked again"}
+        return None
+    return asked
+
+
+def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked) -> dict:
+    """The actions `recognize_stack`, `find_modules` and `find_entry_points` find, by kind, from their records when the
+    records' owners say they are fresh (a kind without one is None): the stack's tool, the pre-map's and the entry points'
+    sources that are not `not_needed` (of the pre-map, those with commands; a source with no command reads files), and the apps the pre-map declares
+    (`starts`), which `run_and_observe` explores."""
+    import json
+    import entry_points
+    import premap
+    import stack_recognition
+    from dynamic import APP
+    found = {}
+    try:
+        if stack_recognition.state(manifest) == "fresh":
+            record = stack_recognition.recorded(manifest)
+            checker = next((c for c in record.get("checkers", ()) if c.get("checker") == "stack-analyser"), {})
+            state = ({"state": "done"} if checker.get("state") == "ran" else
+                     {"state": "failed", "cause": checker.get("reason")} if checker else {"state": "pending"})
+            found["recognize"] = [_action("recognize_stack:stack-analyser", "recognize_stack", "recognize",
+                                          {"technologies": len(record.get("found", ()))}, False, False, state)]
+        for kind, owner in (("model", premap), ("entries", entry_points)):
+            if owner.state(manifest)["state"] != "fresh":
+                continue
+            record = json.loads(owner.path(manifest).read_text(encoding="utf-8"))
+            step = KINDS[kind][0]
+            found[kind] = [_source_action(step, kind, status, record.get("gaps", ()), asked)
+                           for status in record.get("sources", ()) if status.get("state") != "not_needed"
+                           and (kind == "entries" or status.get("tools") or status.get("rank") == "model")]
+            if kind == "model":
+                apps = sorted({entry["root"] for entry in record.get("starts", ())})
+                state = _events(RUN_AND_OBSERVE, APP, begun, recorded)
+                found["explore"] = [_action(f"{RUN_AND_OBSERVE}:{APP}:{root}", RUN_AND_OBSERVE, "explore",
+                                            {"root": root}, True, True, state) for root in apps]
+    except (OSError, ValueError, KeyError):  # a record that cannot be read: its step's own action says the step
+        pass
+    return found
+
+
+def _source_action(step: str, kind: str, status: dict, gaps, asked) -> dict:
+    """A source of a record as an action: `done` when it ran, `failed`, `not_possible` where it could not run (with the
+    `model_not_run` gap where a cause is known), `pending` where its commands wait for a runner; or waiting for, or refused,
+    the hosts it asked for."""
+    name, tools = status["source"], status.get("tools") or ()
+    mine = [gap for gap in gaps if gap.get("source") == name]
+    unrun = next((gap for gap in mine if gap.get("kind") == "model_not_run"), None)
+    state = ({"state": "done"} if status["state"] == "ran" else
+             {"state": "failed", "cause": status.get("reason")} if status["state"] == "failed" else
+             {"state": "not_possible", "cause": status.get("reason"), "remedy": status.get("install")}
+             if status["state"] == "unavailable" else
+             {"state": "not_possible", "gap": "model_not_run", "cause": unrun.get("cause") or unrun["detail"],
+              "remedy": unrun["remedy"]} if unrun and unrun.get("remedy") else
+             {"state": "pending", **({"gap": "model_not_run"} if unrun else {})})
+    hosts = {host for gap in mine for host in (gap.get("hosts") or [gap.get("host")] if gap.get("kind") in
+                                                  ("approval_required", "host_denied") else ()) if host}
+    state = asked(tools, hosts) or state
+    container = bool(tools)  # its commands run in Daodan's container; a reader runs nothing
+    return _action(f"{step}:{name}", step, kind, {"source": name}, KINDS[kind][1] and container, container,
+                   {**({"tools": list(tools)} if tools else {}),
+                    **({"network": status["network"]} if status.get("network") else {}), **state})
+
+
+def _events(step: str, analyzer: str, begun: dict, recorded: list[dict]) -> dict:
+    """The state the last `analyzer.*` event of `analyzer` gives since `step` began; `pending` without one."""
+    state = {"state": "pending"}
+    for event in recorded[begun[step]:] if step in begun else ():
+        if event.get("step") == step and event.get("analyzer") == analyzer \
+                and str(event.get("kind")).startswith("analyzer."):
+            state = _analyzer_state(event)
+    return state
 
 
 def _steps(header: dict | None, unreadable: str | None, recorded: list[dict]) -> tuple[list[dict], dict]:
@@ -279,9 +380,10 @@ def _action(identifier: str, step: str, kind: str, target: dict, project_code: b
             "container": container, **state}
 
 
-def _node_action(node: dict, steps: dict, begun: dict, recorded: list[dict], unparsed: dict) -> dict:
-    """A node of the plan as an action: a reading's from the store, a resolver's or an observer's from its analyzer's
-    events since its step began, or `not_possible` when the need of each of its languages failed."""
+def _node_action(node: dict, steps: dict, begun: dict, recorded: list[dict], unparsed: dict, asked) -> dict:
+    """A node of the plan as an action: a reading's from the store; a resolver's or an observer's from its analyzer's
+    events since its step began, `not_possible` when the need of each of its languages failed, or waiting for the hosts
+    its adapter asked for (the tool `egress.asking` names)."""
     kind = NODE_KIND[node["step"]]
     state = {"state": "pending"}
     if node["step"] == READ_CODE:
@@ -290,14 +392,12 @@ def _node_action(node: dict, steps: dict, begun: dict, recorded: list[dict], unp
         elif steps[READ_CODE]["state"] == "done":
             state = {"state": "done"}
     else:
-        for event in recorded[begun[node["step"]]:] if node["step"] in begun else ():
-            if event.get("step") == node["step"] and event.get("analyzer") == node["adapter"] \
-                    and str(event.get("kind")).startswith("analyzer."):
-                state = _analyzer_state(event)
+        state = _events(node["step"], node["adapter"], begun, recorded)
         stopped = blocked(node, unparsed) if node["step"] == LINK_CALLS else {}
         if state["state"] == "pending" and stopped and set(stopped) == set(node["on"]["languages"]):
             state = {"state": "not_possible", "cause": "; ".join(reason for _need, reason in stopped.values()),
                      "remedy": _parser_install()}
+        state = asked({node["adapter"]}) or state
     return _action(node["id"], node["step"], kind, node["on"], KINDS[kind][1] and node["container"], node["container"],
                    state)
 
