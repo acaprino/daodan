@@ -18,6 +18,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import card_store  # noqa: E402
 import mcp_service  # noqa: E402
+import node_model  # noqa: E402
 import semantic_store  # noqa: E402
 import visual  # noqa: E402
 from snapshot_store import open_snapshot, resolve_run_snapshot  # noqa: E402
@@ -150,6 +151,16 @@ class EnvelopeTests(unittest.TestCase):
         self.assertEqual(refs["symbol:src/app/b.py::helper"]["freshness"], "uncovered")
         self.assertEqual(envelope["flows"], [])
         self.assertTrue(envelope["meta"]["snapshot_digest"])
+
+    def test_every_entity_has_a_species_and_says_if_it_is_concrete(self):
+        refs = {entity["ref"]: entity for entity in self.envelope["entities"]}
+        for entity in refs.values():
+            self.assertIn(entity["species"], node_model.SPECIES, entity["ref"])
+            self.assertIsInstance(entity["concrete"], bool, entity["ref"])
+            self.assertNotIn("nature", entity)
+        self.assertEqual((refs["file:src/app/a.py"]["species"], refs["file:src/app/a.py"]["concrete"]), ("file", True))
+        self.assertEqual((refs["component:runner"]["species"], refs["component:runner"]["concrete"]), ("modulo", False))
+        self.assertEqual((refs["feature:running"]["species"], refs["feature:running"]["concrete"]), ("funzionalità", False))
 
     def card(self, run_id: str, purpose: str) -> None:
         run = self.project / ".daodan/map/runs" / run_id
