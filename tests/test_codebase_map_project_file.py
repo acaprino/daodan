@@ -67,12 +67,57 @@ def test_another_identity_version_or_schema_is_refused_with_the_cause(tmp_path, 
         project_file.open_project(path).close()
 
 
-def test_a_known_older_version_asks_for_the_migration(tmp_path, monkeypatch):
+def test_a_known_older_version_asks_for_the_migration(tmp_path):
     path = tmp_path / "project.daodan"
     project_file.create(path)
     with closing(_raw(path)) as db:
         db.execute("PRAGMA user_version = 1")
-    monkeypatch.setitem(project_file.MIGRATIONS, 1, lambda path: None)
+    with pytest.raises(ProjectError, match="serve la migrazione da v1"):
+        project_file.open_project(path).close()
+
+
+V1 = Path(__file__).resolve().parent / "fixtures/project-file/v1.sql"  # git show c7bc75b:docs/specs/progetto-v1.sql
+
+
+def _v1(tmp_path, history: str) -> Path:
+    """A file of version 1: a folder and a file whose first version, closed at revision 2, has the species
+    `history`; the head is revision 2."""
+    path = tmp_path / "old.daodan"
+    with closing(_raw(path)) as db:
+        db.executescript(V1.read_text(encoding="utf-8"))
+        _base(db)
+        db.execute("INSERT INTO revisions VALUES (2, 'r2', 1, 1, 'manual', 'ada', '2026-11-28T00:00:00+00:00', 'r2')")
+        db.execute("INSERT INTO project VALUES (1, 'p-uuid', 'demo', 2)")
+        _node(db, 1, "cartella")
+        db.execute("INSERT INTO objects VALUES ('n2', 'node')")
+        for version, start, end, species in ((2, 1, 2, history), (3, 2, None, "file")):
+            db.execute("INSERT INTO versions VALUES (?, 'n2', ?, ?, 'analysis')", (version, start, end))
+            db.execute("INSERT INTO nodes (version_id, parent_id, name, species, position, status, abstraction)"
+                       " VALUES (?, 'n1', 'a.py', ?, 'interno', 'confermato', 'concreto')", (version, species))
+    return path
+
+
+def test_a_v1_file_migrates_in_a_verified_copy_and_reopens_with_the_same_ids_and_revisions(tmp_path):
+    path = _v1(tmp_path, "simbolo")
+    with closing(_raw(path)) as db:
+        before = _dump(db)
+    project_file.migrate(path)
+    assert sorted(item.name for item in tmp_path.iterdir()) == ["old.daodan"]  # no copy is left beside it
+    with closing(project_file.open_project(path)) as db:
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert _dump(db) == before  # the same ids, UUIDs, revisions and versions, closed ones too
+        assert project_file.head(db) == 2 and sorted(project_file.state(db)) == ["n1", "n2"]
+        assert project_file.state(db, 1)["n2"]["fields"]["species"] == "simbolo"
+    with pytest.raises(ProjectError, match="nessuna migrazione"):
+        project_file.migrate(path)
+
+
+def test_an_unknown_species_only_in_the_history_is_refused_and_the_v1_file_stays_byte_for_byte(tmp_path):
+    path = _v1(tmp_path, "inventata")
+    kept = path.read_bytes()
+    with pytest.raises(ProjectError, match=r"n2 \(revisione 1\): 'inventata'"):
+        project_file.migrate(path)
+    assert path.read_bytes() == kept and sorted(item.name for item in tmp_path.iterdir()) == ["old.daodan"]
     with pytest.raises(ProjectError, match="serve la migrazione da v1"):
         project_file.open_project(path).close()
 
