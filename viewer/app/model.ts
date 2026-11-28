@@ -6,13 +6,14 @@ import { markAddress } from '../src/marks.ts';
 import { FAILURE } from '../src/words.ts';
 import { groupKey, pendingGroup, repliedWords, replyBody } from './egress.ts';
 import type { Reply } from './egress.ts';
+import { isAsking } from './engine.ts';
 import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
+import { firstStep, onPath, REPOSITORY, SHOWS_PREMAP } from './path.ts';
 import { accessible, preferredBranch, repositorySlug, urlError } from './repository.ts';
-import { isAsking } from './run.ts';
 import { createServer } from './server.ts';
 import type { AppState, Checked, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
-import { complete, ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
+import { ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
 import type { Asked, EngineDraft, EngineWork, PathPage, PathResult, PremapFound, Snapshot, Symbols } from './snapshot.ts';
 import { readKept, STORAGE } from './storage.ts';
 import type { Kept, Place, Stage } from './storage.ts';
@@ -76,12 +77,17 @@ export function createModel(host: Host) {
     const before = now.server, c = ctx({ server: found });
     const linked = before !== null && before.links?.state !== 'done' && found.links?.state === 'done';  // new links: a new graph
     const mappingChanged = before !== null && found.mapped?.state !== 'running' && JSON.stringify(before.mapped) !== JSON.stringify(found.mapped);
+    // A step of the plan of the same run is done, or up to date, now: what it wrote is read again.
+    const was = new Map((before?.run?.plan?.steps ?? []).map(step => [step.id, step.state] as const));
+    const grown = before !== null && c !== null && ctx({ server: before })?.run_id === c.run_id && (found.run?.plan?.steps ?? []).some(step =>
+      (step.state === 'done' || step.state === 'skipped') && was.get(step.id) !== step.state);
     const patch: { -readonly [K in keyof Snapshot]?: Snapshot[K] } = { server: found, serverError: '' };
     let kept = now.kept, ready = false;
     if (now.engineDraft === null) patch.engineDraft = { ...found.engine, api_key: '' };
     if (kept.runId !== (c?.run_id ?? '')) Object.assign(patch, dropRun());
+    const first = firstStep({ server: found });  // the first step of the plan, once the state has one
     if (c && kept.runId !== c.run_id) {  // what the browser kept belongs to another run
-      kept = { ...kept, analysisStage: kept.runId && kept.analysisStage !== 'repository' ? 'premap' : kept.analysisStage,
+      kept = { ...kept, analysisStage: kept.runId && kept.analysisStage !== REPOSITORY ? first ?? REPOSITORY : kept.analysisStage,
         runId: c.run_id, treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphOpen: [] };
     }
     if (!c && kept.runId) kept = { ...kept, runId: '' };
@@ -89,14 +95,14 @@ export function createModel(host: Host) {
       patch.selecting = false;
       if (c && found.job?.state === 'ready') {
         ready = true;
-        if (now.checked) kept = { ...kept, analysisStage: 'premap' };  // not while another address is being written
+        if (now.checked && first) kept = { ...kept, analysisStage: first };  // not while another address is being written
       }
     }
-    if (linked || mappingChanged || now.pathPage?.run !== c?.run_id) patch.pathPage = null;
+    if (linked || grown || mappingChanged || now.pathPage?.run !== c?.run_id) patch.pathPage = null;
     if (kept !== now.kept) patch.kept = kept;
     set(patch);
     if (ready && c) say(`Contesto pronto: ${slug(c)} · ${c.branch}`);
-    if (linked && c) loadGraph();
+    if (c && (linked || (grown && drawsGraph()))) loadGraph();
     loadViews();
     settle();
   }
@@ -106,29 +112,25 @@ export function createModel(host: Host) {
     const past: readonly RunEvent[] = eventsRun === run.run_id ? now.events : [];
     eventsRun = run.run_id;
     cursors = { after: run.next_cursor, pipeline_after: run.pipeline.next_cursor, pulse_after: found.pulse.next_cursor };
-    const grown = run.pipeline.events.some(e => e.kind === 'step.finished' || e.kind === 'graph.ready') && ctx(now)?.run_id === run.run_id;
-    set({ events: [...past, ...run.events.map(e => ({ ...e, run: true })), ...run.pipeline.events], ...(grown && { pathPage: null }) });
-    if (grown) {
-      loadViews();
-      if (drawsGraph()) loadGraph();
-    }
+    // The events are the run's chronicle: the views are read again when the plan says a step is done, not on an event.
+    set({ events: [...past, ...run.events.map(e => ({ ...e, run: true })), ...run.pipeline.events] });
     settle();
   }
 
-  const drawsGraph = () => now.kept.analysisStage !== 'repository' || now.kept.screen === 'graph';
+  const drawsGraph = () => now.kept.analysisStage !== REPOSITORY || now.kept.screen === 'graph';
 
   function loadViews() {  // what the stage on screen draws, read once a run
     const c = ctx(now);
     if (c && graphRun !== graphKey(c.run_id, now.kept) && drawsGraph()) loadGraph();
     if (viewingPaths(now) && !now.pathPage) loadPathPage();
-    if (c && premapRun !== c.run_id && ['premap', 'synthesis'].includes(now.kept.analysisStage)) loadPremap();
+    if (c && premapRun !== c.run_id && SHOWS_PREMAP.includes(now.kept.analysisStage)) loadPremap();
   }
 
-  // What the analysis can show: without a context the repository alone, and the synthesis once the pipeline is over.
+  // What the analysis can show: without a context the repository alone, and a step only while the plan has it.
   function settle() {
     if (!now.server || now.kept.screen !== 'analysis') return;
     const stage = now.kept.analysisStage;
-    const shown: Stage = !ctx(now) ? 'repository' : stage === 'synthesis' && !complete(now) ? 'analysis' : stage;
+    const shown: Stage = !ctx(now) || !onPath(now, stage) ? REPOSITORY : stage;
     if (shown !== stage) keep({ analysisStage: shown });
   }
 

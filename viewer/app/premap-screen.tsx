@@ -1,6 +1,8 @@
-// The pre-map: the repository before its analysis. What it holds, in short; its tree, what it is made with and what it depends on are
-// behind; what is chosen in the tree, and where all this comes from, are in the inspector.
+// What the first steps found in the repository, before its behaviour is read, each under its step: the files and their languages,
+// the technologies, and the structure with what each unit depends on. What is chosen in the tree, and where all this comes from,
+// are in the inspector.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentType } from 'react';
 import { Button, Cluster, Column, Icon, ScrollArea, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Text, ToggleGroup, ToggleGroupItem } from '@acaprino/sigrid/primitives';
 import { DescriptionList, Disclosure, Empty, SearchField } from '@acaprino/sigrid/components';
 import { Tree } from '@acaprino/sigrid/assemblies';
@@ -19,7 +21,6 @@ import { RunName } from './provenance.tsx';
 import { ContextFold } from './repository-screen.tsx';
 import { ctx } from './snapshot.ts';
 import type { Premap } from './snapshot.ts';
-import { Step } from './step.tsx';
 import { model, useModel } from './use-model.ts';
 
 // What is chosen in the tree.
@@ -64,7 +65,7 @@ function Provenance() {
   </>;
 }
 
-const PROVENANCE: Detail = { id: 'premap.provenance', title: 'Provenienza della pre-mappa', icon: 'info', name: <RunName />, content: <Provenance /> };
+const PROVENANCE: Detail = { id: 'premap.provenance', title: 'Provenienza del modello di build', icon: 'info', name: <RunName />, content: <Provenance /> };
 
 // The directories or the technical units, filtered by the search. Open at first where something was looked for in them, and by Ctrl+F.
 function Structure({ premap }: { premap: Premap }) {
@@ -138,43 +139,62 @@ function Technology({ technology: { name, mark } }: { technology: Premap['techno
 // The first names of a list, beside its row.
 const names = (list: readonly { name: string }[]) => list.slice(0, 4).map(({ name }) => name).join(', ') + (list.length > 4 ? '…' : '');
 
-function Found({ premap }: { premap: Premap }) {
+// The files and their languages, under the step that lists them.
+function Files({ premap }: { premap: Premap }) {
   return <>
     <Column data-selectable="">
       <DescriptionList aria-label="Inventario" items={inventory(premap).map(count => ({ name: count.name, value: <>{count.value} <Text variant="note">{count.of}</Text></> }))} />
     </Column>
     <Column gap="xs">
-      <Structure premap={premap} />
-      <Fold label="Tecnologie e framework" summary={names(premap.technologies)}><Column data-selectable="">
-        {premap.technologies.length > 0
-          ? <DescriptionList aria-label="Tecnologie e framework" items={premap.technologies.map(technology => ({ name: <Technology technology={technology} />, value: <Column gap="xs">
-              <Text>{technologyFacts(technology)}</Text>
-              {technology.source && <Text variant="note" pre>{technology.source}</Text>}
-            </Column> }))} />
-          : <Empty title="Nessuna tecnologia riconosciuta nei manifest." />}
-      </Column></Fold>
       <Fold label="Linguaggi" summary={names(premap.languages)}><Column data-selectable="">
         {premap.languages.length > 0
           ? <DescriptionList aria-label="Linguaggi" items={premap.languages.map(language => ({ name: language.name, value: plural(language.files, 'file', 'file') }))} />
           : <Empty title="Nessun file sorgente riconosciuto." />}
         <Text as="p" variant="note">File sorgente dello snapshot, per linguaggio riconosciuto da Daodan.</Text>
       </Column></Fold>
-      <Dependencies premap={premap} />
       <ContextFold />
     </Column>
   </>;
 }
 
-export function PremapScreen() {
+// The technologies, each with the file that proves it, under the step that recognizes them.
+function Technologies({ premap }: { premap: Premap }) {
+  return <Column data-selectable="">
+    {premap.technologies.length > 0
+      ? <DescriptionList aria-label="Tecnologie e framework" items={premap.technologies.map(technology => ({ name: <Technology technology={technology} />, value: <Column gap="xs">
+          <Text>{technologyFacts(technology)}</Text>
+          {technology.source && <Text variant="note" pre>{technology.source}</Text>}
+        </Column> }))} />
+      : <Empty title="Nessuna tecnologia riconosciuta nei manifest." />}
+  </Column>;
+}
+
+// The structure and what each unit depends on, under the step that finds the modules; where it all comes from is in the details.
+function Modules({ premap }: { premap: Premap }) {
+  return <Column gap="xs">
+    <Structure premap={premap} />
+    <Dependencies premap={premap} />
+    <ContextFold />
+  </Column>;
+}
+
+// What the steps found in the repository, read once for the three of them: its part, or why it cannot be read.
+function Part({ shows: Shown }: { shows: ComponentType<{ premap: Premap }> }) {
+  const s = useModel();
+  return s.premapError
+    ? <Failed title="Modello di build non disponibile." cause={s.premapError} retry={model.retryPremap} />
+    : s.premap ? <Shown premap={s.premap} />
+    : <Loading label="Lettura del modello di build…" />;
+}
+
+export const FilesResult = () => <Part shows={Files} />;
+export const TechnologiesResult = () => <Part shows={Technologies} />;
+export function ModulesResult() {
   const s = useModel();
   const { show } = useFrame();
-  const premap = s.premap;
   useChoice();
-  return <Step stage="premap" line="Ecco che cosa c’è nel repository, prima di interpretarne il comportamento."
-    end={<Button variant="ghost" size="sm" disabled={!premap} onClick={() => show(PROVENANCE)}><Icon name="info" />Provenienza</Button>}>
-    {s.premapError
-      ? <Failed title="Pre-mappa non disponibile." cause={s.premapError} retry={model.retryPremap} />
-      : premap ? <Found premap={premap} />
-      : <Loading label="Lettura della pre-mappa…" />}
-  </Step>;
+  return <>
+    <Cluster><Button variant="ghost" size="sm" disabled={!s.premap} onClick={() => show(PROVENANCE)}><Icon name="info" />Provenienza</Button></Cluster>
+    <Part shows={Modules} />
+  </>;
 }

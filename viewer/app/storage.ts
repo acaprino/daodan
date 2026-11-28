@@ -1,9 +1,10 @@
 // Where the person was looking: all the browser keeps. The server's state is the truth.
 import type { Host } from './server.ts';
 
-export const STORAGE = 'daodan-app-v2';  // v2: the graph opens whole, so what v1 kept of its filters is dropped
+export const STORAGE = 'daodan-app-v3';  // v3: the step of the analysis is an id of the plan, which the stages of v2 are not
 export type Place = 'analysis' | 'graph' | 'engine';
-export type Stage = 'repository' | 'premap' | 'analysis' | 'synthesis';
+// The step of the analysis in view: «repository», or the id of a step of the plan (`pipeline.IDS`).
+export type Stage = string;
 export type Kept = {
   screen: Place; analysisStage: Stage; repositoryUrl: string; runId: string;
   treeMode: 'directories' | 'units'; treeSearch: string; treeSelected: string; treeOpen: Record<string, boolean>;
@@ -12,7 +13,6 @@ export type Kept = {
 };
 
 const PLACES: readonly string[] = ['analysis', 'graph', 'engine'];
-export const STAGES: readonly Stage[] = ['repository', 'premap', 'analysis', 'synthesis'];
 export const DEFAULTS: Kept = {
   screen: 'analysis', analysisStage: 'repository', repositoryUrl: '', runId: '',
   treeMode: 'directories', treeSearch: '', treeSelected: '', treeOpen: {},
@@ -27,7 +27,7 @@ export function readKept(storage: Host['storage']): { kept: Kept; available: boo
     if (stored && typeof stored === 'object') kept = { ...DEFAULTS, ...stored };
   } catch { available = false; }
   if (!PLACES.includes(kept.screen)) kept.screen = 'analysis';
-  if (!STAGES.includes(kept.analysisStage)) kept.analysisStage = 'repository';
+  if (typeof kept.analysisStage !== 'string' || !kept.analysisStage) kept.analysisStage = 'repository';
   if (!Array.isArray(kept.graphOpen) || kept.graphOpen.some(id => typeof id !== 'string')) kept.graphOpen = [];
   return { kept, available };
 }

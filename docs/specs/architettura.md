@@ -287,9 +287,9 @@ Un solo oggetto condiviso tra interfaccia, MCP e riga di comando (il giornale de
 
 ## L'interfaccia segue la pipeline
 
-*Nel piano in `T1.E`; il popup degli host in `T0.C`.*
-
 La UI (solo componenti Sigrid nella shell Imago) legge il piano e i risultati degli step senza ricostruirli dagli eventi e senza tenere elenchi propri di fasi. Mostra gli otto step con i loro risultati, i consensi prima dell'esecuzione, l'azione in corso e le lacune. Un host da approvare («Servizi comuni») è una notifica e un popup con host, porta, indirizzo risolto e il file che lo dichiara; un tentativo verso un host in blacklist è solo una notifica. Le parole interne («pre-mappa», «scan», «stack», «analyze») escono dall'interfaccia.
+
+**Nel codice:** l'app legge `run.plan` dello stato (lo stesso piano di `codebase_map_status` e di `daodan snapshot plan`) con `viewer/app/plan.ts` (passi, azioni, azione in corso, lacune, riga di stato e politica, senza eventi); il percorso dell'Analisi è «Repository» più i passi del piano, nel suo ordine (`viewer/app/path.ts`), con le parole dei passi di `pipeline_tree.py` per `id`; ogni passo è `viewer/app/plan-step.tsx`, con il suo risultato, le sue azioni e la piega «Eventi» con la cronaca del giornale; le viste si rileggono quando un passo del piano diventa `done` o `skipped`. Il popup degli host di `T0.C` (`hosts-dialog.tsx`) si apre da un'azione `awaiting_approval` e dalla palette.
 
 ## Le anagrafiche (`daodan/data/`)
 

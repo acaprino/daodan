@@ -34,7 +34,8 @@ if str(SCRIPT_DIR) not in sys.path:
 OUT = SCRIPT_DIR.parents[1] / "viewer" / "pipeline" / "data.ts"
 HEAD = ("// Written by daodan/core/pipeline_tree.py from the code's declarations: not edited by hand. `python pipeline_tree.py build`\n"
         "// writes it again, and `check` (tests/test_codebase_map_pipeline_tree.py) fails when it is behind.\n"
-        "import type { Data } from './tree.ts';\n\nexport const DATA: Data = ")
+        "import type { Data } from './tree.ts';\n\n// The steps alone, which the app imports by their `id`: the bundle leaves `DATA` out.\n"
+        "export const STEPS: Data['steps'] = ")
 
 
 def _is_release(value: str) -> bool:
@@ -301,7 +302,7 @@ def tree(decl: dict) -> dict:
         r["when_plan"] = ("se il passo 3 ha trovato " + FOUND[name]) if name in FOUND else r["when"]
     WRITES = {"pafter": "flussi e schede", "common": "", "s1": "l'elenco dei file", "s2": "lo snapshot: simboli, import, chiamate", "s3": "modules.json, premap.json ed entry-points.json", "s4": "technologies.json",
               "s5": "gli archi provati (engine-edges.sqlite)", "s6": "gli archi osservati", "s7": "il grafo completo", "after": "i flussi",
-              "p1": "l'elenco dei file", "p2": "lo snapshot: simboli, import, chiamate", "p3": "lo stack, con il file che prova ogni voce",
+              "p1": "l'elenco dei file", "p2": "lo snapshot: simboli, import, chiamate", "p3": "le tecnologie, con il file che prova ogni voce",
               "p4": "il modello di build: moduli, dipendenze, comandi", "p5": "i punti di ingresso, legati alle funzioni",
               "p6": "gli archi provati", "p7": "gli archi osservati", "p8": "il grafo completo"}
 
@@ -319,7 +320,7 @@ def tree(decl: dict) -> dict:
                        ("common", "Servizi comuni", "container e preparazione", "Ciò che ogni step usa quando deve eseguire qualcosa: il motore, l'immagine, le toolchain, i registri.")],
              "plan": [("p1", "Elenco dei file", "1_list_files", "Percorre la cartella. Di ogni file: hash e linguaggio."),
                       ("p2", "Lettura del codice", "2_read_code", "Apre ogni file dell'elenco: simboli, import, chiamate."),
-                      ("p3", "Stack", "3_recognize_stack", "Solo analisi: quali strumenti di build, framework e tecnologie ci sono, e dove. Nessun modulo."),
+                      ("p3", "Tecnologie", "3_recognize_stack", "Solo analisi: quali strumenti di build, framework e tecnologie ci sono, e dove. Nessun modulo."),
                       ("p4", "Moduli", "4_find_modules", "Per ogni strumento di build trovato al 3, il suo adattatore dà moduli, dipendenze, comandi."),
                       ("p5", "Punti di ingresso", "5_find_entry_points", "Per ogni framework trovato al 3, il suo strumento dà rotte, pagine ed eventi, legati alle funzioni."),
                       ("p6", "Chiamate", "6_link_calls", "Per ogni linguaggio, l'analizzatore ufficiale dice dove punta ogni chiamata."),
@@ -333,7 +334,9 @@ def tree(decl: dict) -> dict:
                ("Strumenti di build", [("fam:npm", "npm, tsc", {"langs": [], "fam": ["npm"], "fw": []}), ("fam:python", "pip, uv", {"langs": [], "fam": ["python"], "fw": []}), ("fam:jvm", "Gradle, Maven, sbt", {"langs": [], "fam": ["jvm"], "fw": []}), ("fam:go", "Go modules", {"langs": [], "fam": ["go"], "fw": []}), ("fam:cargo", "Cargo", {"langs": [], "fam": ["cargo"], "fw": []}), ("fam:dotnet", ".NET, MSBuild", {"langs": [], "fam": ["dotnet"], "fw": []}), ("fam:native", "CMake, Meson, Bazel, Make, Autotools", {"langs": [], "fam": ["native"], "fw": []}), ("fam:docker", "Docker Compose, Dockerfile", {"langs": [], "fam": ["docker"], "fw": []})]),
                ("Framework", [("fw:react", "React (senza router con comando)", {"langs": JS, "fam": ["npm"], "fw": ["react"]}), ("fw:next", "Next.js", {"langs": JS, "fam": ["npm"], "fw": ["next"]}), ("fw:react-router", "React Router, Remix", {"langs": JS, "fam": ["npm"], "fw": ["react-router"]}), ("fw:nuxt", "Nuxt", {"langs": JS + ["vue"], "fam": ["npm"], "fw": ["nuxt"]}), ("fw:sveltekit", "SvelteKit", {"langs": JS + ["svelte"], "fam": ["npm"], "fw": ["sveltekit"]}), ("fw:angular", "Angular", {"langs": ["typescript", "markup"], "fam": ["npm"], "fw": ["angular"]}), ("fw:astro-fw", "Astro", {"langs": JS + ["astro"], "fam": ["npm"], "fw": ["astro-fw"]}), ("fw:backend", "Backend con rotte (Django, FastAPI, Flask, Spring…)", {"langs": [], "fam": [], "fw": ["backend"]})])]
 
-    steps = {mode: [{"key": key, "title": title, "code": code, "what": what, "writes": WRITES.get(key, "")}
+    # a numbered step of the plan is a step of the pipeline: its `id` is the code's (`pipeline.IDS`), which the app reads
+    steps = {mode: [{"key": key, "title": title, "code": code, "what": what, "writes": WRITES.get(key, ""),
+                     **({"id": code.partition("_")[2]} if mode == "plan" and code[0].isdigit() else {})}
                     for key, title, code, what in listed] for mode, listed in STEPS.items()}
     choices = [{"id": key, "name": name, "group": group, **tags} for group, items in CHOICES for key, name, tags in items]
     return {"rows": rows, "steps": steps, "choices": choices}
@@ -345,14 +348,22 @@ def text(data: dict) -> str:
         return "[\n" + ",\n".join("    " + json.dumps(item, ensure_ascii=False) for item in items) + ",\n  ]"
     steps = "{\n" + "".join(f"    {mode}: {lines(listed).replace(chr(10) + '    ', chr(10) + '      ').replace(chr(10) + '  ]', chr(10) + '    ]')},\n"
                              for mode, listed in data["steps"].items()) + "  }"
-    return HEAD + "{\n  rows: " + lines(data["rows"]) + ",\n  steps: " + steps + ",\n  choices: " + lines(data["choices"]) + ",\n};\n"
+    return (HEAD + steps.replace("\n  ", "\n") + ";\n\nexport const DATA: Data = {\n  rows: " + lines(data["rows"]) + ",\n  steps: STEPS,\n  choices: "
+            + lines(data["choices"]) + ",\n};\n")
 
 
-def check(decl: dict | None = None, written: str | None = None) -> list[str]:
-    """What the tree and the code disagree on, one line each; empty when they agree."""
+def check(decl: dict | None = None, written: str | None = None, ids: tuple[str, ...] | None = None) -> list[str]:
+    """What the tree and the code disagree on, one line each; empty when they agree. `ids` are the pipeline's steps in
+    their order (`pipeline.IDS`), which the numbered steps of the plan carry."""
     decl = declared() if decl is None else decl
+    if ids is None:
+        import pipeline
+        ids = pipeline.IDS
     data = tree(decl)
     rows, problems = data["rows"], []
+    carried = [step["id"] for step in data["steps"]["plan"] if "id" in step]
+    if carried != list(ids):
+        problems.append(f"plan: the numbered steps carry {', '.join(carried)}, not the pipeline's {', '.join(ids)}")
     names = [row["name"] for row in rows]
     problems += [f"{name}: two rows have this name" for name in sorted({n for n in names if names.count(n) > 1})]
     told = {row["declared"] for row in rows if row["declared"]}

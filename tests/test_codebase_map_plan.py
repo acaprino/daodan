@@ -359,6 +359,29 @@ def test_the_plan_says_the_steps_and_actions_of_the_last_analysis(tmp_path, shar
     assert _states(planning.current(manifest))["find_modules"] == "pending"  # of the analysis before
 
 
+def test_a_step_carries_its_times_from_the_journal_a_running_one_only_its_start(tmp_path, shared):
+    """A step done has `started_at` and `ended_at` from its events, one running only `started_at`, one to do neither;
+    `list_files` and `read_code` have no events, so no times."""
+    planning = _planning()
+    root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    pipeline.run(manifest, stop="find_entry_points", fast_scan=True)
+    recorded = events.read(manifest.with_name(events.JOURNAL))[0]
+    steps = {step["id"]: step for step in planning.current(manifest)["steps"]}
+    done = steps["find_modules"]
+    assert done["state"] in ("done", "skipped") and done["started_at"] <= done["ended_at"]
+    assert done["started_at"] == next(event["at"] for event in reversed(recorded) if event.get("step") == "find_modules"
+                                      and event["kind"] in ("step.started", "step.skipped"))
+    assert not {"started_at", "ended_at"} & (set(steps["list_files"]) | set(steps["link_calls"]))
+    bus = events.Bus(manifest.with_name(events.JOURNAL))
+    bus.emit("step.started", "recognize_stack", step="recognize_stack")
+    steps = {step["id"]: step for step in planning.current(manifest)["steps"]}
+    assert steps["recognize_stack"]["state"] == "running" and steps["recognize_stack"]["started_at"]
+    assert "ended_at" not in steps["recognize_stack"]
+    assert not {"started_at", "ended_at"} & set(steps["find_modules"])  # of the analysis before
+
+
 def test_an_action_is_not_possible_with_the_cause_and_remedy_of_its_need_and_a_fresh_one_is_skipped(tmp_path, shared,
                                                                                                     no_go_grammar):
     planning = _planning()
@@ -431,3 +454,25 @@ def test_the_command_line_prints_the_plan_the_app_and_mcp_show(tmp_path, shared,
     capsys.readouterr()
     assert snapshot.main(["plan", str(manifest)]) == 0
     assert json.loads(capsys.readouterr().out) == planning.current(manifest)
+
+
+def test_the_plan_of_the_viewer_s_tests_has_the_server_s_ids_states_kinds_and_keys(tmp_path, shared):
+    """`viewer/test/plan.json`, the plan the app's tests read, stays in the server's form: the eight ids in order, the
+    states, kinds and keys of `plan.STATES`, `ACTION_STATES`, `ACTIONS` and `_action`, and the policy's keys."""
+    import json
+    planning = _planning()
+    fixture = json.loads((Path(__file__).resolve().parents[1] / "viewer/test/plan.json").read_text(encoding="utf-8"))
+    real = planning.current(tmp_path / "out" / "manifest.sqlite")
+    assert set(fixture) == set(real)
+    assert [step["id"] for step in fixture["steps"]] == list(pipeline.IDS)
+    assert {step["state"] for step in fixture["steps"]} <= set(planning.STATES)
+    assert all({"id", "state", "executes", "stops"} <= set(step) <= {"id", "state", "executes", "stops", "cause", "remedy",
+                                                                     "started_at", "ended_at"} for step in fixture["steps"])
+    base = set(planning._action("x", "x", "read", {}, False, False, {"state": "pending"}))
+    assert all(base <= set(action) <= base | {"tools", "network", "hosts", "gap", "cause", "remedy"}
+               for action in fixture["actions"])
+    assert {action["state"] for action in fixture["actions"]} <= set(planning.ACTION_STATES)
+    assert {action["kind"] for action in fixture["actions"]} <= set(planning.ACTIONS)
+    assert all(action["step"] == planning.KINDS[action["kind"]][0] for action in fixture["actions"])
+    assert set(fixture["policy"]["network"]) == set(real["policy"]["network"])
+    assert {"kind", "detail"} <= set(fixture["gaps"][-1]) and fixture["gaps"][-1] == planning.DOWNLOADS

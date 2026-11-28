@@ -52,7 +52,7 @@ def analyzed(name: str, work: Path) -> tuple[MapService, dict]:
         status = service.status(RUN)
     engine = status["engine"]
     return service, {"seconds": round(time.monotonic() - started), "state": engine.get("state"),
-                     "reason": engine.get("reason"), "pipeline": status.get("pipeline"),
+                     "reason": engine.get("reason"), "plan": status.get("plan"),
                      "languages": {language: {key: entry.get(key) for key in ("state", "engine", "reason")}
                                    for language, entry in (engine.get("languages") or {}).items()}}
 

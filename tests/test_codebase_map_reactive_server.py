@@ -81,6 +81,17 @@ def _load_mcp_server():
         return mcp_server
 
 
+def _modelling(plan: dict) -> bool:
+    """A source of `find_modules` still waits for the pass to run its model commands (`pending` with `model_not_run`)."""
+    return any(action["step"] == "find_modules" and action["state"] == "pending" and action.get("gap") == "model_not_run"
+               for action in plan["actions"])
+
+
+def _modelled(plan: dict) -> bool:
+    """The step `find_modules` of the plan is done, or up to date."""
+    return {step["id"]: step["state"] for step in plan["steps"]}["find_modules"] in ("done", "skipped")
+
+
 def _make_project(root: Path) -> Path:
     files = {
         "api/pom.xml": (
@@ -130,7 +141,7 @@ def test_manifest_only_run_drives_model_scan_and_keeps_the_cause_without_a_conta
     with patch("engine_tools.shared_cache_dir", return_value=tmp_path / "cache"), \
             patch.object(engine_pass, "_spawn_detached", return_value=child) as spawn:
         created = service.create_run(".", "config", engine=True)
-        assert created["engine"]["state"] == "running" and created["pipeline"]["find_modules"] == "stale"
+        assert created["engine"]["state"] == "running" and _modelling(created["plan"])
         spawn.assert_called_once()
         manifest = project / ".daodan/map/runs/config/snapshot/manifest.sqlite"
         engine_pass.running_record(manifest).unlink()
@@ -138,7 +149,8 @@ def test_manifest_only_run_drives_model_scan_and_keeps_the_cause_without_a_conta
             assert resolve_edges.main([str(manifest), "--pass"]) == 0
         assert any(gap.get("kind") == "model_not_run" and "engine offline" in gap["detail"]
                    for gap in premap.ensure(manifest)["gaps"])
-        assert service.status("config")["pipeline"]["find_modules"] == "fresh"  # current with the recorded container gaps
+        status = service.status("config")
+        assert _modelled(status["plan"]) and not _modelling(status["plan"])  # current with the recorded container gaps
         assert pipeline.runtime(manifest)["state"] == "none"
         assert service.index("config")["engine"]["action"] == "started"
         assert spawn.call_count == 2
@@ -151,7 +163,8 @@ def test_create_run_and_hook_refresh_never_probe_containers_under_lock_and_expos
         service = mcp_service.MapService(project)
         with mock.patch.object(container, "find_engine", side_effect=AssertionError("must not probe container under lock")):
             created = service.create_run(".", "r1", engine=False)
-        assert created["pipeline"]["find_modules"] == "fresh" and created["pipeline"]["recognize_stack"] == "fresh"
+        states = {step["id"]: step["state"] for step in created["plan"]["steps"]}
+        assert _modelled(created["plan"]) and states["recognize_stack"] in ("done", "skipped")
 
         mods = service.modules("r1")
         by_id = {m["id"]: m for m in mods["modules"]}

@@ -7,16 +7,16 @@ import { Failed, Loading } from '../src/states.tsx';
 import { number, plural } from '../src/words.ts';
 import { ExplorerLink } from './explorer-link.tsx';
 import { useFrame } from './frame.tsx';
-import { levelsName, markOf, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
+import { buildCounts, levelsName, markOf, nodeFacts, nodeName, responsibilityOf, runtimeSummary } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { Paths } from './paths-section.tsx';
+import { planGaps } from './plan.ts';
+import { Preview } from './preview.tsx';
 import { Gaps, PROVENANCE } from './provenance.tsx';
-import { gapLines } from './run.ts';
 import type { Context } from './server.ts';
-import { ctx } from './snapshot.ts';
+import { complete, ctx } from './snapshot.ts';
 import { iconOf } from './scene.ts';
 import { GraphFailed, MapNote } from './states.tsx';
-import { Step } from './step.tsx';
 import { model, useModel } from './use-model.ts';
 
 // What the graph counts, each with what it is of.
@@ -29,7 +29,7 @@ function Counts({ graph, commit }: { graph: Graph; commit: string }) {
     fact('Relazioni nel grafo', graph.edges.length, runtimeSummary(graph.edges) || 'Tra i gruppi visualizzati'),
     fact('File nel grafo', graph.files, `Snapshot del commit ${commit.slice(0, 7)}`),
     modules ? fact('File senza modulo', graph.unassigned.count, 'Lacuna esplicita del grafo')
-      : fact('Nodi esterni', graph.nodes.filter(n => n.location === 'external').length, 'Servizi riconosciuti dallo stack'),
+      : fact('Nodi esterni', graph.nodes.filter(n => n.location === 'external').length, 'Servizi riconosciuti fra le tecnologie'),
   ]} /></Column>;
 }
 
@@ -59,7 +59,7 @@ function Dependencies() {
 function Missing() {
   const s = useModel();
   const { show } = useFrame();
-  return <Fold label="Cosa manca al quadro" summary={plural(gapLines(s).length, 'lacuna', 'lacune')}>
+  return <Fold label="Cosa manca al quadro" summary={plural(planGaps(s).length, 'lacuna', 'lacune')}>
     <Column>
       <Gaps first={8} />
       <Cluster><Button variant="ghost" size="sm" onClick={() => show(PROVENANCE)}><Icon name="file" />Provenienza e lacune</Button></Cluster>
@@ -84,9 +84,16 @@ function Result({ context }: { context: Context }) {
   </>;
 }
 
-export function SynthesisScreen() {
-  const c = ctx(useModel());
-  return <Step stage="synthesis" line="Ecco che cosa dice il grafo di questo run." end={<ExplorerLink />}>
-    {c && <><MapNote /><Result context={c} /></>}
-  </Step>;
+// What the graph of this run says, under the step that assembles it: the graph as it takes shape, and once the pipeline is over
+// its counts, paths, groups and gaps.
+export function SynthesisResult() {
+  const s = useModel();
+  const c = ctx(s);
+  if (!c) return null;
+  return <>
+    <Cluster><ExplorerLink /></Cluster>
+    <Fold label="Grafo in costruzione" summary={buildCounts(s.graph)}><Preview /></Fold>
+    {complete(s) ? <><MapNote /><Result context={c} /></>
+      : <Text as="p" variant="muted">Il quadro del grafo è pronto da leggere quando la pipeline è conclusa.</Text>}
+  </>;
 }

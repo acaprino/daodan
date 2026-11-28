@@ -21,10 +21,31 @@ export type Mapped = {
 export type HostRequest = { host: string; port: number; address: string | null; network: boolean; declared_in: string[] };
 // The requests of one tool, answered together.
 export type HostGroup = { tool: string; project: string; requests: HostRequest[] };
+// The one plan of the run (`codebase_map_status.plan`, `daodan snapshot plan`): the eight steps in order with their state, what a run
+// may reach, the actions with theirs, and the gaps. The states and kinds are the server's closed lists (`plan.STATES`,
+// `plan.ACTION_STATES`, `plan.ACTIONS`); `viewer/test/plan.json` is checked against them.
+export type StepState = 'pending' | 'running' | 'done' | 'failed' | 'skipped';
+export type PlanStep = {
+  id: string; state: StepState; executes: 'no' | 'container'; stops: boolean; cause?: string | null; remedy?: string | null;
+  started_at?: string; ended_at?: string;
+};
+export type ActionKind = 'read' | 'recognize' | 'model' | 'entries' | 'resolve' | 'observe' | 'explore' | 'assemble';
+export type PlanAction = {
+  id: string; step: string; kind: ActionKind; project_code: boolean; container: boolean;
+  target: { languages?: string[]; files?: number; unit_kinds?: string[]; source?: string; technologies?: number; root?: string };
+  state: StepState | 'not_possible' | 'awaiting_approval';
+  tools?: string[]; network?: string[]; hosts?: string[]; gap?: string; cause?: string | null; remedy?: string | null;
+};
+export type Policy = {
+  network: { canonical: string[]; approved: string[]; blocked: string[]; other: string; answered_in: string };
+  container: { engine: string; cause?: string; remedy?: string };
+};
+export type PlanGap = { kind: string; detail: string; language?: string; files?: number };
+export type Plan = { steps: PlanStep[]; policy: Policy; actions: PlanAction[]; gaps: PlanGap[] };
 export type AppState = {
   context?: Context | null;
   job?: Job;
-  run?: { pass?: Pass; progress?: RunProgress | null } | null;
+  run?: { pass?: Pass; progress?: RunProgress | null; plan?: Plan | null } | null;
   engine?: Engine;
   mcp?: { command: string; args: string[] } | null;
   mcp_ready?: string;

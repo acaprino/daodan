@@ -42,6 +42,23 @@ CLEAN = {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHO
          "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
 
 
+def _modelling(plan: dict) -> bool:
+    """A source of `find_modules` still waits for the pass to run its model commands (`pending` with `model_not_run`)."""
+    return any(action["step"] == "find_modules" and action["state"] == "pending" and action.get("gap") == "model_not_run"
+               for action in plan["actions"])
+
+
+def _modelled(plan: dict) -> bool:
+    """The step `find_modules` of the plan is done, or up to date."""
+    return {step["id"]: step["state"] for step in plan["steps"]}["find_modules"] in ("done", "skipped")
+
+
+def _scanned(plan: dict) -> bool:
+    """The steps of the plan up to `find_entry_points` are done, or up to date."""
+    states = {step["id"]: step["state"] for step in plan["steps"]}
+    return all(states[step] in ("done", "skipped") for step in ("recognize_stack", "find_modules", "find_entry_points"))
+
+
 def git(folder: Path, *arguments: str) -> str:
     return subprocess.run(["git", *arguments], cwd=folder, env={**os.environ, **CLEAN}, check=True,
                           capture_output=True, text=True).stdout.strip()
@@ -976,14 +993,15 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         status, state = request(port, "/api/app/select", {"url": found["url"], "branch": "main"})
         assert status == 200 and state["job"]["state"] in ("preparing", "ready")
         deadline = time.monotonic() + 120
-        # Selection prepares the run; the detached pass then attempts the scan's container commands.
+        # Selection prepares the run; the detached pass then attempts the scan's container commands, and runs the steps
+        # again: while it runs, a step up to the entry points may be under way in the plan.
         while time.monotonic() < deadline and (state["job"]["state"] == "preparing" or
-                (state["job"]["state"] == "ready" and state["run"]["pipeline"]["find_modules"] == "stale"
-                 and state["run"]["pass"]["state"] == "running")):
+                (state["job"]["state"] == "ready" and state["run"]["pass"]["state"] == "running"
+                 and (_modelling(state["run"]["plan"]) or not _scanned(state["run"]["plan"])))):
             time.sleep(0.2)
             state = request(port, "/api/app/state")[1]
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
-        assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["find_modules"] == "fresh"
+        assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and _modelled(state["run"]["plan"])
         # the run's one plan, as `codebase_map_status` gives it: the steps to the entry points are done
         import pipeline
         plan = state["run"]["plan"]
@@ -998,7 +1016,7 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         first = next(data for name, data in seen if name == "snapshot")["run_events"]
         assert first["run_id"] == "app-aaaaaaaaaaaa" and first["pipeline"]["events"][0]["kind"] == "step.started"
         told = [data for name, data in seen if name == "app"][-1]
-        assert told["context"]["run_id"] == "app-aaaaaaaaaaaa" and told["run"]["pipeline"]["find_modules"] == "fresh"
+        assert told["context"]["run_id"] == "app-aaaaaaaaaaaa" and _modelled(told["run"]["plan"])
         last = [data for name, data in seen if name in ("snapshot", "update")][-1]
         cursors = (last["run_events"]["next_cursor"], last["run_events"]["pipeline"]["next_cursor"],
                    last["pulse"]["next_cursor"])
@@ -1515,14 +1533,16 @@ def test_a_busy_project_is_no_failure_the_stream_skips_a_turn_and_a_read_answers
             Service.asked += 1
             if Service.asked == 1:
                 raise busy()
-            return {"pipeline": {"find_modules": "fresh"}, "progress": None, "engine": {"state": "fresh", "reason": None}}
+            return {"plan": {"steps": [{"id": "find_modules", "state": "done"}]}, "progress": None,
+                    "engine": {"state": "fresh", "reason": None}}
 
     monkeypatch.setattr(launcher, "TURN", 0.01)
     app = launcher.App(tmp_path / "work", environment={})
     app.service, app.context = Service(), {"run_id": "r", "path": str(tmp_path / "checkout")}
     frames = list(app.stream(quiet)({"run": "r", "max_seconds": "1"}, lambda: False))
     assert [name for name, _ in frames] == ["app", "snapshot"] and Service.asked == 2
-    assert frames[0][1]["run"]["pipeline"] == {"find_modules": "fresh"}
+    assert frames[0][1]["run"]["plan"] == {"steps": [{"id": "find_modules", "state": "done"}]}
+    assert "pipeline" not in frames[0][1]["run"]
 
     def refused(query):
         raise busy()

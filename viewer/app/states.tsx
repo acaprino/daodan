@@ -2,7 +2,7 @@
 import { Text } from '@acaprino/sigrid/primitives';
 import { Empty, Note } from '@acaprino/sigrid/components';
 import { Failed } from '../src/states.tsx';
-import { mapNotice } from './run.ts';
+import { mapNotice } from './notices.ts';
 import { model, useModel } from './use-model.ts';
 
 export function MapNote() {

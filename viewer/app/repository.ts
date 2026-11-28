@@ -30,7 +30,7 @@ export function sameChoice(s: Pick<Snapshot, 'server' | 'kept' | 'checked' | 'br
   return !repo || (s.branch === c.branch && repo.branches.some(b => b.name === c.branch && b.commit === c.commit));
 }
 // What starts again when another repository or branch is chosen.
-export const RESTART = 'Pre-mappa, Analisi e Sintesi ripartono dal branch scelto; lo stesso commit riusa l’analisi già fatta.';
+export const RESTART = 'I passi dell’analisi ripartono dal branch scelto; lo stesso commit riusa l’analisi già fatta.';
 
 type Feedback = { tone: 'error' | 'warning'; title: string; message: string };
 const FEEDBACK: Record<string, Feedback> = {
@@ -46,7 +46,7 @@ export function accessFeedback(checked: Checked | null): Feedback | null {
   return { ...found, message: found.message + (checked.detail ? ` (${checked.detail})` : '') };
 }
 
-const JOB_STEP: Record<string, string> = { checkout: 'Checkout del branch', snapshot: 'Snapshot e pre-mappa' };
+const JOB_STEP: Record<string, string> = { checkout: 'Checkout del branch', snapshot: 'Snapshot del codice e modello di build' };
 export type Preparation = { state: 'preparing' | 'failed'; step: string; detail: string };
 // How the preparation of the branch goes: while it goes, and when it failed.
 export function preparation(job: Job | undefined): Preparation | null {

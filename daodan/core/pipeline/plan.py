@@ -203,9 +203,9 @@ def current(manifest) -> dict:
     """The one plan of the snapshot `manifest`, computed at each call from its owners (no file of its own):
 
     - `steps`: the eight ids in order, each `{id, state, executes, stops}`, `state` one of `STATES` (with `cause` and
-      `remedy` when failed): `list_files` and `read_code` from the store's header (`reading`), the others from the
-      journal (`events.read`); `executes` is the step's `EXECUTES`, `stops` whether the steps after it need it
-      (`WITHOUT is None`).
+      `remedy` when failed, and `started_at` and `ended_at` where the journal has them): `list_files` and `read_code`
+      from the store's header (`reading`), the others from the journal (`events.read`); `executes` is the step's
+      `EXECUTES`, `stops` whether the steps after it need it (`WITHOUT is None`).
     - `policy`: what a run may reach (`egress`) and the container engine (`DAODAN_CONTAINER`).
     - `actions`: each `{id, step, kind, target, project_code, container, state}`, `kind` one of `ACTIONS`: the nodes
       of the plan of the store (`plan(stored(store))`, `target` their `on`); those the steps 3–5 find in their fresh
@@ -344,7 +344,9 @@ def _events(step: str, analyzer: str, begun: dict, recorded: list[dict]) -> dict
 def _steps(header: dict | None, unreadable: str | None, recorded: list[dict]) -> tuple[list[dict], dict]:
     """The eight steps with their state, and the journal's index where each of the pipeline's began last. A step's last
     event decides its state; one older than the last event of a step before it belongs to an analysis before, and the
-    step is `pending` in this one."""
+    step is `pending` in this one. A step of the pipeline carries its times from the journal: `started_at`, the `at` of
+    its `step.started` or `step.skipped`, and `ended_at`, the `at` of its `step.finished`, `step.failed` or
+    `step.skipped`."""
     import pipeline
     listed = ({"state": "failed", "cause": unreadable, "remedy": "write the snapshot again"} if unreadable else
               {"state": "pending" if header is None else "done"})
@@ -368,6 +370,9 @@ def _steps(header: dict | None, unreadable: str | None, recorded: list[dict]) ->
             if entry["state"] == "failed":
                 entry.update({"cause": data.get("cause") or data.get("failed") or event.get("message"),
                               "remedy": data.get("remedy") or step.WITHOUT})
+            began = recorded[begun[step.NAME]].get("at") if step.NAME in begun else None
+            ended = event.get("at") if event["kind"] != "step.started" else None
+            entry.update({**({"started_at": began} if began else {}), **({"ended_at": ended} if ended else {})})
         else:
             begun.pop(step.NAME, None)
         steps.append({"id": step.NAME, **entry, "executes": step.EXECUTES, "stops": step.WITHOUT is None})

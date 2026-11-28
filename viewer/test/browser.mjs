@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import {
-  askRequests, checkRequests, engineRequests, envelope, errors, fresh, graph, groups, markRequests, marksAsked, mode, opened, quiet, respond, run,
-  selectRequests, stream,
+  askRequests, checkRequests, engineRequests, envelope, errors, fresh, graph, groups, markRequests, marksAsked, mode, opened, plan, planDone, quiet,
+  respond, run, selectRequests, stream,
 } from './serve.mjs';
 
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH });
@@ -30,8 +30,11 @@ try {
   const line = text => page.getByRole('status').filter({ hasText: text });  // the status row, and what it says
   const inMain = () => page.evaluate(() => !!document.activeElement?.closest('main'));
   const onContent = () => page.waitForFunction(() => document.activeElement?.tagName === 'MAIN');  // the focus is on the content itself
-  // The steps of the analysis: the path, the step on the screen, its title, its foot, and what opens in place.
-  const NUMBERED = { Repository: '1. Repository', 'Pre-mappa': '2. Pre-mappa', Analisi: '3. Analisi', Sintesi: '4. Sintesi e grafo' };
+  // The steps of the analysis: the path (Repository, then the steps of the plan), the step on the screen, its title, its foot, and what
+  // opens in place.
+  const STEPS = ['Repository', 'Elenco dei file', 'Lettura del codice', 'Tecnologie', 'Moduli', 'Punti di ingresso', 'Chiamate', 'Esecuzione', 'Grafo finale'];
+  const NUMBERED = Object.fromEntries(STEPS.map((name, at) => [name, `${at + 1}. ${name}`]));
+  const failing = id => ({ ...plan, steps: plan.steps.map(one => (one.id === id ? { ...one, state: 'failed', cause: 'memoria', remedy: undefined } : one)) });
   const path = main.getByRole('list', { name: 'Percorso di analisi', exact: true });
   const step = name => path.getByRole('listitem').filter({ hasText: new RegExp(name) });
   const stage = name => path.getByRole('button', { name: new RegExp(`^${name}`) });  // a step that can be opened
@@ -88,42 +91,31 @@ try {
     assert.doesNotMatch(await keys(), /Ctrl\s*[KF]/);  // this stage has no search
     // The path, the whole of it in sight: the step on the screen, how each is, and why one cannot be opened. The title takes no focus as it opens.
     assert.deepEqual(await step('Repository').evaluateAll(all => all.map(el => el.getAttribute('aria-current'))), ['step']);
-    for (const name of ['Repository', 'Pre-mappa', 'Analisi', 'Sintesi']) await stageSays(name, 'completato');
+    for (const name of STEPS) await stageSays(name, 'completato');
     assert.ok(!(await page.evaluate(() => document.activeElement?.id === 'step-title')));
     assert.ok(await back.isDisabled());  // off on the first step, and there
     const place = await footAt();
-    await footBar.getByText('Poi: Pre-mappa', { exact: true }).waitFor();
+    await footBar.getByText('Poi: Elenco dei file', { exact: true }).waitFor();
     await forward('Continua').waitFor();
     await serve({ context: null, job: { state: 'idle' } });
     await line('Nessuna repository').waitFor();
     await stageSays('Repository', 'passo attuale');
-    const why = text => path.getByText(text, { exact: true });
-    const atFullStrength = locator => locator.evaluate(el => {
-      for (let at = el; at; at = at.parentElement) if (getComputedStyle(at).opacity !== '1') return false;
-      return true;
-    });
-    const first = why('Scegli prima una repository e un branch.');
-    await first.first().waitFor();
-    assert.equal(await first.count(), 3);  // one under each step that cannot be opened
-    for (const reason of await first.all()) assert.ok(await atFullStrength(reason));
-    for (const name of ['Pre-mappa', 'Analisi', 'Sintesi']) assert.equal(await stage(name).count(), 0);
+    assert.equal(await path.getByRole('listitem').count(), 1);  // the plan is of a context: without one, Repository alone
     await fold('Contesto attivo');
     await main.getByText('Nessuna repository selezionata sul server.').waitFor();
     assert.ok(await forward('Verifica accesso').isDisabled());
     await footBar.getByText('Scrivi l’URL della repository.', { exact: true }).waitFor();
     assert.deepEqual(await footAt(), place);
-    await serve({ run: { pass: { state: 'running' } } });
-    await stageSays('Analisi', 'in corso');
-    await step('Analisi').getByText('0%', { exact: true }).waitFor();
-    await why('La sintesi è pronta quando la pipeline è conclusa.').waitFor();
-    assert.equal(await stage('Sintesi').count(), 0);
-    await line('Analisi in corso').filter({ hasText: '0%' }).waitFor();
-    assert.equal(await line('Analisi in corso').getByText('0%', { exact: true }).getAttribute('aria-hidden'), 'true');  // the row is announced: not at every percent
+    await serve({ run: { pass: { state: 'running' }, plan } });  // the steps are the plan's: done, up to date, under way, to do
+    await stageSays('Chiamate', 'in corso');
+    await stageSays('Punti di ingresso', 'non eseguito');  // up to date: Sigrid's skipped
+    await line('Analisi in corso').filter({ hasText: '63%' }).waitFor();  // five of eight
+    assert.equal(await line('Analisi in corso').getByText('63%', { exact: true }).getAttribute('aria-hidden'), 'true');  // the row is announced: not at every percent
     await page.getByRole('progressbar', { name: 'Passi completati della pipeline' }).waitFor();
-    await serve({ run: { pass: { state: 'failed' } } });
-    await stageSays('Analisi', 'non riuscito');
+    await serve({ run: { pass: { state: 'failed' }, plan: failing('link_calls') } });
+    await stageSays('Chiamate', 'non riuscito');
     await serve({});
-    await stageSays('Analisi', 'completato');
+    await stageSays('Chiamate', 'completato');
     // The repository: its address is checked, then the branch appears. One button goes on, and says why it waits.
     await serve({ context: null, job: { state: 'idle' } });
     const address = main.getByRole('textbox', { name: 'URL GitHub' });
@@ -176,22 +168,24 @@ try {
     await prepare.click();
     await line('Preparazione in corso').waitFor();
     mode.premapStatus = 500;
-    await serve({});  // the context is ready: the process goes on to its pre-map, and its graph is read
+    await serve({});  // the context is ready: the process goes on to the first step of its plan, and its graph is read
     await page.getByText('Contesto pronto: demo/shop · main', { exact: true }).waitFor();
-    await panel('Pre-mappa').waitFor();
-    await onTitle('Pre-mappa');
+    await panel('Elenco dei file').waitFor();
+    await onTitle('Elenco dei file');
     assert.deepEqual(await footAt(), place);
     assert.ok(await back.isEnabled());
+    await stage('Moduli').click();  // the step that shows what the pre-map found
+    await panel('Moduli').waitFor();
+    await onTitle('Moduli');
     // A pre-map that cannot be read says why, with Riprova; while it is read the panel waits.
-    const unread = wrong('Pre-mappa non disponibile.'), provenance = main.getByRole('button', { name: 'Provenienza', exact: true });
+    const unread = wrong('Modello di build non disponibile.'), provenance = main.getByRole('button', { name: 'Provenienza', exact: true });
     await unread.filter({ hasText: 'snapshot non leggibile' }).waitFor();
     assert.ok(await selectable(unread.getByText('snapshot non leggibile')));
-    await stageSays('Pre-mappa', 'non riuscito');
     assert.ok(await provenance.isDisabled());
     mode.premapStatus = 200;
     mode.premapDelay = 1000;
     await unread.getByRole('button', { name: 'Riprova' }).click();
-    await main.getByRole('progressbar', { name: 'Lettura della pre-mappa…' }).waitFor();
+    await main.getByRole('progressbar', { name: 'Lettura del modello di build…' }).waitFor();
     assert.equal(await unread.count(), 0);
     await onContent();
     const tree = main.getByRole('tree'), treeRow = name => tree.getByRole('treeitem', { name, exact: true });
@@ -202,11 +196,10 @@ try {
     await tree.waitFor();
     assert.match(await keys(), /Ctrl\s*F[\s\S]*Cerca in questa vista[\s\S]*F6[\s\S]*Area successiva/);
     mode.premapDelay = 0;
-    await stageSays('Pre-mappa', 'completato');
     await foot.getByText(/ · 2 gruppi nel grafo$/).waitFor();
     assert.equal((await tab('Motore').boundingBox()).x, beside);  // a count that comes moves no tab
     // Choosing a step shows it, and its title takes the focus. Going back loses nothing written; the context in use, to read and copy, is there.
-    for (const name of ['Analisi', 'Sintesi', 'Repository']) {
+    for (const name of ['Chiamate', 'Grafo finale', 'Repository']) {
       await stage(name).click();
       await panel(name).waitFor();
       await onTitle(name);
@@ -214,7 +207,10 @@ try {
       assert.deepEqual(await footAt(), place);
     }
     assert.deepEqual([await address.inputValue(), /^dev/.test(await branch.innerText())], ['https://github.com/demo/shop', true]);
-    await main.getByText('Pre-mappa, Analisi e Sintesi ripartono dal branch scelto', { exact: false }).waitFor();  // another branch says what starts again
+    // What the analysis may reach and where it runs is said with the context chosen, before any step that runs something.
+    assert.match(await main.getByLabel('Politica dell’analisi', { exact: true }).innerText(),
+      /Registri aperti\s*registry\.npmjs\.org[\s\S]*Host approvati\s*git\.example\.com[\s\S]*Host bloccati\s*tracker\.example\.com[\s\S]*Ogni altro host\s*Chiede la tua risposta in questa app[\s\S]*Container\s*Il motore di container dell’utente/);
+    await main.getByText('I passi dell’analisi ripartono dal branch scelto', { exact: false }).waitFor();  // another branch says what starts again
     await branch.click();
     await page.getByRole('option', { name: /^main/ }).click();
     await forward('Continua').waitFor();  // the branch of the run in view is no new analysis
@@ -222,25 +218,30 @@ try {
     const facts = main.getByLabel('Contesto attivo', { exact: true });
     for (const text of ['demo/shop', 'main', '1'.repeat(12), 'demo']) assert.ok(await selectable(facts.getByText(text, { exact: true })), text);
     await address.press('Enter');
-    await panel('Pre-mappa').waitFor();
-    await onTitle('Pre-mappa');
-    await step('Pre-mappa').getByText('3 file · 2 unità tecniche', { exact: true }).waitFor();
-    // The pre-map: what it holds, in short; what it is made with and what it depends on are behind, in words to read and copy.
-    for (const label of ['Contesto attivo', 'Struttura del repository', 'Tecnologie e framework', 'Linguaggi', 'Dipendenze per unità']) await fold(label);
+    await panel('Elenco dei file').waitFor();
+    await onTitle('Elenco dei file');
+    // What the first steps found, each under its step, in words to read and copy: the files and their languages,
+    for (const label of ['Contesto attivo', 'Linguaggi']) await fold(label);
     for (const text of ['demo/shop', '1'.repeat(12)]) assert.ok(await selectable(facts.getByText(text, { exact: true })), text);
     const listed = name => main.getByLabel(name, { exact: true });
     assert.match(await listed('Inventario').innerText(), /File nello snapshot\s*3[\s\S]*Linguaggi rilevati\s*1[\s\S]*Unità tecniche\s*2[\s\S]*Dipendenze per unità\s*2/);
     assert.match(await listed('Linguaggi').innerText(), /TypeScript\s*2 file/);
+    for (const text of ['Inventario del checkout', 'File nello snapshot', '2 file']) assert.ok(await selectable(main.getByText(text, { exact: true }).first()), text);
+    // the technologies, each with the file that proves it,
+    await stage('Tecnologie').click();
+    await panel('Tecnologie').waitFor();
     assert.match(await listed('Tecnologie e framework').innerText(),
       /React\s*framework · Versione non registrata\s*package\.json:12[\s\S]*node\s*toolchain · 24\s*\.nvmrc/);
-    for (const text of ['Inventario del checkout', 'File nello snapshot', '2 file', 'framework · Versione non registrata', '.nvmrc']) {
-      assert.ok(await selectable(main.getByText(text, { exact: true }).first()), text);
-    }
+    for (const text of ['framework · Versione non registrata', '.nvmrc']) assert.ok(await selectable(main.getByText(text, { exact: true }).first()), text);
     // A technology asks for its logo, and keeps its icon where none comes; a toolchain has none to ask for.
     const technologies = listed('Tecnologie e framework').getByRole('term');
     await technologies.filter({ hasText: 'React' }).locator('img').waitFor({ state: 'detached' });
     assert.deepEqual(await Promise.all(['React', 'node'].map(text => technologies.filter({ hasText: text }).locator('svg').count())), [1, 1]);
     assert.deepEqual([...new Set(markRequests)], ['?id=react&token=test']);
+    // and the structure, with what each unit depends on.
+    await stage('Moduli').click();
+    await panel('Moduli').waitFor();
+    for (const label of ['Struttura del repository', 'Dipendenze per unità']) await fold(label);
     const dependencies = main.getByRole('table', { name: 'Dipendenze per unità' });
     const dependency = name => dependencies.getByRole('row').filter({ hasText: name });
     assert.match(await dependency('left-pad').innerText(), /left-pad\s+runtime\s+web\s+\^1\.3\.0\s+package\.json\s+—\s+Diretta/);
@@ -285,11 +286,11 @@ try {
     // Another stage takes the details away, and they are there again with their stage.
     await stage('Repository').click();
     await fileDetails.waitFor({ state: 'hidden' });
-    await stage('Pre-mappa').click();
+    await stage('Moduli').click();
     await fileDetails.waitFor();
     // Where it comes from takes the place of the choice; Escape closes it, and the focus stays on its button.
     await provenance.click();
-    const origin = details('Provenienza della pre-mappa');
+    const origin = details('Provenienza del modello di build');
     await origin.waitFor();
     assert.match(await origin.innerText(), /Commit\s*1{40}[\s\S]*File nello snapshot\s*3[\s\S]*Unità tecniche\s*2[\s\S]*Dipendenze per unità\s*2/);
     await chosen('main.ts').waitFor({ state: 'detached' });
@@ -345,17 +346,17 @@ try {
     await treeRow('util.ts').waitFor();
     // The foot goes on and back, and Enter on the title goes on: it has the focus of the step.
     await forward('Continua').click();
-    await panel('Analisi').waitFor();
-    await onTitle('Analisi');
+    await panel('Punti di ingresso').waitFor();
+    await onTitle('Punti di ingresso');
     await back.click();
-    await panel('Pre-mappa').waitFor();
-    await onTitle('Pre-mappa');
+    await panel('Moduli').waitFor();
+    await onTitle('Moduli');
     await page.keyboard.press('Enter');
-    await panel('Analisi').waitFor();
-    await onTitle('Analisi');
-    await stage('Pre-mappa').press('Enter');
-    await panel('Pre-mappa').waitFor();
-    await onTitle('Pre-mappa');
+    await panel('Punti di ingresso').waitFor();
+    await onTitle('Punti di ingresso');
+    await stage('Moduli').press('Enter');
+    await panel('Moduli').waitFor();
+    await onTitle('Moduli');
     // The screens are places: by a press, by the arrows and Enter, by their commands.
     await tab('Grafo').click();
     await screen('Grafo');
@@ -372,7 +373,16 @@ try {
       await palette.waitFor({ state: 'detached' });
       await onContent();
     }
-    await panel('Pre-mappa').waitFor();  // the step is where it was left
+    await panel('Moduli').waitFor();  // the step is where it was left
+    // No word of the code is on a step: what the server says (causes, remedies, the names of its tools) is shown as data, so the
+    // names of the fixture's tools are taken out first. A regular expression on the visible text, which has no grammar.
+    const tools = [...new Set(plan.actions.flatMap(action => [...(action.tools ?? []), action.id.split(':').slice(1).join(':')]).filter(Boolean))];
+    for (const name of STEPS) {
+      await stage(name).click();
+      await panel(name).waitFor();
+      const shown = tools.reduce((text, tool) => text.replaceAll(tool, ''), await page.locator('body').innerText());
+      assert.doesNotMatch(shown, /pre-?mappa|\b(scan|stack|analyze|analyzer)\b/i, name);
+    }
     // Ctrl+F on a step with no search says so; F6 and Shift+F6 go from a region to the next; the skip link goes to the content.
     await stage('Repository').click();
     await page.keyboard.press('Control+f');
@@ -425,25 +435,25 @@ try {
     assert.ok(await fits());
     await views.getByRole('button', { name: /^Analisi/ }).click();
     await panel('Repository').waitFor();
-    await main.getByText('Passo 1 di 4', { exact: true }).waitFor();
+    await main.getByText(`Passo 1 di ${STEPS.length}`, { exact: true }).waitFor();
     assert.ok(await fits());
     const narrowPlace = await footAt();
-    await forward('Continua').click();
-    await panel('Pre-mappa').waitFor();
-    await onTitle('Pre-mappa');
-    await main.getByText('Passo 2 di 4', { exact: true }).waitFor();
-    assert.deepEqual([await fits(), await footAt()], [true, narrowPlace]);
+    const onward = async names => {
+      for (const name of names) {
+        await forward('Continua').click();
+        await panel(name).waitFor();
+        await onTitle(name);
+        await main.getByText(`Passo ${STEPS.indexOf(name) + 1} di ${STEPS.length}`, { exact: true }).waitFor();
+        assert.deepEqual([await fits(), await footAt()], [true, narrowPlace]);
+      }
+    };
+    await onward(STEPS.slice(1, 5));
     // Ctrl+F brings its field into sight, from behind its row.
     assert.equal(await treeSearch.count(), 0);
     await page.keyboard.press('Control+f');
     await treeSearch.and(page.locator(':focus')).waitFor();
-    for (const [name, at] of [['Analisi', 3], ['Sintesi', 4]]) {
-      await forward('Continua').click();
-      await panel(name).waitFor();
-      await main.getByText(`Passo ${at} di 4`, { exact: true }).waitFor();
-      assert.deepEqual([await fits(), await footAt()], [true, narrowPlace]);
-    }
-    for (const name of ['Analisi', 'Pre-mappa', 'Repository']) {
+    await onward(STEPS.slice(5));
+    for (const name of STEPS.slice(0, -1).reverse()) {
       await back.click();
       await panel(name).waitFor();
       await onTitle(name);
@@ -452,21 +462,21 @@ try {
     await page.getByText('Questa vista non ha una ricerca.').waitFor();
     // What had the focus goes with the column: the content takes it.
     await page.setViewportSize({ width: 1280, height: 850 });
-    await stage('Pre-mappa').click();
-    await panel('Pre-mappa').waitFor();
-    await stage('Pre-mappa').focus();
+    await stage('Moduli').click();
+    await panel('Moduli').waitFor();
+    await stage('Moduli').focus();
     await page.setViewportSize({ width: 390, height: 820 });  // as a zoom does
-    await main.getByText('Passo 2 di 4', { exact: true }).waitFor();
+    await main.getByText(`Passo 5 di ${STEPS.length}`, { exact: true }).waitFor();
     await onContent();
     await page.setViewportSize({ width: 1280, height: 850 });
-    await stage('Pre-mappa').waitFor();
+    await stage('Moduli').waitFor();
   }
 
   // ticket 21: the run and the synthesis
   {
     const tab = name => page.getByRole('toolbar', { name: 'Daodan', exact: true }).getByRole('button', { name: new RegExp(`^${name}`) });
     const screen = name => page.getByRole('main', { name, exact: true }).waitFor();
-    const run = stepPanel('Analisi'), synthesis = stepPanel('Sintesi');
+    const run = stepPanel('Chiamate'), synthesis = stepPanel('Grafo finale');
     const button = (where, name) => where.getByRole('button', { name, exact: true });
     const alertIn = (where, text) => where.getByRole('alert').filter({ hasText: text });
     const says = (where, text) => where.getByText(text, { exact: typeof text === 'string' }).waitFor();  // a note's title follows its tone's word: a pattern
@@ -483,63 +493,59 @@ try {
     const linesOf = text => text.split('\n').map(part => part.trim()).filter(Boolean);
     const at = '2026-11-24T10:00:00Z';
     await tab('Analisi').click();
-    await stage('Analisi').click();
+    await stage('Chiamate').click();
     await run.waitFor();
-    // A run that is over: its phase, its state and its steps in words. What it leads to is in the action bar.
-    await says(run, 'Pipeline completata');
+    // A step that is over: its state, what it does, and its actions with where they run. What it leads to is in the action bar.
     await says(run, 'Completata');
-    await says(run, 'Pipeline conclusa: sintesi e grafo sono pronti da leggere.');
+    await says(run, 'Per ogni linguaggio, l\'analizzatore ufficiale dice dove punta ogni chiamata.');
+    const actions = run.getByRole('list', { name: 'Azioni del passo', exact: true });
+    assert.match(await actions.innerText(), /Chiamate: go[\s\S]*Nel container[\s\S]*Fatta[\s\S]*Chiamate: python/);
     await fold('Come leggere l’avanzamento');
     await says(run, /run demo sul commit 1{12}, sull’intero progetto/);
-    const steps = run.getByRole('list', { name: 'Passi della pipeline', exact: true }).getByRole('listitem');
-    const stepStates = () => steps.evaluateAll(all => all.map(el => el.dataset.state));
-    const noted = text => steps.filter({ hasText: text }).waitFor();
-    assert.deepEqual(await stepStates(), Array(6).fill('skipped'));
-    await fold('Eventi e feedback');
+    await fold('Eventi');  // the step's own events
     await says(run, 'Nessun evento ancora.');
     await forward('Continua').waitFor();
     // A run under way: the progress of a step, the cause of one that failed, the percent, the events to read and copy.
-    await serve({ run: { pass: { state: 'running' }, progress: { step: 'link_calls', analyzer: 'pyright', done: 1, total: 4 } } });
+    await serve({ run: { pass: { state: 'running' }, progress: { step: 'link_calls', analyzer: 'pyright', done: 1, total: 4 }, plan } });
     await send([
       { kind: 'step.started', step: 'recognize_stack', message: '', at }, { kind: 'step.finished', step: 'recognize_stack', message: '', at },
       { kind: 'step.started', step: 'find_entry_points', message: '', at }, { kind: 'log', level: 'error', step: 'find_entry_points', message: 'x', data: { cause: 'manifest illeggibile' }, at },
       { kind: 'step.started', step: 'link_calls', message: '', data: { inputs: ['modules.json'] }, at },
     ]);
-    await noted('In corso · 1/4');
-    assert.deepEqual(await stepStates(), ['done', 'upcoming', 'error', 'running', 'upcoming', 'upcoming']);
-    await steps.first().getByText('0 s', { exact: true }).waitFor();  // how long it took
-    assert.match(await run.locator('[aria-current="step"]').innerText(), /Chiamate · analizzatore per linguaggio/);
-    assert.ok(await selectable(steps.getByText('Non riuscita · manifest illeggibile', { exact: true })));
-    const bar = run.getByRole('progressbar', { name: 'Passi completati della pipeline', exact: true });
-    assert.equal(await bar.getAttribute('aria-valuetext'), '21%');  // one of six, and a quarter
-    assert.ok(await selectable(run.getByText('Ultimo avanzamento: Chiamate · pyright · 1/4', { exact: true })));
-    for (const text of ['1 di 6 passi completati', '21%', 'Chiamate · analizzatore per linguaggio', 'In esecuzione', 'Ultimo avanzamento: Chiamate · pyright · 1/4']) await says(run, text);
-    assert.ok(await forward('Continua').isDisabled());
-    await footBar.getByText('Attendi la fine della pipeline.', { exact: true }).waitFor();
+    await step('Chiamate').getByText('In corso · 1/4', { exact: true }).waitFor();  // the path says how far the step under way is
+    const doing = run.getByRole('progressbar', { name: 'Azione in corso', exact: true });  // and the step, which action
+    assert.equal(await doing.getAttribute('aria-valuetext'), '25%');
+    await run.getByText('Chiamate: go', { exact: true }).first().waitFor();
+    assert.match(await actions.innerText(), /Chiamate: python[\s\S]*no container engine answers · Rimedio: start Docker or Podman[\s\S]*Non possibile/);
+    await says(run, 'Che cosa manca');  // what the step cannot do, a fact of it
+    await forward('Continua').and(page.locator(':enabled')).waitFor();  // a step goes on to the next one, under way or not
     const log = run.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem');
-    assert.equal(await log.count(), 5);
-    assert.match(await log.first().innerText(), /Chiamate · avviato[\s\S]*Legge: modules\.json/);  // the newest first
-    assert.match(await log.filter({ hasText: 'Ingressi · nota' }).innerText(), /Errore/);
+    assert.equal(await log.count(), 1);  // the events of the step alone: the journal is its chronicle, the plan says how it is
+    assert.match(await log.first().innerText(), /Chiamate · avviato[\s\S]*Legge: modules\.json/);
     assert.ok(await selectable(log.first().getByText('Legge: modules.json', { exact: true })));
-    await send(Array.from({ length: 5 }, (_, n) => ({ kind: 'log', step: 'link_calls', level: 'info', message: `nota ${n}`, at })));
+    await send(Array.from({ length: 9 }, (_, n) => ({ kind: 'log', step: 'link_calls', level: 'info', message: `nota ${n}`, at })));
     await says(run, '10 eventi');
     assert.equal(await log.count(), 8);
-    assert.match(await log.first().innerText(), /nota 4/);
+    assert.match(await log.first().innerText(), /nota 8/);  // the newest first
     await button(run, 'Altri 2 eventi').click();
     const others = run.getByRole('list', { name: 'Altri 2 eventi', exact: true }).getByRole('listitem');
     await others.first().waitFor();
-    assert.deepEqual((await others.allInnerTexts()).map(text => linesOf(text)[0]), ['Tecnologie · completato', 'Tecnologie · avviato']);
+    assert.deepEqual((await others.allInnerTexts()).map(text => linesOf(text)[0]), ['Chiamate · nota', 'Chiamate · avviato']);
+    // Each step has its own: what was noted of the entry points is under theirs, with the title of the step.
+    await stage('Punti di ingresso').click();
+    const entries = stepPanel('Punti di ingresso');
+    await entries.waitFor();
+    await fold('Eventi');
+    assert.match(await entries.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem').filter({ hasText: 'Punti di ingresso · nota' }).innerText(), /Errore/);
+    await stage('Chiamate').click();
+    await run.waitFor();
     // The run is over with a step that failed; a pass that could not go says why, and one that failed is tried again.
     await send([{ kind: 'step.finished', step: 'link_calls', message: '', at }]);
     await serve({ run: { pass: { state: 'unavailable', reason: 'nessun container' } } });
     await alertIn(run, 'Lacuna: il passaggio che rifinisce il grafo delle chiamate non è disponibile.').filter({ hasText: 'nessun container' }).waitFor();
-    assert.deepEqual(await stepStates(), ['done', 'skipped', 'error', 'done', 'skipped', 'skipped']);
-    assert.equal(await steps.filter({ hasText: 'Non eseguita · nessun container' }).count(), 3);
-    await noted('Non riuscita · manifest illeggibile');
-    await forward('Continua').and(page.locator(':enabled')).waitFor();  // the end lights the button: it does not take the run away
-    assert.equal(await run.count(), 1);
-    assert.equal(await bar.getAttribute('aria-valuetext'), 'Non riuscito · 33%');
-    await serve({ run: { pass: { state: 'failed', reason: 'memoria' } } });
+    assert.equal(await run.count(), 1);  // the end does not take the step away
+    await serve({ run: { pass: { state: 'failed', reason: 'memoria' }, plan: failing('link_calls') } });
+    await alertIn(run, 'Il passo non è riuscito.').filter({ hasText: 'Non riuscita · memoria' }).waitFor();
     const pass = alertIn(run, 'Il passaggio che rifinisce il grafo delle chiamate non è riuscito.');
     assert.match(await pass.innerText(), /Errore[\s\S]*memoria/);
     await button(pass, 'Riprova').click();
@@ -547,18 +553,22 @@ try {
     await closeNotice('il server ha risposto 404');
     await page.reload();
     await run.waitFor();
-    // The graph as it takes shape, behind its row: the canvas lays it out; a thing chosen is in the details, and goes to the graph.
+    // The graph as it takes shape, behind its row under the last step: the canvas lays it out; a thing chosen is in the details, and
+    // goes to the graph.
+    await stage('Grafo finale').click();
+    await synthesis.waitFor();
     await fold('Grafo in costruzione');
-    assert.equal(await run.getByRole('link', { name: 'Apri l’esploratore', exact: true }).getAttribute('href'), '/?token=test&run=demo');
-    const canvas = run.getByRole('group', { name: 'Costruzione del grafo', exact: true });
+    assert.equal(await synthesis.getByRole('link', { name: 'Apri l’esploratore', exact: true }).getAttribute('href'), '/?token=test&run=demo');
+    const canvas = synthesis.getByRole('group', { name: 'Costruzione del grafo', exact: true });
     const thing = name => canvas.getByRole('button', { name: new RegExp(`^${name},`) });
     await button(canvas, 'Client, 1 file · confermato').waitFor();
     await button(canvas, 'Server, 6 file · confermato').waitFor();
     assert.equal(await canvas.getByRole('button', { name: /^Apri / }).count(), 0);  // nothing opens in the preview
-    assert.match(await run.getByRole('list', { name: 'Tipi di linea', exact: true }).innerText(),
+    assert.match(await synthesis.getByRole('list', { name: 'Tipi di linea', exact: true }).innerText(),
       /Relazioni\s*1[\s\S]*Osservata in esecuzione\s*1[\s\S]*Campionata dal profiler\s*1[\s\S]*Prova insufficiente\s*1/);
-    for (const text of ['Codice', 'Costruzione conclusa']) await says(run, text);
-    assert.equal(await run.getByText('2 directory · 4 relazioni · 2 file', { exact: true }).count(), 2);  // on its row, and under the canvas
+    await synthesis.getByText('Codice', { exact: true }).first().waitFor();
+    await says(synthesis, 'Costruzione conclusa');
+    assert.equal(await synthesis.getByText('2 directory · 4 relazioni · 2 file', { exact: true }).count(), 2);  // on its row, and under the canvas
     await thing('Client').click();
     await groupIs('Client');
     assert.match(await group.innerText(), /Directory del grafo di questo run\.[\s\S]*Responsabilità non descritta nel grafo\.[\s\S]*1 file · confermato · commit 1{12}[\s\S]*Apri nel grafo/);
@@ -578,7 +588,10 @@ try {
     assert.equal(await button(group, 'Apri nel grafo').count(), 0);
     await tab('Analisi').click();
     await group.waitFor({ state: 'hidden' });
-    // The links: a refusal is a notice that stays; the search is busy, and a note whose tone changes does not take the focus.
+    // The links, under the step of the calls: a refusal is a notice that stays; the search is busy, and a note whose tone changes does
+    // not take the focus.
+    await stage('Chiamate').click();
+    await run.waitFor();
     const find = button(run, 'Trova i legami');
     await says(run, /^Non ancora cercati/);
     mode.linkStatus = 500;
@@ -610,18 +623,22 @@ try {
     assert.equal(await forward('Torna al passo').count(), 0);
     await tab('Analisi').click();
     await serve({});
-    await fold('Grafo in costruzione');
     // New links are a new graph: one that cannot be read says why, and is asked again.
     mode.graphStatus = 500;
     await serve({ links: { state: 'done', routes: { called: 1, offered: 2, linked: 1 }, gaps: 0 } });
     await says(run, /1 richiesta, 2 rotte, 1 legame, 0 lacune\.$/);
-    const unread = alertIn(run, 'Grafo non disponibile.');
+    await stage('Grafo finale').click();
+    await synthesis.waitFor();
+    await fold('Grafo in costruzione');
+    const unread = alertIn(synthesis, 'Grafo non disponibile.').first();  // in the graph as it takes shape, and in the counts
     assert.match(await unread.innerText(), /grafo non letto/);
     assert.equal(await canvas.count(), 0);
     mode.graphStatus = 200;
     await button(unread, 'Riprova').click();
     await thing('Client').waitFor();
     assert.ok(await inMain());
+    await stage('Chiamate').click();
+    await run.waitFor();
     // The map of the system: a note whose tone changes is drawn anew, so it is announced.
     const partialMap = { state: 'incomplete', cause: 'the recorded map still has stale or incomplete records',
       needs_review: { nodes: { count: 2, ids: ['a', 'b'] }, flows: { count: 1, ids: ['c'] }, refused_proposals: { count: 1, ids: ['request:d'] } } };
@@ -635,10 +652,10 @@ try {
     await map({ state: 'done' });
     await says(run, /Mappa del sistema registrata/);
     assert.equal(await run.getByRole('alert').count(), 0);
-    // The synthesis: the paths by entry, a page at a time, and the writes without an entry.
-    await forward('Continua').click();
+    // The synthesis, under the last step: the paths by entry, a page at a time, and the writes without an entry.
+    await stage('Grafo finale').click();
     await synthesis.waitFor();
-    await onTitle('Sintesi');
+    await onTitle('Grafo finale');
     assert.equal(await synthesis.getByRole('link', { name: 'Apri l’esploratore', exact: true }).getAttribute('href'), '/?token=test&run=demo');
     const paths = synthesis.getByRole('region', { name: 'Percorsi per ingresso', exact: true });
     await says(paths, 'Nessun ingresso classificato per questo snapshot.');
@@ -679,7 +696,7 @@ try {
     assert.ok(await selectable(synthesis.getByText('1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto', { exact: true })));
     for (const label of ['Dipendenze dopo l’analisi', 'Cosa manca al quadro']) await fold(label);
     await says(synthesis, '1 voce con versione risolta nel modello di build.');
-    await says(synthesis, 'Nessuna lacuna registrata dal run.');
+    await says(synthesis, 'how much a run downloads is not known before it runs: no source gives its size');  // the plan's, as data
     await map(partialMap);
     await alertIn(synthesis, 'Mappa del sistema parziale').waitFor();
     await map({ state: 'done' });
@@ -707,13 +724,16 @@ try {
     await page.setViewportSize({ width: 390, height: 820 });
     await synthesis.waitFor();
     assert.ok(await fits());
-    await back.click();
-    await run.waitFor();
     await fold('Grafo in costruzione');
     await thing('Client').waitFor();
     assert.ok(await fits());
+    await back.click();
+    await stepPanel('Esecuzione').waitFor();
+    await back.click();
+    await run.waitFor();
+    assert.ok(await fits());
     await page.setViewportSize({ width: 1280, height: 850 });
-    await page.evaluate(() => localStorage.removeItem('daodan-app-v2'));
+    await page.evaluate(() => localStorage.removeItem('daodan-app-v3'));
     await page.reload();
     await stage('Repository').waitFor();
   }
@@ -805,7 +825,7 @@ try {
     await groupIs('Client');
     await marked('Client');
     assert.match(await group.innerText(), /Directory selezionata\s*confermato[\s\S]*Responsabilità non descritta nel grafo\.[\s\S]*File assegnati\s*1\s*Relazioni nel grafo\s*4\s*Provenienza\s*Directory del checkout/);
-    assert.match(await group.getByRole('list', { name: 'Stack', exact: true }).innerText(), /React\s*framework\s*package\.json:12/);
+    assert.match(await group.getByRole('list', { name: 'Tecnologie', exact: true }).innerText(), /React\s*framework\s*package\.json:12/);
     for (const text of ['Altre dipendenze dichiarate: 3', 'Nessuna evidenza dichiarata.']) await says(group, text);
     await button(group, 'Relazioni del gruppo (4)').click();
     const relations = group.getByRole('list', { name: 'Relazioni del gruppo (4)', exact: true }).getByRole('listitem');
@@ -829,7 +849,7 @@ try {
     const files = group.getByRole('list', { name: 'Tutti i 6 file', exact: true }).getByRole('listitem');
     await files.first().waitFor();
     assert.equal(await files.count(), 6);
-    assert.equal(await group.getByRole('list', { name: 'Stack', exact: true }).count(), 0);
+    assert.equal(await group.getByRole('list', { name: 'Tecnologie', exact: true }).count(), 0);
     await thing('Client').click();
     await groupIs('Client');
     assert.equal(await button(group, 'Tutti i 6 file').count(), 0);
@@ -915,7 +935,7 @@ try {
     await button(panel, 'Vai al repository').click();
     await stepPanel('Repository').waitFor();
     await onContent();
-    await page.evaluate(() => localStorage.removeItem('daodan-app-v2'));
+    await page.evaluate(() => localStorage.removeItem('daodan-app-v3'));
     await page.reload();
     await stepPanel('Repository').waitFor();
   }
@@ -1970,9 +1990,9 @@ try {
     await win.getByRole('dialog', { name: 'Cerca un comando' }).getByRole('option', { name: says }).click();
     await onGraph();
     // The synthesis has the link too.
-    await win.evaluate(() => localStorage.setItem('daodan-app-v2', JSON.stringify({ ...JSON.parse(localStorage.getItem('daodan-app-v2')), screen: 'analysis', analysisStage: 'synthesis' })));
+    await win.evaluate(() => localStorage.setItem('daodan-app-v3', JSON.stringify({ ...JSON.parse(localStorage.getItem('daodan-app-v3')), screen: 'analysis', analysisStage: 'assemble_graph' })));
     await win.reload();
-    await win.getByRole('region', { name: '4. Sintesi e grafo', exact: true }).waitFor();
+    await win.getByRole('region', { name: '9. Grafo finale', exact: true }).waitFor();
     await toMap();
     assert.equal(win.context().pages().length, 1);
     await win.context().close();
