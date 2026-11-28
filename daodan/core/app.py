@@ -283,7 +283,7 @@ class App:
         status = service.status(context["run_id"]) if service is not None else {}
         engine = status.get("engine") or {}
         return {**self._held(),
-                "run": {"pipeline": status.get("pipeline"), "plan": status.get("plan"), "progress": status.get("progress"),
+                "run": {"plan": status.get("plan"), "progress": status.get("progress"),
                         "pass": {key: engine.get(key) for key in ("state", "reason")}} if status else None}
 
     def stream(self, explorer):

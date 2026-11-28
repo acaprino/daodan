@@ -303,22 +303,6 @@ class MapService:
         for name in names:
             confinement.reject_link_chain(run / name)
 
-    def _pipeline_state(self, manifest_path, engine_info):
-        import entry_points
-        import premap
-        import technologies
-        m_state = module_graph.graph_state(manifest_path)["state"]
-        inspected = premap.state(manifest_path)
-        found = entry_points.state(manifest_path)  # the scan writes the entry points after the pre-map
-        p_state = inspected["state"] if inspected["state"] != "fresh" else found["state"]
-        if (inspected.get("pending_sources") or found.get("pending_sources")) and engine_info.get("state") == "running":
-            p_state = "stale"  # the background pass still has to attempt the deferred model commands
-        scan_state = "fresh" if m_state == "fresh" and p_state == "fresh" else (
-            "stale" if "stale" in (m_state, p_state) else "missing"
-        )
-        stack_state = technologies.state(manifest_path) if inspected["state"] in ("fresh", "stale") else "missing"
-        return {"find_modules": scan_state, "recognize_stack": stack_state, "link_calls": engine_info.get("state")}
-
     def _status(self, run_id, *, engine=False):
         run, state, manifest, target = self._bound_run(run_id)
         project = self.project_root.as_posix()
@@ -333,7 +317,6 @@ class MapService:
             eng = self._engine(state, manifest.path, repair=False)
             result["engine"] = eng
             result["progress"] = self._progress(manifest.path)
-            result["pipeline"] = self._pipeline_state(manifest.path, eng)  # kept for MCP clients until T1.E reads `plan`
             from pipeline import plan as planning
             result["plan"] = planning.current(manifest.path)  # the one plan: steps, policy, actions and gaps
             import egress

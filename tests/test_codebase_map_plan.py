@@ -359,6 +359,29 @@ def test_the_plan_says_the_steps_and_actions_of_the_last_analysis(tmp_path, shar
     assert _states(planning.current(manifest))["find_modules"] == "pending"  # of the analysis before
 
 
+def test_a_step_carries_its_times_from_the_journal_a_running_one_only_its_start(tmp_path, shared):
+    """A step done has `started_at` and `ended_at` from its events, one running only `started_at`, one to do neither;
+    `list_files` and `read_code` have no events, so no times."""
+    planning = _planning()
+    root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    pipeline.run(manifest, stop="find_entry_points", fast_scan=True)
+    recorded = events.read(manifest.with_name(events.JOURNAL))[0]
+    steps = {step["id"]: step for step in planning.current(manifest)["steps"]}
+    done = steps["find_modules"]
+    assert done["state"] in ("done", "skipped") and done["started_at"] <= done["ended_at"]
+    assert done["started_at"] == next(event["at"] for event in reversed(recorded) if event.get("step") == "find_modules"
+                                      and event["kind"] in ("step.started", "step.skipped"))
+    assert not {"started_at", "ended_at"} & (set(steps["list_files"]) | set(steps["link_calls"]))
+    bus = events.Bus(manifest.with_name(events.JOURNAL))
+    bus.emit("step.started", "recognize_stack", step="recognize_stack")
+    steps = {step["id"]: step for step in planning.current(manifest)["steps"]}
+    assert steps["recognize_stack"]["state"] == "running" and steps["recognize_stack"]["started_at"]
+    assert "ended_at" not in steps["recognize_stack"]
+    assert not {"started_at", "ended_at"} & set(steps["find_modules"])  # of the analysis before
+
+
 def test_an_action_is_not_possible_with_the_cause_and_remedy_of_its_need_and_a_fresh_one_is_skipped(tmp_path, shared,
                                                                                                     no_go_grammar):
     planning = _planning()

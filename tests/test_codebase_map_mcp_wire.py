@@ -378,12 +378,12 @@ class CodebaseMapWireTests(unittest.TestCase):
         self.assertEqual(replay["events"], [])
         state = self.data(self.call("codebase_map_status", {"run_id": "wire-run"}))
         self.assertFalse(state["check"]["complete"])
-        # the one plan crosses the transport beside the older `pipeline` summary, which stays until T1.E
+        # the one plan crosses the transport, in place of the older `pipeline` summary
         self.assertEqual(set(state["plan"]), {"steps", "policy", "actions", "gaps"})
         self.assertEqual([step["id"] for step in state["plan"]["steps"]], [
             "list_files", "read_code", "recognize_stack", "find_modules", "find_entry_points", "link_calls",
             "run_and_observe", "assemble_graph"])
-        self.assertIn("find_modules", state["pipeline"])
+        self.assertNotIn("pipeline", state)
 
     def test_invalid_arguments_and_incomplete_publication_are_tool_errors(self):
         escaped = self.call("codebase_map_scope", {"target": "../"})
