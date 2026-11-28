@@ -300,7 +300,7 @@ Ogni anagrafica deve avere un controllo automatico di coerenza con il codice:
 | `file-formats.json` | Formati accettati, linguaggi, cartelle/nomi esclusi | `list_files` | Nel codice |
 | `linguist-catalog.json` | Nomi Linguist per ogni formato accettato | `list_files` | Nel codice |
 | `language-rules.toml` | Regole di disambiguazione estensioni condivise | `list_files` | Nel codice (manca il nome file) |
-| `service-registry.json`, `registry-additions.json`, `marks/` | Di ogni tecnologia nome, `kind` (`service`, `project`), tipo di nodo e sito; `support` (`full`, `partial`, `none`); dove ci sono, `category` (`framework`, `library`, `tool`, `service`) e logo (+ `surface`) | `recognize_stack`, il grafo, UI | Nel codice (senza `surface`) |
+| `service-registry.json`, `registry-additions.json`, `marks/` | Di ogni tecnologia nome, `kind` (`service`, `project`), tipo di nodo e sito; `support` (`full`, `partial`, `none`); dove ci sono, `category` (`framework`, `library`, `tool`, `service`), logo e `surface` (`registry_build.SURFACES`: solo sui framework e i toolkit che la decidono; senza, `web`) | `recognize_stack`, il grafo, UI | Nel codice |
 | `build-tools.json` | Strumenti di build/toolchain -> adattatore | `find_modules` | Nel codice (CMake, Meson, Bazel, Make, autotools, sbt, .NET, Mix dopo il `.6` del fork) |
 | `package-managers.json` | Registri pacchetti consentiti nella preparazione | Preparazione container | Nel codice |
 | `entry-queries.json` | Query tree-sitter per ingressi | `find_entry_points` | Nel codice |

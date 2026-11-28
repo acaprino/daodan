@@ -61,6 +61,15 @@ def test_the_assistant_proposes_never_replaces_the_user_s_and_the_user_confirms_
         commands.remove(project, "starts", "web")
 
 
+def test_a_surface_is_one_of_the_registry_s_and_is_kept(project):
+    """`surface` is a name of `registry_build.SURFACES`, the ones the registry's entries carry."""
+    import registry_build
+    for surface in registry_build.SURFACES:
+        kept = commands.set(project, {"kind": "starts", "root": "web", "argv": ["npm", "start"], "surface": surface},
+                            "user")
+        assert [row.get("surface") for row in kept] == [surface]
+
+
 @pytest.mark.parametrize("given, said", [
     ({"kind": "tests", "root": ".", "argv": "pytest -q"}, "argv must be"),
     ({"kind": "tests", "root": ".", "argv": []}, "argv must be"),
@@ -71,6 +80,8 @@ def test_the_assistant_proposes_never_replaces_the_user_s_and_the_user_confirms_
     ({"kind": "tests", "root": "/etc", "argv": ["pytest"]}, "relative to its root"),
     ({"kind": "starts", "root": "web", "argv": ["npm", "start"], "port": 0}, "port must be"),
     ({"kind": "starts", "root": "web", "argv": ["npm", "start"], "port": "80"}, "port must be"),
+    ({"kind": "starts", "root": "web", "argv": ["npm", "start"], "surface": "ios"}, "surface must be one of web, "),
+    ({"kind": "starts", "root": "web", "argv": ["npm", "start"], "surface": ""}, "surface must be one of"),
     ("npm start", "an object"),
 ])
 def test_a_command_that_is_not_well_formed_is_refused_and_nothing_is_kept(project, given, said):

@@ -11,8 +11,9 @@ per entry in `data/marks/ID.svg` (the entry's `mark`), and the official marks of
 (`add-mark`: the owner's file, its URL, the day and its terms, or with `--own` a drawing of Daodan's, kept in the
 additions and in REGISTRY-NOTICES.md);
 the entries of the CNCF Landscape (CC BY 4.0) with name, category and site; and
-`registry-additions.json`, what the catalogs lack: a name, a site, a category, a mark, the name of the CNCF item that is the
-entry when the two write it otherwise (`cncf`). An entry has no signs: what a
+`registry-additions.json`, what the catalogs lack: a name, a site, a category, the surface of a framework or toolkit that
+decides it (`surface`, one of `SURFACES`), a mark, the name of the CNCF item that is the entry when the two write it
+otherwise (`cncf`). An entry has no signs: what a
 project shows is the release's, and the additions may not hold any.
 
     python registry_build.py build --out FILE [--cache DIR]
@@ -51,6 +52,10 @@ DATA = SCRIPT_DIR.parent / "data"
 SOURCES = ("stack-analyser", "simple-icons", "cncf-landscape", "additions")
 KINDS = ("service", "project")
 CATEGORIES = ("framework", "library", "tool", "service")
+# What `run_and_observe` runs an app on (`docs/specs/architettura.md`, «Superfici attive»): an entry's `surface`, from
+# the additions, only on the frameworks and toolkits that decide it; an app none of them decides, started at an HTTP
+# address, is `web`.
+SURFACES = ("web", "webview", "desktop", "android", "windows")
 SUPPORT = ("full", "partial", "none")  # an entry's `support`, written by `support`
 # A framework or library Daodan reads beyond recognizing it, and the module of the reader, from `core/`: the framework's own tool
 # for its routes or the events of its templates (`entry_points.FRAMEWORK_SOURCES`, `entry_points.TEMPLATE_SOURCES`), its compiler
@@ -117,6 +122,8 @@ def check(value: object, data: Path | None = None, additions: list[dict] | None 
             problems.append(f"{ident}: kind is one of {', '.join(KINDS)}")
         if entry.get("category") is not None and entry.get("category") not in CATEGORIES:
             problems.append(f"{ident}: category is one of {', '.join(CATEGORIES)}")
+        if "surface" in entry and entry["surface"] not in SURFACES:
+            problems.append(f"{ident}: surface is one of {', '.join(SURFACES)}")
         if entry.get("type") not in flows.NODE_TYPES:
             problems.append(f"{ident}: type is one of {', '.join(flows.NODE_TYPES)}")
         if "signs" in entry:
@@ -386,7 +393,7 @@ def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
         if entry is None:
             entry = entries[record["id"]] = {"id": record["id"], "name": record["name"], "kind": record["kind"],
                                              "type": record["type"], "site": None, "mark": None, "from": []}
-        for name in ("name", "kind", "type", "site", "category", "mark", "mark_source"):
+        for name in ("name", "kind", "type", "site", "category", "surface", "mark", "mark_source"):
             if record.get(name):
                 entry[name] = record[name]
         if record.get("mark"):

@@ -2,11 +2,11 @@
 
 They live in `commands.json` in the per-user shared folder (`egress.shared_cache_dir`), never in the project, as the
 answers of `egress` do: `{<project>: [entry]}`, the project named as `egress.project_of` names it, the file written
-whole under `egress.locked`. An entry is `{kind, root, argv, by, grade}`, with `port`, `surface` and, for `tests`, the
-`runner` where given: `kind` one of `KINDS`, `root` the folder from the project's root (`.` the root), `argv` the
-command's words. `by` says who stated it, `user` (grade `confermato`) or `assistant` (`proposto`); an entry the user
-confirmed keeps `proposed_by`. One entry per kind, folder and, for `tests`, runner: a new one takes its place, but the
-assistant never takes the place of the user's.
+whole under `egress.locked`. An entry is `{kind, root, argv, by, grade}`, with `port`, `surface` (one of
+`registry_build.SURFACES`) and, for `tests`, the `runner` where given: `kind` one of `KINDS`, `root` the folder from the
+project's root (`.` the root), `argv` the command's words. `by` says who stated it, `user` (grade `confermato`) or
+`assistant` (`proposto`); an entry the user confirmed keeps `proposed_by`. One entry per kind, folder and, for
+`tests`, runner: a new one takes its place, but the assistant never takes the place of the user's.
 
 `merged` puts them before the pre-map's entries of the same kind, which `dynamic.declared` and `dynamic.app.plan` rank
 by `dynamic.PRECEDENCE` (user, assistant, CI). A command runs only in the container, as every other does, and the hosts
@@ -60,11 +60,12 @@ def entry(project: str, given: dict, by: str) -> dict:
         raise ValueError(f"kind must be one of {', '.join(KINDS)}: {kind!r}")
     if not isinstance(argv, list) or not argv or not all(isinstance(word, str) and word for word in argv):
         raise ValueError("argv must be a nonempty list of nonempty strings")
+    from registry_build import SURFACES
     port, surface = given.get("port"), given.get("surface")
     if port is not None and (type(port) is not int or not 0 < port < 65536):
         raise ValueError(f"port must be a number from 1 to 65535: {port!r}")
-    if surface is not None and (not isinstance(surface, str) or not surface):  # the names come with `T3.B.9`
-        raise ValueError(f"surface must be a name: {surface!r}")
+    if surface is not None and surface not in SURFACES:
+        raise ValueError(f"surface must be one of {', '.join(SURFACES)}: {surface!r}")
     kept = {"kind": kind, "root": _root(project, given.get("root", ".")), "argv": list(argv), "by": by,
             "grade": GRADES[by]}
     if kind == "tests":

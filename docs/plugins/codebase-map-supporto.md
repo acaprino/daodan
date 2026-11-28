@@ -181,7 +181,7 @@ Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `lib
 
 | Classe | Voci con una regola del fork | Voci con la categoria scritta, fra tutte |
 | --- | --- | --- |
-| framework | 139 | 139 |
+| framework | 139 | 151 |
 | library | 196 | 196 |
 | tool | 169 | 169 |
 | service | 719 | 719 |
@@ -203,7 +203,7 @@ Riconoscimento dello stack sul corpus, giro del 28 novembre 2026 (`benchmarks/pr
 
 Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: il fork di stack-analyser ha una regola per la voce (la colonna «Regola del fork»: `sì` se la voce viene dal catalogo del suo rilascio, `no` se il registro la nomina e il fork non la riconosce) e la riconosce da ciò che il progetto mostra (un pacchetto, un'immagine, un file, un sorgente). Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
-<details><summary>Framework, librerie e strumenti: 504 voci</summary>
+<details><summary>Framework, librerie e strumenti: 516 voci</summary>
 
 | Voce | Id | Classe | Regola del fork | Lettura propria | Fixture in cui lo step la trova (28 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
@@ -221,6 +221,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | ASP.NET Core | `aspnetcore` | framework | sì | — | 6 |
 | Assemble | `assemble` | framework | sì | — | 0 |
 | Astro | `astro` | framework | sì | frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`entry_points/astro.py`); stili con il compilatore del framework (`indexers/css_astro.py`) | 1 |
+| Avalonia | `avalonia` | framework | no | — | 0 |
 | Axum | `axum` | framework | sì | — | 3 |
 | Blazor | `blazor` | framework | sì | — | 2 |
 | Blitzjs | `blitzjs` | framework | sì | — | 0 |
@@ -253,6 +254,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | FastMCP | `fastmcp` | framework | sì | — | 1 |
 | Fiber | `fiber` | framework | sì | — | 1 |
 | Flask | `flask` | framework | sì | — | 7 |
+| Flet | `flet` | framework | no | — | 0 |
 | Flutter | `flutter` | framework | sì | — | 2 |
 | flutter_test | `flutter-test` | framework | sì | — | 2 |
 | FumaDocs | `fumadocs` | framework | sì | — | 1 |
@@ -260,13 +262,16 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Gin | `gin` | framework | sì | — | 2 |
 | Gradio | `gradio` | framework | sì | — | 1 |
 | Gridsome | `gridsome` | framework | sì | — | 0 |
+| GTK | `gtk` | framework | no | — | 0 |
 | HexoJS | `hexojs` | framework | sì | — | 0 |
 | Hono | `honojs` | framework | sì | — | 1 |
 | Hugo | `hugo` | framework | sì | — | 1 |
 | Inferno | `infernojs` | framework | sì | — | 0 |
 | Ionic | `ionic` | framework | sì | — | 0 |
+| JavaFX | `javafx` | framework | no | — | 0 |
 | Jekyll | `jekyll` | framework | sì | — | 0 |
 | Jetpack Compose | `jetpack-compose` | framework | sì | — | 1 |
+| Kivy | `kivy` | framework | no | — | 0 |
 | Koa | `koa` | framework | sì | — | 0 |
 | Kotlin Multiplatform | `kotlin-multiplatform` | framework | sì | — | 3 |
 | Ktor | `ktor` | framework | sì | — | 2 |
@@ -291,6 +296,8 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Pico CSS | `pico-css` | framework | sì | — | 1 |
 | Preact | `preactjs` | framework | sì | — | 1 |
 | proptest | `proptest` | framework | sì | — | 1 |
+| PyQt | `pyqt` | framework | no | — | 0 |
+| PySide | `pyside` | framework | no | — | 0 |
 | Quarkus | `quarkus` | framework | sì | — | 1 |
 | Quarkus REST | `quarkus-rest` | framework | sì | — | 1 |
 | Quarkus WebSockets Next | `quarkus-websockets-next` | framework | sì | — | 1 |
@@ -335,15 +342,20 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Tanstack Start | `tanstackstart` | framework | sì | — | 1 |
 | Tauri | `tauri` | framework | sì | — | 3 |
 | test | `dart-test` | framework | sì | — | 1 |
+| Tkinter | `tkinter` | framework | no | — | 0 |
 | UIKit | `uikit` | framework | sì | — | 4 |
 | UmiJS | `umijs` | framework | sì | — | 0 |
+| Uno Platform | `uno-platform` | framework | no | — | 0 |
 | VitePress | `vitepress` | framework | sì | — | 1 |
 | Vue.js | `vue` | framework | sì | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_vue.py`) | 9 |
 | VuePress | `vuepress` | framework | sì | — | 0 |
 | Vuetify | `vuetify` | framework | sì | — | 1 |
 | Wagtail | `wagtail` | framework | sì | — | 1 |
+| Wails | `wails` | framework | no | — | 0 |
 | Wasp | `wasp` | framework | sì | — | 0 |
+| Windows Forms | `winforms` | framework | no | — | 0 |
 | WinUI | `winui` | framework | sì | — | 1 |
+| WPF | `wpf` | framework | no | — | 0 |
 | Yew | `yew` | framework | sì | — | 1 |
 | Yii2 | `yii2` | framework | sì | — | 0 |
 | _hyperscript | `hyperscript` | library | sì | — | 2 |
