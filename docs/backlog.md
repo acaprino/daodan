@@ -43,6 +43,7 @@
 - Chi prepara il modello degli embedding (ex scelta 10).
 - Ordine sorgenti (lista scritta vs bisogno dichiarato), `pass` vs `run`, colonna `producer` (ex ondata 4, voce 9).
 - Limite di tempo per stage e cursore in byte sul giornale (ex ondata 4, voci 5 e 6).
+- Importazione del vecchio esempio Bank of Anthos (ZIP con `project.json` e `v2/graph.sqlite`, cinque tabelle, un altro identificativo SQLite) nel `.daodan` (uscita da `T2.E.1`): conserverebbe l'originale e recupererebbe dal manifest revisioni e provenienza, con «unknown» e una lacuna per ciò che non si recupera; cambiare estensione o solo `user_version` non converte il contenuto. Nessuno scrive oggi quel formato.
 - Renovate come terzo lettore pacchetti (ex ondata 2, voce 10); corsa settimanale confronto Linguist (ex ondata 1, voce 5).
 
 ### 6. Soluzioni provvisorie da sostituire con quella pulita
