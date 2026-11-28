@@ -738,7 +738,7 @@ def test_the_folder_of_the_root_is_restored_into_a_directory_that_exists_before_
     restored = container_runner._python(project_dir)
     assert restored["lines"][0] == f"mkdir -p {preparation.VENVS}"
     assert any("for f in '.'" in line and "uv venv" in line for line in restored["lines"][1:])
-    first, _, _, _ = container_runner.plan("flask", [], [], restored["lines"], restored["needs"])
+    first, *_ = container_runner.plan("flask", [], [], restored["lines"], restored["needs"])
     setup = first["argv"][2]
     assert setup.index(f"mkdir -p {preparation.VENVS}") < setup.index("uv venv")  # the order the container runs them in
     (tmp_path / "empty").mkdir()

@@ -762,7 +762,7 @@ def test_the_runner_restores_the_python_environment_of_each_folder_and_both_scri
     (project_dir / "api").mkdir(parents=True)
     (project_dir / "api/requirements.txt").write_text("fastapi==0.165.0\n", encoding="utf-8")
     assert any("'api'" in line and "uv venv" in line for line in container_runner._python(project_dir)["lines"])
-    first, files, _, _ = container_runner.plan("fastapi", [], [], container_runner._python(project_dir)["lines"], ["uv"])
+    first, files, *_ = container_runner.plan("fastapi", [], [], container_runner._python(project_dir)["lines"], ["uv"])
     assert [name for _, _, name in files if name.endswith(".py")] == list(SCRIPTS) and first["network"] == "registries"
 
 
