@@ -74,6 +74,9 @@ from pathlib import Path
 import code_graph
 
 VERSION = "0.6.8"  # @sourcegraph/scip-python on npm
+# A second Pyright beside the one inside scip-python, kept on purpose: it alone gives the cause of a hole (its
+# language server's hover: `Any`, `Unknown`, `bound`, `UNBOUND_CAUSES`); scip-python embeds its Pyright and exposes
+# no hover or type of a member, only the index.
 PYRIGHT = "1.1.414"  # pyright on npm: the checker's pass (`python_unbound.py`)
 UNBOUND = Path(__file__).with_name("python_unbound.py")
 # Why the index names nothing at a member, by what the checker says of it (`python_unbound.py`).

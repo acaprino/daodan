@@ -1597,6 +1597,8 @@ Modello di evidenza: nessun campo nuovo. Ciò che l'indice non decide si dice co
 
 ## 27 novembre 2026, Soglie T2
 
+Esiti (`T2.B.19`): JVM raggiunta su javapoet e klaxon; C e C++ raggiunta a mano dopo `T2.B.20` (zlib 20/20, tinyxml2 16/20), conteggi non confrontabili uno a uno con quelli del 14 novembre (il prodotto conta anche le letture); fogli di stile raggiunta su cinque casi su sette, non su bulma (7/11) e styled-components-website (12/15), domanda al proprietario nel piano.
+
 ### JVM: javapoet e klaxon (`T2.B.10`)
 
 Soglia, scritta prima della corsa: javapoet con i conteggi del grafo uguali a `results/graph-java-javapoet-checks.json` e verifica a mano 20/20; klaxon con i 251 archi incerti `*-across-tasks` resi certi dall'Analysis API del prodotto (come nelle domande mirate del 14 novembre) e gli altri conteggi invariati, verifica a mano almeno 16/20.
@@ -1640,7 +1642,7 @@ Esecuzione, codice del prodotto di questo commit: `modal deploy benchmarks/infer
 - zlib: `_tr_tally_lit`, `send_bits` e `deflateInit` ora giusti; gli archi verso i tipi C (cast, `sizeof`, dichiarazioni) passano da `project-callable` a `project-value`.
 - tinyxml2: conteggi e verifica a mano uguali al giro di `T2.B.15`, gli stessi quattro sbagliati.
 
-## 27 novembre 2026, soglia dei fogli di stile (T2.B.17)
+### Fogli di stile (`T2.B.17`)
 
 `lang_css.py` sui sette casi, due corse sullo stesso codice salvo il TypeScript del programma degli script: `39dfca8` (TypeScript 5.9.3 di `css_engines/`) e `d52925a` (`T2.B.16`, il TypeScript 6.0.3 di scip-typescript 0.6.2). `modal deploy benchmarks/inference-audit/lang_css.py`, `python benchmarks/inference-audit/lang_css.py spawn --cases v3-admin-vite,tududi,bulma,bootstrap3,hn-svelte,saas-starter,sc-website`, `fetch` con gli stessi casi; risultati in `results/graph-css-<caso>-checks.json` (quelli di `d52925a`).
 
