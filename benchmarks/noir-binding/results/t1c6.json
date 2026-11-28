@@ -1,0 +1,444 @@
+{
+ "total": {
+  "rows": 4000,
+  "bound_before": 2303,
+  "bound_by_name_before": 1637,
+  "bound_after": 2301,
+  "links_failed": 0,
+  "links_other_symbols": 0,
+  "nameless_in_both": 389,
+  "edges_before": 24,
+  "edges_after": 24,
+  "outside_before": 0,
+  "outside_after": 0,
+  "missing_after": 3
+ },
+ "applications": {
+  "shhh": {
+   "rows": 6,
+   "bound_before": 6,
+   "bound_by_name_before": 6,
+   "bound_after": 6,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "bookstack": {
+   "rows": 345,
+   "bound_before": 0,
+   "bound_by_name_before": 0,
+   "bound_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "koel": {
+   "rows": 339,
+   "bound_before": 0,
+   "bound_by_name_before": 0,
+   "bound_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "rubygems": {
+   "rows": 12,
+   "bound_before": 0,
+   "bound_by_name_before": 0,
+   "bound_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "lobsters": {
+   "rows": 8,
+   "bound_before": 0,
+   "bound_by_name_before": 0,
+   "bound_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "gin-vue-admin": {
+   "rows": 217,
+   "bound_before": 1,
+   "bound_by_name_before": 0,
+   "bound_after": 1,
+   "nameless_in_both": 1,
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "go-admin": {
+   "rows": 139,
+   "bound_before": 93,
+   "bound_by_name_before": 0,
+   "bound_after": 93,
+   "nameless_in_both": 2,
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "go-gin-example": {
+   "rows": 29,
+   "bound_before": 0,
+   "bound_by_name_before": 0,
+   "bound_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "nestjs-boilerplate": {
+   "rows": 22,
+   "bound_before": 22,
+   "bound_by_name_before": 22,
+   "bound_after": 22,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "nest-admin": {
+   "rows": 94,
+   "bound_before": 94,
+   "bound_by_name_before": 88,
+   "bound_after": 94,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "nestjs-realworld": {
+   "rows": 40,
+   "bound_before": 21,
+   "bound_by_name_before": 21,
+   "bound_after": 21,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "node-express-boilerplate": {
+   "rows": 15,
+   "bound_before": 13,
+   "bound_by_name_before": 0,
+   "bound_after": 13,
+   "nameless_in_both": 13,
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "anything-llm": {
+   "rows": 424,
+   "bound_before": 354,
+   "bound_by_name_before": 4,
+   "bound_after": 354,
+   "nameless_in_both": 350,
+   "edges_before": 12,
+   "edges_after": 12,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "juice-shop": {
+   "rows": 188,
+   "bound_before": 106,
+   "bound_by_name_before": 1,
+   "bound_after": 106,
+   "nameless_in_both": 4,
+   "edges_before": 5,
+   "edges_after": 5,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "litecast": {
+   "rows": 5,
+   "bound_before": 4,
+   "bound_by_name_before": 4,
+   "bound_after": 4,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "uni-stack": {
+   "rows": 15,
+   "bound_before": 15,
+   "bound_by_name_before": 13,
+   "bound_after": 13,
+   "missing_after": 2,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "expo-template": {
+   "rows": 16,
+   "bound_before": 15,
+   "bound_by_name_before": 15,
+   "bound_after": 15,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "petclinic": {
+   "rows": 32,
+   "bound_before": 17,
+   "bound_by_name_before": 17,
+   "bound_after": 17,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "ruoyi": {
+   "rows": 441,
+   "bound_before": 304,
+   "bound_by_name_before": 304,
+   "bound_after": 304,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "petclinic-kotlin": {
+   "rows": 33,
+   "bound_before": 18,
+   "bound_by_name_before": 18,
+   "bound_after": 18,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "eshoponweb": {
+   "rows": 54,
+   "bound_before": 32,
+   "bound_by_name_before": 25,
+   "bound_after": 32,
+   "nameless_in_both": 7,
+   "edges_before": 7,
+   "edges_after": 7,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "eshop": {
+   "rows": 61,
+   "bound_before": 46,
+   "bound_by_name_before": 37,
+   "bound_after": 46,
+   "nameless_in_both": 9,
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "btcpayserver": {
+   "failed": [
+    "before",
+    "after"
+   ]
+  },
+  "healthchecks": {
+   "rows": 258,
+   "bound_before": 257,
+   "bound_by_name_before": 257,
+   "bound_after": 257,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "defectdojo": {
+   "rows": 678,
+   "bound_before": 572,
+   "bound_by_name_before": 492,
+   "bound_after": 572,
+   "nameless_in_both": 3,
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "fastapi-template": {
+   "rows": 31,
+   "bound_before": 23,
+   "bound_by_name_before": 23,
+   "bound_after": 23,
+   "missing_after": 1,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  },
+  "dispatch": {
+   "rows": 498,
+   "bound_before": 290,
+   "bound_by_name_before": 290,
+   "bound_after": 290,
+   "links_failed": 0,
+   "links_other_symbols": 0
+  }
+ },
+ "symbol_changed": [],
+ "lost": [],
+ "gained": [],
+ "nameless_edges": [
+  {
+   "app": "go-admin",
+   "path": "/api/v1/health",
+   "method": "GET",
+   "site": "app/other/router/monitor.go:52",
+   "symbol": "app/other/router/monitor.go::GET /api/v1/health",
+   "lines": [
+    52,
+    54
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "go-admin",
+   "path": "/api/v1/ready",
+   "method": "GET",
+   "site": "app/other/router/monitor.go:63",
+   "symbol": "app/other/router/monitor.go::GET /api/v1/ready",
+   "lines": [
+    63,
+    80
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/api/catalog/catalogtypes",
+   "method": "GET",
+   "site": "src/Catalog.API/Apis/CatalogApi.cs:85",
+   "symbol": "src/Catalog.API/Apis/CatalogApi.cs::GET /api/catalog/catalogtypes",
+   "lines": [
+    85,
+    86
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/api/catalog/catalogbrands",
+   "method": "GET",
+   "site": "src/Catalog.API/Apis/CatalogApi.cs:92",
+   "symbol": "src/Catalog.API/Apis/CatalogApi.cs::GET /api/catalog/catalogbrands",
+   "lines": [
+    92,
+    93
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/logout",
+   "method": "POST",
+   "site": "src/WebhookClient/Endpoints/AuthenticationEndpoints.cs:12",
+   "symbol": "src/WebhookClient/Endpoints/AuthenticationEndpoints.cs::POST /logout",
+   "lines": [
+    12,
+    17
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/check",
+   "method": "OPTIONS",
+   "site": "src/WebhookClient/Endpoints/WebhookEndpoints.cs:16",
+   "symbol": "src/WebhookClient/Endpoints/WebhookEndpoints.cs::OPTIONS /check",
+   "lines": [
+    16,
+    29
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/webhook-received",
+   "method": "POST",
+   "site": "src/WebhookClient/Endpoints/WebhookEndpoints.cs:31",
+   "symbol": "src/WebhookClient/Endpoints/WebhookEndpoints.cs::POST /webhook-received",
+   "lines": [
+    31,
+    53
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/api/webhooks",
+   "method": "GET",
+   "site": "src/Webhooks.API/Apis/WebHooksApi.cs:13",
+   "symbol": "src/Webhooks.API/Apis/WebHooksApi.cs::GET /api/webhooks",
+   "lines": [
+    13,
+    18
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/api/webhooks/{id}",
+   "method": "GET",
+   "site": "src/Webhooks.API/Apis/WebHooksApi.cs:20",
+   "symbol": "src/Webhooks.API/Apis/WebHooksApi.cs::GET /api/webhooks/{id}",
+   "lines": [
+    20,
+    33
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/api/webhooks",
+   "method": "POST",
+   "site": "src/Webhooks.API/Apis/WebHooksApi.cs:35",
+   "symbol": "src/Webhooks.API/Apis/WebHooksApi.cs::POST /api/webhooks",
+   "lines": [
+    35,
+    63
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  },
+  {
+   "app": "eshop",
+   "path": "/api/webhooks/{id}",
+   "method": "DELETE",
+   "site": "src/Webhooks.API/Apis/WebHooksApi.cs:66",
+   "symbol": "src/Webhooks.API/Apis/WebHooksApi.cs::DELETE /api/webhooks/{id}",
+   "lines": [
+    66,
+    82
+   ],
+   "edges_before": 0,
+   "edges_after": 0,
+   "outside_before": 0,
+   "outside_after": 0
+  }
+ ]
+}

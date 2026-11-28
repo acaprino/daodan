@@ -95,6 +95,7 @@ from link_types import ANY_SERVICE, REST, join  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
+from languages.semantic import NAMELESS  # noqa: E402
 
 RULES_SCHEMA = "daodan/flow-rules/v1"
 LINKS_SCHEMA = "daodan/flow-links/v4"  # callee-based effects inherit sampled or conflicting evidence
@@ -444,8 +445,22 @@ class Facts:
 
     def folds(self, declaration: dict) -> bool:
         """Whether a declaration is no node of its own: an anonymous function counts as the function that holds it, unless a
-        route names it."""
-        return declaration["name"] == "(anonymous)" and declaration["id"] not in self.route_named
+        route names it. So does a function the other readers write with no name (`NAMELESS`: a lambda, a Go func literal) when a
+        function that holds it is one a route names (`route_named`): its calls are the handler's. Elsewhere it keeps its node, as in
+        the rest of the graph."""
+        if declaration["id"] in self.route_named or declaration["name"] not in NAMELESS:
+            return False
+        if declaration["name"] == "(anonymous)":
+            return True
+        holder = self.owner(declaration)
+        while holder is not None and holder["id"] not in self.route_named:
+            holder = self.owner(holder)
+        return holder is not None
+
+    def notes(self, file: str) -> list[str]:
+        """What the semantic reading of a file says it left unresolved (`semantic.ANONYMOUS_DEFAULT`, ...)."""
+        row = self.db.execute("SELECT payload FROM sem_coverage WHERE file=?", (file,)).fetchone()
+        return _unpack(row[0]).get("notes", []) if row else []
 
     def name_routes(self, names: dict[str, str]) -> None:
         """Name functions written in place as route handlers by their route (`route_named`); the nodes read so far are read again."""
