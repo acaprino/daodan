@@ -5,16 +5,18 @@ Il risultato è il più recente `results/pipeline/*-t1-gate*.json` per nome (la 
 
 - un solo piano (`plan.current`): gli otto step nell'ordine di `pipeline.IDS`, ogni azione `failed` o `not_possible` con la
   sua `cause`, ogni lacuna del piano con `kind` e `detail`;
-- i moduli: il punteggio di `score.score` contro `fixtures/real-bank-of-anthos/expected.json`, che il driver calcola come
-  oggi, non perde una voce che la pre-mappa di oggi trova (`results/daodan_premap_corpus.json`, di `modal_premap.py`): una
-  voce persa è mancata o sbagliata ora e non lì, e una faccia data lì e non ora le perde tutte;
+- i moduli e le toolchain: il punteggio di `score.score` contro `fixtures/real-bank-of-anthos/expected.json`, che il driver
+  calcola come oggi, non perde una voce che la pre-mappa di oggi trova (`results/daodan_premap_corpus.json`, di
+  `modal_premap.py`) senza una lacuna. Una voce persa è mancata o sbagliata ora e non lì, e una faccia data lì e non ora le
+  perde tutte; è ammessa solo se la pre-mappa del risultato ha una lacuna di `SILENT` di una sorgente che scrive la sua
+  faccia (`writers`);
 - gli ingressi: `entries_vs_reference.compare(system.json, {"static_sites": entry_sites, "observed_spans": []})` copre almeno
   `STATIC` controlli iniziali dei flussi del riferimento;
 - nessuna perdita senza causa: ha una causa uno step con `cause`, un'azione con `cause`, una lacuna (`gap`) o gli host che
   attende (`hosts`), una sorgente della pre-mappa con la sua `reason` o una lacuna di suo nome. Uno step che non è `done` né
   `skipped` ne ha una, o segue uno step fallito che ferma i successivi (`stops`); un'azione che non lo è, sotto uno step
   `done` o `skipped`, ne ha una; una sorgente che non è `ran` né `not_needed` ne ha una; le lacune della pre-mappa e del passo
-  dinamico hanno `kind` e `detail`; una voce dei moduli persa sta in ACCEPTED con la causa.
+  dinamico hanno `kind` e `detail`.
 
 Il calcolo sta in funzioni pure, provate anche su righe scritte qui.
 
@@ -35,14 +37,17 @@ import entries_vs_reference  # noqa: E402
 
 CASE = "real-bank-of-anthos"
 RESULTS, FIXTURE = HERE / "results", HERE / "fixtures" / CASE
-# le facce dei moduli nel punteggio di `score.score`
-MODULES = ("units", "units.depends_on", "units.source_roots", "units.config", "workspace", "workspace.members")
+# le facce dei moduli e delle toolchain nel punteggio di `score.score`
+FACETS = ("units", "units.depends_on", "units.source_roots", "units.config", "workspace", "workspace.members", "toolchains")
+# Le lacune per cui una sorgente non dice i suoi fatti, o non tutti, come le nomina la tabella «Gaps» di
+# `plugins/codebase-map/skills/map/references/premap.md` («it states nothing», «its facts are missing», «a model command that
+# failed … or answered without resolution»): una lacuna d'altro tipo di quella sorgente (`file_withheld`) non spiega una voce.
+SILENT = ("source_unavailable", "source_failed", "model_not_run", "model_failed", "model_partial")
 # `T1.C.11` ha misurato i fatti della pipeline sui flussi persi, non `entries_vs_reference`: nessun suo numero si confronta.
 # La soglia è quella della corsa di prova, `results/pipeline/2026-11-28-t1-gate-prova.json`: 0 dei 27 controlli citati, perché
 # stanno in template, manifesti di Kubernetes e Skaffold, CI, Terraform e Makefile, e i 44 siti delle rotte in `.py`, `.java`,
 # `pom.xml` e in un Ingress.
 STATIC = 0
-ACCEPTED: dict[tuple[str, str], str] = {}  # (faccia, voce) dei moduli persa: la causa; oggi nessuna
 ENDED = ("done", "skipped")
 
 
@@ -84,7 +89,7 @@ def unexplained(case: dict) -> list[str]:
     return out
 
 
-def lost(now: dict, before: dict, facets=MODULES) -> list[tuple[str, str]]:
+def lost(now: dict, before: dict, facets=FACETS) -> list[tuple[str, str]]:
     """Le voci delle `facets` che il punteggio `before` trova e `now` no; `(faccia, "*")` per una faccia data prima e non ora."""
     def missing(result: dict) -> set[str]:
         return set(result.get("missed") or ()) | {wrong["item"] for wrong in result.get("wrong") or ()}
@@ -96,6 +101,19 @@ def lost(now: dict, before: dict, facets=MODULES) -> list[tuple[str, str]]:
             continue
         out += [(facet, "*")] if not new.get("given") else [(facet, item) for item in sorted(missing(new) - missing(old))]
     return out
+
+
+def writers(record: dict, facet: str) -> set[str]:
+    """Le sorgenti che scrivono `facet` (`units.config` è di `units`) nel record della pre-mappa `record`: le `sources` che
+    `premap.join` mette su ogni voce, una per sorgente che l'ha detta (`premap._add`). Il record è quello del riferimento, dove
+    le voci perse si trovano; le etichette sono `premap.label` (nome e versione), le stesse delle `source` delle lacune."""
+    return {source for entry in record.get(facet.split(".")[0]) or () for source in entry.get("sources") or ()}
+
+
+def unexplained_losses(losses: list[tuple[str, str]], gaps, record: dict) -> list[tuple[str, str]]:
+    """Le voci perse che nessuna lacuna spiega: ne spiega una la lacuna di `SILENT` di una sorgente che scrive la sua faccia."""
+    silent = {gap.get("source") for gap in gaps or () if gap.get("kind") in SILENT}
+    return [(facet, item) for facet, item in losses if not silent & writers(record, facet)]
 
 
 def entries(case: dict) -> dict:
@@ -123,13 +141,17 @@ def test_the_caller_gets_one_plan_with_the_eight_steps_in_order(case):
     assert not problems, problems
 
 
-def test_the_modules_lose_nothing_the_pre_map_of_today_finds(case):
-    before = json.loads((RESULTS / "daodan_premap_corpus.json").read_text(encoding="utf-8"))[CASE]["premap"]
+def test_the_modules_and_toolchains_lose_nothing_the_pre_map_of_today_finds_without_a_gap(case):
+    reference = json.loads((RESULTS / "daodan_premap_corpus.json").read_text(encoding="utf-8"))[CASE]
     now = case.get("premap") or {}
+    losses = lost(now, reference["premap"])
+    silent = [gap for gap in case.get("gaps") or () if gap.get("kind") in SILENT]
     print(json.dumps({facet: {key: (now.get(facet) or {}).get(key) for key in ("given", "expected", "found")}
-                      for facet in MODULES}))
-    losses = [item for item in lost(now, before) if item not in ACCEPTED]
-    assert not losses, losses
+                      for facet in FACETS}))
+    print(json.dumps({"lost": losses, "gaps": [{key: gap.get(key) for key in ("kind", "source", "path", "detail")}
+                                               for gap in silent]}, ensure_ascii=False))
+    left = unexplained_losses(losses, case.get("gaps"), reference["output"])
+    assert not left, left
 
 
 def test_the_entries_cover_at_least_the_cites_of_the_trial(case):
@@ -200,6 +222,18 @@ def test_a_module_found_before_and_missed_or_wrong_now_is_lost_and_one_missed_in
               "workspace": {"given": True, "missed": [], "wrong": []}, "units.config": {"given": False}}
     now = {"units": {"given": True, "missed": ["u@a", "u@b"], "wrong": [{"item": "u@c"}]}, "workspace": {"given": False}}
     assert lost(now, before) == [("units", "u@b"), ("units", "u@c"), ("workspace", "*")]
+
+
+def test_a_lost_entry_is_explained_only_by_a_gap_of_silence_of_a_source_that_writes_its_facet():
+    record = {"toolchains": [{"tool": "python", "sources": ["renovate@1"]}, {"tool": "java", "sources": ["jvm-files@5"]}],
+              "units": [{"root": ".", "sources": ["modules.py@1"]}]}
+    losses = [("toolchains", "python@a/.python-version"), ("units.config", "u@. > x")]
+    renovate = {"kind": "model_failed", "source": "renovate@1", "path": ".", "detail": "renovate ended the repository"}
+    assert unexplained_losses(losses, [renovate], record) == [("units.config", "u@. > x")]
+    withheld = {**renovate, "kind": "file_withheld"}  # a file left out of the copy, not a source that said nothing
+    other = {**renovate, "source": "make@4"}  # a source that writes no toolchain
+    assert unexplained_losses(losses, [withheld, other], record) == losses
+    assert writers(record, "units.config") == {"modules.py@1"}
 
 
 def test_the_latest_result_is_the_last_by_name_and_no_report_is_one(tmp_path):
