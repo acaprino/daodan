@@ -267,7 +267,7 @@ if PROXY == "script":
         # beyond the four: the tool gave up (urllib, 15 s) before the yes (25 s): the run goes once more, reaching it
         "rerun": execute(project("exec-rerun"), f"https://{ALLOWED}/exec-rerun", timeout=5, reply="once", after=25),
     }
-    blocked_exec = project("exec-blocked")
+    blocked_exec = project("exec-blocked/c/source")  # a checkout of the app: «Blocca» is kept in its project file
     egress.respond(OUTSIDE, str(blocked_exec), "block")
     executed["blocked"] = execute(blocked_exec, f"https://{OUTSIDE}/exec-blocked")
     os.environ.pop(egress.ANSWERS, None)
