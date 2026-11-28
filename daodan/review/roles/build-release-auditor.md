@@ -23,8 +23,7 @@ Require the workflow files with their triggers and permissions, protected enviro
 - For each trigger that outside contributors can fire (pull request from a fork, issue or comment, dependency update, external event) compare the checked-out ref, approval gate and runner with the secrets, write token and deployment authority the job holds. Contributor code running with those is the finding; a wide permission block alone is a lead.
 - Follow branch names, titles, commit messages, issue fields, artifact names, matrix values and step outputs into shell commands, expressions, paths and inputs of privileged workflows.
 - Follow caches, artifacts and shared workspaces from the job that writes them to the job that restores and executes or releases them: key and namespace, producer identity, digest binding, and whether promotion resolves the artifact again.
-- Check that test, review, signature and publication name one immutable digest through every copy, repack and architecture merge, and that mutable inputs (branches, tags, floating actions, container tags, downloaded tools, submodules, generated or vendored sources) cannot change between review and build.
-- Compare the build context with the intended release inputs: secrets, local configuration and repository metadata that enter a package or image.
+- Check that test, review, signature and publication name one immutable digest through every copy, repack and architecture merge, and that build inputs outside the package manifests (floating actions, container tags, downloaded tools, submodules, generated or vendored sources) cannot change between review and build.
 - For signatures and attestations check that the consumer validates workflow, repository, branch, environment and key role, not only a valid signature. For updaters check binding of version, product, platform, channel, target path, expiry and rollback state to the payload; for plugins, that authenticity and capability checks run before install or update hooks.
 
 ## Counterevidence
@@ -33,5 +32,5 @@ Fork jobs without secrets, pinned digests, caches scoped per trust level, protec
 
 ## Boundaries and output
 
-Package origin, lockfiles and advisories belong to dependency-provenance; secrets already present in source or layers to secret-exposure; Tauri updater configuration to tauri-hardening; rollout compatibility to release-compatibility.
+Package origin, lockfiles, mutable package references and advisories belong to dependency-provenance; secrets in source, artifacts or image layers to secret-exposure; Tauri updater configuration to tauri-hardening; rollout compatibility to release-compatibility.
 Add trigger or input, lower-trust actor, the step that trusts it, the authority or output reached and the missing binding. Never trigger a workflow, publish or sign to verify.

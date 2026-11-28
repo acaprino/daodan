@@ -25,7 +25,7 @@ Load only applicable sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/r
 - Follow caller-controlled IDs and privileged fields through reads, writes, lists, exports, bulk/admin jobs and direct download/upload routes. Check object, tenant, operation and field permissions at the effective sink; inspect alternate entrypoints and shared guards.
 - For RLS, resolve engine behavior, policy composition, read/write predicates, effective DB role, security-definer functions and privileged writers. Trace tenant context through connection checkout, reuse, transaction and reset; a configured policy may be bypassed by its execution role.
 - Compare IAM, DB, service and tool grants to the operation. Demonstrate how excess power becomes reachable, including confused-deputy paths and delegated credentials; a broad grant alone does not prove exploitability.
-- Check the derived readers of a protected record: search, filter and sort, counts and aggregates, analytics, logs, diagnostics and error or timing differences that reveal what the direct read denies. Check keys composed of a tenant and a caller-chosen part for collisions across tenants, and API keys whose request parameters override the tenant, resource or environment of their server-side record.
+- Check the derived readers of a protected record: search, filter and sort, counts, aggregates and analytics that reveal what the direct read denies.
 - Establish the actual unauthorized reader or mutator, attacker-controlled value and bypassed check. Preserve direct and indirect paths when a guard covers only the primary handler.
 
 ## Counterevidence

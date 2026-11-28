@@ -24,8 +24,8 @@ Require the final merged manifest or entitlement set, registered schemes and int
 - For file-open, share, drag/drop, clipboard and notification actions check content type, the final target and the user's current intent before a privileged operation; a confirmation must name the action, resource and account it authorizes and expire with them.
 - For webviews check the origin at call time and after every navigation, redirect, subframe and error page before a native bridge answers; check the bridge's method allowlist and arguments, and file, universal-access and custom-protocol settings that join remote content to local files.
 - For sockets, pipes, XPC, Binder, D-Bus, native messaging and loopback listeners check the peer's OS credentials, code identity or channel ownership, then bind each method and resource to that peer rather than to an identifier it declares. Check exported services, activities, receivers and providers against their permission and signature level.
-- For privileged helpers and installers follow the command, file, user or setting a low-privilege caller selects, and manifests, scripts, symlinks and working directories it can rewrite after authorization. Check request IDs, socket paths, inherited descriptors and restart behavior that let one peer answer or reuse another's operation.
-- Follow keychain items, token files, backups, logs, caches, widgets and notifications to another app, profile or user, and across logout, account switch and device restore.
+- For privileged helpers and installers follow the command, file, user or setting a low-privilege caller selects, and manifests, scripts and working directories it can rewrite after authorization. Check request IDs, socket paths, inherited descriptors and restart behavior that let one peer answer or reuse another's operation.
+- Follow keychain items, token files, backups, caches, widgets and notifications to another app, profile or user, and across logout, account switch and device restore.
 
 ## Counterevidence
 
@@ -33,5 +33,5 @@ Peer-credential or code-signature checks, signature-level permissions, descripto
 
 ## Boundaries and output
 
-Tauri commands, events and capabilities belong to tauri-ipc and tauri-hardening; browser windows and storage to client-context; update signing to build-release; path containment on remote input to untrusted-resource; parsing of an opened native file to memory-safety.
+Tauri commands, events and capabilities belong to tauri-ipc and tauri-hardening; browser windows and storage to client-context; update signing to build-release; path containment and symlinks to untrusted-resource; check/use windows on files to local-concurrency; secrets in logs to secret-exposure; parsing of an opened native file to memory-safety.
 Add entry, local actor, peer or origin check, operation reached and result. Use a disposable local fixture; never test against another user's device or data.

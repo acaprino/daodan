@@ -24,8 +24,7 @@ For patterns read only relevant sections of `${CLAUDE_PLUGIN_ROOT}/skills/defect
 
 - Follow each length, offset, index and terminator to the buffer it addresses, recomputing headroom after prefixes, padding and alignment, for source and destination. Check arithmetic before allocation, copy, loop and indexing: subtraction below zero, `count * size`, sums near the type maximum, narrowing and signedness changes, and units mixed between bytes, elements and code units.
 - Find buffers, padding, struct fields and spare capacity returned, compared, hashed or serialized across a trust boundary before initialization.
-- For each owner released on an error, cancellation, close or reallocation path, find the callback, timer, iterator, borrowed slice or cached pointer that still uses it, and the second release. Check tags, discriminators and downcasts against the representation read afterwards.
-- Compare retain/release, locks and ownership across threads on the fast, error, shutdown and compatibility paths of the same object; show the schedule that frees or mutates it during access.
+- Check tags, discriminators, object kinds and downcasts against the representation read afterwards, including a tag left stale after reuse. Where resource-lifecycle or local-concurrency shows a use after release, a double release or a race on a native object, establish what the stale access reads or writes; the lifetime and the interleaving stay theirs.
 - At every `extern`, CGo, JNI, Python or generated binding compare both sides: who allocates, frees and pins, how long a pointer stays valid, whether a length is bytes or elements, struct layout, packing, enum width and calling convention per architecture, and unwinding across an ABI that forbids it.
 - For loaders, plugins and privileged interfaces check search paths writable by a lower-trust principal, the identity check against the image actually mapped, offsets and counts in binary metadata before range and overlap checks, user memory read twice after validation, and live pointers that survive unload.
 
@@ -35,5 +34,5 @@ A bound enforced on every caller, checked arithmetic, ownership proven by the ty
 
 ## Boundaries and output
 
-Leaks and unreleased handles belong to resource-lifecycle; allocation cost to algorithmic-cost; races on application state to local-concurrency; arithmetic errors without a memory effect to local-correctness; update and supply-channel authenticity to build-release.
+Ownership, use after release, double release and leaks belong to resource-lifecycle; interleavings, lock order and file TOCTOU to local-concurrency; allocation cost to algorithmic-cost; arithmetic errors without a memory effect to local-correctness; update and supply-channel authenticity to build-release.
 Add input, the violated bound, lifetime or contract, the path that reaches it and the observed effect. Stop at the violated invariant; keep any run inside an explicitly disposable authorized fixture and develop nothing beyond the proof.

@@ -25,7 +25,7 @@ Require, for each message family, producer, transport or broker, gateway, consum
 - For streams, subscriptions, batches and bulk messages authorized once, follow later items that name other resources and delivery that continues after role, membership or token revocation.
 - Check who can publish or subscribe to another tenant's topic, wildcard, consumer group, partition, reply queue or dead-letter route; a tenant name inside the payload is not isolation.
 - Check that a reply, cancellation or acknowledgement is bound to the peer, tenant and operation that are pending: predictable, reused or cross-tenant correlation IDs let one caller complete another's request.
-- Find bodies that declare themselves administrative, replication or migration events without an independently authenticated producer and type, and dead-letter, error-topic, tracing and operator views that expose secrets or another tenant's payload to a lower-trust reader.
+- Find internal messages that declare themselves administrative, replication or migration events without an independently authenticated producer and type, and dead-letter, error-topic, tracing and operator views that expose secrets or another tenant's payload to a lower-trust reader.
 
 ## Counterevidence
 
