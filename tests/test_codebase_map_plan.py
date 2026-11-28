@@ -68,19 +68,19 @@ def test_the_plan_names_each_adapter_on_what_it_runs_on_and_what_it_needs():
             ("README", {"language": None}), ("q.sql", {"language": "sql"})]
     planned = planning.plan(rows)
     nodes = {node["id"]: node for node in planned["nodes"]}
-    assert {"parse:python", "parse:go", "parse:file-level", "parse:sql", "resolve:scip-python", "resolve:scip-go",
-            "observe:dynamic-record-python", "observe:dynamic-record-go"} == set(nodes)
-    assert nodes["parse:python"]["on"] == {"languages": ["python"], "files": 2} and not nodes["parse:python"]["needs"]
-    assert nodes["parse:file-level"]["on"] == {"languages": [], "files": 1}
-    resolve = nodes["resolve:scip-go"]
+    assert {"read_code:python", "read_code:go", "read_code:file-level", "read_code:sql", "link_calls:scip-python", "link_calls:scip-go",
+            "run_and_observe:dynamic-record-python", "run_and_observe:dynamic-record-go"} == set(nodes)
+    assert nodes["read_code:python"]["on"] == {"languages": ["python"], "files": 2} and not nodes["read_code:python"]["needs"]
+    assert nodes["read_code:file-level"]["on"] == {"languages": [], "files": 1}
+    resolve = nodes["link_calls:scip-go"]
     assert (resolve["step"], resolve["adapter"], resolve["container"], resolve["needs"]) == (
-        "resolve", "scip-go", True, ["parse:go"])
+        "link_calls", "scip-go", True, ["read_code:go"])
     assert resolve["on"] == {"languages": ["go"], "files": 1, "unit_kinds": ["go-module"]} and resolve["version"]
-    observe = nodes["observe:dynamic-record-go"]
-    assert (observe["needs"], observe["on"]["languages"], observe["container"]) == (["resolve:scip-go"], ["go"], True)
-    assert "version" not in nodes["parse:go"]  # only an adapter that declares one has it
+    observe = nodes["run_and_observe:dynamic-record-go"]
+    assert (observe["needs"], observe["on"]["languages"], observe["container"]) == (["link_calls:scip-go"], ["go"], True)
+    assert "version" not in nodes["read_code:go"]  # only an adapter that declares one has it
     assert [planning.node_of(row) for _path, row in rows] == [
-        "parse:python", "parse:python", "parse:go", "parse:file-level", "parse:sql"]
+        "read_code:python", "read_code:python", "read_code:go", "read_code:file-level", "read_code:sql"]
     assert {(gap["kind"], gap["language"], gap["files"]) for gap in planned["gaps"]} == {("no-analyzer", "sql", 1)}
 
 
@@ -92,8 +92,8 @@ def test_a_language_with_an_analyzer_and_no_observer_is_a_gap_and_a_resolver_is_
     planned = planning.plan([("a.css", {"language": "css"}), ("a.rb", {"language": "ruby"})])
     assert [(gap["kind"], gap["language"]) for gap in planned["gaps"] if gap["kind"] == "no-observer"] == [
         ("no-observer", "stylesheet")]
-    assert "resolve:stylesheet" in {node["id"] for node in planned["nodes"]}  # a graph of other languages' files
-    nodes = [node for node in planned["nodes"] if node["step"] == "resolve"]
+    assert "link_calls:stylesheet" in {node["id"] for node in planned["nodes"]}  # a graph of other languages' files
+    nodes = [node for node in planned["nodes"] if node["step"] == "link_calls"]
     languages = [language for node in nodes for language in node["on"]["languages"]]
     assert len(languages) == len(set(languages))  # a language has one resolver
 
@@ -101,12 +101,12 @@ def test_a_language_with_an_analyzer_and_no_observer_is_a_gap_and_a_resolver_is_
 def test_a_node_whose_need_failed_is_blocked_per_language_and_says_which_need():
     planning = _planning()
     planned = planning.plan([("a.c", {"language": "c"}), ("a.cpp", {"language": "cpp"})])
-    clang = next(node for node in planned["nodes"] if node["id"] == "resolve:scip-clang")
+    clang = next(node for node in planned["nodes"] if node["id"] == "link_calls:scip-clang")
     assert planning.blocked(clang, {}) == {}
-    assert planning.blocked(clang, {"parse:c": "no c file was parsed"}) == {"c": ("parse:c", "no c file was parsed")}
-    watcher = next(node for node in planned["nodes"] if node["step"] == "observe" and "cpp" in node["on"]["languages"])
-    failed = {"resolve:scip-clang": {"cpp": "no graph of cpp"}}
-    assert planning.blocked(watcher, failed) == {"cpp": ("resolve:scip-clang", "no graph of cpp")}
+    assert planning.blocked(clang, {"read_code:c": "no c file was parsed"}) == {"c": ("read_code:c", "no c file was parsed")}
+    watcher = next(node for node in planned["nodes"] if node["step"] == "run_and_observe" and "cpp" in node["on"]["languages"])
+    failed = {"link_calls:scip-clang": {"cpp": "no graph of cpp"}}
+    assert planning.blocked(watcher, failed) == {"cpp": ("link_calls:scip-clang", "no graph of cpp")}
 
 
 def test_a_row_may_stand_for_a_group_of_files_and_the_parse_part_needs_no_adapter_registry():
@@ -118,18 +118,18 @@ def test_a_row_may_stand_for_a_group_of_files_and_the_parse_part_needs_no_adapte
                ("", {"language": None, "status": "lexical", "files": 1})]
     assert planning.plan(grouped) == planning.plan(single)
     ids = {node["id"] for node in planning.plan(single)["nodes"]}
-    assert "parse:go" not in ids and not {"resolve:scip-go", "observe:dynamic-record-go"} & ids  # all excluded
-    assert planning.parse_nodes(single) == [node for node in planning.plan(single)["nodes"] if node["step"] == "parse"]
+    assert "read_code:go" not in ids and not {"link_calls:scip-go", "run_and_observe:dynamic-record-go"} & ids  # all excluded
+    assert planning.parse_nodes(single) == [node for node in planning.plan(single)["nodes"] if node["step"] == "read_code"]
 
 
 def test_the_stylesheet_graph_is_built_from_its_own_parsers_so_no_parse_node_blocks_it():
     planning = _planning()
     nodes = {node["id"]: node for node in planning.plan([("a.css", {"language": "css"}),
                                                          ("b.vue", {"language": "vue"})])["nodes"]}
-    sheet = nodes["resolve:stylesheet"]
-    assert sheet["needs"] == [] and nodes["resolve:scip-typescript"]["needs"] == ["parse:vue"]
-    assert planning.blocked(sheet, {"parse:stylesheet": "x", "parse:css": "x", "parse:vue": "x"}) == {}
-    assert planning.blocked(nodes["resolve:scip-typescript"], {"parse:vue": "x"}) == {"vue": ("parse:vue", "x")}
+    sheet = nodes["link_calls:stylesheet"]
+    assert sheet["needs"] == [] and nodes["link_calls:scip-typescript"]["needs"] == ["read_code:vue"]
+    assert planning.blocked(sheet, {"read_code:stylesheet": "x", "read_code:css": "x", "read_code:vue": "x"}) == {}
+    assert planning.blocked(nodes["link_calls:scip-typescript"], {"read_code:vue": "x"}) == {"vue": ("read_code:vue", "x")}
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -146,7 +146,7 @@ def test_every_file_of_the_inventory_is_in_a_parse_node(tmp_path, fixture):
         rows = list(store.iter_inventory())
         entries = {path: entry for path, entry in store.iter_files(semantic=False)}
     planned = planning.plan(rows)
-    parse = {node["id"]: node for node in planned["nodes"] if node["step"] == "parse"}
+    parse = {node["id"]: node for node in planned["nodes"] if node["step"] == "read_code"}
     assert rows and sum(node["on"]["files"] for node in parse.values()) == len(rows)
     assert {path for path, _row in rows} == set(entries)
     assert all(planning.node_of(row) in parse for _path, row in rows)
@@ -157,7 +157,7 @@ def test_no_parser_runs_outside_the_plan(tmp_path):
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     parsed = []
     real = snapshot.get_adapter
-    with mock.patch.object(_planning(), "parse_nodes", _parse_without("parse:go")), \
+    with mock.patch.object(_planning(), "parse_nodes", _parse_without("read_code:go")), \
             mock.patch.object(snapshot, "get_adapter", side_effect=lambda name: parsed.append(name) or real(name)):
         snapshot.read_project(root, tmp_path / "out" / "manifest.sqlite")
     assert "python" in parsed and "go" not in parsed  # the spy sees the adapter that is in the plan
@@ -166,7 +166,7 @@ def test_no_parser_runs_outside_the_plan(tmp_path):
 def test_a_file_in_no_parse_node_keeps_its_row_and_says_why(tmp_path):
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     manifest = tmp_path / "out" / "manifest.sqlite"
-    with mock.patch.object(_planning(), "parse_nodes", _parse_without("parse:go")):
+    with mock.patch.object(_planning(), "parse_nodes", _parse_without("read_code:go")):
         written = snapshot.read_project(root, manifest)
     with open_snapshot(manifest) as store:
         assert [path for path, _row in store.iter_inventory()] == ["billing.go", "pay.py"]
@@ -187,15 +187,15 @@ def test_no_resolver_runs_outside_the_plan(tmp_path):
         return None, None, None, {"available": True, "engine": spec.name,
                                   "languages": {language: {"state": "fresh"} for language in wanted}}
 
-    with mock.patch.object(_planning(), "plan", _without("resolve:scip-go")), \
+    with mock.patch.object(_planning(), "plan", _without("link_calls:scip-go")), \
             mock.patch.object(engine_pass, "_launch", side_effect=launch), \
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         report = engine_pass.run_pass(manifest, tmp_path / "out" / "report.json")
     assert launched == ["scip-python"] and "go" not in report["languages"]
 
 
-@pytest.mark.parametrize("dropped, seen", [("observe:dynamic-record-go", "python"),
-                                           ("observe:dynamic-record-python", "go")])
+@pytest.mark.parametrize("dropped, seen", [("run_and_observe:dynamic-record-go", "python"),
+                                           ("run_and_observe:dynamic-record-python", "go")])
 def test_no_observer_runs_outside_the_plan(tmp_path, dropped, seen):
     root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
     manifest, asked = tmp_path / "out" / "manifest.sqlite", []
@@ -258,13 +258,13 @@ def test_a_parser_that_is_missing_stops_the_resolver_and_the_observer_of_its_lan
     results, launched, asked, seen = _chain(tmp_path)
     assert launched == ["scip-python"]  # scip-go does not start, with its parser missing
     languages = results["link_calls"]["languages"]
-    assert languages["go"]["state"] == "unavailable" and languages["go"]["need"] == "parse:go"
+    assert languages["go"]["state"] == "unavailable" and languages["go"]["need"] == "read_code:go"
     assert "none of the 1 go files was parsed" in languages["go"]["reason"] and languages["python"]["state"] == "fresh"
     unavailable = [event for event in seen if event["kind"] == "analyzer.unavailable"]
-    assert [(event["analyzer"], event["data"]["need"]) for event in unavailable] == [("scip-go", "parse:go")]
+    assert [(event["analyzer"], event["data"]["need"]) for event in unavailable] == [("scip-go", "read_code:go")]
     assert asked == ["python"]  # the go observer does not plan its runs
     observed = results["run_and_observe"]["languages"]
-    assert (observed["go"]["state"], observed["go"]["need"]) == ("no-static-graph", "resolve:scip-go")
+    assert (observed["go"]["state"], observed["go"]["need"]) == ("no-static-graph", "link_calls:scip-go")
     assert observed["python"]["state"] == "not-run"
 
 

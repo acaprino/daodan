@@ -584,7 +584,7 @@ def run(manifest: Path, bus) -> dict:
                 say(gap["detail"], {key: gap[key] for key in ("kind", "language", "detail")}, language=gap["language"])
                 left([gap["language"]], "no-observer", "no observer runs this language's tests")
         by_entry = {module.NAME: module for module in observers()}
-        waiting = [node for node in layout["nodes"] if node["step"] == "observe"]
+        waiting = [node for node in layout["nodes"] if node["step"] == STEP]
         for number, node in enumerate(waiting):
             module = by_entry[node["adapter"]]
             name, entry = resolver(module), module.NAME

@@ -179,4 +179,4 @@ def test_a_file_the_pre_map_excludes_is_read_like_any_other_and_the_plan_counts_
     with open_snapshot(manifest) as store:
         assert "f" in store.get_file("lib/x.py")["symbols"] and "g" in store.get_file("app.py")["symbols"]
         planned = planning.plan(planning.stored(store))
-    assert {node["id"]: node["on"]["files"] for node in planned["nodes"]}["parse:python"] == 2
+    assert {node["id"]: node["on"]["files"] for node in planned["nodes"]}["read_code:python"] == 2

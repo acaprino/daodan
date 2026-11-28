@@ -7,8 +7,9 @@ It reads the adapters' own declarations (`engine_pass.ENGINES`, which the stages
 the project, only choices; the steps run the nodes it gives and nothing else (`snapshot.write_reading`,
 `engine_pass.pass_plan`, `dynamic.run`).
 
-A node is `{id, step, adapter, [version], on, container, needs}`: `id` is `<step>:<adapter>` (`parse:<language>`,
-`parse:file-level` for the files with no language, `resolve:<analyzer name>`, `observe:<observer entry>`); `on` is
+A node is `{id, step, adapter, [version], on, container, needs}`: `step` is the id of the step that runs it and `id` is
+`<step>:<adapter>` (`read_code:<language>`, `read_code:file-level` for the files with no language,
+`link_calls:<analyzer name>`, `run_and_observe:<observer entry>`); `on` is
 `{"languages", "files"}` (counts, never paths), and for a resolver also `unit_kinds`; `container` is whether it runs
 in Daodan's container; `needs` are the ids of the nodes it waits for. A gap is `{kind, language, files, detail}`:
 `no-analyzer` (a language no analyzer lists) or `no-observer` (a language with a resolver and no observer).
@@ -21,11 +22,13 @@ from __future__ import annotations
 import collections
 
 FILE_LEVEL = "file-level"  # the adapter of the files with no language: their entry holds no reading
+# The steps that run the nodes, by their ids: the reading (`snapshot.write_reading`), `engine_pass.STEP`, `dynamic.STEP`.
+READ_CODE, LINK_CALLS, RUN_AND_OBSERVE = "read_code", "link_calls", "run_and_observe"
 
 
 def node_of(row: dict) -> str:
-    """The parse node a file belongs to, from its inventory row."""
-    return f"parse:{row.get('language') or FILE_LEVEL}"
+    """The reading's node a file belongs to, from its inventory row."""
+    return f"{READ_CODE}:{row.get('language') or FILE_LEVEL}"
 
 
 def coverage(connection) -> list[tuple[str, dict]]:
@@ -70,11 +73,11 @@ def _owner(language: str):
 def need(node: dict, language: str) -> str | None:
     """The id of the node of `node`'s `needs` that `language` waits for: its parser (a resolver), its resolver (an
     observer); None where it waits for none."""
-    if node["step"] == "resolve":
-        needed = f"parse:{language}"
+    if node["step"] == LINK_CALLS:
+        needed = node_of({"language": language})
     else:
         owner = _owner(language)
-        needed = f"resolve:{owner.NAME}" if owner else None
+        needed = f"{LINK_CALLS}:{owner.NAME}" if owner else None
     return needed if needed in node["needs"] else None
 
 
@@ -112,17 +115,17 @@ def _tally(rows) -> tuple[collections.Counter, dict, set]:
     return files, statuses, held
 
 
-def _parse(files: collections.Counter) -> list[dict]:
-    nodes = [_node("parse", language, None, {"languages": [language], "files": files[language]}, False, [])
+def _read(files: collections.Counter) -> list[dict]:
+    nodes = [_node(READ_CODE, language, None, {"languages": [language], "files": files[language]}, False, [])
              for language in sorted(language for language in files if language)]
     if files[None]:
-        nodes.append(_node("parse", FILE_LEVEL, None, {"languages": [], "files": files[None]}, False, []))
+        nodes.append(_node(READ_CODE, FILE_LEVEL, None, {"languages": [], "files": files[None]}, False, []))
     return nodes
 
 
 def parse_nodes(rows) -> list[dict]:
-    """The parse nodes alone, which need no adapter registry: what the reading takes its files from."""
-    return _parse(_tally(rows)[0])
+    """The reading's nodes alone, which need no adapter registry: what the reading takes its files from."""
+    return _read(_tally(rows)[0])
 
 
 def plan(rows) -> dict:
@@ -132,7 +135,7 @@ def plan(rows) -> dict:
     files, statuses, held = _tally(rows)
     read = {language for language, found in statuses.items() if found & set(READ)}
     languages = sorted(language for language in files if language)
-    nodes = _parse(files)
+    nodes = _read(files)
     analyzers = _analyzers()
     owner: dict = {}
     for analyzer in analyzers:  # a language's resolver is the first analyzer that lists it
@@ -148,9 +151,10 @@ def plan(rows) -> dict:
         if not mine:
             continue
         sources = sorted(language for language in analyzer.SNAPSHOT_LANGUAGES if files[language])
-        # A graph of other languages' files reads them with its own parsers: no parse node of the snapshot is its need.
-        needs = [] if analyzer.SNAPSHOT_LANGUAGES else [f"parse:{language}" for language in mine if files[language]]
-        nodes.append(_node("resolve", analyzer.NAME, analyzer.VERSION,
+        # A graph of other languages' files reads them with its own parsers: no reading node of the snapshot is its need.
+        needs = [] if analyzer.SNAPSHOT_LANGUAGES else [node_of({"language": language}) for language in mine
+                                                        if files[language]]
+        nodes.append(_node(LINK_CALLS, analyzer.NAME, analyzer.VERSION,
                            {"languages": mine, "files": sum(files[language] for language in {*mine, *sources}),
                             "unit_kinds": sorted(analyzer.UNIT_KINDS)}, bool(analyzer.NEEDS_CONTAINER), needs))
         resolved += mine
@@ -159,9 +163,9 @@ def plan(rows) -> dict:
         mine = sorted(language for language in observer.LANGUAGES if language in resolved)
         watched.update(observer.LANGUAGES)
         if mine:
-            nodes.append(_node("observe", observer.NAME, getattr(observer, "VERSION", None),
+            nodes.append(_node(RUN_AND_OBSERVE, observer.NAME, getattr(observer, "VERSION", None),
                                {"languages": mine, "files": sum(files[language] for language in mine)}, True,
-                               sorted({f"resolve:{owner[language].NAME}" for language in mine})))
+                               sorted({f"{LINK_CALLS}:{owner[language].NAME}" for language in mine})))
     gaps = []
     served = {language for analyzer in analyzers for language in analyzer.SNAPSHOT_LANGUAGES}
     for language in languages:  # a graph of other languages' files serves one whose files it reads no code of

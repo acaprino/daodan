@@ -526,7 +526,7 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
             and hasattr(previous, "verified_reusable_headers")
             and previous._has_json_cache()
         )
-        # The plan's parse part (spec 8.4; no entries exist yet, so no status): a file in no parse node is not
+        # The plan's `read_code` nodes (spec 8.4; no entries exist yet, so no status): a file in none of them is not
         # read by a language adapter. It keeps its inventory row and a file-level entry that says so.
         from pipeline import plan as planning
         rows = dict(listed.iter_inventory())

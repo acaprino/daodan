@@ -74,8 +74,9 @@ def snapshot_plan(connection) -> dict:
 def pass_languages(connection) -> list[str]:
     """The languages the pass serves: every one the snapshot holds a file of, parsed or not (`unparsed`), and those
     of an analyzer whose graph is built from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph)
-    when the snapshot holds one: the languages of the plan's parse and resolve nodes."""
-    return sorted({language for node in snapshot_plan(connection)["nodes"] if node["step"] in ("parse", "resolve")
+    when the snapshot holds one: the languages of the plan's `read_code` and `link_calls` nodes."""
+    from pipeline import plan as planning
+    return sorted({language for node in snapshot_plan(connection)["nodes"] if node["step"] in (planning.READ_CODE, STEP)
                    for language in node["on"]["languages"]})
 
 
@@ -402,8 +403,9 @@ def engine_command(manifest: Path, report_path: Path) -> list[str]:
 
 
 def _unparsed_needs(connection) -> dict[str, str]:
-    """`unparsed` as the plan's `failed`: the parse node of each language the snapshot did not parse, with why."""
-    return {f"parse:{language}": reason for language, reason in unparsed(connection).items()}
+    """`unparsed` as the plan's `failed`: the reading's node of each language the snapshot did not parse, with why."""
+    from pipeline import plan as planning
+    return {planning.node_of({"language": language}): reason for language, reason in unparsed(connection).items()}
 
 
 def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict, str]:
@@ -412,7 +414,7 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
     from pipeline import plan as planning
     manifest = Path(manifest)
     with open_snapshot(manifest) as store:
-        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == "resolve"]
+        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == STEP]
         failed = _unparsed_needs(store.connection)
         digest = logical_digest(store)
         fresh = {}
@@ -448,7 +450,7 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     outcomes = report["languages"]
     from pipeline import plan as planning
     with open_snapshot(manifest) as store:
-        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == "resolve"]
+        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == STEP]
         failed = _unparsed_needs(store.connection)
     specs = {spec.name: spec for spec in ENGINES}
     stopped = {language: (specs[node["adapter"]], *why) for node in nodes
