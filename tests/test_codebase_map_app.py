@@ -984,6 +984,11 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
             state = request(port, "/api/app/state")[1]
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
         assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["find_modules"] == "fresh"
+        # the run's one plan, as `codebase_map_status` gives it: the steps to the entry points are done
+        import pipeline
+        plan = state["run"]["plan"]
+        assert [step["id"] for step in plan["steps"]] == list(pipeline.IDS)
+        assert {step["id"]: step["state"] for step in plan["steps"]}["find_entry_points"] in ("done", "skipped")
         assert state["mcp"]["args"][-2:] == ["--project", project.parent.as_posix()]
         assert state["mcp"]["command"] == sys.executable  # its packages are the app's: no `uv` on the PATH
         # what Daodan writes about the checkout is beside it: a container's output may not be inside the project

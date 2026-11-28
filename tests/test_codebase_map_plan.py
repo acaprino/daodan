@@ -418,3 +418,16 @@ def test_a_request_of_gradle_waits_for_its_model_action_alone_and_a_no_makes_it_
     refused = {action["id"]: action for action in planning.current(manifest)["actions"]}[f"find_modules:{gradle}"]
     assert (refused["state"], refused["gap"], refused["hosts"]) == ("not_possible", "host_denied", ["repo.example.com"])
     assert refused["cause"] and refused["remedy"]
+
+
+def test_the_command_line_prints_the_plan_the_app_and_mcp_show(tmp_path, shared, capsys):
+    """`daodan snapshot plan MANIFEST` prints `plan.current` as JSON: one plan for app, MCP and command line."""
+    import json
+    planning = _planning()
+    root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    pipeline.run(manifest, stop="find_entry_points", fast_scan=True)
+    capsys.readouterr()
+    assert snapshot.main(["plan", str(manifest)]) == 0
+    assert json.loads(capsys.readouterr().out) == planning.current(manifest)

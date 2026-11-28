@@ -333,7 +333,9 @@ class MapService:
             eng = self._engine(state, manifest.path, repair=False)
             result["engine"] = eng
             result["progress"] = self._progress(manifest.path)
-            result["pipeline"] = self._pipeline_state(manifest.path, eng)
+            result["pipeline"] = self._pipeline_state(manifest.path, eng)  # kept for MCP clients until T1.E reads `plan`
+            from pipeline import plan as planning
+            result["plan"] = planning.current(manifest.path)  # the one plan: steps, policy, actions and gaps
             import egress
             # the hosts the analysis waits for the person to approve, by tool: read here, answered only in the app
             result["egress"] = egress.groups([egress.project_of(Path(manifest.path))])
