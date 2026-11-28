@@ -70,7 +70,10 @@ def _restore():
 
     project = pathlib.Path("/work")
     restored = runner._node(project)
-    first, files, hosts, gaps = runner.plan("next", [], [], restored["lines"])
+    # the tools the runner installs as root before the setup (`container.tool_phase`, T3.A.6b) go back into it, ahead of the restore: this
+    # build runs as root, and the measurement stays the one the results hold
+    *_, tools = runner.plan("next", [], [], restored["lines"])
+    first, files, hosts, gaps, _ = runner.plan("next", [], [], [*(tools or {}).get("lines", ()), *restored["lines"]])
     os.makedirs(preparation.IN, exist_ok=True)
     for url, sha, file in files:
         data = urllib.request.urlopen(url, timeout=600).read()
