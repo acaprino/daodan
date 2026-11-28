@@ -212,15 +212,17 @@ export const askReason = (s: Pick<Snapshot, 'server'>) =>
   (!ctx(s) ? 'Seleziona prima una repository.' : s.server?.engine?.engine ? '' : 'Scegli e salva prima un motore.');
 export const isAsking = (s: Pick<Snapshot, 'server' | 'asked'>) => s.asked?.state === 'running' || s.server?.asked?.state === 'running';
 
-// The status row: the state, what is under way, and how far it is where that is known.
+// The status row: the state, what is under way, and how far it is where that is known. A step under way is said by its short
+// name: the row stays one line at 620 px, and the screen of the run says the rest.
 export function statusOf(s: Run & Pick<Snapshot, 'serverError'>): { state: string; tone?: BadgeTone; text: string; percent: number | null } {
   if (s.serverError) return { state: 'Errore', tone: 'danger', text: 'Server non raggiungibile', percent: null };
   if (!s.server) return { state: 'Lettura', tone: 'info', text: 'Lettura dello stato del server…', percent: null };
   const work = preparation(s.server.job);
   if (isPreparing(s)) return { state: 'Preparazione in corso', tone: 'info', text: work?.step ?? '', percent: null };
   if (!ctx(s)) return { state: 'Nessuna repository', text: work ? `Preparazione non riuscita (${work.step})` : '', percent: null };
-  const running = !complete(s) || steps(s).some(step => step.status === 'running');
-  return { state: running ? 'Analisi in corso' : 'Contesto pronto', tone: running ? 'info' : 'success', text: runPhaseLabel(s), percent: running ? runPercent(s) : null };
+  const now = steps(s).find(step => step.status === 'running'), running = !complete(s) || Boolean(now);
+  return { state: running ? 'Analisi in corso' : 'Contesto pronto', tone: running ? 'info' : 'success', text: now ? STEP[now.id] : runPhaseLabel(s),
+    percent: running ? runPercent(s) : null };
 }
 
 // The foot: where the service is, and the engine.

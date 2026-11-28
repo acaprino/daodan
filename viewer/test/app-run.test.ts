@@ -112,7 +112,7 @@ test('the steps follow their own events, with the progress, the gaps and the cau
   ]);
   assert.equal(runPercent(s), 38);  // two of six and a quarter
   assert.equal(runPhaseLabel(s), 'Esecuzione · osservazione dei test');
-  assert.deepEqual(statusOf(s), { state: 'Analisi in corso', tone: 'info', text: 'Esecuzione · osservazione dei test', percent: 38 });
+  assert.deepEqual(statusOf(s), { state: 'Analisi in corso', tone: 'info', text: 'Esecuzione', percent: 38 });  // the short name: one line
   const over = of({ context, run: { pass: { state: 'unavailable', reason: 'nessun container' } } });
   assert.deepEqual([steps(over)[0].status, steps(over)[0].note, runPercent(over)], ['skipped', 'Non eseguita · nessun container', 0]);
   assert.equal(runPercent(of(null)), 0);
@@ -149,6 +149,7 @@ test('the status row and the foot say the server that is read, lost, idle or at 
   assert.deepEqual(statusOf(of({ job: { state: 'preparing', step: 'snapshot' } })), { state: 'Preparazione in corso', tone: 'info', text: 'Snapshot e pre-mappa', percent: null });
   assert.equal(statusOf(of({ job: { state: 'failed', step: 'checkout' } })).text, 'Preparazione non riuscita (Checkout del branch)');
   assert.deepEqual(statusOf(run('fresh')), { state: 'Contesto pronto', tone: 'success', text: 'Pipeline completata', percent: null });
+  assert.equal(statusOf(run('running', [{ kind: 'step.started', step: 'link_calls' }])).text, 'Chiamate');  // as the 620 px shot runs it
   assert.equal(serviceLine(of({ engine: { engine: 'claude' } })), 'App locale: il codice resta sul tuo disco · Motore: claude');
   assert.equal(serviceLine(of({}, { serverError: 'caduto' })), 'Server non raggiungibile · Motore non scelto');
 });
