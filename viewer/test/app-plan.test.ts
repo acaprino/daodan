@@ -57,6 +57,17 @@ test('an action says what it does, where it runs, and an action waiting names it
   assert.deepEqual(currentAction(of(PLAN, { progress: { step: 'find_modules', done: 1, total: 3 } }))?.total, 0);
 });
 
+test('an app\'s exploration and the tests open the window of their command; a stated one says who stated it', () => {
+  const [tests, app] = actionsOf(of(PLAN), 'run_and_observe');
+  assert.deepEqual([tests.commandAt, tests.command], [{ kind: 'tests', root: '.' }, '']);
+  assert.deepEqual([app.title, app.commandAt, app.command], ['Esplorazione dell’app in web', { kind: 'starts', root: 'web' }, '']);
+  assert.deepEqual(actionsOf(of(PLAN), 'link_calls').map(row => row.commandAt), [null, null]);
+  const stated = (grade: 'confermato' | 'proposto') => ({ ...PLAN, actions: PLAN.actions.map(action =>
+    (action.kind === 'explore' ? { ...action, by: grade === 'confermato' ? 'user' as const : 'assistant' as const, grade } : action)) });
+  assert.equal(actionsOf(of(stated('proposto')), 'run_and_observe')[1].command, 'Comando proposto dall’assistente');
+  assert.equal(actionsOf(of(stated('confermato')), 'run_and_observe')[1].command, 'Comando confermato da te');
+});
+
 test('the gaps are the plan\'s and the graph\'s, never the events\'', () => {
   const s = { ...of(PLAN), events: [{ kind: 'gap', message: 'dagli eventi', data: { gap: { detail: 'dagli eventi' } } }],
     graph: { unassigned: { count: 2 }, gaps: [{ reason: 'del grafo' }] } } as unknown as Snapshot;

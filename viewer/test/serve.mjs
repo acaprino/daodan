@@ -18,7 +18,7 @@ export const marksAsked = [];
 Object.assign(envelope.entities.find(entity => entity.ref === 'component:web'), { technologies: ['react'], evidence: parts.map((path, n) => ({ path, line: n + 1 })) });
 envelope.flows.push({ ...envelope.flows[1], ref: 'flow:lungo', label: 'Flusso lungo', complete: true, gaps: [], steps: Array(43).fill(envelope.flows[1].steps[0]) });
 // What the fixture server does next, so that a test can make a route fail or wait.
-export const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [], markRequests = [];
+export const engineRequests = [], askRequests = [], checkRequests = [], selectRequests = [], markRequests = [], commandRequests = [];
 export const mode = { graphStatus: 200, premapStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, selectRefused: '', exportBroken: false, exportDelay: 0, exportBusy: 0, layoutLost: false, pathsBroken: false, pathsClassified: false, marks: false };
 export const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 export const groups = ['Client', 'Server'].map(name => ({
@@ -60,6 +60,13 @@ export const respond = async route => {
     markRequests.push(url.search);
     return route.fulfill(mode.marks ? { contentType: 'image/svg+xml', body: LOGO }
       : { status: 404, json: { error: 'nessun logo' } });
+  }
+  // A command set is kept as the person's; the answer is the whole state, as the server's is.
+  if (path === '/api/app/command') {
+    const body = route.request().postDataJSON();
+    commandRequests.push(body);
+    const kept = body.action === 'set' ? [{ ...body.command, by: 'user', grade: 'confermato' }] : [];
+    return route.fulfill({ json: { ...fresh, commands: kept } });
   }
   if (path === '/api/app/symbols') return route.fulfill({ json: { file: 'child', symbols: [{ id: 'child::save', name: 'save', lines: [1, 5] }], calls: [] } });
   if (path === '/api/app/ask') {

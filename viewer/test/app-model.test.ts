@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { Notify } from '@acaprino/imago';
 import { createModel } from '../app/model.ts';
+import type { Command } from '../app/server.ts';
 import { ORPHAN_WRITES } from '../app/snapshot.ts';
 import { DEFAULTS, readKept, STORAGE } from '../app/storage.ts';
 
@@ -205,6 +206,38 @@ test('a refused answer is said and the group waits; one put aside is offered aga
   assert.equal(asked('/api/app/egress').length, 1);
   model.showHosts();
   assert.deepEqual(now().hostsHidden, []);
+});
+
+test('the person\'s command is sent from the form, once, and the new state and a notice follow; a refusal keeps the window', async () => {
+  const proposed: Command = { kind: 'starts', root: 'web', argv: ['pnpm', 'dev'], by: 'assistant', grade: 'proposto', surface: 'web' };
+  let answer: (value: unknown) => void = () => undefined;
+  const { model, sources, now, asked, said, notices } = setup({ '/api/app/command': call =>
+    (call.body.action === 'remove' ? fails(400, 'no single starts command of web is kept') : new Promise(resolve => { answer = resolve; })) });
+  model.start();
+  sources[0].send('app', { ...ready, commands: [proposed] });
+  model.showCommand('starts', 'web');
+  assert.deepEqual(now().commandDraft, { kind: 'starts', root: 'web', words: 'pnpm\ndev', port: '' });
+  model.editCommand({ words: 'pnpm\nrun\ndev', port: '5173' });
+  const sent = model.setCommand();
+  model.setCommand();  // one at a time
+  model.hideCommand();  // nor does the window close while it is sent
+  assert.deepEqual(asked('/api/app/command').map(call => call.body),
+    [{ action: 'set', command: { kind: 'starts', root: 'web', argv: ['pnpm', 'run', 'dev'], port: 5173, surface: 'web' } }]);
+  assert.equal(now().commandBusy, 'set');
+  const mine: Command = { ...proposed, argv: ['pnpm', 'run', 'dev'], port: 5173, by: 'user', grade: 'confermato' };
+  answer({ ...ready, commands: [mine] });
+  await sent;
+  assert.deepEqual([now().server?.commands, now().commandBusy, now().commandDraft], [[mine], '', null]);
+  assert.ok(said().includes('Comando impostato: Avvio dell’app in web. Gira alla prossima analisi, nel container.'));
+  model.showCommand('starts', 'web');
+  assert.equal(await model.removeCommand(mine), false);
+  assert.deepEqual(asked('/api/app/command').at(-1)?.body, { action: 'remove', kind: 'starts', root: 'web' });
+  assert.deepEqual([notices.at(-1), now().commandDraft?.root], [{ kind: 'error', text: 'no single starts command of web is kept' }, 'web']);
+  model.editCommand({ words: '' });
+  await model.setCommand();  // a form that is not ready sends nothing
+  assert.equal(asked('/api/app/command').length, 2);
+  model.hideCommand();
+  assert.equal(now().commandDraft, null);
 });
 
 test('a run in view again, after none or chosen anew, is read again', async () => {

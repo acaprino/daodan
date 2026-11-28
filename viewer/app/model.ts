@@ -4,6 +4,8 @@ import type { Notify } from '@acaprino/imago';
 import { causeOf, whenFree } from '../src/http.ts';
 import { markAddress } from '../src/marks.ts';
 import { FAILURE } from '../src/words.ts';
+import { confirmBody, confirmedWords, draftOf, isReady, removeBody, removedWords, setBody, setWords, workOf } from './commands.ts';
+import type { CommandDraft } from './commands.ts';
 import { groupKey, pendingGroup, repliedWords, replyBody } from './egress.ts';
 import type { Reply } from './egress.ts';
 import { isAsking } from './engine.ts';
@@ -14,7 +16,7 @@ import { accessible, preferredBranch, repositorySlug, urlError } from './reposit
 import { editBody, pathError } from './project.ts';
 import type { Conflict, Field, Keep, Project, Revision } from './project.ts';
 import { createServer } from './server.ts';
-import type { AppState, Checked, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
+import type { AppState, Checked, Command, CommandKind, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
 import { ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
 import type { Asked, EngineDraft, EngineWork, PathPage, PathResult, PremapFound, Snapshot, Symbols } from './snapshot.ts';
 import { readKept, STORAGE } from './storage.ts';
@@ -36,7 +38,7 @@ export function createModel(host: Host) {
     premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, groupWanted: stored.kept.screen === 'graph',
     engineFromStep: false, pathPage: null, symbols: null, events: [],
     engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null,
-    hostsHidden: [], hostsReplying: '', project: null, projectError: '', projectBusy: '',
+    hostsHidden: [], hostsReplying: '', project: null, projectError: '', projectBusy: '', commandDraft: null, commandBusy: '',
   };
   const listeners = new Set<() => void>();
   // What no screen draws: which run and groups the last answers are of, the question whose answer is awaited, the check and the
@@ -468,6 +470,37 @@ export function createModel(host: Host) {
   }
   const showHosts = () => set({ hostsHidden: [] });
 
+  // -- the commands the person states for a folder of the project -----------------------------------------------------
+
+  // The window of the commands, its form on a kind and a folder; it does not close while something is being sent.
+  const showCommand = (kind: CommandKind, root: string) => set({ commandDraft: draftOf(kind, root, now.server?.commands) });
+  function hideCommand() { if (!now.commandBusy) set({ commandDraft: null }); }
+  function editCommand(patch: Partial<CommandDraft>) { if (now.commandDraft) set({ commandDraft: { ...now.commandDraft, ...patch } }); }
+  // One at a time. The server's answer is its new state; a refusal is said and the window stays. True when the server took it.
+  async function commandWork(work: string, body: unknown, done: string): Promise<boolean> {
+    if (now.commandBusy) return false;
+    set({ commandBusy: work });
+    try {
+      const found = await post<AppState>('/api/app/command', body);
+      set({ commandBusy: '' });
+      applyState(found);
+      say(done);
+      return true;
+    } catch (error) {
+      set({ commandBusy: '' });
+      say(causeOf(error), 'error');
+      return false;
+    }
+  }
+  // The person's command, from the form: the window closes once the server has it.
+  async function setCommand(): Promise<void> {
+    const draft = now.commandDraft;
+    if (!draft || !isReady(draft)) return;
+    if (await commandWork('set', setBody(draft, now.server?.commands), setWords(draft))) set({ commandDraft: null });
+  }
+  const confirmCommand = (command: Command) => commandWork(workOf('confirm', command), confirmBody(command), confirmedWords(command));
+  const removeCommand = (command: Command) => commandWork(workOf('remove', command), removeBody(command), removedWords(command));
+
   // The server's answer to these is its new state.
   const act = (path: string) => post<AppState>(path, {}).then(applyState).catch(error => say(causeOf(error), 'error'));
 
@@ -495,6 +528,7 @@ export function createModel(host: Host) {
     retryPass: () => act('/api/app/retry'), findLinks: () => act('/api/app/link'),
     editEngine, saveEngine, probeEngine, forgetKey, setQuestion: (question: string) => set({ question }), ask,
     replyHosts, hideHosts, showHosts,
+    showCommand, hideCommand, editCommand, setCommand, confirmCommand, removeCommand,
     changeNode, resolveConflict, openProject, saveProject,
   };
 }

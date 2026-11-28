@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import {
-  askRequests, checkRequests, engineRequests, envelope, errors, fresh, graph, groups, markRequests, marksAsked, mode, opened, plan, planDone, quiet,
+  askRequests, checkRequests, commandRequests, engineRequests, envelope, errors, fresh, graph, groups, markRequests, marksAsked, mode, opened, plan, planDone, quiet,
   respond, run, selectRequests, stream,
 } from './serve.mjs';
 
@@ -555,6 +555,26 @@ try {
     await notices.getByText('il server ha risposto 404', { exact: true }).waitFor();  // the fixture has no answer to it
     await closeNotice('il server ha risposto 404');
     await page.reload();
+    await run.waitFor();
+    // The command of an app, from its action: a port that is no port is said, and nothing is sent; once the server has it, it is said
+    // and the window closes.
+    await stage('Esecuzione').click();
+    const exploring = stepPanel('Esecuzione');
+    await exploring.waitFor();
+    await button(exploring, 'Comando: Esplorazione dell’app in web').click();
+    const commands = page.getByRole('dialog', { name: 'Comandi del progetto', exact: true });
+    await says(commands, 'Nessun comando impostato o proposto per questo progetto.');
+    await commands.getByRole('textbox', { name: 'Comando', exact: true }).fill('npm\nrun\ndev');
+    const port = commands.getByRole('textbox', { name: 'Porta', exact: true });
+    await port.fill('0');
+    await alertIn(commands, 'La porta è un numero da 1 a 65535.').waitFor();
+    assert.ok(await button(commands, 'Imposta il comando').isDisabled());
+    await port.fill('5173');
+    await button(commands, 'Imposta il comando').click();
+    await commands.waitFor({ state: 'hidden' });
+    assert.deepEqual(commandRequests, [{ action: 'set', command: { kind: 'starts', root: 'web', argv: ['npm', 'run', 'dev'], port: 5173 } }]);
+    await closeNotice('Comando impostato: Avvio dell’app in web. Gira alla prossima analisi, nel container.');
+    await stage('Chiamate').click();
     await run.waitFor();
     // The graph as it takes shape, behind its row under the last step: the canvas lays it out; a thing chosen is in the details, and
     // goes to the graph.
