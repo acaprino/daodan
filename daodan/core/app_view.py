@@ -4,8 +4,8 @@ Composition only: the stack, the modules and the envelope are the service's; the
 run's snapshot headers. Nothing of the project runs. The graph groups files by module when the run has two or more,
 otherwise by the directory that holds them (its `grouping`), and counts the relations between groups; an external node
 holds no file and is drawn beside the groups at either grouping (a service, say); an external project (a framework) is
-data of the group whose files declare it (`projects`), not a node. These are the system map's levels `codice` and
-`infrastruttura` (`system_levels.LEVELS`; the only ones the app builds): a group opens in place into its directories
+data of the group whose files declare it (`projects`), not a node. These are the natures `codice` and `fisico`
+(`node_model.NATURES`; the only ones the app builds): a group opens in place into its directories
 and files, a directory in turn, a file into its outermost symbols and a symbol into those its lines hold (`view`); a
 file's symbols and their calls are also the inspector's, open or not (`symbols`).
 """
@@ -18,12 +18,12 @@ from pathlib import PurePosixPath
 from premap.suffix_table import NAMES
 from service_registry import marked, package_key
 from snapshot_store import open_snapshot, resolve_run_snapshot
-from system_levels import LEVELS
+from system_levels import NATURES, natures_asked
 from technologies import module_declaration
 
 STRUCTURE = ("file", "directory", "symbol")
 EVIDENCE = 20  # sites kept per relation, as the envelope keeps
-BUILT = ("codice", "infrastruttura")  # the levels of the system map the app builds: files and groups, external nodes
+BUILT = ("codice", "fisico")  # the natures the app builds: files and groups, external nodes
 
 
 def headers(run_dir) -> dict:
@@ -127,21 +127,21 @@ def graph(envelope: dict) -> dict:
 
 
 def levels(names: list | None) -> tuple:
-    """The levels of the system map a request names, in their order, both of BUILT when it names none: another one of
-    the list is not built in the app yet, and is refused rather than served as the code's; `infrastruttura` (the
-    external nodes and their uses) is built only beside `codice`, which gives it the groups that use them."""
+    """The natures a request names (`system_levels.natures_asked`, which still takes the old names), in their order,
+    both of BUILT when it names none: another one of the list is not built in the app yet, and is refused rather than
+    served as the code's; `fisico` (the external nodes and their uses) is built only beside `codice`, which gives it
+    the groups that use them."""
     if names is None:
         return BUILT
     if not isinstance(names, list) or not names or not all(isinstance(name, str) for name in names):
         raise ValueError("levels is a JSON list of levels")
-    for name in names:
-        if name not in LEVELS:
-            raise ValueError(f"no level {name!r}: the levels are {', '.join(LEVELS)}")
+    asked = natures_asked(names)
+    for name in asked:
         if name not in BUILT:
             raise ValueError(f"the level {name!r} is not built in the app yet: it builds {' and '.join(BUILT)}")
-    if "codice" not in names:
-        raise ValueError("the level 'infrastruttura' is built in the app only beside 'codice'")
-    return tuple(name for name in LEVELS if name in names)
+    if "codice" not in asked:
+        raise ValueError("the level 'fisico' is built in the app only beside 'codice'")
+    return tuple(name for name in NATURES if name in asked)
 
 
 def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=None) -> dict:
@@ -149,7 +149,7 @@ def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=No
     group replaced by what it holds (a module or a directory its directories and files, `_contents`; a file its
     outermost symbols, read for that file only by `symbols_of(path)`, and a symbol those its lines hold, `_nested`),
     each node with its `level` and the open `group` that holds it, a first-level group, and its frame when open, with
-    its stack (`_stack`); without `infrastruttura` no external node nor its arrows. The edges are the envelope's
+    its stack (`_stack`); without `fisico` no external node nor its arrows. The edges are the envelope's
     relations lifted to the node that shows each end now (`_edges`), and an open file's calls between its symbols
     (`_calls`) in place of its file-to-file
     calls; a relation with no finer end (a module's own, a file's import) stays on its open group, which `open` lists
@@ -180,7 +180,7 @@ def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=No
             owner.update((member, child) for member in (child, *item.get("members", ())))
         opened.append({"id": ref, "name": node["name"], "kind": node["kind"], "parent": holder[ref],  # a module its stack
                        **{key: node[key] for key in ("projects", "other_dependencies") if key in node}})
-    nodes = {ref: {**item, "level": "infrastruttura" if item["location"] == "external" else "codice",
+    nodes = {ref: {**item, "level": "fisico" if item["location"] == "external" else "codice",
                    "group": holder[ref]} for ref, item in nodes.items()}
     nodes = {ref: item for ref, item in nodes.items() if item["level"] in shown}
     ends = {**nodes, **{group["id"]: group for group in opened}}

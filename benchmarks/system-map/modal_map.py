@@ -330,11 +330,11 @@ def _levels(system: dict, links: dict, manifest: Path) -> dict:
     with open_snapshot(manifest) as store:
         source = flows.Source(store)
         for flow in system["flows"]:
-            for level in system_levels.LEVELS:
+            for level in system_levels.NATURES:
                 view = system_levels.view(system, flow["name"], [level], links)
                 out["views"] += 1
                 for node in view["nodes"]:
-                    home = ["codice"] if node["type"] == "file" else system_levels.levels_of(
+                    home = ["codice"] if node["type"] == "file" else system_levels._natures(
                         next(n for n in system["nodes"] if n["name"] == node["name"]))
                     if node["level"] != level or level not in home:
                         out["out_of_level"].append(f"{flow['name']} / {level}: {node['name']}")

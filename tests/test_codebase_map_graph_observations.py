@@ -54,7 +54,7 @@ def test_polymorphic_call_keeps_observed_and_sampled_ends_in_both_directions(tmp
     physical = flows.trace(links, "dispatch.py::dispatch", "from")
     assert {(edge["to"], edge["origin"], edge["confidence"], edge["resolver"]) for edge in physical["edges"]} == {
         (f"handlers.py::{name}", "osservato", confidence, resolver) for name, confidence in counts}
-    logical = flows.at_level(physical, "logico", {"dispatch.py": "sender", "handlers.py": "handlers"})
+    logical = flows.at_level(physical, "moduli", {"dispatch.py": "sender", "handlers.py": "handlers"})
     assert {(edge["confidence"], edge["links"]) for edge in logical["edges"]} == {("observed", 2), ("sampled", 1)}
     relations = {}
     for end in edge_view.call_ends(call):

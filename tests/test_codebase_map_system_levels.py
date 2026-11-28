@@ -52,7 +52,8 @@ class LevelTests(unittest.TestCase):
         self.assertTrue(kept["proof"])
 
     def test_infrastructure_puts_a_node_on_what_it_runs_on(self):
-        infra = self.view(["infrastruttura"])
+        infra = self.view(["fisico"])
+        self.assertEqual(self.view(["infrastruttura"]), infra)  # the old name, taken until T2.D
         self.assertIn(("Server shop", "Stripe", "declared"), arrow_states(infra))
         self.assertIn("API pagamenti", next(a for a in infra["arrows"] if a["from"] == "Server shop")["through"])
 
@@ -62,7 +63,7 @@ class LevelTests(unittest.TestCase):
         for arrow in flow["arrows"]:
             if (arrow["from"], arrow["to"]) in {("API pagamenti", "Stripe"), ("Cliente", "Checkout")}:
                 arrow["status"] = "refused"
-        infra = system_levels.view(broken, PAY, ["infrastruttura"])
+        infra = system_levels.view(broken, PAY, ["fisico"])
         self.assertEqual(infra["arrows"], [])
         self.assertIn("refused", infra["gaps"][0]["reason"])
         people = system_levels.view(broken, PAY, ["persone"])
@@ -82,7 +83,7 @@ class LevelTests(unittest.TestCase):
         changed = copy.deepcopy(self.m)
         for record in changed["nodes"]:
             record.update({"Stripe": {"registry": "stripe"}, "Server shop": {"registry": plain}}.get(record["name"], {}))
-        shown = {n["name"]: n for n in system_levels.view(changed, PAY, ["persone", "infrastruttura"])["nodes"]}
+        shown = {n["name"]: n for n in system_levels.view(changed, PAY, ["persone", "fisico"])["nodes"]}
         self.assertIn("stripe", marked)
         self.assertEqual(shown["Stripe"]["mark"], "stripe")
         self.assertNotIn("mark", shown["Server shop"])
@@ -97,7 +98,7 @@ class LevelTests(unittest.TestCase):
             self.view(["codice"])
 
     def test_two_copies_of_an_entity_are_a_gap_not_an_arrow(self):
-        mixed = self.view(["persone", "funzioni"])
+        mixed = self.view(["persone", "logico"])
         self.assertNotIn(("API pagamenti", "Badge pagamento"), {(a["from"], a["to"]) for a in mixed["arrows"]})
         gap = next(g for g in mixed["gaps"] if (g["from"], g["to"]) == ("API pagamenti", "Badge pagamento"))
         self.assertIn("db/payments", gap["reason"])
@@ -106,20 +107,21 @@ class LevelTests(unittest.TestCase):
 
     def test_a_flow_exists_at_the_levels_where_it_has_nodes(self):
         self.assertEqual(self.view(["persone"], "Riprova dei pagamenti")["absent"], ["persone"])
-        everything = self.view(list(system_levels.LEVELS), links=self.links)
+        everything = self.view(list(system_levels.NATURES), links=self.links)
         self.assertEqual((everything["flow_status"], everything["fresh"]), ("incomplete", False))
         self.assertTrue(everything["reason"])
         self.assertTrue(everything["nodes"][0]["also"])
         badge = next(n for n in everything["nodes"] if n["name"] == "Badge pagamento")
         self.assertEqual(badge["also"], {"codice": ["web/badge.ts"]})
-        with self.assertRaisesRegex(ValueError, "level"):
-            self.view(["fisico"])
+        with self.assertRaisesRegex(ValueError, "no level 'physical': levels are one or more of persone, logico"):
+            self.view(["physical"])
 
     def test_the_home_level_of_the_new_types_and_of_a_queue(self):
-        homes = {kind: system_levels.levels_of({"type": kind, "position": "internal"})
+        homes = {kind: system_levels._natures({"type": kind, "position": "internal"})
                  for kind in ("filesystem", "coda", "applicazione", "lavoro a orario")}
-        self.assertEqual(homes, {"filesystem": ["infrastruttura"], "coda": ["infrastruttura"],
-                                 "applicazione": ["persone"], "lavoro a orario": ["funzioni"]})
+        self.assertEqual(homes, {"filesystem": ["fisico"], "coda": ["fisico"],
+                                 "applicazione": ["persone"], "lavoro a orario": ["logico"]})
+        self.assertEqual(system_levels._natures({"type": "gateway", "position": "external"}), ["logico", "fisico"])
 
     def test_inside_a_node(self):
         opened = system_levels.inside(self.m, "Pagamento", self.links)

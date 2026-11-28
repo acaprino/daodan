@@ -590,10 +590,10 @@ def test_the_first_level_is_the_graph_in_groups_and_reads_no_outline(levels, tmp
     top = leveled(levels, tmp_path).graph({})
     shown = ("grouping", "edges", "files", "unassigned")
     assert {key: top[key] for key in shown} == {key: whole[key] for key in shown}
-    # no node is in an open group; an external service is a node of the level infrastruttura, a group of codice
-    assert [{**node, "group": None, "level": "infrastruttura" if node["location"] == "external" else "codice"}
+    # no node is in an open group; an external service is a node of the nature fisico, a group of codice
+    assert [{**node, "group": None, "level": "fisico" if node["location"] == "external" else "codice"}
             for node in whole["nodes"]] == top["nodes"]
-    assert (top["levels"], top["grouping"], top["open"]) == (["codice", "infrastruttura"], "modules", [])
+    assert (top["levels"], top["grouping"], top["open"]) == (["codice", "fisico"], "modules", [])
     web, server = group_of(top, "web/api.ts"), group_of(top, "server/app.py")
     edges = {(edge["source"], edge["target"], edge["status"]): edge for edge in top["edges"]}
     assert edges[(web, server, "uncertain")]["counts"] == {"calls": 1}  # the deduced link, uncertain apart
@@ -757,17 +757,19 @@ def test_a_file_a_symbol_a_node_the_run_does_not_show_or_a_path_is_refused_as_a_
     for file in ("../server/app.py", "server/app.py", "symbol:server/store/db.py::save", server, "file:nowhere.py"):
         with pytest.raises(ValueError):
             app.symbols({"file": file})
-    # the graph is the system map's levels codice and infrastruttura; codice alone has no external node nor its arrows;
+    # the graph is the natures codice and fisico (the old name infrastruttura still taken); codice alone has no
+    # external node nor its arrows;
     # a level the app does not build is refused, never served as the code's
-    both = app.graph({"levels": json.dumps(["infrastruttura", "codice"])})
-    assert both == app.graph({}) and both["levels"] == ["codice", "infrastruttura"]
+    both = app.graph({"levels": json.dumps(["fisico", "codice"])})
+    assert both == app.graph({}) and both["levels"] == ["codice", "fisico"]
+    assert app.graph({"levels": json.dumps(["infrastruttura", "codice"])}) == both
     code = app.graph({"levels": json.dumps(["codice"])})
     assert code["levels"] == ["codice"] and {node["level"] for node in code["nodes"]} == {"codice"}
     assert not any(end.startswith("external:") for edge in code["edges"] for end in (edge["source"], edge["target"]))
     assert {node["id"] for node in code["nodes"]} == {node["id"] for node in both["nodes"]} - {
         "external:stripe", "external:lemonsqueezy"}
-    for asked, why in ((["funzioni"], "'funzioni' is not built in the app yet"), (["Funzionale"], "no level 'Funzionale'"),
-                       (["infrastruttura"], "only beside 'codice'"), ([], "a JSON list of levels"),
+    for asked, why in ((["logico"], "'logico' is not built in the app yet"), (["funzioni"], "'logico' is not built"),
+                       (["Funzionale"], "no level 'Funzionale'"), (["fisico"], "only beside 'codice'"), ([], "a JSON list of levels"),
                        ("codice", "a JSON list of levels")):
         with pytest.raises(ValueError, match=why):
             app.graph({"levels": json.dumps(asked) if isinstance(asked, list) else asked})

@@ -13,7 +13,7 @@ const edge = (source: string, target: string, counts: Record<string, number> = {
 // a → b → c, and d alone; b also imports d.
 const graph: Graph = {
   grouping: 'directories', nodes: [node('a'), node('b'), node('c'), node('d', { location: 'external', files: [] })], open: [],
-  edges: [edge('a', 'b'), edge('b', 'c'), edge('b', 'd', { imports: 2 })], files: 1234, levels: ['codice', 'infrastruttura'], unassigned: { count: 0 },
+  edges: [edge('a', 'b'), edge('b', 'c'), edge('b', 'd', { imports: 2 })], files: 1234, levels: ['codice', 'fisico'], unassigned: { count: 0 },
 };
 const seen = (filters: object) => { const g = visibleGraph(graph, { ...DEFAULTS, ...filters }); return [g.nodes.map(n => n.id).join(''), g.edges.length]; };
 
@@ -79,6 +79,6 @@ test('nodes, lines and the whole graph are said in words', () => {
     ['2 chiamate, 1 import · campionata dal profiler', '1 utilizzo']);
   assert.equal(runtimeSummary([{ status: 'observed' }, { status: 'observed' }, { status: 'sampled' }, { status: 'observed', conflict: true }]),
     '2 osservate in esecuzione · 1 campionata dal profiler · 1 in conflitto');
-  assert.deepEqual([buildCounts(null), levelsName(graph)], ['—', 'Codice · Infrastruttura']);
+  assert.deepEqual([buildCounts(null), levelsName(graph)], ['—', 'Codice · Fisico']);
   assert.match(buildCounts(graph), /^4 directory · 3 relazioni · 1\.?234 file$/);
 });

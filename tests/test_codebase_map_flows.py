@@ -132,7 +132,8 @@ class FlowFixtureTests(unittest.TestCase):
         flow = flows.trace(self.links, "web/checkout.ts::onPayClick", "from")
         modules_of = flows.file_modules(self.manifest)
         self.assertEqual(modules_of["server/payments.py"], "payment")
-        logical = flows.at_level(flow, "logico", modules_of)
+        logical = flows.at_level(flow, "moduli", modules_of)
+        self.assertEqual(flows.at_level(flow, "logico", modules_of), logical)  # the old name, taken until T2.D
         self.assertIn("module:payment", logical["nodes"])
         self.assertNotIn("server/payments.py::charge_order", logical["nodes"])
         # A symbol whose file belongs to no module stays a symbol.
@@ -144,10 +145,12 @@ class FlowFixtureTests(unittest.TestCase):
         data = flows.at_level(flow, "dati", {})
         self.assertEqual({edge["type"] for edge in data["edges"]}, {"scrive", "legge"})
         self.assertIn("store:db/payments", data["nodes"])
-        ux = flows.at_level(flows.trace(self.links, "web/checkout.ts::renderCheckout", "from"), "ux", {})
+        ux = flows.at_level(flows.trace(self.links, "web/checkout.ts::renderCheckout", "from"), "persone", {})
         self.assertIn(("web/checkout.ts::renderCheckout", "web/checkout.ts::onPayClick"),
                       {(edge["from"], edge["to"]) for edge in ux["edges"] if edge["type"] == "attiva"})
-        self.assertEqual(flows.at_level(flow, "fisico", {}), flow)
+        self.assertEqual(flows.at_level(flow, "codice", {}), flow)
+        with self.assertRaisesRegex(ValueError, "codice, moduli, dati, persone"):
+            flows.at_level(flow, "physical", {})
 
     @pytest.mark.usefixtures("real_stack")
     def test_the_service_asks_for_rules_records_them_and_answers_at_a_level(self):

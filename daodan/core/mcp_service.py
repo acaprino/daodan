@@ -743,7 +743,7 @@ class MapService:
                 return gate
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
-    def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100, card=None,
+    def flows(self, run_id, rules=None, start=None, direction="from", level="codice", limit=100, card=None,
               brief=False, map=None, about=None, levels=None, entry_offset=None, shape_offset=None, shape_answers=None,
               trace_offset=None, trace_id=None, trace_decision=None, next_question=False, effect_offset=None):
         """Flows of the bound run from its link rules: the summary, or one flow at a level.
@@ -770,13 +770,15 @@ class MapService:
                 raise ValueError(f"{name} must be a nonnegative integer")
         if trace_id is not None and (not isinstance(trace_id, str) or not 1 <= len(trace_id) <= 200):
             raise ValueError("trace_id must be a path card id")
-        if levels is not None and (about is None or not isinstance(levels, list)
-                                   or not levels or any(lv not in system_levels.LEVELS for lv in levels)):
-            raise ValueError("levels go with about and are one or more of " + ", ".join(system_levels.LEVELS))
+        if levels is not None:
+            if about is None:
+                raise ValueError("levels go with about and are one or more of " + ", ".join(system_levels.NATURES))
+            levels = system_levels.natures_asked(levels)
         if about is not None and (not isinstance(about, str) or not about.strip() or len(about) > 200):
             raise ValueError("about must be a name of at most 200 characters")
-        if direction not in ("from", "to", "through") or level not in flow_model.LEVELS:
-            raise ValueError("direction is from, to or through; level is " + ", ".join(flow_model.LEVELS))
+        if direction not in ("from", "to", "through"):
+            raise ValueError("direction is from, to or through")
+        level = flow_model.level_name(level)
         if start is not None and (not isinstance(start, str) or not start.strip() or len(start) > 1000):
             raise ValueError("start must be a node of at most 1000 characters")
         _limit(limit)
@@ -903,7 +905,7 @@ class MapService:
                                     "fresh": not changed and not changed_evidence, "changed_files": changed[:limit],
                                     "evidence_changed": changed_evidence}
                 flow = flow_model.at_level(
-                    flow, level, flow_model.file_modules(manifest.path) if level == "logico" else {})
+                    flow, level, flow_model.file_modules(manifest.path) if level == "moduli" else {})
                 flow["edge_count"] = len(flow["edges"])
                 flow["edges"] = flow["edges"][:limit]
             return {"status": "ok", "run_id": run_id, **flow}

@@ -16,7 +16,7 @@ def test_logical_edges_keep_the_conflict_on_its_observation():
     modules = {'web.ts': 'ui', 'save.ts': 'core'}
     for order in (edges, edges[::-1]):
         flow = flows.trace({'edges': order, 'gaps': []}, start, 'from')
-        view = flows.at_level(flow, 'logico', modules)
+        view = flows.at_level(flow, 'moduli', modules)
         assert {(e['site'], e['conflict'], e['links']) for e in view['edges']} == {
             ('web.ts:2', False, 1), ('web.ts:3', True, 1)}
 

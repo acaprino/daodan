@@ -1,6 +1,10 @@
 """Derivation of the module graph from one snapshot: build units merged per
 directory, declared and proposed modules verified, identities, file ownership
-and the edges between modules. Deterministic for the same inputs."""
+and the edges between modules. Deterministic for the same inputs.
+
+A module's `nature` (NATURES) is how concrete it is, not the nature of a node of the map (`node_model.NATURES`,
+derived): the envelope turns it into `concrete` (`node_model.concrete`). It keeps its name because renaming it touches
+the cache and a dozen tests with no new reader."""
 from __future__ import annotations
 
 import json

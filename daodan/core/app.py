@@ -349,7 +349,7 @@ class App:
 
     def graph(self, query: dict) -> dict:
         """The run's graph at the system map's `levels` (a JSON list; `app_view.levels`: the app builds codice and
-        infrastruttura) with the groups of `open` (a JSON list of node ids) open in place (`app_view.view`); the
+        fisico) with the groups of `open` (a JSON list of node ids) open in place (`app_view.view`); the
         explorer (`/`) shows it whole."""
         shown = app_view.levels(_listed(query, "levels", "levels is a JSON list of levels"))
         groups = _listed(query, "open", "open is a JSON list of node ids") or []
