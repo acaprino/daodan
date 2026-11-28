@@ -19,8 +19,8 @@ import dynamic  # noqa: E402
 import egress  # noqa: E402
 from dynamic import app  # noqa: E402
 
-NPM_START = {"root": "web", "mode": "start", "runner": "npm", "declared_in": "web/package.json#scripts.start",
-             "port": 3000, "needs_build": False}
+NPM_START = {"root": "web", "mode": "start", "runner": "npm", "argv": ["npm", "run", "start"], "surface": "web",
+             "declared_in": "web/package.json#scripts.start", "port": 3000, "needs_build": False}
 CI_TESTS = {"root": ".", "runner": "pytest", "argv": ["pytest", "-q"], "source": "ci",
             "declared_in": ".github/workflows/ci.yml#jobs.t.steps.1"}
 
@@ -116,10 +116,14 @@ def test_merged_puts_them_before_the_pre_map_s_and_the_observers_and_the_app_tak
     assert dynamic.declared(merged, "pytest", "")["argv"] == ["pytest", "-m", "slow"]  # the assistant before the CI
     assert dynamic.declared(merged, "pytest", "")["grade"] == "proposto"
     planned = app.plan(merged)
-    assert [(one["root"], one["by"], one["port"]) for one in planned["apps"]] == [("web", "user", 4000)]
+    assert [(one["root"], one["by"], one["port"], one["surface"]) for one in planned["apps"]] == [
+        ("web", "user", 4000, "web")]  # a start that states no surface opens an address: `web`, as the pre-map's
     assert app._command(planned["apps"][0]) == "npm run serve"
     assert app._command(NPM_START) == "npm run start"
     commands.set(project, {"kind": "starts", "root": "web", "argv": ["pnpm", "dev"]}, "user")
+    planned = app.plan(commands.merged(record, project))  # pnpm runs with corepack: its words as the user wrote them
+    assert [app._command(one) for one in planned["apps"]] == ["pnpm dev"]
+    commands.set(project, {"kind": "starts", "root": "web", "argv": ["deno", "task", "dev"]}, "user")
     planned = app.plan(commands.merged(record, project))  # the user's command stands, even where it cannot run yet
     assert planned["apps"] == [] and [gap["kind"] for gap in planned["gaps"]] == ["start_runner_not_supported"]
     assert planned["gaps"][0]["path"] == commands.FILE

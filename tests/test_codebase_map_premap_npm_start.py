@@ -53,9 +53,10 @@ def test_a_vite_app_declares_its_dev_server_and_its_build(tmp_path):
     files = {"package.json": (FIXTURES / "js-vite-react-ts/package.json").read_text(encoding="utf-8")}
     record = premapped(tmp_path, files)
     assert plain(record["starts"]) == [
-        {"root": ".", "mode": "dev", "runner": "npm", "declared_in": "package.json#scripts.dev", "port": None,
-         "needs_build": False}]
-    assert plain(record["builds"]) == [{"root": ".", "runner": "npm", "declared_in": "package.json#scripts.build"}]
+        {"root": ".", "mode": "dev", "runner": "npm", "argv": ["npm", "run", "dev"], "surface": "web",
+         "declared_in": "package.json#scripts.dev", "port": None, "needs_build": False}]
+    assert plain(record["builds"]) == [{"root": ".", "runner": "npm", "argv": ["npm", "run", "build"],
+                                        "declared_in": "package.json#scripts.build"}]
 
 
 def test_a_production_server_of_the_closed_table_needs_the_build(tmp_path):
@@ -65,8 +66,8 @@ def test_a_production_server_of_the_closed_table_needs_the_build(tmp_path):
     record = premapped(tmp_path / "again", {"package.json": package(start="node server.js", preview="vite preview"),
                                             "server.js": ""})
     assert plain(record["starts"]) == [
-        {"root": ".", "mode": "start", "runner": "npm", "declared_in": "package.json#scripts.start", "port": None,
-         "needs_build": False}]
+        {"root": ".", "mode": "start", "runner": "npm", "argv": ["npm", "run", "start"], "surface": "web",
+         "declared_in": "package.json#scripts.start", "port": None, "needs_build": False}]
 
 
 def test_a_start_that_runs_a_file_the_snapshot_does_not_hold_needs_the_build(tmp_path):
@@ -129,6 +130,22 @@ def test_the_executor_is_the_one_of_the_lockfile_of_the_folder_or_above(tmp_path
         "plain/package.json": package(dev="vite"), "plain/package-lock.json": "{}"})
     assert {entry["root"]: entry["runner"] for entry in found} == {
         ".": "pnpm", "web": "yarn", "app": "bun", "plain": "npm"}
+    assert {entry["root"]: entry["argv"] for entry in found}["web"] == ["yarn", "run", "dev"]  # the declared words
+
+
+def test_without_a_lockfile_the_executor_is_the_one_the_nearest_package_manager_field_names(tmp_path):
+    """`packageManager`, the field corepack reads, as the restore reads it (`preparation.node_restores`): of the folder
+    or the nearest above it, after the lockfiles of each folder, the manager's name as written (a manager the
+    exploration has no preparation for is its gap, `dynamic.app`)."""
+    found = starts(tmp_path, {
+        "package.json": json.dumps({"packageManager": "pnpm@9.12.2", "scripts": {"dev": "vite"}}),
+        "apps/web/package.json": package(dev="vite"),
+        "own/package.json": package(dev="vite"), "own/package-lock.json": "{}",
+        "yarn/package.json": json.dumps({"packageManager": "yarn@4.5.0+sha512.abc", "scripts": {"dev": "vite"}}),
+        "odd/package.json": json.dumps({"packageManager": "deno@2.1.0", "scripts": {"dev": "vite"}})})
+    assert {entry["root"]: entry["argv"] for entry in found} == {
+        ".": ["pnpm", "run", "dev"], "apps/web": ["pnpm", "run", "dev"], "own": ["npm", "run", "dev"],
+        "yarn": ["yarn", "run", "dev"], "odd": ["deno", "run", "dev"]}
 
 
 def test_a_package_without_scripts_or_with_none_of_them_states_nothing(tmp_path):

@@ -633,7 +633,7 @@ Passo 11 del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-fluss
 
 ### Col motore container vero
 
-`modal_engine.py` avvia un demone Docker (rete normale) in una VM Sandbox di Modal e lancia `dynamic.app.observe` con `container.find_engine()`, cioè `container.run_in_container` di Daodan e non il sostituto `sandbox_run` di Modal: preparazione con i registri, `keep_root` per il browser, esecuzione senza rete, uscite riportate. Fixture: `explore-fixtures/vite-react` (la stessa del test). Risultato, `results/explore/engine.json`: motore `docker`, app `ready` su 5173, 2 controlli premuti, nessuna lacuna, 42,6 s; Save → `validate` e `save`, Reset → `reset`, con file e riga di `src/lib/actions.ts`.
+`modal_engine.py` avvia un demone Docker (rete normale) in una VM Sandbox di Modal e lancia `dynamic.app.observe` con `container.find_engine()`, cioè `container.run_in_container` di Daodan e non il sostituto `sandbox_run` di Modal: preparazione con i registri, `keep_root` per il browser, esecuzione senza rete, uscite riportate. La pre-mappa è quella dei lettori e di Renovate, che gira nel container come in `find_modules` (`container_runner.runner`): le toolchain che la preparazione installa (Node, Bun) sono fatti suoi. `--fixture <cartella>` (dalla radice del repository) sceglie il progetto, copiato senza `node_modules` né `expected.json`; senza, `explore-fixtures/vite-react` (la stessa del test). Risultato, `results/explore/engine.json`: motore `docker`, app `ready` su 5173, 2 controlli premuti, nessuna lacuna, 42,6 s; Save → `validate` e `save`, Reset → `reset`, con file e riga di `src/lib/actions.ts`.
 
 ## Eventi fra la pagina e il guscio Tauri
 

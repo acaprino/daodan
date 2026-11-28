@@ -1,11 +1,15 @@
 """Starting the app the project declares, in the container (plan task 11.2; spec of the project's interfaces, 7.1-7.3).
 
-`plan` reads the pre-map's `starts` and `builds` (`premap/npm_start.py`): per module the `start` script, else the
-`dev` one; the module's `build` first where the start reads compiled output (`needs_build`). The command is the
-declared one, `npm run <script>`, never changed; its environment is the container's, plus the variables of the example
-`.env` files the project publishes and Git tracks in the app's folder (`_examples`): the test values the app asks for. Where the project declares none, or a start needs a build nobody
-declares, or its runner is not npm (pnpm, Yarn and Bun are not yet run: `start_runner_not_supported`), nothing runs
-and the gap says why.
+`plan` reads the pre-map's `starts` and `builds` (`premap/npm_start.py`, and the commands of the user and the
+assistant, `commands`): per module the `start` script, else the `dev` one; the module's `build` first where the start
+reads compiled output (`needs_build`). The command is the declared one, its words (`argv`, `<runner> run <script>` for
+a script), never changed; its environment is the container's, plus the variables of the example `.env` files the
+project publishes and Git tracks in the app's folder (`_examples`): the test values the app asks for. Its runner, the
+command's program, has its preparation (`_unprepared`): Node's own programs come with Daodan's Node, pnpm and Yarn
+with corepack as the restores run them (`preparation.RESTORES`' `before`), its shims on the path and the manager the
+folder names fetched while the preparation has the network, and Bun with mise at the version the pre-map states
+(`preparation.toolchains`), never one mise would pick. Where the project declares none, or a start needs a build
+nobody declares, or a runner has no preparation (`start_runner_not_supported`), nothing runs and the gap says why.
 
 A start runs on its surface (`registry_build.SURFACES`): the one it states (a command of the user or the assistant,
 `commands`), else `web`, the address it opens. Only the `ACTIVE` ones run (spec «Superfici attive»): a start on
@@ -53,53 +57,82 @@ WEB = "web"  # the surface of a start that states none: the HTTP address it open
 DEFERRED = "ui_execution_deferred"  # the gap of a surface not run yet: `<DEFERRED>:<surface>`
 REMEDY = ("where the project also starts the folder on web or webview, set that command for the folder in the app: it "
           "runs instead")
+TOOLCHAINS = ("node", "bun")  # the stated toolchains the preparation installs (`preparation.toolchains`, mise)
+NODE_PROGRAMS = ("node", "npm", "npx")  # the programs of Daodan's Node (`preparation.NODE`, its `bin`)
+COREPACK = tuple(manager for manager, spec in preparation.RESTORES.items()  # pnpm and Yarn, as their restores
+                 if spec.get("before") == preparation.COREPACK)
+MISE = ("bun",)  # the runners mise installs at the version the pre-map states: none of Daodan's own
+
+
+def chosen(record: dict) -> dict[str, dict]:
+    """The start the exploration runs in each folder of the `starts` of `record`: the user's command, then the
+    assistant's (`commands.merged`), then the project's (`dynamic.rank`); `start` before `dev`."""
+    from dynamic import rank
+    found: dict[str, dict] = {}
+    for entry in sorted(record.get("starts", []), key=lambda entry: (rank(entry), entry["mode"] != "start")):
+        found.setdefault(entry["root"], entry)
+    return found
+
+
+def _unprepared(entry: dict, toolchains: list[dict]) -> str | None:
+    """Why the runner of a start or a build (its program) has no preparation here (see the module's docstring), None
+    where it has one; `toolchains` the stated ones the preparation installs."""
+    runner = entry["runner"]
+    if runner in NODE_PROGRAMS or runner in COREPACK:
+        return None
+    if runner in MISE:
+        if any(item.get("tool") == runner and preparation.EXACT.match(str(item.get("version") or ""))
+               for item in toolchains):
+            return None
+        return (f"mise installs {runner} at the version the project states, and the pre-map states no exact {runner} "
+                "version (a version file, `packageManager` or `engines`, as Renovate reads them)")
+    return "the exploration has no preparation for it"
 
 
 def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages: list[dict] = (),
          units: list[dict] = ()) -> dict:
     """`{apps, gaps, roots, toolchains, explore, seeds}` from the pre-map `record`: see the module's docstring. An app
-    is the `starts` entry chosen for a module, with its `build` entry where it needs one; `seeds` are routes (paths)
-    the exploration opens besides the app's root; `pages`, the framework rows of the entry points (`entry_points`), give
-    each app the pages it opens too; `units`, the physical modules of the stack record (`technologies.derive`), the
-    technologies whose surface may not be run yet."""
+    is the `starts` entry chosen for a module (`chosen`), with its `build` entry where it needs one; `seeds` are routes
+    (paths) the exploration opens besides the app's root; `pages`, the framework rows of the entry points
+    (`entry_points`), give each app the pages it opens too; `units`, the physical modules of the stack record
+    (`technologies.derive`), the technologies whose surface may not be run yet."""
     import premap
     from dynamic import rank  # the user's command, then the assistant's (`commands.merged`), then the project's
     builds: dict[str, dict] = {}
     for entry in sorted(record.get("builds", []), key=rank):
         builds.setdefault(entry["root"], entry)
-    chosen: dict[str, dict] = {}
-    for entry in sorted(record.get("starts", []), key=lambda entry: (rank(entry), entry["mode"] != "start")):
-        chosen.setdefault(entry["root"], entry)  # start before dev
+    starts = chosen(record)
+    toolchains = [item for item in record.get("toolchains", []) if item.get("tool") in TOOLCHAINS]
     apps, gaps = [], []
-    for root, entry in sorted(chosen.items()):
+    for root, entry in sorted(starts.items()):
         surface = entry.get("surface") or WEB
+        build = builds.get(root) if entry["needs_build"] else None
+        unprepared = [(one, why) for one in (entry, build) if one for why in [_unprepared(one, toolchains)] if why]
         if surface not in ACTIVE:
             gaps.append({"kind": f"{DEFERRED}:{surface}", "root": root, "path": entry["declared_in"],
                          "detail": f"{entry['declared_in']} starts {root} on the {surface} surface, which the "
                                    "exploration does not run yet: the app is not started", "remedy": REMEDY})
-        elif entry["runner"] != "npm":
-            gaps.append({"kind": "start_runner_not_supported", "path": entry["declared_in"], "runner": entry["runner"],
-                         "detail": f"{entry['declared_in']} is started with {entry['runner']}, which the exploration "
-                                   "does not run yet: the app is not started"})
-        elif entry["needs_build"] and root not in builds:
+        elif unprepared:
+            gaps += [{"kind": "start_runner_not_supported", "path": one["declared_in"], "runner": one["runner"],
+                      "detail": f"{one['declared_in']} runs with {one['runner']}: {why}: the app is not started"}
+                     for one, why in unprepared]
+        elif entry["needs_build"] and build is None:
             gaps.extend({key: value for key, value in gap.items() if key != "source"}
                         for gap in record.get("gaps", [])
                         if gap.get("kind") == "build_command_missing" and gap.get("path") == _manifest(entry))
         else:
-            apps.append({**entry, **({"build": builds[root]} if entry["needs_build"] else {}),
-                         "seeds": _pages(pages, root)})
+            apps.append({**entry, **({"build": build} if build else {}), "seeds": _pages(pages, root)})
     if not record.get("starts"):
         gaps.append({"kind": "no_start_command", "detail": "no package.json of the project declares a start or dev "
                                                            "script that starts an app: nothing is explored"})
     gaps += [{key: value for key, value in gap.items() if key != "source"} for gap in record.get("gaps", [])
              if gap.get("kind") == "no_start_command"]
-    started = {posixpath.normpath(root or ".") for root, entry in chosen.items()
+    started = {posixpath.normpath(root or ".") for root, entry in starts.items()
                if (entry.get("surface") or WEB) in ACTIVE}
     gaps += _deferred(units, started)
     return {"apps": apps, "gaps": gaps,
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
-            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in ("node", "bun")],
-            "explore": explore, "seeds": list(seeds)}
+            "toolchains": toolchains, "explore": explore, "seeds": list(seeds)}
 
 
 def _surfaces() -> dict[str, str]:
@@ -144,16 +177,9 @@ def _manifest(entry: dict) -> str:
     return entry["declared_in"].partition("#")[0]
 
 
-def _script(entry: dict) -> str:
-    return entry["declared_in"].rpartition("#scripts.")[2]
-
-
 def _command(entry: dict) -> str:
-    """The command's words where it states them (a command of the user or the assistant, `commands`), else the
-    script of its `package.json`."""
-    if entry.get("argv"):
-        return shlex.join(entry["argv"])
-    return f"npm run {shlex.quote(_script(entry))}"
+    """The command's words (`argv`) as one shell line: joined, never split."""
+    return shlex.join(entry["argv"])
 
 
 def _chains(planned: dict) -> dict:
@@ -161,10 +187,28 @@ def _chains(planned: dict) -> dict:
                                    if preparation.EXACT.match(str(item.get("version") or ""))])
 
 
+def _folder(root: str) -> str:
+    return shlex.quote(posixpath.normpath(posixpath.join("/work", root)))
+
+
+def _managers(planned: dict) -> list[tuple[str, str]]:
+    """`(root, manager)` for each start and build of the planned apps that corepack runs (`COREPACK`), in order."""
+    return list(dict.fromkeys((one["root"], run["runner"]) for one in planned["apps"]
+                              for run in (one, one.get("build")) if run and run["runner"] in COREPACK))
+
+
 def scripts(planned: dict, restores: list[str]) -> tuple[str, str]:
     """The preparation's script and the execution's: `restores` are the lines of the project's own restore."""
     chains = _chains(planned)
     explore = bool(planned.get("explore"))
+    managers = _managers(planned)
+    # pnpm and Yarn as the restores run them (`preparation.COREPACK_INSTALL`), with corepack's own shims on the path
+    # (`corepack enable`) so the declared words run as written, and each folder's manager (its `packageManager`, else
+    # corepack's default) fetched while the preparation has the network: the execution has none
+    corepack = [f"{{ {preparation.COREPACK_INSTALL}; {preparation.COREPACK};"
+                f" corepack enable --install-directory {T}/bin {' '.join(sorted({m for _, m in managers}))} ; }} >&2",
+                *(f"( cd {_folder(root)} && {manager} --version ) >&2" for root, manager in managers)] \
+        if managers else []
     # the browser, as the observer prepares Playwright's (`javascript.scripts`): apt over HTTPS, the headless shell
     browser = [f"{{ npm install -g --prefix {T}/npm --ignore-scripts --no-audit --no-fund --loglevel=error"
                f" playwright-core@{PLAYWRIGHT} ; }} >&2",
@@ -172,11 +216,11 @@ def scripts(planned: dict, restores: list[str]) -> tuple[str, str]:
                '  if [ -f "$f" ]; then sed -i "s|http://|https://|g" "$f"; fi', 'done',
                f"node {T}/npm/lib/node_modules/playwright-core/cli.js install --with-deps --only-shell chromium >&2"]
     prepare = ["set -u", f'mkdir -p {T}/bin "$HOME"', *preparation.setup(["node"])["lines"], *chains["lines"],
-               *(browser if explore else []), "cd /work || exit 70", *restores]
-    execute = ["set -u", f"mkdir -p {OUT}",
+               *(browser if explore else []), "cd /work || exit 70", *restores, *corepack]
+    execute = ["set -u", f"mkdir -p {OUT}", *([preparation.COREPACK] if managers else []),
                *([f"export DAODAN_PLAYWRIGHT={T}/npm/lib/node_modules/playwright-core"] if explore else [])]
     for number, one in enumerate(planned["apps"]):
-        folder = shlex.quote(posixpath.normpath(posixpath.join("/work", one["root"])))
+        folder = _folder(one["root"])
         execute.append("s=$(date +%s); c=0")
         if one.get("build"):
             execute += [f"( cd {folder} && timeout -k 30 {BUILD} {_command(one['build'])} ) > {OUT}/build-{number}.log "
@@ -307,7 +351,9 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         timeout=len(planned["apps"]) * (BUILD + READY + (EXPLORE if explore else 0) + 300), prepare_timeout=3600,
         memory=MEMORY, engine=engine, inputs=inputs, keep_root=explore, dotenv_env=dotenv_env, **shared,
         registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *(javascript.BROWSER_HOSTS if explore else ()),
-                                        *restored["hosts"], *chains["hosts"]])))
+                                        *restored["hosts"], *chains["hosts"],
+                                        *(host for _, manager in _managers(planned)
+                                          for host in preparation.RESTORES[manager]["hosts"])])))
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "apps": [], "gaps": unrun}
     prepared = _text(out_dir / "prepare.log")

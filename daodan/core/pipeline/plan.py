@@ -275,7 +275,8 @@ def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked, proj
     """The actions `recognize_stack`, `find_modules` and `find_entry_points` find, by kind, from their records when the
     records' owners say they are fresh (a kind without one is None): the stack's tool, the pre-map's and the entry points'
     sources that are not `not_needed` (of the pre-map, those with commands; a source with no command reads files), and the apps the pre-map declares
-    (`starts`) or the user or the assistant states for the `project` (`commands`), which `run_and_observe` explores: an
+    (`starts`) or the user or the assistant states for the `project` (`commands`), which `run_and_observe` explores: its
+    target is the root with the `argv`, `surface` and `declared_in` of the start that runs there (`_started`), and an
     app with a stated command carries its `by` and `grade`. A folder on a surface not run yet (`dynamic.app.plan`, with
     the modules of the stack record as last written, `technologies.recorded`) is `not_possible` with the gap
     `ui_execution_deferred:<surface>`, also where no start is declared."""
@@ -309,13 +310,14 @@ def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked, proj
                 stated = {}  # the root's command of the user or the assistant, the first by `dynamic.PRECEDENCE`
                 for entry in sorted((entry for entry in starts if entry.get("by")), key=rank):
                     stated.setdefault(entry["root"], {"by": entry["by"], "grade": entry["grade"]})
+                chosen = app.chosen(record)  # the start the exploration runs in each folder: its words and surface
                 waiting = {}  # the roots on a surface not run yet: never run, whatever the app's events say
                 for gap in app.plan(record, units=technologies.recorded(manifest).get("units") or ())["gaps"]:
                     if gap["kind"].startswith(f"{app.DEFERRED}:"):
                         waiting.setdefault(gap["root"], []).append(gap)
                 state = _events(RUN_AND_OBSERVE, APP, begun, recorded)
                 found["explore"] = [_action(f"{RUN_AND_OBSERVE}:{APP}:{root}", RUN_AND_OBSERVE, "explore",
-                                            {"root": root}, True, True,
+                                            {"root": root, **_started(chosen.get(root))}, True, True,
                                             {**state, **stated.get(root, {}), **_deferred(waiting.get(root))})
                                     for root in sorted({entry["root"] for entry in starts} | set(waiting))]
     except (OSError, ValueError, KeyError):  # a record that cannot be read: its step's own action says the step
@@ -330,6 +332,15 @@ def _deferred(gaps: list[dict] | None) -> dict:
         return {}
     return {"state": "not_possible", "gap": gaps[0]["kind"], "cause": "; ".join(gap["detail"] for gap in gaps),
             "remedy": gaps[0]["remedy"]}
+
+
+def _started(entry: dict | None) -> dict:
+    """What an `explore` action's target says of the start the exploration runs in its folder (`dynamic.app.chosen`):
+    its words, its surface (`web` where it states none: the address it opens) and where it is declared."""
+    from dynamic import app
+    if entry is None:
+        return {}
+    return {"argv": entry.get("argv"), "surface": entry.get("surface") or app.WEB, "declared_in": entry["declared_in"]}
 
 
 def _source_action(step: str, kind: str, status: dict, gaps, asked) -> dict:

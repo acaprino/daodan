@@ -155,7 +155,9 @@ def remove(project: str, kind: str, root: str, runner: str | None = None) -> lis
 def merged(record: dict, project: str) -> dict:
     """The pre-map `record` with the project's commands before its own entries of the same kind, in the pre-map's form:
     a `starts` or `builds` entry runs its `argv` (`mode` `start` or `build`, `runner` its first word, no build before
-    it), and `declared_in` names this file. The record itself is not changed."""
+    it), a start on its `surface`, else `web` (`dynamic.app.WEB`), and `declared_in` names this file. The record
+    itself is not changed."""
+    from dynamic.app import WEB
     rows = sorted(listed(project), key=lambda row: list(GRADES).index(row["by"]))
     if not rows:
         return record
@@ -168,6 +170,7 @@ def merged(record: dict, project: str) -> dict:
                   ({} if kind == "tests" else {"mode": "start" if kind == "starts" else "build",
                                                "runner": row["argv"][0], "port": row.get("port"),
                                                "needs_build": False})
+                  | ({"surface": row.get("surface") or WEB} if kind == "starts" else {})
                   for row in mine]
         merged[kind] = [*shaped, *(record.get(kind) or ())]
     return merged
