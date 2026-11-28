@@ -86,8 +86,8 @@ def _image(name: str) -> modal.Image:
     for url, sha, file in plan["files"]:
         if url:  # a download of the runner (`uv`), checked by its sha256 as the runner does
             image = image.run_commands(f"curl -fsSL {shlex.quote(url)} -o {inputs}/{file} && echo '{sha}  {inputs}/{file}' | sha256sum -c -")
-        else:  # Daodan's own file, beside the premap modules
-            image = image.add_local_file(REPO / "daodan/core/premap" / file, f"{inputs}/{file}", copy=True)
+        else:  # Daodan's own file, beside the entry points modules
+            image = image.add_local_file(REPO / "daodan/core/entry_points" / file, f"{inputs}/{file}", copy=True)
     env = " ".join(f"{k}={shlex.quote(v)}" for k, v in plan["env"].items())
     setup = shlex.quote(plan["setup"]["argv"][2].replace("--locked", "--frozen") if name == "redash-frozen" else plan["setup"]["argv"][2])
     if name == "redash-frozen":  # the Redis its application is made against (`create_app` asks for its version)

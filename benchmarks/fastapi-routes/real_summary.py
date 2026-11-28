@@ -6,7 +6,7 @@ agrees), by function (the same function under another path), and what only one f
 
     python benchmarks/fastapi-routes/real_summary.py <a folder outside the repository: the sources are fetched into it at the commits of `apps.py`> <a working folder outside it>
 
-Both sides go through Daodan's own code, the one the pre-map would run: `premap.write` with the recorded answers instead of the container
+Both sides go through Daodan's own code, the one the pre-map would run: `premap.write`, then `entry_points.write` on it, with the recorded answers instead of the container
 (`noir.read`, `fastapi_app.read`), then `binder.bind`. The path key is `flows.path_schema` of the path as each tool writes it (`/api/users/{user_id}` and
 Noir's spelling are both `/api/users/{}`), so a difference is a difference of the route and not of its notation.
 """
@@ -22,6 +22,7 @@ import apps  # noqa: E402
 import binder  # noqa: E402
 import entries  # noqa: E402
 import flows  # noqa: E402
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
@@ -124,7 +125,8 @@ def summarize(name: str, application: str, script: str, noir_variant: str, sourc
 
     def run(commands):
         return [noir_answer if command["tool"] == "noir" else script_answer for command in commands]
-    record = premap.write(manifest, sources=(premap.module_graph, premap.requirements, noir, fastapi_app), runner=run)
+    stated = premap.write(manifest, sources=(premap.module_graph, premap.requirements), runner=run)
+    record = entry_points.write(manifest, sources=(noir, fastapi_app), runner=run, stated=stated)
     where = {"repository": apps.APPS[application][0], "commit": apps.APPS[application][1], "licence": apps.APPS[application][2],
              "folder": apps.APPS[application][3] or "."} if application != "fixture" else {"repository": "this repository: benchmarks/fastapi-routes/fixture"}
     out = {"name": name, "application": application, **where, "script": {"variant": script, "exit": script_answer["returncode"],

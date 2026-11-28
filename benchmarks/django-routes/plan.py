@@ -4,7 +4,7 @@
 
 It runs Daodan's code only: the restore lines of the folders (`container_runner._python`, read from the file names of the copy), the setup command
 and the files it unpacks (`container_runner.plan`), the Python of each environment the restore makes (`preparation.python_environments`,
-`python_interpreter`) and, when `entry_points/django_app.py` exists, the commands it gives for the folder (`premap.write` with the module graph and a
+`python_interpreter`) and, when `entry_points/django_app.py` exists, the commands it gives for the folder (`entry_points.write` on the pre-map of the module graph, with a
 runner that answers nothing). Nothing of the project is imported or run: that happens in the container, from these lines. Its working files go
 under `DAODAN_PROBE_TMP` when it is set.
 
@@ -23,6 +23,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "daodan/core"))
 
 import preparation  # noqa: E402
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
 import container_runner  # noqa: E402
@@ -53,7 +54,8 @@ def plan(folder: Path) -> dict:
             taken.extend(commands)
             return [{"returncode": 0, "stdout": "", "stderr": "", "root": "/work"} for _ in commands]
         if django_app is not None:
-            premap.write(manifest, sources=(premap.module_graph, premap.requirements, django_app), runner=run)
+            stated = premap.write(manifest, sources=(premap.module_graph, premap.requirements), runner=run)
+            entry_points.write(manifest, sources=(django_app,), runner=run, stated=stated)
         noir_commands = noir.commands(types.SimpleNamespace(inventory=types.SimpleNamespace(files=["a"])))  # the one command: a scan of the copy
         restored = container_runner._python(project)
         # the tools the runner installs as root before the setup (`container.tool_phase`, uv) go back into the setup, where they were before

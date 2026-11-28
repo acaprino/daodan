@@ -2,7 +2,7 @@
 
     python benchmarks/fastapi-routes/plan.py [folder]        (Daodan's own Python dependencies, the ones its tests use; default `fixture`)
 
-It runs Daodan's code only: the pre-map's own `module_graph` and `requirements` sources and FastAPI's (`premap.write` with a runner that
+It runs Daodan's code only: the pre-map's own `module_graph` and `requirements` sources and FastAPI's (`premap.write`, then `entry_points.write` on it, with a runner that
 answers nothing, to take the commands `fastapi_app.commands` gives for the folder), the restore lines of the folders
 (`container_runner._python`, read from the file names of the copy) and the setup command and the files it unpacks
 (`container_runner.plan`). Nothing of the project is imported or run: that happens in the container, from these lines. Its working
@@ -23,6 +23,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "daodan/core"))
 
 import preparation  # noqa: E402
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
 import container_runner  # noqa: E402
@@ -51,7 +52,8 @@ def plan(folder: Path) -> dict:
         def run(commands):
             taken.extend(commands)
             return [{"returncode": 0, "stdout": "", "stderr": "", "root": "/work"} for _ in commands]
-        premap.write(manifest, sources=(premap.module_graph, premap.requirements, fastapi_app), runner=run)
+        stated = premap.write(manifest, sources=(premap.module_graph, premap.requirements), runner=run)
+        entry_points.write(manifest, sources=(fastapi_app,), runner=run, stated=stated)
         restored = container_runner._python(project)
         # the tools the runner installs as root before the setup (`container.tool_phase`, uv) go back into the setup, where they were before
         # T3.A.6b, ahead of the restore: the image build runs as root, and the measurement stays the one the results hold
