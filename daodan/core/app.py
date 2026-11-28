@@ -94,6 +94,14 @@ def _listed(query: dict, name: str, why: str) -> list | None:
     return found
 
 
+def _opened(query: dict) -> tuple:
+    """The node ids of the query's `open` (a JSON list), sorted and once each."""
+    groups = _listed(query, "open", "open is a JSON list of node ids") or []
+    if not all(isinstance(item, str) for item in groups):
+        raise ValueError("open is a JSON list of node ids")
+    return tuple(sorted(set(groups)))
+
+
 def _cause(error: Exception) -> str:
     """Why a piece of work failed, as the page reads it."""
     return str(error) if isinstance(error, ValueError) else f"{type(error).__name__}: {error}"
@@ -352,12 +360,18 @@ class App:
         fisico) with the groups of `open` (a JSON list of node ids) open in place (`app_view.view`); the
         explorer (`/`) shows it whole."""
         shown = app_view.levels(_listed(query, "levels", "levels is a JSON list of levels"))
-        groups = _listed(query, "open", "open is a JSON list of node ids") or []
-        if not all(isinstance(item, str) for item in groups):
-            raise ValueError("open is a JSON list of node ids")
-        groups = tuple(sorted(set(groups)))
+        groups = _opened(query)
         return self._kept(("graph", shown, groups), lambda envelope, run_dir: app_view.view(
             envelope, groups, shown, self._file_symbols(run_dir)))
+
+    def flow(self, query: dict) -> dict:
+        """The run's flow `id` (a `flow:` ref of the envelope) step by step with the groups of `open` open in place,
+        as the graph opens them (`app_view.flow`)."""
+        ref, groups = query.get("id"), _opened(query)
+        if not isinstance(ref, str):
+            raise ValueError("id is the ref of a flow")
+        return self._kept(("flow", ref, groups), lambda envelope, run_dir: app_view.flow(
+            envelope, ref, groups, self._file_symbols(run_dir)))
 
     def symbols(self, query: dict) -> dict:
         """The inspector's data of the run's `file` (a node id), open or not: its symbols and their calls, with lines
@@ -724,7 +738,8 @@ class App:
 
         active = Active()
         routes = {**visual.live_routes(active), "/api/app/state": self.state, "/api/app/answer": self.answer,
-                  "/api/app/paths": self.paths, "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols}
+                  "/api/app/paths": self.paths, "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols,
+                  "/api/app/flow": self.flow}
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
                    "/api/app/retry": self.retry, "/api/app/egress": self.hosts,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask,

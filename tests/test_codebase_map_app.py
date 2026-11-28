@@ -1744,3 +1744,73 @@ def test_graph_keeps_a_conflicting_call_at_the_twenty_first_site():
     assert certain["counts"]["calls"] == len(certain["evidence"]) == 20
     assert disputed["status"] == "observed" and disputed["counts"]["calls"] == 1
     assert disputed["conflict"] and disputed["evidence"][0]["line"] == 21
+
+
+def payments(linked: bool) -> dict:
+    """The spec's case («Seguire un flusso attraverso i gruppi»): the frontend calls A, B writes the ledger; A and B
+    are «Pagamenti»; with `linked`, A calls B."""
+    def entity(ref, kind, **fields):
+        return {"ref": ref, "type": kind, "name": ref.split(":", 1)[1], **fields}
+
+    def step(source, target, kind, site):
+        return {"source": source, "target": target, "type": kind, "origin": "statico", "site": site}
+
+    submit, charge, record = "symbol:web/app.ts::submit", "symbol:pay/a.py::charge", "symbol:pay/b.py::record"
+    first = [step(submit, charge, "chiama", "web/app.ts:3")]
+    writes = [step(record, "store:ledger", "scrive", "pay/b.py:5")]
+    flows = [{"ref": "flow:submit", "entry": submit, "complete": True, "gaps": [],
+              "steps": first + ([step(charge, record, "chiama", "pay/a.py:2")] + writes if linked else [])},
+             {"ref": "flow:record", "entry": record, "complete": True, "gaps": [], "steps": writes}]
+    return {"entities": [entity("build:web", "build"), {**entity("build:pay", "build"), "name": "Pagamenti"},
+                         *[entity(f"file:{path}", "file", path=path) for path in ("web/app.ts", "pay/a.py", "pay/b.py")],
+                         entity(submit, "symbol"), entity(charge, "symbol"), entity(record, "symbol"),
+                         entity("store:ledger", "store")],
+            "relations": [{"ref": "calls:file:web/app.ts->file:pay/a.py", "kind": "calls", "source": "file:web/app.ts",
+                           "target": "file:pay/a.py", "status": "confirmed", "counts": {"calls": 1},
+                           "evidence": [{"path": "web/app.ts", "line": 3}]},
+                          *([{"ref": "calls:file:pay/a.py->file:pay/b.py", "kind": "calls", "source": "file:pay/a.py",
+                              "target": "file:pay/b.py", "status": "confirmed", "counts": {"calls": 1},
+                              "evidence": [{"path": "pay/a.py", "line": 2}]}] if linked else [])],
+            "memberships": [{"member": "file:web/app.ts", "group": "build:web", "view": "physical"},
+                            {"member": "file:pay/a.py", "group": "build:pay", "view": "physical"},
+                            {"member": "file:pay/b.py", "group": "build:pay", "view": "physical"}],
+            "gaps": [], "meta": {}, "technologies": [], "flows": flows}
+
+
+def test_a_flow_through_a_closed_group_shows_its_two_dependencies_and_the_path_left_to_prove():
+    envelope = payments(linked=False)
+    arrow, = app_view.view(envelope)["edges"]
+    assert (arrow["id"], arrow["relations"]) == ("build:web->build:pay", ["calls:file:web/app.ts->file:pay/a.py"])
+    found = app_view.flow(envelope, "flow:submit")
+    step, = found["steps"]
+    assert (step["n"], step["parent"], step["source"], step["target"]) == (1, None, "build:web", "build:pay")
+    assert step["relation"]["target"] == "symbol:pay/a.py::charge" and step["proof"] == [{"path": "web/app.ts", "line": 3}]
+    assert "condition" not in step and "profile" not in step  # no source gives them
+    web = {"id": "build:web", "name": "web", "entries": [], "exits": [{"step": 1, "end": "symbol:web/app.ts::submit"}]}
+    assert found["groups"] == [{"id": "build:pay", "name": "Pagamenti",
+                                "entries": [{"step": 1, "end": "symbol:pay/a.py::charge"}], "exits": []}, web]
+    # «Pagamenti» closed: in from the frontend, out to the ledger, and nothing inside joins A to B
+    path, = found["to_prove"]
+    assert (path["group"], path["from"], path["to"], path["enters"], path["leaves"]) == (
+        "build:pay", "build:web", "store:ledger", ["symbol:pay/a.py::charge"], ["symbol:pay/b.py::record"])
+    # open, each step shows its files, and no closed group is left to cross
+    opened = app_view.flow(envelope, "flow:submit", ("build:pay",))
+    assert [(item["source"], item["target"]) for item in opened["steps"]] == [("build:web", "file:pay/a.py")]
+    assert opened["to_prove"] == []
+    with pytest.raises(ValueError, match="flow:nothing"):
+        app_view.flow(envelope, "flow:nothing")
+
+
+def test_with_the_arc_inside_the_group_the_flow_through_it_is_proved_step_by_step():
+    found = app_view.flow(payments(linked=True), "flow:submit")
+    assert [(item["n"], item["parent"], item["source"], item["target"]) for item in found["steps"]] == [
+        (1, None, "build:web", "build:pay"), (2, 1, "build:pay", "build:pay"), (3, 2, "build:pay", "store:ledger")]
+    assert found["groups"] == [{"id": "build:pay", "name": "Pagamenti",
+                                "entries": [{"step": 1, "end": "symbol:pay/a.py::charge"}],
+                                "exits": [{"step": 3, "end": "symbol:pay/b.py::record"}]},
+                               {"id": "build:web", "name": "web", "entries": [],
+                                "exits": [{"step": 1, "end": "symbol:web/app.ts::submit"}]}]
+    assert found["to_prove"] == []
+    opened = app_view.view(payments(linked=True), ("build:pay",))
+    inside, = [edge for edge in opened["edges"] if edge["source"] == "file:pay/a.py"]
+    assert inside["relations"] == ["calls:file:pay/a.py->file:pay/b.py"]
