@@ -47,9 +47,9 @@ ROWS = [
 ]
 
 
-def _links(tmp_path, monkeypatch, rows=ROWS, rules=()):
+def _links(tmp_path, monkeypatch, rows=ROWS, rules=(), sources=SOURCES):
     import flows
-    _, manifest = manifest_of(tmp_path, SOURCES)
+    _, manifest = manifest_of(tmp_path, sources)
     premap.write(manifest, sources=())
     entry_points.write(manifest, sources=())
     fake_file = tmp_path / "fake.py"
@@ -74,6 +74,22 @@ def test_an_export_that_names_no_function_keeps_the_module_row_with_the_gap_nami
     assert not [e for e in links["entries"] if e["reader"] == "fake" and e["path"] == "/limits"]
     [gap] = [g for g in links["gaps"] if "/limits" in g["reason"]]  # a row with a gap is a gap of the links
     assert gap["symbol"] == "api/orders.ts::<module>" and "LIMIT" in gap["reason"]
+
+
+def test_a_default_export_of_a_function_with_no_name_is_a_gap_never_a_row_that_vanishes(tmp_path, monkeypatch):
+    """The snapshot records no export for `export default () => ...` and notes it (`semantic.ANONYMOUS_DEFAULT`): that `default` is made, not
+    missing, so it is a gap even where the row's exports are optional or another of them binds (T1.C.6). A file that makes no default still has none."""
+    sources = {**SOURCES, "api/anon.ts": "export function GET() {\n  return 1;\n}\n\nexport default () => 2;\n"}
+    module = {"reader": "fake", "kind": "rotta", "site": "api/anon.ts", "symbol": "api/anon.ts::<module>", "sources": ["fake@v1"]}
+    rows = [{**module, "shape": "page", "path": "/anon", "exports": ["default"], "exports_optional": True},
+            {**module, "shape": "page", "path": "/both", "exports": ["GET", "default"]},
+            {**module, "shape": "page", "site": "api/orders.ts", "symbol": "api/orders.ts::<module>", "path": "/none", "exports": ["default"], "exports_optional": True}]
+    links = _links(tmp_path, monkeypatch, rows, sources=sources)
+    reasons = {path: g["reason"] for g in links["gaps"] for path in ("/anon", "/both", "/none") if f" {path} from:" in g["reason"]}
+    assert set(reasons) == {"/anon", "/both"}
+    assert all(r.endswith("default: anonymous default export is unresolved") for r in reasons.values())
+    assert [e["symbol"] for e in links["entries"] if e["reader"] == "fake" and e["path"] == "/both"] == ["api/anon.ts::GET"]
+    assert not [e for e in links["entries"] if e["reader"] == "fake" and e["path"] in ("/anon", "/none")]
 
 
 def test_a_name_at_a_position_is_the_one_function_of_that_name_whose_lines_hold_it(tmp_path, monkeypatch):

@@ -3,8 +3,8 @@
 Two forms. An export in a file (`exports`, or `methods` when each export is a method of the route): the snapshot's own
 export records name the function (`exported_target`). A name at a position (`handler` with `site` `file:line`): the one
 function of that name whose lines hold the line; failing that, for Noir's row (a scanner of text: its place and its name are
-citations), the one function that starts at the line (the outermost, when a closure holds others on it) if the name agrees with it
-(`_agrees`). The place alone cannot tell a handler from the function that registers it, nor the name alone a function among those of its
+citations), the one function that starts at the line (the outermost, when a closure holds others on it and has a name) if the name agrees
+with it (`_agrees`). The place alone cannot tell a handler from the function that registers it, nor the name alone a function among those of its
 name: each is an equality of two data. A row with no name is no such row (`noir.rows` reads the name only where Noir cites the handler's
 place; without it the place is the registration's). The sources that name the function itself (Flask, Django, FastAPI) bind by the
 name only. A row of another form passes unchanged.
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
-from languages.semantic import NAMELESS
+from languages.semantic import ANONYMOUS_DEFAULT, NAMELESS
 
 
 def bind(rows: list[dict], facts, resolver) -> list[dict]:
@@ -46,6 +46,8 @@ def _exports(row: dict, facts, resolver) -> list[dict]:
                           "handler_source": row["reader"], "handler": name, **({"method": name} if methods else {})})
         elif reason != "export-missing":  # an export the file does not make is no gap: a route module has the exports it needs
             unread.append(f"{name}: {reason}")
+        elif name == "default" and ANONYMOUS_DEFAULT in facts.notes(file):  # it does make it, with no name the snapshot records
+            unread.append(f"{name}: {ANONYMOUS_DEFAULT}")
     if found and not unread:
         return found
     if not found and not unread and row.get("exports_optional"):
@@ -60,7 +62,7 @@ NO_NODE = "the function there has no node: an anonymous function no named functi
 def _placed(row: dict, facts) -> tuple[list[dict], list[dict] | None]:
     """Where a row's handler is: the functions of its file whose lines hold the line and that have the name the tool gives (the rule of
     a name at a position), and, for a row with a name that this does not bind, the functions that start at the line and no other of them
-    holds (`starts`); None where the row is not one to bind by the place."""
+    holds (`starts`), or all of them where one of those is written with no name; None where the row is not one to bind by the place."""
     import entries  # where the readers' names are
     file, _, line = row["site"].rpartition(":")
     functions, named = facts.functions.get(file, ()), row["handler"]
@@ -70,7 +72,10 @@ def _placed(row: dict, facts) -> tuple[list[dict], list[dict] | None]:
         return matches, None
     starts = [d for d in functions if d["line"] == at] if at else []
     # the spans say which holds the others: a callback in a closure, a lambda in a lambda
-    return matches, [d for d in starts if not any(o is not d and o["span"][:2] <= d["span"][:2] and d["span"][2:] <= o["span"][2:] for o in starts)]
+    outer = [d for d in starts if not any(o is not d and o["span"][:2] <= d["span"][:2] and d["span"][2:] <= o["span"][2:] for o in starts)]
+    # a function written with no name takes any name (`_agrees`): holding others on its line, it may be the registrar of the handler, not the
+    # handler, and no datum tells; so the line is a gap. One with a name is the outermost only where its name agrees (a factory, `f()`)
+    return matches, outer if all(d["name"] not in NAMELESS for d in outer) else starts
 
 
 def _position(row: dict, facts, matches: list[dict], starts: list[dict] | None) -> dict:
@@ -89,7 +94,7 @@ def _started(name: str, starts: list[dict], facts) -> tuple[str | None, str | No
     if not starts:
         return None, "no function starts at the line Noir cites for the handler"
     if len(starts) > 1:
-        return None, "several functions start at the line and none holds the others"
+        return None, "several functions start at the line"
     [function] = starts
     how = _agrees(name, function, facts)
     if how is None:
@@ -111,7 +116,8 @@ def _started(name: str, starts: list[dict], facts) -> tuple[str | None, str | No
 
 
 def _agrees(name: str, function: dict, facts) -> str | None:
-    """How the name Noir gives agrees with the function at the line, or None. A function written with no name takes any. Else: its name or
+    """How the name Noir gives agrees with the function at the line, or None. A function written with no name takes any (measured: no
+    nameless function bound so is not its route's handler, 0 of 391, `benchmarks/noir-binding`, «I tre dubbi», 1). Else: its name or
     qualified name; the same after a receiver or a variable in front (`api.GetPage` for Go's `SysApi.GetPage`: the part after the last
     dot of each); the class that owns it (a class view named by its class); the call that returns it (`recycles.f()`: a factory)."""
     if function["name"] in NAMELESS:

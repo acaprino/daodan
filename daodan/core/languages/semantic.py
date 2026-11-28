@@ -688,7 +688,7 @@ class _JavaScriptEvidence(_Evidence):
             if name is not None:
                 self.data["exports"].append({"exported": "default", "local": self.text(name)})
             else:
-                self.note("anonymous default export is unresolved")
+                self.note(ANONYMOUS_DEFAULT)
         elif declaration is not None:
             name = declaration.child_by_field_name("name")
             if name is not None:
@@ -1082,6 +1082,8 @@ _TS_ANON_CALLABLES = {
 # The names the readers give a function written with none (`(anonymous)` where a name is missing, `(lambda)` of Python and C++);
 # not `(constructor)`, which is a function's own role.
 NAMELESS = frozenset({"(anonymous)", "(lambda)", *_TS_ANON_CALLABLES.values()})
+# The note of a file whose `export default` is a function or a class written with no name: the export record is missing (`binder._exports`).
+ANONYMOUS_DEFAULT = "anonymous default export is unresolved"
 _TS_BLOCK_NODES = frozenset({
     "block", "for_statement", "enhanced_for_statement",
     "switch_block_statement_group", "switch_rule", "try_statement",

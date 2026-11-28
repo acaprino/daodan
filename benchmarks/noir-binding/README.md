@@ -18,6 +18,7 @@ Domanda: sulle applicazioni vere, di quanti endpoint di OWASP Noir (il 1.5.0 fis
 | `summarize.py` | dalla risposta di Modal ai conteggi: `results/<nome>.json` e `results/summary.json`, e la tabella; rifiuta una risposta il cui Noir non è quello fissato |
 | `after.py`, `summarize_after.py` | la misura dopo la correzione (sezione «Dopo la correzione»): `modal_binding.py --mode after` con il codice dell'albero, senza sostituire il legatore; `results/after.json` (con le impronte della copia di `daodan/`) |
 | `nodes.py`, `summarize_nodes.py` | il livello del nodo (sezione «A livello di nodo»): `modal_binding.py --mode nodes` scrive `<nome>.nodes.json` (fuori dal repository), `summarize_nodes.py` scrive `results/nodes.json` |
+| `compare_after.py` | i difetti del legatore (sezione «Difetti del legatore»): due corse di `modal_binding.py --mode after`, il legatore di un commit (`DAODAN_CODE`) e quello dell'albero, riga per riga; scrive `results/t1c6.json` |
 | `sample_check.py` | un campione, da leggere a occhio, degli endpoint che una correzione legherebbe: che cosa cita Noir, la funzione scelta, le righe del sorgente. Scarica il **testo** dei sorgenti sull'host (in una cartella fuori dal repository, mai eseguito): è l'unica lettura dei progetti fuori da Modal. Stampa, non scrive |
 | `results/<nome>.json` | per applicazione: conteggi, cause con 3 esempi ciascuna (estratti della risposta di Noir e dichiarazioni dello snapshot: nome e righe, mai sorgente), correzioni, impronte del codice di Daodan |
 | `results/summary.json` | gli stessi conteggi per framework e in totale (senza `shhh`, la taratura) |
@@ -334,6 +335,23 @@ Dieci nuovi endpoint scelti a caso (seme 24) fra quelli con un arco in uscita, E
 | DefectDojo | defectdojo | POST /jira/{tid}/delete | `DeleteJiraView` | `DeleteJiraView.post` (563-599) | 5 | `user_has_configuration_permission` a views.py:564 (dentro); `create_notification` a views.py:577 (dentro); `add_breadcrumb` a views.py:593 (dentro) |
 
 **Rispetto alle misure precedenti:** i 670 recuperabili e i 660 su nodo proprio restano veri (le 677 funzioni trovate dal dato `handler.line` sono ora 666 legate, perché 11 fabbriche sono rifiutate da un controllo più prudente); nessuna contraddizione. Nei dati il nome non ha mai disconfermato una posizione: le 666 sono tutte concordanti.
+
+## Difetti del legatore (T1.C.6, 28 novembre 2026)
+
+Quattro difetti del legatore ([piano](../../docs/plans/refactoring.md), passo `T1.C.6`), corretti o fissati:
+
+- **(a) Una funzione senza nome dentro un gestore nominato dalla rotta si ripiega nel suo nodo.** `Facts.folds` ripiegava solo `(anonymous)`; ora anche gli altri `NAMELESS` (`(lambda)` di C# e Python, `(func)` di Go, `(closure)`), ma solo quando una funzione che li contiene è in `route_named`: le chiamate di `go func() { a() }()` dentro la closure di `GET /health` sono di `GET /health`, non di un nodo `Register.(func).(func)` di tutte le rotte. Le altre lambda tengono il loro nodo, come nel resto del grafo.
+- **(b) Più funzioni alla riga citata.** La regola «la più esterna» resta solo dove quella ha un nome, che deve concordare con quello di Noir (le 7 fabbriche di juice-shop `const f = () => (req, res) => …`, `f()`). Dove la più esterna è scritta senza nome (prende qualunque nome, `_agrees`) la riga è una lacuna, «several functions start at the line»: un registratore anonimo (`export default (app) => app.get(…, (req, res) => …)`) non è mai legato come gestore. Togliere la regola del tutto, come diceva il piano, faceva perdere quelle 7 fabbriche legate giuste (misurato in una prima corsa: juice-shop da 106 a 99 legate, «several functions start at the line»).
+- **(c) `export default` di una funzione senza nome.** Lo snapshot non ne registra l'esportazione e lo annota (`semantic.ANONYMOUS_DEFAULT`); `binder._exports` dà la lacuna «default: anonymous default export is unresolved» invece di far sparire la riga (con `exports_optional` o accanto a un'altra esportazione legata). Le sorgenti con `exports` (Next.js, Nuxt, React Router, SvelteKit) non sono in questa misura, che è di Noir: provato dai test.
+- **(d) Una funzione senza nome legata con qualunque nome** resta com'è (0 su 391, «I tre dubbi», 1), fissata da un test.
+
+**Misura** (Modal, 26 applicazioni di `apps.py` senza btcpayserver, Noir 1.5.0; corse `after` `ap-acf7eMgC6OisNqbMaa7IcC` e `ap-xlcTguZYkTEbasYXodWCYG` col legatore di `98a01c1`, `ap-veAExmOH8NGOIQWF77O1o9` con quello di questo passo; `compare_after.py`, `results/t1c6.json`):
+
+| | Righe HTTP | Legate prima | Legate ora | Simbolo cambiato | Perse | Nuove | Righe senza nome legate per posizione | Archi in uscita | Fuori dalle righe del gestore |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Totale** | 4.000 | 2.303 | 2.301 | **0** (di cui 0 delle 1.637 legate per nome) | **0** | 0 | 389 | 24 → 24 | **0 → 0** |
+
+Le 2 legate in meno e le 3 righe «mancanti» non sono del legatore: Noir scrive un ordine diverso fra due corse (uni-stack: le rotte tRPC di `with-tamagui` o di `with-nativewind`; fastapi-template: `compose.yml` o `compose.deploy.yml`), come già notato sopra. Le 11 «sorelle» di eShop (9) e go-admin (2) sono legate a un nodo proprio prima e dopo, con **0 archi**: lo snapshot non risolve nessuna chiamata dentro di loro, quindi (a) non cambia nulla qui e il ripiegamento è provato solo dai test. `flows.link_facts` costruisce in 26 su 26, con gli stessi simboli delle righe del legatore. La corsa di `modal_binding.py` (prova, `ap-AsZPrWP5Qo0LmUlofRnVTj`) con il legatore di questo passo dà **2.297 legati su 3.994**, come «Dopo la correzione»; i `results/<app>.json` restano quelli del 24 novembre (il legatore di allora).
 
 ## Laravel e Rails: il comando ufficiale, e che cosa manca a Noir
 

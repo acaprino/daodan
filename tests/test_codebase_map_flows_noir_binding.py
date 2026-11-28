@@ -147,7 +147,7 @@ def test_a_factory_is_bound_when_its_node_holds_the_calls_of_the_function_it_ret
     links = links_of(tmp_path, answer, files)
     assert entry_of(links, "GET", "/api/Recycles")["symbol"] == "routes/recycles.js::blockRecycleItems"
     assert calls_from(links, "routes/recycles.js::blockRecycleItems") == ["routes/recycles.js::check"]
-    assert entry_of(links, "GET", "/api/Items")["symbol"] == "routes/factory.js::blockItems"
+    assert entry_of(links, "GET", "/api/Items")["symbol"] == "routes/factory.js::blockItems"  # the outermost has a name, and Noir's agrees
     assert calls_from(links, "routes/factory.js::blockItems") == ["routes/factory.js::check"]
 
 
@@ -216,24 +216,29 @@ def test_a_function_at_the_top_of_a_module_that_no_named_function_holds_is_the_r
     assert all(isinstance(e["symbol"], str) for e in links["entries"])
 
 
-def test_the_closure_and_not_the_callback_or_the_registrar_is_the_one_function_at_a_line_that_holds_the_others(tmp_path):
-    """Several functions start on one line: the one no other of them holds (their spans) is the handler of a route written on that line, or the
-    function that registers it, which a name that is not Noir's `closure` for it refuses."""
+def test_several_functions_at_the_line_are_the_outermost_only_where_it_has_a_name_that_agrees(tmp_path):
+    """Several functions start on one line: the one no other of them holds (their spans) is a registrar or the handler, and only its name can say
+    which. One with a name binds where Noir's agrees with it; one written with no name takes any name (`_agrees`), so it could be a registrar bound
+    as the handler: the line is a gap (T1.C.6), and the calls stay where the snapshot puts them."""
     files = {"routes/u.js": source("function list() { return []; }", "function users(app) {", "  app.get('/users', (req, res) => res.json(list().map((u) => u.id)));", "}"),  # 3
              "routes/r.js": source("function a() { return 1; }", "function b() { return 2; }",
                                    "function register(app) { app.get('/a', (req, res) => { res.json(a()); });", "  app.post('/b', (req, res) => {", "    res.json(b());", "  });", "}"),  # 3, 4
              "src/health.js": source("const ok = () => 'ok';", "export const healthRoutes = (app) => app.get('/health', (req, res) => res.send(ok()));"),  # 2
-             "lib/m.js": source("function a(){return 1}function b(){return 2}function register(app){app.get('/a',(q,s)=>s.json(a()));app.get('/b',(q,s)=>s.json(b()))}")}  # 1
+             "lib/m.js": source("function a(){return 1}function b(){return 2}function register(app){app.get('/a',(q,s)=>s.json(a()));app.get('/b',(q,s)=>s.json(b()))}"),  # 1
+             "routes/reg.js": source("function ok() { return 1; }", "export default (app) => app.get('/reg', (req, res) => res.json(ok()));")}  # 2: a registrar with no name
     answer = [endpoint("/users", "GET", "routes/u.js", "closure", 3), endpoint("/a", "GET", "routes/r.js", "closure", 3), endpoint("/b", "POST", "routes/r.js", "closure", 4),
-              endpoint("/health", "GET", "src/health.js", "closure", 2), endpoint("/m/a", "GET", "lib/m.js", "closure", 1)]
+              endpoint("/health", "GET", "src/health.js", "closure", 2), endpoint("/m/a", "GET", "lib/m.js", "closure", 1),
+              endpoint("/reg", "GET", "routes/reg.js", "closure", 2)]
     rows = bound(tmp_path, answer, files)
-    assert symbols(rows) == {("GET", "/users"): "routes/u.js::GET /users", ("POST", "/b"): "routes/r.js::POST /b"}
-    assert causes(rows) == {("GET", "/a"): "Noir names closure, the function at the line is register",
+    assert symbols(rows) == {("POST", "/b"): "routes/r.js::POST /b"}
+    assert causes(rows) == {("GET", "/users"): "several functions start at the line",
+                            ("GET", "/a"): "Noir names closure, the function at the line is register",
                             ("GET", "/health"): "Noir names closure, the function at the line is healthRoutes",
-                            ("GET", "/m/a"): "several functions start at the line and none holds the others"}
+                            ("GET", "/m/a"): "several functions start at the line", ("GET", "/reg"): "several functions start at the line"}
     links = links_of(tmp_path / "links", answer, files)
-    assert calls_from(links, "routes/u.js::GET /users") == ["routes/u.js::list"]
-    assert calls_from(links, "routes/r.js::register") == ["routes/r.js::a"]  # the closure of `/a` is still the registering function's
+    assert calls_from(links, "routes/u.js::users") == ["routes/u.js::list"]  # the closure of `/users` is still the registering function's
+    assert calls_from(links, "routes/r.js::register") == ["routes/r.js::a"]
+    assert calls_from(links, "routes/r.js::POST /b") == ["routes/r.js::b"]
 
 
 def test_a_closure_that_is_the_value_of_a_property_keeps_the_node_of_its_property(tmp_path):
@@ -282,15 +287,35 @@ def test_the_lambdas_of_a_minimal_api_and_the_func_literals_of_a_go_router_are_e
     assert calls_from(links, "router/router.go::GET /ready") == ["router/router.go::b"]
 
 
-def test_a_go_func_literal_inside_a_route_closure_is_still_the_shared_node_of_the_functions_that_hold_it(tmp_path):
-    """Pinned, not fixed: the readers fold only `(anonymous)` into the function that holds it, so the `(func)` a route's closure starts (`go func() { a() }()`) is
-    one node for every closure of the function that registers the routes. The same goes for a lambda inside a C# lambda."""
+def test_a_go_func_literal_or_a_csharp_lambda_inside_a_route_closure_is_folded_into_the_route_s_node(tmp_path):
+    """A function written with no name inside a function a route names (`route_named`) is part of it (T1.C.6): the `(func)` a route's closure starts
+    (`go func() { a() }()`) and a lambda inside a C# lambda; before, they were one node for every closure of the function that registers the routes.
+    One that no route's function holds keeps its node."""
     go = source("package router", "", "func a() {}", "func b() {}", "", "func Register(r Router) {", '\tr.GET("/health", func(c Ctx) {', "\t\tgo func() { a() }()", "\t})",
-                '\tr.GET("/ready", func(c Ctx) {', "\t\tgo func() { b() }()", "\t})", "}")
-    links = links_of(tmp_path, [endpoint("/health", "GET", "router/r.go", "closure", 7), endpoint("/ready", "GET", "router/r.go", "closure", 10)], {"router/r.go": go})
-    assert {e["path"]: e["symbol"] for e in links["entries"] if e.get("reader") == "noir"} == {"/health": "router/r.go::GET /health", "/ready": "router/r.go::GET /ready"}
-    assert calls_from(links, "router/r.go::Register.(func).(func)") == ["router/r.go::a", "router/r.go::b"]  # both routes' calls are on one node
-    assert calls_from(links, "router/r.go::GET /health") == [] and calls_from(links, "router/r.go::GET /ready") == []
+                '\tr.GET("/ready", func(c Ctx) {', "\t\tgo func() { b() }()", "\t})", "\tgo func() { a() }()", "}")
+    csharp = source("public static class CatalogApi", "{", "    public static void MapCatalogApi(this Router app)", "    {",
+                    '        app.MapGet("/a", () =>', "        {", "            return Run(() => One());", "        });",  # 5
+                    '        app.MapGet("/b", () =>', "        {", "            return Run(() => Two());", "        });",  # 9
+                    "        Run(() => Two());", "    }",
+                    "    static int Run(System.Func<int> f) => f();", "    static int One() => 1;", "    static int Two() => 2;", "}")
+    answer = [endpoint("/health", "GET", "router/r.go", "closure", 7), endpoint("/ready", "GET", "router/r.go", "closure", 10),
+              endpoint("/a", "GET", "api/Cat.cs", "closure", 5), endpoint("/b", "GET", "api/Cat.cs", "closure", 9)]
+    links = links_of(tmp_path, answer, {"router/r.go": go, "api/Cat.cs": csharp})
+    assert {e["path"]: e["symbol"] for e in links["entries"] if e.get("reader") == "noir"} == {
+        "/health": "router/r.go::GET /health", "/ready": "router/r.go::GET /ready", "/a": "api/Cat.cs::GET /a", "/b": "api/Cat.cs::GET /b"}
+    assert calls_from(links, "router/r.go::GET /health") == ["router/r.go::a"] and calls_from(links, "router/r.go::GET /ready") == ["router/r.go::b"]
+    assert calls_from(links, "router/r.go::Register.(func)") == ["router/r.go::a"]  # the one in `Register` itself: no route's function holds it
+    assert calls_from(links, "api/Cat.cs::GET /a") == ["api/Cat.cs::CatalogApi.One", "api/Cat.cs::CatalogApi.Run"]
+    assert calls_from(links, "api/Cat.cs::GET /b") == ["api/Cat.cs::CatalogApi.Run", "api/Cat.cs::CatalogApi.Two"]
+    assert calls_from(links, "api/Cat.cs::CatalogApi.MapCatalogApi.(lambda)") == ["api/Cat.cs::CatalogApi.Two"]
+
+
+def test_a_function_written_with_no_name_binds_whatever_name_noir_gives(tmp_path):
+    """Kept as it is (T1.C.6, d): measured 0 wrong of 391 (`benchmarks/noir-binding`, «I tre dubbi», 1). Noir's name for a closure is its own
+    (`closure`, `authController.register`): no datum of the snapshot can agree or disagree with it."""
+    files = {"routes/any.js": source("function ok() { return 1; }", "function r(app) {", "  app.get('/any', (req, res) => res.json(ok()));", "}")}
+    rows = bound(tmp_path, [endpoint("/any", "GET", "routes/any.js", "somethingElse.entirely", 3)], files)
+    assert symbols(rows) == {("GET", "/any"): "routes/any.js::GET /any"}
 
 
 # ------------------------------------------------------------------------------------------------------------ more routes, or none, on a function
