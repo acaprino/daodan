@@ -1,9 +1,11 @@
 """Source: how a Node package says it starts and builds, read from its `package.json`, never run.
 
-`starts` entries `{root, mode, runner, declared_in, port, needs_build}` for the `dev` and `start` scripts, `builds`
-entries `{root, runner, declared_in}` for `build`; the command is `<runner> run <script>`, the one the package
-declares (spec of the project's interfaces, section 5). The runner is the one of the nearest lockfile, the folder's
-or above it (`pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `bun.lockb`), else npm.
+`starts` entries `{root, mode, runner, argv, surface, declared_in, port, needs_build}` for the `dev` and `start`
+scripts, `builds` entries `{root, runner, argv, declared_in}` for `build`; `argv` is the command, `<runner> run
+<script>`, the one the package declares (spec of the project's interfaces, section 5), and `surface` is `web`: a script
+opens an HTTP address (`dynamic.app`). The runner is the one of the nearest lockfile, the folder's or above it
+(`pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `bun.lockb`), else the one the nearest `packageManager` names (the field
+corepack reads; the restore reads it too, `preparation.node_restores`), else npm.
 
 Each script is read from its syntax tree (`premap/shell.py`, tree-sitter bash: no official tool reads an npm script,
 and a regular expression is not for a language with a grammar). `port` is a decimal literal: `--port N`,
@@ -25,10 +27,11 @@ from pathlib import Path, PurePosixPath
 
 from premap import shell
 
-NAME, VERSION, RANK = "npm-start", "daodan/premap/v1", "reader"
+NAME, VERSION, RANK = "npm-start", "daodan/premap/v2", "reader"
 MODES = ("dev", "start")
 LOCKFILES = (("pnpm-lock.yaml", "pnpm"), ("yarn.lock", "yarn"), ("bun.lock", "bun"), ("bun.lockb", "bun"),
              ("package-lock.json", "npm"), ("npm-shrinkwrap.json", "npm"))
+SURFACE = "web"  # a package script opens an HTTP address: the `web` surface (`dynamic.app.WEB`)
 BUILT_FIRST = {("next", "start"), ("nuxt", "start"), ("vite", "preview"), ("astro", "preview")}
 NOT_STARTS = {"jest", "vitest", "mocha", "ava", "tap", "cypress",  # test runners
               "tsc", "vue-tsc", "svelte-check", "eslint", "stylelint", "prettier"}  # checkers
@@ -74,9 +77,10 @@ def _port(commands) -> int | None:
     return None
 
 
-def _runner(root: str, context) -> str:
-    """The lockfile's executor; the snapshot holds no `yarn.lock` or `bun.lockb`, so each is looked for on disk, in a
-    folder the snapshot holds (`origins.disk_text`)."""
+def _runner(root: str, context, named: dict[str, str]) -> str:
+    """The lockfile's executor, else the manager `named` (folder -> the one its `packageManager` names) gives, in the
+    folder or the nearest above it; the snapshot holds no `yarn.lock` or `bun.lockb`, so each is looked for on disk, in
+    a folder the snapshot holds (`origins.disk_text`)."""
     folder = root
     while True:
         for lockfile, runner in LOCKFILES:
@@ -84,27 +88,42 @@ def _runner(root: str, context) -> str:
             if rel in context.inventory.headers or (folder in context.inventory.directories
                                                     and (Path(context.root) / rel).is_file()):
                 return runner
+        if folder in named:
+            return named[folder]
         if folder == ".":
             return "npm"
         folder = PurePosixPath(folder).parent.as_posix()
 
 
-def run(context):
-    files = set(context.inventory.files)
-    starts, builds, gaps = [], [], []
-    for rel in sorted(files):
+def _manifests(context) -> dict[str, dict]:
+    """Each readable `package.json` of the snapshot by its folder (`.` the root), in the order of their paths."""
+    found = {}
+    for rel in sorted(context.inventory.files):
         if PurePosixPath(rel).name != "package.json":
             continue
         try:
-            scripts = json.loads(context.inventory.text(rel)).get("scripts")
-        except (ValueError, AttributeError):
+            manifest = json.loads(context.inventory.text(rel))
+        except ValueError:
             continue  # an unreadable manifest is the module graph's gap
+        if isinstance(manifest, dict):
+            found[PurePosixPath(rel).parent.as_posix() if "/" in rel else "."] = manifest
+    return found
+
+
+def run(context):
+    starts, builds, gaps = [], [], []
+    manifests = _manifests(context)
+    named = {folder: name for folder, manifest in manifests.items()  # `<name>@<version>`, as corepack writes it
+             for name in [str(manifest.get("packageManager") or "").split("@")[0].strip()] if name}
+    for root, manifest in manifests.items():
+        rel = "package.json" if root == "." else f"{root}/package.json"
+        scripts = manifest.get("scripts")
         if not isinstance(scripts, dict):
             continue
-        root = PurePosixPath(rel).parent.as_posix() if "/" in rel else "."
-        runner = _runner(root, context)
+        runner = _runner(root, context, named)
         if isinstance(scripts.get("build"), str):
-            builds.append({"root": root, "runner": runner, "declared_in": f"{rel}#scripts.build"})
+            builds.append({"root": root, "runner": runner, "argv": [runner, "run", "build"],
+                           "declared_in": f"{rel}#scripts.build"})
         for mode in MODES:
             script = scripts.get(mode)
             if not isinstance(script, str) or not script.strip():
@@ -119,8 +138,8 @@ def run(context):
                              "detail": f"{rel}: the `{mode}` script runs only a test runner, a checker or a CLI "
                                        "without its subcommand: it starts nothing"})
                 continue
-            starts.append({"root": root, "mode": mode, "runner": runner, "declared_in": f"{rel}#scripts.{mode}",
-                           "port": _port(commands),
+            starts.append({"root": root, "mode": mode, "runner": runner, "argv": [runner, "run", mode],
+                           "surface": SURFACE, "declared_in": f"{rel}#scripts.{mode}", "port": _port(commands),
                            "needs_build": _unbuilt(commands, root, context) or any(
                                (name, _subcommand(arguments)) in BUILT_FIRST for _, name, arguments in commands)})
     for entry in starts:

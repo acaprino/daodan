@@ -31,13 +31,15 @@ from test_codebase_map_dynamic_javascript import Played, write  # noqa: E402
 
 
 def start(root: str, mode: str, script: str | None = None, runner: str = "npm", port=None, needs_build=False) -> dict:
-    return {"root": root, "mode": mode, "runner": runner, "declared_in": f"{root}/package.json#scripts.{script or mode}"
+    """A `starts` entry as `premap/npm_start.py` writes it."""
+    return {"root": root, "mode": mode, "runner": runner, "argv": [runner, "run", script or mode], "surface": "web",
+            "declared_in": f"{root}/package.json#scripts.{script or mode}"
             if root != "." else f"package.json#scripts.{script or mode}", "port": port, "needs_build": needs_build}
 
 
 def build(root: str, runner: str = "npm") -> dict:
-    return {"root": root, "runner": runner, "declared_in": f"{root}/package.json#scripts.build" if root != "."
-            else "package.json#scripts.build"}
+    return {"root": root, "runner": runner, "argv": [runner, "run", "build"],
+            "declared_in": f"{root}/package.json#scripts.build" if root != "." else "package.json#scripts.build"}
 
 
 # --- the plan --------------------------------------------------------------------------------------------------
@@ -63,10 +65,46 @@ def test_a_start_that_needs_a_build_nobody_declares_does_not_run_and_says_why():
     assert planned["apps"] == [] and [gap["kind"] for gap in planned["gaps"]] == ["build_command_missing"]
 
 
-def test_a_runner_the_driver_does_not_run_is_a_gap_with_its_name():
-    planned = app.plan({"starts": [start(".", "dev", runner="pnpm")]})
+def test_pnpm_yarn_and_node_s_own_programs_run_and_a_runner_with_no_preparation_is_a_gap_with_its_name():
+    """Node's own programs and the managers corepack runs as the restores do (`preparation.RESTORES`' `before`) have
+    their preparation; a program none prepares is `start_runner_not_supported`, naming it."""
+    assert set(app.COREPACK) == {"pnpm", "yarn"}
+    user = {**start("api", "start", runner="node"), "argv": ["node", "server.js"], "declared_in": "commands.json"}
+    planned = app.plan({"starts": [start(".", "dev", runner="pnpm"), start("web", "dev", runner="yarn"), user,
+                                   start("deno", "dev", runner="deno")]})
+    assert [(one["root"], one["argv"]) for one in planned["apps"]] == [
+        (".", ["pnpm", "run", "dev"]), ("api", ["node", "server.js"]), ("web", ["yarn", "run", "dev"])]
+    assert [(gap["kind"], gap["runner"], gap["path"]) for gap in planned["gaps"]] == [
+        ("start_runner_not_supported", "deno", "deno/package.json#scripts.dev")]
+    assert "no preparation" in planned["gaps"][0]["detail"]
+
+
+def test_bun_runs_at_the_exact_version_the_pre_map_states_and_without_one_is_a_gap():
+    """mise installs Bun at the version the project states (`preparation.toolchains`), never one it would pick."""
+    record = {"starts": [start(".", "start", runner="bun")]}
+    stated = app.plan({**record, "toolchains": [{"tool": "bun", "version": "1.2.2", "declared_in": ".bun-version"}]})
+    assert [one["argv"] for one in stated["apps"]] == [["bun", "run", "start"]] and stated["gaps"] == []
+    assert stated["toolchains"] == [{"tool": "bun", "version": "1.2.2", "declared_in": ".bun-version"}]
+    for toolchains in ([], [{"tool": "bun", "version": ">=1.1", "declared_in": "package.json#engines"}]):
+        planned = app.plan({**record, "toolchains": toolchains})
+        assert planned["apps"] == [] and [(gap["kind"], gap["runner"]) for gap in planned["gaps"]] == [
+            ("start_runner_not_supported", "bun")]
+        assert "no exact bun version" in planned["gaps"][0]["detail"]
+
+
+def test_a_build_whose_runner_has_no_preparation_keeps_its_start_from_running():
+    record = {"starts": [start(".", "start", needs_build=True)], "builds": [build(".", runner="deno")]}
+    planned = app.plan(record)
     assert planned["apps"] == []
-    assert [(gap["kind"], gap["runner"]) for gap in planned["gaps"]] == [("start_runner_not_supported", "pnpm")]
+    assert [(gap["kind"], gap["path"]) for gap in planned["gaps"]] == [
+        ("start_runner_not_supported", "package.json#scripts.build")]
+
+
+def test_the_chosen_start_of_a_folder_is_the_user_s_then_the_assistant_s_then_the_project_s_start_before_dev():
+    mine = {**start("web", "start"), "argv": ["npm", "run", "serve"], "by": "assistant", "declared_in": "commands.json"}
+    found = app.chosen({"starts": [start("web", "dev"), start("web", "start"), mine, start("api", "dev")]})
+    assert {root: entry["argv"] for root, entry in found.items()} == {
+        "web": ["npm", "run", "serve"], "api": ["npm", "run", "dev"]}
 
 
 def test_a_project_declaring_no_start_is_a_gap_and_nothing_runs():
@@ -145,6 +183,22 @@ def test_the_execution_runs_the_declared_command_and_never_one_of_ours():
     assert execute.index("npm run build") < execute.index("npm run dev")
     assert "--host" not in execute and "--port" not in execute  # the declared command is not changed
     assert "5173" in execute  # the declared port is the driver's to wait on
+    assert "corepack" not in prepare and "corepack" not in execute  # npm's: nothing of corepack
+
+
+def test_pnpm_and_yarn_get_corepack_s_shims_and_their_manager_fetched_while_the_preparation_has_the_network():
+    """The declared words run as written (`pnpm run dev`, never `corepack pnpm …`): corepack's shims are on the path,
+    each folder's manager is fetched in the preparation, and the execution, with no network, does not prompt."""
+    planned = {"apps": [{**start("web", "start", runner="pnpm", needs_build=True), "build": build("web", "pnpm")},
+                        start("docs", "dev", runner="yarn"), start(".", "dev")], "gaps": [], "roots": [], "toolchains": []}
+    prepare, execute = app.scripts(planned, ["corepack pnpm install"])
+    assert preparation.COREPACK_INSTALL in prepare
+    assert f"corepack enable --install-directory {app.T}/bin pnpm yarn" in prepare
+    assert "( cd /work/web && pnpm --version )" in prepare and "( cd /work/docs && yarn --version )" in prepare
+    assert prepare.index("corepack pnpm install") < prepare.index("corepack enable")
+    assert preparation.COREPACK in execute
+    assert "pnpm run build" in execute and "'pnpm run start'" in execute and "'yarn run dev'" in execute
+    assert "corepack pnpm" not in execute
 
 
 # --- the outcome, read back ------------------------------------------------------------------------------------
@@ -209,6 +263,23 @@ def test_a_failed_build_is_a_gap_with_the_log_and_the_app_does_not_start(tmp_pat
     [gap] = seen["gaps"]
     assert gap["kind"] == "build_failed" and "TS2304" in gap["detail"] and "exited with code 2" in gap["detail"]
     assert seen["apps"][0]["state"] == "not_started"
+
+
+def test_the_preparation_reaches_the_hosts_of_the_manager_corepack_fetches(tmp_path):
+    played = Played({"app-0.json": result()}, {"execute.log": "DAODAN-APP 0 exit 0 4\n"})
+    observe(tmp_path, played, [start(".", "dev", runner="yarn")])
+    assert set(preparation.RESTORES["yarn"]["hosts"]) <= set(played.given["registries"])
+
+
+def test_a_host_the_proxy_refused_and_nobody_answered_is_the_approval_gap_of_a_run_that_went_on(tmp_path):
+    """The browser's or mise's download outside the canonical hosts asks (`egress`): the run goes on without it, and the
+    gap names the host to answer in the app, not only the browser that is missing."""
+    asked = [{"host": "storage.googleapis.com", "port": "443", "declared_in": []}]
+    played = Played({"app-0.json": result()}, {"execute.log": "DAODAN-APP 0 exit 0 4\n"},
+                    {"state": "done", "exit_code": 0, "outputs": [], "asked": asked})
+    seen = observe(tmp_path, played)
+    [gap] = [gap for gap in seen["gaps"] if gap["kind"] == "approval_required"]
+    assert gap["hosts"] == ["storage.googleapis.com"] and "storage.googleapis.com:443" in gap["detail"]
 
 
 def test_a_driver_that_wrote_nothing_is_a_gap_not_a_silence(tmp_path):
@@ -403,6 +474,22 @@ def test_the_step_explores_keeps_the_pages_and_reuses_them_while_the_snapshot_an
     assert again["reused"] is True and [gap["kind"] for gap in again["gaps"]] == ["explore_cap"]  # the gaps are said again
     assert later.get("reused") is None and (tmp_path / observed_entries.FILE).is_file()
     assert calls[0]["explore"] is True
+
+
+def test_a_run_that_asked_for_hosts_nobody_answered_is_not_kept_so_the_next_analysis_runs_again(tmp_path):
+    """The gap's remedy is to answer in the app and analyze again: the same snapshot and plan run again, not the run
+    that went without the hosts."""
+    record = {"starts": [start(".", "dev")], "builds": []}
+    calls = []
+    asking = explorer(calls)
+
+    def observe(project, planned, out_dir, engine=None):
+        seen = asking(project, planned, out_dir, engine)
+        return {**seen, "gaps": [{"kind": "approval_required", "hosts": ["storage.googleapis.com"], "detail": "ask"}]}
+    with mock.patch.object(app, "observe", observe):
+        first = app.explore(tmp_path / "manifest.sqlite", tmp_path, record, "digest-1", tmp_path / "runs")
+        again = app.explore(tmp_path / "manifest.sqlite", tmp_path, record, "digest-1", tmp_path / "runs")
+    assert len(calls) == 2 and first.get("reused") is None and again.get("reused") is None
 
 
 def test_a_project_with_no_app_to_start_runs_nothing_and_leaves_no_pages(tmp_path):

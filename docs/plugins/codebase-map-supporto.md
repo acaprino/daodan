@@ -74,7 +74,7 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `python-tests` | daodan/premap/v1 | lettore: legge i file | `premap/python_tests.py` | not_needed 115, ran 7 |
 | `npm-files` | daodan/premap/v1 | lettore: legge i file | `premap/npm_lock.py` | not_needed 86, ran 36 |
 | `npm-tests` | daodan/premap/v6 | lettore: legge i file | `premap/npm_tests.py` | not_needed 113, ran 9 |
-| `npm-start` | daodan/premap/v1 | lettore: legge i file | `premap/npm_start.py` | non misurato: non era nel giro |
+| `npm-start` | daodan/premap/v2 | lettore: legge i file | `premap/npm_start.py` | non misurato: non era nel giro |
 | `jvm-files` | daodan/premap/v5 | lettore: legge i file | `premap/jvm_files.py` | not_needed 100, ran 22 |
 | `project-files` | daodan/premap/v2 | lettore: legge i file | `premap/project_files.py` | not_needed 115, ran 7 |
 | `gitmodules` | daodan/premap/v1 | lettore: legge i file | `premap/gitmodules.py` | not_needed 120, ran 2 |

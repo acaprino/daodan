@@ -629,11 +629,21 @@ Passo 11 del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-fluss
 - Il motore di Daodan su Windows (Kiri in WSL, `container.own_engine`): la prova col motore vero sotto è su Linux con Docker.
 - I flussi interi del riferimento: solo il loro controllo iniziale si confronta (`entries_vs_reference.py`); i passi che seguono non sono misurati.
 - Un modulo che chiede un valore che nessun tipo HTML dice (un codice, un identificativo, un `pattern` stretto): resta `invalid` e non si invia; le credenziali non si indovinano. I campi fuori da un modulo non si compilano.
-- pnpm, Yarn e Bun: `start_runner_not_supported`, non eseguiti.
+- Yarn su container reale: `js-yarn-berry` non dichiara un avvio (sotto). Un'app Bun che resta in ascolto: lo `start` di `js-bun` stampa ed esce.
 
 ### Col motore container vero
 
-`modal_engine.py` avvia un demone Docker (rete normale) in una VM Sandbox di Modal e lancia `dynamic.app.observe` con `container.find_engine()`, cioè `container.run_in_container` di Daodan e non il sostituto `sandbox_run` di Modal: preparazione con i registri, `keep_root` per il browser, esecuzione senza rete, uscite riportate. Fixture: `explore-fixtures/vite-react` (la stessa del test). Risultato, `results/explore/engine.json`: motore `docker`, app `ready` su 5173, 2 controlli premuti, nessuna lacuna, 42,6 s; Save → `validate` e `save`, Reset → `reset`, con file e riga di `src/lib/actions.ts`.
+`modal_engine.py` avvia un demone Docker (rete normale) in una VM Sandbox di Modal e lancia `dynamic.app.observe` con `container.find_engine()`, cioè `container.run_in_container` di Daodan e non il sostituto `sandbox_run` di Modal: preparazione con i registri, `keep_root` per il browser, esecuzione senza rete, uscite riportate. La pre-mappa è quella dei lettori e di Renovate, che gira nel container come in `find_modules` (`container_runner.runner`): le toolchain che la preparazione installa (Node, Bun) sono fatti suoi. `--fixture <cartella>` (dalla radice del repository) sceglie il progetto, copiato senza `node_modules` né `expected.json`; senza, `explore-fixtures/vite-react` (la stessa del test). Risultato, `results/explore/engine.json`: motore `docker`, app `ready` su 5173, 2 controlli premuti, nessuna lacuna, 42,6 s; Save → `validate` e `save`, Reset → `reset`, con file e riga di `src/lib/actions.ts`.
+
+Un host che la preparazione chiede fuori dall'elenco canonico (`egress`) è la domanda dell'app: il driver risponde «once» agli host chiesti, come la persona nell'app, e rifà la corsa, al più 3 volte; `rounds` tiene le lacune di ogni corsa con gli host chiesti. pnpm, Yarn e Bun (`T3.B.11`, 28 novembre 2026; codice `fe6ab15` per pnpm e Bun, `e486883` per Yarn, `daodan/` uguale):
+
+| Fixture | Risultato | Corsa | Esito |
+| --- | --- | --- | --- |
+| `fixtures/js-vue-pnpm` | `results/explore/engine-pnpm.json` | `ap-cEFeCI5dGufJRcoDw65IKG` | runner `pnpm` dal `packageManager` (nessun lockfile), `pnpm run dev` con gli shim di corepack, pnpm 9.12.2 scaricato nella preparazione. Prima corsa: l'app risponde su 5173, il browser non si installa (`storage.googleapis.com` da approvare): `approval_required` ed `explore_failed`. Dopo il sì: `ready` su 5173, 1 pagina, 1 controllo premuto (il contatore, `Counter.vue` righe 5 e 9), nessuna lacuna, 80,7 s |
+| `fixtures/js-bun` | `results/explore/engine-bun.json` | `ap-rBeAzQUeE11xkXggBySGTw` | Renovate dichiara Bun 1.2.2 (`.bun-version`); mise lo installa dopo due risposte (`github.com` e `storage.googleapis.com`, poi `release-assets.githubusercontent.com`). `bun run start` esegue `bun run src/index.ts`, che stampa `{ name: "1.2.2" }` ed esce con 0: `app_not_started`, lo script non è un server. 102 s |
+| `fixtures/js-yarn-berry` | `results/explore/engine-yarn.json` | `ap-DvPFGKDPhXKVp5l4meM2vq` | nessun `package.json` dichiara `dev` o `start`: `no_start_command`, niente parte. 29 s |
+
+Il controllo `explore-fixtures/vite-react` con npm, sul codice di `5b75651` (`ap-JcBh9OtYJroPBNfGvwAB1t`), chiede anch'esso `storage.googleapis.com`: il browser di Playwright viene da un host generico che l'elenco canonico lascia fuori di proposito, come GitHub (`container.REGISTRIES`, dal 27 novembre 2026, `T0.C`), e `engine.json` è del 22 novembre, di prima. Una corsa che ha chiesto un host non si tiene per il riuso (`app.explore`): dopo la risposta l'analisi la rifà. Le dipendenze di `js-bun` le ripristina npm: `bun.lock` non è fra i lockfile dei ripristini (`preparation.RESTORES`).
 
 ## Eventi fra la pagina e il guscio Tauri
 
