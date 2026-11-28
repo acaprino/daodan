@@ -1610,6 +1610,22 @@ Esito: soglia raggiunta su tutti e due.
 - Sessione Kotlin nel container: compilazione di `KotlinAsk.kt` 7,2 s, sessione 9,4 s (7,3 s di domande): 97 file, 17 nomi sovraccarichi, 405 riferimenti e 67 override chiesti, 337 risposte (270 riferimenti, 67 override). Picco del processo più grande dell'esecuzione 736 MB (heap massimo 3 GB). scip-java 98,3 s, 1.261 MB; corsa intera 155,1 s.
 - Costo: non letto dalla fattura di Modal.
 
+### C e C++: zlib e tinyxml2 (`T2.B.15`)
+
+Soglia, dal piano: conteggi del grafo uguali a `results/graph-c-zlib-checks.json` e `graph-cpp-tinyxml2-checks.json` (14 novembre, adattatore del benchmark), verifica a mano 20/20 su zlib e almeno 16/20 su tinyxml2, tempo e picco.
+
+Esecuzione, codice del prodotto di `005f20e`: `lang_clang.py spawn --stage --cases zlib,tinyxml2` (`fc-01M8FQE02WRK13XJ7WHB60KHW2`, `fc-01M8FQE071AYJD8ZT4XWYC2CS7`), poi `fetch --stage`: lo snapshot del prodotto sulla copia, lo stage scip-clang del passaggio (`indexers/clang.py`, la build nella Sandbox Modal del benchmark della pipeline, gli host dichiarati presi per approvati), i grafi presi mentre lo stage scrive lo store. Risultati: `results/clang-stage-{zlib,tinyxml2}.json`, con le chiavi del report che differiscono.
+
+| Caso | Nodi | Archi | File snapshot / indicizzati | Buchi | A mano | Stage (scip-clang) | Snapshot, picco |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| zlib (C) | 1.874 → 3.975 | 14.137 → 26.391 | 69 / 27 → 65 / 44 | 2.383 → 5.289 | 17/20 (era 20/20) | 76,7 s (34,8 s) | 133,6 s, 204 MB |
+| tinyxml2 (C++) | 2.063 → 2.069 | 7.978 → 8.141 | 4 / 3 → 4 / 3 | 145 → 193 | 16/20 (era 16/20) | 39,6 s (4,0 s) | 83,2 s, 210 MB |
+
+Esito: soglia **non** raggiunta sui conteggi (né su zlib né su tinyxml2) e sulla verifica a mano di zlib; raggiunta sulla verifica a mano di tinyxml2. Il picco di scip-clang non arriva dalla Sandbox (`peak_mb` vuoto).
+- I conteggi non sono confrontabili uno a uno: il prodotto conta anche le letture (`* read`: zlib 9.169 archi, tinyxml2 2.347), che l'adattatore del 14 novembre non dava; su zlib la build del prodotto compila 44 file invece di 27 (in più `contrib/minizip`, `contrib/puff`, `contrib/blast`, `contrib/untgz`, `test/infcover.c`: la pre-mappa trova le loro build) e lo snapshot del prodotto ne elenca 65 invece di 69. I buchi hanno le cause del lettore dall'albero (`T2.B.13`): ramo spento (zlib 818, tinyxml2 77), argomento di macro scartato (34), `extern "C"` (tinyxml2 84), conversione a un tipo di base (7), al posto di `no-occurrence`.
+- zlib a mano, i tre sbagliati: `deflate.c:1888` `_tr_tally_lit` e `trees.c:775` `send_bits`, attesi `value`, raggiungono i `typedef` dei cast nelle espansioni (`zutil.h:39`, `:41`, `zconf.h:402`), che lo snapshot del prodotto dichiara `class` e il grafo conta come chiamabili; `test/example.c:175` `deflateInit` ha anche `zlib.h:86` (il `typedef` `z_stream` del cast della macro). Stessa causa: un `typedef` C contato come classe chiamabile.
+- tinyxml2 a mano: gli stessi quattro sbagliati del 14 novembre (`~XMLNode` e `printf` senza occorrenza, `TIXML_SNPRINTF` e `TIXMLASSERT` `value`).
+
 ## 27 novembre 2026, soglia dei fogli di stile (T2.B.17)
 
 `lang_css.py` sui sette casi, due corse sullo stesso codice salvo il TypeScript del programma degli script: `39dfca8` (TypeScript 5.9.3 di `css_engines/`) e `d52925a` (`T2.B.16`, il TypeScript 6.0.3 di scip-typescript 0.6.2). `modal deploy benchmarks/inference-audit/lang_css.py`, `python benchmarks/inference-audit/lang_css.py spawn --cases v3-admin-vite,tududi,bulma,bootstrap3,hn-svelte,saas-starter,sc-website`, `fetch` con gli stessi casi; risultati in `results/graph-css-<caso>-checks.json` (quelli di `d52925a`).
@@ -1667,3 +1683,20 @@ Risultati (corse `fc-01M8FNA7V3WNVE6BXQXE9YK7WG` e `fc-01M8FNA7XDXYWTHK5K5TS23NG
 - La cache del linguaggio funziona e rende: chi da 34 a 3 s, tududi da 183 a 81 s; su tududi il resto è la lettura dell'indice tenuto e la costruzione del grafo, che la cache non evita.
 - Il sottoinsieme non dà il grafo intero, in nessuno dei due linguaggi. Su chi le chiamate di `middleware` ai metodi di interfaccia del pacchetto radice (`Router#Get`, `Routes#Match`, `Router#Use`) restano senza definizione: scip-go, coi pacchetti nominati, le scrive con un simbolo che l'indice tenuto non definisce. Su tududi i documenti rifatti perdono occorrenze (12.099 `no-occurrence`) e legami fra file. Il guadagno di tempo è nullo su chi e del 25% su tududi. Esito: il sottoinsieme si spegne per Go e TypeScript (`SUBSET = False`), resta la cache del linguaggio.
 - Lo snapshot riletto da capo dopo la modifica costa 3,6 s su chi e 228,7 s su tududi (`read_project` senza lo snapshot precedente: il prodotto, in `refresh_working`, riusa le letture).
+
+## 28 novembre 2026, passaggio staccato e `self.metodo()` rimisurati (T2.B.18)
+
+Fonte del difetto: solo la nota di `3b856ab` (17 novembre), un passaggio staccato su quattro chiuso dopo circa 6 minuti senza store e 154 chiamate `self.m()` senza arco. `modal_detached.py`: otto container, ognuno con il codice di Daodan (`daodan/`, senza i test), il suo snapshot (`snapshot.py write --no-engine --no-index`), poi `engine_pass.ensure_edges` (il figlio staccato del prodotto, `-X faulthandler`, log accanto allo snapshot) interrogato ogni 5 s fino alla fine o a 1.800 s; i container dei motori nella Sandbox Modal del benchmark della pipeline. Le `self.m()` sono i riferimenti `call` Python dello snapshot con parti `self` e un nome, cercati per id nello store. `modal deploy benchmarks/inference-audit/modal_detached.py`, `python benchmarks/inference-audit/modal_detached.py spawn`, `fetch`; risultato `results/detached-pass.json` (snapshot, store e log di ogni corsa sul volume, `inference-audit/detached/<n>.tar.gz`). Codice del prodotto di `005f20e`.
+
+| Misura | Valore |
+| --- | --- |
+| passaggi chiusi `fresh` | 8 su 8 (C#, JavaScript, Python, fogli di stile; Go, Java, Kotlin `unavailable`: nessuna build nella pre-mappa) |
+| chiusi senza store, oltre il limite | 0, 0 |
+| durata del passaggio | da 1.238,6 a 1.601,3 s; snapshot da 340 a 433 s a parte |
+| durata per stage (corsa 7) | scip-python 956,2 s (indicizzatore 66,7 s, 1.644 MB), scip-typescript 163,5 s, scip-dotnet 56,8 s, fogli di stile 36,5 s |
+| chiamate `self.m()` | 1.141 in ogni corsa: 1.127 con arco, 14 buchi con causa, 0 senza riga |
+
+- Il difetto non si riproduce: nessun passaggio si chiude senza store e nessuno supera il limite. I 14 buchi sono metodi della libreria standard ereditati (`send_response`, `send_header`, `end_headers` di `http.server` in `core/visual.py`, `get_starttag_text` di `html.parser` in `core/indexers/css.py`): Pyright li lega, scip-python non nomina nulla lì, e il buco lo dice. Nessuna correzione.
+- Una prima serie (5 corse su 8 `failed`) girava su container senza PyYAML: gli stage di scip-typescript e dei fogli di stile, che uv fa girare sui pacchetti dell'interprete, cadevano su `import yaml` (`preparation._node_local`). Era l'immagine del benchmark, che ora installa `daodan/core/requirements.txt`; le corse riportate sono tutte su quella immagine.
+- Lo stage Python è il più lungo: 956 s, di cui 67 dell'indicizzatore; il resto (installazioni al primo uso, cause dei buchi, grafo) non è misurato a parte.
+

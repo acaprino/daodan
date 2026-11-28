@@ -80,9 +80,6 @@ NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = ("scip-typescript", ("typescript"
 # The container's memory: on the host the run peaked at 2,264 MB on a real project (benchmarks/inference-audit, 13 November
 # 2026)
 MIN_FREE = 3 * 2**30
-# `index` takes the stage's `subset` (`engine_pass._redone`), off: on chi and tududi the kept index with the
-# subset's merged in is not the whole graph of the changed copy (benchmarks/inference-audit README, T2.B.5)
-SUBSET = False
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # git, for
 # a package a manifest takes from a repository (`indexers/clang.py` IMAGE)
 WORK, OUT = "/work", "/daodan/out"  # the copy (`container.WORKDIR`), and where the index is brought back from
@@ -583,13 +580,12 @@ def _runs(out_dir: Path, cause: str | None) -> list[dict]:
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsconfig: str | None = None, *,
           roots: set[str], paths=(), members: dict | None = None, toolchains=(), refused=(), engine=None,
-          memory: int = MIN_FREE, declared: dict | None = None, subset: list[str] | None = None) -> dict:
+          memory: int = MIN_FREE, declared: dict | None = None) -> dict:
     """The scip-typescript index of `project_dir` for `files` (default: every JS/TS file outside
     `node_modules`), `tsconfig` the configuration a root without one extends, `roots` the folders of its packages,
     `paths` the aliases of its units, `members` the folders of the packages reached by name and `toolchains` the
     Node it states, all as the pre-map names them (`structure`); `engine` and `memory` are the container's. See
-    the module's docstring. `subset`, the files the stage has to index again (changed, or importing one that did):
-    the generated tsconfig's `files` list holds only them."""
+    the module's docstring."""
     import container
     import node_preparation
     from indexers import runtime
@@ -611,9 +607,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
     found = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
                    if path.suffix in (*SUFFIXES, *components.SUFFIXES)
                    and "node_modules" not in path.relative_to(project_dir).parts)
-    if subset is not None:
-        files = subset
-    elif files is None:
+    if files is None:
         files = [rel for rel in found if rel.endswith(SUFFIXES)]
     parts = components.listed(project_dir, [rel for rel in found if rel.endswith(tuple(components.SUFFIXES))])
     plan_file = work_dir / "components.json"

@@ -46,7 +46,7 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (92): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287, D-295, D-296, D-297, D-298, D-299, D-300, D-303, D-304, D-305, D-306, D-308, D-309, D-310, D-311, D-312, D-313
+- `tutti` (93): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287, D-295, D-296, D-297, D-298, D-299, D-300, D-303, D-304, D-305, D-306, D-308, D-309, D-310, D-311, D-312, D-313, D-314
 - `java` (48): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284, D-293, D-294
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
@@ -69,7 +69,7 @@ Convenzioni:
 
 ### Area
 
-- `analizzatore` (138): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290, D-294, D-295, D-296, D-297, D-298, D-299, D-300, D-301, D-303, D-304, D-308, D-310, D-313
+- `analizzatore` (139): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290, D-294, D-295, D-296, D-297, D-298, D-299, D-300, D-301, D-303, D-304, D-308, D-310, D-313, D-314
 - `pre-mappa` (40): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062, D-284
 - `passo dinamico` (37): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274, D-292
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
@@ -87,7 +87,7 @@ Convenzioni:
 ### Tipo
 
 - `completezza` (168): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292, D-293, D-294, D-295, D-296, D-297, D-298, D-299, D-300, D-301, D-304, D-306, D-307, D-308, D-311
-- `correttezza` (94): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288, D-303, D-305, D-309, D-310, D-313
+- `correttezza` (95): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288, D-303, D-305, D-309, D-310, D-313, D-314
 - `sicurezza` (30): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286, D-311
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -95,7 +95,7 @@ Convenzioni:
 
 ### Origine
 
-- `commit` (127): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283, D-284, D-285, D-287, D-293
+- `commit` (128): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283, D-284, D-285, D-287, D-293, D-314
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (31): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264, D-286
@@ -126,7 +126,7 @@ Convenzioni:
 - `Docker` (8): D-046, D-107, D-135, D-140, D-141, D-240, D-277, D-279
 - `git` (8): D-048, D-126, D-197, D-204, D-245, D-250, D-257, D-280
 - `GitHub Actions` (8): D-056, D-182, D-201, D-213, D-260, D-261, D-274, D-275
-- `scip-python` (7): D-084, D-086, D-088, D-246, D-247, D-248, D-269
+- `scip-python` (8): D-084, D-086, D-088, D-246, D-247, D-248, D-269, D-314
 - `scip-typescript` (9): D-146, D-147, D-148, D-152, D-156, D-157, D-160, D-290, D-291
 - `Cargo` (7): D-014, D-021, D-030, D-041, D-175, D-239, D-311
 - `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
@@ -213,7 +213,7 @@ Convenzioni:
 
 ## Indice
 
-313 schede: 252 risolte, 18 aperte, 43 buchi dichiarati.
+314 schede: 253 risolte, 18 aperte, 43 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -301,7 +301,7 @@ Convenzioni:
 
 ### Analizzatori
 
-143 schede: 100 risolto, 16 aperto, 27 buco dichiarato.
+144 schede: 101 risolto, 16 aperto, 27 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -448,6 +448,7 @@ Convenzioni:
 | D-308 | Una richiesta non si univa alla sua rotta, e un legame trovato non era una relazione fra moduli | pets-workshop | risolto | `b6f877bad` | tutti · analizzatore · completezza · corsa su un progetto |
 | D-310 | Un passaggio finito senza rapporto non diceva come era finito, e su POSIX restava «in corso» | pets-workshop | risolto | `aeba9de21` | tutti · analizzatore · correttezza · corsa su un progetto |
 | D-313 | Su Windows il passaggio apriva una finestra della console, e chiuderla lo terminava senza una riga | un progetto privato | risolto | `fb8e162cf` | tutti · analizzatore · correttezza · corsa su un progetto |
+| D-314 | Un passaggio staccato chiuso senza store dopo circa 6 minuti, e 154 `self.m()` senza arco | il codice di Daodan | risolto | — | tutti · analizzatore · correttezza · commit · scip-python |
 
 ### Passo dinamico e osservatori
 
@@ -3752,6 +3753,16 @@ Casi che il giro aggiunge alle schede esistenti (da accodare alla loro «Descriz
 - **Verifica:** da `fb8e162cf`, `tests/test_codebase_map_resolve_edges.py` (`test_on_windows_the_pass_has_a_console_of_its_own_and_no_window`): rosso prima, su Modal. Prova le opzioni date a Windows, non Windows: la finestra con le opzioni vecchie, nessuna con le nuove e `0xC000013A` alla sua chiusura sono stati visti sull'host con un processo che dorme, e quella prova non sta nel repository, perché la suite gira su Modal, senza Windows.
 - **Stato:** risolto. Un passaggio intero su Windows con le opzioni nuove non è stato visto: quello del 19 novembre è stato fermato a mano dopo 35 secondi, senza finestre.
 - **Note:** D-310.
+
+#### D-314 Un passaggio staccato chiuso senza store dopo circa 6 minuti, e 154 `self.m()` senza arco
+- **Tag:** lingua tutti · area analizzatore · tipo correttezza · origine commit · strumento scip-python
+- **Descrizione:** la nota di `3b856ab` (17 novembre): un passaggio staccato su quattro sul codice di Daodan si chiudeva dopo circa 6 minuti senza store, e 154 chiamate Python `self.m()` restavano senza arco. Il riferimento della nota (`doc_review.py:427`) oggi punta ad altro codice.
+- **Spiegazione:** non trovata: sul codice di oggi il difetto non si riproduce. Le chiamate Python vengono da scip-python, non più dalla regola lessicale del 17 novembre; un passaggio che finisce senza rapporto dice il codice di uscita (D-310) e il log ha la pila di `faulthandler`.
+- **Progetto e caso:** il codice di Daodan (`daodan/`, senza i test) — `benchmarks/inference-audit/modal_detached.py`, 28 novembre 2026, codice del prodotto di `005f20e`.
+- **Rimedio:** nessuno.
+- **Verifica:** `results/detached-pass.json` (README di `benchmarks/inference-audit`, «passaggio staccato e `self.metodo()` rimisurati»): 8 passaggi staccati su 8 `fresh` con lo store, nessuno oltre i 1.800 s (da 1.238,6 a 1.601,3 s); 1.141 `self.m()`, 1.127 con arco e 14 buchi con causa (metodi di `http.server` e `html.parser` che Pyright lega e scip-python non nomina), nessuna senza riga.
+- **Stato:** risolto: non si riproduce; la causa del 17 novembre non è stata trovata.
+- **Note:** D-310, D-313.
 
 ### Passo dinamico e osservatori
 

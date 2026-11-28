@@ -1,0 +1,746 @@
+{
+ "summary": {
+  "runs": 8,
+  "fresh": 8,
+  "without_store": 0,
+  "timed_out": 0,
+  "seconds": [
+   1238.6,
+   1251.4,
+   1355.7,
+   1383.9,
+   1431.9,
+   1530.1,
+   1560.7,
+   1601.3
+  ],
+  "codes": [
+   "{\"code_graph.py\": \"8f4aac588655\", \"indexers/KotlinAsk.kt\": \"77b5faec27f5\", \"indexers/__init__.py\": \"67a8a5b52d41\", \"indexers/clang.py\": \"4fe01164c84e\", \"indexers/clang_run.py\": \"c1ea74dc335f\", \"indexers/components.py\": \"d46475644269\", \"indexers/csharp.py\": \"d791ccbca98d\", \"indexers/css.py\": \"68ff0d7e347c\", \"indexers/css_astro.py\": \"c8157d430209\", \"indexers/css_csstree.py\": \"d9ed24317d3d\", \"indexers/css_less.py\": \"d74d9e3004ae\", \"indexers/css_sass.py\": \"c2a5e278bdfc\", \"indexers/css_stylus.py\": \"a8d16d83fc4d\", \"indexers/css_svelte.py\": \"10e35514b1c3\", \"indexers/css_tailwind.py\": \"d7536cfbb251\", \"indexers/css_typescript.py\": \"a82b9c69c6d0\", \"indexers/css_vue.py\": \"371de29e0479\", \"indexers/go.py\": \"87b9bde8a306\", \"indexers/java.py\": \"4c36b9ca4357\", \"indexers/jvm.py\": \"c0ad14c4ba49\", \"indexers/kotlin.py\": \"f16e64bd3c42\", \"indexers/python.py\": \"27ea410254f8\", \"indexers/python_unbound.py\": \"49e96c46d1f4\", \"indexers/runtime.py\": \"fd355346a48c\", \"indexers/rust.py\": \"f94e32a260ff\", \"indexers/typescript.py\": \"872986318854\", \"indexers/typescript_types.py\": \"8d7033172e18\"}"
+  ],
+  "self_calls": [
+   "{\"edge\": 1127, \"hole the checker binds the method end_headers and scip-python names nothing there\": 2, \"hole the checker binds the method get_starttag_text and scip-python names nothing there\": 1, \"hole the checker binds the method send_header and scip-python names nothing there\": 9, \"hole the checker binds the method send_response and scip-python names nothing there\": 2}"
+  ]
+ },
+ "runs": [
+  {
+   "run": 0,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 340.4,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1251.4,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  },
+  {
+   "run": 1,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 433.2,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1601.3,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  },
+  {
+   "run": 2,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 410.2,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1431.9,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  },
+  {
+   "run": 3,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 388.1,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1383.9,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  },
+  {
+   "run": 4,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 386.7,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1355.7,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  },
+  {
+   "run": 5,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 407.9,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1530.1,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  },
+  {
+   "run": 6,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 413.7,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1560.7,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  },
+  {
+   "run": 7,
+   "code": {
+    "code_graph.py": "8f4aac588655",
+    "indexers/__init__.py": "67a8a5b52d41",
+    "indexers/clang.py": "4fe01164c84e",
+    "indexers/clang_run.py": "c1ea74dc335f",
+    "indexers/components.py": "d46475644269",
+    "indexers/csharp.py": "d791ccbca98d",
+    "indexers/css.py": "68ff0d7e347c",
+    "indexers/css_astro.py": "c8157d430209",
+    "indexers/css_csstree.py": "d9ed24317d3d",
+    "indexers/css_less.py": "d74d9e3004ae",
+    "indexers/css_sass.py": "c2a5e278bdfc",
+    "indexers/css_stylus.py": "a8d16d83fc4d",
+    "indexers/css_svelte.py": "10e35514b1c3",
+    "indexers/css_tailwind.py": "d7536cfbb251",
+    "indexers/css_typescript.py": "a82b9c69c6d0",
+    "indexers/css_vue.py": "371de29e0479",
+    "indexers/go.py": "87b9bde8a306",
+    "indexers/java.py": "4c36b9ca4357",
+    "indexers/jvm.py": "c0ad14c4ba49",
+    "indexers/kotlin.py": "f16e64bd3c42",
+    "indexers/python.py": "27ea410254f8",
+    "indexers/python_unbound.py": "49e96c46d1f4",
+    "indexers/runtime.py": "fd355346a48c",
+    "indexers/rust.py": "f94e32a260ff",
+    "indexers/typescript.py": "872986318854",
+    "indexers/typescript_types.py": "8d7033172e18",
+    "indexers/KotlinAsk.kt": "77b5faec27f5"
+   },
+   "snapshot_seconds": 357.1,
+   "action": "started",
+   "state": "fresh",
+   "seconds": 1238.6,
+   "timed_out": false,
+   "languages": {
+    "csharp": {
+     "state": "fresh"
+    },
+    "go": {
+     "reason": "no Go module of the pre-map holds a Go file: no module to index",
+     "state": "unavailable"
+    },
+    "java": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "javascript": {
+     "state": "fresh"
+    },
+    "kotlin": {
+     "reason": "no Gradle or Maven build in the pre-map: nothing builds these files",
+     "state": "unavailable"
+    },
+    "python": {
+     "state": "fresh"
+    },
+    "stylesheet": {
+     "state": "fresh"
+    }
+   },
+   "store": true,
+   "self_calls": {
+    "calls": 1141,
+    "by_verdict": {
+     "edge": 1127,
+     "hole the checker binds the method end_headers and scip-python names nothing there": 2,
+     "hole the checker binds the method get_starttag_text and scip-python names nothing there": 1,
+     "hole the checker binds the method send_header and scip-python names nothing there": 9,
+     "hole the checker binds the method send_response and scip-python names nothing there": 2
+    },
+    "without_edge_examples": [
+     "core/indexers/css.py:1503 hole the checker binds the method get_starttag_text and scip-python names nothing there",
+     "core/visual.py:753 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:754 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:755 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:756 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:757 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:758 hole the checker binds the method end_headers and scip-python names nothing there",
+     "core/visual.py:774 hole the checker binds the method send_response and scip-python names nothing there",
+     "core/visual.py:775 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:776 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:777 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:778 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:779 hole the checker binds the method send_header and scip-python names nothing there",
+     "core/visual.py:780 hole the checker binds the method end_headers and scip-python names nothing there"
+    ]
+   }
+  }
+ ]
+}

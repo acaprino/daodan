@@ -293,8 +293,8 @@ def _on_modal() -> None:
 
 
 def _step(spec_name: str, manifest: Path, target: Path, store: Path) -> dict:
-    """One stage: its seconds, its report, the `subset` of each indexer run (None: the whole language; no run: the
-    cache), the indexer's peak (`peak_mb` of its report: it runs in a sandbox, not as a child of this process)."""
+    """One stage: its seconds, its report, an entry per indexer run (none: the cache), the indexer's peak
+    (`peak_mb` of its report: it runs in a sandbox, not as a child of this process)."""
     import time
     import resolve_edges as rx
     spec = next(spec for spec in rx.ENGINES if spec.name == spec_name)
@@ -302,8 +302,7 @@ def _step(spec_name: str, manifest: Path, target: Path, store: Path) -> dict:
     original, runs = module.index, []
 
     def counting(*args, **kwargs):
-        subset = kwargs.get("subset")
-        runs.append({"subset": None} if subset is None else {"subset": len(subset), "files": subset[:30]})
+        runs.append({})
         return original(*args, **kwargs)
 
     module.index = counting
@@ -321,7 +320,7 @@ def _step(spec_name: str, manifest: Path, target: Path, store: Path) -> dict:
 @app.function(cpu=4, memory=12288, timeout=3600, volumes={"/results": volume})
 def change_case(name: str) -> dict:
     """The incremental stage on one case: each indexer stage of its languages whole (no `index-cache/`), again with
-    nothing changed (the language's cache), after the hand change of `CHANGES` (the files it moves: `subset`), and
+    nothing changed (the language's cache), after the hand change of `CHANGES` (the language again, whole), and
     whole on the changed copy without the cache, whose store must equal the incremental one row by row."""
     import shutil
     import time

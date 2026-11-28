@@ -1,0 +1,1941 @@
+{
+ "case": "zlib",
+ "commit": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
+ "code": {
+  "code_graph.py": "8f4aac588655",
+  "indexers/__init__.py": "67a8a5b52d41",
+  "indexers/clang.py": "4fe01164c84e",
+  "indexers/clang_run.py": "c1ea74dc335f",
+  "indexers/components.py": "d46475644269",
+  "indexers/csharp.py": "d791ccbca98d",
+  "indexers/css.py": "68ff0d7e347c",
+  "indexers/css_astro.py": "c8157d430209",
+  "indexers/css_csstree.py": "d9ed24317d3d",
+  "indexers/css_less.py": "d74d9e3004ae",
+  "indexers/css_sass.py": "c2a5e278bdfc",
+  "indexers/css_stylus.py": "a8d16d83fc4d",
+  "indexers/css_svelte.py": "10e35514b1c3",
+  "indexers/css_tailwind.py": "d7536cfbb251",
+  "indexers/css_typescript.py": "a82b9c69c6d0",
+  "indexers/css_vue.py": "371de29e0479",
+  "indexers/go.py": "87b9bde8a306",
+  "indexers/java.py": "4c36b9ca4357",
+  "indexers/jvm.py": "c0ad14c4ba49",
+  "indexers/kotlin.py": "f16e64bd3c42",
+  "indexers/python.py": "27ea410254f8",
+  "indexers/python_unbound.py": "49e96c46d1f4",
+  "indexers/runtime.py": "fd355346a48c",
+  "indexers/rust.py": "f94e32a260ff",
+  "indexers/typescript.py": "872986318854",
+  "indexers/typescript_types.py": "8d7033172e18",
+  "indexers/KotlinAsk.kt": "77b5faec27f5",
+  "adapters/clang.py": "c73b59af36f4",
+  "adapters/go_callgraph.py": "04f53f7ee62a",
+  "adapters/java.py": "0861828a7eec",
+  "adapters/js_jelly.py": "e3ef3f9aa8cd",
+  "adapters/jvm_callgraph.py": "27d24421e478",
+  "adapters/jvm_here.py": "03948f8e704d",
+  "adapters/kotlin.py": "17254bcde28c",
+  "adapters/kotlin_analysis.py": "5eef9336bea9",
+  "adapters/ts_compiler.py": "089c8aa85ec8"
+ },
+ "snapshot": {
+  "command": [
+   "/usr/local/bin/python",
+   "/daodan/map/core/snapshot.py",
+   "write",
+   "/work/stage-zlib/src",
+   "--out",
+   "/work/stage-zlib/snapshot/manifest.sqlite",
+   "--no-engine",
+   "--no-index"
+  ],
+  "returncode": 0,
+  "seconds": 133.6,
+  "peak_mb": 204,
+  "stdout_tail": "snapshot: 182 files -> /work/stage-zlib/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/stage-zlib/snapshot/modules.json (52 modules)\npremap: 63 units, 39 gaps -> /work/stage-zlib/snapshot/premap.json\n",
+  "stderr_tail": "installing stack-analyser 1.27.6-daodan.6 into /root/.cache/daodan/engines/stack-analyser/1.27.6-daodan.6 (first use)\ninstalling node v22.23.4 into /root/.cache/daodan/engines/node/v22.23.4 (first use)\nDAODAN_MAXRSS_KB=209352\n",
+  "stderr_errors": 0,
+  "stderr_error_examples": []
+ },
+ "stage_seconds": 76.7,
+ "seconds": 210.9,
+ "stage": {
+  "available": true,
+  "engine": "scip-clang@v0.4.1",
+  "indexer": {
+   "name": "scip-clang",
+   "version": "v0.4.1",
+   "seconds": 34.8,
+   "peak_mb": null
+  },
+  "languages": {
+   "c": {
+    "state": "fresh"
+   },
+   "cpp": {
+    "state": "fresh"
+   }
+  },
+  "reason": null,
+  "install": null,
+  "gaps": [
+   {
+    "kind": "build_not_indexed",
+    "path": "contrib/vstudio/vc10",
+    "state": "unavailable",
+    "detail": "contrib/vstudio/vc10: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild"
+   },
+   {
+    "kind": "build_not_indexed",
+    "path": "contrib/vstudio/vc11",
+    "state": "unavailable",
+    "detail": "contrib/vstudio/vc11: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild"
+   },
+   {
+    "kind": "build_not_indexed",
+    "path": "contrib/vstudio/vc12",
+    "state": "unavailable",
+    "detail": "contrib/vstudio/vc12: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild"
+   },
+   {
+    "kind": "build_not_indexed",
+    "path": "contrib/vstudio/vc14",
+    "state": "unavailable",
+    "detail": "contrib/vstudio/vc14: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild"
+   },
+   {
+    "kind": "build_not_indexed",
+    "path": "contrib/vstudio/vc17",
+    "state": "unavailable",
+    "detail": "contrib/vstudio/vc17: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild"
+   },
+   {
+    "kind": "build_not_indexed",
+    "path": "contrib/vstudio/vc9",
+    "state": "unavailable",
+    "detail": "contrib/vstudio/vc9: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild"
+   }
+  ]
+ },
+ "graphs": {
+  "c": {
+   "report": {
+    "language": "c",
+    "indexer": {
+     "name": "scip-clang",
+     "version": "v0.4.1",
+     "seconds": 34.8,
+     "peak_mb": null
+    },
+    "files": {
+     "snapshot": 65,
+     "indexed": 44,
+     "missing": [
+      {
+       "path": "contrib/infback9/infback9.c",
+       "reason": "no compile command: no build compiles a file of contrib/infback9"
+      },
+      {
+       "path": "contrib/infback9/infback9.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/infback9/inffix9.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/infback9/inflate9.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/infback9/inftree9.c",
+       "reason": "no compile command: no build compiles a file of contrib/infback9"
+      },
+      {
+       "path": "contrib/infback9/inftree9.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/minizip/iowin32.c",
+       "reason": "no compile command: the build compiles other files of contrib/minizip, not this one"
+      },
+      {
+       "path": "contrib/minizip/iowin32.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/minizip/mztools.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/testzlib/testzlib.c",
+       "reason": "no compile command: no build compiles a file of contrib/testzlib"
+      },
+      {
+       "path": "examples/enough.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/fitblk.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/gun.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/gzappend.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/gzjoin.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/gzlog.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/gzlog.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "examples/gznorm.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/zpipe.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/zran.c",
+       "reason": "no compile command: no build compiles a file of examples"
+      },
+      {
+       "path": "examples/zran.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      }
+     ],
+     "missing_count": 21
+    },
+    "nodes": 3975,
+    "edges": 26391,
+    "symbols_by_kind": {
+     "external class": 25,
+     "external function": 64,
+     "external macro": 60,
+     "external property": 11,
+     "external variable": 3,
+     "project class": 108,
+     "project function": 332,
+     "project macro": 353,
+     "project module": 89,
+     "project property": 362,
+     "project variable": 2457,
+     "undefined function": 88,
+     "undefined macro": 3,
+     "undefined module": 20
+    },
+    "edges_by_end": {
+     "dead-end call": 9,
+     "external call": 764,
+     "external read": 210,
+     "external unknown": 1706,
+     "namespace unknown": 138,
+     "project-callable call": 914,
+     "project-callable read": 77,
+     "project-callable unknown": 2346,
+     "project-value call": 1337,
+     "project-value read": 8882,
+     "project-value unknown": 10008
+    },
+    "callable_chain_hops": {
+     "0": 3237,
+     "1": 100
+    },
+    "hop_tags": {
+     "declaration": 100
+    },
+    "edges_uncertain": {
+     "one symbol defined at several places": 124
+    },
+    "edges_removed": {},
+    "holes_by_class": {
+     "call-result call": 1,
+     "in a branch of `# else /* W == 4 */` of `# if W == 8` the build does not compile: the index has no occurrence in it read": 4,
+     "in a branch of `# else` of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `# else` of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it read": 23,
+     "in a branch of `# else` of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `# else` of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it read": 22,
+     "in a branch of `# else` of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `# else` of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it read": 3,
+     "in a branch of `# ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it call": 2,
+     "in a branch of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it read": 24,
+     "in a branch of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it read": 26,
+     "in a branch of `# ifdef HAS_vsnprintf_void` the build does not compile: the index has no occurrence in it call": 2,
+     "in a branch of `# ifdef HAS_vsnprintf_void` the build does not compile: the index has no occurrence in it read": 5,
+     "in a branch of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it read": 7,
+     "in a branch of `# ifdef USEWIN32IOAPI` the build does not compile: the index has no occurrence in it call": 5,
+     "in a branch of `# ifdef USEWIN32IOAPI` the build does not compile: the index has no occurrence in it read": 9,
+     "in a branch of `# ifndef NOUNCRYPT` the build does not compile: the index has no occurrence in it call": 6,
+     "in a branch of `# ifndef NOUNCRYPT` the build does not compile: the index has no occurrence in it read": 31,
+     "in a branch of `#elif __APPLE__` of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#elif __APPLE__` of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it read": 1,
+     "in a branch of `#else /* !STDC && !Z_HAVE_STDARG_H */` of `#if defined(STDC) || defined(Z_HAVE_STDARG_H)` the build does not compile: the index has no occurrence in it call": 4,
+     "in a branch of `#else /* !STDC && !Z_HAVE_STDARG_H */` of `#if defined(STDC) || defined(Z_HAVE_STDARG_H)` the build does not compile: the index has no occurrence in it read": 52,
+     "in a branch of `#else /* no atomics */` of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it call": 2,
+     "in a branch of `#else /* no atomics */` of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it read": 7,
+     "in a branch of `#else` of `#if !defined(NO_snprintf) && !defined(NO_vsnprintf)` the build does not compile: the index has no occurrence in it call": 10,
+     "in a branch of `#else` of `#if !defined(NO_snprintf) && !defined(NO_vsnprintf)` the build does not compile: the index has no occurrence in it read": 18,
+     "in a branch of `#else` of `#if defined(unix) || defined(__APPLE__)` the build does not compile: the index has no occurrence in it read": 6,
+     "in a branch of `#else` of `#ifdef INT_MAX` the build does not compile: the index has no occurrence in it read": 4,
+     "in a branch of `#else` of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it read": 1,
+     "in a branch of `#else` of `#ifndef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#else` of `#ifndef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it read": 1,
+     "in a branch of `#if N > 5` the build does not compile: the index has no occurrence in it call": 2,
+     "in a branch of `#if N > 5` the build does not compile: the index has no occurrence in it read": 22,
+     "in a branch of `#if defined UNDER_CE` the build does not compile: the index has no occurrence in it call": 6,
+     "in a branch of `#if defined UNDER_CE` the build does not compile: the index has no occurrence in it read": 26,
+     "in a branch of `#if defined(GEN_TREES_H) || !defined(STDC)` the build does not compile: the index has no occurrence in it call": 5,
+     "in a branch of `#if defined(GEN_TREES_H) || !defined(STDC)` the build does not compile: the index has no occurrence in it read": 62,
+     "in a branch of `#if defined(UNDER_CE)` the build does not compile: the index has no occurrence in it call": 12,
+     "in a branch of `#if defined(UNDER_CE)` the build does not compile: the index has no occurrence in it read": 31,
+     "in a branch of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it call": 5,
+     "in a branch of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it read": 4,
+     "in a branch of `#ifdef ARMCRC32` the build does not compile: the index has no occurrence in it call": 5,
+     "in a branch of `#ifdef ARMCRC32` the build does not compile: the index has no occurrence in it read": 58,
+     "in a branch of `#ifdef BUILDFIXED` the build does not compile: the index has no occurrence in it call": 4,
+     "in a branch of `#ifdef BUILDFIXED` the build does not compile: the index has no occurrence in it read": 48,
+     "in a branch of `#ifdef DUMP_BL_TREE` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#ifdef DUMP_BL_TREE` the build does not compile: the index has no occurrence in it read": 12,
+     "in a branch of `#ifdef DYNAMIC_CRC_TABLE` the build does not compile: the index has no occurrence in it call": 6,
+     "in a branch of `#ifdef DYNAMIC_CRC_TABLE` the build does not compile: the index has no occurrence in it read": 28,
+     "in a branch of `#ifdef FASTEST` the build does not compile: the index has no occurrence in it read": 3,
+     "in a branch of `#ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it call": 22,
+     "in a branch of `#ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it read": 57,
+     "in a branch of `#ifdef HAVE_BZIP2` the build does not compile: the index has no occurrence in it call": 7,
+     "in a branch of `#ifdef HAVE_BZIP2` the build does not compile: the index has no occurrence in it read": 67,
+     "in a branch of `#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR` the build does not compile: the index has no occurrence in it read": 28,
+     "in a branch of `#ifdef INFLATE_STRICT` the build does not compile: the index has no occurrence in it read": 11,
+     "in a branch of `#ifdef LIT_MEM` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#ifdef LIT_MEM` the build does not compile: the index has no occurrence in it read": 14,
+     "in a branch of `#ifdef MAKECRCH` the build does not compile: the index has no occurrence in it call": 40,
+     "in a branch of `#ifdef MAKECRCH` the build does not compile: the index has no occurrence in it read": 92,
+     "in a branch of `#ifdef MAKEFIXED` the build does not compile: the index has no occurrence in it call": 20,
+     "in a branch of `#ifdef MAKEFIXED` the build does not compile: the index has no occurrence in it read": 20,
+     "in a branch of `#ifdef M_I86` the build does not compile: the index has no occurrence in it call": 2,
+     "in a branch of `#ifdef M_I86` the build does not compile: the index has no occurrence in it read": 5,
+     "in a branch of `#ifdef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#ifdef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it read": 1,
+     "in a branch of `#ifdef NO_INIT_GLOBAL_POINTERS` the build does not compile: the index has no occurrence in it read": 10,
+     "in a branch of `#ifdef SLOW` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#ifdef SLOW` the build does not compile: the index has no occurrence in it read": 14,
+     "in a branch of `#ifdef USE_MMAP /* MMAP version, Miguel Albrecht <malbrech@eso.org> */` the build does not compile: the index has no occurrence in it call": 11,
+     "in a branch of `#ifdef USE_MMAP /* MMAP version, Miguel Albrecht <malbrech@eso.org> */` the build does not compile: the index has no occurrence in it read": 26,
+     "in a branch of `#ifdef USE_MMAP` the build does not compile: the index has no occurrence in it call": 1,
+     "in a branch of `#ifdef USE_MMAP` the build does not compile: the index has no occurrence in it read": 3,
+     "in a branch of `#ifdef WIDECHAR` the build does not compile: the index has no occurrence in it call": 4,
+     "in a branch of `#ifdef WIDECHAR` the build does not compile: the index has no occurrence in it read": 15,
+     "in a branch of `#ifdef W` the build does not compile: the index has no occurrence in it call": 5,
+     "in a branch of `#ifdef W` the build does not compile: the index has no occurrence in it read": 28,
+     "in a branch of `#ifdef ZLIB_DEBUG` the build does not compile: the index has no occurrence in it call": 5,
+     "in a branch of `#ifdef ZLIB_DEBUG` the build does not compile: the index has no occurrence in it read": 42,
+     "in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it call": 27,
+     "in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it read": 129,
+     "in a branch of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it call": 20,
+     "in a branch of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it read": 65,
+     "in a branch of `#ifdef __TURBOC__` the build does not compile: the index has no occurrence in it call": 6,
+     "in a branch of `#ifdef __TURBOC__` the build does not compile: the index has no occurrence in it read": 35,
+     "in a branch of `#ifndef HAVE_MEMCPY` the build does not compile: the index has no occurrence in it read": 12,
+     "in an argument of macro `Assert` (zutil.h:231), whose expansion in this build drops it: the index has no occurrence of what it names read": 26,
+     "in an argument of macro `DROPBITS` (infback.c:186), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read": 8,
+     "in an argument of macro `DROPBITS` (inflate.c:495), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read": 8,
+     "in an argument of macro `NEEDBITS` (infback.c:175), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read": 3,
+     "in an argument of macro `NEEDBITS` (inflate.c:484), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read": 3,
+     "in an argument of macro `SET_BINARY_MODE` (minigzip.c:40), whose expansion in this build drops it: the index has no occurrence of what it names read": 3,
+     "in an argument of macro `SET_BINARY_MODE` (pufftest.c:28), whose expansion in this build drops it: the index has no occurrence of what it names read": 1,
+     "in an argument of macro `Tracecv` (zutil.h:236), whose expansion in this build drops it: the index has no occurrence of what it names call": 2,
+     "in an argument of macro `Tracecv` (zutil.h:236), whose expansion in this build drops it: the index has no occurrence of what it names read": 14,
+     "in an argument of macro `Tracev` (zutil.h:233), whose expansion in this build drops it: the index has no occurrence of what it names read": 54,
+     "in an argument of macro `Tracevv` (zutil.h:234), whose expansion in this build drops it: the index has no occurrence of what it names read": 27,
+     "in an argument of macro `ZALLOC` (zutil.h:245), where the index writes 2 symbols named `Byte` (the expansion's own and the argument's): which one the argument names it does not say read": 1,
+     "in an argument of macro `send_code` (trees.c:238), where the index writes 2 symbols named `code` (the expansion's own and the argument's): which one the argument names it does not say read": 2,
+     "no-document call": 867,
+     "no-document read": 3576
+    },
+    "holes": [
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 1279,
+      "examples": [
+       "contrib/infback9/infback9.c:36 state",
+       "examples/enough.c:409 rem",
+       "examples/gzappend.c:497 argv"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 909,
+      "examples": [
+       "contrib/infback9/infback9.c:23 version",
+       "examples/enough.c:570 got",
+       "examples/gzlog.c:704 buf"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 766,
+      "examples": [
+       "contrib/infback9/infback9.c:28 strm.msg",
+       "examples/fitblk.c:119 def.avail_out",
+       "examples/gzlog.c:423 log.clen"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "included-name-undeclared",
+      "count": 580,
+      "examples": [
+       "contrib/infback9/infback9.c:23 Z_NULL",
+       "examples/fitblk.c:225 Z_STREAM_ERROR",
+       "examples/gzlog.c:784 REPLACE_OP"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 468,
+      "examples": [
+       "contrib/infback9/infback9.c:34 ZALLOC",
+       "examples/gun.c:607 unlink",
+       "examples/gzlog.c:728 fprintf"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "unique-lexical-binding",
+      "count": 178,
+      "examples": [
+       "contrib/minizip/iowin32.c:96 win32_translate_open_mode",
+       "examples/gzappend.c:241 bye",
+       "examples/gzlog.c:398 log_check"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 157,
+      "examples": [
+       "contrib/infback9/infback9.c:268 BYTEBITS",
+       "contrib/infback9/infback9.c:528 DROPBITS",
+       "examples/gzjoin.c:150 bget"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef MAKECRCH` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 68,
+      "examples": [
+       "crc32.c:353 out",
+       "crc32.c:416 k",
+       "crc32.c:454 out"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef HAVE_BZIP2` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 62,
+      "examples": [
+       "contrib/minizip/unzip.c:1423 pfile_in_zip_read_info.bstream.bzalloc",
+       "contrib/minizip/unzip.c:1671 pfile_in_zip_read_info.stream.total_in",
+       "contrib/minizip/unzip.c:1688 uOutThis"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 51,
+      "examples": [
+       "test/minigzip.c:175 gz",
+       "test/minigzip.c:195 gz.strm",
+       "test/minigzip.c:248 strm.avail_in"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef ARMCRC32` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 48,
+      "examples": [
+       "crc32.c:585 buf",
+       "crc32.c:623 crc",
+       "crc32.c:642 last"
+      ]
+     },
+     {
+      "class": "in a branch of `#else /* !STDC && !Z_HAVE_STDARG_H */` of `#if defined(STDC) || defined(Z_HAVE_STDARG_H)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 44,
+      "examples": [
+       "gzwrite.c:456 state.strm",
+       "gzwrite.c:482 strm.next_in",
+       "gzwrite.c:514 strm.avail_in"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "unique-lexical-binding",
+      "count": 37,
+      "examples": [
+       "contrib/minizip/iowin32.c:81 WIN32FILE_IOWIN",
+       "contrib/minizip/iowin32.c:412 win32_seek64_file_func",
+       "contrib/minizip/iowin32.c:434 win32_write_file_func"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 37,
+      "examples": [
+       "test/example.c:40 q",
+       "test/minigzip.c:177 mode",
+       "test/minigzip.c:225 out"
+      ]
+     },
+     {
+      "class": "in an argument of macro `Tracev` (zutil.h:233), whose expansion in this build drops it: the index has no occurrence of what it names",
+      "kind": "read",
+      "reason": "included-name-undeclared",
+      "count": 34,
+      "examples": [
+       "infback.c:54 stderr",
+       "inflate.c:205 stderr",
+       "inflate.c:1217 stderr"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined(GEN_TREES_H) || !defined(STDC)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 34,
+      "examples": [
+       "trees.c:305 static_init_done",
+       "trees.c:334 code",
+       "trees.c:344 code"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "included-declaration",
+      "count": 33,
+      "examples": [
+       "contrib/infback9/infback9.c:65 inflate_table9",
+       "examples/gun.c:700 inflateBackEnd",
+       "examples/gznorm.c:148 inflate"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "included-definition-missing",
+      "count": 30,
+      "examples": [
+       "examples/fitblk.c:86 deflate",
+       "examples/gzappend.c:438 deflateEnd",
+       "examples/zpipe.c:67 deflate"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef MAKECRCH` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 29,
+      "examples": [
+       "crc32.c:352 fopen",
+       "crc32.c:408 fprintf",
+       "crc32.c:443 fprintf"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 26,
+      "examples": [
+       "contrib/minizip/miniunz.c:89 filename",
+       "contrib/minizip/miniunz.c:93 ftm",
+       "contrib/minizip/minizip.c:87 dt"
+      ]
+     },
+     {
+      "class": "in a branch of `# ifndef NOUNCRYPT` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 24,
+      "examples": [
+       "contrib/minizip/unzip.c:1491 s.pcrc_32_tab",
+       "contrib/minizip/unzip.c:1498 s.filestream",
+       "contrib/minizip/unzip.c:1614 i"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef MAKECRCH` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 24,
+      "examples": [
+       "crc32.c:362 crc_table",
+       "crc32.c:425 big",
+       "crc32.c:493 k"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef BUILDFIXED` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 24,
+      "examples": [
+       "infback.c:83 virgin",
+       "infback.c:100 sym",
+       "inflate.c:268 sym"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 23,
+      "examples": [
+       "contrib/puff/puff.c:496 dist",
+       "inffast.c:187 op",
+       "inflate.c:1147 left"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined(GEN_TREES_H) || !defined(STDC)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 23,
+      "examples": [
+       "trees.c:319 base_length",
+       "trees.c:342 base_dist",
+       "trees.c:354 static_ltree"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 23,
+      "examples": [
+       "trees.c:391 header",
+       "trees.c:403 header",
+       "trees.c:416 _length_code"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 22,
+      "examples": [
+       "contrib/minizip/miniunz.c:91 hFile",
+       "contrib/minizip/minizip.c:92 ret",
+       "contrib/untgz/untgz.c:224 loctm.tm_min"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "included-name-undeclared",
+      "count": 22,
+      "examples": [
+       "deflate.c:395 Z_STREAM_ERROR",
+       "test/minigzip.c:185 Z_NULL",
+       "test/minigzip.c:251 Z_DATA_ERROR"
+      ]
+     },
+     {
+      "class": "in a branch of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 21,
+      "examples": [
+       "gzwrite.c:486 format",
+       "gzwrite.c:486 a7",
+       "gzwrite.c:487 a14"
+      ]
+     },
+     {
+      "class": "in a branch of `# else` of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 21,
+      "examples": [
+       "gzwrite.c:492 format",
+       "gzwrite.c:492 a7",
+       "gzwrite.c:493 a14"
+      ]
+     },
+     {
+      "class": "in a branch of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 21,
+      "examples": [
+       "gzwrite.c:497 format",
+       "gzwrite.c:497 a7",
+       "gzwrite.c:498 a14"
+      ]
+     },
+     {
+      "class": "in a branch of `# else` of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 21,
+      "examples": [
+       "gzwrite.c:501 format",
+       "gzwrite.c:501 a7",
+       "gzwrite.c:502 a14"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef ZLIB_DEBUG` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 21,
+      "examples": [
+       "trees.c:190 s.bits_sent",
+       "trees.c:264 s.bi_buf",
+       "trees.c:471 s.bits_sent"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 20,
+      "examples": [
+       "trees.c:396 i",
+       "trees.c:404 i",
+       "trees.c:417 i"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 19,
+      "examples": [
+       "contrib/minizip/miniunz.c:89 CreateFileA",
+       "contrib/minizip/miniunz.c:129 _mkdir",
+       "contrib/untgz/untgz.c:215 localtime"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef MAKEFIXED` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 19,
+      "examples": [
+       "inflate.c:320 puts",
+       "inflate.c:326 puts",
+       "inflate.c:337 putchar"
+      ]
+     },
+     {
+      "class": "in a branch of `#if N > 5` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 18,
+      "examples": [
+       "crc32.c:791 crc5",
+       "crc32.c:851 crc5",
+       "crc32.c:950 k"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef BUILDFIXED` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 18,
+      "examples": [
+       "infback.c:89 state.lens",
+       "infback.c:100 state.lens",
+       "inflate.c:268 state.lens"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef __TURBOC__` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 18,
+      "examples": [
+       "zutil.c:213 buf",
+       "zutil.c:221 buf",
+       "zutil.c:237 next_ptr"
+      ]
+     },
+     {
+      "class": "in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 17,
+      "examples": [
+       "test/example.c:41 calloc",
+       "test/minigzip.c:177 strchr",
+       "test/minigzip.c:196 free"
+      ]
+     }
+    ],
+    "external_packages": {
+     ". (none)@-": 2017,
+     ". libc6-dev@2.39-0ubuntu8.9": 417,
+     ". clang@21.1.8": 244,
+     ". linux-libc-dev@6.8.0-149.149": 2
+    }
+   },
+   "hand_check": {
+    "right": 17,
+    "total": 20,
+    "sites": [
+     {
+      "site": "deflate.c:373",
+      "name": "deflateInit2_",
+      "nth": 0,
+      "why": "exported function, same file",
+      "expected": [
+       "deflate.c:379"
+      ],
+      "verdict": "right",
+      "got": [
+       "deflate.c:379"
+      ],
+      "symbols": [
+       "cxx . project 0$ deflateInit2_(e3796522b73a3800)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ deflateInit2_(e3796522b73a3800).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "deflate.c:432",
+      "name": "ZALLOC",
+      "nth": 0,
+      "why": "function-like macro calling through strm->zalloc",
+      "expected": [
+       "value"
+      ],
+      "verdict": "right",
+      "got": [
+       "value"
+      ],
+      "symbols": [
+       "cxx . project 0$ `zutil.h:245:9`!",
+       "cxx . project 0$ z_stream_s#opaque.",
+       "cxx . project 0$ z_stream_s#zalloc."
+      ],
+      "ends": [
+       [
+        "project-value",
+        "cxx . project 0$ `zutil.h:245:9`!",
+        [],
+        "macro"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ z_stream_s#opaque.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ z_stream_s#zalloc.",
+        [],
+        "property"
+       ]
+      ]
+     },
+     {
+      "site": "deflate.c:587",
+      "name": "fill_window",
+      "nth": 0,
+      "why": "static function (`local` is a macro for static)",
+      "expected": [
+       "deflate.c:251"
+      ],
+      "verdict": "right",
+      "got": [
+       "deflate.c:251"
+      ],
+      "symbols": [
+       "cxx . project 0$ fill_window(5a134a6201984157)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ fill_window(5a134a6201984157).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "deflate.c:665",
+      "name": "_tr_init",
+      "nth": 0,
+      "why": "defined in trees.c, prototype in deflate.h",
+      "expected": [
+       "trees.c:455"
+      ],
+      "verdict": "right",
+      "got": [
+       "trees.c:455"
+      ],
+      "symbols": [
+       "cxx . project 0$ _tr_init(5a134a6201984157)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ _tr_init(5a134a6201984157).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "deflate.c:1185",
+      "name": "func",
+      "nth": 0,
+      "why": "function pointer in a struct table, through `(*...)`",
+      "expected": [
+       "value"
+      ],
+      "verdict": "right",
+      "got": [
+       "value"
+      ],
+      "symbols": [
+       "cxx . project 0$ config_s#func."
+      ],
+      "ends": [
+       [
+        "project-value",
+        "cxx . project 0$ config_s#func.",
+        [],
+        "property"
+       ]
+      ]
+     },
+     {
+      "site": "deflate.c:1888",
+      "name": "_tr_tally_lit",
+      "nth": 0,
+      "why": "macro with three definitions under #ifdef; the active one calls nothing",
+      "expected": [
+       "value"
+      ],
+      "verdict": "wrong",
+      "got": [
+       "zutil.h:39"
+      ],
+      "symbols": [
+       "cxx . project 0$ `deflate.h:351:10`!",
+       "cxx . project 0$ ct_data_s#$anonymous_type_0#freq.",
+       "cxx . project 0$ ct_data_s#fc.",
+       "cxx . project 0$ internal_state#dyn_ltree.",
+       "cxx . project 0$ internal_state#sym_buf.",
+       "cxx . project 0$ internal_state#sym_end.",
+       "cxx . project 0$ internal_state#sym_next.",
+       "cxx . project 0$ uch#",
+       "deflate.c#local 146"
+      ],
+      "ends": [
+       [
+        "project-value",
+        "cxx . project 0$ `deflate.h:351:10`!",
+        [],
+        "macro"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ ct_data_s#$anonymous_type_0#freq.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ ct_data_s#fc.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#dyn_ltree.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#sym_buf.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#sym_end.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#sym_next.",
+        [],
+        "property"
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ uch#",
+        [],
+        ""
+       ],
+       [
+        "project-value",
+        "deflate.c#local 146",
+        [],
+        "variable"
+       ]
+      ]
+     },
+     {
+      "site": "inflate.c:1257",
+      "name": "UPDATE_CHECK",
+      "nth": 0,
+      "why": "macro whose body calls crc32 or adler32",
+      "expected": [
+       "adler32.c:128",
+       "crc32.c:1015"
+      ],
+      "verdict": "right",
+      "got": [
+       "adler32.c:128",
+       "crc32.c:1015"
+      ],
+      "symbols": [
+       "cxx . project 0$ `inflate.c:418:11`!",
+       "cxx . project 0$ adler32(3ff2d47d027372c0).",
+       "cxx . project 0$ crc32(3ff2d47d027372c0).",
+       "cxx . project 0$ inflate_state#flags."
+      ],
+      "ends": [
+       [
+        "project-value",
+        "cxx . project 0$ `inflate.c:418:11`!",
+        [],
+        "macro"
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ adler32(3ff2d47d027372c0).",
+        [],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ crc32(3ff2d47d027372c0).",
+        [],
+        ""
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ inflate_state#flags.",
+        [],
+        "property"
+       ]
+      ]
+     },
+     {
+      "site": "inflate.c:1029",
+      "name": "inflate_fast",
+      "nth": 0,
+      "why": "other file",
+      "expected": [
+       "inffast.c:50"
+      ],
+      "verdict": "right",
+      "got": [
+       "inffast.c:50"
+      ],
+      "symbols": [
+       "cxx . project 0$ inflate_fast(3518e825092b9584)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ inflate_fast(3518e825092b9584).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "inflate.c:391",
+      "name": "zmemcpy",
+      "nth": 0,
+      "why": "object-like macro aliasing memcpy",
+      "expected": [
+       "external memcpy"
+      ],
+      "verdict": "right",
+      "got": [
+       "external memcpy"
+      ],
+      "symbols": [
+       "cxx . . $ memcpy(cc817cb175f282d).",
+       "cxx . project 0$ `zutil.h:209:13`!"
+      ],
+      "ends": [
+       [
+        "external",
+        "cxx . . $ memcpy(cc817cb175f282d).",
+        [],
+        ". (none)@-"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ `zutil.h:209:13`!",
+        [],
+        "macro"
+       ]
+      ]
+     },
+     {
+      "site": "crc32.c:1017",
+      "name": "crc32_z",
+      "nth": 0,
+      "why": "defined twice, under #ifdef ARMCRC32 and its #else",
+      "expected": [
+       "crc32.c:694"
+      ],
+      "verdict": "right",
+      "got": [
+       "crc32.c:694"
+      ],
+      "symbols": [
+       "cxx . project 0$ crc32_z(f1362df98b691acb)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ crc32_z(f1362df98b691acb).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "infback.c:612",
+      "name": "out",
+      "nth": 0,
+      "why": "function pointer parameter (callback)",
+      "expected": [
+       "value"
+      ],
+      "verdict": "right",
+      "got": [
+       "value"
+      ],
+      "symbols": [
+       "infback.c#local 10"
+      ],
+      "ends": [
+       [
+        "project-value",
+        "infback.c#local 10",
+        [],
+        "variable"
+       ]
+      ]
+     },
+     {
+      "site": "gzread.c:184",
+      "name": "gz_error",
+      "nth": 0,
+      "why": "ZLIB_INTERNAL function of another file",
+      "expected": [
+       "gzlib.c:529"
+      ],
+      "verdict": "right",
+      "got": [
+       "gzlib.c:529"
+      ],
+      "symbols": [
+       "cxx . project 0$ gz_error(b3e12012326d2820)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ gz_error(b3e12012326d2820).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "gzread.c:28",
+      "name": "zstrerror",
+      "nth": 0,
+      "why": "macro: strerror(errno), errno a macro calling __errno_location",
+      "expected": [
+       "external __errno_location",
+       "external strerror"
+      ],
+      "verdict": "right",
+      "got": [
+       "external __errno_location",
+       "external strerror"
+      ],
+      "symbols": [
+       "cxx . . $ __errno_location(a7741f82f5fc3640).",
+       "cxx . . $ strerror(ff224f080444ee45).",
+       "cxx . project 0$ `gzguts.h:132:13`!"
+      ],
+      "ends": [
+       [
+        "external",
+        "cxx . . $ __errno_location(a7741f82f5fc3640).",
+        [],
+        ". (none)@-"
+       ],
+       [
+        "external",
+        "cxx . . $ strerror(ff224f080444ee45).",
+        [],
+        ". (none)@-"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ `gzguts.h:132:13`!",
+        [],
+        "macro"
+       ]
+      ]
+     },
+     {
+      "site": "gzlib.c:235",
+      "name": "open",
+      "nth": 0,
+      "why": "libc, after an #ifdef inside the expression",
+      "expected": [
+       "external open"
+      ],
+      "verdict": "right",
+      "got": [
+       "external open"
+      ],
+      "symbols": [
+       "cxx . . $ open(e156e3aa1e5c4ad1)."
+      ],
+      "ends": [
+       [
+        "external",
+        "cxx . . $ open(e156e3aa1e5c4ad1).",
+        [],
+        ". (none)@-"
+       ]
+      ]
+     },
+     {
+      "site": "zutil.c:288",
+      "name": "malloc",
+      "nth": 0,
+      "why": "libc",
+      "expected": [
+       "external malloc"
+      ],
+      "verdict": "right",
+      "got": [
+       "external malloc"
+      ],
+      "symbols": [
+       "cxx . . $ malloc(bfcfa4d6b7f7ef64)."
+      ],
+      "ends": [
+       [
+        "external",
+        "cxx . . $ malloc(bfcfa4d6b7f7ef64).",
+        [],
+        ". (none)@-"
+       ]
+      ]
+     },
+     {
+      "site": "zutil.c:123",
+      "name": "fprintf",
+      "nth": 0,
+      "why": "inside #ifdef ZLIB_DEBUG, not compiled",
+      "expected": [
+       "no occurrence"
+      ],
+      "verdict": "right",
+      "got": [
+       "no occurrence"
+      ]
+     },
+     {
+      "site": "trees.c:775",
+      "name": "send_bits",
+      "nth": 0,
+      "why": "macro chain send_bits, put_short, put_byte: no function",
+      "expected": [
+       "value"
+      ],
+      "verdict": "wrong",
+      "got": [
+       "zconf.h:402",
+       "zutil.h:39",
+       "zutil.h:41"
+      ],
+      "symbols": [
+       "cxx . . $ Bytef#",
+       "cxx . project 0$ Bytef#",
+       "cxx . project 0$ `trees.c:273:9`!",
+       "cxx . project 0$ internal_state#bi_buf.",
+       "cxx . project 0$ internal_state#bi_valid.",
+       "cxx . project 0$ internal_state#pending.",
+       "cxx . project 0$ internal_state#pending_buf.",
+       "cxx . project 0$ uch#",
+       "cxx . project 0$ ush#",
+       "trees.c#local 71",
+       "trees.c#local 72"
+      ],
+      "ends": [
+       [
+        "external",
+        "cxx . . $ Bytef#",
+        [],
+        ". (none)@-"
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ Bytef#",
+        [],
+        ""
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ `trees.c:273:9`!",
+        [],
+        "macro"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#bi_buf.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#bi_valid.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#pending.",
+        [],
+        "property"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ internal_state#pending_buf.",
+        [],
+        "property"
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ uch#",
+        [],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ ush#",
+        [],
+        ""
+       ],
+       [
+        "project-value",
+        "trees.c#local 71",
+        [],
+        "variable"
+       ],
+       [
+        "project-value",
+        "trees.c#local 72",
+        [],
+        "variable"
+       ]
+      ]
+     },
+     {
+      "site": "test/example.c:175",
+      "name": "deflateInit",
+      "nth": 0,
+      "why": "zlib.h macro for deflateInit_",
+      "expected": [
+       "deflate.c:371"
+      ],
+      "verdict": "wrong",
+      "got": [
+       "deflate.c:371",
+       "zlib.h:86"
+      ],
+      "symbols": [
+       "cxx . project 0$ `zlib.h:1813:11`!",
+       "cxx . project 0$ deflateInit_(103c4d60eb79a694).",
+       "cxx . project 0$ z_stream#"
+      ],
+      "ends": [
+       [
+        "project-value",
+        "cxx . project 0$ `zlib.h:1813:11`!",
+        [],
+        "macro"
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ deflateInit_(103c4d60eb79a694).",
+        [],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ z_stream#",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "test/example.c:184",
+      "name": "CHECK_ERR",
+      "nth": 0,
+      "why": "macro calling fprintf and exit",
+      "expected": [
+       "external exit",
+       "external fprintf"
+      ],
+      "verdict": "right",
+      "got": [
+       "external exit",
+       "external fprintf"
+      ],
+      "symbols": [
+       "cxx . . $ exit(3ca292c338df9bb3).",
+       "cxx . . $ fprintf(bc216f8e5b1ebeac).",
+       "cxx . libc6-dev 2.39-0ubuntu8.9$ stderr.",
+       "cxx . project 0$ `test/example.c:22:9`!"
+      ],
+      "ends": [
+       [
+        "external",
+        "cxx . . $ exit(3ca292c338df9bb3).",
+        [],
+        ". (none)@-"
+       ],
+       [
+        "external",
+        "cxx . . $ fprintf(bc216f8e5b1ebeac).",
+        [],
+        ". (none)@-"
+       ],
+       [
+        "external",
+        "cxx . libc6-dev 2.39-0ubuntu8.9$ stderr.",
+        [],
+        ". libc6-dev@2.39-0ubuntu8.9"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ `test/example.c:22:9`!",
+        [],
+        "macro"
+       ]
+      ]
+     },
+     {
+      "site": "test/example.c:523",
+      "name": "test_compress",
+      "nth": 0,
+      "why": "file compiled twice (example, example64)",
+      "expected": [
+       "test/example.c:60"
+      ],
+      "verdict": "right",
+      "got": [
+       "test/example.c:60"
+      ],
+      "symbols": [
+       "cxx . project 0$ test_compress(29af2b5e6d398e7b)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ test_compress(29af2b5e6d398e7b).",
+        [],
+        ""
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  "cpp": {
+   "report": {
+    "language": "cpp",
+    "indexer": {
+     "name": "scip-clang",
+     "version": "v0.4.1",
+     "seconds": 34.8,
+     "peak_mb": null
+    },
+    "files": {
+     "snapshot": 9,
+     "indexed": 1,
+     "missing": [
+      {
+       "path": "contrib/iostream/test.cpp",
+       "reason": "no compile command: no build compiles a file of contrib/iostream"
+      },
+      {
+       "path": "contrib/iostream/zfstream.cpp",
+       "reason": "no compile command: no build compiles a file of contrib/iostream"
+      },
+      {
+       "path": "contrib/iostream/zfstream.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/iostream2/zstream.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      },
+      {
+       "path": "contrib/iostream2/zstream_test.cpp",
+       "reason": "no compile command: no build compiles a file of contrib/iostream2"
+      },
+      {
+       "path": "contrib/iostream3/test.cc",
+       "reason": "no compile command: no build compiles a file of contrib/iostream3"
+      },
+      {
+       "path": "contrib/iostream3/zfstream.cc",
+       "reason": "no compile command: no build compiles a file of contrib/iostream3"
+      },
+      {
+       "path": "contrib/iostream3/zfstream.h",
+       "reason": "header no indexed translation unit includes in an active branch"
+      }
+     ],
+     "missing_count": 8
+    },
+    "nodes": 118,
+    "edges": 81,
+    "symbols_by_kind": {
+     "external macro": 1,
+     "project class": 19,
+     "project function": 6,
+     "project macro": 24,
+     "project module": 3,
+     "project property": 20,
+     "project variable": 43,
+     "undefined module": 2
+    },
+    "edges_by_end": {
+     "external unknown": 1,
+     "namespace unknown": 3,
+     "project-callable unknown": 65,
+     "project-value unknown": 12
+    },
+    "callable_chain_hops": {
+     "0": 65
+    },
+    "hop_tags": {},
+    "edges_uncertain": {},
+    "edges_removed": {},
+    "holes_by_class": {
+     "computed-callee call": 21,
+     "no-document call": 281,
+     "no-document read": 442
+    },
+    "holes": [
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 216,
+      "examples": [
+       "contrib/iostream/test.cpp:12 os",
+       "contrib/iostream2/zstream.h:166 level",
+       "contrib/iostream3/zfstream.cc:100 mode"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 200,
+      "examples": [
+       "contrib/iostream/zfstream.cpp:12 sync",
+       "contrib/iostream/zfstream.cpp:314 clear",
+       "contrib/iostream3/zfstream.cc:229 this.pbase"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "scope-unresolved",
+      "count": 159,
+      "examples": [
+       "contrib/iostream/test.cpp:8 ios.out",
+       "contrib/iostream/zfstream.cpp:288 buffer",
+       "contrib/iostream3/zfstream.cc:247 io_mode"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 34,
+      "examples": [
+       "contrib/iostream/test.cpp:20 os.close",
+       "contrib/iostream2/zstream.h:265 zs.fp",
+       "contrib/iostream3/test.cc:27 inf.getline"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "included-name-undeclared",
+      "count": 33,
+      "examples": [
+       "contrib/iostream/test.cpp:12 endl",
+       "contrib/iostream2/zstream.h:177 Z_DEFAULT_COMPRESSION",
+       "contrib/iostream2/zstream_test.cpp:20 endl"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 30,
+      "examples": [
+       "contrib/iostream/zfstream.cpp:49 p",
+       "contrib/iostream2/zstream.h:81 m_fp",
+       "contrib/iostream2/zstream.h:209 m_fp"
+      ]
+     },
+     {
+      "class": "computed-callee",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 21,
+      "examples": [
+       "contrib/iostream2/zstream.h:67 ",
+       "contrib/iostream2/zstream.h:140 ",
+       "contrib/iostream2/zstream.h:221 "
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "ambiguous-binding",
+      "count": 15,
+      "examples": [
+       "contrib/iostream2/zstream.h:55 open",
+       "contrib/iostream2/zstream.h:200 m_os.pcount",
+       "contrib/iostream2/zstream.h:246 m_os.precision"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "dynamic-callee",
+      "count": 11,
+      "examples": [
+       "contrib/iostream/zfstream.h:103 m.func",
+       "contrib/iostream2/zstream.h:71 SET_BINARY_MODE",
+       "contrib/iostream3/test.cc:41 (expr).pubsetbuf"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "unique-lexical-binding",
+      "count": 10,
+      "examples": [
+       "contrib/iostream/zfstream.h:120 gzomanip",
+       "contrib/iostream2/zstream.h:66 close",
+       "contrib/iostream2/zstream.h:180 close"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 7,
+      "examples": [
+       "contrib/iostream2/zstream.h:73 fileno",
+       "contrib/iostream2/zstream.h:237 ostrstream",
+       "contrib/iostream2/zstream_test.cpp:20 setw"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "unknown-receiver",
+      "count": 4,
+      "examples": [
+       "contrib/iostream/zfstream.h:103 m.val",
+       "contrib/iostream2/zstream.h:44 val.word",
+       "contrib/iostream3/zfstream.h:459 m.val1"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "included-definition-ambiguous",
+      "count": 3,
+      "examples": [
+       "contrib/iostream/test.cpp:14 setcompressionlevel",
+       "contrib/iostream/test.cpp:17 setcompressionlevel",
+       "contrib/iostream3/test.cc:34 setcompression"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "included-declaration",
+      "count": 1,
+      "examples": [
+       "contrib/iostream2/zstream_test.cpp:14 read_string"
+      ]
+     }
+    ],
+    "external_packages": {
+     ". libc6-dev@2.39-0ubuntu8.9": 1
+    }
+   }
+  }
+ },
+ "compared": {
+  "c": {
+   "differences": [
+    "callable_chain_hops.0",
+    "callable_chain_hops.1",
+    "edges",
+    "edges_by_end.external call",
+    "edges_by_end.external read",
+    "edges_by_end.external unknown",
+    "edges_by_end.namespace unknown",
+    "edges_by_end.project-callable call",
+    "edges_by_end.project-callable read",
+    "edges_by_end.project-callable unknown",
+    "edges_by_end.project-value call",
+    "edges_by_end.project-value read",
+    "edges_by_end.project-value unknown",
+    "edges_uncertain.one symbol defined at several places",
+    "external_packages.. (none)@-",
+    "external_packages.. clang@21.1.8",
+    "external_packages.. libc6-dev@2.39-0ubuntu8.9",
+    "external_packages.. linux-libc-dev@6.8.0-149.149",
+    "external_packages.cxx (none)@-",
+    "external_packages.cxx libc6-dev@2.39-0ubuntu8.12",
+    "external_packages.cxx libgcc-13-dev@13.3.0-6ubuntu2_24.04.1",
+    "files.indexed",
+    "files.missing",
+    "files.missing_count",
+    "files.snapshot",
+    "holes",
+    "holes_by_class.call-result call",
+    "holes_by_class.in a branch of `# else /* W == 4 */` of `# if W == 8` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# else` of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# else` of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# else` of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# else` of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# else` of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# else` of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# ifdef HAS_snprintf_void` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# ifdef HAS_sprintf_void` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# ifdef HAS_vsnprintf_void` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# ifdef HAS_vsnprintf_void` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# ifdef HAS_vsprintf_void` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# ifdef USEWIN32IOAPI` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# ifdef USEWIN32IOAPI` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `# ifndef NOUNCRYPT` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `# ifndef NOUNCRYPT` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#elif __APPLE__` of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#elif __APPLE__` of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#else /* !STDC && !Z_HAVE_STDARG_H */` of `#if defined(STDC) || defined(Z_HAVE_STDARG_H)` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#else /* !STDC && !Z_HAVE_STDARG_H */` of `#if defined(STDC) || defined(Z_HAVE_STDARG_H)` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#else /* no atomics */` of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#else /* no atomics */` of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#else` of `#if !defined(NO_snprintf) && !defined(NO_vsnprintf)` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#else` of `#if !defined(NO_snprintf) && !defined(NO_vsnprintf)` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#else` of `#if defined(unix) || defined(__APPLE__)` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#else` of `#ifdef INT_MAX` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#else` of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#else` of `#ifndef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#else` of `#ifndef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if N > 5` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if N > 5` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if defined UNDER_CE` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined UNDER_CE` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if defined(GEN_TREES_H) || !defined(STDC)` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined(GEN_TREES_H) || !defined(STDC)` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if defined(UNDER_CE)` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined(UNDER_CE)` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined(__STDC__) && __STDC_VERSION__ >= 201112L && \\` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef ARMCRC32` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef ARMCRC32` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef BUILDFIXED` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef BUILDFIXED` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef DUMP_BL_TREE` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef DUMP_BL_TREE` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef DYNAMIC_CRC_TABLE` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef DYNAMIC_CRC_TABLE` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef FASTEST` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef GEN_TREES_H` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef HAVE_BZIP2` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef HAVE_BZIP2` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef INFLATE_STRICT` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef LIT_MEM` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef LIT_MEM` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef MAKECRCH` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef MAKECRCH` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef MAKEFIXED` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef MAKEFIXED` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef M_I86` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef M_I86` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef NO_GZCOMPRESS` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef NO_INIT_GLOBAL_POINTERS` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef SLOW` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef SLOW` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef USE_MMAP /* MMAP version, Miguel Albrecht <malbrech@eso.org> */` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef USE_MMAP /* MMAP version, Miguel Albrecht <malbrech@eso.org> */` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef USE_MMAP` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef USE_MMAP` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef WIDECHAR` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef WIDECHAR` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef W` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef W` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef ZLIB_DEBUG` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef ZLIB_DEBUG` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef Z_SOLO` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef _WIN32` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifdef __TURBOC__` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#ifdef __TURBOC__` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#ifndef HAVE_MEMCPY` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in an argument of macro `Assert` (zutil.h:231), whose expansion in this build drops it: the index has no occurrence of what it names read",
+    "holes_by_class.in an argument of macro `DROPBITS` (infback.c:186), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read",
+    "holes_by_class.in an argument of macro `DROPBITS` (inflate.c:495), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read",
+    "holes_by_class.in an argument of macro `NEEDBITS` (infback.c:175), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read",
+    "holes_by_class.in an argument of macro `NEEDBITS` (inflate.c:484), where the index writes 2 symbols named `bits` (the expansion's own and the argument's): which one the argument names it does not say read",
+    "holes_by_class.in an argument of macro `SET_BINARY_MODE` (minigzip.c:40), whose expansion in this build drops it: the index has no occurrence of what it names read",
+    "holes_by_class.in an argument of macro `SET_BINARY_MODE` (pufftest.c:28), whose expansion in this build drops it: the index has no occurrence of what it names read",
+    "holes_by_class.in an argument of macro `Tracecv` (zutil.h:236), whose expansion in this build drops it: the index has no occurrence of what it names call",
+    "holes_by_class.in an argument of macro `Tracecv` (zutil.h:236), whose expansion in this build drops it: the index has no occurrence of what it names read",
+    "holes_by_class.in an argument of macro `Tracev` (zutil.h:233), whose expansion in this build drops it: the index has no occurrence of what it names read",
+    "holes_by_class.in an argument of macro `Tracevv` (zutil.h:234), whose expansion in this build drops it: the index has no occurrence of what it names read",
+    "holes_by_class.in an argument of macro `ZALLOC` (zutil.h:245), where the index writes 2 symbols named `Byte` (the expansion's own and the argument's): which one the argument names it does not say read",
+    "holes_by_class.in an argument of macro `send_code` (trees.c:238), where the index writes 2 symbols named `code` (the expansion's own and the argument's): which one the argument names it does not say read",
+    "holes_by_class.no-document call",
+    "holes_by_class.no-document read",
+    "holes_by_class.no-occurrence call",
+    "holes_by_class.no-position call",
+    "hop_tags.declaration",
+    "nodes",
+    "symbols_by_kind.external class",
+    "symbols_by_kind.external function",
+    "symbols_by_kind.external macro",
+    "symbols_by_kind.external property",
+    "symbols_by_kind.project class",
+    "symbols_by_kind.project function",
+    "symbols_by_kind.project macro",
+    "symbols_by_kind.project module",
+    "symbols_by_kind.project property",
+    "symbols_by_kind.project variable",
+    "symbols_by_kind.undefined function",
+    "symbols_by_kind.undefined module"
+   ]
+  },
+  "cpp": {
+   "differences": [
+    "callable_chain_hops.0",
+    "edges",
+    "edges_by_end.external unknown",
+    "edges_by_end.namespace unknown",
+    "edges_by_end.project-callable unknown",
+    "edges_by_end.project-value unknown",
+    "external_packages.. libc6-dev@2.39-0ubuntu8.9",
+    "files.indexed",
+    "files.missing",
+    "files.missing_count",
+    "files.snapshot",
+    "holes",
+    "holes_by_class.computed-callee call",
+    "holes_by_class.no-document call",
+    "holes_by_class.no-document read",
+    "nodes",
+    "symbols_by_kind.external macro",
+    "symbols_by_kind.project class",
+    "symbols_by_kind.project function",
+    "symbols_by_kind.project macro",
+    "symbols_by_kind.project module",
+    "symbols_by_kind.project property",
+    "symbols_by_kind.project variable",
+    "symbols_by_kind.undefined module"
+   ]
+  },
+  "stored_hand_check": "20/20"
+ }
+}

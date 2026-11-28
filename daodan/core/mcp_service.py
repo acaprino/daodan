@@ -572,14 +572,17 @@ class MapService:
 
         `targets`, paths of the project inside the run's target, are indexed again at once unless `check`: a target
         whose bytes differ from the snapshot is read again into it (the other files' parses reused), and the pass
-        restarts, each analyzer running again only where its inputs moved (`engine_pass._redone`). The answer holds,
+        restarts, each analyzer running again only where its inputs moved (`engine_pass._inputs`). The answer holds,
         per target, the state of its language's edges and, once fresh, its edges and its holes by class with their
-        cause."""
+        cause. Only the working run takes `targets`: a published run's snapshot never changes."""
         if not isinstance(check, bool) or not isinstance(break_lock, bool):
             raise ValueError("check and break_lock must be booleans")
         if targets is not None and (not isinstance(targets, list) or not 1 <= len(targets) <= MAX_LIMIT
                                     or not all(isinstance(item, str) for item in targets)):
             raise ValueError(f"targets must be a list of 1 to {MAX_LIMIT} project paths")
+        if targets is not None and run_id != snapshot.WORKING_RUN:
+            raise ValueError(f"targets read files again into the working run only; run {run_id!r} stays as it was "
+                             f"published: call it with run_id {snapshot.WORKING_RUN!r}")
         with self._operation(write=not check):
             run, state, manifest, target = self._bound_run(run_id)
             files = None if targets is None else self._target_files(manifest, target, targets)

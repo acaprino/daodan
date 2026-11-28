@@ -526,34 +526,6 @@ def fixture_rows(built):
             for name, data in built.items()}
 
 
-def test_the_kept_index_without_the_documents_made_again_and_the_new_ones_is_the_whole_new_index(tmp_path):
-    """`ts` with one file changed (`ts-changed`): `ts`'s index without the documents of that file and of those
-    importing it (`skip`), then `ts-changed`'s documents of them alone, read as `ts-changed`'s whole index."""
-    import scip_pb2
-    rels = {"src/api/alias.js", "src/api/jobs.js", "src/api/logService.js"}
-    source = tmp_path / "ts-changed"
-    shutil.copytree(FIXTURES / "ts-changed", source)
-    partial = scip_pb2.Index()
-    partial.ParseFromString((source / "index.scip").read_bytes())
-    kept = [document for document in partial.documents if document.relative_path in rels]
-    assert sorted(document.relative_path for document in kept) == sorted(rels)
-    del partial.documents[:]
-    partial.documents.extend(kept)
-    (tmp_path / "partial.scip").write_bytes(partial.SerializeToString())
-
-    def read(*loads):
-        index = code_graph.Index(source)
-        for path, skip in loads:
-            index.load(path, "", skip)
-        return {name: sorted((key, sorted(map(repr, value)) if isinstance(value, (list, set)) else repr(value))
-                             for key, value in getattr(index, name).items())
-                for name in ("documents", "units", "defs", "info", "implementers", "repeated")}
-
-    merged = read((FIXTURES / "ts/index.scip", rels), (tmp_path / "partial.scip", ()))
-    assert merged == read((source / "index.scip", ()))
-    assert merged != read((FIXTURES / "ts/index.scip", ()))  # the change is in the documents
-
-
 @pytest.mark.parametrize("site", sorted(TS_ENDS))
 def test_ts_fixture_end(fixture_rows, site):
     row, want = fixture_rows["ts"][site], TS_ENDS[site]

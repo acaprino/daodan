@@ -1,0 +1,1271 @@
+{
+ "case": "tinyxml2",
+ "commit": "9148bdf719e997d1f474be6bcc7943881046dba1",
+ "code": {
+  "code_graph.py": "8f4aac588655",
+  "indexers/__init__.py": "67a8a5b52d41",
+  "indexers/clang.py": "4fe01164c84e",
+  "indexers/clang_run.py": "c1ea74dc335f",
+  "indexers/components.py": "d46475644269",
+  "indexers/csharp.py": "d791ccbca98d",
+  "indexers/css.py": "68ff0d7e347c",
+  "indexers/css_astro.py": "c8157d430209",
+  "indexers/css_csstree.py": "d9ed24317d3d",
+  "indexers/css_less.py": "d74d9e3004ae",
+  "indexers/css_sass.py": "c2a5e278bdfc",
+  "indexers/css_stylus.py": "a8d16d83fc4d",
+  "indexers/css_svelte.py": "10e35514b1c3",
+  "indexers/css_tailwind.py": "d7536cfbb251",
+  "indexers/css_typescript.py": "a82b9c69c6d0",
+  "indexers/css_vue.py": "371de29e0479",
+  "indexers/go.py": "87b9bde8a306",
+  "indexers/java.py": "4c36b9ca4357",
+  "indexers/jvm.py": "c0ad14c4ba49",
+  "indexers/kotlin.py": "f16e64bd3c42",
+  "indexers/python.py": "27ea410254f8",
+  "indexers/python_unbound.py": "49e96c46d1f4",
+  "indexers/runtime.py": "fd355346a48c",
+  "indexers/rust.py": "f94e32a260ff",
+  "indexers/typescript.py": "872986318854",
+  "indexers/typescript_types.py": "8d7033172e18",
+  "indexers/KotlinAsk.kt": "77b5faec27f5",
+  "adapters/clang.py": "c73b59af36f4",
+  "adapters/go_callgraph.py": "04f53f7ee62a",
+  "adapters/java.py": "0861828a7eec",
+  "adapters/js_jelly.py": "e3ef3f9aa8cd",
+  "adapters/jvm_callgraph.py": "27d24421e478",
+  "adapters/jvm_here.py": "03948f8e704d",
+  "adapters/kotlin.py": "17254bcde28c",
+  "adapters/kotlin_analysis.py": "5eef9336bea9",
+  "adapters/ts_compiler.py": "089c8aa85ec8"
+ },
+ "snapshot": {
+  "command": [
+   "/usr/local/bin/python",
+   "/daodan/map/core/snapshot.py",
+   "write",
+   "/work/stage-tinyxml2/src",
+   "--out",
+   "/work/stage-tinyxml2/snapshot/manifest.sqlite",
+   "--no-engine",
+   "--no-index"
+  ],
+  "returncode": 0,
+  "seconds": 83.2,
+  "peak_mb": 210,
+  "stdout_tail": "snapshot: 213 files -> /work/stage-tinyxml2/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/stage-tinyxml2/snapshot/modules.json (4 modules)\npremap: 7 units, 5 gaps -> /work/stage-tinyxml2/snapshot/premap.json\n",
+  "stderr_tail": "installing stack-analyser 1.27.6-daodan.6 into /root/.cache/daodan/engines/stack-analyser/1.27.6-daodan.6 (first use)\ninstalling node v22.23.4 into /root/.cache/daodan/engines/node/v22.23.4 (first use)\nDAODAN_MAXRSS_KB=214680\n",
+  "stderr_errors": 0,
+  "stderr_error_examples": []
+ },
+ "stage_seconds": 39.6,
+ "seconds": 123.3,
+ "stage": {
+  "available": true,
+  "engine": "scip-clang@v0.4.1",
+  "indexer": {
+   "name": "scip-clang",
+   "version": "v0.4.1",
+   "seconds": 4.0,
+   "peak_mb": null
+  },
+  "languages": {
+   "cpp": {
+    "state": "fresh"
+   }
+  },
+  "reason": null,
+  "install": null,
+  "gaps": [
+   {
+    "kind": "build_not_indexed",
+    "path": "test",
+    "state": "failed",
+    "detail": "test: failed: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
+   }
+  ]
+ },
+ "graphs": {
+  "cpp": {
+   "report": {
+    "language": "cpp",
+    "indexer": {
+     "name": "scip-clang",
+     "version": "v0.4.1",
+     "seconds": 4.0,
+     "peak_mb": null
+    },
+    "files": {
+     "snapshot": 4,
+     "indexed": 3,
+     "missing": [
+      {
+       "path": "contrib/html5-printer.cpp",
+       "reason": "no compile command: no build compiles a file of contrib"
+      }
+     ],
+     "missing_count": 1
+    },
+    "nodes": 2069,
+    "edges": 8141,
+    "symbols_by_kind": {
+     "external class": 4,
+     "external macro": 13,
+     "project class": 31,
+     "project function": 12,
+     "project macro": 12,
+     "project method": 412,
+     "project module": 7,
+     "project property": 88,
+     "project variable": 1448,
+     "undefined method": 26,
+     "undefined module": 16
+    },
+    "edges_by_end": {
+     "dead-end unknown": 8,
+     "external call": 6,
+     "external read": 14,
+     "external unknown": 63,
+     "namespace unknown": 23,
+     "project-callable call": 2249,
+     "project-callable read": 8,
+     "project-callable unknown": 1591,
+     "project-value call": 300,
+     "project-value read": 2325,
+     "project-value unknown": 1554
+    },
+    "callable_chain_hops": {
+     "0": 3679,
+     "1": 169
+    },
+    "hop_tags": {
+     "implementation": 145,
+     "declaration": 24
+    },
+    "edges_uncertain": {},
+    "edges_removed": {},
+    "holes_by_class": {
+     "`clock`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 5,
+     "`exit`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 2,
+     "`fclose`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 10,
+     "`ferror`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`fgetc`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`fgets`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 3,
+     "`fopen`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 9,
+     "`fputc`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`fread`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 2,
+     "`fseek`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 2,
+     "`ftell`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`fwrite`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`isalpha`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`isdigit`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`isspace`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`memcpy`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 5,
+     "`memset`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 2,
+     "`printf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 28,
+     "`strchr`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`strcmp`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 2,
+     "`strlen`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 7,
+     "`strncmp`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 3,
+     "`vfprintf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "`vsnprintf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call": 1,
+     "a conversion to `unsigned`, a type the language builds in: no symbol to name call": 7,
+     "a member, in a template, of a value whose type may depend on the template's parameters: clang resolves it only where the template is instantiated, and the index names it nowhere read": 1,
+     "a name a conditional directive tests, read as code because the directive sits inside an expression: the index names no symbol there read": 1,
+     "in a branch of `#else` of `#if (_MSC_VER < 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it call": 3,
+     "in a branch of `#else` of `#if (_MSC_VER < 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it read": 12,
+     "in a branch of `#if 0` the build does not compile: the index has no occurrence in it call": 8,
+     "in a branch of `#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )` the build does not compile: the index has no occurrence in it call": 10,
+     "in a branch of `#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )` the build does not compile: the index has no occurrence in it read": 10,
+     "in a branch of `#if defined( _MSC_VER )` the build does not compile: the index has no occurrence in it call": 3,
+     "in a branch of `#if defined( _MSC_VER )` the build does not compile: the index has no occurrence in it read": 7,
+     "in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it call": 5,
+     "in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it read": 19,
+     "no-document call": 10,
+     "no-document read": 15
+    },
+    "holes": [
+     {
+      "class": "`printf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 28,
+      "examples": [
+       "tinyxml2.cpp:2542 printf",
+       "xmltest.cpp:79 printf",
+       "xmltest.cpp:328 printf"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 16,
+      "examples": [
+       "tinyxml2.cpp:47 va",
+       "tinyxml2.cpp:48 va",
+       "tinyxml2.cpp:55 format"
+      ]
+     },
+     {
+      "class": "`fclose`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 10,
+      "examples": [
+       "tinyxml2.cpp:2359 fclose",
+       "xmltest.cpp:725 fclose",
+       "xmltest.cpp:1050 fclose"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 10,
+      "examples": [
+       "xmltest.cpp:303 _CrtMemCheckpoint",
+       "xmltest.cpp:307 _CrtDumpMemoryLeaks",
+       "xmltest.cpp:2759 _CrtMemDifference"
+      ]
+     },
+     {
+      "class": "`fopen`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 8,
+      "examples": [
+       "xmltest.cpp:334 fopen",
+       "xmltest.cpp:701 fopen",
+       "xmltest.cpp:1180 fopen"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 7,
+      "examples": [
+       "contrib/html5-printer.cpp:62 file",
+       "contrib/html5-printer.cpp:62 depth",
+       "contrib/html5-printer.cpp:84 name"
+      ]
+     },
+     {
+      "class": "in a branch of `#else` of `#if (_MSC_VER < 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 7,
+      "examples": [
+       "tinyxml2.cpp:77 str",
+       "tinyxml2.cpp:77 va",
+       "tinyxml2.cpp:79 required"
+      ]
+     },
+     {
+      "class": "`strlen`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 7,
+      "examples": [
+       "tinyxml2.cpp:198 strlen",
+       "tinyxml2.cpp:2456 strlen",
+       "tinyxml2.cpp:2514 strlen"
+      ]
+     },
+     {
+      "class": "a conversion to `unsigned`, a type the language builds in: no symbol to name",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 7,
+      "examples": [
+       "xmltest.cpp:833 unsigned",
+       "xmltest.cpp:844 unsigned",
+       "xmltest.cpp:973 unsigned"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined( _MSC_VER )` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 7,
+      "examples": [
+       "xmltest.cpp:2702 freq",
+       "xmltest.cpp:2731 end",
+       "xmltest.cpp:2747 start"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "scope-unresolved",
+      "count": 6,
+      "examples": [
+       "contrib/html5-printer.cpp:67 _elementJustOpened",
+       "contrib/html5-printer.cpp:97 std.cout",
+       "contrib/html5-printer.cpp:101 std.cout"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "scope-unresolved",
+      "count": 6,
+      "examples": [
+       "xmltest.cpp:303 startMemState",
+       "xmltest.cpp:305 _CRTDBG_LEAK_CHECK_DF",
+       "xmltest.cpp:2759 startMemState"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 5,
+      "examples": [
+       "contrib/html5-printer.cpp:67 isVoidElement",
+       "contrib/html5-printer.cpp:67 _stack.PeekTop",
+       "contrib/html5-printer.cpp:70 XMLPrinter.CloseElement"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 5,
+      "examples": [
+       "contrib/html5-printer.cpp:95 doc.Parse",
+       "contrib/html5-printer.cpp:100 doc.Print",
+       "contrib/html5-printer.cpp:104 doc.Print"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 5,
+      "examples": [
+       "tinyxml2.cpp:47 va_start",
+       "tinyxml2.cpp:48 vsnprintf_s",
+       "tinyxml2.cpp:55 vsnprintf_s"
+      ]
+     },
+     {
+      "class": "in a branch of `#else` of `#if (_MSC_VER < 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 5,
+      "examples": [
+       "tinyxml2.cpp:75 len",
+       "tinyxml2.cpp:76 len",
+       "tinyxml2.cpp:85 len"
+      ]
+     },
+     {
+      "class": "`clock`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 5,
+      "examples": [
+       "xmltest.cpp:318 clock",
+       "xmltest.cpp:320 clock",
+       "xmltest.cpp:2721 clock"
+      ]
+     },
+     {
+      "class": "`memcpy`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 4,
+      "examples": [
+       "tinyxml2.cpp:201 memcpy",
+       "tinyxml2.cpp:337 memcpy",
+       "tinyxml2.cpp:2460 memcpy"
+      ]
+     },
+     {
+      "class": "in a branch of `#if 0` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 4,
+      "examples": [
+       "tinyxml2.cpp:2241 _textPool.Trace",
+       "tinyxml2.cpp:2242 _elementPool.Trace",
+       "tinyxml2.cpp:2243 _commentPool.Trace"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "non-callable-binding",
+      "count": 4,
+      "examples": [
+       "xmltest.cpp:308 leaksOnStart",
+       "xmltest.cpp:2759 diffMemState",
+       "xmltest.cpp:2760 diffMemState"
+      ]
+     },
+     {
+      "class": "in a branch of `#if 0` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "unknown-receiver",
+      "count": 4,
+      "examples": [
+       "xmltest.cpp:1856 xmlDoc.NewDeclaration",
+       "xmltest.cpp:1857 xmlDoc.NewComment",
+       "xmltest.cpp:1859 xmlDoc.NewElement"
+      ]
+     },
+     {
+      "class": "in a branch of `#else` of `#if (_MSC_VER < 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 3,
+      "examples": [
+       "tinyxml2.cpp:77 _vsnprintf",
+       "tinyxml2.cpp:80 TIXMLASSERT",
+       "tinyxml2.cpp:85 TIXMLASSERT"
+      ]
+     },
+     {
+      "class": "`fgets`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 3,
+      "examples": [
+       "xmltest.cpp:708 fgets",
+       "xmltest.cpp:711 fgets",
+       "xmltest.cpp:1195 fgets"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined( _MSC_VER )` the build does not compile: the index has no occurrence in it",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 3,
+      "examples": [
+       "xmltest.cpp:2702 QueryPerformanceFrequency",
+       "xmltest.cpp:2719 QueryPerformanceCounter",
+       "xmltest.cpp:2731 QueryPerformanceCounter"
+      ]
+     },
+     {
+      "class": "no-document",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 2,
+      "examples": [
+       "contrib/html5-printer.cpp:83 p",
+       "contrib/html5-printer.cpp:84 p"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "included-name-undeclared",
+      "count": 2,
+      "examples": [
+       "tinyxml2.cpp:48 _TRUNCATE",
+       "tinyxml2.cpp:55 _TRUNCATE"
+      ]
+     },
+     {
+      "class": "`strncmp`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 2,
+      "examples": [
+       "tinyxml2.cpp:219 strncmp",
+       "tinyxml2.cpp:345 strncmp"
+      ]
+     },
+     {
+      "class": "`fread`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 2,
+      "examples": [
+       "tinyxml2.cpp:2404 fread",
+       "xmltest.cpp:2713 fread"
+      ]
+     },
+     {
+      "class": "`memset`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 2,
+      "examples": [
+       "tinyxml2.h:404 memset",
+       "xmltest.cpp:2712 memset"
+      ]
+     },
+     {
+      "class": "`strcmp`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 2,
+      "examples": [
+       "xmltest.cpp:38 strcmp",
+       "xmltest.cpp:715 strcmp"
+      ]
+     },
+     {
+      "class": "`exit`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 2,
+      "examples": [
+       "xmltest.cpp:331 exit",
+       "xmltest.cpp:344 exit"
+      ]
+     },
+     {
+      "class": "`fseek`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 2,
+      "examples": [
+       "xmltest.cpp:2707 fseek",
+       "xmltest.cpp:2709 fseek"
+      ]
+     },
+     {
+      "class": "`vsnprintf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:96 vsnprintf"
+      ]
+     },
+     {
+      "class": "`strchr`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:504 strchr"
+      ]
+     },
+     {
+      "class": "in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it",
+      "kind": "read",
+      "reason": "ambiguous-binding",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:2316 fp"
+      ]
+     },
+     {
+      "class": "`fopen`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "included-name-undeclared",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:2321 fopen"
+      ]
+     },
+     {
+      "class": "`fgetc`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:2368 fgetc"
+      ]
+     },
+     {
+      "class": "`ferror`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:2368 ferror"
+      ]
+     },
+     {
+      "class": "`vfprintf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:2614 vfprintf"
+      ]
+     },
+     {
+      "class": "`fwrite`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released)",
+      "kind": "call",
+      "reason": "scope-unresolved",
+      "count": 1,
+      "examples": [
+       "tinyxml2.cpp:2633 fwrite"
+      ]
+     }
+    ],
+    "external_packages": {
+     ". libc6-dev@2.39-0ubuntu8.9": 58,
+     ". clang@21.1.8": 18,
+     ". (none)@-": 7
+    }
+   },
+   "hand_check": {
+    "right": 16,
+    "total": 20,
+    "sites": [
+     {
+      "site": "tinyxml2.cpp:787",
+      "name": "Accept",
+      "nth": 0,
+      "why": "virtual, pure in XMLNode, six overrides",
+      "expected": [
+       "impl tinyxml2.cpp:1279",
+       "impl tinyxml2.cpp:1327",
+       "impl tinyxml2.cpp:1377",
+       "impl tinyxml2.cpp:1424",
+       "impl tinyxml2.cpp:2143",
+       "impl tinyxml2.cpp:782",
+       "tinyxml2.h:934"
+      ],
+      "verdict": "right",
+      "got": [
+       "impl tinyxml2.cpp:1279",
+       "impl tinyxml2.cpp:1327",
+       "impl tinyxml2.cpp:1377",
+       "impl tinyxml2.cpp:1424",
+       "impl tinyxml2.cpp:2143",
+       "impl tinyxml2.cpp:782",
+       "tinyxml2.h:934"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLNode#Accept(73649879a03e260d)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLNode#Accept(73649879a03e260d).",
+        [],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLComment#Accept(73649879a03e260d).",
+        [
+         "implementation"
+        ],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLDeclaration#Accept(73649879a03e260d).",
+        [
+         "implementation"
+        ],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLDocument#Accept(73649879a03e260d).",
+        [
+         "implementation"
+        ],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLElement#Accept(73649879a03e260d).",
+        [
+         "implementation"
+        ],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLText#Accept(73649879a03e260d).",
+        [
+         "implementation"
+        ],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLUnknown#Accept(73649879a03e260d).",
+        [
+         "implementation"
+        ],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:1282",
+      "name": "Visit",
+      "nth": 0,
+      "why": "virtual and overloaded: Visit(const XMLText&)",
+      "expected": [
+       "impl tinyxml2.cpp:2993",
+       "impl xmltest.cpp:2584",
+       "tinyxml2.h:505"
+      ],
+      "verdict": "right",
+      "got": [
+       "impl tinyxml2.cpp:2993",
+       "impl xmltest.cpp:2584",
+       "tinyxml2.h:505"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLVisitor#Visit(1ef670f4daea8df1)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLVisitor#Visit(1ef670f4daea8df1).",
+        [],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ main(d8e43b79a186046c).TestUtil#Visit(1ef670f4daea8df1).",
+        [
+         "implementation"
+        ],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLPrinter#Visit(1ef670f4daea8df1).",
+        [
+         "implementation"
+        ],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:785",
+      "name": "VisitEnter",
+      "nth": 0,
+      "why": "virtual and overloaded: VisitEnter(const XMLDocument&)",
+      "expected": [
+       "impl tinyxml2.cpp:2960",
+       "impl xmltest.cpp:2567",
+       "tinyxml2.h:483"
+      ],
+      "verdict": "right",
+      "got": [
+       "impl tinyxml2.cpp:2960",
+       "impl xmltest.cpp:2567",
+       "tinyxml2.h:483"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLVisitor#VisitEnter(9a6e7eba7fc912fd)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLVisitor#VisitEnter(9a6e7eba7fc912fd).",
+        [],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ main(d8e43b79a186046c).TestUtil#VisitEnter(9a6e7eba7fc912fd).",
+        [
+         "implementation"
+        ],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLPrinter#VisitEnter(9a6e7eba7fc912fd).",
+        [
+         "implementation"
+        ],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:1199",
+      "name": "~",
+      "nth": 0,
+      "why": "explicit call of a virtual destructor",
+      "expected": [
+       "impl tinyxml2.cpp:1293",
+       "impl tinyxml2.cpp:1341",
+       "impl tinyxml2.cpp:1390",
+       "impl tinyxml2.cpp:1606",
+       "impl tinyxml2.cpp:2205",
+       "impl tinyxml2.h:1020",
+       "tinyxml2.cpp:811"
+      ],
+      "verdict": "miss",
+      "got": [
+       "no occurrence"
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:1200",
+      "name": "Free",
+      "nth": 0,
+      "why": "pure virtual, override in a class template",
+      "expected": [
+       "impl tinyxml2.h:397",
+       "tinyxml2.h:334"
+      ],
+      "verdict": "right",
+      "got": [
+       "impl tinyxml2.h:397",
+       "tinyxml2.h:334"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/MemPool#Free(5d22bdacc48458e8)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/MemPool#Free(5d22bdacc48458e8).",
+        [],
+        ""
+       ],
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/MemPoolT#Free(5d22bdacc48458e8).",
+        [
+         "implementation"
+        ],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.h:1992",
+      "name": "Alloc",
+      "nth": 0,
+      "why": "member of a dependent type MemPoolT<PoolElementSize>",
+      "expected": [
+       "tinyxml2.h:371"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.h:371"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/MemPoolT#Alloc(50c7df7de5344ebb)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/MemPoolT#Alloc(50c7df7de5344ebb).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.h:1992",
+      "name": "NodeType",
+      "nth": 0,
+      "why": "placement new of a template parameter: no constructor before instantiation",
+      "expected": [
+       "value"
+      ],
+      "verdict": "right",
+      "got": [
+       "value"
+      ],
+      "symbols": [
+       "tinyxml2.h#local 328"
+      ],
+      "ends": [
+       [
+        "project-value",
+        "tinyxml2.h#local 328",
+        [],
+        "variable"
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.h:1996",
+      "name": "Push",
+      "nth": 0,
+      "why": "member of a class template instance",
+      "expected": [
+       "tinyxml2.h:223"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.h:223"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/DynArray#Push(9b289cee16747614)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/DynArray#Push(9b289cee16747614).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:2217",
+      "name": "[",
+      "nth": 0,
+      "why": "operator[] of a class template, non-const",
+      "expected": [
+       "tinyxml2.h:253"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.h:253"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/DynArray#`operator[]`(ec43b8547ac5c60)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/DynArray#`operator[]`(ec43b8547ac5c60).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:560",
+      "name": "TIXML_SNPRINTF",
+      "nth": 0,
+      "why": "object-like macro for snprintf",
+      "expected": [
+       "external snprintf"
+      ],
+      "verdict": "wrong",
+      "got": [
+       "value"
+      ],
+      "symbols": [
+       "cxx . project 0$ `tinyxml2.cpp:92:10`!"
+      ],
+      "ends": [
+       [
+        "project-value",
+        "cxx . project 0$ `tinyxml2.cpp:92:10`!",
+        [],
+        "macro"
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:1281",
+      "name": "TIXMLASSERT",
+      "nth": 0,
+      "why": "macro for assert, itself a macro calling __assert_fail",
+      "expected": [
+       "external __assert_fail"
+      ],
+      "verdict": "wrong",
+      "got": [
+       "value"
+      ],
+      "symbols": [
+       "cxx . project 0$ `tinyxml2.h:89:16`!",
+       "cxx . project 0$ `tinyxml2.h:92:12`!"
+      ],
+      "ends": [
+       [
+        "project-value",
+        "cxx . project 0$ `tinyxml2.h:89:16`!",
+        [],
+        "macro"
+       ],
+       [
+        "project-value",
+        "cxx . project 0$ `tinyxml2.h:92:12`!",
+        [],
+        "macro"
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.h:1474",
+      "name": "SetAttribute",
+      "nth": 0,
+      "why": "overload (int) among eight",
+      "expected": [
+       "tinyxml2.cpp:1545"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.cpp:1545"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLAttribute#SetAttribute(d4f767463ce0a6b3)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLAttribute#SetAttribute(d4f767463ce0a6b3).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:708",
+      "name": "SkipWhiteSpace",
+      "nth": 0,
+      "why": "static, overloaded on const: char* argument",
+      "expected": [
+       "tinyxml2.h:562"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.h:562"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLUtil#SkipWhiteSpace(5874cd7f0254925)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLUtil#SkipWhiteSpace(5874cd7f0254925).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "tinyxml2.cpp:2742",
+      "name": "PrintSpace",
+      "nth": 0,
+      "why": "virtual without override",
+      "expected": [
+       "tinyxml2.cpp:2656"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.cpp:2656"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLPrinter#PrintSpace(d4f767463ce0a6b3)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLPrinter#PrintSpace(d4f767463ce0a6b3).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "xmltest.cpp:117",
+      "name": "doc",
+      "nth": 0,
+      "why": "default constructor of a declared variable",
+      "expected": [
+       "tinyxml2.cpp:2183"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.cpp:2183"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLDocument#XMLDocument(a2190919d02f8d13)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLDocument#XMLDocument(a2190919d02f8d13).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "xmltest.cpp:118",
+      "name": "LoadFile",
+      "nth": 0,
+      "why": "overload (const char*)",
+      "expected": [
+       "tinyxml2.cpp:2344"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.cpp:2344"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLDocument#LoadFile(15d99b90f27bba38)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLDocument#LoadFile(15d99b90f27bba38).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "xmltest.cpp:164",
+      "name": "FirstChildElement",
+      "nth": 0,
+      "why": "const and non-const overloads, non-const object",
+      "expected": [
+       "tinyxml2.h:784"
+      ],
+      "verdict": "right",
+      "got": [
+       "tinyxml2.h:784"
+      ],
+      "symbols": [
+       "cxx . project 0$ tinyxml2/XMLNode#FirstChildElement(ca07ad1b52b83cf5)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ tinyxml2/XMLNode#FirstChildElement(ca07ad1b52b83cf5).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "xmltest.cpp:166",
+      "name": "printf",
+      "nth": 0,
+      "why": "C library",
+      "expected": [
+       "external printf"
+      ],
+      "verdict": "miss",
+      "got": [
+       "no occurrence"
+      ]
+     },
+     {
+      "site": "xmltest.cpp:489",
+      "name": "XMLTest",
+      "nth": 0,
+      "why": "overloads and a template: (int, int) picks the template",
+      "expected": [
+       "xmltest.cpp:75"
+      ],
+      "verdict": "right",
+      "got": [
+       "xmltest.cpp:75"
+      ],
+      "symbols": [
+       "cxx . project 0$ XMLTest(6f1950cf12386d00)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ XMLTest(6f1950cf12386d00).",
+        [],
+        ""
+       ]
+      ]
+     },
+     {
+      "site": "xmltest.cpp:502",
+      "name": "XMLTest",
+      "nth": 0,
+      "why": "overloads and a template: (bool, bool) picks the overload",
+      "expected": [
+       "xmltest.cpp:70"
+      ],
+      "verdict": "right",
+      "got": [
+       "xmltest.cpp:70"
+      ],
+      "symbols": [
+       "cxx . project 0$ XMLTest(a8cc820920aa9ccb)."
+      ],
+      "ends": [
+       [
+        "project-callable",
+        "cxx . project 0$ XMLTest(a8cc820920aa9ccb).",
+        [],
+        ""
+       ]
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "compared": {
+  "cpp": {
+   "differences": [
+    "callable_chain_hops.0",
+    "callable_chain_hops.1",
+    "edges",
+    "edges_by_end.external read",
+    "edges_by_end.external unknown",
+    "edges_by_end.namespace unknown",
+    "edges_by_end.project-callable call",
+    "edges_by_end.project-callable read",
+    "edges_by_end.project-callable unknown",
+    "edges_by_end.project-value call",
+    "edges_by_end.project-value read",
+    "edges_by_end.project-value unknown",
+    "external_packages.. (none)@-",
+    "external_packages.. clang@21.1.8",
+    "external_packages.. libc6-dev@2.39-0ubuntu8.9",
+    "external_packages.cxx (none)@-",
+    "external_packages.cxx libc6-dev@2.39-0ubuntu8.12",
+    "external_packages.cxx libgcc-13-dev@13.3.0-6ubuntu2_24.04.1",
+    "files.missing",
+    "holes",
+    "holes_by_class.`clock`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`exit`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fclose`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`ferror`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fgetc`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fgets`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fopen`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fputc`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fread`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fseek`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`ftell`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`fwrite`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`isalpha`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`isdigit`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`isspace`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`memcpy`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`memset`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`printf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`strchr`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`strcmp`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`strlen`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`strncmp`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`vfprintf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.`vsnprintf`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not released) call",
+    "holes_by_class.a conversion to `unsigned`, a type the language builds in: no symbol to name call",
+    "holes_by_class.a member, in a template, of a value whose type may depend on the template's parameters: clang resolves it only where the template is instantiated, and the index names it nowhere read",
+    "holes_by_class.a name a conditional directive tests, read as code because the directive sits inside an expression: the index names no symbol there read",
+    "holes_by_class.in a branch of `#else` of `#if (_MSC_VER < 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#else` of `#if (_MSC_VER < 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if 0` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined( _MSC_VER ) && defined( TINYXML2_DEBUG )` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if defined( _MSC_VER )` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined( _MSC_VER )` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it call",
+    "holes_by_class.in a branch of `#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)` the build does not compile: the index has no occurrence in it read",
+    "holes_by_class.no-document read",
+    "holes_by_class.no-occurrence call",
+    "hop_tags.implementation",
+    "nodes",
+    "symbols_by_kind.external class",
+    "symbols_by_kind.external macro",
+    "symbols_by_kind.project macro",
+    "symbols_by_kind.undefined module"
+   ]
+  },
+  "stored_hand_check": "16/20"
+ }
+}

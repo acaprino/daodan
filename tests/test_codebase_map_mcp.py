@@ -642,37 +642,48 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual(packet["sha256"], __import__("hashlib").sha256(body.encode()).hexdigest())
 
     def test_index_with_targets_reads_a_changed_target_again_and_restarts_the_pass(self):
-        """A target changed since the snapshot is read again into it and the pass restarts (which analyzer runs
-        again, only where its inputs moved, is the stage's: `IndexerStageTests` of the resolve-edges tests); an
-        unchanged one rewrites nothing; a path outside the run's target, or a symbol, is refused."""
+        """In the working run, a target changed since the snapshot is read again into it and the pass restarts
+        (which analyzer runs again, only where its inputs moved, is the stage's: `IndexerStageTests` of the
+        resolve-edges tests); an unchanged one rewrites nothing; a path outside the run's target, or a symbol, is
+        refused. A published run takes no targets: its snapshot stays as it was published."""
         import engine_pass
         from snapshot_store import file_headers, open_snapshot
         child = mock.Mock(pid=4242)
+        root = self.project / ".daodan/map"
         with mock.patch.object(engine_pass, "engine_command", return_value=["engine"]), \
                 mock.patch.object(engine_pass, "_spawn_detached", return_value=child) as spawn, \
                 mock.patch.object(engine_pass, "_process_alive", return_value=True), \
                 mock.patch.object(engine_pass, "_terminate_tree"):
             self.create(engine=True)
-            manifest = self.run_dir / "snapshot/manifest.sqlite"
+            state = json.loads((self.run_dir / "state.json").read_text(encoding="utf-8"))
+            (self.run_dir / "state.json").write_text(json.dumps({**state, "status": "complete"}), encoding="utf-8")
+            (root / "runs.json").write_text(json.dumps({"schema": 2, "active": [], "latest_completed": "example"}),
+                                            encoding="utf-8")
+            published = (self.run_dir / "snapshot/manifest.sqlite").read_bytes()
+            self.assertEqual(snapshot.refresh_working(root)["status"], "fresh")
+            with self.assertRaisesRegex(ValueError, "working"):
+                self.service.index("example", targets=["src/module.py"])
+            manifest = root / "runs/working/snapshot/manifest.sqlite"
             written = manifest.stat().st_mtime_ns
-            unchanged = self.service.index("example", targets=["src/module.py"])
+            unchanged = self.service.index("working", targets=["src/module.py"])
             self.assertEqual(manifest.stat().st_mtime_ns, written)
             self.assertEqual(unchanged["targets"], [{"path": "src/module.py", "file": "module.py",
                                                      "language": "python", "state": unchanged["targets"][0]["state"]}])
             started = spawn.call_count
             self.module.write_text("LIMIT = 8\n\ndef selected():\n    return LIMIT\n", encoding="utf-8")
-            changed = self.service.index("example", targets=["src/module.py"])
+            changed = self.service.index("working", targets=["src/module.py"])
             self.assertGreater(spawn.call_count, started)
         with open_snapshot(manifest) as store:
             self.assertEqual(file_headers(store)["module.py"]["raw_hash"],
                              __import__("hashlib").sha256(self.module.read_bytes()).hexdigest())
+        self.assertEqual((self.run_dir / "snapshot/manifest.sqlite").read_bytes(), published)
         self.assertEqual(changed["engine"]["action"], "started")
         self.assertEqual((changed["targets"][0]["file"], changed["targets"][0]["state"]), ("module.py", "running"))
-        self.assertIn("snapshot_refreshed", [e["event"] for e in self.service.events("example")["events"]])
+        self.assertIn("snapshot_refreshed", [e["event"] for e in self.service.events("working")["events"]])
         (self.project / "other.py").write_text("x = 1\n", encoding="utf-8")
         for bad in (["other.py"], ["../outside.py"], ["src/module.py::selected"], "src/module.py", []):
             with self.subTest(bad=bad), self.assertRaises(ValueError):
-                self.service.index("example", targets=bad)
+                self.service.index("working", targets=bad)
 
     def test_create_run_builds_the_lexical_index_beside_the_snapshot(self):
         self.create()
