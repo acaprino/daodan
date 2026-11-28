@@ -100,8 +100,8 @@ def _image(name: str) -> modal.Image:
     for url, sha, file in plan["files"]:
         if url:  # a download of the runner (`uv`), checked by its sha256 as the runner does
             image = image.run_commands(f"curl -fsSL {shlex.quote(url)} -o {inputs}/{file} && echo '{sha}  {inputs}/{file}' | sha256sum -c -")
-        else:  # Daodan's own file, beside the premap modules
-            image = image.add_local_file(REPO / "daodan/core/premap" / file, f"{inputs}/{file}", copy=True)
+        else:  # Daodan's own file, beside the entry points modules
+            image = image.add_local_file(REPO / "daodan/core/entry_points" / file, f"{inputs}/{file}", copy=True)
     env = " ".join(f"{k}={shlex.quote(v)}" for k, v in plan["env"].items())
     setup = shlex.quote(plan["setup"]["argv"][2])
     return (image.add_local_dir(FOLDERS[name], "/fix", copy=True, ignore=["**/__pycache__/**", "**/.venv/**"])
@@ -475,8 +475,8 @@ def _recorded(answers: dict) -> None:
         a = answers[name]
         (RECORDED_DIR / f"{name}.json").write_text(
             json.dumps({k: a[k] for k in ("returncode", "stdout", "stderr")}, indent=1) + "\n", encoding="utf-8", newline="\n")
-    premap = REPO / "daodan/core/premap"
-    prints = {name: hashlib.sha256((premap / name).read_bytes().replace(b"\r\n", b"\n")).hexdigest() for name in SCRIPTS}
+    scripts = REPO / "daodan/core/entry_points"
+    prints = {name: hashlib.sha256((scripts / name).read_bytes().replace(b"\r\n", b"\n")).hexdigest() for name in SCRIPTS}
     (RECORDED_DIR / "script.json").write_text(json.dumps({**prints, "version": PLANS["fixture"]["version"]}, indent=1) + "\n", encoding="utf-8", newline="\n")
 
 

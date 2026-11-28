@@ -62,7 +62,7 @@ def _image(name: str) -> modal.Image:
     for url, sha, file in plan["files"]:
         if url:  # a download of the runner (`uv`), checked by its sha256 as the runner does
             image = image.run_commands(f"curl -fsSL {shlex.quote(url)} -o {inputs}/{file} && echo '{sha}  {inputs}/{file}' | sha256sum -c -")
-        elif file == "django_routes.py":  # Daodan's own script, beside the premap modules; absent while only the exploration runs
+        elif file == "django_routes.py":  # Daodan's own script, beside the entry points modules; absent while only the exploration runs
             if SCRIPT.exists():
                 image = image.add_local_file(SCRIPT, f"{inputs}/{file}", copy=True)
             else:

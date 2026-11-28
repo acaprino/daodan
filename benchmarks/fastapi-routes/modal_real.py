@@ -61,8 +61,8 @@ def _image(key: str) -> modal.Image:
     for url, sha, file in plan["files"]:
         if url:  # a download of the runner (`uv`), checked by its sha256 as the runner does
             image = image.run_commands(f"curl -fsSL {shlex.quote(url)} -o {inputs}/{file} && echo '{sha}  {inputs}/{file}' | sha256sum -c -")
-        else:  # Daodan's own file, beside the premap modules
-            image = image.add_local_file(REPO / "daodan/core/premap" / file, f"{inputs}/{file}", copy=True)
+        else:  # Daodan's own file, beside the entry points modules
+            image = image.add_local_file(REPO / "daodan/core/entry_points" / file, f"{inputs}/{file}", copy=True)
     env = " ".join(f"{k}={shlex.quote(v)}" for k, v in plan["env"].items())
     setup = shlex.quote(plan["setup"]["argv"][2])
     image = image.run_commands(f"curl -fsSL -o /usr/local/bin/noir {apps.NOIR[0]} && echo '{apps.NOIR[1]}  /usr/local/bin/noir' | sha256sum -c - && chmod +x /usr/local/bin/noir")

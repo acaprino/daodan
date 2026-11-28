@@ -4,7 +4,7 @@
 
 It reads what `real_probe.py` kept (`<name>-script.json`, `<name>-noir.json` under `DAODAN_REAL_OUT`) and the local checkout of the same commit
 (`DAODAN_REAL_DIR`; the fixture's own folder for `fixture`), and runs Daodan's code only: the snapshot of the tree, the two sources read over
-the answers the container gave (`premap.write` with a runner that hands them back) and Daodan's binder (`binder.bind`, the one `flows.link_facts`
+the answers the container gave (`premap.write`, then `entry_points.write` on it, with a runner that hands them back) and Daodan's binder (`binder.bind`, the one `flows.link_facts`
 calls), which ties each row "a name at a position" to the one function of the snapshot that holds it. Nothing of the project is run, and
 nothing of it is written: `results/real/<name>.json` has the counts and, for the differences, route texts and names of functions.
 
@@ -30,6 +30,7 @@ sys.path.insert(0, str(HERE.parents[1] / "daodan/core"))
 import binder  # noqa: E402
 import entries  # noqa: E402
 import flows  # noqa: E402
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
@@ -109,7 +110,8 @@ def compare(name: str) -> dict:
         def run(commands):
             tool = commands[0]["tool"]
             return [{"django": ours, "noir": theirs}[tool] for _ in commands]
-        record = premap.write(manifest, sources=(premap.module_graph, premap.requirements, django_app, noir), runner=run)
+        stated = premap.write(manifest, sources=(premap.module_graph, premap.requirements), runner=run)
+        record = entry_points.write(manifest, sources=(django_app, noir), runner=run, stated=stated)
         states = {s["source"].split("@")[0]: s["state"] for s in record["sources"] if s["source"].split("@")[0] in ("django", "noir")}
         out["sources"] = states
         out["gaps"] = Counter(f"{g.get('source', '?').split('@')[0]}/{g['kind']}" for g in record["gaps"] if g.get("source", "").split("@")[0] in ("django", "noir"))
@@ -121,7 +123,9 @@ def compare(name: str) -> dict:
             # the answer of the command it would give, read as `premap` reads them
             with open_snapshot(manifest) as store:
                 command = {"tool": "django", "argv": ["sh", "-c", "", "django", "900", ""], "cwd": ".", "env": {}, "network": "none", "venv": "."}
-                result = django_app.read(premap.Context(manifest, store), [command], [ours])
+                context = premap.Context(manifest, store)
+                context.stated = stated
+                result = django_app.read(context, [command], [ours])
                 rows = [{**r, "sources": [f"django@{django_app.VERSION}"]} for r in result["facts"].get("framework_entries", [])]
             out["source_state"] = "not_needed: the rows are those of the answer read as if the command were given"
         django_rows = bind(manifest, rows)
