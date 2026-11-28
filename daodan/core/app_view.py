@@ -3,8 +3,8 @@
 Composition only: the stack, the modules and the envelope are the service's; the files and their languages are the
 run's snapshot headers. Nothing of the project runs. The graph groups files by module when the run has two or more,
 otherwise by the directory that holds them (its `grouping`), and counts the relations between groups; an external node
-holds no file and is drawn beside the groups at either grouping (a service, say); an external project (a framework) is
-data of the group whose files declare it (`projects`), not a node. These are the natures `codice` and `fisico`
+holds no file and is drawn beside the groups at either grouping (a service, say); frameworks, libraries and tools are
+nodes under «Tecnologie», which opens into them, and each group keeps those its files declare (`projects`). These are the natures `codice` and `fisico`
 (`node_model.NATURES`; the only ones the app builds): a group opens in place into its directories
 and files, a directory in turn, a file into its outermost symbols and a symbol into those its lines hold (`view`); a
 file's symbols and their calls are also the inspector's, open or not (`symbols`).
@@ -172,6 +172,8 @@ def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=No
             under.update(_nested(ref, read[path], entities))
         if node["kind"] in ("file", "symbol"):
             children = under.get(ref, {})
+        elif node["kind"] == "group":  # «Tecnologie»: the technologies it holds
+            children = {member: _node(entities[member], entities[member]["name"]) for member in node["members"]}
         else:
             children = _contents(top[ref], node["files"], entities)
         for child, item in children.items():
@@ -180,7 +182,7 @@ def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=No
             owner.update((member, child) for member in (child, *item.get("members", ())))
         opened.append({"id": ref, "name": node["name"], "kind": node["kind"], "parent": holder[ref],  # a module its stack
                        **{key: node[key] for key in ("projects", "other_dependencies") if key in node}})
-    nodes = {ref: {**item, "level": "fisico" if item["location"] == "external" else "codice",
+    nodes = {ref: {**item, "level": "fisico" if item["location"] == "external" and item["kind"] != "technology" else "codice",
                    "group": holder[ref]} for ref, item in nodes.items()}
     nodes = {ref: item for ref, item in nodes.items() if item["level"] in shown}
     ends = {**nodes, **{group["id"]: group for group in opened}}
@@ -269,16 +271,19 @@ def _node(item: dict, name: str, status: str | None = None) -> dict:
 
 def _top(envelope: dict) -> tuple[str, dict, list, dict, dict]:
     """How the graph groups files when it opens (`modules` or `directories`), the entities (with the directories it
-    groups by), the files, the groups as nodes with their files, and the group of each file. An external project (a
-    framework or a library, the registry's `kind` `project`) is no node: each group carries those its files declare (`projects`),
-    with the declaring sites."""
+    groups by), the files, the groups as nodes with their files, and the group of each file. A framework, a library or
+    a tool is a node under «Tecnologie» (`group:technologies`), a group beside the others that does not choose the
+    grouping and opens into them; each group also carries the frameworks and libraries its files declare
+    (`projects`), with the declaring sites: the closed form of its arrows to them."""
     entities = {item["ref"]: item for item in envelope["entities"]}
     files = sorted(ref for ref, item in entities.items() if item["type"] == "file")
     # a virtual module is the tree no build names, not a group of its own: its files show by their directories;
     # a store is a member of a node, not a group (the system map's «nodo»), and holds no file
-    groups = [ref for ref, item in entities.items() if item["type"] not in (*STRUCTURE, "virtual", "store")]
-    # an external node holds no file: it does not choose the grouping, and it is drawn beside the groups at either one
-    outside = [ref for ref in groups if entities[ref].get("location") == "external"]
+    # a technology is a member of the group «Tecnologie», not a group in itself
+    groups = [ref for ref, item in entities.items() if item["type"] not in (*STRUCTURE, "virtual", "store", "technology")]
+    # an external node holds no file, nor does «Tecnologie»: neither chooses the grouping, and both are drawn beside
+    # the groups at either one
+    outside = [ref for ref in groups if entities[ref].get("location") == "external" or entities[ref]["type"] == "group"]
     owner: dict[str, str] = {}
     if len(groups) - len(outside) >= 2:
         grouping = "modules"
@@ -301,6 +306,10 @@ def _top(envelope: dict) -> tuple[str, dict, list, dict, dict]:
     for ref in files:
         if ref in owner:
             nodes[owner[ref]]["files"].append(entities[ref]["path"])
+    for item in envelope["memberships"]:  # «Tecnologie» holds the technologies, which show by it until it is open
+        if item["group"] in nodes and entities.get(item["member"], {}).get("type") == "technology":
+            nodes[item["group"]].setdefault("members", []).append(item["member"])
+            owner[item["member"]] = item["group"]
     _stack(envelope["technologies"], entities, nodes, owner)
     return grouping, entities, files, nodes, owner
 
@@ -314,7 +323,8 @@ def _stack(technologies: list, entities: dict, nodes: dict, owner: dict) -> None
     which the mark route takes, name, kind `project`, its `category` and the declaring sites), and the count of its
     other declared packages, known to the registry or not, neither a tile nor a service, which has its node
     (`other_dependencies`). One a line only mentions is not listed."""
-    projects: dict[str, dict] = {ref: {} for ref, node in nodes.items() if node["location"] != "external"}
+    projects: dict[str, dict] = {ref: {} for ref, node in nodes.items()
+                                 if node["location"] != "external" and node["kind"] != "group"}
     others: dict[str, set] = {ref: set() for ref in projects}
     shown = {item["id"] for item in technologies if item["category"] in (*TILES, "service")}
     for item in technologies:

@@ -162,6 +162,37 @@ class EnvelopeTests(unittest.TestCase):
         self.assertEqual((refs["component:runner"]["species"], refs["component:runner"]["concrete"]), ("modulo", False))
         self.assertEqual((refs["feature:running"]["species"], refs["feature:running"]["concrete"]), ("funzionalità", False))
 
+    def test_a_library_with_a_central_version_is_used_by_each_module_at_its_use(self):
+        """The stack places a library whose version a central file writes at each module's use of it (`used_in`, a
+        `libraries` row of the module): one arrow per module, at that site, to its node under «Tecnologie»."""
+        original, used = visual._derived, {"runner": ("src/app/a.py", 1), "helpers": ("src/app/b.py", 1)}
+
+        def derived(manifest):
+            graph, stack = original(manifest)
+            zod = {"id": "zod", "name": "Zod", "type": None, "category": "library", "site": None,
+                   "signs": [{"sign": "package", "value": "zod", "path": "gradle/libs.versions.toml", "line": 3,
+                              "strength": "declared"}]}
+            modules = [{**unit, "libraries": [*(unit.get("libraries") or ()), {
+                "ecosystem": "maven", "name": "zod", "id": "zod", "path": used[unit["name"]][0],
+                "line": used[unit["name"]][1]}]} if unit["name"] in used else unit
+                       for unit in stack.get("modules", stack["units"])]
+            return graph, {**stack, "technologies": [*stack["technologies"], zod], "modules": modules}
+
+        with mock.patch.object(visual, "_derived", derived):
+            envelope = visual.build_envelope(self.project / ".daodan/map/runs/r1")
+        visual.validate_envelope(envelope)
+        arrows = {(item["source"], item["target"]): item for item in envelope["relations"] if item["kind"] == "uses"}
+        self.assertEqual({source: arrows[(source, "technology:zod")]["evidence"] for source, target in arrows
+                          if target == "technology:zod"},
+                         {"component:runner": [{"path": "src/app/a.py", "line": 1}],
+                          "component:helpers": [{"path": "src/app/b.py", "line": 1}]})
+        self.assertIn({"member": "technology:zod", "group": "group:technologies", "view": "logical"},
+                      envelope["memberships"])
+        refs = {item["ref"]: item for item in envelope["entities"]}
+        self.assertEqual((refs["technology:zod"]["species"], refs["technology:zod"]["concrete"],
+                          refs["group:technologies"]["species"], refs["group:technologies"]["concrete"]),
+                         ("tecnologia", True, "gruppo", False))
+
     def card(self, run_id: str, purpose: str) -> None:
         run = self.project / ".daodan/map/runs" / run_id
         manifest = resolve_run_snapshot(run, json.loads((run / "state.json").read_text(encoding="utf-8")))
@@ -433,13 +464,23 @@ class ServiceNodeTests(unittest.TestCase):
         self.assertEqual((technologies["stripe"]["mark"], technologies["express"]["mark"]), ("stripe", "express"))
         self.assertNotIn("mark", technologies["adobe.analytics"])
 
-    def test_a_framework_or_a_library_is_no_node(self):
+    def test_a_framework_or_a_library_is_a_technology_under_technologies_never_an_external_node(self):
         externals = {ref for ref, item in self.refs.items() if item["type"] == "external"}
         self.assertIn("express", {item["id"] for item in self.envelope["technologies"]})  # the stack has it
         # `adobe`, the generic service the release gives beside `adobe.analytics`, stays as it gives it (the owner's
         # confirmed choice 6 of docs/plans/2026-11-22-stack-dal-fork-3-passaggio.md)
         self.assertEqual(externals, {"external:stripe", "external:lemonsqueezy", "external:adobe.analytics",
                                      "external:adobe"})
+        express = self.refs["technology:express"]
+        self.assertEqual((express["name"], express["location"], express["mark"], express["species"], express["concrete"]),
+                         ("Express", "external", "express", "tecnologia", True))
+        self.assertIn({"member": "technology:express", "group": "group:technologies", "view": "logical"},
+                      self.envelope["memberships"])
+        sites = [site for item in self.envelope["relations"] if item["kind"] == "uses"
+                 and item["target"] == "technology:express" for site in item["evidence"]]
+        self.assertTrue(sites)
+        self.assertEqual({site["path"] for site in sites}, {"package.json"})
+        self.assertNotIn("technology:pushbullet", self.refs)
 
     def test_a_service_only_mentioned_in_a_line_is_no_node(self):
         self.assertIn("pushbullet", {item["id"] for item in self.stack["mentioned"]})  # the stack keeps it apart
