@@ -399,7 +399,8 @@ def explore(manifest: Path, project: Path, record_: dict, digest: str, folder: P
     """The exploration as the step runs it: plan from the pre-map `record_` and the framework rows `pages`, explore in the container, keep the pages
     beside `manifest`. `{state, apps, gaps, kept}` as `observe` has them (`cause` and `remedy` where it did not run), and
     `reused` where the run of the same snapshot (`digest`, the store's), plan and driver is in `folder`: its gaps come
-    back, nothing runs. Only a run that ended `ran` is kept for reuse."""
+    back, nothing runs. Only a run that ended `ran` is kept for reuse, and not one that asked for hosts the user has yet
+    to answer (`approval_required`): after the answer, the next analysis runs again."""
     import hashlib
     import technologies
     planned = plan(record_, explore=True, pages=pages, units=technologies.recorded(manifest).get("units") or ())
@@ -417,7 +418,8 @@ def explore(manifest: Path, project: Path, record_: dict, digest: str, folder: P
     cache.unlink(missing_ok=True)
     seen = observe(project, planned, folder, engine)
     seen["kept"] = record(manifest, planned, folder)
-    if seen["state"] == "ran" and planned["apps"]:
+    if seen["state"] == "ran" and planned["apps"] and not any(gap.get("kind") == "approval_required"
+                                                              for gap in seen["gaps"]):
         Path(folder).mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps({"key": key, "result": seen}), encoding="utf-8")
     return seen

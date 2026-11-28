@@ -643,7 +643,7 @@ Un host che la preparazione chiede fuori dall'elenco canonico (`egress`) è la d
 | `fixtures/js-bun` | `results/explore/engine-bun.json` | `ap-rBeAzQUeE11xkXggBySGTw` | Renovate dichiara Bun 1.2.2 (`.bun-version`); mise lo installa dopo due risposte (`github.com` e `storage.googleapis.com`, poi `release-assets.githubusercontent.com`). `bun run start` esegue `bun run src/index.ts`, che stampa `{ name: "1.2.2" }` ed esce con 0: `app_not_started`, lo script non è un server. 102 s |
 | `fixtures/js-yarn-berry` | `results/explore/engine-yarn.json` | `ap-DvPFGKDPhXKVp5l4meM2vq` | nessun `package.json` dichiara `dev` o `start`: `no_start_command`, niente parte. 29 s |
 
-Il controllo `explore-fixtures/vite-react` con npm, sul codice di `5b75651` (`ap-JcBh9OtYJroPBNfGvwAB1t`), chiede anch'esso `storage.googleapis.com`: da `T0.C` il browser di Playwright si scarica da un host fuori dall'elenco canonico, e `engine.json` è di prima. Le dipendenze di `js-bun` le ripristina npm: `bun.lock` non è fra i lockfile dei ripristini (`preparation.RESTORES`).
+Il controllo `explore-fixtures/vite-react` con npm, sul codice di `5b75651` (`ap-JcBh9OtYJroPBNfGvwAB1t`), chiede anch'esso `storage.googleapis.com`: il browser di Playwright viene da un host generico che l'elenco canonico lascia fuori di proposito, come GitHub (`container.REGISTRIES`, dal 27 novembre 2026, `T0.C`), e `engine.json` è del 22 novembre, di prima. Una corsa che ha chiesto un host non si tiene per il riuso (`app.explore`): dopo la risposta l'analisi la rifà. Le dipendenze di `js-bun` le ripristina npm: `bun.lock` non è fra i lockfile dei ripristini (`preparation.RESTORES`).
 
 ## Eventi fra la pagina e il guscio Tauri
 

@@ -476,6 +476,22 @@ def test_the_step_explores_keeps_the_pages_and_reuses_them_while_the_snapshot_an
     assert calls[0]["explore"] is True
 
 
+def test_a_run_that_asked_for_hosts_nobody_answered_is_not_kept_so_the_next_analysis_runs_again(tmp_path):
+    """The gap's remedy is to answer in the app and analyze again: the same snapshot and plan run again, not the run
+    that went without the hosts."""
+    record = {"starts": [start(".", "dev")], "builds": []}
+    calls = []
+    asking = explorer(calls)
+
+    def observe(project, planned, out_dir, engine=None):
+        seen = asking(project, planned, out_dir, engine)
+        return {**seen, "gaps": [{"kind": "approval_required", "hosts": ["storage.googleapis.com"], "detail": "ask"}]}
+    with mock.patch.object(app, "observe", observe):
+        first = app.explore(tmp_path / "manifest.sqlite", tmp_path, record, "digest-1", tmp_path / "runs")
+        again = app.explore(tmp_path / "manifest.sqlite", tmp_path, record, "digest-1", tmp_path / "runs")
+    assert len(calls) == 2 and first.get("reused") is None and again.get("reused") is None
+
+
 def test_a_project_with_no_app_to_start_runs_nothing_and_leaves_no_pages(tmp_path):
     with mock.patch.object(container, "run_in_container", side_effect=AssertionError("no container")):
         seen = app.explore(tmp_path / "manifest.sqlite", tmp_path, {"starts": [], "builds": []}, "d", tmp_path / "runs")
