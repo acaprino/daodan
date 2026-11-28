@@ -38,15 +38,15 @@ const WIDTHS = [340, 390, 620, 860, 1440], SHOT = [390, 620, 1440];
 const from = { screen: 'analysis', runId: 'demo', repositoryUrl: 'https://github.com/demo/shop' };
 const none = { context: null, job: { state: 'idle' } };
 // The events of a run: some phases over, each with its time, one that failed; those of one under way began just now.
-const PHASES = ['parse', 'scan', 'stack', 'analyze', 'dynamic', 'union'];
+const PHASES = ['recognize_stack', 'find_modules', 'find_entry_points', 'link_calls', 'run_and_observe', 'assemble_graph'];
 const eventsOf = how => {
   const at = second => new Date(Date.now() - 300_000 + second * 1000).toISOString();
   const over = how === 'done' ? 6 : 3;
   const list = PHASES.slice(0, over).flatMap((step, n) => [{ kind: 'step.started', step, message: '', at: at(n * 40) }, { kind: 'step.finished', step, message: '', at: at(n * 40 + 31 + n) }]);
   if (how === 'done') return list;
-  list[3] = { kind: 'step.failed', step: 'scan', message: 'x', data: { cause: 'modules.json illeggibile' }, at: at(52) };
-  list.push({ kind: 'step.started', step: 'analyze', message: '', at: at(170) });
-  if (how === 'failed') list.push({ kind: 'step.failed', step: 'analyze', message: 'memoria esaurita', at: at(260) });
+  list[3] = { kind: 'step.failed', step: 'find_modules', message: 'x', data: { cause: 'modules.json illeggibile' }, at: at(52) };
+  list.push({ kind: 'step.started', step: 'link_calls', message: '', at: at(170) });
+  if (how === 'failed') list.push({ kind: 'step.failed', step: 'link_calls', message: 'memoria esaurita', at: at(260) });
   return list;
 };
 const SCREENS = [
@@ -58,7 +58,7 @@ const SCREENS = [
   ['analisi-1-fatto', from, '1. Repository'],
   ['analisi-2-premappa', { ...from, analysisStage: 'premap' }, '2. Pre-mappa'],
   ['analisi-2-errore', { ...from, analysisStage: 'premap' }, '2. Pre-mappa', { premapStatus: 500 }],
-  ['analisi-3-in-corso', { ...from, analysisStage: 'analysis' }, '3. Analisi', { serve: { run: { pass: { state: 'running' }, progress: { step: 'analyze', analyzer: 'pyright', done: 1, total: 4 } } }, events: 'running' }],
+  ['analisi-3-in-corso', { ...from, analysisStage: 'analysis' }, '3. Analisi', { serve: { run: { pass: { state: 'running' }, progress: { step: 'link_calls', analyzer: 'pyright', done: 1, total: 4 } } }, events: 'running' }],
   ['analisi-3-fallita', { ...from, analysisStage: 'analysis' }, '3. Analisi', { serve: { run: { pass: { state: 'failed', reason: 'memoria esaurita durante Analyze' } } }, events: 'failed' }],
   ['analisi-3-fatta', { ...from, analysisStage: 'analysis' }, '3. Analisi', { events: 'done' }],
   ['analisi-4-sintesi', { ...from, analysisStage: 'synthesis' }, '4. Sintesi e grafo'],

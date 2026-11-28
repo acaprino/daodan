@@ -45,18 +45,18 @@ def test_the_lines_a_run_adds_to_the_records_are_those_after_what_was_there():
 
 def test_the_seconds_of_a_step_run_from_its_start_to_its_end():
     event = lambda kind, step, at: {"kind": kind, "step": step, "at": f"2026-11-24T10:{at}Z"}  # noqa: E731
-    events = [event("step.started", "scan", "00:00.000000"), event("step.finished", "scan", "00:12.500000"),
-              event("step.started", "analyze", "00:12.500000"), event("step.failed", "analyze", "01:00.000000")]
-    assert modal_runs.step_seconds(events) == {"scan": 12.5, "analyze": 47.5}
+    events = [event("step.started", "find_modules", "00:00.000000"), event("step.finished", "find_modules", "00:12.500000"),
+              event("step.started", "link_calls", "00:12.500000"), event("step.failed", "link_calls", "01:00.000000")]
+    assert modal_runs.step_seconds(events) == {"find_modules": 12.5, "link_calls": 47.5}
 
 
 def test_a_run_is_written_as_score_reads_it_and_unreadable_links_leave_no_file(tmp_path):
-    run = {"seconds": 12.5, "step_seconds": {"scan": 3.0}, "steps": {}, "links": {"found": 2, "of": 4, "missing": []},
+    run = {"seconds": 12.5, "step_seconds": {"find_modules": 3.0}, "steps": {}, "links": {"found": 2, "of": 4, "missing": []},
            "events": '{"at": "x"}\n', "containers": '{"phase": "prepare"}'}
     modal_runs.write_run(tmp_path / "a", run)
     assert sorted(path.name for path in (tmp_path / "a").iterdir()) == [
         "container-runs.jsonl", "links.json", "pipeline-events.jsonl", "run.json"]
     assert json.loads((tmp_path / "a" / "run.json").read_text(encoding="utf-8")) == {
-        "seconds": 12.5, "step_seconds": {"scan": 3.0}, "steps": {}, "links": {"found": 2, "of": 4, "missing": []}}
+        "seconds": 12.5, "step_seconds": {"find_modules": 3.0}, "steps": {}, "links": {"found": 2, "of": 4, "missing": []}}
     modal_runs.write_run(tmp_path / "b", {**run, "links": {"error": "ValueError: boom"}})
     assert not (tmp_path / "b" / "links.json").exists()

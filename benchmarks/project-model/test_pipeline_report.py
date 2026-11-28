@@ -91,7 +91,7 @@ class Build(unittest.TestCase):
     def test_a_failed_step_is_a_failed_case(self):
         report = pipeline_report.build({"x": {"steps": {"scan": {"failed": "no build tool", "remedy": "r"}},
                                               "seconds": 1.0}})
-        self.assertEqual(report["cases"]["failed"], {"x": "scan: no build tool"})
+        self.assertEqual(report["cases"]["failed"], {"x": "find_modules: no build tool"})  # a round of old runs
 
     def test_languages_across_cases(self):
         self.assertEqual(self.report["languages"]["typescript"], {
@@ -115,12 +115,12 @@ class Build(unittest.TestCase):
 
     def test_gaps_by_step_and_kind(self):
         self.assertEqual(self.report["gaps"], [
-            {"step": "scan", "kind": "toolchain_unavailable", "count": 2,
+            {"step": "find_modules", "kind": "toolchain_unavailable", "count": 2,
              "examples": ["js-one: package.json: node >=20: a range, not a version to install",
                           "jvm-two: package.json: node >=20: a range, not a version to install"]},
-            {"step": "scan", "kind": "superseded", "count": 1,
+            {"step": "find_modules", "kind": "superseded", "count": 1,
              "examples": ["jvm-two: pom.xml: pom.xml: read by the build tool"]},
-            {"step": "analyze", "kind": "restore_failed", "count": 1,
+            {"step": "link_calls", "kind": "restore_failed", "count": 1,
              "examples": ["js-one: .: npm wrote no node_modules"]}])
 
     def test_containers(self):
@@ -159,7 +159,7 @@ class Render(unittest.TestCase):
                      f"| jvm-two | kotlin | 2 / 2 | {NO_SOURCE_SET} (2) |",
                      "| scala | 1 | 1.200 |",
                      "| units | 2 | 0 | 3 | 4 | 0 | 1 |",
-                     "| scan | toolchain_unavailable | 2 | js-one: package.json: node >=20: a range, not a version to"
+                     "| find_modules | toolchain_unavailable | 2 | js-one: package.json: node >=20: a range, not a version to"
                      " install<br>jvm-two: package.json: node >=20: a range, not a version to install |",
                      "- Corse: 4; secondi: 1.540,0.",
                      "| execute | gradle:8 | exited | 1 | — | 1 | jvm-two |",

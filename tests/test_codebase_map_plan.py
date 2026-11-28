@@ -250,20 +250,20 @@ def _chain(tmp_path):
             mock.patch.object(dynamic_go, "plan", side_effect=lambda *a: asked.append("go") or {"runs": [], "gaps": []}), \
             mock.patch.object(dynamic_python, "plan",
                               side_effect=lambda *a: asked.append("python") or {"runs": [], "gaps": []}):
-        results = pipeline.run(manifest, listeners=[seen.append], start="analyze", stop="dynamic")
+        results = pipeline.run(manifest, listeners=[seen.append], start="link_calls", stop="run_and_observe")
     return results, launched, asked, seen
 
 
 def test_a_parser_that_is_missing_stops_the_resolver_and_the_observer_of_its_language_only(tmp_path, no_go_grammar):
     results, launched, asked, seen = _chain(tmp_path)
     assert launched == ["scip-python"]  # scip-go does not start, with its parser missing
-    languages = results["analyze"]["languages"]
+    languages = results["link_calls"]["languages"]
     assert languages["go"]["state"] == "unavailable" and languages["go"]["need"] == "parse:go"
     assert "none of the 1 go files was parsed" in languages["go"]["reason"] and languages["python"]["state"] == "fresh"
     unavailable = [event for event in seen if event["kind"] == "analyzer.unavailable"]
     assert [(event["analyzer"], event["data"]["need"]) for event in unavailable] == [("scip-go", "parse:go")]
     assert asked == ["python"]  # the go observer does not plan its runs
-    observed = results["dynamic"]["languages"]
+    observed = results["run_and_observe"]["languages"]
     assert (observed["go"]["state"], observed["go"]["need"]) == ("no-static-graph", "resolve:scip-go")
     assert observed["python"]["state"] == "not-run"
 
@@ -271,20 +271,19 @@ def test_a_parser_that_is_missing_stops_the_resolver_and_the_observer_of_its_lan
 def test_with_its_parser_the_same_chain_reaches_the_observer_of_each_language(tmp_path):
     results, launched, asked, _seen = _chain(tmp_path)
     assert sorted(launched) == ["scip-go", "scip-python"] and sorted(asked) == ["go", "python"]
-    assert {language: outcome["state"] for language, outcome in results["dynamic"]["languages"].items()} == {
+    assert {language: outcome["state"] for language, outcome in results["run_and_observe"]["languages"].items()} == {
         "go": "not-run", "python": "not-run"}
 
 
-def test_the_plan_the_parse_step_says_is_the_plan_the_pass_runs(tmp_path):
-    """One row source (`plan.stored`): the event's plan has the pass's gaps, the astro code no analyzer serves too."""
+def test_the_plan_of_the_stored_rows_is_the_plan_the_pass_runs(tmp_path):
+    """One row source (`plan.stored`): the plan has the pass's gaps, the astro code no analyzer serves too."""
     root = _project(tmp_path / "project", {
         "a.sql": "select 1;\n", "pay.py": PY, "page.html": '<p class="x">x</p>\n',
         "Page.astro": '---\nimport { f } from "./f";\nf();\n---\n<p class="x">x</p>\n<style>\n.x { color: red }\n</style>\n'})
-    manifest, seen = tmp_path / "out" / "manifest.sqlite", []
+    manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(root, manifest)
-    pipeline.run(manifest, listeners=[seen.append], start="parse", stop="parse")
-    [said] = [event["data"]["plan"] for event in seen if event["message"] == "the plan"]
     with open_snapshot(manifest) as store:
+        said = _planning().plan(_planning().stored(store))
         planned = engine_pass.snapshot_plan(store.connection)
         assert engine_pass.no_analyzer(store.connection) == {gap["language"]: gap["files"] for gap in planned["gaps"]
                                                             if gap["kind"] == "no-analyzer"} == {"astro": 1, "sql": 1}

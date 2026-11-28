@@ -56,8 +56,8 @@ def explore_folder(source: str) -> dict:
     said = []
     steps = pipeline.run(manifest, listeners=[said.append])  # the whole pipeline on this one snapshot, as `run_folder` runs it
     record = premap.ensure(manifest)
-    seen = (steps.get("dynamic") or {}).get("app") or {"state": "failed", "apps": 0, "kept": 0,
-                                                       "cause": str(steps.get("dynamic")), "remedy": ""}
+    seen = (steps.get("run_and_observe") or {}).get("app") or {"state": "failed", "apps": 0, "kept": 0,
+                                                               "cause": str(steps.get("run_and_observe")), "remedy": ""}
     gaps = [event["data"]["gap"] for event in said if event["kind"] == "gap" and event.get("analyzer") == dynamic.APP]
     out = manifest.parent / dynamic.RUNS / dynamic.APP
     result = {"source": source, "starts": record.get("starts", []), "builds": record.get("builds", []),

@@ -1477,11 +1477,11 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
         index = retrieval.ensure_index(manifest)
         if index["state"] != "fresh":
             raise ValueError(f"index: {index['state']}: {index.get('reason', '')}")
-        piped = pipeline.run(manifest, stop="find_entry_points", fast_scan=True)
-        scanned = piped["scan"]
+        piped = pipeline.run(manifest, stop=pipeline.FindEntryPoints.NAME, fast_scan=True)
+        scanned = piped[pipeline.FindModules.NAME]
         if "failed" in scanned:
             raise ValueError(f"modules: {scanned['failed']}")
-        stacked = piped.get("stack") or {}
+        stacked = piped.get(pipeline.RecognizeStack.NAME) or {}
         engine = resolve_edges.ensure_edges(manifest) if state.get("engine", True) else {"state": "off"}
         with ExitStack() as stack:
             base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
@@ -1728,10 +1728,10 @@ def cmd_write(args: argparse.Namespace) -> int:
         else:
             print(f"index: {index['action']} -> {index['index']} ({index['documents']} documents)")
     if not getattr(args, "no_modules", False):
-        # Steps 1-3 (stack, scan, find_entry_points): the stack, structure and module stack, then the entry points.
+        # The steps to `find_entry_points`: the stack, structure and module stack, then the entry points.
         import pipeline
-        piped = pipeline.run(Path(args.out), stop="find_entry_points")
-        scanned = piped["scan"]
+        piped = pipeline.run(Path(args.out), stop=pipeline.FindEntryPoints.NAME)
+        scanned = piped[pipeline.FindModules.NAME]
         if "failed" in scanned:
             print(f"modules: {scanned['failed']}", file=sys.stderr)
             status = 1

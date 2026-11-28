@@ -499,38 +499,38 @@ try {
     await says(run, 'Nessun evento ancora.');
     await forward('Continua').waitFor();
     // A run under way: the progress of a step, the cause of one that failed, the percent, the events to read and copy.
-    await serve({ run: { pass: { state: 'running' }, progress: { step: 'analyze', analyzer: 'pyright', done: 1, total: 4 } } });
+    await serve({ run: { pass: { state: 'running' }, progress: { step: 'link_calls', analyzer: 'pyright', done: 1, total: 4 } } });
     await send([
-      { kind: 'step.started', step: 'parse', message: '', at }, { kind: 'step.finished', step: 'parse', message: '', at },
-      { kind: 'step.started', step: 'stack', message: '', at }, { kind: 'log', level: 'error', step: 'stack', message: 'x', data: { cause: 'manifest illeggibile' }, at },
-      { kind: 'step.started', step: 'analyze', message: '', data: { inputs: ['modules.json'] }, at },
+      { kind: 'step.started', step: 'recognize_stack', message: '', at }, { kind: 'step.finished', step: 'recognize_stack', message: '', at },
+      { kind: 'step.started', step: 'find_entry_points', message: '', at }, { kind: 'log', level: 'error', step: 'find_entry_points', message: 'x', data: { cause: 'manifest illeggibile' }, at },
+      { kind: 'step.started', step: 'link_calls', message: '', data: { inputs: ['modules.json'] }, at },
     ]);
     await noted('In corso · 1/4');
     assert.deepEqual(await stepStates(), ['done', 'upcoming', 'error', 'running', 'upcoming', 'upcoming']);
     await steps.first().getByText('0 s', { exact: true }).waitFor();  // how long it took
-    assert.match(await run.locator('[aria-current="step"]').innerText(), /Analyze · analyzer per linguaggio/);
+    assert.match(await run.locator('[aria-current="step"]').innerText(), /Chiamate · analizzatore per linguaggio/);
     assert.ok(await selectable(steps.getByText('Non riuscita · manifest illeggibile', { exact: true })));
     const bar = run.getByRole('progressbar', { name: 'Passi completati della pipeline', exact: true });
     assert.equal(await bar.getAttribute('aria-valuetext'), '21%');  // one of six, and a quarter
-    assert.ok(await selectable(run.getByText('Ultimo avanzamento: Analyze · pyright · 1/4', { exact: true })));
-    for (const text of ['1 di 6 passi completati', '21%', 'Analyze · analyzer per linguaggio', 'In esecuzione', 'Ultimo avanzamento: Analyze · pyright · 1/4']) await says(run, text);
+    assert.ok(await selectable(run.getByText('Ultimo avanzamento: Chiamate · pyright · 1/4', { exact: true })));
+    for (const text of ['1 di 6 passi completati', '21%', 'Chiamate · analizzatore per linguaggio', 'In esecuzione', 'Ultimo avanzamento: Chiamate · pyright · 1/4']) await says(run, text);
     assert.ok(await forward('Continua').isDisabled());
     await footBar.getByText('Attendi la fine della pipeline.', { exact: true }).waitFor();
     const log = run.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem');
     assert.equal(await log.count(), 5);
-    assert.match(await log.first().innerText(), /Analyze · avviato[\s\S]*Legge: modules\.json/);  // the newest first
-    assert.match(await log.filter({ hasText: 'Stack · nota' }).innerText(), /Errore/);
+    assert.match(await log.first().innerText(), /Chiamate · avviato[\s\S]*Legge: modules\.json/);  // the newest first
+    assert.match(await log.filter({ hasText: 'Ingressi · nota' }).innerText(), /Errore/);
     assert.ok(await selectable(log.first().getByText('Legge: modules.json', { exact: true })));
-    await send(Array.from({ length: 5 }, (_, n) => ({ kind: 'log', step: 'analyze', level: 'info', message: `nota ${n}`, at })));
+    await send(Array.from({ length: 5 }, (_, n) => ({ kind: 'log', step: 'link_calls', level: 'info', message: `nota ${n}`, at })));
     await says(run, '10 eventi');
     assert.equal(await log.count(), 8);
     assert.match(await log.first().innerText(), /nota 4/);
     await button(run, 'Altri 2 eventi').click();
     const others = run.getByRole('list', { name: 'Altri 2 eventi', exact: true }).getByRole('listitem');
     await others.first().waitFor();
-    assert.deepEqual((await others.allInnerTexts()).map(text => linesOf(text)[0]), ['Parse · completato', 'Parse · avviato']);
+    assert.deepEqual((await others.allInnerTexts()).map(text => linesOf(text)[0]), ['Tecnologie · completato', 'Tecnologie · avviato']);
     // The run is over with a step that failed; a pass that could not go says why, and one that failed is tried again.
-    await send([{ kind: 'step.finished', step: 'analyze', message: '', at }]);
+    await send([{ kind: 'step.finished', step: 'link_calls', message: '', at }]);
     await serve({ run: { pass: { state: 'unavailable', reason: 'nessun container' } } });
     await alertIn(run, 'Lacuna: il passaggio che rifinisce il grafo delle chiamate non è disponibile.').filter({ hasText: 'nessun container' }).waitFor();
     assert.deepEqual(await stepStates(), ['done', 'skipped', 'error', 'done', 'skipped', 'skipped']);

@@ -35,6 +35,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 # What a stage's log says when it ran out of memory, in lower case.
 MEMORY_EXHAUSTED = ("memoryerror", "out of memory", "outofmemoryerror", "bad_alloc", "cannot allocate memory")
 
+STEP = "link_calls"  # the pipeline step whose events the pass emits (`pipeline.LinkCalls`)
 # Files the derived pass leaves beside the edge store.
 REPORT_NAME = "engine-report.json"
 
@@ -456,13 +457,13 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
         _not_fresh(bus, spec, [language], outcomes, "unavailable", reason, PARSER_INSTALL, needed)
     exhausted = None
     for number, (spec, wanted) in enumerate(plan, 1):
-        bus.progress("analyze", number - 1, len(plan), analyzer=spec.name, message=f"{spec.name}: {', '.join(wanted)}")
+        bus.progress(STEP, number - 1, len(plan), analyzer=spec.name, message=f"{spec.name}: {', '.join(wanted)}")
         if all(language in fresh for language in wanted):
             outcomes.update({language: {"state": "fresh", "engine": fresh[language]["engine"]} for language in wanted})
-            bus.emit("analyzer.finished", f"{spec.name}: already fresh", step="analyze", analyzer=spec.name,
+            bus.emit("analyzer.finished", f"{spec.name}: already fresh", step=STEP, analyzer=spec.name,
                      languages=wanted, fresh=True)
             continue
-        bus.emit("analyzer.started", f"{spec.name} for {', '.join(wanted)}", step="analyze", analyzer=spec.name,
+        bus.emit("analyzer.started", f"{spec.name} for {', '.join(wanted)}", step=STEP, analyzer=spec.name,
                  languages=wanted)
         free = free_memory()
         if exhausted:
@@ -478,7 +479,7 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
                 report["engines"][spec.name] = {**compact_report(stage),
                                                 "seconds": round(time.monotonic() - started, 1)}
                 for gap in stage.get("gaps") or ():
-                    bus.emit("gap", gap.get("detail") or gap["kind"], step="analyze", analyzer=spec.name, gap=gap)
+                    bus.emit("gap", gap.get("detail") or gap["kind"], step=STEP, analyzer=spec.name, gap=gap)
                 if stage.get("memory_exhausted"):
                     exhausted = f"the {spec.name} engine ran out of memory"
             if state is None:
@@ -489,14 +490,14 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
                     outcomes[language] = {"state": entry["state"], "engine": stage.get("engine"),
                                           **({"reason": entry["reason"]} if entry.get("reason") else {})}
                 _write_report(report_path, report)
-                bus.emit("analyzer.finished", f"{stage.get('engine')}: {', '.join(wanted)}", step="analyze",
+                bus.emit("analyzer.finished", f"{stage.get('engine')}: {', '.join(wanted)}", step=STEP,
                          analyzer=spec.name, languages=wanted, engine=stage.get("engine"))
                 continue
         _not_fresh(bus, spec, wanted, outcomes, state, reason, install)
         _write_report(report_path, report)
     report["available"] = any(outcome["state"] == "fresh" for outcome in outcomes.values())
     report["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    bus.progress("analyze", len(plan), len(plan))
+    bus.progress(STEP, len(plan), len(plan))
     _write_report(report_path, report)
     return report
 
@@ -542,10 +543,10 @@ def _not_fresh(bus, spec: EngineSpec, wanted: list[str], outcomes: dict, state: 
     """A stage that is unavailable here or failed: its event and its languages' outcomes. `need` is the plan's node
     whose failure stopped it, when one did."""
     if state == "unavailable":
-        bus.emit("analyzer.unavailable", f"{spec.name} cannot run here", step="analyze", analyzer=spec.name,
+        bus.emit("analyzer.unavailable", f"{spec.name} cannot run here", step=STEP, analyzer=spec.name,
                  level="warning", cause=reason, remedy=install, languages=wanted, **({"need": need} if need else {}))
     else:
-        bus.emit("analyzer.finished", f"{spec.name} failed", step="analyze", analyzer=spec.name, level="error",
+        bus.emit("analyzer.finished", f"{spec.name} failed", step=STEP, analyzer=spec.name, level="error",
                  cause=reason, remedy=f"see {LOG_NAME} beside the snapshot", languages=wanted)
     for language in wanted:
         outcomes[language] = {key: value for key, value in (("state", state), ("engine", spec.name), ("need", need),

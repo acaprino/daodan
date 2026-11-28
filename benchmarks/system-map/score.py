@@ -550,8 +550,12 @@ def whole(tag: Path, expected: Path = EXPECTED_FOLDER) -> dict:
 
 
 def _journal(folder: Path) -> list[dict]:
-    file = folder / "pipeline-events.jsonl"
-    return [json.loads(line) for line in file.read_text(encoding="utf-8").splitlines() if line.strip()] if file.is_file() else []
+    """The events of the run in `folder`, each with its step's id, an old journal's too (`pipeline.events.read`)."""
+    core = str(Path(__file__).resolve().parents[2] / "daodan" / "core")
+    if core not in sys.path:
+        sys.path.insert(0, core)
+    from pipeline import events
+    return events.read(folder / "pipeline-events.jsonl")[0]
 
 
 def runs(folders: list[Path]) -> dict:
@@ -570,7 +574,7 @@ def runs(folders: list[Path]) -> dict:
                      else _unmeasured("pipeline-events.jsonl is not there or empty"),
                      "restores": _measured(sum(phase in ("node-restore", "prepare") for phase in phases)) if phases
                      else _unmeasured("no container-runs.jsonl under the folder"),
-                     "analyzer_starts": _measured(sum(event["step"] == "analyze" for event in started)) if events
+                     "analyzer_starts": _measured(sum(event["step"] == "link_calls" for event in started)) if events
                      else _unmeasured("pipeline-events.jsonl is not there or empty"),
                      "app_starts": _measured(sum(event.get("analyzer") == "app" for event in started)) if events
                      else _unmeasured("pipeline-events.jsonl is not there or empty"),

@@ -653,12 +653,11 @@ def routes_case(name: str, case: dict, archive: bytes | None, rules: str, tag: s
             calls_no_route=[g for g in gaps if "no handler" in str(g.get("reason") or g.get("detail"))][:60])
         # what the dynamic step said about this project: why the app was or was not started and explored
         import premap
-        journal = manifest.with_name("pipeline-events.jsonl")
+        from pipeline import events
         answer["dynamic_events"] = [
             {"kind": e["kind"], "analyzer": e.get("analyzer"), "level": e.get("level"), "message": str(e["message"])[:220],
              **{key: str((e.get("data") or {})[key])[:300] for key in ("gap", "cause", "remedy") if (e.get("data") or {}).get(key)}}
-            for e in (json.loads(line) for line in journal.read_text(encoding="utf-8").splitlines() if line.strip())
-            if e.get("step") == "dynamic"][:80] if journal.is_file() else []
+            for e in events.read(manifest.with_name(events.JOURNAL))[0] if e.get("step") == "run_and_observe"][:80]
         record = json.loads(premap.path(manifest).read_text(encoding="utf-8"))
         answer["premap_starts"] = json.dumps(record.get("starts"))[:3000]
         controls = manifest.with_name("observed-controls.json")

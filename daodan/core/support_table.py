@@ -147,8 +147,10 @@ def languages_section(cards, run_path: Path) -> list[str]:
 
 def analyzers_section(report: dict, raw: dict, run_path: Path) -> list[str]:
     observed = collections.defaultdict(lambda: [0, 0, 0, set()])  # observed cases, cases, sites, states
+    from pipeline import events
     for case in raw.values():
-        for language, item in ((case.get("steps") or {}).get("dynamic") or {}).get("languages", {}).items():
+        steps = {events.LEGACY.get(name, name): step for name, step in (case.get("steps") or {}).items()}  # results of old runs
+        for language, item in (steps.get("run_and_observe") or {}).get("languages", {}).items():
             entry = observed[language]
             entry[1] += 1
             entry[3].add(item.get("state"))

@@ -7,7 +7,8 @@ listener in another process, or one that comes later, reads them with `read` fro
 stops nothing: its error becomes an event. Nor does a journal that cannot be written: the listeners are told once,
 and the events go on to them. Each event is one write, so the lines of two processes that append do not mix; a
 line a stopped writer left broken is skipped by `read`. An analysis that ends without a word (stopped, killed)
-leaves a step started and never ended: who knows it is over says that end (`close_open`).
+leaves a step started and never ended: who knows it is over says that end (`close_open`). A journal written before the
+steps had their ids reads with them (`LEGACY`).
 """
 from __future__ import annotations
 
@@ -19,6 +20,10 @@ JOURNAL = "pipeline-events.jsonl"
 KINDS = frozenset({"step.started", "step.finished", "step.failed", "step.skipped", "analyzer.started",
                    "analyzer.finished", "analyzer.unavailable", "progress", "gap", "log", "graph.ready"})
 LEVELS = ("debug", "info", "warning", "error")
+# The steps' old names, as a journal written before the eight ids keeps them: `read` gives the id. `parse` said the plan
+# on a store `read_code` had read.
+LEGACY = {"stack": "recognize_stack", "scan": "find_modules", "parse": "read_code", "analyze": "link_calls",
+          "dynamic": "run_and_observe", "union": "assemble_graph"}
 
 
 class Bus:
@@ -81,8 +86,9 @@ class Bus:
 
 
 def read(journal: Path, after: int = 0, limit: int | None = None) -> tuple[list[dict], int]:
-    """The events after the cursor `after` (a count of lines), and the cursor to read from next. A line that is
-    no event (a writer stopped in its middle) counts and is skipped: one broken line never hides the ones after it."""
+    """The events after the cursor `after` (a count of lines), and the cursor to read from next, each with its step's id
+    (`LEGACY`). A line that is no event (a writer stopped in its middle) counts and is skipped: one broken line never hides
+    the ones after it."""
     path = Path(journal)
     if not path.is_file():
         return [], after
@@ -100,6 +106,8 @@ def read(journal: Path, after: int = 0, limit: int | None = None) -> tuple[list[
             except ValueError:
                 continue
             if isinstance(event, dict):
+                if event.get("step") in LEGACY:
+                    event["step"] = LEGACY[event["step"]]
                 found.append(event)
     return found, cursor
 

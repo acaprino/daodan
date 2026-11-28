@@ -138,8 +138,8 @@ def test_the_entry_points_are_a_step_of_their_own_after_scan(tmp_path):
     it does under its own name."""
     import pipeline
     _, manifest = manifest_of(tmp_path, {"api.py": "def submit():\n    pass\n"})
-    result = pipeline.run(manifest, start="scan", stop="scan", fast_scan=True)
-    assert "failed" not in result["scan"] and not entry_points.path(manifest).exists()
+    result = pipeline.run(manifest, start="find_modules", stop="find_modules", fast_scan=True)
+    assert "failed" not in result["find_modules"] and not entry_points.path(manifest).exists()
     seen = []
     result = pipeline.run(manifest, listeners=[seen.append], start="find_entry_points", stop="find_entry_points",
                           fast_scan=True)
