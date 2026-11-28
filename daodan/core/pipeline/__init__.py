@@ -12,19 +12,20 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
 2. `scan`: the module graph and the pre-map, the project's modules; a source of the pre-map that `build-tools.json`
    names runs only for a build tool the stack found (`premap.BUILD_TOOLS`), and the model commands run in Daodan's
    container (`container_runner`). Then each module gets the technologies its files declare
-   (`technologies.ensure`). It too reads only the inventory and the stack's record. Then the entry points
-   (`entry_points.ensure`): Noir and the frameworks' own tools, in the container, on the pre-map; their own step comes
-   with the orchestrator.
-3. `parse`: says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files, executed by
+   (`technologies.ensure`). It too reads only the inventory and the stack's record.
+3. `find_entry_points`: where the project's flows start (`entry_points.ensure`): Noir and the frameworks' own tools, in
+   the container, on the pre-map; once the snapshot is read, the routes bound to its functions (`entry_points.bound`).
+   The analysis goes on without them: `analyze` does not read them.
+4. `parse`: says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files, executed by
    `snapshot.write_reading`, `engine_pass.pass_plan` and `dynamic.run`. It reads no file: the one reading is
    `snapshot.read_project`, which every caller runs first, and a store that holds only its inventory stops the step.
-4. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
-5. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
+5. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
+6. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
    container engine, no observer for a language or no test command the project declares, it says the gap and
    the pipeline goes on. The same step starts the app the project declares and explores it in a browser: the controls
    it pressed are entries of the links (`dynamic/app.py`). `DAODAN_DYNAMIC=off` skips it.
-6. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
+7. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
    store of each technology's graph: it says what a run observed (the sites, the holes closed, the sampled ones
    apart) and what stayed
    unobserved (a language with no observed edge, the tests that did not run, the files no test executed, an
@@ -53,6 +54,7 @@ class Context:
     bus: events.Bus
     report_path: Path | None = None  # the analysis's report, beside the snapshot by default
     fast_scan: bool = False  # reader-only scan without container commands, for interactive/hook callers
+    runner: object = None  # the container runner of `scan` and `find_entry_points` (`_runner`), None with `fast_scan`
     results: dict = field(default_factory=dict)  # each step's result by its name, for the steps after it
 
 
@@ -88,11 +90,10 @@ class Parse:
 
 
 class Scan:
-    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("inventory", "stack"), ("modules", "premap", "technologies", "entry-points"), None
+    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("inventory", "stack"), ("modules", "premap", "technologies"), None
 
     @staticmethod
     def run(context: Context) -> dict:
-        import entry_points
         import modules
         import premap
         import technologies
@@ -108,8 +109,7 @@ class Scan:
             bus.progress(Scan.NAME, done, total, phase=status["source"],
                          message=f"{status['source']}: {status['state']}")
 
-        runner = None if context.fast_scan else _runner(manifest)
-        record = premap.ensure(manifest, report=source, runner=runner)
+        record = premap.ensure(manifest, report=source, runner=context.runner)
         synced = modules.sync_with_premap(manifest, record)
         for gap in record.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
@@ -122,16 +122,32 @@ class Scan:
             bus.emit("log", f"the technologies of the modules: {error}", step=Scan.NAME, level="error", cause=cause,
                      remedy=Stack.WITHOUT)
             out["technologies_failed"] = cause
-        # `find_entry_points` until the orchestrator gives it a step: on the pre-map, with the same runner
-        found = entry_points.ensure(manifest, runner=runner, report=source)
-        for gap in found.get("gaps", []):
-            bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
-        out.update(entry_points=str(entry_points.path(manifest)), entry_gaps=len(found["gaps"]))
         return out
 
 
+class FindEntryPoints:
+    NAME, INPUTS, OUTPUTS = "find_entry_points", ("inventory", "stack", "premap", "snapshot"), ("entry_points",)
+    WITHOUT = "the analysis goes on without routes; analyze again"  # `analyze` does not read them
+
+    @staticmethod
+    def run(context: Context) -> dict:
+        import entry_points
+        _inventory_only(context.manifest)  # a store that cannot be read stops the run here
+        bus, manifest = context.bus, context.manifest
+
+        def source(status: dict, done: int, total: int) -> None:
+            bus.progress(FindEntryPoints.NAME, done, total, phase=status["source"],
+                         message=f"{status['source']}: {status['state']}")
+
+        # on the pre-map, with `scan`'s runner; `write` binds the routes (`entry_points.bound`) once the snapshot is read
+        found = entry_points.ensure(manifest, runner=context.runner, report=source)
+        for gap in found.get("gaps", []):
+            bus.emit("gap", gap.get("detail") or gap["kind"], step=FindEntryPoints.NAME, gap=gap)
+        return {"entry_points": str(entry_points.path(manifest)), "gaps": len(found["gaps"])}
+
+
 def _runner(manifest: Path):
-    """`container_runner.runner` with the engine asked once per scan, as an analyzer asks it once per stage
+    """`container_runner.runner` with the engine asked once per analysis, as an analyzer asks it once per stage
     (`container.find_engine`): the engine found goes to the first run, which ends it, and the next runs find their
     own; without one, every model source gets the same `container.Gap` at once, with no second wait."""
     import container
@@ -191,7 +207,7 @@ class Dynamic:
 class Union:
     # `modules.ensure_graph` derives the module edges from the snapshot's symbols and the graph `scan` wrote; the
     # static links (`flows.cached_links`) join the HTTP calls to the routes of `entry-points`
-    NAME, INPUTS, OUTPUTS = "union", ("snapshot", "modules", "entry-points", "edges", "observed"), ("graph",)
+    NAME, INPUTS, OUTPUTS = "union", ("snapshot", "modules", "entry_points", "edges", "observed"), ("graph",)
     WITHOUT = None
     # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
     # extension, JNI): each stage loads only its own index, so no edge joins them.
@@ -320,7 +336,7 @@ class Union:
                          "examples": conflicts["examples"], "detail": detail}, language)
 
 
-STEPS = (Stack, Scan, Parse, Analyze, Dynamic, Union)
+STEPS = (Stack, Scan, FindEntryPoints, Parse, Analyze, Dynamic, Union)
 
 # What the pipeline is given, the snapshot `read_project` wrote (its inventory, and the files read): every other input of a
 # step is the output of a step before it.
@@ -365,7 +381,7 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
     bus = events.Bus(manifest.with_name(events.JOURNAL))
     for listener in listeners:
         bus.subscribe(listener)
-    context = Context(manifest, bus, report_path, fast_scan=fast_scan)
+    context = Context(manifest, bus, report_path, fast_scan=fast_scan, runner=None if fast_scan else _runner(manifest))
     chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
     results = context.results
     for step in chosen:

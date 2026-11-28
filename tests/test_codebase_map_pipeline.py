@@ -158,7 +158,8 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
     assert steps == [("step.started", "stack"), ("step.finished", "stack"), ("step.started", "scan"),
-                     ("step.finished", "scan"), ("step.started", "parse"), ("step.finished", "parse"),
+                     ("step.finished", "scan"), ("step.started", "find_entry_points"),
+                     ("step.finished", "find_entry_points"), ("step.started", "parse"), ("step.finished", "parse"),
                      ("step.started", "analyze"),
                      ("step.finished", "analyze"), ("step.started", "dynamic"), ("step.finished", "dynamic"),
                      ("step.started", "union"), ("step.finished", "union")]
@@ -356,7 +357,8 @@ def test_the_pass_records_how_long_each_stage_took(tmp_path):
 
 def test_a_start_or_stop_that_names_no_step_is_refused_before_any_event(tmp_path):
     seen = []
-    with pytest.raises(ValueError, match="no step 'analyse': the steps are stack, scan, parse, analyze, dynamic, union"):
+    with pytest.raises(ValueError, match="no step 'analyse': the steps are stack, scan, find_entry_points, parse, analyze, "
+                                         "dynamic, union"):
         pipeline.run(tmp_path / "manifest.sqlite", listeners=[seen.append], start="analyse")
     assert seen == [] and not (tmp_path / events.JOURNAL).exists()
 
@@ -400,14 +402,20 @@ def test_an_error_a_step_the_others_need_does_not_foresee_is_said_before_it_leav
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
-    assert [step.NAME for step in pipeline.STEPS] == ["stack", "scan", "parse", "analyze", "dynamic", "union"]
+    assert [step.NAME for step in pipeline.STEPS] == ["stack", "scan", "find_entry_points", "parse", "analyze", "dynamic",
+                                                      "union"]
     assert pipeline.Stack.INPUTS == ("inventory",)  # the stack takes no fact of the pre-map
 
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
     # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
     assert {step.NAME: bool(step.WITHOUT) for step in pipeline.STEPS} == {
-        "scan": False, "stack": True, "parse": False, "analyze": False, "dynamic": True, "union": False}
+        "scan": False, "stack": True, "find_entry_points": True, "parse": False, "analyze": False, "dynamic": True,
+        "union": False}
+    # the entry points are a step of their own, after the pre-map they read: `analyze` does not read them
+    assert "entry_points" not in pipeline.Scan.OUTPUTS + pipeline.Analyze.INPUTS
+    assert (pipeline.FindEntryPoints.INPUTS, pipeline.FindEntryPoints.OUTPUTS) == (
+        ("inventory", "stack", "premap", "snapshot"), ("entry_points",))
     # the reading is `read_project`'s alone (the owner's decision of 24 November 2026): the step takes the read snapshot,
     # which the pipeline is given, and says the plan
     assert (pipeline.Parse.INPUTS, pipeline.Parse.OUTPUTS) == (("snapshot",), ("plan",))
@@ -455,7 +463,7 @@ def test_a_snapshot_that_cannot_be_read_stops_the_run_with_its_remedy(tmp_path):
     for written in (True, False):
         if not written:
             manifest.unlink()
-        for first in ("stack", "scan", "parse"):
+        for first in ("stack", "scan", "find_entry_points", "parse"):
             seen = []
             result = pipeline.run(manifest, listeners=[seen.append], start=first, stop=first)
             assert list(result) == [first] and result[first]["remedy"] == "write the snapshot again"
@@ -534,8 +542,8 @@ def _go_snapshot(tmp_path):
 
 
 def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_found_once(tmp_path):
-    """The scan hands the pre-map the container runner: each model source's commands go to one container run,
-    the engine found once is given to the first run (it ends with that run), the others find their own."""
+    """The scan hands the pre-map the container runner, and the entry points the same one: each model source's commands go
+    to one container run, the engine found once is given to the first run (it ends with that run), the others find their own."""
     import container
     import entry_points
     import premap
@@ -553,15 +561,15 @@ def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_f
     seen = []
     with mock.patch.object(container, "find_engine", return_value=engine) as found, \
             mock.patch.object(container_runner, "runner", side_effect=runner):
-        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert "failed" not in result["scan"]
+        result = pipeline.run(manifest, listeners=[seen.append], stop="find_entry_points")
+    assert "failed" not in result["scan"] and "failed" not in result["find_entry_points"]
     assert found.call_count == 1
     assert [tool for tool, _ in asked] == ["renovate", "go", "noir"]
     assert [given for _, given in asked] == [engine, None, None]
     ran = [*premap.ensure(manifest)["sources"], *entry_points.ensure(manifest)["sources"]]  # the entry points after the pre-map
     assert not [s for s in ran if s["state"] == "not_run"]
-    sources = {e["data"]["phase"] for e in seen if e["kind"] == "progress" and e["step"] == "scan"}
-    assert {s["source"] for s in ran} == sources  # one progress event per source
+    sources = {e["data"]["phase"] for e in seen if e["kind"] == "progress" and e["step"] in ("scan", "find_entry_points")}
+    assert {s["source"] for s in ran} == sources  # one progress event per source, under its step
 
 
 def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_and_no_wait(tmp_path):
@@ -575,8 +583,8 @@ def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_a
     seen = []
     with mock.patch.object(container, "find_engine", side_effect=gap) as found, \
             mock.patch.object(container, "run_commands", side_effect=AssertionError("a container started")):
-        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert "failed" not in result["scan"] and found.call_count == 1
+        result = pipeline.run(manifest, listeners=[seen.append], stop="find_entry_points")
+    assert "failed" not in result["scan"] and found.call_count == 1  # once for the pre-map and the entry points
     record, found = premap.ensure(manifest), entry_points.ensure(manifest)
     model = [s for s in (*record["sources"], *found["sources"]) if s["state"] not in ("ran", "not_needed")]
     assert {s["source"].split("@")[0] for s in model} == {"renovate", "go", "noir"}
@@ -614,3 +622,6 @@ def test_every_input_of_a_step_is_written_by_a_step_before_or_given_to_the_pipel
     # `union` reads the symbols of the snapshot and the module graph `scan` wrote (`modules.ensure_graph`), not only the edges
     early = [pipeline.Union, *(step for step in pipeline.STEPS if step is not pipeline.Union)]
     assert ("union", "modules") in _unmet(early, pipeline.INPUTS)
+    # the entry points read the pre-map `scan` writes
+    entries = [pipeline.FindEntryPoints, *(step for step in pipeline.STEPS if step is not pipeline.FindEntryPoints)]
+    assert ("find_entry_points", "premap") in _unmet(entries, pipeline.INPUTS)

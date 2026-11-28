@@ -48,8 +48,8 @@ def _written(manifest: Path) -> dict:
     return out
 
 
-def test_the_steps_are_stack_scan_then_parse():
-    assert [step.NAME for step in pipeline.STEPS][:3] == ["stack", "scan", "parse"]
+def test_the_steps_are_stack_scan_find_entry_points_then_parse():
+    assert [step.NAME for step in pipeline.STEPS][:4] == ["stack", "scan", "find_entry_points", "parse"]
 
 
 def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(real_stack, tmp_path):

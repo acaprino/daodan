@@ -1477,7 +1477,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
         index = retrieval.ensure_index(manifest)
         if index["state"] != "fresh":
             raise ValueError(f"index: {index['state']}: {index.get('reason', '')}")
-        piped = pipeline.run(manifest, stop="scan", fast_scan=True)
+        piped = pipeline.run(manifest, stop="find_entry_points", fast_scan=True)
         scanned = piped["scan"]
         if "failed" in scanned:
             raise ValueError(f"modules: {scanned['failed']}")
@@ -1728,9 +1728,9 @@ def cmd_write(args: argparse.Namespace) -> int:
         else:
             print(f"index: {index['action']} -> {index['index']} ({index['documents']} documents)")
     if not getattr(args, "no_modules", False):
-        # Step 1 (stack) and Step 2 (scan): the stack, then structure and module stack before downstream analysis.
+        # Steps 1-3 (stack, scan, find_entry_points): the stack, structure and module stack, then the entry points.
         import pipeline
-        piped = pipeline.run(Path(args.out), stop="scan")
+        piped = pipeline.run(Path(args.out), stop="find_entry_points")
         scanned = piped["scan"]
         if "failed" in scanned:
             print(f"modules: {scanned['failed']}", file=sys.stderr)
