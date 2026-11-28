@@ -652,6 +652,53 @@ def test_a_gradle_build_that_fails_runs_once_and_never_opens_the_repositories_it
     assert [row["host"] for row in egress.pending(str(project.resolve()))] == ["maven.example.dev"]
 
 
+def test_a_renovate_preset_on_a_host_is_asked_and_once_approved_the_extraction_runs_again_reaching_it(
+        tmp_path, no_download, monkeypatch):
+    """Renovate's extraction runs with no network, and a preset its config extends on GitHub ends the repository (the
+    answer recorded on Modal, `fixtures/premap/renovate/ended.json`): the host of the URL it asked at is a request,
+    with the `approval_required` gap beside the reader's `model_failed`. Once the user approved it, the extraction runs
+    once more in the preparation, behind the proxy that opens that host, and its answer stands. Refused, nothing is
+    asked and the extraction runs once: `host_denied`, and the reader's gap stays."""
+    from premap import renovate
+    monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("140.82.121.6", 0))])
+    ended = json.loads((ROOT / "tests/fixtures/premap/renovate/ended.json").read_text(encoding="utf-8"))
+    ended = ended["preset"]["answer"]
+    read = {"returncode": 0, "stdout": json.dumps({"repositories": {"local": {"packageFiles": {"pyenv": [
+        {"packageFile": ".python-version", "deps": [{"depName": "python", "currentValue": "3.12"}]}]}}}}),
+        "stderr": ""}
+    project, manifest = manifest_of(tmp_path, {".python-version": "3.12\n", "renovate.json": "{}\n"})
+    name = str(project.resolve())
+    for reply in (None, "always", "no"):
+        monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / f"shared-{reply}"))  # the user's answers, each case its own
+        egress.begin(name)  # and no request of the case before, in this process either
+        calls = []
+
+        def run_commands(project, commands, **options):
+            calls.append({"commands": commands, **options})
+            return {"state": "done", "root": "/work", "results": [{"returncode": 0, "stdout": "", "stderr": ""},
+                                                                  ended if len(calls) == 1 else read]}
+        if reply:
+            egress.respond("api.github.com", name, reply)
+        with mock.patch.object(container, "run_commands", run_commands):
+            [answer] = container_runner.runner(manifest)([command("renovate")])
+        kinds = [gap["kind"] for gap in answer.get("gaps", [])]
+        if reply == "always":
+            assert len(calls) == 2 and calls[0]["commands"][1]["network"] == "none"
+            setup, again = calls[1]["commands"]
+            assert again["argv"] == ["renovate", "x"] and again["network"] == "registries"
+            assert setup["network"] == "registries" and "api.github.com" in calls[1]["registries"]
+            assert answer["stdout"] == read["stdout"] and kinds == [] and not egress.pending(name)
+            continue
+        assert len(calls) == 1 and "api.github.com" not in calls[0]["registries"]
+        assert answer["stdout"] == ended["stdout"] and renovate.asked(answer) == ["api.github.com"]
+        if reply is None:  # nobody decided: a request of Renovate's, and the gap until the user answers
+            [gap] = answer["gaps"]
+            assert (gap["kind"], gap["hosts"]) == ("approval_required", ["api.github.com"])
+            assert [(row["host"], row["tool"]) for row in egress.pending(name)] == [("api.github.com", "renovate")]
+        else:  # refused: no request
+            assert kinds == ["host_denied"] and not egress.pending(name)
+
+
 def test_a_tool_whose_fixed_hosts_ask_does_not_start_and_says_approval_required(tmp_path, no_download, monkeypatch,
                                                                               undecided):
     """The runner stops, before any engine is looked for, at the hosts of the tool (Bazel's GitHub among them) that

@@ -438,6 +438,7 @@ def _inputs(digest, root, sources) -> str:
         value.append("package-roles-v1")
         value.append("package-tables-v1")
         value.append("renovate-ended-v1")
+        value.append("renovate-preset-hosts-v1")
     if maven in sources:
         value.append("maven-managed-versions-v1")
     if gradle in sources:
@@ -624,10 +625,27 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
     return {**report, **freshness(record, runner)}
 
 
+def _asked(record: dict) -> bool:
+    """Whether a source of the record waits on the user about a host (`egress`): a request (`approval_required`), or a
+    host refused that is no longer (a "no" lasts one analysis). The run that asked runs again with the answer, as
+    `engine_pass._keep` keeps no contract that waited."""
+    told = [gap for gap in record.get("gaps", ()) if gap.get("kind") in ("approval_required", "host_denied")]
+    if any(gap["kind"] == "approval_required" for gap in told):
+        return True
+    if not told or not (record.get("binding") or {}).get("root"):
+        return False
+    import egress
+    project = str(Path(record["binding"]["root"]).resolve())  # `egress.project_of`: the store's root
+    state, answers = egress.load(), egress.session(project)
+    return any(gap.get("host") and egress.decide(gap["host"], project, state, answers) != "deny" for gap in told)
+
+
 def freshness(record: dict, runner) -> dict:
     """The state of a record already bound to the present snapshot and sources (the pre-map, or another record `_run` made):
     with a runner, stale while model commands are left `not_run`, unless an explicitly disabled container is their recorded
-    cause."""
+    cause, and while a source waits on the user's answer about a host (`_asked`)."""
+    if runner is not None and _asked(record):
+        return {"state": "stale", "reason": "a run asked the user about a host: it runs again with the answer"}
     unrun = [s for s in record.get("sources", []) if s.get("state") == "not_run"]
     if runner is not None and unrun:
         from container import OFF_CAUSE

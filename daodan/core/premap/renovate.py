@@ -23,7 +23,9 @@ the presets it extends. One on a host the run does not reach (`github>…`, with
 before any file is read, and Renovate still exits 0 with an empty extraction: in `--dry-run=extract` only Renovate's
 error handling gives the report's repository a `status` (`processResult`, lib/workers/repository/index.ts), so a
 repository with one is a `model_failed` gap with its `problems` (`_ended`), never an empty answer
-(measured: `benchmarks/project-model/results/renovate-network.json`).
+(measured: `benchmarks/project-model/results/renovate-network.json`). The hosts of the URLs those problems asked for
+(`asked`) are the user's requests (`egress`); once one is approved, the runner runs the extraction again behind the
+proxy that opens it (`container_runner.reach`).
 
 Of a service container a GitHub Actions job declares, Renovate's github-actions manager keeps the image alone
 (`lib/modules/manager/github-actions/schema.ts`). When a regular YAML workflow exists in `.github/workflows`,
@@ -876,7 +878,7 @@ def read(context, commands, results):
             "detail": f"renovate: {(result['stderr'] or result['stdout']).strip()[-400:]}"}]}
     report = json.loads(result["stdout"])
     repository = (report.get("repositories") or {}).get("local") or {}
-    if "status" in repository and not repository.get("packageFiles"):  # ended by Renovate's error handling, nothing read
+    if _closed(report):  # ended by Renovate's error handling, nothing read
         return {"facts": declared, "gaps": [*gaps, _ended(repository)]}
 
     def text(rel: str) -> str:
@@ -948,14 +950,49 @@ def read(context, commands, results):
     return {"facts": facts, **({"gaps": gaps} if gaps else {})}
 
 
+def _closed(report) -> dict | None:
+    """The report's repository when Renovate's error handling ended it before it read a file (the module's docstring),
+    else None."""
+    repositories = report.get("repositories") if isinstance(report, dict) else None
+    repository = (repositories.get("local") if isinstance(repositories, dict) else None) or {}
+    return repository if isinstance(repository, dict) and "status" in repository and not repository.get(
+        "packageFiles") else None
+
+
+def _problem(problem: dict) -> tuple:
+    """A problem of the report: its message, the error's and the URL the error asked for (`err.options.url`)."""
+    err = problem.get("err") if isinstance(problem.get("err"), dict) else {}
+    options = err.get("options") if isinstance(err.get("options"), dict) else {}
+    return problem.get("msg"), err.get("message"), options.get("url")
+
+
+def asked(answer: dict) -> list[str]:
+    """The hosts of the URLs Renovate asked for in the repository it ended (`_problem`): a preset on a host the run did
+    not reach, which the runner asks the user about (`egress`), as `gradle.retry` names a build's repositories. Only
+    an `https` URL at port 443 names one: the proxy opens a host there alone. None for an answer that is no such
+    report (the workflows' and the lockfiles' commands)."""
+    from urllib.parse import urlsplit
+    try:
+        repository = _closed(json.loads(answer.get("stdout") or ""))
+    except ValueError:
+        return []
+    found = set()
+    for problem in (repository or {}).get("problems") or ():
+        url = _problem(problem)[2] if isinstance(problem, dict) else None
+        try:
+            parts = urlsplit(url) if isinstance(url, str) else None
+            if parts and parts.scheme == "https" and parts.port in (None, 443) and parts.hostname:
+                found.add(parts.hostname)
+        except ValueError:  # a port that is no number
+            continue
+    return sorted(found)
+
+
 def _ended(repository: dict) -> dict:
     """The gap of a repository Renovate's error handling ended (the module's docstring): its `status` and its
     `problems`, each the message, the error's and the URL it asked for."""
-    said = []
-    for problem in repository.get("problems") or ():
-        err = problem.get("err") if isinstance(problem.get("err"), dict) else {}
-        options = err.get("options") if isinstance(err.get("options"), dict) else {}
-        said.append(": ".join(str(part) for part in (problem.get("msg"), err.get("message"), options.get("url")) if part))
+    said = [": ".join(str(part) for part in _problem(problem) if part) for problem in repository.get("problems") or ()
+            if isinstance(problem, dict)]
     return {"kind": "model_failed", "path": ".",
             "detail": f"renovate ended the repository ({repository['status']}) before reading its files: "
                       f"{'; '.join(said) or 'no problem said'}"[:600]}
