@@ -12,6 +12,10 @@ project's root (`.` the root), `argv` the command's words. `by` says who stated 
 by `dynamic.PRECEDENCE` (user, assistant, CI). A command runs only in the container, as every other does, and the hosts
 it reaches are approved only in the app (`egress`). The app sets, confirms and removes (`/api/app/command`, `user`);
 MCP only proposes (`codebase_map_set_command`, always `assistant`).
+
+What the person chose to run lives beside them, in `choices.json` (`choose`, `chosen`): `{<project>: [choice]}`, a
+choice `{kind, root, runner, source, declared_in, argv}` for a slot (`dynamic.slot`), `source` None for none of its
+alternatives; a project with no entry never pressed the button, `[]` pressed it with nothing ticked.
 """
 from __future__ import annotations
 
@@ -27,6 +31,7 @@ if str(SCRIPT_DIR) not in sys.path:
 import egress  # noqa: E402
 
 FILE = "commands.json"
+CHOICES = "choices.json"  # beside FILE: what the person chose to run (`choose`)
 KINDS = ("tests", "starts", "builds")
 GRADES = {"user": "confermato", "assistant": "proposto"}
 
@@ -49,6 +54,10 @@ def _runner(argv: list[str]) -> str:
     return next((name for name in renovate._runners() if argv[:len(name.split())] == name.split()), argv[0])
 
 
+def _words(argv) -> bool:
+    return isinstance(argv, list) and bool(argv) and all(isinstance(word, str) and word for word in argv)
+
+
 def entry(project: str, given: dict, by: str) -> dict:
     """The entry `given` as it is kept, checked: a ValueError names what is wrong."""
     if by not in GRADES:
@@ -58,7 +67,7 @@ def entry(project: str, given: dict, by: str) -> dict:
     kind, argv = given.get("kind"), given.get("argv")
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {', '.join(KINDS)}: {kind!r}")
-    if not isinstance(argv, list) or not argv or not all(isinstance(word, str) and word for word in argv):
+    if not _words(argv):
         raise ValueError("argv must be a nonempty list of nonempty strings")
     from registry_build import SURFACES
     port, surface = given.get("port"), given.get("surface")
@@ -77,9 +86,10 @@ def _key(entry: dict) -> tuple:
     return entry["kind"], entry["root"], entry.get("runner")
 
 
-def _read() -> dict:
+def _read(name: str) -> dict:
+    """The shared file `name`, `{<project>: ...}`; empty where it is missing or not well formed."""
     try:
-        held = json.loads((egress.shared_cache_dir() / FILE).read_text(encoding="utf-8"))
+        held = json.loads((egress.shared_cache_dir() / name).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
     return held if isinstance(held, dict) else {}
@@ -87,7 +97,7 @@ def _read() -> dict:
 
 def listed(project: str) -> list[dict]:
     """The project's commands, as kept; an entry that is not well formed is left out."""
-    rows = _read().get(project)
+    rows = _read(FILE).get(project)
     if not isinstance(rows, list):
         return []
     return [row for row in rows if isinstance(row, dict) and row.get("kind") in KINDS
@@ -97,7 +107,7 @@ def listed(project: str) -> list[dict]:
 def _change(project: str, change) -> list[dict]:
     """The project's commands after `change(rows) -> rows`, written whole under the lock."""
     with egress.locked():
-        held = _read()
+        held = _read(FILE)
         rows = change(listed(project))
         if rows:
             held[project] = rows
@@ -150,6 +160,56 @@ def remove(project: str, kind: str, root: str, runner: str | None = None) -> lis
         row = _match(rows, kind, root, runner)
         return [other for other in rows if other is not row]
     return _change(project, change)
+
+
+def _choice(project: str, given: dict) -> dict:
+    """The choice `given` as it is kept, checked: a ValueError names what is wrong."""
+    from dynamic import SOURCES
+    if not isinstance(given, dict):
+        raise ValueError("a choice is an object")
+    kind, source, argv = given.get("kind"), given.get("source"), given.get("argv")
+    if kind not in KINDS:
+        raise ValueError(f"kind must be one of {', '.join(KINDS)}: {kind!r}")
+    if source is not None and source not in SOURCES:
+        raise ValueError(f"source must be one of {', '.join(SOURCES)}, or null for none: {source!r}")
+    if argv is not None and not _words(argv):
+        raise ValueError("argv must be a nonempty list of nonempty strings, or null")
+    for key in ("runner", "declared_in"):
+        if given.get(key) is not None and not (isinstance(given[key], str) and given[key]):
+            raise ValueError(f"{key} must be a nonempty string, or null: {given[key]!r}")
+    return {"kind": kind, "root": _root(project, given.get("root", ".")), "runner": given.get("runner"),
+            "source": source, "declared_in": given.get("declared_in"), "argv": None if argv is None else list(argv)}
+
+
+def chosen(project: str) -> list[dict] | None:
+    """What the person chose to run for the project (`choose`): None where they never pressed the button, `[]` where
+    they pressed it with nothing ticked; a choice that is not well formed is left out."""
+    rows = _read(CHOICES).get(project)
+    if not isinstance(rows, list):
+        return None
+    kept = []
+    for row in rows:
+        try:
+            kept.append(_choice(project, row))
+        except ValueError:
+            continue
+    return kept
+
+
+def choose(project: str, choices: list[dict] | None) -> list[dict] | None:
+    """Keep `choices` as the project's, whole, in place of the earlier ones; None forgets them, as if the button was
+    never pressed. All are checked first: a ValueError names what is wrong, and nothing changes."""
+    if choices is not None and not isinstance(choices, list):
+        raise ValueError("the choices are a list, or null")
+    kept = None if choices is None else [_choice(project, one) for one in choices]
+    with egress.locked():
+        held = _read(CHOICES)
+        if kept is None:
+            held.pop(project, None)
+        else:
+            held[project] = kept  # `[]` too: pressed, nothing ticked (`_change` would drop it)
+        egress._replace(egress.shared_cache_dir() / CHOICES, held)
+    return kept
 
 
 def merged(record: dict, project: str) -> dict:

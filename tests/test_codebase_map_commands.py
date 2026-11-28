@@ -127,3 +127,35 @@ def test_merged_puts_them_before_the_pre_map_s_and_the_observers_and_the_app_tak
     planned = app.plan(commands.merged(record, project))  # the user's command stands, even where it cannot run yet
     assert planned["apps"] == [] and [gap["kind"] for gap in planned["gaps"]] == ["start_runner_not_supported"]
     assert planned["gaps"][0]["path"] == commands.FILE
+
+
+CHOICE = {"kind": "tests", "root": "./", "runner": "pytest", "source": "ci",
+          "declared_in": ".github/workflows/ci.yml#jobs.t.steps.1", "argv": ["pytest", "-q"]}
+
+
+def test_the_choice_is_none_until_the_button_is_pressed_and_an_empty_one_is_kept_apart_from_the_commands(project):
+    """Never pressed is None; pressed with nothing ticked is `[]`, which a write and a read keep (`_change` would drop
+    it); the choices live in their own file of the shared folder, never in the project nor in `commands.json`."""
+    assert commands.chosen(project) is None
+    assert commands.choose(project, []) == [] and commands.chosen(project) == []
+    held = json.loads((egress.shared_cache_dir() / commands.CHOICES).read_text(encoding="utf-8"))
+    assert held == {project: []} and not (egress.shared_cache_dir() / commands.FILE).exists()
+    assert [path.name for path in Path(project).rglob("*")] == ["web"]
+    assert commands.chosen(project + "-other") is None
+
+
+def test_a_stored_choice_reads_back_none_forgets_it_and_a_bad_one_is_refused(project):
+    """A choice reads back as kept, its folder as `_root` gives it; `source` None says none for that slot; None removes
+    the project's choice; a choice not well formed is refused, naming what is wrong, and nothing changes."""
+    none = {"kind": "starts", "root": "web", "runner": None, "source": None, "declared_in": None, "argv": None}
+    kept = commands.choose(project, [CHOICE, none])
+    assert kept == [{**CHOICE, "root": "."}, none] and commands.chosen(project) == kept
+    for bad, said in (({**CHOICE, "source": "someone"}, "source must be one of user, assistant, ci, project, "),
+                      ({**CHOICE, "kind": "lint"}, "kind must be"), ({**CHOICE, "root": "../x"}, "outside the project"),
+                      ({**CHOICE, "argv": ["pytest", ""]}, "argv must be"), ({**CHOICE, "runner": 3}, "runner must be"),
+                      ("pytest", "an object")):
+        with pytest.raises(ValueError, match=said):
+            commands.choose(project, [CHOICE, bad])
+    assert commands.chosen(project) == kept
+    assert commands.choose(project, None) is None and commands.chosen(project) is None
+    assert json.loads((egress.shared_cache_dir() / commands.CHOICES).read_text(encoding="utf-8")) == {}
