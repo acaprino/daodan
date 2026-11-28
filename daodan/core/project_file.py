@@ -23,10 +23,11 @@ from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 
+from jsonpointer import JsonPointer, JsonPointerException, resolve_pointer, set_pointer  # RFC 6901: not in the stdlib
 from snapshot_store import _plain
 
-__all__ = ["APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "changes", "commit",
-           "confirm", "create", "head", "open_project", "state"]
+__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "changes", "commit",
+           "confirm", "conflicts", "create", "edit", "head", "open_project", "read", "release", "resolve", "state"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
@@ -199,12 +200,15 @@ def head(db: sqlite3.Connection) -> int:
 
 def commit(db: sqlite3.Connection, *, expected_head: int, kind: str, author: str, summary: str,
            analysis_id: int | None = None, source: dict | None = None, analysis: dict | None = None,
-           opened: list[dict] = (), closed: list[str] = ()) -> int:
+           opened: list[dict] = (), closed: list[str] = (), edits: list[dict] = (), conflicts: list[dict] = (),
+           resolved: list[int] = ()) -> int:
     """Write one revision after `expected_head`, all or nothing, and return its number. In one `BEGIN IMMEDIATE`
     transaction: the head is compared with `expected_head`, the revision is inserted on the analysis it names
     (`analysis_id`; a new one from `source` and `analysis`; else the head's, as a manual edit inherits it), the open
-    versions of `closed` (object ids) end, the `opened` rows begin, the resulting state is checked (`check`) and
-    the head moves. Any error rolls everything back."""
+    versions of `closed` (object ids) end, the `opened` rows begin, the `edits` (`{object_id, field_path, action,
+    base_rev, base, value}`) and the `conflicts` (`{edit_id, incoming, producer, evidence, removed}`, their
+    provenance the analysis and its producer) are recorded, the `resolved` conflicts get this revision, the resulting
+    state is checked (`check`) and the head moves. Any error rolls everything back."""
     if kind not in REVISION_KINDS:
         raise ProjectError(f"tipo di revisione sconosciuto: {kind}")
     _begin(db)
@@ -225,6 +229,25 @@ def commit(db: sqlite3.Connection, *, expected_head: int, kind: str, author: str
                 raise ProjectError(f"nessuna versione aperta da chiudere: {object_id}")
         for row in opened:
             _open(db, rev, row, analysis_id)
+        try:
+            for item in edits:
+                db.execute("INSERT INTO manual_edits (rev, base_rev, object_id, field_path, action, base_json, value_json)"
+                           " VALUES (?, ?, ?, ?, ?, ?, ?)", (rev, item["base_rev"], item["object_id"], item["field_path"],
+                                                             item["action"], json.dumps(item["base"]), json.dumps(item["value"])))
+            for item in conflicts:
+                provenance = {"analysis": analysis_id, "producer": item.get("producer"),
+                              **({"object": "removed"} if item.get("removed") else {})}
+                conflict = db.execute("INSERT INTO conflicts (detected_rev, edit_id, incoming_json, incoming_provenance)"
+                                      " VALUES (?, ?, ?, ?)", (rev, item["edit_id"], json.dumps(item["incoming"]),
+                                                               json.dumps(provenance, sort_keys=True))).lastrowid
+                for evidence in item.get("evidence", ()):
+                    db.execute("INSERT INTO conflict_evidence VALUES (?, ?)", (conflict, _evidence(db, analysis_id, evidence)))
+        except sqlite3.IntegrityError as error:
+            raise ProjectError(f"modifica o conflitto non validi: {error}") from error
+        for conflict in resolved:
+            if db.execute("UPDATE conflicts SET resolved_rev = ? WHERE conflict_id = ? AND resolved_rev IS NULL",
+                          (rev, conflict)).rowcount != 1:
+                raise ProjectError(f"nessun conflitto aperto {conflict}")
         db.execute("UPDATE project SET head_rev = ?", (rev,))
         check(db, rev)
         db.execute("COMMIT")
@@ -259,6 +282,11 @@ def _analysis(db: sqlite3.Connection, source: dict, analysis: dict) -> int:
         raise ProjectError(f"sorgenti o analisi non valide: {error}") from error
 
 
+def _evidence(db: sqlite3.Connection, analysis_id: int, item: dict) -> int:
+    return db.execute(f"INSERT INTO evidence (analysis_id, {', '.join(EVIDENCE)}) VALUES (?{', ?' * len(EVIDENCE)})",
+                      [analysis_id] + [item.get(column) for column in EVIDENCE]).lastrowid
+
+
 def _open(db: sqlite3.Connection, rev: int, row: dict, analysis_id: int) -> int:
     """Open a version of `row` at `rev`: its object (new, or of the same kind), the version, the row of its kind's
     table, its evidence and the rows it owns. The version id."""
@@ -281,9 +309,7 @@ def _open(db: sqlite3.Connection, rev: int, row: dict, analysis_id: int) -> int:
                               if column in JSON_COLUMNS else fields.get(column) for column in COLUMNS[kind]]
         db.execute(f"INSERT INTO {TABLES[kind]} ({', '.join(columns)}) VALUES ({', '.join('?' * len(columns))})", values)
         for item in row.get("evidence", ()):
-            evidence = db.execute(f"INSERT INTO evidence (analysis_id, {', '.join(EVIDENCE)}) VALUES (?{', ?' * len(EVIDENCE)})",
-                                  [analysis_id] + [item.get(column) for column in EVIDENCE]).lastrowid
-            db.execute("INSERT INTO version_evidence VALUES (?, ?)", (version, evidence))
+            db.execute("INSERT INTO version_evidence VALUES (?, ?)", (version, _evidence(db, analysis_id, item)))
         roles: dict[str, int] = {}
         for item in row.get("endpoints", ()):
             ordinal = roles[item["role"]] = roles.get(item["role"], -1) + 1
@@ -376,8 +402,9 @@ def check(db: sqlite3.Connection, rev: int) -> None:
 # Reading
 
 
-def state(db: sqlite3.Connection, rev: int | None = None) -> dict[str, dict]:
-    """The objects active at `rev` (the head if None), by id, as rows with their `version_id`."""
+def state(db: sqlite3.Connection, rev: int | None = None, only=None) -> dict[str, dict]:
+    """The objects active at `rev` (the head if None), by id, as rows with their `version_id`; with `only`, just
+    those object ids."""
     rev = head(db) if rev is None else rev
     rows: dict[str, dict] = {}
     by_version: dict[int, dict] = {}
@@ -386,7 +413,10 @@ def state(db: sqlite3.Connection, rev: int | None = None) -> dict[str, dict]:
         query = (f"SELECT v.object_id, v.version_id, v.provenance, {', '.join('t.' + column for column in columns)}"
                  f" FROM versions AS v JOIN {table} AS t USING (version_id)"
                  f" WHERE v.from_rev <= ? AND (v.until_rev IS NULL OR ? < v.until_rev)")
-        for object_id, version, provenance, *values in db.execute(query, (rev, rev)):
+        chosen = sorted(set(only)) if only is not None else None
+        if chosen is not None:
+            query += f" AND v.object_id IN ({', '.join('?' * len(chosen))})"
+        for object_id, version, provenance, *values in db.execute(query, (rev, rev, *(chosen or ()))):
             fields = {column: json.loads(value) if column in JSON_COLUMNS else value
                       for column, value in zip(COLUMNS[kind], values)}
             row = {"id": object_id, "kind": kind, "provenance": provenance, "version_id": version, "fields": fields,
@@ -449,13 +479,15 @@ def _delta(before: dict[str, dict], rows: list[dict]) -> tuple[list[dict], list[
 def analyse(db: sqlite3.Connection, *, rows: list[dict], hashes: dict[str, str], source: dict, analysis: dict,
             author: str, unread=(), summary: str = "rianalisi") -> int:
     """Record a new analysis of the project as a revision `analysis`: its rows (`project_rows.from_envelope`, by
-    key) reconciled with the head (`project_rows.reconcile`) and the difference written. The revision number."""
+    key) reconciled with the head (`project_rows.reconcile`), the choices made by hand merged on them with the
+    conflicts they raise (`_merge`), and the difference written. The revision number."""
     import project_rows  # it reads this module's rows: imported here, not at the top
     current = head(db)
-    incoming = project_rows.reconcile(db, current, rows, hashes, unread)
-    opened, closed = _delta(state(db, current), incoming)
+    before = state(db, current)
+    incoming, conflicts = _merge_all(db, current, before, project_rows.reconcile(db, current, rows, hashes, unread))
+    opened, closed = _delta(before, incoming)
     return commit(db, expected_head=current, kind="analysis", author=author, summary=summary, source=source,
-                  analysis=analysis, opened=opened, closed=closed)
+                  analysis=analysis, opened=opened, closed=closed, conflicts=conflicts)
 
 
 def changes(db: sqlite3.Connection, before: int, after: int) -> dict[str, list[str]]:
@@ -475,7 +507,7 @@ def changes(db: sqlite3.Connection, before: int, after: int) -> dict[str, list[s
 def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str) -> int:
     """Settle the `identity_match` proposal `match` in a revision `resolution` by `author`: with `same`, one of its
     candidates, the new node takes that original id back (the provisional identity ends, and every active row that
-    pointed at it points at the original); with None they are distinct and the new id stays. The proposal and its
+    pointed at it points at the original, and the choices kept on the original apply to it); with None they are distinct and the new id stays. The proposal and its
     gap end either way. The revision number."""
     current = head(db)
     now = state(db, current)
@@ -484,7 +516,7 @@ def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str
         raise ProjectError(f"nessuna proposta di corrispondenza aperta: {match}")
     proposal = record["fields"]["payload"]
     closed = [match] + [row["id"] for row in now.values() if row["kind"] == "gap" and row["fields"]["subject_id"] == match]
-    opened = []
+    opened, raised = [], []
     if same is not None:
         if same not in proposal["candidates"]:
             raise ProjectError(f"{same} non è un candidato di {match}")
@@ -496,7 +528,10 @@ def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str
         def moved(value):
             return swap.get(value, value)
 
-        opened.append({**now[provisional], "id": same, "provenance": "resolution"})
+        original = _edits(db, current, {same})  # the choices kept on the original id
+        reopened, raised = _merge({**now[provisional], "id": same, "provenance": "resolution"}, original,
+                                  _open_conflicts(db, current))
+        opened.append(reopened)
         closed.append(provisional)
         for row in now.values():
             if row["id"] in closed:
@@ -515,7 +550,7 @@ def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str
     summary = f"conferma: {proposal['keys']['new']} è " + (proposal["keys"]["candidates"][proposal["candidates"].index(same)]
                                                           if same is not None else "un oggetto nuovo")
     return commit(db, expected_head=current, kind="resolution", author=author, summary=summary,
-                  opened=opened, closed=closed)
+                  opened=opened, closed=closed, conflicts=raised)
 
 
 def keep_needed(before: dict[str, dict], rows: list[dict], kept: list[dict]) -> list[dict]:
@@ -534,3 +569,188 @@ def keep_needed(before: dict[str, dict], rows: list[dict], kept: list[dict]) -> 
             [item["node_id"] for item in row.get("endpoints", ())] + [item["to_step_id"] for item in row.get("transitions", ())]
         kept += [before[item] for item in pointed if item in before and item not in present]
     return out
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Manual edits, their merge at the next analysis and the resolution of conflicts («Integrità al salvataggio», 4)
+
+ABSENT = object()  # the value of an edit that removes its field
+_ABSENT = {"present": False}
+KEEP = ("manual", "incoming", "analysis")
+
+
+def _present(value) -> dict:
+    return {"present": True, "value": value}
+
+
+def _lookup(document: dict, pointer: str) -> dict:
+    """The field at the JSON Pointer `pointer` of `document` as `{"present": …, "value": …}`."""
+    if pointer == "":
+        return _present(document)
+    try:
+        return _present(resolve_pointer(document, pointer))
+    except JsonPointerException:
+        return _ABSENT
+
+
+def _put(document: dict, pointer: str, value: dict) -> dict:
+    """A copy of `document` with the field at `pointer` set to `value` (`{"present": …}`), or removed. A field is
+    a whole object or list: a pointer into a list names no element after a reorder, so it is refused."""
+    if pointer == "":
+        raise ProjectError("l'oggetto intero non si modifica a mano: si modifica un suo campo")
+    parts = JsonPointer(pointer).parts
+    if len(parts) == 1 and not value["present"]:
+        raise ProjectError(f"un campo della tabella non si toglie, si imposta: {pointer}")
+    try:
+        container = resolve_pointer(document, JsonPointer.from_parts(parts[:-1]).path)
+    except JsonPointerException as error:
+        raise ProjectError(f"il campo {pointer} non c'è: {error}") from error
+    if not isinstance(container, dict):
+        raise ProjectError(f"un elenco si modifica intero, non per indice: {pointer}")
+    if value["present"]:
+        return set_pointer(document, pointer, value["value"], inplace=False)
+    copy = json.loads(json.dumps(document))
+    resolve_pointer(copy, JsonPointer.from_parts(parts[:-1]).path).pop(parts[-1], None)
+    return copy
+
+
+def read(db: sqlite3.Connection, object_id: str, rev: int | None = None) -> dict | None:
+    """The object as an edit's JSON Pointer reads it at `rev` (the head if None): the columns of its table, with
+    `attributes` (or `payload`) as JSON. None when it is not active."""
+    found = state(db, rev, [object_id]).get(object_id)
+    return None if found is None else found["fields"]
+
+
+def _edits(db: sqlite3.Connection, rev: int, object_ids=None) -> list[dict]:
+    """The last edit of each field up to `rev`, when it is a `set`: the choices that hold."""
+    query = ("SELECT edit_id, rev, object_id, field_path, base_json, value_json FROM manual_edits AS e"
+             " WHERE action = 'set' AND rev = (SELECT max(rev) FROM manual_edits"
+             " WHERE object_id = e.object_id AND field_path = e.field_path AND rev <= :rev)")
+    found = [{"edit_id": edit, "rev": number, "object_id": object_id, "field_path": path,
+              "base": json.loads(base), "value": json.loads(value)}
+             for edit, number, object_id, path, base, value in db.execute(query + " ORDER BY edit_id", {"rev": rev})]
+    return [item for item in found if object_ids is None or item["object_id"] in object_ids]
+
+
+def _open_conflicts(db: sqlite3.Connection, rev: int) -> dict[int, dict]:
+    return {edit: json.loads(incoming) for edit, incoming in db.execute(
+        "SELECT edit_id, incoming_json FROM conflicts WHERE detected_rev <= ? AND (resolved_rev IS NULL OR ? < resolved_rev)",
+        (rev, rev))}
+
+
+def _merge(row: dict, edits: list[dict], pending: dict[int, dict]) -> tuple[dict, list[dict]]:
+    """`row` as the analysis brings it with the choices of `edits` on it, and the conflicts it raises: an incoming
+    value equal to the edit's base or to its choice keeps the choice; another one keeps it too and is a conflict,
+    unless the same value is already one that is open (`pending`, edit id -> incoming)."""
+    fields, conflicts = row["fields"], []
+    for item in edits:
+        incoming = _lookup(fields, item["field_path"])
+        if incoming not in (item["base"], item["value"]) and pending.get(item["edit_id"]) != incoming:
+            conflicts.append({"edit_id": item["edit_id"], "incoming": incoming, "evidence": row.get("evidence", ()),
+                              "producer": ((fields.get("attributes") or {}).get("identity") or {}).get("producer")})
+        fields = _put(fields, item["field_path"], item["value"])
+    return ({**row, "fields": fields, "provenance": "manual"} if edits else row), conflicts
+
+
+def _merge_all(db: sqlite3.Connection, current: int, before: dict[str, dict], incoming: list[dict]) -> tuple[list, list]:
+    """The incoming rows with every choice that holds at `current`, and the conflicts; an edited object the analysis
+    no longer brings stays, with what it needs, and each of its choices is a conflict with an absent value."""
+    edits: dict[str, list] = {}
+    for item in _edits(db, current):
+        edits.setdefault(item["object_id"], []).append(item)
+    pending = _open_conflicts(db, current)
+    present = {row["id"] for row in incoming}
+    out, conflicts, kept = [], [], []
+    for row in incoming:
+        merged, raised = _merge(row, edits.get(row["id"], []), pending)
+        out.append(merged)
+        conflicts += raised
+    for object_id, items in edits.items():
+        if object_id not in present and object_id in before:
+            kept.append(before[object_id])
+            conflicts += [{"edit_id": item["edit_id"], "incoming": _ABSENT, "evidence": (), "producer": None, "removed": True}
+                          for item in items if pending.get(item["edit_id"]) != _ABSENT]
+    return keep_needed(before, out, kept), conflicts
+
+
+def edit(db: sqlite3.Connection, *, object_id: str, field_path: str, value, author: str, base_rev: int,
+         summary: str | None = None) -> int:
+    """A revision `manual` by `author` that sets the field at the JSON Pointer `field_path` of the object (as `read`
+    gives it) to `value` (`ABSENT` removes it), on the analysis of `base_rev`, which must be the head. The old
+    version ends and one with the value and the provenance `manual` begins. The edit's base is the value the
+    analysis gave the field: its value at `base_rev`, or, over an earlier choice that still holds, that choice's base
+    (the three-way merge compares the analysis with the analysis). The revision number."""
+    now = state(db, base_rev, [object_id]).get(object_id)
+    if now is None:
+        raise ProjectError(f"nessun oggetto attivo {object_id} nella revisione {base_rev}")
+    chosen = _ABSENT if value is ABSENT else _present(value)
+    fields = _put(now["fields"], field_path, chosen)
+    earlier = [item["base"] for item in _edits(db, base_rev, {object_id}) if item["field_path"] == field_path]
+    return commit(db, expected_head=base_rev, kind="manual", author=author, summary=summary or f"modifica di {field_path}",
+                  opened=[{**now, "fields": fields, "provenance": "manual"}], closed=[object_id],
+                  edits=[{"object_id": object_id, "field_path": field_path, "action": "set", "base_rev": base_rev,
+                          "base": earlier[0] if earlier else _lookup(now["fields"], field_path), "value": chosen}])
+
+
+def release(db: sqlite3.Connection, *, object_id: str, field_path: str, author: str, base_rev: int) -> int:
+    """A revision `manual` in which the field follows the analysis again: it takes back the last analysis value
+    the choice knew (its base)."""
+    (choice,) = [item for item in _edits(db, base_rev, {object_id}) if item["field_path"] == field_path] or [None]
+    if choice is None:
+        raise ProjectError(f"nessuna scelta a mano su {field_path} di {object_id}")
+    return _settle(db, base_rev, object_id, field_path, choice["base"], "release", choice["base"], author,
+                   f"{field_path} torna all'analisi", kind="manual")
+
+
+def _settle(db, current, object_id, field_path, value, action, base, author, summary, *, kind, resolved=()) -> int:
+    """A revision with the field at `value` and the edit `action` (`set` with that value, or `release`)."""
+    now = state(db, current, [object_id]).get(object_id)
+    if now is None:
+        raise ProjectError(f"nessun oggetto attivo {object_id}")
+    others = [item for item in _edits(db, current, {object_id}) if item["field_path"] != field_path]
+    record = {"object_id": object_id, "field_path": field_path, "action": action, "base_rev": current, "base": base,
+              "value": value if action == "set" else _ABSENT}
+    fields = _put(now["fields"], field_path, value)
+    provenance = "manual" if others or action == "set" else "analysis"
+    return commit(db, expected_head=current, kind=kind, author=author, summary=summary,
+                  opened=[{**now, "fields": fields, "provenance": provenance}], closed=[object_id],
+                  edits=[record], resolved=resolved)
+
+
+def resolve(db: sqlite3.Connection, conflict_id: int, keep: str, *, author: str) -> int:
+    """Settle the open conflict `conflict_id` in a revision `resolution` by `author`, keeping the choice made by hand
+    (`manual`), the incoming value as a choice (`incoming`) or following the analysis again (`analysis`); the edit
+    is recorded in that revision and its number written in `resolved_rev`. The revision number."""
+    if keep not in KEEP:
+        raise ProjectError(f"scelta sconosciuta: {keep} (una di {', '.join(KEEP)})")
+    current = head(db)
+    found = db.execute("SELECT c.incoming_json, c.resolved_rev, e.object_id, e.field_path, e.value_json, c.incoming_provenance"
+                       " FROM conflicts AS c JOIN manual_edits AS e USING (edit_id) WHERE c.conflict_id = ?",
+                       (conflict_id,)).fetchone()
+    if found is None or found[1] is not None:
+        raise ProjectError(f"nessun conflitto aperto {conflict_id}")
+    incoming, object_id, field_path, chosen = json.loads(found[0]), found[2], found[3], json.loads(found[4])
+    removed = json.loads(found[5]).get("object") == "removed"
+    value = chosen if keep == "manual" else incoming
+    action = "release" if keep == "analysis" else "set"
+    if removed and keep != "manual":  # the analysis took the object away and the person agrees
+        return commit(db, expected_head=current, kind="resolution", author=author, summary=f"conflitto {conflict_id}: {keep}",
+                      closed=[object_id], resolved=[conflict_id],
+                      edits=[{"object_id": object_id, "field_path": field_path, "action": action, "base_rev": current,
+                              "base": incoming, "value": _ABSENT if action == "release" else incoming}])
+    return _settle(db, current, object_id, field_path, value, action, incoming, author, f"conflitto {conflict_id}: {keep}",
+                   kind="resolution", resolved=[conflict_id])
+
+
+def conflicts(db: sqlite3.Connection, rev: int | None = None) -> list[dict]:
+    """The conflicts detected up to `rev` (the head if None), each `open` or not at that revision, with the edit's
+    field, base and choice, the incoming value and its provenance."""
+    rev = head(db) if rev is None else rev
+    rows = db.execute("SELECT c.conflict_id, c.detected_rev, c.resolved_rev, c.incoming_json, c.incoming_provenance,"
+                      " e.edit_id, e.object_id, e.field_path, e.base_json, e.value_json"
+                      " FROM conflicts AS c JOIN manual_edits AS e USING (edit_id) WHERE c.detected_rev <= ?"
+                      " ORDER BY c.conflict_id", (rev,))
+    return [{"conflict_id": conflict, "detected_rev": detected, "resolved_rev": resolved if resolved and resolved <= rev else None,
+             "open": resolved is None or rev < resolved, "incoming": json.loads(incoming), "provenance": json.loads(provenance),
+             "edit_id": edit, "object_id": object_id, "field_path": path, "base": json.loads(base), "value": json.loads(value)}
+            for conflict, detected, resolved, incoming, provenance, edit, object_id, path, base, value in rows]
