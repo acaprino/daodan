@@ -490,6 +490,21 @@ def test_the_needs_install_as_root_before_the_setup_and_one_into_the_image_keeps
     assert tools is None and all(line in first["argv"][-1] for line in preparation.setup(["git", "rust"])["lines"])
 
 
+
+@pytest.mark.parametrize("framework", ["django", "flask", "fastapi"])
+def test_the_route_probes_install_uv_in_their_setup_before_the_restore_as_before_the_tools_phase(framework, monkeypatch):
+    """The probes of `benchmarks/<framework>-routes` build their image as root with the setup `plan.py` prints: uv, which the
+    runner installs as root apart (`T3.A.6b`), stays in it ahead of the restore, so the measurement is the one the results hold."""
+    import importlib.util
+    import preparation
+    monkeypatch.setattr(container_runner, "TOOLS", dict(container_runner.TOOLS))  # the probes add their entry: not for the other tests
+    bench = ROOT / "benchmarks" / f"{framework}-routes"
+    spec = importlib.util.spec_from_file_location(f"{framework}_routes_plan", bench / "plan.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    setup = module.plan(bench / "fixture")["setup"]["argv"][2]
+    assert preparation.UNPACK_UV in setup and setup.index(preparation.UNPACK_UV) < setup.index("uv venv")
+
 def test_cargo_runs_on_the_rust_the_project_states_behind_mise():
     import preparation
     first, *_ = container_runner.plan("cargo", [command("cargo")], [{"tool": "rust", "version": "1.80.0"}])

@@ -53,7 +53,11 @@ def plan(folder: Path) -> dict:
             return [{"returncode": 0, "stdout": "", "stderr": "", "root": "/work"} for _ in commands]
         premap.write(manifest, sources=(premap.module_graph, premap.requirements, fastapi_app), runner=run)
         restored = container_runner._python(project)
-        first, files, hosts, gaps = container_runner.plan("fastapi", taken, [], restored["lines"], restored["needs"])
+        # the tools the runner installs as root before the setup (`container.tool_phase`, uv) go back into the setup, where they were before
+        # T3.A.6b, ahead of the restore: the image build runs as root, and the measurement stays the one the results hold
+        *_, tools = container_runner.plan("fastapi", taken, [], restored["lines"], restored["needs"])
+        first, files, hosts, gaps, _ = container_runner.plan("fastapi", taken, [], [*(tools or {}).get("lines", ()), *restored["lines"]],
+                                                         restored["needs"])
     return {"image": container_runner.IMAGE, "env": container_runner.ENV, "setup": first, "files": files, "hosts": hosts,
             "gaps": gaps + restored["gaps"], "commands": taken, "version": fastapi_app.VERSION,
             "state": preparation.STATE, "inputs": preparation.IN, "tools": preparation.T, "venvs": preparation.VENVS}

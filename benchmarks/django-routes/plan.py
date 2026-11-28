@@ -56,7 +56,11 @@ def plan(folder: Path) -> dict:
             premap.write(manifest, sources=(premap.module_graph, premap.requirements, django_app), runner=run)
         noir_commands = noir.commands(types.SimpleNamespace(inventory=types.SimpleNamespace(files=["a"])))  # the one command: a scan of the copy
         restored = container_runner._python(project)
-        first, files, hosts, gaps = container_runner.plan("django", taken, [], restored["lines"], restored["needs"])
+        # the tools the runner installs as root before the setup (`container.tool_phase`, uv) go back into the setup, where they were before
+        # T3.A.6b, ahead of the restore: the image build runs as root, and the measurement stays the one the results hold
+        *_, tools = container_runner.plan("django", taken, [], restored["lines"], restored["needs"])
+        first, files, hosts, gaps, _ = container_runner.plan("django", taken, [], [*(tools or {}).get("lines", ()), *restored["lines"]],
+                                                         restored["needs"])
         listed = sorted(p.relative_to(project).as_posix() for p in project.rglob("*") if p.is_file() and ".git" not in p.relative_to(project).parts)
         held = preparation.python_environments(listed, lambda rel: (project / rel).is_file())
         interpreters = {env: preparation.python_interpreter(env, manager, "/work") for env, manager in held.items()}
