@@ -114,7 +114,7 @@ def read_record(manifest):
 def evidence(manifest):
     """Load and validate the pre-map and the record of the entry points once for all of their flow-entry readers."""
     import entry_points
-    from entry_points import FRAMEWORK_SOURCES, TEMPLATE_SOURCES, noir
+    from entry_points import FRAMEWORK_SOURCES, noir
     from premap import module_graph, python_build, renovate
     manifest = Path(manifest)
     try:
@@ -127,13 +127,7 @@ def evidence(manifest):
     except (OSError, KeyError, TypeError, ValueError) as error:
         routes, gaps = [], [noir.unavailable(error)]
     else:
-        routes, gaps = noir.from_record(found)
-        for source in FRAMEWORK_SOURCES:
-            framework, framework_gaps = source.from_record(found)
-            routes, gaps = routes + framework, gaps + framework_gaps
-        # A template source's rows are not routes: they stand for, or join, the tree reader's at the same events (`entries.compiled`); their gaps are told here
-        for source in TEMPLATE_SOURCES:
-            gaps += source.from_record(found)[1]
+        routes, gaps = entry_points.rows(found)
     for source in FRAMEWORK_SOURCES:  # what a source tells from the pre-map alone, with no command (`react_router.stated_gaps`)
         gaps += source.stated_gaps(report) if hasattr(source, "stated_gaps") else []
     rows = report.get("declared_entries")

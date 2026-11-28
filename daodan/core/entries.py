@@ -1076,7 +1076,8 @@ def _declared_rows(manifest):
     recorded = Path(manifest).with_name("flow-rules.json")
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         view = edge_view.load_edge_view(store)
-        return flows.bind_declared(rows, flows.Facts(store, db, view), view, flows.load_rules(recorded) if recorded.is_file() else [])
+        return flows.bind_declared(rows, flows.Facts(store, db, view), view, flows.load_rules(recorded) if recorded.is_file() else [],
+                                   manifest)
 
 
 def cached_syntax(manifest: Path) -> list[dict]:

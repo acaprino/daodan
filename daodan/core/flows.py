@@ -1041,9 +1041,13 @@ def _route_handler(facts: Facts, spec: str, call: dict) -> str | None:
 
 def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     """A function written in place as a route handler is named by its route, before any link reads names."""
+    if rules:
+        facts.name_routes(_written_names(facts, view, rules))
+
+
+def _written_names(facts: Facts, view: dict, rules: list[dict]) -> dict[str, str]:
+    """The functions written in place as route handlers that `rules` name, by their route; nothing is named here."""
     import entries
-    if not rules:
-        return
     names = {}
     for ref in view["references"]:
         parts = [str(part) for part in ref.get("parts") or []]
@@ -1057,13 +1061,29 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
                             for k in ("method", "path"))
             if written and written["name"] == "(anonymous)" and method and path is not None:
                 names[written["id"]] = f"{method.upper()} {path}"
-    facts.name_routes(names)
+    return names
 
 
-def bind_declared(declared: list[dict], facts: Facts, view: dict, rules: list[dict]) -> list[dict]:
+def bind_declared(declared: list[dict], facts: Facts, view: dict, rules: list[dict], manifest: Path | None = None) -> list[dict]:
     """The declared rows as the links bind them (`binder.bind`), for the links and the candidates alike: a function written in place as a
-    handler a rule offers is named by that route first, and then the binder names the closures Noir cites, so that both end on the same nodes."""
-    _name_written_handlers(facts, view, [r for r in rules if "written" in r and "shape" not in r and r["link"] == "offre" and r.get("handler")])
+    handler a rule offers is named by that route first, and then the binder names the closures Noir cites, so that both end on the same nodes.
+    Where the rules name no such function, the routes are bound as the step of the entry points of `manifest` binds them, with no rule
+    (`entry_points.bound`, the one its record keeps for this reading), and only the manifests' rows here: the same binding."""
+    import entries
+    written = [r for r in rules if "written" in r and "shape" not in r and r["link"] == "offre" and r.get("handler")]
+    names = _written_names(facts, view, written) if written else {}
+    if not names and manifest is not None:
+        import entry_points
+        try:
+            record = entry_points.read_record(manifest)
+        except (OSError, KeyError, TypeError, ValueError):
+            record = None
+        if record is not None:
+            found = entry_points.bound(manifest, record, facts, [row for row in declared if row["reader"] != entries.MANIFEST])
+            facts.name_routes(found["route_named"])
+            return [*found["rows"], *binder.bind([row for row in declared if row["reader"] == entries.MANIFEST], facts, facts.resolver)]
+    if written:
+        facts.name_routes(names)
     return binder.bind(declared, facts, facts.resolver)
 
 
@@ -1145,7 +1165,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         from entry_points.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
-        declared = bind_declared(declared, facts, view, rules)
+        declared = bind_declared(declared, facts, view, rules, manifest)
         # One route, one entry: the route of a source outside `entry_points.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
         # of them (the text of the path where a row has no schema), in the file or on the function that row starts, is that row,
         # provided its method is the row's or the row has none (a page answers any; Noir's method is not copied onto it). Another

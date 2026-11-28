@@ -104,7 +104,7 @@ def _premap_on_both(tmp_path, files: dict, sources: tuple, runner) -> list[dict]
         write(root, manifest)
         record = entry_points.write(manifest, sources=sources, runner=runner)
         record["sources"] = [{k: v for k, v in s.items() if k != "seconds"} for s in record["sources"]]
-        records.append(json.loads(json.dumps({k: v for k, v in record.items() if k != "binding"}).replace(str(manifest.parent), "<OUT>")))
+        records.append(json.loads(json.dumps({k: v for k, v in record.items() if k not in ("binding", "bound")}).replace(str(manifest.parent), "<OUT>")))  # `bound`: the binder needs the read store
     return records
 
 

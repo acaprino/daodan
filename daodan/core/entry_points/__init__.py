@@ -6,7 +6,8 @@ framework's own tool (`framework_entries`), run in Daodan's container by the run
 pre-map's machinery (`premap.Context`, `premap._run`, `premap.join`), each reading the pre-map (`Context.stated`): the
 toolchains a runner prepares and the restores it refuses come from there («Pacchetti ripristinati: da `find_modules`»). The record
 is bound to the snapshot as the pre-map is, to the pre-map it read (its `inputs_digest`) and to its sources' versions.
-The flows read it with the manifests' own rows (`flow_entries.evidence`).
+Once the snapshot is read, the step also binds the routes to its functions with no rule (`bound`, kept under `bound`); the flows
+read the rows with the manifests' own (`flow_entries.evidence`) and take that binding where the rules of the session name no handler.
 """
 from __future__ import annotations
 
@@ -82,6 +83,49 @@ def derive(manifest: Path, store, stated: dict, sources=None, runner=None, repor
             **premap.join(parts, IDENTITY), "gaps": gaps}
 
 
+def rows(record: dict) -> tuple[list[dict], list[dict]]:
+    """The routes of `record` (Noir's and those of `FRAMEWORK_SOURCES`) and the gaps of its sources. A template source's rows are no
+    routes: they stand for, or join, the tree reader's at the same events (`entries.compiled`); its gaps are told here."""
+    routes, gaps = noir.from_record(record)
+    for source in FRAMEWORK_SOURCES:
+        found, said = source.from_record(record)
+        routes, gaps = routes + found, gaps + said
+    for source in TEMPLATE_SOURCES:
+        gaps += source.from_record(record)[1]
+    return routes, gaps
+
+
+def reading(db, routes: list[dict]) -> str:
+    """What a binding holds for: the routes it binds, the snapshot the semantic store `db` was built from (`sem_meta`) and the code
+    of the binder and of the links' readers (`flows._links_reader_digest`)."""
+    import flows
+    import semantic_store
+    row = db.execute("SELECT payload FROM sem_meta WHERE key='manifest_digest'").fetchone()
+    value = [semantic_store._unpack(row[0]) if row else None, flows._links_reader_digest(), routes]
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def bound(manifest: Path, record: dict, facts=None, routes: list[dict] | None = None) -> dict:
+    """The routes of `record` (`rows`, or `routes`) bound to the snapshot's functions with no rule (`binder.bind`): `{reading, rows,
+    route_named}`, each row with its `symbol` or its `gap`, and the names the routes give functions written with no name, which the
+    nodes of the links take (`Facts.name_routes`). The binding `record` keeps for the same `reading` is given as it is. The step calls
+    it once the snapshot is read and keeps it in the record; the links call it with their own `facts` where the rules of the session
+    name no handler written in place (`flows.bind_declared`)."""
+    import binder
+    import flows
+    import semantic_store
+    if facts is None:
+        with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+            return bound(manifest, record, flows.Facts(store, db), routes)
+    routes = rows(record)[0] if routes is None else routes
+    stamp = reading(facts.db, routes)
+    kept = record.get("bound") or {}
+    if kept.get("reading") == stamp:
+        return kept
+    found = binder.bind(routes, facts, facts.resolver)
+    return {"reading": stamp, "rows": found, "route_named": dict(facts.route_named)}
+
+
 def write(manifest: Path, sources=None, runner=None, report=None, stated: dict | None = None) -> dict:
     """Derive and publish `entry-points.json` beside the manifest, on the pre-map `stated`: by default the one beside it, of
     this snapshot, else one derived now (`premap.ensure`)."""
@@ -97,6 +141,11 @@ def write(manifest: Path, sources=None, runner=None, report=None, stated: dict |
     with open_snapshot(manifest) as store:
         stamp = premap._snapshot_stamp(manifest)
         record = derive(manifest, store, stated, sources, runner, report)
+        if store.metadata.get("reading") != "not-started":  # the binder reads the snapshot's functions: only once it is read
+            try:
+                record["bound"] = bound(manifest, record)
+            except ValueError:  # a semantic store of another resolver: the links bind the rows, and say why they cannot
+                pass
         if inventory_digest(store) != record["binding"]["inventory_digest"] or premap._snapshot_stamp(manifest) != stamp:
             raise ValueError("snapshot changed during the entry points; retry")
         record["binding"]["snapshot_stamp"] = stamp

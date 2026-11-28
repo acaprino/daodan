@@ -8,6 +8,9 @@ citations), the one function that starts at the line (the outermost, when a clos
 name: each is an equality of two data. A row with no name is no such row (`noir.rows` reads the name only where Noir cites the handler's
 place; without it the place is the registration's). The sources that name the function itself (Flask, Django, FastAPI) bind by the
 name only. A row of another form passes unchanged.
+
+It runs in the step of the entry points, with no rule, once the snapshot is read (`entry_points.bound`), and again in the links when
+the rules of the session name a handler written in place, or the step ran before the reading (`flows.bind_declared`).
 """
 from __future__ import annotations
 
