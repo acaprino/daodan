@@ -115,3 +115,18 @@ def test_each_project_that_uses_a_central_package_links_to_it(real_stack, tmp_pa
     links = sorted((lib["path"], lib["line"], lib.get("version")) for unit in stack["units"]
                    for lib in unit["libraries"] if lib["name"] == "Serilog")
     assert links == [("src/Api/Api.csproj", 7, "4.1.0"), ("src/Core/Core.csproj", 6, "4.1.0")]
+
+
+def test_a_central_package_the_registry_knows_is_used_by_each_project_that_names_it(real_stack, tmp_path):
+    """Newtonsoft.Json, a library of the registry whose version Directory.Packages.props writes, is used by each
+    project at the line that references it: one entry, two modules, two uses with the entry's id."""
+    readers = tuple(s for s in premap.SOURCES if not hasattr(s, "commands"))
+    record = build(tmp_path, "central-registry", sources=(*readers, dotnet))
+    stack = technologies.ensure(tmp_path / "out" / "manifest.sqlite", facts=record)
+    assert "json-net" in {item["id"] for item in stack["technologies"]}
+    uses = sorted((lib["path"], lib["line"], lib.get("id")) for unit in stack["modules"]
+                  for lib in unit["libraries"] if lib["name"] == "Newtonsoft.Json")
+    assert uses == [("src/Api/Api.csproj", 7, "json-net"), ("src/Core/Core.csproj", 6, "json-net")]
+    arrows = sorted(unit["technology_evidence"]["json-net"]["path"] for unit in stack["modules"]
+                    if "json-net" in unit["technology_evidence"])
+    assert arrows == ["src/Api/Api.csproj", "src/Core/Core.csproj"]

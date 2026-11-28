@@ -548,3 +548,31 @@ def test_a_package_a_unit_depends_on_as_a_unit_of_the_project_is_not_external():
         ("example.com/lib", "tools/go.mod#L3"), ("github.com/x/y", "api/go.mod#L6"), ("react", "web/package.json#L5"),
         ("example.com/lib", "api/go.mod")]
     assert module_graph.external_packages({"modules": [], "edges": []}, packages) == packages  # no unit, nothing leaves
+
+
+def test_a_catalog_library_the_registry_knows_is_used_by_each_build_script_that_names_it(real_stack, tmp_path):
+    """Jackson, a library of the registry whose version the Gradle catalog writes, is used by each build script at its
+    `libs.*` line: one entry, two modules, two uses with the entry's id."""
+    project = tmp_path / "proj"
+    files = {
+        "settings.gradle.kts": 'rootProject.name = "inventory"\ninclude(":domain", ":api")\n',
+        "gradle/libs.versions.toml": (
+            '[versions]\njackson = "2.18.1"\n\n[libraries]\n'
+            'jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }\n'),
+        "domain/build.gradle.kts": "dependencies {\n    implementation(libs.jackson.databind)\n}\n",
+        "api/build.gradle.kts": "dependencies {\n    implementation(libs.jackson.databind)\n}\n",
+    }
+    for rel, text in files.items():
+        path = project / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(project, manifest)
+    stack = technologies.ensure(manifest, facts=premap.write(manifest))
+    assert "jackson" in {item["id"] for item in stack["technologies"]}
+    uses = sorted((lib["path"], lib["line"], lib.get("id")) for unit in stack["modules"] for lib in unit["libraries"]
+                  if lib["name"] == "com.fasterxml.jackson.core:jackson-databind")
+    assert uses == [("api/build.gradle.kts", 2, "jackson"), ("domain/build.gradle.kts", 2, "jackson")]
+    arrows = sorted(unit["technology_evidence"]["jackson"]["path"] for unit in stack["modules"]
+                    if "jackson" in unit["technology_evidence"])
+    assert arrows == ["api/build.gradle.kts", "domain/build.gradle.kts"]
