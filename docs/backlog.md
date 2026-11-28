@@ -48,7 +48,7 @@
 
 ### 5b. Ingressi dai manifesti di rilascio (deciso dal proprietario il 28 novembre 2026)
 
-- Deployment, StatefulSet e Job di Kubernetes, profili di Skaffold, trigger di Cloud Build in Terraform (5 dei 7 flussi persi su Bank of Anthos, `benchmarks/system-map/README.md`, «Da dove verrebbero gli ingressi persi»). Strumenti ufficiali: `kustomize build`, `skaffold render`/`diagnose`, il lettore HCL di HashiCorp. Si riprende solo se una misura sul corpus mostra che contano su più progetti.
+- Deployment, StatefulSet e Job di Kubernetes, profili di Skaffold, trigger di Cloud Build in Terraform (5 dei 7 flussi persi su Bank of Anthos, `benchmarks/system-map/README.md`, «Da dove verrebbero gli ingressi persi»). Strumenti ufficiali: `kustomize build`, `skaffold render`/`diagnose`, il lettore HCL di HashiCorp. Si riprende solo se una misura sul corpus mostra che contano su più progetti. I profili (Kubernetes, Skaffold, Compose) sono ripresi nella tranche `T2.F` del piano (decisione del proprietario, 28 novembre 2026); qui restano i trigger di Cloud Build.
 - Orari e thread scritti nel codice: nessuna tabella nostra; restano al modello come candidati `residuo` (provenienza «modello»), con i fatti del compilatore sul candidato quando la build gira.
 
 ### 5c. Lacune dei framework sotto la soglia (misurate in `T1.C.14`, 28 novembre 2026)
