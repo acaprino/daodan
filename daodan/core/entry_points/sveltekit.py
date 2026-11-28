@@ -22,7 +22,9 @@ route with no module in the list (a page with only a component) has no row: Reac
 a route and an entry there, but here the component is not a module with functions that the tool names. An export that no function of
 the snapshot is bound to, which the binder says (`actions` is an object: its members are anonymous functions of the snapshot, and so is `GET = make('get')`
 and a re-export), a file the snapshot does not hold, a failed command and a file that is not the layout this reader knows are gaps
-with their cause, never a guess. The rows are entries, not offered routes: the tool gives no HTTP method.
+with their cause, never a guess. The rows are entries, not offered routes: the tool gives no HTTP method (the links tell each as a
+declared route with no method); the route's `schema` (`_schema`) makes Noir's route on the same file and path that row
+(`flows.link_facts`).
 
 Evaluated and not used: `$types.d.ts` (the id and, by its type names, the kinds a directory has, but no file name and no
 `+server` method), `non-ambient.d.ts` (`RouteId()` lists the folders that hold no route too: `/api`, `/components`) and
@@ -39,7 +41,7 @@ from pathlib import PurePosixPath
 
 from entry_points import frameworks
 
-NAME, VERSION, RANK = "sveltekit", "daodan/premap/v2", "scanner"
+NAME, VERSION, RANK = "sveltekit", "daodan/premap/v3", "scanner"  # v3: the route's `schema`
 PACKAGE = "@sveltejs/kit"
 ENV = {"npm_config_offline": "true"}
 # shortcut: the file is the tool's own cache, not the output the documentation promises (the types and `tsconfig.json`), and it is
@@ -93,6 +95,20 @@ def _files(listed) -> dict[str, str]:
     return owner
 
 
+def _schema(route: str) -> str | None:
+    """The route id as `REST` reads a path (`flows.path_schema`: `[id]` and `[id=matcher]` are `{}`), or None for an id that stands
+    for no single schema: a rest (`[...rest]`), an optional segment (`[[opt]]`) or a group (`(shop)`). No file `svelte-kit sync`
+    writes ties an id to its URL (`Pathname()` of `non-ambient.d.ts` is a union with no id, `benchmarks/sveltekit-routes/README.md`),
+    so a group is not taken out by a rule of ours: its route has no schema. The segments are read as the framework writes them: a
+    text with no grammar, read with string operations, as `nextjs._next_path` does."""
+    # shortcut: a route under a group has no schema, so Noir's `/cart` and the row of `/(shop)/cart` stay two, when a SvelteKit writes each id's URL: read it there
+    # shortcut: an escaped character (`[x+2f]`) reads as a parameter, when a project uses one
+    import flows
+    if any(s.startswith("(") and s.endswith(")") or "[..." in s or "[[" in s for s in route.split("/")):
+        return None
+    return flows.path_schema(route.replace("[", "{").replace("]", "}"))
+
+
 def read(context, commands, results):
     import entries
     import flows
@@ -127,7 +143,7 @@ def read(context, commands, results):
         for route, file in files:
             shape = PurePosixPath(file).stem  # `+page.server.ts` -> `+page.server`, as the tool names the role
             spec = table.get(shape)
-            base = {"reader": NAME, "shape": shape, "path": route}
+            base = {"reader": NAME, "shape": shape, "path": route, "schema": _schema(route)}
             module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
             if spec is None:  # a file name this table does not know: a shape to classify, and no export to start from
                 rows.append({**module, "gap": f"{file}: {NAME} lists a file named {shape}, which this reader has no exports for"})

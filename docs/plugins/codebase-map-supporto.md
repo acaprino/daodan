@@ -97,9 +97,9 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `dotnet` | 10.0.404 | modello: il comando del build tool, nel container | `premap/dotnet.py` | not_needed 117, ran 5 |
 | `noir` | 1.5.0 | scanner: legge ogni file | `entry_points/noir.py` | non misurato: non era nel giro |
 | `next` | daodan/premap/v4 | scanner: legge ogni file | `entry_points/nextjs.py` | non misurato: non era nel giro |
-| `react-router` | daodan/premap/v4 | scanner: legge ogni file | `entry_points/react_router.py` | non misurato: non era nel giro |
-| `nuxt` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/nuxt.py` | non misurato: non era nel giro |
-| `sveltekit` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/sveltekit.py` | non misurato: non era nel giro |
+| `react-router` | daodan/premap/v5 | scanner: legge ogni file | `entry_points/react_router.py` | non misurato: non era nel giro |
+| `nuxt` | daodan/premap/v3 | scanner: legge ogni file | `entry_points/nuxt.py` | non misurato: non era nel giro |
+| `sveltekit` | daodan/premap/v3 | scanner: legge ogni file | `entry_points/sveltekit.py` | non misurato: non era nel giro |
 | `angular` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/angular.py` | non misurato: non era nel giro |
 | `astro` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/astro.py` | non misurato: non era nel giro |
 

@@ -15,10 +15,11 @@ index), `index`, and its `file`, relative to the app directory, which the tool d
 directory in the paths of the files it writes: evaluated and not used, it is a second command that writes 20 files in the
 project, and Remix 2 has none; `benchmarks/react-router-routes/README.md`.) It does not give the exports of the
 route module (a component, a `loader`, an `action`), nor whether it is a page or a resource route: the row is the module and
-carries the exports its table names (`QUERIES["react-router"]`, the ones a route starts), and the links' binder (`binder.bind`) ties
+carries the exports its table names (`QUERIES["react-router"]`, the ones a route starts) and the route's `schema` (`_schema`), and the links' binder (`binder.bind`) ties
 them to the functions the snapshot's own export records name. A route whose file the snapshot does not hold and a command that
 failed are gaps with their cause, never a guess (an export no function is bound to is the binder's gap, a re-export for one; an anonymous default, `export default function () {}`, is a known limit: the snapshot keeps no `default` export record for it, so it reads as `export-missing`, which is no reason, and the module has a gap only when none of its other exports is found). The rows are
-entries, not offered routes: the tool gives no HTTP method.
+entries, not offered routes: the tool gives no HTTP method (the links tell each as a declared route with no method); the `schema` makes
+Noir's route on the same file and path that row (`flows.link_facts`).
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ import posixpath
 
 from entry_points import frameworks
 
-NAME, VERSION, RANK = "react-router", "daodan/premap/v4", "scanner"  # v4: the module row with its `exports`, bound by the links; v3: the data functions of the root and of a layout with no path; v2: an absolute child, the root under `app/`, `timeout`
+NAME, VERSION, RANK = "react-router", "daodan/premap/v5", "scanner"  # v5: the route's `schema`; v4: the module row with its `exports`, bound by the links; v3: the data functions of the root and of a layout with no path; v2: an absolute child, the root under `app/`, `timeout`
 CLI = {"@react-router/dev": "react-router", "@remix-run/dev": "remix"}  # the package that installs the command -> the command
 LIBRARY = ("react-router", "react-router-dom")  # the library: routes written in code, which no command lists
 APP = "app"  # the app directory the tool prints its files against, by default
@@ -84,6 +85,17 @@ def _routes(tree, parents=(), top=True) -> list[dict]:
     return found
 
 
+def _schema(path: str) -> str | None:
+    """The route's path as `REST` reads one (`flows.path_schema`: `:id` is `{}`), or None for a path that stands for several
+    schemas: a splat (`*`) or an optional segment (`:lang?`, `about?`). React Router's own matcher (`matchPath`) is JavaScript and
+    the command prints only the text, so its segments are read as the framework writes them: a text with no grammar, read with
+    string operations, as `nextjs._next_path` does."""
+    import flows
+    if any(segment == "*" or segment.endswith("?") for segment in path.split("/")):
+        return None
+    return flows.path_schema(path)
+
+
 def read(context, commands, results):
     import entries
     import flows
@@ -131,7 +143,7 @@ def read(context, commands, results):
     if routes:
         for route, file in routes:
             shape = "index" if route["index"] else "route" if route["own"] else "layout"
-            base = {"reader": NAME, "shape": shape, "kind": table[shape]["kind"], "path": route["path"]}
+            base = {"reader": NAME, "shape": shape, "kind": table[shape]["kind"], "path": route["path"], "schema": _schema(route["path"])}
             module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
             data = shape == "layout"
             if data:  # the module row stays; the functions the framework calls on a request are rows of their own shape
