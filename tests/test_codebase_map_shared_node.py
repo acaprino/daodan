@@ -227,7 +227,7 @@ def test_the_seed_s_proxy_serves_its_project_and_its_refusals_are_requests_and_h
     with node_preparation.analysis():
         first, = container_runner.runner(manifest, fake)([{"tool": "tsc", "argv": ["tsc", "--showConfig"], "cwd": "."}])
     assert [phase for phase, _, _ in phases][:3] == ["own", "tools", "node-restore"] and started
-    assert all(args[-1] == key for args in started)  # the seed's proxy and the consumer's serve the project
+    assert all(args[4] == key for args in started)  # the seed's proxy and the consumer's serve the project (`project`)
     assert [(g["host"], g["port"]) for g in first["gaps"] if g["kind"] == "host_denied"] == [
         ("blocked.example.com", "443")]
     assert not any(g["kind"] == "approval_required" for g in first["gaps"])  # the restore succeeded: its result stands

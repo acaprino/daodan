@@ -2289,6 +2289,7 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
              "gitlab": ([planned], DATABASE_URL.replace("@localhost:", "@db:")),
              "compose": (composed, "postgres://postgres:changethis@localhost:5432/app")}
     image = (modal.Image.debian_slim(python_version="3.13").apt_install("git")
+             .pip_install("jsonpointer==3.0.0")  # `project_file`, which `egress.load` reads the project's lists from
              .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"])
              # `container` and its imports read data registers at import, from `data` beside its folder's parent
              .add_local_dir(SCRIPTS.parent / "data", "/daodan/data", ignore=["marks/**"]))
