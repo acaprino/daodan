@@ -1,8 +1,9 @@
-"""`scan` and `stack` run on the inventory, before `parse` (spec of the pipeline, 8.2 and 8.11 step 5, piece D).
+"""`recognize_stack` and `find_modules` run on the inventory, before `link_calls` needs the files read (spec of the pipeline, 8.2
+and 8.11 step 5, piece D).
 
 They read no symbol (pieces A, B and C), so on a store that holds only the inventory they write the same pre-map, module graph
-and technologies as on the store the reading has written (`snapshot.read_project`, the one reading: `parse` only says the
-plan); and since those are bound to the inventory's digest, reading the files afterwards leaves them fresh.
+and technologies as on the store the reading has written (`snapshot.read_project`, the one reading); and since those are bound
+to the inventory's digest, reading the files afterwards leaves them fresh.
 """
 from __future__ import annotations
 
@@ -48,8 +49,8 @@ def _written(manifest: Path) -> dict:
     return out
 
 
-def test_the_steps_are_stack_scan_then_parse():
-    assert [step.NAME for step in pipeline.STEPS][:3] == ["stack", "scan", "parse"]
+def test_the_steps_are_the_stack_the_modules_the_entry_points_then_the_calls():
+    assert [step.NAME for step in pipeline.STEPS][:4] == ["recognize_stack", "find_modules", "find_entry_points", "link_calls"]
 
 
 def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(real_stack, tmp_path):
@@ -58,8 +59,8 @@ def test_scan_and_stack_write_the_same_on_the_inventory_as_on_the_read_snapshot(
     snapshot.read_project(root, read)
     file_inventory.write(root, listed)
     for manifest in (read, listed):
-        result = pipeline.run(manifest, stop="scan", fast_scan=True)
-        assert "failed" not in result["scan"] and "failed" not in result["stack"], result
+        result = pipeline.run(manifest, stop="find_modules", fast_scan=True)
+        assert "failed" not in result["find_modules"] and "failed" not in result["recognize_stack"], result
     assert "pushbullet" in {item["id"] for item in _written(read)[technologies.path(read).name]["mentioned"]}  # a sign read in the text
     assert _written(listed) == _written(read)
 
@@ -76,7 +77,7 @@ def test_the_module_graph_names_the_same_git_state_on_the_inventory(tmp_path):
     file_inventory.write(root, listed)
     gits = []
     for manifest in (read, listed):
-        pipeline.run(manifest, start="scan", stop="scan", fast_scan=True)
+        pipeline.run(manifest, start="find_modules", stop="find_modules", fast_scan=True)
         gits.append(json.loads(modules.graph_name(manifest).read_text(encoding="utf-8"))["binding"]["git"])
     assert gits[0] is not None and gits[1] == gits[0]
 
@@ -85,8 +86,8 @@ def test_what_scan_and_stack_wrote_stays_fresh_once_the_files_are_read(tmp_path)
     root = _project(tmp_path)
     manifest = tmp_path / "out" / "manifest.sqlite"
     file_inventory.write(root, manifest)
-    result = pipeline.run(manifest, stop="scan", fast_scan=True)
-    assert "failed" not in result["scan"] and "failed" not in result["stack"], result
+    result = pipeline.run(manifest, stop="find_modules", fast_scan=True)
+    assert "failed" not in result["find_modules"] and "failed" not in result["recognize_stack"], result
     snapshot.read_project(root, manifest)  # the reading replaces the store that held only the inventory
     assert premap.state(manifest)["state"] == "fresh"
     assert modules.graph_state(manifest)["state"] == "fresh"
@@ -140,9 +141,9 @@ def test_a_declared_symbol_member_is_checked_once_the_file_is_read(tmp_path):
     read, listed = tmp_path / "read" / "manifest.sqlite", tmp_path / "listed" / "manifest.sqlite"
     snapshot.read_project(root, read)
     file_inventory.write(root, listed)
-    pipeline.run(read, start="scan", stop="scan", fast_scan=True)
+    pipeline.run(read, start="find_modules", stop="find_modules", fast_scan=True)
     with mock.patch.object(snapshot_store.SnapshotStore, "get_file", side_effect=AssertionError("scan read a file's symbols")):
-        pipeline.run(listed, start="scan", stop="scan", fast_scan=True)
+        pipeline.run(listed, start="find_modules", stop="find_modules", fast_scan=True)
     snapshot.read_project(root, listed)
 
     def greeting(graph):
@@ -161,7 +162,8 @@ SUBMODULE = {".gitmodules": '[submodule "lib"]\n\tpath = lib\n\turl = https://ex
 
 def test_a_file_the_pre_map_excludes_is_read_like_any_other_and_the_plan_counts_it(tmp_path):
     """The `excluded` facet of the pre-map is a label, not a choice of the reading (the owner's decision of 24 November
-    2026): the one reading, `read_project`, reads a submodule's file, and the plan `parse` says counts it."""
+    2026): the one reading, `read_project`, reads a submodule's file, and the plan counts it."""
+    from pipeline import plan as planning
     from snapshot_store import open_snapshot
     root = tmp_path / "proj"
     for rel, text in SUBMODULE.items():
@@ -169,13 +171,12 @@ def test_a_file_the_pre_map_excludes_is_read_like_any_other_and_the_plan_counts_
         (root / rel).write_text(text, encoding="utf-8", newline="\n")
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(root, manifest)
-    seen = []
-    result = pipeline.run(manifest, listeners=[seen.append], start="scan", stop="parse", fast_scan=True)
-    assert "failed" not in result["parse"], result
+    result = pipeline.run(manifest, start="find_modules", stop="find_modules", fast_scan=True)
+    assert "failed" not in result["find_modules"], result
     record = json.loads(premap.path(manifest).read_text(encoding="utf-8"))
     assert [(entry["path"], entry["why"]) for entry in record["excluded"]] == [("lib/", "submodule"),
                                                                               (".gitmodules", "vendored")]
     with open_snapshot(manifest) as store:
         assert "f" in store.get_file("lib/x.py")["symbols"] and "g" in store.get_file("app.py")["symbols"]
-    [said] = [event for event in seen if event["kind"] == "log" and event["message"] == "the plan"]
-    assert {node["id"]: node["on"]["files"] for node in said["data"]["plan"]["nodes"]}["parse:python"] == 2
+        planned = planning.plan(planning.stored(store))
+    assert {node["id"]: node["on"]["files"] for node in planned["nodes"]}["read_code:python"] == 2

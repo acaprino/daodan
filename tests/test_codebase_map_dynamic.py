@@ -400,7 +400,7 @@ def step(manifest: Path, box=None, engine=container.Engine("fake", ("fake",))) -
     found = {"side_effect": engine} if isinstance(engine, Exception) else {"return_value": engine}
     with mock.patch.object(container, "find_engine", **found) as asked, \
             mock.patch.object(container, "run_in_container", side_effect=box):
-        result = pipeline.Dynamic.run(pipeline.Context(manifest, bus))
+        result = pipeline.RunAndObserve.run(pipeline.Context(manifest, bus))
     return result, seen, asked
 
 
@@ -423,7 +423,7 @@ def test_the_step_runs_the_declared_tests_in_the_container_and_saves_what_they_c
     assert python["state"] == "observed" and python["edges"] > 0 and python["closed"] >= 6
     kinds = [(event["kind"], event["analyzer"]) for event in seen if event["kind"].startswith("analyzer.")]
     assert kinds == [("analyzer.started", observer.NAME), ("analyzer.finished", observer.NAME)]
-    assert {event["step"] for event in seen} == {"dynamic"}
+    assert {event["step"] for event in seen} == {"run_and_observe"}
     assert {event["data"].get("phase") for event in seen if event["kind"] == "progress"} >= {"plan", "tests", "join"}
     assert [event["data"]["gap"]["kind"] for event in seen if event["kind"] == "gap"] == ["runner_brought"]
     with code_graph.Snapshot(manifest) as snap:
@@ -458,8 +458,8 @@ def test_without_a_container_engine_the_step_states_the_gap_and_the_pipeline_goe
     bus = pipeline.events.Bus()
     bus.subscribe(seen.append)
     context = pipeline.Context(manifest, bus)
-    context.results["dynamic"] = result
-    pipeline.Union.run(context)
+    context.results["run_and_observe"] = result
+    pipeline.AssembleGraph.run(context)
     [gap] = gaps(seen, "not-observed")
     assert refused.cause in gap["detail"]  # the union says the graph is static only, and why
 
@@ -557,7 +557,7 @@ def test_the_union_says_what_was_observed_and_what_stayed_unobserved(case):
     seen = []
     bus = pipeline.events.Bus()
     bus.subscribe(seen.append)
-    union = pipeline.Union.run(pipeline.Context(manifest, bus))
+    union = pipeline.AssembleGraph.run(pipeline.Context(manifest, bus))
     assert not gaps(seen, "not-observed")
     [said] = [event for event in seen if event["kind"] == "log"]
     python = result["languages"]["python"]
@@ -578,7 +578,7 @@ def test_a_report_reads_what_the_dynamic_step_observed_from_the_run(case):
     manifest.with_name(pipeline.events.JOURNAL).unlink(missing_ok=True)
     assert pipeline.runtime(manifest)["state"] == "not-run"  # no analysis has observed anything yet
     result, _seen, _asked = step(manifest, Container(played))
-    pipeline.Union.run(pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL))))
+    pipeline.AssembleGraph.run(pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL))))
     said = pipeline.runtime(manifest)
     python, seen = result["languages"]["python"], said["languages"]["python"]
     assert said["state"] == "observed"
@@ -596,8 +596,8 @@ def test_a_report_says_why_a_run_observed_nothing(case):
     refused = container.Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
     result, _seen, _asked = step(manifest, engine=refused)
     context = pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL)))
-    context.results["dynamic"] = result
-    pipeline.Union.run(context)
+    context.results["run_and_observe"] = result
+    pipeline.AssembleGraph.run(context)
     said = pipeline.runtime(manifest)
     assert said["state"] == "none" and said["languages"] == {}
     [gap] = said["gaps"]
@@ -668,8 +668,8 @@ def union(manifest: Path, result: dict) -> list[dict]:
     bus = pipeline.events.Bus()
     bus.subscribe(seen.append)
     context = pipeline.Context(manifest, bus)
-    context.results["dynamic"] = result
-    pipeline.Union.run(context)
+    context.results["run_and_observe"] = result
+    pipeline.AssembleGraph.run(context)
     return seen
 
 
@@ -689,8 +689,8 @@ def test_runtime_reports_browser_actions_even_when_no_call_edge_was_placed(tmp_p
     assert result["languages"]["python"]["state"] == "not-observed"
     context = pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL)))
     for analyzed in (result, warm):
-        context.results["dynamic"] = analyzed
-        pipeline.Union.run(context)
+        context.results["run_and_observe"] = analyzed
+        pipeline.AssembleGraph.run(context)
         report = pipeline.runtime(manifest)
         assert report["state"] == "observed"
         assert report["ui_controls"] == [{"root": ".", **controls}]
@@ -747,8 +747,8 @@ def test_one_successful_suite_is_reused_with_evidence_in_only_one_of_its_languag
     assert hot["languages"]["python"]["sampled"]["edges"] == 1
     for analyzed in (cold, hot):
         context = pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL)))
-        context.results["dynamic"] = analyzed
-        pipeline.Union.run(context)
+        context.results["run_and_observe"] = analyzed
+        pipeline.AssembleGraph.run(context)
         report = pipeline.runtime(manifest)
         assert report["state"] == "observed" and report["languages"]["python"]["edges"] == 0
         assert report["languages"]["python"]["sampled"]["edges"] == 1
@@ -782,7 +782,7 @@ def test_the_union_ends_the_run_whatever_one_language_holds(tmp_path):
         code_graph.write_observed(snap, out, "python", [], {"resolver": "old@1", "tests": [{"root": "."}]})
     seen = union(manifest, {"languages": {}})
     [said] = [event for event in seen if event["level"] == "error"]
-    assert said["step"] == "union" and said["data"]["language"] == "python" and "KeyError" in said["data"]["cause"]
+    assert said["step"] == "assemble_graph" and said["data"]["language"] == "python" and "KeyError" in said["data"]["cause"]
     assert seen[-1]["kind"] == "graph.ready"
 
 
@@ -849,8 +849,8 @@ def test_a_profiler_alone_gives_sampled_edges_and_no_claim_on_what_it_did_not_se
     bus = pipeline.events.Bus()
     bus.subscribe(seen.append)
     context = pipeline.Context(manifest, bus)
-    context.results["dynamic"] = result
-    union = pipeline.Union.run(context)
+    context.results["run_and_observe"] = result
+    union = pipeline.AssembleGraph.run(context)
     assert not gaps(seen, "not-observed") and not gaps(seen, "files-not-executed")
     [said] = [event for event in seen if event["kind"] == "log"]
     assert said["message"] == "python: 2 sites and 5 edges sampled in a run, 2 holes closed"

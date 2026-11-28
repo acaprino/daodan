@@ -419,15 +419,15 @@ class MapServiceTests(unittest.TestCase):
         from pipeline import events as pipeline_events
         self.create()
         journal = self.service.root / "runs/example/snapshot" / pipeline_events.JOURNAL
-        # The run's creation runs the scan without the container, and the stack (pipeline spec of 15 November 2026, section 6).
+        # The run's creation runs the stack, the scan and the entry points without the container (pipeline spec, section 6).
         progress = self.service.status("example")["progress"]
-        self.assertEqual((progress["step"], progress["done"]), ("scan", progress["total"]))
+        self.assertEqual((progress["step"], progress["done"]), ("find_entry_points", progress["total"]))
         start = len(pipeline_events.read(journal)[0])
         bus = pipeline_events.Bus(journal)
-        bus.emit("step.started", "scan", step="scan")
-        bus.progress("analyze", 1, 3, analyzer="python", phase="index")
-        bus.progress("analyze", 2, 3, analyzer="python", phase="graph")
-        bus.emit("log", "x" * (mcp_service.MAX_MESSAGE + 5), step="analyze", analyzer="python", level="debug")
+        bus.emit("step.started", "find_modules", step="find_modules")
+        bus.progress("link_calls", 1, 3, analyzer="python", phase="index")
+        bus.progress("link_calls", 2, 3, analyzer="python", phase="graph")
+        bus.emit("log", "x" * (mcp_service.MAX_MESSAGE + 5), step="link_calls", analyzer="python", level="debug")
         service_events = self.service.events("example")["events"]
         first = self.service.events("example", limit=2, pipeline_after=start)
         self.assertEqual(first["events"], service_events[:2])
@@ -440,7 +440,7 @@ class MapServiceTests(unittest.TestCase):
         self.assertFalse(self.service.events("example", pipeline_after=start + 4)["pipeline"]["events"])
         progress = self.service.status("example")["progress"]
         self.assertEqual({key: progress[key] for key in ("step", "analyzer", "done", "total", "phase")},
-                         {"step": "analyze", "analyzer": "python", "done": 2, "total": 3, "phase": "graph"})
+                         {"step": "link_calls", "analyzer": "python", "done": 2, "total": 3, "phase": "graph"})
         for values in ({"pipeline_after": -1}, {"pipeline_after": True}, {"pipeline_after": start + 5}):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 self.service.events("example", **values)

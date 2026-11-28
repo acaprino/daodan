@@ -9,8 +9,11 @@ import type { Snapshot } from './snapshot.ts';
 type Run = Pick<Snapshot, 'server' | 'events'>;
 export type Message = { tone: 'info' | 'warning' | 'error'; title: string; message: string };
 
-const STEPS: [string, string][] = [['parse', 'Parse · lettura dei sorgenti'], ['scan', 'Scan · inventario e moduli'], ['stack', 'Stack · tecnologie e librerie'],
-  ['analyze', 'Analyze · analyzer per linguaggio'], ['dynamic', 'Dynamic · osservazione dei test'], ['union', 'Union · collegamento dei grafi']];
+// The steps the pipeline runs, by their ids (`pipeline.STEPS`); a journal of old names reaches here with the ids. A bridge until
+// the view of the eight steps reads the plan from the server.
+const STEPS: [string, string][] = [['recognize_stack', 'Tecnologie · stack e librerie'], ['find_modules', 'Moduli · struttura del progetto'],
+  ['find_entry_points', 'Ingressi · rotte e pagine'], ['link_calls', 'Chiamate · analizzatore per linguaggio'],
+  ['run_and_observe', 'Esecuzione · osservazione dei test'], ['assemble_graph', 'Grafo · collegamento dei grafi']];
 const STEP: Record<string, string> = Object.fromEntries(STEPS.map(([id, label]) => [id, label.split(' · ')[0]]));
 
 export const pipelineEvents = (s: Pick<Snapshot, 'events'>) => s.events.filter(e => !e.run);

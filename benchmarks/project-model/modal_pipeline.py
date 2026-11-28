@@ -35,7 +35,7 @@ it uploaded and the paths where the two differ.
     DAODAN_FOLDER=<folder> python -m modal run benchmarks/project-model/modal_pipeline.py --folder-out DIR
 
 The last form runs the pipeline on a folder of this PC and brings its snapshot, pre-map, edge store and events
-back into DIR; `--folder-stop analyze` ends it after that step, without the tests of the dynamic step.
+back into DIR; `--folder-stop link_calls` ends it after that step, without the tests of the dynamic step.
 """
 from __future__ import annotations
 
@@ -635,7 +635,7 @@ def run_cases(names: list) -> dict:
 
             def listen(event, seen=seen, clock=clock, said=said, started=started):
                 seen.append(event["kind"])
-                if event["kind"] == "gap" and event["step"] == "dynamic":  # its gaps: no record keeps them
+                if event["kind"] == "gap" and event["step"] == "run_and_observe":  # its gaps: no record keeps them
                     gap = (event.get("data") or {}).get("gap") or {}
                     said.append({key: gap[key] for key in ("kind", "path", "name", "image", "detail") if key in gap})
                 if event["kind"].startswith("step."):

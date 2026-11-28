@@ -47,8 +47,8 @@ def test_scan_writes_the_modules_reading_no_symbol_and_the_graph_readers_get_is_
     no_symbols = AssertionError("scan read the snapshot's symbols")
     with mock.patch.object(snapshot, "resolved_imports", side_effect=no_symbols), \
             mock.patch.object(semantic_store, "semantic_reader", side_effect=no_symbols):
-        result = pipeline.run(manifest, start="scan", stop="scan", fast_scan=True)
-    assert "failed" not in result["scan"]
+        result = pipeline.run(manifest, start="find_modules", stop="find_modules", fast_scan=True)
+    assert "failed" not in result["find_modules"]
     scanned = json.loads(modules.graph_name(manifest).read_text(encoding="utf-8"))
     assert not {"imports", "calls"} & _kinds(scanned) and "declares" in _kinds(scanned)
 
@@ -59,9 +59,9 @@ def test_scan_writes_the_modules_reading_no_symbol_and_the_graph_readers_get_is_
 
 def test_the_union_step_leaves_the_whole_graph(tmp_path):
     _, manifest = manifest_of(tmp_path, FILES)
-    pipeline.run(manifest, start="scan", stop="scan", fast_scan=True)
-    with mock.patch.object(pipeline.Analyze, "run", return_value={}), \
-            mock.patch.object(pipeline.Dynamic, "run", return_value={}):
-        pipeline.run(manifest, start="union")
+    pipeline.run(manifest, start="find_modules", stop="find_modules", fast_scan=True)
+    with mock.patch.object(pipeline.LinkCalls, "run", return_value={}), \
+            mock.patch.object(pipeline.RunAndObserve, "run", return_value={}):
+        pipeline.run(manifest, start="assemble_graph")
     graph = json.loads(modules.graph_name(manifest).read_text(encoding="utf-8"))
     assert "imports" in _kinds(graph)

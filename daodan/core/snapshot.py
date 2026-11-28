@@ -526,7 +526,7 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
             and hasattr(previous, "verified_reusable_headers")
             and previous._has_json_cache()
         )
-        # The plan's parse part (spec 8.4; no entries exist yet, so no status): a file in no parse node is not
+        # The plan's `read_code` nodes (spec 8.4; no entries exist yet, so no status): a file in none of them is not
         # read by a language adapter. It keeps its inventory row and a file-level entry that says so.
         from pipeline import plan as planning
         rows = dict(listed.iter_inventory())
@@ -1477,11 +1477,11 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
         index = retrieval.ensure_index(manifest)
         if index["state"] != "fresh":
             raise ValueError(f"index: {index['state']}: {index.get('reason', '')}")
-        piped = pipeline.run(manifest, stop="scan", fast_scan=True)
-        scanned = piped["scan"]
+        piped = pipeline.run(manifest, stop=pipeline.FindEntryPoints.NAME, fast_scan=True)
+        scanned = piped[pipeline.FindModules.NAME]
         if "failed" in scanned:
             raise ValueError(f"modules: {scanned['failed']}")
-        stacked = piped.get("stack") or {}
+        stacked = piped.get(pipeline.RecognizeStack.NAME) or {}
         engine = resolve_edges.ensure_edges(manifest) if state.get("engine", True) else {"state": "off"}
         with ExitStack() as stack:
             base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
@@ -1728,10 +1728,10 @@ def cmd_write(args: argparse.Namespace) -> int:
         else:
             print(f"index: {index['action']} -> {index['index']} ({index['documents']} documents)")
     if not getattr(args, "no_modules", False):
-        # Step 1 (stack) and Step 2 (scan): the stack, then structure and module stack before downstream analysis.
+        # The steps to `find_entry_points`: the stack, structure and module stack, then the entry points.
         import pipeline
-        piped = pipeline.run(Path(args.out), stop="scan")
-        scanned = piped["scan"]
+        piped = pipeline.run(Path(args.out), stop=pipeline.FindEntryPoints.NAME)
+        scanned = piped[pipeline.FindModules.NAME]
         if "failed" in scanned:
             print(f"modules: {scanned['failed']}", file=sys.stderr)
             status = 1

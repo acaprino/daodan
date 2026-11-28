@@ -107,7 +107,7 @@ class WorkingRunTests(unittest.TestCase):
         import pipeline
         self.edit("app.py", "def greet():\n    return 'hello'\n")
         stop = pipeline.StepFailed("the snapshot cannot be read: broken", "write the snapshot again")
-        with mock.patch.object(pipeline.Scan, "run", side_effect=stop):
+        with mock.patch.object(pipeline.FindModules, "run", side_effect=stop):
             self.refresh()
         self.assertEqual(self.report()["status"], "failed")
         self.assertEqual(self.report()["error"], "modules: the snapshot cannot be read: broken")
@@ -512,7 +512,7 @@ class WorkingRunTests(unittest.TestCase):
             premap.ensure(manifest)
         import pipeline
         with self.assertRaisesRegex(ValueError, "came with the project"):
-            pipeline.run(manifest, stop="scan")
+            pipeline.run(manifest, stop="find_modules")
 
     def test_7_nothing_of_a_store_that_comes_with_the_project_is_read(self):
         self.ship()

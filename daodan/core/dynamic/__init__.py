@@ -27,7 +27,7 @@ stack, `caller` a project function as a callee is written, `callee` a callee, `l
 in the caller's file, or None when the profiler gives none. An observer gives what it has; with no exact site,
 the run says nothing of the files it did not execute.
 
-`run` is the step (`pipeline.Dynamic`); `join` places the sites on the snapshot's references, by position,
+`run` is the step (`pipeline.RunAndObserve`); `join` places the sites on the snapshot's references, by position,
 `join_sampled` the pairs, by line and name, and `code_graph.write_observed` saves the rows. An observed end
 holds for the run that produced it: it proves that a call can arrive there, not that it arrives only there, and
 a call no test executed stays as the static steps left it. A sampled one says the same with resolver
@@ -71,7 +71,7 @@ import shlex
 from datetime import datetime, timezone
 from pathlib import Path
 
-STEP = "dynamic"
+STEP = "run_and_observe"
 APP = "app"  # the exploration of the started app, apart from the observers: its record is `RUNS/APP`
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
 EXAMPLES = 20
@@ -584,7 +584,7 @@ def run(manifest: Path, bus) -> dict:
                 say(gap["detail"], {key: gap[key] for key in ("kind", "language", "detail")}, language=gap["language"])
                 left([gap["language"]], "no-observer", "no observer runs this language's tests")
         by_entry = {module.NAME: module for module in observers()}
-        waiting = [node for node in layout["nodes"] if node["step"] == "observe"]
+        waiting = [node for node in layout["nodes"] if node["step"] == STEP]
         for number, node in enumerate(waiting):
             module = by_entry[node["adapter"]]
             name, entry = resolver(module), module.NAME

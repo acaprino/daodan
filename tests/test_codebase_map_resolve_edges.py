@@ -342,10 +342,10 @@ class PassLifecycleTests(unittest.TestCase):
         with mock.patch.object(engine_pass, "_spawn_detached", return_value=child):
             self.assertEqual(resolve_edges.ensure_edges(self.manifest)["action"], "started")
         with mock.patch.object(engine_pass, "_launch", side_effect=AssertionError("the static index is fresh")), \
-                mock.patch.object(pipeline.Dynamic, "run", return_value={"languages": {}}) as dynamic:
-            result = pipeline.run(self.manifest, start="analyze")
+                mock.patch.object(pipeline.RunAndObserve, "run", return_value={"languages": {}}) as dynamic:
+            result = pipeline.run(self.manifest, start="link_calls")
         dynamic.assert_called_once()
-        self.assertTrue(result["analyze"]["pipeline_complete"])
+        self.assertTrue(result["link_calls"]["pipeline_complete"])
         self.assertEqual(resolve_edges.ensure_edges(self.manifest)["action"], "none")
 
     def test_the_edge_view_carries_coverage_and_names_a_running_pass(self):
@@ -1451,7 +1451,7 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(result["languages"]["go"]["state"], "fresh")
         self.assertEqual(result["engines"]["scip-go"]["gaps"], [gap])
         journal, _cursor = events.read(manifest.with_name(events.JOURNAL))
-        said = [event for event in journal if event["kind"] == "gap" and event["step"] == "analyze"]
+        said = [event for event in journal if event["kind"] == "gap" and event["step"] == "link_calls"]
         self.assertEqual([(event["analyzer"], event["data"]["gap"]) for event in said], [("scip-go", gap)])
 
     def test_container_language_without_container_is_unavailable(self):

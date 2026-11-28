@@ -94,7 +94,7 @@ test('the events of a run are added as they come, those of another take their pl
   const { model, sources, now } = setup();
   model.start();
   sources[0].send('app', none);
-  sources[0].send('snapshot', events('r1', [{ kind: 'step.started', step: 'parse' }], [{ event: 'run_created', message: 'nuovo' }]));
+  sources[0].send('snapshot', events('r1', [{ kind: 'step.started', step: 'recognize_stack' }], [{ event: 'run_created', message: 'nuovo' }]));
   sources[0].send('update', events('r1', [{ kind: 'log', message: 'letto' }]));
   assert.deepEqual(now().events.map(e => [e.run === true, e.event ?? e.kind]), [[true, 'run_created'], [false, 'step.started'], [false, 'log']]);
   sources[0].onerror!();
@@ -562,9 +562,9 @@ test('a graph that fails is said and asked again; new links, and a step that end
   sources[0].send('app', { ...ready, links: { state: 'done' } });
   await turn();
   assert.equal(times(), 3);
-  sources[0].send('update', events('r1', [{ kind: 'step.finished', step: 'union' }]));
+  sources[0].send('update', events('r1', [{ kind: 'step.finished', step: 'assemble_graph' }]));
   await turn();
-  sources[0].send('update', events('r1', [{ kind: 'progress', step: 'union' }]));
+  sources[0].send('update', events('r1', [{ kind: 'progress', step: 'assemble_graph' }]));
   await turn();
   assert.equal(times(), 4);
 });

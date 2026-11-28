@@ -189,20 +189,20 @@ Una strada sola: lo decise il proprietario il 24 novembre 2026, dopo le misure d
 
 #### Dal codice al disegno
 
-Dove sta oggi ognuno degli otto id (corrispondenza del punto 15 di `T1`):
+Dove sta oggi ognuno degli otto id (`pipeline.IDS`; un giornale scritto con i nomi vecchi si legge con gli id, `events.LEGACY`):
 
 | Id del disegno | Oggi nel codice |
 | --- | --- |
 | `list_files` | `file_inventory.write`, prima della pipeline |
 | `read_code` | `snapshot.read_project` con `snapshot.write_reading`, prima della pipeline |
-| `recognize_stack` | Lo step `stack`, che oggi gira dopo `scan` |
-| `find_modules` | Lo step `scan`, senza rotte ed eventi |
-| `find_entry_points` | Le sorgenti dei framework e Noir, oggi in `scan` (`premap.SOURCES`), più `entries.py` e `binder.py`, che girano dopo la pipeline |
-| `link_calls` | Lo step `analyze` |
-| `run_and_observe` | Lo step `dynamic` |
-| `assemble_graph` | Lo step `union` |
+| `recognize_stack` | Lo step `RecognizeStack` |
+| `find_modules` | Lo step `FindModules` |
+| `find_entry_points` | Lo step `FindEntryPoints` (`entry_points.SOURCES`, legate da `binder.py`), più `entries.py`, che gira dopo la pipeline |
+| `link_calls` | Lo step `LinkCalls`, il primo che rifiuta uno snapshot con il solo inventario |
+| `run_and_observe` | Lo step `RunAndObserve` |
+| `assemble_graph` | Lo step `AssembleGraph` |
 
-`parse` non diventa nessuno degli otto: dice solo il piano, che resta la funzione `pipeline.plan`. Il resto dello stato, passo per passo (spec 8.11: là i dettagli):
+Lo step `parse` non c'è più: diceva solo il piano, che resta la funzione `pipeline.plan`. Il resto dello stato, passo per passo (spec 8.11: là i dettagli):
 
 | Che cosa | Stato | Spec 8.11 |
 | --- | --- | --- |
@@ -217,7 +217,7 @@ Dove sta oggi ognuno degli otto id (corrispondenza del punto 15 di `T1`):
 | I chiamanti passano da `read_project` a inventario e poi pipeline | Fermo: non cambia nulla per il prodotto | 8.3 |
 | Il linguaggio da una libreria nostra, con il catalogo di Linguist | In parte: anagrafica, catalogo di Linguist e modulo (`languages/detect/`) con le regole di `.ts` e `.sql`. Da fare: i `.h` nel modulo con l'albero sintattico, il riconoscimento per nome di file. | 8.3 |
 | Radici e alias degli import da `tsc` | Fermo: sui 25 progetti veri 0 import guadagnati e 110 persi. Oggi la lettura a mano (`import_resolution.py`) | Passo 5, pezzo F |
-| I nomi nuovi di step, eventi e cartelle (`parsers/`, `scanners/`, `resolvers/`, `observers/`) | Da fare. Fatto solo `NAME`, in `indexers/` e `dynamic/` | Passo 6 |
+| I nomi nuovi di step, eventi e cartelle (`parsers/`, `scanners/`, `resolvers/`, `observers/`) | Step ed eventi: fatto (gli otto id). Cartelle: restano (`indexers/`, `dynamic/`, `premap/`, `entry_points/`) | Passo 6 |
 | Le prove 2 e 5: le due modalità danno lo stesso grafo; un ripiego è dichiarato | Da fare | 8.10 |
 | Le due parti di `scan`: `parse` parte dopo la prima, e si rifà solo ciò che la seconda corregge | Da fare | 8.5 |
 | `plan` come step | Da fare | 8.4 |

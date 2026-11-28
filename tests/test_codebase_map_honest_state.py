@@ -76,7 +76,7 @@ def _go_pass(index, languages=("go",), **fields):
 def _run(manifest: Path, index, languages=("go",), fields=None, **options) -> tuple[dict, list[dict]]:
     seen = []
     with _go_pass(index, languages, **(fields or {})):
-        result = pipeline.run(manifest, listeners=[seen.append], start="analyze", **options)
+        result = pipeline.run(manifest, listeners=[seen.append], start="link_calls", **options)
     return result, seen
 
 
@@ -93,14 +93,14 @@ def test_a_language_with_no_file_in_the_index_is_failed_with_the_commonest_reaso
     empty.write_bytes(b"")
     result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given:
                         _contract(indexes=[[str(empty), ""]]))
-    outcome = result["analyze"]["languages"]["go"]
+    outcome = result["link_calls"]["languages"]["go"]
     assert outcome["state"] == "failed"
     assert "none of the 2 go files" in outcome["reason"] and "no document in the index (2)" in outcome["reason"]
-    assert result["analyze"]["available"] is False
+    assert result["link_calls"]["available"] is False
     assert resolve_edges.edge_state(manifest)["languages"]["go"]["state"] == "failed"
     finished = [e for e in seen if e["kind"] == "analyzer.finished"]
     assert [e["level"] for e in finished] == ["error"] and "no document in the index" in finished[0]["data"]["cause"]
-    assert result["union"]["languages"]["go"]["state"] == "failed"
+    assert result["assemble_graph"]["languages"]["go"]["state"] == "failed"
 
 
 def test_one_language_of_a_stage_without_a_file_indexed_is_failed_beside_the_fresh_one(tmp_path):
@@ -108,10 +108,10 @@ def test_one_language_of_a_stage_without_a_file_indexed_is_failed_beside_the_fre
     its cause, and the stage says so on the bus."""
     _project_dir, manifest = _project(tmp_path, {"native/b.c": "int b(void) { return 1; }\n"})
     result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(), ("go", "c"))
-    languages = result["analyze"]["languages"]
-    assert languages["go"]["state"] == "fresh" and result["analyze"]["available"] is True
+    languages = result["link_calls"]["languages"]
+    assert languages["go"]["state"] == "fresh" and result["link_calls"]["available"] is True
     assert languages["c"]["state"] == "failed" and "none of the 1 c files" in languages["c"]["reason"]
-    [gap] = _gaps(seen, "analyze", "language_not_indexed")
+    [gap] = _gaps(seen, "link_calls", "language_not_indexed")
     assert gap["language"] == "c" and gap["detail"] == languages["c"]["reason"]
     state = resolve_edges.edge_state(manifest)["languages"]
     assert (state["go"]["state"], state["c"]["state"]) == ("fresh", "failed")
@@ -128,10 +128,10 @@ def test_a_language_no_build_compiles_is_unavailable_not_failed(tmp_path):
                                 create=True)
     with unbuilt, missing:
         result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(), ("go", "c"))
-    languages = result["analyze"]["languages"]
+    languages = result["link_calls"]["languages"]
     assert languages["go"]["state"] == "fresh"
     assert languages["c"]["state"] == "unavailable" and "none of the 1 c files" in languages["c"]["reason"]
-    [gap] = _gaps(seen, "analyze", "language_not_indexed")
+    [gap] = _gaps(seen, "link_calls", "language_not_indexed")
     assert gap["language"] == "c" and gap["detail"] == languages["c"]["reason"]
     empty = tmp_path / "empty.scip"
     empty.write_bytes(b"")
@@ -139,7 +139,7 @@ def test_a_language_no_build_compiles_is_unavailable_not_failed(tmp_path):
     with unbuilt, missing:
         result, _seen = _run(manifest, lambda project_dir, work_dir, files=None, **given:
                              _contract(indexes=[[str(empty), ""]]))
-    assert result["analyze"]["languages"]["go"]["state"] == "unavailable"
+    assert result["link_calls"]["languages"]["go"]["state"] == "unavailable"
 
 
 def test_the_files_the_index_does_not_hold_are_a_gap_of_the_union(tmp_path):
@@ -147,8 +147,8 @@ def test_the_files_the_index_does_not_hold_are_a_gap_of_the_union(tmp_path):
     files are missing and why."""
     _project_dir, manifest = _project(tmp_path, {"tools/tool.go": "package tools\n"})
     result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract())
-    assert result["union"]["languages"]["go"]["state"] == "fresh"
-    [gap] = _gaps(seen, "union", "files-missing")
+    assert result["assemble_graph"]["languages"]["go"]["state"] == "fresh"
+    [gap] = _gaps(seen, "assemble_graph", "files-missing")
     assert (gap["files"], gap["of"]) == (1, 3) and gap["reasons"] == {"no document in the index": 1}
     [event] = [e for e in seen if e["kind"] == "gap" and e["data"]["gap"]["kind"] == "files-missing"]
     assert event["data"]["language"] == "go" and "1 of 3" in event["message"]
@@ -161,10 +161,10 @@ def test_a_build_that_gave_no_index_is_a_gap_of_the_stage_beside_the_one_that_di
     builds = [{"root": "", "state": "done"},
               {"root": "legacy", "state": "failed", "reason": "scip-java wrote no index (exit code 1): boom"}]
     result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(builds=builds))
-    assert result["analyze"]["languages"]["go"]["state"] == "fresh"
-    [gap] = _gaps(seen, "analyze", "build_not_indexed")
+    assert result["link_calls"]["languages"]["go"]["state"] == "fresh"
+    [gap] = _gaps(seen, "link_calls", "build_not_indexed")
     assert gap["path"] == "legacy" and gap["state"] == "failed" and "boom" in gap["detail"]
-    assert result["analyze"]["engines"]["scip-go"]["gaps"] == [gap]
+    assert result["link_calls"]["engines"]["scip-go"]["gaps"] == [gap]
 
 
 def test_a_unit_or_a_run_that_gave_no_index_is_a_gap_of_the_stage(tmp_path):
@@ -174,7 +174,7 @@ def test_a_unit_or_a_run_that_gave_no_index_is_a_gap_of_the_stage(tmp_path):
     units = [{"root": "lib", "state": "indexed"},
              {"root": "app", "state": "unavailable", "kind": "not-cmake", "cause": "built with make"}]
     _result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(units=units))
-    [gap] = _gaps(seen, "analyze", "build_not_indexed")
+    [gap] = _gaps(seen, "link_calls", "build_not_indexed")
     assert (gap["path"], gap["state"]) == ("app", "unavailable") and "built with make" in gap["detail"]
 
     _project_dir, manifest = _project(tmp_path / "runs", {"tools/go.mod": "module example.com/tools\n\ngo 1.21\n",
@@ -182,7 +182,7 @@ def test_a_unit_or_a_run_that_gave_no_index_is_a_gap_of_the_stage(tmp_path):
     runs = [{"prefix": "", "returncode": 0, "index": "x.scip"},
             {"prefix": "tools", "returncode": 1, "index": None, "stderr_tail": "warning\npanic: no packages\n"}]
     _result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(runs=runs))
-    [gap] = _gaps(seen, "analyze", "build_not_indexed")
+    [gap] = _gaps(seen, "link_calls", "build_not_indexed")
     assert gap["path"] == "tools" and "exit code 1" in gap["detail"] and "panic: no packages" in gap["detail"]
 
     _project_dir, manifest = _project(tmp_path / "probe", {"tools/go.mod": "module example.com/tools\n\ngo 1.21\n",
@@ -190,7 +190,7 @@ def test_a_unit_or_a_run_that_gave_no_index_is_a_gap_of_the_stage(tmp_path):
     probe = [{"prefix": "", "returncode": 1, "index": None, "stderr_tail": "no go.mod"},
              {"prefix": "tools", "returncode": 0, "index": "x.scip"}]
     _result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(runs=probe))
-    assert not _gaps(seen, "analyze", "build_not_indexed")
+    assert not _gaps(seen, "link_calls", "build_not_indexed")
 
 
 def test_an_indexer_reaches_the_hosts_the_project_declares_and_one_it_could_not_reach_is_a_gap(tmp_path):
@@ -216,7 +216,7 @@ def test_an_indexer_reaches_the_hosts_the_project_declares_and_one_it_could_not_
             _result, seen = _run(manifest, index, fields={"needs_container": builds})
         assert given.get("declared") == (declared if builds else None)
         assert egress.WHERE[str(Path(_project_dir).resolve())] == declared["where"]  # its runs' requests name the files
-        [gap] = _gaps(seen, "analyze", "host_unreachable")
+        [gap] = _gaps(seen, "link_calls", "host_unreachable")
         assert gap["host"] == "proxy.corp.example" and gap["declared_in"] == ["go.mod"]
 
 
@@ -239,14 +239,14 @@ def test_a_declared_host_nobody_decided_stops_the_stage_before_its_build_and_aft
     with mock.patch("preparation.declared", return_value=declared), \
             mock.patch("container.find_engine", return_value="the engine"):
         result, seen = _run(manifest, index, fields={"needs_container": True})
-        assert built == [] and result["analyze"]["languages"]["go"]["state"] in ("failed", "unavailable")
-        [gap] = _gaps(seen, "analyze", "approval_required")
+        assert built == [] and result["link_calls"]["languages"]["go"]["state"] in ("failed", "unavailable")
+        [gap] = _gaps(seen, "link_calls", "approval_required")
         assert gap["hosts"] == ["proxy.corp.example"] and "did not start" in gap["detail"]
         assert "proxy.corp.example:443 (declared in go.mod)" in gap["detail"]
         assert [(row["host"], row["declared_in"]) for row in egress.pending(key)] == [("proxy.corp.example", ["go.mod"])]
         egress.respond("proxy.corp.example", key, "once")  # between two passes: the next one is served by it
         _result, seen = _run(manifest, index, fields={"needs_container": True})
-    assert len(built) == 1 and not _gaps(seen, "analyze", "approval_required")
+    assert len(built) == 1 and not _gaps(seen, "link_calls", "approval_required")
     assert egress.pending(key) == [] and egress.session(key) == egress.new_session()  # the pass ended: forgotten
 
 
@@ -280,7 +280,7 @@ def test_a_snapshot_of_a_folder_below_the_root_asks_and_is_answered_under_the_ro
         egress.respond("proxy.corp.example", key, "once")
         _result, seen = _run(manifest, index, fields={"needs_container": True})
     assert [Path(folder).resolve() for folder in built] == [Path(below)]  # the stage still builds its own folder
-    assert not _gaps(seen, "analyze", "approval_required")
+    assert not _gaps(seen, "link_calls", "approval_required")
 
 
 def test_a_wanted_language_the_stage_does_not_report_is_missing(tmp_path):
@@ -314,7 +314,7 @@ def test_a_language_with_no_parsed_file_is_unavailable_in_the_pass_with_the_reas
     started = []
     result, seen = _run(manifest, lambda *given, **options: started.append(1) or _contract())
     assert not started
-    outcome = result["analyze"]["languages"]["go"]
+    outcome = result["link_calls"]["languages"]["go"]
     assert outcome["state"] == "unavailable" and "none of the 2 go files" in outcome["reason"]
     assert "lexical" in outcome["reason"] and outcome["install"]
     [event] = [e for e in seen if e["kind"] == "analyzer.unavailable"]
@@ -330,9 +330,9 @@ def test_the_union_names_the_languages_no_analyzer_serves(tmp_path):
                                                  "db/p.pkb": "create package body p as end p;\n",
                                                  "s.scss": "a { b: c }\n"})
     seen = []
-    result = pipeline.Union.run(pipeline.Context(manifest, _bus(seen)))
+    result = pipeline.AssembleGraph.run(pipeline.Context(manifest, _bus(seen)))
     assert result["no_analyzer"] == {"plsql": 1, "sql": 2}
-    gaps = {gap["language"]: gap for gap in _gaps(seen, "union", "no-analyzer")}
+    gaps = {gap["language"]: gap for gap in _gaps(seen, "assemble_graph", "no-analyzer")}
     assert set(gaps) == {"plsql", "sql"} and gaps["sql"]["files"] == 2 and "2 sql files" in gaps["sql"]["detail"]
     assert resolve_edges.edge_state(manifest)["no_analyzer"] == {"plsql": 1, "sql": 2}
     assert "no_analyzer" not in resolve_edges.edge_state(_project(tmp_path / "go")[1])
@@ -344,13 +344,13 @@ def test_the_union_says_calls_across_two_analyzers_are_not_resolved(tmp_path):
     _project_dir, manifest = _project(tmp_path, {"native/b.c": "int b(void) { return 1; }\n",
                                                  "native/c.cpp": "int c() { return 1; }\n"})
     seen = []
-    result = pipeline.Union.run(pipeline.Context(manifest, _bus(seen)))
-    [gap] = _gaps(seen, "union", "not-joined")
+    result = pipeline.AssembleGraph.run(pipeline.Context(manifest, _bus(seen)))
+    [gap] = _gaps(seen, "assemble_graph", "not-joined")
     assert gap["languages"] == ["go", "c"] and "not resolved" in gap["detail"]
     assert result["not_joined"] == [["go", "c"]]
     seen = []
-    result = pipeline.Union.run(pipeline.Context(_project(tmp_path / "go")[1], _bus(seen)))
-    assert not _gaps(seen, "union", "not-joined") and "not_joined" not in result
+    result = pipeline.AssembleGraph.run(pipeline.Context(_project(tmp_path / "go")[1], _bus(seen)))
+    assert not _gaps(seen, "assemble_graph", "not-joined") and "not_joined" not in result
 
 
 def _bus(seen: list) -> events.Bus:

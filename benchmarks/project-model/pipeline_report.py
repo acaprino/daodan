@@ -18,31 +18,40 @@ import statistics
 import sys
 from pathlib import Path
 
+CORE = Path(__file__).resolve().parents[2] / "daodan" / "core"
 STATES = ("fresh", "failed", "unavailable")
-STEPS = ("scan", "analyze", "union")
+STEPS = ("find_modules", "link_calls", "assemble_graph")
 TOP = 3  # reasons, examples and cases shown per row
+
+
+def _steps(case: dict) -> dict:
+    """The results of the case's steps by their ids: a round of old runs keeps the old names (`pipeline.events.LEGACY`)."""
+    if str(CORE) not in sys.path:
+        sys.path.insert(0, str(CORE))
+    from pipeline import events
+    return {events.LEGACY.get(name, name): step for name, step in (case.get("steps") or {}).items()}
 
 
 def _error(case: dict) -> str | None:
     """Why the case failed: its own error, or the first step that stopped the pipeline."""
     if case.get("error"):
         return case["error"]
-    return next((f"{name}: {step['failed']}" for name, step in (case.get("steps") or {}).items()
+    return next((f"{name}: {step['failed']}" for name, step in _steps(case).items()
                  if isinstance(step, dict) and step.get("failed")), None)
 
 
 def _languages(case: dict) -> dict:
-    steps = case.get("steps") or {}
-    return (steps.get("union") or {}).get("languages") or (steps.get("analyze") or {}).get("languages") or {}
+    steps = _steps(case)
+    return (steps.get("assemble_graph") or {}).get("languages") or (steps.get("link_calls") or {}).get("languages") or {}
 
 
 def _gaps(case: dict):
     """(step, gap) of the case: the pre-map's, then each analyzer's."""
     for gap in case.get("gaps") or []:
-        yield "scan", gap
-    for engine in ((case.get("steps") or {}).get("analyze") or {}).get("engines", {}).values():
+        yield "find_modules", gap
+    for engine in (_steps(case).get("link_calls") or {}).get("engines", {}).values():
         for gap in engine.get("gaps") or []:
-            yield "analyze", gap
+            yield "link_calls", gap
 
 
 def build(round_: dict) -> dict:
@@ -77,7 +86,7 @@ def build(round_: dict) -> dict:
                 reasons = collections.Counter(item["reason"] for item in files["missing"]).most_common(TOP)
                 missing.append({"case": name, "language": language, "missing": len(files["missing"]),
                                 "snapshot": files["snapshot"], "reasons": dict(reasons)})
-        for language, count in ((case.get("steps") or {}).get("union") or {}).get("no_analyzer", {}).items():
+        for language, count in (_steps(case).get("assemble_graph") or {}).get("no_analyzer", {}).items():
             unserved[language].update(cases=1, files=count)
         for facet, score in (case.get("premap") or {}).items():
             total = premap[facet]

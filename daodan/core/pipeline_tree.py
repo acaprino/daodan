@@ -308,13 +308,13 @@ def tree(decl: dict) -> dict:
     for r in rows:
         r["ver"] = decl["versions"].get(r["name"], "")
 
-    STEPS = {"today": [("s1", "Elenco dei file", "inventario", "Percorre la cartella. Di ogni file: hash e linguaggio."),
-                       ("s2", "Lettura del codice", "lettura", "Apre ogni file dell'elenco: simboli, import, chiamate."),
-                       ("s3", "Struttura del progetto", "scan", "Scrive moduli e pre-mappa. Oggi contiene tre competenze: build, punti di ingresso, pacchetti."),
-                       ("s4", "Tecnologie", "stack", "Riconosce framework, librerie, strumenti e servizi, e li assegna ai moduli."),
-                       ("s5", "Chiamate", "analyze", "Per ogni linguaggio, l'analizzatore ufficiale dice dove punta ogni chiamata."),
-                       ("s6", "Esecuzione", "dynamic", "Test e app nel container: ciò che viene chiamato davvero."),
-                       ("s7", "Grafo finale", "union", "Unisce e dice cosa manca."),
+    STEPS = {"today": [("s1", "Elenco dei file", "list_files", "Percorre la cartella. Di ogni file: hash e linguaggio."),
+                       ("s2", "Lettura del codice", "read_code", "Apre ogni file dell'elenco: simboli, import, chiamate."),
+                       ("s3", "Struttura del progetto", "find_modules, find_entry_points", "Scrive moduli e pre-mappa, poi i punti di ingresso nello step che segue."),
+                       ("s4", "Tecnologie", "recognize_stack", "Riconosce framework, librerie, strumenti e servizi, e li assegna ai moduli."),
+                       ("s5", "Chiamate", "link_calls", "Per ogni linguaggio, l'analizzatore ufficiale dice dove punta ogni chiamata."),
+                       ("s6", "Esecuzione", "run_and_observe", "Test e app nel container: ciò che viene chiamato davvero."),
+                       ("s7", "Grafo finale", "assemble_graph", "Unisce e dice cosa manca."),
                        ("after", "Dopo la pipeline", "flussi e schede", "Legame di rotte ed eventi alle funzioni, flussi, schede del modello. Oggi il legame avviene fuori dagli step."),
                        ("common", "Servizi comuni", "container e preparazione", "Ciò che ogni step usa quando deve eseguire qualcosa: il motore, l'immagine, le toolchain, i registri.")],
              "plan": [("p1", "Elenco dei file", "1_list_files", "Percorre la cartella. Di ogni file: hash e linguaggio."),

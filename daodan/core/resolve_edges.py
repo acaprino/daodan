@@ -102,15 +102,15 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"error": f"no such manifest: {manifest}"}), file=sys.stderr)
         return 2
     if args.whole_pass:
-        # The detached pass runs every step: the stack and the scan keep their records while they are fresh, and the scan
-        # runs the model commands still unrun.
+        # The detached pass runs every step: `recognize_stack`, `find_modules` and `find_entry_points` keep their records
+        # while they are fresh, and run the model commands still unrun.
         import pipeline
         results = pipeline.run(manifest, report_path=(args.report_out or manifest.with_name(REPORT_NAME)).resolve())
 
-        report = results.get("analyze") or {}
-        if "union" not in results:
+        report = results.get(pipeline.LinkCalls.NAME) or {}
+        if pipeline.AssembleGraph.NAME not in results:
             cause = next((value["failed"] for value in results.values() if "failed" in value),
-                         "the pipeline ended before union")
+                         "the pipeline ended before assemble_graph")
             print(f"the analysis failed: {cause}", file=sys.stderr)
             return 1
         print(json.dumps({key: report[key] for key in ("available", "languages")}, indent=2, sort_keys=True))

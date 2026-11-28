@@ -18,9 +18,10 @@ source and survive independent verification. Sources remain the authority.
 Eight steps, always in this order: each starts from what the ones before it established, and none finds out
 again what another already knows. Each uses the official tool of what it reads, behind an adapter, and writes
 what it could not do as a gap. The eight ids are the design ([`docs/specs/architettura.md`](docs/specs/architettura.md),
-"La pipeline a otto step"); the code still runs six steps (`pipeline.STEPS` in `daodan/core/pipeline/__init__.py`:
-`scan`, `stack`, `parse`, `analyze`, `dynamic`, `union`) until the plan's step T1.D renames them. The last column
-says where each id is in the code today.
+"La pipeline a otto step"), and the code uses them (`pipeline.IDS` in `daodan/core/pipeline/__init__.py`): the first
+two run before the pipeline, the other six are its steps (`pipeline.STEPS`). A journal written with the old names
+(`stack`, `scan`, `parse`, `analyze`, `dynamic`, `union`) reads with the ids. The last column says where each id is
+in the code today.
 
 ```mermaid
 flowchart LR
@@ -31,15 +32,14 @@ flowchart LR
 |---|---|---|---|
 | 1. `list_files` | Walks every folder and file: path, size, hash, language | No | `file_inventory.write`, before the pipeline |
 | 2. `read_code` | Reads each file: symbols, imports, references | No | `snapshot.read_project` (with `snapshot.write_reading`), before the pipeline |
-| 3. `recognize_stack` | Names build tools, frameworks, libraries and services | No | Step `stack`, which runs after `scan` |
-| 4. `find_modules` | Asks the build tools for modules, build units, packages and test commands | Only inside the container | Step `scan`, minus routes and events |
-| 5. `find_entry_points` | Finds where a user or a request enters, each tied to its function | Only inside the container | The framework sources and Noir, now in `scan` (`premap.SOURCES`), plus `entries.py` and `binder.py`, which run after the pipeline |
-| 6. `link_calls` | Resolves each call to its target | Only inside the container | Step `analyze` |
-| 7. `run_and_observe` | Runs the project's tests and records what they call; starts the app the project declares and presses its controls in a browser | Only inside the container | Step `dynamic` |
-| 8. `assemble_graph` | Joins the graphs and lists what is missing | No | Step `union`: it lists, it does not join yet |
+| 3. `recognize_stack` | Names build tools, frameworks, libraries and services | No | Step `RecognizeStack` |
+| 4. `find_modules` | Asks the build tools for modules, build units, packages and test commands | Only inside the container | Step `FindModules` |
+| 5. `find_entry_points` | Finds where a user or a request enters, each tied to its function | Only inside the container | Step `FindEntryPoints` (`entry_points.SOURCES`, bound by `binder.py`), plus `entries.py`, which runs after the pipeline |
+| 6. `link_calls` | Resolves each call to its target | Only inside the container | Step `LinkCalls` |
+| 7. `run_and_observe` | Runs the project's tests and records what they call; starts the app the project declares and presses its controls in a browser | Only inside the container | Step `RunAndObserve` |
+| 8. `assemble_graph` | Joins the graphs and lists what is missing | No | Step `AssembleGraph`: it lists, it does not join yet |
 
-The plan is not a step: it is the function `pipeline.plan` (`daodan/core/pipeline/plan.py`). The step `parse` has no
-id: it only says that plan.
+The plan is not a step: it is the function `pipeline.plan` (`daodan/core/pipeline/plan.py`).
 
 After the pipeline the model writes semantic cards and link rules, and flows connect writers, readers and user
 actions. [The process as the code runs it today, what is left to reach the design, its tools and example graphs](docs/plugins/codebase-map.md#pipeline).

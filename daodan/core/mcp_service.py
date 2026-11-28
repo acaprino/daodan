@@ -317,7 +317,7 @@ class MapService:
             "stale" if "stale" in (m_state, p_state) else "missing"
         )
         stack_state = technologies.state(manifest_path) if inspected["state"] in ("fresh", "stale") else "missing"
-        return {"scan": scan_state, "stack": stack_state, "analyze": engine_info.get("state")}
+        return {"find_modules": scan_state, "recognize_stack": stack_state, "link_calls": engine_info.get("state")}
 
     def _status(self, run_id, *, engine=False):
         run, state, manifest, target = self._bound_run(run_id)
@@ -501,8 +501,8 @@ class MapService:
                     self._event(run, "index_failed", message=f"{index['state']}: {index['reason']}")
                 if format == "sqlite":
                     import pipeline
-                    piped = pipeline.run(run / state["snapshot"]["path"], stop="scan", fast_scan=True)
-                    scanned = piped["scan"]
+                    piped = pipeline.run(run / state["snapshot"]["path"], stop=pipeline.FindEntryPoints.NAME, fast_scan=True)
+                    scanned = piped[pipeline.FindModules.NAME]
                     if "failed" in scanned:
                         self._event(run, "modules_failed", message=str(scanned["failed"])[:MAX_MESSAGE])
                 else:

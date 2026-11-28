@@ -131,3 +131,18 @@ def test_the_entry_points_follow_the_frameworks_of_the_stack_record_of_its_inven
     for other in ({"inventory": "another"}, {"ran": "failed"}):  # every source again
         stack([], **other)
         assert entry_points.state(manifest, sources=(noir, nextjs), runner=run)["state"] == "fresh"
+
+
+def test_the_entry_points_are_a_step_of_their_own_after_scan(tmp_path):
+    """`scan` writes the pre-map and no entry point; `find_entry_points`, the step after it, writes their record and says what
+    it does under its own name."""
+    import pipeline
+    _, manifest = manifest_of(tmp_path, {"api.py": "def submit():\n    pass\n"})
+    result = pipeline.run(manifest, start="find_modules", stop="find_modules", fast_scan=True)
+    assert "failed" not in result["find_modules"] and not entry_points.path(manifest).exists()
+    seen = []
+    result = pipeline.run(manifest, listeners=[seen.append], start="find_entry_points", stop="find_entry_points",
+                          fast_scan=True)
+    assert result["find_entry_points"]["entry_points"] == str(entry_points.path(manifest))
+    assert entry_points.state(manifest)["state"] == "fresh"
+    assert {event["step"] for event in seen} == {"find_entry_points"}

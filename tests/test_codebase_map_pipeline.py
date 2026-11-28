@@ -28,10 +28,10 @@ def test_an_event_has_its_step_kind_level_and_message_and_goes_to_every_listener
     bus = events.Bus(journal)
     seen = []
     bus.subscribe(seen.append)
-    bus.emit("step.started", "scan", step="scan")
-    bus.progress("analyze", 1, 3, analyzer="scip-go", phase="index")
-    assert [(e["kind"], e["step"], e["level"]) for e in seen] == [("step.started", "scan", "info"),
-                                                                  ("progress", "analyze", "info")]
+    bus.emit("step.started", "find_modules", step="find_modules")
+    bus.progress("link_calls", 1, 3, analyzer="scip-go", phase="index")
+    assert [(e["kind"], e["step"], e["level"]) for e in seen] == [("step.started", "find_modules", "info"),
+                                                                  ("progress", "link_calls", "info")]
     assert seen[1]["data"] == {"done": 1, "total": 3, "phase": "index"} and seen[1]["analyzer"] == "scip-go"
     written, cursor = events.read(journal)
     assert [e["kind"] for e in written] == ["step.started", "progress"] and cursor == 2
@@ -41,7 +41,7 @@ def test_an_event_has_its_step_kind_level_and_message_and_goes_to_every_listener
 
 def test_a_line_still_being_written_is_read_next_time(tmp_path):
     journal = tmp_path / events.JOURNAL
-    events.Bus(journal).emit("step.started", "scan", step="scan")
+    events.Bus(journal).emit("step.started", "find_modules", step="find_modules")
     with journal.open("a", encoding="utf-8") as stream:
         stream.write('{"kind": "prog')  # another process is appending
     written, cursor = events.read(journal)
@@ -51,10 +51,10 @@ def test_a_line_still_being_written_is_read_next_time(tmp_path):
 def test_a_broken_line_of_the_journal_is_skipped_and_hides_no_event_after_it(tmp_path):
     journal = tmp_path / events.JOURNAL
     bus = events.Bus(journal)
-    bus.emit("step.started", "scan", step="scan")
+    bus.emit("step.started", "find_modules", step="find_modules")
     with journal.open("ab") as stream:
         stream.write(b'{"kind": "prog\n')  # a writer stopped in the middle of its line, and another went on
-    bus.emit("step.finished", "scan", step="scan")
+    bus.emit("step.finished", "find_modules", step="find_modules")
     written, cursor = events.read(journal)
     assert [e["kind"] for e in written] == ["step.started", "step.finished"] and cursor == 3
     assert events.read(journal, after=1, limit=1) == ([], 2)  # the broken line counts: the cursor stays a line count
@@ -66,8 +66,8 @@ def test_a_journal_that_cannot_be_written_stops_nothing_and_is_told_once(tmp_pat
     bus = events.Bus(tmp_path / "taken" / events.JOURNAL)
     seen = []
     bus.subscribe(seen.append)
-    bus.emit("step.started", "scan", step="scan")
-    bus.emit("step.finished", "scan", step="scan")
+    bus.emit("step.started", "find_modules", step="find_modules")
+    bus.emit("step.finished", "find_modules", step="find_modules")
     assert [e["kind"] for e in seen] == ["step.started", "log", "step.finished"]
     assert seen[1]["level"] == "error" and seen[1]["data"]["cause"] and seen[1]["data"]["remedy"]
 
@@ -75,27 +75,44 @@ def test_a_journal_that_cannot_be_written_stops_nothing_and_is_told_once(tmp_pat
 def test_what_an_ended_analysis_left_open_is_closed_with_the_cause_and_only_once(tmp_path):
     journal = tmp_path / events.JOURNAL
     bus = events.Bus(journal)
-    bus.emit("step.started", "scan", step="scan")
-    bus.emit("step.finished", "scan", step="scan")
-    bus.emit("step.started", "analyze", step="analyze")
-    bus.emit("analyzer.started", "scip-go for go", step="analyze", analyzer="scip-go")
-    bus.emit("analyzer.finished", "scip-go: go", step="analyze", analyzer="scip-go")
-    bus.emit("analyzer.started", "scip-rust for rust", step="analyze", analyzer="scip-rust")
-    assert events.close_open(journal, "its process is gone", "analyze again") == ["scip-rust", "analyze"]
+    bus.emit("step.started", "find_modules", step="find_modules")
+    bus.emit("step.finished", "find_modules", step="find_modules")
+    bus.emit("step.started", "link_calls", step="link_calls")
+    bus.emit("analyzer.started", "scip-go for go", step="link_calls", analyzer="scip-go")
+    bus.emit("analyzer.finished", "scip-go: go", step="link_calls", analyzer="scip-go")
+    bus.emit("analyzer.started", "scip-rust for rust", step="link_calls", analyzer="scip-rust")
+    assert events.close_open(journal, "its process is gone", "analyze again") == ["scip-rust", "link_calls"]
     closed = events.read(journal, after=6)[0]
     assert [(e["kind"], e["step"], e["analyzer"], e["level"]) for e in closed] == [
-        ("analyzer.finished", "analyze", "scip-rust", "error"), ("step.failed", "analyze", None, "error")]
+        ("analyzer.finished", "link_calls", "scip-rust", "error"), ("step.failed", "link_calls", None, "error")]
     assert all(e["data"] == {"cause": "its process is gone", "remedy": "analyze again"} for e in closed)
     assert events.close_open(journal, "its process is gone", "analyze again") == []
     assert events.close_open(tmp_path / "none.jsonl", "no journal", "nothing to close") == []
 
 
+def test_a_journal_written_with_the_old_names_reads_with_the_ids(tmp_path):
+    """A journal of an analysis before the eight ids (`events.LEGACY`): each old name reads as its id, `parse` as `read_code`,
+    and what it left open is closed under the id."""
+    journal = tmp_path / events.JOURNAL
+    bus = events.Bus(journal)
+    for old in ("stack", "scan", "parse", "analyze", "dynamic", "union"):
+        bus.emit("step.started", old, step=old)
+        bus.emit("step.finished", old, step=old)
+    bus.emit("step.started", "analyze", step="analyze")
+    written = events.read(journal)[0]
+    assert [e["step"] for e in written[:12:2]] == ["recognize_stack", "find_modules", "read_code", "link_calls",
+                                                   "run_and_observe", "assemble_graph"]
+    assert [e["message"] for e in written[:12:2]] == ["stack", "scan", "parse", "analyze", "dynamic", "union"]
+    assert events.close_open(journal, "its process is gone", "analyze again") == ["link_calls"]
+    assert events.read(journal, after=13)[0][0]["step"] == "link_calls"
+
+
 def test_an_unknown_kind_or_level_is_refused():
     bus = events.Bus()
     with pytest.raises(ValueError):
-        bus.emit("whatever", "x", step="scan")
+        bus.emit("whatever", "x", step="find_modules")
     with pytest.raises(ValueError):
-        bus.emit("log", "x", step="scan", level="loud")
+        bus.emit("log", "x", step="find_modules", level="loud")
 
 
 def test_a_listener_that_fails_stops_nothing_and_its_error_becomes_an_event(tmp_path):
@@ -107,7 +124,7 @@ def test_a_listener_that_fails_stops_nothing_and_its_error_becomes_an_event(tmp_
 
     bus.subscribe(broken)
     bus.subscribe(seen.append)
-    bus.emit("step.started", "scan", step="scan")
+    bus.emit("step.started", "find_modules", step="find_modules")
     assert [e["kind"] for e in seen] == ["step.started", "log"]
     assert seen[1]["level"] == "error" and "listener down" in seen[1]["message"]
 
@@ -115,8 +132,8 @@ def test_a_listener_that_fails_stops_nothing_and_its_error_becomes_an_event(tmp_
 def test_a_warning_or_an_error_carries_its_cause_and_remedy():
     bus = events.Bus()
     with pytest.raises(ValueError):
-        bus.emit("analyzer.unavailable", "no engine", step="analyze", analyzer="scip-java", level="warning")
-    event = bus.emit("analyzer.unavailable", "no engine", step="analyze", analyzer="scip-java", level="warning",
+        bus.emit("analyzer.unavailable", "no engine", step="link_calls", analyzer="scip-java", level="warning")
+    event = bus.emit("analyzer.unavailable", "no engine", step="link_calls", analyzer="scip-java", level="warning",
                      cause="no container engine answers", remedy="start Kiri")
     assert event["data"] == {"cause": "no container engine answers", "remedy": "start Kiri"}
 
@@ -157,23 +174,19 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
-    assert steps == [("step.started", "stack"), ("step.finished", "stack"), ("step.started", "scan"),
-                     ("step.finished", "scan"), ("step.started", "parse"), ("step.finished", "parse"),
-                     ("step.started", "analyze"),
-                     ("step.finished", "analyze"), ("step.started", "dynamic"), ("step.finished", "dynamic"),
-                     ("step.started", "union"), ("step.finished", "union")]
+    assert steps == [(kind, step.NAME) for step in pipeline.STEPS for kind in ("step.started", "step.finished")]
     analyzers = [(e["kind"], e["analyzer"]) for e in seen if e["kind"].startswith("analyzer.")
-                 and e["step"] == "analyze"]
+                 and e["step"] == "link_calls"]
     assert analyzers == [("analyzer.started", "scip-go"), ("analyzer.finished", "scip-go")]
-    assert any(e["kind"] == "progress" and e["step"] == "analyze" and e["data"]["total"] == 1 for e in seen)
-    assert any(e["kind"] == "progress" and e["step"] == "scan" for e in seen)
+    assert any(e["kind"] == "progress" and e["step"] == "link_calls" and e["data"]["total"] == 1 for e in seen)
+    assert any(e["kind"] == "progress" and e["step"] == "find_modules" for e in seen)
     ready = [e for e in seen if e["kind"] == "graph.ready"]
     assert len(ready) == 1 and ready[0]["data"]["languages"]["go"]["state"] == "fresh"
-    unobserved = [e["data"]["gap"] for e in seen if e["kind"] == "gap" and e["step"] == "union"
+    unobserved = [e["data"]["gap"] for e in seen if e["kind"] == "gap" and e["step"] == "assemble_graph"
                   and e["data"].get("language") == "go"]
     assert [gap["kind"] for gap in unobserved] == ["not-observed"]  # with the cause the dynamic step gave
     assert unobserved[0]["detail"] != "no edge observed in a run: the dynamic step has not observed this language"
-    assert result["union"]["languages"]["go"]["state"] == "fresh"
+    assert result["assemble_graph"]["languages"]["go"]["state"] == "fresh"
     journal, _cursor = events.read(manifest.with_name(events.JOURNAL))
     assert [e["kind"] for e in journal] == [e["kind"] for e in seen]
 
@@ -186,12 +199,12 @@ def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
     snapshot.read_project(tmp_path / "p", manifest)
     seen = []
-    result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert list(result) == ["stack", "scan"]
-    assert [e["step"] for e in seen if e["kind"].startswith("step.")] == ["stack", "stack", "scan", "scan"]
-    with mock.patch.object(pipeline.Analyze, "run", side_effect=pipeline.StepFailed("no store", "write it")):
-        result = pipeline.run(manifest, listeners=[seen.append], start="analyze")
-    assert result == {"analyze": {"failed": "no store", "remedy": "write it"}}
+    result = pipeline.run(manifest, listeners=[seen.append], stop="find_modules")
+    assert list(result) == ["recognize_stack", "find_modules"]
+    assert [e["step"] for e in seen if e["kind"].startswith("step.")] == ["recognize_stack", "recognize_stack", "find_modules", "find_modules"]
+    with mock.patch.object(pipeline.LinkCalls, "run", side_effect=pipeline.StepFailed("no store", "write it")):
+        result = pipeline.run(manifest, listeners=[seen.append], start="link_calls")
+    assert result == {"link_calls": {"failed": "no store", "remedy": "write it"}}
     assert seen[-1]["kind"] == "step.failed" and seen[-1]["data"]["remedy"] == "write it"
 
 
@@ -205,11 +218,11 @@ def test_a_failure_of_the_dynamic_step_is_said_and_the_union_still_ends_the_run(
     snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     with mock.patch.object(dynamic, "run", side_effect=RuntimeError("the recorder's file is gone")):
-        result = pipeline.run(manifest, listeners=[seen.append], start="dynamic")
-    assert list(result) == ["dynamic", "union"] and "the recorder's file is gone" in result["dynamic"]["failed"]
+        result = pipeline.run(manifest, listeners=[seen.append], start="run_and_observe")
+    assert list(result) == ["run_and_observe", "assemble_graph"] and "the recorder's file is gone" in result["run_and_observe"]["failed"]
     [said] = [e for e in seen if e["level"] == "error"]
-    assert said["step"] == "dynamic" and "RuntimeError" in said["data"]["cause"] and said["data"]["remedy"]
-    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "union"}
+    assert said["step"] == "run_and_observe" and "RuntimeError" in said["data"]["cause"] and said["data"]["remedy"]
+    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "assemble_graph"}
 
 
 def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs_the_rest():
@@ -231,13 +244,13 @@ def test_a_failing_stack_step_says_why_and_does_not_stop_the_steps_after_it(tmp_
     snapshot.read_project(tmp_path / "p", manifest)
     seen = []
     with mock.patch.object(stack_recognition, "ensure", side_effect=OSError("disk full")):
-        result = pipeline.run(manifest, listeners=[seen.append], stop="scan", fast_scan=True)
-    assert result["stack"] == {"failed": "OSError: disk full"}
-    assert "failed" not in result["scan"] and result["scan"]["technologies_failed"] == "OSError: disk full"
+        result = pipeline.run(manifest, listeners=[seen.append], stop="find_modules", fast_scan=True)
+    assert result["recognize_stack"] == {"failed": "OSError: disk full"}
+    assert "failed" not in result["find_modules"] and result["find_modules"]["technologies_failed"] == "OSError: disk full"
     said = [e for e in seen if e["level"] == "error"]
     assert [(e["kind"], e["step"], e["data"]["remedy"]) for e in said] == [
-        ("log", "stack", pipeline.Stack.WITHOUT), ("log", "scan", pipeline.Stack.WITHOUT)]
-    [ended] = [e for e in seen if e["kind"] == "step.finished" and e["step"] == "stack"]
+        ("log", "recognize_stack", pipeline.RecognizeStack.WITHOUT), ("log", "find_modules", pipeline.RecognizeStack.WITHOUT)]
+    [ended] = [e for e in seen if e["kind"] == "step.finished" and e["step"] == "recognize_stack"]
     assert ended["data"]["failed"] == "OSError: disk full"  # a listener of the step's end alone knows how it ended
 
 
@@ -255,11 +268,11 @@ def test_the_union_says_why_no_run_was_observed_when_the_dynamic_step_gave_no_re
         with mock.patch.object(resolve_edges, "edge_state",
                                return_value={"languages": {"python": {"state": "fresh", "coverage": {}}}}):
             pipeline.run(manifest, listeners=[seen.append], **asked)
-        return [e["data"]["gap"]["detail"] for e in seen if e["kind"] == "gap" and e["step"] == "union"]
+        return [e["data"]["gap"]["detail"] for e in seen if e["kind"] == "gap" and e["step"] == "assemble_graph"]
 
-    assert details(start="union") == ["no edge observed in a run: the dynamic step did not run in this analysis"]
+    assert details(start="assemble_graph") == ["no edge observed in a run: the dynamic step did not run in this analysis"]
     with mock.patch.object(dynamic, "run", side_effect=RuntimeError("the recorder's file is gone")):
-        assert details(start="dynamic") == ["no edge observed in a run: the dynamic step failed: RuntimeError: "
+        assert details(start="run_and_observe") == ["no edge observed in a run: the dynamic step failed: RuntimeError: "
                                             "the recorder's file is gone"]
 
 
@@ -280,18 +293,18 @@ def test_the_union_counts_the_routes_of_the_static_links_and_says_the_calls_no_r
 
     seen = []
     with mock.patch.object(flows, "cached_links", side_effect=links):
-        result = pipeline.run(manifest, listeners=[seen.append], start="union")
-    assert asked == [[]] and result["union"]["routes"] == {"offered": 2, "called": 3, "linked": 1}
+        result = pipeline.run(manifest, listeners=[seen.append], start="assemble_graph")
+    assert asked == [[]] and result["assemble_graph"]["routes"] == {"offered": 2, "called": 3, "linked": 1}
     [gap] = [e["data"]["gap"] for e in seen if e["kind"] == "gap" and e["data"]["gap"]["kind"] == "routes-not-joined"]
     assert (gap["calls"], gap["called"], gap["offered"]) == (2, 3, 2)
     assert "2 of 3 HTTP calls are linked to no route" in gap["detail"]
     seen.clear()
     with mock.patch.object(flows, "cached_links", side_effect=ValueError("the inputs changed")):
-        result = pipeline.run(manifest, listeners=[seen.append], start="union")
-    assert "routes" not in result["union"]
+        result = pipeline.run(manifest, listeners=[seen.append], start="assemble_graph")
+    assert "routes" not in result["assemble_graph"]
     [said] = [e for e in seen if e["level"] == "error"]
-    assert said["step"] == "union" and "ValueError" in said["data"]["cause"] and said["data"]["remedy"]
-    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "union"}
+    assert said["step"] == "assemble_graph" and "ValueError" in said["data"]["cause"] and said["data"]["remedy"]
+    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "assemble_graph"}
     assert any(e["kind"] == "graph.ready" for e in seen)
 
 
@@ -301,9 +314,9 @@ def test_an_interrupted_step_says_it_ends_before_the_interruption_leaves(tmp_pat
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
     snapshot.read_project(tmp_path / "p", manifest)
     seen = []
-    with mock.patch.object(pipeline.Analyze, "run", side_effect=KeyboardInterrupt), pytest.raises(KeyboardInterrupt):
-        pipeline.run(manifest, listeners=[seen.append], start="analyze")
-    assert (seen[-1]["kind"], seen[-1]["step"]) == ("step.failed", "analyze")
+    with mock.patch.object(pipeline.LinkCalls, "run", side_effect=KeyboardInterrupt), pytest.raises(KeyboardInterrupt):
+        pipeline.run(manifest, listeners=[seen.append], start="link_calls")
+    assert (seen[-1]["kind"], seen[-1]["step"]) == ("step.failed", "link_calls")
     assert seen[-1]["data"]["cause"] == "interrupted: KeyboardInterrupt" and seen[-1]["data"]["remedy"]
 
 
@@ -325,18 +338,18 @@ def test_a_stopped_pass_and_one_that_ended_without_a_word_leave_no_step_open(tmp
 
     with mock.patch.object(engine_pass, "running_record", return_value=tmp_path / "running.json"), \
             mock.patch.object(engine_pass, "_terminate_tree"):
-        events.Bus(journal).emit("step.started", "analyze", step="analyze")
+        events.Bus(journal).emit("step.started", "link_calls", step="link_calls")
         with mock.patch.object(engine_pass, "pass_state", return_value={"state": "running", "pid": 1}):
             assert engine_pass.stop_pass(manifest, "the person asked")["stopped"]
-        assert last_step() == ("step.failed", "analyze", "the analysis was stopped: the person asked")
+        assert last_step() == ("step.failed", "link_calls", "the analysis was stopped: the person asked")
 
-        events.Bus(journal).emit("step.started", "dynamic", step="dynamic")
+        events.Bus(journal).emit("step.started", "run_and_observe", step="run_and_observe")
         with mock.patch.object(engine_pass, "edge_state", return_value={"state": "missing", "languages": {}}), \
                 mock.patch.object(engine_pass, "pass_plan", return_value=([], {}, "digest")), \
                 mock.patch.object(engine_pass, "engine_command", return_value=["pass"]), \
                 mock.patch.object(engine_pass, "_spawn_detached", return_value=Child()):
             assert engine_pass.ensure_edges(manifest)["action"] == "started"
-        assert last_step() == ("step.failed", "dynamic", "the analysis that started it ended without finishing it")
+        assert last_step() == ("step.failed", "run_and_observe", "the analysis that started it ended without finishing it")
 
 
 def test_the_pass_records_how_long_each_stage_took(tmp_path):
@@ -356,7 +369,8 @@ def test_the_pass_records_how_long_each_stage_took(tmp_path):
 
 def test_a_start_or_stop_that_names_no_step_is_refused_before_any_event(tmp_path):
     seen = []
-    with pytest.raises(ValueError, match="no step 'analyse': the steps are stack, scan, parse, analyze, dynamic, union"):
+    with pytest.raises(ValueError, match="no step 'analyse': the steps are recognize_stack, find_modules, "
+                                         "find_entry_points, link_calls, run_and_observe, assemble_graph"):
         pipeline.run(tmp_path / "manifest.sqlite", listeners=[seen.append], start="analyse")
     assert seen == [] and not (tmp_path / events.JOURNAL).exists()
 
@@ -392,70 +406,69 @@ def test_an_error_a_step_the_others_need_does_not_foresee_is_said_before_it_leav
     (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
     snapshot.read_project(tmp_path / "p", manifest)
     seen = []
-    with mock.patch.object(pipeline.Analyze, "run", side_effect=RuntimeError("the index is gone")), \
+    with mock.patch.object(pipeline.LinkCalls, "run", side_effect=RuntimeError("the index is gone")), \
             pytest.raises(RuntimeError):
-        pipeline.run(manifest, listeners=[seen.append], start="analyze")
-    assert seen[-1]["kind"] == "step.failed" and seen[-1]["step"] == "analyze"
+        pipeline.run(manifest, listeners=[seen.append], start="link_calls")
+    assert seen[-1]["kind"] == "step.failed" and seen[-1]["step"] == "link_calls"
     assert seen[-1]["data"]["cause"] == "RuntimeError: the index is gone"
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
-    assert [step.NAME for step in pipeline.STEPS] == ["stack", "scan", "parse", "analyze", "dynamic", "union"]
-    assert pipeline.Stack.INPUTS == ("inventory",)  # the stack takes no fact of the pre-map
+    assert [step.NAME for step in pipeline.STEPS] == ["recognize_stack", "find_modules", "find_entry_points", "link_calls",
+                                                      "run_and_observe", "assemble_graph"]
+    # the eight ids: the first two run before the pipeline (`snapshot.read_project`)
+    assert pipeline.IDS == ("list_files", "read_code", *(step.NAME for step in pipeline.STEPS))
+    assert pipeline.RecognizeStack.INPUTS == ("inventory",)  # the stack takes no fact of the pre-map
 
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
     # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
     assert {step.NAME: bool(step.WITHOUT) for step in pipeline.STEPS} == {
-        "scan": False, "stack": True, "parse": False, "analyze": False, "dynamic": True, "union": False}
-    # the reading is `read_project`'s alone (the owner's decision of 24 November 2026): the step takes the read snapshot,
-    # which the pipeline is given, and says the plan
-    assert (pipeline.Parse.INPUTS, pipeline.Parse.OUTPUTS) == (("snapshot",), ("plan",))
+        "find_modules": False, "recognize_stack": True, "find_entry_points": True, "link_calls": False,
+        "run_and_observe": True, "assemble_graph": False}
+    # the entry points are a step of their own, after the pre-map they read: `link_calls` does not read them
+    assert "entry_points" not in pipeline.FindModules.OUTPUTS + pipeline.LinkCalls.INPUTS
+    assert (pipeline.FindEntryPoints.INPUTS, pipeline.FindEntryPoints.OUTPUTS) == (
+        ("inventory", "stack", "premap", "snapshot"), ("entry_points",))
+    # the reading is `read_project`'s alone (the owner's decision of 24 November 2026): the pipeline is given the snapshot
     assert pipeline.INPUTS == ("inventory", "snapshot")
 
 
-def test_the_parse_step_stops_on_a_store_that_holds_only_its_inventory_and_only_says_the_plan_of_a_read_one(tmp_path):
+def test_link_calls_stops_on_a_store_that_holds_only_its_inventory(tmp_path):
     """The reading is `snapshot.read_project`'s alone (the owner's decision of 24 November 2026, spec 8.11 step 3): a store
-    with the inventory and no reading (8.6, point 3) stops the step with its remedy, read by no one; a read store is found as
-    it is, and the step writes nothing."""
+    with the inventory and no reading (8.6, point 3) stops `link_calls`, the first step that needs it, with its remedy; no
+    one reads it, and no analyzer starts."""
     import file_inventory
     from snapshot_store import open_snapshot
     project = tmp_path / "p"
     project.mkdir()
     (project / "a.py").write_text("def answer():\n    return 42\n", encoding="utf-8")
-    (project / "b.py").write_text("from a import answer\n\nVALUE = answer()\n", encoding="utf-8")
-    listed, read = tmp_path / "listed" / "manifest.sqlite", tmp_path / "read" / "manifest.sqlite"
+    listed = tmp_path / "listed" / "manifest.sqlite"
     file_inventory.write(project, listed)
-    snapshot.read_project(project, read)
     with open_snapshot(listed) as store:
         assert (store.metadata["reading"], store.file_count) == ("not-started", 0)
-    kept = {path: path.read_bytes() for path in (listed, read)}
+    kept = listed.read_bytes()
     seen = []
-    with mock.patch.object(snapshot, "write_reading", side_effect=AssertionError("the parse step reads")):
-        result = pipeline.run(listed, listeners=[seen.append], start="parse", stop="parse")
-        assert list(result) == ["parse"] and result["parse"]["remedy"] == "write the snapshot again"
-        assert "only its inventory" in result["parse"]["failed"]
-        assert [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")] == [
-            ("step.started", "parse"), ("step.failed", "parse")]
-        seen.clear()
-        result = pipeline.run(read, listeners=[seen.append], start="parse", stop="parse")
-    assert list(result["parse"]) == ["plan"] and set(result["parse"]["plan"]) == {"nodes", "gaps"}
-    assert result["parse"]["plan"]["nodes"] > 0
+    with mock.patch.object(snapshot, "write_reading", side_effect=AssertionError("the step reads")), \
+            mock.patch.object(resolve_edges, "run_pass", side_effect=AssertionError("an analyzer started")):
+        result = pipeline.run(listed, listeners=[seen.append], start="link_calls", stop="link_calls")
+    assert list(result) == ["link_calls"] and result["link_calls"]["remedy"] == "write the snapshot again"
+    assert "only its inventory" in result["link_calls"]["failed"]
     assert [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")] == [
-        ("step.started", "parse"), ("step.finished", "parse")]
-    assert {path: path.read_bytes() for path in kept} == kept
+        ("step.started", "link_calls"), ("step.failed", "link_calls")]
+    assert listed.read_bytes() == kept
 
 
 def test_a_snapshot_that_cannot_be_read_stops_the_run_with_its_remedy(tmp_path):
-    """The first step, the stack, stops the run with the remedy: a step failure, not an error; so do the scan and the parse
-    step, where a run starts at one of them."""
+    """The first step, `recognize_stack`, stops the run with the remedy: a step failure, not an error; so do the steps after
+    it that read the store, where a run starts at one of them."""
     manifest = tmp_path / "out" / "manifest.sqlite"
     manifest.parent.mkdir()
     manifest.write_bytes(b"not a snapshot")
     for written in (True, False):
         if not written:
             manifest.unlink()
-        for first in ("stack", "scan", "parse"):
+        for first in ("recognize_stack", "find_modules", "find_entry_points", "link_calls"):
             seen = []
             result = pipeline.run(manifest, listeners=[seen.append], start=first, stop=first)
             assert list(result) == [first] and result[first]["remedy"] == "write the snapshot again"
@@ -471,7 +484,7 @@ def test_the_callers_say_a_failure_of_the_scan_step(tmp_path, capsys):
     (project / "src").mkdir(parents=True)
     (project / "src" / "a.py").write_text("x = 1\n", encoding="utf-8")
     stop = pipeline.StepFailed("the snapshot cannot be read: broken", "write the snapshot again")
-    with mock.patch.object(pipeline.Scan, "run", side_effect=stop):
+    with mock.patch.object(pipeline.FindModules, "run", side_effect=stop):
         status = snapshot.main(["write", str(project / "src"), "--out", str(tmp_path / "out" / "manifest.sqlite"),
                                 "--no-index", "--no-engine"])
         assert status == 1 and "modules: the snapshot cannot be read: broken" in capsys.readouterr().err
@@ -534,8 +547,8 @@ def _go_snapshot(tmp_path):
 
 
 def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_found_once(tmp_path):
-    """The scan hands the pre-map the container runner: each model source's commands go to one container run,
-    the engine found once is given to the first run (it ends with that run), the others find their own."""
+    """The scan hands the pre-map the container runner, and the entry points the same one: each model source's commands go
+    to one container run, the engine found once is given to the first run (it ends with that run), the others find their own."""
     import container
     import entry_points
     import premap
@@ -553,15 +566,15 @@ def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_f
     seen = []
     with mock.patch.object(container, "find_engine", return_value=engine) as found, \
             mock.patch.object(container_runner, "runner", side_effect=runner):
-        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert "failed" not in result["scan"]
+        result = pipeline.run(manifest, listeners=[seen.append], stop="find_entry_points")
+    assert "failed" not in result["find_modules"] and "failed" not in result["find_entry_points"]
     assert found.call_count == 1
     assert [tool for tool, _ in asked] == ["renovate", "go", "noir"]
     assert [given for _, given in asked] == [engine, None, None]
     ran = [*premap.ensure(manifest)["sources"], *entry_points.ensure(manifest)["sources"]]  # the entry points after the pre-map
     assert not [s for s in ran if s["state"] == "not_run"]
-    sources = {e["data"]["phase"] for e in seen if e["kind"] == "progress" and e["step"] == "scan"}
-    assert {s["source"] for s in ran} == sources  # one progress event per source
+    sources = {e["data"]["phase"] for e in seen if e["kind"] == "progress" and e["step"] in ("find_modules", "find_entry_points")}
+    assert {s["source"] for s in ran} == sources  # one progress event per source, under its step
 
 
 def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_and_no_wait(tmp_path):
@@ -575,8 +588,8 @@ def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_a
     seen = []
     with mock.patch.object(container, "find_engine", side_effect=gap) as found, \
             mock.patch.object(container, "run_commands", side_effect=AssertionError("a container started")):
-        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert "failed" not in result["scan"] and found.call_count == 1
+        result = pipeline.run(manifest, listeners=[seen.append], stop="find_entry_points")
+    assert "failed" not in result["find_modules"] and found.call_count == 1  # once for the pre-map and the entry points
     record, found = premap.ensure(manifest), entry_points.ensure(manifest)
     model = [s for s in (*record["sources"], *found["sources"]) if s["state"] not in ("ran", "not_needed")]
     assert {s["source"].split("@")[0] for s in model} == {"renovate", "go", "noir"}
@@ -609,8 +622,11 @@ def test_every_input_of_a_step_is_written_by_a_step_before_or_given_to_the_pipel
     """Spec of the pipeline, 8.8 point 3, proof 6: the order of the steps is the one their inputs ask for."""
     assert _unmet(pipeline.STEPS, pipeline.INPUTS) == []
     # the check sees a step out of place: `analyze` first reads a pre-map no step has written yet
-    misplaced = [pipeline.Analyze, *(step for step in pipeline.STEPS if step is not pipeline.Analyze)]
-    assert ("analyze", "premap") in _unmet(misplaced, pipeline.INPUTS)
+    misplaced = [pipeline.LinkCalls, *(step for step in pipeline.STEPS if step is not pipeline.LinkCalls)]
+    assert ("link_calls", "premap") in _unmet(misplaced, pipeline.INPUTS)
     # `union` reads the symbols of the snapshot and the module graph `scan` wrote (`modules.ensure_graph`), not only the edges
-    early = [pipeline.Union, *(step for step in pipeline.STEPS if step is not pipeline.Union)]
-    assert ("union", "modules") in _unmet(early, pipeline.INPUTS)
+    early = [pipeline.AssembleGraph, *(step for step in pipeline.STEPS if step is not pipeline.AssembleGraph)]
+    assert ("assemble_graph", "modules") in _unmet(early, pipeline.INPUTS)
+    # the entry points read the pre-map `scan` writes
+    entries = [pipeline.FindEntryPoints, *(step for step in pipeline.STEPS if step is not pipeline.FindEntryPoints)]
+    assert ("find_entry_points", "premap") in _unmet(entries, pipeline.INPUTS)

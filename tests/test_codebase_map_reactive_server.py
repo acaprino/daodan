@@ -130,7 +130,7 @@ def test_manifest_only_run_drives_model_scan_and_keeps_the_cause_without_a_conta
     with patch("engine_tools.shared_cache_dir", return_value=tmp_path / "cache"), \
             patch.object(engine_pass, "_spawn_detached", return_value=child) as spawn:
         created = service.create_run(".", "config", engine=True)
-        assert created["engine"]["state"] == "running" and created["pipeline"]["scan"] == "stale"
+        assert created["engine"]["state"] == "running" and created["pipeline"]["find_modules"] == "stale"
         spawn.assert_called_once()
         manifest = project / ".daodan/map/runs/config/snapshot/manifest.sqlite"
         engine_pass.running_record(manifest).unlink()
@@ -138,7 +138,7 @@ def test_manifest_only_run_drives_model_scan_and_keeps_the_cause_without_a_conta
             assert resolve_edges.main([str(manifest), "--pass"]) == 0
         assert any(gap.get("kind") == "model_not_run" and "engine offline" in gap["detail"]
                    for gap in premap.ensure(manifest)["gaps"])
-        assert service.status("config")["pipeline"]["scan"] == "fresh"  # current with the recorded container gaps
+        assert service.status("config")["pipeline"]["find_modules"] == "fresh"  # current with the recorded container gaps
         assert pipeline.runtime(manifest)["state"] == "none"
         assert service.index("config")["engine"]["action"] == "started"
         assert spawn.call_count == 2
@@ -151,7 +151,7 @@ def test_create_run_and_hook_refresh_never_probe_containers_under_lock_and_expos
         service = mcp_service.MapService(project)
         with mock.patch.object(container, "find_engine", side_effect=AssertionError("must not probe container under lock")):
             created = service.create_run(".", "r1", engine=False)
-        assert created["pipeline"]["scan"] == "fresh" and created["pipeline"]["stack"] == "fresh"
+        assert created["pipeline"]["find_modules"] == "fresh" and created["pipeline"]["recognize_stack"] == "fresh"
 
         mods = service.modules("r1")
         by_id = {m["id"]: m for m in mods["modules"]}
@@ -250,8 +250,8 @@ def test_ui_http_routes_pipeline_events_stack_envelope_and_sse_stream_with_clean
         service.create_run(".", "r1", engine=False)
         manifest = project / ".daodan/map/runs/r1/snapshot/manifest.sqlite"
         bus = pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL))
-        bus.emit("log", "first-line", step="scan")
-        bus.emit("log", "second-line", step="stack")
+        bus.emit("log", "first-line", step="find_modules")
+        bus.emit("log", "second-line", step="recognize_stack")
 
         assets = tmp_path / "assets"
         assets.mkdir()

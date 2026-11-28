@@ -26,7 +26,7 @@ test('the stages say how they are, and why one cannot be opened', () => {
     ['synthesis', 'todo', 'La sintesi è pronta quando la pipeline è conclusa.']]);
   assert.deepEqual(rows(run('fresh')).map(row => row.slice(1)), [['done', ''], ['done', ''], ['done', ''], ['done', '']]);
   assert.deepEqual(rows(run('failed')).slice(2).map(row => row.slice(1)), [['error', ''], ['done', '']]);
-  assert.equal(rows(run('fresh', [{ kind: 'step.started', step: 'union' }]))[2][1], 'running');  // a step runs after the pass's end
+  assert.equal(rows(run('fresh', [{ kind: 'step.started', step: 'assemble_graph' }]))[2][1], 'running');  // a step runs after the pass's end
   assert.equal(rows(of({ context, run: { pass: { state: 'fresh' } } }, { premapError: 'illeggibile' }))[1][1], 'error');
   const found = stages(of({ context, run: { pass: { state: 'running' }, progress: null } }, { premap: { files: ['a'], units: [] } }));
   assert.deepEqual(found.map(row => [row.detail, row.meta]),
@@ -65,9 +65,9 @@ test('the foot has the way back, one action, and why it waits or what comes afte
 test('a phase says how long it has taken, as its events do', () => {
   const at = (second: number) => `2026-11-25T10:00:${String(second).padStart(2, '0')}Z`, now = Date.parse('2026-11-25T10:02:05Z');
   const events = [
-    { kind: 'step.started', step: 'parse', at: at(0) }, { kind: 'step.finished', step: 'parse', at: at(9) },
-    { kind: 'step.started', step: 'scan', at: at(9) }, { kind: 'step.failed', step: 'scan', at: at(12), message: 'disco pieno' },
-    { kind: 'step.started', step: 'stack', at: at(0) }, { kind: 'step.started', step: 'analyze' },
+    { kind: 'step.started', step: 'recognize_stack', at: at(0) }, { kind: 'step.finished', step: 'recognize_stack', at: at(9) },
+    { kind: 'step.started', step: 'find_modules', at: at(9) }, { kind: 'step.failed', step: 'find_modules', at: at(12), message: 'disco pieno' },
+    { kind: 'step.started', step: 'find_entry_points', at: at(0) }, { kind: 'step.started', step: 'link_calls' },
   ];
   const s = run('running', events);
   assert.deepEqual(steps(s).map(step => stepTime(s, step, now)), ['9 s', '3 s', '2 min 5 s', '', '', '']);
@@ -100,29 +100,29 @@ test('the repository says what the check found and how the preparation goes', ()
 
 test('the steps follow their own events, with the progress, the gaps and the causes', () => {
   const events = [
-    { kind: 'step.started', step: 'parse' }, { kind: 'step.finished', step: 'parse' },
-    { kind: 'step.started', step: 'analyze' }, { kind: 'analyzer.unavailable', step: 'analyze', analyzer: 'pyright', message: 'manca' }, { kind: 'step.finished', step: 'analyze' },
-    { kind: 'step.started', step: 'stack' }, { kind: 'step.failed', step: 'stack', message: 'interrotto' },
-    { kind: 'step.started', step: 'dynamic' },
+    { kind: 'step.started', step: 'recognize_stack' }, { kind: 'step.finished', step: 'recognize_stack' },
+    { kind: 'step.started', step: 'link_calls' }, { kind: 'analyzer.unavailable', step: 'link_calls', analyzer: 'pyright', message: 'manca' }, { kind: 'step.finished', step: 'link_calls' },
+    { kind: 'step.started', step: 'find_entry_points' }, { kind: 'step.failed', step: 'find_entry_points', message: 'interrotto' },
+    { kind: 'step.started', step: 'run_and_observe' },
   ];
-  const s = run('running', events, { progress: { step: 'dynamic', done: 1, total: 4 } });
+  const s = run('running', events, { progress: { step: 'run_and_observe', done: 1, total: 4 } });
   assert.deepEqual(steps(s).map(step => [step.id, step.status, step.note]), [
-    ['parse', 'done', 'Completata'], ['scan', 'pending', 'In attesa'], ['stack', 'failed', 'Non riuscita · interrotto'],
-    ['analyze', 'done', 'Completata con lacune · pyright: manca'], ['dynamic', 'running', 'In corso · 1/4'], ['union', 'pending', 'In attesa'],
+    ['recognize_stack', 'done', 'Completata'], ['find_modules', 'pending', 'In attesa'], ['find_entry_points', 'failed', 'Non riuscita · interrotto'],
+    ['link_calls', 'done', 'Completata con lacune · pyright: manca'], ['run_and_observe', 'running', 'In corso · 1/4'], ['assemble_graph', 'pending', 'In attesa'],
   ]);
   assert.equal(runPercent(s), 38);  // two of six and a quarter
-  assert.equal(runPhaseLabel(s), 'Dynamic · osservazione dei test');
-  assert.deepEqual(statusOf(s), { state: 'Analisi in corso', tone: 'info', text: 'Dynamic · osservazione dei test', percent: 38 });
+  assert.equal(runPhaseLabel(s), 'Esecuzione · osservazione dei test');
+  assert.deepEqual(statusOf(s), { state: 'Analisi in corso', tone: 'info', text: 'Esecuzione · osservazione dei test', percent: 38 });
   const over = of({ context, run: { pass: { state: 'unavailable', reason: 'nessun container' } } });
   assert.deepEqual([steps(over)[0].status, steps(over)[0].note, runPercent(over)], ['skipped', 'Non eseguita · nessun container', 0]);
   assert.equal(runPercent(of(null)), 0);
 });
 
 test('the bar of the steps stops where a step failed once the run is over', () => {
-  const events = [{ kind: 'step.started', step: 'parse' }, { kind: 'step.finished', step: 'parse' }, { kind: 'step.started', step: 'stack' }, { kind: 'step.failed', step: 'stack', message: 'interrotto' }];
+  const events = [{ kind: 'step.started', step: 'recognize_stack' }, { kind: 'step.finished', step: 'recognize_stack' }, { kind: 'step.started', step: 'find_entry_points' }, { kind: 'step.failed', step: 'find_entry_points', message: 'interrotto' }];
   assert.deepEqual(runBar(run('running', events)), { value: 17 });
   assert.deepEqual(runBar(run('fresh', events)), { value: 17, status: 'error', valueText: 'Non riuscito · 17%' });
-  assert.deepEqual(runBar(run('fresh', [...events, { kind: 'step.started', step: 'union' }])), { value: 17 });  // one still runs
+  assert.deepEqual(runBar(run('fresh', [...events, { kind: 'step.started', step: 'assemble_graph' }])), { value: 17 });  // one still runs
   assert.deepEqual(runBar(run('failed', events.slice(0, 2))), { value: 17 });  // the pass failed, no step did
 });
 
@@ -132,14 +132,14 @@ test('the run says its phase, its state and what the last progress was', () => {
   assert.deepEqual([runPhaseLabel(run(undefined)), statusLabel(run(undefined)), runHelp(run(undefined))],
     ['In attesa del passaggio del grafo', 'In esecuzione', 'In attesa del primo avanzamento del run.']);
   assert.match(runHelp(run('off')), /con le sue lacune/);
-  assert.equal(runHelp(run('running', [], { progress: { step: 'scan', analyzer: 'ctags', done: 2, total: 3 } })), 'Ultimo avanzamento: Scan · ctags · 2/3');
+  assert.equal(runHelp(run('running', [], { progress: { step: 'find_modules', analyzer: 'ctags', done: 2, total: 3 } })), 'Ultimo avanzamento: Moduli · ctags · 2/3');
   assert.equal(buildStatus(run('running')), 'Costruzione in corso');
   assert.equal(buildStatus(run('running', [{ kind: 'graph.ready' }])), 'Grafo del codice scritto');
 });
 
 test('the count of the steps done is beside the title', () => {
   assert.equal(runCount(run('running')), '0 di 6 passi completati');
-  assert.equal(runCount(run('running', [{ kind: 'step.started', step: 'parse' }, { kind: 'step.finished', step: 'parse' }])), '1 di 6 passi completati');
+  assert.equal(runCount(run('running', [{ kind: 'step.started', step: 'recognize_stack' }, { kind: 'step.finished', step: 'recognize_stack' }])), '1 di 6 passi completati');
 });
 
 test('the status row and the foot say the server that is read, lost, idle or at work', () => {
@@ -180,15 +180,15 @@ test('the pass, the map and the links say what is missing and why', () => {
 test('the log says each event in words and leaves out progress and debug', () => {
   const items = logItems(of(null, { events: [
     { run: true, event: 'engine_failed', message: 'caduto', timestamp: '10:00' }, { run: true, event: 'phase_completed', message: 'm' }, { run: true, event: 'altro', message: 'm' },
-    { kind: 'progress', step: 'scan', message: '1/2' }, { kind: 'log', level: 'debug', message: 'interno' },
-    { kind: 'step.finished', step: 'scan', message: '', data: { outputs: ['modules.json'] } }, { kind: 'step.started', step: 'union', message: '', data: { inputs: ['a', 'b'] } },
-    { kind: 'gap', step: 'stack', message: 'x', data: { gap: { detail: 'manifest assente', remedy: 'aggiungilo' } } },
-    { kind: 'analyzer.unavailable', step: 'analyze', analyzer: 'pyright', message: 'm', data: { cause: 'manca' } },
+    { kind: 'progress', step: 'find_modules', message: '1/2' }, { kind: 'log', level: 'debug', message: 'interno' },
+    { kind: 'step.finished', step: 'find_modules', message: '', data: { outputs: ['modules.json'] } }, { kind: 'step.started', step: 'assemble_graph', message: '', data: { inputs: ['a', 'b'] } },
+    { kind: 'gap', step: 'find_entry_points', message: 'x', data: { gap: { detail: 'manifest assente', remedy: 'aggiungilo' } } },
+    { kind: 'analyzer.unavailable', step: 'link_calls', analyzer: 'pyright', message: 'm', data: { cause: 'manca' } },
     { kind: 'log', level: 'error', message: 'rotto' },
   ] }));
   assert.deepEqual(items.map(item => [item.title, item.detail, item.type]), [
-    ['Passaggio del grafo interrotto', 'caduto', 'error'], ['Fase completata', 'm', ''], ['altro', 'm', ''], ['Scan · completato', 'Scritti: modules.json', ''], ['Union · avviato', 'Legge: a, b', ''],
-    ['Stack · lacuna', 'manifest assente Rimedio: aggiungilo', 'gap'], ['Analyze · analyzer non disponibile · pyright', 'manca', ''], ['Pipeline · nota', 'rotto', 'error'],
+    ['Passaggio del grafo interrotto', 'caduto', 'error'], ['Fase completata', 'm', ''], ['altro', 'm', ''], ['Moduli · completato', 'Scritti: modules.json', ''], ['Grafo · avviato', 'Legge: a, b', ''],
+    ['Ingressi · lacuna', 'manifest assente Rimedio: aggiungilo', 'gap'], ['Chiamate · analyzer non disponibile · pyright', 'manca', ''], ['Pipeline · nota', 'rotto', 'error'],
   ]);
 });
 

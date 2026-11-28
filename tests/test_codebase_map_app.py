@@ -978,12 +978,12 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         deadline = time.monotonic() + 120
         # Selection prepares the run; the detached pass then attempts the scan's container commands.
         while time.monotonic() < deadline and (state["job"]["state"] == "preparing" or
-                (state["job"]["state"] == "ready" and state["run"]["pipeline"]["scan"] == "stale"
+                (state["job"]["state"] == "ready" and state["run"]["pipeline"]["find_modules"] == "stale"
                  and state["run"]["pass"]["state"] == "running")):
             time.sleep(0.2)
             state = request(port, "/api/app/state")[1]
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
-        assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["scan"] == "fresh"
+        assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["find_modules"] == "fresh"
         assert state["mcp"]["args"][-2:] == ["--project", project.parent.as_posix()]
         assert state["mcp"]["command"] == sys.executable  # its packages are the app's: no `uv` on the PATH
         # what Daodan writes about the checkout is beside it: a container's output may not be inside the project
@@ -993,7 +993,7 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         first = next(data for name, data in seen if name == "snapshot")["run_events"]
         assert first["run_id"] == "app-aaaaaaaaaaaa" and first["pipeline"]["events"][0]["kind"] == "step.started"
         told = [data for name, data in seen if name == "app"][-1]
-        assert told["context"]["run_id"] == "app-aaaaaaaaaaaa" and told["run"]["pipeline"]["scan"] == "fresh"
+        assert told["context"]["run_id"] == "app-aaaaaaaaaaaa" and told["run"]["pipeline"]["find_modules"] == "fresh"
         last = [data for name, data in seen if name in ("snapshot", "update")][-1]
         cursors = (last["run_events"]["next_cursor"], last["run_events"]["pipeline"]["next_cursor"],
                    last["pulse"]["next_cursor"])
@@ -1510,14 +1510,14 @@ def test_a_busy_project_is_no_failure_the_stream_skips_a_turn_and_a_read_answers
             Service.asked += 1
             if Service.asked == 1:
                 raise busy()
-            return {"pipeline": {"scan": "fresh"}, "progress": None, "engine": {"state": "fresh", "reason": None}}
+            return {"pipeline": {"find_modules": "fresh"}, "progress": None, "engine": {"state": "fresh", "reason": None}}
 
     monkeypatch.setattr(launcher, "TURN", 0.01)
     app = launcher.App(tmp_path / "work", environment={})
     app.service, app.context = Service(), {"run_id": "r", "path": str(tmp_path / "checkout")}
     frames = list(app.stream(quiet)({"run": "r", "max_seconds": "1"}, lambda: False))
     assert [name for name, _ in frames] == ["app", "snapshot"] and Service.asked == 2
-    assert frames[0][1]["run"]["pipeline"] == {"scan": "fresh"}
+    assert frames[0][1]["run"]["pipeline"] == {"find_modules": "fresh"}
 
     def refused(query):
         raise busy()

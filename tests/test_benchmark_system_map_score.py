@@ -475,8 +475,8 @@ class RunsTableTests(unittest.TestCase):
         stamps = ["2026-11-23T10:00:00.000000Z", "2026-11-23T10:00:01.000000Z", "2026-11-23T10:00:02.000000Z",
                   f"2026-11-23T10:{seconds // 60:02d}:{seconds % 60:02d}.000000Z"]
         (run / "pipeline-events.jsonl").write_text(
-            "\n".join(json.dumps({"at": at, "step": step, "analyzer": analyzer, "kind": kind, "data": {}})
-                      for at, (kind, step, analyzer) in zip(stamps, events)), encoding="utf-8")
+            "".join(json.dumps({"at": at, "step": step, "analyzer": analyzer, "kind": kind, "data": {}}) + "\n"
+                    for at, (kind, step, analyzer) in zip(stamps, events)), encoding="utf-8")  # the old names: read as ids
         (run / "dynamic-runs").mkdir()
         (run / "dynamic-runs" / "container-runs.jsonl").write_text(
             "\n".join(json.dumps({"phase": phase}) for phase in ["node-restore"] * restores + ["execute"]),
