@@ -993,7 +993,11 @@ che ignora la `network` dei comandi.
   risposta) e `ap-ZDmpDyTi52NXbYzJIBAS3J` (approvato); risultati in
   `results/pipeline/2026-11-28-t0c10-renovate-{undecided,approved}.json`. Le stesse due su `6ed40ad0f` (prima della
   correzione di `_asked`, che non tocca una corsa sola) davano gli stessi numeri (`ap-CcLVrdN1VkbuZpyALBYmcw`,
-  `ap-5PeGJkaGGnMVhZkYSZTQAj`).
+  `ap-5PeGJkaGGnMVhZkYSZTQAj`). Con l'albero pulito, `code.differs` dei due file elenca 4 e 1096 percorsi, tutti sotto
+  `benchmarks/project-model/` e nessuno sotto `daodan/`: `code()` dà risposte diverse per lo stesso commit lanciato da Git
+  Bash e da PowerShell (non indagato). `test_renovate_preset.py` rilegge i due risultati.
+- Non misurato qui: che Renovate, una volta in rete, non chieda altri host (`sandbox_run` non tiene il registro di un
+  proxy); la sorgente di Renovate dice `network: ["none"]` anche dopo il rilancio con la rete.
 
 | Risposta | Toolchain | Lacune di Renovate | Richieste in `egress` | Azione del piano | Corse di Renovate |
 | --- | --- | --- | --- | --- | --- |
