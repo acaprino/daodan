@@ -18,6 +18,7 @@ benchmarks/system-map/results/system/TAG` brings a run here. Nothing heavy runs 
     modal run benchmarks/system-map/modal_map.py::brief [--tar PATH --links-file PATH] [--cases ...]
     modal run --detach benchmarks/system-map/modal_map.py::links --case tududi --out PATH
     modal run benchmarks/system-map/modal_map.py::entries --tars CASE=PATH[,CASE=PATH] [--tag entries]
+    modal run benchmarks/system-map/modal_map.py::facts --tars CASE=PATH[,CASE=PATH] [--tag facts]
     modal run benchmarks/system-map/modal_map.py::possible --snapshot VOLUME-DIR --source VOLUME-DIR --rules PATH
            --expected PATH --out PATH [--generators ritorno,incerto]
     modal run benchmarks/system-map/modal_map.py::engine_proof_run [--tag TAG] [--out PATH]
@@ -865,6 +866,77 @@ def entries(tars: str, tag: str = "entries"):
     """The candidates and files of each case of `--tars CASE=PATH[,CASE=PATH]`, here in results/system/TAG/CASE/."""
     calls = [(name, CASES[name], Path(path).read_bytes(), tag) for name, path in _pairs(tars.split(","), "tars").items()]
     _bring(entries_case.starmap(calls, return_exceptions=True), tag)
+
+
+# Renovate's extraction as it answers, before `premap.renovate.read` keeps only the managers of its ecosystems: one row per
+# package file, with its manager and the names of its dependencies. A child process with the engine on Modal Sandboxes.
+RENOVATE_ROWS = """import json, sys
+sys.path.insert(0, %r)
+from pathlib import Path
+import pipeline, premap
+from premap import renovate
+from snapshot_store import open_snapshot
+manifest = Path(sys.argv[1])
+with open_snapshot(manifest) as store:
+    context = premap.Context(manifest, store)
+    commands = renovate.commands(context)[:1]
+answer = pipeline._runner(manifest)(commands)[0]
+if answer["returncode"]:
+    raise SystemExit(answer["stderr"][-2000:])
+files = ((json.loads(answer["stdout"]).get("repositories") or {}).get("local") or {}).get("packageFiles") or {}
+print(json.dumps([{"manager": manager, "packageFile": item.get("packageFile"),
+                   "deps": [d.get("depName") or d.get("packageName") for d in item.get("deps") or []]}
+                  for manager, items in sorted(files.items()) for item in items], ensure_ascii=False))
+""" % SCRIPTS
+FACTS = ("docker_builds", "configured_services", "workflow_triggers", "services", "starts", "packages")
+
+
+@app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume}, single_use_containers=True)
+def facts_case(name: str, case: dict, archive: bytes | None, tag: str) -> dict:
+    """What today's pipeline knows of a case's declarations before any rule (plan, `T1.C.11`): Renovate's rows with
+    their `packageFile` and manager, the pre-map's facts of `FACTS` and the rows of `find_entry_points` (the declared
+    ones of `flow_entries.evidence` and every reader's candidates). The pre-map's commands and Renovate run on Modal
+    Sandboxes (`modal_pipeline.engine_environment`): nothing of the project runs in this function."""
+    import subprocess
+    sys.path.insert(0, ENGINE_FOLDER)
+    import modal_pipeline
+    work = Path("/work") / name
+    target = _source(work / "src", case, archive)
+    manifest = work / "snapshot/manifest.sqlite"
+    env = {**os.environ, **modal_pipeline.engine_environment()}
+    for command in ([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out", str(manifest),
+                     "--no-engine", "--no-index"], [sys.executable, "-c", RENOVATE_ROWS, str(manifest)]):
+        done = subprocess.run(command, capture_output=True, text=True, env=env, timeout=ENGINE_SECONDS)
+        if done.returncode:
+            raise RuntimeError(f"{command[1]} -> {done.returncode}\n{done.stderr[-4000:]}")
+    sys.path.insert(0, SCRIPTS)
+    import entries
+    import flows
+    from premap import flow_entries
+    record = json.loads(manifest.with_name("premap.json").read_text(encoding="utf-8"))
+    declared, gaps = flow_entries.evidence(manifest)
+    found = {"case": name, "renovate": json.loads(done.stdout), **{key: record.get(key, []) for key in FACTS},
+             "sources": record["sources"], "declared_entries": declared, "declared_gaps": gaps,
+             "candidates": entries.candidates(flows.link_facts(manifest, []), manifest)}
+    _save(tag, f"{name}/facts.json", found)
+    volume.commit()
+    return found
+
+
+@app.local_entrypoint()
+def facts(tars: str, tag: str = "facts"):
+    """The declarations today's pipeline holds for each case of `--tars CASE=PATH[,CASE=PATH]` (`facts_case`), here in
+    results/system/TAG/CASE/facts.json."""
+    calls = [(name, CASES[name], Path(path).read_bytes(), tag) for name, path in _pairs(tars.split(","), "tars").items()]
+    for result in facts_case.starmap(calls, return_exceptions=True):
+        if isinstance(result, Exception):
+            print("FAILED", repr(result)[:2000])
+            continue
+        out = RESULTS / "system" / tag / result["case"]
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "facts.json").write_bytes(json.dumps(result, ensure_ascii=False, indent=1).encode())
+        print(result["case"], len(result["renovate"]), "Renovate rows", len(result["declared_entries"]), "declared",
+              len(result["candidates"]), "candidates", {key: len(result[key]) for key in FACTS})
 
 
 def _bring(results, tag: str) -> None:
