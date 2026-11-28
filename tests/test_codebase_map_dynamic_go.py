@@ -378,12 +378,12 @@ class ObserveTest(unittest.TestCase):
         egress.respond("mirror.corp.example", str(self.project), "once")  # approved for this analysis: it opens only then
         self.play_run()
         self.observe(declared=("mirror.corp.example",))
-        self.assertIn("mirror.corp.example", self.created()[0])
+        self.assertIn("mirror.corp.example", self.created()[1])  # after `own`: the proxy
 
     def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_with_no_network(self):
         self.play_run()
         self.observe()
-        proxy, prepare, execute = self.created()
+        _owned, proxy, _tools, prepare, execute = self.created()  # `T3.A`: the copy given to 65532, the recipes as root
         for host in ("proxy.golang.org", "sum.golang.org"):
             self.assertIn(host, proxy)
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
@@ -404,7 +404,7 @@ class ObserveTest(unittest.TestCase):
         self.play_run()
         self.observe()
         self.assertEqual(tree_digest(self.project), before)
-        prepare = self.created()[1]
+        prepare = self.created()[0]  # `own`: the copy goes in there, given to 65532
         carried = self.state / "containers" / prepare[prepare.index("--name") + 1] / "fs"
         self.assertEqual((carried / preparation.IN.lstrip("/") / "go_record.go").read_bytes(),
                          observer.RECORDER.read_bytes())
@@ -416,7 +416,7 @@ class ObserveTest(unittest.TestCase):
                                              {"tool": "node", "version": "20.1.0", "declared_in": ".nvmrc"}]))
         self.assertIn("install go@1.22.4", self.script("prepare"))
         self.assertNotIn("node@", self.script("prepare"))
-        self.assertIn("go.dev", self.created()[0])
+        self.assertIn("go.dev", self.created()[1])  # after `own`: the proxy
 
     def test_each_module_runs_in_its_folder_and_one_recorder_run_rewrites_them_all(self):
         write_project(self.project / "tools", {"go.mod": "module example.com/tools\n", "t.go": "package tools\n",

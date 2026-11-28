@@ -152,7 +152,7 @@ def test_the_preparation_restores_the_declared_dependencies_and_the_execution_ru
     tests = [{"root": ".", "runner": "pytest", "declared_in": "tests/conftest.py", "args": ["tests"]}]
     planned, prepare, execute = scripts_of(tests, ["scripts/requirements.txt", "tests/conftest.py"])
     assert preparation.restore("pip", ["scripts"]) in prepare  # the shared preparation's own line
-    assert preparation.UNPACK_UV in prepare
+    assert preparation.UNPACK_UV in observer.scripts(planned)[2]["tools"]["lines"][0] and preparation.UNPACK_UV not in prepare
     venv = f"{preparation.VENVS}/scripts/bin/python"
     # the runner the project declares and does not install is brought at Daodan's pin, and said
     assert f"pytest=={observer.PYTEST}" in prepare and "brought pytest" in prepare
