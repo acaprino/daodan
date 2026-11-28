@@ -27,6 +27,7 @@ EVIDENCE = 20  # sites kept per relation, as the envelope keeps
 BUILT = ("codice", "fisico")  # the natures the app builds: files and groups, external nodes
 MODES = ("highlight", "hide")  # what the filter by nature does to the other nodes: dims them, or hides them
 GRADES = ("uncertain", "sampled", "observed", "inferred", "confirmed")  # a relation's statuses, weakest first
+BLOCK = 300  # the children a view shows of an open group at once, the view of the spec's measure
 
 
 def headers(run_dir) -> dict:
@@ -309,6 +310,24 @@ def flow(envelope: dict, ref: str, groups: tuple = (), symbols_of=None) -> dict:
             "groups": [crossed[group] for group in sorted(crossed)], "to_prove": to_prove, "gaps": found["gaps"]}
 
 
+def _block(group: str, block: int, children: dict, rest: dict) -> dict:
+    """The `children` of `group` a view shows at once: all of them up to BLOCK, else the first BLOCK by name and a
+    node `more:<group>#<block>` «altri N» holding the others (their files, and the members of those without files),
+    which `rest` keeps until it opens. No child is lost: the blocks add up to the children."""
+    if len(children) <= BLOCK:
+        return children
+    order = sorted(children, key=lambda ref: (children[ref]["name"], ref))
+    shown, left = {ref: children[ref] for ref in order[:BLOCK]}, {ref: children[ref] for ref in order[BLOCK:]}
+    ref = f"more:{group}#{block}"
+    rest[ref] = (group, block, left)
+    members = [member for child, item in left.items() if not item["files"]
+               for member in (child, *item.get("members", ()))]
+    shown[ref] = {**_node({"ref": ref, "type": "more"}, f"altri {len(left)}", "confirmed"),
+                  "files": [path for item in left.values() for path in item["files"]],
+                  **({"members": members} if members else {})}
+    return shown
+
+
 def _joined(inside: dict, start: str, stop: str) -> bool:
     """Whether the arcs `inside` (end to the ends it reaches) lead from `start` to `stop`."""
     todo, met = [start], {start}
@@ -324,10 +343,11 @@ def _joined(inside: dict, start: str, stop: str) -> bool:
 def _open(envelope: dict, groups, symbols_of) -> tuple:
     """The first grouping's nodes with `groups` open in place (`view`): grouping, entities, files, the nodes in view,
     the node that shows each end (`owner`), the open group holding each node (`holder`), the open groups in the
-    order they opened, and the files read by `symbols_of`. An asked id the graph does not show, or that holds
-    nothing to open, is refused, ending with the id."""
+    order they opened, and the files read by `symbols_of`. A group holding more than BLOCK opens on a block of them
+    and a node «altri N» (`_block`), which opens on the next block in its place; its children are the group's. An
+    asked id the graph does not show, or that holds nothing to open, is refused, ending with the id."""
     grouping, entities, files, nodes, owner = _top(envelope)
-    holder, top, opened, read, under = dict.fromkeys(nodes), {ref: ref for ref in nodes}, [], {}, {}
+    holder, top, opened, read, under, rest = dict.fromkeys(nodes), {ref: ref for ref in nodes}, [], {}, {}, {}
     pending = sorted(set(groups))
     while pending:
         ref = next((item for item in pending if item in nodes), pending[0])
@@ -335,22 +355,27 @@ def _open(envelope: dict, groups, symbols_of) -> tuple:
         if node is None or not (node["files"] or node.get("members")):
             raise ValueError(f"the graph shows no group to open: {json.dumps(ref, ensure_ascii=False)}")
         pending.remove(ref)
-        if node["kind"] == "file":
-            path = node["files"][0]
-            read[path] = symbols_of(path)
-            under.update(_nested(ref, read[path], entities))
-        if node["kind"] in ("file", "symbol"):
-            children = under.get(ref, {})
-        elif node["kind"] == "group":  # «Tecnologie»: the technologies it holds
-            children = {member: _node(entities[member], entities[member]["name"]) for member in node["members"]}
+        if node["kind"] == "more":
+            group, block, children = rest.pop(ref)
+            children, parent = _block(group, block + 1, children, rest), holder[ref]
         else:
-            children = _contents(top[ref], node["files"], entities)
+            if node["kind"] == "file":
+                path = node["files"][0]
+                read[path] = symbols_of(path)
+                under.update(_nested(ref, read[path], entities))
+            if node["kind"] in ("file", "symbol"):
+                children = under.get(ref, {})
+            elif node["kind"] == "group":  # «Tecnologie»: the technologies it holds
+                children = {member: _node(entities[member], entities[member]["name"]) for member in node["members"]}
+            else:
+                children = _contents(top[ref], node["files"], entities)
+            children, parent = _block(ref, 1, children, rest), ref
+            opened.append({"id": ref, "name": node["name"], "kind": node["kind"], "parent": holder[ref],  # a module its stack
+                           **{key: node[key] for key in ("projects", "other_dependencies") if key in node}})
         for child, item in children.items():
-            nodes[child], holder[child], top[child] = item, ref, top[ref]
+            nodes[child], holder[child], top[child] = item, parent, top[ref]
             owner.update((f"file:{path}", child) for path in item["files"])
             owner.update((member, child) for member in (child, *item.get("members", ())))
-        opened.append({"id": ref, "name": node["name"], "kind": node["kind"], "parent": holder[ref],  # a module its stack
-                       **{key: node[key] for key in ("projects", "other_dependencies") if key in node}})
     return grouping, entities, files, nodes, owner, holder, opened, read
 
 

@@ -1885,3 +1885,35 @@ def test_highlighting_dims_the_others_and_lights_a_closed_group_with_how_many_it
     assert {ref: node.get("lit") for ref, node in code.items() if node.get("lit")} == {
         "build:api": 1, "build:web": 1, "group:technologies": 1}
     assert {ref for ref, node in code.items() if node.get("dim")} == {"external:gateway", "external:stripe"}
+
+
+def test_a_large_group_opens_in_blocks_with_a_node_for_the_others_and_loses_no_child():
+    paths = [f"big/f{index:03}.py" for index in range(700)]
+    envelope = {"entities": [{"ref": "build:big", "type": "build", "name": "big"},
+                             {"ref": "build:small", "type": "build", "name": "small"},
+                             *({"ref": f"file:{path}", "type": "file", "name": path.split("/")[-1], "path": path}
+                               for path in [*paths, "small/s.py"])],
+                "relations": [{"ref": "imports:file:small/s.py->file:big/f650.py", "kind": "imports",
+                               "source": "file:small/s.py", "target": "file:big/f650.py", "status": "confirmed",
+                               "evidence": []}],
+                "memberships": [*({"member": f"file:{path}", "group": "build:big", "view": "physical"} for path in paths),
+                                {"member": "file:small/s.py", "group": "build:small", "view": "physical"}],
+                "gaps": [], "meta": {}, "technologies": []}
+    blocks = ("build:big", "more:build:big#1", "more:build:big#2")
+    for opened, count, left, target in ((1, 300, 400, "more:build:big#1"), (2, 600, 100, "more:build:big#2"),
+                                        (3, 700, 0, "file:big/f650.py")):
+        found = app_view.view(envelope, blocks[:opened])
+        shown = [node for node in found["nodes"] if node["kind"] == "file"]
+        assert [node["name"] for node in shown] == [path.split("/")[-1] for path in paths[:count]]
+        assert {node["group"] for node in shown} == {"build:big"} and [item["id"] for item in found["open"]] == ["build:big"]
+        more = [node for node in found["nodes"] if node["kind"] == "more"]
+        assert [(node["name"], len(node["files"])) for node in more] == ([(f"altri {left}", left)] if left else [])
+        assert len(shown) + sum(len(node["files"]) for node in more) == 700
+        assert [edge["target"] for edge in found["edges"]] == [target]
+    # the filter and the blocks together: the node for the others holds files of the code, and no physical node
+    lit = {node["id"]: node for node in app_view.view(envelope, ("build:big",), natures=["codice"])["nodes"]}
+    assert lit["more:build:big#1"]["lit"] == 400 and "dim" not in lit["more:build:big#1"]
+    hidden = app_view.view(envelope, ("build:big",), natures=["fisico"], mode="hide")
+    assert (hidden["nodes"], hidden["absent"]) == ([], ["fisico"])
+    with pytest.raises(ValueError, match="more:build:big#2"):
+        app_view.view(envelope, ("build:big", "more:build:big#2"))
