@@ -450,7 +450,7 @@ class App:
             path = self._project_path(required=False)
             mark = None
             if path is not None and path.exists():
-                with closing(project_file.open_project(path)) as db:
+                with self._opened(path) as db:
                     mark = (db.execute("SELECT project_uuid FROM project").fetchone(), project_file.head(db))
                     if self._levels.get("mark") != mark:
                         self._levels["applied"] = project_file.applied(envelope, db)
@@ -501,7 +501,7 @@ class App:
                                                      for key in ("snapshot_digest", "modules_digest", "cards_digest")}}}
             rows, path = project_rows.from_envelope(envelope, hashes), Path(context["project"])
             if path.exists():
-                with closing(project_file.open_project(path, write=True)) as db:
+                with self._opened(path, write=True) as db:
                     rev = project_file.analyse(db, rows=rows, hashes=hashes, source=source, analysis=analysis,
                                                author="daodan", summary=f"analisi di {run}")
             else:
@@ -513,11 +513,17 @@ class App:
         except Exception as error:  # noqa: BLE001 - the page reads why the graph was not recorded
             self.recorded = {"state": "failed", "rev": None, "cause": _cause(error)}
 
+    @staticmethod
+    def _opened(path: Path, write: bool = False):
+        """The project file at `path`, migrated first when it is of an older version (`project_file.upgrade`)."""
+        project_file.upgrade(path)
+        return closing(project_file.open_project(path, write=write))
+
     def _reading(self, write: bool = False):
         path = self._project_path()
         if not path.exists():
             raise ValueError("the project has no file yet: it is written when the analysis ends")
-        return closing(project_file.open_project(path, write=write))
+        return self._opened(path, write)
 
     def project_history(self, query: dict) -> dict:
         """The project file's revisions with author, kind, summary and the fields changed (`project_file.history`)."""
@@ -527,9 +533,13 @@ class App:
     def project_conflicts(self, query: dict) -> dict:
         """The conflicts of the head, open or settled, each with the key of its object (the graph's node id)."""
         with self._reading() as db:
-            keys = {row["id"]: project_file.key_of(row) for row in project_file.state(db).values()}
+            now = project_file.state(db)
+            keys = {row["id"]: project_file.key_of(row) for row in now.values()}
             return {"head": project_file.head(db),
-                    "conflicts": [{**item, "key": keys.get(item["object_id"])} for item in project_file.conflicts(db)]}
+                    "conflicts": [{**item, "key": keys.get(item["object_id"])} for item in project_file.conflicts(db)],
+                    # the open identity proposals: a node that may be one of before, to confirm with `/confirm`
+                    "proposals": [{"match": row["id"], **row["fields"]["payload"]} for row in now.values()
+                                  if row["kind"] == "record" and row["fields"]["kind"] == "identity_match"]}
 
     def project_edit(self, body: dict) -> dict:
         """A choice made by hand: `{"ref": <node or flow id of the graph>, "field": "name" | "description", "value":
@@ -553,9 +563,15 @@ class App:
             return {"rev": project_file.resolve(db, body["conflict_id"], body["keep"], author=getpass.getuser())}
 
     def project_confirm(self, body: dict) -> dict:
-        """Settle an identity proposal: `{"match": <its record's id>, "same": <a candidate's id, or null>}`."""
+        """Settle an identity proposal, `{"match": <its record's id>, "same": <a candidate's id, or null>}`, or say that
+        a node is one of before, `{"new": <its ref>, "same": <the ref of the one before>}`: a file renamed with
+        changes, whose edited original the analysis left with a conflict (`project_file.pair`)."""
+        if isinstance(body.get("new"), str) and isinstance(body.get("same"), str):
+            with self._reading(write=True) as db:
+                return {"rev": project_file.pair(db, project_file.find(db, body["new"]), project_file.find(db, body["same"]),
+                                                 author=getpass.getuser())}
         if not isinstance(body.get("match"), str) or not isinstance(body.get("same"), (str, type(None))):
-            raise ValueError("a confirmation is the proposal's id and a candidate's id or null")
+            raise ValueError("a confirmation is a proposal's id and a candidate's id or null, or two refs")
         with self._reading(write=True) as db:
             return {"rev": project_file.confirm(db, body["match"], body.get("same"), author=getpass.getuser())}
 

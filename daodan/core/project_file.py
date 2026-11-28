@@ -28,7 +28,7 @@ from snapshot_store import _plain
 
 __all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "applied", "changes",
            "commit", "confirm", "conflicts", "copy", "create", "edit", "find", "head", "history", "incoming", "key_of",
-           "migrate", "open_project", "read", "release", "resolve", "source_of", "state"]
+           "migrate", "open_project", "pair", "read", "release", "resolve", "source_of", "state", "upgrade"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
@@ -174,6 +174,22 @@ MIGRATIONS[1] = _from_v1
 
 def _tables(db: sqlite3.Connection, schema: str) -> list[str]:
     return [name for (name,) in db.execute(f"SELECT name FROM {schema}.sqlite_schema WHERE type = 'table' ORDER BY name")]
+
+
+def upgrade(path: Path | str) -> bool:
+    """Migrate the project file at `path` when its version is an older one `MIGRATIONS` knows (`migrate`); whether it
+    did. A file of this version, or one that is no project file, is left to `open_project` to accept or refuse."""
+    path = Path(path)
+    _plain(path)
+    try:
+        with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=BUSY_TIMEOUT_S)) as db:
+            identity, version = (db.execute(f"PRAGMA {name}").fetchone()[0] for name in ("application_id", "user_version"))
+    except sqlite3.DatabaseError:
+        return False
+    if identity != APPLICATION_ID or version not in MIGRATIONS:
+        return False
+    migrate(path)
+    return True
 
 
 def migrate(path: Path | str) -> None:
@@ -582,9 +598,8 @@ def changes(db: sqlite3.Connection, before: int, after: int) -> dict[str, list[s
 
 def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str) -> int:
     """Settle the `identity_match` proposal `match` in a revision `resolution` by `author`: with `same`, one of its
-    candidates, the new node takes that original id back (the provisional identity ends, and every active row that
-    pointed at it points at the original, and the choices kept on the original apply to it); with None they are distinct and the new id stays. The proposal and its
-    gap end either way. The revision number."""
+    candidates, the new node takes that original id back (`_join`); with None they are distinct and the new id
+    stays. The proposal and its gap end either way. The revision number."""
     current = head(db)
     now = state(db, current)
     record = now.get(match)
@@ -592,41 +607,75 @@ def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str
         raise ProjectError(f"nessuna proposta di corrispondenza aperta: {match}")
     proposal = record["fields"]["payload"]
     closed = [match] + [row["id"] for row in now.values() if row["kind"] == "gap" and row["fields"]["subject_id"] == match]
-    opened, raised = [], []
+    opened, raised, resolved = [], [], []
     if same is not None:
         if same not in proposal["candidates"]:
             raise ProjectError(f"{same} non è un candidato di {match}")
-        provisional = proposal["new"]
-        if provisional not in now:
-            raise ProjectError(f"l'identità provvisoria non è più attiva: {provisional}")
-        swap = {provisional: same}
-
-        def moved(value):
-            return swap.get(value, value)
-
-        original = _edits(db, current, {same})  # the choices kept on the original id
-        reopened, raised = _merge({**now[provisional], "id": same, "provenance": "resolution"}, original,
-                                  _open_conflicts(db, current))
-        opened.append(reopened)
-        closed.append(provisional)
-        for row in now.values():
-            if row["id"] in closed:
-                continue
-            replaced = {**row, "fields": {**row["fields"], **{name: moved(row["fields"].get(name))
-                                                              for name in REFERENCES[row["kind"]]}}}
-            if "endpoints" in row:
-                replaced["endpoints"] = [{**item, "node_id": moved(item["node_id"])} for item in row["endpoints"]]
-            if "edges" in row:
-                replaced["edges"] = [moved(item) for item in row["edges"]]
-            if "transitions" in row:
-                replaced["transitions"] = [{**item, "to_step_id": moved(item["to_step_id"])} for item in row["transitions"]]
-            if _content(replaced) != _content(row):
-                opened.append(replaced)
-                closed.append(row["id"])
+        opened, raised, resolved = _join(db, current, now, proposal["new"], same, closed)
     summary = f"conferma: {proposal['keys']['new']} è " + (proposal["keys"]["candidates"][proposal["candidates"].index(same)]
                                                           if same is not None else "un oggetto nuovo")
     return commit(db, expected_head=current, kind="resolution", author=author, summary=summary,
-                  opened=opened, closed=closed, conflicts=raised)
+                  opened=opened, closed=closed, conflicts=raised, resolved=resolved)
+
+
+def pair(db: sqlite3.Connection, new: str, same: str, *, author: str) -> int:
+    """The person says that the node `new` is the node `same` of an earlier revision, in a revision `resolution` by
+    `author`: a file renamed with changes, which no digest pairs (Git's similarity has no part, decision 7 of `T2.E`)
+    and whose edited original the analysis left with a conflict `removed`, or one no edit held. `new` takes the id
+    `same` back as a confirmed proposal does (`_join`). The revision number."""
+    current = head(db)
+    now = state(db, current)
+    if now.get(new, {}).get("kind") != "node":
+        raise ProjectError(f"nessun nodo attivo {new}")
+    known = db.execute("SELECT kind FROM objects WHERE object_id = ?", (same,)).fetchone()
+    if known != ("node",) or same == new:
+        raise ProjectError(f"{same} non è un altro nodo del progetto")
+    closed: list[str] = []
+    opened, raised, resolved = _join(db, current, now, new, same, closed)
+    keys = [key_of(now[new]), key_of(now[same]) if same in now else same]
+    return commit(db, expected_head=current, kind="resolution", author=author, summary=f"conferma: {keys[0]} è {keys[1]}",
+                  opened=opened, closed=closed, conflicts=raised, resolved=resolved)
+
+
+def _join(db: sqlite3.Connection, current: int, now: dict[str, dict], provisional: str, same: str,
+          closed: list[str]) -> tuple[list[dict], list[dict], list[int]]:
+    """(opened, conflicts, resolved) by which the node `provisional` takes the original id `same` back at the head
+    `current`, adding to `closed`: the provisional identity ends, every active row that pointed at it points at the
+    original, and the choices kept on the original apply to it (a value they disagree with is a conflict). An
+    original the analysis had left active for its choices ends too, with its conflicts `removed`, now settled."""
+    if provisional not in now:
+        raise ProjectError(f"l'identità provvisoria non è più attiva: {provisional}")
+    swap = {provisional: same}
+
+    def moved(value):
+        return swap.get(value, value)
+
+    resolved = [conflict for conflict, edit, provenance in db.execute(
+        "SELECT c.conflict_id, e.object_id, c.incoming_provenance FROM conflicts AS c JOIN manual_edits AS e USING (edit_id)"
+        " WHERE c.resolved_rev IS NULL") if edit == same and json.loads(provenance).get("object") == "removed"]
+    pending = {edit: value for edit, value in _open_conflicts(db, current).items()}
+    for conflict in resolved:
+        (edit,) = db.execute("SELECT edit_id FROM conflicts WHERE conflict_id = ?", (conflict,)).fetchone()
+        pending.pop(edit, None)
+    reopened, raised = _merge({**now[provisional], "id": same, "provenance": "resolution"}, _edits(db, current, {same}), pending)
+    opened = [reopened]
+    closed.append(provisional)
+    if same in now:
+        closed.append(same)
+    for row in now.values():
+        if row["id"] in closed:
+            continue
+        replaced = {**row, "fields": {**row["fields"], **{name: moved(row["fields"].get(name)) for name in REFERENCES[row["kind"]]}}}
+        if "endpoints" in row:
+            replaced["endpoints"] = [{**item, "node_id": moved(item["node_id"])} for item in row["endpoints"]]
+        if "edges" in row:
+            replaced["edges"] = [moved(item) for item in row["edges"]]
+        if "transitions" in row:
+            replaced["transitions"] = [{**item, "to_step_id": moved(item["to_step_id"])} for item in row["transitions"]]
+        if _content(replaced) != _content(row):
+            opened.append(replaced)
+            closed.append(row["id"])
+    return opened, raised, resolved
 
 
 def keep_needed(before: dict[str, dict], rows: list[dict], kept: list[dict]) -> list[dict]:

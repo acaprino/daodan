@@ -2013,7 +2013,7 @@ def test_the_graph_is_recorded_at_each_analysis_and_a_choice_made_by_hand_shows_
         app._record(app.context)
         assert app.recorded == {"state": "done", "rev": 3, "cause": None}
         assert next(node for node in request(port, "/api/app/graph")[1]["nodes"] if node["id"] == group)["name"] == "Il server"
-        assert request(port, "/api/app/project/conflicts")[1] == {"head": 3, "conflicts": []}
+        assert request(port, "/api/app/project/conflicts")[1] == {"head": 3, "conflicts": [], "proposals": []}
         # a copy where the person chooses is a project file Daodan recognises
         saved = tmp_path / "elsewhere" / "copia.daodan"
         assert request(port, "/api/app/project/save", {"path": str(saved)})[0] == 200
