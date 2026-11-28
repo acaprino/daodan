@@ -2,13 +2,13 @@
  "case": "zlib",
  "commit": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
  "code": {
-  "code_graph.py": "8f4aac588655",
+  "code_graph.py": "e2c728fa18d0",
   "indexers/__init__.py": "67a8a5b52d41",
-  "indexers/clang.py": "4fe01164c84e",
+  "indexers/clang.py": "01a1522ce72a",
   "indexers/clang_run.py": "c1ea74dc335f",
   "indexers/components.py": "d46475644269",
   "indexers/csharp.py": "d791ccbca98d",
-  "indexers/css.py": "68ff0d7e347c",
+  "indexers/css.py": "92a4f67c0c3b",
   "indexers/css_astro.py": "c8157d430209",
   "indexers/css_csstree.py": "d9ed24317d3d",
   "indexers/css_less.py": "d74d9e3004ae",
@@ -18,15 +18,15 @@
   "indexers/css_tailwind.py": "d7536cfbb251",
   "indexers/css_typescript.py": "a82b9c69c6d0",
   "indexers/css_vue.py": "371de29e0479",
-  "indexers/go.py": "87b9bde8a306",
+  "indexers/go.py": "b22b13061018",
   "indexers/java.py": "4c36b9ca4357",
-  "indexers/jvm.py": "c0ad14c4ba49",
-  "indexers/kotlin.py": "f16e64bd3c42",
+  "indexers/jvm.py": "41843c9a83d7",
+  "indexers/kotlin.py": "720dde070bd0",
   "indexers/python.py": "27ea410254f8",
   "indexers/python_unbound.py": "49e96c46d1f4",
   "indexers/runtime.py": "fd355346a48c",
-  "indexers/rust.py": "f94e32a260ff",
-  "indexers/typescript.py": "872986318854",
+  "indexers/rust.py": "0d86f4594145",
+  "indexers/typescript.py": "7cd3d2de0d5c",
   "indexers/typescript_types.py": "8d7033172e18",
   "indexers/KotlinAsk.kt": "77b5faec27f5",
   "adapters/clang.py": "c73b59af36f4",
@@ -51,22 +51,22 @@
    "--no-index"
   ],
   "returncode": 0,
-  "seconds": 133.6,
-  "peak_mb": 204,
+  "seconds": 115.6,
+  "peak_mb": 210,
   "stdout_tail": "snapshot: 182 files -> /work/stage-zlib/snapshot/manifest.sqlite\nmodules: rebuilt -> /work/stage-zlib/snapshot/modules.json (52 modules)\npremap: 63 units, 39 gaps -> /work/stage-zlib/snapshot/premap.json\n",
-  "stderr_tail": "installing stack-analyser 1.27.6-daodan.6 into /root/.cache/daodan/engines/stack-analyser/1.27.6-daodan.6 (first use)\ninstalling node v22.23.4 into /root/.cache/daodan/engines/node/v22.23.4 (first use)\nDAODAN_MAXRSS_KB=209352\n",
+  "stderr_tail": "installing stack-analyser 1.27.6-daodan.6 into /root/.cache/daodan/engines/stack-analyser/1.27.6-daodan.6 (first use)\ninstalling node v22.23.4 into /root/.cache/daodan/engines/node/v22.23.4 (first use)\nDAODAN_MAXRSS_KB=215464\n",
   "stderr_errors": 0,
   "stderr_error_examples": []
  },
- "stage_seconds": 76.7,
- "seconds": 210.9,
+ "stage_seconds": 95.6,
+ "seconds": 211.9,
  "stage": {
   "available": true,
   "engine": "scip-clang@v0.4.1",
   "indexer": {
    "name": "scip-clang",
    "version": "v0.4.1",
-   "seconds": 34.8,
+   "seconds": 55.5,
    "peak_mb": null
   },
   "languages": {
@@ -125,7 +125,7 @@
     "indexer": {
      "name": "scip-clang",
      "version": "v0.4.1",
-     "seconds": 34.8,
+     "seconds": 55.5,
      "peak_mb": null
     },
     "files": {
@@ -219,10 +219,10 @@
      ],
      "missing_count": 21
     },
-    "nodes": 3975,
-    "edges": 26391,
+    "nodes": 3974,
+    "edges": 26249,
     "symbols_by_kind": {
-     "external class": 25,
+     "external class": 24,
      "external function": 64,
      "external macro": 60,
      "external property": 11,
@@ -241,24 +241,24 @@
      "dead-end call": 9,
      "external call": 764,
      "external read": 210,
-     "external unknown": 1706,
-     "namespace unknown": 138,
-     "project-callable call": 914,
-     "project-callable read": 77,
-     "project-callable unknown": 2346,
-     "project-value call": 1337,
-     "project-value read": 8882,
-     "project-value unknown": 10008
+     "external unknown": 1585,
+     "namespace unknown": 139,
+     "project-callable call": 787,
+     "project-callable read": 57,
+     "project-callable unknown": 519,
+     "project-value call": 1464,
+     "project-value read": 8902,
+     "project-value unknown": 11813
     },
     "callable_chain_hops": {
-     "0": 3237,
+     "0": 1263,
      "1": 100
     },
     "hop_tags": {
      "declaration": 100
     },
     "edges_uncertain": {
-     "one symbol defined at several places": 124
+     "one symbol defined at several places": 80
     },
     "edges_removed": {},
     "holes_by_class": {
@@ -811,14 +811,14 @@
      }
     ],
     "external_packages": {
-     ". (none)@-": 2017,
+     ". (none)@-": 2004,
      ". libc6-dev@2.39-0ubuntu8.9": 417,
-     ". clang@21.1.8": 244,
+     ". clang@21.1.8": 136,
      ". linux-libc-dev@6.8.0-149.149": 2
     }
    },
    "hand_check": {
-    "right": 17,
+    "right": 20,
     "total": 20,
     "sites": [
      {
@@ -963,9 +963,9 @@
       "expected": [
        "value"
       ],
-      "verdict": "wrong",
+      "verdict": "right",
       "got": [
-       "zutil.h:39"
+       "value"
       ],
       "symbols": [
        "cxx . project 0$ `deflate.h:351:10`!",
@@ -1022,10 +1022,10 @@
         "property"
        ],
        [
-        "project-callable",
+        "project-value",
         "cxx . project 0$ uch#",
         [],
-        ""
+        "class"
        ],
        [
         "project-value",
@@ -1318,11 +1318,9 @@
       "expected": [
        "value"
       ],
-      "verdict": "wrong",
+      "verdict": "right",
       "got": [
-       "zconf.h:402",
-       "zutil.h:39",
-       "zutil.h:41"
+       "value"
       ],
       "symbols": [
        "cxx . . $ Bytef#",
@@ -1345,10 +1343,10 @@
         ". (none)@-"
        ],
        [
-        "project-callable",
+        "project-value",
         "cxx . project 0$ Bytef#",
         [],
-        ""
+        "class"
        ],
        [
         "project-value",
@@ -1381,16 +1379,16 @@
         "property"
        ],
        [
-        "project-callable",
+        "project-value",
         "cxx . project 0$ uch#",
         [],
-        ""
+        "class"
        ],
        [
-        "project-callable",
+        "project-value",
         "cxx . project 0$ ush#",
         [],
-        ""
+        "class"
        ],
        [
         "project-value",
@@ -1414,10 +1412,9 @@
       "expected": [
        "deflate.c:371"
       ],
-      "verdict": "wrong",
+      "verdict": "right",
       "got": [
-       "deflate.c:371",
-       "zlib.h:86"
+       "deflate.c:371"
       ],
       "symbols": [
        "cxx . project 0$ `zlib.h:1813:11`!",
@@ -1438,10 +1435,10 @@
         ""
        ],
        [
-        "project-callable",
+        "project-value",
         "cxx . project 0$ z_stream#",
         [],
-        ""
+        "class"
        ]
       ]
      },
@@ -1525,7 +1522,7 @@
     "indexer": {
      "name": "scip-clang",
      "version": "v0.4.1",
-     "seconds": 34.8,
+     "seconds": 55.5,
      "peak_mb": null
     },
     "files": {
@@ -1582,11 +1579,11 @@
     "edges_by_end": {
      "external unknown": 1,
      "namespace unknown": 3,
-     "project-callable unknown": 65,
-     "project-value unknown": 12
+     "project-callable unknown": 35,
+     "project-value unknown": 42
     },
     "callable_chain_hops": {
-     "0": 65
+     "0": 35
     },
     "hop_tags": {},
     "edges_uncertain": {},

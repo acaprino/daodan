@@ -893,6 +893,37 @@ def test_clang_an_explicit_destructor_call_ends_at_the_destructor(tmp_path):
     assert call["hole"] == "" and any(end.cls == "project-callable" for end in call["ends"]), call
 
 
+def test_clang_a_c_type_is_a_value_and_a_cpp_class_its_constructor(tmp_path):
+    """zlib's `(uch)c` in `_tr_tally_lit` and `sizeof(z_stream)` in `deflateInit`: a C `typedef` or struct, which the
+    snapshot declares as a class, is a value, since C has no constructor; a C++ class is what `Box()` calls."""
+    import snapshot
+    from indexers import clang
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "cast.c").write_text("typedef unsigned char uch;\nstruct box { int n; };\n"
+                                    "int put(struct box *b, int c) {\n    return b->n + (uch)c;\n}\n", encoding="utf-8")
+    (project / "make.cpp").write_text("class Box {};\nBox make() { return Box(); }\n", encoding="utf-8")
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.read_project(project, manifest)
+    uch, box, n, put = ("cxx . project 0$ uch#", "cxx . project 0$ box#", "cxx . project 0$ box#n.",
+                        "cxx . project 0$ put(1a).")
+    cpp_box, make = "cxx . project 0$ Box#", "cxx . project 0$ make(2b)."
+    (tmp_path / "index.scip").write_bytes(document("cast.c", [
+        occurrence(1, 22, 25, uch, True), occurrence(2, 7, 10, box, True), occurrence(2, 17, 18, n, True),
+        occurrence(3, 4, 7, put, True), occurrence(3, 15, 18, box), occurrence(3, 20, 21, "local 0", True),
+        occurrence(3, 27, 28, "local 1", True), occurrence(4, 11, 12, "local 0"), occurrence(4, 14, 15, n),
+        occurrence(4, 19, 22, uch), occurrence(4, 23, 24, "local 1")]) + document("make.cpp", [
+        occurrence(1, 6, 9, cpp_box, True), occurrence(2, 0, 3, cpp_box), occurrence(2, 4, 8, make, True),
+        occurrence(2, 20, 23, cpp_box)]))
+    with code_graph.Snapshot(manifest) as snap:
+        index = code_graph.Index(snap.root)
+        index.load(tmp_path / "index.scip")
+        _hops, traversal, _prepared = code_graph.adapter_traversal(clang, index, snap)
+        ends = {key: [(end.cls, end.detail) for end in traversal.ends(key)] for key in (uch, box, cpp_box)}
+    assert ends == {uch: [("project-value", "class")], box: [("project-value", "class")],
+                    cpp_box: [("project-callable", "")]}, ends
+
+
 def test_clang_an_operator_call_is_an_edge_of_kind_unknown(built):
     """`a + b` is no call the snapshot lists; the index names `Vec::operator+` there."""
     data = built["cpp"]

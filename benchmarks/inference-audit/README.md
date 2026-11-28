@@ -1626,6 +1626,20 @@ Esito: soglia **non** raggiunta sui conteggi (né su zlib né su tinyxml2) e sul
 - zlib a mano, i tre sbagliati: `deflate.c:1888` `_tr_tally_lit` e `trees.c:775` `send_bits`, attesi `value`, raggiungono i `typedef` dei cast nelle espansioni (`zutil.h:39`, `:41`, `zconf.h:402`), che lo snapshot del prodotto dichiara `class` e il grafo conta come chiamabili; `test/example.c:175` `deflateInit` ha anche `zlib.h:86` (il `typedef` `z_stream` del cast della macro). Stessa causa: un `typedef` C contato come classe chiamabile.
 - tinyxml2 a mano: gli stessi quattro sbagliati del 14 novembre (`~XMLNode` e `printf` senza occorrenza, `TIXML_SNPRINTF` e `TIXMLASSERT` `value`).
 
+#### Il `typedef` C non è un chiamabile (`T2.B.20`)
+
+`classify` di `indexers/clang.py` dice `value` di un tipo (il suffisso `#` del simbolo di scip-clang) definito solo in file C: il C non ha costruttori, quindi un cast, un `sizeof` o una dichiarazione non chiamano niente, anche se lo snapshot dichiara `class` un `typedef` o una struct; `code_graph.Traversal` finisce un simbolo `value` su un valore del progetto. `SymbolInformation.kind` non si presta: scip-clang v0.4.1 lo scrive 0 (indice registrato `tests/fixtures/code-graph/c/index.scip`); il tipo di cursore di clang chiederebbe un clang nell'immagine, che porta solo scip-clang. Il C++ resta com'era: una classe è il suo costruttore.
+
+Esecuzione, codice del prodotto di questo commit: `modal deploy benchmarks/inference-audit/lang_clang.py`, `lang_clang.py spawn --stage --cases zlib,tinyxml2` (`fc-01M8FYM5KVYDAY86MYA4KQ0JY4`, `fc-01M8FYM5RFNV7A5XEQTS2AMGBK`), `fetch --stage`. Risultati: `results/clang-stage-{zlib,tinyxml2}.json`.
+
+| Caso | Nodi | Archi | `project-callable` | Buchi | A mano | Stage (scip-clang) | Snapshot, picco |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| zlib (C) | 3.975 → 3.974 | 26.391 → 26.249 | 3.337 → 1.363 | 5.289 | 17/20 → **20/20** | 95,6 s (55,5 s) | 115,6 s, 210 MB |
+| tinyxml2 (C++) | 2.069 | 8.141 | 3.848 | 193 | 16/20 (uguale) | 30,2 s (3,5 s) | 75,2 s, 201 MB |
+
+- zlib: `_tr_tally_lit`, `send_bits` e `deflateInit` ora giusti; gli archi verso i tipi C (cast, `sizeof`, dichiarazioni) passano da `project-callable` a `project-value`.
+- tinyxml2: conteggi e verifica a mano uguali al giro di `T2.B.15`, gli stessi quattro sbagliati.
+
 ## 27 novembre 2026, soglia dei fogli di stile (T2.B.17)
 
 `lang_css.py` sui sette casi, due corse sullo stesso codice salvo il TypeScript del programma degli script: `39dfca8` (TypeScript 5.9.3 di `css_engines/`) e `d52925a` (`T2.B.16`, il TypeScript 6.0.3 di scip-typescript 0.6.2). `modal deploy benchmarks/inference-audit/lang_css.py`, `python benchmarks/inference-audit/lang_css.py spawn --cases v3-admin-vite,tududi,bulma,bootstrap3,hn-svelte,saas-starter,sc-website`, `fetch` con gli stessi casi; risultati in `results/graph-css-<caso>-checks.json` (quelli di `d52925a`).
