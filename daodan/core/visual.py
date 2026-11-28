@@ -14,7 +14,10 @@ Every node carries `location` (`internal`, `external`) and, when known, `node_ty
 from the closed list of the flow model: an external module is a service or API, a service
 the stack recognises the type of its registry entry, a route handler a service or API, the
 symbol that binds a user action a screen, a store the type its link rule names. A node of
-unknown type has none. An external service and an item of `technologies` whose registry entry has a
+unknown type has none. Every node carries its `species` and whether it is `concrete` (`node_model`); its natures are
+derived from those, never written. A framework, a library or a tool the stack recognises is a node of its own
+(`technology:<id>`) under the abstract group «Tecnologie» (`group:technologies`), used by each module that declares
+it. An external service and an item of `technologies` whose registry entry has a
 logo carry the entry's id in `mark`; the others have none.
 
     python visual.py envelope RUN_DIR [--out FILE]
@@ -52,6 +55,7 @@ import card_store  # noqa: E402
 import confinement  # noqa: E402
 import edge_view  # noqa: E402
 import modules  # noqa: E402
+import node_model  # noqa: E402
 import snapshot  # noqa: E402
 import semantic_store  # noqa: E402
 import source_reader  # noqa: E402
@@ -59,6 +63,8 @@ from snapshot_store import logical_digest, open_snapshot, resolve_run_snapshot  
 
 SCHEMA = "daodan/visual@1"
 LIMIT = 1000  # the readers' maximum per list: larger inputs are split, never cut in silence
+TECHNOLOGY_CATEGORIES = ("framework", "library", "tool")  # the registry's categories that are nodes under TECHNOLOGIES
+TECHNOLOGIES = "group:technologies"
 _SECRET_WORDS = ("password=", "passwd=", "secret=", "token=", "apikey=", "api_key=")
 
 
@@ -183,8 +189,10 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
         ref = _module_ref(module)
         by_id[module["id"]] = ref
         external = module.get("location") == "external"
-        entity(ref, ref.split(":", 1)[0], module["name"], description=module.get("responsibility") or module.get("description") or "",
-               provenance=module.get("provenance"), nature=module.get("nature"), status=module.get("status"),
+        kind = ref.split(":", 1)[0]
+        entity(ref, kind, module["name"], description=module.get("responsibility") or module.get("description") or "",
+               provenance=module.get("provenance"), status=module.get("status"),
+               concrete=node_model.concrete(node_model.ENVELOPE_SPECIES[kind], module.get("nature")),
                languages=module.get("languages"), toolchains=module.get("toolchains"),
                location="external" if external else "internal", node_type="servizio o API" if external else None,
                evidence=[{"path": item.get("path"), "line": item.get("line")} for item in module.get("evidence", [])],
@@ -274,6 +282,31 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
                 used["counts"]["uses"] += 1
                 used["evidence"] = [*used["evidence"], {"path": sign["path"], "line": sign["line"]}][:20]
 
+    # Frameworks, libraries and tools the stack recognises (a mention is none): a node each, with its entry's type and
+    # mark, under the abstract group «Tecnologie»; each module uses those it declares, at the declaring site (a
+    # library with a central version at the site of the module's use of it: its `libraries` row).
+    built = {item["id"]: item for item in stack["technologies"] if item["category"] in TECHNOLOGY_CATEGORIES}
+    for ident, item in built.items():
+        ref = f"technology:{ident}"
+        entity(ref, "technology", item["name"], location="external", node_type=item["type"], provenance="registry",
+               status="inferred", mark=ident if ident in marked else None,
+               evidence=[{"path": s["path"], "line": s["line"]} for s in technologies.sites(item["signs"])
+                         if technologies.module_declaration(s)][:20])
+        memberships.append({"member": ref, "group": TECHNOLOGIES, "view": "logical"})
+    if built:
+        entity(TECHNOLOGIES, "group", "Tecnologie", location="internal",
+               description="Framework, librerie e strumenti dello stack")
+    for unit in stack.get("modules", stack["units"]):
+        if unit["id"] not in by_id:
+            continue
+        used = {ident: site for ident, site in (unit.get("technology_evidence") or {}).items() if ident in built}
+        for library in unit.get("libraries") or ():
+            if library.get("id") in built:
+                used.setdefault(library["id"], {"path": library["path"], "line": library.get("line")})
+        for ident, site in used.items():
+            relation("uses", by_id[unit["id"]], f"technology:{ident}", counts={"uses": 1},
+                     evidence=[{"path": site["path"], "line": site.get("line")}])
+
     # Memberships: a file belongs to every logical module that holds it; build and virtual units are physical groups.
     for module in graph.get("modules", []):
         ref = by_id[module["id"]]
@@ -287,6 +320,8 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
     for found in entities.values():
         if "address" in found:
             found["address"] = sanitize_address(found["address"])
+        found["species"] = node_model.species_of(found)
+        found.setdefault("concrete", node_model.concrete(found["species"]))
     return {
         "schema": SCHEMA,
         "meta": {"project_root": root, "run_id": run_dir.name, "target": target,

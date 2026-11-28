@@ -1776,7 +1776,16 @@ def _trace_path(links, start, direction, boundary, max_edges, outgoing, incoming
 
 # ---------------------------------------------------------------- levels
 
-LEVELS = ("fisico", "logico", "dati", "ux")
+LEVELS = ("codice", "moduli", "dati", "persone")
+RENAMED = {"fisico": "codice", "logico": "moduli", "ux": "persone"}  # the old names, still taken until T2.D
+
+
+def level_name(level: str) -> str:
+    """A flow's level as LEVELS names it; an old name (`RENAMED`) is taken as its new one."""
+    level = RENAMED.get(level, level)
+    if level not in LEVELS:
+        raise ValueError(f"level must be one of {', '.join(LEVELS)}")
+    return level
 
 
 def file_modules(manifest: Path) -> dict[str, str]:
@@ -1797,24 +1806,24 @@ def file_modules(manifest: Path) -> dict[str, str]:
 
 
 def at_level(flow: dict, level: str, modules_of: dict[str, str]) -> dict:
-    """One flow seen at a level; the flow itself does not change.
+    """One flow seen at a level (`level_name`); the flow itself does not change.
 
-    `logico` contracts the symbols of one module into a node and keeps a symbol with
-    no module as it is; `dati` keeps the store accesses; `ux` keeps the user
-    actions and who shows the data. Every contracted link counts the links it stands for.
+    `codice` is the flow's symbols as they are; `moduli` is the same nature, code, at the depth of a module: it
+    contracts the symbols of one module into a node and keeps a symbol with no module as it is; `dati` keeps the
+    store accesses; `persone` keeps the user actions and who shows the data. Every contracted link counts the links
+    it stands for.
     """
-    if level == "fisico":
+    level = level_name(level)
+    if level == "codice":
         return flow
-    if level not in LEVELS:
-        raise ValueError(f"level must be one of {', '.join(LEVELS)}")
     edges = flow["edges"]
     if level == "dati":
         edges = [edge for edge in edges if edge["type"] in ("scrive", "legge")]
-    elif level == "ux":
+    elif level == "persone":
         edges = [edge for edge in edges if edge["type"] in ("attiva", "legge")]
 
     def seen_as(node: str) -> str:
-        if level != "logico" or "::" not in node:
+        if level != "moduli" or "::" not in node:
             return node
         module = modules_of.get(node.split("::", 1)[0])
         return f"module:{module}" if module else node
@@ -2036,7 +2045,7 @@ def main(argv=None) -> int:
     group.add_argument("--to", dest="start_to")
     group.add_argument("--through", dest="start_through")
     trace_parser.add_argument("--boundary", action="append", default=None)
-    trace_parser.add_argument("--level", choices=LEVELS, default="fisico")
+    trace_parser.add_argument("--level", choices=LEVELS + tuple(RENAMED), default="codice")
     args = parser.parse_args(argv)
     manifest = args.manifest.resolve()
     from run_store import store_of
@@ -2110,7 +2119,8 @@ def _cli_query(args, manifest, parser):
                                                                 (args.start_through, "through")) if value)
     flow = trace(links, start, direction, args.boundary)
     if direction != "through":
-        flow = at_level(flow, args.level, file_modules(args.manifest.resolve()) if args.level == "logico" else {})
+        level = level_name(args.level)
+        flow = at_level(flow, level, file_modules(args.manifest.resolve()) if level == "moduli" else {})
     print(json.dumps(flow, indent=2, sort_keys=True))
     return 0
 

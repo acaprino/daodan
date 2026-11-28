@@ -590,10 +590,10 @@ def test_the_first_level_is_the_graph_in_groups_and_reads_no_outline(levels, tmp
     top = leveled(levels, tmp_path).graph({})
     shown = ("grouping", "edges", "files", "unassigned")
     assert {key: top[key] for key in shown} == {key: whole[key] for key in shown}
-    # no node is in an open group; an external service is a node of the level infrastruttura, a group of codice
-    assert [{**node, "group": None, "level": "infrastruttura" if node["location"] == "external" else "codice"}
+    # no node is in an open group; an external service is a node of the nature fisico, a group of codice
+    assert [{**node, "group": None, "level": "fisico" if node["location"] == "external" else "codice"}
             for node in whole["nodes"]] == top["nodes"]
-    assert (top["levels"], top["grouping"], top["open"]) == (["codice", "infrastruttura"], "modules", [])
+    assert (top["levels"], top["grouping"], top["open"]) == (["codice", "fisico"], "modules", [])
     web, server = group_of(top, "web/api.ts"), group_of(top, "server/app.py")
     edges = {(edge["source"], edge["target"], edge["status"]): edge for edge in top["edges"]}
     assert edges[(web, server, "uncertain")]["counts"] == {"calls": 1}  # the deduced link, uncertain apart
@@ -669,7 +669,7 @@ def test_a_group_opens_in_place_and_its_summary_arrows_become_the_arrows_of_what
     assert opened(app) == top
 
 
-def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_a_node_and_a_tool_or_a_mention_is_not(
+def test_a_technology_a_module_declares_is_a_node_under_technologies_and_a_tile_of_its_stack_and_a_mention_is_not(
         levels, tmp_path):
     import technologies
     from snapshot_store import resolve_run_snapshot
@@ -698,19 +698,46 @@ def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_
             for item in shown[admin]["projects"][1:]] == [("nextjs", "Next.js", "project", ["admin/next.config.js"])]
     assert (shown[server]["projects"], shown[server]["other_dependencies"]) == ([], 0)
     assert {project["id"] for node in top["nodes"] for project in node.get("projects", ())} == {"express", "nextjs", "zod"}
-    # Open, the frame of the module keeps its stack; at no detail is a framework, a tool or a mention a node or an end.
+    # Open, the frame of the module keeps its stack.
     one, two = opened(app, web), opened(app, web, admin, f"{web}#web/lib")
     assert next(item for item in one["open"] if item["id"] == web)["projects"] == shown[web]["projects"]
     assert next(item for item in two["open"] if item["id"] == admin)["projects"] == shown[admin]["projects"]
-    for found in (top, one, two):
+    # Frameworks, libraries and tools are nodes under «Tecnologie», a group beside the modules that does not choose the
+    # grouping; a mention and a service are not among them. Closed, a module's uses go to the group.
+    group = "group:technologies"
+    built = {f"technology:{item['id']}" for item in stack["technologies"]
+             if item["category"] in ("framework", "library", "tool")}
+    assert {"technology:express", "technology:zod", "technology:jest", "technology:nodejs", "technology:nextjs"} <= built
+    assert not built & {"technology:pushbullet", "technology:stripe"}
+    assert (shown[group]["name"], shown[group]["group"], sorted(shown[group]["members"])) == ("Tecnologie", None, sorted(built))
+    assert not any(node["id"].startswith("technology:") for node in top["nodes"])
+    closed = arrows(top)
+    assert closed[(web, group, "confirmed")]["counts"]["uses"] >= 3  # express, zod, jest at least
+    assert closed[(admin, group, "confirmed")]["counts"]["uses"] >= 2  # express, nextjs
+    # Open, each module uses each technology it declares, at the declaring site.
+    techs = opened(app, group)
+    assert {node["id"] for node in techs["nodes"] if node["group"] == group} == built
+    assert {node["level"] for node in techs["nodes"] if node["group"] == group} == {"codice"}
+    express_node = next(node for node in techs["nodes"] if node["id"] == "technology:express")
+    assert (express_node["location"], express_node["mark"]) == ("external", "express")
+    uses = arrows(techs)
+    assert uses[(web, "technology:express", "confirmed")]["evidence"] == [
+        {"kind": "uses", "path": "web/package.json", "line": 6}]
+    assert uses[(admin, "technology:express", "confirmed")]["evidence"] == [
+        {"kind": "uses", "path": "admin/package.json", "line": 5}]
+    assert uses[(web, "technology:jest", "confirmed")]["evidence"] == [
+        {"kind": "uses", "path": "web/package.json", "line": 9}]
+    assert (web, "technology:zod", "confirmed") in uses and (admin, "technology:nextjs", "confirmed") in uses
+    assert not any(target == group for _source, target, _status in uses)
+    for found in (top, one, two, techs):
         ends = {node["id"] for node in found["nodes"]} | {
             end for edge in found["edges"] for end in (edge["source"], edge["target"])}
         assert not ends & {"external:express", "external:zod", "external:jest", "external:nodejs",
-                           "external:pushbullet"}
+                           "external:pushbullet", "technology:pushbullet"}
     assert opened(app) == top
-    # codice alone keeps the stack, the module's own, and drops the services
+    # codice alone keeps the stack, the module's own, and «Tecnologie», and drops the services
     code = {node["id"]: node for node in app.graph({"levels": json.dumps(["codice"])})["nodes"]}
-    assert code[web]["projects"] == shown[web]["projects"] and "external:stripe" not in code
+    assert code[web]["projects"] == shown[web]["projects"] and "external:stripe" not in code and group in code
 
 
 def test_a_symbol_holding_others_opens_into_them_and_a_closed_class_keeps_its_calls_counts_and_lines(levels, tmp_path):
@@ -757,17 +784,19 @@ def test_a_file_a_symbol_a_node_the_run_does_not_show_or_a_path_is_refused_as_a_
     for file in ("../server/app.py", "server/app.py", "symbol:server/store/db.py::save", server, "file:nowhere.py"):
         with pytest.raises(ValueError):
             app.symbols({"file": file})
-    # the graph is the system map's levels codice and infrastruttura; codice alone has no external node nor its arrows;
+    # the graph is the natures codice and fisico (the old name infrastruttura still taken); codice alone has no
+    # external node nor its arrows;
     # a level the app does not build is refused, never served as the code's
-    both = app.graph({"levels": json.dumps(["infrastruttura", "codice"])})
-    assert both == app.graph({}) and both["levels"] == ["codice", "infrastruttura"]
+    both = app.graph({"levels": json.dumps(["fisico", "codice"])})
+    assert both == app.graph({}) and both["levels"] == ["codice", "fisico"]
+    assert app.graph({"levels": json.dumps(["infrastruttura", "codice"])}) == both
     code = app.graph({"levels": json.dumps(["codice"])})
     assert code["levels"] == ["codice"] and {node["level"] for node in code["nodes"]} == {"codice"}
     assert not any(end.startswith("external:") for edge in code["edges"] for end in (edge["source"], edge["target"]))
     assert {node["id"] for node in code["nodes"]} == {node["id"] for node in both["nodes"]} - {
         "external:stripe", "external:lemonsqueezy"}
-    for asked, why in ((["funzioni"], "'funzioni' is not built in the app yet"), (["Funzionale"], "no level 'Funzionale'"),
-                       (["infrastruttura"], "only beside 'codice'"), ([], "a JSON list of levels"),
+    for asked, why in ((["logico"], "'logico' is not built in the app yet"), (["funzioni"], "'logico' is not built"),
+                       (["Funzionale"], "no level 'Funzionale'"), (["fisico"], "only beside 'codice'"), ([], "a JSON list of levels"),
                        ("codice", "a JSON list of levels")):
         with pytest.raises(ValueError, match=why):
             app.graph({"levels": json.dumps(asked) if isinstance(asked, list) else asked})

@@ -2,14 +2,16 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Levels of a flow of the system map: one flow, seen from persone, funzioni, dati, codice, infrastruttura.
+"""Levels of a flow of the system map: one flow, seen at one or more natures of its nodes (`node_model.NATURES`:
+persone, logico, dati, codice, fisico).
 
-Each level shows only its node types. An arrow between two shown nodes contracts a
-path whose middle nodes are hidden: it stays declared when a step is declared and
+A node is shown at its natures (`node_model.natures`, from its species and position). An arrow between two
+shown nodes contracts a path whose middle nodes are hidden: it stays declared when a step is declared and
 keeps the proof of every step. A path enters and leaves an entity on the same
 representation; when it does not, or a step is refused, it is a gap, never an arrow.
-At `infrastruttura` a node is put on what it runs on; at `codice` a node becomes the
-files of its members that the flow's links touch, never single symbols.
+At `fisico` a node is put on what it runs on; at `codice` a node becomes the
+files of its members that the flow's links touch, never single symbols. An external node whose registry entry has a
+logo carries the entry's id in `mark`, as in the envelope (`visual.build_envelope`).
 """
 from __future__ import annotations
 
@@ -21,19 +23,28 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import node_model  # noqa: E402
+import service_registry  # noqa: E402
 import system_map  # noqa: E402
+from node_model import NATURES  # noqa: E402
 
-LEVELS = ("persone", "funzioni", "dati", "codice", "infrastruttura")
-_HOME = {"attore": "persone", "schermata": "persone", "applicazione": "persone", "entità": "dati",
-         "database": "infrastruttura", "coda": "infrastruttura", "filesystem": "infrastruttura",
-         "dispositivo": "infrastruttura"}
+RENAMED = {"funzioni": "logico", "infrastruttura": "fisico"}  # the old names, still taken until T2.D
 MAX_PATHS = 2000
 
 
-def levels_of(node: dict) -> list[str]:
-    """The levels a node is shown at: its home one, and `infrastruttura` for an external service."""
-    home = _HOME.get(node["type"], "funzioni")
-    return [home, "infrastruttura"] if node["position"] == "external" and home == "funzioni" else [home]
+def natures_asked(levels) -> list[str]:
+    """The natures a request names, in the order of NATURES; an old name (`RENAMED`) is taken as its new one."""
+    if not isinstance(levels, list) or not levels or not all(isinstance(level, str) for level in levels):
+        raise ValueError(f"levels are a list of one or more of {', '.join(NATURES)}")
+    unknown = [level for level in levels if RENAMED.get(level, level) not in NATURES]
+    if unknown:
+        raise ValueError(f"no level {unknown[0]!r}: levels are one or more of {', '.join(NATURES)}")
+    asked = {RENAMED.get(level, level) for level in levels}
+    return [nature for nature in NATURES if nature in asked]
+
+
+def _natures(node: dict) -> list[str]:
+    return node_model.natures(node_model.species_of(node), node["position"])
 
 
 def _find(records: list[dict], name: str, what: str) -> dict:
@@ -145,19 +156,17 @@ def _code_steps(flow: dict, nodes: dict, links: dict) -> tuple[list[dict], dict[
 
 def view(system: dict, flow: str, levels: list[str], links: dict | None = None) -> dict:
     """A flow of `system_map.load` at one or more levels, by flow id or current name."""
-    if not levels or any(level not in LEVELS for level in levels):
-        raise ValueError(f"levels are one or more of {', '.join(LEVELS)}")
-    if "codice" in levels and links is None:
+    chosen = natures_asked(levels)
+    if "codice" in chosen and links is None:
         raise ValueError("the codice level needs the links of the snapshot")
-    chosen = [level for level in LEVELS if level in levels]
     record = _find(system["flows"], flow, "flow")
     nodes = {n["name"]: n for n in system["nodes"]}
     pool = list(dict.fromkeys(record["nodes"] + ([o for n in record["nodes"] for o in nodes[n]["on"]]
-                                                 if "infrastruttura" in chosen else [])))
-    shown = {n: next((lv for lv in chosen if lv in levels_of(nodes[n])), None) for n in pool}
+                                                 if "fisico" in chosen else [])))
+    shown = {n: next((lv for lv in chosen if lv in _natures(nodes[n])), None) for n in pool}
     visible = {n for n, level in shown.items() if level}
     steps = [_step(a) for a in record["arrows"]]
-    if "infrastruttura" in chosen:  # a hidden node is put on what it runs on
+    if "fisico" in chosen:  # a hidden node is put on what it runs on
         for name in pool:
             if name in visible or not nodes[name]["on"]:
                 continue
@@ -174,15 +183,18 @@ def view(system: dict, flow: str, levels: list[str], links: dict | None = None) 
             steps = [s for s in moved if s["from"] != s["to"]]
     entities = {n for n in pool if nodes[n]["type"] == "entità"}
     arrows, gaps = _contract(visible, steps, entities)
+    logos = service_registry.marked()
     out_nodes = [{"name": n, "type": nodes[n]["type"], "level": shown[n], "position": nodes[n]["position"],
-                  "also": _also(nodes[n], shown[n], system["nodes"])} for n in pool if shown[n]]
+                  "also": _also(nodes[n], shown[n], system["nodes"]),
+                  **({"mark": nodes[n]["registry"]} if nodes[n].get("registry") in logos else {})}
+                 for n in pool if shown[n]]
     if "codice" in chosen:
         code_steps, files = _code_steps(record, nodes, links)
         code_arrows, code_gaps = _contract(set(files), code_steps, set())
         arrows, gaps = arrows + code_arrows, gaps + code_gaps
         out_nodes += [{"name": path, "type": "file", "level": "codice", "position": "internal",
                        "also": _grouped(nodes[o] for o in owners)} for path, owners in files.items()]
-    out_nodes.sort(key=lambda n: (LEVELS.index(n["level"]), system_map.key(n["name"])))
+    out_nodes.sort(key=lambda n: (NATURES.index(n["level"]), system_map.key(n["name"])))
     return {"flow": record["name"], "flow_status": record["status"], "fresh": record["fresh"],
             **{k: record[k] for k in ("reachability", "entries", "effects") if k in record},
             **({"reason": record["reason"]} if "reason" in record else {}),
@@ -193,25 +205,25 @@ def view(system: dict, flow: str, levels: list[str], links: dict | None = None) 
 def _grouped(found) -> dict[str, list[str]]:
     out = defaultdict(list)
     for node in found:
-        out[levels_of(node)[0]].append(node["name"])
-    return {level: sorted(names, key=system_map.key) for level, names in sorted(out.items(), key=lambda i: LEVELS.index(i[0]))}
+        out[_natures(node)[0]].append(node["name"])
+    return {level: sorted(names, key=system_map.key) for level, names in sorted(out.items(), key=lambda i: NATURES.index(i[0]))}
 
 
 def _also(node: dict, level: str, every: list[dict]) -> dict[str, list[str]]:
     """The same node at the other levels: its files, what it runs on, what runs on it."""
     out = defaultdict(set)
-    for other in levels_of(node)[1:]:
+    for other in _natures(node)[1:]:
         out[other].add(node["name"])
     if node["position"] == "internal" and level != "codice":
         out["codice"].update(node["files"])
     by_name = {n["name"]: n for n in every}
     for name in node["on"]:
-        out[levels_of(by_name[name])[0]].add(name)
+        out[_natures(by_name[name])[0]].add(name)
     for other in every:
         if node["name"] in other["on"]:
-            out[levels_of(other)[0]].add(other["name"])
+            out[_natures(other)[0]].add(other["name"])
     out.pop(level, None)
-    return {lv: sorted(out[lv], key=system_map.key) for lv in LEVELS if out.get(lv)}
+    return {lv: sorted(out[lv], key=system_map.key) for lv in NATURES if out.get(lv)}
 
 
 def inside(system: dict, name: str, links: dict | None = None) -> dict:

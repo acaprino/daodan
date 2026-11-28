@@ -290,9 +290,9 @@ def test_ui_http_routes_pipeline_events_stack_envelope_and_sse_stream_with_clean
             v_code, _, v_raw = get("/data/visual.json?run=r1")
             env = json.loads(v_raw)
             api_entity = next(e for e in env["entities"] if e["ref"] == "build:api")
-            assert api_entity["nature"] == "concrete"
+            assert (api_entity["species"], api_entity["concrete"]) == ("modulo", True)
             assert "spring-boot" in api_entity["frameworks"]
-            assert any(e["nature"] == "virtual" for e in env["entities"] if e.get("nature"))
+            assert all("species" in e and "nature" not in e for e in env["entities"])
 
             # SSE /api/stream refuses missing token and streams live events with token
             unauth, _, _ = get("/api/stream?run=r1&once=1", token=None)

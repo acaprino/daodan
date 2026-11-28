@@ -71,7 +71,7 @@ The answer lists each node and flow with `status` (`accepted`, `incomplete`, `re
 
 The brief shows candidates from the syntax tree and the recorded pre-map. The AST readers find candidates in callback arguments, markup bindings and decorators. Each has its reader, shape, symbol and source site. Use `entry_offset=0` with an optional `limit` and continue at `next_offset` to inspect every candidate, even before link rules exist. These rows have status `candidate`; only verified flows contribute to map coverage.
 
-`about="name"` answers for an area, a flow or a node by id or current name: its flows, nodes, member files, external and unseen nodes. A report or an answer names up to 40 files of a node; past that it counts them by directory (`files_by_directory`). With `levels=[...]` (persone, funzioni, dati, codice, infrastruttura) and a flow, it shows the flow at those levels: arrows contracted through hidden nodes keep their state and proof, and a path that changes representation or crosses a refused step is a gap.
+`about="name"` answers for an area, a flow or a node by id or current name: its flows, nodes, member files, external and unseen nodes. A report or an answer names up to 40 files of a node; past that it counts them by directory (`files_by_directory`). With `levels=[...]`, the natures of the nodes (persone, logico, dati, codice, fisico), and a flow, it shows the flow at those levels: arrows contracted through hidden nodes keep their state and proof, and a path that changes representation or crosses a refused step is a gap.
 
 ## Sequence
 
