@@ -31,9 +31,9 @@ its input; the six others are its steps (`STEPS`):
    the pipeline goes on. The same step starts the app the project declares and explores it in a browser: the controls
    it pressed are entries of the links (`dynamic/app.py`). `DAODAN_DYNAMIC=off` skips it.
 8. `assemble_graph`: the graphs of the technologies as the complete graph. Until the connection points exist, it is
-   the store of each technology's graph: it says what a run observed (the sites, the holes closed, the sampled ones
-   apart) and what stayed unobserved (a language with no observed edge, the tests that did not run, the files no test
-   executed, an observed edge against a proven one), and what the graph does not hold: the files an index left out,
+   the store of each technology's graph: it says what a run observed (the sites, the holes closed) and what stayed
+   unobserved (a language with no observed edge, the tests that did not run, the files no test executed, an
+   observed edge against a proven one), and what the graph does not hold: the files an index left out,
    the languages no analyzer lists, the calls between two analyzers' languages. It counts the routes the static
    links join, with no rule of the model (`flows.cached_links`), and says the HTTP calls no route answers.
 
@@ -350,32 +350,25 @@ class AssembleGraph:
 
     @staticmethod
     def observed(language: str, coverage: dict, reason: str | None, bus, say) -> None:
-        """What a run observed for `language` (its `coverage`'s `observed`, and `sampled` apart), and what stayed
-        unobserved, each a gap: no edge of a run at all (with the dynamic step's `reason` when it gave one), the
-        tests that did not run to their end, the files with calls no test executed, the observed edges against a
-        proven one. A sample says nothing of what it did not see."""
-        seen, sampled = coverage.get("observed") or {}, coverage.get("sampled") or {}
+        """What a run observed for `language` (its `coverage`'s `observed`), and what stayed unobserved, each a
+        gap: no edge of a run at all (with the dynamic step's `reason` when it gave one), the tests that did not run
+        to their end, the files with calls no test executed, the observed edges against a proven one."""
+        seen = coverage.get("observed") or {}
         for test in seen.get("tests") or ():
             if test["state"] != "ran":
                 detail = (f"{language}: the tests of {test['root']} ({test['runner']}) ended {test['state']}: what "
                           "they call is not observed")
                 say(detail, {"kind": "tests-not-run", "path": test["root"], "state": test["state"],
                              "detail": detail}, language)
-        if not seen.get("edges") and not sampled.get("edges"):
+        if not seen.get("edges"):
             why = reason or ("a run placed no call on a reference of this language" if seen else
                              "the dynamic step has not observed this language")
             say(f"{language}: static graph only", {"kind": "not-observed", "detail":
                 f"no edge observed in a run: {why}"}, language)
             return
-        if seen.get("edges"):
-            bus.emit("log", f"{language}: {seen['sites']} sites observed in a run, "
-                            f"{sum(seen['closed'].values())} holes closed", step=AssembleGraph.NAME, language=language,
-                     resolver=seen.get("resolver"), sites=seen["sites"], edges=seen["edges"], closed=seen["closed"])
-        if sampled.get("edges"):
-            bus.emit("log", f"{language}: {sampled['sites']} sites and {sampled['edges']} edges sampled in a run, "
-                            f"{sum(sampled['closed'].values())} holes closed", step=AssembleGraph.NAME, language=language,
-                     resolver=sampled.get("resolver"), sites=sampled["sites"], edges=sampled["edges"],
-                     closed=sampled["closed"])
+        bus.emit("log", f"{language}: {seen['sites']} sites observed in a run, "
+                        f"{sum(seen['closed'].values())} holes closed", step=AssembleGraph.NAME, language=language,
+                 resolver=seen.get("resolver"), sites=seen["sites"], edges=seen["edges"], closed=seen["closed"])
         idle = (seen.get("files") or {}).get("not_executed") or []
         if idle:
             detail = (f"{language}: no test executed {len(idle)} files with calls, which stay as the static steps "
@@ -526,8 +519,8 @@ def runtime(manifest: Path) -> dict:
     languages = {}
     for language, entry in sorted((state.get("languages") or {}).items()):
         coverage = entry.get("coverage") or {}
-        seen, sampled = coverage.get("observed") or {}, coverage.get("sampled") or {}
-        if seen.get("edges") or sampled.get("edges"):
+        seen = coverage.get("observed") or {}
+        if seen.get("edges"):
             files = seen.get("files") or {}
             languages[language] = {
                 "resolver": seen.get("resolver"), "sites": seen.get("sites", 0), "edges": seen.get("edges", 0),
@@ -535,10 +528,6 @@ def runtime(manifest: Path) -> dict:
                 "files": {"executed": files.get("executed", 0), "not_executed": len(files.get("not_executed") or ())},
                 "tests": [{key: test.get(key) for key in ("root", "runner", "state")}
                           for test in seen.get("tests") or ()]}
-            if sampled.get("edges"):
-                languages[language]["sampled"] = {"resolver": sampled.get("resolver"), "sites": sampled["sites"],
-                                                  "edges": sampled["edges"],
-                                                  "closed": sum((sampled.get("closed") or {}).values())}
     last_union = recorded[ready[-1]]["data"]
     ui_controls = last_union.get("ui_controls", [])
     gaps.extend(last_union.get("ui_gaps", []))

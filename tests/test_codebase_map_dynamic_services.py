@@ -39,7 +39,7 @@ import container_runner  # noqa: E402
 from premap import compose, renovate  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 from test_codebase_map_container import FAKE_CLI  # noqa: E402
-from test_codebase_map_dynamic import SAMPLED_LIB, gaps, static_store, step, write_project  # noqa: E402
+from test_codebase_map_dynamic import BOX_LIB, gaps, static_store, step, write_project  # noqa: E402
 
 # chrisvel/tududi at 71da9d7b34dfd1600657e9c5ddf40420206fd263, .github/workflows/ci.yml as Renovate's YAML library
 # prints it: the job that runs the backend's tests and the PostgreSQL its tests reach at localhost
@@ -1838,7 +1838,7 @@ def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped:
 
 def run_step(tmp_path, entries: list[dict], runs: list[list[dict]], state: str = "ran", ci_steps=(), stepped=(),
              found=()):
-    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
     static_store(manifest)
     seen: dict = {}
     record = {"services": entries, "tests": [], "ci_steps": list(ci_steps)}

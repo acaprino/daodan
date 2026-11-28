@@ -110,12 +110,12 @@ def merge_sites(old: list[dict], new: list[dict]) -> list[dict]:
     return [{**site, "callees": list(callees.values())} for site, callees in sites.values()]
 
 
-def save(path: Path, expected: str, tests: list, outcomes: dict, at: str, sites: list, pairs: list, attempt: int,
+def save(path: Path, expected: str, tests: list, outcomes: dict, at: str, sites: list, attempt: int,
          ui_gaps: list) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     cache = {"key": expected, "tests": tests, "outcomes": outcomes, "at": at, "attempt": attempt, "ui_gaps": ui_gaps}
     # Completed commands only need their summary. Keep raw observations across an incomplete batch until the
     # retry can join the union on the original static graph, including evidence from a timed-out process.
     if not all(finished(test) for test in tests):
-        cache.update(sites=sites, sampled=pairs)
+        cache.update(sites=sites)
     _write_json_atomic(path, cache)

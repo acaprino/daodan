@@ -1260,15 +1260,14 @@ def _sites(snapshot: Snapshot, language: str) -> list[dict]:
 
 
 def write_observed(snapshot: Snapshot, out: Path, language: str, rows: list[dict], facts: dict) -> dict:
-    """Save a run's rows (`dynamic.join`, `dynamic.join_sampled`) in the store's entry of `language`, in place of
-    the ones of a run it held, and return the entry's coverage, counted again over the same sites: the static
-    rows and the holes stay as the analyzer wrote them, the ends of the run are counted apart by provenance
+    """Save a run's rows (`dynamic.join`) in the store's entry of `language`, in place of the ones of a run it
+    held, and return the entry's coverage, counted again over the same sites: the static rows and the holes stay
+    as the analyzer wrote them, the ends of the run are counted apart by provenance
     (`resolve_edges.language_coverage`), and `facts`, what the run says of itself (its resolver, its tests, what
-    it did not join or execute, its conflicts with proven edges), join the coverage's `observed`; its `sampled`,
-    what the sampled join says, the coverage's `sampled`. The store must hold the language: an observed edge
-    answers a reference of a graph that is there."""
+    it did not join or execute, its conflicts with proven edges), join the coverage's `observed`. The store must
+    hold the language: an observed edge answers a reference of a graph that is there."""
     import resolve_edges as rx
-    from edge_store import OBSERVED, SAMPLED, SEEN
+    from edge_store import OBSERVED, SEEN
     edges, binding, reason = rx.read_edge_store(out, snapshot.store)
     if reason is not None or language not in binding["languages"]:
         raise ValueError(reason or f"the edge store holds no {language} graph")
@@ -1280,11 +1279,7 @@ def write_observed(snapshot: Snapshot, out: Path, language: str, rows: list[dict
                                     [hole for hole in holes if hole["language"] == language],
                                     (entry.get("coverage") or {}).get("files"))
     none = {"sites": 0, "edges": 0, "closed": {}}
-    facts = dict(facts)
-    sampled = facts.pop(SAMPLED, None)
     coverage[OBSERVED] = {**facts, **coverage.get(OBSERVED, none)}
-    if sampled is not None:
-        coverage[SAMPLED] = {**sampled, **coverage.get(SAMPLED, none)}
     entries = {**binding["languages"], language: {**entry, "coverage": coverage}}
     fresh = rx.store_binding(snapshot.store, snapshot.manifest, binding["parser_fingerprint"], entries,
                              binding.get("engine_reports") or {})

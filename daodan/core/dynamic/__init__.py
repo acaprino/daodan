@@ -4,7 +4,7 @@ An observer is one module of this package per technology. It declares `NAME`, `V
 observed rows' resolver is `NAME@VERSION`) and `LANGUAGES`, and gives:
 
     plan(record, files, read) -> {"runs": [...], "gaps": [...]}   what to run, from the pre-map alone
-    observe(project, planned, out_dir, engine) -> {"state", "sites", "sampled", "runs", "gaps"}   in the container
+    observe(project, planned, out_dir, engine) -> {"state", "sites", "runs", "gaps"}   in the container
     external(callee) -> {"manager", "package", "version"}          the package of a callee outside the project
 
 `plan` takes the command that runs the tests from what the project declares (the pre-map's `tests`), never from a
@@ -21,18 +21,13 @@ callee's name; a callee is `{kind: "project", file, line, column, name, type}` (
 and byte column, as the snapshot has it; with no column, the one function of that name on that line) or one
 outside the project, and may carry `wraps` (the callee it stands for) or `mock`.
 
-`sites` are an exact recorder's: every call, with its caller and callee, at its site. A sampling profiler of
-the toolchain is a second source, declared apart: its pairs are `sampled`, each `{caller, callee, line}` of one
-stack, `caller` a project function as a callee is written, `callee` a callee, `line` the line from 0 of the call
-in the caller's file, or None when the profiler gives none. An observer gives what it has; with no exact site,
-the run says nothing of the files it did not execute.
+`sites` are an exact recorder's: every call, with its caller and callee, at its site. No observer has a second
+source: a sampling profiler's stacks name no call site (each observer says why it is not one).
 
 `run` is the step (`pipeline.RunAndObserve`); `join` places the sites on the snapshot's references, by position,
-`join_sampled` the pairs, by line and name, and `code_graph.write_observed` saves the rows. An observed end
-holds for the run that produced it: it proves that a call can arrive there, not that it arrives only there, and
-a call no test executed stays as the static steps left it. A sampled one says the same with resolver
-`NAME@VERSION:sampled` and confidence `sampled`; it is never set against a proven edge and says nothing of the
-calls and files no sample named. A language with no observer, a project with no declared test command, a run
+and `code_graph.write_observed` saves the rows. An observed end holds for the run that produced it: it proves that
+a call can arrive there, not that it arrives only there, and a call no test executed stays as the static steps
+left it. A language with no observer, a project with no declared test command, a run
 with no container engine are gaps, never silence; so are a result that breaks this contract (`observer-malformed`,
 `failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`).
 Completed test commands can be reused even when they placed no row. Interrupted commands are retried on the next
@@ -92,7 +87,7 @@ EXPRESSION = re.compile(r"\$\{\{.*?\}\}", re.S)  # GitHub's expressions, which D
 LOCAL = {"localhost", "127.0.0.1", "::1", "[::1]", "0.0.0.0"}  # the tests' own host, the pod's shared one
 PORT = re.compile(r"\$\{\{\s*job\.services\.[\w-]+\.ports\[\s*['\"]?(\d+)['\"]?\s*\]\s*\}\}")  # but this one
 KEYS = {"runs": {"root", "runner", "state"}, "sites": {"file", "line", "column", "name", "role", "callees"},
-        "sampled": {"caller", "callee", "line"}, "gaps": {"kind", "detail"}}  # what each item of a result holds
+        "gaps": {"kind", "detail"}}  # what each item of a result holds
 
 
 def malformed(result) -> str | None:
@@ -102,7 +97,7 @@ def malformed(result) -> str | None:
     if result["state"] != "ran":
         return None if result.get("cause") and result.get("remedy") else f"a {result['state']} without cause and remedy"
     for key, need in KEYS.items():
-        items = result.get(key, [] if key == "sampled" else None)
+        items = result.get(key)
         if not isinstance(items, list) or not all(isinstance(item, dict) for item in items):
             return f"its {key} is not a list of entries"
         short = sorted({name for item in items for name in need - item.keys()})
@@ -124,15 +119,14 @@ def observers() -> list:
     return sorted(found, key=lambda module: module.NAME)
 
 
-def resolver(observer, sampled: bool = False) -> str:
-    """The resolver of an observer's rows, named as an analyzer's: the recorder and its version; of its sampled
-    rows, the same with `:sampled`."""
-    return f"{observer.NAME}@{observer.VERSION}" + (":sampled" if sampled else "")
+def resolver(observer) -> str:
+    """The resolver of an observer's rows, named as an analyzer's: the recorder and its version."""
+    return f"{observer.NAME}@{observer.VERSION}"
 
 
 def _declared(snapshot, rel: str, line: int, column: int | None, name: str) -> str | None:
-    """The snapshot's declaration at a function's line from 1 and byte column; with no column (a profiler's
-    frame), the only one of that name on that line."""
+    """The snapshot's declaration at a function's line from 1 and byte column; with no column (a callee a
+    recorder gives without one), the only one of that name on that line."""
     if column is not None:
         return snapshot.function_at(rel, line, column)
     found = snapshot.connection.execute(
@@ -245,55 +239,6 @@ def join(snapshot, language: str, sites: list[dict], edges: list[dict], observer
              "files": {"executed": len(executed),
                        "not_executed": sorted(snapshot.checkout.get(rel, rel) for rel in called - executed)}}
     return rows, facts
-
-
-def join_sampled(snapshot, language: str, pairs: list[dict], observer) -> tuple[list[dict], dict]:
-    """The sampled rows of `language` and what the join says of itself.
-
-    A pair whose caller is a function of the language's files answers the reference of that caller whose span
-    holds the pair's line and whose last name is the callee's, when there is one only. Any other is a row with no
-    reference: an edge between the caller's declaration (`caller`, None at a module's top) and the callee's end
-    (`_end`), with the line when the profiler gave it, that answers no reference and closes no hole; its
-    `payload.unplaced` says why: `no-line`, `not-found` (no call of that name there), `ambiguous`. No pair is
-    set against a proven row: what a sample did not see is no fact.
-
-    The facts: the `pairs` of the language's files, `placed` on a reference, `unplaced` by cause.
-    """
-    from edge_store import SAMPLED
-    name = resolver(observer, sampled=True)
-    callers = dict(snapshot.connection.execute("SELECT id, caller FROM sem_references"))
-    named = collections.defaultdict(list)
-    for identity, rel, kind, _resolution, _target, span, parts, _reason in snapshot.references(language):
-        if parts:
-            named[(rel, parts[-1])].append((identity, kind, span))
-    rows, counts, unplaced = {}, collections.Counter(), collections.Counter()
-    for pair in pairs:
-        caller, callee, line = pair["caller"], pair["callee"], pair.get("line")
-        rel = snapshot.rel.get(caller["file"])
-        if rel is None or snapshot.languages.get(rel) != language:
-            continue
-        counts["pairs"] += 1
-        source = _declared(snapshot, rel, caller["line"] + 1, caller.get("column"), caller["name"])
-        found = [(identity, kind, span) for identity, kind, span in named[(rel, callee["name"])]
-                 if line is not None and span[0] <= line + 1 <= span[2] and callers[identity] == source]
-        end = _end(snapshot, callee, observer.external)
-        payload = {"chain": end["chain"], "detail": end["detail"]}
-        if len(found) == 1:
-            [(identity, kind, span)] = found
-            counts["placed"] += 1
-            place = {"reference_id": identity, "kind": kind, "caller": source, "l0": span[0], "c0": span[1]}
-        else:
-            cause = "no-line" if line is None else "ambiguous" if found else "not-found"
-            unplaced[cause] += 1
-            place = {"reference_id": None, "kind": "call", "caller": source, "l0": None if line is None else line + 1,
-                     "c0": None}
-            payload["unplaced"] = cause
-        row = {**place, "file": rel, "language": language, "verdict": end["verdict"], "target_id": end["target_id"],
-               "symbol": end["symbol"], "external": end["external"], "resolver": name, "confidence": SAMPLED,
-               "payload": payload}
-        rows.setdefault((row["reference_id"], source, row["l0"], end["verdict"], end["symbol"]), row)
-    return list(rows.values()), {"pairs": counts["pairs"], "placed": counts["placed"],
-                                 "unplaced": dict(sorted(unplaced.items()))}
 
 
 def _given(value) -> str | None:
@@ -540,7 +485,7 @@ def run(manifest: Path, bus) -> dict:
     Each observer whose languages have a static graph in the store plans its runs from the pre-map, runs them in
     the container (the engine is asked once, when the first observer has something to run) and saves what the
     join places. An outcome's `state` is `observed` (with the `sites`, `edges` and `closed` holes of the store's
-    coverage, and `sampled` apart), or why nothing was: `no-observer`, `no-static-graph`, `not-run` (nothing to
+    coverage), or why nothing was: `no-observer`, `no-static-graph`, `not-run` (nothing to
     run, the plan's gaps, or no test ran, the run's), `unavailable` (no container), `failed` (the run, or a result
     that breaks the contract), `not-observed` (the tests ran and placed no row of the language); those carry the
     `reason`. Completed commands are reused on the same snapshot, static analyzers, recorder and plan.
@@ -734,19 +679,12 @@ def run(manifest: Path, bus) -> dict:
                          remedy="see the gaps of the run", languages=wanted)
                 continue
             sites = execution_cache.merge_sites(cached.get("sites", []), result.get("sites") or [])
-            pairs = result.get("sampled") or []
-            if cached.get("sampled"):
-                pairs = list({json.dumps(pair, sort_keys=True): pair for pair in [*cached["sampled"], *pairs]}.values())
             bus.progress(STEP, number, len(waiting), analyzer=entry, phase="join",
-                         message=f"{entry}: {len(sites)} observed sites and {len(pairs)} sampled pairs to place")
+                         message=f"{entry}: {len(sites)} observed sites to place")
             at = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
             for language in wanted:
-                # With no exact site, nothing is said of what the run did not execute: a sample misses calls.
-                rows, facts = join(snapshot, language, sites, edges, module) if sites or not pairs else ([], {})
+                rows, facts = join(snapshot, language, sites, edges, module)
                 facts = {"resolver": name, "at": at, "tests": combined_tests or attempt_tests, **facts}
-                if pairs:
-                    more, said = join_sampled(snapshot, language, pairs, module)
-                    rows, facts["sampled"] = rows + more, {"resolver": resolver(module, sampled=True), **said}
                 if not rows:
                     if seen[language].get("observed"):
                         code_graph.write_observed(snapshot, store, language, [], facts)
@@ -755,7 +693,7 @@ def run(manifest: Path, bus) -> dict:
                     continue
                 outcomes[language] = _outcome(code_graph.write_observed(snapshot, store, language, rows, facts))
             execution_cache.save(cache_file, expected, tests, {language: outcomes[language] for language in wanted},
-                                 at, sites, pairs, cached.get("attempt", 0) + 1, control_gaps)
+                                 at, sites, cached.get("attempt", 0) + 1, control_gaps)
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
         bus.progress(STEP, len(waiting), len(waiting))
@@ -807,8 +745,6 @@ def _unplaced(snapshot, language: str, sites: list[dict], facts: dict) -> str:
         roles = ", ".join(f"{role} {count}" for role, count in facts["unjoined"].items())
         return (f"the tests ran and the recorder saw {facts['recorded']} call sites in {language} files, none at a "
                 f"reference of the static graph ({roles})")
-    if not sites and "sampled" in facts:
-        return f"the tests ran and no sampled pair has its caller in a {language} file of the snapshot"
     said = f"the tests ran and made no call from a {language} file of the project"
     outside = sorted({site["file"] for site in sites if site["file"] not in snapshot.rel})
     if outside:
@@ -820,18 +756,13 @@ def _unplaced(snapshot, language: str, sites: list[dict], facts: dict) -> str:
 
 def _outcome(coverage: dict) -> dict:
     """A language's outcome from its coverage: the sites with an exact observed end, the rows, the holes they
-    close, and the same of the sampled ones apart, when there are."""
-    def counted(item: dict) -> dict:
-        return {"sites": item.get("sites", 0), "edges": item.get("edges", 0),
-                "closed": sum((item.get("closed") or {}).values())}
-    sampled = coverage.get("sampled")
-    return {"state": "observed", **counted(coverage.get("observed") or {}),
-            **({"sampled": counted(sampled)} if sampled else {})}
+    close."""
+    seen = coverage.get("observed") or {}
+    return {"state": "observed", "sites": seen.get("sites", 0), "edges": seen.get("edges", 0),
+            "closed": sum((seen.get("closed") or {}).values())}
 
 
 def _told(outcome: dict) -> str:
     if outcome["state"] != "observed":
         return outcome["reason"]
-    sampled = outcome.get("sampled")
-    return (f"{outcome['sites']} sites observed" + (f", {sampled['sites']} sampled" if sampled else "")
-            + f", {outcome['closed'] + (sampled or {}).get('closed', 0)} holes closed")
+    return f"{outcome['sites']} sites observed, {outcome['closed']} holes closed"
