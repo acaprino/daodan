@@ -61,6 +61,8 @@
 
 - **Campi Tauri nello snapshot (`T2.C.6`):** `flows.link_facts` legge ancora `tauri_event` e `tauri_command` dello snapshot; pulito: campi generici `event` e `command` scritti da `languages/semantic.py`.
 
+- **Vista dei flussi (`T2.C.9`–`T2.C.11`):** `to_prove` prende archi interni e uscite dai passi di tutti i flussi (un'uscita che nessun flusso raggiunge non si controlla); condizione e profilo non hanno fonte su nessun passo (domanda «`T2.C`, profili e condizioni»); in `hide` una freccia che parte da un nodo nascosto senza un visibile prima si perde; i segni «Da creare» di `architettura.md` per questi tre passi vanno aggiornati.
+
 ## Fermo o ritirato: non si rifà
 
 | Che cosa | Perché | Dove (`614c940`) |

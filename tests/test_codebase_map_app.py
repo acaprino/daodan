@@ -1744,3 +1744,176 @@ def test_graph_keeps_a_conflicting_call_at_the_twenty_first_site():
     assert certain["counts"]["calls"] == len(certain["evidence"]) == 20
     assert disputed["status"] == "observed" and disputed["counts"]["calls"] == 1
     assert disputed["conflict"] and disputed["evidence"][0]["line"] == 21
+
+
+def payments(linked: bool) -> dict:
+    """The spec's case («Seguire un flusso attraverso i gruppi»): the frontend calls A, B writes the ledger; A and B
+    are «Pagamenti»; with `linked`, A calls B."""
+    def entity(ref, kind, **fields):
+        return {"ref": ref, "type": kind, "name": ref.split(":", 1)[1], **fields}
+
+    def step(source, target, kind, site):
+        return {"source": source, "target": target, "type": kind, "origin": "statico", "site": site}
+
+    submit, charge, record = "symbol:web/app.ts::submit", "symbol:pay/a.py::charge", "symbol:pay/b.py::record"
+    first = [step(submit, charge, "chiama", "web/app.ts:3")]
+    writes = [step(record, "store:ledger", "scrive", "pay/b.py:5")]
+    flows = [{"ref": "flow:submit", "entry": submit, "complete": True, "gaps": [],
+              "steps": first + ([step(charge, record, "chiama", "pay/a.py:2")] + writes if linked else [])},
+             {"ref": "flow:record", "entry": record, "complete": True, "gaps": [], "steps": writes}]
+    return {"entities": [entity("build:web", "build"), {**entity("build:pay", "build"), "name": "Pagamenti"},
+                         *[entity(f"file:{path}", "file", path=path) for path in ("web/app.ts", "pay/a.py", "pay/b.py")],
+                         entity(submit, "symbol"), entity(charge, "symbol"), entity(record, "symbol"),
+                         entity("store:ledger", "store")],
+            "relations": [{"ref": "calls:file:web/app.ts->file:pay/a.py", "kind": "calls", "source": "file:web/app.ts",
+                           "target": "file:pay/a.py", "status": "confirmed", "counts": {"calls": 1},
+                           "evidence": [{"path": "web/app.ts", "line": 3}]},
+                          *([{"ref": "calls:file:pay/a.py->file:pay/b.py", "kind": "calls", "source": "file:pay/a.py",
+                              "target": "file:pay/b.py", "status": "confirmed", "counts": {"calls": 1},
+                              "evidence": [{"path": "pay/a.py", "line": 2}]}] if linked else [])],
+            "memberships": [{"member": "file:web/app.ts", "group": "build:web", "view": "physical"},
+                            {"member": "file:pay/a.py", "group": "build:pay", "view": "physical"},
+                            {"member": "file:pay/b.py", "group": "build:pay", "view": "physical"}],
+            "gaps": [], "meta": {}, "technologies": [], "flows": flows}
+
+
+def test_a_flow_through_a_closed_group_shows_its_two_dependencies_and_the_path_left_to_prove():
+    envelope = payments(linked=False)
+    arrow, = app_view.view(envelope)["edges"]
+    assert (arrow["id"], arrow["relations"]) == ("build:web->build:pay", ["calls:file:web/app.ts->file:pay/a.py"])
+    found = app_view.flow(envelope, "flow:submit")
+    step, = found["steps"]
+    assert (step["n"], step["parent"], step["source"], step["target"]) == (1, None, "build:web", "build:pay")
+    assert step["relation"]["target"] == "symbol:pay/a.py::charge" and step["proof"] == [{"path": "web/app.ts", "line": 3}]
+    assert "condition" not in step and "profile" not in step  # no source gives them
+    web = {"id": "build:web", "name": "web", "entries": [], "exits": [{"step": 1, "end": "symbol:web/app.ts::submit"}]}
+    assert found["groups"] == [{"id": "build:pay", "name": "Pagamenti",
+                                "entries": [{"step": 1, "end": "symbol:pay/a.py::charge"}], "exits": []}, web]
+    # «Pagamenti» closed: in from the frontend, out to the ledger, and nothing inside joins A to B
+    path, = found["to_prove"]
+    assert (path["group"], path["from"], path["to"], path["enters"], path["leaves"]) == (
+        "build:pay", "build:web", "store:ledger", ["symbol:pay/a.py::charge"], ["symbol:pay/b.py::record"])
+    # open, each step shows its files, and no closed group is left to cross
+    opened = app_view.flow(envelope, "flow:submit", ("build:pay",))
+    assert [(item["source"], item["target"]) for item in opened["steps"]] == [("build:web", "file:pay/a.py")]
+    assert opened["to_prove"] == []
+    with pytest.raises(ValueError, match="flow:nothing"):
+        app_view.flow(envelope, "flow:nothing")
+
+
+def test_with_the_arc_inside_the_group_the_flow_through_it_is_proved_step_by_step():
+    found = app_view.flow(payments(linked=True), "flow:submit")
+    assert [(item["n"], item["parent"], item["source"], item["target"]) for item in found["steps"]] == [
+        (1, None, "build:web", "build:pay"), (2, 1, "build:pay", "build:pay"), (3, 2, "build:pay", "store:ledger")]
+    assert found["groups"] == [{"id": "build:pay", "name": "Pagamenti",
+                                "entries": [{"step": 1, "end": "symbol:pay/a.py::charge"}],
+                                "exits": [{"step": 3, "end": "symbol:pay/b.py::record"}]},
+                               {"id": "build:web", "name": "web", "entries": [],
+                                "exits": [{"step": 1, "end": "symbol:web/app.ts::submit"}]}]
+    assert found["to_prove"] == []
+    opened = app_view.view(payments(linked=True), ("build:pay",))
+    inside, = [edge for edge in opened["edges"] if edge["source"] == "file:pay/a.py"]
+    assert inside["relations"] == ["calls:file:pay/a.py->file:pay/b.py"]
+
+
+def natured() -> dict:
+    """Two modules, a gateway that calls one, the service it uses, and «Tecnologie» holding what the other uses."""
+    def entity(ref, kind, **fields):
+        return {"ref": ref, "type": kind, "name": ref.split(":", 1)[1], **fields}
+
+    def relation(kind, source, target, line):
+        return {"ref": f"{kind}:{source}->{target}", "kind": kind, "source": source, "target": target,
+                "status": "confirmed", "counts": {kind: 1}, "evidence": [{"path": "api/main.py", "line": line}]}
+
+    return {"entities": [entity("build:api", "build"), entity("build:web", "build"),
+                         *[entity(f"file:{path}", "file", path=path) for path in ("api/main.py", "web/app.ts")],
+                         entity("external:gateway", "external", location="external", node_type="gateway"),
+                         entity("external:stripe", "external", location="external", node_type="servizio o API"),
+                         entity("technology:react", "technology", location="external"),
+                         {**entity("group:technologies", "group"), "name": "Tecnologie"}],
+            "relations": [relation("calls", "external:gateway", "build:api", 1),
+                          relation("uses", "file:api/main.py", "external:stripe", 2),
+                          relation("imports", "file:web/app.ts", "file:api/main.py", 3),
+                          relation("uses", "build:web", "technology:react", 4)],
+            "memberships": [{"member": "file:api/main.py", "group": "build:api", "view": "physical"},
+                            {"member": "file:web/app.ts", "group": "build:web", "view": "physical"},
+                            {"member": "technology:react", "group": "group:technologies", "view": "logical"}],
+            "gaps": [], "meta": {}, "technologies": []}
+
+
+def test_opening_closing_and_filtering_in_any_order_give_the_same_view():
+    envelope = natured()
+    for mode in app_view.MODES:
+        first = app_view.view(envelope, ("build:api", "group:technologies"), natures=["fisico", "codice"], mode=mode)
+        second = app_view.view(envelope, ("group:technologies", "build:api", "build:api"), natures=["codice", "fisico"],
+                               mode=mode)
+        assert first == second and first["natures"] == ["codice", "fisico"]
+        # closing a group is the view without it, whatever was opened or filtered before
+        assert app_view.view(envelope, ("build:api",), natures=["codice"], mode=mode) == app_view.view(
+            envelope, ("build:api",), natures=["codice"], mode=mode)
+    with pytest.raises(ValueError, match="mode"):
+        app_view.view(envelope, mode="fade")
+
+
+def test_hiding_keeps_the_nodes_of_the_natures_and_an_arrow_through_a_hidden_one_keeps_its_steps():
+    envelope = natured()
+    found = app_view.view(envelope, natures=["logico"], mode="hide")
+    assert [node["id"] for node in found["nodes"]] == ["external:gateway", "external:stripe"]
+    arrow, = found["edges"]
+    assert (arrow["id"], arrow["source"], arrow["target"], arrow["status"], arrow["through"]) == (
+        "external:gateway->external:stripe via", "external:gateway", "external:stripe", "confirmed", ["build:api"])
+    assert [step["id"] for step in arrow["steps"]] == ["external:gateway->build:api", "build:api->external:stripe"]
+    assert arrow["relations"] == ["calls:external:gateway->build:api", "uses:file:api/main.py->external:stripe"]
+    assert [site["line"] for site in arrow["evidence"]] == [1, 2] and arrow["counts"] == {"calls": 1, "uses": 1}
+    # the filter never opens a group, and an open one shows only the children it admits
+    opened = app_view.view(envelope, ("build:api",), natures=["logico"], mode="hide")
+    assert [group["id"] for group in opened["open"]] == ["build:api"]
+    assert [node["id"] for node in opened["nodes"]] == ["external:gateway", "external:stripe"]
+    code = app_view.view(envelope, ("build:api",), natures=["codice"], mode="hide")
+    assert {node["id"] for node in code["nodes"]} == {"build:web", "file:api/main.py", "group:technologies"}
+    assert app_view.view(envelope, natures=["persone", "logico"], mode="hide")["absent"] == ["persone"]
+
+
+def test_highlighting_dims_the_others_and_lights_a_closed_group_with_how_many_it_holds():
+    envelope = natured()
+    whole = app_view.view(envelope)
+    found = app_view.view(envelope, natures=["logico"])
+    assert [node["id"] for node in found["nodes"]] == [node["id"] for node in whole["nodes"]]
+    assert found["edges"] == whole["edges"] and found["absent"] == []
+    assert {node["id"] for node in found["nodes"] if node.get("dim")} == {"build:api", "build:web", "group:technologies"}
+    code = {node["id"]: node for node in app_view.view(envelope, natures=["codice"])["nodes"]}
+    assert {ref: node.get("lit") for ref, node in code.items() if node.get("lit")} == {
+        "build:api": 1, "build:web": 1, "group:technologies": 1}
+    assert {ref for ref, node in code.items() if node.get("dim")} == {"external:gateway", "external:stripe"}
+
+
+def test_a_large_group_opens_in_blocks_with_a_node_for_the_others_and_loses_no_child():
+    paths = [f"big/f{index:03}.py" for index in range(700)]
+    envelope = {"entities": [{"ref": "build:big", "type": "build", "name": "big"},
+                             {"ref": "build:small", "type": "build", "name": "small"},
+                             *({"ref": f"file:{path}", "type": "file", "name": path.split("/")[-1], "path": path}
+                               for path in [*paths, "small/s.py"])],
+                "relations": [{"ref": "imports:file:small/s.py->file:big/f650.py", "kind": "imports",
+                               "source": "file:small/s.py", "target": "file:big/f650.py", "status": "confirmed",
+                               "evidence": []}],
+                "memberships": [*({"member": f"file:{path}", "group": "build:big", "view": "physical"} for path in paths),
+                                {"member": "file:small/s.py", "group": "build:small", "view": "physical"}],
+                "gaps": [], "meta": {}, "technologies": []}
+    blocks = ("build:big", "more:build:big#1", "more:build:big#2")
+    for opened, count, left, target in ((1, 300, 400, "more:build:big#1"), (2, 600, 100, "more:build:big#2"),
+                                        (3, 700, 0, "file:big/f650.py")):
+        found = app_view.view(envelope, blocks[:opened])
+        shown = [node for node in found["nodes"] if node["kind"] == "file"]
+        assert [node["name"] for node in shown] == [path.split("/")[-1] for path in paths[:count]]
+        assert {node["group"] for node in shown} == {"build:big"} and [item["id"] for item in found["open"]] == ["build:big"]
+        more = [node for node in found["nodes"] if node["kind"] == "more"]
+        assert [(node["name"], len(node["files"])) for node in more] == ([(f"altri {left}", left)] if left else [])
+        assert len(shown) + sum(len(node["files"]) for node in more) == 700
+        assert [edge["target"] for edge in found["edges"]] == [target]
+    # the filter and the blocks together: the node for the others holds files of the code, and no physical node
+    lit = {node["id"]: node for node in app_view.view(envelope, ("build:big",), natures=["codice"])["nodes"]}
+    assert lit["more:build:big#1"]["lit"] == 400 and "dim" not in lit["more:build:big#1"]
+    hidden = app_view.view(envelope, ("build:big",), natures=["fisico"], mode="hide")
+    assert (hidden["nodes"], hidden["absent"]) == ([], ["fisico"])
+    with pytest.raises(ValueError, match="more:build:big#2"):
+        app_view.view(envelope, ("build:big", "more:build:big#2"))
