@@ -5,6 +5,7 @@ import { useFocusKept } from '@acaprino/imago';
 import { Cell, Column } from '@acaprino/sigrid/primitives';
 import { Steps } from '@acaprino/sigrid/components';
 import { ContentSplit } from '@acaprino/sigrid/layout';
+import { Fold } from '../src/listed.tsx';
 import { Loading } from '../src/states.tsx';
 import { ScreenPanel } from './frame.tsx';
 import { pathRows, REPOSITORY } from './path.ts';
@@ -16,12 +17,13 @@ import { model, useModel } from './use-model.ts';
 // In the window's action bar. The notices sit above the bar, never over the action.
 export const analysisActions = () => <StepFoot />;
 
-// Beside the step, or in a row above it where the two do not fit side by side.
-function Path({ row }: { row: boolean }) {
+// Beside the step, or behind its row above it where the two do not fit side by side: a row of Sigrid's `Steps` holds the dots of all
+// the steps of the plan and the name of the one on the screen, which at 390 px sticks out of nine (an open point for Sigrid).
+function Path() {
   const s = useModel();
   const list = pathRows(s);
-  return <Steps aria-label="Percorso di analisi" orientation={row ? 'horizontal' : 'vertical'}
-    steps={list.map(({ label, detail, state, meta }) => ({ label, description: row ? undefined : detail || undefined, status: state, meta: meta || undefined }))}
+  return <Steps aria-label="Percorso di analisi"
+    steps={list.map(({ label, detail, state, meta }) => ({ label, description: detail || undefined, status: state, meta: meta || undefined }))}
     current={list.findIndex(step => step.id === s.kept.analysisStage)} onStepSelect={index => model.selectStage(list[index].id)} />;
 }
 
@@ -42,8 +44,9 @@ export function AnalysisScreen() {
     </ScreenPanel>;
   }
   const rows = pathRows(s), row = panes === 1, at = rows.findIndex(step => step.id === stage) + 1;
-  return <ContentSplit aside={<Column pad="lg"><Path row={false} /></Column>} asideLabel="Percorso" width="sm" show="main" step={720} onPanesChange={setPanes}>
-    <ScreenPanel title="Analisi" subtitle={!row && `Passo ${at} di ${rows.length}`} tools={row && <Cell grow><Path row /></Cell>}>
+  const where = `Passo ${at} di ${rows.length}`;
+  return <ContentSplit aside={<Column pad="lg"><Path /></Column>} asideLabel="Percorso" width="sm" show="main" step={720} onPanesChange={setPanes}>
+    <ScreenPanel title="Analisi" subtitle={!row && where} tools={row && <Cell grow><Fold label="Percorso" summary={where}><Path /></Fold></Cell>}>
       {stage === REPOSITORY ? <RepositoryScreen /> : <PlanStepScreen />}
     </ScreenPanel>
   </ContentSplit>;
