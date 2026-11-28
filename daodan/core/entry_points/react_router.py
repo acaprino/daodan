@@ -30,6 +30,7 @@ from entry_points import frameworks
 
 NAME, VERSION, RANK = "react-router", "daodan/premap/v5", "scanner"  # v5: the route's `schema`; v4: the module row with its `exports`, bound by the links; v3: the data functions of the root and of a layout with no path; v2: an absolute child, the root under `app/`, `timeout`
 CLI = {"@react-router/dev": "react-router", "@remix-run/dev": "remix"}  # the package that installs the command -> the command
+PACKAGES = tuple(CLI)  # the packages a folder's `package.json` declares: the source runs there
 LIBRARY = ("react-router", "react-router-dom")  # the library: routes written in code, which no command lists
 APP = "app"  # the app directory the tool prints its files against, by default
 ENV = {"npm_config_offline": "true"}
@@ -52,7 +53,7 @@ def commands(context):
     # the dev package may be hoisted and the app is a folder below (the run then fails with the tool's own "Route config file not
     # found" and is a gap), when a monorepo declares @react-router/dev in its root: take the folders that hold an app/routes.ts
     found = []
-    for folder in frameworks.folders(context, tuple(CLI)):  # in the inventory's order, then the CLI's, as the manifest was read
+    for folder in frameworks.folders(context, PACKAGES):  # in the inventory's order, then the CLI's, as the manifest was read
         found += [(folder, command) for package, command in CLI.items() if folder in frameworks.folders(context, (package,))]
     limit = ["timeout", "--kill-after=10", str(seconds(len(found) or 1))]
     return [{"tool": NAME, "argv": [*limit, "npx", "--no-install", command, "routes", "--json"], "cwd": folder, "env": ENV,

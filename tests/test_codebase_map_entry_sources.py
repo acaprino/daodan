@@ -7,7 +7,7 @@ import pytest
 from test_codebase_map_container_runner import manifest_of, entry_points, premap
 import flows
 from premap import cargo, python_build, renovate
-from entry_points import noir
+from entry_points import nextjs, noir, react_router
 from entry_points.flow_entries import evidence
 
 
@@ -86,3 +86,48 @@ def test_one_endpoint_outside_the_project_survives_as_a_gap_beside_the_valid_rou
         assert gaps[0] in links["source_gaps"]
         assert any(row["symbol"] == "api.py::save" and row.get("path") == "/save" for row in links["entries"])
     assert run.call_count == 1
+
+
+def test_a_framework_source_runs_only_for_a_framework_the_stack_found():
+    """`find_entry_points` follows the stack: a source `registry_build.READERS` names runs for an id of it the stack found, Noir
+    on every project, and without the stack's ids (None) every source runs. Each source READERS names is one of `SOURCES`."""
+    from registry_build import READERS
+    readers = {entry_points._reader(source) for source in entry_points.SOURCES}
+    assert {path for path in READERS.values() if path.startswith("entry_points/")} == readers - {"entry_points/noir.py"}
+    assert entry_points._chosen(None, None) == entry_points.SOURCES
+    assert entry_points._chosen(None, []) == (noir,)
+    assert entry_points._chosen(None, ["remixrun", "tailwind"]) == (noir, react_router)
+
+
+def test_the_entry_points_follow_the_frameworks_of_the_stack_record_of_its_inventory(tmp_path):
+    """A stack record of this inventory chooses the sources, and the record is stale once it names other frameworks; a stack
+    that did not run, or a record of another inventory, chooses nothing."""
+    import stack_recognition
+    from snapshot_store import inventory_digest, open_snapshot
+    _, manifest = manifest_of(tmp_path, {"web/package.json": '{"dependencies": {"next": "15.0.0"}}\n'})
+    with open_snapshot(manifest) as store:
+        digest = inventory_digest(store)
+    asked = []
+
+    def run(commands):
+        asked.extend(command["tool"] for command in commands)
+        return [{"root": "/work", "returncode": 1, "stdout": "", "stderr": "no tool here"} for _ in commands]
+
+    def stack(ids, inventory=digest, ran="ran"):
+        stack_recognition.path(manifest).write_text(json.dumps({
+            "schema": stack_recognition.SCHEMA, "inventory_digest": inventory,
+            "checkers": [{"checker": "stack-analyser", "state": ran}],
+            "found": [{"id": ident, "category": "framework", "signs": [{"source": "stack-analyser"}]} for ident in ids]}),
+            encoding="utf-8")
+
+    stack(["nodejs"])
+    record = entry_points.ensure(manifest, sources=(noir, nextjs), runner=run)
+    assert [s["source"].partition("@")[0] for s in record["sources"]] == ["noir"] and nextjs.NAME not in asked
+    assert entry_points.state(manifest, sources=(noir, nextjs), runner=run)["state"] == "fresh"
+    stack(["nextjs", "nodejs"])
+    assert entry_points.state(manifest, sources=(noir, nextjs), runner=run)["state"] == "stale"
+    record = entry_points.ensure(manifest, sources=(noir, nextjs), runner=run)
+    assert [s["source"].partition("@")[0] for s in record["sources"]] == ["noir", "next"] and nextjs.NAME in asked
+    for other in ({"inventory": "another"}, {"ran": "failed"}):  # every source again
+        stack([], **other)
+        assert entry_points.state(manifest, sources=(noir, nextjs), runner=run)["state"] == "fresh"

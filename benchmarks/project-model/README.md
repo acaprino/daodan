@@ -540,6 +540,24 @@ Una riga per ogni voce della «Verifica» della spec. Nessuna è provata sul pro
 - «Nessun codice eseguito»: la prova, riscritta per l'installazione vera e il `.env.example`, non è stata eseguita su Modal. Qui gira, con il rilascio vero, il solo vettore `.env.example` (il test locale). Che nessun vettore scatti con l'installazione vera e il Node di Daodan è da provare.
 - Tornano al proprietario, dal giro del piano 2: i tempi; i servizi in più (da 67 a 86: 22 aggiunti, 3 tolti); le tre differenze della porta che spostano un id senza cambiare nessun nome atteso (`okta`, `gcp`, `_config.yml` di Jekyll); le menzioni `env`, che il piano 3 non tiene; ciò che «Non misurato» non copre.
 
+## Le sorgenti dei framework dallo stack (T1.C.5)
+
+Misura se `find_entry_points` perde una sorgente di framework quando la sceglie lo stack ([piano](../../docs/plans/refactoring.md), `T1.C.5`): una sorgente che `registry_build.READERS` nomina gira solo per un id di READERS che lo stack ha trovato (`entry_points._chosen`); Noir gira sempre. `test_entry_sources_from_stack.py`, sui dati già committati, senza giri nuovi.
+
+### Parametri
+
+- Oggi: una sorgente lavora dove un `package.json` dichiara uno dei suoi `PACKAGES` (`frameworks.folders`). Fixture con i file nel repository: l'inventario di Daodan (`file_inventory.write`, poi `premap.Context`). Fixture clonate (`source.json`): le dipendenze dichiarate in un `package.json` di `results/daodan_premap_corpus.json`, dove ci sono.
+- Stack: gli `ids` di ogni fixture in `results/daodan_stack.json` (stack-analyser `1.27.6-daodan.6`). Il prodotto prende solo gli id con un segno di stack-analyser (`stack_recognition.found_ids`); qui tutti quelli del record.
+- Perdita: una sorgente che lavora oggi e che lo stack non sceglie. Le perdite ammesse stanno in `ACCEPTED` con la causa.
+
+### Risultati
+
+- 28 novembre 2026, Modal `ap-gRanKINdPvZoikqn2oKk80`: 140 fixture misurate, 5 con una sorgente che lavora oggi (`js-angular`, `js-nextjs`, `js-sveltekit`, `real-app-jhipster-sample`, `real-svc-otel-demo`), 0 sorgenti perse. Lo stack ne sceglie in più due, che girano senza comandi (`react-router` su `mix-real-tududi` e `real-app-memos`: lo stack vi trova `reactrouterdom`, nessun `package.json` dichiara un pacchetto della CLI). Le cartelle restano quelle di `frameworks.folders`: nessuna differenza le chiede.
+
+### Non misurato
+
+- Le 46 fixture clonate senza una pre-mappa misurata, fra cui `real-stack-epic-stack` (React Router 7), `real-stack-astro-paper`, `real-stack-elk`, `real-stack-mealie` (Nuxt), `real-stack-documenso`, `real-stack-umami`, `real-stack-polar` (Next.js) e `real-sveltekit-realworld`: lo stack vi trova l'id della loro sorgente, ma che cosa sceglierebbe `frameworks.folders` non è nei dati committati.
+
 ## Esplorazione dell'app avviata
 
 Passo 11 del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-flussi.md): Daodan avvia l'app dichiarata nel container, apre un browser senza interfaccia, legge i controlli di ogni pagina dall'albero di accessibilità di Playwright, ne preme ognuno una volta e registra le funzioni del progetto che partono (copertura V8 fra due letture, meno ciò che la pagina ferma esegue da sola).

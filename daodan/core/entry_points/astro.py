@@ -35,7 +35,7 @@ from entry_points import frameworks
 
 NAME, VERSION, RANK = "astro", "daodan/premap/v2", "scanner"
 SCRIPT = "daodan-astro"  # what `container_runner.TOOLS` installs: `astro_templates.mjs` run by the container's Node
-PACKAGE = "astro"
+PACKAGES = ("astro",)
 TOTAL_SECONDS = 600  # seconds the commands may take in all the folders together: a run lasts 1800, the restore of the packages in it
 MEMORY_GB = 3  # what the run has (`container_runner.TOOLS["astro"]`, a test keeps the two equal)
 OBJECT = "member_expression"  # the callee of a call on an object (`cart.add(1)`); an identifier is a name, any other node names no function
@@ -57,7 +57,7 @@ def _table() -> dict:
 def _plan(context) -> dict:
     """`{"files": {folder: [file, ...]}, "gaps": [...]}`: the `.astro` files of each folder whose `package.json` declares `astro`,
     relative to the folder, as the snapshot holds them; and a gap for each one no such folder holds."""
-    folders, by_folder, gaps = frameworks.nearest_first(frameworks.folders(context, (PACKAGE,))), {}, []
+    folders, by_folder, gaps = frameworks.nearest_first(frameworks.folders(context, PACKAGES)), {}, []
     for file in context.inventory.files:
         if context.inventory.headers[file].get("language") != NAME:
             continue

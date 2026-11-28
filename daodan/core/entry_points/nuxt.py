@@ -37,6 +37,7 @@ import posixpath
 from entry_points import frameworks
 
 NAME, VERSION, RANK = "nuxt", "daodan/premap/v3", "scanner"  # v3: the route's `schema`, a page is `page`
+PACKAGES = ("nuxt",)  # the package a folder's `package.json` declares: the source runs there
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a handler import names, written with no extension
 TYPES = ".nuxt/types"
 # shortcut: the file is read where Nuxt writes it by default; a project that sets `buildDir` is a gap saying so (measured: `build-dir`
@@ -63,7 +64,7 @@ def commands(context):
     """For each folder `nuxt prepare` and the print of the file it writes (the server routes); then, for each, one of Daodan's
     script (`nuxt_pages.mjs`, `daodan-nuxt`), under `timeout`: the pages. The script needs no list: `loadNuxt` finds them. The
     script runs after all the others, so a slow one loses the rows of no other folder."""
-    folders = frameworks.folders(context, ("nuxt",))
+    folders = frameworks.folders(context, PACKAGES)
     routes = [{"tool": NAME, "argv": argv, "cwd": folder, "env": env, "network": "none"}
               for folder in folders
               for argv, env in ((["npx", "--no-install", "nuxt", "prepare"], ENV), (["cat", ROUTES], {}))]
