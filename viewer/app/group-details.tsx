@@ -36,8 +36,8 @@ const line = ({ name, about }: Row): ReactNode => <><Text pre>{name}</Text>{abou
 
 // The frameworks and the libraries a group declares, and where.
 function Stack({ projects, others = 0 }: { projects: Technology[]; others?: number }) {
-  return <Section title="Stack" level={3} icon={<Icon name="labels" />}>
-    {projects.length > 0 ? <List label="Stack" items={projects.map(project => <>
+  return <Section title="Tecnologie" level={3} icon={<Icon name="labels" />}>
+    {projects.length > 0 ? <List label="Tecnologie" items={projects.map(project => <>
       <Cluster>
         <Mark image={model.markUrl(project.mark)} icon="package" />
         <Text variant="strong">{project.name}</Text>

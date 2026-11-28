@@ -399,7 +399,7 @@ test('a choice is asked once, and a frame that comes before its answer is of wha
   assert.deepEqual([now().selecting, asked('/api/app/select').length], [true, 2]);
   sources[0].send('app', ready);  // the same run, prepared again
   await turn();
-  assert.deepEqual([now().selecting, now().kept.analysisStage, asked('/api/app/premap').length], [false, 'list_files', 0]);
+  assert.deepEqual([now().selecting, now().kept.analysisStage, asked('/api/app/premap').length], [false, 'list_files', 1]);  // the first step shows the files the pre-map read
 });
 
 test('a busy server is asked again once by each reader, and said once', async t => {

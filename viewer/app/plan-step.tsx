@@ -7,14 +7,17 @@ import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/compo
 import { useFrame } from './frame.tsx';
 import { actionsOf, currentAction, planSteps } from './plan.ts';
 import type { ActionRow } from './plan.ts';
-import { PremapResult } from './premap-screen.tsx';
+import { FilesResult, ModulesResult, TechnologiesResult } from './premap-screen.tsx';
 import { PassResult } from './run-screen.tsx';
 import { Step } from './step.tsx';
 import { SynthesisResult } from './synthesis-screen.tsx';
 import { model, useModel } from './use-model.ts';
 
-// What a step wrote, under it. Until the results are divided, a result is whole under the step that writes it last.
-const RESULT: Record<string, ComponentType> = { find_modules: PremapResult, link_calls: PassResult, assemble_graph: SynthesisResult };
+// What a step wrote, under it; a step with no result of its own (`read_code`, `find_entry_points`, `run_and_observe`) shows its actions:
+// the rows of the entry points are in the paths of `assemble_graph`, which ask for the links.
+const RESULT: Record<string, ComponentType> = {
+  list_files: FilesResult, recognize_stack: TechnologiesResult, find_modules: ModulesResult, link_calls: PassResult, assemble_graph: SynthesisResult,
+};
 
 const TONE = { error: 'danger', running: 'info', done: 'success', skipped: 'success', todo: undefined } as const;
 

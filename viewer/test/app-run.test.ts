@@ -105,7 +105,7 @@ test('the status row and the foot say the server that is read, lost, idle or at 
   assert.deepEqual(statusOf(of(null)), { state: 'Lettura', tone: 'info', text: 'Lettura dello stato del server…', percent: null });
   assert.deepEqual(statusOf(of({ job: { state: 'idle' } }, { serverError: 'caduto' })), { state: 'Errore', tone: 'danger', text: 'Server non raggiungibile', percent: null });
   assert.deepEqual(statusOf(of({ job: { state: 'idle' } })), { state: 'Nessuna repository', text: '', percent: null });
-  assert.deepEqual(statusOf(of({ job: { state: 'preparing', step: 'snapshot' } })), { state: 'Preparazione in corso', tone: 'info', text: 'Snapshot e pre-mappa', percent: null });
+  assert.deepEqual(statusOf(of({ job: { state: 'preparing', step: 'snapshot' } })), { state: 'Preparazione in corso', tone: 'info', text: 'Snapshot del codice e modello di build', percent: null });
   assert.equal(statusOf(of({ job: { state: 'failed', step: 'checkout' } })).text, 'Preparazione non riuscita (Checkout del branch)');
   assert.deepEqual(statusOf(run('fresh')), { state: 'Contesto pronto', tone: 'success', text: 'Pipeline completata', percent: null });
   assert.equal(statusOf(run('running', [{ kind: 'step.started', step: 'link_calls' }])).text, 'Chiamate');  // as the 620 px shot runs it

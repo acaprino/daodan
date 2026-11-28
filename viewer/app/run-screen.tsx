@@ -1,14 +1,11 @@
-// The run's links and pass, under the step of the calls; the graph as it takes shape and what happened are behind.
+// The run's links and pass, under the step of the calls; what happened is behind.
 import { useMemo } from 'react';
 import { Badge, Button, Cluster, Column, Icon, Text } from '@acaprino/sigrid/primitives';
 import { Note } from '@acaprino/sigrid/components';
 import type { IconName } from '@acaprino/sigrid/primitives';
 import { Fold, LongFold } from '../src/listed.tsx';
 import { MORE, plural } from '../src/words.ts';
-import { ExplorerLink } from './explorer-link.tsx';
 import { useFrame } from './frame.tsx';
-import { buildCounts } from './graph.ts';
-import { Preview } from './preview.tsx';
 import { short } from './repository.ts';
 import { ContextFold } from './repository-screen.tsx';
 import { linksNote, logItems, passAlert } from './run.ts';
@@ -67,7 +64,7 @@ function Activity() {
 }
 
 // The links between the modules and the pass that refines the graph of the calls, under the step of the calls: why the pass did not
-// go, with «Riprova» where it failed; the graph as it takes shape and what happened are behind.
+// go, with «Riprova» where it failed; what happened is behind.
 export function PassResult() {
   const s = useModel();
   const c = ctx(s), alert = passAlert(s);
@@ -78,9 +75,6 @@ export function PassResult() {
     <MapNote />
     <Links />
     <Column gap="xs">
-      <Fold label="Grafo in costruzione" summary={buildCounts(s.graph)}>
-        <Column gap="md"><Preview /><Cluster><ExplorerLink /></Cluster></Column>
-      </Fold>
       <Activity />
       <ContextFold />
       <Fold label="Come leggere l’avanzamento">

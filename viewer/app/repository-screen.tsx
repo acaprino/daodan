@@ -1,8 +1,9 @@
 // The repository: its address, whether it can be read, and the branch to analyse. The context in use and how it is read are behind.
-import { Button, Cluster, Column, Input, Progress, Select, Text } from '@acaprino/sigrid/primitives';
+import { Button, Cluster, Column, Icon, Input, Progress, Section, Select, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, FormField, Note } from '@acaprino/sigrid/components';
 import { Fold } from '../src/listed.tsx';
 import { Failed } from '../src/states.tsx';
+import { planOf, policyFacts } from './plan.ts';
 import { accessFeedback, accessible, isPreparing, preparation, repositoryContext, repositorySlug, RESTART, sameChoice, short } from './repository.ts';
 import { ctx, slug } from './snapshot.ts';
 import { Step, STEP_FORM, useGoOn } from './step.tsx';
@@ -26,6 +27,17 @@ export function ContextFold() {
     {c ? <ContextFacts /> : <Text as="p" variant="muted">{isPreparing(s)
       ? 'Preparazione in corso: il contesto sarà pronto alla fine del checkout e dello snapshot.' : 'Nessuna repository selezionata sul server.'}</Text>}
   </Fold>;
+}
+
+// What the analysis may reach and where it runs, once a context is chosen (the plan is of one): the registries, the hosts approved and
+// blocked, that every other host asks here, and the container engine, or why there is none.
+function Policy() {
+  const policy = planOf(useModel())?.policy;
+  if (!policy) return null;
+  return <Section title="Che cosa può fare l’analisi" level={3} icon={<Icon name="globe" />}>
+    <Column data-selectable=""><DescriptionList aria-label="Politica dell’analisi" items={policyFacts(policy)} /></Column>
+    <Text as="p" variant="note">Ogni azione del piano dice se esegue il codice del progetto, se lo fa nel container e quale rete usa.</Text>
+  </Section>;
 }
 
 export function RepositoryScreen() {
@@ -58,6 +70,7 @@ export function RepositoryScreen() {
     </Column>}
     {work?.state === 'failed' && <Failed title={`Preparazione non riuscita (${work.step}).`} cause={work.detail} />}
     {s.selectError && <Failed title="Selezione non riuscita." cause={s.selectError} />}
+    {c && <Policy />}
     <Column gap="xs">
       <ContextFold />
       <Fold label="Accesso GitHub" summary="Non connesso">

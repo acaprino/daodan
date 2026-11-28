@@ -8,7 +8,7 @@ import type { Snapshot } from './snapshot.ts';
 
 export const REPOSITORY = 'repository';
 // The steps that show what `/api/app/premap` holds, read when one is on the screen.
-export const SHOWS_PREMAP: readonly string[] = ['find_modules', 'assemble_graph'];
+export const SHOWS_PREMAP: readonly string[] = ['list_files', 'recognize_stack', 'find_modules', 'assemble_graph'];
 
 // `detail`: what the step found or how it is; `meta`: how long it took.
 export type PathRow = { id: string; label: string; detail: string; state: PathStatus; meta: string };

@@ -5,14 +5,15 @@ import { MORE, number, plural } from '../src/words.ts';
 import type { Detail } from './frame.tsx';
 import { levelLabel } from './graph.ts';
 import { short } from './repository.ts';
-import { gapLines, passWord } from './run.ts';
+import { planGaps } from './plan.ts';
+import { passWord } from './run.ts';
 import { ctx, slug } from './snapshot.ts';
 import { useModel } from './use-model.ts';
 
 // What the run says it does not know: facts of the run, so they are not announced. `first`: how many are in sight, the others
 // being in the details.
 export function Gaps({ first }: { first?: number }) {
-  const gaps = gapLines(useModel());
+  const gaps = planGaps(useModel());
   if (!gaps.length) return <Text as="p" variant="muted">Nessuna lacuna registrata dal run.</Text>;
   const rest = first === undefined ? 0 : Math.max(0, gaps.length - first);
   return <Column data-selectable="">

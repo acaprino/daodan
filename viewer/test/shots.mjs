@@ -54,6 +54,8 @@ const SCREENS = [
   ['analisi-1-preparazione', from, '1. Repository', { serve: { context: null, job: { state: 'preparing', step: 'checkout', detail: 'demo/shop, main' } } }],
   ['analisi-1-errore', from, '1. Repository', { serve: { context: null, job: { state: 'failed', step: 'checkout', detail: 'il branch main non si scarica: rete assente' } } }],
   ['analisi-1-fatto', from, '1. Repository'],
+  ['analisi-2-file', { ...from, analysisStage: 'list_files' }, '2. Elenco dei file'],
+  ['analisi-4-tecnologie', { ...from, analysisStage: 'recognize_stack' }, '4. Tecnologie'],
   ['analisi-5-moduli', { ...from, analysisStage: 'find_modules' }, '5. Moduli'],
   ['analisi-5-errore', { ...from, analysisStage: 'find_modules' }, '5. Moduli', { premapStatus: 500 }],
   ['analisi-7-in-corso', { ...from, analysisStage: 'link_calls' }, '7. Chiamate', { serve: { run: { pass: { state: 'running' }, progress: { step: 'link_calls', analyzer: 'pyright', done: 1, total: 4 }, plan: planOf('running') } } }],

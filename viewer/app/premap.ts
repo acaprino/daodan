@@ -159,7 +159,7 @@ export const provenanceFacts = (c: Context, premap: Premap | null): Fact[] => [
   { name: 'Dipendenze per unità', value: counted(premap?.dependencies) },
 ];
 export const PROVENANCE_NOTES = [
-  'I linguaggi provengono dai sorgenti dello snapshot. Le tecnologie e le dipendenze provengono dalla mappa dello stack.',
+  'I linguaggi provengono dai sorgenti dello snapshot. Le tecnologie e le dipendenze provengono dalle tecnologie riconosciute e dal modello di build.',
   'Il manifest fornisce il vincolo dichiarato. Il modello di build fornisce la versione risolta e la relazione diretta o transitiva, quando disponibili.',
-  'Uno strumento usato dagli analyzer non prova che il progetto usi quel framework.',
+  'Uno strumento usato dagli analizzatori non prova che il progetto usi quel framework.',
 ];
