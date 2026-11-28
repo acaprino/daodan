@@ -2,7 +2,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useFocusKept } from '@acaprino/imago';
-import { Button, Cluster, Column, Icon, Select, Split, Text } from '@acaprino/sigrid/primitives';
+import { Button, Cluster, Column, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Icon, Select, Split, Text } from '@acaprino/sigrid/primitives';
 import { Empty, SearchField } from '@acaprino/sigrid/components';
 import { useMedia } from '@acaprino/sigrid';
 import { GraphCanvas, GraphLegend } from '@acaprino/sigrid/graph';
@@ -12,6 +12,7 @@ import { Loading } from '../src/states.tsx';
 import { plural } from '../src/words.ts';
 import { ExplorerLink } from './explorer-link.tsx';
 import { ScreenPanel, useFrame } from './frame.tsx';
+import type { Detail } from './frame.tsx';
 import { filtersOn, isOpenGroup, levelsName, thingById, toggledGroup, visibleGraph } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { graphDetail, groupOf } from './group-details.tsx';
@@ -74,6 +75,25 @@ function Filters({ ready }: { ready: boolean }) {
   return tight ? filters : <Cluster wrap={false}>{filters}</Cluster>;
 }
 
+// The details the whole graph has. Under 620 px the header has no room for both beside the title: they go in one menu (Sigrid's
+// `mobile.md`, «More than that goes in one menu»), whose button takes the focus back when the details close.
+const WHOLE: readonly { detail: Detail; icon: 'history' | 'file'; label: string }[] = [
+  { detail: PROJECT_HISTORY, icon: 'history', label: 'Cronologia' }, { detail: PROVENANCE, icon: 'file', label: 'Provenienza e lacune' },
+];
+function GraphActions({ ready }: { ready: boolean }) {
+  const { show } = useFrame();
+  const narrow = useMedia('(width < 620px)'), menu = useRef<HTMLButtonElement>(null);
+  if (!narrow) return WHOLE.map(({ detail, icon, label }) =>
+    <Button key={detail.id} variant="ghost" size="sm" disabled={!ready} onClick={() => show(detail)}><Icon name={icon} />{label}</Button>);
+  return <DropdownMenu>
+    <DropdownMenuTrigger asChild><Button ref={menu} variant="ghost" size="sm" disabled={!ready}><Icon name="more" />Altro</Button></DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      {WHOLE.map(({ detail, icon, label }) =>
+        <DropdownMenuItem key={detail.id} onSelect={() => show({ ...detail, opener: menu.current })}><Icon name={icon} />{label}</DropdownMenuItem>)}
+    </DropdownMenuContent>
+  </DropdownMenu>;
+}
+
 type Visible = Pick<Graph, 'nodes' | 'edges'>;
 
 // What is in view, or that another graph is being read while this one stays.
@@ -131,7 +151,7 @@ function useVisible(graph: Graph | null): Visible | null {
 }
 
 export function GraphScreen() {
-  const { show, go } = useFrame();
+  const { go } = useFrame();
   const clear = useClear();
   const graph = useModelSlice(s => s.graph), error = useModelSlice(s => s.graphError), loading = useModelSlice(s => s.graphLoading);
   const read = useModelSlice(s => s.server !== null), context = useModelSlice(ctx), serverError = useModelSlice(s => s.serverError);
@@ -141,10 +161,7 @@ export function GraphScreen() {
   const ready = graph !== null && visible !== null && error === '';
   return <ScreenPanel title="Grafo del codice" tools={<Filters ready={ready} />}
     subtitle={ready && [levelsName(graph), `${visible.nodes.length} / ${graph.nodes.length} nodi`].filter(Boolean).join(' · ')}
-    actions={<>
-      <Button variant="ghost" size="sm" disabled={!graph} onClick={() => show(PROJECT_HISTORY)}><Icon name="history" />Cronologia</Button>
-      <Button variant="ghost" size="sm" disabled={!graph} onClick={() => show(PROVENANCE)}><Icon name="file" />Provenienza e lacune</Button>
-    </>}>
+    actions={<GraphActions ready={graph !== null} />}>
     {!read ? !serverError && <Column pad="lg"><Loading label="Lettura dello stato del server…" /></Column>
       : !context ? <Empty fill title="Nessun grafo" description="Seleziona prima una repository e un branch."
           action={<Button variant="outline" size="sm" onClick={() => go(() => model.selectStage('repository'))}>Vai al repository</Button>} />
