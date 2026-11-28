@@ -63,6 +63,8 @@
 
 - **Vista dei flussi (`T2.C.9`–`T2.C.11`):** `to_prove` prende archi interni e uscite dai passi di tutti i flussi (un'uscita che nessun flusso raggiunge non si controlla); condizione e profilo non hanno fonte su nessun passo (domanda «`T2.C`, profili e condizioni»); in `hide` una freccia che parte da un nodo nascosto senza un visibile prima si perde; i segni «Da creare» di `architettura.md` per questi tre passi vanno aggiornati.
 
+- **Genere dei simboli C (`T2.B.20`):** scip-clang 0.4.1 scrive `SymbolInformation.kind` 0, quindi un tipo C è un valore dal descrittore di tipo `#` di SCIP più la lingua del file; pulito: il `kind` dell'indicizzatore quando scip-clang lo scrive. Un `typedef` C++ usato in un cast resta chiamabile.
+
 ## Fermo o ritirato: non si rifà
 
 | Che cosa | Perché | Dove (`614c940`) |
