@@ -1217,3 +1217,45 @@ def test_no_mcp_tool_answers_a_host_request_and_the_status_lists_them_by_tool(tm
     status = service.status("r1")
     assert status["plan"] == planning.current(service.root / "runs/r1/snapshot/manifest.sqlite")
     assert "pipeline" not in status
+
+
+def test_the_assistant_s_command_from_mcp_is_proposto_and_no_tool_confirms_it(tmp_path, monkeypatch):
+    """`codebase_map_set_command` keeps the assistant's command (`commands`, `proposto`): no parameter says who sets
+    it, no tool confirms or removes it, and it never takes the place of the person's."""
+    import asyncio
+    import importlib.util
+    import inspect
+    import commands
+    import egress
+    from test_codebase_map_reactive_server import _load_mcp_server
+
+    server = _load_mcp_server().create_server(tmp_path)
+    if importlib.util.find_spec("mcp") is not None:
+        from mcp import Client
+
+        async def catalog():
+            async with Client(server) as client:
+                return {tool.name: sorted(tool.inputSchema.get("properties", {}))
+                        for tool in (await client.list_tools()).tools}
+        tools = asyncio.run(catalog())
+    else:
+        tools = {name: sorted(set(inspect.signature(tool).parameters) - {"ctx"})
+                 for name, tool in server._tools.items()}
+    assert tools["codebase_map_set_command"] == ["argv", "kind", "port", "root", "run_id", "surface"]
+    assert not any("confirm" in name or "remove" in name for name in tools)
+    project = tmp_path / "project"
+    (project / "src").mkdir(parents=True)
+    (project / "src" / "a.py").write_text("A = 1\n", encoding="utf-8")
+    service = mcp_service.MapService(project)
+    service.create_run("src", "r1", engine=False)
+    key = str(project.resolve())
+    monkeypatch.setattr(egress, "project_of", lambda manifest: key)
+    told = service.set_command("r1", "tests", "src", ["pytest", "-m", "integration"])
+    assert told["commands"] == [{"kind": "tests", "root": "src", "argv": ["pytest", "-m", "integration"],
+                                 "by": "assistant", "grade": "proposto", "runner": "pytest"}]
+    with pytest.raises(ValueError, match="outside the project"):
+        service.set_command("r1", "tests", "../other", ["pytest"])
+    commands.set(key, {"kind": "tests", "root": "src", "argv": ["pytest"]}, "user")
+    with pytest.raises(ValueError, match="does not replace"):
+        service.set_command("r1", "tests", "src", ["pytest", "-x"])
+    assert [row["by"] for row in commands.listed(key)] == ["user"]

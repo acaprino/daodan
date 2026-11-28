@@ -49,10 +49,13 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages
     the exploration opens besides the app's root; `pages`, the framework rows of the entry points (`entry_points`), give
     each app the pages it opens too."""
     import premap
-    builds = {entry["root"]: entry for entry in record.get("builds", [])}
+    from dynamic import rank  # the user's command, then the assistant's (`commands.merged`), then the project's
+    builds: dict[str, dict] = {}
+    for entry in sorted(record.get("builds", []), key=rank):
+        builds.setdefault(entry["root"], entry)
     chosen: dict[str, dict] = {}
-    for entry in sorted(record.get("starts", []), key=lambda entry: entry["mode"] != "start"):  # start before dev
-        chosen.setdefault(entry["root"], entry)
+    for entry in sorted(record.get("starts", []), key=lambda entry: (rank(entry), entry["mode"] != "start")):
+        chosen.setdefault(entry["root"], entry)  # start before dev
     apps, gaps = [], []
     for root, entry in sorted(chosen.items()):
         if entry["runner"] != "npm":
@@ -94,6 +97,10 @@ def _script(entry: dict) -> str:
 
 
 def _command(entry: dict) -> str:
+    """The command's words where it states them (a command of the user or the assistant, `commands`), else the
+    script of its `package.json`."""
+    if entry.get("argv"):
+        return shlex.join(entry["argv"])
     return f"npm run {shlex.quote(_script(entry))}"
 
 

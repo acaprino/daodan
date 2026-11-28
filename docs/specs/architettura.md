@@ -82,8 +82,8 @@ Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Se
 
 | Fonte | Che cosa dice | Grado | Stato |
 | --- | --- | --- | --- |
-| L'utente | `[deciso]` Comando impostato in Daodan da chi conosce il progetto, tenuto nell'archivio di Daodan (mai nel progetto) | `confermato` | Da creare (`T3.B`) |
-| L'assistente | `[deciso]` Anche un assistente (via MCP) può impostare il comando. Resta scritto che l'ha impostato un assistente; è `proposto`, non `confermato`. Gira solo nel container, e gli indirizzi di rete si approvano solo dalla GUI | `proposto` | Da creare (`T3.B`) |
+| L'utente | `[deciso]` Comando impostato in Daodan da chi conosce il progetto, tenuto nella cartella condivisa di Daodan (`commands.json`, come `egress.json`; mai nel progetto); passa davanti a ogni altra fonte | `confermato` | Nel codice (`commands.py`, `/api/app/command`) |
+| L'assistente | `[deciso]` Anche un assistente (via MCP) può impostare il comando. Resta scritto che l'ha impostato un assistente; è `proposto`, non `confermato`, finché la persona non lo conferma nell'app, e non prende il posto di quello dell'utente. Gira solo nel container, e gli indirizzi di rete si approvano solo dalla GUI | `proposto` | Nel codice (`commands.py`, `codebase_map_set_command`) |
 | Lo strumento di build | Comando previsto dallo strumento (`npm test`, `go test`, `cargo test`, Gradle/Maven, `dotnet test`, CTest) | `dichiarato` | Nel codice |
 | I file del progetto | Script `test`/`start`/`dev`, config pytest, makefile (vale per il runner lanciato, non per il nome) | `dichiarato` | Nel codice |
 | La CI del progetto | Passo dei test in CI, con servizi e passi preliminari | `dichiarato` | Parziale (`T3.B`) |

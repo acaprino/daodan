@@ -237,7 +237,7 @@ def current(manifest) -> dict:
     project = _project(manifest) if header is not None else None
     asked = _asked(project)
     actions = [_node_action(node, by_step, begun, recorded, unparsed, asked) for node in planned["nodes"]]
-    found = _found(manifest, by_step, begun, recorded, asked) if header is not None else {}
+    found = _found(manifest, by_step, begun, recorded, asked, project) if header is not None else {}
     for kind in STEPWIDE:
         if found.get(kind) is not None:  # the actions the step's fresh record shows
             actions.extend(found[kind])
@@ -271,16 +271,18 @@ def _asked(project: str | None):
     return asked
 
 
-def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked) -> dict:
+def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked, project: str | None = None) -> dict:
     """The actions `recognize_stack`, `find_modules` and `find_entry_points` find, by kind, from their records when the
     records' owners say they are fresh (a kind without one is None): the stack's tool, the pre-map's and the entry points'
     sources that are not `not_needed` (of the pre-map, those with commands; a source with no command reads files), and the apps the pre-map declares
-    (`starts`), which `run_and_observe` explores."""
+    (`starts`) or the user or the assistant states for the `project` (`commands`), which `run_and_observe` explores: an
+    app with a stated command carries its `by` and `grade`."""
     import json
+    import commands
     import entry_points
     import premap
     import stack_recognition
-    from dynamic import APP
+    from dynamic import APP, rank
     found = {}
     try:
         if stack_recognition.state(manifest) == "fresh":
@@ -299,10 +301,14 @@ def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked) -> d
                            for status in record.get("sources", ()) if status.get("state") != "not_needed"
                            and (kind == "entries" or status.get("tools") or status.get("rank") == "model")]
             if kind == "model":
-                apps = sorted({entry["root"] for entry in record.get("starts", ())})
+                starts = commands.merged(record, project).get("starts", ()) if project else record.get("starts", ())
+                stated = {}  # the root's command of the user or the assistant, the first by `dynamic.PRECEDENCE`
+                for entry in sorted((entry for entry in starts if entry.get("by")), key=rank):
+                    stated.setdefault(entry["root"], {"by": entry["by"], "grade": entry["grade"]})
                 state = _events(RUN_AND_OBSERVE, APP, begun, recorded)
                 found["explore"] = [_action(f"{RUN_AND_OBSERVE}:{APP}:{root}", RUN_AND_OBSERVE, "explore",
-                                            {"root": root}, True, True, state) for root in apps]
+                                            {"root": root}, True, True, {**state, **stated.get(root, {})})
+                                    for root in sorted({entry["root"] for entry in starts})]
     except (OSError, ValueError, KeyError):  # a record that cannot be read: its step's own action says the step
         pass
     return found

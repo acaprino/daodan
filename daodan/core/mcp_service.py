@@ -505,6 +505,18 @@ class MapService:
         with self._operation():
             return self._status(run_id, engine=True)
 
+    def set_command(self, run_id, kind, root, argv, port=None, surface=None):
+        """The assistant proposes the command of a folder of the run's project (`commands.set`, always `assistant`,
+        grade `proposto`): only the person confirms it, in the app. It runs only in the container, at the next
+        analysis, and the hosts it reaches are approved only in the app."""
+        import commands
+        import egress
+        with self._operation():
+            _, _, manifest, _ = self._bound_run(run_id)
+            project = egress.project_of(Path(manifest.path))
+            given = {"kind": kind, "root": root, "argv": argv, "port": port, "surface": surface}
+            return {"run_id": run_id, "commands": commands.set(project, given, "assistant")}
+
     def _engine_event(self, run, result):
         if result.get("action") == "started":
             self._event(run, "engine_started", message=f"pid {result.get('pid')}")

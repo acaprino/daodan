@@ -976,6 +976,41 @@ def test_the_state_shows_the_host_requests_by_tool_and_only_its_guarded_action_a
         server.server_close()
 
 
+def test_the_person_sets_confirms_and_removes_a_command_and_the_state_shows_them(tmp_path):
+    """`/api/app/command` keeps the person's command (`confermato`), makes the assistant's proposal theirs, removes it;
+    under the server's guard, and a command that is not well formed is refused."""
+    import commands
+    project = tmp_path / "checkout"
+    (project / "web").mkdir(parents=True)
+    key = str(project.resolve())
+    commands.set(key, {"kind": "starts", "root": "web", "argv": ["npm", "run", "serve"]}, "assistant")
+    app = launcher.App(tmp_path / "work", environment={})
+    server = app.serve(token="t")
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        port = server.server_address[1]
+        assert request(port, "/api/app/state")[1]["commands"] == []  # no checkout selected
+        app.context = {"path": str(project), "run_id": "app-aaaaaaaaaaaa"}
+        assert [row["grade"] for row in request(port, "/api/app/state")[1]["commands"]] == ["proposto"]
+        confirm = {"action": "confirm", "kind": "starts", "root": "web"}
+        assert request(port, "/api/app/command", confirm, token=None)[0] == 403
+        status, told = request(port, "/api/app/command", confirm)
+        assert status == 200 and told["commands"] == [{"kind": "starts", "root": "web", "argv": ["npm", "run", "serve"],
+                                                       "by": "user", "grade": "confermato", "proposed_by": "assistant"}]
+        tests = {"kind": "tests", "root": ".", "argv": ["pytest", "-m", "slow"]}
+        status, told = request(port, "/api/app/command", {"action": "set", "command": tests})
+        assert status == 200 and [(row["kind"], row["by"]) for row in told["commands"]] == [
+            ("starts", "user"), ("tests", "user")]
+        assert request(port, "/api/app/command", {"action": "set", "command": {**tests, "root": "../x"}})[0] == 400
+        assert request(port, "/api/app/command", {"action": "run"})[0] == 400
+        status, told = request(port, "/api/app/command", {"action": "remove", "kind": "starts", "root": "web"})
+        assert status == 200 and [row["kind"] for row in told["commands"]] == ["tests"]
+    finally:
+        app.close()
+        server.shutdown()
+        server.server_close()
+
+
 def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monkeypatch):
     project = tmp_path / "checkout"
     project.mkdir()

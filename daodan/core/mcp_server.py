@@ -90,6 +90,14 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
         """Read canonical state and actual delivery gaps, including direct worker changes, and the call-resolution engine state and, per language, its coverage (sites with an answer by class, holes by class, uncertain arcs, complete or lower-bound), and the analysis's last progress (step, analyzer, done of total), the one plan (`plan`: the eight steps with their state, the policy of network and container, the actions with their state, `awaiting_approval` included, and the gaps), and the hosts it waits for the person to approve, by tool (`egress`: read only, they are answered only in Daodan's app)."""
         return await _invoke(ctx, service.status, run_id)
 
+    @server.tool(annotations=writes)
+    async def codebase_map_set_command(
+        ctx: Context, run_id: str, kind: Literal["tests", "starts", "builds"], root: str, argv: list[str],
+        port: int | None = None, surface: str | None = None,
+    ) -> dict:
+        """Propose the command that runs the tests of, starts or builds a folder (`root`, from the project's root) of the run's project, as its words (`argv`). It is kept as the assistant's (`proposto`) and comes before the CI's and the project's at the next analysis; only the person confirms or removes it, in Daodan's app, and never replaces theirs. It runs only in Daodan's container."""
+        return await _invoke(ctx, service.set_command, run_id, kind, root, argv, port=port, surface=surface)
+
     @server.tool(annotations=read_only)
     async def codebase_map_outline(
         ctx: Context, run_id: str, path: str | None = None,
