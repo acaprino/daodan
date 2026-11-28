@@ -14,7 +14,7 @@ from pathlib import Path
 
 from project_file import REFERENCES
 
-__all__ = ["POLICY", "PRODUCER", "assign", "from_envelope", "inventory", "source", "tree_sha256"]
+__all__ = ["POLICY", "PRODUCER", "assign", "from_envelope", "inventory", "reconcile", "source", "tree_sha256"]
 
 PRODUCER = "daodan/visual@1"
 POLICY = "daodan/inventory@1"
@@ -195,3 +195,139 @@ def source(manifest: Path, commit: str | None = None, committed_at: str | None =
     return {"repository_uri": repository_uri, "git_commit": commit, "git_committed_at": committed_at if commit else None,
             "tree_sha256": tree_sha256(hashes),
             "inventory_policy": json.dumps({"policy": POLICY, "scope": scope}, sort_keys=True)}
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# The same node at the next analysis («Riconoscere lo stesso nodo alla rianalisi»)
+
+
+def _key(row: dict) -> str | None:
+    return ((row["fields"].get("attributes") or {}).get("identity") or {}).get("key")
+
+
+def _signature(row: dict) -> tuple:
+    """What identifies an object that is no node or flow once the objects it points at are reconciled: an edge by
+    its ends, kind, profile, grade and the attributes its key carries; a variant by flow and profile; a step by
+    variant, first edge and order among the steps of that variant on that edge; a gap by subject and text."""
+    fields = row["fields"]
+    if row["kind"] == "edge":
+        attributes = fields.get("attributes") or {}
+        return ("edge", fields["source_id"], fields["target_id"], fields["kind"], fields.get("profile"), fields["grade"],
+                *(json.dumps(attributes.get(key), sort_keys=True) for key in ("link_type", "key", "conflict", "site")))
+    if row["kind"] == "variant":
+        return ("variant", fields["flow_id"], fields.get("profile"))
+    if row["kind"] == "gap":
+        return ("gap", fields.get("subject_id"), fields["description"], fields["cause"])
+    raise ValueError(row["kind"])
+
+
+def _step_signatures(rows: list[dict], ids) -> dict:
+    """Signature -> row for the steps of `rows`, their variant and edges read through `ids` (key -> id, or the
+    identity for rows that already have ids)."""
+    out, seen = {}, {}
+    for row in sorted((row for row in rows if row["kind"] == "step"), key=lambda row: row["fields"]["display_order"]):
+        variant, edge = ids(row["fields"]["variant_id"]), ids(row["edges"][0]) if row["edges"] else None
+        occurrence = seen[variant, edge] = seen.get((variant, edge), -1) + 1
+        out[("step", variant, edge, occurrence)] = row
+    return out
+
+
+def reconcile(db, head: int, rows: list[dict], hashes: dict[str, str], unread=()) -> list[dict]:
+    """The rows of a new analysis (`from_envelope`, by key) with the object ids of revision `head` they continue,
+    before any diff: the same key and kind keep the id; a file gone and one come with a digest equal and unique in
+    both inventories (the head's files and `hashes`, path -> SHA-256 of the new inventory) keep it, with or without
+    Git, and the symbols of a reconciled file follow it; a copy, whose original is still there, gets a new id; several
+    candidates get no automatic match but a `technical_records` `identity_match` (new id, candidates, digest, keys)
+    and a gap that names it. An edge, a variant, a step or a gap keeps its id only when its reconciled ends and the
+    rest of its signature are the same (Git's similarity has no part). The nodes of the files of `unread` (paths a
+    partial analysis did not read) stay as they are, with a gap, and so does what they need; so do the open identity
+    proposals. A new observation gets a new UUID."""
+    import project_file
+    old = project_file.state(db, head)
+    old_nodes = {row["id"]: row for row in old.values() if row["kind"] == "node"}
+    old_files = {}  # path -> (id, digest)
+    for object_id, row in old_nodes.items():
+        identity = row["fields"]["attributes"].get("identity") or {}
+        if identity.get("path") and _key(row) == f"file:{identity['path']}":
+            old_files[identity["path"]] = (object_id, identity.get("sha256"))
+    new_files = {row["fields"]["attributes"]["identity"]["path"]: row for row in rows
+                 if row["kind"] == "node" and "path" in row["fields"]["attributes"].get("identity", {})}
+    old_count, new_count = {}, {}
+    for _, digest in old_files.values():
+        old_count[digest] = old_count.get(digest, 0) + 1
+    for digest in hashes.values():
+        new_count[digest] = new_count.get(digest, 0) + 1
+    vanished = {path: digest for path, (_, digest) in old_files.items() if path not in hashes and path not in new_files}
+    renamed, proposals = {}, []  # old path -> new path; (new path, candidate old paths)
+    for path in sorted(new_files):
+        digest = hashes.get(path)
+        if path in old_files or digest is None:
+            continue
+        candidates = sorted(old for old, found in vanished.items() if found == digest)
+        if len(candidates) == 1 and old_count.get(digest) == 1 and new_count.get(digest) == 1:
+            renamed[candidates[0]] = path
+        elif candidates:
+            proposals.append((path, candidates))
+    keyed: dict[tuple, str] = {}  # (kind, key) -> old id, the keys of renamed files and their symbols translated
+    for object_id, row in old.items():
+        key = _key(row)
+        if key is None or row["kind"] not in ("node", "flow"):
+            continue
+        for before, after in renamed.items():
+            if key == f"file:{before}":
+                key = f"file:{after}"
+            elif key.startswith(f"symbol:{before}::"):
+                key = f"symbol:{after}::{key[len(f'symbol:{before}::'):]}"
+        keyed[row["kind"], key] = object_id
+    ids: dict[str, str] = {}
+    for row in rows:
+        if row["kind"] in ("node", "flow"):
+            ids[row["key"]] = keyed.get((row["kind"], row["key"])) or str(uuid.uuid4())
+
+    def through(key):
+        return ids.get(key, key)
+
+    def match(kind, signature_of):
+        """Ids for the rows of `kind` whose signature, read through `ids`, an old object of that kind has."""
+        olds = {}
+        for row in old.values():
+            if row["kind"] == kind:
+                olds.setdefault(signature_of(row, lambda value: value), []).append(row["id"])
+        for row in rows:
+            if row["kind"] == kind:
+                found = olds.get(signature_of(row, through)) or []
+                ids[row["key"]] = found.pop(0) if found else str(uuid.uuid4())
+
+    def mapped(row, read):
+        fields = {**row["fields"], **{name: read(row["fields"].get(name)) for name in REFERENCES[row["kind"]]}}
+        return _signature({**row, "fields": fields})
+
+    match("edge", mapped)
+    match("variant", mapped)
+    olds = _step_signatures(list(old.values()), lambda value: value)
+    for signature, row in _step_signatures(rows, through).items():
+        ids[row["key"]] = olds[signature]["id"] if signature in olds else str(uuid.uuid4())
+    match("gap", mapped)
+    for path, candidates in proposals:
+        record = f"identity_match:{path}"
+        rows = rows + [
+            {"key": record, "kind": "record", "provenance": "identity", "evidence": [{"kind": "source", "locator": path}],
+             "fields": {"kind": "identity_match",
+                        "payload": {"new": ids[f"file:{path}"], "candidates": [old_files[item][0] for item in candidates],
+                                    "keys": {"new": f"file:{path}", "candidates": [f"file:{item}" for item in candidates]},
+                                    "sha256": hashes[path]}}},
+            {"key": f"{record}#gap", "kind": "gap", "provenance": "identity",
+             "fields": {"subject_id": record, "cause": "identity_match", "remedy": "confermare la corrispondenza",
+                        "description": f"{path} può essere {' o '.join(candidates)}: serve una conferma"}}]
+    out = assign(rows, ids)
+    present = {row["id"] for row in out}
+    kept = [row for row in old.values() if row["provenance"] == "identity" and row["id"] not in present]
+    unread = set(unread)
+    for object_id, row in old_nodes.items():
+        path = (row["fields"]["attributes"].get("identity") or {}).get("path")
+        if object_id not in present and path in unread:
+            kept.append(row)
+            out.append({"id": str(uuid.uuid4()), "kind": "gap", "provenance": "analysis",
+                        "fields": {"subject_id": object_id, "description": f"{path} non è stato letto in questa analisi",
+                                   "cause": "analisi parziale", "remedy": None}})
+    return project_file.keep_needed(old, out, kept)

@@ -148,3 +148,119 @@ def test_the_tree_digest_is_the_rule_of_the_spec_and_ignores_the_order_of_the_in
     random.Random(1).shuffle(shuffled)
     assert project_rows.tree_sha256(dict(reversed(shuffled))) == project_rows.tree_sha256(dict(shuffled)) == by_hand.hexdigest()
     assert project_rows.tree_sha256({"é": A, "z": B}) != project_rows.tree_sha256({"é": B, "z": A})
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# The same node at the next analysis
+
+PAYMENT = hashlib.sha256(b"def pay():\n    return 1\n").hexdigest()
+OTHER = hashlib.sha256(b"x = 1\n").hexdigest()
+
+
+def _tree(files: dict[str, str], symbols=()) -> tuple[dict, dict]:
+    """An envelope of the files `files` (name in `src` -> digest) and of the symbols `symbols` (`name::symbol`), with
+    the inventory of the same files."""
+    entities = [_entity("directory:src", "directory", "src", path="src", location="internal")]
+    memberships = []
+    for name in files:
+        entities.append(_entity(f"file:src/{name}", "file", name, path=f"src/{name}", location="internal"))
+        memberships.append({"member": f"file:src/{name}", "group": "directory:src", "view": "physical"})
+    for symbol in symbols:
+        name, short = symbol.split("::")
+        entities.append(_entity(f"symbol:src/{symbol}", "symbol", short, path=f"src/{name}", location="internal"))
+    return ({"schema": "daodan/visual@1", "meta": {}, "entities": entities, "relations": [], "memberships": memberships,
+             "gaps": [], "flows": [], "technologies": []},
+            {f"src/{name}": digest for name, digest in files.items()})
+
+
+def _source(hashes):
+    return {"tree_sha256": project_rows.tree_sha256(hashes), "inventory_policy": "{}"}
+
+
+def _start(tmp_path, files, symbols=()):
+    found, hashes = _tree(files, symbols)
+    path = tmp_path / "project.daodan"
+    project_file.create(path, name="demo", source=_source(hashes), analysis={"daodan_version": "test", "config": {}},
+                        rows=project_rows.assign(project_rows.from_envelope(found, hashes), {}))
+    return path
+
+
+def _again(db, files, symbols=(), unread=()):
+    found, hashes = _tree(files, symbols)
+    return project_file.analyse(db, rows=project_rows.from_envelope(found, hashes), hashes=hashes, source=_source(hashes),
+                                analysis={"daodan_version": "test", "config": {}}, author="daodan", unread=unread)
+
+
+def _id(db, key, rev=None):
+    (found,) = [row["id"] for row in project_file.state(db, rev).values() if project_rows._key(row) == key]
+    return found
+
+
+def test_a_rename_with_the_same_content_keeps_the_id_and_its_symbols_follow(tmp_path):
+    path = _start(tmp_path, {"payment.py": PAYMENT, "other.py": OTHER}, ["payment.py::pay"])
+    with closing(project_file.open_project(path, write=True)) as db:
+        file, symbol, other = (_id(db, key) for key in ("file:src/payment.py", "symbol:src/payment.py::pay", "file:src/other.py"))
+        assert _again(db, {"transfer.py": PAYMENT, "other.py": OTHER}, ["transfer.py::pay"]) == 2
+        assert _id(db, "file:src/transfer.py") == file and _id(db, "symbol:src/transfer.py::pay") == symbol
+        assert _id(db, "file:src/other.py") == other
+        assert project_file.state(db, 1)[file]["fields"]["name"] == "payment.py"
+        assert project_file.state(db)[file]["fields"]["name"] == "transfer.py"
+        diff = project_file.changes(db, 1, 2)
+        assert diff["added"] == [] and diff["removed"] == [] and sorted(diff["changed"]) == sorted([file, symbol])
+        assert _again(db, {"transfer.py": PAYMENT, "other.py": OTHER}, ["transfer.py::pay"]) == 3
+        assert project_file.changes(db, 2, 3) == {"added": [], "removed": [], "changed": []}
+
+
+def test_a_copy_beside_its_original_gets_a_new_id(tmp_path):
+    path = _start(tmp_path, {"payment.py": PAYMENT})
+    with closing(project_file.open_project(path, write=True)) as db:
+        file = _id(db, "file:src/payment.py")
+        _again(db, {"payment.py": PAYMENT, "copy.py": PAYMENT})
+        assert _id(db, "file:src/payment.py") == file and _id(db, "file:src/copy.py") != file
+        assert not [row for row in project_file.state(db).values() if row["kind"] == "record"]
+
+
+def test_two_equal_candidates_ask_for_a_confirmation_and_keep_its_author_and_history(tmp_path):
+    path = _start(tmp_path, {"x.py": PAYMENT, "y.py": PAYMENT})
+    with closing(project_file.open_project(path, write=True)) as db:
+        x, y = _id(db, "file:src/x.py"), _id(db, "file:src/y.py")
+        _again(db, {"z.py": PAYMENT})
+        z = _id(db, "file:src/z.py")
+        assert z not in (x, y)
+        now = project_file.state(db)
+        (record,) = [row for row in now.values() if row["kind"] == "record"]
+        assert record["fields"]["kind"] == "identity_match" and record["provenance"] == "identity"
+        assert record["fields"]["payload"]["new"] == z and sorted(record["fields"]["payload"]["candidates"]) == sorted([x, y])
+        (gap,) = [row for row in now.values() if row["kind"] == "gap"]
+        assert gap["fields"]["subject_id"] == record["id"] and gap["fields"]["cause"] == "identity_match"
+        assert _again(db, {"z.py": PAYMENT}) == 3  # an open proposal stays open at the next analysis
+        assert record["id"] in project_file.state(db)
+        assert project_file.confirm(db, record["id"], x, author="ada") == 4
+        now = project_file.state(db)
+        assert _id(db, "file:src/z.py") == x and z not in now and record["id"] not in now and gap["id"] not in now
+        assert db.execute("SELECT kind, author FROM revisions WHERE rev = 4").fetchone() == ("resolution", "ada")
+        assert [row for (row,) in db.execute("SELECT from_rev FROM versions WHERE object_id = ? ORDER BY from_rev", (x,))] == [1, 4]
+        assert project_file.state(db, 3)[z]["fields"]["name"] == "z.py"  # the earlier revisions keep their ids
+
+
+def test_distinct_candidates_keep_the_new_id(tmp_path):
+    path = _start(tmp_path, {"x.py": PAYMENT, "y.py": PAYMENT})
+    with closing(project_file.open_project(path, write=True)) as db:
+        _again(db, {"z.py": PAYMENT})
+        z = _id(db, "file:src/z.py")
+        (record,) = [row["id"] for row in project_file.state(db).values() if row["kind"] == "record"]
+        project_file.confirm(db, record, None, author="ada")
+        assert _id(db, "file:src/z.py") == z and record not in project_file.state(db)
+
+
+def test_a_file_a_partial_analysis_did_not_read_stays_open_with_a_gap(tmp_path):
+    path = _start(tmp_path, {"a.py": PAYMENT, "b.py": OTHER})
+    with closing(project_file.open_project(path, write=True)) as db:
+        b = _id(db, "file:src/b.py")
+        _again(db, {"a.py": PAYMENT}, unread={"src/b.py"})
+        now = project_file.state(db)
+        assert b in now
+        (gap,) = [row for row in now.values() if row["kind"] == "gap"]
+        assert gap["fields"]["subject_id"] == b and "non è stato letto" in gap["fields"]["description"]
+        _again(db, {"a.py": PAYMENT})
+        assert b not in project_file.state(db)  # read and gone: it ends

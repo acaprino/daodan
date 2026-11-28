@@ -25,8 +25,8 @@ from pathlib import Path
 
 from snapshot_store import _plain
 
-__all__ = ["APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "commit", "create", "head",
-           "open_project", "state"]
+__all__ = ["APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "changes", "commit",
+           "confirm", "create", "head", "open_project", "state"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
@@ -415,3 +415,122 @@ def state(db: sqlite3.Connection, rev: int | None = None) -> dict[str, dict]:
                 f" WHERE from_step_version IN ({marks}) ORDER BY from_step_version, ordinal", chunk):
             by_version[version]["transitions"].append({"to_step_id": target, "condition": condition})
     return rows
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# A new analysis and the identity proposals
+
+
+def _content(row: dict) -> str:
+    """What a version says, for comparing an incoming row with the active one: provenance, fields and the rows it
+    owns, with every optional column filled."""
+    return json.dumps({"kind": row["kind"], "provenance": row.get("provenance") or "analysis", "fields": row["fields"],
+                       "evidence": sorted(json.dumps({column: item.get(column) for column in EVIDENCE}, sort_keys=True)
+                                          for item in row.get("evidence", ())),
+                       "endpoints": [{"role": item["role"], "node_id": item["node_id"], "description": item.get("description")}
+                                     for item in row.get("endpoints", ())],
+                       "edges": list(row.get("edges", ())),
+                       "transitions": [{"to_step_id": item["to_step_id"], "condition": item.get("condition")}
+                                       for item in row.get("transitions", ())]}, sort_keys=True, default=str)
+
+
+def _delta(before: dict[str, dict], rows: list[dict]) -> tuple[list[dict], list[str]]:
+    """(opened, closed) that take the state `before` to `rows`: a row new or changed opens, an active object changed
+    or missing from `rows` closes."""
+    incoming = {row["id"]: row for row in rows}
+    if len(incoming) != len(rows):
+        raise ProjectError("due righe con lo stesso oggetto")
+    changed = [row for object_id, row in incoming.items()
+               if object_id not in before or _content(before[object_id]) != _content(row)]
+    closed = [object_id for object_id in before if object_id not in incoming]
+    return changed, closed + [row["id"] for row in changed if row["id"] in before]
+
+
+def analyse(db: sqlite3.Connection, *, rows: list[dict], hashes: dict[str, str], source: dict, analysis: dict,
+            author: str, unread=(), summary: str = "rianalisi") -> int:
+    """Record a new analysis of the project as a revision `analysis`: its rows (`project_rows.from_envelope`, by
+    key) reconciled with the head (`project_rows.reconcile`) and the difference written. The revision number."""
+    import project_rows  # it reads this module's rows: imported here, not at the top
+    current = head(db)
+    incoming = project_rows.reconcile(db, current, rows, hashes, unread)
+    opened, closed = _delta(state(db, current), incoming)
+    return commit(db, expected_head=current, kind="analysis", author=author, summary=summary, source=source,
+                  analysis=analysis, opened=opened, closed=closed)
+
+
+def changes(db: sqlite3.Connection, before: int, after: int) -> dict[str, list[str]]:
+    """The diff between two revisions, by object id: `added` (active only at `after`), `removed` (only at `before`)
+    and `changed` (active at both, in another version)."""
+    active = "SELECT object_id, version_id FROM versions WHERE from_rev <= {0} AND (until_rev IS NULL OR {0} < until_rev)"
+    query = (f"WITH a AS ({active.format(':a')}), b AS ({active.format(':b')})"
+             " SELECT a.object_id, a.version_id, b.version_id FROM a LEFT JOIN b USING (object_id)"
+             " WHERE a.version_id IS NOT b.version_id"
+             " UNION ALL SELECT b.object_id, NULL, b.version_id FROM b WHERE b.object_id NOT IN (SELECT object_id FROM a)")
+    out = {"added": [], "removed": [], "changed": []}
+    for object_id, old, new in db.execute(query, {"a": before, "b": after}):
+        out["added" if old is None else "removed" if new is None else "changed"].append(object_id)
+    return {key: sorted(value) for key, value in out.items()}
+
+
+def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str) -> int:
+    """Settle the `identity_match` proposal `match` in a revision `resolution` by `author`: with `same`, one of its
+    candidates, the new node takes that original id back (the provisional identity ends, and every active row that
+    pointed at it points at the original); with None they are distinct and the new id stays. The proposal and its
+    gap end either way. The revision number."""
+    current = head(db)
+    now = state(db, current)
+    record = now.get(match)
+    if record is None or record["kind"] != "record" or record["fields"]["kind"] != "identity_match":
+        raise ProjectError(f"nessuna proposta di corrispondenza aperta: {match}")
+    proposal = record["fields"]["payload"]
+    closed = [match] + [row["id"] for row in now.values() if row["kind"] == "gap" and row["fields"]["subject_id"] == match]
+    opened = []
+    if same is not None:
+        if same not in proposal["candidates"]:
+            raise ProjectError(f"{same} non è un candidato di {match}")
+        provisional = proposal["new"]
+        if provisional not in now:
+            raise ProjectError(f"l'identità provvisoria non è più attiva: {provisional}")
+        swap = {provisional: same}
+
+        def moved(value):
+            return swap.get(value, value)
+
+        opened.append({**now[provisional], "id": same, "provenance": "resolution"})
+        closed.append(provisional)
+        for row in now.values():
+            if row["id"] in closed:
+                continue
+            replaced = {**row, "fields": {**row["fields"], **{name: moved(row["fields"].get(name))
+                                                              for name in REFERENCES[row["kind"]]}}}
+            if "endpoints" in row:
+                replaced["endpoints"] = [{**item, "node_id": moved(item["node_id"])} for item in row["endpoints"]]
+            if "edges" in row:
+                replaced["edges"] = [moved(item) for item in row["edges"]]
+            if "transitions" in row:
+                replaced["transitions"] = [{**item, "to_step_id": moved(item["to_step_id"])} for item in row["transitions"]]
+            if _content(replaced) != _content(row):
+                opened.append(replaced)
+                closed.append(row["id"])
+    summary = f"conferma: {proposal['keys']['new']} è " + (proposal["keys"]["candidates"][proposal["candidates"].index(same)]
+                                                          if same is not None else "un oggetto nuovo")
+    return commit(db, expected_head=current, kind="resolution", author=author, summary=summary,
+                  opened=opened, closed=closed)
+
+
+def keep_needed(before: dict[str, dict], rows: list[dict], kept: list[dict]) -> list[dict]:
+    """`rows` with the rows of `kept` (active rows of `before`) and, transitively, the active rows they point at
+    that `rows` lacks: a row that stays keeps its parent, its ends, its flow and its steps' edges."""
+    out = list(rows)
+    present = {row["id"] for row in out}
+    kept = list(kept)
+    while kept:
+        row = kept.pop()
+        if row["id"] in present:
+            continue
+        present.add(row["id"])
+        out.append(row)
+        pointed = [row["fields"].get(name) for name in REFERENCES[row["kind"]]] + list(row.get("edges", ())) + \
+            [item["node_id"] for item in row.get("endpoints", ())] + [item["to_step_id"] for item in row.get("transitions", ())]
+        kept += [before[item] for item in pointed if item in before and item not in present]
+    return out
