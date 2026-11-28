@@ -494,67 +494,17 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
     Its plan is the parse part only (`pipeline.plan.parse_nodes`): the inventory has no status yet, and the
     resolve and observe nodes are the plan of the read snapshot (`plan.stored`).
     """
-    from datetime import datetime, timezone
-    from snapshot_store import SnapshotWriter, _plain
+    from snapshot_store import _plain
 
     extra_metadata = _checked_options(format, extra_metadata)
     out = Path(out)
     _plain(out)
     with open_snapshot(inventory) as listed:
-        if listed.metadata.get("reading") != "not-started":
-            raise ValueError("not an inventory awaiting its reading")
-        root = Path(listed.metadata["root"])
-        target_key = listed.metadata["target"]
-        target = (root / target_key).resolve()
-        if not (target.is_dir() or target.is_file()):
-            raise ValueError(f"snapshot target does not exist: {target}")
-        fingerprint = parser_fingerprint()
-        reusable = (previous is not None and previous.metadata.get("schema") == SCHEMA
-                    and previous.metadata.get("root") == root.as_posix()
-                    and previous.metadata.get("target") == target_key
-                    and previous.metadata.get("parser_fingerprint") == fingerprint)
-        counted = listed.metadata["metrics"]
-        metrics = {"files_read": counted["files_read"], "source_bytes_read": counted["source_bytes_read"],
-                   "parsed_files": 0, "cache_hits": 0}
-        perimeter = Perimeter(target)
-        temporary = _temporary_beside(out)
-        supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
-        fast_reuse = (
-            reusable
-            and format == "sqlite"
-            and getattr(previous, "format", None) == "sqlite"
-            and hasattr(previous, "verified_reusable_headers")
-            and previous._has_json_cache()
-        )
-        # The plan's `read_code` nodes (spec 8.4; no entries exist yet, so no status): a file in none of them is not
-        # read by a language adapter. It keeps its inventory row and a file-level entry that says so.
-        from pipeline import plan as planning
-        rows = dict(listed.iter_inventory())
-        parse = {node["id"] for node in planning.parse_nodes(rows.items())}
-        run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress, rows,
-                            {path for path, row in rows.items() if planning.node_of(row) not in parse})
-        scope = listed.metadata["scope"]
-        unread = listed.metadata.get("unread") or {}
-        left_out = {key: listed.metadata[key] for key in ("excluded", "excluded_unknown") if key in listed.metadata}
+        header, run, perimeter = _reading_of(listed, format, previous, progress)
+    supplied = {Path(path).resolve(): value for path, value in (parse_results or {}).items()}
+    temporary = _temporary_beside(out)
     try:
-        with SnapshotWriter(temporary, format) as writer:
-            run.writer = writer
-            if format == "sqlite":
-                writer.connection.execute("CREATE TABLE observed_coverage(file TEXT PRIMARY KEY,payload BLOB)")
-            run.c_family(run.sources(root, supplied))
-            run.newer(root)
-            run.close_sources()
-            if format == "sqlite":
-                for path, row in run.rows.items():
-                    writer.put_inventory(path, row)
-            metadata_record = {
-                **extra_metadata,
-                "schema": SCHEMA, "target": target_key, "root": root.as_posix(),
-                "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "git": git_info(root), "scope": scope, "unread": unread, **left_out,
-                "parser_fingerprint": fingerprint, "metrics": metrics,
-            }
-            run.seal(metadata_record, perimeter)
+        metadata_record = _read_into(temporary, format, run, supplied, perimeter, header, extra_metadata)
         _plain(out)
         # A caller reusing the same pathname transfers its reader to publication.
         # Windows cannot replace the file while that connection is open.
@@ -565,6 +515,74 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
     finally:
         temporary.unlink(missing_ok=True)
         Path(str(temporary) + "-journal").unlink(missing_ok=True)
+
+
+def _reading_of(listed, format: str, previous, progress) -> tuple[dict, "_SnapshotPass", Perimeter]:
+    """What reading the inventory `listed` needs: the header it carries over (`root`, `target`, `scope`, `unread`, what it
+    left out, the parsers' fingerprint and the metrics the pass fills), the pass over its files, which reuses `previous`
+    when that is a snapshot of the same tree read by the same parsers, and the target's perimeter."""
+    if listed.metadata.get("reading") != "not-started":
+        raise ValueError("not an inventory awaiting its reading")
+    root = Path(listed.metadata["root"])
+    target_key = listed.metadata["target"]
+    target = (root / target_key).resolve()
+    if not (target.is_dir() or target.is_file()):
+        raise ValueError(f"snapshot target does not exist: {target}")
+    fingerprint = parser_fingerprint()
+    reusable = (previous is not None and previous.metadata.get("schema") == SCHEMA
+                and previous.metadata.get("root") == root.as_posix()
+                and previous.metadata.get("target") == target_key
+                and previous.metadata.get("parser_fingerprint") == fingerprint)
+    counted = listed.metadata["metrics"]
+    metrics = {"files_read": counted["files_read"], "source_bytes_read": counted["source_bytes_read"],
+               "parsed_files": 0, "cache_hits": 0}
+    fast_reuse = (
+        reusable
+        and format == "sqlite"
+        and getattr(previous, "format", None) == "sqlite"
+        and hasattr(previous, "verified_reusable_headers")
+        and previous._has_json_cache()
+    )
+    # The plan's `read_code` nodes (spec 8.4; no entries exist yet, so no status): a file in none of them is not
+    # read by a language adapter. It keeps its inventory row and a file-level entry that says so.
+    from pipeline import plan as planning
+    rows = dict(listed.iter_inventory())
+    parse = {node["id"] for node in planning.parse_nodes(rows.items())}
+    run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress, rows,
+                        {path for path, row in rows.items() if planning.node_of(row) not in parse})
+    header = {"target": target_key, "root": root, "fingerprint": fingerprint, "metrics": metrics,
+              "scope": listed.metadata["scope"], "unread": listed.metadata.get("unread") or {},
+              "left_out": {key: listed.metadata[key] for key in ("excluded", "excluded_unknown") if key in listed.metadata}}
+    return header, run, Perimeter(target)
+
+
+def _read_into(temporary: Path, format: str, run: "_SnapshotPass", supplied: dict, perimeter: Perimeter, header: dict,
+               extra_metadata: dict) -> dict:
+    """Read the files of `run` into the store `temporary` and seal it with its header (`header` from `_reading_of`, after
+    the host's `extra_metadata`); the header written."""
+    from datetime import datetime, timezone
+    from snapshot_store import SnapshotWriter
+
+    root = header["root"]
+    with SnapshotWriter(temporary, format) as writer:
+        run.writer = writer
+        if format == "sqlite":
+            writer.connection.execute("CREATE TABLE observed_coverage(file TEXT PRIMARY KEY,payload BLOB)")
+        run.c_family(run.sources(root, supplied))
+        run.newer(root)
+        run.close_sources()
+        if format == "sqlite":
+            for path, row in run.rows.items():
+                writer.put_inventory(path, row)
+        metadata_record = {
+            **extra_metadata,
+            "schema": SCHEMA, "target": header["target"], "root": root.as_posix(),
+            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "git": git_info(root), "scope": header["scope"], "unread": header["unread"], **header["left_out"],
+            "parser_fingerprint": header["fingerprint"], "metrics": header["metrics"],
+        }
+        run.seal(metadata_record, perimeter)
+    return metadata_record
 
 
 def compare_files(manifest: dict, target: Path, verify: bool = False,
@@ -1427,16 +1445,9 @@ def refresh_working(root: Path) -> dict:
         active.unlink()
 
 
-def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
-    import pipeline
-    import resolve_edges
-    import retrieval
-    from datetime import datetime, timezone
-
-    started = time.perf_counter()
-    report_path = working / "refresh.json"
-    previous = _read_json(report_path) or {}
-    pstate = _read_json(published / "state.json")
+def _working_state(published: Path, working: Path, pstate: dict) -> tuple[dict, bool]:
+    """The working run's state and whether it is born now: a working run of another published run starts again from
+    the published one's state, without its manifests, with the published proposals and technologies carried over."""
     state = _read_json(working / "state.json") or {}
     born = state.get("parent_run") != published.name
     if born:
@@ -1452,6 +1463,33 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             else:
                 (working / "snapshot" / carried).unlink(missing_ok=True)
         _write_json_atomic(working / "state.json", state)
+    return state, born
+
+
+def _since_published(published: Path, pstate: dict, manifest: Path) -> tuple[dict, dict]:
+    """The files and the symbols of `manifest` that changed since the published run's snapshot."""
+    with ExitStack() as stack:
+        base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
+        current = stack.enter_context(open_snapshot(manifest))
+        old, new = file_headers(base), file_headers(current)
+        delta = {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new))}
+        delta["modified"] = sorted(name for name in set(old) & set(new)
+                                   if old[name].get("hash") != new[name].get("hash"))
+        delta["unchanged"] = sorted(set(old) & set(new) - set(delta["modified"]))
+        return delta, compare_symbols(base, delta, entries=new)
+
+
+def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
+    import pipeline
+    import resolve_edges
+    import retrieval
+    from datetime import datetime, timezone
+
+    started = time.perf_counter()
+    report_path = working / "refresh.json"
+    previous = _read_json(report_path) or {}
+    pstate = _read_json(published / "state.json")
+    state, born = _working_state(published, working, pstate)
     manifest = working / state["snapshot"]["path"]
     target = _project_target(root, state["target"])
     now = lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")  # noqa: E731
@@ -1483,15 +1521,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             raise ValueError(f"modules: {scanned['failed']}")
         stacked = piped.get(pipeline.RecognizeStack.NAME) or {}
         engine = resolve_edges.ensure_edges(manifest) if state.get("engine", True) else {"state": "off"}
-        with ExitStack() as stack:
-            base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
-            current = stack.enter_context(open_snapshot(manifest))
-            old, new = file_headers(base), file_headers(current)
-            delta = {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new))}
-            delta["modified"] = sorted(name for name in set(old) & set(new)
-                                       if old[name].get("hash") != new[name].get("hash"))
-            delta["unchanged"] = sorted(set(old) & set(new) - set(delta["modified"]))
-            symbols = compare_symbols(base, delta, entries=new)
+        delta, symbols = _since_published(published, pstate, manifest)
         st = manifest.stat()
         report = {
             "status": "fresh", "refreshed_at": now(), "published_run": published.name,
