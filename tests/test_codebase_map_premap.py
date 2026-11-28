@@ -864,6 +864,31 @@ def test_renovate_reader_gives_declared_toolchains(tmp_path):
     assert "dependencies" not in record
 
 
+def test_a_repository_renovate_ends_before_reading_its_files_is_a_gap_not_an_empty_answer(tmp_path):
+    """Renovate's local platform reads the project's config and resolves the presets it extends: with the network
+    blocked one of GitHub's ends the repository, and so does a config that disables Renovate, each with exit 0 and no
+    file read (answers recorded on Modal, `fixtures/premap/renovate/ended.json`). Each is a `model_failed` gap that says
+    why, not an extraction that found nothing."""
+    recorded = json.loads((FIXTURES / "renovate" / "ended.json").read_text(encoding="utf-8"))
+    files = {"pyproject.toml": '[project]\nname = "syn"\nversion = "0"\nrequires-python = ">=3.12"\n',
+             ".python-version": "3.12\n", "main.py": "print(1)\n"}
+    for case, said in (("preset", "Host error: getaddrinfo EAI_AGAIN api.github.com: https://api.github.com/repos/"
+                                  "GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/"
+                                  "dee-platform-ops.json5"), ("disabled", "(disabled)")):
+        project, manifest = tmp_path / case / "proj", tmp_path / case / "out" / "manifest.sqlite"
+        for rel, text in {**files, "renovate.json": json.dumps(recorded[case]["renovate.json"])}.items():
+            (project / rel).parent.mkdir(parents=True, exist_ok=True)
+            (project / rel).write_text(text, encoding="utf-8", newline="\n")
+        snapshot.read_project(project, manifest)
+        answer = recorded[case]["answer"]
+        assert answer["returncode"] == 0
+        with open_snapshot(manifest) as store:
+            result = renovate.read(premap.Context(manifest, store), [], [answer])
+        assert "toolchains" not in result["facts"] and "packages" not in result["facts"]
+        [gap] = [g for g in result["gaps"] if g["kind"] == "model_failed"]
+        assert gap["detail"].startswith("renovate ended the repository (") and said in gap["detail"], gap
+
+
 # -------------------------------------------------------- requirements files
 
 def test_a_requirements_file_alone_makes_a_unit_and_its_includes_belong_to_it(tmp_path):

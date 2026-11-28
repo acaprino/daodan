@@ -933,3 +933,36 @@ preparazione rifiuti solo quelle assolute o fuori dalla copia (decisione del pro
 
 - `@pnpm/lockfile.fs`: non è nel container della pre-mappa.
 - `setup.py` e `setup.cfg` con un percorso locale: rari, non letti per il rifiuto.
+
+## Renovate con la rete e senza, 28 novembre 2026
+
+Perché la corsa di prova del Cancello T1 (`modal_pipeline.py --cases real-bank-of-anthos`) dà 5 toolchain su 37 e il
+riferimento `results/daodan_premap_corpus.json` (`modal_premap.py`) 18.
+
+- Comando: `modal run benchmarks/project-model/modal_premap.py --network real-bank-of-anthos --tools <gli id dello stack
+  della corsa di prova> --out OUT.json` (`renovate_network`). Parametri: la rete dei comandi di Renovate (aperta, come
+  `_runner`; bloccata, in un Sandbox della stessa immagine con `block_network`, come l'esecuzione della pipeline) e la
+  scelta delle sorgenti (`tools`, `premap._chosen`), sullo stesso clone di `db35fea`; poi Renovate da solo su tre
+  progetti di `SYNTHETIC`: senza configurazione, con un `renovate.json` che estende il preset di GitHub di Bank of
+  Anthos, con `{"enabled": false}`.
+- Corse: `ap-y2DQMndDdboCnjRG3X5NSi` (commit `1fc9e47ac`, prima del rimedio) e `ap-PwUHLn8BjB3FlPbK9uAh9m` (`75de1e046`,
+  dopo), stesse toolchain ed estrazioni; risultato in `results/renovate-network.json`.
+
+| Braccio | Toolchain | Pacchetti di Renovate | Uscita | Gestori estratti | Lacuna di Renovate (dopo) |
+| --- | --- | --- | --- | --- | --- |
+| rete aperta | 18 | 339 | 0 | 11 (pep621, pyenv, dockerfile, terraform, …) | — |
+| rete aperta, sorgenti dello stack | 18 | 339 | 0 | gli stessi | — |
+| rete bloccata, sorgenti dello stack | 5 (le stesse della corsa di prova) | 0 | 0 | nessuno | `model_failed`: Host error, `api.github.com` |
+| piccolo, senza configurazione, bloccata | 2 | 0 | 0 | pep621, pyenv | — |
+| piccolo, preset di GitHub, aperta / bloccata | 2 / 0 | 0 | 0 | 3 / nessuno | — / `model_failed` |
+| piccolo, `enabled: false`, aperta e bloccata | 0 | 0 | 0 | nessuno | `model_failed` (`disabled`) |
+
+- La scelta dello stack non toglie nulla: Renovate non è in `data/build-tools.json` e gira in ogni caso.
+- La causa: la piattaforma `local` di Renovate risponde `requireConfig: optional` (`lib/modules/platform/local/index.ts`,
+  unita alla configurazione in `lib/modules/platform/index.ts`) sopra il `RENOVATE_REQUIRE_CONFIG=ignored` di
+  `premap/renovate.py`: il log di debug del braccio bloccato dice `Found .github/renovate.json5 config file`, poi `Preset
+  fetch error: external-host-error` e `Skipping the rest ... error in init phase`. Il repository finisce senza leggere un
+  file, con uscita 0 e `packageFiles` vuoto; il riferimento ha la rete (`_runner` non guarda `network`) e il preset si
+  risolve.
+- Non misurato: il riferimento con i comandi `network: none` davvero senza rete su tutto il corpus (quanti altri progetti
+  estendono un preset remoto).

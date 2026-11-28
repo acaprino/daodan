@@ -19,6 +19,12 @@ sides; they must match.
 `--runs` also keeps, per fixture, every model command with its answer (`results/premap-runs/<fixture>.json.gz`):
 `tools/premap_replay.py` replays them on this PC, so a change to a reader is scored without a new run.
 
+`--network` runs the pre-map of one real repository with Renovate's commands given the network and refused it (a
+Sandbox with `block_network`, as in the pipeline), with and without the stack's `--tools`, and Renovate alone on two
+small projects, one whose config extends a preset of GitHub's (`renovate_network`):
+
+    python -m modal run benchmarks/project-model/modal_premap.py --network real-bank-of-anthos --tools maven,python --out OUT.json
+
 A family's fixtures share one container; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume `daodan-flow-results`) has a container of its own.
 """
@@ -194,6 +200,119 @@ def score_fixtures(names: list) -> dict:
     return out
 
 
+# `--network`: two small projects of the same Python, one whose Renovate config extends a preset of GitHub's
+PRESET = "github>GoogleCloudPlatform/kubernetes-engine-samples//.github/renovate-configs/dee-platform-ops.json5"
+SYNTHETIC = {"pyproject.toml": '[project]\nname = "syn"\nversion = "0"\nrequires-python = ">=3.12"\n',
+             ".python-version": "3.12\n", "main.py": "print(1)\n"}
+
+
+def _boxed(box, log: list, env: dict | None = None):
+    """`_runner` in `box`, a Sandbox of this image with the network blocked, as the pipeline's execution runs a command."""
+    def run(commands):
+        answers = []
+        for command in commands:
+            root = os.environ["PREMAP_ROOT"]
+            process = box.exec("sh", "-c", 'cd "$0" && exec "$@"', f"{root}/{command['cwd']}", *command["argv"],
+                               env={**command["env"], **(env or {})}, timeout=600)
+            out, err = process.stdout.read(), process.stderr.read()
+            answer = {"returncode": process.wait(), "stdout": out, "stderr": err, "root": root}
+            log.append({"command": command, "result": answer})
+            answers.append(answer)
+        return answers
+    return run
+
+
+def _said(record: dict, log: list, debug: bool, raw: bool = False) -> dict:
+    """What an arm of `renovate_network` keeps: the toolchains, Renovate's state and gaps, and its extraction's answer
+    (`raw`: the answer itself, as a test replays it)."""
+    done = next((r["result"] for r in log if r["command"]["argv"][:1] == ["renovate"]), None) or {}
+    try:
+        report = json.loads(done.get("stdout") or "null")
+    except ValueError:
+        report = None
+    local = ((report or {}).get("repositories") or {}).get("local") or {}
+    lines, seen = [], set()
+    for line in (done.get("stderr") or "").splitlines():
+        try:
+            item = json.loads(line)
+        except ValueError:
+            item = {"level": None, "msg": line[:300]}
+        said = f"{item.get('level')} {item.get('msg')}" + (f": {item['err'].get('message')}" if isinstance(
+            item.get("err"), dict) else "")
+        if said not in seen and len(lines) < 400:
+            seen.add(said)
+            lines.append(said[:400])
+    return {"toolchains": sorted(f"{t['tool']}@{t['declared_in']}" for t in record.get("toolchains", [])),
+            "packages": len(record.get("packages", [])),
+            "renovate_packages": sum(any(s.startswith("renovate@") for s in p["sources"])
+                                     for p in record.get("packages", [])),
+            "renovate": [s for s in record["sources"] if s["source"].startswith("renovate@")],
+            "renovate_gaps": [{k: str(g.get(k))[:300] for k in ("kind", "path", "detail")} for g in record["gaps"]
+                              if str(g.get("source", "")).startswith("renovate@") and g["kind"] != "file_withheld"],
+            "extract": {"returncode": done.get("returncode"), "report_keys": sorted(report or {}),
+                        "problems": (report or {}).get("problems"), "local_keys": sorted(local),
+                        "local_problems": local.get("problems"),
+                        "managers": {m: len(files) for m, files in (local.get("packageFiles") or {}).items()},
+                        "stderr" if debug else "stderr_tail": lines if debug else (done.get("stderr") or "")[-1500:]},
+            **({"answer": done} if raw else {})}
+
+
+@app.function(cpu=2.0, memory=4096, timeout=2400, volumes={"/results": volume})
+def renovate_network(name: str, tools: list) -> dict:
+    """The pre-map of the real repository `name` with Renovate's commands run with the network open (`_runner`) and blocked
+    (in a Sandbox of this image with `block_network`, as the pipeline's execution runs them), with and without the
+    stack's `tools` (`premap._chosen`); then Renovate alone on three small projects: no config, a config that extends
+    a preset of GitHub's (`PRESET`), one that disables Renovate: what tells the network from the choice of sources."""
+    sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM, f"{REMOTE_PM}/tools"]
+    import io
+    import tarfile
+    import premap
+    import snapshot
+    from premap import renovate
+    from snapshot_store import open_snapshot
+    out = {"code": code_hash(Path(__file__), Path(REMOTE_SCRIPTS) / "premap"), "versions": _versions(), "arms": {}}
+    real = _real(name)
+    synthetic = {"syn-plain": SYNTHETIC, "syn-preset": {**SYNTHETIC, "renovate.json": json.dumps({"extends": [PRESET]})},
+                 "syn-disabled": {**SYNTHETIC, "renovate.json": json.dumps({"enabled": False})}}
+    manifests = {name: Path("/work") / f"{name}.out" / "manifest.sqlite"}
+    shutil.rmtree(manifests[name].parent, ignore_errors=True)
+    snapshot.read_project(real, manifests[name])
+    for case, files in synthetic.items():
+        project, manifests[case] = _case(case, files)
+        snapshot.read_project(project, manifests[case])
+    packed = io.BytesIO()
+    with tarfile.open(fileobj=packed, mode="w") as tar:
+        for case in manifests:
+            tar.add(Path("/work") / case, arcname=f"work/{case}")
+    box = modal.Sandbox.create(image=image, block_network=True, cpu=2.0, memory=4096, timeout=2400,
+                               app=modal.App.lookup("daodan-premap-sandboxes", create_if_missing=True))
+    try:
+        unpack = box.exec("tar", "-xf", "-", "-C", "/", text=False)
+        unpack.stdin.write(packed.getvalue())
+        unpack.stdin.write_eof()
+        unpack.stdin.drain()
+        if unpack.wait() != 0:
+            raise RuntimeError(f"the copy did not unpack in the sandbox: {unpack.stderr.read()[-300:]}")
+        arms = [("open", name, False, None, None, False), ("open+stack", name, False, tools, None, False),
+                ("blocked+stack", name, True, tools, None, False), ("blocked-debug", name, True, tools, (renovate,), True)]
+        arms += [(f"{case}-{way}", case, way == "blocked", None, (renovate,), False)
+                 for case in synthetic for way in ("open", "blocked")]
+        for arm, case, blocked, chosen, sources, debug in arms:
+            os.environ["PREMAP_ROOT"] = str(Path("/work") / case)
+            log: list = []
+            local = _runner(log)
+            boxed = _boxed(box, log, {"LOG_FILE_LEVEL": "debug"} if debug else None)
+            run = (lambda commands: (boxed if commands[0]["tool"] == "renovate" else local)(commands)) if blocked \
+                else local
+            with open_snapshot(manifests[case]) as store:
+                record = premap.derive(manifests[case], store, sources=sources, runner=run, tools=chosen)
+            out["arms"][arm] = _said(record, log, debug, raw=case.startswith("syn-") and blocked)
+            print(arm, len(out["arms"][arm]["toolchains"]), "toolchains", flush=True)
+    finally:
+        box.terminate()
+    return out
+
+
 def _languages(manifest: Path, log: list) -> dict:
     """Per file of the snapshot, its suffix-table language against go-enry's: what replacing the table would change."""
     from premap import suffix_table
@@ -231,9 +350,17 @@ def _languages(manifest: Path, log: list) -> dict:
 
 
 @app.local_entrypoint()
-def main(store: str = "", score: str = "", out: str = "", runs: str = ""):
+def main(store: str = "", score: str = "", out: str = "", runs: str = "", network: str = "", tools: str = ""):
     local = code_hash(Path(__file__), REPO / "daodan/core/premap")
     print("code", local, flush=True)
+    if network:  # one real repository, Renovate with the network open and blocked (`renovate_network`)
+        answer = renovate_network.remote(network, [t for t in tools.split(",") if t])
+        print("remote code", answer["code"], "same" if answer["code"] == local else "DIFFERENT", flush=True)
+        for arm, said in answer["arms"].items():
+            print(arm, len(said["toolchains"]), "toolchains", said["packages"], "packages",
+                  said["extract"]["returncode"], said["extract"]["managers"], flush=True)
+        Path(out).write_text(json.dumps(answer, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        return
     if store:
         answer = store_outputs.remote([s for s in store.split(",") if s])
         print("remote code", answer["code"], "same" if answer["code"] == local else "DIFFERENT", answer["versions"],

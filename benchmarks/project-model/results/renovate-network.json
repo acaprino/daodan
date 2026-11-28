@@ -1,0 +1,641 @@
+{
+ "code": "011ce12efea3db9d",
+ "versions": {
+  "go": "go version go1.27.3 linux/amd64",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "uv": "uv 0.11.28 (x86_64-unknown-linux-gnu)",
+  "renovate": "44.239.1"
+ },
+ "arms": {
+  "open": {
+   "toolchains": [
+    "java@src/ledger/balancereader/pom.xml#properties.java.version",
+    "java@src/ledger/ledgerwriter/pom.xml#properties.java.version",
+    "java@src/ledger/transactionhistory/pom.xml#properties.java.version",
+    "java@src/ledgermonolith/pom.xml#properties.java.version",
+    "maven@.mvn/wrapper/maven-wrapper.properties#distributionUrl",
+    "python@src/accounts/contacts/.python-version",
+    "python@src/accounts/contacts/Dockerfile",
+    "python@src/accounts/contacts/pyproject.toml",
+    "python@src/accounts/userservice/.python-version",
+    "python@src/accounts/userservice/Dockerfile",
+    "python@src/accounts/userservice/pyproject.toml",
+    "python@src/frontend/.python-version",
+    "python@src/frontend/Dockerfile",
+    "python@src/frontend/pyproject.toml",
+    "python@src/loadgenerator/.python-version",
+    "python@src/loadgenerator/Dockerfile",
+    "python@src/loadgenerator/pyproject.toml",
+    "terraform@iac/tf-anthos-gke/providers.tf"
+   ],
+   "packages": 380,
+   "renovate_packages": 339,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 10.203
+    }
+   ],
+   "renovate_gaps": [],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems"
+    ],
+    "local_problems": [
+     {
+      "level": 40,
+      "msg": "GitHub token is required for some dependencies",
+      "err": null,
+      "url": null
+     }
+    ],
+    "managers": {
+     "cloudbuild": 3,
+     "dockerfile": 7,
+     "github-actions": 2,
+     "helm-values": 1,
+     "kubernetes": 49,
+     "maven": 5,
+     "maven-wrapper": 1,
+     "pep621": 4,
+     "pyenv": 4,
+     "renovate-config": 1,
+     "terraform": 16
+    }
+   }
+  },
+  "open+stack": {
+   "toolchains": [
+    "java@src/ledger/balancereader/pom.xml#properties.java.version",
+    "java@src/ledger/ledgerwriter/pom.xml#properties.java.version",
+    "java@src/ledger/transactionhistory/pom.xml#properties.java.version",
+    "java@src/ledgermonolith/pom.xml#properties.java.version",
+    "maven@.mvn/wrapper/maven-wrapper.properties#distributionUrl",
+    "python@src/accounts/contacts/.python-version",
+    "python@src/accounts/contacts/Dockerfile",
+    "python@src/accounts/contacts/pyproject.toml",
+    "python@src/accounts/userservice/.python-version",
+    "python@src/accounts/userservice/Dockerfile",
+    "python@src/accounts/userservice/pyproject.toml",
+    "python@src/frontend/.python-version",
+    "python@src/frontend/Dockerfile",
+    "python@src/frontend/pyproject.toml",
+    "python@src/loadgenerator/.python-version",
+    "python@src/loadgenerator/Dockerfile",
+    "python@src/loadgenerator/pyproject.toml",
+    "terraform@iac/tf-anthos-gke/providers.tf"
+   ],
+   "packages": 380,
+   "renovate_packages": 339,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 7.736
+    }
+   ],
+   "renovate_gaps": [],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems"
+    ],
+    "local_problems": [
+     {
+      "level": 40,
+      "msg": "GitHub token is required for some dependencies",
+      "err": null,
+      "url": null
+     }
+    ],
+    "managers": {
+     "cloudbuild": 3,
+     "dockerfile": 7,
+     "github-actions": 2,
+     "helm-values": 1,
+     "kubernetes": 49,
+     "maven": 5,
+     "maven-wrapper": 1,
+     "pep621": 4,
+     "pyenv": 4,
+     "renovate-config": 1,
+     "terraform": 16
+    }
+   }
+  },
+  "blocked+stack": {
+   "toolchains": [
+    "java@src/ledger/balancereader/pom.xml#properties.java.version",
+    "java@src/ledger/ledgerwriter/pom.xml#properties.java.version",
+    "java@src/ledger/transactionhistory/pom.xml#properties.java.version",
+    "java@src/ledgermonolith/pom.xml#properties.java.version",
+    "maven@.mvn/wrapper/maven-wrapper.properties#distributionUrl"
+   ],
+   "packages": 233,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 7.523
+    }
+   ],
+   "renovate_gaps": [
+    {
+     "kind": "model_failed",
+     "path": ".",
+     "detail": "renovate ended the repository (unknown) before reading its files: Host error: getaddrinfo EAI_AGAIN api.github.com: https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5"
+    }
+   ],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems",
+     "status"
+    ],
+    "local_problems": [
+     {
+      "level": 40,
+      "msg": "Host error",
+      "err": "getaddrinfo EAI_AGAIN api.github.com",
+      "url": "https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5"
+     }
+    ],
+    "managers": {}
+   }
+  },
+  "blocked-debug": {
+   "toolchains": [],
+   "packages": 0,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 6.581
+    }
+   ],
+   "renovate_gaps": [
+    {
+     "kind": "model_failed",
+     "path": ".",
+     "detail": "renovate ended the repository (unknown) before reading its files: Host error: getaddrinfo EAI_AGAIN api.github.com: https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5"
+    }
+   ],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems",
+     "status"
+    ],
+    "local_problems": [
+     {
+      "level": 40,
+      "msg": "Host error",
+      "err": "getaddrinfo EAI_AGAIN api.github.com",
+      "url": "https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5"
+     }
+    ],
+    "managers": {},
+    "stderr": [
+     "30 Renovate started",
+     "40 RE2 not usable, falling back to RegExp: Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js",
+     "20 Parsing configs",
+     "20 No config file found on disk - skipping",
+     "20 No additional config file found specified - skipping",
+     "20 File config",
+     "20 Additional file config",
+     "20 CLI config",
+     "20 Env config",
+     "20 Resolved global extends",
+     "20 Combined config",
+     "20 Enabling forkProcessing while in non-autodiscover mode",
+     "20 Enabling onboardingNoDeps while in non-autodiscover mode",
+     "20 Found valid git version: 2.39.5",
+     "20 Setting global hostRules",
+     "20 Using configured baseDir: /tmp/daodan-renovate",
+     "20 Using cacheDir: /tmp/daodan-renovate/cache",
+     "20 Using containerbaseDir: /tmp/daodan-renovate/cache/containerbase",
+     "20 Initializing Renovate internal cache into /tmp/daodan-renovate/cache/renovate/renovate-cache-v1",
+     "20 Commits limit = null",
+     "20 validatePresets()",
+     "20 Reinitializing hostRules for repo",
+     "20 Clearing hostRules",
+     "30 Repository started",
+     "20 Using localDir: /work/real-bank-of-anthos",
+     "20 PackageFiles.clear() - Package files deleted",
+     "20 Resetting npmrc",
+     "20 checkOnboarding()",
+     "20 isOnboarded()",
+     "20 Repo is onboarded",
+     "20 Got file list using git",
+     "20 Found .github/renovate.json5 config file",
+     "20 Repository config",
+     "20 migrateAndValidate()",
+     "20 No config migration necessary",
+     "20 hostRules: no authentication for api.github.com",
+     "20 Using queue: host=api.github.com, concurrency=16",
+     "20 GET https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5 = (code=EAI_AGAIN, statusCode=-1 retryCount=2, duration=1)",
+     "20 GitHub failure: RequestError: getaddrinfo EAI_AGAIN api.github.com",
+     "20 Preset fetch error: external-host-error",
+     "40 Host error: getaddrinfo EAI_AGAIN api.github.com",
+     "30 External host error causing abort - skipping",
+     "20 Unknown res: external-host-error",
+     "20 Repository result: external-host-error, status: unknown, enabled: undefined, onboarded: undefined",
+     "20 Skipping the rest to the Renovate run due to error in `init` phase: external-host-error",
+     "20 Repository timing splits (milliseconds)",
+     "20 Package cache statistics",
+     "20 HTTP statistics",
+     "20 HTTP cache statistics",
+     "20 Lookup statistics",
+     "20 getReleases statistics summary",
+     "20 Cache fallback URLs",
+     "20 Git operations statistics",
+     "30 Repository finished",
+     "20 Writing report",
+     "20 Checking file package cache for expired items",
+     "20 Cache GC: kept 0 content entries (0 bytes), removed 0 orphaned (0 bytes) in 13ms",
+     "20 Deleted 0 of 0 file cached entries in 15ms"
+    ]
+   }
+  },
+  "syn-plain-open": {
+   "toolchains": [
+    "python@.python-version",
+    "python@pyproject.toml"
+   ],
+   "packages": 0,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 6.261
+    }
+   ],
+   "renovate_gaps": [],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems"
+    ],
+    "local_problems": [],
+    "managers": {
+     "pep621": 1,
+     "pyenv": 1
+    }
+   }
+  },
+  "syn-plain-blocked": {
+   "toolchains": [
+    "python@.python-version",
+    "python@pyproject.toml"
+   ],
+   "packages": 0,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 4.323
+    }
+   ],
+   "renovate_gaps": [],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems"
+    ],
+    "local_problems": [],
+    "managers": {
+     "pep621": 1,
+     "pyenv": 1
+    }
+   }
+  },
+  "syn-preset-open": {
+   "toolchains": [
+    "python@.python-version",
+    "python@pyproject.toml"
+   ],
+   "packages": 0,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 6.342
+    }
+   ],
+   "renovate_gaps": [],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems"
+    ],
+    "local_problems": [],
+    "managers": {
+     "pep621": 1,
+     "pyenv": 1,
+     "renovate-config": 1
+    }
+   }
+  },
+  "syn-preset-blocked": {
+   "toolchains": [],
+   "packages": 0,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 6.302
+    }
+   ],
+   "renovate_gaps": [
+    {
+     "kind": "model_failed",
+     "path": ".",
+     "detail": "renovate ended the repository (unknown) before reading its files: Host error: getaddrinfo EAI_AGAIN api.github.com: https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5"
+    }
+   ],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems",
+     "status"
+    ],
+    "local_problems": [
+     {
+      "level": 40,
+      "msg": "Host error",
+      "err": "getaddrinfo EAI_AGAIN api.github.com",
+      "url": "https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5"
+     }
+    ],
+    "managers": {}
+   }
+  },
+  "syn-disabled-open": {
+   "toolchains": [],
+   "packages": 0,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 4.934
+    }
+   ],
+   "renovate_gaps": [
+    {
+     "kind": "model_failed",
+     "path": ".",
+     "detail": "renovate ended the repository (disabled) before reading its files: no problem said"
+    }
+   ],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems",
+     "status"
+    ],
+    "local_problems": [],
+    "managers": {}
+   }
+  },
+  "syn-disabled-blocked": {
+   "toolchains": [],
+   "packages": 0,
+   "renovate_packages": 0,
+   "renovate": [
+    {
+     "source": "renovate@44.239.1",
+     "rank": "reader",
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "ran",
+     "seconds": 3.051
+    }
+   ],
+   "renovate_gaps": [
+    {
+     "kind": "model_failed",
+     "path": ".",
+     "detail": "renovate ended the repository (disabled) before reading its files: no problem said"
+    }
+   ],
+   "extract": {
+    "returncode": 0,
+    "report_keys": [
+     "problems",
+     "repositories"
+    ],
+    "problems": [
+     {
+      "level": 40,
+      "msg": "RE2 not usable, falling back to RegExp",
+      "err": "Cannot find module './build/Release/re2.node'\nRequire stack:\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js"
+     }
+    ],
+    "local_keys": [
+     "branches",
+     "packageFiles",
+     "problems",
+     "status"
+    ],
+    "local_problems": [],
+    "managers": {}
+   }
+  }
+ },
+ "run": "ap-PwUHLn8BjB3FlPbK9uAh9m",
+ "first_run": "ap-y2DQMndDdboCnjRG3X5NSi (before the fix: the same toolchains and extractions, no renovate gap)",
+ "commit": "75de1e046"
+}
