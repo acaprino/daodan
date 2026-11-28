@@ -27,7 +27,8 @@ export function passAlert(s: Pick<Snapshot, 'server'>): (Message & { retry: bool
 }
 
 // The words of an event, with the title of its step from the page of the pipeline (`STEPS`, by `id`).
-const titleOf = (id: string | undefined) => STEPS.plan.find(step => step.id === id)?.title || id || 'Pipeline';
+// An event of no step is the pipeline's: the steps of the page without an id (what comes after, what all share) are none of them.
+const titleOf = (id: string | undefined) => (id && STEPS.plan.find(step => step.id === id)?.title) || id || 'Pipeline';
 const KIND: Record<string, string> = {
   'step.started': 'avviato', 'step.finished': 'completato', 'step.failed': 'non riuscito', 'step.skipped': 'saltato', 'analyzer.started': 'strumento avviato',
   'analyzer.unavailable': 'strumento non disponibile', 'analyzer.finished': 'strumento completato', gap: 'lacuna', 'graph.ready': 'grafo pronto', log: 'nota',
