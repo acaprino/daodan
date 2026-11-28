@@ -56,13 +56,13 @@ def from_envelope(envelope: dict, hashes: dict[str, str] | None = None) -> list[
     # The parent is the physical membership: the folder that holds an entity, or the group «Tecnologie»; every other
     # membership (a logical module, a build unit) is a `member` edge from the member to its group.
     parents: dict[str, str] = {}
-    members = []
+    members = {}  # (member, group) once: two units with one ref, or a file a unit lists twice, are one membership
     for item in envelope["memberships"]:
         member, group = item["member"], item["group"]
         if member not in parents and (group == TECHNOLOGIES or (item["view"] == "physical" and group.startswith("directory:"))):
             parents[member] = group
-        else:
-            members.append((member, group))
+        elif parents.get(member) != group:
+            members[member, group] = None
     for ref, entity in entities.items():
         identity = _identity(ref)
         if entity["type"] == "file":
@@ -73,7 +73,9 @@ def from_envelope(envelope: dict, hashes: dict[str, str] | None = None) -> list[
         if status not in STATUS:
             raise ValueError(f"{ref}: stato sconosciuto {status!r}")
         catalog = entity.get("mark") or (ref.split(":", 1)[1] if entity["type"] in ("external", "technology") else None)
-        rows.append({"key": ref, "kind": "node", "provenance": "analysis", "evidence": _evidence(entity.get("evidence", ())),
+        # a value the project declares (`codebase-modules.json`) arrives as the analysis's others do, said `declared`
+        provenance = "declared" if entity.get("provenance") == "declared" else "analysis"
+        rows.append({"key": ref, "kind": "node", "provenance": provenance, "evidence": _evidence(entity.get("evidence", ())),
                      "fields": {"parent_id": parents.get(ref), "name": entity["name"], "species": entity["species"],
                                 "position": POSITION[entity.get("location")], "status": STATUS[status],
                                 "abstraction": "concreto" if entity.get("concrete", True) else "astratto",

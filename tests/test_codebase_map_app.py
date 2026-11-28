@@ -7,6 +7,8 @@ server of this test, and a command-line engine is a script that prints the event
 """
 from __future__ import annotations
 
+import getpass
+import hashlib
 import http.client
 import json
 import os
@@ -17,6 +19,7 @@ import sys
 import threading
 import time
 from collections import Counter
+from contextlib import closing
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote
@@ -35,6 +38,8 @@ if str(SCRIPTS) not in sys.path:
 import app as launcher  # noqa: E402
 import app_view  # noqa: E402
 import engines  # noqa: E402
+import project_file  # noqa: E402
+import project_rows  # noqa: E402
 import repository  # noqa: E402
 import visual  # noqa: E402
 
@@ -152,9 +157,11 @@ def test_a_checkout_runs_nothing_the_user_s_configuration_or_the_repository_name
         monkeypatch.setenv(name, str(home))
     monkeypatch.delenv("GIT_CONFIG_GLOBAL", raising=False)
     work = tmp_path / "work"
-    path, commit = repository._clone(origin.as_uri(), "main", work / "r", work, transports=("file",))
+    path, commit, committed_at = repository._clone(origin.as_uri(), "main", work / "r", work, transports=("file",))
     assert not mark.exists()
     assert path.parent.name == commit == git(origin, "rev-parse", "HEAD") and path.name == repository.CHECKOUT
+    assert committed_at == git(origin, "show", "-s", "--format=%cI", "HEAD")  # the commit's date, whole
+    assert repository.project_path(path) == work / "r" / repository.PROJECT  # beside the commits, never in one
     assert (path / "a.py").read_text() == "x = 1\n"
     assert repository._clone(origin.as_uri(), "main", work / "r", work, transports=("file",))[0] == path  # reused
     assert [item.name for item in (work / "r").iterdir()] == [commit]
@@ -1371,6 +1378,9 @@ def test_when_the_pass_ends_fresh_the_links_and_then_the_map_start_by_themselves
     app = selecting(tmp_path, monkeypatch, service)
     engine = Doing(app)
     monkeypatch.setattr(engines, "configured", lambda chosen: engine)
+    recorded = []
+    monkeypatch.setattr(launcher.App, "_record", lambda self, context: recorded.append(
+        (context["project"], self.mapped["state"])))
     app._prepare("https://github.com/o/n", "main")  # the pass ends failed: nothing starts
     assert (engine.started, app.linked["state"], app.mapped["state"]) == ([], "idle", "idle")
     app.retry({})  # the pass starts again and ends fresh
@@ -1386,6 +1396,8 @@ def test_when_the_pass_ends_fresh_the_links_and_then_the_map_start_by_themselves
     app.retry({})
     app._follow()
     assert len(engine.started) == 2 and service.asked == read
+    # the graph is recorded once, at the chain's end, in the repository's file beside the commits
+    assert recorded == [(str(tmp_path / repository.PROJECT), "done")]
 
 
 def test_with_the_rules_and_a_map_recorded_for_the_snapshot_no_engine_is_asked_again(tmp_path, monkeypatch):
@@ -1942,3 +1954,79 @@ def test_a_large_group_opens_in_blocks_with_a_node_for_the_others_and_loses_no_c
     assert (hidden["nodes"], hidden["absent"]) == ([], ["fisico"])
     with pytest.raises(ValueError, match="more:build:big#2"):
         app_view.view(envelope, ("build:big", "more:build:big#2"))
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# The project file: the graph recorded at each analysis, a choice made by hand on the graph, the history, copies
+
+
+def recording(levels, tmp_path):
+    """An app on the run of `levels` whose checkout is the commit of a repository o/n, with no project file yet."""
+    app = leveled(levels, tmp_path)
+    root = Path(levels.project_root)
+    app.context.update(project=str(app.work / "repositories" / "o" / "n" / repository.PROJECT),
+                       commit=git(root, "rev-parse", "HEAD"), committed_at=git(root, "show", "-s", "--format=%cI", "HEAD"),
+                       repository={"host": "github.com", "owner": "o", "name": "n", "url": "https://github.com/o/n"})
+    return app
+
+
+def test_the_graph_is_recorded_at_each_analysis_and_a_choice_made_by_hand_shows_in_the_graph_and_the_history(
+        levels, tmp_path):
+    import tomllib
+    app = recording(levels, tmp_path)
+    app._record(app.context)
+    assert app.recorded == {"state": "done", "rev": 1, "cause": None}
+    path, root = Path(app.context["project"]), Path(levels.project_root)
+    with closing(project_file.open_project(path)) as db:
+        assert project_file.head(db) == 1 and db.execute("SELECT name FROM project").fetchone() == ("o/n",)
+        version, config = db.execute("SELECT daodan_version, config_json FROM analyses").fetchone()
+        source = project_file.source_of(db)
+    pyproject = tomllib.loads((HERE.parent / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    assert version == pyproject and json.loads(config)["run_id"] == "levels"
+    # the sources: the commit whole with its date, and the perimeter's digest of the bytes the inventory read
+    assert (source["repository_uri"], source["git_commit"], source["git_committed_at"]) == \
+        ("https://github.com/o/n", app.context["commit"], app.context["committed_at"])
+    import snapshot_store
+    run_dir = levels.root / "runs" / "levels"
+    manifest = snapshot_store.resolve_run_snapshot(run_dir, json.loads((run_dir / "state.json").read_text(encoding="utf-8")))
+    hashes = project_rows.inventory(manifest)
+    assert hashes and all(hashlib.sha256((root / item).read_bytes()).hexdigest() == digest for item, digest in hashes.items())
+    assert source["tree_sha256"] == project_rows.tree_sha256(hashes)
+    assert json.loads(source["inventory_policy"])["policy"] == "daodan/inventory@1"
+    server = app.serve(token="t")
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        port = server.server_address[1]
+        group = group_of(request(port, "/api/app/graph")[1], "server/app.py")
+        assert request(port, "/api/app/project/edit", {"ref": group, "field": "name", "value": 3})[0] == 400
+        assert request(port, "/api/app/project/edit", {"ref": group, "field": "name", "value": "Il server"}) == \
+            (200, {"rev": 2})
+        shown = next(node for node in request(port, "/api/app/graph")[1]["nodes"] if node["id"] == group)
+        assert shown["name"] == "Il server" and shown["manual"] is True and "conflict" not in shown
+        told = request(port, "/api/app/project/history")[1]
+        assert told["head"] == 2 and [item["kind"] for item in told["revisions"]] == ["analysis", "manual"]
+        (made,) = told["revisions"][1]["edits"]
+        assert told["revisions"][1]["author"] == getpass.getuser()
+        assert (made["key"], made["field_path"], made["base_rev"], made["value"]) == \
+            (group, "/name", 1, {"present": True, "value": "Il server"})
+        # a second analysis of the same commit adds a revision and keeps the name chosen by hand
+        app._record(app.context)
+        assert app.recorded == {"state": "done", "rev": 3, "cause": None}
+        assert next(node for node in request(port, "/api/app/graph")[1]["nodes"] if node["id"] == group)["name"] == "Il server"
+        assert request(port, "/api/app/project/conflicts")[1] == {"head": 3, "conflicts": [], "proposals": []}
+        # a copy where the person chooses is a project file Daodan recognises
+        saved = tmp_path / "elsewhere" / "copia.daodan"
+        assert request(port, "/api/app/project/save", {"path": str(saved)})[0] == 200
+        with closing(project_file.open_project(saved, write=True)) as db:
+            assert project_file.head(db) == 3
+            project_file.edit(db, object_id=project_file.find(db, group), field_path="/name", value="Il backend",
+                              author="bob", base_rev=3)
+        # a file received from someone takes the place of the repository's it names; its history comes with it
+        assert request(port, "/api/app/project/open", {"path": str(saved)})[0] == 200
+        assert [item["author"] for item in request(port, "/api/app/project/history")[1]["revisions"]][-1] == "bob"
+        assert next(node for node in request(port, "/api/app/graph")[1]["nodes"] if node["id"] == group)["name"] == "Il backend"
+        assert request(port, "/api/app/project/open", {"path": str(tmp_path / "none.daodan")})[0] == 400
+    finally:
+        app.close()
+        server.shutdown()
+        server.server_close()

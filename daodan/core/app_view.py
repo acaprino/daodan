@@ -449,7 +449,9 @@ def _node(item: dict, name: str, status: str | None = None) -> dict:
     return {"id": item["ref"], "name": name, "kind": item["type"], "location": item.get("location", "internal"),
             "node_type": item.get("node_type"), "mark": item.get("mark"), "status": item.get("status") or status,
             "provenance": item.get("provenance"), "responsibility": item.get("description") or "",
-            "evidence": item.get("evidence", []), "files": []}
+            "evidence": item.get("evidence", []), "files": [],
+            # a name or a description chosen by hand (`project_file.applied`), and an open conflict on it
+            **{key: True for key in ("manual", "conflict") if item.get(key)}}
 
 
 def _top(envelope: dict) -> tuple[str, dict, list, dict, dict]:

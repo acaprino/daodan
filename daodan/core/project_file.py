@@ -26,14 +26,15 @@ from pathlib import Path
 from jsonpointer import JsonPointer, JsonPointerException, resolve_pointer, set_pointer  # RFC 6901: not in the stdlib
 from snapshot_store import _plain
 
-__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "changes", "commit",
-           "confirm", "conflicts", "create", "edit", "head", "open_project", "read", "release", "resolve", "state"]
+__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "applied", "changes",
+           "commit", "confirm", "conflicts", "copy", "create", "edit", "find", "head", "history", "incoming", "key_of",
+           "migrate", "open_project", "pair", "read", "release", "resolve", "source_of", "state", "upgrade"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
 FORMAT_VERSION = 2
 SQLITE_MINIMUM = (3, 38)  # JSON functions and STRICT tables
-MIGRATIONS: dict = {}  # an older user_version -> its migration (T2.E.8)
+MIGRATIONS: dict = {}  # an older user_version -> its migration in `migrate` (T2.E.8), filled below
 BUSY_TIMEOUT_S = 10
 
 TABLES = {"node": "nodes", "edge": "edges", "flow": "flows", "variant": "variants", "step": "steps", "gap": "gaps",
@@ -131,7 +132,7 @@ def open_project(path: Path | str, write: bool = False) -> sqlite3.Connection:
             raise ProjectError(f"non è un file di progetto di Daodan: {path} (application_id {identity:#x})")
         if version != FORMAT_VERSION:
             if version in MIGRATIONS:
-                raise ProjectError(f"serve la migrazione da v{version}: {path}")
+                raise ProjectError(f"serve la migrazione da v{version} (`migrate`): {path}")
             raise ProjectError(f"questo file chiede la versione {version} del formato di Daodan, "
                                f"questa legge la {FORMAT_VERSION}: {path}")
         found = frozenset(db.execute("SELECT type, name, tbl_name, sql FROM sqlite_schema"))
@@ -150,7 +151,99 @@ def open_project(path: Path | str, write: bool = False) -> sqlite3.Connection:
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# Writing
+# Migration from an older version, in a verified copy
+
+
+def _from_v1(db: sqlite3.Connection) -> None:
+    """Version 1 has the same 21 tables and columns; its `nodes.species` has no CHECK. Every species of every
+    version, closed ones too, must be one of version 2, else the cause names the object, the revision and the
+    value; then each table is copied from the attached `old`."""
+    from node_model import SPECIES  # the same 24 as the DDL's CHECK (`test_every_species_of_the_code_enters...`)
+    unknown = db.execute(f"SELECT v.object_id, v.from_rev, n.species FROM old.nodes AS n JOIN old.versions AS v"
+                         f" USING (version_id) WHERE n.species NOT IN ({', '.join('?' * len(SPECIES))})"
+                         f" ORDER BY v.from_rev, v.object_id", SPECIES).fetchall()
+    if unknown:
+        raise ProjectError("specie sconosciute nella v1: " + ", ".join(
+            f"{object_id} (revisione {rev}): {species!r}" for object_id, rev, species in unknown[:5]))
+    for table in _tables(db, "main"):
+        db.execute(f"INSERT INTO main.{table} SELECT * FROM old.{table}")
+
+
+MIGRATIONS[1] = _from_v1
+
+
+def _tables(db: sqlite3.Connection, schema: str) -> list[str]:
+    return [name for (name,) in db.execute(f"SELECT name FROM {schema}.sqlite_schema WHERE type = 'table' ORDER BY name")]
+
+
+def upgrade(path: Path | str) -> bool:
+    """Migrate the project file at `path` when its version is an older one `MIGRATIONS` knows (`migrate`); whether it
+    did. A file of this version, or one that is no project file, is left to `open_project` to accept or refuse."""
+    path = Path(path)
+    _plain(path)
+    try:
+        with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=BUSY_TIMEOUT_S)) as db:
+            identity, version = (db.execute(f"PRAGMA {name}").fetchone()[0] for name in ("application_id", "user_version"))
+    except sqlite3.DatabaseError:
+        return False
+    if identity != APPLICATION_ID or version not in MIGRATIONS:
+        return False
+    migrate(path)
+    return True
+
+
+def migrate(path: Path | str) -> None:
+    """Take the project file at `path` from its version to `FORMAT_VERSION`, all or nothing: a consistent copy with
+    `Connection.backup`, a new file beside it from the DDL, the migration of that version (`MIGRATIONS`) from the
+    attached copy in one transaction, then `foreign_key_check` empty, `integrity_check` `ok` and every table equal in
+    both directions (`EXCEPT`); only then the new file replaces the old one, which stays as it was otherwise."""
+    path = Path(path)
+    _plain(path)
+    if not path.is_file():
+        raise ProjectError(f"nessun file di progetto: {path}")
+    token = uuid.uuid4().hex
+    copy, fresh = path.with_name(f".{path.name}.{token}.old"), path.with_name(f".{path.name}.{token}.new")
+    try:
+        with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True, timeout=BUSY_TIMEOUT_S)) as source:
+            try:
+                identity, version = (source.execute(f"PRAGMA {name}").fetchone()[0]
+                                     for name in ("application_id", "user_version"))
+            except sqlite3.DatabaseError as error:
+                raise ProjectError(f"non è un file di progetto di Daodan: {path} ({error})") from error
+            if identity != APPLICATION_ID or version not in MIGRATIONS:
+                raise ProjectError(f"nessuna migrazione per {path} (application_id {identity:#x}, versione {version})")
+            with closing(sqlite3.connect(copy)) as target:
+                source.backup(target)
+        _initialize(fresh)
+        with closing(sqlite3.connect(fresh.resolve().as_uri(), uri=True, isolation_level=None)) as db:
+            db.execute("ATTACH DATABASE ? AS old", (copy.resolve().as_uri() + "?mode=ro",))
+            tables = _tables(db, "main")
+            if _tables(db, "old") != tables:
+                raise ProjectError(f"le tabelle di {path} non sono quelle della v{version}")
+            db.execute("BEGIN IMMEDIATE")
+            db.execute("PRAGMA defer_foreign_keys=ON")
+            try:
+                MIGRATIONS[version](db)
+                if db.execute("PRAGMA main.foreign_key_check").fetchall():
+                    raise ProjectError(f"la copia di {path} cita oggetti che non esistono")
+                db.execute("COMMIT")
+            except BaseException:
+                db.execute("ROLLBACK")
+                raise
+            if db.execute("PRAGMA main.integrity_check").fetchall() != [("ok",)]:
+                raise ProjectError(f"la copia di {path} non è integra")
+            for table in tables:
+                for one, other in (("main", "old"), ("old", "main")):
+                    if db.execute(f"SELECT 1 FROM (SELECT * FROM {one}.{table} EXCEPT SELECT * FROM {other}.{table})"
+                                  f" LIMIT 1").fetchone():
+                        raise ProjectError(f"la tabella {table} migrata non è uguale a quella di {path}")
+            db.execute("DETACH DATABASE old")
+        with closing(open_project(fresh)):
+            pass  # the new file is one this version recognises
+        os.replace(fresh, path)
+    finally:
+        copy.unlink(missing_ok=True)
+        fresh.unlink(missing_ok=True)
 
 
 def create(path: Path | str, *, name: str | None = None, source: dict | None = None, analysis: dict | None = None,
@@ -206,8 +299,8 @@ def commit(db: sqlite3.Connection, *, expected_head: int, kind: str, author: str
     transaction: the head is compared with `expected_head`, the revision is inserted on the analysis it names
     (`analysis_id`; a new one from `source` and `analysis`; else the head's, as a manual edit inherits it), the open
     versions of `closed` (object ids) end, the `opened` rows begin, the `edits` (`{object_id, field_path, action,
-    base_rev, base, value}`) and the `conflicts` (`{edit_id, incoming, producer, evidence, removed}`, their
-    provenance the analysis and its producer) are recorded, the `resolved` conflicts get this revision, the resulting
+    base_rev, base, value}`) and the `conflicts` (`{edit_id, incoming, provenance, evidence}`, their provenance
+    `incoming`'s with the analysis) are recorded, the `resolved` conflicts get this revision, the resulting
     state is checked (`check`) and the head moves. Any error rolls everything back."""
     if kind not in REVISION_KINDS:
         raise ProjectError(f"tipo di revisione sconosciuto: {kind}")
@@ -235,8 +328,7 @@ def commit(db: sqlite3.Connection, *, expected_head: int, kind: str, author: str
                            " VALUES (?, ?, ?, ?, ?, ?, ?)", (rev, item["base_rev"], item["object_id"], item["field_path"],
                                                              item["action"], json.dumps(item["base"]), json.dumps(item["value"])))
             for item in conflicts:
-                provenance = {"analysis": analysis_id, "producer": item.get("producer"),
-                              **({"object": "removed"} if item.get("removed") else {})}
+                provenance = {"analysis": analysis_id, **item["provenance"]}
                 conflict = db.execute("INSERT INTO conflicts (detected_rev, edit_id, incoming_json, incoming_provenance)"
                                       " VALUES (?, ?, ?, ?)", (rev, item["edit_id"], json.dumps(item["incoming"]),
                                                                json.dumps(provenance, sort_keys=True))).lastrowid
@@ -506,9 +598,8 @@ def changes(db: sqlite3.Connection, before: int, after: int) -> dict[str, list[s
 
 def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str) -> int:
     """Settle the `identity_match` proposal `match` in a revision `resolution` by `author`: with `same`, one of its
-    candidates, the new node takes that original id back (the provisional identity ends, and every active row that
-    pointed at it points at the original, and the choices kept on the original apply to it); with None they are distinct and the new id stays. The proposal and its
-    gap end either way. The revision number."""
+    candidates, the new node takes that original id back (`_join`); with None they are distinct and the new id
+    stays. The proposal and its gap end either way. The revision number."""
     current = head(db)
     now = state(db, current)
     record = now.get(match)
@@ -516,41 +607,75 @@ def confirm(db: sqlite3.Connection, match: str, same: str | None, *, author: str
         raise ProjectError(f"nessuna proposta di corrispondenza aperta: {match}")
     proposal = record["fields"]["payload"]
     closed = [match] + [row["id"] for row in now.values() if row["kind"] == "gap" and row["fields"]["subject_id"] == match]
-    opened, raised = [], []
+    opened, raised, resolved = [], [], []
     if same is not None:
         if same not in proposal["candidates"]:
             raise ProjectError(f"{same} non è un candidato di {match}")
-        provisional = proposal["new"]
-        if provisional not in now:
-            raise ProjectError(f"l'identità provvisoria non è più attiva: {provisional}")
-        swap = {provisional: same}
-
-        def moved(value):
-            return swap.get(value, value)
-
-        original = _edits(db, current, {same})  # the choices kept on the original id
-        reopened, raised = _merge({**now[provisional], "id": same, "provenance": "resolution"}, original,
-                                  _open_conflicts(db, current))
-        opened.append(reopened)
-        closed.append(provisional)
-        for row in now.values():
-            if row["id"] in closed:
-                continue
-            replaced = {**row, "fields": {**row["fields"], **{name: moved(row["fields"].get(name))
-                                                              for name in REFERENCES[row["kind"]]}}}
-            if "endpoints" in row:
-                replaced["endpoints"] = [{**item, "node_id": moved(item["node_id"])} for item in row["endpoints"]]
-            if "edges" in row:
-                replaced["edges"] = [moved(item) for item in row["edges"]]
-            if "transitions" in row:
-                replaced["transitions"] = [{**item, "to_step_id": moved(item["to_step_id"])} for item in row["transitions"]]
-            if _content(replaced) != _content(row):
-                opened.append(replaced)
-                closed.append(row["id"])
+        opened, raised, resolved = _join(db, current, now, proposal["new"], same, closed)
     summary = f"conferma: {proposal['keys']['new']} è " + (proposal["keys"]["candidates"][proposal["candidates"].index(same)]
                                                           if same is not None else "un oggetto nuovo")
     return commit(db, expected_head=current, kind="resolution", author=author, summary=summary,
-                  opened=opened, closed=closed, conflicts=raised)
+                  opened=opened, closed=closed, conflicts=raised, resolved=resolved)
+
+
+def pair(db: sqlite3.Connection, new: str, same: str, *, author: str) -> int:
+    """The person says that the node `new` is the node `same` of an earlier revision, in a revision `resolution` by
+    `author`: a file renamed with changes, which no digest pairs (Git's similarity has no part, decision 7 of `T2.E`)
+    and whose edited original the analysis left with a conflict `removed`, or one no edit held. `new` takes the id
+    `same` back as a confirmed proposal does (`_join`). The revision number."""
+    current = head(db)
+    now = state(db, current)
+    if now.get(new, {}).get("kind") != "node":
+        raise ProjectError(f"nessun nodo attivo {new}")
+    known = db.execute("SELECT kind FROM objects WHERE object_id = ?", (same,)).fetchone()
+    if known != ("node",) or same == new:
+        raise ProjectError(f"{same} non è un altro nodo del progetto")
+    closed: list[str] = []
+    opened, raised, resolved = _join(db, current, now, new, same, closed)
+    keys = [key_of(now[new]), key_of(now[same]) if same in now else same]
+    return commit(db, expected_head=current, kind="resolution", author=author, summary=f"conferma: {keys[0]} è {keys[1]}",
+                  opened=opened, closed=closed, conflicts=raised, resolved=resolved)
+
+
+def _join(db: sqlite3.Connection, current: int, now: dict[str, dict], provisional: str, same: str,
+          closed: list[str]) -> tuple[list[dict], list[dict], list[int]]:
+    """(opened, conflicts, resolved) by which the node `provisional` takes the original id `same` back at the head
+    `current`, adding to `closed`: the provisional identity ends, every active row that pointed at it points at the
+    original, and the choices kept on the original apply to it (a value they disagree with is a conflict). An
+    original the analysis had left active for its choices ends too, with its conflicts `removed`, now settled."""
+    if provisional not in now:
+        raise ProjectError(f"l'identità provvisoria non è più attiva: {provisional}")
+    swap = {provisional: same}
+
+    def moved(value):
+        return swap.get(value, value)
+
+    resolved = [conflict for conflict, edit, provenance in db.execute(
+        "SELECT c.conflict_id, e.object_id, c.incoming_provenance FROM conflicts AS c JOIN manual_edits AS e USING (edit_id)"
+        " WHERE c.resolved_rev IS NULL") if edit == same and json.loads(provenance).get("object") == "removed"]
+    pending = {edit: value for edit, value in _open_conflicts(db, current).items()}
+    for conflict in resolved:
+        (edit,) = db.execute("SELECT edit_id FROM conflicts WHERE conflict_id = ?", (conflict,)).fetchone()
+        pending.pop(edit, None)
+    reopened, raised = _merge({**now[provisional], "id": same, "provenance": "resolution"}, _edits(db, current, {same}), pending)
+    opened = [reopened]
+    closed.append(provisional)
+    if same in now:
+        closed.append(same)
+    for row in now.values():
+        if row["id"] in closed:
+            continue
+        replaced = {**row, "fields": {**row["fields"], **{name: moved(row["fields"].get(name)) for name in REFERENCES[row["kind"]]}}}
+        if "endpoints" in row:
+            replaced["endpoints"] = [{**item, "node_id": moved(item["node_id"])} for item in row["endpoints"]]
+        if "edges" in row:
+            replaced["edges"] = [moved(item) for item in row["edges"]]
+        if "transitions" in row:
+            replaced["transitions"] = [{**item, "to_step_id": moved(item["to_step_id"])} for item in row["transitions"]]
+        if _content(replaced) != _content(row):
+            opened.append(replaced)
+            closed.append(row["id"])
+    return opened, raised, resolved
 
 
 def keep_needed(before: dict[str, dict], rows: list[dict], kept: list[dict]) -> list[dict]:
@@ -638,16 +763,29 @@ def _open_conflicts(db: sqlite3.Connection, rev: int) -> dict[int, dict]:
         (rev, rev))}
 
 
+def incoming(edit: dict, version: dict) -> tuple[dict, dict]:
+    """The value an analysis brings for the field of `edit` in `version` (the incoming row) and its provenance: who
+    owns a manual edit, in one place («Identità e storia»; [deciso, su delega, provvisorio], `T2.E.7`). The `.daodan`
+    is the one place the app writes an edit, and Daodan never writes the project's files: `codebase-modules.json`
+    and `codebase-system-map.json` stay inputs of the analysis, so a declared value (provenance `declared`) arrives
+    as every other value of the analysis does, and its change under an edit is a conflict, never a silent
+    precedence. Another answer of the owner changes this function, its test and the sentence of the spec."""
+    fields = version["fields"]
+    return _lookup(fields, edit["field_path"]), {
+        "origin": version.get("provenance") or "analysis",
+        "producer": ((fields.get("attributes") or {}).get("identity") or {}).get("producer")}
+
+
 def _merge(row: dict, edits: list[dict], pending: dict[int, dict]) -> tuple[dict, list[dict]]:
     """`row` as the analysis brings it with the choices of `edits` on it, and the conflicts it raises: an incoming
-    value equal to the edit's base or to its choice keeps the choice; another one keeps it too and is a conflict,
-    unless the same value is already one that is open (`pending`, edit id -> incoming)."""
+    value (`incoming`) equal to the edit's base or to its choice keeps the choice; another one keeps it too and is a
+    conflict, unless the same value is already one that is open (`pending`, edit id -> incoming)."""
     fields, conflicts = row["fields"], []
     for item in edits:
-        incoming = _lookup(fields, item["field_path"])
-        if incoming not in (item["base"], item["value"]) and pending.get(item["edit_id"]) != incoming:
-            conflicts.append({"edit_id": item["edit_id"], "incoming": incoming, "evidence": row.get("evidence", ()),
-                              "producer": ((fields.get("attributes") or {}).get("identity") or {}).get("producer")})
+        value, provenance = incoming(item, {**row, "fields": fields})
+        if value not in (item["base"], item["value"]) and pending.get(item["edit_id"]) != value:
+            conflicts.append({"edit_id": item["edit_id"], "incoming": value, "evidence": row.get("evidence", ()),
+                              "provenance": provenance})
         fields = _put(fields, item["field_path"], item["value"])
     return ({**row, "fields": fields, "provenance": "manual"} if edits else row), conflicts
 
@@ -668,7 +806,8 @@ def _merge_all(db: sqlite3.Connection, current: int, before: dict[str, dict], in
     for object_id, items in edits.items():
         if object_id not in present and object_id in before:
             kept.append(before[object_id])
-            conflicts += [{"edit_id": item["edit_id"], "incoming": _ABSENT, "evidence": (), "producer": None, "removed": True}
+            conflicts += [{"edit_id": item["edit_id"], "incoming": _ABSENT, "evidence": (),
+                           "provenance": {"origin": "analysis", "producer": None, "object": "removed"}}
                           for item in items if pending.get(item["edit_id"]) != _ABSENT]
     return keep_needed(before, out, kept), conflicts
 
@@ -754,3 +893,90 @@ def conflicts(db: sqlite3.Connection, rev: int | None = None) -> list[dict]:
              "open": resolved is None or rev < resolved, "incoming": json.loads(incoming), "provenance": json.loads(provenance),
              "edit_id": edit, "object_id": object_id, "field_path": path, "base": json.loads(base), "value": json.loads(value)}
             for conflict, detected, resolved, incoming, provenance, edit, object_id, path, base, value in rows]
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# What the app reads and does with the file: the choices on the envelope, the history, copies
+
+
+FIELDS = {"name": "/name", "description": "/attributes/description"}  # what the app lets a person change by hand
+
+
+def key_of(row: dict) -> str | None:
+    """The identity key of a row: the envelope's `ref` of a node or a flow."""
+    return ((row["fields"].get("attributes") or {}).get("identity") or {}).get("key")
+
+
+def find(db: sqlite3.Connection, key: str) -> str:
+    """The object id of the node or flow active at the head whose identity key is `key`."""
+    found = [row["id"] for row in state(db).values() if row["kind"] in ("node", "flow") and key_of(row) == key]
+    if len(found) != 1:
+        raise ProjectError(f"nessun nodo o flusso attivo con la chiave {key}")
+    return found[0]
+
+
+def applied(envelope: dict, db: sqlite3.Connection) -> dict:
+    """A copy of `envelope` with the names and descriptions chosen by hand at the head: an entity or a flow whose
+    object holds a choice takes its name and description and says `manual`, and `conflict` too when one of its
+    choices has an open conflict. The analysis stays as it is: only what the person chose is carried."""
+    rows = state(db)
+    opened = {item["object_id"] for item in conflicts(db) if item["open"]}
+    chosen = {key_of(row): row for row in rows.values() if row["kind"] in ("node", "flow") and row["provenance"] == "manual"}
+
+    def marked(item: dict, label: str) -> dict:
+        row = chosen.get(item["ref"])
+        if row is None:
+            return item
+        description = (row["fields"].get("attributes") or {}).get("description")
+        return {**item, label: row["fields"]["name"], "manual": True,
+                **({"description": description or ""} if "description" in item or description else {}),
+                **({"conflict": True} if row["id"] in opened else {})}
+    return {**envelope, "entities": [marked(item, "name") for item in envelope["entities"]],
+            "flows": [marked(item, "label") for item in envelope["flows"]]}
+
+
+def history(db: sqlite3.Connection) -> list[dict]:
+    """The revisions in order: number, kind, author, date, summary, the versions opened and closed, and the edits
+    (`{object_id, key, field_path, action, base_rev, value}`: who changed what, from which revision)."""
+    opened = dict(db.execute("SELECT from_rev, count(*) FROM versions GROUP BY from_rev"))
+    closed = dict(db.execute("SELECT until_rev, count(*) FROM versions WHERE until_rev IS NOT NULL GROUP BY until_rev"))
+    keys = {object_id: json.loads(attributes).get("identity", {}).get("key") for object_id, attributes in db.execute(
+        "SELECT v.object_id, t.attributes_json FROM versions AS v JOIN (SELECT version_id, attributes_json FROM nodes"
+        " UNION ALL SELECT version_id, attributes_json FROM flows) AS t USING (version_id)"
+        " WHERE v.object_id IN (SELECT object_id FROM manual_edits) ORDER BY v.version_id")}
+    edits: dict[int, list] = {}
+    for rev, object_id, path, action, base_rev, value in db.execute(
+            "SELECT rev, object_id, field_path, action, base_rev, value_json FROM manual_edits ORDER BY edit_id"):
+        edits.setdefault(rev, []).append({"object_id": object_id, "key": keys.get(object_id), "field_path": path,
+                                          "action": action, "base_rev": base_rev, "value": json.loads(value)})
+    return [{"rev": rev, "kind": kind, "author": author, "created_at": created, "summary": summary,
+             "opened": opened.get(rev, 0), "closed": closed.get(rev, 0), "edits": edits.get(rev, [])}
+            for rev, kind, author, created, summary in db.execute(
+                "SELECT rev, kind, author, created_at, summary FROM revisions ORDER BY rev")]
+
+
+def source_of(db: sqlite3.Connection) -> dict:
+    """The sources of the head's analysis, with the columns of `source_snapshots`."""
+    found = db.execute(f"SELECT {', '.join('s.' + column for column in SOURCE)} FROM project AS p"
+                       " JOIN revisions AS r ON r.rev = p.head_rev JOIN analyses AS a USING (analysis_id)"
+                       " JOIN source_snapshots AS s USING (source_id)").fetchone()
+    if found is None:
+        raise ProjectError("il file non ha ancora un progetto")
+    return dict(zip(SOURCE, found))
+
+
+def copy(source: Path | str, target: Path | str) -> None:
+    """A consistent copy of the project file at `source` at `target`, which it replaces: `Connection.backup` into a
+    file beside `target`, recognised by `open_project` before it takes `target`'s place."""
+    target = Path(target)
+    _plain(target)
+    staging = target.with_name(f".{target.name}.{uuid.uuid4().hex}.new")
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with closing(open_project(source)) as db, closing(sqlite3.connect(staging)) as out:
+            db.backup(out)
+        with closing(open_project(staging)):
+            pass
+        os.replace(staging, target)
+    finally:
+        staging.unlink(missing_ok=True)

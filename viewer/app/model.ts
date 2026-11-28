@@ -11,6 +11,8 @@ import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { firstStep, onPath, REPOSITORY, SHOWS_PREMAP } from './path.ts';
 import { accessible, preferredBranch, repositorySlug, urlError } from './repository.ts';
+import { editBody, pathError } from './project.ts';
+import type { Conflict, Field, Keep, Project, Revision } from './project.ts';
 import { createServer } from './server.ts';
 import type { AppState, Checked, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
 import { ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
@@ -34,7 +36,7 @@ export function createModel(host: Host) {
     premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, groupWanted: stored.kept.screen === 'graph',
     engineFromStep: false, pathPage: null, symbols: null, events: [],
     engineDraft: null, engineSaid: '', engineTone: '', engineBusy: [], question: '', asked: null,
-    hostsHidden: [], hostsReplying: '',
+    hostsHidden: [], hostsReplying: '', project: null, projectError: '', projectBusy: '',
   };
   const listeners = new Set<() => void>();
   // What no screen draws: which run and groups the last answers are of, the question whose answer is awaited, the check and the
@@ -99,10 +101,12 @@ export function createModel(host: Host) {
       }
     }
     if (linked || grown || mappingChanged || now.pathPage?.run !== c?.run_id) patch.pathPage = null;
+    const recorded = before !== null && found.project?.state === 'done' && found.project.rev !== before.project?.rev;  // a new analysis
     if (kept !== now.kept) patch.kept = kept;
     set(patch);
     if (ready && c) say(`Contesto pronto: ${slug(c)} · ${c.branch}`);
     if (c && (linked || (grown && drawsGraph()))) loadGraph();
+    if (recorded && c) reread();
     loadViews();
     settle();
   }
@@ -139,7 +143,7 @@ export function createModel(host: Host) {
     premapRun = graphRun = '';
     premapAsked += 1;
     graphAsked += 1;
-    return { premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, symbols: null };
+    return { premap: null, premapError: '', graph: null, graphError: '', graphLoading: false, symbols: null, project: null, projectError: '' };
   }
 
   async function loadPremap(): Promise<void> {
@@ -177,6 +181,7 @@ export function createModel(host: Host) {
       graphRun = key;
       const graphRoot = rootOf(found, now.kept.graphRoot);  // a group just opened keeps the focus inside it
       set({ graph: found, graphError: '', symbols: null, ...(graphRoot !== now.kept.graphRoot && { kept: { ...now.kept, graphRoot } }) });
+      loadProject();
     } catch (error) {
       if (!wanted()) return;
       const cause = causeOf(error);
@@ -191,6 +196,62 @@ export function createModel(host: Host) {
       if (wanted()) set({ graphLoading: false });
     }
     if (wanted() && graphRun !== graphKey(run, now.kept)) return loadGraph();  // the groups wanted changed meanwhile
+  }
+
+  // -- the project file: its history and conflicts, and what the person changes by hand ---------------------------------
+
+  async function loadProject(): Promise<void> {
+    const run = ctx(now)?.run_id, wanted = () => ctx(now)?.run_id === run;
+    if (!run) return;
+    try {
+      const [history, found] = await Promise.all([
+        whenFree(() => get<{ head: number; revisions: Revision[] }>('/api/app/project/history'), () => undefined, wanted),
+        whenFree(() => get<{ conflicts: Conflict[] }>('/api/app/project/conflicts'), () => undefined, wanted),
+      ]);
+      if (history && found && wanted()) set({ project: { ...history, conflicts: found.conflicts } satisfies Project, projectError: '' });
+    } catch (error) {
+      if (wanted()) set({ project: null, projectError: causeOf(error) });
+    }
+  }
+  // The graph and the file read again: a choice made, a conflict settled, a file received or a new analysis.
+  function reread() {
+    graphRun = '';
+    loadGraph();
+    loadProject();
+  }
+  // One at a time; what came of it is said, a refusal stays until it is closed. True when the server took it.
+  async function projectWork(work: string, path: string, body: unknown, done: string): Promise<boolean> {
+    if (now.projectBusy) return false;
+    set({ projectBusy: work });
+    try {
+      await post(path, body);
+      say(done);
+      return true;
+    } catch (error) {
+      say(causeOf(error), 'error');
+      return false;
+    } finally {
+      set({ projectBusy: '' });
+    }
+  }
+  async function changeNode(ref: string, field: Field, value: string): Promise<boolean> {
+    const ok = await projectWork('edit', '/api/app/project/edit', editBody(now.project, ref, field, value), 'Modifica salvata nel file di progetto.');
+    if (ok) reread();
+    return ok;
+  }
+  async function resolveConflict(conflict: number, keep: Keep): Promise<void> {
+    if (await projectWork(`resolve ${conflict}`, '/api/app/project/resolve', { conflict_id: conflict, keep }, 'Conflitto risolto.')) reread();
+  }
+  // A file received from someone: it takes the place of the one of the repository it names, with its history.
+  async function openProject(path: string): Promise<boolean> {
+    if (pathError(path)) { say(pathError(path), 'error'); return false; }
+    const ok = await projectWork('open', '/api/app/project/open', { path: path.trim() }, 'File di progetto aperto: le sue modifiche sono nella cronologia.');
+    if (ok) reread();
+    return ok;
+  }
+  async function saveProject(path: string): Promise<boolean> {
+    if (pathError(path)) { say(pathError(path), 'error'); return false; }
+    return projectWork('save', '/api/app/project/save', { path: path.trim() }, `Copia del file di progetto salvata in ${path.trim()}.`);
   }
 
   // -- the repository ----------------------------------------------------------------------------------------------
@@ -432,5 +493,6 @@ export function createModel(host: Host) {
     retryPass: () => act('/api/app/retry'), findLinks: () => act('/api/app/link'),
     editEngine, saveEngine, probeEngine, forgetKey, setQuestion: (question: string) => set({ question }), ask,
     replyHosts, hideHosts, showHosts,
+    changeNode, resolveConflict, openProject, saveProject,
   };
 }

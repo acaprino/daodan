@@ -67,12 +67,57 @@ def test_another_identity_version_or_schema_is_refused_with_the_cause(tmp_path, 
         project_file.open_project(path).close()
 
 
-def test_a_known_older_version_asks_for_the_migration(tmp_path, monkeypatch):
+def test_a_known_older_version_asks_for_the_migration(tmp_path):
     path = tmp_path / "project.daodan"
     project_file.create(path)
     with closing(_raw(path)) as db:
         db.execute("PRAGMA user_version = 1")
-    monkeypatch.setitem(project_file.MIGRATIONS, 1, lambda path: None)
+    with pytest.raises(ProjectError, match="serve la migrazione da v1"):
+        project_file.open_project(path).close()
+
+
+V1 = Path(__file__).resolve().parent / "fixtures/project-file/v1.sql"  # git show c7bc75b:docs/specs/progetto-v1.sql
+
+
+def _v1(tmp_path, history: str) -> Path:
+    """A file of version 1: a folder and a file whose first version, closed at revision 2, has the species
+    `history`; the head is revision 2."""
+    path = tmp_path / "old.daodan"
+    with closing(_raw(path)) as db:
+        db.executescript(V1.read_text(encoding="utf-8"))
+        _base(db)
+        db.execute("INSERT INTO revisions VALUES (2, 'r2', 1, 1, 'manual', 'ada', '2026-11-28T00:00:00+00:00', 'r2')")
+        db.execute("INSERT INTO project VALUES (1, 'p-uuid', 'demo', 2)")
+        _node(db, 1, "cartella")
+        db.execute("INSERT INTO objects VALUES ('n2', 'node')")
+        for version, start, end, species in ((2, 1, 2, history), (3, 2, None, "file")):
+            db.execute("INSERT INTO versions VALUES (?, 'n2', ?, ?, 'analysis')", (version, start, end))
+            db.execute("INSERT INTO nodes (version_id, parent_id, name, species, position, status, abstraction)"
+                       " VALUES (?, 'n1', 'a.py', ?, 'interno', 'confermato', 'concreto')", (version, species))
+    return path
+
+
+def test_a_v1_file_migrates_in_a_verified_copy_and_reopens_with_the_same_ids_and_revisions(tmp_path):
+    path = _v1(tmp_path, "simbolo")
+    with closing(_raw(path)) as db:
+        before = _dump(db)
+    project_file.migrate(path)
+    assert sorted(item.name for item in tmp_path.iterdir()) == ["old.daodan"]  # no copy is left beside it
+    with closing(project_file.open_project(path)) as db:
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert _dump(db) == before  # the same ids, UUIDs, revisions and versions, closed ones too
+        assert project_file.head(db) == 2 and sorted(project_file.state(db)) == ["n1", "n2"]
+        assert project_file.state(db, 1)["n2"]["fields"]["species"] == "simbolo"
+    with pytest.raises(ProjectError, match="nessuna migrazione"):
+        project_file.migrate(path)
+
+
+def test_an_unknown_species_only_in_the_history_is_refused_and_the_v1_file_stays_byte_for_byte(tmp_path):
+    path = _v1(tmp_path, "inventata")
+    kept = path.read_bytes()
+    with pytest.raises(ProjectError, match=r"n2 \(revisione 1\): 'inventata'"):
+        project_file.migrate(path)
+    assert path.read_bytes() == kept and sorted(item.name for item in tmp_path.iterdir()) == ["old.daodan"]
     with pytest.raises(ProjectError, match="serve la migrazione da v1"):
         project_file.open_project(path).close()
 
@@ -246,7 +291,7 @@ def test_of_two_writers_from_the_same_head_the_second_is_refused(tmp_path):
 HASHES = {"src/a.py": "1" * 64, "src/b.py": "2" * 64}
 
 
-def _envelope(label="Pagamento", grade="confirmed", languages=("Python",)):
+def _envelope(label="Pagamento", grade="confirmed", languages=("Python",), module="core", declared=False):
     """A module with a file and two symbols, a call between the files and the flow «label» from `run` to `helper`."""
     def entity(ref, kind, name, **fields):
         found = {"ref": ref, "type": kind, "name": name, "description": "", "evidence": [], "location": "internal", **fields}
@@ -255,8 +300,8 @@ def _envelope(label="Pagamento", grade="confirmed", languages=("Python",)):
     entities = [entity("directory:src", "directory", "src", path="src"),
                 entity("file:src/a.py", "file", "a.py", path="src/a.py"),
                 entity("file:src/b.py", "file", "b.py", path="src/b.py"),
-                entity("module:core", "module", "core", status="confirmed", description="Il nucleo",
-                       languages=list(languages)),
+                entity("module:core", "module", module, status="confirmed", description="Il nucleo",
+                       languages=list(languages), **({"provenance": "declared"} if declared else {})),
                 entity("symbol:src/a.py::run", "symbol", "run", path="src/a.py"),
                 entity("symbol:src/b.py::helper", "symbol", "helper", path="src/b.py")]
     return {"entities": entities,
@@ -312,7 +357,7 @@ def test_the_example_of_the_spec_rename_reanalyse_conflict_and_resolution(tmp_pa
         (conflict,) = project_file.conflicts(db)
         assert conflict["open"] and conflict["detected_rev"] == 4 and conflict["object_id"] == flow
         assert conflict["incoming"] == {"present": True, "value": "Pagare un contatto"}
-        assert conflict["provenance"] == {"analysis": 3, "producer": "daodan/visual@1"}
+        assert conflict["provenance"] == {"analysis": 3, "origin": "analysis", "producer": "daodan/visual@1"}
         assert conflict["edit_id"] == db.execute("SELECT edit_id FROM manual_edits WHERE rev = 2").fetchone()[0]
         assert _reanalyse(db, grade="inferred", label="Pagare un contatto") == 5  # the same value: no second conflict
         assert len(project_file.conflicts(db)) == 1
@@ -387,3 +432,28 @@ def test_an_edited_object_the_analysis_removes_stays_with_a_conflict(tmp_path):
         assert conflict["incoming"] == {"present": False} and conflict["provenance"]["object"] == "removed"
         project_file.resolve(db, conflict["conflict_id"], "analysis", author="ada")
         assert project_file.read(db, module) is None
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Who owns a manual edit (T2.E.7, provisional): the `.daodan`; a declared file stays an input of the analysis
+
+
+def test_a_declared_module_renamed_by_hand_keeps_its_name_until_the_declaration_changes(tmp_path):
+    path = tmp_path / "project.daodan"
+    project_file.create(path, name="demo", source={"git_commit": "a" * 40}, analysis=ANALYSIS, author="daodan",
+                        rows=project_rows.assign(project_rows.from_envelope(_envelope(declared=True), HASHES), {}))
+    with closing(project_file.open_project(path, write=True)) as db:
+        module = _object(db, "module:core")
+        assert project_file.state(db)[module]["provenance"] == "declared"
+        project_file.edit(db, object_id=module, field_path="/name", value="Nucleo", author="ada", base_rev=1)
+        _reanalyse(db, declared=True)  # the same declaration: the name chosen by hand stays, no conflict
+        assert project_file.read(db, module)["name"] == "Nucleo" and project_file.conflicts(db) == []
+        _reanalyse(db, declared=True, module="kernel")  # codebase-modules.json names it again: a conflict
+        assert project_file.read(db, module)["name"] == "Nucleo"
+        (conflict,) = project_file.conflicts(db)
+        assert conflict["incoming"] == {"present": True, "value": "kernel"}
+        assert conflict["provenance"] == {"analysis": 3, "origin": "declared", "producer": "daodan/visual@1"}
+    # the rule is one function: the value and the provenance the analysis brings for an edit's field
+    edit = {"field_path": "/name"}
+    assert project_file.incoming(edit, {"provenance": "declared", "fields": {"name": "kernel", "attributes": {}}}) == \
+        ({"present": True, "value": "kernel"}, {"origin": "declared", "producer": None})
