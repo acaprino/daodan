@@ -53,6 +53,7 @@ export type AppState = {
   links?: Links;
   mapped?: Mapped;
   egress?: HostGroup[];
+  project?: { state: string; rev?: number | null; cause?: string | null };  // the repository's project file, written at each analysis
 };
 
 // An event of the run's own journal (`run`), or of its pipeline.

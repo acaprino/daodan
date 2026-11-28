@@ -14,6 +14,7 @@ import {
 } from './group.ts';
 import type { Row } from './group.ts';
 import { short } from './repository.ts';
+import { NodeProject } from './project-screen.tsx';
 import { iconOf } from './scene.ts';
 import { ctx } from './snapshot.ts';
 import { model, useModel, useModelSlice, useSymbols } from './use-model.ts';
@@ -100,7 +101,11 @@ function GroupDetails({ id }: { id: string }) {
   const related = relationsOf(graph, id), proven = related.filter(isProven);
   return <>
     <Column>
-      <Cluster><Text variant="muted">{whatIs(thing)}</Text><Badge variant="secondary">{stateOf(thing)}</Badge></Cluster>
+      <Cluster>
+        <Text variant="muted">{whatIs(thing)}</Text><Badge variant="secondary">{stateOf(thing)}</Badge>
+        {n?.manual && <Badge variant="secondary">Modificato a mano</Badge>}
+        {n?.conflict && <Badge variant="secondary" tone="warning">In conflitto</Badge>}
+      </Cluster>
       {n && <Text as="p">{responsibilityOf(n)}</Text>}
     </Column>
     <Section title="Perimetro" level={3} icon={<Icon name="graph" />}>
@@ -110,6 +115,7 @@ function GroupDetails({ id }: { id: string }) {
       {proven.length > 0
         && <FoldedList label={`Prove delle chiamate (${number(proven.length)})`} items={proven.map(edge => line(proofRow(graph, edge)))} />}
     </Section>
+    {n && <NodeProject id={n.id} name={n.name} description={n.responsibility ?? ''} />}
     {thing.projects && <Stack projects={thing.projects} others={thing.other_dependencies} />}
     {thing.kind === 'file' && <FileSymbols file={id} />}
     {n && <Section title="Evidenze" level={3} icon={<Icon name="quote" />}>

@@ -10,6 +10,7 @@ export type GraphNode = {
   id: string; name: string; kind: string; files: string[]; location: string; status?: string; group: string | null; level?: string;
   node_type?: string | null; responsibility?: string; provenance?: string; lines?: number[]; members?: string[]; mark?: string | null;
   evidence?: Evidence[]; projects?: Technology[]; other_dependencies?: number;
+  manual?: boolean; conflict?: boolean;  // a name or a description chosen by hand in the project file, and an open conflict on it
 };
 export type GraphEdge = { source: string; target: string; counts: Record<string, number>; status?: string; conflict?: boolean; evidence: EdgeEvidence[] };
 // A group open in place: `parent` is the open group that holds it, which comes before it.

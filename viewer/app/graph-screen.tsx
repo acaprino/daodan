@@ -15,6 +15,7 @@ import { ScreenPanel, useFrame } from './frame.tsx';
 import { filtersOn, isOpenGroup, levelsName, thingById, toggledGroup, visibleGraph } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { graphDetail, groupOf } from './group-details.tsx';
+import { PROJECT_HISTORY } from './project-screen.tsx';
 import { PROVENANCE } from './provenance.tsx';
 import { sceneOf } from './scene.ts';
 import { ctx } from './snapshot.ts';
@@ -140,7 +141,10 @@ export function GraphScreen() {
   const ready = graph !== null && visible !== null && error === '';
   return <ScreenPanel title="Grafo del codice" tools={<Filters ready={ready} />}
     subtitle={ready && [levelsName(graph), `${visible.nodes.length} / ${graph.nodes.length} nodi`].filter(Boolean).join(' · ')}
-    actions={<Button variant="ghost" size="sm" disabled={!graph} onClick={() => show(PROVENANCE)}><Icon name="file" />Provenienza e lacune</Button>}>
+    actions={<>
+      <Button variant="ghost" size="sm" disabled={!graph} onClick={() => show(PROJECT_HISTORY)}><Icon name="history" />Cronologia</Button>
+      <Button variant="ghost" size="sm" disabled={!graph} onClick={() => show(PROVENANCE)}><Icon name="file" />Provenienza e lacune</Button>
+    </>}>
     {!read ? !serverError && <Column pad="lg"><Loading label="Lettura dello stato del server…" /></Column>
       : !context ? <Empty fill title="Nessun grafo" description="Seleziona prima una repository e un branch."
           action={<Button variant="outline" size="sm" onClick={() => go(() => model.selectStage('repository'))}>Vai al repository</Button>} />
