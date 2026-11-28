@@ -964,5 +964,19 @@ riferimento `results/daodan_premap_corpus.json` (`modal_premap.py`) 18.
   fetch error: external-host-error` e `Skipping the rest ... error in init phase`. Il repository finisce senza leggere un
   file, con uscita 0 e `packageFiles` vuoto; il riferimento ha la rete (`_runner` non guarda `network`) e il preset si
   risolve.
-- Non misurato: il riferimento con i comandi `network: none` davvero senza rete su tutto il corpus (quanti altri progetti
-  estendono un preset remoto).
+- Non misurato: il riferimento con i comandi `network: none` davvero senza rete su tutto il corpus.
+
+### I preset fuori da Renovate nel corpus (T0.C.10, informativo)
+
+Quante fixture hanno una config di Renovate che estende un preset che Renovate non ha in sé.
+
+- Comando: `modal run benchmarks/project-model/modal_premap.py --presets --out results/renovate-presets.json`
+  (`renovate_presets`, corsa `ap-92TWZ1Q99ZqwticQRhwRK1`, commit `bdd3b73e7`). Parametri: le 186 fixture con
+  `expected.json`, le 64 reali sui loro cloni (`_real`). Il file è quello che Renovate 44.239.1 prende, con le sue
+  funzioni: il primo di `getConfigFileNames()` che c'è (`package.json` solo con la chiave `renovate`, come
+  `detectConfigFile`), letto da `parseFileConfig` (JSON5 per `.json5`, JSONC per gli altri); ogni voce di `extends` ha la
+  sorgente che le dà `parsePreset`. Si leggono solo gli `extends` della config, non quelli dei preset che estende (sono in
+  rete).
+- Risultato: 10 fixture su 186 hanno una config; 3 estendono un preset fuori da Renovate, tutti `github>` (su
+  `api.github.com`): `real-bank-of-anthos`, `real-stack-jellyfin`, `real-stack-jellyfin-ios`. Le altre 7 estendono solo
+  preset interni (`config:base`, `config:recommended`, `group:`, `schedule:`, …).

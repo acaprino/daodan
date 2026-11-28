@@ -1,0 +1,323 @@
+{
+ "summary": {
+  "fixtures": 186,
+  "with_config": 10,
+  "extending_outside": [
+   "real-bank-of-anthos",
+   "real-stack-jellyfin",
+   "real-stack-jellyfin-ios"
+  ],
+  "by_source": {
+   "github": [
+    "real-bank-of-anthos",
+    "real-stack-jellyfin",
+    "real-stack-jellyfin-ios"
+   ]
+  }
+ },
+ "renovate": "44.239.1",
+ "fixtures": {
+  "js-angular": null,
+  "js-bun": null,
+  "js-cjs-esm-exports": null,
+  "js-deno": null,
+  "js-lerna": null,
+  "js-local-and-git-deps": null,
+  "js-nextjs": null,
+  "js-node-scripts": null,
+  "js-npm-single": null,
+  "js-npm-workspaces": null,
+  "js-nx": null,
+  "js-pnpm-workspace": null,
+  "js-static-html": null,
+  "js-sveltekit": null,
+  "js-turborepo": null,
+  "js-vendored-generated": null,
+  "js-version-conflict": null,
+  "js-vite-react-ts": null,
+  "js-vue-pnpm": null,
+  "js-yarn-berry": null,
+  "jvm-android-app-lib": null,
+  "jvm-gradle-computed-deps": null,
+  "jvm-gradle-groovy-wrapper": null,
+  "jvm-gradle-kts-catalog-composite": null,
+  "jvm-gradle-locking": null,
+  "jvm-java-version-conflict": null,
+  "jvm-kmp-common-jvm": null,
+  "jvm-kotlin-source-sets": null,
+  "jvm-maven-multi-bom-profile": null,
+  "jvm-maven-release-apt": null,
+  "jvm-maven-wrapper": null,
+  "jvm-mixed-java-kotlin": null,
+  "jvm-no-build": null,
+  "jvm-protobuf-generated": null,
+  "jvm-sbt-two-subprojects": null,
+  "jvm-spring-boot-managed": null,
+  "jvm-ver-gradle-mixed-tc8": null,
+  "jvm-ver-gradle-src6": null,
+  "jvm-ver-gradle-src8": null,
+  "jvm-ver-gradle-tc11": null,
+  "jvm-ver-gradle-tc21": null,
+  "jvm-ver-gradle-tc25": null,
+  "jvm-ver-gradle-tc8": null,
+  "jvm-ver-mvn-11": null,
+  "jvm-ver-mvn-14": null,
+  "jvm-ver-mvn-21": null,
+  "jvm-ver-mvn-25": null,
+  "jvm-ver-mvn-5": null,
+  "jvm-ver-mvn-6": null,
+  "jvm-ver-mvn-7": null,
+  "jvm-ver-mvn-8": null,
+  "jvm-ver-mvn-9": null,
+  "jvm-ver-mvn-cfg6": null,
+  "jvm-ver-mvn-rel8": null,
+  "mix-dart-flutter": null,
+  "mix-dotnet-central": null,
+  "mix-edge-deep-manifest": null,
+  "mix-edge-empty": null,
+  "mix-edge-extensions": null,
+  "mix-edge-scripts": null,
+  "mix-edge-sql": null,
+  "mix-edge-submodules": null,
+  "mix-edge-vendored": null,
+  "mix-elixir-umbrella": null,
+  "mix-infra-compose": null,
+  "mix-infra-devcontainer": null,
+  "mix-infra-gha": null,
+  "mix-infra-k8s-helm": null,
+  "mix-infra-tool-versions": null,
+  "mix-php-laravel": null,
+  "mix-poly-firebase": null,
+  "mix-poly-grpc": null,
+  "mix-poly-openapi": null,
+  "mix-ruby-rails": null,
+  "mix-swift-spm": null,
+  "mix-terraform-modules": null,
+  "py-conda-env": null,
+  "py-django": null,
+  "py-fastapi-compose": null,
+  "py-hatch-envs": null,
+  "py-monorepo-path-deps": null,
+  "py-namespace-packages": null,
+  "py-notebooks": null,
+  "py-pdm": null,
+  "py-pep723-scripts": null,
+  "py-pip-tools": null,
+  "py-pipenv": null,
+  "py-poetry-groups": null,
+  "py-requirements-includes": null,
+  "py-setup-cfg-extras": null,
+  "py-setup-py-dynamic": null,
+  "py-setup-py-static": null,
+  "py-undeclared-scripts": null,
+  "py-uv-src-layout": null,
+  "py-uv-workspace": null,
+  "py-vendored-generated": null,
+  "py-version-disagree": null,
+  "sys-bazel": null,
+  "sys-c-macro-annotations": null,
+  "sys-cmake-presets": null,
+  "sys-cmake-targets": null,
+  "sys-cpp-header-only": null,
+  "sys-cpp-vcpkg-conan": null,
+  "sys-git-submodule-absent": null,
+  "sys-go-buildtags": null,
+  "sys-go-cgo": null,
+  "sys-go-generated": null,
+  "sys-go-nested": null,
+  "sys-go-single": null,
+  "sys-go-toolchain": null,
+  "sys-go-vendor": null,
+  "sys-go-workspace": null,
+  "sys-make-plain": null,
+  "sys-meson": null,
+  "sys-rust-buildrs": null,
+  "sys-rust-features": null,
+  "sys-rust-path-git": null,
+  "sys-rust-shared-test-module": null,
+  "sys-rust-single": null,
+  "sys-rust-tauri": null,
+  "sys-rust-toolchain-conflict": null,
+  "sys-rust-workspace": null,
+  "mix-real-chi": null,
+  "mix-real-javapoet": {
+   "file": "renovate.json",
+   "presets": [
+    {
+     "preset": "config:base",
+     "source": "internal"
+    }
+   ]
+  },
+  "mix-real-klaxon": null,
+  "mix-real-python-semver": null,
+  "mix-real-semver": null,
+  "mix-real-tinyxml2": null,
+  "mix-real-tududi": null,
+  "mix-real-zlib": null,
+  "real-app-full-stack-fastapi": null,
+  "real-app-hoppscotch": null,
+  "real-app-jhipster-sample": null,
+  "real-app-kotlinconf": null,
+  "real-app-memos": null,
+  "real-auth0-go": null,
+  "real-bank-of-anthos": {
+   "file": ".github/renovate.json5",
+   "presets": [
+    {
+     "preset": "github>GoogleCloudPlatform/kubernetes-engine-samples//.github/renovate-configs/dee-platform-ops.json5",
+     "source": "github"
+    },
+    {
+     "preset": ":approveMajorUpdates",
+     "source": "internal"
+    },
+    {
+     "preset": "schedule:earlyMondays",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-microblog": null,
+  "real-next-subscriptions": null,
+  "real-stack-actual": null,
+  "real-stack-ardalis-cleanarchitecture": null,
+  "real-stack-astro-paper": null,
+  "real-stack-atuin": null,
+  "real-stack-bakerydemo": null,
+  "real-stack-bookstack": null,
+  "real-stack-ctfd": null,
+  "real-stack-documenso": null,
+  "real-stack-docuseal": null,
+  "real-stack-elk": {
+   "file": ".github/renovate.json5",
+   "presets": [
+    {
+     "preset": "config:base",
+     "source": "internal"
+    },
+    {
+     "preset": "schedule:weekly",
+     "source": "internal"
+    },
+    {
+     "preset": "group:allNonMajor",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-stack-epic-stack": null,
+  "real-stack-fiber-go-template": null,
+  "real-stack-gin-vue-admin": null,
+  "real-stack-healthchecks": null,
+  "real-stack-hexpm": null,
+  "real-stack-jasontaylor-cleanarchitecture": {
+   "file": "renovate.json",
+   "presets": [
+    {
+     "preset": "config:recommended",
+     "source": "internal"
+    },
+    {
+     "preset": ":semanticCommits",
+     "source": "internal"
+    },
+    {
+     "preset": ":separateMajorReleases",
+     "source": "internal"
+    },
+    {
+     "preset": "group:allNonMajor",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-stack-jellyfin": {
+   "file": ".github/renovate.json",
+   "presets": [
+    {
+     "preset": "github>jellyfin/.github//renovate-presets/dotnet",
+     "source": "github"
+    }
+   ]
+  },
+  "real-stack-jellyfin-ios": {
+   "file": ".github/renovate.json",
+   "presets": [
+    {
+     "preset": "github>jellyfin/.github//renovate-presets/nodejs",
+     "source": "github"
+    },
+    {
+     "preset": ":dependencyDashboard",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-stack-koel": null,
+  "real-stack-kuvasz": null,
+  "real-stack-lldap": null,
+  "real-stack-lobsters": null,
+  "real-stack-localsend": null,
+  "real-stack-mall": null,
+  "real-stack-mattermost-mobile": null,
+  "real-stack-mealie": {
+   "file": "renovate.json",
+   "presets": [
+    {
+     "preset": "config:recommended",
+     "source": "internal"
+    },
+    {
+     "preset": "helpers:pinGitHubActionDigests",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-stack-nestjs-boilerplate": {
+   "file": "renovate.json",
+   "presets": [
+    {
+     "preset": "config:base",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-stack-netbox": null,
+  "real-stack-openbudgeteer": null,
+  "real-stack-opengist": null,
+  "real-stack-owncast": {
+   "file": "renovate.json",
+   "presets": [
+    {
+     "preset": "config:recommended",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-stack-paperless-ngx": null,
+  "real-stack-peopleinspace": {
+   "file": "renovate.json",
+   "presets": [
+    {
+     "preset": "config:base",
+     "source": "internal"
+    }
+   ]
+  },
+  "real-stack-plausible": null,
+  "real-stack-polar": null,
+  "real-stack-quarkus-super-heroes": null,
+  "real-stack-spring-petclinic": null,
+  "real-stack-symfony-demo": null,
+  "real-stack-umami": null,
+  "real-stack-wallabag": null,
+  "real-stack-wger": null,
+  "real-svc-eshop": null,
+  "real-svc-otel-demo": null,
+  "real-svc-petclinic-microservices": null,
+  "real-svc-robot-shop": null,
+  "real-svc-voting-app": null,
+  "real-sveltekit-realworld": null
+ }
+}
