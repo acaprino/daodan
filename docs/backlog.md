@@ -62,7 +62,8 @@
 - **Angular `@HostListener` e `host`**: 0; non misurate 3. Fonte: `getHostElement` del controllore dei template (`benchmarks/angular-compiler`).
 - **Astro, `astro:routes:resolved`**: 1 (`real-stack-astro-paper`). Fonte: `sync()` dell'API con l'hook (`benchmarks/astro-compiler`).
 - **Go senza framework (`net/http`)**: 0; non misurate 11 con l'id `golang`. Fonte: go/types o scip-go sull'ultimo argomento della registrazione.
-- **Wrapper HTTP, parti non misurate**: il wrapper di un wrapper e i client di altri linguaggi (i client `axios`, `requests` e `httpx` sono `T1.C.15`).
+- **Wrapper HTTP, client sotto soglia**: `httpx` 1 (`mix-edge-submodules`), `axios` 1 (`mix-php-laravel`): un progetto ciascuno, nessuna riga in `daodan/data/http-clients.json` (`T1.C.15` ha messo solo `requests`, 6). Fonte quando una misura li porta a 3: il simbolo che scip-python scrive per le funzioni di `httpx` e scip-typescript per `AxiosInstance` (`index.d.ts`), letto da un indice registrato come per `requests`.
+- **Wrapper HTTP, parti aperte**: il wrapper di un wrapper (serve la prova del wrapper che chiama); i client di altri linguaggi; in Python l'URL passato per nome (`requests.request(method="POST", url=url)`: una lacuna, perché `flows._value` legge gli argomenti per posto; scip-python nomina già il parametro di ogni parola chiave, `request().(url)`), una funzione decorata (una lacuna: il decoratore decide che cosa passa la chiamata) e i metodi di `requests.Session` (non misurati).
 
 ### 5d. Collegamenti CSS sotto soglia (`T2.B.17`)
 

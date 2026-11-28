@@ -101,6 +101,53 @@ class PythonSemanticTests(unittest.TestCase):
         self.assertTrue(module.get("unresolved"))
         self.assertIn("exec", module.get("reason", ""))
 
+    def function_scope(self, semantic, name="f"):
+        function = next(d for d in semantic["declarations"] if d["name"] == name and d["kind"] == "function")
+        return next(s for s in semantic["scopes"] if s.get("caller") == function["id"])
+
+    def test_every_statement_that_binds_a_parameter_again_is_declared_inside_its_function(self):
+        """What binds a name in Python (the language reference, «Naming and binding»), written in the function over
+        its parameter: a declaration of the name, or an import, the reader records inside the function's lines, while
+        the function's scope stays resolved: the write is read, not guessed (`http_wrappers.prove` asks this)."""
+        forms = {"assignment": "url = other", "augmented": "url += other", "annotated": "url: str = other",
+                 "unpacked": "[url, *rest] = other", "starred": "first, *url = other", "for": "for url in other: pass",
+                 "with": "with other as url: pass", "except": "try:\n        pass\n    except Exception as url:\n        pass",
+                 "assignment expression": "(url := other)", "in a comprehension": "[(url := x) for x in other]",
+                 "capture": "match other:\n        case url:\n            pass",
+                 "as pattern": "match other:\n        case [1] as url:\n            pass",
+                 "star pattern": "match other:\n        case [*url]:\n            pass",
+                 "mapping rest": "match other:\n        case {**url}:\n            pass",
+                 "del": "del url", "def": "def url(): pass", "class": "class url: pass", "type": "type url = int",
+                 "nonlocal": "def inner():\n        nonlocal url\n        url = other",
+                 "import": "import url", "from import": "from os import sep as url"}
+        for form, statement in forms.items():
+            with self.subTest(form=form):
+                source = f"def f(url):\n    {statement}\n    return url\n"
+                semantic = self.parse(source)
+                last = len(source.splitlines())
+                written = [item["span"][0] for item in [*semantic["declarations"], *semantic["imports"]]
+                           if (item.get("name") or item.get("local")) == "url" and item.get("kind") != "parameter"]
+                self.assertTrue(written and all(2 <= line < last for line in written), written)
+                self.assertFalse(self.function_scope(semantic).get("unresolved"))
+
+    def test_what_runs_code_or_hands_out_a_namespace_leaves_the_scope_it_writes_unresolved(self):
+        """`exec` and `eval` write in this scope and the module's by default; `globals()` is the module's mapping,
+        `locals()`, and `vars()` with no argument, the scope's: the reader cannot read what they write."""
+        cases = {'exec("url = 1")': ("exec may introduce or mutate lexical bindings",) * 2,
+                 'eval("(url := 1)")': ("eval may introduce or mutate lexical bindings",) * 2,
+                 'globals()["url"] = 1': (None, "globals() is a mapping that may introduce or mutate module bindings"),
+                 'locals()["url"] = 1': ("locals() is a mapping that may introduce or mutate the bindings of its scope",
+                                         None),
+                 'vars()["url"] = 1': ("vars() is a mapping that may introduce or mutate the bindings of its scope", None),
+                 'vars(other)["url"] = 1': (None, None), 'self.exec("url = 1")': (None, None)}
+        for statement, reasons in cases.items():
+            with self.subTest(statement=statement):
+                semantic = self.parse(f"def f(url):\n    {statement}\n    return url\n")
+                module = next(s for s in semantic["scopes"] if s["id"] == "module")
+                self.assertEqual(tuple(scope.get("reason") for scope in (self.function_scope(semantic), module)), reasons)
+                self.assertEqual([bool(scope.get("unresolved")) for scope in (self.function_scope(semantic), module)],
+                                 [reason is not None for reason in reasons])
+
 
 class JavaScriptSemanticTests(unittest.TestCase):
     def parse(self, source, adapter=javascript.adapter, suffix="js"):

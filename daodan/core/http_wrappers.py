@@ -11,12 +11,17 @@ the snapshot state. For a call the engine resolves, at every sure end, into a fu
 - the snapshot declares that name once inside F's span, as F's parameter: its place among the formal parameters in the
   syntax tree of F's own declaration is the position of the URL in every call to F (overloads change nothing, for a
   method as for a function: the implementation's parameters decide); a destructured or rest parameter has no place of
-  its own, and TypeScript's `this`, which no call passes, leaves the scope unresolved, so it is refused as below;
+  its own, and TypeScript's `this`, which no call passes, leaves the scope unresolved, so it is refused as below. In
+  Python a method's first parameter is the instance it is called on and takes no place, a parameter after `*` or
+  `*args` is passed by name and has none, and a decorated function passes what its decorator decides: refused;
 - the name is written nowhere else: the snapshot declares every target of an assignment it reads (`url = x`, `url += x`,
-  `url++`, `[url] = x`, `({url} = x)`, `for (url of x)`), and every inner declaration of the name. What it cannot read
-  (`(url as any) = x`, `[(url as any)] = xs`, `eval(...)` and `(eval)(...)`) it declares nothing for: the reader leaves that
-  scope unresolved (`languages/semantic.py`, `block`), or the lines unread around a syntax error. F holding such a scope
-  or such lines is refused. The one exemption is the reader's own reason for a generic function
+  `url++`, `[url] = x`, `({url} = x)`, `for (url of x)`; in Python `url: T = x`, `with ... as url`, `except E as url`,
+  `(url := x)`, a capture pattern, `del url`, `nonlocal url` in an inner function), every inner declaration of the name,
+  and every import with its scope (`from m import x as url`). What it cannot read (`(url as any) = x`,
+  `[(url as any)] = xs`, `eval(...)` and `(eval)(...)`; Python's `exec`, `eval`, `locals()` and `vars()`) it declares
+  nothing for: the reader leaves that scope unresolved (`languages/semantic.py`, `block`), or the lines unread around a
+  syntax error. F holding such a scope or such lines is refused; Python's `globals()` leaves the module unresolved, and
+  writes no parameter. The one exemption is the reader's own reason for a generic function
   (`semantic.GENERIC_SCOPE_REASON`, set first on the scope the function opens: any later reason takes its place on that
   scope or sits on another scope of F, and refuses). `arguments`, which aliases the parameters in sloppy mode, is a read
   the snapshot records: F reading it is refused;
@@ -30,15 +35,19 @@ The proof holds as far as the reader marks unresolved, or unread, what it does n
 walks without declaring and without a mark. The holes the reviews found (a callee wrapped in parentheses or an erased
 type, an element or a fragment as an attribute's value, lines skipped around a syntax error) are closed in the reader, each
 with its test in `tests/test_xray_semantic_syntax.py`, and the shapes of each in `tests/test_codebase_map_flows_http_wrapper.py`.
+No reader sees Python's frames: since Python 3.13 a frame's `f_locals` writes the variables of its function (PEP 667), from
+a function F calls too, and a builtin reached by another name (`builtins.exec`) is no `exec` to the reader.
 
 Each other case is a gap with its site and its cause, never a candidate: a URL built from a parameter (the gap names the
 argument's node type: a template, a binary expression, a call), a parameter that is written again, shadowed, destructured
 or rest, a method that is no literal, ends outside the table mixed with ends in it, calls of the client that read the route
-differently, a name two declarations share. A function that is not named (a callback), one the URL is not a parameter of,
-a call with no URL and a call whose ends are not the table's are no wrapper and no gap. A wrapper of a wrapper (a function
+differently, a name two declarations share, a URL passed by name where a named argument reads a parameter of F
+(`requests.request(method="POST", url=url)`: a rule reads an argument by its place, and the gap cannot tell which named
+argument is the URL). Else a function that is not named (a callback), one the URL is not a parameter of, a call with no
+URL and a call whose ends are not the table's are no wrapper and no gap. A wrapper of a wrapper (a function
 that passes its own parameter to a proved wrapper) is not proved here: it needs the proof of the wrapper it calls, and no
-rule yet. A table entry for another language needs its reader to declare assignment targets and to leave unresolved what it
-cannot read.
+rule yet. The table's entries are JavaScript's, TypeScript's and Python's; one for another language needs its reader to
+declare assignment targets and to leave unresolved what it cannot read.
 
 `flows.link_facts` applies the proposed rules with no model (`applied`), and reads a call of the table made outside a wrapper
 as a rule would (`asked`): both ask for a route with `service(rules)`, and meet the routes `find_entry_points` declares.
@@ -108,13 +117,18 @@ class _Snapshot:
 
     def declared(self, owner: dict, name: str) -> list[dict]:
         """The declarations of that name inside the function's span: its parameter, and what gives the name a value or
-        declares it again. The engine could not say it: the SCIP roles do not tell a write from a read
-        (`code_graph.Occurrence` keeps only `definition`; scip-python gives a redefinition the read role), and the gate of
-        `Traversal._binding` serves a module's or a class's bindings, never a parameter."""
+        declares it again, an import included (Python's `from m import x as url` in the function binds `url`; the reader
+        records it with the imports, beside the declarations). The engine could not say it: the SCIP roles do not tell a
+        write from a read (`code_graph.Occurrence` keeps only `definition`; scip-python gives a redefinition the read
+        role), and the gate of `Traversal._binding` serves a module's or a class's bindings, never a parameter."""
         if self._declared is None:
             self._declared = defaultdict(list)
             for declaration in self.facts.declarations.values():
                 self._declared[declaration["file"], declaration["name"]].append(declaration)
+            for file, name_of, payload in self.facts.db.execute(
+                    "SELECT file, name, payload FROM sem_bindings WHERE kind='import'"):
+                if span := _unpack(payload).get("span"):
+                    self._declared[file, name_of].append({"kind": "import", "line": span[0], "column": span[1]})
         return [d for d in self._declared[owner["file"], name] if _inside(owner, d["line"], d["column"])]
 
     def sharing(self, owner: dict) -> list[dict]:
@@ -179,31 +193,52 @@ def _parameters_read(facts: flows.Facts, owner: dict, tree, node) -> list[str]:
 def _place(owner: dict, tree, declaration: dict, name: str) -> tuple[int | None, str]:
     """The place of the parameter a declaration is among the arguments of a call to the function, read from the
     function's own node in the tree, else None and why. TypeScript's `this`, which no call passes, would take a place it
-    does not have: the reader leaves such a function's scope unresolved (`binding` of a `this` pattern), so none gets here."""
+    does not have: the reader leaves such a function's scope unresolved (`binding` of a `this` pattern), so none gets here.
+    Python's grammar says the rest: a function whose nearest enclosing definition is a class is called on an instance,
+    which takes its first parameter; a parameter after `*` or `*args` takes its argument by name, as `**kwargs` does; a
+    decorator decides what a call passes."""
     span = owner["span"]
     node = tree.root.descendant_for_point_range((span[0] - 1, span[1]), (span[2] - 1, span[3]))
     if node is None or tuple(node.start_point) != (span[0] - 1, span[1]):
         return None, "the function is not where the snapshot declares it in its syntax tree"
+    if node.parent is not None and node.parent.type == "decorated_definition":
+        return None, "the function is decorated: what a call of it passes is the decorator's"
+    holder = node.parent  # the nearest definition around the function: a class makes it a method, under an `if` too
+    while holder is not None and holder.type not in ("function_definition", "class_definition"):
+        holder = holder.parent
+    receiver = int(holder is not None and holder.type == "class_definition")
     listed = node.child_by_field_name("parameters")
     formal = list(listed.named_children) if listed is not None else [node.child_by_field_name("parameter")]
-    patterns = []
+    patterns, by_name = [], False
     for parameter in formal:  # the pattern a formal parameter declares: a type and a default take nothing from it
-        if parameter is None or parameter.is_extra:
+        if parameter is None or parameter.is_extra or parameter.type == "positional_separator":
+            continue
+        if parameter.type == "keyword_separator":
+            by_name = True
             continue
         if parameter.type in ("required_parameter", "optional_parameter"):
             parameter = parameter.child_by_field_name("pattern")
         elif parameter.type == "assignment_pattern":
             parameter = parameter.child_by_field_name("left")
+        elif parameter.type in ("default_parameter", "typed_default_parameter"):
+            parameter = parameter.child_by_field_name("name")
+        elif parameter.type == "typed_parameter":
+            parameter = next(iter(parameter.named_children), None)
         if parameter is not None:
-            patterns.append(parameter)
+            patterns.append((parameter, by_name or parameter.type == "dictionary_splat_pattern"))
+            by_name = by_name or parameter.type == "list_splat_pattern"
     at = (declaration["line"] - 1, declaration["column"])
-    for index, pattern in enumerate(patterns):
+    for index, (pattern, named) in enumerate(patterns):
         if tuple(pattern.start_point) <= at < tuple(pattern.end_point):
-            if tuple(pattern.start_point) == at and pattern.type == "identifier":
-                return index, ""
-            return None, f"the parameter {name} " + (
-                "is a rest parameter: it holds every argument from its place on" if pattern.type == "rest_pattern"
-                else "is destructured: it has no place of its own among the arguments")
+            if pattern.type in ("rest_pattern", "list_splat_pattern"):
+                return None, f"the parameter {name} is a rest parameter: it holds every argument from its place on"
+            if named:
+                return None, f"the parameter {name} takes its argument by name: a call passes it at no place"
+            if tuple(pattern.start_point) != at or pattern.type != "identifier":
+                return None, f"the parameter {name} is destructured: it has no place of its own among the arguments"
+            if index < receiver:
+                return None, f"the parameter {name} is the instance the method is called on"
+            return index - receiver, ""
     return None, "no formal parameter of the function holds the declaration"
 
 
@@ -222,8 +257,7 @@ def prove(facts: flows.Facts, view: dict) -> tuple[list[dict], list[dict]]:
         symbols = ref.get("external_symbols") or ()
         found = [client(symbol) for symbol in symbols]
         owner = facts.declarations.get(ref.get("caller") or "")
-        if not any(found) or owner is None or owner["kind"] not in ("function", "method") \
-                or owner["name"] == "(anonymous)":
+        if not any(found) or owner is None or owner["kind"] not in ("function", "method") or owner["name"] in semantic.NAMELESS:
             continue
         site = f"{ref['file']}:{ref['span'][0]}"
         # one spec for every end: a future entry may read the URL or the method elsewhere than another end of the same call
@@ -235,12 +269,16 @@ def prove(facts: flows.Facts, view: dict) -> tuple[list[dict], list[dict]]:
         if isinstance(call, str):
             refuse(owner, site, call)
             continue
-        args = call["args"]
-        argument = flows._unwrapped(args[spec["url"]]) if spec["url"] < len(args) and args[spec["url"]] is not None \
-            else None
+        args, tree = call["args"], call["tree"]
+        if spec["url"] < len(args) and args[spec["url"]] is None:  # Python: the URL, and all after it, passed by name
+            named = [node for keyword, node in entries._arguments(call["node"], tree.source) if keyword]
+            if own := [name for node in named for name in _parameters_read(facts, owner, tree, node)]:
+                refuse(owner, site, f"the call passes {', '.join(own)} by name, and a rule reads an argument by its place")
+            continue
+        argument = flows._unwrapped(args[spec["url"]]) if spec["url"] < len(args) else None
         if argument is None:
             continue
-        tree, own = call["tree"], _parameters_read(facts, owner, call["tree"], argument)
+        own = _parameters_read(facts, owner, tree, argument)
         if argument.type not in flows.NAMES:
             if own:
                 refuse(owner, site, f"the URL is built from the parameter {', '.join(own)} by {argument.type}")
