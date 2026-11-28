@@ -1900,6 +1900,36 @@ def test_an_observer_that_starts_no_service_is_said_and_one_without_a_container_
     assert gaps(events, "service_unavailable") == []
 
 
+def test_the_app_s_run_gets_the_services_says_its_own_gaps_and_not_again_those_the_observers_said(tmp_path):
+    """The exploration's container run in the step starts the CI's services with the variables their job gives, as the
+    observers' runs do (`dynamic.app.plan`'s `beside`); a service that did not start in it is the app's own gap, and
+    what the CI's declaration leaves out, which the step said with the observers, is not said again."""
+    _project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
+    static_store(manifest)
+    broken = {**TUDUDI, "name": "cache", "image": "redis:7", "declared_in": "ci.yml#jobs.test.services.cache",
+              "ports": ["6380:6379"], "options": "", "env": {}}
+    started = [{"name": "postgres", "image": "postgres:16-alpine", "outcome": "ready"},
+               {"name": "cache", "image": "redis:7", "outcome": "failed", "cause": "pull access denied"}]
+    record = {"services": [TUDUDI, broken], "tests": [], "ci_steps": [], "starts": [
+        {"root": ".", "mode": "start", "runner": "npm", "argv": ["npm", "run", "start"], "surface": "web",
+         "declared_in": "package.json#scripts.start", "port": 3000, "needs_build": False}]}
+    seen, given = {}, {}
+
+    def box(project, command, **options):  # the app's run, as `container.run_in_container` within `container.beside`
+        services, env, _steps, said = container.BESIDE.get()
+        given.update(services=services, env=env)
+        said.services.extend(started)
+        return {"state": "done", "exit_code": 0, "outputs": []}
+    with mock.patch.object(premap, "ensure", return_value=record), \
+            mock.patch.object(dynamic, "observers", return_value=[observer_of(seen, [started])]):
+        _result, events, _asked = step(manifest, box)
+    assert given == {"services": seen["services"], "env": {"DATABASE_URL": DATABASE_URL}}
+    assert [gap["detail"].rpartition("; ")[2] for gap in gaps(events, "service_unavailable")] == [
+        "the tests ran without it", "the app ran without it"]
+    [partial] = gaps(events, "service_incomplete")  # the declaration's, said once for the step
+    assert partial["name"] == "cache"
+
+
 def test_the_step_runs_the_ci_s_steps_before_each_observer_s_tests_and_says_those_that_did_not(tmp_path):
     """The steps before the tests the observer runs reach its container runs; one that failed in its runs is a
     `ci_step_failed` gap once, one that cannot run a `ci_step_not_run` gap."""

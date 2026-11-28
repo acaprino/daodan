@@ -25,6 +25,7 @@ sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import container  # noqa: E402
+import dynamic  # noqa: E402
 import preparation  # noqa: E402
 from dynamic import app  # noqa: E402
 from test_codebase_map_dynamic_javascript import Played, write  # noqa: E402
@@ -280,6 +281,70 @@ def test_a_host_the_proxy_refused_and_nobody_answered_is_the_approval_gap_of_a_r
     seen = observe(tmp_path, played)
     [gap] = [gap for gap in seen["gaps"] if gap["kind"] == "approval_required"]
     assert gap["hosts"] == ["storage.googleapis.com"] and "storage.googleapis.com:443" in gap["detail"]
+
+
+# --- what the project's CI gives the tests of the app's folder ---------------------------------------------------
+
+POSTGRES = {"name": "postgres", "image": "postgres:16-alpine", "declared_in": "ci.yml#jobs.test.services.postgres",
+            "host": "localhost", "env": {"POSTGRES_PASSWORD": "postgres"}, "ports": ["5432:5432"],
+            "options": "--health-cmd pg_isready", "job_env": {"DATABASE_URL": "postgres://localhost:5432/shelf"}}
+CI_TESTS = [{"root": ".", "runner": "node:test", "declared_in": "package.json#scripts.test", "args": []},
+            {"root": ".", "runner": "jest", "declared_in": "jest.config.js", "args": []},  # no job of the CI runs it
+            {"root": "web", "runner": "vitest", "declared_in": "web/package.json#scripts.test", "args": []}]
+CI_STEPS = [{"declared_in": "ci.yml#jobs.test.steps.2", "tests": "package.json#scripts.test", "name": "Seed", "cwd": ".",
+             "run": "node db/seed.js"},
+            {"declared_in": "ci.yml#jobs.test.steps.3", "tests": "package.json#scripts.test", "test": True,
+             "env": {"NODE_ENV": "test", "TOKEN": "${{ secrets.TOKEN }}"}},
+            {"declared_in": "ci.yml#jobs.web.steps.1", "tests": "web/package.json#scripts.test", "cwd": "web",
+             "run": "npm run fixtures"}]
+
+
+def test_the_app_gets_the_ci_s_services_and_what_it_gives_the_tests_of_its_folder_and_nothing_more():
+    """The services the CI starts, the variables of their job and of the test step of the tests of the app's folder
+    that a job runs, and the steps before them (as `dynamic.services` and `dynamic.ci_steps` give them to an observer);
+    not those of another folder's tests, nor a value the CI computes, which is a gap. Without an app, none."""
+    record = {"starts": [start(".", "start")], "services": [POSTGRES], "tests": CI_TESTS, "ci_steps": CI_STEPS}
+    planned = app.plan(record)
+    assert planned["beside"] == {"services": dynamic.services(record)["services"],
+                                 "env": {"DATABASE_URL": "postgres://localhost:5432/shelf", "NODE_ENV": "test"},
+                                 "steps": [{"declared_in": "ci.yml#jobs.test.steps.2", "name": "Seed", "cwd": ".",
+                                            "run": "node db/seed.js"}],
+                                 "paths": {"postgres": "ci.yml#jobs.test.services.postgres"}}
+    [gap] = planned["gaps"]
+    assert gap["kind"] == "ci_step_incomplete" and "TOKEN" in gap["detail"] and "tests_not_in_ci" not in str(planned)
+    alone = app.plan({**record, "starts": []})
+    assert alone["beside"] == {"services": [], "env": {}, "steps": [], "paths": {}}
+    assert [gap["kind"] for gap in alone["gaps"]] == ["no_start_command"]
+
+
+def test_the_app_s_run_starts_within_what_the_ci_gives_and_says_a_service_and_a_step_that_did_not_run(tmp_path):
+    """The container run is `container.run_in_container` within `container.beside`, as an observer's: a service that did
+    not start and a step that failed in it are the app's gaps; a run with no container says neither."""
+    record = {"starts": [start(".", "dev")], "services": [POSTGRES], "tests": CI_TESTS, "ci_steps": CI_STEPS}
+    beside = app.plan(record)["beside"]
+    given = {}
+
+    def run(project, command, **options):
+        services, env, steps, said = container.BESIDE.get()
+        given.update(services=services, env=env, steps=steps)
+        said.services.append({"name": "postgres", "image": "postgres:16-alpine", "outcome": "failed",
+                              "cause": "pull access denied"})
+        said.ci_steps.append({"declared_in": "ci.yml#jobs.test.steps.2", "name": "Seed", "outcome": "exited",
+                              "exit_code": 1, "duration_seconds": 1, "cause": "it exited with code 1: ECONNREFUSED"})
+        write(Path(options["out_dir"]), {"execute.log": "DAODAN-APP 0 exit 0 4\n"})
+        write(Path(options["out_dir"]) / "out", {"app-0.json": result()})
+        return {"state": "done", "exit_code": 0, "outputs": []}
+    seen = observe(tmp_path / "a", run, beside=beside)
+    assert given == {key: beside[key] for key in ("services", "env", "steps")} and container.BESIDE.get() is None
+    service, step = seen["gaps"]
+    assert (service["kind"], service["path"]) == ("service_unavailable", "ci.yml#jobs.test.services.postgres")
+    assert "pull access denied" in service["detail"] and service["detail"].endswith("the app ran without it")
+    assert (step["kind"], step["path"]) == ("ci_step_failed", "ci.yml#jobs.test.steps.2")
+    assert "ECONNREFUSED" in step["detail"] and step["detail"].endswith("the app ran after it")
+    assert seen["apps"][0]["state"] == "ready"
+    unrun = observe(tmp_path / "b", lambda *args, **options: {"state": "gap", "cause": "no engine", "remedy": "start one"},
+                    beside=beside)
+    assert unrun["state"] == "gap" and unrun["gaps"] == []
 
 
 def test_a_driver_that_wrote_nothing_is_a_gap_not_a_silence(tmp_path):
