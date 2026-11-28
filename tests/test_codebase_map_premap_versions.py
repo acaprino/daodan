@@ -2,7 +2,7 @@
 declare the language version as data (Package.swift, .csproj), and Gradle's model of the Java and Kotlin targets.
 
 Renovate's answers are the recorded ones of the corpus (`benchmarks/project-model/results/premap-runs/`), Gradle's
-were recorded once in a Linux container (`tests/fixtures/premap/versions/gradle/<fixture>.json`).
+are recorded on Modal by `tests/fixtures/premap/versions/gradle/record.py` (`<fixture>.json` beside it).
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import premap  # noqa: E402
-from premap import gradle, project_files, renovate  # noqa: E402
+from premap import gradle, jvm_files, project_files, renovate  # noqa: E402
 import snapshot  # noqa: E402
 
 CORPUS = ROOT / "benchmarks/project-model/fixtures"
@@ -31,8 +31,8 @@ def recorded(name: str) -> dict:
     return json.loads(gzip.decompress((RUNS / f"{name}.json.gz").read_bytes()).decode("utf-8"))
 
 
-def replay(name: str):
-    table = {json.dumps(run["command"], sort_keys=True): run["result"] for run in recorded(name)["runs"]}
+def replay(*names: str):
+    table = {json.dumps(run["command"], sort_keys=True): run["result"] for name in names for run in recorded(name)["runs"]}
     return lambda commands: [table[json.dumps(command, sort_keys=True)] for command in commands]
 
 
@@ -260,6 +260,52 @@ def test_an_android_value_the_model_does_not_give_is_a_gap_naming_the_package():
     [gap] = read["gaps"]
     assert (gap["kind"], gap["path"]) == ("toolchain_undeclared", "build.gradle.kts")
     assert "android.compileSdk" in gap["detail"] and "platforms;android-" in gap["detail"]
+
+
+def test_a_platform_a_gradle_project_imports_is_a_package_with_the_bom_role():
+    """The model's `platforms` (`org.gradle.category` `platform` or `enforced-platform`) are `maven` packages of the
+    project's build file with `role` `bom`; a configure that failed states none."""
+    build = {"kind": "build", "root": "/w", "name": "x", "nested": False, "gradle": "9.9.1", "projects": [
+        {"path": ":", "dir": "/w", "buildFile": "/w/build.gradle.kts", "buildFileExists": True}]}
+    project = {"kind": "project", "build": None, "path": ":", "buildFile": "/w/build.gradle.kts", "uses": [],
+               "platforms": ["org.junit:junit-bom", "org.springframework.boot:spring-boot-dependencies"], "facts": {}}
+    stdout = "".join(gradle.SEPARATOR + json.dumps(record) + "\n" for record in (build, project))
+    read = gradle.read(None, [{"cwd": "."}], [{"root": "/w", "returncode": 0, "stdout": stdout, "stderr": ""}])
+    assert read["facts"]["packages"] == [
+        {"ecosystem": "maven", "name": "org.junit:junit-bom", "declared_in": "build.gradle.kts", "role": "bom"},
+        {"ecosystem": "maven", "name": "org.springframework.boot:spring-boot-dependencies",
+         "declared_in": "build.gradle.kts", "role": "bom"}]
+    failed = gradle.read(None, [{"cwd": "."}], [{"root": "/w", "returncode": 1, "stdout": stdout, "stderr": "x"}])
+    assert "packages" not in failed["facts"]
+
+
+def test_gradle_s_platform_gives_the_role_to_renovate_s_entry_at_its_line_or_in_the_catalog(tmp_path):
+    """`testImplementation platform('org.junit:junit-bom:5.11.3')`, `implementation(platform("...firebase-bom..."))`
+    and `testImplementation(platform(libs.junit.bom))`: Renovate states the line and the version, Gradle's model that
+    the dependency is a platform; in a catalog the entry is the catalog's, its use the project's build file."""
+    def boms(name: str) -> list:
+        return [p for p in premap_of(tmp_path, name)["packages"] if p.get("role")]
+
+    [groovy] = boms("jvm-gradle-groovy-wrapper")
+    assert (groovy["name"], groovy["declared_in"].split("#")[0], groovy["version"], groovy["role"]) == (
+        "org.junit:junit-bom", "build.gradle", "5.11.3", "bom")
+    assert {"gradle", "renovate"} <= {s.partition("@")[0] for s in groovy["sources"]}
+    [android] = boms("jvm-android-app-lib")
+    assert (android["name"], android["declared_in"].split("#")[0], android["version"]) == (
+        "com.google.firebase:firebase-bom", "app/build.gradle.kts", "33.7.0")
+    [catalog] = boms("jvm-gradle-kts-catalog-composite")
+    assert (catalog["name"], catalog["declared_in"].split("#")[0]) == (
+        "org.junit:junit-bom", "gradle/libs.versions.toml")
+    assert [place.split("#")[0] for place in catalog["used_in"]] == ["domain/build.gradle.kts"]
+
+
+def premap_of(tmp_path, name: str) -> dict:
+    """The pre-map of a corpus fixture from Renovate's recorded answer, Gradle's (`gradle/<name>`) and the build files."""
+    project = tmp_path / name / "proj"
+    shutil.copytree(CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
+    manifest = tmp_path / name / "out" / "manifest.sqlite"
+    snapshot.read_project(project, manifest)
+    return premap.write(manifest, sources=(renovate, jvm_files, gradle), runner=replay(name, f"gradle/{name}"))
 
 
 # ------------------------------------------------------------ CMake and Cargo

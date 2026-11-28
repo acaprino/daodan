@@ -190,6 +190,8 @@ def _used(packages: list[dict]) -> list[dict]:
     def fold(target: dict, entry: dict, places: list[str]) -> None:
         target["used_in"] = _places([*target["used_in"], *places])
         target["sources"] += [s for s in entry["sources"] if s not in target["sources"]]
+        if entry.get("role") and "role" not in target:  # Gradle's model: a platform() of a catalog's entry
+            target["role"] = entry["role"]
 
     central: dict[tuple, dict] = {}
     for entry in packages:
@@ -448,6 +450,8 @@ def _inputs(digest, root, sources) -> str:
         value.append("package-tables-v1")
     if maven in sources:
         value.append("maven-managed-versions-v1")
+    if gradle in sources:
+        value.append("gradle-platforms-v1")
     if noir in sources:
         value.append("noir-entry-paths-v3")
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()

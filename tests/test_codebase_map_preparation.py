@@ -634,6 +634,30 @@ def test_a_package_lerna_json_names_is_installed_by_lerna_s_bootstrap_after_the_
         assert "node_modules/.bin/lerna bootstrap --ignore-scripts" in plan["lines"][-1]
 
 
+def test_lerna_7_and_later_have_no_bootstrap_line_and_the_package_no_workspace_names_stays_a_gap():
+    """Lerna 7 removed `bootstrap`: the root's package manager installs the workspaces it names. A root that declares
+    Lerna 7 or later, or locks it, gets no `lerna` line; a package only `lerna.json` names stays a gap naming why. The
+    lockfile's version wins over the declared range; a range open upward says no major, and the bootstrap stays."""
+    def plan(declared: str, locked: str | None = None) -> dict:
+        manifests = {"package.json": {"name": "root", "devDependencies": {"lerna": declared}},
+                     "lerna.json": {"version": "1.0.0"},
+                     "packages/a/package.json": {"name": "@lrn/a", "dependencies": {"ms": "2.1.3"}}}
+        if locked:
+            manifests["package-lock.json"] = {"lockfileVersion": 3, "packages": {
+                "": {"name": "root"}, "node_modules/lerna": {"version": locked}}}
+        return prepared(manifests)
+
+    for declared, locked in (("^8.1.9", None), ("7.0.0", None), ("^6.6.2", "7.4.2")):
+        newer = plan(declared, locked)
+        assert "lerna" not in newer["restores"] and not any("bootstrap" in line for line in newer["lines"])
+        [gap] = newer["gaps"]
+        assert (gap["kind"], gap["path"]) == ("restore_failed", "packages/a") and "no bootstrap" in gap["detail"]
+    for declared, locked in (("^6.6.2", None), ("^8.0.0", "6.6.2"), (">=6", None)):
+        assert plan(declared, locked)["restores"]["lerna"] == ["."], (declared, locked)
+    assert [preparation.lerna_major({"devDependencies": {"lerna": r}}, "") for r in
+            ("^6.6.2", "~7", "8.x", "v9.0.0", "6 || 7", "*", ">=6", "latest")] == [6, 7, 8, 9, 6, None, None, None]
+
+
 def test_a_nested_requirements_file_is_an_environment_of_its_own():
     """pip installs a requirements file where it is, and no workspace names one: `docs/requirements.txt` under a uv
     project is restored on its own; a pyproject member below the root stays the root's."""

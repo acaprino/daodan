@@ -1,6 +1,6 @@
 // Daodan's pre-map: Gradle's project tree once the settings are evaluated, then per configured project the
-// projects it depends on and the Java and Kotlin targets the build sets; with each, the URLs of the repositories it
-// resolves from. Each record is a line starting with \u001e.
+// projects it depends on, the platforms it imports and the Java and Kotlin targets the build sets; with each, the URLs
+// of the repositories it resolves from. Each record is a line starting with \u001e.
 import groovy.json.JsonOutput
 def emit(record) { println '\u001e' + JsonOutput.toJson(record) }
 def urls(Closure repositories) {  // the Maven and Ivy repositories' URLs; none where the container does not exist
@@ -24,6 +24,12 @@ def compatibility(task, name) {  // a compile task's own field, null under the j
         field.accessible = true
         return field.get(task)
     } catch (Throwable ignored) { return null }
+}
+def category(dependency) {  // the `org.gradle.category` attribute a dependency asks for: `platform()` sets `platform`,
+    // `enforcedPlatform()` `enforced-platform`; null for a plain dependency
+    def key = dependency.attributes.keySet().find { it.name == 'org.gradle.category' }
+    def value = key == null ? null : dependency.attributes.getAttribute(key)
+    value instanceof org.gradle.api.Named ? value.name : value?.toString()
 }
 def jvmTarget(options) {
     options != null && options.hasProperty('jvmTarget') ? text(explicitValue(options.jvmTarget)) : null
@@ -71,13 +77,16 @@ gradle.projectsEvaluated { g ->
                 : "$level${minor ? '.' + minor : ''}${extension ? '-ext' + extension : ''}".toString()
             facts['android.buildToolsVersion'] = value('buildToolsVersion') ?: ''
         }
-        def uses = [] as SortedSet
+        def uses = [] as SortedSet, platforms = [] as SortedSet
         p.configurations.each { c ->
             c.dependencies.withType(org.gradle.api.artifacts.ProjectDependency).each { d -> uses << d.path }
+            c.dependencies.withType(org.gradle.api.artifacts.ExternalModuleDependency).each { d ->
+                if (category(d) in ['platform', 'enforced-platform']) { platforms << "${d.group}:${d.name}".toString() }
+            }
         }
         uses.remove(p.path)
         emit([kind: 'project', build: build, path: p.path, buildFile: p.buildFile.absolutePath,
-              uses: uses as List, facts: facts.findAll { it.value != null },
+              uses: uses as List, platforms: platforms as List, facts: facts.findAll { it.value != null },
               repositories: urls { p.repositories } + urls { p.buildscript.repositories }])
     }
 }

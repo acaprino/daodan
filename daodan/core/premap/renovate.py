@@ -66,10 +66,8 @@ TOOL_DEPTYPES = {"engines", "packageManager", "volta", "golang", "toolchain", "r
 WRAPPER_SELF = {"maven-wrapper", "gradle-wrapper"}  # a wrapper manager's entry for the wrapper itself, not the tool
 # A package that a build downloads to manage or inherit others, not to compile with: its `role`, by the depType Renovate's
 # maven manager gives it (`import`, a BOM in `dependencyManagement`; `parent`, `parent-root`, the POM parent). One field
-# keeps it a dependency, as decided, apart from the others. Gradle's `platform()` is a declared gap: Renovate's gradle
-# manager gives it no depType of its own (the dependency's coordinates only), and the one source that states it,
-# Gradle's model (the dependency's `Category` attribute, `platform` or `enforced-platform`), is not read by
-# `gradle_model.gradle`: the init script is part of each recorded Gradle answer's command, all to record again.
+# keeps it a dependency, as decided, apart from the others. Gradle's `platform()` has no depType of its own in
+# Renovate's answer: Gradle's model states it (`premap.gradle`, the dependency's `org.gradle.category` attribute).
 ROLES = {("maven", "import"): "bom", ("maven", "parent"): "parent", ("maven", "parent-root"): "parent"}
 # Composer's platform packages (php, hhvm, ext-*, lib-*, composer, composer-plugin-api, composer-runtime-api): what the
 # PHP running the project has, never downloaded, so no package; `php` is a toolchain where the file states it. Composer's
@@ -751,8 +749,8 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
 
 def read(context, commands, results):
     result = results[0]
-    workflows = next((r for c, r in zip(commands, results) if c["argv"] == ["sh", "-c", EACH]), None)
-    yarn = next((r for c, r in zip(commands, results) if c["argv"][2:4] == [YARN_LOCKS, YARN_NAME]), None)
+    workflows = next((r for c, r in zip(commands, results) if c.get("argv") == ["sh", "-c", EACH]), None)
+    yarn = next((r for c, r in zip(commands, results) if (c.get("argv") or [])[2:4] == [YARN_LOCKS, YARN_NAME]), None)
     tests = (getattr(context, "stated", None) or {}).get("tests") or []
     declared, gaps = _workflows(workflows, compose.reader(context), tests) if workflows else ({}, [])
     started, unread = compose.scripts(context)  # and the test scripts that start Docker Compose

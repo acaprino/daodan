@@ -216,3 +216,11 @@ def test_a_local_dependency_only_yarn_lock_states_keeps_its_restore_from_running
     planned = preparation.node_prepare(sorted(files), files.get, preparation.refusals(record))
     assert planned["restores"] == {} and planned["lines"] == []
     assert not [gap for gap in planned["gaps"] if gap["kind"] == "restore_failed"]
+
+
+def test_a_tilde_range_is_no_local_dependency_and_a_home_path_is():
+    """npm-package-arg: `~1.2.3` is a semver range (patch updates), `~/x` a folder under the home: only the path is a
+    local dependency, refused as absolute."""
+    manifest = {"name": "root", "dependencies": {"ms": "~2.1.3", "home": "~/x", "sib": "./sib", "up": "../up"}}
+    gaps = preparation.local_dependencies(["package.json"], lambda rel: json.dumps(manifest), "node")
+    assert sorted(gap["entry"] for gap in gaps) == ["dependencies.home: ~/x", "dependencies.up: ../up"]

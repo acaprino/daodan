@@ -4,7 +4,9 @@
 folder holding a settings script (or, without one, a build script), with the Gradle Daodan carries. The init script
 applies to every build Gradle loads (the root build, included builds, buildSrc) and prints, once a build's settings
 are evaluated, its root folder and the tree of projects its settings made (each project's path, folder and build
-file); once its projects are configured, per project with a build file, the projects it depends on and only the
+file); once its projects are configured, per project with a build file, the projects it depends on, the external
+dependencies whose `org.gradle.category` attribute is `platform` or `enforced-platform` (`platform()`,
+`enforcedPlatform()`: a BOM the build imports for its versions) and only the
 Java and Kotlin targets the build sets, never a default or a convention (that would be Gradle's own JVM, or a
 toolchain lookup): the Java toolchain's `languageVersion`, `sourceCompatibility` and `targetCompatibility` of the
 `java` extension or of a Java compile task, a compile task's `options.release`, Kotlin's `compilerOptions.jvmTarget`
@@ -19,7 +21,9 @@ one, which Gradle still makes) and the projects of its build it depends on as ed
 workspace with its projects' folders as members; each target is a `java` toolchain declared in the project's build
 file with the field (Gradle's model says which project a value applies to, not which script set it), the Android
 values the toolchains `android-sdk` and `android-build-tools` (`ANDROID`), one the model gives none of (an add-on's
-target) a `toolchain_undeclared` gap naming its package. A project's registries are the origins of the
+target) a `toolchain_undeclared` gap naming its package. Each platform is a `maven` package of the project's build
+file with `role` `bom`, as a Maven BOM import is (`renovate.ROLES`): Renovate states the line and version, Gradle's
+model that it is a platform. A project's registries are the origins of the
 repositories it and its buildscript resolve from and of those its build's settings declare (plugin management,
 dependency resolution management). A build whose
 settings did not evaluate is a `model_failed` gap; one that failed while configuring keeps its projects and is
@@ -96,7 +100,7 @@ def _name(build: str | None, path: str) -> str:
 
 
 def read(context, commands, results):
-    units, workspaces, toolchains, gaps, seen, version, registries = {}, [], [], [], set(), None, {}
+    units, workspaces, toolchains, packages, gaps, seen, version, registries = {}, [], [], [], [], set(), None, {}
     for command, result in zip(commands, results):
         root = result.get("root") or "/"
 
@@ -136,6 +140,10 @@ def read(context, commands, results):
                 unit["depends_on"] = [_name(project["build"], path) for path in project["uses"]]
             if unit is not None:
                 registries[unit["name"]] |= {origin(url) for url in project.get("repositories") or ()}
+            for name in project.get("platforms") or () if build_file and result["returncode"] == 0 else ():
+                item = {"ecosystem": "maven", "name": name, "declared_in": build_file, "role": "bom"}
+                if item not in packages:
+                    packages.append(item)
             for field, value in project["facts"].items():
                 where = f"{build_file}#{field}"
                 if not build_file or result["returncode"] != 0:
@@ -152,5 +160,5 @@ def read(context, commands, results):
         if found - {None}:
             units[name]["registries"] = sorted(found - {None})
     facts = {key: value for key, value in (("units", list(units.values())), ("workspace", workspaces),
-                                           ("toolchains", toolchains)) if value}
+                                           ("toolchains", toolchains), ("packages", packages)) if value}
     return {"facts": facts, "gaps": gaps, **({"version": version} if version else {})}
