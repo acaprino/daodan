@@ -288,3 +288,133 @@ def test_the_plan_of_the_stored_rows_is_the_plan_the_pass_runs(tmp_path):
         assert engine_pass.no_analyzer(store.connection) == {gap["language"]: gap["files"] for gap in planned["gaps"]
                                                             if gap["kind"] == "no-analyzer"} == {"astro": 1, "sql": 1}
     assert said == planned
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# The one plan (`plan.current`): the steps, the policy, the actions and the gaps, from their owners
+
+
+@pytest.fixture
+def shared(tmp_path, monkeypatch):
+    import egress
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    egress.PENDING.clear()
+    yield tmp_path / "shared"
+    egress.PENDING.clear()
+
+
+def _states(planned: dict, of: str = "steps") -> dict:
+    return {entry["id"]: entry["state"] for entry in planned[of]}
+
+
+def test_the_plan_of_no_snapshot_has_the_eight_steps_to_do_the_policy_and_the_download_gap(tmp_path, shared):
+    import container
+    planning = _planning()
+    planned = planning.current(tmp_path / "out" / "manifest.sqlite")
+    assert [step["id"] for step in planned["steps"]] == list(pipeline.IDS)
+    assert set(_states(planned).values()) == {"pending"}
+    assert {step["id"]: (step["executes"], step["stops"]) for step in planned["steps"]} == {
+        "list_files": ("no", True), "read_code": ("no", True), "recognize_stack": ("no", False),
+        "find_modules": ("container", True), "find_entry_points": ("container", False), "link_calls": ("container", True),
+        "run_and_observe": ("container", False), "assemble_graph": ("no", True)}
+    assert [(action["id"], action["kind"], action["state"]) for action in planned["actions"]] == [
+        ("recognize_stack", "recognize", "pending"), ("find_modules", "model", "pending"),
+        ("find_entry_points", "entries", "pending"), ("assemble_graph", "assemble", "pending")]
+    assert planned["gaps"] == [planning.DOWNLOADS]
+    network = planned["policy"]["network"]
+    assert network == {"canonical": list(container.REGISTRIES), "approved": [], "blocked": [], "other": "ask",
+                       "answered_in": "app"}
+    assert planned["policy"]["container"]["engine"] == "off" and planned["policy"]["container"]["remedy"]
+
+
+def test_the_plan_says_the_steps_and_actions_of_the_last_analysis(tmp_path, shared):
+    """The steps to `find_entry_points` are done, the store is read, the nodes wait for the steps after; an approved host
+    is in the policy, and an analysis started again leaves the steps after it to do."""
+    import egress
+    planning = _planning()
+    root = _project(tmp_path / "project", {"billing.go": GO, "pay.py": PY})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    pipeline.run(manifest, stop="find_entry_points", fast_scan=True)
+    state, _ = egress.answer(egress.load(), egress.new_session(), "git.example.com", egress.project_of(manifest), "always")
+    egress.save(state)
+    planned = planning.current(manifest)
+    assert _states(planned) == {"list_files": "done", "read_code": "done", "recognize_stack": "done",
+                                "find_modules": "done", "find_entry_points": "done", "link_calls": "pending",
+                                "run_and_observe": "pending", "assemble_graph": "pending"}
+    actions = {action["id"]: action for action in planned["actions"]}
+    assert {action["kind"] for action in planned["actions"]} <= set(planning.ACTIONS)
+    assert all(set(action) >= {"id", "step", "kind", "target", "project_code", "container", "state"}
+               for action in planned["actions"])
+    assert (actions["read_code:go"]["state"], actions["read_code:go"]["container"]) == ("done", False)
+    assert actions["link_calls:scip-go"]["state"] == "pending" and actions["link_calls:scip-go"]["target"]["languages"] == ["go"]
+    assert all(not action["project_code"] or action["container"] for action in planned["actions"])
+    assert "find_modules" not in actions and "recognize_stack" not in actions  # their fresh records stand for the steps
+    assert actions["recognize_stack:stack-analyser"]["state"] in ("done", "failed")
+    assert planned["policy"]["network"]["approved"] == ["git.example.com"]
+    with open_snapshot(manifest) as store:
+        assert [gap for gap in planned["gaps"] if gap is not planning.DOWNLOADS] == planning.plan(planning.stored(store))["gaps"]
+    bus = events.Bus(manifest.with_name(events.JOURNAL))
+    bus.emit("step.started", "recognize_stack", step="recognize_stack")
+    assert _states(planning.current(manifest))["find_modules"] == "pending"  # of the analysis before
+
+
+def test_an_action_is_not_possible_with_the_cause_and_remedy_of_its_need_and_a_fresh_one_is_skipped(tmp_path, shared,
+                                                                                                    no_go_grammar):
+    planning = _planning()
+    _results, _launched, _asked, _seen = _chain(tmp_path)
+    planned = planning.current(tmp_path / "out" / "manifest.sqlite")
+    actions = {action["id"]: action for action in planned["actions"]}
+    assert actions["read_code:go"]["state"] == "failed" and "none of the 1 go files" in actions["read_code:go"]["cause"]
+    go = actions["link_calls:scip-go"]
+    assert go["state"] == "not_possible" and "none of the 1 go files" in go["cause"] and go["remedy"]
+    assert actions["link_calls:scip-python"]["state"] == "done"
+    assert _states(planned)["link_calls"] == "done" and _states(planned)["recognize_stack"] == "pending"
+    bus = events.Bus((tmp_path / "out" / "manifest.sqlite").with_name(events.JOURNAL))
+    bus.emit("step.started", "link_calls", step="link_calls")
+    bus.emit("analyzer.finished", "scip-python: already fresh", step="link_calls", analyzer="scip-python", fresh=True)
+    planned = planning.current(tmp_path / "out" / "manifest.sqlite")
+    assert _states(planned, "actions")["link_calls:scip-python"] == "skipped"
+    assert _states(planned)["link_calls"] == "running"
+    assert _states(planned, "actions")["link_calls:scip-go"] == "not_possible"  # its parser is still missing
+
+
+def test_a_request_of_gradle_waits_for_its_model_action_alone_and_a_no_makes_it_not_possible(tmp_path, shared):
+    """The sources of the pre-map are actions of `find_modules`, with the tools and the network their commands name: a
+    request `egress.pending` holds for gradle (the tool `egress.asking` named, as `container_runner` asks) puts its action
+    alone in `awaiting_approval`, with the hosts only; the user's "no" makes it `not_possible` with `host_denied`."""
+    import container
+    import egress
+    import premap
+    from premap import go as premap_go, gradle as premap_gradle
+    planning = _planning()
+    root = _project(tmp_path / "project", {"settings.gradle": "rootProject.name = 'shop'\n", "build.gradle": "\n",
+                                           "go.mod": "module example.com/billing\n\ngo 1.22\n", "billing.go": GO})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    project = egress.project_of(manifest)
+
+    def runner(commands):  # as `container_runner` asks: gradle's host nobody decided stops it, the others find no engine
+        with egress.asking(commands[0]["tool"]):
+            if commands[0]["tool"] == "gradle":
+                _waiting, said = egress.preflight(project, ("repo.example.com",))
+                raise container.Gap(said[0]["detail"], "answer in the app, then analyze again", said)
+        raise container.Gap("no container engine answers", "start Docker or Podman")
+
+    looked = lambda rows, *args, **kwargs: [{**row, "address": None, "network": False} for row in rows]  # noqa: E731
+    with mock.patch.object(egress, "resolve", side_effect=looked):
+        premap.write(manifest, runner=runner)  # every source: the record is fresh for the plan
+    gradle, go = premap.label(premap_gradle), premap.label(premap_go)
+    actions = {action["id"]: action for action in planning.current(manifest)["actions"]}
+    waiting = actions[f"find_modules:{gradle}"]
+    assert (waiting["state"], waiting["hosts"], waiting["tools"], waiting["network"]) == (
+        "awaiting_approval", ["repo.example.com"], ["gradle"], ["registries"])
+    assert set(waiting) == {"id", "step", "kind", "target", "project_code", "container", "state", "hosts", "tools", "network"}
+    assert waiting["kind"] == "model" and waiting["project_code"] and waiting["container"]
+    assert [action["id"] for action in actions.values() if action["state"] == "awaiting_approval"] == [f"find_modules:{gradle}"]
+    assert (actions[f"find_modules:{go}"]["state"], actions[f"find_modules:{go}"]["gap"]) == ("not_possible", "model_not_run")
+    assert "find_modules" not in actions  # the record's sources stand for the step
+    egress.reply(project, ["repo.example.com"], "no")
+    refused = {action["id"]: action for action in planning.current(manifest)["actions"]}[f"find_modules:{gradle}"]
+    assert (refused["state"], refused["gap"], refused["hosts"]) == ("not_possible", "host_denied", ["repo.example.com"])
+    assert refused["cause"] and refused["remedy"]

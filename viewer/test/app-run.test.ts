@@ -118,6 +118,15 @@ test('the steps follow their own events, with the progress, the gaps and the cau
   assert.equal(runPercent(of(null)), 0);
 });
 
+test('a step whose records are fresh is already up to date and counts as done', () => {
+  const events = [{ kind: 'step.skipped', step: 'recognize_stack' }, { kind: 'step.skipped', step: 'find_modules' },
+    { kind: 'step.started', step: 'find_entry_points' }];
+  const list = steps(run('running', events));
+  assert.deepEqual(list.slice(0, 3).map(step => [step.status, step.note]),
+    [['skipped', 'Già aggiornata'], ['skipped', 'Già aggiornata'], ['running', 'In corso']]);
+  assert.equal(runCount(run('running', events)), '2 di 6 passi completati');
+});
+
 test('the bar of the steps stops where a step failed once the run is over', () => {
   const events = [{ kind: 'step.started', step: 'recognize_stack' }, { kind: 'step.finished', step: 'recognize_stack' }, { kind: 'step.started', step: 'find_entry_points' }, { kind: 'step.failed', step: 'find_entry_points', message: 'interrotto' }];
   assert.deepEqual(runBar(run('running', events)), { value: 17 });

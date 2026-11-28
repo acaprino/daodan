@@ -2,7 +2,8 @@
 
 Each step has the same contract: `NAME`, `INPUTS` (what it reads, written by the steps before it), `OUTPUTS`
 (what it writes), `WITHOUT` (what the pipeline does when the step fails: None where the steps after it need it and
-stop, else the words that say how it goes on) and `run(context)`; it says what it does on the context's event bus
+stop, else the words that say how it goes on), `EXECUTES` (where what it runs runs: "no" where it runs nothing,
+"container" in Daodan's container) and `run(context)`; it says what it does on the context's event bus
 (`pipeline.events`). The snapshot is the pipeline's input; the flows read the complete graph after it.
 
 The eight ids of the design (`IDS`, docs/specs/architettura.md, «La pipeline a otto step»): `list_files`
@@ -35,6 +36,10 @@ its input; the six others are its steps (`STEPS`):
    executed, an observed edge against a proven one), and what the graph does not hold: the files an index left out,
    the languages no analyzer lists, the calls between two analyzers' languages. It counts the routes the static
    links join, with no rule of the model (`flows.cached_links`), and says the HTTP calls no route answers.
+
+Steps 3–5 have `fresh(context)`: their `run`'s result read from their records when the records' owners say they are
+fresh (one `summary` per step, for both). `_run` asks it before `run` and, when it answers, says `step.skipped` and does
+not run the step; `link_calls` and `run_and_observe` skip per analyzer, `assemble_graph` always runs.
 
 A journal written with the old names (`stack`, `scan`, `parse`, `analyze`, `dynamic`, `union`) reads with the ids
 (`events.LEGACY`).
@@ -80,6 +85,7 @@ def _inventory_only(manifest: Path) -> bool:
 
 class FindModules:
     NAME, INPUTS, OUTPUTS, WITHOUT = "find_modules", ("inventory", "stack"), ("modules", "premap", "technologies"), None
+    EXECUTES = "container"  # the model commands (`container_runner`)
 
     @staticmethod
     def run(context: Context) -> dict:
@@ -102,20 +108,46 @@ class FindModules:
         synced = modules.sync_with_premap(manifest, record)
         for gap in record.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=FindModules.NAME, gap=gap)
-        out = {"modules": len(synced["modules"]), "graph": graph["graph"], "action": graph.get("action"),
-               "units": len(record["units"]), "gaps": len(record["gaps"]), "premap": str(premap.path(manifest))}
         try:  # the technologies of each module, with the file that declares them: the analysis needs none
-            out["technologies"] = len(technologies.ensure(manifest, facts=record)["technologies"])
+            found = technologies.ensure(manifest, facts=record)
         except Exception as error:  # noqa: BLE001 - said, as a failed stack step is, and the run goes on
-            cause = f"{type(error).__name__}: {error}"
-            bus.emit("log", f"the technologies of the modules: {error}", step=FindModules.NAME, level="error", cause=cause,
+            found = f"{type(error).__name__}: {error}"
+            bus.emit("log", f"the technologies of the modules: {error}", step=FindModules.NAME, level="error", cause=found,
                      remedy=RecognizeStack.WITHOUT)
-            out["technologies_failed"] = cause
-        return out
+        return FindModules.summary(manifest, graph, synced, record, found)
+
+    @staticmethod
+    def fresh(context: Context) -> dict | None:
+        """The summary of the records when the module graph, the pre-map (with `run`'s runner) and the technologies are
+        fresh and the graph holds this pre-map (`modules.sync_with_premap` would leave it as it is); else None."""
+        import json
+        import modules
+        import premap
+        import technologies
+        manifest = context.manifest
+        graph = modules.graph_state(manifest)
+        if graph["state"] != "fresh" or premap.state(manifest, runner=context.runner)["state"] != "fresh":
+            return None
+        record = json.loads(premap.path(manifest).read_text(encoding="utf-8"))
+        synced = modules.load_graph(Path(graph["graph"]))
+        if not record.get("inputs_digest") or synced.get("premap_digest") != record["inputs_digest"] \
+                or technologies.state(manifest, facts=record) != "fresh":
+            return None
+        return FindModules.summary(manifest, {**graph, "action": "none"}, synced, record, technologies.recorded(manifest))
+
+    @staticmethod
+    def summary(manifest: Path, graph: dict, synced: dict, record: dict, found: dict | str) -> dict:
+        """What `run` gives, from its records: `found` is the technologies' record, or the cause they failed with."""
+        import premap
+        return {"modules": len(synced["modules"]), "graph": graph["graph"], "action": graph.get("action"),
+                "units": len(record["units"]), "gaps": len(record["gaps"]), "premap": str(premap.path(manifest)),
+                **({"technologies": len(found["technologies"])} if isinstance(found, dict) else
+                   {"technologies_failed": found})}
 
 
 class FindEntryPoints:
     NAME, INPUTS, OUTPUTS = "find_entry_points", ("inventory", "stack", "premap", "snapshot"), ("entry_points",)
+    EXECUTES = "container"  # Noir and the frameworks' own tools
     WITHOUT = "the analysis goes on without routes; analyze again"  # `link_calls` does not read them
 
     @staticmethod
@@ -132,6 +164,21 @@ class FindEntryPoints:
         found = entry_points.ensure(manifest, runner=context.runner, report=source)
         for gap in found.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=FindEntryPoints.NAME, gap=gap)
+        return FindEntryPoints.summary(manifest, found)
+
+    @staticmethod
+    def fresh(context: Context) -> dict | None:
+        """The summary of the record when it is fresh, with `run`'s runner (`entry_points.state`); else None."""
+        import json
+        import entry_points
+        if entry_points.state(context.manifest, runner=context.runner)["state"] != "fresh":
+            return None
+        return FindEntryPoints.summary(context.manifest,
+                                       json.loads(entry_points.path(context.manifest).read_text(encoding="utf-8")))
+
+    @staticmethod
+    def summary(manifest: Path, found: dict) -> dict:
+        import entry_points
         return {"entry_points": str(entry_points.path(manifest)), "gaps": len(found["gaps"])}
 
 
@@ -160,19 +207,32 @@ def _runner(manifest: Path):
 
 class RecognizeStack:
     NAME, INPUTS, OUTPUTS = "recognize_stack", ("inventory",), ("stack",)
+    EXECUTES = "no"  # the pinned stack-analyser reads the files, and runs nothing of the project
     WITHOUT = "the analysis goes on; scan again to recognize the technologies"  # the analysis needs no technology
 
     @staticmethod
     def run(context: Context) -> dict:
         import stack_recognition
         _inventory_only(context.manifest)  # the first step: a store that cannot be read stops the run here
-        record = stack_recognition.ensure(context.manifest)
-        return {"technologies": len(record["found"]), "tools": record["tools"],
-                "path": str(stack_recognition.path(context.manifest))}
+        return RecognizeStack.summary(context.manifest, stack_recognition.ensure(context.manifest))
+
+    @staticmethod
+    def fresh(context: Context) -> dict | None:
+        """The summary of the record when it is fresh (`stack_recognition.state`); else None."""
+        import stack_recognition
+        if stack_recognition.state(context.manifest) != "fresh":
+            return None
+        return RecognizeStack.summary(context.manifest, stack_recognition.recorded(context.manifest))
+
+    @staticmethod
+    def summary(manifest: Path, record: dict) -> dict:
+        import stack_recognition
+        return {"technologies": len(record["found"]), "tools": record["tools"], "path": str(stack_recognition.path(manifest))}
 
 
 class LinkCalls:
     NAME, INPUTS, OUTPUTS, WITHOUT = "link_calls", ("snapshot", "premap"), ("edges",), None
+    EXECUTES = "container"  # an analyzer that builds the project builds it there (`EngineSpec.needs_container`)
 
     @staticmethod
     def run(context: Context) -> dict:
@@ -189,6 +249,7 @@ class LinkCalls:
 
 class RunAndObserve:
     NAME, INPUTS, OUTPUTS = "run_and_observe", ("snapshot", "premap", "edges"), ("observed",)
+    EXECUTES = "container"  # the project's tests and its app
     WITHOUT = "the graph is the static one; run the analysis again"  # what a run observes is added to that graph
 
     @staticmethod
@@ -201,7 +262,7 @@ class AssembleGraph:
     # `modules.ensure_graph` derives the module edges from the snapshot's symbols and the graph `find_modules` wrote; the
     # static links (`flows.cached_links`) join the HTTP calls to the routes of `entry_points`
     NAME, INPUTS, OUTPUTS = "assemble_graph", ("snapshot", "modules", "entry_points", "edges", "observed"), ("graph",)
-    WITHOUT = None
+    WITHOUT, EXECUTES = None, "no"
     # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
     # extension, JNI): each stage loads only its own index, so no edge joins them.
     APART = (("java", "kotlin"), ("go", "c"), ("python", "c"), ("python", "cpp"), ("java", "c"), ("java", "cpp"))
@@ -367,7 +428,8 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
     without (`WITHOUT`) says why as an error and the run goes on: its result is `{"failed": cause}`, and its
     `step.finished` carries `failed`. An error a step the others need does not foresee is said as `step.failed`
     and reaches the caller, and so is an interruption (Ctrl-C, the interpreter's exit). A `start` or `stop` that
-    names no step is refused before any event."""
+    names no step is refused before any event. A step whose records are fresh (`_fresh`) is not run: its
+    `step.skipped` carries its `outputs`, and its result is the one its records give."""
     names = [step.NAME for step in STEPS]
     for asked in (start, stop):
         if asked is not None and asked not in names:
@@ -380,6 +442,11 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
     chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
     results = context.results
     for step in chosen:
+        if (done := _fresh(step, context)) is not None:
+            bus.emit("step.skipped", f"{step.NAME}: inputs unchanged", step=step.NAME, outputs=list(step.OUTPUTS),
+                     reason="inputs unchanged")
+            results[step.NAME] = done
+            continue
         bus.emit("step.started", step.NAME, step=step.NAME, inputs=list(step.INPUTS))
         failed = None
         try:
@@ -412,6 +479,19 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
         report["pipeline_complete"] = True
         engine_pass._write_report(report_path or manifest.with_name(engine_pass.REPORT_NAME), report)
     return results
+
+
+def _fresh(step, context: Context) -> dict | None:
+    """What a step with `fresh` gave last time, read from its records, when they are fresh: the one place that decides
+    whether a step runs. The fingerprints stay their records' owners'; a record that cannot be read is not fresh, and
+    the step that runs says why. `link_calls` and `run_and_observe` skip per analyzer (`analyzer.finished` with
+    `fresh`), and `assemble_graph` always runs: `runtime` reads its gaps from the journal's last union."""
+    if not hasattr(step, "fresh"):
+        return None
+    try:
+        return step.fresh(context)
+    except (OSError, ValueError, KeyError):
+        return None
 
 
 def follow(manifest: Path, after: int = 0, limit: int | None = None) -> tuple[list[dict], int]:
