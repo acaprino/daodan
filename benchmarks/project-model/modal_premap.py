@@ -222,8 +222,9 @@ def _boxed(box, log: list, env: dict | None = None):
     return run
 
 
-def _said(record: dict, log: list, debug: bool) -> dict:
-    """What an arm of `renovate_network` keeps: the toolchains, Renovate's state and gaps, and its extraction's answer."""
+def _said(record: dict, log: list, debug: bool, raw: bool = False) -> dict:
+    """What an arm of `renovate_network` keeps: the toolchains, Renovate's state and gaps, and its extraction's answer
+    (`raw`: the answer itself, as a test replays it)."""
     done = next((r["result"] for r in log if r["command"]["argv"][:1] == ["renovate"]), None) or {}
     try:
         report = json.loads(done.get("stdout") or "null")
@@ -243,6 +244,8 @@ def _said(record: dict, log: list, debug: bool) -> dict:
             lines.append(said[:400])
     return {"toolchains": sorted(f"{t['tool']}@{t['declared_in']}" for t in record.get("toolchains", [])),
             "packages": len(record.get("packages", [])),
+            "renovate_packages": sum(any(s.startswith("renovate@") for s in p["sources"])
+                                     for p in record.get("packages", [])),
             "renovate": [s for s in record["sources"] if s["source"].startswith("renovate@")],
             "renovate_gaps": [{k: str(g.get(k))[:300] for k in ("kind", "path", "detail")} for g in record["gaps"]
                               if str(g.get("source", "")).startswith("renovate@") and g["kind"] != "file_withheld"],
@@ -250,15 +253,16 @@ def _said(record: dict, log: list, debug: bool) -> dict:
                         "problems": (report or {}).get("problems"), "local_keys": sorted(local),
                         "local_problems": local.get("problems"),
                         "managers": {m: len(files) for m, files in (local.get("packageFiles") or {}).items()},
-                        "stderr" if debug else "stderr_tail": lines if debug else (done.get("stderr") or "")[-1500:]}}
+                        "stderr" if debug else "stderr_tail": lines if debug else (done.get("stderr") or "")[-1500:]},
+            **({"answer": done} if raw else {})}
 
 
 @app.function(cpu=2.0, memory=4096, timeout=2400, volumes={"/results": volume})
 def renovate_network(name: str, tools: list) -> dict:
     """The pre-map of the real repository `name` with Renovate's commands run with the network open (`_runner`) and blocked
     (in a Sandbox of this image with `block_network`, as the pipeline's execution runs them), with and without the
-    stack's `tools` (`premap._chosen`); then Renovate alone on two small projects, with and without a config that extends
-    a preset of GitHub's (`PRESET`): what tells the network from the choice of sources."""
+    stack's `tools` (`premap._chosen`); then Renovate alone on three small projects: no config, a config that extends
+    a preset of GitHub's (`PRESET`), one that disables Renovate: what tells the network from the choice of sources."""
     sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM, f"{REMOTE_PM}/tools"]
     import io
     import tarfile
@@ -268,7 +272,8 @@ def renovate_network(name: str, tools: list) -> dict:
     from snapshot_store import open_snapshot
     out = {"code": code_hash(Path(__file__), Path(REMOTE_SCRIPTS) / "premap"), "versions": _versions(), "arms": {}}
     real = _real(name)
-    synthetic = {"syn-plain": SYNTHETIC, "syn-preset": {**SYNTHETIC, "renovate.json": json.dumps({"extends": [PRESET]})}}
+    synthetic = {"syn-plain": SYNTHETIC, "syn-preset": {**SYNTHETIC, "renovate.json": json.dumps({"extends": [PRESET]})},
+                 "syn-disabled": {**SYNTHETIC, "renovate.json": json.dumps({"enabled": False})}}
     manifests = {name: Path("/work") / f"{name}.out" / "manifest.sqlite"}
     shutil.rmtree(manifests[name].parent, ignore_errors=True)
     snapshot.read_project(real, manifests[name])
@@ -301,7 +306,7 @@ def renovate_network(name: str, tools: list) -> dict:
                 else local
             with open_snapshot(manifests[case]) as store:
                 record = premap.derive(manifests[case], store, sources=sources, runner=run, tools=chosen)
-            out["arms"][arm] = _said(record, log, debug)
+            out["arms"][arm] = _said(record, log, debug, raw=case.startswith("syn-") and blocked)
             print(arm, len(out["arms"][arm]["toolchains"]), "toolchains", flush=True)
     finally:
         box.terminate()
