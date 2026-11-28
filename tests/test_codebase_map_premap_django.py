@@ -620,7 +620,7 @@ def test_the_runner_restores_the_python_environment_of_each_folder_and_the_scrip
     (tmp_path / "p/requirements.txt").write_text("django==6.1.3\n", encoding="utf-8")
     restored = container_runner._python(tmp_path / "p")
     assert len(restored["lines"]) == 2 and any("for f in '.'" in line and "uv venv" in line for line in restored["lines"])
-    first, files, _, _ = container_runner.plan("django", [], [], restored["lines"], restored["needs"])
+    first, files, *_ = container_runner.plan("django", [], [], restored["lines"], restored["needs"])
     assert first["network"] == "registries" and [name for _, _, name in files][0] == "django_routes.py"
 
 
