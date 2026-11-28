@@ -558,6 +558,44 @@ Misura se `find_entry_points` perde una sorgente di framework quando la sceglie 
 
 - Le 46 fixture clonate senza una pre-mappa misurata, fra cui `real-stack-epic-stack` (React Router 7), `real-stack-astro-paper`, `real-stack-elk`, `real-stack-mealie` (Nuxt), `real-stack-documenso`, `real-stack-umami`, `real-stack-polar` (Next.js) e `real-sveltekit-realworld`: lo stack vi trova l'id della loro sorgente, ma che cosa sceglierebbe `frameworks.folders` non è nei dati committati.
 
+## Le lacune dei framework sul corpus (T1.C.14)
+
+Quanti progetti usano ogni lacuna aperta dei framework ([piano](../../docs/plans/refactoring.md), `T1.C.14`). Regola scritta prima della corsa (decisione del proprietario, 28 novembre 2026): un caso usato da almeno 3 progetti diventa un passo di codice in `T1.C`, gli altri vanno in [backlog](../../docs/backlog.md) con il conto. `test_framework_gaps.py`, sui dati già committati, senza LLM.
+
+### Parametri
+
+- Corpus: le 186 fixture di `score._fixtures("all")`; 122 con i file nel repository, 64 clonate (`source.json`).
+- Versione (Next.js senza `typegen`, SvelteKit 1, Nuxt 2, Astro): gli intervalli dichiarati nei `packages` di `results/daodan_premap_corpus.json` (Renovate sui manifesti, 184 fixture con il record, anche clonate), letti con `semver.intersects` di npm (semver 7.8.5, quello del Node dell'immagine). `results/daodan_stack.json` ha gli id, non le versioni; nessuna fixture che dichiara uno di questi pacchetti committa un lockfile. Intervalli del caso: `next` `<15.5.0` (`next typegen` c'è da Next.js 15.5), `@sveltejs/kit` `<2.0.0`, `nuxt` `<3.0.0`, `astro` qualunque (le pagine di Astro non sono lette in nessuna versione).
+- API: il nodo tree-sitter (grammatiche di `tree-sitter-language-pack`, come le carica Daodan) nei file JavaScript, TypeScript, Python e Go che l'inventario di Daodan elenca e non esclude, solo per le 122 fixture con i file. Un file conta se importa il pacchetto del caso e ha il nodo dell'API: la chiamata `createBrowserRouter` (`react-router`, `react-router-dom`); `basename` come attributo JSX, chiave o proprietà abbreviata (`react-router`, `react-router-dom`, `@react-router/dev`); `export const actions` o `export { actions }` in un `+page.server.(js|ts)`; il decoratore `@HostListener` o la chiave `host` di `@Component`/`@Directive` (`@angular/core`); `Handle`, `HandleFunc` o `NewServeMux` chiamati sul nome locale di `net/http`; l'import stesso di `axios`, `requests` o `httpx`, i client che la tabella di `daodan/data/http-clients.json` non ha (ha solo `fetch`). `test_each_case_reads_its_official_datum_on_a_written_example` prova ogni query su un esempio scritto e su ciò che le somiglia.
+- `pages/` di Next.js: la regola di Next.js (`findDir` di `packages/next/src/lib/find-pages-dir.ts`: `<dir>/pages`, poi `<dir>/src/pages`) sui percorsi dell'inventario, accanto a ogni `package.json` che dichiara `next`.
+
+### Risultati
+
+28 novembre 2026, Modal `ap-qp05LDKvpZZjl0xxLrffh8`.
+
+| Caso | Progetti | Quali | Non misurati (clonate che potrebbero usarlo) |
+| --- | ---: | --- | --- |
+| Next.js senza `typegen` | 2 | `js-nextjs` (14.2.15), `real-next-subscriptions` (14.2.3) | `real-stack-jellyfin`, `real-stack-kuvasz` (senza pre-mappa registrata) |
+| SvelteKit 1 | 0 | — (`js-sveltekit` `^2.7.0`, `real-sveltekit-realworld` `^2.52.2`) | come sopra |
+| Nuxt 2 | 0 | — (`real-stack-elk`, `real-stack-mealie`, `real-stack-polar`: Nuxt 4) | come sopra |
+| Astro, `astro:routes:resolved` | 1 | `real-stack-astro-paper` (`^7.4.8`) | come sopra |
+| Next.js `pages/` | 0 | — (`js-nextjs` ha solo `app/`) | 6: `real-next-subscriptions`, `real-stack-documenso`, `real-stack-owncast`, `real-stack-polar`, `real-stack-umami`, `real-svc-otel-demo` |
+| React Router `createBrowserRouter` | 0 | — | 7: `mix-real-tududi`, `real-app-memos`, `real-stack-actual`, `real-stack-documenso`, `real-stack-epic-stack`, `real-stack-jasontaylor-cleanarchitecture`, `real-stack-plausible` |
+| React Router `basename` | 0 | — | gli stessi 7 |
+| SvelteKit `actions` | 0 | — (`js-sveltekit` esporta solo `load`) | 1: `real-sveltekit-realworld` |
+| Angular `@HostListener` e `host` | 0 | — (`js-angular`) | 3: `real-app-jhipster-sample`, `real-stack-jasontaylor-cleanarchitecture`, `real-stack-paperless-ngx` |
+| Go senza framework (`net/http`) | 0 | — (`sys-go-single` registra con chi) | 11 con l'id `golang`: `mix-real-chi`, `real-app-hoppscotch`, `real-app-memos`, `real-auth0-go`, `real-stack-fiber-go-template`, `real-stack-gin-vue-admin`, `real-stack-opengist`, `real-stack-owncast`, `real-stack-wallabag`, `real-svc-otel-demo`, `real-svc-robot-shop` |
+| Wrapper HTTP: client fuori dalla tabella | **8** | `requests` 6 (`py-conda-env`, `py-pep723-scripts`, `py-poetry-groups`, `py-requirements-includes`, `py-setup-py-dynamic`, `py-setup-py-static`), `httpx` 1 (`mix-edge-submodules`), `axios` 1 (`mix-php-laravel`) | 17 che li dichiarano, fra cui `real-stack-mealie` (tutti e tre), `real-svc-otel-demo`, `real-app-full-stack-fastapi` |
+
+Per la regola il solo caso che diventa un passo è il wrapper HTTP (`T1.C.15`); gli altri dieci vanno nel backlog con il conto. Nessuna dichiarazione illeggibile per `semver`.
+
+### Non misurato
+
+- Le 64 fixture clonate per i casi di API e di `pages/`: i loro file non sono nel repository (la colonna «Non misurati»). Per React Router, Angular, Next.js `pages/` e Go le clonate candidate sono 3 o più: il conto 0 vale per le fixture con i file, non per il corpus.
+- `real-stack-jellyfin` e `real-stack-kuvasz` per i casi di versione (nessuna pre-mappa registrata).
+- Del wrapper HTTP, il wrapper di un wrapper (serve la prova del motore, non un nodo) e i client di altri linguaggi; i file `.vue`, `.svelte` e `.astro`, che le query non leggono.
+- La versione installata: un intervallo come `^14.2.0` conta se ammette una versione del caso, non se il lockfile la sceglie.
+
 ## Esplorazione dell'app avviata
 
 Passo 11 del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-flussi.md): Daodan avvia l'app dichiarata nel container, apre un browser senza interfaccia, legge i controlli di ogni pagina dall'albero di accessibilità di Playwright, ne preme ognuno una volta e registra le funzioni del progetto che partono (copertura V8 fra due letture, meno ciò che la pagina ferma esegue da sola).
