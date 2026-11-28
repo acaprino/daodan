@@ -3,7 +3,6 @@
 int plain(int value);
 
 int main() {
-    fmt::print("{}
-", plain(1));
+    fmt::print("{}\n", plain(1));
     return plain(2);
 }

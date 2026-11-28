@@ -739,8 +739,11 @@ def _keep(cache: Path, inputs: dict, result: dict, work: Path | None) -> None:
     """A contract that gave an index (or a graph), kept for the next stage: its inputs, and the files it names in the
     work directory (indexes, the compile tasks Kotlin's `refine` reads) or in the cache copied beside it. One entry
     per analyzer, of the whole language: every adapter runs all its units in one container and gives one contract,
-    which it does not split per unit, so a changed unit runs the language again. Keeping is best effort: the stage goes on without."""
-    if result.get("state") or not (result.get("indexes") or result.get("graph")):
+    which it does not split per unit, so a changed unit runs the language again. A contract that waited on the user's
+    answer about a host (`approval_required`, `host_denied`) is not kept: the next analysis runs again with the answer
+    (`egress`). Keeping is best effort: the stage goes on without."""
+    if result.get("state") or not (result.get("indexes") or result.get("graph")) or any(
+            gap.get("kind") in ("approval_required", "host_denied") for gap in result.get("gaps") or ()):
         return
     files, generation = cache / "files", _key(inputs)[:12]
     held, made, temp = set(), set(), None

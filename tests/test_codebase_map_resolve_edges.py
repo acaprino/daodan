@@ -1364,6 +1364,26 @@ class IndexerStageTests(unittest.TestCase):
         snapshot.read_project(project, manifest)
         self.assertEqual(stage(), 3)  # a manifest changed, no Go file did: the language runs again, whole
 
+    def test_a_contract_that_waits_on_the_users_answer_about_a_host_is_not_kept(self):
+        """After the answer (`egress`) the next analysis runs the indexer again: a kept contract would keep the
+        unit that asked as it was."""
+        _project, manifest = self.project("go")
+        for kind in ("approval_required", "host_denied"):
+            calls = []
+
+            def index(project_dir, work_dir, files=None, **given):
+                calls.append(True)
+                written = Path(work_dir) / "scip-go-0.scip"
+                shutil.copyfile(self.FIXTURES / "go/index.scip", written)
+                return {**self.contract("go"), "indexes": [[str(written), ""]],
+                        "gaps": [{"kind": kind, "hosts": ["github.com"], "detail": "asked"}]}
+
+            for _ in range(2):
+                resolve_edges.default_edge_store(manifest).unlink(missing_ok=True)
+                self.run_stage("scip-go", manifest, index)
+            self.assertEqual(len(calls), 2, kind)
+            self.assertFalse((manifest.parent / engine_pass.INDEX_CACHE / "scip-go").exists(), kind)
+
     def test_reuse_requires_the_installed_pin_and_the_adapter_that_built_the_entry(self):
         from indexers import go
         entry = {"engine": f"scip-go@{go.VERSION}", "indexer": {"version": go.VERSION}}

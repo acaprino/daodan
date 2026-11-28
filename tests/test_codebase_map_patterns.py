@@ -20,7 +20,7 @@ ALLOWED = {
     "dynamic/__init__.py": 2, "dynamic/callgrind.py": 4, "dynamic/clang.py": 3, "dynamic/dotnet.py": 6,
     "dynamic/go.py": 1, "dynamic/javascript.py": 5, "dynamic/jvm.py": 4, "dynamic/python.py": 9, "dynamic/rust.py": 2,
     "engine_tools.py": 1, "file_formats.py": 1, "file_inventory.py": 2, "format_catalog.py": 1, "flows.py": 4, "import_resolution.py": 1, "link_types.py": 3, "indexers/clang.py": 12,
-    "indexers/clang_run.py": 7, "indexers/csharp.py": 8, "indexers/css.py": 59, "indexers/go.py": 7,
+    "indexers/clang_run.py": 6, "indexers/csharp.py": 8, "indexers/css.py": 59, "indexers/go.py": 7,
     "indexers/java.py": 6, "indexers/jvm.py": 10, "indexers/kotlin.py": 1, "indexers/python.py": 12,
     "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6,
     "languages/cfamily.py": 18, "languages/csharp.py": 5, "languages/detect/rules/header.py": 2, "languages/detect/rules/sql_rowtype.py": 1,
@@ -56,4 +56,4 @@ def test_no_file_of_the_core_has_more_regular_expressions_than_it_had():
 
 
 def test_the_count_only_goes_down():
-    assert sum(ALLOWED.values()) <= 651  # 27 November 2026: -1, the position stage gone (T2.B.7); -11, requirements files and VCS requirements read by pip's parser, tomllib, configparser and ast (T3.A.8a); +1, Linguist's expressions tried on the dot directories the perimeter reads; +1, Composer's PLATFORM_PACKAGE_REGEX on a package name (T1.B.9b); +2, Linguist's `vendor`/`documentation` expressions on paths (T1.B.5); texts with no grammar; 659 on the 26th
+    assert sum(ALLOWED.values()) <= 650  # 28 November 2026: -1, a recorded URL's host read by urllib.parse (T2.B.21); 27 November 2026: -1, the position stage gone (T2.B.7); -11, requirements files and VCS requirements read by pip's parser, tomllib, configparser and ast (T3.A.8a); +1, Linguist's expressions tried on the dot directories the perimeter reads; +1, Composer's PLATFORM_PACKAGE_REGEX on a package name (T1.B.9b); +2, Linguist's `vendor`/`documentation` expressions on paths (T1.B.5); texts with no grammar; 659 on the 26th

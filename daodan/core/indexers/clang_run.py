@@ -2,7 +2,7 @@
 then scip-clang over it. Standard library only: the image's python3 runs it.
 
     python3 clang_run.py UNITS_JSON OUT_DIR JOBS [CMAKE]    # the execution, with no network
-    python3 clang_run.py prepare UNITS_JSON                 # in the preparation, with the registries open
+    python3 clang_run.py prepare UNITS_JSON [CMAKE]         # in the preparation, through the proxy
 
 JOBS is how many compiler processes scip-clang and make run at once: the container's share of the machine, as the
 caller gives it, never the machine's processor count.
@@ -18,13 +18,16 @@ reads), run from the workspace's root. A build that ends with an error keeps the
 of the files without one; a build that writes no database is `failed` with the tool's own output.
 
 A `cmake` unit is configured from its root, with `init`, the initial cache the preparation's restore of
-vcpkg or Conan writes, read when it is there, and `absent`, the submodules the pre-map finds not checked out. A
-dependency the project fetches is never downloaded: CMake
-runs with FETCHCONTENT_FULLY_DISCONNECTED, and CMake's dependency provider interface (`PROVIDER`, given through
-CMAKE_PROJECT_TOP_LEVEL_INCLUDES) records each dependency the project asks FetchContent_MakeAvailable for, with the
-URLs it declares, and supplies none. A unit whose configure then fails is not indexed: `unavailable` with the
-absent submodule CMake's output names, or with what CMake recorded when it asked for a download, else `failed`;
-CMake's own output, unparsed, either way. `file(DOWNLOAD)` and ExternalProject are not recorded.
+vcpkg or Conan writes, read when it is there, and `absent`, the submodules the pre-map finds not checked out. In
+the execution a dependency the project fetches is never downloaded: CMake runs with FETCHCONTENT_FULLY_DISCONNECTED,
+and CMake's dependency provider interface (`PROVIDER`, given through CMAKE_PROJECT_TOP_LEVEL_INCLUDES) records each
+dependency the project asks FetchContent_MakeAvailable for, with the URLs it declares, and supplies none. A unit
+whose configure then fails is not indexed: `unavailable` with the absent submodule CMake's output names, or with
+what CMake recorded when it asked for a download, else `failed`; CMake's own output, unparsed, either way.
+`file(DOWNLOAD)` and ExternalProject are not recorded. A unit marked `fetch`, whose recorded hosts the user allows
+(`indexers/clang.py`, `approved`), is configured in the preparation instead, FetchContent downloading through the
+proxy into a folder of its own (FETCHCONTENT_BASE_DIR); the execution takes that configure's database without the
+commands of the dependencies' files, which are not the project's (`downloaded`).
 
 scip-clang reads each database with the commands of a compiler that is not clang reading the builtin headers of
 the clang scip-clang is built on, which the copy carries (`builtin_headers`): with GCC's, which scip-clang gives
@@ -46,6 +49,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import urllib.parse
 import zipfile
 from pathlib import Path
 
@@ -96,11 +100,13 @@ def run(command: list[str], cwd: Path, timeout: float = 3600, stdout: Path | Non
     return code, (output or b"").decode("utf-8", errors="replace"), round(time.monotonic() - started, 1)
 
 
-def configure_command(cmake: str, unit: dict, build: Path, log: Path) -> list[str]:
+def configure_command(cmake: str, unit: dict, build: Path, log: Path, deps: Path | None = None) -> list[str]:
+    """CMake's configure of a unit, the provider recording what FetchContent is asked for: with no download
+    (FETCHCONTENT_FULLY_DISCONNECTED), or, with `deps`, FetchContent downloading into it (FETCHCONTENT_BASE_DIR)."""
     init = unit.get("init")  # the initial cache the preparation's restore writes, naming the toolchain file
     return [cmake, *(["-C", init] if init and Path(init).is_file() else []), "-S", str(WORK / unit.get("root", ".")),
             "-B", str(build), "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
-            "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+            f"-DFETCHCONTENT_BASE_DIR={deps}" if deps else "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
             f"-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES={SCRATCH / 'provider.cmake'}", f"-DDAODAN_FETCH_LOG={log}"]
 
 
@@ -117,28 +123,31 @@ def fetch_record(log: Path) -> list[dict]:
     return [{"name": name, "urls": urls} for name, urls in out.items()]
 
 
-def _host(url: str) -> str:
-    match = re.match(r"(?:[a-z+]+://)?(?:[^@/]+@)?([^/:]+)", url)
-    return match.group(1) if match else url
+def _host(url: str) -> str | None:
+    """The host of an https URL at port 443, the only downloads the proxy opens (`urllib.parse.urlsplit`); None for
+    any other: git's scp form (`git@host:path`), which urlsplit reads as no URL, a local path, another scheme or
+    port."""
+    try:
+        split = urllib.parse.urlsplit(url)
+        return split.hostname if split.scheme == "https" and split.port in (None, 443) else None
+    except ValueError:  # a port that is no number, a bracketed host that is no address
+        return None
 
 
-def second_attempt(unit: dict, output: str) -> list[str] | None:
-    """The arguments a second configure would add after a failed one, or None for no second attempt: always None
-    until the map-driven round measures how many units would need one."""
-    return None
+def hosts(fetched: list[dict]) -> tuple[list[str], list[str]]:
+    """The hosts the provider's record (`fetch_record`) downloads from, and its URLs the proxy cannot open."""
+    urls = [url for item in fetched for url in item["urls"]]
+    return sorted({_host(url) for url in urls} - {None}), [url for url in urls if _host(url) is None]
 
 
-def configure(runner, cmake: str, unit: dict, build: Path, log: Path) -> tuple[list[dict], dict]:
-    """One unit's configure steps and its state: `configured`, else `unavailable` or `failed` with the cause and
-    CMake's output (`error`), as CMake wrote it."""
+def configure(runner, cmake: str, unit: dict, build: Path, log: Path,
+              deps: Path | None = None) -> tuple[list[dict], dict]:
+    """One unit's configure step and its state: `configured`, else `unavailable` or `failed` with the cause and
+    CMake's output (`error`), as CMake wrote it. With `deps`, the configure that downloads (`configure_command`):
+    its failure after a download is `failed`, the hosts allowed."""
     log.unlink(missing_ok=True)
-    command = configure_command(cmake, unit, build, log)
-    code, output, seconds = runner(command, WORK)
-    steps = [{"step": "configure", "returncode": code, "seconds": seconds, "tail": output[-2500:]}]
-    again = second_attempt(unit, output) if code != 0 else None
-    if again is not None:
-        code, output, seconds = runner(command + again, WORK)
-        steps.append({"step": "configure again", "returncode": code, "seconds": seconds, "tail": output[-2500:]})
+    code, output, seconds = runner(configure_command(cmake, unit, build, log, deps), WORK)
+    steps = [_step("configure", code, output, seconds)]
     if code == 0:
         return steps, {"state": "configured"}
     error, fetched = output[-ERROR_TAIL:], fetch_record(log)
@@ -148,12 +157,15 @@ def configure(runner, cmake: str, unit: dict, build: Path, log: Path) -> tuple[l
                        "cause": f"the configure reads {' and '.join(absent)}: "
                                 f"{'a git submodule' if len(absent) == 1 else 'git submodules'} not checked out "
                                 "(git submodule update --init)"}
+    ended = "timed out" if code is None else f"ended with exit code {code}"
     if not fetched:
-        ended = "timed out" if code is None else f"ended with exit code {code}"
         return steps, {"state": "failed", "error": error, "cause": f"the configure {ended}; {UNCOVERED}"}
-    hosts = ", ".join(sorted({_host(url) for item in fetched for url in item["urls"]}))
+    named = ", ".join(sorted({_host(url) or url for item in fetched for url in item["urls"]}))
+    if deps:
+        return steps, {"state": "failed", "fetched": fetched, "error": error,
+                       "cause": f"the configure {ended}, FetchContent downloading from {named} through the proxy"}
     return steps, {"state": "unavailable", "kind": OUTSIDE, "fetched": fetched, "error": error,
-                   "cause": f"the configure needs what FetchContent would download from {hosts}, outside the allowed "
+                   "cause": f"the configure needs what FetchContent would download from {named}, outside the allowed "
                             "registries"}
 
 
@@ -286,6 +298,36 @@ def cmake_tool(given: str | None, scratch: Path) -> str:
     if given and Path(given).is_file():
         return given
     return str(next(scratch.glob("cmake-*/bin/cmake"), Path("cmake")))
+
+
+def cmake_ready(given: str | None) -> str:
+    """The CMake a configure runs (`cmake_tool`), the pin unpacked into the scratch folder when `given` is not there,
+    with the provider the configure includes beside it."""
+    SCRATCH.mkdir(parents=True, exist_ok=True)
+    if not (given and Path(given).is_file()):
+        run(["tar", "-xzf", str(TOOLS / "cmake.tar.gz"), "-C", str(SCRATCH)], SCRATCH)
+    (SCRATCH / "provider.cmake").write_text(PROVIDER, encoding="utf-8")
+    return cmake_tool(given, SCRATCH)
+
+
+def downloaded(number: int, build: Path) -> tuple[list[dict], dict]:
+    """Unit `number` as the preparation configured it, FetchContent downloading (`prepare`): its steps and state,
+    and, once it configured, its compilation database in `build` without the commands of the files of the
+    dependencies it downloaded, which are not the project's."""
+    folder = PREPARED / str(number)
+    try:
+        held = json.loads((folder / "configure.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return [], {"state": "failed", "cause": "the preparation recorded no configure: its output is in the run's "
+                                               "prepare.log"}
+    database = folder / "build" / "compile_commands.json"
+    if held["state"]["state"] == "configured" and database.is_file():
+        deps = folder / "deps"
+        build.mkdir(parents=True, exist_ok=True)
+        entries = [entry for entry in json.loads(database.read_text(encoding="utf-8"))
+                   if deps not in _file(entry).parents]
+        (build / "compile_commands.json").write_text(json.dumps(entries, indent=1) + "\n", encoding="utf-8")
+    return held["steps"], held["state"]
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -504,11 +546,21 @@ def _prepared(number: int) -> dict | None:
         return None
 
 
-def prepare(units: list[dict]) -> int:
-    """The preparation's part, the registries open: what each unit's build downloads (Bazel's aquery, Go's
-    modules), its step in `PREPARED/<n>/step.json` for the execution, which has no network."""
+def prepare(units: list[dict], given: str | None = None) -> int:
+    """The preparation's part, through the proxy: what each unit's build downloads (Bazel's aquery, Go's modules),
+    its step in `PREPARED/<n>/step.json`, and the configure of a `fetch` unit, FetchContent downloading into
+    `PREPARED/<n>/deps` with the CMake `given` (else the pin), its steps and state in `PREPARED/<n>/configure.json`:
+    for the execution, which has no network."""
+    cmake = None
     for number, unit in enumerate(units):
         folder = PREPARED / str(number)
+        if unit.get("fetch"):
+            cmake = cmake or cmake_ready(given)
+            folder.mkdir(parents=True, exist_ok=True)
+            steps, state = configure(run, cmake, unit, folder / "build", folder / "fetch.log", folder / "deps")
+            (folder / "configure.json").write_text(json.dumps({"steps": steps, "state": state}) + "\n",
+                                                   encoding="utf-8")
+            continue
         if unit.get("build") == "bazel":
             step = bazel_prepare(run, bazel_tool(), unit, folder)
         elif unit.get("build") == "go" and unit.get("download"):
@@ -524,16 +576,13 @@ def prepare(units: list[dict]) -> int:
 
 def main(argv: list[str]) -> int:
     if argv[1] == "prepare":
-        return prepare(json.loads(Path(argv[2]).read_text(encoding="utf-8")))
+        return prepare(json.loads(Path(argv[2]).read_text(encoding="utf-8")), argv[3] if len(argv) > 3 else None)
     units, out, jobs = json.loads(Path(argv[1]).read_text(encoding="utf-8")), Path(argv[2]), int(argv[3])
     shutil.rmtree(SCRATCH, ignore_errors=True)
     SCRATCH.mkdir(parents=True)
     out.mkdir(parents=True, exist_ok=True)  # once the scratch folder is emptied: OUT_DIR may lie in it
     builds = {unit.get("build", "cmake") for unit in units}
-    given = argv[4] if len(argv) > 4 else None
-    if "cmake" in builds and not (given and Path(given).is_file()):
-        run(["tar", "-xzf", str(TOOLS / "cmake.tar.gz"), "-C", str(SCRATCH)], SCRATCH)
-    cmake = cmake_tool(given, SCRATCH)
+    cmake = cmake_ready(argv[4] if len(argv) > 4 else None) if "cmake" in builds else "cmake"
     meson_env = meson_tools() if "meson" in builds else {}
     scip_clang = SCRATCH / "scip-clang"
     shutil.copyfile(TOOLS / "scip-clang", scip_clang)
@@ -542,7 +591,6 @@ def main(argv: list[str]) -> int:
     packages = SCRATCH / "package-map.json"
     packages.write_text(json.dumps([*package_map("project@0"), {"path": str(headers), "package": f"clang@{version}"}],
                                    indent=1) + "\n", encoding="utf-8")
-    (SCRATCH / "provider.cmake").write_text(PROVIDER, encoding="utf-8")
     results, installed = [], None  # Bear's install, once, before the first build that runs under it
     for number, unit in enumerate(units):
         build, kind, steps = SCRATCH / f"build-{number}", unit.get("build", "cmake"), []
@@ -552,7 +600,8 @@ def main(argv: list[str]) -> int:
         if kind in BEAR_BUILDS and installed["returncode"] != 0:
             state = _ended("install Bear", installed["returncode"], installed["tail"])
         else:
-            done, state = (configure(run, cmake, unit, build, SCRATCH / f"fetch-{number}.log") if kind == "cmake"
+            done, state = (downloaded(number, build) if kind == "cmake" and unit.get("fetch")
+                           else configure(run, cmake, unit, build, SCRATCH / f"fetch-{number}.log") if kind == "cmake"
                            else meson(run, unit, build, meson_env) if kind == "meson"
                            else make(run, unit, build, jobs) if kind == "make"
                            else autotools(run, unit, build, jobs) if kind == "autotools"
