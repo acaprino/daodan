@@ -208,6 +208,43 @@ def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp
     assert seen[-1]["kind"] == "step.failed" and seen[-1]["data"]["remedy"] == "write it"
 
 
+def test_a_step_whose_records_are_fresh_is_skipped_with_the_result_of_the_run_that_wrote_them(tmp_path):
+    """Spec of the pipeline, 8.8: on the same snapshot the second run skips the three steps whose records are fresh
+    (`step.skipped`, with their outputs), with the result the first run gave (the module graph untouched, `action` "none"),
+    and starts the others; once a file changes no step is skipped. The union completes the module graph in between, and
+    leaves it fresh."""
+    import dynamic
+    project, manifest = tmp_path / "p", tmp_path / "out" / "manifest.sqlite"
+    project.mkdir()
+    (project / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.read_project(project, manifest)
+    fresh = ("recognize_stack", "find_modules", "find_entry_points")
+
+    def analysis() -> tuple[dict, list[dict]]:
+        seen = []
+        with mock.patch.object(resolve_edges, "run_pass", return_value={}), mock.patch.object(dynamic, "run", return_value={}):
+            result = pipeline.run(manifest, listeners=[seen.append])
+        return result, [e for e in seen if e["kind"].startswith("step.")]
+
+    first, steps = analysis()
+    assert not [e for e in steps if e["kind"] == "step.skipped"]
+    second, steps = analysis()
+    assert [(e["kind"], e["step"]) for e in steps] == [
+        *(("step.skipped", name) for name in fresh),
+        *((kind, step.NAME) for step in pipeline.STEPS[3:] for kind in ("step.started", "step.finished"))]
+    assert [e["data"] for e in steps[:3]] == [{"outputs": list(step.OUTPUTS), "reason": "inputs unchanged"}
+                                             for step in pipeline.STEPS[:3]]
+    assert first["find_modules"]["action"] != "none"
+    assert {name: second[name] for name in fresh} == {
+        name: {**first[name], **({"action": "none"} if name == "find_modules" else {})} for name in fresh}
+    (project / "a.py").write_text("x = 2\ny = 3\n", encoding="utf-8")
+    (project / "b.py").write_text("z = 1\n", encoding="utf-8")
+    snapshot.read_project(project, manifest)
+    _third, steps = analysis()
+    assert [(e["kind"], e["step"]) for e in steps] == [
+        (kind, step.NAME) for step in pipeline.STEPS for kind in ("step.started", "step.finished")]
+
+
 def test_a_failure_of_the_dynamic_step_is_said_and_the_union_still_ends_the_run(tmp_path):
     """What a run observes is added to the static graph: a dynamic step that breaks leaves that graph, says why,
     and the pipeline goes on to the union."""

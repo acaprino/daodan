@@ -222,7 +222,7 @@ Lo step `parse` non c'è più: diceva solo il piano, che resta la funzione `pipe
 | Le due parti di `scan`: `parse` parte dopo la prima, e si rifà solo ciò che la seconda corregge | Da fare | 8.5 |
 | `plan` come step | Da fare | 8.4 |
 | Una dichiarazione comune per ogni adattatore | Da fare | 8.8 |
-| La freschezza controllata in un punto solo, `step.skipped` | Da fare | 8.8 |
+| La freschezza controllata in un punto solo, `step.skipped` | Fatto: `_run` chiede `fresh` a `recognize_stack`, `find_modules` e `find_entry_points`; `link_calls` e `run_and_observe` saltano per analizzatore, `assemble_graph` gira sempre | 8.8 |
 | `connect` unisce ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle) | Da fare | 8.2 |
 | Il riconoscimento dal fork di stack-analyser | Da fare: oggi il registro (`service_registry.py`) | Spec dello stack dal fork (nella storia di git) |
 

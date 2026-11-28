@@ -21,6 +21,9 @@ export const pipelineEvents = (s: Pick<Snapshot, 'events'>) => s.events.filter(e
 export type StepStatus = 'running' | 'done' | 'failed' | 'pending' | 'skipped';
 export type RunStep = { id: string; label: string; status: StepStatus; note: string };
 
+// A step the pipeline did not run because its records are fresh (`step.skipped`): it counts as done.
+const UP_TO_DATE = 'Già aggiornata';
+
 // The run's steps follow their own events: the pass's state is the engine's, whose end does not end the steps after it. The
 // note comes from the run: the progress, the cause of a step that failed or of an analyzer that could not run, and the pass's
 // cause for a step the run will not reach.
@@ -30,6 +33,7 @@ export function steps(s: Run): RunStep[] {
     const step = e.step ?? '';
     if (e.kind === 'step.started') { status[step] = 'running'; causes[step] = []; delete failed[step]; }
     if (e.kind === 'step.finished') status[step] = 'done';
+    if (e.kind === 'step.skipped') { status[step] = 'skipped'; causes[step] = []; delete failed[step]; }
     if (e.kind === 'step.failed' || (e.kind === 'log' && e.level === 'error' && e.data?.cause)) failed[step] = e.data?.cause || e.message;
     if (e.kind === 'analyzer.unavailable') (causes[step] ||= []).push(`${e.analyzer || 'analyzer'}: ${e.data?.cause || e.message}`);
   }
@@ -40,7 +44,7 @@ export function steps(s: Run): RunStep[] {
     const now = of(id), cause = causes[id]?.join(' · ');
     const note = now === 'done' ? (cause ? 'Completata con lacune · ' + cause : 'Completata')
       : now === 'running' ? 'In corso' + (progress?.step === id && progress.total ? ` · ${progress.done}/${progress.total}` : '')
-        : now === 'failed' ? 'Non riuscita · ' + failed[id]
+        : now === 'failed' ? 'Non riuscita · ' + failed[id] : now === 'skipped' ? UP_TO_DATE
           : reached ? 'In attesa' : 'Non eseguita' + (p.reason ? ' · ' + p.reason : '');
     return { id, label, status: now === 'pending' && !reached ? 'skipped' : now, note };
   });
@@ -68,7 +72,7 @@ export function phaseItems(s: Run, now: number) {
   }));
 }
 
-const completed = (list: readonly RunStep[]) => list.filter(t => t.status === 'done').length;
+const completed = (list: readonly RunStep[]) => list.filter(t => t.status === 'done' || t.note === UP_TO_DATE).length;
 // How many of its steps are done, beside the screen's title.
 export function runCount(s: Run): string {
   const list = steps(s);
