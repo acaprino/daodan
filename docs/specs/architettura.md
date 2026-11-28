@@ -190,7 +190,7 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 
 ### Come riconoscere il file
 
-Il formato richiede SQLite 3.38 o successivo con funzioni JSON disponibili. Le tabelle usano tipi STRICT. L'intestazione è quella di SQLite. Il lettore verifica `application_id = 0x44414F44` (DAOD), `user_version = 1` e lo schema atteso prima di usare il file. Il DDL inizializza soltanto un database vuoto. Un lettore che incontra una versione sconosciuta spiega quale versione serve. Fino al primo rilascio il formato ha una sola versione, la 1, e lo schema cambia sul posto senza migrazioni: un file scritto da una build di sviluppo precedente si rifiuta con la causa e si rifà analizzando il progetto. Una copia da condividere a database aperto si ottiene con l'API di backup di SQLite, così include anche i commit già visibili in WAL. [Intestazione e pragma](https://sqlite.org/pragma.html) · [Backup SQLite](https://sqlite.org/backup.html)
+Il formato richiede SQLite 3.38 o successivo con funzioni JSON disponibili. Le tabelle usano tipi STRICT. L'intestazione è quella di SQLite. Il lettore verifica `application_id = 0x44414F44` (DAOD), `user_version = 1` e lo schema atteso prima di usare il file. Il DDL inizializza soltanto un database vuoto. Un lettore che incontra una versione sconosciuta spiega quale versione serve. Fino al primo rilascio il formato ha una sola versione, la 1, e lo schema cambia sul posto senza migrazioni: un file scritto da una build di sviluppo precedente si rifiuta con la causa; Daodan non lo cancella: la persona lo toglie e una nuova analisi lo riscrive. Una copia da condividere a database aperto si ottiene con l'API di backup di SQLite, così include anche i commit già visibili in WAL. [Intestazione e pragma](https://sqlite.org/pragma.html) · [Backup SQLite](https://sqlite.org/backup.html)
 
 ### Tabelle
 
@@ -268,7 +268,7 @@ In Bank of Anthos, «Pagamento a un contatto» ha un solo ID di flusso. Sullo st
 
 ### Prove di accettazione del formato
 
-Rinomina `payment.py` in `transfer.py` dopo un edit manuale: con un'unica corrispondenza verificabile restano lo stesso ID e l'edit, anche dopo riapertura. Ripeti senza Git. Copia invece il file lasciando l'originale: la copia ha un nuovo ID e l'edit resta sull'originale. Con due candidati uguali o una rinomina più modifica segnalata solo per similarità, richiedi conferma e verifica autore, decisione e storia. Verifica infine che tutte le 24 specie siano accettate, che una inventata venga rifiutata nel DDL e dall'importatore, e che un ciclo tra padri venga rifiutato dal writer. La prova del proprietario, in memoria, copre creazione e rilettura di un progetto minimo. Le prove end-to-end usano un file su disco attraverso l'app.
+Rinomina `payment.py` in `transfer.py` dopo un edit manuale: con un'unica corrispondenza verificabile restano lo stesso ID e l'edit, anche dopo riapertura. Ripeti senza Git. Copia invece il file lasciando l'originale: la copia ha un nuovo ID e l'edit resta sull'originale. Con due candidati uguali o una rinomina più modifica segnalata solo per similarità, richiedi conferma e verifica autore, decisione e storia. Verifica infine che tutte le 24 specie siano accettate, che una inventata venga rifiutata nel DDL e dall'apertura, e che un ciclo tra padri venga rifiutato dal writer. La prova del proprietario, in memoria, copre creazione e rilettura di un progetto minimo. Le prove end-to-end usano un file su disco attraverso l'app.
 
 ### Schema SQLite
 
