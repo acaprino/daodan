@@ -64,6 +64,10 @@
 - **Go senza framework (`net/http`)**: 0; non misurate 11 con l'id `golang`. Fonte: go/types o scip-go sull'ultimo argomento della registrazione.
 - **Wrapper HTTP, parti non misurate**: il wrapper di un wrapper e i client di altri linguaggi (i client `axios`, `requests` e `httpx` sono `T1.C.15`).
 
+### 5d. Collegamenti CSS sotto soglia (`T2.B.17`)
+
+- bulma 7/11 e styled-components-website 12/15 (`benchmarks/inference-audit/README.md`, «Soglia ≥15/15 a mano»): `.button` che non raggiunge il suo CSS Module, `.fas` e `.algolia-content`, `#js-menu-toggle`, lo `<style>` dentro JSX, due variabili CSS di `GlobalStyles.tsx`. Casi di due progetti: si riprendono solo se una misura ne mostra di simili su più progetti, o li chiude l'osservazione nel browser.
+
 ### 6. Soluzioni provvisorie da sostituire con quella pulita
 *Decisione del proprietario (27 novembre 2026): ogni ripiego accettato per andare avanti si sostituisce, appena possibile, con la soluzione pulita qui accanto.*
 - **Lettori SQL e PL/SQL a regex** (`daodan/core/languages/sql.py`, `plsql.py`, deroga di `T1.A.6`): pulita = una grammatica tree-sitter PL/SQL completa (package body, trigger, type body), misurata con `benchmarks/sql-grammar`.
