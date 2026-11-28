@@ -28,7 +28,7 @@ import premap  # noqa: E402
 import preparation  # noqa: E402
 from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
-from entry_points import angular, astro, nextjs, noir, nuxt, react_router, sveltekit  # noqa: E402
+from entry_points import angular, astro, express, nextjs, noir, nuxt, react_router, sveltekit  # noqa: E402
 
 SCHEMA = "daodan/entry-points/v1"
 FILE = "entry-points.json"
@@ -42,6 +42,10 @@ FRAMEWORK_SOURCES = (nextjs, react_router, nuxt, sveltekit)
 # gaps are told by `flow_entries.evidence`, and the key of the cached links hashes each one's file. Their script is not in it: a
 # record is fresh for the `NAME@VERSION` that made it, and the version goes with the script (each one's test of the recorded print).
 TEMPLATE_SOURCES = (angular, astro)
+# The readers of the snapshot's trees, on the host and with no container (spec «Strumenti nativi»): their rows are routes of their own,
+# beside those of `FRAMEWORK_SOURCES` in the union with Noir (`one_entry`), each with the span of its handler for the binder. Not yet
+# run by the step: `T1.C.9` wires `express` (`express.rows`, from `bound`) where it binds at least the routes Noir binds.
+TREE_SOURCES = (express,)
 IDENTITY = {  # individual observations: no two rows are one fact
     "noir_entries": (),  # of a single scanner
     "framework_entries": (),  # of a framework's own tool (`next`, `react-router`, `angular`)
@@ -152,10 +156,10 @@ def bound(manifest: Path, record: dict, facts=None, routes: list[dict] | None = 
 
 def one_entry(declared: list[dict]) -> list[dict]:
     """One route, one entry: the bound rows `declared` (`flows.bind_declared`) less the route of a source outside
-    `FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one of them (the text of the path where a row has no schema), in
+    `FRAMEWORK_SOURCES` and `TREE_SOURCES` (Noir) on the schema of a bound row of one of them (the text of the path where a row has no schema), in
     the file or on the function that row starts, provided its method is the row's or the row has none (a page answers any;
     Noir's method is not copied onto it). Another path, or a method no row of that file and path carries, is a route of its own."""
-    framework = {source.NAME for source in FRAMEWORK_SOURCES}
+    framework = {source.NAME for source in (*FRAMEWORK_SOURCES, *TREE_SOURCES)}
 
     def file_of(site: str) -> str:
         file, _, line = site.rpartition(":")

@@ -1,7 +1,9 @@
 """The links' binder, spec 8.13 point 2: the one place a row of an entries' source is tied to a function of the snapshot.
 
-Two forms. An export in a file (`exports`, or `methods` when each export is a method of the route): the snapshot's own
-export records name the function (`exported_target`). A name at a position (`handler` with `site` `file:line`): the one
+Three forms. An export in a file (`exports`, or `methods` when each export is a method of the route): the snapshot's own
+export records name the function (`exported_target`). The span of the handler (`span`, with `site` in its file), which a reader of
+the trees gives (`entry_points/express.py`): the one function of the snapshot with that span, an equality of two data; one written
+with no name takes its route's name, as Noir's do (`_name_handlers`). A name at a position (`handler` with `site` `file:line`): the one
 function of that name whose lines hold the line; failing that, for Noir's row (a scanner of text: its place and its name are
 citations), the one function that starts at the line (the outermost, when a closure holds others on it and has a name) if the name agrees
 with it (`_agrees`). The place alone cannot tell a handler from the function that registers it, nor the name alone a function among those of its
@@ -21,16 +23,40 @@ from languages.semantic import ANONYMOUS_DEFAULT, NAMELESS
 
 def bind(rows: list[dict], facts, resolver) -> list[dict]:
     placed = {id(row): _placed(row, facts) for row in rows if "handler" in row and "handler_source" not in row}
-    _name_handlers(rows, placed, facts)
+    spanned = {id(row): _spanned(row, facts) for row in rows if "span" in row and "handler" not in row and "handler_source" not in row}
+    _name_handlers(rows, {**placed, **{key: ([], found) for key, found in spanned.items()}}, facts)
     out = []
     for row in rows:
         if "handler" not in row and ("exports" in row or "methods" in row):
             out += _exports(row, facts, resolver)
         elif id(row) in placed:
             out.append(_position(row, facts, *placed[id(row)]))
+        elif id(row) in spanned:
+            out.append(_by_span(row, facts, spanned[id(row)]))
         else:
             out.append(row)
     return out
+
+
+def _spanned(row: dict, facts) -> list[dict]:
+    """The functions of the row's file whose span is the one the source gives its handler: one, where the source read the handler."""
+    file = row["site"].rpartition(":")[0] or row["site"]
+    return [d for d in facts.functions.get(file, ()) if list(d.get("span") or ()) == list(row["span"])]
+
+
+def _by_span(row: dict, facts, found: list[dict]) -> dict:
+    """A row with the span of its handler (a reader of the trees, `entry_points/express.py`): the one function with that span, by its
+    own node; a function written with no name has the node its route names it with (`_name_handlers`)."""
+    cause = "no function of the snapshot has the span of the handler" if not found else \
+        "several functions of the snapshot have the span of the handler" if len(found) > 1 else None
+    if cause is None:
+        [function] = found
+        node = facts.own_node(function["id"])
+        if node is not None and (function["name"] not in NAMELESS or function["id"] in facts.route_named
+                                 or facts.property_label(function) is not None):
+            return {**row, "symbol": node, "handler_source": row["reader"]}
+        cause = NO_NODE if facts.node(function["id"]) is None else f"the function there shares its node {facts.node(function['id'])} with others"
+    return {**row, "gap": f"{row['reader']} reports this entry without a unique snapshot handler at its site: {cause}"}
 
 
 def _exports(row: dict, facts, resolver) -> list[dict]:
@@ -140,7 +166,8 @@ def _builds_folded(function: dict, facts) -> bool:
 
 
 def _name_handlers(rows: list[dict], placed: dict, facts) -> None:
-    """A function written with no name that is the only one to start where Noir cites a route's handler is named by that route, as the links
+    """A function written with no name that is the only one to start where Noir cites a route's handler, or that has the span a reader of the
+    trees gives it (`_spanned`), is named by that route, as the links
     name a function written as a handler (`Facts.route_named`): its node is its own and holds the calls inside its lines, and does not
     depend on its siblings. Not one that already has a real name (the value of a property is that property's node), nor one a rule
     named. A function with several routes is named by the first of them by name, whatever the order of the rows; two functions of a file
