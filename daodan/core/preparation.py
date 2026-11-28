@@ -370,9 +370,9 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
     "maven": {"marks": ("pom.xml",), "error": r"^\[ERROR\]", "before": JAVA_PROXY, "hosts": (),
               "line": "mvn -B -q org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline"},
     # Node: one family, `package.json` marks the folders, the lockfile names the manager (none: npm, the `default`);
-    # scripts off (`restore` with `scripts` runs the install with them first)
+    # scripts off; then, with no network, the manager's own `rebuild` runs them (`rebuild`)
     "npm": {"marks": ("package.json",), "family": "node", "locks": NPM_LOCKS, "default": True,
-            "error": "^npm (error|ERR!)", "hosts": (),
+            "error": "^npm (error|ERR!)", "hosts": (), "rebuild": "npm rebuild",
             "line": f"if {' || '.join(f'[ -f {lock} ]' for lock in NPM_LOCKS)};"
                     " then npm ci --ignore-scripts --no-audit --no-fund;"
                     " else npm install --ignore-scripts --no-audit --no-fund; fi"},
@@ -385,11 +385,13 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
     # `strictDepBuilds` (pnpm.io/settings/build, on from pnpm 11) ends with ERR_PNPM_IGNORED_BUILDS an install that left
     # a dependency's build script unrun, its packages installed: here the scripts are off on purpose, so it is off too
     "pnpm": {"marks": ("package.json",), "family": "node", "locks": ("pnpm-lock.yaml",), "error": "ERR_PNPM|ERROR",
-             "before": COREPACK, "hosts": (),
+             "before": COREPACK, "hosts": (), "rebuild": "corepack pnpm rebuild --config.strict-dep-builds=false",
              "line": "corepack pnpm install --frozen-lockfile --ignore-scripts --config.strict-dep-builds=false",
              "unlocked": "corepack pnpm install --no-frozen-lockfile --ignore-scripts --config.strict-dep-builds=false"},
     "yarn": {"marks": ("package.json",), "family": "node", "locks": ("yarn.lock",), "before": COREPACK,
              "error": "^error|YN0[0-9]+: .*Error", "hosts": ("repo.yarnpkg.com",),  # corepack: Yarn 2 and later
+             # Yarn 1 has no `rebuild` command: npm's walks the node_modules Yarn 1 lays out (Arborist's actual tree)
+             "rebuild": "if [ -f .yarnrc.yml ]; then corepack yarn rebuild; else npm rebuild; fi",
              "line": "if [ -f .yarnrc.yml ]; then corepack yarn install --immutable --mode=skip-build;"
                      " else corepack yarn install --frozen-lockfile --ignore-scripts; fi",
              "unlocked": "if [ -f .yarnrc.yml ]; then corepack yarn install --mode=skip-build;"
@@ -512,30 +514,31 @@ def python_interpreter(env, manager, workdir) -> str:
     return shlex.quote(f"{VENVS}/{env}/bin/python")
 
 
-OFF = (" --ignore-scripts", " --mode=skip-build")  # what turns a Node manager's lifecycle scripts off in its line
-LIMIT = 600  # the seconds a folder's install with its lifecycle scripts may take
+LIMIT = 600  # the seconds a folder's lifecycle scripts may take (`rebuild`)
 
 
-def restore(manager: str, folders: list[str], unlocked: bool = False, scripts: bool = False) -> str:
+def _report(manager: str, mark: str, log: str | None = None) -> str:
+    """The shell that prints `DAODAN-<mark>-FAILED manager folder` (`$f`), the error lines of `log` (`LOG`, or its
+    last ones), `DAODAN-<mark>-END` on stderr."""
+    log = log or LOG
+    return (f"{{ printf 'DAODAN-{mark}-FAILED {manager} %s\\n' \"$f\"; {{ grep -E '{RESTORES[manager]['error']}'"
+            f" {log} || tail -n 30 {log}; }} | head -n 30; echo DAODAN-{mark}-END; }} >&2")
+
+
+def restore(manager: str, folders: list[str], unlocked: bool = False) -> str:
     """The shell line restoring `manager`'s dependencies in each of `folders` (`unlocked`: none has a lockfile, the
     manager resolves): a folder that fails prints `DAODAN-RESTORE-FAILED manager folder`, its error lines,
-    `DAODAN-RESTORE-END` on stderr; the line goes on. With `scripts`, project code and so for a container only,
-    a folder's install runs first with the manager's lifecycle scripts, where a framework generates what its
-    compiler reads (a dependency's `postinstall`, the package's `postinstall` and `prepare`): one that fails or
-    outlasts `LIMIT` prints `DAODAN-GENERATE-FAILED manager folder`, its error lines, `DAODAN-GENERATE-END`, and
-    the folder is restored without them. A Python folder whose install fails, in a project that declares VCS
+    `DAODAN-RESTORE-END` on stderr; the line goes on. A Node restore runs no lifecycle script: `rebuild` runs them
+    after, with no network. A Python folder whose install fails, in a project that declares VCS
     requirements (`WITHOUT`, written by `without`), is installed again without them: one that then succeeds prints
     `DAODAN-VCS-FAILED manager folder`, the first install's error lines, `DAODAN-VCS-END`; one that fails again
     prints the restore's mark with the error lines of both."""
     spec = RESTORES[manager]
-    line = full = spec["unlocked" if unlocked else "line"]
-    for flag in OFF:
-        full = full.replace(flag, "")
+    line = spec["unlocked" if unlocked else "line"]
     failed = f" && ! grep -Eq '{spec['failed']}' {LOG}" if spec.get("failed") else ""
 
-    def report(mark: str, log: str = LOG) -> str:
-        return (f"{{ printf 'DAODAN-{mark}-FAILED {manager} %s\\n' \"$f\"; {{ grep -E '{spec['error']}' {log}"
-                f" || tail -n 30 {log}; }} | head -n 30; echo DAODAN-{mark}-END; }} >&2")
+    def report(mark: str, log: str | None = None) -> str:
+        return _report(manager, mark, log)
 
     attempt = f"( cd \"$f\" && {line} ) > {LOG} 2>&1{failed} || {report('RESTORE')}"
     if spec.get("without"):
@@ -543,12 +546,23 @@ def restore(manager: str, folders: list[str], unlocked: bool = False, scripts: b
         attempt = (f"( cd \"$f\" && {line} ) > {LOG} 2>&1 || if [ -s {WITHOUT} ]; then mv {LOG} {first};"
                    f" ( cd \"$f\" && {spec['without']} ) > {LOG} 2>&1 && {report('VCS', first)}"
                    f" || {{ cat {LOG} >> {first}; {report('RESTORE', first)}; }}; else {report('RESTORE')}; fi")
-    if scripts and full != line:
-        attempt = (f"( cd \"$f\" && timeout {LIMIT} sh -c '{full}' ) > {LOG} 2>&1"
-                   f" || {{ {report('GENERATE')}; {attempt}; }}")
     names = " ".join(f"'{f}'" for f in folders)
     before = f"{spec['before']}; " if spec.get("before") else ""
     return f"{before}for f in {names}; do {attempt}; done; true"
+
+
+def rebuild(manager: str, folders: list[str]) -> str:
+    """The shell line that runs, in each of `folders` a Node restore installed without them, the lifecycle scripts
+    of its packages with the manager's own command (`npm rebuild`, `pnpm rebuild`, `yarn rebuild`): the
+    dependencies' `preinstall`, `install`, `postinstall` and, for npm, the package's own, where a framework generates
+    what its compiler reads. Project code, for a container with no network (`container.run_in_container`'s
+    `generate`): a folder whose scripts fail or outlast `LIMIT`, one that downloads among them, prints
+    `DAODAN-GENERATE-FAILED manager folder`, its error lines, `DAODAN-GENERATE-END`; the line goes on."""
+    spec = RESTORES[manager]
+    names = " ".join(f"'{f}'" for f in folders)
+    before = f"{COREPACK_INSTALL}; {COREPACK}; " if spec.get("before") == COREPACK else ""
+    return (f"{before}for f in {names}; do ( cd \"$f\" && timeout {LIMIT} sh -c '{spec['rebuild']}' ) > {LOG} 2>&1"
+            f" || {_report(manager, 'GENERATE')}; done; true")
 
 
 NODE_REGISTRIES = ("registry.npmjs.org", "registry.yarnpkg.com")  # npm's, under its two names
@@ -629,9 +643,10 @@ def _names(patterns: list[str], rel: str) -> bool:
 
 
 def node_prepare(files, read, stated=()) -> dict:
-    """`{restores, lines, hosts, gaps}` for the Node packages among `files`, `read(rel)` a file's text: per
-    manager the folders its restore runs in (`node_restores`; a manifest's `packageManager`, the field corepack
-    reads, names the manager), the shell lines that restore them with their lifecycle scripts (`restore`), each
+    """`{restores, lines, generate, hosts, gaps}` for the Node packages among `files`, `read(rel)` a file's text:
+    per manager the folders its restore runs in (`node_restores`; a manifest's `packageManager`, the field corepack
+    reads, names the manager), the shell lines that restore them without their lifecycle scripts (`restore`), on
+    the proxy's network, and those that then run the scripts with no network (`generate`, `rebuild`), each
     whole on its own (pnpm's and Yarn's install the corepack they run, `COREPACK_INSTALL`), the hosts they reach
     beside npm's registry, and a `restore_failed` gap for each package
     folder that declares dependencies no restore installs: one inside a restore's folder whose workspaces do not
@@ -680,8 +695,9 @@ def node_prepare(files, read, stated=()) -> dict:
     for manager, folders, _unlocked in found:
         plan[manager] = sorted(plan.get(manager, []) + folders)
     lines = [(f"{COREPACK_INSTALL}; " if RESTORES[manager].get("before") == COREPACK else "")
-             + (f"{YARN_PROXY}; " if manager == "yarn" else "") + restore(manager, folders, unlocked, scripts=True)
+             + (f"{YARN_PROXY}; " if manager == "yarn" else "") + restore(manager, folders, unlocked)
              for manager, folders, unlocked in found]
+    generate = [rebuild(manager, folders) for manager, folders, _unlocked in found]
     owner = {folder: manager for manager, folders in plan.items() for folder in folders}
     lerna = {_folder(rel): _lerna(read(rel)) for rel in files if posixpath.basename(rel) == "lerna.json"}
     gaps, bootstrap = list(local), set()
@@ -710,7 +726,7 @@ def node_prepare(files, read, stated=()) -> dict:
     if bootstrap:
         plan["lerna"] = sorted(bootstrap)
         lines.append(restore("lerna", sorted(bootstrap)))
-    return {"restores": plan, "lines": lines, "gaps": gaps,
+    return {"restores": plan, "lines": lines, "generate": generate, "gaps": gaps,
             "hosts": tuple(dict.fromkeys(host for manager in plan for host in RESTORES[manager]["hosts"]))}
 
 
@@ -946,9 +962,9 @@ GENERATE = re.compile(r"DAODAN-GENERATE-FAILED (\S+) (.+)\n((?:.*\n)*?)DAODAN-GE
 
 
 def generation_gaps(stderr: str) -> list[dict]:
-    """The `generation_failed` gaps a restore with lifecycle scripts printed: the manager, the folder, the error
-    lines of the install whose scripts failed; the folder was then restored without them. A folder whose restore
-    failed without them too has that gap only (`restore_gaps`): its scripts were not the cause."""
+    """The `generation_failed` gaps the lifecycle scripts of a restore printed (`rebuild`, with no network): the
+    manager, the folder, the error lines of the scripts that failed; the folder stays restored without them. A
+    folder whose restore failed has that gap only (`restore_gaps`): its scripts were not the cause."""
     failed = {(manager, folder) for manager, folder, _lines in RESTORE.findall(stderr or "")}
     return [{"kind": "generation_failed", "manager": manager, "path": folder,
              "detail": " | ".join(line.strip() for line in lines.splitlines() if line.strip())[:600]}

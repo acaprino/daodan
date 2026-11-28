@@ -180,7 +180,7 @@ def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in
     assert preparation.setup(["node"])["lines"][0] in lines
     assert any(f"npm install -g --prefix {T}/npm --ignore-scripts" in line
                and f"@sourcegraph/scip-typescript@{typescript.VERSION}" in line for line in lines)
-    assert f"{preparation.COREPACK_INSTALL}; " + preparation.restore("pnpm", ["."], scripts=True) in lines
+    assert f"{preparation.COREPACK_INSTALL}; " + preparation.restore("pnpm", ["."]) in lines
     assert "mise" not in prepare and "npm ci" not in prepare
     # The execution, without network: the generated tsconfig takes the place of the project's, then the indexer
     # runs on Daodan's Node and its index goes where the outputs come back from.
@@ -236,7 +236,7 @@ def test_the_index_the_container_brings_back_feeds_the_graph(sandbox):
     result = typescript.index(project, sandbox["root"] / "work", roots={""})
     assert "state" not in result, result.get("reason")
     assert result["restores"] == {"npm": ["."]}
-    assert preparation.restore("npm", ["."], scripts=True) in box.asked[0]["prepare"][2]
+    assert preparation.restore("npm", ["."]) in box.asked[0]["prepare"][2]
     assert result["tsconfig_extends"] == "./tsconfig.project.json"  # the project's own, renamed in the copy
     assert "gaps" not in result
     languages = ("javascript", "typescript")
@@ -285,11 +285,15 @@ def test_the_node_preparation_restores_each_folder_with_its_manager_and_its_life
     # Each line is whole on its own: pnpm and Yarn install the corepack they run, Yarn takes the proxy from its own
     # settings, set in its line.
     corepack, yarn = f"{preparation.COREPACK_INSTALL}; ", f"{preparation.YARN_PROXY}; "
-    assert plan["lines"] == [preparation.restore("npm", ["api", "cli"], scripts=True),
-                             corepack + preparation.restore("pnpm", ["web"], True, scripts=True),
-                             corepack + yarn + preparation.restore("yarn", ["site"], scripts=True)]
+    assert plan["lines"] == [preparation.restore("npm", ["api", "cli"]),
+                             corepack + preparation.restore("pnpm", ["web"], True),
+                             corepack + yarn + preparation.restore("yarn", ["site"])]
+    # The lifecycle scripts after, with no network: the manager's own `rebuild`, Yarn 1's npm's.
+    assert plan["generate"] == [preparation.rebuild("npm", ["api", "cli"]), preparation.rebuild("pnpm", ["web"]),
+                                preparation.rebuild("yarn", ["site"])]
     assert plan["hosts"] == ("repo.yarnpkg.com",)  # where corepack takes Yarn 2 and later
-    assert preparation.node_prepare(["go.mod"], None) == {"restores": {}, "lines": [], "gaps": [], "hosts": ()}
+    assert preparation.node_prepare(["go.mod"], None) == {"restores": {}, "lines": [], "generate": [], "gaps": [],
+                                                          "hosts": ()}
     # A manifest that is not JSON names no manager: npm.
     assert preparation.node_prepare(["package.json"], lambda rel: "{ not json")["restores"] == {"npm": ["."]}
 
@@ -333,7 +337,7 @@ def test_a_package_with_only_its_manifest_is_installed_by_npm_with_its_lifecycle
     result = typescript.index(project, sandbox["root"] / "work", **typescript.structure({"units": units}))
     assert "state" not in result and "gaps" not in result
     assert result["restores"] == {"npm": ["."]}
-    assert preparation.restore("npm", ["."], scripts=True) in box.asked[0]["prepare"][2].splitlines()
+    assert preparation.restore("npm", ["."]) in box.asked[0]["prepare"][2].splitlines()
 
 
 def _package(root: Path, rel: str, manifest: dict, *files: str) -> None:
@@ -410,22 +414,20 @@ def test_each_type_package_is_installed_apart_and_linked_where_typescript_looks_
     assert not (types / "references.d.ts").exists()
 
 
-def test_a_restore_runs_the_lifecycle_scripts_first_and_falls_back_to_the_install_without_them():
+def test_a_restore_runs_no_lifecycle_script_and_the_manager_s_rebuild_runs_them_after():
     """The install's own lifecycle is where a framework generates what the compiler reads (a dependency's
-    `postinstall`, the package's `postinstall` and `prepare`): project code, so for a container only. One that
-    fails, or outlasts the limit, is said and costs the generation only: the folder is restored without scripts."""
-    plain, line = preparation.restore("npm", ["a", "b"]), preparation.restore("npm", ["a", "b"], scripts=True)
-    first = (f"timeout {preparation.LIMIT} sh -c 'if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ];"
-             " then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi'")
-    assert first in line and "DAODAN-GENERATE-FAILED npm %s" in line
-    assert line.index(first) < line.index("DAODAN-GENERATE-FAILED") < line.index("npm ci --ignore-scripts")
-    assert line.index("npm ci --ignore-scripts") < line.index("DAODAN-RESTORE-FAILED") and line.endswith("done; true")
-    assert "timeout" not in plain and "GENERATE" not in plain  # the default is the line without project code
-    assert "corepack pnpm install --frozen-lockfile --config.strict-dep-builds=false'" in preparation.restore("pnpm", ["."], scripts=True)
-    berry = preparation.restore("yarn", ["."], scripts=True)
-    assert "corepack yarn install --immutable; else corepack yarn install --frozen-lockfile; fi'" in berry
-    # A manager whose restore runs no project code has one line.
-    assert preparation.restore("go", ["."], scripts=True) == preparation.restore("go", ["."])
+    `postinstall`): project code, so for a container with no network only (`T3.A.6d`). The restore runs none; the
+    manager's own `rebuild` runs them after: one that fails, or outlasts the limit, is said and costs the
+    generation only."""
+    plain = preparation.restore("npm", ["a", "b"])
+    assert "npm ci --ignore-scripts" in plain and "timeout" not in plain and "GENERATE" not in plain
+    line = preparation.rebuild("npm", ["a", "b"])
+    assert f"timeout {preparation.LIMIT} sh -c 'npm rebuild'" in line and "DAODAN-GENERATE-FAILED npm %s" in line
+    assert line.endswith("done; true") and "npm ci" not in line
+    pnpm = preparation.rebuild("pnpm", ["."])
+    assert pnpm.startswith(preparation.COREPACK_INSTALL) and "'corepack pnpm rebuild --config.strict-dep-builds=false'" in pnpm
+    # Yarn 1 has no `rebuild`: npm's walks the node_modules it lays out.
+    assert "'if [ -f .yarnrc.yml ]; then corepack yarn rebuild; else npm rebuild; fi'" in preparation.rebuild("yarn", ["."])
     stderr = ("DAODAN-GENERATE-FAILED npm web/app\nnpm error code 1\nnpm error command sh -c svelte-kit sync\n"
               "DAODAN-GENERATE-END\nDAODAN-RESTORE-FAILED npm api\nnpm error code E404\nDAODAN-RESTORE-END\n")
     assert preparation.generation_gaps(stderr) == [{
@@ -489,7 +491,7 @@ def test_the_project_runs_on_the_node_it_states_and_the_indexer_on_daodans(sandb
     assert all(line in lines for line in chains["lines"]) and "mise install node@20.11.1" in prepare
     # The indexer is installed before the project's Node is first on the path, and runs on Daodan's.
     assert prepare.index("@sourcegraph/scip-typescript@") < prepare.index("mise install node@20.11.1")
-    assert prepare.index("mise install node@20.11.1") < prepare.index(preparation.restore("npm", ["."], scripts=True))
+    assert prepare.index("mise install node@20.11.1") < prepare.index(preparation.restore("npm", ["."]))
     assert f"{T}/node/bin/node " in asked["command"][2]
     assert asked["registries"] == (*preparation.NODE_REGISTRIES, *chains["hosts"])
     assert set(asked["inputs"]) == {f"{IN}/node.tar.gz", f"{IN}/mise", typescript.CONFIG, typescript.TYPES,
@@ -509,7 +511,7 @@ def test_the_type_packages_follow_the_restore_and_the_prepare_run_lists_those_ad
     asked = box.asked[0]
     prepare, line = asked["prepare"][2], f"python3 {typescript.TYPES} /work 20 {typescript.TYPES_DIR} . web"
     assert line in prepare.splitlines()
-    assert prepare.index(preparation.restore("npm", ["."], scripts=True)) < prepare.index(line)
+    assert prepare.index(preparation.restore("npm", ["."])) < prepare.index(line)
     assert Path(asked["inputs"][typescript.TYPES]) == Path(typescript.__file__).with_name("typescript_types.py")
     # On the indexer's record, which the stage's report and each language's store entry carry.
     assert result["indexer"]["types"] == ["@types/node@20.19.2", "@types/ms@2.1.0"] and "gaps" not in result
