@@ -276,13 +276,16 @@ def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked, proj
     records' owners say they are fresh (a kind without one is None): the stack's tool, the pre-map's and the entry points'
     sources that are not `not_needed` (of the pre-map, those with commands; a source with no command reads files), and the apps the pre-map declares
     (`starts`) or the user or the assistant states for the `project` (`commands`), which `run_and_observe` explores: an
-    app with a stated command carries its `by` and `grade`."""
+    app with a stated command carries its `by` and `grade`. A folder on a surface not run yet (`dynamic.app.plan`, with
+    the modules of the stack record as last written, `technologies.recorded`) is `not_possible` with the gap
+    `ui_execution_deferred:<surface>`, also where no start is declared."""
     import json
     import commands
     import entry_points
     import premap
     import stack_recognition
-    from dynamic import APP, rank
+    import technologies
+    from dynamic import APP, app, rank
     found = {}
     try:
         if stack_recognition.state(manifest) == "fresh":
@@ -301,17 +304,32 @@ def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked, proj
                            for status in record.get("sources", ()) if status.get("state") != "not_needed"
                            and (kind == "entries" or status.get("tools") or status.get("rank") == "model")]
             if kind == "model":
-                starts = commands.merged(record, project).get("starts", ()) if project else record.get("starts", ())
+                record = commands.merged(record, project) if project else record
+                starts = record.get("starts", ())
                 stated = {}  # the root's command of the user or the assistant, the first by `dynamic.PRECEDENCE`
                 for entry in sorted((entry for entry in starts if entry.get("by")), key=rank):
                     stated.setdefault(entry["root"], {"by": entry["by"], "grade": entry["grade"]})
+                waiting = {}  # the roots on a surface not run yet: never run, whatever the app's events say
+                for gap in app.plan(record, units=technologies.recorded(manifest).get("units") or ())["gaps"]:
+                    if gap["kind"].startswith(f"{app.DEFERRED}:"):
+                        waiting.setdefault(gap["root"], []).append(gap)
                 state = _events(RUN_AND_OBSERVE, APP, begun, recorded)
                 found["explore"] = [_action(f"{RUN_AND_OBSERVE}:{APP}:{root}", RUN_AND_OBSERVE, "explore",
-                                            {"root": root}, True, True, {**state, **stated.get(root, {})})
-                                    for root in sorted({entry["root"] for entry in starts})]
+                                            {"root": root}, True, True,
+                                            {**state, **stated.get(root, {}), **_deferred(waiting.get(root))})
+                                    for root in sorted({entry["root"] for entry in starts} | set(waiting))]
     except (OSError, ValueError, KeyError):  # a record that cannot be read: its step's own action says the step
         pass
     return found
+
+
+def _deferred(gaps: list[dict] | None) -> dict:
+    """The state of an app whose surface is not run yet (`dynamic.app.DEFERRED`): `not_possible` with the gap, its
+    causes and remedy; nothing without one."""
+    if not gaps:
+        return {}
+    return {"state": "not_possible", "gap": gaps[0]["kind"], "cause": "; ".join(gap["detail"] for gap in gaps),
+            "remedy": gaps[0]["remedy"]}
 
 
 def _source_action(step: str, kind: str, status: dict, gaps, asked) -> dict:

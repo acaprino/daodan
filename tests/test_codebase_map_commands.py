@@ -70,6 +70,19 @@ def test_a_surface_is_one_of_the_registry_s_and_is_kept(project):
         assert [row.get("surface") for row in kept] == [surface]
 
 
+def test_a_start_the_user_states_on_a_surface_not_run_yet_is_its_gap_and_does_not_start(project):
+    """The user's start stands before the pre-map's of the same folder, and a surface the exploration does not run yet
+    keeps it from starting: `ui_execution_deferred:<surface>`, naming this file."""
+    import registry_build
+    surface = next(surface for surface in registry_build.SURFACES if surface not in app.ACTIVE)
+    commands.set(project, {"kind": "starts", "root": "web", "argv": ["npm", "run", "phone"], "surface": surface},
+                 "user")
+    planned = app.plan(commands.merged({"starts": [NPM_START]}, project))
+    assert planned["apps"] == []
+    assert [(gap["kind"], gap["root"], gap["path"]) for gap in planned["gaps"]] == [
+        (f"ui_execution_deferred:{surface}", "web", commands.FILE)]
+
+
 @pytest.mark.parametrize("given, said", [
     ({"kind": "tests", "root": ".", "argv": "pytest -q"}, "argv must be"),
     ({"kind": "tests", "root": ".", "argv": []}, "argv must be"),

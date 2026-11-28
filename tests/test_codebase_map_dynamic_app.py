@@ -76,6 +76,53 @@ def test_a_project_declaring_no_start_is_a_gap_and_nothing_runs():
     assert [gap["kind"] for gap in planned["gaps"]] == ["no_start_command", "no_start_command"]
 
 
+def surfaced(deferred: bool) -> tuple[str, str]:
+    """A technology whose registry entry decides a surface the exploration runs (`deferred` False) or does not run yet,
+    and that surface: read from the registry, never named here."""
+    import service_registry
+    return next((entry["id"], entry["surface"]) for entry in service_registry.load()["entries"]
+                if entry.get("surface") and (entry["surface"] not in app.ACTIVE) is deferred)
+
+
+def module(root: str, *idents: str) -> dict:
+    """A physical module of the stack record (`technologies.derive`), in `root`, declaring `idents` in its manifest."""
+    return {"id": f"m@{root}", "name": f"m-{root}", "paths": [root], "technologies": list(idents),
+            "technology_evidence": {ident: {"path": f"{root}/package.json", "line": 3} for ident in idents}}
+
+
+def test_the_active_surfaces_are_of_the_registry_and_the_others_wait():
+    import registry_build
+    assert set(app.ACTIVE) < set(registry_build.SURFACES)
+
+
+def test_a_module_on_a_surface_not_run_yet_and_with_no_start_is_a_gap_with_the_technology_and_its_file():
+    ident, surface = surfaced(deferred=True)
+    planned = app.plan({"starts": [start("web", "dev")]}, units=[module("mobile", ident)])
+    assert [one["root"] for one in planned["apps"]] == ["web"]  # the other app still starts
+    (gap,) = planned["gaps"]
+    assert {key: gap[key] for key in ("kind", "root", "module", "technology", "path", "line")} == {
+        "kind": f"ui_execution_deferred:{surface}", "root": "mobile", "module": "m@mobile", "technology": ident,
+        "path": "mobile/package.json", "line": 3}
+    assert ident in gap["detail"] and surface in gap["detail"] and gap["remedy"]
+
+
+def test_a_module_whose_folder_starts_on_an_active_surface_or_whose_surface_runs_is_no_gap():
+    deferred, _ = surfaced(deferred=True)
+    active, _ = surfaced(deferred=False)
+    planned = app.plan({"starts": [start("web", "dev")]},  # a start that states no surface opens an address: `web`
+                       units=[module("web", deferred), module("desk", active), module("lib", "no-such-technology")])
+    assert [one["root"] for one in planned["apps"]] == ["web"] and planned["gaps"] == []
+
+
+def test_a_start_on_a_surface_not_run_yet_does_not_start_whatever_its_runner():
+    _, surface = surfaced(deferred=True)
+    stated = {**start("mobile", "start", runner="flutter"), "surface": surface, "declared_in": "commands.json"}
+    planned = app.plan({"starts": [stated]})
+    assert planned["apps"] == []
+    assert [(gap["kind"], gap["root"], gap["path"]) for gap in planned["gaps"]] == [
+        (f"ui_execution_deferred:{surface}", "mobile", "commands.json")]
+
+
 def test_the_pages_nextjs_declares_under_an_apps_folder_are_its_seeds():
     record, pages = {"starts": [start("web", "dev")]}, [
         {"shape": "AppPageConfig", "page": True, "schema": "/about", "site": "web/app/about/page.tsx", "path": "/about"},
@@ -363,6 +410,17 @@ def test_a_project_with_no_app_to_start_runs_nothing_and_leaves_no_pages(tmp_pat
         seen = app.explore(tmp_path / "manifest.sqlite", tmp_path, {"starts": [], "builds": []}, "d", tmp_path / "runs")
     assert seen["state"] == "ran" and seen["kept"] == 0 and [g["kind"] for g in seen["gaps"]] == ["no_start_command"]
     assert not (tmp_path / "observed-controls.json").exists()
+
+
+def test_the_step_takes_the_modules_of_the_stack_record_beside_the_manifest(tmp_path):
+    import technologies
+    ident, surface = surfaced(deferred=True)
+    manifest = tmp_path / "manifest.sqlite"
+    technologies.path(manifest).write_text(json.dumps({"schema": technologies.SCHEMA, "technologies": [],
+                                                       "units": [module("mobile", ident)]}), encoding="utf-8")
+    with mock.patch.object(container, "run_in_container", side_effect=AssertionError("no container")):
+        seen = app.explore(manifest, tmp_path, {"starts": [], "builds": []}, "d", tmp_path / "runs")
+    assert [g["kind"] for g in seen["gaps"]] == ["no_start_command", f"ui_execution_deferred:{surface}"]
 
 
 # --- the example `.env` files the project publishes are the app's test values --------------------------------------
