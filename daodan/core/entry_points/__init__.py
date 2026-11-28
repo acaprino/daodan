@@ -44,7 +44,7 @@ FRAMEWORK_SOURCES = (nextjs, react_router, nuxt, sveltekit)
 TEMPLATE_SOURCES = (angular, astro)
 # The readers of the snapshot's trees, on the host and with no container (spec «Strumenti nativi»): their rows are routes of their own,
 # beside those of `FRAMEWORK_SOURCES` in the union with Noir (`one_entry`), each with the span of its handler for the binder. Not yet
-# run by the step: `T1.C.9` wires `express` (`express.rows`, from `bound`) where it binds at least the routes Noir binds.
+# run by the step: on four Express applications it binds 342 routes where Noir binds 842 (`benchmarks/express-routes/README.md`, `T1.C.9`).
 TREE_SOURCES = (express,)
 IDENTITY = {  # individual observations: no two rows are one fact
     "noir_entries": (),  # of a single scanner

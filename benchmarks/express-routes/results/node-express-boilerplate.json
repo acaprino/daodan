@@ -1,0 +1,408 @@
+{
+ "application": {
+  "commit": "179ae84efec61b14206d0305d941daed6c6d07f9",
+  "licence": "MIT",
+  "repository": "hagopj13/node-express-boilerplate"
+ },
+ "compare": {
+  "common_routes": 0,
+  "express_bound": 0,
+  "express_gaps": {
+   "the handler is no function of the snapshot": 15
+  },
+  "express_rows": 15,
+  "noir_bound": 13,
+  "noir_gaps": 2,
+  "noir_rows": 15,
+  "only_express": [],
+  "only_noir": [
+   [
+    "DELETE",
+    "/v1/users/{}",
+    "src/controllers/user.controller.js::function@32:30"
+   ],
+   [
+    "GET",
+    "/v1/users",
+    "src/controllers/user.controller.js::function@12:28"
+   ],
+   [
+    "GET",
+    "/v1/users/{}",
+    "src/controllers/user.controller.js::function@19:27"
+   ],
+   [
+    "PATCH",
+    "/v1/users/{}",
+    "src/controllers/user.controller.js::function@27:30"
+   ],
+   [
+    "POST",
+    "/v1/auth/forgot-password",
+    "src/controllers/auth.controller.js::function@28:34"
+   ],
+   [
+    "POST",
+    "/v1/auth/login",
+    "src/controllers/auth.controller.js::function@11:25"
+   ],
+   [
+    "POST",
+    "/v1/auth/logout",
+    "src/controllers/auth.controller.js::function@18:26"
+   ],
+   [
+    "POST",
+    "/v1/auth/refresh-tokens",
+    "src/controllers/auth.controller.js::function@23:33"
+   ],
+   [
+    "POST",
+    "/v1/auth/register",
+    "src/controllers/auth.controller.js::function@5:28"
+   ],
+   [
+    "POST",
+    "/v1/auth/reset-password",
+    "src/controllers/auth.controller.js::function@34:33"
+   ],
+   [
+    "POST",
+    "/v1/auth/send-verification-email",
+    "src/controllers/auth.controller.js::function@39:41"
+   ],
+   [
+    "POST",
+    "/v1/auth/verify-email",
+    "src/controllers/auth.controller.js::function@45:31"
+   ],
+   [
+    "POST",
+    "/v1/users",
+    "src/controllers/user.controller.js::function@7:30"
+   ]
+  ],
+  "same_function_other_path": 0,
+  "same_route_and_function": 0
+ },
+ "express_peak_mb": 114.3,
+ "express_rows": [
+  {
+   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a external",
+   "method": "OPTIONS",
+   "path": "*",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/app.js:42",
+   "symbol": "src/app.js::<module>"
+  },
+  {
+   "gap": "express route POST /login: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/login",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:10",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /logout: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/logout",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:11",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /refresh-tokens: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/refresh-tokens",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:12",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /forgot-password: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/forgot-password",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:13",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /reset-password: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/reset-password",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:14",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /send-verification-email: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/send-verification-email",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:15",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /verify-email: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/verify-email",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:16",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /register: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/register",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/auth.route.js:9",
+   "symbol": "src/routes/v1/auth.route.js::<module>"
+  },
+  {
+   "gap": "express route GET /: the handler is no function of the snapshot: a external",
+   "method": "GET",
+   "path": "/",
+   "reader": "express",
+   "shape": "method",
+   "site": "src/routes/v1/docs.route.js:14",
+   "symbol": "src/routes/v1/docs.route.js::<module>"
+  },
+  {
+   "gap": "express route DELETE /:userId: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/:userId",
+   "reader": "express",
+   "shape": "route",
+   "site": "src/routes/v1/user.route.js:14",
+   "symbol": "src/routes/v1/user.route.js::<module>"
+  },
+  {
+   "gap": "express route GET /:userId: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/:userId",
+   "reader": "express",
+   "shape": "route",
+   "site": "src/routes/v1/user.route.js:14",
+   "symbol": "src/routes/v1/user.route.js::<module>"
+  },
+  {
+   "gap": "express route PATCH /:userId: the handler is no function of the snapshot: the value a function returns",
+   "method": "PATCH",
+   "path": "/:userId",
+   "reader": "express",
+   "shape": "route",
+   "site": "src/routes/v1/user.route.js:14",
+   "symbol": "src/routes/v1/user.route.js::<module>"
+  },
+  {
+   "gap": "express route GET /: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/",
+   "reader": "express",
+   "shape": "route",
+   "site": "src/routes/v1/user.route.js:9",
+   "symbol": "src/routes/v1/user.route.js::<module>"
+  },
+  {
+   "gap": "express route POST /: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/",
+   "reader": "express",
+   "shape": "route",
+   "site": "src/routes/v1/user.route.js:9",
+   "symbol": "src/routes/v1/user.route.js::<module>"
+  }
+ ],
+ "express_seconds": 0.1,
+ "name": "node-express-boilerplate",
+ "noir": {
+  "argv": [
+   "noir",
+   "scan",
+   "/work",
+   "-f",
+   "json",
+   "--no-log"
+  ],
+  "returncode": 0,
+  "seconds": 0.9,
+  "stderr_tail": ""
+ },
+ "noir_rows": [
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "OPTIONS",
+   "path": "/*",
+   "reader": "noir",
+   "schema": "/*",
+   "shape": "http",
+   "site": "src/app.js:42",
+   "symbol": "src/app.js::<module>"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@5:28",
+   "handler": "authController.register",
+   "method": "POST",
+   "path": "/v1/auth/register",
+   "reader": "noir",
+   "schema": "/v1/auth/register",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:5",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/register"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@11:25",
+   "handler": "authController.login",
+   "method": "POST",
+   "path": "/v1/auth/login",
+   "reader": "noir",
+   "schema": "/v1/auth/login",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:11",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/login"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@18:26",
+   "handler": "authController.logout",
+   "method": "POST",
+   "path": "/v1/auth/logout",
+   "reader": "noir",
+   "schema": "/v1/auth/logout",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:18",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/logout"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@23:33",
+   "handler": "authController.refreshTokens",
+   "method": "POST",
+   "path": "/v1/auth/refresh-tokens",
+   "reader": "noir",
+   "schema": "/v1/auth/refresh-tokens",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:23",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/refresh-tokens"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@28:34",
+   "handler": "authController.forgotPassword",
+   "method": "POST",
+   "path": "/v1/auth/forgot-password",
+   "reader": "noir",
+   "schema": "/v1/auth/forgot-password",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:28",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/forgot-password"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@34:33",
+   "handler": "authController.resetPassword",
+   "method": "POST",
+   "path": "/v1/auth/reset-password",
+   "reader": "noir",
+   "schema": "/v1/auth/reset-password",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:34",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/reset-password"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@39:41",
+   "handler": "authController.sendVerificationEmail",
+   "method": "POST",
+   "path": "/v1/auth/send-verification-email",
+   "reader": "noir",
+   "schema": "/v1/auth/send-verification-email",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:39",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/send-verification-email"
+  },
+  {
+   "function": "src/controllers/auth.controller.js::function@45:31",
+   "handler": "authController.verifyEmail",
+   "method": "POST",
+   "path": "/v1/auth/verify-email",
+   "reader": "noir",
+   "schema": "/v1/auth/verify-email",
+   "shape": "http",
+   "site": "src/controllers/auth.controller.js:45",
+   "symbol": "src/controllers/auth.controller.js::POST /v1/auth/verify-email"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/v1/docs/",
+   "reader": "noir",
+   "schema": "/v1/docs",
+   "shape": "http",
+   "site": "src/routes/v1/docs.route.js:14",
+   "symbol": "src/routes/v1/docs.route.js::<module>"
+  },
+  {
+   "function": "src/controllers/user.controller.js::function@7:30",
+   "handler": "userController.createUser",
+   "method": "POST",
+   "path": "/v1/users/",
+   "reader": "noir",
+   "schema": "/v1/users",
+   "shape": "http",
+   "site": "src/controllers/user.controller.js:7",
+   "symbol": "src/controllers/user.controller.js::POST /v1/users/"
+  },
+  {
+   "function": "src/controllers/user.controller.js::function@12:28",
+   "handler": "userController.getUsers",
+   "method": "GET",
+   "path": "/v1/users/",
+   "reader": "noir",
+   "schema": "/v1/users",
+   "shape": "http",
+   "site": "src/controllers/user.controller.js:12",
+   "symbol": "src/controllers/user.controller.js::GET /v1/users/"
+  },
+  {
+   "function": "src/controllers/user.controller.js::function@19:27",
+   "handler": "userController.getUser",
+   "method": "GET",
+   "path": "/v1/users/:userId",
+   "reader": "noir",
+   "schema": "/v1/users/{}",
+   "shape": "http",
+   "site": "src/controllers/user.controller.js:19",
+   "symbol": "src/controllers/user.controller.js::GET /v1/users/:userId"
+  },
+  {
+   "function": "src/controllers/user.controller.js::function@27:30",
+   "handler": "userController.updateUser",
+   "method": "PATCH",
+   "path": "/v1/users/:userId",
+   "reader": "noir",
+   "schema": "/v1/users/{}",
+   "shape": "http",
+   "site": "src/controllers/user.controller.js:27",
+   "symbol": "src/controllers/user.controller.js::PATCH /v1/users/:userId"
+  },
+  {
+   "function": "src/controllers/user.controller.js::function@32:30",
+   "handler": "userController.deleteUser",
+   "method": "DELETE",
+   "path": "/v1/users/:userId",
+   "reader": "noir",
+   "schema": "/v1/users/{}",
+   "shape": "http",
+   "site": "src/controllers/user.controller.js:32",
+   "symbol": "src/controllers/user.controller.js::DELETE /v1/users/:userId"
+  }
+ ],
+ "sites": {},
+ "snapshot_seconds": 1.5
+}

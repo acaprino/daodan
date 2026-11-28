@@ -19,16 +19,16 @@ argument alone is Express's getter of a setting, `app.get('env')`); its handler 
 
 A row per route: `reader` `express`, `shape` (`method` or `route`, the data's form), `kind` `rotta`, `method` (None for `all`),
 `path` with the prefixes composed, `schema` (`flows.path_schema`), and `site` and `span` of the handler's function: the binder ties it
-to the one function of the snapshot with that span (`binder.bind`). A path that is no literal, a handler that is no function of the
+to the one function of the snapshot with that span (`binder.bind`); `registered` keeps where the route is registered. A path that is no literal, a handler that is no function of the
 snapshot, a router mounted under a prefix that is no literal and a router no app mounts are gaps with the cause, at the registration.
-It runs on the host with no container (spec «Strumenti nativi»), once the snapshot is read; `T1.C.9` wires it into the step.
+It runs on the host with no container (spec «Strumenti nativi»), once the snapshot is read; not run by the step: `T1.C.9` measured it short of Noir.
 """
 from __future__ import annotations
 
 from collections import defaultdict
 
 NAME = "express"
-VERSION = "1"
+VERSION = "2"
 DEPTH = 24  # how many values one evaluation may follow (names, imports, exports, calls): a cycle ends there, unknown
 PREFIXES = 64  # the prefixes one app or router may be mounted under: past them its routes are a gap
 
@@ -447,7 +447,8 @@ def rows(facts) -> list[dict]:
             for prefix in prefixes:
                 path = _join(prefix, route["path"])
                 out.append({**base, "path": path, "schema": flows.path_schema(path),
-                            "site": f"{declaration['file']}:{declaration['line']}", "span": list(declaration["span"])})
+                            "site": f"{declaration['file']}:{declaration['line']}", "span": list(declaration["span"]),
+                            "registered": route["site"]})
             out += [gap(cause) for cause in causes]
     return sorted(out, key=lambda row: (row["site"], row["path"] or "", row["method"] or "", row.get("gap", "")))
 

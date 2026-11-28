@@ -58,6 +58,8 @@ def test_express_4_prefixes_of_use_are_composed_across_files_and_each_handler_is
     # the site and the span are the handler's, not the registration's: `list` is declared at line 5 of the router's file
     assert spans["GET", "/api/v1/users"] == ("routes/users.js:5", [5, 0, 7, 1])
     assert all(row["schema"] == flows.path_schema(row["path"]) for row in found if not row.get("gap"))
+    # where each route is registered stays beside its handler's site: `get('/', list)` in the router's file
+    assert {row["registered"] for row in found if row.get("path") == "/api/v1/users"} == {"routes/users.js:17"}
     assert _routes(bound) == {
         ("GET", "/api/v1/users", "routes/users.js::list"),  # router mounted under `/users` on a router under `/api/v1`
         ("GET", "/api/v1/users/:id", "routes/users.js::show"),  # `route('/:id').get(show).post(update)`
@@ -115,7 +117,7 @@ def test_the_binder_ties_a_span_to_the_one_function_with_it_and_says_why_it_cann
 
 
 def test_express_is_a_primary_source_of_the_union_with_noir_and_is_not_run_by_the_step_yet():
-    """A Noir route on the schema of an Express row in the same file is that row (`one_entry`); `T1.C.9` wires the module."""
+    """A Noir route on the schema of an Express row in the same file is that row (`one_entry`); the step does not run the module (`T1.C.9`)."""
     mine = {"reader": "express", "shape": "method", "kind": "rotta", "method": "GET", "path": "/users/:id", "schema": "/users/{}",
             "site": "routes/users.js:9", "symbol": "routes/users.js::show"}
     noir = {"reader": "noir", "shape": "http", "kind": "rotta", "method": "GET", "path": "/users/:id", "schema": "/users/{}",
