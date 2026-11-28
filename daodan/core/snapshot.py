@@ -1940,8 +1940,19 @@ def cmd_context(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_plan(args: argparse.Namespace) -> int:
+    """The one plan of a snapshot (`pipeline.plan.current`), as JSON: the same the app and `codebase_map_status` show."""
+    from pipeline import plan as planning
+    try:
+        print(json.dumps(planning.current(Path(args.manifest)), separators=(",", ":")))
+        return 0
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+
+
 def _add_tree_commands(sub) -> None:
-    """Subcommands over a source tree and its snapshot: scope, files, write, index, search."""
+    """Subcommands over a source tree and its snapshot: scope, files, technologies, plan, write, index, search."""
     scope_parser = sub.add_parser("scope", help="count what a run would analyze and what its perimeter leaves out")
     scope_parser.add_argument("target")
     scope_parser.set_defaults(func=cmd_scope)
@@ -1955,6 +1966,10 @@ def _add_tree_commands(sub) -> None:
     technologies_parser.add_argument("manifest")
     technologies_parser.add_argument("--out", required=True)
     technologies_parser.set_defaults(func=cmd_technologies)
+
+    plan_parser = sub.add_parser("plan", help="the one plan of a snapshot: steps, policy, actions and gaps, as JSON")
+    plan_parser.add_argument("manifest")
+    plan_parser.set_defaults(func=cmd_plan)
 
     write_parser = sub.add_parser("write", help="write a manifest for a target tree")
     write_parser.add_argument("target")

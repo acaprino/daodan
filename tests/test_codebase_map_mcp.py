@@ -1212,3 +1212,8 @@ def test_no_mcp_tool_answers_a_host_request_and_the_status_lists_them_by_tool(tm
         egress.collect(key, [{"host": "10.0.0.4", "port": "443"}], {"10.0.0.4": ["build.gradle"]})
     assert service.status("r1")["egress"] == [{"tool": "gradle", "project": key, "requests": [
         {"host": "10.0.0.4", "port": "443", "address": "10.0.0.4", "network": True, "declared_in": ["build.gradle"]}]}]
+    # the status carries the one plan, the same `plan.current` gives, and keeps `pipeline` for its clients until T1.E
+    from pipeline import plan as planning
+    status = service.status("r1")
+    assert status["plan"] == planning.current(service.root / "runs/r1/snapshot/manifest.sqlite")
+    assert set(status["pipeline"]) == {"find_modules", "recognize_stack", "link_calls"}

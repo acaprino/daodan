@@ -74,7 +74,7 @@ Un'interfaccia nasce da un ingresso, non da un manifesto. Il campo `surface` del
 - **`webview`** (attiva in T3): Electron (CDP), Tauri e Wails (WebDriver) su `Xvfb`. Dove manca il driver si esercita la sola pagina e lo si dichiara.
 - **Superfici differite** (`desktop` Linux, GUI Python, `android`, `windows`): finché non implementate emettono la lacuna `ui_execution_deferred:<superficie>` (non ancora nel codice; assegnata a `T3.B` nel piano). macOS e iOS restano fuori perimetro.
 
-Regole valide per tutte le superfici: nulla dell'host; download con licenza o di qualche GB solo dopo consenso esplicito (altrimenti `approval_required`, non ancora nel codice; il nome nasce in `T0.C` e compare nel piano unico in `T1.D`); solo dati e credenziali di prova già preparati dalla CI del progetto; progetti multipiattaforma eseguiti sul bersaglio `web` quando dichiarato.
+Regole valide per tutte le superfici: nulla dell'host; download con licenza o di qualche GB solo dopo consenso esplicito (altrimenti `approval_required`, nel codice da `T0.C`: `egress.approval_gap`); solo dati e credenziali di prova già preparati dalla CI del progetto; progetti multipiattaforma eseguiti sul bersaglio `web` quando dichiarato.
 
 ### Come si sa che cosa lanciare (test, avvio, build)
 
@@ -485,6 +485,8 @@ Un solo oggetto condiviso tra interfaccia, MCP e riga di comando (il giornale de
 3. **Dice che cosa fa, non come:** frasi leggibili («lancia i test di `api`»), con strumento/comando/versione come dettaglio apribile. Ogni azione indica bersaglio e tre fatti: se esegue codice del progetto, se gira nel container, se scarica dalla rete e quanto pesa.
 4. **Stato per azione** aggiornato in tempo reale: `da fare`, `in corso`, `fatta`, `fallita`, `saltata` (già fresca), `non possibile` (con causa e rimedio), `in attesa di approvazione` (un suo host attende la risposta di una persona). Tipi di azione da elenco chiuso.
 
+**Nel codice:** `pipeline.plan.current(manifest)` dà `{steps, policy, actions, gaps}`, calcolato a ogni chiamata da record, giornale ed `egress`, senza un file suo. Gli step hanno `state` (`pending`, `running`, `done`, `failed`, `skipped`), `executes` e `stops`; le azioni `kind` da `plan.ACTIONS` (`read`, `recognize`, `model`, `entries`, `resolve`, `observe`, `explore`, `assemble`), `target`, `project_code`, `container` e `state` da `plan.ACTION_STATES` (in più `not_possible` e `awaiting_approval`, che porta solo `hosts`; i dettagli restano in `egress`). Lo leggono l'app (`run.plan` dello stato), MCP (`plan` di `codebase_map_status`) e la riga di comando (`daodan snapshot plan MANIFEST`); il peso dei download è la lacuna `download_size_unknown`.
+
 ## L'interfaccia segue la pipeline
 
 *Nel piano in `T1.E`; il popup degli host in `T0.C`.*
@@ -511,7 +513,7 @@ Ogni anagrafica deve avere un controllo automatico di coerenza con il codice:
 - **Motore di container:** isola sempre il codice del progetto. Su Windows è il **Kiri** di Daodan, in una distribuzione WSL 2 propria; altrove è quello dell'utente (`docker`, poi `podman`).
 - **Preparazione (una per analisi):** toolchain (`mise`), dipendenze ripristinate via proxy, strumenti verificati per sha256; tutto il resto gira senza rete. I controlli preventivi non sono il confine di isolamento (da creare, `T3.A`): i comandi vengono solo da una tabella chiusa; un lockfile con `file:` o `-e` è rifiutato con una lacuna, mentre un indirizzo `git+` o URL non si rifiuta `[deciso]`: il suo host si approva come ogni altro; gli script di lifecycle dei gestori sono spenti nel ripristino. Il container gira con `--cap-drop ALL` e un utente non root (da creare, `T3.A`).
   - **Nel codice** (`daodan/core/container.py`): esecuzione con `--network none`; preparazione su una rete interna con il proxy (`container.PROXY_SCRIPT`) come sola uscita; `--security-opt no-new-privileges`. Il proxy apre senza chiedere solo i registri di `package-managers.json` e gli host approvati (`egress.decide`); ogni altro host, anche dichiarato (`preparation.declared`, `python_vcs`) o fisso di uno strumento, è rifiutato e chiede (`T0.C`). Non passa `--cap-drop` né `--user`. La prova su un container vero è `benchmarks/egress/modal_probe.py` (`T0.C.8`).
-- **Uscita di rete con approvazione `[deciso]`** (non ancora nel codice; nel piano è in `T0.C`, con lo stato di attesa nel piano unico in `T1.D`). Sostituisce «solo proxy verso registri autorizzati» e ritira l'apertura «come una CI» degli host dichiarati.
+- **Uscita di rete con approvazione `[deciso]`** (nel codice: `egress`, da `T0.C`; lo stato di attesa è `awaiting_approval` nel piano unico, `T1.D`). Sostituisce «solo proxy verso registri autorizzati» e ritira l'apertura «come una CI» degli host dichiarati.
   - **Confine:** nessuna uscita diretta dal container di analisi; il controllo sta fuori, nel proxy, unica uscita (inclusi redirect, DNS e IP letterali).
   - **In whitelist:** passa senza chiedere. Sono gli host canonici (`daodan/data/package-managers.json`: i gestori dell'elenco di Wikipedia, con gli host scritti a mano e provati da `benchmarks/registry-hosts/`) e quelli approvati dall'utente.
   - **In blacklist:** rifiutato subito; solo una notifica del tentativo, nessun popup.
