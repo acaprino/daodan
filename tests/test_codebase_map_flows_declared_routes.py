@@ -8,6 +8,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import flows
+import entry_points
 import premap
 from test_codebase_map_manifest_entries import noir_route
 from test_codebase_map_container_runner import manifest_of
@@ -73,7 +74,7 @@ TYPEGEN = (VALIDATOR + block("/api/orders/[id]", "app/api/orders/[id]/route.ts")
 
 @pytest.fixture(scope="module")
 def links(tmp_path_factory):
-    from premap import nextjs, noir
+    from entry_points import nextjs, noir
 
     def run(commands):
         if commands[0]["tool"] == "noir":
@@ -81,7 +82,7 @@ def links(tmp_path_factory):
         return [{"root": "/work", "returncode": 0, "stderr": "", "stdout": "" if c["argv"][0] == "npx" else TYPEGEN}
                 for c in commands]
     _, manifest = manifest_of(tmp_path_factory.mktemp("declared-routes"), FILES)
-    premap.write(manifest, sources=(noir, nextjs), runner=run)
+    entry_points.write(manifest, sources=(noir, nextjs), runner=run)
     return flows.link_facts(manifest, flows.validate_rules(RULES))
 
 
@@ -195,7 +196,7 @@ def test_what_was_linked_before_is_linked_after_and_the_counts_rise(links):
 def row(reader, shape, method="GET", path="/x", symbol="a.py::f", kind="rotta", site="a.py:1", declares=True):
     """A row as its adapter writes it: the route's `schema` when the adapter declares a route (Noir's `http`, Next.js's
     route handler and page); the path spelled as the tool does becomes `REST`'s schema, None for a catch-all."""
-    from premap import nextjs
+    from entry_points import nextjs
     out = {"reader": reader, "shape": shape, "kind": kind, "symbol": symbol, "site": site, "method": method, "path": path}
     if declares:
         route = nextjs._next_path(path) if reader == "next" else path

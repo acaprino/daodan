@@ -2,7 +2,7 @@
 (`container.WORKDIR`), fetched at its pinned commit while the image was built, and nothing of it runs here. Three things happen, all of them reading:
 
 1. Daodan's own snapshot of `/work` (`snapshot.read_project`), the one the pre-map reads.
-2. The pinned Noir, with the arguments `premap/noir.py` gives (`noir.commands`).
+2. The pinned Noir, with the arguments `entry_points/noir.py` gives (`noir.commands`).
 3. For each endpoint of Noir's report: what `noir.read` makes of it (a candidate row, or the gap that drops it), then `binder.bind` over the candidate
    rows, and for each row the facts a cause is found from: the snapshot's declarations that cover its line, those with the handler's name in the file and
    elsewhere, and the next declaration after the line. The facts are written as they are; `causes.py` decides, outside the container.
@@ -26,7 +26,7 @@ SEGMENT = re.compile(r"[A-Za-z_$][\w$]*")  # an identifier inside a handler name
 SHOWN = 8
 BELOW = 3  # lines
 OWNERS = ("class", "interface", "struct", "enum", "trait", "impl", "record", "object", "module", "namespace")  # the declarations that hold methods
-FILES = ("binder.py", "premap/noir.py", "languages/semantic.py", "snapshot.py", "flows.py", "edge_view.py", "entries.py", "semantic_store.py")
+FILES = ("binder.py", "entry_points/noir.py", "languages/semantic.py", "snapshot.py", "flows.py", "edge_view.py", "entries.py", "semantic_store.py")
 
 
 def listing(root: str) -> dict[str, int]:
@@ -69,7 +69,7 @@ def run(name: str) -> dict:
     import premap
     import semantic_store
     import snapshot
-    from premap import noir
+    from entry_points import noir
     from snapshot_store import open_snapshot
 
     before = listing(ROOT)

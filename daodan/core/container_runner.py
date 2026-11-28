@@ -3,7 +3,8 @@ take): each source's commands in one container run, in Daodan's container. The a
 (`run_and_observe`) take only `IMAGE` and `TOOLS` from it: their runs go through `container.run_in_container`, which with
 `egress.preflight` is the service every step shares.
 
-`runner(manifest)` returns the `runner(commands) -> results` that `premap.derive` calls once per model source.
+`runner(manifest)` returns the `runner(commands) -> results` that `premap.derive` and `entry_points.derive` call once per model
+source.
 It runs the commands with `container.run_commands` over a copy of the project (the same runner the JVM and clang
 analyzers use): those whose `network` is `registries` in the preparation, behind the proxy that opens only the
 package registries (`container.REGISTRIES`) and the hosts a tool names in `TOOLS` (Bazel's) that the user approved
@@ -30,11 +31,13 @@ import tempfile
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
-SCRIPTS = SCRIPT_DIR / "premap"  # Daodan's own files a tool carries (no URL: `dockerfile_stages.go`, the `.mjs` scripts), beside their sources
+SCRIPTS = SCRIPT_DIR / "entry_points"  # Daodan's own files a tool carries (no URL: the `.mjs` scripts), beside their sources
+BUILD_SCRIPTS = SCRIPT_DIR / "premap"  # the same, beside the pre-map's sources (`dockerfile_stages.go`)
 
 import preparation  # noqa: E402
 import node_preparation  # noqa: E402
-from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, noir, sbt  # noqa: E402
+from entry_points import noir  # noqa: E402
+from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -91,12 +94,12 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
     "next": {"files": [NODE], "setup": [UNPACK["node"]], "registries": True, "runs_on": ("node",),
              "restores": "node", "memory": 3},
     # the project's own `react-router` or `remix` command (`@react-router/dev`, `@remix-run/dev`) is in the packages the setup
-    # restores: no install of its own, and a preparation, where an analysis' shared restore is taken (`premap/react_router.py`)
+    # restores: no install of its own, and a preparation, where an analysis' shared restore is taken (`entry_points/react_router.py`)
     "react-router": {"files": [NODE], "setup": [UNPACK["node"]], "registries": True, "runs_on": ("node",),
                      "restores": "node", "memory": 3},
     # the project's own `nuxt` is in the packages the setup restores (its `postinstall`, `nuxt prepare`, ran there too, on the
     # whole project): no install of its own, and a preparation, where an analysis' shared restore is taken; Daodan's script (beside
-    # this module) calls `loadNuxt` of the project's `@nuxt/kit`, run as `daodan-nuxt` (`premap/nuxt.py`). measured: the peak
+    # this module) calls `loadNuxt` of the project's `@nuxt/kit`, run as `daodan-nuxt` (`entry_points/nuxt.py`). measured: the peak
     # memory of either command on the two fixtures is 0.4 GB at most (`benchmarks/nuxt-routes/README.md`); `memory` is Next.js's, not
     # measured on a project with many modules
     "nuxt": {"files": [NODE, (None, None, "nuxt_pages.mjs")],
@@ -105,26 +108,26 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                                        f" && chmod 755 {T}/bin/daodan-nuxt"],
              "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
     # the project's own `svelte-kit` (`@sveltejs/kit`) is in the packages the setup restores (its `prepare` script, which is usually
-    # `svelte-kit sync`, ran there too): no install of its own, and a preparation (`premap/sveltekit.py`)
+    # `svelte-kit sync`, ran there too): no install of its own, and a preparation (`entry_points/sveltekit.py`)
     "sveltekit": {"files": [NODE], "setup": [UNPACK["node"]], "registries": True, "runs_on": ("node",),
                   "restores": "node", "memory": 3},
     # the project's own `@angular/compiler` is in the packages the setup restores: Daodan's script (beside this module)
-    # calls its `parseTemplate`, run as `daodan-angular` (`premap/angular.py`)
+    # calls its `parseTemplate`, run as `daodan-angular` (`entry_points/angular.py`)
     "angular": {"files": [NODE, (None, None, "angular_templates.mjs")],
                 "setup": [UNPACK["node"], f"cp {IN}/angular_templates.mjs {T}/angular_templates.mjs"
                                           f" && printf '%s\\n' '#!/bin/sh' 'exec node {T}/angular_templates.mjs \"$@\"' > {T}/bin/daodan-angular"
                                           f" && chmod 755 {T}/bin/daodan-angular"],
                 "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
     # the compiler the project's own `astro` depends on is in the packages the setup restores: Daodan's script calls its `parse`,
-    # run as `daodan-astro` (`premap/astro.py`)
+    # run as `daodan-astro` (`entry_points/astro.py`)
     "astro": {"files": [NODE, (None, None, "astro_templates.mjs")],
               "setup": [UNPACK["node"], f"cp {IN}/astro_templates.mjs {T}/astro_templates.mjs"
                                         f" && printf '%s\\n' '#!/bin/sh' 'exec node {T}/astro_templates.mjs \"$@\"' > {T}/bin/daodan-astro"
                                         f" && chmod 755 {T}/bin/daodan-astro"],
               "registries": True, "runs_on": ("node",), "restores": "node", "memory": 3},
     # Daodan's script (beside this module) loads the application with the project's own Flask, run by the Python of the environment
-    # the setup restores for each folder (`_python`, `premap/flask_app.py`); measured on Modal, `benchmarks/flask-routes/README.md`, which
-    # says why the source is not in `premap.SOURCES`
+    # the setup restores for each folder (`_python`, `entry_points/flask_app.py`); measured on Modal, `benchmarks/flask-routes/README.md`, which
+    # says why the source is not in `entry_points.SOURCES`
     "flask": {"files": [(None, None, "flask_routes.py")], "setup": [f"cp {IN}/flask_routes.py {T}/flask_routes.py"],
               "registries": True, "restores": "python", "memory": 3},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
@@ -164,8 +167,10 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
 
 
 def fetched(url: str | None, sha256: str | None, name: str) -> Path:
-    """`preparation.fetched`; a file with no URL is Daodan's own, beside the sources that use it (`SCRIPTS`)."""
-    return SCRIPTS / name if url is None else preparation.fetched(url, sha256, name)
+    """`preparation.fetched`; a file with no URL is Daodan's own, beside the sources that use it (`SCRIPTS`, `BUILD_SCRIPTS`)."""
+    if url is None:
+        return next((folder / name for folder in (SCRIPTS, BUILD_SCRIPTS) if (folder / name).is_file()), SCRIPTS / name)
+    return preparation.fetched(url, sha256, name)
 
 
 

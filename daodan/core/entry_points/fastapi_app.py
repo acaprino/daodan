@@ -3,7 +3,7 @@
 Measured on Modal (FastAPI 0.165.0 with Starlette 1.10.0 and fastapi-cli 0.0.34, the runner's image, the network blocked; the same fixture
 on 0.115.14 and 0.137.1): what the script prints, how the snapshot names and places the functions it binds, and what each failure writes are
 in `benchmarks/fastapi-routes/README.md`; the answers the tests read are `tests/fixtures/premap/fastapi/`. The source is one of
-`premap.FRAMEWORK_SOURCES`: its rows are entries of the links. It is written and tested and not wired (the patches are `benchmarks/fastapi-routes/wiring/`):
+`entry_points.FRAMEWORK_SOURCES`: its rows are entries of the links. It is written and tested and not wired (the patches are `benchmarks/fastapi-routes/wiring/`):
 on two real applications the pinned Noir gives the same routes with the same functions and the framework's objects add none (`benchmarks/fastapi-routes/README.md`,
 «Applicazioni vere»).
 
@@ -101,7 +101,7 @@ def commands(context):
 def _stopped(result: dict, command: dict) -> str:
     """Why the script did not give its answer: the limit that ended it, or what it wrote first; and the environment it ran in, for
     the Python is the nearest folder's above, not always the folder's own."""
-    from premap import frameworks
+    from entry_points import frameworks
     where = f" (the Python of the environment restored for {command['venv']!r})" if command.get("venv") is not None else ""
     return frameworks.stopped(result, SCRIPT, command["argv"][4], MEMORY_GB) + where
 
@@ -264,7 +264,7 @@ def _competing(document: dict) -> str | None:
 
 def read(context, commands, results):
     import entries
-    from premap import frameworks
+    from entry_points import frameworks
     kinds = {"http": entries.QUERIES[NAME]["route"]["kind"], "websocket": entries.QUERIES[NAME]["websocket"]["kind"]}
     gaps, rows = [], []
     for command, result in zip(commands, results):
@@ -289,7 +289,7 @@ def read(context, commands, results):
 
 
 def from_record(report):
-    """The rows this source persisted in a pre-map and its gaps there; a pre-map made without the source, or where it was not
+    """The rows this source persisted in the record of the entry points and its gaps there; a record made without the source, or where it was not
     needed, has none."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],

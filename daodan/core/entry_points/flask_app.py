@@ -3,7 +3,7 @@
 Measured on Modal (Flask 3.1.3 and Werkzeug 3.1.9, the runner's image, the network blocked): what the script prints, how the snapshot
 names and places the functions it binds, and what each failure writes are in `benchmarks/flask-routes/README.md`; the answers the
 tests read are `tests/fixtures/premap/flask/`. The source is not wired (`benchmarks/flask-routes/README.md`, «Applicazioni vere»: on real
-applications Noir gives the same routes and functions): it is not in `premap.SOURCES` and `FRAMEWORK_SOURCES`, and `entry-queries.json`
+applications Noir gives the same routes and functions): it is not in `entry_points.SOURCES` and `FRAMEWORK_SOURCES`, and `entry-queries.json`
 has no table for it, so `read` needs `entries.QUERIES["flask"]` (the tests and the benchmark put it there); wired, its rows are entries
 of the links.
 
@@ -104,7 +104,7 @@ def commands(context):
 def _stopped(result: dict, command: dict) -> str:
     """Why the script did not give its answer: the limit that ended it, or what it wrote first; and the environment it ran in, for
     the Python is the nearest folder's above, not always the folder's own."""
-    from premap import frameworks
+    from entry_points import frameworks
     where = f" (the Python of the environment restored for {command['venv']!r})" if command.get("venv") is not None else ""
     if result["returncode"] == 4:  # the script's own: it could not write the answer to the descriptor it saved
         return f"{SCRIPT} could not write its answer (exit 4): {frameworks.excerpt(result)}{where}"
@@ -263,7 +263,7 @@ def _dispatched(dispatch: dict) -> str:
 
 def read(context, commands, results):
     import entries
-    from premap import frameworks
+    from entry_points import frameworks
     kind = entries.QUERIES[NAME]["route"]["kind"]
     gaps, rows = [], []
     for command, result in zip(commands, results):
@@ -291,7 +291,7 @@ def read(context, commands, results):
 
 
 def from_record(report):
-    """The rows this source persisted in a pre-map and its gaps there; a pre-map made without the source, or where it was not
+    """The rows this source persisted in the record of the entry points and its gaps there; a record made without the source, or where it was not
     needed, has none."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],

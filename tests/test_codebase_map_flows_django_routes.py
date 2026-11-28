@@ -1,13 +1,13 @@
 """The routes of a Django project are offered routes (`flows.link_facts`) as Noir's, Next.js's and Flask's are: a call of the client meets them.
 
-The Django rows are the ones `premap/django_app.py` makes from the answer recorded on Modal (`tests/fixtures/premap/django/routes.json`) over the
+The Django rows are the ones `entry_points/django_app.py` makes from the answer recorded on Modal (`tests/fixtures/premap/django/routes.json`) over the
 fixture of `benchmarks/django-routes/`. Each carries the path schema `django_app` makes from Django's own parse of the route
 (`/shop/products/<int:pk>/` is `/shop/products/{}`), or none where an argument may hold a `/`, the route is a `re_path`, is under
 `i18n_patterns` or has a converter of the project's own: that route is a gap of the declared routes and meets no call. Django has no method per
 route: a function view has none, and `flows._declared_routes` says so for each (a declared route that has no method), where a class-based view
 has one row per method it answers and is offered like any other.
 
-The wiring of the source (`entries.QUERIES["django"]`, `premap.FRAMEWORK_SOURCES`) is the one the report of task 14b gives; the module-scoped
+The wiring of the source (`entries.QUERIES["django"]`, `entry_points.FRAMEWORK_SOURCES`) is the one the report of task 14b gives; the module-scoped
 fixture adds it for the run and takes it away.
 """
 import json
@@ -19,9 +19,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import entries
 import flows
+import entry_points
 import premap
-from premap import django_app
-from test_codebase_map_container_runner import manifest_of
+from entry_points import django_app
+from test_codebase_map_container_runner import manifest_of, write_both
 from test_codebase_map_premap_django import QUERY, WIRED, project, recorded
 
 RULES = [
@@ -49,10 +50,10 @@ def links(tmp_path_factory):
         return [recorded("routes") for _ in commands]
     with pytest.MonkeyPatch.context() as patch:
         patch.setitem(entries.QUERIES, "django", QUERY)
-        if django_app not in premap.FRAMEWORK_SOURCES:  # once the wiring is in the tree it is there already
-            patch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, django_app))
+        if django_app not in entry_points.FRAMEWORK_SOURCES:  # once the wiring is in the tree it is there already
+            patch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, django_app))
         _, manifest = manifest_of(tmp_path_factory.mktemp("django-routes"), {**project(), "web/client.ts": CLIENT})
-        premap.write(manifest, sources=(premap.requirements, django_app), runner=run)
+        write_both(manifest, sources=(premap.requirements, django_app), runner=run)
         return flows.link_facts(manifest, flows.validate_rules(RULES))
 
 
@@ -67,8 +68,8 @@ def reasons(links):
 def test_django_is_a_framework_source_whose_rows_are_entries_of_the_links():
     """Waits for the lines of the report in `premap/__init__.py`."""
     if not WIRED["framework"]:
-        pytest.skip("`django_app` is not in `premap.FRAMEWORK_SOURCES` yet: the wiring is in the report of task 14b")
-    assert django_app in premap.SOURCES and premap.SOURCES.index(django_app) < premap.SOURCES.index(premap.angular)
+        pytest.skip("`django_app` is not in `entry_points.FRAMEWORK_SOURCES` yet: the wiring is in the report of task 14b")
+    assert django_app in entry_points.SOURCES and entry_points.SOURCES.index(django_app) < entry_points.SOURCES.index(entry_points.angular)
 
 
 def test_a_class_based_view_s_methods_are_entries_each_on_its_own_function(links):

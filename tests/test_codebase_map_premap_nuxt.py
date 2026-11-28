@@ -1,5 +1,5 @@
 """The server routes a Nuxt project's own `nuxt prepare` makes Nitro write, `.nuxt/types/nitro-routes.d.ts`, and the pages its
-own `@nuxt/kit` resolves (`premap/nuxt_pages.mjs`), read from their output and bound to the snapshot.
+own `@nuxt/kit` resolves (`entry_points/nuxt_pages.mjs`), read from their output and bound to the snapshot.
 
 The container is a fake: the answers are the ones the real commands gave on Modal for the fixtures of
 `benchmarks/nuxt-routes/` (`tests/fixtures/premap/nuxt/answers.json`, recorded by that folder's `modal_probe.py --mode source`):
@@ -17,7 +17,7 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, entry_points, premap, recorder
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/nuxt-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/nuxt/answers.json").read_text(encoding="utf-8"))
@@ -78,7 +78,7 @@ def runner_for(answers):
 def read(tmp_path, files, name="nuxt3", answers=None):
     _, manifest = manifest_of(tmp_path, files)
     asked, run = runner_for(answers or {".": answer(name)})
-    record = premap.write(manifest, sources=(premap.nuxt,), runner=run)
+    record = entry_points.write(manifest, sources=(entry_points.nuxt,), runner=run)
     record["bound"] = bound(manifest, record)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
 
@@ -264,8 +264,8 @@ def test_the_time_the_script_was_given_and_the_memory_of_the_run_are_in_the_gap_
     killed = {"root": "/work", "returncode": 137, "stdout": "", "stderr": ""}
     [second] = [g for g in read(tmp_path / "killed", project("nuxt3"), answers={".": (*answer("nuxt3")[:2], killed)})[1]
                 if g["kind"] == "model_failed"]
-    assert "exit 137" in second["detail"] and "900 seconds" in second["detail"] and f"{premap.nuxt.MEMORY_GB} GB" in second["detail"]
-    assert premap.nuxt.MEMORY_GB == container_runner.TOOLS["nuxt"]["memory"]
+    assert "exit 137" in second["detail"] and "900 seconds" in second["detail"] and f"{entry_points.nuxt.MEMORY_GB} GB" in second["detail"]
+    assert entry_points.nuxt.MEMORY_GB == container_runner.TOOLS["nuxt"]["memory"]
 
 
 def test_an_output_that_is_no_json_of_the_known_layout_is_a_gap_and_no_row(tmp_path):
@@ -395,7 +395,7 @@ def test_the_routes_are_read_from_the_tree_whatever_the_wrappers_around_the_impo
              "      'post': Awaited<ReturnType<typeof import('../../server/api/a.post').default>>\n    }\n"
              "    '/b/:id': {\n      'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/b/[id]').default>>>>\n    }\n"
              "  }\n}\n")
-    found, error, unread = premap.nuxt.nitro_routes(older)
+    found, error, unread = entry_points.nuxt.nitro_routes(older)
     assert (error, unread) == (None, [])
     assert found == [{"path": "/a", "method": "get", "import": "../../server/api/a.get"},
                      {"path": "/a", "method": "post", "import": "../../server/api/a.post"},
@@ -405,8 +405,8 @@ def test_the_routes_are_read_from_the_tree_whatever_the_wrappers_around_the_impo
 def test_a_text_that_does_not_parse_whole_gives_the_line_of_the_error_and_no_route():
     import entries
     whole = "interface InternalApi {\n  '/a': {\n    'get': Awaited<ReturnType<typeof import('x').default>>\n  }\n}\n"
-    assert premap.nuxt.nitro_routes(whole)[0] == [{"path": "/a", "method": "get", "import": "x"}]
-    found, error, unread = premap.nuxt.nitro_routes(whole + "const = = ;\n")  # a route that was whole is no row when the file is not
+    assert entry_points.nuxt.nitro_routes(whole)[0] == [{"path": "/a", "method": "get", "import": "x"}]
+    found, error, unread = entry_points.nuxt.nitro_routes(whole + "const = = ;\n")  # a route that was whole is no row when the file is not
     assert found == [] and error == 6 and unread == []
 
 
@@ -418,8 +418,8 @@ def test_a_snapshot_with_no_package_json_declaring_nuxt_runs_nothing(tmp_path):
              "tools/package.json": '["nuxt"]\n', "pages/index.vue": "<template><div/></template>\n"}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        assert premap.nuxt.commands(premap.Context(manifest, store)) is None
-    record = premap.write(manifest, sources=(premap.nuxt,), runner=lambda commands: 1 / 0)
+        assert entry_points.nuxt.commands(premap.Context(manifest, store)) is None
+    record = entry_points.write(manifest, sources=(entry_points.nuxt,), runner=lambda commands: 1 / 0)
     assert record["sources"][0]["state"] == "not_needed" and "framework_entries" not in record
 
 
@@ -430,14 +430,14 @@ def test_each_package_json_declaring_nuxt_among_its_dependencies_or_dev_dependen
              "apps/c/package.json": '{"dependencies": {"vue": "3.5.46"}}\n'}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        asked = premap.nuxt.commands(premap.Context(manifest, store))
+        asked = entry_points.nuxt.commands(premap.Context(manifest, store))
     assert [(c["cwd"], c["argv"][0]) for c in asked] == [("apps/a", "npx"), ("apps/a", "cat"), ("apps/b", "npx"), ("apps/b", "cat"),
                                                           ("apps/a", "timeout"), ("apps/b", "timeout")]  # the script after all the others
     assert {c["argv"][2] for c in asked if c["argv"][0] == "timeout"} == {"450"}  # two folders share the 900 seconds
 
 
 def test_the_folders_share_the_time_of_the_script_and_none_has_less_than_ten_seconds():
-    assert [premap.nuxt.pages_seconds(n) for n in (1, 2, 3, 90, 91, 500)] == [900, 450, 300, 10, 10, 10]
+    assert [entry_points.nuxt.pages_seconds(n) for n in (1, 2, 3, 90, 91, 500)] == [900, 450, 300, 10, 10, 10]
 
 
 def test_the_commands_use_the_projects_own_nuxt_without_network_and_the_setup_installs_no_package(tmp_path):
@@ -445,7 +445,7 @@ def test_the_commands_use_the_projects_own_nuxt_without_network_and_the_setup_in
     from snapshot_store import open_snapshot
     project_dir, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"nuxt": "4.6.4"}}\n'})
     with open_snapshot(manifest) as store:
-        asked = premap.nuxt.commands(premap.Context(manifest, store))
+        asked = entry_points.nuxt.commands(premap.Context(manifest, store))
     # `npm_config_offline`: without `nuxt` installed `npx --no-install` still asks the registry and fails after 70 seconds with a network
     # error (measured: 70.6 s, `benchmarks/nuxt-routes/`); offline it fails at once, saying what is missing (0.45 s)
     assert asked == [
@@ -470,9 +470,9 @@ def test_the_setup_installs_daodans_script_as_a_command_and_the_script_is_beside
     from pathlib import Path as Beside
     spec = container_runner.TOOLS["nuxt"]
     assert (None, None, "nuxt_pages.mjs") in spec["files"] and "daodan-nuxt" in spec["setup"][1] and "nuxt_pages.mjs" in spec["setup"][1]
-    assert container_runner.fetched(None, None, "nuxt_pages.mjs") == Beside(premap.nuxt.__file__).with_name("nuxt_pages.mjs")
+    assert container_runner.fetched(None, None, "nuxt_pages.mjs") == Beside(entry_points.nuxt.__file__).with_name("nuxt_pages.mjs")
     assert container_runner.fetched(None, None, "nuxt_pages.mjs").is_file()
-    assert premap.nuxt.SCRIPT == "daodan-nuxt"
+    assert entry_points.nuxt.SCRIPT == "daodan-nuxt"
 
 
 def test_in_an_analysis_the_source_has_a_preparation_that_takes_the_shared_restore_before_its_commands(tmp_path):
@@ -480,7 +480,7 @@ def test_in_an_analysis_the_source_has_a_preparation_that_takes_the_shared_resto
     from snapshot_store import open_snapshot
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"nuxt": "4.6.4"}}\n'})
     with open_snapshot(manifest) as store:
-        asked = premap.nuxt.commands(premap.Context(manifest, store))
+        asked = entry_points.nuxt.commands(premap.Context(manifest, store))
     calls, fake = recorder()
     with node_preparation.analysis(), patch.object(container, "run_commands", fake):  # as the pipeline runs it
         container_runner.runner(manifest)(asked)
@@ -506,7 +506,7 @@ def test_no_engine_carries_the_reason_and_nothing_of_the_project_runs_on_this_ma
         started.append(args)
         return real(args, *given, **options)
     with patch.object(container, "run_commands", run), patch.object(subprocess, "Popen", spy):
-        record = premap.write(manifest, sources=(premap.nuxt,), runner=container_runner.runner(manifest))
+        record = entry_points.write(manifest, sources=(entry_points.nuxt,), runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record and not mark.exists()
@@ -514,7 +514,7 @@ def test_no_engine_carries_the_reason_and_nothing_of_the_project_runs_on_this_ma
     started.clear()  # and with an engine's answer in hand, reading it starts nothing of the project either
     _, answered = runner_for({".": answer("nuxt3")})
     with patch.object(subprocess, "Popen", spy):
-        record = premap.write(manifest, sources=(premap.nuxt,), runner=answered)
+        record = entry_points.write(manifest, sources=(entry_points.nuxt,), runner=answered)
     assert record["framework_entries"] and not mark.exists()
     assert {Path(str(a[0] if isinstance(a, (list, tuple)) else a)).stem for a in started} <= {"git"}
 
@@ -523,25 +523,26 @@ def test_no_engine_carries_the_reason_and_nothing_of_the_project_runs_on_this_ma
 
 def test_the_source_is_registered_as_one_of_the_sources_that_give_entries_of_their_own():
     import entries
-    assert premap.nuxt in premap.FRAMEWORK_SOURCES and premap.nuxt in premap.SOURCES
-    assert hasattr(premap.nuxt, "commands") and callable(premap.nuxt.from_record)
-    assert premap.nuxt.NAME in entries.QUERIES and premap.nuxt.NAME in container_runner.TOOLS  # the table is keyed by the source's name
+    assert entry_points.nuxt in entry_points.FRAMEWORK_SOURCES and entry_points.nuxt in entry_points.SOURCES
+    assert hasattr(entry_points.nuxt, "commands") and callable(entry_points.nuxt.from_record)
+    assert entry_points.nuxt.NAME in entries.QUERIES and entry_points.nuxt.NAME in container_runner.TOOLS  # the table is keyed by the source's name
     assert entries.QUERIES["nuxt"] == {"server-route": {"kind": "rotta", "exports": ["default"]}, "page": {"kind": "rotta"}}
 
 
 def test_a_premap_made_before_the_source_is_stale(tmp_path):
     _, manifest = manifest_of(tmp_path, project("nuxt3"))
-    before = tuple(source for source in premap.SOURCES if source is not premap.nuxt)
-    premap.write(manifest, sources=before)
-    assert premap.state(manifest, sources=before)["state"] == "fresh"
-    assert premap.state(manifest)["state"] == "stale"
+    premap.write(manifest, sources=())
+    before = tuple(source for source in entry_points.SOURCES if source is not entry_points.nuxt)
+    entry_points.write(manifest, sources=before)
+    assert entry_points.state(manifest, sources=before)["state"] == "fresh"
+    assert entry_points.state(manifest)["state"] == "stale"
 
 
 def test_the_rows_and_the_gaps_of_the_source_reach_the_flow_evidence(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     files = project("nuxt3")
     _, manifest = manifest_of(tmp_path, files)
-    premap.write(manifest, sources=(premap.nuxt,), runner=runner_for({".": answer("nuxt3")})[1])
+    entry_points.write(manifest, sources=(entry_points.nuxt,), runner=runner_for({".": answer("nuxt3")})[1])
     rows_, gaps = evidence(manifest)
     mine = [r for r in rows_ if r["reader"] == "nuxt"]
     assert {(r["path"], r.get("method")) for r in mine if r["shape"] == "server-route"} == {(route, method) for route, method, _ in HANDLERS}
@@ -550,9 +551,9 @@ def test_the_rows_and_the_gaps_of_the_source_reach_the_flow_evidence(tmp_path):
 
 
 def test_a_premap_where_the_source_was_not_needed_gives_the_evidence_no_nuxt_row_and_no_gap(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"vue": "3.5.46"}}\n'})
-    premap.write(manifest, sources=(premap.nuxt,), runner=lambda commands: 1 / 0)
+    entry_points.write(manifest, sources=(entry_points.nuxt,), runner=lambda commands: 1 / 0)
     rows_, gaps = evidence(manifest)
     assert [r for r in rows_ if r["reader"] == "nuxt"] == [] and [g for g in gaps if g.get("source") == SOURCE] == []
 
@@ -563,7 +564,7 @@ def test_the_source_file_of_the_nuxt_reader_is_part_of_the_key_of_the_cached_lin
     seen = []
     with patch.object(Reader, "read_bytes", autospec=True, side_effect=lambda self: seen.append(self.name) or b""):
         flows._links_reader_digest.__wrapped__()
-    assert "nuxt.py" in seen  # from the one tuple, `premap.FRAMEWORK_SOURCES`: no other line names the file
+    assert "nuxt.py" in seen  # from the one tuple, `entry_points.FRAMEWORK_SOURCES`: no other line names the file
 
 
 # --------------------------------------------------------------------- what reaches the links
@@ -571,7 +572,7 @@ def test_the_source_file_of_the_nuxt_reader_is_part_of_the_key_of_the_cached_lin
 @pytest.fixture(scope="module")
 def made(tmp_path_factory):
     _, manifest = manifest_of(tmp_path_factory.mktemp("nuxt-links"), project("nuxt3"))
-    premap.write(manifest, sources=(premap.nuxt,), runner=runner_for({".": answer("nuxt3")})[1])
+    entry_points.write(manifest, sources=(entry_points.nuxt,), runner=runner_for({".": answer("nuxt3")})[1])
     return manifest
 
 
@@ -602,7 +603,7 @@ def test_the_handlers_the_snapshot_cannot_bind_are_gaps_of_the_links_with_what_w
 
 def test_the_shape_of_the_source_is_in_the_registry_so_no_question_is_asked_for_it(made):
     import entries
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     rules = entries.registry_rules([r for r in evidence(made)[0] if r["reader"] == "nuxt"])
     assert {(r["shape"], r["entry"]) for r in rules} == {("server-route", "rotta"), ("page", "rotta")}
 
@@ -612,7 +613,7 @@ def test_the_premap_rows_are_the_modules_with_their_exports_and_the_links_report
     links' binder reads the snapshot's export record: a `defineEventHandler(...)` call is no function, so the links' gap says so."""
     import flows
     _, manifest = manifest_of(tmp_path, project("nuxt3"))
-    record = premap.write(manifest, sources=(premap.nuxt,), runner=runner_for({".": answer("nuxt3")})[1])
+    record = entry_points.write(manifest, sources=(entry_points.nuxt,), runner=runner_for({".": answer("nuxt3")})[1])
     servers = [r for r in record["framework_entries"] if r["shape"] == "server-route"]
     assert servers and all(r["exports"] == ["default"] and r["symbol"] == f"{r['site']}::<module>" and "handler" not in r for r in servers)
     links = flows.cached_links(manifest, [])

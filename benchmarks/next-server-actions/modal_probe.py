@@ -9,8 +9,8 @@ is built: the one moment the network is open). Then, with the network blocked, i
 whether the directive leaves a trace in a record). Every answer goes to `results/<variant>.json`. The project's code
 (`next.config.ts`, `node_modules`) runs only in the container.
 
-A fourth variant, `noir`, runs OWASP Noir (the binary and the digest Daodan's pre-map pins in `daodan/core/premap/noir.py`) over a copy of
-the fixture without its packages, as `premap/noir.py` does, and keeps its JSON report: whether the `server-action` row names the
+A fourth variant, `noir`, runs OWASP Noir (the binary and the digest Daodan's pre-map pins in `daodan/core/entry_points/noir.py`) over a copy of
+the fixture without its packages, as `entry_points/noir.py` does, and keeps its JSON report: whether the `server-action` row names the
 function and the line of its declaration.
 
 Nothing here reads a record for a meaning: the filters keep what names `checkout` and the modules one step before and after
@@ -38,10 +38,10 @@ LISTING_LIMIT = 3000
 MANIFEST_NAMES = ("route-summaries.json", "history.json", "metadata.json")
 
 def _noir_install() -> str:
-    """The command that downloads Noir as `premap/noir.py` pins it (url, sha256): the file is loaded for its constants, not imported."""
+    """The command that downloads Noir as `entry_points/noir.py` pins it (url, sha256): the file is loaded for its constants, not imported."""
     import importlib.util
 
-    spec = importlib.util.spec_from_file_location("daodan_noir_pin", REPO / "daodan/core/premap/noir.py")
+    spec = importlib.util.spec_from_file_location("daodan_noir_pin", REPO / "daodan/core/entry_points/noir.py")
     pin = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(pin)
     url, sha256, _name = pin.DOWNLOAD

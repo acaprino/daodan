@@ -12,7 +12,9 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
 2. `scan`: the module graph and the pre-map, the project's modules; a source of the pre-map that `build-tools.json`
    names runs only for a build tool the stack found (`premap.BUILD_TOOLS`), and the model commands run in Daodan's
    container (`container_runner`). Then each module gets the technologies its files declare
-   (`technologies.ensure`). It too reads only the inventory and the stack's record.
+   (`technologies.ensure`). It too reads only the inventory and the stack's record. Then the entry points
+   (`entry_points.ensure`): Noir and the frameworks' own tools, in the container, on the pre-map; their own step comes
+   with the orchestrator.
 3. `parse`: says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files, executed by
    `snapshot.write_reading`, `engine_pass.pass_plan` and `dynamic.run`. It reads no file: the one reading is
    `snapshot.read_project`, which every caller runs first, and a store that holds only its inventory stops the step.
@@ -85,10 +87,11 @@ class Parse:
 
 
 class Scan:
-    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("inventory", "stack"), ("modules", "premap", "technologies"), None
+    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("inventory", "stack"), ("modules", "premap", "technologies", "entry-points"), None
 
     @staticmethod
     def run(context: Context) -> dict:
+        import entry_points
         import modules
         import premap
         import technologies
@@ -104,7 +107,8 @@ class Scan:
             bus.progress(Scan.NAME, done, total, phase=status["source"],
                          message=f"{status['source']}: {status['state']}")
 
-        record = premap.ensure(manifest, report=source, runner=None if context.fast_scan else _runner(manifest))
+        runner = None if context.fast_scan else _runner(manifest)
+        record = premap.ensure(manifest, report=source, runner=runner)
         synced = modules.sync_with_premap(manifest, record)
         for gap in record.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
@@ -117,6 +121,11 @@ class Scan:
             bus.emit("log", f"the technologies of the modules: {error}", step=Scan.NAME, level="error", cause=cause,
                      remedy=Stack.WITHOUT)
             out["technologies_failed"] = cause
+        # `find_entry_points` until the orchestrator gives it a step: on the pre-map, with the same runner
+        found = entry_points.ensure(manifest, runner=runner, report=source)
+        for gap in found.get("gaps", []):
+            bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
+        out.update(entry_points=str(entry_points.path(manifest)), entry_gaps=len(found["gaps"]))
         return out
 
 

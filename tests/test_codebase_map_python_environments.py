@@ -1,7 +1,7 @@
 """Which Python environment a command in a folder uses: the restore makes environments only for the root, for a folder with a
 lockfile of its own, for a folder marked only by a requirements file and for the folders no marked folder holds (`preparation.restores`); a folder inside another runs in the one of
 the nearest folder above that was restored, and Poetry's lives in Poetry's own cache. One piece of code says it, for the dynamic step
-of the Python tests (`dynamic/python.py`) and for the Flask source (`premap/flask_app.py`)."""
+of the Python tests (`dynamic/python.py`) and for the Flask source (`entry_points/flask_app.py`)."""
 import sys
 from pathlib import Path
 

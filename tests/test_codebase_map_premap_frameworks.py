@@ -14,8 +14,9 @@ from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
+import entry_points  # noqa: E402
 import premap  # noqa: E402
-from premap import frameworks  # noqa: E402
+from entry_points import frameworks  # noqa: E402
 
 
 class _Inventory:
@@ -70,7 +71,7 @@ def test_why_a_script_did_not_answer_is_one_wording_for_every_source_that_runs_o
 
 
 def test_no_framework_source_keeps_a_copy_of_a_shared_helper_or_borrows_another_sources():
-    sources = (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)
+    sources = (*entry_points.FRAMEWORK_SOURCES, *entry_points.TEMPLATE_SOURCES)
     names = {source.__name__.rsplit(".", 1)[-1] for source in sources}
     for source in sources:
         tree = ast.parse(Path(source.__file__).read_text(encoding="utf-8"))
@@ -82,15 +83,15 @@ def test_no_framework_source_keeps_a_copy_of_a_shared_helper_or_borrows_another_
                     and isinstance(node.value, ast.Name) and node.value.id in others]
         borrowed += [alias.name for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)
                      and ((node.module or "").rsplit(".", 1)[-1] in others
-                          or node.module == "premap" and any(alias.name in others for alias in node.names))
+                          or node.module in ("premap", "entry_points") and any(alias.name in others for alias in node.names))
                      for alias in node.names]
         assert not borrowed, (source.NAME, borrowed)  # what two sources share is in `frameworks`, whatever its name
 
 
 def test_no_module_of_the_pre_map_takes_a_private_helper_of_a_framework_source():
     """A source outside the tuples (one still being written) reaches the shared helpers through `frameworks` too."""
-    names = {source.__name__.rsplit(".", 1)[-1] for source in (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)}
-    for path in sorted((SCRIPTS / "premap").glob("*.py")):
+    names = {source.__name__.rsplit(".", 1)[-1] for source in (*entry_points.FRAMEWORK_SOURCES, *entry_points.TEMPLATE_SOURCES)}
+    for path in sorted([*(SCRIPTS / "premap").glob("*.py"), *(SCRIPTS / "entry_points").glob("*.py")]):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         borrowed = [f"{node.value.id}.{node.attr}" for node in ast.walk(tree) if isinstance(node, ast.Attribute)
                     and isinstance(node.value, ast.Name) and node.value.id in names - {path.stem}
@@ -102,6 +103,6 @@ def test_the_reading_of_a_tools_output_is_in_its_adapter():
     """Spec 8.13 point 4: Noir's report, Nitro's routes file and Next.js's validator are read by the adapter of the
     tool that writes them, not by the tree reader of the entries."""
     import entries
-    from premap import nextjs, noir, nuxt
+    from entry_points import nextjs, noir, nuxt
     assert not {"noir", "nitro_routes", "typegen"} & set(vars(entries))
     assert callable(noir.rows) and callable(nuxt.nitro_routes) and callable(nextjs.typegen)

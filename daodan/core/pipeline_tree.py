@@ -5,7 +5,8 @@
 """Write the tree of the pipeline: for each step, what runs, when, with which tool at which version, where, and what it
 gives. A development tool: it reads the code's own declarations and runs nothing of a project.
 
-What is declared is read from the code (`declared`): the sources of the pre-map (`premap.SOURCES`), the analyzers
+What is declared is read from the code (`declared`): the sources of the pre-map and of the entry points (`premap.SOURCES`,
+`entry_points.SOURCES`), the analyzers
 (`indexers.analyzers`), the observers (`dynamic.observers`), the languages and their rules (`file_formats`,
 `languages.detect`) and the pins of the tools. What each one is for is a line of Italian written here, by its name.
 `check` says what the two disagree on: a source with no line, a line whose source is gone, a file a line names that is
@@ -47,6 +48,7 @@ def declared() -> dict:
     import container
     import dynamic
     import engine_tools
+    import entry_points
     import file_formats
     import format_catalog
     import indexers
@@ -58,7 +60,8 @@ def declared() -> dict:
     from dynamic import app as dynamic_app, callgrind
     from indexers import components, jvm, python as scip_python, runtime
     from languages import detect
-    versions = {source.NAME: str(source.VERSION) for source in premap.SOURCES if _is_release(str(source.VERSION))}
+    sources = (*premap.SOURCES, *entry_points.SOURCES)
+    versions = {source.NAME: str(source.VERSION) for source in sources if _is_release(str(source.VERSION))}
     analyzers = []
     for analyzer in indexers.analyzers():
         module = analyzer.__name__.rsplit(".", 1)[-1]
@@ -82,7 +85,7 @@ def declared() -> dict:
                      "mascheratura dei segreti": secret_mask.VERSION, "ambienti Python": engine_tools.UV_VERSION,
                      "Node di Daodan": runtime.NODE_VERSION, "motore di container": "Kiri " + container.KIRI_VERSION,
                      "anagrafica dei formati": "Linguist " + format_catalog.VERSION, **({"toolchain del progetto": mise} if mise else {})})
-    return {"sources": [source.NAME for source in premap.SOURCES], "analyzers": analyzers, "observers": observers, "languages": read,
+    return {"sources": [source.NAME for source in sources], "analyzers": analyzers, "observers": observers, "languages": read,
             "supported": list(languages.SUPPORTED_LANGUAGES), "rules": sorted({rule.id for group in detect.RULES.values() for rule in group}),
             "versions": versions}
 
@@ -173,10 +176,10 @@ def tree(decl: dict) -> dict:
          ("angular", "angular.py", "Il compilatore di Angular (parseTemplate) e il suo type checker dei template", "Gli eventi dei template e che cosa chiamano.", ["angular"], ["typescript", "markup"]),
          ("astro", "astro.py", "Il compilatore di Astro (@astrojs/compiler)", "Gli eventi nei file .astro.", ["astro-fw"], JS + ["astro"])]
     for name, file, tool, does, fw, langs in F:
-        row("s3", "p5", name, "premap/" + file, "comando", "container", tool, does, langs=langs, fw=fw, fam=["npm"], declared=name)
-    row("s3", "p5", "noir", "premap/noir.py", "comando", "container", "Noir, scanner di rotte (OWASP)", "Le rotte dei backend, senza eseguire il progetto.", all=True, declared="noir")
+        row("s3", "p5", name, "entry_points/" + file, "comando", "container", tool, does, langs=langs, fw=fw, fam=["npm"], declared=name)
+    row("s3", "p5", "noir", "entry_points/noir.py", "comando", "container", "Noir, scanner di rotte (OWASP)", "Le rotte dei backend, senza eseguire il progetto.", all=True, declared="noir")
     for name, tool in (("django", "L'URLconf caricato da Django"), ("fastapi", "Il loader e gli oggetti rotta di FastAPI"), ("flask", "La url_map dell'applicazione Flask")):
-        row("s3", "p5", name, f"premap/{name}_app.py", "comando", "container", tool, "Le rotte con la funzione che le serve. Sulle app misurate Noir dava lo stesso.", langs=["python"], fw=["backend"], status="scritto, non collegato")
+        row("s3", "p5", name, f"entry_points/{name}_app.py", "comando", "container", tool, "Le rotte con la funzione che le serve. Sulle app misurate Noir dava lo stesso.", langs=["python"], fw=["backend"], status="scritto, non collegato")
     row("after", "p5", "lettori degli ingressi", "entries.py + data/entry-queries.json", "lettore", "host", "tree-sitter, una query per grammatica (le query sono dati)", "Dove può partire un flusso: un onClick nel JSX, un decoratore, un gestore di evento.", langs=JS + ["vue", "svelte", "python", "java", "kotlin", "go", "rust", "csharp"], fw=["react", "next", "react-router", "nuxt", "sveltekit", "angular", "astro-fw", "backend"])
     row("after", "p5", "legatore", "binder.py", "regola", "host", "Codice nostro", "Lega ogni rotta o evento trovato alla funzione dello snapshot.", all=True)
 
@@ -296,7 +299,7 @@ def tree(decl: dict) -> dict:
         else:
             r["when"] = WHEN.get(name, "")
         r["when_plan"] = ("se il passo 3 ha trovato " + FOUND[name]) if name in FOUND else r["when"]
-    WRITES = {"pafter": "flussi e schede", "common": "", "s1": "l'elenco dei file", "s2": "lo snapshot: simboli, import, chiamate", "s3": "modules.json e premap.json", "s4": "technologies.json",
+    WRITES = {"pafter": "flussi e schede", "common": "", "s1": "l'elenco dei file", "s2": "lo snapshot: simboli, import, chiamate", "s3": "modules.json, premap.json ed entry-points.json", "s4": "technologies.json",
               "s5": "gli archi provati (engine-edges.sqlite)", "s6": "gli archi osservati", "s7": "il grafo completo", "after": "i flussi",
               "p1": "l'elenco dei file", "p2": "lo snapshot: simboli, import, chiamate", "p3": "lo stack, con il file che prova ogni voce",
               "p4": "il modello di build: moduli, dipendenze, comandi", "p5": "i punti di ingresso, legati alle funzioni",

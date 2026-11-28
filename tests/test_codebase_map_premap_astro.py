@@ -1,6 +1,6 @@
 """The events an Astro project's own compiler reads in its templates, read from its output and given the snapshot's file, line and column.
 
-`parse` of the compiler the project's `astro` depends on runs in Daodan's container (`premap/astro_templates.mjs`); the container is a
+`parse` of the compiler the project's `astro` depends on runs in Daodan's container (`entry_points/astro_templates.mjs`); the container is a
 fake here: the answers are the ones the real script printed on Modal for `benchmarks/astro-compiler/fixture`, with Astro 5
 (`@astrojs/compiler` 2.x), 6 (`@astrojs/compiler` 4.x) and 7 (`@astrojs/compiler-rs`), in a copy of the project, in a copy with Windows
 line ends and in a copy without its packages (`tests/fixtures/premap/astro/`, recorded by `benchmarks/astro-compiler/modal_probe.py
@@ -16,14 +16,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from test_codebase_map_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import container, container_runner, manifest_of, entry_points, premap, recorder
 
 import preparation  # noqa: E402
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/astro-compiler"
 FIXTURE = BENCHMARK / "fixture"
 RECORDED = Path(__file__).parent / "fixtures/premap/astro"
-SOURCE = f"astro@{premap.astro.VERSION}"
+SOURCE = f"astro@{entry_points.astro.VERSION}"
 VERSIONS = ("astro5", "astro6", "astro7")
 NODE20 = "astro5-node20"  # Astro 5 on Node 20: the oldest Node the script has to run on
 INDEX, EDGE, BROKEN, UNICODE = "src/pages/index.astro", "src/pages/edge.astro", "src/pages/broken.astro", "src/pages/unicode.astro"
@@ -45,7 +45,7 @@ def commands_of(tmp_path, files):
     from snapshot_store import open_snapshot
     project, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        return project, manifest, premap.astro.commands(premap.Context(manifest, store))
+        return project, manifest, entry_points.astro.commands(premap.Context(manifest, store))
 
 
 def listed(command) -> dict:
@@ -62,7 +62,7 @@ def recorded(version: str, key: str = "installed") -> list[dict]:
 
 def read(tmp_path, answers, files=None):
     _, manifest = manifest_of(tmp_path, files or project_files())
-    record = premap.write(manifest, sources=(premap.astro,), runner=lambda commands: answers)
+    record = entry_points.write(manifest, sources=(entry_points.astro,), runner=lambda commands: answers)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], manifest
 
 
@@ -83,7 +83,7 @@ def test_each_folder_that_declares_astro_is_one_command_given_its_astro_files_an
     _, _, asked = commands_of(tmp_path, project_files())
     [command] = asked
     assert (command["tool"], command["cwd"], command["network"], command["env"]) == ("astro", ".", "none", {})
-    assert command["argv"][:4] == ["timeout", "--kill-after=10", str(premap.astro.seconds(1)), "daodan-astro"] and len(command["argv"]) == 5
+    assert command["argv"][:4] == ["timeout", "--kill-after=10", str(entry_points.astro.seconds(1)), "daodan-astro"] and len(command["argv"]) == 5
     expected = sorted(path.relative_to(FIXTURE).as_posix() for path in FIXTURE.rglob("*.astro"))
     assert listed(command) == {"prefix": "on", "jsx": "astro-jsx.d.ts", "files": expected} and len(expected) == 13
     assert not [f for f in listed(command)["files"] if not f.endswith(".astro")]  # the `.ts` endpoint is no template
@@ -103,14 +103,14 @@ def test_a_project_without_astro_runs_nothing_and_an_astro_file_no_folder_holds_
              "site/src/plain.ts": "export const x = 1;\n"}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        assert premap.astro.commands(premap.Context(manifest, store)) is None  # `site` declares astro and holds no `.astro` file
-    record = premap.write(manifest, sources=(premap.astro,), runner=lambda commands: 1 / 0)
+        assert entry_points.astro.commands(premap.Context(manifest, store)) is None  # `site` declares astro and holds no `.astro` file
+    record = entry_points.write(manifest, sources=(entry_points.astro,), runner=lambda commands: 1 / 0)
     assert record["sources"][0]["state"] == "not_needed" and "framework_entries" not in record
     files["site/src/b.astro"] = "<p onclick=\"go()\">b</p>\n"
     _, manifest = manifest_of(tmp_path / "again", files)
     plan = None
     with open_snapshot(manifest) as store:
-        plan = premap.astro._plan(premap.Context(manifest, store))
+        plan = entry_points.astro._plan(premap.Context(manifest, store))
     assert plan["files"] == {"site": ["src/b.astro"]}
     assert [(g["path"], g["kind"]) for g in plan["gaps"]] == [("src/a.astro", "model_partial")]
 
@@ -129,7 +129,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     from snapshot_store import open_snapshot
     project, manifest = manifest_of(tmp_path, project_files())
     with open_snapshot(manifest) as store:
-        asked = premap.astro.commands(premap.Context(manifest, store))
+        asked = entry_points.astro.commands(premap.Context(manifest, store))
     spec = container_runner.TOOLS["astro"]
     assert (spec["restores"], spec["runs_on"]) == ("node", ("node",))  # the project's compiler is in its packages
     assert any(item[2] == "astro_templates.mjs" and item[0] is None for item in spec["files"])  # Daodan's own file, beside the source
@@ -149,19 +149,19 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     assert f"( {plan['lines'][0]} )" in setup and "install -g" not in setup  # the restore of the project's packages, nothing else
     assert f"{container_runner.T}/bin/daodan-astro" in setup and "astro_templates.mjs" in setup
     assert len(rest) == 1 and rest[0]["network"] == "none" and "inputs" not in rest[0]
-    assert rest[0]["argv"][:4] == ["timeout", "--kill-after=10", str(premap.astro.seconds(1)), "daodan-astro"]  # a project's own code may not end
-    assert premap.astro.MEMORY_GB == spec["memory"]  # what the gap of a killed run says the run has
+    assert rest[0]["argv"][:4] == ["timeout", "--kill-after=10", str(entry_points.astro.seconds(1)), "daodan-astro"]  # a project's own code may not end
+    assert entry_points.astro.MEMORY_GB == spec["memory"]  # what the gap of a killed run says the run has
     assert carried[f"{preparation.IN}/astro_templates.mjs"] == (container_runner.SCRIPTS / "astro_templates.mjs").read_bytes()
     assert carried[f"{preparation.IN}/astro-files-0.json"].decode("utf-8") == next(iter(asked[0]["inputs"].values()))
 
 
 def test_the_recorded_answers_carry_the_print_of_the_script_that_made_them_and_the_version_of_the_source_they_were_made_for():
-    """A pre-map is fresh while its source's `NAME@VERSION` is the one it was made by (`premap.state`): a script that changes with no
+    """A pre-map is fresh while its source's `NAME@VERSION` is the one it was made by (`entry_points.state`): a script that changes with no
     new `VERSION` leaves stale rows in a project's pre-map. The recording holds both, so changing the script fails here until it is
     recorded again, and the record is made with the `VERSION` the source has then: raise it with the script."""
     script = container_runner.SCRIPTS / "astro_templates.mjs"
     printed = hashlib.sha256(script.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
-    assert json.loads((RECORDED / "script.json").read_text(encoding="utf-8")) == {"astro_templates.mjs": printed, "version": premap.astro.VERSION}, (
+    assert json.loads((RECORDED / "script.json").read_text(encoding="utf-8")) == {"astro_templates.mjs": printed, "version": entry_points.astro.VERSION}, (
         "the script or the version changed: record the answers again (`benchmarks/astro-compiler/modal_probe.py --mode source`)")
 
 
@@ -314,7 +314,7 @@ def test_nothing_of_astro_starts_on_the_host_without_an_engine(tmp_path, monkeyp
     monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: started.append(args) or run(*args, **kwargs))
     monkeypatch.setattr(subprocess, "Popen", lambda *args, **kwargs: started.append(args) or popen(*args, **kwargs))
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    record = premap.write(manifest, sources=(premap.astro,), runner=container_runner.runner(manifest))
+    record = entry_points.write(manifest, sources=(entry_points.astro,), runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
@@ -369,7 +369,7 @@ def test_an_attribute_that_starts_with_on_is_an_event_only_when_astro_declares_i
     """`one="two()"` and `onfoo` start with `on` and are no event: the names are the members of `DOMAttributes` in `astro-jsx.d.ts`,
     the declarations `astro` ships for its own JSX, which the script prints and the tree of TypeScript reads."""
     answer = json.loads(recorded(version)[0]["stdout"])
-    names = premap.astro._declared(answer["jsx"])
+    names = entry_points.astro._declared(answer["jsx"])
     assert {"onclick", "onsubmit", "oninput", "onanimationend"} <= names and not {"one", "onfoo", "onend"} & names
     record, _, _ = read(tmp_path, recorded(version), project_files(version))
     assert f"{CALLS}:7" not in seen(record) and f"{CALLS}:8" not in seen(record)
@@ -378,8 +378,8 @@ def test_an_attribute_that_starts_with_on_is_an_event_only_when_astro_declares_i
 def test_the_names_of_the_events_are_the_members_of_the_interface_astro_declares_them_in_and_of_no_other():
     text = ("declare namespace a.b { interface Other { onnope?: string } interface DOMAttributes { children?: any; "
             "onclick?: string | undefined | null; 'on:x'?: string; onfoo?: string } }\n")
-    assert premap.astro._declared(text) == {"children", "onclick", "onfoo"}
-    assert premap.astro._declared("interface Other { onnope?: string }") == set() and premap.astro._declared("") == set()
+    assert entry_points.astro._declared(text) == {"children", "onclick", "onfoo"}
+    assert entry_points.astro._declared("interface Other { onnope?: string }") == set() and entry_points.astro._declared("") == set()
 
 
 @pytest.mark.parametrize("jsx, cause", [(None, "astro-jsx.d.ts is not in the packages of astro"),
@@ -425,18 +425,18 @@ def test_every_position_the_script_printed_is_where_the_text_writes_the_name_of_
 def test_a_command_the_time_limit_ends_or_kills_is_a_gap_with_the_limit_in_seconds_and_no_row(tmp_path):
     [ended] = recorded("astro5", "timeout")  # the real script with 0.05 seconds, on Modal: `timeout` ended it
     assert ended["returncode"] == 124 and ended["stdout"] == ""
-    seconds = str(premap.astro.seconds(1))
+    seconds = str(entry_points.astro.seconds(1))
     record, [gap], _ = read(tmp_path / "ended", [ended])
     assert (gap["kind"], gap["path"], gap["detail"]) == ("model_failed", ".", f"daodan-astro did not end in {seconds} seconds")
     assert "framework_entries" not in record
     record, [gap], _ = read(tmp_path / "killed", [{**ended, "returncode": 137}])
     assert gap["detail"] == (f"daodan-astro was killed (exit 137): it did not end in {seconds} seconds, "
-                             f"or it ran out of memory ({premap.astro.MEMORY_GB} GB)")
+                             f"or it ran out of memory ({entry_points.astro.MEMORY_GB} GB)")
 
 
 def test_the_time_the_commands_have_is_shared_between_the_folders_with_a_least_for_each():
-    assert premap.astro.seconds(1) == premap.astro.TOTAL_SECONDS
-    assert premap.astro.seconds(4) * 4 <= premap.astro.TOTAL_SECONDS and premap.astro.seconds(10_000) == 10
+    assert entry_points.astro.seconds(1) == entry_points.astro.TOTAL_SECONDS
+    assert entry_points.astro.seconds(4) * 4 <= entry_points.astro.TOTAL_SECONDS and entry_points.astro.seconds(10_000) == 10
 
 
 def test_a_file_the_answer_does_not_hold_is_a_gap_and_not_a_silence_and_the_others_are_still_read(tmp_path):
@@ -457,16 +457,17 @@ def test_the_cause_a_failed_command_gives_is_both_ends_of_what_the_tool_said(tmp
 
 # ---------------------------------------------------------------- how it joins the rest
 def test_the_source_is_registered_with_a_facet_that_joins_nothing_and_is_not_a_framework_source_of_routes():
-    assert premap.astro in premap.SOURCES and premap.IDENTITY["framework_entries"] == ()
-    assert premap.astro not in premap.FRAMEWORK_SOURCES  # its rows are the attribute reader's: `entries.compiled`
+    assert entry_points.astro in entry_points.SOURCES and entry_points.IDENTITY["framework_entries"] == ()
+    assert entry_points.astro not in entry_points.FRAMEWORK_SOURCES  # its rows are the attribute reader's: `entries.compiled`
 
 
 def test_a_premap_made_before_the_source_is_stale(tmp_path):
     _, manifest = manifest_of(tmp_path, project_files())
-    before = tuple(source for source in premap.SOURCES if source is not premap.astro)
-    premap.write(manifest, sources=before)
-    assert premap.state(manifest, sources=before)["state"] == "fresh"
-    assert premap.state(manifest)["state"] == "stale"
+    premap.write(manifest, sources=())
+    before = tuple(source for source in entry_points.SOURCES if source is not entry_points.astro)
+    entry_points.write(manifest, sources=before)
+    assert entry_points.state(manifest, sources=before)["state"] == "fresh"
+    assert entry_points.state(manifest)["state"] == "stale"
 
 
 def test_in_the_links_each_row_is_a_gap_at_its_site_and_the_gaps_of_the_compiler_are_told_with_them(tmp_path):
@@ -490,12 +491,12 @@ def test_without_the_compilers_rows_the_template_of_an_astro_file_gives_no_row(t
 
 
 def test_the_source_is_part_of_the_key_of_the_cached_links_beside_the_other_sources_of_a_template():
-    """`flows._links_reader_digest` hashes the files of every source whose rows join the tree reader's (`premap.TEMPLATE_SOURCES`).
+    """`flows._links_reader_digest` hashes the files of every source whose rows join the tree reader's (`entry_points.TEMPLATE_SOURCES`).
     Its script is not in it: the pre-map is fresh for the `NAME@VERSION` that made it, and the version goes with the script (the
     test of the recorded print)."""
     import flows
     from pathlib import Path as Reader
-    assert premap.TEMPLATE_SOURCES == (premap.angular, premap.astro)
+    assert entry_points.TEMPLATE_SOURCES == (entry_points.angular, entry_points.astro)
     seen_files = []
     with patch.object(Reader, "read_bytes", autospec=True, side_effect=lambda self: seen_files.append(self.name) or b""):
         flows._links_reader_digest.__wrapped__()

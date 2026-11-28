@@ -14,7 +14,7 @@ from __future__ import annotations
 import posixpath
 from pathlib import PurePosixPath
 
-from premap import frameworks
+from entry_points import frameworks
 
 NAME, VERSION, RANK = "next", "daodan/premap/v4", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a `.js` import names: `.ts`, `.tsx`, `.js`, `.jsx`
@@ -134,7 +134,7 @@ def read(context, commands, results):
 
 
 def from_record(report):
-    """The candidates this source persisted in a pre-map and its gaps there; a pre-map made without the source, or
+    """The candidates this source persisted in the record of the entry points and its gaps there; a record made without the source, or
     where it was not needed, has none."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],

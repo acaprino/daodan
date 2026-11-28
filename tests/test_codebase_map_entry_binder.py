@@ -17,6 +17,7 @@ from pathlib import Path
 TESTS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TESTS.parent / "daodan/core"))
 sys.path.insert(0, str(TESTS))
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 from test_codebase_map_container_runner import manifest_of  # noqa: E402
 
@@ -50,10 +51,11 @@ def _links(tmp_path, monkeypatch, rows=ROWS, rules=()):
     import flows
     _, manifest = manifest_of(tmp_path, SOURCES)
     premap.write(manifest, sources=())
+    entry_points.write(manifest, sources=())
     fake_file = tmp_path / "fake.py"
     fake_file.write_text("# a source of another framework\n", encoding="utf-8")
     fake = types.SimpleNamespace(NAME="fake", __file__=str(fake_file), from_record=lambda report: (rows, []))
-    monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, fake))
+    monkeypatch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, fake))
     return flows.link_facts(manifest, list(rules))
 
 
@@ -85,7 +87,7 @@ def test_a_name_at_a_position_is_the_one_function_of_that_name_whose_lines_hold_
 def test_a_noir_endpoint_with_no_handler_name_is_a_row_at_its_position_that_the_binder_says_is_a_gap():
     """Noir's row always carries `handler`, the name or None, so the binder says what it could not bind."""
     import binder
-    from premap import noir
+    from entry_points import noir
     report = {"endpoints": [{"method": "GET", "url": "/x", "protocol": "http",
                              "details": {"code_paths": [{"path": "/src/app.py", "line": 3}]}}]}
     [row] = noir.rows(report, "/src")
@@ -99,7 +101,7 @@ def test_a_method_noir_names_with_its_class_is_bound_by_the_snapshot_s_qualified
     """Noir names a class view's method `Class.method` (measured on CTFd: `AudienceList.get`); the snapshot's simple name is
     `get`, its qualified name the same `Class.method`. Two classes of one file with a `get` each are told apart by the lines."""
     import binder
-    from premap import noir
+    from entry_points import noir
     report = {"endpoints": [{"method": "GET", "url": url, "protocol": "http",
                              "handler": {"name": name, "path": "/src/api.py", "line": line}}
                             for url, name, line in (("/a", "AudienceList.get", 4), ("/b", "Other.get", 9), ("/c", "Other.get", 4))]}
@@ -115,7 +117,7 @@ def test_a_method_noir_names_with_its_class_is_bound_by_the_snapshot_s_qualified
 # ------------------------------------------- a handler Noir cites by its position: the cases that need no real snapshot (the rest: test_codebase_map_flows_noir_binding.py)
 
 def _row(name, line):
-    from premap import noir
+    from entry_points import noir
     place = {"path": "/src/api.js", "line": line}
     [row] = noir.rows({"endpoints": [{"method": "GET", "url": "/x", "protocol": "http",
                                       **({"handler": {"name": name, **place}} if name else {"handler": None, "details": {"code_paths": [place]}})}]}, "/src")
@@ -159,7 +161,7 @@ def test_a_source_that_names_the_function_itself_binds_by_its_name_only():
 def test_no_source_of_the_entries_tuple_binds_a_row_itself():
     """The sources of `FRAMEWORK_SOURCES` read their tool's output; binding is the binder's, so none opens the snapshot's
     semantic store or looks an export up."""
-    for source in premap.FRAMEWORK_SOURCES:
+    for source in entry_points.FRAMEWORK_SOURCES:
         tree = ast.parse(Path(source.__file__).read_text(encoding="utf-8"))
         named = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)} | {
             alias.name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
@@ -207,5 +209,63 @@ def test_the_pages_the_exploration_opens_are_the_rows_marked_page_whose_schema_h
         {"reader": "fake", "shape": "view", "page": True, "path": "/docs/[...all]", "schema": None, "site": "web/docs.ts"},
         {"reader": "fake", "shape": "endpoint", "path": "/api/x", "schema": "/api/x", "site": "web/api.ts"},
         {"reader": "fake", "shape": "view", "page": True, "path": "/other", "schema": "/other", "site": "admin/other.ts"}]}
-    assert app._pages(record, "web") == ["/about"]
-    assert app._pages(record, ".") == ["/about", "/other"]
+    assert app._pages(record["framework_entries"], "web") == ["/about"]
+    assert app._pages(record["framework_entries"], ".") == ["/about", "/other"]
+
+
+# ------------------------------------------------------------------------- the binder in the step of the entry points (T1.C.4)
+
+def _rebound(manifest, routes, rules):
+    """The routes as the links bound them before the step did: again, from their `handler` and `site`, with the rules given."""
+    import json
+    import edge_view
+    import flows
+    import semantic_store
+    from snapshot_store import open_snapshot
+    with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+        view = edge_view.load_edge_view(store)
+        return json.loads(json.dumps(flows.bind_declared(routes, flows.Facts(store, db, view), view, list(rules))))
+
+
+def _noir_symbols(links):
+    return {(e["method"], e["path"]): e["symbol"] for e in links["entries"] if e.get("reader") == "noir"}
+
+
+def test_the_step_binds_the_routes_as_the_links_did_and_the_links_take_its_binding_unless_a_rule_names_a_handler(tmp_path):
+    from unittest import mock
+    import binder
+    import flows
+    from test_codebase_map_flows_noir_binding import RULES, WORLD, WORLD_ANSWER, snapshot_of
+    manifest = snapshot_of(tmp_path, WORLD_ANSWER, WORLD)  # a read snapshot: the step binds
+    record = entry_points.read_record(manifest)
+    routes = entry_points.rows(record)[0]
+    step = record["bound"]
+    assert step["rows"] == _rebound(manifest, routes, []) and step["route_named"]
+    with mock.patch.object(binder, "bind", side_effect=AssertionError("bound again")):  # the same reading: the binding kept is the one
+        assert entry_points.bound(manifest, record) == step
+    expected = {(r["method"], r["path"]): r["symbol"] for r in step["rows"] if not r.get("gap")}
+    assert _noir_symbols(flows.link_facts(manifest, [])) == expected
+    ruled = {(r["method"], r["path"]): r["symbol"] for r in _rebound(manifest, routes, RULES) if not r.get("gap")}
+    assert ruled != expected and ruled[("GET", "/api/ruled")] == "routes/ruled.js::GET /ruled"  # the rule's name, not the route's
+    assert _noir_symbols(flows.link_facts(manifest, RULES)) == ruled  # a rule names a handler written in place: the links bind again
+
+
+def test_a_step_that_ran_before_the_reading_binds_nothing_and_the_links_bind_the_routes_once_it_is_read(tmp_path):
+    import json
+    import file_inventory
+    import flows
+    import snapshot
+    from entry_points import noir
+    from test_codebase_map_flows_noir_binding import WORLD, WORLD_ANSWER
+    root = tmp_path / "proj"
+    for rel, text in WORLD.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8", newline="\n")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    file_inventory.write(root, manifest)  # the inventory alone, as `scan` finds it before `parse`
+    answer = {"root": "/work", "returncode": 0, "stdout": json.dumps({"endpoints": WORLD_ANSWER}), "stderr": ""}
+    assert "bound" not in entry_points.write(manifest, sources=(noir,), runner=lambda commands: [answer])
+    snapshot.read_project(root, manifest)
+    record = entry_points.read_record(manifest)  # the same inventory: the record still holds
+    expected = {(r["method"], r["path"]): r["symbol"] for r in _rebound(manifest, entry_points.rows(record)[0], []) if not r.get("gap")}
+    assert expected and _noir_symbols(flows.link_facts(manifest, [])) == expected

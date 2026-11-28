@@ -6,7 +6,7 @@ counts as the function that owns it (`Facts.node` folds `(anonymous)` into its o
 `(lambda)` of one method, are the same string). A route bound to a node that many routes share would carry the steps of all of them: so what a candidate rule
 binds is measured as the links hold it.
 
-1. The pre-map of the snapshot is written with the recorded Noir answer (`premap.write`, as `real_summary.py` of flask-routes does).
+1. The entry points of the snapshot are written with the recorded Noir answer (`entry_points.write`, as `real_summary.py` of flask-routes does).
 2. `binder.bind` is run over the rows on a `flows.Facts` built as `flows.link_facts` builds it, with the candidate rule patched in here (not in the repository):
    the rule of today first (a unique function that has the handler's name at the row's line), then, for a row whose position is the handler's (`handler.path`
    of Noir's endpoint, never the `code_paths` fallback) and for which the first found none, the one function that starts at that line.
@@ -55,10 +55,11 @@ def run(name: str) -> dict:
     import edge_view
     import entries
     import flows
+    import entry_points
     import premap
     import semantic_store
     import snapshot
-    from premap import noir
+    from entry_points import noir
     from snapshot_store import open_snapshot
 
     out = {"name": name}
@@ -76,7 +77,8 @@ def run(name: str) -> dict:
     report = json.loads(result.stdout)
     where = provenance(report)
     answer = {"returncode": 0, "stdout": result.stdout, "stderr": "", "root": ROOT}
-    record = premap.write(manifest, sources=(noir,), runner=lambda commands: [answer])
+    premap.write(manifest, sources=())  # the pre-map with no source of its own, as before Noir left it
+    record = entry_points.write(manifest, sources=(noir,), runner=lambda commands: [answer])
     rows = record.get("noir_entries", [])
     out["rows"] = len(rows)
 

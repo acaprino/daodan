@@ -8,7 +8,7 @@ classifies the shapes; it does not look for entries.
 The residual net reads the links; the other readers read the snapshot the links come from (`candidates`), code from
 its syntax tree: the grammar the snapshot read the file with, and what a framework writes is the data of
 `daodan/data/entry-queries.json`, one query per grammar. the reading of a tool's output (Noir's report, Nitro's routes file, Next.js's validator) is in the adapter of that tool
-(`premap/`), which uses this module's tree and queries.
+(`entry_points/`), which uses this module's tree and queries.
 """
 from __future__ import annotations
 
@@ -999,13 +999,13 @@ def _cached_rows(manifest: Path, inputs=None) -> list[dict]:
 
 
 def compiled(rows: list[dict], manifest: Path) -> list[dict]:
-    """The rows of Angular's own compiler (`premap/angular.py`, `parseTemplate` run in Daodan's container) in place of the tree
+    """The rows of Angular's own compiler (`entry_points/angular.py`, `parseTemplate` run in Daodan's container) in place of the tree
     reader's at the same events: an attribute row at the file, line and column of an event the compiler read is dropped, its
     label (the tree reader reads the accessible name) goes to the compiler's rows, and the compiler's rows are added: they hold
     the method the handler is, the events of a template written in a `.ts` and the calls on another object (a gap with its
-    cause). Astro's compiler (`premap/astro.py`) gives rows of the same shape for the events of a `.astro` template, which no tree
-    reader reads. Without a pre-map record of the compiler the rows are the tree reader's, whole."""
-    from premap import TEMPLATE_SOURCES
+    cause). Astro's compiler (`entry_points/astro.py`) gives rows of the same shape for the events of a `.astro` template, which no tree
+    reader reads. Without a record of the compiler the rows are the tree reader's, whole."""
+    from entry_points import TEMPLATE_SOURCES
     found = []
     for source in TEMPLATE_SOURCES:
         recorded = source.recorded(manifest)
@@ -1068,15 +1068,16 @@ def _observed(manifest: Path, static: list[dict]) -> list[dict]:
 
 def _declared_rows(manifest):
     """The declared rows as the links bind them (`flows.bind_declared`), with the rules recorded beside the snapshot, which the links are made
-    with: the pre-map's rows are on the module, with their exports, and a closure a rule names by its route is on that node here too."""
-    from premap.flow_entries import evidence
+    with: the rows of the pre-map and of the entry points are on the module, with their exports, and a closure a rule names by its route is on that node here too."""
+    from entry_points.flow_entries import evidence
     rows = evidence(manifest)[0]
     if not rows:
         return rows
     recorded = Path(manifest).with_name("flow-rules.json")
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         view = edge_view.load_edge_view(store)
-        return flows.bind_declared(rows, flows.Facts(store, db, view), view, flows.load_rules(recorded) if recorded.is_file() else [])
+        return flows.bind_declared(rows, flows.Facts(store, db, view), view, flows.load_rules(recorded) if recorded.is_file() else [],
+                                   manifest)
 
 
 def cached_syntax(manifest: Path) -> list[dict]:

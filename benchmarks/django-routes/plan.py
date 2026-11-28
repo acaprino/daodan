@@ -4,7 +4,7 @@
 
 It runs Daodan's code only: the restore lines of the folders (`container_runner._python`, read from the file names of the copy), the setup command
 and the files it unpacks (`container_runner.plan`), the Python of each environment the restore makes (`preparation.python_environments`,
-`python_interpreter`) and, when `premap/django_app.py` exists, the commands it gives for the folder (`premap.write` with the module graph and a
+`python_interpreter`) and, when `entry_points/django_app.py` exists, the commands it gives for the folder (`premap.write` with the module graph and a
 runner that answers nothing). Nothing of the project is imported or run: that happens in the container, from these lines. Its working files go
 under `DAODAN_PROBE_TMP` when it is set.
 
@@ -26,10 +26,10 @@ import preparation  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
 import container_runner  # noqa: E402
-from premap import noir  # noqa: E402
+from entry_points import noir  # noqa: E402
 
 try:
-    from premap import django_app  # noqa: E402
+    from entry_points import django_app  # noqa: E402
 except ImportError:  # the source is not written yet: the exploratory runs need no command of it
     django_app = None
 

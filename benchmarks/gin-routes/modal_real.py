@@ -6,7 +6,7 @@ Gin itself says of their routes, against Noir. Section «Applicazioni vere» of 
     python -I benchmarks/gin-routes/real_summary.py <the same folder>
 
 The image of each application is built with the network open (the only moment it is): Python 3.12 and the pins of the snapshot's readers, the
-Noir that `premap/noir.py` pins (sha256 checked), the copy of Daodan's code, the grammars (`noir-binding/warm.py`), the Go that
+Noir that `entry_points/noir.py` pins (sha256 checked), the copy of Daodan's code, the grammars (`noir-binding/warm.py`), the Go that
 `preparation.GO` pins (sha256 checked, `prepare.py go`), the finder (`finder/main.go`, built against golang.org/x/tools at its latest
 version, recorded), the checkout at its commit at `/work`, and Daodan's restore of its Go modules (`prepare.py restore`); MariaDB only for the
 variant marked «by hand». Everything else runs with the network blocked (`real.py`). The answer of each application goes to

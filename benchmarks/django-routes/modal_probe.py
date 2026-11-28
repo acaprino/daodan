@@ -8,7 +8,7 @@
 The image is Daodan's (`container_runner.IMAGE`, with Modal's Python added beside it), and what Daodan's runner does before a command is done by
 the same lines: `plan.py` (run with the Python that has Daodan's own dependencies, `DAODAN_PYTHON` names it, default `python`) prints, for a
 project folder, the setup command `container_runner.plan` gives, the restore lines `container_runner._python` makes, the Python of each
-environment and, once `premap/django_app.py` exists, the commands it gives. There is one image for the `fixture` and one for each folder of
+environment and, once `entry_points/django_app.py` exists, the commands it gives. There is one image for the `fixture` and one for each folder of
 `layouts/`, plus two with another Django (4.2 and 5.2): the image build, the one moment the network is open, unpacks Daodan's files at
 `preparation.IN`, copies the folder to `/work` (`container.WORKDIR`) and runs the setup command there, with the runner's environment
 (`preparation.ENV`). Each variant then runs in a copy of its folder at `/work`, with the network blocked and the same environment, and its
@@ -17,7 +17,7 @@ The project's code runs only in the container. What differs from Daodan's own co
 `/usr/local/bin` (3.12.1), which is the `python3` the restore's `uv venv --python python3` picks.
 
 `--mode explore` runs the exploratory scripts of `probe/` (`dump.py`: the loaded URLconf level by level; `launch.py`: three ways of running
-the project's own `manage.py`) over the variants of `VARIANTS`. `--mode record` runs the source's own script (`premap/django_routes.py`,
+the project's own `manage.py`) over the variants of `VARIANTS`. `--mode record` runs the source's own script (`entry_points/django_routes.py`,
 the commands `django_app.commands` gives) and writes the answers in `RECORDED` as `tests/fixtures/premap/django/<variant>.json` with the sha256
 of the script and the `VERSION` of the source (`script.json`): if the script changes, record again and raise the `VERSION`.
 """
@@ -35,7 +35,7 @@ LOCAL = modal.is_local()  # in a container this file lies at /root: nothing belo
 REPO = HERE.parents[1] if LOCAL else HERE
 OUT = HERE / "results"
 RECORDED_DIR = REPO / "tests/fixtures/premap/django"
-SCRIPT = REPO / "daodan/core/premap/django_routes.py"
+SCRIPT = REPO / "daodan/core/entry_points/django_routes.py"
 LAYOUTS = ("subfolder", "two-projects", "no-manage", "custom-launcher", "installed-copy", "drf")
 OTHER_DJANGO = {"django42": "django==4.2.*", "django52": "django==5.2.*"}
 FOLDERS = {"fixture": HERE / "fixture", **{name: HERE / "layouts" / name for name in LAYOUTS}, **{name: HERE / "fixture" for name in OTHER_DJANGO}}
@@ -174,7 +174,7 @@ for layout, cwd, env in (("subfolder", "src", "."), ("two-projects", "a", "a"), 
     for way in WAYS:
         VARIANTS[f"{way}-{tag}"] = (layout, way, "ok", cwd, env, "60")
     VARIANTS[f"dump-{tag}"] = (layout, "dump", "ok", cwd, env, "120")
-# the source's own script (`premap/django_routes.py`, the command `django_app.commands` gives), over the variants the tests read: the answers of
+# the source's own script (`entry_points/django_routes.py`, the command `django_app.commands` gives), over the variants the tests read: the answers of
 # `--mode record`. `hangs` and `thread` run with 5 seconds, `db-postgres-driver` in the environment that has the driver
 for edit in EDITS:
     if edit != "ok":

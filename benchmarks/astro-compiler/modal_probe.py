@@ -13,8 +13,8 @@ open), then runs each script of `probe/` (env `PROBES="01_parse.mjs,02_positions
 in the project's folder with the network blocked; each script's output is written to `results/<version>/`. The project's code
 (`astro.config.mjs`, `node_modules`) runs only in the container.
 
-`--mode source` runs what `daodan/core/premap/astro.py` runs in Daodan's container: the command it gives for the fixture (a function
-with the network open, where Daodan's grammar bundle comes from), then the script of that command (`daodan/core/premap/astro_templates.mjs`)
+`--mode source` runs what `daodan/core/entry_points/astro.py` runs in Daodan's container: the command it gives for the fixture (a function
+with the network open, where Daodan's grammar bundle comes from), then the script of that command (`daodan/core/entry_points/astro_templates.mjs`)
 by each version's Node and packages, with the network blocked: in a copy of the project with its packages, in a copy with Windows line
 ends, and in a copy without its packages. The answers, as the container runner returns them (`returncode`, `stdout`, `stderr`), are
 written to `tests/fixtures/premap/astro/<version>.json`, which `tests/test_codebase_map_premap_astro.py` reads, with the sha256 of the
@@ -55,7 +55,7 @@ def _image(name: str, node: str = "24", lock: str | None = None) -> modal.Image:
         .add_local_file(FIX / "tsconfig.json", f"/fix/{name}/tsconfig.json")
         .add_local_dir(FIX / "src", f"/fix/{name}/src")
         .add_local_dir(HERE / "probe", f"/fix/{name}/probe")
-        .add_local_file(REPO / "daodan/core/premap/astro_templates.mjs", "/tools/astro_templates.mjs")
+        .add_local_file(REPO / "daodan/core/entry_points/astro_templates.mjs", "/tools/astro_templates.mjs")
     )
 
 
@@ -128,6 +128,7 @@ def commands() -> dict:
     from pathlib import Path
 
     sys.path[:0] = ["/daodan/core"]
+    import entry_points
     import premap
     import snapshot
     from snapshot_store import open_snapshot
@@ -137,8 +138,8 @@ def commands() -> dict:
     snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
-        return {"commands": premap.astro.commands(context), "gaps": premap.astro._plan(context)["gaps"],
-                "version": premap.astro.VERSION}
+        return {"commands": entry_points.astro.commands(context), "gaps": entry_points.astro._plan(context)["gaps"],
+                "version": entry_points.astro.VERSION}
 
 
 def _source(name: str, asked: list[dict]) -> dict:

@@ -1,5 +1,5 @@
-"""The routes a Django project declares, `premap/django_app.py`: the commands it gives, and the rows and the gaps `read` makes from what
-Daodan's script (`premap/django_routes.py`, run in the container by the project's own Python) prints.
+"""The routes a Django project declares, `entry_points/django_app.py`: the commands it gives, and the rows and the gaps `read` makes from what
+Daodan's script (`entry_points/django_routes.py`, run in the container by the project's own Python) prints.
 
 The answers are real ones: `benchmarks/django-routes/modal_probe.py` runs the script on Modal, in the runner's image with the network
 blocked, over the fixture (`benchmarks/django-routes/fixture/`, Django 6.1.3), over copies of it that do not load and over projects of other
@@ -9,7 +9,7 @@ tests build an answer in line where the shape under test is Daodan's own check o
 each says so.
 
 The wiring a source needs in files this change does not own is injected here, the same dicts the report of task 14b gives for them:
-`container_runner.TOOLS["django"]`, `entries.QUERIES["django"]`, `premap.FRAMEWORK_SOURCES`. Each test that waits for the wiring to be
+`container_runner.TOOLS["django"]`, `entries.QUERIES["django"]`, `entry_points.FRAMEWORK_SOURCES`. Each test that waits for the wiring to be
 in the tree uses `wired`.
 """
 from __future__ import annotations
@@ -22,11 +22,11 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, entry_points, premap, recorder, write_both
 from test_codebase_map_premap_sveltekit import nothing_started, spied
 
 import entries  # noqa: E402
-from premap import django_app  # noqa: E402
+from entry_points import django_app  # noqa: E402
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/django-routes"
 FIXTURE = BENCHMARK / "fixture"
@@ -48,8 +48,8 @@ def wired(monkeypatch):
     import entries
     monkeypatch.setitem(container_runner.TOOLS, "django", TOOL)
     monkeypatch.setitem(entries.QUERIES, "django", QUERY)
-    if django_app not in premap.FRAMEWORK_SOURCES:  # once the wiring is in the tree it is there already
-        monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, django_app))
+    if django_app not in entry_points.FRAMEWORK_SOURCES:  # once the wiring is in the tree it is there already
+        monkeypatch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, django_app))
 
 
 def project(folder: Path = FIXTURE, **changes) -> dict[str, str]:
@@ -67,7 +67,7 @@ def printed(routes, **fields):
 def commands_of(tmp_path, files, sources=SOURCES):
     _, manifest = manifest_of(tmp_path, files)
     asked = []
-    premap.write(manifest, sources=sources, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
+    write_both(manifest, sources=sources, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
     return asked
 
 
@@ -97,7 +97,7 @@ def test_two_projects_with_their_own_manifests_are_two_commands_each_in_its_own_
 def test_a_manifest_without_manage_py_runs_nothing_and_a_manage_py_nobody_declares_django_for_neither(tmp_path):
     for files in (project(LAYOUTS / "no-manage"), {"manage.py": "x = 1\n", "requirements.txt": "flask==3.1.3\n"}):
         _, manifest = manifest_of(tmp_path / str(len(files)), files)
-        record = premap.write(manifest, sources=SOURCES, runner=lambda commands: 1 / 0)
+        record = write_both(manifest, sources=SOURCES, runner=lambda commands: 1 / 0)
         assert [s["state"] for s in record["sources"] if s["source"].startswith("django")] == ["not_needed"]
 
 
@@ -147,7 +147,7 @@ def read(tmp_path, files, answers, sources=(premap.requirements, django_app)):
     def run(commands):
         asked.extend(commands)
         return answers
-    record = premap.write(manifest, sources=sources, runner=run)
+    record = write_both(manifest, sources=sources, runner=run)
     # the rows as the links bind them (`binder.bind`): the source gives a name at a position, the binder ties it to the function
     record = {**record, "framework_entries": bound(manifest, record)} if "framework_entries" in record else record
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
@@ -625,15 +625,15 @@ def test_the_runner_restores_the_python_environment_of_each_folder_and_the_scrip
 
 
 WIRED = {"tool": container_runner.TOOLS.get("django"), "queries": entries.QUERIES.get("django"),
-         "framework": django_app in premap.FRAMEWORK_SOURCES, "sources": django_app in premap.SOURCES}  # what the tree has before `wired` adds it
+         "framework": django_app in entry_points.FRAMEWORK_SOURCES, "sources": django_app in entry_points.SOURCES}  # what the tree has before `wired` adds it
 
 
 def test_the_wiring_in_the_tree_is_what_the_report_of_task_14b_gives():
     """Waits for the lines of the report in `container_runner.py`, `entry-queries.json` and `premap/__init__.py`: skipped until they are there."""
     if not any(WIRED.values()):
-        pytest.skip("the wiring of the source is not in the tree yet: `container_runner.TOOLS['django']`, `entry-queries.json`, `premap.SOURCES` and `FRAMEWORK_SOURCES`")
+        pytest.skip("the wiring of the source is not in the tree yet: `container_runner.TOOLS['django']`, `entry-queries.json`, `entry_points.SOURCES` and `FRAMEWORK_SOURCES`")
     assert WIRED["tool"] == TOOL and WIRED["queries"] == QUERY and WIRED["framework"] and WIRED["sources"]
-    assert premap.SOURCES.index(django_app) < premap.SOURCES.index(premap.angular)  # after the other frameworks' sources
+    assert entry_points.SOURCES.index(django_app) < entry_points.SOURCES.index(entry_points.angular)  # after the other frameworks' sources
 
 
 def test_the_source_opens_no_store_and_borrows_nothing_from_another_framework_s_source():
@@ -653,7 +653,7 @@ def test_no_engine_carries_the_reason_as_the_source_s_gap_and_nothing_of_the_pro
     _, manifest = manifest_of(tmp_path, project())
     _, run = recorder(state="gap")
     with patch.object(container, "run_commands", run):
-        record = premap.write(manifest, sources=(premap.module_graph, premap.requirements, django_app), runner=container_runner.runner(manifest))
+        record = write_both(manifest, sources=(premap.module_graph, premap.requirements, django_app), runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
@@ -685,13 +685,13 @@ def test_nothing_of_the_project_starts_on_the_host_without_an_engine_nor_when_th
     marks, manifest = marked_project(tmp_path, monkeypatch)
     started = spied(monkeypatch)
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    record = premap.write(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
+    record = write_both(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
     nothing_started(started, marks)  # Daodan's own git only, with the hooks and the monitor off; no tool, no file of the project
     started.clear()
-    premap.write(manifest, sources=SOURCES, runner=lambda commands: [recorded("routes") for _ in commands])  # an answer in hand: reading it starts nothing
+    write_both(manifest, sources=SOURCES, runner=lambda commands: [recorded("routes") for _ in commands])  # an answer in hand: reading it starts nothing
     nothing_started(started, marks)
 
 
@@ -713,6 +713,6 @@ def test_the_check_catches_a_source_that_starts_the_command_on_the_host(tmp_path
         return real(context)
     monkeypatch.setattr(django_app, "commands", mutated)
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    premap.write(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
+    write_both(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
     with pytest.raises(AssertionError):
         nothing_started(started, marks)

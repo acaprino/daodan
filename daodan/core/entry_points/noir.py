@@ -1,4 +1,4 @@
-"""The routes Noir finds in the container. The pre-map binds them and their gaps to its snapshot."""
+"""The routes Noir finds in the container. The record of the entry points binds them and their gaps to its snapshot."""
 from __future__ import annotations
 
 import json
@@ -74,7 +74,7 @@ def read(context, commands, results):
         if header is None:
             gaps.append({"kind": "outside_snapshot", "path": file, "detail": "Noir cites a file outside the snapshot"})
             continue
-        # Reads once per file (also shared with the other pre-map readers), verifies the snapshot hash; its lines as `parse`
+        # Reads once per file (also shared with the other sources), verifies the snapshot hash; its lines as `parse`
         # counts them, which runs after `scan`.
         lines = len(context.inventory.text(file).split("\n"))
         _, _, number = item["site"].rpartition(":")
@@ -87,14 +87,14 @@ def read(context, commands, results):
 
 def unavailable(error):
     return {"source": f"{NAME}@{VERSION}", "kind": "noir_unavailable", "detail": str(error),
-            "remedy": "refresh the pre-map in Daodan's container"}
+            "remedy": "refresh the entry points in Daodan's container"}
 
 
 def from_record(report):
     source = f"{NAME}@{VERSION}"
     if not any(s["source"] == source for s in report["sources"]):
-        return [], [unavailable("this pre-map has no Noir run")]
-    # a row of an older pre-map has no `handler` (None: the binder says the gap) and no `schema`: computed here, as `rows` does
+        return [], [unavailable("this record of the entry points has no Noir run")]
+    # a row of an older record has no `handler` (None: the binder says the gap) and no `schema`: computed here, as `rows` does
     import flows
     return [{"handler": None, **({"schema": flows.path_schema(row["path"])} if row.get("kind") == "rotta" else {}), **row}
             for row in report.get("noir_entries", [])], [g for g in report["gaps"] if g["source"] == source]
@@ -102,7 +102,7 @@ def from_record(report):
 
 def evidence(manifest: Path) -> tuple[list, list]:
     """Read the persisted candidates without running an analyzer. Legacy and stale reports explain their gap."""
-    from premap.flow_entries import read_record
+    from entry_points import read_record
     try:
         return from_record(read_record(Path(manifest)))
     except (OSError, KeyError, TypeError, ValueError) as error:

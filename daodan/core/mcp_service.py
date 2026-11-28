@@ -282,7 +282,7 @@ class MapService:
                  "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite",
                  "snapshot/engine-report.json", "snapshot/engine-pass.log",
                  "snapshot/modules.json", "snapshot/modules.md", "snapshot/proposals.json",
-                 "snapshot/premap.json", "snapshot/technologies.json", "snapshot/context",
+                 "snapshot/premap.json", "snapshot/entry-points.json", "snapshot/technologies.json", "snapshot/context",
                  "snapshot/flow-rules.json", "snapshot/flow-links.json", "snapshot/entry-candidates.json",
                  "snapshot/system-map.json", "snapshot/flow-cards.json", "snapshot/discovery-budget.json",
                  "snapshot/brief-runtime-yaml.json",
@@ -304,17 +304,19 @@ class MapService:
             confinement.reject_link_chain(run / name)
 
     def _pipeline_state(self, manifest_path, engine_info):
+        import entry_points
         import premap
         import technologies
         m_state = module_graph.graph_state(manifest_path)["state"]
         inspected = premap.state(manifest_path)
-        p_state = inspected["state"]
-        if inspected.get("pending_sources") and engine_info.get("state") == "running":
+        found = entry_points.state(manifest_path)  # the scan writes the entry points after the pre-map
+        p_state = inspected["state"] if inspected["state"] != "fresh" else found["state"]
+        if (inspected.get("pending_sources") or found.get("pending_sources")) and engine_info.get("state") == "running":
             p_state = "stale"  # the background pass still has to attempt the deferred model commands
         scan_state = "fresh" if m_state == "fresh" and p_state == "fresh" else (
             "stale" if "stale" in (m_state, p_state) else "missing"
         )
-        stack_state = technologies.state(manifest_path) if p_state in ("fresh", "stale") else "missing"
+        stack_state = technologies.state(manifest_path) if inspected["state"] in ("fresh", "stale") else "missing"
         return {"scan": scan_state, "stack": stack_state, "analyze": engine_info.get("state")}
 
     def _status(self, run_id, *, engine=False):

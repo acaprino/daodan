@@ -285,7 +285,7 @@ def _read(name: str) -> dict:
     import premap
     import semantic_store
     import snapshot
-    from premap import noir
+    from entry_points import noir
     from snapshot_store import open_snapshot
 
     root = pathlib.Path("/work")

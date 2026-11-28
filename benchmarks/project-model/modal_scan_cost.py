@@ -13,7 +13,7 @@ B. On the real projects, `repetitions` times, one after the other: the inventory
    `snapshot._read_source` (stat and bytes of each file, which the inventory has read before) and in `_SnapshotPass.seal`
    (the semantic store and the publication). Medians.
 C. Angular: the TypeScript files whose tree `premap.angular` reads now and before 648efd2b7, and its seconds; and the
-   rhythm of `premap.angular._components` on the TypeScript files of every project, to size it on the largest.
+   rhythm of `entry_points.angular._components` on the TypeScript files of every project, to size it on the largest.
 D. (`--languages`, `results/scan-cost/languages.json`) the language go-enry gives each file against the inventory's
    (`file_inventory.write`), from the recorded answer of `daodan-enry .` alone: the pairs that differ, by kind, with examples.
 E. In the same mode, the files each reason of exclusion holds, `submodule` too, and the entries `.gitmodules` states.
@@ -325,11 +325,11 @@ def summarize_languages(fixtures: dict, same: dict) -> dict:
 # ------------------------------------------------------------------ what runs on Modal
 
 class Counted:
-    """`premap.angular._components`, the reader of a TypeScript file's tree, counted while this is entered: its calls, the
+    """`entry_points.angular._components`, the reader of a TypeScript file's tree, counted while this is entered: its calls, the
     bytes of the files it is given (their size in the inventory) and its seconds, in all and of each file."""
 
     def __init__(self):
-        from premap import angular
+        from entry_points import angular
         self.angular, self.original = angular, angular._components
         self.calls, self.bytes, self.seconds, self.by_file = 0, 0, 0.0, {}
 
@@ -412,7 +412,7 @@ def angular_facts(manifest: Path, store, headers: dict, before: list[str], recor
     """Measure C for a project that declares Angular: the trees `commands` reads (on a Context of its own, nothing of the
     files cached), what the rule before 648efd2b7 chose (`before`), and the pre-map's own counts when it ran."""
     import premap
-    from premap import angular, frameworks
+    from entry_points import angular, frameworks
     folders = frameworks.folders(premap.Context(manifest, store), angular.PACKAGES)
     if not folders:
         return None
@@ -433,7 +433,7 @@ def typescript_rhythm(manifest: Path, store, ts_files: list[str], before: list[s
     """`_components` on each TypeScript file of the project, on a Context whose texts are not cached: its seconds hold the
     read of the bytes, the hash check, the decoding, the tree and the query."""
     import premap
-    from premap import angular
+    from entry_points import angular
     context, gaps, errors = premap.Context(manifest, store), [], 0
     with Counted() as sweep:
         for file in ts_files:

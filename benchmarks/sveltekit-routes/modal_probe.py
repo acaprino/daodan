@@ -229,6 +229,7 @@ def commands() -> dict:
     from pathlib import Path
 
     sys.path[:0] = ["/daodan/core"]
+    import entry_points
     import premap
     import snapshot
     from snapshot_store import open_snapshot
@@ -237,7 +238,7 @@ def commands() -> dict:
     shutil.copytree("/lockwork/routes", project)
     snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
-        return {"routes": premap.sveltekit.commands(premap.Context(manifest, store))}
+        return {"routes": entry_points.sveltekit.commands(premap.Context(manifest, store))}
 
 
 @app.function(cpu=2, memory=4096, timeout=1800, block_network=True)

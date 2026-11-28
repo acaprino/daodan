@@ -737,7 +737,6 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
             services, gaps = services + found, gaps + said
             before += _gitlab_steps(rel, doc, list(tests), read, claimed)
         else:
-            from premap.flow_entries import workflow_triggers
             triggers.extend(workflow_triggers(rel, doc))
             found, said = _steps(rel, doc, read)
             services, steps, gaps = services + _services(rel, doc), steps + found, gaps + said
@@ -745,6 +744,28 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
     return {name: facts for name, facts in (("services", services), ("workflow_triggers", triggers),
                                             ("compose", steps), ("ci_steps", before))
             if facts}, gaps
+
+
+def workflow_triggers(file, document):
+    """The YAML document Renovate already read. The path after # names the exact workflow property."""
+    on = document.get("on") if isinstance(document, dict) else None
+    if isinstance(on, str):
+        events = [(on, f"{file}#on", None)]
+    elif isinstance(on, list):
+        events = [(name, f"{file}#on.{i}", None) for i, name in enumerate(on) if isinstance(name, str)]
+    elif isinstance(on, dict):
+        events = [(name, f"{file}#on.{name}", value) for name, value in on.items()]
+    else:
+        return []
+    found = []
+    for name, site, value in events:
+        if name == "schedule" and isinstance(value, list):
+            for i, record in enumerate(value):
+                if isinstance(record, dict) and isinstance(record.get("cron"), str):
+                    found.append({"event": name, "label": record["cron"], "declared_in": f"{site}.{i}.cron"})
+        else:
+            found.append({"event": name, "label": name, "declared_in": site})
+    return found
 
 
 def read(context, commands, results):

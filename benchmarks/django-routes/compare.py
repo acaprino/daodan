@@ -1,4 +1,4 @@
-"""The routes of a Django project from its own loaded URLconf (`premap/django_app.py`) and from OWASP Noir, side by side, over the same tree.
+"""The routes of a Django project from its own loaded URLconf (`entry_points/django_app.py`) and from OWASP Noir, side by side, over the same tree.
 
     python benchmarks/django-routes/compare.py <name> [<name> ...]        (Daodan's own Python dependencies; `name`: `fixture` or a project of `real_probe.py`)
 
@@ -33,7 +33,7 @@ import flows  # noqa: E402
 import premap  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
-from premap import django_app, noir  # noqa: E402
+from entry_points import django_app, noir  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 OUT = Path(os.environ.get("DAODAN_REAL_OUT", r"D:\daodan-work\django-probe\real-results"))

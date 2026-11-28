@@ -157,12 +157,12 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
             raise ValueError(f"{where}: link must be one of {', '.join(LINKS)}")
         if "shape" in rule or "reader" in rule:
             import entries
-            import premap
+            import entry_points
             if rule.get("source") != "modello":
                 raise ValueError(f"{where}: supplied classifications must have source modello; registry decisions come from Daodan")
             if set(rule) != {"link", "reader", "shape", "entry", "source"} or rule["link"] != "ingresso" or (
                     rule["reader"] not in (entries.ATTRIBUTE, entries.ARGUMENT, entries.DECORATOR, entries.NOIR, entries.MANIFEST,
-                                             *(source.NAME for source in (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)))
+                                             *(source.NAME for source in (*entry_points.FRAMEWORK_SOURCES, *entry_points.TEMPLATE_SOURCES)))
                     or not isinstance(rule["shape"], str) or not rule["shape"]
                     or rule["entry"] not in (*entries.ENTRY_KINDS, entries.NO_ENTRY)):
                 raise ValueError(f"{where}: invalid shape classification or entry kind")
@@ -1041,9 +1041,13 @@ def _route_handler(facts: Facts, spec: str, call: dict) -> str | None:
 
 def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     """A function written in place as a route handler is named by its route, before any link reads names."""
+    if rules:
+        facts.name_routes(_written_names(facts, view, rules))
+
+
+def _written_names(facts: Facts, view: dict, rules: list[dict]) -> dict[str, str]:
+    """The functions written in place as route handlers that `rules` name, by their route; nothing is named here."""
     import entries
-    if not rules:
-        return
     names = {}
     for ref in view["references"]:
         parts = [str(part) for part in ref.get("parts") or []]
@@ -1057,13 +1061,29 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
                             for k in ("method", "path"))
             if written and written["name"] == "(anonymous)" and method and path is not None:
                 names[written["id"]] = f"{method.upper()} {path}"
-    facts.name_routes(names)
+    return names
 
 
-def bind_declared(declared: list[dict], facts: Facts, view: dict, rules: list[dict]) -> list[dict]:
+def bind_declared(declared: list[dict], facts: Facts, view: dict, rules: list[dict], manifest: Path | None = None) -> list[dict]:
     """The declared rows as the links bind them (`binder.bind`), for the links and the candidates alike: a function written in place as a
-    handler a rule offers is named by that route first, and then the binder names the closures Noir cites, so that both end on the same nodes."""
-    _name_written_handlers(facts, view, [r for r in rules if "written" in r and "shape" not in r and r["link"] == "offre" and r.get("handler")])
+    handler a rule offers is named by that route first, and then the binder names the closures Noir cites, so that both end on the same nodes.
+    Where the rules name no such function, the routes are bound as the step of the entry points of `manifest` binds them, with no rule
+    (`entry_points.bound`, the one its record keeps for this reading), and only the manifests' rows here: the same binding."""
+    import entries
+    written = [r for r in rules if "written" in r and "shape" not in r and r["link"] == "offre" and r.get("handler")]
+    names = _written_names(facts, view, written) if written else {}
+    if not names and manifest is not None:
+        import entry_points
+        try:
+            record = entry_points.read_record(manifest)
+        except (OSError, KeyError, TypeError, ValueError):
+            record = None
+        if record is not None:
+            found = entry_points.bound(manifest, record, facts, [row for row in declared if row["reader"] != entries.MANIFEST])
+            facts.name_routes(found["route_named"])
+            return [*found["rows"], *binder.bind([row for row in declared if row["reader"] == entries.MANIFEST], facts, facts.resolver)]
+    if written:
+        facts.name_routes(names)
     return binder.bind(declared, facts, facts.resolver)
 
 
@@ -1142,15 +1162,15 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         view = edge_view.load_edge_view(store)
         facts = Facts(store, db, view)
         candidates = entry_reader._cached_rows(manifest, (facts, db, view))
-        from premap.flow_entries import evidence
+        from entry_points.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
-        declared = bind_declared(declared, facts, view, rules)
-        # One route, one entry: the route of a source outside `premap.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
+        declared = bind_declared(declared, facts, view, rules, manifest)
+        # One route, one entry: the route of a source outside `entry_points.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
         # of them (the text of the path where a row has no schema), in the file or on the function that row starts, is that row,
         # provided its method is the row's or the row has none (a page answers any; Noir's method is not copied onto it). Another
         # path, or a method no row of that file and path carries, is a route of its own.
-        from premap import FRAMEWORK_SOURCES
+        from entry_points import FRAMEWORK_SOURCES
         tuple_names = {source.NAME for source in FRAMEWORK_SOURCES}
         def file_of(site: str) -> str:
             file, _, line = site.rpartition(":")
@@ -1454,12 +1474,13 @@ def _symbol_coverage(symbols_by_file, entries, edges):
 @cache
 def _links_reader_digest() -> str:
     """Installed link readers and rules; one bounded read of Daodan's own code per process."""
-    from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
+    from entry_points import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
     digest = hashlib.sha256()
     for path in (Path(__file__), SCRIPT_DIR / "binder.py", SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
-                 SCRIPT_DIR / "premap" / "flow_entries.py", SCRIPT_DIR / "premap" / "noir.py",
+                 SCRIPT_DIR / "entry_points" / "__init__.py", SCRIPT_DIR / "entry_points" / "flow_entries.py",
+                 SCRIPT_DIR / "entry_points" / "noir.py",
                  *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
-                 SCRIPT_DIR / "premap" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
+                 SCRIPT_DIR / "entry_points" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
                  SCRIPT_DIR / "premap" / "python_build.py", SCRIPT_DIR / "languages" / "rust.py",
                  SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json"):
         digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
@@ -1472,11 +1493,13 @@ def _links_stamp(manifest: Path, *, premap=True) -> list:
     edges = manifest.with_name("engine-edges.sqlite")
     files = (manifest, manifest.with_name(manifest.name + "-wal"), edges, edges.with_name(edges.name + "-wal"),
              modules.graph_name(manifest), manifest.with_name(modules.LEDGER_FILE))
-    if premap:  # the pre-map's record, and the stack step's: its services are the links' external nodes
+    if premap:  # the pre-map's record, the entry points', and the stack step's: its services are the links' external nodes
+        import entry_points
         import observed_entries
         import technologies
         from premap import path
-        files += (path(manifest), technologies.path(manifest), manifest.with_name(observed_entries.FILE))
+        files += (path(manifest), entry_points.path(manifest), technologies.path(manifest),
+                  manifest.with_name(observed_entries.FILE))
     stamp = []
     for path in files:
         try:

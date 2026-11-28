@@ -769,14 +769,20 @@ def _app(manifest: Path, snapshot, bus, say) -> dict:
     are kept beside the manifest for the entries. What did not run is a gap with its cause, never silence; a failure
     of the exploration stops no other part of the step. `{state, apps, kept}`, with `cause` and `remedy` where it did
     not run, and `reused` where the run of the same snapshot was kept."""
+    import entry_points
     import premap
     from snapshot_store import logical_digest
     from . import app
     record = premap.ensure(manifest)
+    try:  # the pages the frameworks declare, which the exploration opens too: none without the record of the entry points
+        pages = entry_points.read_record(manifest).get("framework_entries", [])
+    except (OSError, KeyError, TypeError, ValueError):
+        pages = []
     if record.get("starts"):
         bus.emit("analyzer.started", f"{APP}: the app started and explored", step=STEP, analyzer=APP)
     try:
-        seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store), manifest.parent / RUNS / APP)
+        seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store), manifest.parent / RUNS / APP,
+                           pages=pages)
     except Exception as error:  # noqa: BLE001 - the exploration is one part of the step: the others stay
         cause = f"{type(error).__name__}: {error}"
         seen = {"state": "failed", "cause": cause, "remedy": "explore again", "apps": [], "kept": 0,

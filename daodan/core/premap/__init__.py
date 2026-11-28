@@ -39,9 +39,9 @@ import modules  # noqa: E402
 import preparation  # noqa: E402
 from snapshot_store import inventory_digest, open_snapshot  # noqa: E402
 
-from premap import (angular, astro, autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, gitmodules, go, gradle,  # noqa: E402
-                    jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_start, npm_tests, nuxt, project_files,
-                    python_build, python_tests, react_router, renovate, requirements, sbt, suffix_table, sveltekit, tsc, uv)
+from premap import (autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, gitmodules, go, gradle,  # noqa: E402
+                    jvm_files, make, maven, meson, module_graph, npm, npm_lock, npm_start, npm_tests, project_files,
+                    python_build, python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
@@ -50,23 +50,12 @@ RANKS = ("model", "reader", "scanner")
 LISTED = "list_files"  # the source of the files the snapshot's header leaves out (`file_inventory.excluded`)
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, npm_start, jvm_files, project_files,
            gitmodules, autotools, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
-           gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, angular, astro)
+           gradle, maven, sbt, dotnet)
 # Each build tool the stack names (a registry id of `category` `tool`) -> the `NAME`s of the sources that model it
 # (`daodan/data/build-tools.json`); its coherence with the registry and `SOURCES` is a test of the pre-map. A source it
 # names runs only for a tool the stack found (`_chosen`); the others run on every project.
 BUILD_TOOLS = json.loads((SCRIPT_DIR.parent / "data" / "build-tools.json").read_text(encoding="utf-8"))
-# The sources whose `framework_entries` rows are entries of their own (a page, a route handler): `flow_entries.evidence` reads
-# each one's rows and gaps, and the key of the cached links hashes each one's file (`flows._links_reader_digest`). Another
-# framework's source is one more name here, with its table in `entry-queries.json` under its `NAME`. `angular` and `astro` are not:
-# their rows stand for, or join, the tree reader's at the same events (`entries.compiled`), and their gaps are told on their own.
-FRAMEWORK_SOURCES = (nextjs, react_router, nuxt, sveltekit)
-# The sources whose rows stand for, or join, the tree reader's at the same events (`entries.compiled`: the events of a template): their
-# gaps are told by `flow_entries.evidence`, and the key of the cached links hashes each one's file. Their script is not in it: a
-# pre-map is fresh for the `NAME@VERSION` that made it, and the version goes with the script (each one's test of the recorded print).
-TEMPLATE_SOURCES = (angular, astro)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
-    "noir_entries": (),  # individual observations from a single scanner
-    "framework_entries": (),  # individual observations of a framework's own tool (`next`, `react-router`, `angular`)
     "excluded": (("path",),),
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),
     "workspace": (("root", "tool"),),  # two build systems in one folder are two workspaces
@@ -222,9 +211,9 @@ def _used(packages: list[dict]) -> list[dict]:
     return out
 
 
-def _add(facet: str, entries: list[dict], item: dict, source: str) -> None:
+def _add(facet: str, entries: list[dict], item: dict, source: str, identity: dict) -> None:
     match = None
-    for level in IDENTITY[facet]:
+    for level in identity[facet]:
         if any(item.get(field) is None for field in level):
             continue
         found = [e for e in entries if source not in e["sources"]
@@ -246,19 +235,19 @@ def _add(facet: str, entries: list[dict], item: dict, source: str) -> None:
             _set(match, facet, field, None, value, source)
 
 
-def join(parts: list[dict]) -> dict:
-    """The facts of `parts` (`{"source", "rank", "facts", "covers"}`) as one entry per fact; see the module's
-    docstring. `covers` (`{kind: [folders]}`) is where a source answers for every unit of a kind: a unit of that kind
+def join(parts: list[dict], identity: dict = IDENTITY) -> dict:
+    """The facts of `parts` (`{"source", "rank", "facts", "covers"}`) as one entry per fact, each facet one of `identity`
+    (the pre-map's, or that of another record made with this machinery: `entry_points`); see the module's docstring. `covers` (`{kind: [folders]}`) is where a source answers for every unit of a kind: a unit of that kind
     and folder no such source states goes to `superseded`, a gap each."""
     order = sorted(range(len(parts)), key=lambda i: (RANKS.index(parts[i]["rank"]), i))
     out: dict[str, list[dict]] = {}
     for i in order:
         for facet, items in (parts[i].get("facts") or {}).items():
-            if facet not in IDENTITY:
-                raise ValueError(f"{parts[i]['source']}: no facet {facet} in the pre-map")
+            if facet not in identity:
+                raise ValueError(f"{parts[i]['source']}: no facet {facet} in the record")
             entries = out.setdefault(facet, [])
             for item in items:
-                _add(facet, entries, item, parts[i]["source"])
+                _add(facet, entries, item, parts[i]["source"], identity)
     for entries in out.values():
         for entry in entries:
             entry.pop("_from")
@@ -452,8 +441,6 @@ def _inputs(digest, root, sources) -> str:
         value.append("maven-managed-versions-v1")
     if gradle in sources:
         value.append("gradle-platforms-v1")
-    if noir in sources:
-        value.append("noir-entry-paths-v3")
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
 
 
@@ -473,7 +460,8 @@ def _takes(runner, name: str) -> bool:
         return False
 
 
-def _run(source, context: Context, runner, toolchains=(), refused=()) -> tuple[dict, dict | None, list[dict]]:
+def _run(source, context: Context, runner, toolchains=(), refused=(),
+         identity: dict = IDENTITY) -> tuple[dict, dict | None, list[dict]]:
     started = time.monotonic()
     status = {"source": label(source), "rank": source.RANK}
     try:
@@ -508,9 +496,9 @@ def _run(source, context: Context, runner, toolchains=(), refused=()) -> tuple[d
                     result = {**(result or {"facts": {}}), "gaps": [*prepared, *((result or {}).get("gaps") or ())]}
         else:
             result = source.run(context)
-        stated = set((result or {}).get("facts") or {}) - set(IDENTITY)
+        stated = set((result or {}).get("facts") or {}) - set(identity)
         if stated:  # structure only: a library a unit uses is resolved by its analyzer's build tool
-            raise ValueError(f"no facet {', '.join(sorted(stated))} in the pre-map")
+            raise ValueError(f"no facet {', '.join(sorted(stated))} in the record")
     except Exception as error:  # an adapter's every failure is the source's gap, never the pre-map's end
         gap = _failed(status, error)
         status["seconds"] = round(time.monotonic() - started, 3)
@@ -626,9 +614,16 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
         return {**report, "state": "corrupt", "reason": str(error)}
     binding = record.get("binding") or {}
     sources = _chosen(sources, _tools(manifest, binding.get("inventory_digest")))
-    current = _inputs(binding.get("inventory_digest"), binding.get("root"), sources)
-    if record.get("inputs_digest") != current or not binding_matches(manifest, binding):
+    inputs = _inputs(binding.get("inventory_digest"), binding.get("root"), sources)
+    if record.get("inputs_digest") != inputs or not binding_matches(manifest, binding):
         return {**report, "state": "stale", "reason": "snapshot or sources changed since the pre-map"}
+    return {**report, **freshness(record, runner)}
+
+
+def freshness(record: dict, runner) -> dict:
+    """The state of a record already bound to the present snapshot and sources (the pre-map, or another record `_run` made):
+    with a runner, stale while model commands are left `not_run`, unless an explicitly disabled container is their recorded
+    cause."""
     unrun = [s for s in record.get("sources", []) if s.get("state") == "not_run"]
     if runner is not None and unrun:
         from container import OFF_CAUSE
@@ -640,11 +635,11 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
                     gap.get("detail") == f"{source['commands']} model commands not run: {OFF_CAUSE}")
         if (getattr(runner, "uses_default_container", False) is not True or os.environ.get("DAODAN_CONTAINER") != "off"
                 or not all(disabled(s) for s in unrun)):
-            return {**report, "state": "stale", "reason": "model commands not run yet"}
+            return {"state": "stale", "reason": "model commands not run yet"}
     # A reader-only scan defers commands. When an actual attempt finds no container,
     # its gap records the cause and remedy, and the resulting scan is current with gaps.
     pending = sum(g.get("kind") == "model_not_run" and "remedy" not in g for g in record.get("gaps", ()))
-    return {**report, "state": "fresh", **({"pending_sources": pending} if pending else {})}
+    return {"state": "fresh", **({"pending_sources": pending} if pending else {})}
 
 
 def ensure(manifest: Path, sources=None, runner=None, report=None) -> dict:

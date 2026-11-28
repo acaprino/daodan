@@ -2,7 +2,7 @@
 
 Measured on Modal (Django 6.1.3, 5.2.19 and 4.2.30, the runner's image, the network blocked): what the script prints, how the snapshot names
 and places the functions it binds, and what each failure writes are in `benchmarks/django-routes/README.md`; the answers the tests read are
-`tests/fixtures/premap/django/`. The source is one of `premap.FRAMEWORK_SOURCES`: its rows are entries of the links.
+`tests/fixtures/premap/django/`. The source is one of `entry_points.FRAMEWORK_SOURCES`: its rows are entries of the links.
 
 `commands` describes, for each `manage.py` of the snapshot that sits at or below a folder with a Python manifest (`pyproject.toml` or
 `requirements.txt`, the files the restore of `preparation.RESTORES` starts from) declaring `django` among the pre-map's own `packages`
@@ -60,7 +60,7 @@ def _manage_folders(context) -> list[str]:
     (the ecosystem and the name are the readers' own, `requirements` and the module graph; no import is searched). A package declared in
     another file than the restore's marks (`requirements/base.txt`) is not a folder: the restore does not run there."""
     from build_units import normalize_pypi_name  # the module graph keeps a `pyproject.toml` name as written (`Django>=5`), `requirements` normalizes
-    from premap import frameworks
+    from entry_points import frameworks
     # shortcut: only a `pyproject.toml` or a `requirements.txt` names a folder, and only a `manage.py` (what `django-admin startproject` makes, and
     # the one file whose settings module is Django's own documented entry) starts a load; a project that declares Django without one (a library
     # of apps, a project started from `wsgi.py` alone) has no row and no gap
@@ -94,7 +94,7 @@ def commands(context):
 def _stopped(result: dict, command: dict) -> str:
     """Why the script did not give its answer: the limit that ended it, or what it wrote first; and the environment it ran in, for the Python
     is the nearest folder's above, not always the folder's own."""
-    from premap import frameworks
+    from entry_points import frameworks
     where = f" (the Python of the environment restored for {command['venv']!r})" if command.get("venv") is not None else ""
     return frameworks.stopped(result, SCRIPT, command["argv"][4], MEMORY_GB) + where
 
@@ -246,7 +246,7 @@ def _routes(context, folder: str, document: dict, kind: str) -> tuple[list[dict]
 
 def read(context, commands, results):
     import entries
-    from premap import frameworks
+    from entry_points import frameworks
     kind = entries.QUERIES[NAME]["route"]["kind"]
     gaps, rows = [], []
     for command, result in zip(commands, results):
@@ -267,7 +267,7 @@ def read(context, commands, results):
 
 
 def from_record(report):
-    """The rows this source persisted in a pre-map and its gaps there; a pre-map made without the source, or where it was not needed, has
+    """The rows this source persisted in the record of the entry points and its gaps there; a record made without the source, or where it was not needed, has
     none."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],

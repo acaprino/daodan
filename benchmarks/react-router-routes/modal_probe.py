@@ -11,7 +11,7 @@ every answer (`argv`, `returncode`, `stdout`, `stderr`, seconds, and the files t
 `results/<variant>.json`. The project's code (`routes.ts`, `react-router.config.ts`, `remix.config.js`, `vite.config.ts`,
 `node_modules`) runs only in the container.
 
-`--mode source` runs what `daodan/core/premap/react_router.py` runs in Daodan's container: the commands it gives for each fixture
+`--mode source` runs what `daodan/core/entry_points/react_router.py` runs in Daodan's container: the commands it gives for each fixture
 (a function with the network open, where Daodan's grammar bundle comes from), then each command, with the argv and the
 environment the source wrote, in a copy of the project with its packages, in a copy of it with a change that matters to the
 source, and in a copy without the packages (the project declares the package and the restore did not install it), with the
@@ -141,7 +141,7 @@ HANG_IGNORING_TERM = (ROUTES_HEAD + 'import { writeFileSync } from "node:fs";\n'
                       'process.on("SIGTERM", () => { writeFileSync("term-seen.txt", String(process.pid)); });  // and does not leave when asked\n'
                       + HANG_BODY)
 LEFT_RUNNING = ["ps", "-eo", "pid,ppid,args"]  # every process still alive after the command: the container holds nothing else of the project
-TIMEOUT = ["timeout", "--kill-after=2", "{seconds}"]  # as `premap/react_router.py` runs it, with short times
+TIMEOUT = ["timeout", "--kill-after=2", "{seconds}"]  # as `entry_points/react_router.py` runs it, with short times
 
 COMMANDS = {  # variant -> (fixture, edit, [(argv, env)]): what runs, in its copy of the fixture
     "absolute-child": ("framework", lambda r: _write(r / "app/routes.ts", ABSOLUTE), [
@@ -283,6 +283,7 @@ def commands() -> dict:
     from pathlib import Path
 
     sys.path[:0] = ["/daodan/core"]
+    import entry_points
     import premap
     import snapshot
     from snapshot_store import open_snapshot
@@ -294,7 +295,7 @@ def commands() -> dict:
         shutil.copytree(f"/lockwork/{name}", project)
         snapshot.read_project(project, manifest)
         with open_snapshot(manifest) as store:
-            out[name] = premap.react_router.commands(premap.Context(manifest, store))
+            out[name] = entry_points.react_router.commands(premap.Context(manifest, store))
     return out
 
 

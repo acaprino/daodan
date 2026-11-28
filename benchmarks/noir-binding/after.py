@@ -1,6 +1,6 @@
 """After the correction (`modal_binding.py --mode after` ships this file to `/daodan/measure/`): the tree's own binder, with nothing substituted.
 
-The checkout is at `/work` (nothing of it runs here). Noir's answer is recorded in the pre-map (`premap.write`), and the links' own `flows.bind_declared`
+The checkout is at `/work` (nothing of it runs here). Noir's answer is recorded in the record of the entry points (`entry_points.write`), and the links' own `flows.bind_declared`
 (`binder.bind`) is run over every row of it on a `flows.Facts` built as `flows.link_facts` builds it; a second `Facts`, untouched, gives the node of a function
 as it was before the binder named any function by its route. Then `flows.link_facts(manifest, [])` is run as it is: no substitution.
 
@@ -87,11 +87,12 @@ def run(name: str) -> dict:
     import edge_view
     import entries
     import flows
+    import entry_points
     import premap
     import semantic_store
     import snapshot
     from languages.semantic import NAMELESS
-    from premap import noir
+    from entry_points import noir
     from snapshot_store import open_snapshot
 
     out = {"name": name}
@@ -118,7 +119,8 @@ def run(name: str) -> dict:
             first = paths[0]
             registration.setdefault((site, endpoint["method"], endpoint["url"]), f"{(first.get('path') or '')[len(ROOT) + 1:]}:{first.get('line')}")
     answer = {"returncode": 0, "stdout": result.stdout, "stderr": "", "root": ROOT}
-    record = premap.write(manifest, sources=(noir,), runner=lambda commands: [answer])
+    premap.write(manifest, sources=())  # the pre-map with no source of its own, as before Noir left it
+    record = entry_points.write(manifest, sources=(noir,), runner=lambda commands: [answer])
     rows = record.get("noir_entries", [])
     out["rows"] = len(rows)
 

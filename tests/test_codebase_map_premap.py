@@ -77,12 +77,12 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
     assert {s["source"].split("@")[0]: s["state"] for s in record["sources"]} == {
         "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
         "gitmodules": "not_needed", "python-tests": "not_needed", "npm-tests": "not_needed", "npm-start": "not_needed", "autotools": "not_needed",
-        "noir": "not_run", "renovate": "not_run", "compose": "not_needed", "buildkit": "not_needed",
+        "renovate": "not_run", "compose": "not_needed", "buildkit": "not_needed",
         "go": "not_needed", "cargo": "not_needed",
         "uv": "not_needed",
         "tsc": "not_needed", "npm": "not_run", "cmake": "not_needed", "meson": "not_needed", "bazel": "not_needed",
         "make": "not_needed", "project-files": "not_needed", "gradle": "not_needed", "maven": "not_needed",
-        "sbt": "not_needed", "dotnet": "not_needed", "next": "not_needed", "react-router": "not_needed", "nuxt": "not_needed", "sveltekit": "not_needed", "angular": "not_needed", "astro": "not_needed"}
+        "sbt": "not_needed", "dotnet": "not_needed"}
     assert all(u["run"] == {"executes_project_code": False, "reason": ""} for u in record["units"])
     assert "needs" not in record
 
@@ -215,6 +215,18 @@ def test_an_unavailable_or_failing_source_is_a_gap_and_states_nothing(tmp_path):
                                "remedy": "install the tool"}
     assert found["other@1"]["kind"] == "source_failed" and "bad flag" in found["other@1"]["detail"]
     assert not any(s in ("tool@1", "other@1") for item in record["units"] for s in item["sources"])
+
+
+def test_no_source_of_the_premap_writes_the_rows_of_the_entry_points(tmp_path):
+    """Noir and the frameworks' own tools are `find_entry_points`' (`entry_points.SOURCES`, `entry-points.json`): the pre-map has
+    no facet for their rows, so a source of it that stated one fails as a source does, and the pre-map holds none."""
+    import entry_points
+    rows = {"noir_entries", "framework_entries"}
+    assert not rows & set(premap.IDENTITY) and set(entry_points.IDENTITY) == rows
+    assert not set(premap.SOURCES) & set(entry_points.SOURCES)
+    stray = fake("stray", "reader", lambda context: {"facts": {"noir_entries": [{"site": "app.py:1"}]}})
+    _, _, record = build(tmp_path, "mixed", sources=[*premap.SOURCES, stray])
+    assert {s["source"]: s["state"] for s in record["sources"]}["stray@1"] == "failed" and not rows & set(record)
 
 
 def test_a_source_with_nothing_to_read_is_not_needed(tmp_path):
@@ -1088,13 +1100,6 @@ NOT_A_BUILD_TOOL = {
     "renovate": "the declared files of every manager, not one build tool's model",
     "compose": "the services Compose declares, not a build",
     "buildkit": "the stages of a Dockerfile, the images: the stack's services",
-    "noir": "the routes: find_entry_points",
-    "next": "a framework's entries: T1.C moves it to find_entry_points",
-    "react-router": "a framework's entries: T1.C moves it to find_entry_points",
-    "nuxt": "a framework's entries: T1.C moves it to find_entry_points",
-    "sveltekit": "a framework's entries: T1.C moves it to find_entry_points",
-    "angular": "a framework's entries: T1.C moves it to find_entry_points",
-    "astro": "a framework's entries: T1.C moves it to find_entry_points",
     "cmake": "the registry has no entry for it until the fork's .6 (T1.B.4)",
     "meson": "the registry has no entry for it until the fork's .6 (T1.B.4)",
     "bazel": "the registry has no entry for it until the fork's .6 (T1.B.4)",

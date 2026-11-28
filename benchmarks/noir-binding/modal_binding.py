@@ -7,7 +7,7 @@ no install, no build, no framework command; only Noir (a scanner that reads text
     ... modal_binding.py --mode after                   the tree's own binder, nothing substituted (`after.py`): `$NOIR_BINDING_EVIDENCE/<name>.after.json`
 
 For each application the image is built with the network open: Python 3.12, the pins of `daodan/core/requirements.txt` (the snapshot's own readers), the Noir
-that `premap/noir.py` pins (sha256 checked), a copy of the working tree's `daodan/core` and `daodan/data` (`DAODAN_CODE` names another folder: a copy made at
+that `entry_points/noir.py` pins (sha256 checked), a copy of the working tree's `daodan/core` and `daodan/data` (`DAODAN_CODE` names another folder: a copy made at
 the start of a measurement, so that another edit of the tree does not change what is measured), the grammars Daodan's own loader places and verifies
 (`languages/_treesitter.py`, each language checked here), and the checkout of `apps.APPS` at its commit at `/work`. Then, with the network blocked,
 `measure.py` runs in the container. The answer of each application (the facts of every endpoint) goes to `$NOIR_BINDING_EVIDENCE/<name>.json`: it holds

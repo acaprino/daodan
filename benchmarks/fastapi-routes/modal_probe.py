@@ -95,7 +95,7 @@ def _image(name: str) -> modal.Image:
     plan = PLANS[name]
     state, inputs = plan["state"], plan["inputs"]
     image = modal.Image.from_registry(plan["image"], add_python="3.12").run_commands(f"mkdir -p {inputs}")
-    # the Noir `premap/noir.py` pins, to compare it with the framework's routes (`noir` variant, `real_summary.py`)
+    # the Noir `entry_points/noir.py` pins, to compare it with the framework's routes (`noir` variant, `real_summary.py`)
     image = image.run_commands(f"curl -fsSL -o /usr/local/bin/noir {apps.NOIR[0]} && echo '{apps.NOIR[1]}  /usr/local/bin/noir' | sha256sum -c - && chmod +x /usr/local/bin/noir")
     for url, sha, file in plan["files"]:
         if url:  # a download of the runner (`uv`), checked by its sha256 as the runner does

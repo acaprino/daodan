@@ -29,7 +29,7 @@ import flows  # noqa: E402
 import premap  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
-from premap import flask_app, noir  # noqa: E402
+from entry_points import flask_app, noir  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 RESULTS = HERE / "results" / "real"
