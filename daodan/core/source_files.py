@@ -7,9 +7,10 @@ import fnmatch
 import functools
 import hashlib
 import math
+import os
 import re
 import subprocess
-from pathlib import Path, PurePath
+from pathlib import Path, PurePath, PurePosixPath
 from typing import Iterator
 
 import file_formats
@@ -60,8 +61,8 @@ PRESENTATION_EXTENSIONS = file_formats.PRESENTATION  # `.jade`: Pug's name befor
 # File-level sources whose explicit module references are read by the stack checker.
 STACK_SOURCE_LANGUAGES = file_formats.STACK_SOURCES
 
-# What the Codebase Map never reads; such a file never enters the manifest, not even as a hash.
-# The obvious credential files, by name alone.
+# What the Codebase Map never reads; such a file never enters the manifest, not even as a hash: the snapshot's header
+# names it in `excluded` by its path alone (`file_inventory.excluded`). The obvious credential files, by name alone.
 FORBIDDEN_GLOBS = file_formats.FORBIDDEN
 # Any other name that speaks of secrets is read unless its content holds a generated value: a
 # run of at least 20 characters with an entropy of at least 4.5 bits per character, or 3 when
@@ -114,15 +115,19 @@ def is_inventory_path(path: PurePath) -> bool:
             or not suffix and path.parent.name in BUILD_FOLDERS)
 
 
-def iter_walked(target: Path, perimeter: Perimeter | None = None) -> Iterator[Path]:
-    """Every file the walk of the perimeter allows, whether or not the snapshot records its kind, in a stable order."""
+def iter_walked(target: Path, perimeter: Perimeter | None = None,
+                forbidden: list[Path] | None = None) -> Iterator[Path]:
+    """Every file the walk of the perimeter allows, whether or not the snapshot records its kind, in a stable order. A
+    file `is_forbidden` forbids is never yielded: its path alone goes to `forbidden`, when given."""
     perimeter = perimeter or Perimeter(target)
     for directory, filenames in perimeter.walk():
         for name in filenames:
             path = directory / name
-            if is_forbidden(name, path):
-                continue
             if target.is_file() and path != target:
+                continue
+            if is_forbidden(name, path):
+                if forbidden is not None:
+                    forbidden.append(path)
                 continue
             yield path
 
@@ -202,7 +207,26 @@ def git_attributes(root: Path, paths: list[str], names) -> tuple[dict[str, dict[
 
 
 BINARY_SECONDS = 300  # `git grep` reads every file of the perimeter once
-FOLDERS_PER_CALL = 2000  # pathspecs on one command line, well under the system's limit on its length
+PATHSPECS_PER_CALL = 2000  # pathspecs on one command line, well under the system's limit on its length
+
+
+def _pathspecs(root: Path, paths: list[str]) -> list[str]:
+    """What `git grep` is asked for to read the files of `paths` and no other: a folder, for its own files only
+    (`--max-depth=0`), when each regular file in it is one of `paths`, else each of its files of `paths`. A file the
+    walk left out beside them (a forbidden name, a file Git ignores) is never opened."""
+    asked: dict[str, set[str]] = {}
+    for rel in paths:
+        asked.setdefault(PurePath(rel).parent.as_posix(), set()).add(rel)
+    specs = []
+    for folder, files in sorted(asked.items()):
+        try:
+            with os.scandir(root / folder) as listing:
+                whole = all(PurePosixPath(folder, entry.name).as_posix() in files for entry in listing
+                            if entry.is_file(follow_symlinks=False))
+        except OSError:
+            whole = False
+        specs += [folder] if whole else sorted(files)
+    return specs
 
 
 def git_binary(root: Path, paths: list[str]) -> tuple[set[str], str | None]:
@@ -214,18 +238,18 @@ def git_binary(root: Path, paths: list[str]) -> tuple[set[str], str | None]:
     own test is Ruby code (`blob_helper.rb`, a MIME table and an encoding
     detector), not data. `--no-index` reads the files where they stand, with or
     without a work tree, and reads no index; `--no-textconv` and `GIT_OPTIONS`
-    leave every program of the checkout unrun. Each folder is asked for its own
-    files only (`--max-depth=0`), by its literal name.
+    leave every program of the checkout unrun. Git reads the files of `paths`
+    and no other (`_pathspecs`), by their literal names.
     """
     git = git_executable()
     if git is None:
         return set(), "git is not available: binary files are not told apart"
-    folders = sorted({PurePath(rel).parent.as_posix() for rel in paths})
+    specs = _pathspecs(root, paths)
     text: set[str] = set()
-    for start in range(0, len(folders), FOLDERS_PER_CALL):
+    for start in range(0, len(specs), PATHSPECS_PER_CALL):
         said = _git(git, root, "--literal-pathspecs", "grep", "--no-index", "--no-exclude-standard", "--no-textconv",
-                    "-I", "-l", "-z", "--max-depth=0", "-e", "", "--", *folders[start:start + FOLDERS_PER_CALL],
-                    seconds=BINARY_SECONDS, answers=(0, 1))  # 1: no file of these folders is text
+                    "-I", "-l", "-z", "--max-depth=0", "-e", "", "--", *specs[start:start + PATHSPECS_PER_CALL],
+                    seconds=BINARY_SECONDS, answers=(0, 1))  # 1: no file of these paths is text
         if said is None:
             return set(), "git grep did not answer: binary files are not told apart"
         text.update(name.decode("utf-8", errors="surrogateescape") for name in said.split(b"\0") if name)

@@ -8,8 +8,9 @@ expressions on the path (`vendor`, `documentation` of `linguist-catalog.json`), 
 (`linguist-vendored`, `linguist-generated`, `linguist-documentation`, read by `git check-attr`); else binary, as Git
 tells it (`source_files.git_binary`). A dependency folder the walk never enters (`vendor/`, `node_modules/`, a
 committed `dist/`) is named by the same expressions and attributes. A generated file is known only from
-`.gitattributes`: Linguist's `generated.rb` is code, not data. Where Git cannot read the attributes the project
-declares, or tell binary files apart, `excluded_unknown` says why.
+`.gitattributes`: Linguist's `generated.rb` is code, not data. A file whose name `file-formats.json` forbids is
+`forbidden`, named by its path alone: nothing opens it (`source_files.iter_walked`, `source_files.git_binary`). Where
+Git cannot read the attributes the project declares, or tell binary files apart, `excluded_unknown` says why.
 """
 from __future__ import annotations
 
@@ -81,10 +82,12 @@ def grouped(reasons: dict[str, str | None]) -> list[dict]:
     return [{"path": path, "why": why} for path, why in excluded.items()]
 
 
-def excluded(root: Path, paths: list[str], folders: list[str] = ()) -> tuple[list[dict], str | None]:
+def excluded(root: Path, paths: list[str], folders: list[str] = (),
+             forbidden: list[str] = ()) -> tuple[list[dict], str | None]:
     """The files of `paths` and the folders of `folders` the walk did not enter (relative to `root`) that are not the
-    project's own code, grouped by folder, and why the attributes the project declares were not read, or binary files
-    not told apart, if they were not."""
+    project's own code, and the files of `forbidden` (the names the walk forbids, by their paths alone), grouped by
+    folder, and why the attributes the project declares were not read, or binary files not told apart, if they were
+    not."""
     said, unknown = git_attributes(root, [*paths, *folders], ATTRIBUTES.values())
     binary, untold = git_binary(root, paths)
 
@@ -93,6 +96,7 @@ def excluded(root: Path, paths: list[str], folders: list[str] = ()) -> tuple[lis
 
     reasons = {rel: reason(rel, rel) or ("binary" if rel in binary else None) for rel in paths}
     reasons.update({f"{rel}/": reason(rel, f"{rel}/") for rel in folders})  # Linguist's expressions end a folder in `/`
+    reasons.update(dict.fromkeys(forbidden, "forbidden"))
     return grouped(reasons), "; ".join(filter(None, (unknown, untold))) or None
 
 
@@ -166,7 +170,8 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
             count = 0
             counts: dict[str, list] = {}
             walked: list[str] = []
-            for path in iter_walked(target, perimeter):
+            forbidden: list[Path] = []
+            for path in iter_walked(target, perimeter, forbidden):
                 walked.append(relative_to_root(path, root))
                 if not is_inventory_path(path):
                     _count(counts, path)  # nothing of it is read
@@ -191,7 +196,8 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
                 del data
             left_out, unknown = excluded(root, walked, [relative_to_root(path, root)
                                                         for path in perimeter.dependency_directories
-                                                        if target.is_dir()])
+                                                        if target.is_dir()],
+                                         [relative_to_root(path, root) for path in forbidden])
             header = {"schema": SCHEMA, "target": relative_to_root(target, root) or ".", "root": root.as_posix(),
                       "scope": scope_record(perimeter, root), "git": git_info(root), "metrics": metrics,
                       "unread": _unread(counts), "excluded": left_out,
