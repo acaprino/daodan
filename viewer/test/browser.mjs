@@ -423,11 +423,14 @@ try {
     await main.getByRole('button', { name: 'Cambia branch', exact: true }).click();
     await branch.filter({ hasText: /^main/ }).waitFor();
     await forward('Continua').waitFor();
-    // A narrow window: the screens are at the foot, and the path is a row above the step.
+    // A narrow window: the screens are at the foot, and the path is behind its row above the step, which says where the step is.
     await page.setViewportSize({ width: 700, height: 820 });
     const views = page.getByRole('toolbar', { name: 'Viste', exact: true });  // under the bar, then at the foot
     await views.getByRole('button', { name: /^Analisi/ }).waitFor();
-    assert.deepEqual([await tab('Analisi').count(), await stage('Repository').isVisible(), await fits()], [0, true, true]);
+    assert.deepEqual([await tab('Analisi').count(), await stage('Repository').isVisible(), await fits()], [0, false, true]);
+    await fold('Percorso');
+    await stage('Repository').waitFor();
+    assert.ok(await fits());
     await page.setViewportSize({ width: 390, height: 820 });
     await views.getByRole('button', { name: /^Motore/ }).click();
     await screen('Motore e domande');
