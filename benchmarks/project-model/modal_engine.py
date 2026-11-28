@@ -55,7 +55,9 @@ def main(out: str = "", fixture: str = ""):
                 break
             time.sleep(1)
         process = box.exec("python", "/daodan/driver.py", timeout=3300)
-        for line in process.stdout:
+        # the stream comes in chunks, not lines: two lines can share one, a long one span several
+        lines = "".join(process.stdout).splitlines()
+        for line in lines:
             print(line.rstrip()[:400], flush=True)
             if line.startswith("RESULT "):
                 result = json.loads(line[len("RESULT "):])
