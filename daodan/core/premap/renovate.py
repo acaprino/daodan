@@ -876,7 +876,7 @@ def read(context, commands, results):
             "detail": f"renovate: {(result['stderr'] or result['stdout']).strip()[-400:]}"}]}
     report = json.loads(result["stdout"])
     repository = (report.get("repositories") or {}).get("local") or {}
-    if "status" in repository:  # Renovate's error handling ended the repository before its files were read
+    if "status" in repository and not repository.get("packageFiles"):  # ended by Renovate's error handling, nothing read
         return {"facts": declared, "gaps": [*gaps, _ended(repository)]}
 
     def text(rel: str) -> str:
