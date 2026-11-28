@@ -5,7 +5,8 @@ model sources of the pre-map's kind (`NAME`, `VERSION`, `RANK`, `commands`, `rea
 framework's own tool (`framework_entries`), run in Daodan's container by the runner the caller supplies. They run with the
 pre-map's machinery (`premap.Context`, `premap._run`, `premap.join`), each reading the pre-map (`Context.stated`): the
 toolchains a runner prepares and the restores it refuses come from there («Pacchetti ripristinati: da `find_modules`»). The record
-is bound to the snapshot as the pre-map is, to the pre-map it read (its `inputs_digest`) and to its sources' versions.
+is bound to the snapshot as the pre-map is, to the pre-map it read (its `inputs_digest`) and to its sources' versions. A framework's
+source runs only for a framework the stack found (`_chosen`, from `registry_build.READERS`); Noir runs on every project.
 Once the snapshot is read, the step also binds the routes to its functions with no rule (`bound`, kept under `bound`); the flows
 read the rows with the manifests' own (`flow_entries.evidence`) and take that binding where the rules of the session name no handler.
 """
@@ -51,6 +52,29 @@ def path(manifest: Path) -> Path:
     return Path(manifest).with_name(FILE)
 
 
+def _reader(source) -> str:
+    """The module of `source` as `registry_build.READERS` names it, from `core/`."""
+    return Path(source.__file__).resolve().relative_to(SCRIPT_DIR).as_posix()
+
+
+def _chosen(sources, found) -> tuple:
+    """`sources` without those `registry_build.READERS` names for no id of `found` (the registry ids the stack found): they run
+    no command and state no gap. With `found` None (no stack record of this inventory, or the tool did not run) all run, as
+    `premap._chosen` does with the build tools."""
+    sources = tuple(SOURCES if sources is None else sources)
+    if found is None:
+        return sources
+    from registry_build import READERS
+    named, wanted = set(READERS.values()), {READERS[ident] for ident in found if ident in READERS}
+    return tuple(source for source in sources if _reader(source) not in named or _reader(source) in wanted)
+
+
+def _found(manifest: Path, digest: str):
+    """The registry ids the stack step found for the inventory of `digest` (`stack_recognition.found_ids`)."""
+    import stack_recognition
+    return stack_recognition.found_ids(manifest, digest)
+
+
 def _inputs(digest, root, premap_digest, sources) -> str:
     value = [digest, root, premap_digest, [premap.label(s) for s in sources], SCHEMA]
     if noir in sources:
@@ -58,10 +82,10 @@ def _inputs(digest, root, premap_digest, sources) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
 
 
-def derive(manifest: Path, store, stated: dict, sources=None, runner=None, report=None) -> dict:
+def derive(manifest: Path, store, stated: dict, sources=None, runner=None, report=None, found=None) -> dict:
     """The record of the snapshot in `store`, its sources run in `SOURCES`' order on the pre-map `stated`; `runner` and
-    `report` as `premap.derive` takes them."""
-    sources = tuple(SOURCES if sources is None else sources)
+    `report` as `premap.derive` takes them; `found`, the registry ids the stack found, chooses the sources (`_chosen`)."""
+    sources = _chosen(sources, found)
     context = premap.Context(manifest, store)
     context.stated = stated
     toolchains, refused = stated.get("toolchains", ()), preparation.refusals(stated)
@@ -140,7 +164,7 @@ def write(manifest: Path, sources=None, runner=None, report=None, stated: dict |
             stated = premap.ensure(manifest)
     with open_snapshot(manifest) as store:
         stamp = premap._snapshot_stamp(manifest)
-        record = derive(manifest, store, stated, sources, runner, report)
+        record = derive(manifest, store, stated, sources, runner, report, _found(manifest, inventory_digest(store)))
         if store.metadata.get("reading") != "not-started":  # the binder reads the snapshot's functions: only once it is read
             try:
                 record["bound"] = bound(manifest, record)
@@ -187,7 +211,7 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
         stated = json.loads(premap.path(manifest).read_text(encoding="utf-8")).get("inputs_digest")
     except (OSError, ValueError):
         stated = None
-    sources = tuple(SOURCES if sources is None else sources)
+    sources = _chosen(sources, _found(manifest, binding.get("inventory_digest")))
     inputs = _inputs(binding.get("inventory_digest"), binding.get("root"), stated, sources)
     if record.get("inputs_digest") != inputs or not premap.binding_matches(manifest, binding):
         return {**report, "state": "stale", "reason": "snapshot, pre-map or sources changed since the entry points"}

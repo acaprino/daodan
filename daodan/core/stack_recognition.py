@@ -206,13 +206,20 @@ def run(manifest: Path, registry: dict | None = None) -> dict:
     return {"found": entries, "checkers": checkers, "gaps": gaps + more, "ran": sorted(ran)}
 
 
-def tools(record: dict) -> list[str] | None:
-    """The registry ids of the build tools (`category` `tool`) the tool found by itself, sorted; None when it did not run,
-    and every source of `find_modules` runs as without the stack."""
+def ids(record: dict, categories=None) -> list[str] | None:
+    """The registry ids the tool found by itself (of `categories`, of any without), sorted; None when it did not run, and
+    every source the stack chooses runs as without it."""
     if not any(c.get("checker") == "stack-analyser" and c.get("state") == "ran" for c in record.get("checkers") or ()):
         return None
-    return sorted({entry["id"] for entry in record.get("found") or () if entry.get("category") == "tool"
+    return sorted({entry["id"] for entry in record.get("found") or ()
+                   if (categories is None or entry.get("category") in categories)
                    and any(sign.get("source") == "stack-analyser" for sign in entry.get("signs") or ())})
+
+
+def tools(record: dict) -> list[str] | None:
+    """The registry ids of the build tools (`category` `tool`) the tool found by itself (`ids`): they choose the sources of
+    `find_modules`."""
+    return ids(record, ("tool",))
 
 
 # --------------------------------------------------------------------------------------------- the record
@@ -245,6 +252,13 @@ def named(manifest: Path, digest: str) -> list[str] | None:
     None without one: every source of `find_modules` runs."""
     record = recorded(manifest)
     return record.get("tools") if record.get("inventory_digest") == digest else None
+
+
+def found_ids(manifest: Path, digest: str) -> list[str] | None:
+    """Every registry id the tool found by itself (`ids`) in the record beside `manifest`, when it was derived from the
+    inventory of `digest`; None without one: every source of `find_entry_points` runs."""
+    record = recorded(manifest)
+    return ids(record) if record.get("inventory_digest") == digest else None
 
 
 def _read(manifest: Path, digest: str) -> dict | None:

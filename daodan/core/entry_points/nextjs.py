@@ -17,6 +17,7 @@ from pathlib import PurePosixPath
 from entry_points import frameworks
 
 NAME, VERSION, RANK = "next", "daodan/premap/v4", "scanner"
+PACKAGES = ("next",)  # the package a folder's `package.json` declares: the source runs there
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a `.js` import names: `.ts`, `.tsx`, `.js`, `.jsx`
 TYPES = ".next/types"
 VALIDATOR = f"{TYPES}/validator.ts"
@@ -24,7 +25,7 @@ VALIDATOR = f"{TYPES}/validator.ts"
 
 def commands(context):
     return [{"tool": NAME, "argv": argv, "cwd": folder, "env": env, "network": "none"}
-            for folder in frameworks.folders(context, ("next",))
+            for folder in frameworks.folders(context, PACKAGES)
             for argv, env in ((["npx", "--no-install", "next", "typegen"], {"NEXT_TELEMETRY_DISABLED": "1", "npm_config_offline": "true"}),
                               (["cat", VALIDATOR], {}))] or None
 

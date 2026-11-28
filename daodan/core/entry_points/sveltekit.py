@@ -42,7 +42,7 @@ from pathlib import PurePosixPath
 from entry_points import frameworks
 
 NAME, VERSION, RANK = "sveltekit", "daodan/premap/v3", "scanner"  # v3: the route's `schema`
-PACKAGE = "@sveltejs/kit"
+PACKAGES = ("@sveltejs/kit",)
 ENV = {"npm_config_offline": "true"}
 # shortcut: the file is the tool's own cache, not the output the documentation promises (the types and `tsconfig.json`), and it is
 # read where the tool writes it by default; a SvelteKit that changes its form is a gap saying so ("no JSON of the known layout") and
@@ -63,7 +63,7 @@ def sync_seconds(folders: int) -> int:
 
 
 def commands(context):
-    folders = frameworks.folders(context, ("@sveltejs/kit",))
+    folders = frameworks.folders(context, PACKAGES)
     if not folders:
         return None
     sync = ["timeout", "--kill-after=10", str(sync_seconds(len(folders))), "npx", "--no-install", "svelte-kit", "sync"]
