@@ -1,0 +1,2897 @@
+{
+ "commits": {
+  "real-app-full-stack-fastapi": "aabb90126964a164e02aff39e7c385bb0598236d",
+  "real-bank-of-anthos": "db35fea9fd090150e2398106aadb475576f80d94",
+  "real-stack-plausible": "012522e4e6a4fe69b61a9d66c622be751aafd480",
+  "real-svc-otel-demo": "b825c7c257268081dcfeff52d0f053fce1ef2561",
+  "real-sveltekit-realworld": "df796708040f5200ec572b28ab7f88ecee5794dd"
+ },
+ "files": [
+  {
+   "case": "fixtures/valid",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "run": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('npm test -- --shard {0}', matrix.shard)"
+        },
+        "step": "test.steps.2",
+        "yaml": "npm test -- --shard ${{ matrix.shard }}"
+       }
+      ],
+      "same": 3
+     },
+     "shell": {
+      "differs": 3,
+      "examples": [
+       {
+        "parser": null,
+        "step": "test.steps.0",
+        "yaml": "bash"
+       },
+       {
+        "parser": null,
+        "step": "test.steps.1",
+        "yaml": "bash"
+       },
+       {
+        "parser": null,
+        "step": "test.steps.2",
+        "yaml": "sh"
+       }
+      ],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "working-directory": {
+      "differs": 4,
+      "examples": [
+       {
+        "parser": null,
+        "step": "test.steps.0",
+        "yaml": "web"
+       },
+       {
+        "parser": null,
+        "step": "test.steps.1",
+        "yaml": "api"
+       },
+       {
+        "parser": null,
+        "step": "test.steps.2",
+        "yaml": "web"
+       }
+      ],
+      "same": 0
+     }
+    },
+    "jobs": 2,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 4,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/ci.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "fixtures/invalid",
+   "file": ".github/workflows/no-runs-on.yml",
+   "parser_errors": [
+    "/bench/fixtures/invalid/.github/workflows/no-runs-on.yml (Line: 4, Col: 5): Required property is missing: runs-on"
+   ],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "fixtures/invalid",
+   "file": ".github/workflows/run-and-uses.yml",
+   "parser_errors": [
+    "/bench/fixtures/invalid/.github/workflows/run-and-uses.yml (Line: 7, Col: 9): Unexpected value 'run'"
+   ],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "fixtures/invalid",
+   "file": ".github/workflows/unknown-key.yml",
+   "parser_errors": [
+    "/bench/fixtures/invalid/.github/workflows/unknown-key.yml (Line: 5, Col: 5): Unexpected value 'step'"
+   ],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "mix-infra-gha",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "working-directory": {
+      "differs": 3,
+      "examples": [
+       {
+        "parser": null,
+        "step": "tools.steps.0",
+        "yaml": "tools"
+       },
+       {
+        "parser": null,
+        "step": "tools.steps.1",
+        "yaml": "tools"
+       },
+       {
+        "parser": null,
+        "step": "tools.steps.2",
+        "yaml": "tools"
+       }
+      ],
+      "same": 8
+     }
+    },
+    "jobs": 3,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 11,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/ci.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "mix-infra-gha",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 3,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/release.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 1,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/assign-reviewers.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 0,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/build-images.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 0,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/changelog.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 26
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 26
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 26
+     },
+     "shell": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": null,
+        "step": "build-test.steps.0",
+        "yaml": "bash"
+       }
+      ],
+      "same": 25
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 26
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 26
+     }
+    },
+    "jobs": 13,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 26,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/checks.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "working-directory": {
+      "differs": 2,
+      "examples": [
+       {
+        "parser": null,
+        "step": "analyze.steps.3",
+        "yaml": "src/checkout"
+       },
+       {
+        "parser": null,
+        "step": "analyze.steps.4",
+        "yaml": "src/product-catalog"
+       }
+      ],
+      "same": 4
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 6,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/codeql-analysis.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     }
+    },
+    "jobs": 2,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 11,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/component-build-images.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 3,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/dependabot-auto-update-protobuf-diff.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 0,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/first-time-pr.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 3
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 3,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/fossa.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 2,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/gradle-wrapper-validation.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 4,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/label-pr.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 0,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/nightly-release.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 0,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/ossf-scorecard.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "working-directory": {
+      "differs": 4,
+      "examples": [
+       {
+        "parser": null,
+        "step": "build-ios.steps.3",
+        "yaml": "src/react-native-app"
+       },
+       {
+        "parser": null,
+        "step": "build-ios.steps.4",
+        "yaml": "src/react-native-app"
+       },
+       {
+        "parser": null,
+        "step": "build-ios.steps.5",
+        "yaml": "src/react-native-app/ios"
+       }
+      ],
+      "same": 7
+     }
+    },
+    "jobs": 2,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 11,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/react-native-build.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 0,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/release.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 17
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 17
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 17
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 17
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 17
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 17
+     }
+    },
+    "jobs": 3,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 17,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/run-agentic-telemetry-tests.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 24
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 24
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 24
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 24
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 24
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 24
+     }
+    },
+    "jobs": 4,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 24,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/run-telemetry-tests.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 1,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/stale.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 0,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/zizmor.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-bank-of-anthos",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "run": {
+      "differs": 2,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('          if [[ ! \"{0}\" =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then\n            echo \"Error: Version must match format vX.Y.Z (e.g., v1.2.3)\"\n            exit 1\n          fi\n', inputs.version)"
+        },
+        "step": "build-and-release.steps.1",
+        "yaml": "if [[ ! \"${{ inputs.version }}\" =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then\n  echo \"Error: Version must match format vX.Y.Z (e.g., v1.2.3)\"\n  exit 1\nfi\n"
+       },
+       {
+        "parser": {
+         "expr": "format('          REGISTRY=$(echo \"{0}\" | cut -d''/'' -f1)\n          gcloud auth configure-docker \"$REGISTRY\"\n', inputs.repo_prefix)"
+        },
+        "step": "build-and-release.steps.6",
+        "yaml": "REGISTRY=$(echo \"${{ inputs.repo_prefix }}\" | cut -d'/' -f1)\ngcloud auth configure-docker \"$REGISTRY\"\n"
+       }
+      ],
+      "same": 7
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 9,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/make-release.yaml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-bank-of-anthos",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 2,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/terraform-validate-ci.yaml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 1,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/add-to-project.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 7,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/bump-pre-commit-hooks.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 6,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/create-draft-release.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 4
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 4,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/deploy-docker-compose.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "working-directory": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": null,
+        "step": "deploy.steps.5",
+        "yaml": "backend"
+       }
+      ],
+      "same": 6
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 7,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/deploy.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 1,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/detect-conflicts.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 1,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/guard-dependencies.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 2,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/issue-manager.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 23
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 23
+     },
+     "run": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('docker compose run --rm playwright bunx playwright test --fail-on-flaky-tests --trace=retain-on-failure --shard={0}/{1}', matrix.shardIndex, matrix.shardTotal)"
+        },
+        "step": "test-playwright.steps.11",
+        "yaml": "docker compose run --rm playwright bunx playwright test --fail-on-flaky-tests --trace=retain-on-failure --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}"
+       }
+      ],
+      "same": 22
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 23
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 23
+     },
+     "working-directory": {
+      "differs": 3,
+      "examples": [
+       {
+        "parser": null,
+        "step": "test-playwright.steps.5",
+        "yaml": "backend"
+       },
+       {
+        "parser": null,
+        "step": "test-playwright.steps.6",
+        "yaml": "frontend"
+       },
+       {
+        "parser": null,
+        "step": "merge-playwright-reports.steps.4",
+        "yaml": "frontend"
+       }
+      ],
+      "same": 20
+     }
+    },
+    "jobs": 4,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 23,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/playwright.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 16
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 16
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 16
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 16
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 16
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 16
+     }
+    },
+    "jobs": 2,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 16,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/pre-commit.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 8,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/prepare-release.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 6,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/smokeshow.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "run": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('uv run bash scripts/tests-start.sh \"Coverage for {0}\"', github.sha)"
+        },
+        "step": "test-backend.steps.6",
+        "yaml": "uv run bash scripts/tests-start.sh \"Coverage for ${{ github.sha }}\""
+       }
+      ],
+      "same": 9
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "working-directory": {
+      "differs": 3,
+      "examples": [
+       {
+        "parser": null,
+        "step": "test-backend.steps.5",
+        "yaml": "backend"
+       },
+       {
+        "parser": null,
+        "step": "test-backend.steps.6",
+        "yaml": "backend"
+       },
+       {
+        "parser": null,
+        "step": "test-backend.steps.9",
+        "yaml": "backend"
+       }
+      ],
+      "same": 7
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 10,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/test-backend.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 8,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/test-docker-compose.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-app-full-stack-fastapi",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 2,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/zizmor.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 1,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/all-checks-pass.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "run": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('echo {0}', steps.docker_build.outputs.digest)"
+        },
+        "step": "build.steps.4",
+        "yaml": "echo ${{ steps.docker_build.outputs.digest }}"
+       }
+      ],
+      "same": 7
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 8,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/build-private-images-ghcr.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 15
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 15
+     },
+     "run": {
+      "differs": 5,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('          platform={0}\n          echo \"PLATFORM_PAIR=${{platform//\\//-}}\" >> $GITHUB_ENV\n', matrix.platform)"
+        },
+        "step": "build.steps.0",
+        "yaml": "platform=${{ matrix.platform }}\necho \"PLATFORM_PAIR=${platform//\\//-}\" >> $GITHUB_ENV\n"
+       },
+       {
+        "parser": {
+         "expr": "format('echo {0}', steps.docker_build.outputs.digest)"
+        },
+        "step": "build.steps.5",
+        "yaml": "echo ${{ steps.docker_build.outputs.digest }}"
+       },
+       {
+        "parser": {
+         "expr": "format('          mkdir -p {0}/digests\n          digest=\"{1}\"\n          touch \"{2}/digests/${{digest#sha256:}}\"\n', runner.temp, steps.docker_build.outputs.digest, runner.temp)"
+        },
+        "step": "build.steps.6",
+        "yaml": "mkdir -p ${{ runner.temp }}/digests\ndigest=\"${{ steps.docker_build.outputs.digest }}\"\ntouch \"${{ runner.temp }}/digests/${digest#sha256:}\"\n"
+       }
+      ],
+      "same": 10
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 15
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 15
+     },
+     "working-directory": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": null,
+        "step": "push.steps.4",
+        "yaml": "${{ runner.temp }}/digests"
+       }
+      ],
+      "same": 14
+     }
+    },
+    "jobs": 2,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 15,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/build-public-images-ghcr.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 1
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 1,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/comment-preview-url.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 55
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 55
+     },
+     "run": {
+      "differs": 3,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('          timeout 120 bash -c ''until docker exec {0} pg_isready -h 127.0.0.1 -U postgres -q; do sleep 0.5; done''\n          timeout 120 bash -c ''until curl -sf http://127.0.0.1:8123/ping > /dev/null; do sleep 0.5; done''\n', job.services.postgres.id)"
+        },
+        "step": "build.steps.10",
+        "yaml": "timeout 120 bash -c 'until docker exec ${{ job.services.postgres.id }} pg_isready -h 127.0.0.1 -U postgres -q; do sleep 0.5; done'\ntimeout 120 bash -c 'until curl -sf http://127.0.0.1:8123/ping > /dev/null; do sleep 0.5; done'\n"
+       },
+       {
+        "parser": {
+         "expr": "format('          timeout 120 bash -c ''until docker exec {0} pg_isready -h 127.0.0.1 -U postgres -q; do sleep 0.5; done''\n          timeout 120 bash -c ''until curl -sf http://127.0.0.1:8123/ping > /dev/null; do sleep 0.5; done''\n', job.services.postgres.id)"
+        },
+        "step": "e2e.steps.13",
+        "yaml": "timeout 120 bash -c 'until docker exec ${{ job.services.postgres.id }} pg_isready -h 127.0.0.1 -U postgres -q; do sleep 0.5; done'\ntimeout 120 bash -c 'until curl -sf http://127.0.0.1:8123/ping > /dev/null; do sleep 0.5; done'\n"
+       },
+       {
+        "parser": {
+         "expr": "format('npm --prefix ./e2e test -- --shard={0}/{1} --reporter=blob', matrix.shardIndex, matrix.shardTotal)"
+        },
+        "step": "e2e.steps.21",
+        "yaml": "npm --prefix ./e2e test -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --reporter=blob"
+       }
+      ],
+      "same": 52
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 55
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 55
+     },
+     "working-directory": {
+      "differs": 2,
+      "examples": [
+       {
+        "parser": null,
+        "step": "e2e.steps.20",
+        "yaml": "./e2e"
+       },
+       {
+        "parser": null,
+        "step": "merge-sharded-e2e-test-report.steps.4",
+        "yaml": "./e2e"
+       }
+      ],
+      "same": 53
+     }
+    },
+    "jobs": 4,
+    "jobs_missing": [],
+    "services_differ": [
+     {
+      "job": "build",
+      "parser": {
+       "clickhouse": "clickhouse/clickhouse-server:25.11.5.8-alpine",
+       "postgres": {
+        "expr": "matrix.postgres_image"
+       }
+      },
+      "yaml": {
+       "clickhouse": "clickhouse/clickhouse-server:25.11.5.8-alpine",
+       "postgres": "${{ matrix.postgres_image }}"
+      }
+     }
+    ],
+    "steps": 55,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/elixir.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 6
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 6,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/hex-audit.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 8
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 8,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/iana-registry-check.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "run": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('        echo \"::error file={0}::Code and migrations shouldn''t be changed at the same time\"\n        exit 1\n', fromJSON(steps.changes.outputs.lib_files)[0])"
+        },
+        "step": "validate.steps.1",
+        "yaml": "echo \"::error file=${{ fromJSON(steps.changes.outputs.lib_files)[0] }}::Code and migrations shouldn't be changed at the same time\"\nexit 1\n"
+       }
+      ],
+      "same": 1
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 2,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/migrations-validation.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 14
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 14
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 14
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 14
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 14
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 14
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 14,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/node.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 7
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 7,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/publish-docs.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 9
+     },
+     "working-directory": {
+      "differs": 9,
+      "examples": [
+       {
+        "parser": null,
+        "step": "terraform.steps.0",
+        "yaml": "test/e2e"
+       },
+       {
+        "parser": null,
+        "step": "terraform.steps.1",
+        "yaml": "test/e2e"
+       },
+       {
+        "parser": null,
+        "step": "terraform.steps.2",
+        "yaml": "test/e2e"
+       }
+      ],
+      "same": 0
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 9,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/terraform-e2e.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "working-directory": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": null,
+        "step": "tracker-release-npm.steps.7",
+        "yaml": "tracker/npm_package"
+       }
+      ],
+      "same": 10
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 11,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/tracker-script-npm-release.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "if": {
+      "differs": 2,
+      "examples": [
+       {
+        "parser": "success() && (format('          {0}\n', !(\n          contains(github.event.pull_request.labels.*.name, 'tracker-release: patch') ||\n          contains(github.event.pull_request.labels.*.name, 'tracker-release: minor') ||\n          contains(github.event.pull_request.labels.*.name, 'tracker-release: major') ||\n          contains(github.event.pull_request.labels.*.name, 'tracker-release: none') )))",
+        "step": "tracker-script-update.steps.8",
+        "yaml": "!( contains(github.event.pull_request.labels.*.name, 'tracker-release: patch') || contains(github.event.pull_request.labels.*.name, 'tracker-release: minor') || contains(github.event.pull_request.labels.*.name, 'tracker-release: major') || contains(github.event.pull_request.labels.*.name, 'tracker-release: none') )"
+       },
+       {
+        "parser": "success() && (format('          {0}\n', (\n          steps.changelog_changed.outputs.any_changed == 'false' &&\n          !contains(github.event.pull_request.labels.*.name, 'tracker-release: none') )))",
+        "step": "tracker-script-update.steps.10",
+        "yaml": "( steps.changelog_changed.outputs.any_changed == 'false' && !contains(github.event.pull_request.labels.*.name, 'tracker-release: none') )"
+       }
+      ],
+      "same": 9
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 11
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 11,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/tracker-script-update.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "run": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": {
+         "expr": "format('npm --prefix ./tracker test -- --shard={0}/{1} --reporter=blob', matrix.shardIndex, matrix.shardTotal)"
+        },
+        "step": "test.steps.3",
+        "yaml": "npm --prefix ./tracker test -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --reporter=blob"
+       }
+      ],
+      "same": 9
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 10
+     },
+     "working-directory": {
+      "differs": 1,
+      "examples": [
+       {
+        "parser": null,
+        "step": "merge-sharded-test-report.steps.4",
+        "yaml": "./tracker"
+       }
+      ],
+      "same": 9
+     }
+    },
+    "jobs": 2,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 10,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/tracker.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  },
+  {
+   "case": "real-stack-plausible",
+   "compare": {
+    "container_differs": [],
+    "fields": {
+     "env": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "if": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "run": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "shell": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "uses": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     },
+     "working-directory": {
+      "differs": 0,
+      "examples": [],
+      "same": 2
+     }
+    },
+    "jobs": 1,
+    "jobs_missing": [],
+    "services_differ": [],
+    "steps": 2,
+    "steps_count_differs": []
+   },
+   "file": ".github/workflows/typos.yml",
+   "parser_errors": [],
+   "parser_failed": null,
+   "yaml_error": null
+  }
+ ],
+ "totals": {
+  "container_differs": 0,
+  "errors_yaml_misses": 3,
+  "fields_differ": {
+   "env": 0,
+   "if": 2,
+   "run": 16,
+   "shell": 4,
+   "uses": 0,
+   "working-directory": 34
+  },
+  "jobs_missing": 0,
+  "read_by_parser": 54,
+  "read_by_yaml": 57,
+  "schema_errors": 3,
+  "services_differ": 1,
+  "steps": 400,
+  "steps_count_differs": 0,
+  "workflows": 57
+ },
+ "versions": {
+  "node": "v24.22.3",
+  "workflow-parser": "0.3.61",
+  "yaml": "2.9.1"
+ }
+}
