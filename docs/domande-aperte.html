@@ -10,11 +10,11 @@
 :root[data-theme="dark"]{--bg:#1c1917;--fg:#f5f5f4;--muted:#a8a29e;--card:#292524;--line:#44403c;--accent:#f59e0b;--ok:#4ade80}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif;padding:24px 16px}
-main{max-width:760px;margin:0 auto}
+main{max-width:760px;margin:0 auto;counter-reset:q}
 h1{font-size:1.5rem;margin:0 0 4px}
 h2{font-size:1.05rem;margin:28px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 p.sub{color:var(--muted);margin:0 0 16px}
-ol{list-style:none;padding:0;margin:0;counter-reset:q}
+ol{list-style:none;padding:0;margin:0}
 li{counter-increment:q;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px}
 li::before{content:counter(q);font-weight:700;color:var(--accent);margin-right:8px}
 li b{font-weight:600}
@@ -26,7 +26,7 @@ code{font-size:.9em;overflow-wrap:anywhere}
 <body>
 <main>
 <h1>Domande aperte</h1>
-<p class="sub">28 novembre 2026, sera. Fonte: <code>docs/plans/refactoring.md</code>, «Domande rimandate al proprietario». Nessuna blocca il lavoro: dove c'è una scelta provvisoria, è già nel codice. I consigli seguono la regola «niente overfitting». Chiuse oggi: Cancello T1 (verde), scoperta cieca fuori dal cancello, preset di Renovate (scelta A, passo T0.C.10).</p>
+<p class="sub">28 novembre 2026, sera. Fonte: <code>docs/plans/refactoring.md</code>, «Domande rimandate al proprietario». Nessuna blocca il lavoro: dove c'è una scelta provvisoria, è già nel codice. I consigli seguono la regola «niente overfitting». I numeri sono unici: basta rispondere «consigli ok, tranne N». Chiuse oggi: Cancello T1 (verde), scoperta cieca fuori dal cancello, preset di Renovate (scelta A, passo T0.C.10).</p>
 
 <h2>Promemoria</h2>
 <ol>
@@ -59,13 +59,26 @@ code{font-size:.9em;overflow-wrap:anywhere}
 <li><b>Togliere un comando (T3.B.8).</b> «Togli il comando» agisce subito, senza conferma né annullamento: una proposta dell'assistente tolta non torna.<span class="r">va bene per i comandi tuoi; per una proposta basta che l'assistente possa riproporla.</span></li>
 <li><b>Impostare sopra una proposta (T3.B.8).</b> Modificare e impostare un comando proposto lo rende tuo, senza dire che veniva dall'assistente.<span class="r">va bene: l'hai scritto tu.</span></li>
 <li><b>La finestra dei comandi nella spec (T3.B.8).</b> La riga dei comandi dell'utente in <code>architettura.md</code> non nomina la finestra dell'App.<span class="r">sì, una riga nella spec.</span></li>
+<li><b>Il titolo del popup della rete (T3.B.12).</b> Per l'esplorazione dice «Rete per app», con il nome interno dello strumento.<span class="r">usare il nome che l'App dà già all'azione del piano («Esplorazione dell'app»), come per gli altri passi; nessuna etichetta nuova.</span></li>
 </ol>
 
-<h2>Esecuzione (T3.B)</h2>
+<h2>Esecuzione e rete (T3.B, T0.C)</h2>
 <ol>
 <li><b>Il grado <code>sampled</code>.</b> Lo scrittore è uscito, i lettori lo leggono ancora per i dati vecchi. Toglierlo ovunque?<span class="r">sì, meno codice.</span></li>
 <li><b>Precedenza dei comandi.</b> Utente, poi assistente, poi CI. Un comando proposto dall'assistente gira prima di quello della CI senza conferma?<span class="r">no: il proposto gira solo dopo «Conferma».</span></li>
+<li><b>Comandi di JVM e .NET dalla CI (T3.B.6).</b> Un passo di CI diventa un comando solo se lancia un runner che un osservatore conosce; JVM e .NET non hanno ancora un osservatore, quindi restano alla convenzione dello strumento.<span class="r">tenere così: con un osservatore JVM o .NET la stessa regola li prende, senza codice nuovo.</span></li>
 <li><b>Dove stanno i comandi.</b> Oggi in <code>commands.json</code> nella cartella condivisa: spostarli nel <code>.daodan</code>?<span class="r">sì, il progetto li porta con sé.</span></li>
+<li><b>Superfici senza regole (T3.B.9).</b> Le 12 voci nuove (<code>wails</code>, <code>winforms</code>, <code>wpf</code> e nove toolkit desktop) hanno <code>support: none</code>: nessun progetto le mostra finché il fork non ha le loro regole. Chiedere una release del fork?<span class="r">sì: le regole stanno nel fork, non in Daodan; gli id si concordano nella richiesta.</span></li>
+<li><b>Altre superfici (T3.B.9).</b> Dare una <code>surface</code> anche ad Android SDK, Cordova, Jetpack Compose e UWP (che il registro non ha)?<span class="r">sì, come superfici differite: sono dati del registro; UWP entra con la release del fork.</span></li>
+<li><b>La superficie di un avvio non dichiarata (T3.B.10).</b> Un avvio senza <code>surface</code> vale <code>web</code>: lo script <code>dev</code> di un modulo React Native, Expo o Capacitor si esplora come pagina e la lacuna di superficie non esce. Prendere la superficie dalle tecnologie del modulo?<span class="r">sì, dal registro (vale per ogni toolkit, nessun nome nel codice); se il modulo ha anche una parte web, come Capacitor ed Expo, si esplora la pagina e l'altra superficie resta lacuna.</span></li>
+<li><b>Host dei download dell'esplorazione (T3.B.11).</b> Il browser di Playwright (<code>storage.googleapis.com</code>) e i download di mise da GitHub sono fuori dall'elenco canonico: ogni prima esplorazione chiede l'approvazione, anche con npm.<span class="r">non canonici: accettano upload, come GitHub in T0.C; prima si prova nel container se basta il mirror di Playwright già canonico (<code>cdn.playwright.dev</code>), altrimenti resta il popup.</span></li>
+<li><b>Una fixture Yarn con uno script <code>dev</code> (T3.B.11).</b> L'avvio con Yarn non è provato su container reale.<span class="r">sì: una fixture prova un percorso comune a tutti, non è overfitting.</span></li>
+<li><b>Ripristino con Bun (T3.B.11).</b> <code>bun.lock</code> non è fra i lockfile dei ripristini: oggi un progetto Bun si ripristina con npm.<span class="r">sì, con il comando ufficiale (<code>bun install --frozen-lockfile</code>), una voce come pnpm e Yarn.</span></li>
+<li><b>Il <code>.env</code> di esempio contro la CI (T3.B.12).</b> Un <code>.env</code> di esempio vince su una variabile della CI con lo stesso nome: un <code>DATABASE_URL</code> segnaposto stacca l'app dal postgres della CI, senza lacuna.<span class="r">vince la CI: è il valore con cui i test girano davvero.</span></li>
+<li><b>Corsa con un servizio non partito (T3.B.12).</b> Oggi si riusa come una corsa riuscita.<span class="r">non riusarla, come una corsa in attesa di approvazione: il guasto è dell'ambiente, non del codice. Una sola regola per osservatori e app.</span></li>
+<li><b>Test in una sottocartella (T3.B.12).</b> I test di <code>backend/</code> (tududi) non danno variabili né passi all'app della radice, perché il legame è per cartella esatta.<span class="r">resta lacuna: è un caso di un solo progetto; il comando o i passi li può dare la persona o l'assistente.</span></li>
+<li><b>Corsa finita che ha chiesto host (T3.B.12).</b> <code>dynamic/javascript.py</code> la riusa e non dà <code>approval_required</code>; l'app sì.<span class="r">è un difetto: correggerlo con un test, nel punto comune agli osservatori e non solo in JavaScript.</span></li>
+<li><b>Pre-mappa con una richiesta in attesa (T0.C.10).</b> Oggi una richiesta senza risposta rende la pre-mappa da rifare: ogni analisi rifà Renovate o Gradle finché nessuno risponde, e con MCP e CLI sempre. In alternativa: rifarla solo quando cambia la risposta (lo stato degli host chiesti entra nell'impronta).<span class="r">l'alternativa: costa meno e vale per ogni strumento che chiede host.</span></li>
 <li><b>Immagini Docker del progetto.</b> Daodan non costruisce l'immagine del Dockerfile o di Compose per avviare l'app.<span class="r">non costruirla: non è compito di Daodan, resta una lacuna segnalata.</span></li>
 <li><b>Peso delle webview.</b> Xvfb, WebKitGTK e la build di Tauri scaricano centinaia di MB senza chiedere. Serve un consenso?<span class="r">sì, un solo consenso per il peso, come per i download grandi.</span></li>
 </ol>
