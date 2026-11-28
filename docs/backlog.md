@@ -90,6 +90,8 @@
 
 - **Gruppo 14 di `--shards 32` (28 novembre 2026):** fallisce sempre nello stesso gruppo (riscrittore dei commenti, C#, `honest_state`: «tree-sitter unavailable: download failed»), i test passano da soli e con `--shards 33`; una prova inquina le altre (grammatiche o variabili d'ambiente). Da trovare e correggere, non da aggirare.
 
+- **Percorso verticale in una colonna (`T1.E`):** provvisorio finché Sigrid non sistema lo `Steps` orizzontale stretto ([acaprino/sigrid#76](https://github.com/acaprino/sigrid/issues/76)); poi l'App torna alla riga orizzontale.
+
 ## Fermo o ritirato: non si rifà
 
 | Che cosa | Perché | Dove (`614c940`) |
