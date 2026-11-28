@@ -262,18 +262,21 @@ def test_ensure_with_a_runner_runs_the_model_commands_a_fresh_premap_left_not_ru
 def test_a_premap_whose_run_asked_the_user_about_a_host_runs_again_with_the_answer(tmp_path, monkeypatch):
     """With a runner the pre-map is stale while a source waits on the user about a host: a request (`approval_required`),
     whatever its answer, and a host refused for one analysis ("no") once that analysis has ended; a host the user
-    blocked keeps it fresh (`egress`). Without a runner it stays as it is."""
+    blocked, and an allowed one the proxy refused at a port other than 443, keep it fresh (`egress`). Without a runner
+    it stays as it is."""
     import egress
     monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
     runner = lambda commands: []  # noqa: E731 - any runner
     for case, gap in (("asked", {"kind": "approval_required", "hosts": ["api.github.com"], "detail": "asked"}),
+                      ("port", {"kind": "host_denied", "host": "pypi.org", "port": "80", "detail": "443 only"}),
                       ("refused", {"kind": "host_denied", "host": "api.github.com", "port": "443", "detail": "no"})):
         sources = [fake("asker", "reader", lambda context, gap=gap: {"facts": {}, "gaps": [gap]})]
         project, manifest, _ = build(tmp_path / case, "mixed", sources=sources)
         name = str(project.resolve())
         assert premap.state(manifest, sources=sources)["state"] == "fresh"
-        if case == "asked":
-            assert premap.state(manifest, sources=sources, runner=runner)["state"] == "stale"
+        if case != "refused":  # a request waits; an allowed host the proxy opens at 443 only stays refused at 80
+            assert premap.state(manifest, sources=sources, runner=runner)["state"] == ("stale" if case == "asked"
+                                                                                       else "fresh")
             continue
         egress.respond("api.github.com", name, "no")  # refused in this analysis: what it said stands
         assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"

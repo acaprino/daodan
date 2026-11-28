@@ -627,8 +627,9 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
 
 def _asked(record: dict) -> bool:
     """Whether a source of the record waits on the user about a host (`egress`): a request (`approval_required`), or a
-    host refused that is no longer (a "no" lasts one analysis). The run that asked runs again with the answer, as
-    `engine_pass._keep` keeps no contract that waited."""
+    host refused that is no longer (a "no" lasts one analysis: it asks again, or the user approved it since; a host
+    the proxy opens at 443 only and was asked at another port stays refused). The run that asked runs again with the
+    answer, as `engine_pass._keep` keeps no contract that waited."""
     told = [gap for gap in record.get("gaps", ()) if gap.get("kind") in ("approval_required", "host_denied")]
     if any(gap["kind"] == "approval_required" for gap in told):
         return True
@@ -637,7 +638,8 @@ def _asked(record: dict) -> bool:
     import egress
     project = str(Path(record["binding"]["root"]).resolve())  # `egress.project_of`: the store's root
     state, answers = egress.load(), egress.session(project)
-    return any(gap.get("host") and egress.decide(gap["host"], project, state, answers) != "deny" for gap in told)
+    decided = [(gap, egress.decide(gap["host"], project, state, answers)) for gap in told if gap.get("host")]
+    return any(now == "ask" or now == "allow" and gap.get("port", "443") == "443" for gap, now in decided)
 
 
 def freshness(record: dict, runner) -> dict:

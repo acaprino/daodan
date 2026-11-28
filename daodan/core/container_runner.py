@@ -272,9 +272,10 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
             name = str(project.resolve())
             found = {n: named(answers[n]) for n in range(1, len(answers))}
             state, answered = egress.load(), egress.session(name)
-            opened = tuple(dict.fromkeys(host for n, named_hosts in found.items() if ran[n]["network"] == "none"
-                                         for host in named_hosts if egress.decide(host, name, state, answered) == "allow"))
-            again = [n for n, named_hosts in found.items() if ran[n]["network"] == "none" and set(named_hosts) & set(opened)]
+            closed = {n for n in found if ran[n].get("network", "none") == "none"}
+            opened = tuple(dict.fromkeys(host for n in sorted(closed) for host in found[n]
+                                         if egress.decide(host, name, state, answered) == "allow"))
+            again = [n for n in sorted(closed) if set(found[n]) & set(opened)]
             told = []
             if again:
                 run = contained([ran[0], *({**ran[n], "network": "registries"} for n in again)], (*hosts, *opened),
